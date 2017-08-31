@@ -1,0 +1,41 @@
+classdef h5helper
+    methods(Static)
+        %get variable string type
+        function string_id = getStringId()
+            string_id = H5T.copy('H5T_C_S1');
+            H5T.set_size(tid, 'H5T_VARIABLE');
+        end
+        function uint8_id = getUint8Id()
+            uint8_id = H5T.copy('H5T_NATIVE_UINT8')
+        end
+        function f32_id = getFloat32Id()
+        end
+        function f64_id = getFloat64Id()
+        end
+        function int32_id = getInt32Id()
+        end
+        function uint16_id = getUint16Id()
+        end
+        function int8_id = getInt8Id()
+        end
+        function int64_id = getInt64Id()
+        end
+            
+        function 
+        function gid = createGroup(loc_id, name)
+            plist = 'H5P_DEFAULT';
+            gid = H5G.create(loc_id, name, plist, plist, plist);
+        end
+        function attr_id = createAttr(loc_id, name, type_id)
+            sid = H5S.create('H5S_SCALAR');
+            pid = H5P.create('H5P_ATTRIBUTE_CREATE');
+            attr_id = H5A.create(loc_id, name, type_id, sid, pid);
+            H5S.close(sid);
+        end
+        function did = createDataset(loc_id, name, type_id, dimensions)
+            sid = H5S.create_simple(length(dimensions), dimensions, dimensions);
+            did = H5D.create(loc_id, name, type_id, sid, 'H5P_DEFAULT');
+        end
+    end
+end
+end

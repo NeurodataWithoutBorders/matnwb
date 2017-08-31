@@ -16,13 +16,13 @@ classdef nwb
     end
     
     properties %datasets
-        acq_images = struct([]);
-        acq_timeseries = struct([]);
-        epochs = struct([]);
-        processing = struct([]);
-        stimulus_presentation = struct([]);
-        stimulus_templates = struct([]);
-        analysis = struct([]);
+        acq_images = [];
+        acq_timeseries = [];
+        epochs = [];
+        processing = [];
+        stimulus_presentation = [];
+        stimulus_templates = [];
+        analysis = [];
     end
     
     methods
@@ -44,25 +44,14 @@ classdef nwb
                     obj.general.(name) = h5read(filename, strcat('/general', '/', name));
                 end
             end
+            if ~isempty(gen.Groups)
+            end
             
             %process dataset groups
-            acq_img_info = h5info(filename, '/acquisition/images');
-            obj.acq_images = importProperties(acq_img_info.Groups);
+            obj.acq_images = importProperties(h5info(filename, '/acquisition/images').Groups);
             
-            acq_ts_info = h5info(filename, '/acquisition/timeseries');
-            obj.acq_timeseries = importProperties(acq_ts_info.Groups);
-            
-            epochs_info = h5info(filename, '/epochs');
-            obj.epochs = importProperties(epochs_info.Groups);
-            
-            process_info = h5info(filename, '/processing');
-            obj.processing = importProperties(process_info.Groups);
-            
-            stim_pres_info = h5info(filename, '/stimulus/presentation');
-            obj.stimulus_presentation = importProperties(stim_pres_info.Groups);
-            
-            stim_temp_info = h5info(filename, '/stimulus/templates');
-            obj.stim_temp_info = importProperties(stim_tepm_info.Groups);
+            acq_ts = h5info(filename, '/acquisition/timeseries');
+            epochs = h5info(filename, '/epochs');
         end
         
         function export(obj, filename)
@@ -74,10 +63,7 @@ classdef nwb
     
     methods(Access=private)
         function datasets = importProperties(groups_array)
-            datasets = struct([]);
-            for i=1:length(groups_array)
-                datasets.(groups_array(i).Name) = types.NWBContainer(groups_array(i));
-            end
+            
         end
         function outobj = exportProperties(obj, propname)
             prop = obj.(propname);
@@ -119,11 +105,10 @@ classdef nwb
             fileobj.groups = dirs;
             
             %attribute
-            
-            fileobj.attr.help = h5helper.createAttr(fid, 'help', string_id, 'H5S_SCALAR');
-            fileobj.attr.namespace = h5helper.createAttr(fid, 'namespace', string_id, 'H5S_SCALAR');
-            fileobj.attr.neurodata_type = h5helper.createAttr(fid, 'neurodata_type', string_id, 'H5S_SCALAR');
-            fileobj.attr.source = h5helper.createAttr(fid, 'source', string_id, 'H5S_SCALAR');
+            fileobj.attr.help = h5helper.createAttr(fid, 'help', string_id);
+            fileobj.attr.namespace = h5helper.createAttr(fid, 'namespace', string_id);
+            fileobj.attr.neurodata_type = h5helper.createAttr(fid, 'neurodata_type', string_id);
+            fileobj.attr.source = h5helper.createAttr(fid, 'source', string_id);
             
             H5A.write(fileobj.attr.help, string_id,...
                 {'an NWB:N file for storing cellular-based neurophysiology data'});
