@@ -5,24 +5,25 @@ classdef nwb
     
     properties %attributes
         attributes = struct('namespace', [], 'source', []);
-        general = struct([]);
+        general = struct();
     end
     
-    properties %values
+    properties %datasets
+        file_create_date = [];
         identifier = [];
         nwb_version = [];
         session_description = [];
         session_start_time = [];
     end
     
-    properties %datasets
-        acq_images = struct([]);
-        acq_timeseries = struct([]);
-        epochs = struct([]);
-        processing = struct([]);
-        stimulus_presentation = struct([]);
-        stimulus_templates = struct([]);
-        analysis = struct([]);
+    properties %grouped datasets
+        acq_images = struct();
+        acq_timeseries = struct();
+        epochs = struct();
+        processing = struct();
+        stimulus_presentation = struct();
+        stimulus_templates = struct();
+        analysis = struct();
     end
     
     methods
@@ -41,28 +42,63 @@ classdef nwb
                 gen_ds = gen.Datasets;
                 for i=1:length(gen_ds)
                     name = gen_ds(i).Name;
-                    obj.general.(name) = h5read(filename, strcat('/general', '/', name));
+                    obj.general.datasets.(name) =...
+                        h5read(filename, strcat('/general', '/', name));
                 end
             end
             
+            %we presume that there is only one level of groups
+            obj.general.groups = struct();
+            if ~isempty(gen.Groups)
+                gen_g = gen.Groups;
+                for i=1:length(gen_g)
+                    group = gen_g(i);
+                    [~, name, ~] = fileparts(group.Name);
+                    if strcmp(name, 'subject')
+                        for i=1:length(group.Datasets)
+                            ds = group.Datasets(i);
+                            [~, ds_nm, ~] = fileparts(ds.Name);
+                            obj.general.groups.subject.(ds_nm) =...
+                                h5read(filename, ds.Name);
+                        end
+                    elseif strcmp(name, 'intracellular_ephys')
+                        
+                    else
+                       obj.general.groups.(name) = h5helper.importH5Groups(group)(1);
+                    end
+                end
+            end
+            
+            % groups which follow NWBContainer dataset form
+            % devices
+            % extracellular_ephys
+            % optogenetics
+            % optophysiology
+            % specifications
+            
+            %weird groups which don't follow sets
+            % intracellular_ephys
+            %   filtering
+            % subject
+            
             %process dataset groups
             acq_img_info = h5info(filename, '/acquisition/images');
-            obj.acq_images = importProperties(acq_img_info.Groups);
+            obj.acq_images = h5helper.importH5Groups(acq_img_info.Groups);
             
             acq_ts_info = h5info(filename, '/acquisition/timeseries');
-            obj.acq_timeseries = importProperties(acq_ts_info.Groups);
+            obj.acq_timeseries = h5helper.importH5Groups(acq_ts_info.Groups);
             
             epochs_info = h5info(filename, '/epochs');
-            obj.epochs = importProperties(epochs_info.Groups);
+            obj.epochs = h5helper.importH5Groups(epochs_info.Groups);
             
             process_info = h5info(filename, '/processing');
-            obj.processing = importProperties(process_info.Groups);
+            obj.processing = h5helper.importH5Groups(process_info.Groups);
             
             stim_pres_info = h5info(filename, '/stimulus/presentation');
-            obj.stimulus_presentation = importProperties(stim_pres_info.Groups);
+            obj.stimulus_presentation = h5helper.importH5Groups(stim_pres_info.Groups);
             
             stim_temp_info = h5info(filename, '/stimulus/templates');
-            obj.stim_temp_info = importProperties(stim_tepm_info.Groups);
+            obj.stimulus_templates = h5helper.importH5Groups(stim_temp_info.Groups);
         end
         
         function export(obj, filename)
@@ -73,12 +109,6 @@ classdef nwb
     end
     
     methods(Access=private)
-        function datasets = importProperties(groups_array)
-            datasets = struct([]);
-            for i=1:length(groups_array)
-                datasets.(groups_array(i).Name) = types.NWBContainer(groups_array(i));
-            end
-        end
         function outobj = exportProperties(obj, propname)
             prop = obj.(propname);
             outobj = [];
@@ -92,7 +122,7 @@ classdef nwb
             %generate an empty nwb file and returns ids to relevant groups
             %and datasets
             
-            fileobj = struct([]);
+            fileobj = struct();
             
             %string
             string_id = H5T.copy('H5T_C_S1');

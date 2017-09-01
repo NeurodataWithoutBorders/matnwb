@@ -57,6 +57,17 @@ classdef h5helper
             sid = H5S.create_simple(length(dimensions), dimensions, dimensions);
             did = H5D.create(loc_id, name, type_id, sid, 'H5P_DEFAULT');
         end
+        
+        %converts HDF5 groups into NWBContainers
+        function group_struct = importH5Groups(group_array)
+            group_struct = struct();
+            for i=1:length(group_array)
+                g = group_array(i);
+                %hdf5 saves the entire path as Name
+                %so parse out the true name on import
+                [~, filename, ~] = fileparts(g.Name);
+                group_struct.(filename) = types.NWBContainer(g);
+            end
+        end
     end
-end
 end

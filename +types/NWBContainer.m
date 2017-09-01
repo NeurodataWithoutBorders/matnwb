@@ -4,11 +4,11 @@ classdef NWBContainer
     end
     
     properties %extensions
-        attributes = struct([]);
-        datasets = struct([]);
-        groups = struct([]);
-        softlinks = struct([]);
-        externlinks = struct([]);
+        attributes = struct();
+        datasets = struct();
+        groups = struct();
+        softlinks = struct();
+        externlinks = struct();
     end
     
     methods
@@ -16,11 +16,7 @@ classdef NWBContainer
             obj.name = g_obj.Name;
             obj.attributes = g_obj.Attributes;
             obj.datasets = g_obj.Datasets;
-            
-            for i=1:length(g_obj.Groups)
-                group = g_obj.Groups(i);
-                obj.groups.(group.Name) = NWBContainer(group);
-            end
+            obj.groups = h5helper.importH5Groups(g_obj.Groups);
         end
         
         function hdf_obj = export(obj, loc_id)
