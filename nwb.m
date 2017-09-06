@@ -28,15 +28,23 @@ classdef nwb
     
     methods
         function obj = nwb(filename)
+            function group = processGroups(path)
+                info = h5info(filename, path);
+                group = h5helper.importH5Groups(info.Groups, filename);
+            end
             root = h5info(filename);
             obj.filename = filename;
             obj.attributes = root.Attributes;
+            %we assume that these Datasets satisfy MATLAB struct name
+            %constraints.
             for i=1:length(root.Datasets)
                 name = root.Datasets(i).Name;
                 obj.(name) = h5read(filename, strcat('/', name));
             end
             
             %process general
+            %datasets in the first level should work with MATLAB struct
+            %name constraints
             gen = h5info(filename, '/general');
             if ~isempty(gen.Datasets)
                 gen_ds = gen.Datasets;
@@ -47,7 +55,10 @@ classdef nwb
                 end
             end
             
-            %we presume that there is only one level of groups
+            %we assume that there is only one level of groups so further
+            %recursion is unnecessary.
+            %we CANNOT assume that the NWBContainer names satisfy MATLAB
+            %struct name constraints
             obj.general.groups = struct();
             if ~isempty(gen.Groups)
                 gen_g = gen.Groups;
@@ -55,50 +66,39 @@ classdef nwb
                     group = gen_g(i);
                     [~, name, ~] = fileparts(group.Name);
                     if strcmp(name, 'subject')
+                        %subject datasets are named and satisfy MATLAB
+                        %constraints
                         for i=1:length(group.Datasets)
                             ds = group.Datasets(i);
                             [~, ds_nm, ~] = fileparts(ds.Name);
                             obj.general.groups.subject.(ds_nm) =...
-                                h5read(filename, ds.Name);
+                                h5read(filename, strcat(group.Name, '/', ds.Name));
                         end
                     elseif strcmp(name, 'intracellular_ephys')
-                        
+                        %intracellular ephys has BOTH NWBContainers and a
+                        %'filtering' dataset.
+                        i_e = struct();
+                        if ~isempty(group.Datasets)
+                            i_e.filtering =...
+                                h5read(filename, strcat(group.Name, '/filtering'));
+                        end
+                        i_e.electrode_groups =...
+                            h5helper.importH5Groups(groups.Groups, filename);
+                        obj.general.groups.intracellular_ephys = i_e;
                     else
-                       obj.general.groups.(name) = h5helper.importH5Groups(group)(1);
+                        obj.general.groups.(name) =...
+                            h5helper.importH5Groups(group.Groups, filename);
                     end
                 end
             end
             
-            % groups which follow NWBContainer dataset form
-            % devices
-            % extracellular_ephys
-            % optogenetics
-            % optophysiology
-            % specifications
-            
-            %weird groups which don't follow sets
-            % intracellular_ephys
-            %   filtering
-            % subject
-            
             %process dataset groups
-            acq_img_info = h5info(filename, '/acquisition/images');
-            obj.acq_images = h5helper.importH5Groups(acq_img_info.Groups);
-            
-            acq_ts_info = h5info(filename, '/acquisition/timeseries');
-            obj.acq_timeseries = h5helper.importH5Groups(acq_ts_info.Groups);
-            
-            epochs_info = h5info(filename, '/epochs');
-            obj.epochs = h5helper.importH5Groups(epochs_info.Groups);
-            
-            process_info = h5info(filename, '/processing');
-            obj.processing = h5helper.importH5Groups(process_info.Groups);
-            
-            stim_pres_info = h5info(filename, '/stimulus/presentation');
-            obj.stimulus_presentation = h5helper.importH5Groups(stim_pres_info.Groups);
-            
-            stim_temp_info = h5info(filename, '/stimulus/templates');
-            obj.stimulus_templates = h5helper.importH5Groups(stim_temp_info.Groups);
+            obj.acq_images = processGroups('/acquisition/images');
+            obj.acq_timeseries = processGroups('/acquisition/timeseries');
+            obj.epochs = processGroups('/epochs');
+            obj.processing = processGroups('/processing');
+            obj.stimulus_presentation = processGroups('/stimulus/presentation');
+            obj.stimulus_templates = processGroups('/stimulus/templates');
         end
         
         function export(obj, filename)

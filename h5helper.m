@@ -59,14 +59,13 @@ classdef h5helper
         end
         
         %converts HDF5 groups into NWBContainers
-        function group_struct = importH5Groups(group_array)
-            group_struct = struct();
-            for i=1:length(group_array)
-                g = group_array(i);
-                %hdf5 saves the entire path as Name
-                %so parse out the true name on import
-                [~, filename, ~] = fileparts(g.Name);
-                group_struct.(filename) = types.NWBContainer(g);
+        function group_mapped = importH5Groups(group_array, filename)
+            %add in reverse order so array is allocated on first
+            %iteration.
+            if isempty(group_array)
+                group_mapped = [];
+            else
+                group_mapped = types.NWBContainer(group_array, filename);
             end
         end
     end
