@@ -6,7 +6,9 @@ classdef NWBContainer < dynamicprops
   methods
     function obj = NWBContainer(varargin)
       p = inputParser;
+      p.KeepUnmatched = true;
       p.addParameter('help', {});
+      p.parse(varargin{:});
       fn = fieldnames(p.Results);
       if ~isempty(fn)
         for i=1:length(fn)
@@ -27,7 +29,7 @@ classdef NWBContainer < dynamicprops
   methods(Access=protected) %validators
     function validate_help(~, val)
       if ~iscellstr(val)
-        error('NWBContainer.help: Expected Cell String Array');
+        error('NWBContainer.help:InvalidType Expected cell string array');
       end
     end
   end

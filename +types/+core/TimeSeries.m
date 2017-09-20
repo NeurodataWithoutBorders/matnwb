@@ -27,6 +27,7 @@ classdef TimeSeries < types.core.NWBContainer
   methods %constructor
     function obj = TimeSeries(varargin)
       p = inputParser;
+      p.KeepUnmatched = true;
       p.addParameter('comments', {'no comments'});
       p.addParameter('description', {'no description'});
       p.addParameter('source', {});
@@ -46,9 +47,9 @@ classdef TimeSeries < types.core.NWBContainer
       p.parse(varargin{:});
       
       obj = obj@types.core.NWBContainer(varargin{:});
-      obj.help = ['Name of TimeSeries or Modules that serve as the source '...
+      obj.help = {['Name of TimeSeries or Modules that serve as the source '...
         'for the data contained here.  It can also be the '...
-        'name of a device, for stimulus or acquisition data'];
+        'name of a device, for stimulus or acquisition data']};
       fn = fieldnames(p.Results);
       if ~isempty(fn)
         for i=1:length(fn)
@@ -126,17 +127,17 @@ classdef TimeSeries < types.core.NWBContainer
     end
     
     function set.starting_time(obj, val)
-      obj.validate_starting_time(obj, val);
+      obj.validate_starting_time(val);
       obj.starting_time = val;
     end
     
     function set.starting_time_rate(obj, val)
-      obj.validate_starting_time_rate(obj, val);
+      obj.validate_starting_time_rate(val);
       obj.starting_time_rate = val;
     end
     
     function set.starting_time_unit(obj, val)
-      obj.validate_starting_time_unit(obj, val);
+      obj.validate_starting_time_unit(val);
       obj.starting_time_unit = val;
     end
   end
@@ -144,19 +145,19 @@ classdef TimeSeries < types.core.NWBContainer
   methods(Access=protected) %validators
     function validate_comments(~, val)
       if ~iscellstr(val)
-        error('TimeSeries.comments: Expected Cell String Array');
+        error('TimeSeries.comments:InvalidType Expected cell string array');
       end
     end
     
     function validate_description(~, val)
       if ~iscellstr(val)
-        error('TimeSeries.description: Expected Cell String Array');
+        error('TimeSeries.description:InvalidType Expected cell string array');
       end
     end
     
     function validate_source(~, val)
       if ~iscellstr(val)
-        error('TimeSeries.source: Expected Cell String Array');
+        error('TimeSeries.source:InvalidType Expected cell string array');
       end
     end
     
@@ -173,7 +174,7 @@ classdef TimeSeries < types.core.NWBContainer
     
     function validate_data_unit(~, val)
       if ~iscellstr(val)
-        error('TimeSeries.data_unit: Expected Cell String Array');
+        error('TimeSeries.data_unit:InvalidType Expected cell string array');
       end
     end
     
@@ -187,7 +188,7 @@ classdef TimeSeries < types.core.NWBContainer
     
     function validate_timestamps_unit(~, val)
       if ~iscellstr(val)
-        error('TimeSeries.unit: Expected Cell String Array');
+        error('TimeSeries.unit:InvalidType Expected cell string array');
       end
     end
     
@@ -199,12 +200,12 @@ classdef TimeSeries < types.core.NWBContainer
     
     function validate_control_description(~, val)
       if ~iscellstr(val)
-        error('TimeSeries.control_description: Expected Cell String Array');
+        error('TimeSeries.control_description:InvalidType Expected cell string array');
       end
     end
     
     function validate_sync(~, val)
-      validateattributes(val, {'cell'}, {});
+      validateattributes(val, {'struct'}, {});
     end
     
     function validate_starting_time(~, val)
@@ -222,7 +223,7 @@ classdef TimeSeries < types.core.NWBContainer
     function validate_starting_time_unit(obj, val)
       if ~isempty(obj.starting_time)
         if ~iscellstr(val)
-          error('TimeSeries.starting_time_unit: Expected Cell String Array');
+          error('TimeSeries.starting_time_unit:InvalidType Expected cell string array');
         end
       end
     end
@@ -233,7 +234,7 @@ classdef TimeSeries < types.core.NWBContainer
     %loc_id should be the root group
     function export(obj, loc_id)
       export@types.NWBContainer(obj, loc_id);
-
+      
       h5util.writeAttribute(loc_id, 'comments', obj.comments, 'string');
       h5util.writeAttribute(loc_id, 'description', obj.description, 'string');
       h5util.writeAttribute(loc_id, 'source', obj.source, 'string');
