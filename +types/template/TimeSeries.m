@@ -2,7 +2,6 @@ classdef TimeSeries < types.core.NWBContainer
   properties %attributes
     comments;
     description;
-    source;
   end
   
   properties %datasets + dataset attributes
@@ -18,10 +17,13 @@ classdef TimeSeries < types.core.NWBContainer
   properties %optional datasets
     control;
     control_description;
-    sync;
     starting_time;
     starting_time_rate;
     starting_time_unit;
+  end
+  
+  properties %groups
+    groups;
   end
   
   methods %constructor
@@ -30,7 +32,6 @@ classdef TimeSeries < types.core.NWBContainer
       p.KeepUnmatched = true;
       p.addParameter('comments', {'no comments'});
       p.addParameter('description', {'no description'});
-      p.addParameter('source', {});
       p.addParameter('data', []);
       p.addParameter('data_conversion', 1);
       p.addParameter('data_resolution', 0);
@@ -40,7 +41,7 @@ classdef TimeSeries < types.core.NWBContainer
       p.addParameter('timestamps_unit', {'Seconds'});
       p.addParameter('control', uint8([]));
       p.addParameter('control_description', {});
-      p.addParameter('sync', struct());
+      p.addParameter('groups', struct());
       p.addParameter('starting_time', []);
       p.addParameter('starting_time_rate', []);
       p.addParameter('starting_time_unit', {'Seconds'});
@@ -69,11 +70,6 @@ classdef TimeSeries < types.core.NWBContainer
     function set.description(obj, val)
       obj.validate_description(val);
       obj.description = val;
-    end
-    
-    function set.source(obj, val)
-      obj.validate_source(val);
-      obj.source = val;
     end
     
     function set.data(obj, val)
@@ -152,12 +148,6 @@ classdef TimeSeries < types.core.NWBContainer
     function validate_description(~, val)
       if ~iscellstr(val)
         error('TimeSeries.description:InvalidType Expected cell string array');
-      end
-    end
-    
-    function validate_source(~, val)
-      if ~iscellstr(val)
-        error('TimeSeries.source:InvalidType Expected cell string array');
       end
     end
     

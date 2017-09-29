@@ -1,42 +1,56 @@
 % Creates a struct of objects that need to be defined
 function classes = parse(filename)
-javaaddpath(fullfile('+yaml', 'jar', 'yaml.jar'));
-
-classes = struct();
-%convert hashmap to cell array of type definitions
-types = cell(yaml.read(filename).get('groups').toArray());
-for i=1:length(types)
-  typedef = yaml.util.hashmap2struct(types{i});
-  
-  if isfield(typedef, 'neurodata_type_def')
-    if isfield(typedef, 'doc')
-      typedef = rmfield(typedef, 'doc');
+  function s = verify(s)
+    if isfield(s, 'neurodata_type_def')
+      if isfield(s, 'groups')
+        [s.groups, cstruct] = processGroups(s.groups);
+        classes = yaml.util.structUniqUnion(classes, cstruct);
+      end
+      
+      if isfield(s, 'attributes')
+        s.attributes = processAttributes(s.attributes);
+      end
+      
+      if isfield(s, 'datasets')
+        [s.datasets, cstruct] = processDatasets(s.datasets);
+        classes = yaml.util.structUniqUnion(classes, cstruct);
+      end
+      
+      if isfield(s, 'links')
+        s.links = processLinks(s.links);
+      end
+    else
+      error('yaml.read:InvalidSchema Highest group definition must contain a ''neurodata_type_def'' field.');
     end
-    
-    if isfield(typedef, 'groups')
-      typedef.groups = processGroups(typedef.groups);
-    end
-    
-    if isfield(typedef, 'attributes')
-      typedef.attributes = processAttributes(typedef.attributes);
-    end
-    
-    if isfield(typedef, 'datasets')
-      typedef.datasets = processDatasets(typedef.datasets);
-    end
-    
-    classname = typedef.neurodata_type_def;
-    typedef = rmfield(typedef, 'neurodata_type_def'); %remove redundant name
-    classes.(classname) = typedef;
-  else
-    error('yaml.read:InvalidSchema Highest group definition must contain a ''neurodata_type_def'' field.');
   end
+javaaddpath(fullfile('jar', 'schema.jar'));
+classes = struct();
+
+schema = Schema; %prevent screwy behavior when 'clear java' is called
+% processList by default searches for a 'name' field but we don't care about
+% that.  So we're re-searching the structure for neurodata_type_def here.
+anonclasses = processList(schema.read(filename).get('groups'), @verify);
+anonfn = fieldnames(anonclasses);
+for i=1:length(anonfn)
+  s = anonclasses.(anonfn{i});
+  typedefnm = s.neurodata_type_def;
+  s = rmfield(s, 'neurodata_type_def');
+  classes.(typedefnm) = s;
 end
+end
+
+function anonName = genAnon()
+persistent anonindex;
+if isempty(anonindex)
+  anonindex = 0;
+end
+
+anonName = ['Anon_' num2str(anonindex)];
+anonindex = anonindex + 1;
 end
 
 %general list processor and basic common filter.
 function ostruct = processList(l, pfunct)
-persistent anonindex;
 ostruct = struct();
 
 s_cell = cell(l.toArray());
@@ -52,15 +66,11 @@ for i=1:length(s_cell)
   if isfield(s, 'name')
     sname = s.name;
   else
-    if isempty(anonindex)
-      anonindex = 0;
-    end
-    sname = ['anon_' num2str(anonindex)];
-    anonindex = anonindex + 1;
+    sname = genAnon();
   end
   
   if isfield(ostruct, sname)
-    error('yaml.read.processList:DuplicateNames Cannot define attributes of the same name (%s) in the same section.', sname);
+    error('processList:DuplicateNames Cannot define attributes of the same name (%s) in the same section.', sname);
   end
   
   if isfield(s, 'name')
@@ -73,16 +83,20 @@ end
 function astruct = processAttributes(alist)
   function s = verify(s)
     if ~isfield(s, 'name')
-      error('yaml.read.processAttributes:NameRequired Attribute name required.');
+      error('processAttributes:NameRequired Attribute name required.');
+    end
+    
+    if isfield(s, 'dtype')
+      s.dtype = yaml.util.schema2matlabTypes(s.dtype);
     end
   end
 astruct = processList(alist, @verify);
 end
 
-function dstruct = processDatasets(dlist)
+function [dstruct, cstruct] = processDatasets(dlist)
   function s = verify(s)
-    if ~isfield(s, 'name')
-      error('yaml.read.processDatasets:NameRequired Dataset name required.');
+    if ~isfield(s, 'neurodata_type_def') && ~isfield(s, 'name')
+      error('processDatasets:NameRequired Dataset name required.');
     end
     
     %process dims and shape into something readable
@@ -97,14 +111,41 @@ function dstruct = processDatasets(dlist)
     if isfield(s, 'shape')
       s.shape = cell(s.shape.toArray());
     end
+    
+    if isfield(s, 'dtype')
+      s.dtype = yaml.util.schema2matlabTypes(s.dtype);
+    end
+    
+    if isfield(s, 'neurodata_type_def')
+      typedefnm = s.neurodata_type_def;
+      s_filtered = rmfield(s, 'neurodata_type_def');
+      if isfield(s, 'quantity')
+        s_filtered = rmfield(s_filtered, 'quantity');
+      end
+      cstruct.(typedefnm) = s_filtered;
+      
+      constraint = struct('type', s.neurodata_type_def);
+      if isfield(s, 'quantity')
+        constraint.quantity = s.quantity;
+      end
+      s = constraint;
+    end
   end
+cstruct = struct();
 dstruct = processList(dlist, @verify);
 end
 
-function gstruct = processGroups(glist)
+function ls = processLinks(ll)
+  function s = verify(s)
+  end
+ls = processList(ll, @verify);
+end
+
+function [gstruct, cstruct] = processGroups(glist)
   function s = verify(s)
     if isfield(s, 'groups')
-      s.groups = processGroups(s.groups);
+      [s.groups, cs] = processGroups(s.groups);
+      cstruct = yaml.util.structUniqUnion(cstruct, cs);
     end
     
     if isfield(s, 'attributes')
@@ -112,8 +153,29 @@ function gstruct = processGroups(glist)
     end
     
     if isfield(s, 'datasets')
-      s.datasets = processDatasets(s.datasets);
+      [s.datasets, cs] = processDatasets(s.datasets);
+      cstruct = yaml.util.structUniqUnion(cstruct, cs);
+    end
+    
+    if isfield(s, 'links')
+      s.links = processLinks(s.links);
+    end
+    
+    if isfield(s, 'neurodata_type_def')
+      typedefnm = s.neurodata_type_def;
+      s_filtered = rmfield(s, 'neurodata_type_def');
+      if isfield(s, 'quantity')
+        s_filtered = rmfield(s_filtered, 'quantity');
+      end
+      cstruct.(typedefnm) = s_filtered;
+      
+      groupconstraint = struct('type', s.neurodata_type_def);
+      if isfield(s, 'quantity')
+        groupconstraint.quantity = s.quantity;
+      end
+      s = groupconstraint;
     end
   end
+cstruct = struct();
 gstruct = processList(glist, @verify);
 end
