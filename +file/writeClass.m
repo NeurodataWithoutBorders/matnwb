@@ -1,80 +1,13 @@
-function writeClass(className, classStruct, dir)
+function writeClass(className, classStruct, dir, namespace)
 validateattributes(className, {'char', 'string'}, {'scalartext'});
 validateattributes(classStruct, {'struct'}, {'scalar'});
 validateattributes(dir, {'char', 'string'}, {'scalartext'});
+validateattributes(namespace, {'char', 'string'}, {'scalartext'});
 
-attr_props = {};
-% name => default_value
-attr_constructs = struct();
-% name => value
-attr_readonly_constructs = struct();
+[attr_props, attr_constructs, attr_readonly_constructs] = filterAttributes(classStruct);
+[ds_props, ds_constructs, ds_readonly_constructs] = filterDatasets(classStruct);
 
-if isfield(classStruct, 'attributes')
-  attr_props = fieldnames(classStruct.attributes);
-  
-  for i=1:length(attr_props)
-    nm = attr_props{i};
-    attr = classStruct.attributes.(nm);
-    if isfield(attr, 'value')
-      attr_readonly_constructs.(nm) = dtype2val(attr.dtype, attr.value);
-    else
-      attr_constructs.(nm) = defaultFromStruct(attr);
-    end
-  end
-end
-
-ds_props = {};
-ds_optional = {};
-% name => default_value
-ds_constructs = struct();
-% name => value
-ds_readonly_constructs = struct();
-
-if isfield(classStruct, 'datasets')
-  ds_props = fieldnames(classStruct.datasets);
-  
-  %construct names for dependent properties(i.e. attributes in datasets)
-  for i=1:length(ds_props)
-    nm = ds_props{i};
-    ds = classStruct.datasets.(nm);
-    
-    if isfield(ds, 'quantity') && (strcmp(ds.quantity, '?') || strcmp(ds.quantity, '*'))
-      ds_optional{length(ds_optional)+1} = nm;
-    end
-    
-    if isfield(ds, 'attributes')
-      subattr = fieldnames(ds.attributes);
-      for j=1:length(subattr)
-        %set as two cell arrays
-        sanm = subattr{j};
-        ds_props{length(ds_props)+1} = {nm sanm};
-        sa = ds.attributes.(sanm);
-        if isfield(sa, 'quantity') &&...
-            (strcmp(sa.quantity, '?') || strcmp(sa.quantity, '*'))
-          ds_optional{length(ds_optional)+1} = [nm '_' sanm];
-        end
-      end
-    end
-  end
-  
-  %constructor creation.
-  for i=1:length(ds_props)
-    nm = ds_props{i}; %can be multiple sizes
-    if iscell(nm)
-      prop = classStruct.datasets.(nm{1}).attributes.(nm{2});
-      nm = [nm{1} '_' nm{2}]; %concatenate w/ underscore <dataset>_<attribute>
-    else
-      prop = classStruct.datasets.(nm);
-    end
-    
-    if isfield(prop, 'value')
-      ds_readonly_constructs.(nm) = dtype2val(prop.dtype, prop.value);
-    else
-      ds_constructs.(nm) = defaultFromStruct(prop);
-    end
-  end
-end
-
+%filter links
 link_props = {};
 link_constructs = struct();
 if isfield(classStruct, 'links')
@@ -91,6 +24,7 @@ for i=1:length(ds_props_flat)
     ds_props_flat{i} = [nm{1} '_' nm{2}];
   end
 end
+
 if length(union(link_props, union(ds_props_flat, attr_props))) ~=...
     sum([length(link_props) length(ds_props_flat) length(attr_props)])
   error(['writeClass: properties and dataset attributes have conflicting names.', ...
@@ -99,14 +33,17 @@ end
 
 hasgroups = isfield(classStruct, 'groups');
 
-%batch into export and definitions for attributes/datasets/links/groups
 fid = fopen(fullfile(dir, [className '.m']), 'w+');
 fprintf(fid, 'classdef %s', className);
 if isfield(classStruct, 'neurodata_type_inc')
-  fprintf(fid, ' < %s', classStruct.neurodata_type_inc);
+  %we assume that the included objects includes 'handle' by default.
+  imports = sprintf('%s.%s', namespace, classStruct.neurodata_type_inc);
+else
+  imports = 'handle'; %root objects should import handle by default.
 end
+fprintf(fid, [' < %s' newline], imports);
 
-%def
+%property definitions
 if ~isempty(attr_props)
   fprintf(fid, newline);
   writeProps(fid, attr_props);
@@ -122,17 +59,16 @@ if ~isempty(link_props)
   writeProps(fid, link_props);
 end
 
-%groups
-if hasgroups
+if isfield(classStruct, 'groups')
   fprintf(fid, newline);
   writeProps(fid, {'groups'});
 end
 
 %constructor
 fprintf(fid, newline);
-fprintf(fid, ['  methods' newline]);
+fprintf(fid, ['  methods %%constructor' newline]);
 fprintf(fid, ['    function obj = %s(varargin)' newline], className);
-fprintf(fid, ['      p = inputParsers;' newline]);
+fprintf(fid, ['      p = inputParser;' newline]);
 fprintf(fid, ['      p.KeepUnmatched = true;' newline]);
 %write optional params with defaults
 writeAddParam(fid, attr_constructs, 'spaces', 6);
@@ -143,14 +79,15 @@ if hasgroups
 end
 fprintf(fid, ['      p.parse(varargin{:});' newline]);
 if isfield(classStruct, 'neurodata_type_inc')
-  fprintf(fid, ['      obj = obj@%s(varargin{:});' newline],...
-    classStruct.neurodata_type_inc);
+  fprintf(fid, ['      obj = obj@%s.%s(varargin{:});' newline],...
+    namespace, classStruct.neurodata_type_inc);
 end
 
-%write properties with value non-default_value
+%set readonly values
 writeAddReadonly(fid, attr_readonly_constructs, 'spaces', 6);
 writeAddReadonly(fid, ds_readonly_constructs, 'spaces', 6);
 
+%set Results assignment
 fprintf(fid, ['      fn = fieldnames(p.Results);' newline]);
 fprintf(fid, ['      if ~isempty(fn)' newline]);
 fprintf(fid, ['        for i=1:length(fn)' newline]);
@@ -163,40 +100,59 @@ fprintf(fid, ['  end' newline]);
 
 %setters
 fprintf(fid, newline);
-fprintf(fid, ['  methods' newline]);
+fprintf(fid, ['  methods %%setters' newline]);
 fprintf(fid, ['  end' newline]);
 
 %validators
 fprintf(fid, newline);
-fprintf(fid, ['  methods(Access=protected)' newline]);
+fprintf(fid, ['  methods(Access=protected) %%validators' newline]);
 fprintf(fid, ['  end' newline]);
 
 %export
 fprintf(fid, newline);
-fprintf(fid, ['  methods' newline]);
+fprintf(fid, ['  methods  %%export' newline]);
 fprintf(fid, ['    function export(obj, loc_id)' newline]);
 if isfield(classStruct, 'neurodata_type_inc')
-  fprintf(fid, ['      export@%s(obj, loc_id);' newline], classStruct.neurodata_type_inc);
+  fprintf(fid, ['      export@%s.%s(obj, loc_id);' newline],...
+    namespace, classStruct.neurodata_type_inc);
 end
 %write attributes
 for i=1:length(attr_props)
   nm = attr_props{i};
-  fprintf(fid, ['      h5util.writeAttribute(loc_id, ''%s'', obj.%s, ''%s'')' newline],...
+  fprintf(fid, ['      h5util.writeAttribute(loc_id, ''%s'', obj.%s, ''%s'');' newline],...
     nm, nm, classStruct.attributes.(nm).dtype);
 end
 %write datasets
 for i=1:length(ds_props)
   nm = ds_props{i};
-  if iscell(nm)
-    dt = classStruct.datasets.(nm{1}).attributes.(nm{2}).dtype;
-    fnm = 'writeAttribute';
-    nm = ds_props_flat{i};
-  else
-    dt = classStruct.datasets.(nm).dtype;
-    fnm = 'writeDataset';
+  
+  if ~iscell(nm)
+    ds = classStruct.datasets.(nm);
+    isopt = isfield(ds, 'quantity') && (strcmp(ds.quantity, '?') || strcmp(ds.quantity, '*'));
+    if isopt
+      fprintf(fid, ['      if ~isempty(obj.%s)' newline], nm);
+      fprintf(fid, '  '); %extra spacing for following block
+    end
+    if isfield(ds, 'attributes')
+      fprintf(fid, ['      id = h5util.writeDataset(loc_id, ''%s'', obj.%s, ''%s'');' newline],...
+        nm, nm, ds.dtype);
+      dsafn = fieldnames(ds.attributes);
+      for j=1:length(dsafn)
+        attrnm = dsafn{j};
+        if isopt
+          fprintf(fid, '  '); %extra spacing for above if block
+        end
+        fprintf(fid, ['      h5util.writeAttribute(id, ''%s'', obj.%s, ''%s'');' newline],...
+          attrnm, [nm '_' attrnm], ds.attributes.(attrnm).dtype);
+      end
+    else
+      fprintf(fid, ['      h5util.writeDataset(loc_id, ''%s'', obj.%s, ''%s'');' newline],...
+        nm, nm, ds.dtype);
+    end
+    if isopt
+      fprintf(fid, ['      end' newline]);
+    end
   end
-  fprintf(fid, ['      h5util.%s(loc_id, ''%s'', obj.%s, ''%s'')' newline],...
-    fnm, nm, nm, dt);
 end
 %write links
 for i=1:length(link_props)
@@ -208,6 +164,73 @@ fprintf(fid, ['    end' newline]);
 fprintf(fid, ['  end' newline]);
 fprintf(fid, 'end');
 fclose(fid);
+end
+
+function [propList, paramStruct, readOnlyStruct] = filterProperties(s, propname, filterFcn)
+validateattributes(propname, {'string', 'char'}, {'scalartext'});
+validateattributes(s, {'struct'}, {'scalar'});
+
+propList = {};
+paramStruct = struct();
+readOnlyStruct = struct();
+
+if isfield(s, propname)
+  fn = fieldnames(s.(propname));
+  for i=1:length(fn)
+    [propList, paramStruct, readOnlyStruct] = filterFcn(s, fn{i}, propList, paramStruct, readOnlyStruct);
+  end
+end
+end
+
+function [propList, paramStruct, readOnlyStruct] = filterAttributes(s)
+  function [pl, ps, ros] = filter(s, nm, pl, ps, ros)
+    attr = s.attributes.(nm);
+    if ~attr.inherited
+      pl{length(pl)+1} = nm;%attr_props does not include inherited fields.
+    end
+    
+    if isfield(attr, 'value')
+      ros.(nm) = dtype2val(attr.dtype, attr.value);
+    else
+      ps.(nm) = defaultFromStruct(attr);
+    end
+  end
+  [propList, paramStruct, readOnlyStruct] = filterProperties(s, 'attributes', @filter);
+end
+
+function [propList, paramStruct, readOnlyStruct] = filterDatasets(s)
+%ds_construct creation for non-inherited properties
+%side effect: assigns to readonlyStruct and paramStruct
+  function [ps, ros] = constructDefaults(nm, prop, ps, ros)
+    validateattributes(nm, {'string', 'char'}, {'scalartext'});
+    validateattributes(prop, {'struct'}, {'scalar'});
+    validateattributes(ps, {'struct'}, {'scalar'});
+    validateattributes(ros, {'struct'}, {'scalar'});
+    
+    if isfield(prop, 'value')
+      ros.(nm) = dtype2val(prop.dtype, prop.value);
+    else
+      ps.(nm) = defaultFromStruct(prop);
+    end
+  end
+
+  function [pl, ps, ros] = filter(s, nm, pl, ps, ros)
+    ds = s.datasets.(nm);
+    if ~ds.inherited
+      pl{length(pl)+1} = nm;
+      [ps, ros] = constructDefaults(nm, s.datasets.(nm), ps, ros);
+      if isfield(ds, 'attributes')
+        subattr = fieldnames(ds.attributes);
+        for j=1:length(subattr)
+          %set as two cell arrays
+          sanm = subattr{j};
+          pl{length(pl)+1} = {nm sanm};
+          [ps, ros] = constructDefaults([nm '_' sanm], s.datasets.(nm).attributes.(sanm), ps, ros);
+        end
+      end
+    end
+  end
+  [propList, paramStruct, readOnlyStruct] = filterProperties(s, 'datasets', @filter);
 end
 
 function writeProps(fid, names)

@@ -2,13 +2,15 @@
 function s = resolveDependencies(s)
 fn = fieldnames(s);
 for i=1:length(fn)
-  class = s.(fn{i});
+  classnm = fn{i};
+  class = s.(classnm);
   %populate dependency list.  This is will probably be slow.
   deps = {};
   while isfield(class, 'neurodata_type_inc')
-    deps{length(deps)+1} = fn{i};
+    deps{length(deps)+1} = classnm;
     if isfield(s, class.neurodata_type_inc)
-      class = s.(class.neurodata_type_inc);
+      classnm = class.neurodata_type_inc;
+      class = s.(classnm);
     else
       s = dbstack();
       error('%s:line %s: Missing type declaration for %s.',...
@@ -52,6 +54,19 @@ for i=1:length(fn)
           nm = propfnm{x};
           depclass.(propnm).(nm) = subclass.(propnm).(nm);
         end
+      end
+    end
+  end
+  
+  %set all fields of root class to uninherited
+  propfields = fieldnames(class);
+  for k=1:length(propfields)
+    propnm = propfields{k};
+    if isstruct(class.(propnm))
+      propsubnm = fieldnames(class.(propnm));
+      for x=1:length(propsubnm)
+        nm = propsubnm{x};
+        s.(classnm).(propnm).(nm).inherited = false;
       end
     end
   end
