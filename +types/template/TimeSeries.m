@@ -23,7 +23,7 @@ classdef TimeSeries < types.core.NWBContainer
   end
   
   properties %groups
-    groups;
+    sync;
   end
   
   methods %constructor
@@ -45,6 +45,7 @@ classdef TimeSeries < types.core.NWBContainer
       p.addParameter('starting_time', []);
       p.addParameter('starting_time_rate', []);
       p.addParameter('starting_time_unit', {'Seconds'});
+      p.addParameter('sync', types.untyped.Group);
       p.parse(varargin{:});
       
       obj = obj@types.core.NWBContainer(varargin{:});
@@ -195,7 +196,7 @@ classdef TimeSeries < types.core.NWBContainer
     end
     
     function validate_sync(~, val)
-      validateattributes(val, {'struct'}, {});
+      validateattributes(val, {'Group'}, {'scalar'});
     end
     
     function validate_starting_time(~, val)
@@ -250,7 +251,10 @@ classdef TimeSeries < types.core.NWBContainer
       h5util.writeAttribute(id, 'unit', obj.starting_time_unit, 'string');
       H5D.close(id);
       
-      h5util.populateGroup(loc_id, 'sync', obj.sync);
+      %groups with names
+      plist = 'H5P_DEFAULT';
+      gid = H5G.create(loc_id, name, plist, plist, plist);
+      export(obj.sync, gid);
     end
   end
 end

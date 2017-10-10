@@ -1,6 +1,6 @@
 function unified = structUniqUnion(s1, s2)
-validateattributes(s1, {'struct'}, {'scalar'});
-validateattributes(s2, {'struct'}, {'scalar'});
+validateattributes(s1, {'struct', 'util.StructMap'}, {'scalar'});
+validateattributes(s2, {'struct', 'util.StructMap'}, {'scalar'});
 
 %field names from both structs should be unique
 s1fn = fieldnames(s1);

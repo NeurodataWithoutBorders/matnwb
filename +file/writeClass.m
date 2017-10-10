@@ -1,7 +1,6 @@
-function writeClass(className, classStruct, dir, namespace)
+function writeClass(className, classStruct, namespace)
 validateattributes(className, {'char', 'string'}, {'scalartext'});
 validateattributes(classStruct, {'struct'}, {'scalar'});
-validateattributes(dir, {'char', 'string'}, {'scalartext'});
 validateattributes(namespace, {'char', 'string'}, {'scalartext'});
 
 [attr_props, attr_constructs, attr_readonly_constructs] = filterAttributes(classStruct);
@@ -25,55 +24,39 @@ for i=1:length(ds_props_flat)
   end
 end
 
-if length(union(link_props, union(ds_props_flat, attr_props))) ~=...
-    sum([length(link_props) length(ds_props_flat) length(attr_props)])
-  error(['writeClass: properties and dataset attributes have conflicting names.', ...
-    'Check all property names and <dataset>_<attribute> constructions for conflicting names.']);
+hasgroups = isfield(classStruct, 'groups') && ~isempty(fieldnames(classStruct.groups));
+
+nongroup_props = unique(cat(2, [link_props ds_props_flat attr_props]));
+if length(nongroup_props) ~= sum([length(link_props) length(ds_props_flat) length(attr_props)])
+  error(['writeClass: properties have conflicting names.', ...
+    'Check all dataset/attribute/group names and <dataset>_<attribute> constructions for conflicting names.']);
 end
 
-hasgroups = isfield(classStruct, 'groups');
-
-fid = fopen(fullfile(dir, [className '.m']), 'w+');
+fid = fopen(fullfile(namespace2dir(namespace), [className '.m']), 'w+');
 fprintf(fid, 'classdef %s', className);
 if isfield(classStruct, 'neurodata_type_inc')
   %we assume that the included objects includes 'handle' by default.
   imports = sprintf('%s.%s', namespace, classStruct.neurodata_type_inc);
 else
-  imports = 'handle'; %root objects should import handle by default.
+  imports = 'dynamicprops'; %root objects should import handle by default.
 end
 fprintf(fid, [' < %s' newline], imports);
 
-%property definitions
-if ~isempty(attr_props)
-  fprintf(fid, newline);
-  writeProps(fid, attr_props);
-end
+%% property definitions
+fprintf(fid, newline);
+writeProps(fid, nongroup_props);
 
-if ~isempty(ds_props_flat)
-  fprintf(fid, newline);
-  writeProps(fid, ds_props_flat);
-end
-
-if ~isempty(link_props)
-  fprintf(fid, newline);
-  writeProps(fid, link_props);
-end
-
-if isfield(classStruct, 'groups')
-  fprintf(fid, newline);
-  writeProps(fid, {'groups'});
-end
-
-%constructor
+%% constructor
 fprintf(fid, newline);
 fprintf(fid, ['  methods %%constructor' newline]);
 fprintf(fid, ['    function obj = %s(varargin)' newline], className);
 fprintf(fid, ['      p = inputParser;' newline]);
 fprintf(fid, ['      p.KeepUnmatched = true;' newline]);
 %write optional params with defaults
-writeAddParam(fid, attr_constructs, 'spaces', 6);
-writeAddParam(fid, ds_constructs, 'spaces', 6);
-writeAddParam(fid, link_constructs, 'spaces', 6);
+for constructs={attr_constructs ds_constructs link_constructs}
+  writeAddParam(fid, constructs{1}, 'spaces', 6);
+end
+
 if hasgroups
   writeAddParam(fid, struct('groups', 'struct()'), 'spaces', 6);
 end
@@ -92,23 +75,48 @@ fprintf(fid, ['      fn = fieldnames(p.Results);' newline]);
 fprintf(fid, ['      if ~isempty(fn)' newline]);
 fprintf(fid, ['        for i=1:length(fn)' newline]);
 fprintf(fid, ['          field = fn{i};' newline]);
+
+if hasgroups
+fprintf(fid, ['          if ~strcmp(field, ''groups'')' newline]);
+fprintf(fid, '  '); %scoping space
+end
+
 fprintf(fid, ['          obj.(field) = p.Results.(field);' newline]);
+
+if hasgroups
+fprintf(fid, ['          end' newline']);
+end
+
 fprintf(fid, ['        end' newline]);
 fprintf(fid, ['      end' newline]);
+if hasgroups
+  fprintf(fid, ['      gn = fieldnames(p.Results.groups);' newline]);
+  fprintf(fid, ['      if ~isempty(gn)' newline]);
+  fprintf(fid, ['        for i=1:length(gn)' newline]);
+  fprintf(fid, ['          gnm = gn{i};' newline]);
+  fprintf(fid, ['          if isfield(obj, gnm)' newline]);
+  fprintf(fid, ['            error(''Naming conflict found in %s object property name: ''''%%s'''''', gnm);' newline], className);
+  fprintf(fid, ['          else' newline]);
+  fprintf(fid, ['            addprop(obj, gnm);' newline]);
+  fprintf(fid, ['            obj.(gnm) = p.Results.groups.(gnm);' newline']);
+  fprintf(fid, ['          end' newline]);
+  fprintf(fid, ['        end' newline]);
+  fprintf(fid, ['      end' newline]);
+end
 fprintf(fid, ['    end' newline]);
 fprintf(fid, ['  end' newline]);
 
-%setters
+%% setters
 fprintf(fid, newline);
 fprintf(fid, ['  methods %%setters' newline]);
 fprintf(fid, ['  end' newline]);
 
-%validators
+%% validators
 fprintf(fid, newline);
 fprintf(fid, ['  methods(Access=protected) %%validators' newline]);
 fprintf(fid, ['  end' newline]);
 
-%export
+%% export
 fprintf(fid, newline);
 fprintf(fid, ['  methods  %%export' newline]);
 fprintf(fid, ['    function export(obj, loc_id)' newline]);
@@ -119,8 +127,8 @@ end
 %write attributes
 for i=1:length(attr_props)
   nm = attr_props{i};
-  fprintf(fid, ['      h5util.writeAttribute(loc_id, ''%s'', obj.%s, ''%s'');' newline],...
-    nm, nm, classStruct.attributes.(nm).dtype);
+  file.writeExportFunction(fid, 'Attribute', nm, nm, classStruct.attributes.(nm).dtype,...
+    'spaces', 6);
 end
 %write datasets
 for i=1:length(ds_props)
@@ -128,27 +136,27 @@ for i=1:length(ds_props)
   
   if ~iscell(nm)
     ds = classStruct.datasets.(nm);
-    isopt = isfield(ds, 'quantity') && (strcmp(ds.quantity, '?') || strcmp(ds.quantity, '*'));
+    spacenum = 6;
+    isopt = isfield(ds, 'quantity') &&...
+      (strcmp(ds.quantity, '?') || strcmp(ds.quantity, '*'));
     if isopt
       fprintf(fid, ['      if ~isempty(obj.%s)' newline], nm);
-      fprintf(fid, '  '); %extra spacing for following block
+      spacenum = 8;%extra spacing for following block
     end
-    if isfield(ds, 'attributes')
-      fprintf(fid, ['      id = h5util.writeDataset(loc_id, ''%s'', obj.%s, ''%s'');' newline],...
-        nm, nm, ds.dtype);
-      dsafn = fieldnames(ds.attributes);
-      for j=1:length(dsafn)
-        attrnm = dsafn{j};
-        if isopt
-          fprintf(fid, '  '); %extra spacing for above if block
-        end
-        fprintf(fid, ['      h5util.writeAttribute(id, ''%s'', obj.%s, ''%s'');' newline],...
-          attrnm, [nm '_' attrnm], ds.attributes.(attrnm).dtype);
+    
+    hasDependents = isfield(ds, 'attributes');
+    file.writeExportFunction(fid, 'Dataset', nm, nm, ds.dtype,...
+      'spaces', spacenum, 'keepid', hasDependents);
+    if hasDependents
+      dsattrfn = fieldnames(ds.attributes);
+      for j=1:length(dsattrfn)
+        attrnm = dsattrfn{j};
+        file.writeExportFunction(fid, 'Attribute', attrnm, [nm '_' attrnm],...
+          ds.attributes.(attrnm).dtype, 'spaces', spacenum, 'idname', 'id');
       end
-    else
-      fprintf(fid, ['      h5util.writeDataset(loc_id, ''%s'', obj.%s, ''%s'');' newline],...
-        nm, nm, ds.dtype);
+      fprintf(fid, [file.spaces(spacenum) 'H5D.close(id);' newline]);
     end
+    
     if isopt
       fprintf(fid, ['      end' newline]);
     end
@@ -156,10 +164,25 @@ for i=1:length(ds_props)
 end
 %write links
 for i=1:length(link_props)
-  %TODO
+  lnm = link_props{i};
+  fprintf(fid, ['      export(obj.%s, loc_id, ''%s'');' newline], lnm, lnm);
 end
+
 %write groups
-%TODO
+if hasgroups
+  fprintf(fid, ['      plist = ''H5P_DEFAULT'';' newline]);
+  fprintf(fid, ['      fnms = fieldnames(obj);' newline]);
+  fprintf(fid, ['      for i=1:length(fnms)' newline]);
+  fprintf(fid, ['        fnm = fnms{i};' newline]);
+  fprintf(fid, ['        if isa(fnm, ''Group'')' newline]);
+  fprintf(fid, ['          gid = H5G.create(loc_id, fnm, plist, plist, plist);' newline]);
+  fprintf(fid, ['          export(obj.(fnm), gid);' newline]);
+  fprintf(fid, ['          H5G.close(gid);' newline]);
+  fprintf(fid, ['        end' newline]);
+  fprintf(fid, ['      end' newline]);
+end
+
+%% end
 fprintf(fid, ['    end' newline]);
 fprintf(fid, ['  end' newline]);
 fprintf(fid, 'end');
@@ -190,9 +213,9 @@ function [propList, paramStruct, readOnlyStruct] = filterAttributes(s)
     end
     
     if isfield(attr, 'value')
-      ros.(nm) = dtype2val(attr.dtype, attr.value);
+      ros.(nm) = file.dtype2val(attr.dtype, attr.value);
     else
-      ps.(nm) = defaultFromStruct(attr);
+      ps.(nm) = file.defaultFromStruct(attr);
     end
   end
   [propList, paramStruct, readOnlyStruct] = filterProperties(s, 'attributes', @filter);
@@ -208,9 +231,9 @@ function [propList, paramStruct, readOnlyStruct] = filterDatasets(s)
     validateattributes(ros, {'struct'}, {'scalar'});
     
     if isfield(prop, 'value')
-      ros.(nm) = dtype2val(prop.dtype, prop.value);
+      ros.(nm) = file.dtype2val(prop.dtype, prop.value);
     else
-      ps.(nm) = defaultFromStruct(prop);
+      ps.(nm) = file.defaultFromStruct(prop);
     end
   end
 
@@ -241,50 +264,15 @@ end
 fprintf(fid, ['  end' newline]);
 end
 
-function writeDefStruct(fid, def_struct, svalue, varargin)
-validateattributes(fid, {'double'}, {'scalar'});
-validateattributes(def_struct, {'struct'}, {'scalar'});
-validateattributes(svalue, {'string', 'char'}, {'scalartext'});
-p = inputParser;
-p.addParameter('spaces', 0, @(x)validateattributes(x, {'numeric'}, {'scalar'}));
-p.parse(varargin{:});
-
-names = fieldnames(def_struct);
-if ~isempty(names)
-  for i=1:length(names)
-    nm = names{i};
-    for j=1:p.Results.spaces
-      fprintf(fid, ' ');
-    end
-    fprintf(fid, [svalue newline], nm, def_struct.(nm));
-  end
-end
-end
-
 function writeAddParam(fid, def_struct, varargin)
-writeDefStruct(fid, def_struct, 'p.addParameter(''%s'', %s);', varargin{:});
+file.writeDefStruct(fid, def_struct, 'p.addParameter(''%s'', %s);', varargin{:});
 end
 
 function writeAddReadonly(fid, def_struct, varargin)
-writeDefStruct(fid, def_struct, 'obj.%s = %s;', varargin{:});
+file.writeDefStruct(fid, def_struct, 'obj.%s = %s;', varargin{:});
 end
 
-function val = defaultFromStruct(s)
-if isfield(s, 'default_value')
-  val = dtype2val(s.dtype, s.default_value);
-elseif strcmp(s.dtype, 'string')
-  val = '{}';
-else
-  val = '[]';
-end
-end
-
-function val = dtype2val(type, val)
-switch(type)
-  case 'string'
-    val = ['{''' val '''}'];
-  case 'double'
-  otherwise
-    val = [type '(' val ')'];
-end
+function dir = namespace2dir(namespace)
+mapped = cellfun(@(s) ['+' s], split(namespace, '.'), 'UniformOutput', false);
+dir = fullfile(mapped{:});
 end

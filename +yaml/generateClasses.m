@@ -9,7 +9,7 @@ if nargin > 0
       d = dirlist(j);
       if ~d.isdir
         yml = yaml.parse(fullfile(srcdir, d.name));
-        classes = yaml.util.structUniqUnion(classes, yml);
+        classes = util.structUniqUnion(classes, yml);
       end
     end
   end

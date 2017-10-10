@@ -4,7 +4,7 @@ function classes = parse(filename)
     if isfield(s, 'neurodata_type_def')
       if isfield(s, 'groups')
         [s.groups, cstruct] = processGroups(s.groups);
-        classes = yaml.util.structUniqUnion(classes, cstruct);
+        classes = util.structUniqUnion(classes, cstruct);
       end
       
       if isfield(s, 'attributes')
@@ -13,7 +13,7 @@ function classes = parse(filename)
       
       if isfield(s, 'datasets')
         [s.datasets, cstruct] = processDatasets(s.datasets);
-        classes = yaml.util.structUniqUnion(classes, cstruct);
+        classes = util.structUniqUnion(classes, cstruct);
       end
       
       if isfield(s, 'links')
@@ -145,7 +145,7 @@ function [gstruct, cstruct] = processGroups(glist)
   function s = verify(s)
     if isfield(s, 'groups')
       [s.groups, cs] = processGroups(s.groups);
-      cstruct = yaml.util.structUniqUnion(cstruct, cs);
+      cstruct = util.structUniqUnion(cstruct, cs);
     end
     
     if isfield(s, 'attributes')
@@ -154,7 +154,7 @@ function [gstruct, cstruct] = processGroups(glist)
     
     if isfield(s, 'datasets')
       [s.datasets, cs] = processDatasets(s.datasets);
-      cstruct = yaml.util.structUniqUnion(cstruct, cs);
+      cstruct = util.structUniqUnion(cstruct, cs);
     end
     
     if isfield(s, 'links')
