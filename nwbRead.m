@@ -2,7 +2,6 @@
 function nwb = nwbRead(filename)
 validateattributes(filename, {'char', 'string'}, {'scalartext'});
 info = h5info(filename);
-
 g = util.StructMap();
 if ~isempty(info.Groups)
   g = processGroups(info.Groups, filename);
@@ -34,7 +33,7 @@ function s = process(propList, func)
 validateattributes(propList, {'struct', 'util.StructMap'}, {'vector'});
 s = util.StructMap();
 for i=1:length(propList)
-  if isstruct(propList) 
+  if isstruct(propList)
     prop = util.StructMap(propList(i));
   else
     prop = propList(i);
@@ -49,12 +48,32 @@ for i=1:length(propList)
 end
 end
 
-function group = processGroups(glist, filename)
+function object = processGroups(glist, filename)
   function v = procFun(g)
-    go = util.StructMap();
+    go = util.StructMap;
+    
+    if ~isempty(g.Attributes)
+      go.attributes = processAttributes(g.Attributes);
+    end
     
     if ~isempty(g.Groups)
       go.groups = processGroups(g.Groups, filename);
+      for gnm=fieldnames(go.groups)'
+        nm = gnm{1};
+        if ~isa(go.groups.(nm), 'types.untyped.Group')
+          tmp = go.groups.(nm);
+          go.groups = rmfield(go.groups, nm);
+          if isempty(fieldnames(go.groups))
+            go = rmfield(go, 'groups');
+          end
+          if ~isfield(go, 'classes')
+            go.classes = util.StructMap;
+          end
+          goclasses = go.classes;
+          goclasses.(nm) = tmp;
+          go.classes = goclasses;
+        end
+      end
     end
     
     if ~isempty(g.Datasets)
@@ -65,13 +84,25 @@ function group = processGroups(glist, filename)
       go.links = processLinks(g.Links);
     end
     
-    if ~isempty(g.Attributes)
-      go.attributes = processAttributes(g.Attributes);
+    if isfield(go, 'attributes') && isfield(go.attributes, 'neurodata_type')
+      slist = {};
+      for fields={'attributes' 'datasets' 'links'}
+        fnm = fields{1};
+        if isfield(go, fnm)
+          slist{length(slist)+1} = go.(fnm);
+        end
+      end
+      kwa = struct2kwargs(slist{:});
+      if isfield(go, 'groups')
+        kwa = cat(2, kwa, {'groups' go.groups});
+      end
+      ndata_type = go.attributes.neurodata_type;
+      v = feval(sprintf('types.%s', ndata_type{1}), kwa{:});
+    else
+      v = types.untyped.Group(go);
     end
-    
-    v = types.untyped.Group(go);
   end
-group = process(glist, @procFun);
+object = process(glist, @procFun);
 end
 
 function attrobj = processAttributes(alist)
@@ -85,9 +116,8 @@ function dsobj = processDatasets(dlist, path, filename)
       v = h5read(filename, fp);
     else
       v = processAttributes(d.Attributes);
-      afields = fieldnames(v);
-      for i=1:length(afields)
-        af = afields{i};
+      for afields=fieldnames(v)'
+        af = afields{1};
         v.([d.Name '_' af]) = v.(af);
         v = rmfield(v, af);
       end

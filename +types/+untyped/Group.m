@@ -4,6 +4,7 @@ classdef Group < dynamicprops & matlab.mixin.CustomDisplay %untyped group
     datasets;
     links;
     groups;
+    classes;
   end
   
   methods
@@ -11,12 +12,10 @@ classdef Group < dynamicprops & matlab.mixin.CustomDisplay %untyped group
       if nargin > 0 %allow empty Group
         validateattributes(s, {'struct', 'util.StructMap'}, {'scalar'});
         
-        fn = fieldnames(s);
-        for i=1:length(fn)
-          nm = fn{i};
-          switch(nm)
-            case {'attributes' 'datasets' 'links' 'groups'}
-              obj.(nm) = s.(nm);
+        for fn=fieldnames(s)'
+          nm = fn{1};
+          if any(strcmp(nm, properties(obj)))
+            obj.(nm) = s.(nm);
           end
         end
       end
@@ -28,32 +27,40 @@ classdef Group < dynamicprops & matlab.mixin.CustomDisplay %untyped group
           error('types.untyped.Group: Unsupported subsref type ''{}''');
         case '()'
           if length(s) > 1
-            [varargout{1:nargout}] = subsref(obj, s(2:end));
+            s = s(2:end);
           elseif nargout > 1
             varargout{1} = obj;
+            return;
           end
         case '.'
           mainsub = s(1).subs;
-          if isprop(obj, mainsub)
-            [varargout{1:nargout}] = builtin('subsref', obj, s);
-          else
-            for prop={'attributes' 'datasets' 'links' 'groups'}
-              if ~isempty(obj.(prop{1})) && isKey(obj.(prop{1}).map, mainsub)
-                [varargout{1:nargout}] = subsref(obj, [substruct('.', prop{1}) s]);
-                break;
-              end
-            end
+          pn = findsubprop(obj, mainsub);
+          if ~isempty(pn)
+            s = [substruct('.', pn), s];
           end
+      end
+      [varargout{1:nargout}] = builtin('subsref', obj, s);
+    end
+    
+    function obj = subsasgn(obj, s, r)
+      switch(s(1).type)
+        case '{}'
+          error('types.untyped.Group: Unsupported subsasgn type ''{}''');
+        case '()'
+        case '.'
+          pn = findsubprop(obj, s(1).subs);
+          if ~isempty(pn)
+            s = [substruct('.', pn), s];
+          end
+          obj = builtin('subsasgn', obj, s, r);
       end
     end
     
     function export(obj, loc_id)
-      pn = fieldnames(obj);
-      for i=1:length(pn)
-        propnm = pn{i};
-        fn = fieldnames(obj.(propnm));
-        for j=1:length(fn)
-          nm = fn{j};
+      for pn=fieldnames(obj)'
+        propnm = pn{1};
+        for fn=fieldnames(obj.(propnm))'
+          nm = fn{1};
           switch propnm
             case 'attributes'
               h5util.writeAttribute(loc_id, nm, obj.attributes.(nm));
@@ -66,6 +73,31 @@ classdef Group < dynamicprops & matlab.mixin.CustomDisplay %untyped group
               gid = H5G.create(loc_id, propnm, plist, plist, plist);
               export(obj.groups.(propnm), gid);
               H5G.close(gid);
+            case 'classes'
+              export(obj.classes.(propnm), gid);
+          end
+        end
+      end
+    end
+    
+    function names = fieldnames(obj)
+      names = {};
+      for prop=properties(obj)'
+        pn = prop{1};
+        if ~isempty(obj.(pn))
+          names = union(names, fieldnames(obj.(pn)));
+        end
+      end
+    end
+    
+    function propnm = findsubprop(obj, nm)
+      propnm = {};
+      if ~isprop(obj, nm)
+        for prop=properties(obj)'
+          pn = prop{1};
+          if ~isempty(obj.(pn)) && isKey(obj.(pn).map, nm)
+            propnm = pn;
+            break;
           end
         end
       end
@@ -74,18 +106,16 @@ classdef Group < dynamicprops & matlab.mixin.CustomDisplay %untyped group
   
   methods(Access=protected)
     function groups = getPropertyGroups(obj)
-      propnms = fieldnames(obj);
-      pgstruct = struct();
-      for i=1:length(propnms)
-        propnm = propnms{i}; 
-        if isempty(obj.(propnm))
-          pgstructval = [];
+      fs = struct();
+      for pnms=properties(obj)'
+        pnm=pnms{1};
+        if isempty(obj.(pnm))
+          fs.(pnm) = {};
         else
-          pgstructval = obj.(propnm).map.keys;
+          fs.(pnm) = fieldnames(obj.(pnm))';
         end
-        pgstruct.(propnm) = pgstructval;
       end
-      groups = matlab.mixin.util.PropertyGroup(pgstruct);
+      groups = matlab.mixin.util.PropertyGroup(fs);
     end
   end
 end

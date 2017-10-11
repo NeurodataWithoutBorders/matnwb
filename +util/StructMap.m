@@ -9,9 +9,8 @@ classdef StructMap
       if nargin == 1 && isstruct(varargin{1})
         obj.map = containers.Map;
         s = varargin{1};
-        snms = fieldnames(s);
-        for i=1:length(snms)
-          snm = snms{i};
+        for snms=fieldnames(s)'
+          snm = snms{1};
           obj.map(snm) = s.(snm);
         end
       else
@@ -50,16 +49,25 @@ classdef StructMap
         case '.'
           subv = s(1).subs;
           if ~startsWith(subv, 'map')
-            s(1).type = '()';
-            s(1).subs = {subv};
-            s = [substruct('.', 'map') s];
+            if length(s) == 1
+              obj.map(subv) = r;
+            else
+              tempobj = obj.map(subv);
+              tempobj = subsasgn(tempobj, s(2:end), r);
+              obj.map(subv) = tempobj;
+            end
+          else
+            obj = builtin('subsasgn', obj, s, r);
           end
-          obj = builtin('subsasgn', obj, s, r);
       end
     end
     
     function names = fieldnames(obj)
-      names = keys(obj.map);
+      names = keys(obj.map)';
+    end
+    
+    function tf = isfield(obj, fieldname)
+      tf = isKey(obj.map, fieldname);
     end
     
     function s = rmfield(s, field)
