@@ -1,0 +1,25 @@
+{
+  "generateAllClasses":
+  {
+    "inputs":
+    [
+      {
+        "name":"extension path",
+        "kind":"optional",
+        "type":"filepath=*.yaml,*.yml",
+        "multiplicity":"append"
+      }
+    ]
+  },
+  "nwbRead":
+  {
+    "inputs":
+    [
+      {"name":"NWB File", "kind":"required", "type":"filepath=*.nwb"}
+    ],
+    "outputs":
+    [
+      {"name":"matnwb", "type":"matnwb"}
+    ]
+  }
+}

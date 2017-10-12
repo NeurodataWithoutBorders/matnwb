@@ -141,10 +141,17 @@ for i=1:length(ds_props)
       (strcmp(ds.quantity, '?') || strcmp(ds.quantity, '*'));
     if isopt
       fprintf(fid, ['      if ~isempty(obj.%s)' newline], nm);
-      spacenum = 8;%extra spacing for following block
+      spacenum = spacenum + 2;%extra spacing for following block
     end
     
     hasDependents = isfield(ds, 'attributes');
+    if strcmp(ds.dtype, 'any')
+      % in the Link edgecase, we don't write dependents, and just export Link
+      fprintf(fid, [file.spaces(spacenum) 'if isa(obj.%s, ''types.untyped.Link'')' newline], nm);
+      spacenum = spacenum + 2;
+      fprintf(fid, [file.spaces(spacenum) 'export(obj.%s, loc_id, ''%s'');' newline], nm, nm);
+      fprintf(fid, [file.spaces(spacenum - 2) 'else' newline]);
+    end
     file.writeExportFunction(fid, 'Dataset', nm, nm, ds.dtype,...
       'spaces', spacenum, 'keepid', hasDependents);
     if hasDependents
@@ -156,9 +163,14 @@ for i=1:length(ds_props)
       end
       fprintf(fid, [file.spaces(spacenum) 'H5D.close(id);' newline]);
     end
+    if strcmp(ds.dtype, 'any')
+      spacenum = spacenum - 2;
+      fprintf(fid, [file.spaces(spacenum) 'end' newline]);
+    end
     
     if isopt
-      fprintf(fid, ['      end' newline]);
+      spacenum = spacenum - 2;
+      fprintf(fid, [file.spaces(spacenum) 'end' newline]);
     end
   end
 end
@@ -174,7 +186,7 @@ if hasgroups
   fprintf(fid, ['      fnms = fieldnames(obj);' newline]);
   fprintf(fid, ['      for i=1:length(fnms)' newline]);
   fprintf(fid, ['        fnm = fnms{i};' newline]);
-  fprintf(fid, ['        if isa(fnm, ''Group'')' newline]);
+  fprintf(fid, ['        if startsWith(class(obj.(fnm)), ''types.'') ' newline]);
   fprintf(fid, ['          gid = H5G.create(loc_id, fnm, plist, plist, plist);' newline]);
   fprintf(fid, ['          export(obj.(fnm), gid);' newline]);
   fprintf(fid, ['          H5G.close(gid);' newline]);

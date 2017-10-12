@@ -1,4 +1,4 @@
-classdef Link
+classdef Link < handle
   properties
     filename = '';
     path;

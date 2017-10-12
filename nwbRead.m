@@ -2,9 +2,12 @@
 function nwb = nwbRead(filename)
 validateattributes(filename, {'char', 'string'}, {'scalartext'});
 info = h5info(filename);
+
+linkRefs = {};
 g = util.StructMap();
 if ~isempty(info.Groups)
-  g = processGroups(info.Groups, filename);
+  [g, lr] = processGroups(info.Groups, filename);
+  linkRefs = [linkRefs lr];
 end
 
 d = util.StructMap();
@@ -15,6 +18,10 @@ end
 l = util.StructMap();
 if ~isempty(info.Links)
   l = processLinks(info.Links);
+  for linkname=fieldnames(l)'
+    ln = linkname{1};
+    linkRefs{length(linkRefs)+1} = l.(ln);
+  end
 end
 
 a = util.StructMap();
@@ -27,6 +34,18 @@ if ~isempty(fieldnames(g))
   kwa = cat(2, kwa, {'groups' g});
 end
 nwb = matnwb(kwa{:});
+
+%resolve links
+for lref = linkRefs
+  lr = lref{1};
+  if isempty(lr.filename)
+    lr.ref = nwb(lr.path);
+  else
+    % we assume the external reference is to a dataset.
+    % TEMPORARY REMOVED: doesn't work with test data right now
+    %lr.ref = h5read(lr.filename, lr.path);
+  end
+end
 end
 
 function s = process(propList, func)
@@ -48,7 +67,7 @@ for i=1:length(propList)
 end
 end
 
-function object = processGroups(glist, filename)
+function [object, linkRefs] = processGroups(glist, filename)
   function v = procFun(g)
     go = util.StructMap;
     
@@ -57,9 +76,10 @@ function object = processGroups(glist, filename)
     end
     
     if ~isempty(g.Groups)
-      go.groups = processGroups(g.Groups, filename);
+      [go.groups, lr] = processGroups(g.Groups, filename);
       for gnm=fieldnames(go.groups)'
         nm = gnm{1};
+        %move classes to their own section
         if ~isa(go.groups.(nm), 'types.untyped.Group')
           tmp = go.groups.(nm);
           go.groups = rmfield(go.groups, nm);
@@ -74,6 +94,7 @@ function object = processGroups(glist, filename)
           go.classes = goclasses;
         end
       end
+      linkRefs = [linkRefs lr];
     end
     
     if ~isempty(g.Datasets)
@@ -82,8 +103,14 @@ function object = processGroups(glist, filename)
     
     if ~isempty(g.Links)
       go.links = processLinks(g.Links);
+      %create list of link references
+      for linkname=fieldnames(go.links)'
+        ln = linkname{1};
+        linkRefs{length(linkRefs)+1} = go.links.(ln);
+      end
     end
     
+    %check if group should actually be a type
     if isfield(go, 'attributes') && isfield(go.attributes, 'neurodata_type')
       slist = {};
       for fields={'attributes' 'datasets' 'links'}
@@ -93,8 +120,21 @@ function object = processGroups(glist, filename)
         end
       end
       kwa = struct2kwargs(slist{:});
-      if isfield(go, 'groups')
-        kwa = cat(2, kwa, {'groups' go.groups});
+      if isfield(go, 'groups') || isfield(go, 'classes')
+        if isfield(go, 'groups')
+          gogroups = go.groups;
+        else
+          gogroups = util.StructMap;
+        end
+        
+        if isfield(go, 'classes')
+          goclasses = go.classes;
+        else
+          goclasses = util.StructMap;
+        end
+        
+        groups = util.structUniqUnion(gogroups, goclasses);
+        kwa = cat(2, kwa, {'groups' groups});
       end
       ndata_type = go.attributes.neurodata_type;
       v = feval(sprintf('types.%s', ndata_type{1}), kwa{:});
@@ -102,6 +142,7 @@ function object = processGroups(glist, filename)
       v = types.untyped.Group(go);
     end
   end
+linkRefs = {};
 object = process(glist, @procFun);
 end
 
@@ -129,7 +170,9 @@ end
 
 function lnkobj = processLinks(llist)
   function v = procFun(l)
-    data = l.Value;
+    % for some reason, h5info returns links in order {optional[<filename>]; path}
+    % So we flipud the value so that it represents function args properly.
+    data = flipud(l.Value); 
     v = types.untyped.Link(data{:});
   end
 lnkobj = process(llist, @procFun);

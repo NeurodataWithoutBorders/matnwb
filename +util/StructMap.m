@@ -34,11 +34,15 @@ classdef StructMap
         case '.'
           subv = s(1).subs;
           if ~startsWith(subv, 'map')
-            s(1).type = '()';
-            s(1).subs = {subv};
-            s = [substruct('.', 'map') s];
+            o = obj.map(subv);
+            if length(s) > 1
+              [varargout{1:nargout}] = subsref(o, s(2:end));
+            else
+              varargout{1} = o;
+            end
+          else
+            [varargout{1:nargout}] = builtin('subsref', obj, s);
           end
-          [varargout{1:nargout}] = builtin('subsref', obj, s);
       end
     end
     

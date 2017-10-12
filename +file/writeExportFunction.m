@@ -15,6 +15,11 @@ if p.Results.keepid
   fprintf(fid, 'id = ');
 end
 
-fprintf(fid, ['h5util.write%s(%s, ''%s'', obj.%s, ''%s'');' newline],...
-  propType, p.Results.idname, nm, objnm, typenm);
+if any(strcmp(typenm, {'string', 'any'}))
+  fprintf(fid, ['h5util.write%s(%s, ''%s'', obj.%s, ''%s'');' newline],...
+    propType, p.Results.idname, nm, objnm, typenm);
+else
+  fprintf(fid, ['h5util.write%s(%s, ''%s'', %s(obj.%s), ''%s'');' newline],...
+    propType, p.Results.idname, nm, typenm, objnm, typenm);
+end
 end

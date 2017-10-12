@@ -1,10 +1,14 @@
-classdef Group < dynamicprops & matlab.mixin.CustomDisplay %untyped group
+classdef Group < handle & matlab.mixin.CustomDisplay %untyped group
   properties
     attributes;
     datasets;
     links;
     groups;
     classes;
+  end
+  
+  properties(Constant=true, Access=private)
+    TRUEPROPS = {'attributes'; 'datasets'; 'links'; 'groups'; 'classes'};
   end
   
   methods
@@ -14,7 +18,7 @@ classdef Group < dynamicprops & matlab.mixin.CustomDisplay %untyped group
         
         for fn=fieldnames(s)'
           nm = fn{1};
-          if any(strcmp(nm, properties(obj)))
+          if any(strcmp(nm, obj.TRUEPROPS))
             obj.(nm) = s.(nm);
           end
         end
@@ -57,35 +61,39 @@ classdef Group < dynamicprops & matlab.mixin.CustomDisplay %untyped group
     end
     
     function export(obj, loc_id)
-      for pn=fieldnames(obj)'
+      for pn=obj.TRUEPROPS'
         propnm = pn{1};
-        for fn=fieldnames(obj.(propnm))'
-          nm = fn{1};
-          switch propnm
-            case 'attributes'
-              h5util.writeAttribute(loc_id, nm, obj.attributes.(nm));
-            case 'datasets'
-              h5util.writeDataset(loc_id, nm, obj.datasets.(nm));
-            case 'links'
-              export(obj.links.(nm), loc_id, nm);
-            case 'groups'
-              plist = 'H5P_DEFAULT';
-              gid = H5G.create(loc_id, propnm, plist, plist, plist);
-              export(obj.groups.(propnm), gid);
-              H5G.close(gid);
-            case 'classes'
-              export(obj.classes.(propnm), gid);
+        if ~isempty(obj.(propnm))
+          for fn=fieldnames(obj.(propnm))'
+            nm = fn{1};
+            switch propnm
+              case 'attributes'
+                h5util.writeAttribute(loc_id, nm, obj.attributes.(nm));
+              case 'datasets'
+                h5util.writeDataset(loc_id, nm, obj.datasets.(nm));
+              case 'links'
+                export(obj.links.(nm), loc_id, nm);
+              case {'groups' 'classes'}
+                plist = 'H5P_DEFAULT';
+                gid = H5G.create(loc_id, nm, plist, plist, plist);
+                export(obj.(propnm).(nm), gid);
+                H5G.close(gid);
+            end
           end
         end
       end
     end
     
     function names = fieldnames(obj)
-      names = {};
-      for prop=properties(obj)'
+      names = properties(obj);
+    end
+    
+    function props = properties(obj)
+      props = {};
+      for prop=obj.TRUEPROPS'
         pn = prop{1};
         if ~isempty(obj.(pn))
-          names = union(names, fieldnames(obj.(pn)));
+          props = union(props, fieldnames(obj.(pn)));
         end
       end
     end
@@ -93,7 +101,7 @@ classdef Group < dynamicprops & matlab.mixin.CustomDisplay %untyped group
     function propnm = findsubprop(obj, nm)
       propnm = {};
       if ~isprop(obj, nm)
-        for prop=properties(obj)'
+        for prop=obj.TRUEPROPS'
           pn = prop{1};
           if ~isempty(obj.(pn)) && isKey(obj.(pn).map, nm)
             propnm = pn;
@@ -107,7 +115,7 @@ classdef Group < dynamicprops & matlab.mixin.CustomDisplay %untyped group
   methods(Access=protected)
     function groups = getPropertyGroups(obj)
       fs = struct();
-      for pnms=properties(obj)'
+      for pnms=obj.TRUEPROPS'
         pnm=pnms{1};
         if isempty(obj.(pnm))
           fs.(pnm) = {};
