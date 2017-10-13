@@ -1,7 +1,5 @@
-function generateClasses(varargin)
-corenmspc = fullfile('schema', 'core', 'nwb.namespace.yaml');
-[c, ~, ~] = yaml.genFromNamespace(corenmspc); %should not be any namespace dependencies
-
+function generateClasses(core, varargin)
+[c, ~, ~] = yaml.genFromNamespace(core); %should not be any namespace dependencies
 namespaces = {'core'};
 depends = {};
 for i=1:nargin
