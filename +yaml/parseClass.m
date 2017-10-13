@@ -1,5 +1,5 @@
 % Creates a struct of objects that need to be defined
-function classes = parse(filename)
+function classes = parseClass(filename)
   function s = verify(s)
     if isfield(s, 'neurodata_type_def')
       if isfield(s, 'groups')
