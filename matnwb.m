@@ -10,19 +10,22 @@ classdef matnwb < types.NWBFile
     
     function varargout = subsref(obj, s)
       switch s(1).type
-        case {'()', '{}'}
+        case {'()', '{}'} %traverse through NWBFile given NWB path
           refs = cell(1, length(s(1).subs));
-          for i=1:length(s(1).subs)
+          for i=1:length(s(1).subs) %you can traverse using multiple paths (if you really wanted to for some reason)
             sub = s(1).subs{i};
             
-            ns = substruct('.', '');
-            counter = 1;
+            ref = obj;
             for token=parsePath(obj, sub)'
-              ns(counter) = substruct('.', token{1});
-              counter = counter + 1;
+              ref = ref.(token{1});
+              if isa(ref, 'types.untyped.Link') %automatically dereference links
+                ref = ref.ref;
+              end
+            end
+            if length(s) > 1
+              ref = subsref(ref, s(2:end));
             end
             
-            ref = subsref(obj, [ns s(2:end)]);
             refs{i} = ref;
           end
           varargout = refs;
@@ -33,6 +36,10 @@ classdef matnwb < types.NWBFile
     
     function export(obj, filename)
       validateattributes(filename, {'string', 'char'}, {'scalartext'});
+      if exist(filename, 'file')
+        warning('Overwriting %s', filename);
+        delete(filename);
+      end
       fid = H5F.create(filename);
       export@types.NWBFile(obj, fid);
       H5F.close(fid);

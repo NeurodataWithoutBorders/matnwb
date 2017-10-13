@@ -137,12 +137,6 @@ for i=1:length(ds_props)
   if ~iscell(nm)
     ds = classStruct.datasets.(nm);
     spacenum = 6;
-    isopt = isfield(ds, 'quantity') &&...
-      (strcmp(ds.quantity, '?') || strcmp(ds.quantity, '*'));
-    if isopt
-      fprintf(fid, ['      if ~isempty(obj.%s)' newline], nm);
-      spacenum = spacenum + 2;%extra spacing for following block
-    end
     
     hasDependents = isfield(ds, 'attributes');
     if strcmp(ds.dtype, 'any')
@@ -167,11 +161,6 @@ for i=1:length(ds_props)
       spacenum = spacenum - 2;
       fprintf(fid, [file.spaces(spacenum) 'end' newline]);
     end
-    
-    if isopt
-      spacenum = spacenum - 2;
-      fprintf(fid, [file.spaces(spacenum) 'end' newline]);
-    end
   end
 end
 %write links
@@ -186,7 +175,7 @@ if hasgroups
   fprintf(fid, ['      fnms = fieldnames(obj);' newline]);
   fprintf(fid, ['      for i=1:length(fnms)' newline]);
   fprintf(fid, ['        fnm = fnms{i};' newline]);
-  fprintf(fid, ['        if startsWith(class(obj.(fnm)), ''types.'') ' newline]);
+  fprintf(fid, ['        if startsWith(class(obj.(fnm)), ''types.'') && ~isa(obj.(fnm), ''types.untyped.Link'')' newline]);
   fprintf(fid, ['          gid = H5G.create(loc_id, fnm, plist, plist, plist);' newline]);
   fprintf(fid, ['          export(obj.(fnm), gid);' newline]);
   fprintf(fid, ['          H5G.close(gid);' newline]);

@@ -3,47 +3,19 @@ function nwb = nwbRead(filename)
 validateattributes(filename, {'char', 'string'}, {'scalartext'});
 info = h5info(filename);
 
-linkRefs = {};
-g = util.StructMap();
-if ~isempty(info.Groups)
-  [g, lr] = processGroups(info.Groups, filename);
-  linkRefs = [linkRefs lr];
-end
-
-d = util.StructMap();
-if ~isempty(info.Datasets)
-  d = processDatasets(info.Datasets, '', filename);
-end
-
-l = util.StructMap();
-if ~isempty(info.Links)
-  l = processLinks(info.Links);
-  for linkname=fieldnames(l)'
-    ln = linkname{1};
-    linkRefs{length(linkRefs)+1} = l.(ln);
-  end
-end
-
-a = util.StructMap();
-if ~isempty(info.Attributes)
-  a = processAttributes(info.Attributes);
-end
-
-kwa = struct2kwargs(d, l, a);
-if ~isempty(fieldnames(g))
-  kwa = cat(2, kwa, {'groups' g});
-end
-nwb = matnwb(kwa{:});
-
+linkRefs = {}; %links that need to be resolved later.
+[nwb, linkRefs] = processGroups(info, filename);
 %resolve links
+[filepath, ~, ~] = fileparts(filename);
 for lref = linkRefs
   lr = lref{1};
   if isempty(lr.filename)
     lr.ref = nwb(lr.path);
   else
     % we assume the external reference is to a dataset.
-    % TEMPORARY REMOVED: doesn't work with test data right now
-    %lr.ref = h5read(lr.filename, lr.path);
+    ff = fullfile(filepath, lr.filename);
+    lr.filename = ff;
+    lr.ref = h5read(ff, lr.path);
   end
 end
 end
@@ -61,6 +33,8 @@ for i=1:length(propList)
   v = func(prop);
   if isa(v, 'util.StructMap')
     s = util.structUniqUnion(s, v);
+  elseif isa(v, 'matnwb')
+    s = v; %Return completed NWBFile
   else
     s.(path2name(path)) = v;
   end
@@ -137,7 +111,12 @@ function [object, linkRefs] = processGroups(glist, filename)
         kwa = cat(2, kwa, {'groups' groups});
       end
       ndata_type = go.attributes.neurodata_type;
-      v = feval(sprintf('types.%s', ndata_type{1}), kwa{:});
+      if strcmp(ndata_type{1}, 'NWBFile') %initialize the inherited object instead.
+        dt = 'matnwb';
+      else
+        dt = ['types.' ndata_type{1}];
+      end
+      v = feval(dt, kwa{:});
     else
       v = types.untyped.Group(go);
     end
