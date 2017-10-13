@@ -1,10 +1,15 @@
 {
-  "generateAllClasses":
+  "generateClasses":
   {
     "inputs":
     [
       {
-        "name":"extension path",
+        "name":"core",
+        "kind":"required",
+        "type":"filepath=*.yaml,*.yml"
+      },
+      {
+        "name":"extensions",
         "kind":"optional",
         "type":"filepath=*.yaml,*.yml",
         "multiplicity":"append"
