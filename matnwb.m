@@ -11,9 +11,7 @@ classdef matnwb < types.NWBFile
     function varargout = subsref(obj, s)
       switch s(1).type
         case {'()', '{}'} %traverse through NWBFile given NWB path
-          refs = cell(1, length(s(1).subs));
-          for i=1:length(s(1).subs) %you can traverse using multiple paths (if you really wanted to for some reason)
-            sub = s(1).subs{i};
+            sub = s(1).subs{1}; %only grab the first
             
             ref = obj;
             for token=parsePath(obj, sub)'
@@ -25,10 +23,7 @@ classdef matnwb < types.NWBFile
             if length(s) > 1
               ref = subsref(ref, s(2:end));
             end
-            
-            refs{i} = ref;
-          end
-          varargout = refs;
+          varargout{1} = ref;
         case '.'
           [varargout{1:nargout}] = builtin('subsref', obj, s);
       end
