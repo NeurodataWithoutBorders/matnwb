@@ -11,8 +11,8 @@ link_props = {};
 link_constructs = struct();
 if isfield(classStruct, 'links')
   link_props = fieldnames(classStruct.links);
-  for i=1:length(link_props)
-    link_constructs.(link_props{i}) = '[]';
+  for link_prop=link_props'
+    link_constructs.(link_prop{1}) = '[]';
   end
 end
 
@@ -38,7 +38,7 @@ if isfield(classStruct, 'neurodata_type_inc')
   %we assume that the included objects includes 'handle' by default.
   imports = sprintf('%s.%s', namespace, classStruct.neurodata_type_inc);
 else
-  imports = 'dynamicprops'; %root objects should import handle by default.
+  imports = 'types.untyped.MetaClass'; %root objects should import handle by default.
 end
 fprintf(fid, [' < %s' newline], imports);
 
@@ -64,6 +64,8 @@ fprintf(fid, ['      p.parse(varargin{:});' newline]);
 if isfield(classStruct, 'neurodata_type_inc')
   fprintf(fid, ['      obj = obj@%s.%s(varargin{:});' newline],...
     namespace, classStruct.neurodata_type_inc);
+else
+  fprintf(fid, ['      obj = obj@types.untyped.MetaClass(varargin{:});' newline]);
 end
 
 %set readonly values
@@ -73,8 +75,8 @@ writeAddReadonly(fid, ds_readonly_constructs, 'spaces', 6);
 %set Results assignment
 fprintf(fid, ['      fn = fieldnames(p.Results);' newline]);
 fprintf(fid, ['      if ~isempty(fn)' newline]);
-fprintf(fid, ['        for i=1:length(fn)' newline]);
-fprintf(fid, ['          field = fn{i};' newline]);
+fprintf(fid, ['        for fieldcell=fn''' newline]);
+fprintf(fid, ['          field = fieldcell{1};' newline]);
 
 if hasgroups
 fprintf(fid, ['          if ~strcmp(field, ''groups'')' newline]);
@@ -90,10 +92,10 @@ end
 fprintf(fid, ['        end' newline]);
 fprintf(fid, ['      end' newline]);
 if hasgroups
-  fprintf(fid, ['      gn = fieldnames(p.Results.groups);' newline]);
+  fprintf(fid, ['     gn = fieldnames(p.Results.groups);' newline]);
   fprintf(fid, ['      if ~isempty(gn)' newline]);
-  fprintf(fid, ['        for i=1:length(gn)' newline]);
-  fprintf(fid, ['          gnm = gn{i};' newline]);
+  fprintf(fid, ['        for groupcell=gn''' newline]);
+  fprintf(fid, ['          gnm = groupcell{1};' newline]);
   fprintf(fid, ['          if isfield(obj, gnm)' newline]);
   fprintf(fid, ['            error(''Naming conflict found in %s object property name: ''''%%s'''''', gnm);' newline], className);
   fprintf(fid, ['          else' newline]);
@@ -123,6 +125,8 @@ fprintf(fid, ['    function export(obj, loc_id)' newline]);
 if isfield(classStruct, 'neurodata_type_inc')
   fprintf(fid, ['      export@%s.%s(obj, loc_id);' newline],...
     namespace, classStruct.neurodata_type_inc);
+else
+  fprintf(fid, ['      export@types.untyped.MetaClass(obj, loc_id);' newline]);
 end
 %write attributes
 for i=1:length(attr_props)
@@ -172,9 +176,8 @@ end
 %write groups
 if hasgroups
   fprintf(fid, ['      plist = ''H5P_DEFAULT'';' newline]);
-  fprintf(fid, ['      fnms = fieldnames(obj);' newline]);
-  fprintf(fid, ['      for i=1:length(fnms)' newline]);
-  fprintf(fid, ['        fnm = fnms{i};' newline]);
+  fprintf(fid, ['      for fnms=fieldnames(obj)''' newline]);
+  fprintf(fid, ['        fnm = fnms{1};' newline]);
   fprintf(fid, ['        if startsWith(class(obj.(fnm)), ''types.'') && ~isa(obj.(fnm), ''types.untyped.Link'')' newline]);
   fprintf(fid, ['          gid = H5G.create(loc_id, fnm, plist, plist, plist);' newline]);
   fprintf(fid, ['          export(obj.(fnm), gid);' newline]);
