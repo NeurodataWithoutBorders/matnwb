@@ -57,10 +57,6 @@ s_cell = cell(l.toArray());
 for i=1:length(s_cell)
   s = yaml.util.hashmap2struct(s_cell{i});
   
-  if isfield(s, 'doc')
-    s = rmfield(s, 'doc');
-  end
-  
   s = pfunct(s); %extended functions
   
   if isfield(s, 'name')

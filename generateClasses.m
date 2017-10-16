@@ -2,7 +2,7 @@ function generateClasses(core, varargin)
 [c, ~, ~] = yaml.genFromNamespace(core); %should not be any namespace dependencies
 namespaces = {'core'};
 depends = {};
-for i=1:nargin
+for i=1:(nargin-1)
   extspc = varargin{i};
   validateattributes(extspc, {'string', 'char'}, {'scalartext'});
   [e, extnm, extdepends] = yaml.genFromNamespace(extspc);

@@ -10,8 +10,8 @@ validateattributes(namespace, {'char', 'string'}, {'scalartext'});
 link_props = {};
 link_constructs = struct();
 if isfield(classStruct, 'links')
-  link_props = fieldnames(classStruct.links);
-  for link_prop=link_props'
+  link_props = fieldnames(classStruct.links)';
+  for link_prop=link_props
     link_constructs.(link_prop{1}) = '[]';
   end
 end
@@ -42,9 +42,56 @@ else
 end
 fprintf(fid, [' < %s' newline], imports);
 
+% Write documentation string
+if isfield(classStruct, 'doc')
+  fprintf(fid, ['%% %s %s' newline], className, classStruct.doc);
+end
+
 %% property definitions
 fprintf(fid, newline);
-writeProps(fid, nongroup_props);
+fprintf(fid, ['  properties' newline]);
+%datasets
+if ~isempty(ds_props)
+  for i=1:length(ds_props)
+    ds_prop = ds_props{i};
+    if iscell(ds_prop) % is a dependent property
+      ds_struct = classStruct.datasets.(ds_prop{1}).attributes.(ds_prop{2});
+      ds_prop = ds_props_flat{i};
+    else
+      ds_struct = classStruct.datasets.(ds_prop);
+    end
+    if isfield(ds_struct, 'doc')
+      docstr = ds_struct.doc;
+    else
+      docstr = '';
+    end
+    fprintf(fid, ['    %s; %% %s' newline], ds_prop, docstr);
+  end
+end
+%attributes
+for attr_prop = attr_props
+  ap = attr_prop{1};
+  ap_struct = classStruct.attributes.(ap);
+  if isfield(ap_struct, 'doc')
+    docstr = ap_struct.doc;
+  else
+    docstr = '';
+  end
+  fprintf(fid, ['    %s; %% %s' newline], ap, docstr);
+end
+%links
+for link_prop=link_props
+  lp = link_prop{1};
+  lp_struct = classStruct.links.(lp);
+  if isfield(lp_struct, 'doc')
+    docstr = lp_struct.doc;
+  else
+    docstr = '';
+  end
+  fprintf(fid, ['    %s; %% %s' newline], lp, docstr);
+end
+
+fprintf(fid, ['  end' newline]);
 
 %% constructor
 fprintf(fid, newline);
@@ -258,14 +305,6 @@ function [propList, paramStruct, readOnlyStruct] = filterDatasets(s)
     end
   end
   [propList, paramStruct, readOnlyStruct] = filterProperties(s, 'datasets', @filter);
-end
-
-function writeProps(fid, names)
-fprintf(fid, ['  properties' newline]);
-for i=1:length(names)
-  fprintf(fid, ['    %s;' newline], names{i});
-end
-fprintf(fid, ['  end' newline]);
 end
 
 function writeAddParam(fid, def_struct, varargin)
