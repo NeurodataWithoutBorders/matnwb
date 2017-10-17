@@ -1,22 +1,34 @@
-function varargout = generateExtensions(varargin)
-namespace = cell(1, nargin);
+function varargout = generateExtensions(corestruct, varargin)
+namespaces = {'core'};
 depends = {};
-c = struct();
-for i=1:nargin
+for i=1:(nargin-1)
   extspc = varargin{i};
-  validateattributes(extspc, {'string', 'char'}, {'scalartext'});
-  [e, extnm, extdepends] = yaml.genFromNamespace(extspc);
-  c = util.structUniqUnion(c, e);
-  namespace{i} = extnm;
-  depends = [depends extdepends];
+  if (ischar(extspc) || isstring(extspc)) && ~strcmp(extspc, 'dryrun')
+    [e, extnm, extdepends] = yaml.genFromNamespace(extspc);
+    corestruct = util.structUniqUnion(corestruct, e);
+    namespaces{length(namespaces)+1} = extnm;
+    depends = [depends extdepends];
+  end
+end
+
+missingdep = setdiff(depends, namespaces);
+if ~isempty(missingdep)
+  error('generateClasses: Missing dependencies { %s }', strjoin(missingdep, ', '));
+end
+
+corestruct = yaml.util.resolveDependencies(corestruct);
+
+for cfn=fieldnames(corestruct)'
+  nm = cfn{1};
+  file.writeClass(nm, corestruct.(nm), 'types');
 end
 
 if nargout >= 1
-  varargout{1} = c;
+  varargout{1} = corestruct;
 end
 
 if nargout >= 2
-  varargout{2} = namespace;
+  varargout{2} = namespaces;
 end
 
 if nargout > 2

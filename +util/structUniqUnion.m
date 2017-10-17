@@ -8,8 +8,8 @@ s2fn = fieldnames(s2);
 
 if length(union(s1fn, s2fn)) < length(s1fn) + length(s2fn)
   s = dbstack;
-  error('%s:line %s: fieldnames for both structs should be respectively unique.',...
-    s(1).file, s(1).line);
+  error('%s: fieldnames for both structs should be respectively unique.',...
+    s(1).file);
 else
   if length(s1fn) >= length(s2fn)
     greaterstruct = s1;

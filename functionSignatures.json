@@ -14,12 +14,23 @@
         "type":"filepath=*.yaml,*.yml",
         "multiplicity":"append"
       }
+    ],
+    "outputs":
+    [
+      {"name":"registry", "kind":"optional", "type":"struct"},
+      {"name":"namespaces", "kind":"optional", "type":"cell"},
+      {"name":"dependencies", "kind":"optional", "type":"cell"}
     ]
   },
   "generateExtensions":
   {
     "inputs":
     [
+      {
+        "name":"registry",
+        "kind":"required",
+        "type":"struct"
+      },
       {
         "name":"namespace",
         "kind":"optional",
@@ -29,8 +40,9 @@
     ],
     "outputs":
     [
-      {"name":"parsed namespaces", "kind":"optional", "type":"cell"},
-      {"name":"parsed dependencies", "kind":"optional", "type":"cell"}
+      {"name":"registry", "kind":"optional", "type":"struct"},
+      {"name":"namespaces", "kind":"optional", "type":"cell"},
+      {"name":"dependencies", "kind":"optional", "type":"cell"}
     ]
   },
   "nwbRead":
