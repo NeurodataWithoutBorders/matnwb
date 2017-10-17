@@ -1,9 +1,6 @@
 function [classes, name, depends] = genFromNamespace(path) %path to namespace yaml file
 validateattributes(path, {'char', 'string'}, {'scalartext'});
-javaaddpath(fullfile('jar', 'schema.jar'));
-schema = Schema;
-[fileList, name, depends] = parseNamespace(schema.read(path));
-
+[fileList, name, depends] = parseNamespace(path);
 [dirname, ~, ~] = fileparts(path);
 classes = struct();
 for file=fileList
@@ -12,9 +9,12 @@ for file=fileList
 end
 end
 
-function [filelist, name, depends] = parseNamespace(yamlobj)
+function [filelist, name, depends] = parseNamespace(fp)
+javaaddpath(fullfile('jar', 'schema.jar'));
+schema = Schema;
 filelist = {};
 depends = {};
+yamlobj = schema.read(fp);
 nmscell = cell(yaml.util.hashmap2struct(yamlobj).namespaces.toArray());
 nms = yaml.util.hashmap2struct(nmscell{1});
 name = nms.name;

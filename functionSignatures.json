@@ -1,19 +1,36 @@
 {
-  "generateClasses":
+  "generateCore":
   {
     "inputs":
     [
       {
-        "name":"core",
+        "name":"core namespace",
         "kind":"required",
         "type":"filepath=*.yaml,*.yml"
       },
       {
-        "name":"extensions",
+        "name":"extensions namespace",
         "kind":"optional",
         "type":"filepath=*.yaml,*.yml",
         "multiplicity":"append"
       }
+    ]
+  },
+  "generateExtensions":
+  {
+    "inputs":
+    [
+      {
+        "name":"namespace",
+        "kind":"optional",
+        "type":"filepath=*.yaml,*.yml",
+        "multiplicity":"append"
+      }
+    ],
+    "outputs":
+    [
+      {"name":"parsed namespaces", "kind":"optional", "type":"cell"},
+      {"name":"parsed dependencies", "kind":"optional", "type":"cell"}
     ]
   },
   "nwbRead":
