@@ -10,6 +10,11 @@ for i=1:length(matnwb)
   else
     fn = filenames;
   end
-  export(matnwb(i), fn);
+  if length(matnwb) > 1
+    mnwb = matnwb(i);
+  else
+    mnwb = matnwb;
+  end
+  export(mnwb, fn);
 end
 end

@@ -53,7 +53,20 @@ classdef Group < handle & matlab.mixin.CustomDisplay %untyped group
         case '()'
         case '.'
           pn = findsubprop(obj, s(1).subs);
-          if ~isempty(pn)
+          if isempty(pn)
+            switch class(r)
+              case 'types.untyped.Group'
+                s = [substruct('.', 'groups') s];
+              case 'types.untyped.Link'
+                s = [substruct('.', 'links') s];
+              otherwise
+                if isnumeric(r)
+                  error('Group:subsasgn: please specify whether this numeric value is in ''attributes'' or ''datasets''');
+                else
+                  s = [substruct('.', 'classes') s];
+                end
+            end
+          else
             s = [substruct('.', pn), s];
           end
           obj = builtin('subsasgn', obj, s, r);
