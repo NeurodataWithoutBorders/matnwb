@@ -3,8 +3,8 @@ validateattributes(className, {'char', 'string'}, {'scalartext'});
 validateattributes(classStruct, {'struct'}, {'scalar'});
 validateattributes(namespace, {'char', 'string'}, {'scalartext'});
 
-[attr_props, attr_constructs, attr_readonly_constructs] = filterAttributes(classStruct);
-[ds_props, ds_constructs, ds_readonly_constructs] = filterDatasets(classStruct);
+[attr_props, attr_constructs, attr_readonly_constructs, attr_inherited] = filterAttributes(classStruct);
+[ds_props, ds_constructs, ds_readonly_constructs, ds_inherited] = filterDatasets(classStruct);
 
 %filter links
 link_props = {};
@@ -92,7 +92,6 @@ for link_prop=link_props
 end
 
 fprintf(fid, ['  end' newline]);
-
 %% constructor
 fprintf(fid, newline);
 fprintf(fid, ['  methods %%constructor' newline]);
@@ -126,14 +125,14 @@ fprintf(fid, ['        for fieldcell=fn''' newline]);
 fprintf(fid, ['          field = fieldcell{1};' newline]);
 
 if hasgroups
-fprintf(fid, ['          if ~strcmp(field, ''groups'')' newline]);
-fprintf(fid, '  '); %scoping space
+  fprintf(fid, ['          if ~strcmp(field, ''groups'')' newline]);
+  fprintf(fid, '  '); %scoping space
 end
 
 fprintf(fid, ['          obj.(field) = p.Results.(field);' newline]);
 
 if hasgroups
-fprintf(fid, ['          end' newline']);
+  fprintf(fid, ['          end' newline']);
 end
 
 fprintf(fid, ['        end' newline]);
@@ -158,11 +157,119 @@ fprintf(fid, ['  end' newline]);
 %% setters
 fprintf(fid, newline);
 fprintf(fid, ['  methods %%setters' newline]);
+if ~isempty(nongroup_props)
+  for ngprop = nongroup_props
+    ngp = ngprop{1};
+    fprintf(fid, ['    function obj = set.%s(obj, val)' newline], ngp);
+    fprintf(fid, ['      obj.%s = validate_%s(obj, val);' newline], ngp, ngp);
+    fprintf(fid, ['    end' newline]);
+  end
+end
 fprintf(fid, ['  end' newline]);
 
 %% validators
 fprintf(fid, newline);
 fprintf(fid, ['  methods(Access=protected) %%validators' newline]);
+%attributes
+allattr = horzcat(attr_props, attr_inherited);
+if ~isempty(allattr)
+  for aprop=allattr
+    ap = aprop{1};
+    attr_s = classStruct.attributes.(ap);
+    fprintf(fid, ['    function val = validate_%s(~, val)' newline], ap);
+    if strcmp(attr_s.dtype, 'string')
+      fprintf(fid, ['      if ~iscellstr(val)' newline]);
+      fprintf(fid, ['        error(''%s: %s must be a cell string'');' newline], className, ap);
+      fprintf(fid, ['      end' newline]);
+    else
+      fprintf(fid, ['      if ~isempty(val)' newline]);
+      if startsWith(attr_s.dtype, 'double') || startsWith(attr_s.dtype, 'single')
+        fprintf(fid, ['        if realmax(''%s'') < val' newline], attr_s.dtype);
+      else
+        fprintf(fid, ['        if intmax(''%s'') < val' newline], attr_s.dtype);
+      end
+      fprintf(fid, ['          warning(''%s: property %s overflow'');' newline], className, ap);
+      if startsWith(attr_s.dtype, 'double') || startsWith(attr_s.dtype, 'single')
+        fprintf(fid, ['        elseif (-realmax(''%s'')) > val' newline], attr_s.dtype);
+      else
+        fprintf(fid, ['        elseif intmin(''%s'') > val' newline], attr_s.dtype);
+      end
+      fprintf(fid, ['          warning(''%s: property %s underflow'');' newline], className, ap);
+      fprintf(fid, ['        end' newline]);
+      fprintf(fid, ['      end' newline]);
+      fprintf(fid, ['      val = %s(val);' newline], attr_s.dtype);
+    end
+    fprintf(fid, ['    end' newline]);
+  end
+end
+%datasets
+allds = horzcat(ds_props, ds_inherited);
+if ~isempty(allds)
+  for dsprop=allds
+    dsp = dsprop{1};
+    if iscell(dsp)
+      ds_s = classStruct.datasets.(dsp{1}).attributes.(dsp{2});
+      dsp = [dsp{1} '_' dsp{2}];
+    else
+      ds_s = classStruct.datasets.(dsp);
+    end
+    fprintf(fid, ['    function val = validate_%s(obj, val)' newline], dsp);
+    fprintf(fid, ['      if isa(val, ''types.untyped.Link'')' newline]);
+    fprintf(fid, ['        val.ref = validate_%s(obj, val.ref);' newline], dsp);
+    fprintf(fid, ['        return;' newline]);
+    fprintf(fid, ['      end' newline]);
+    
+    if isfield(ds_s, 'shape')
+      threshold = length(ds_s.shape);
+      fprintf(fid, ['      if ~isempty(val)' newline]);
+      if threshold > 2
+        fprintf(fid, ['        if ndims(val) ~= %d' newline], threshold);
+      elseif threshold > 1
+        fprintf(fid, ['        if ~ismatrix(val)' newline], threshold);
+      else
+        fprintf(fid, ['        if ~isvector(val)' newline]);
+      end
+      fprintf(fid, ['          error(''%s: val must have at most %d dimensions'');' newline], className, threshold);
+      fprintf(fid, ['        end' newline]);
+      fprintf(fid, ['      end' newline]);
+    end
+    switch(ds_s.dtype)
+      case 'string'
+        fprintf(fid, ['      if ~iscellstr(val)' newline]);
+        fprintf(fid, ['        error(''%s: %s must be a cell string'');' newline], className, dsp);
+        fprintf(fid, ['      end' newline]);
+      case 'any'
+      otherwise %numeric
+        fprintf(fid, ['      if ~isempty(val)' newline]);
+        if startsWith(ds_s.dtype, 'double') || startsWith(ds_s.dtype, 'single')
+          fprintf(fid, ['        if realmax(''%s'') < val' newline], ds_s.dtype);
+        else
+          fprintf(fid, ['        if intmax(''%s'') < val' newline], ds_s.dtype);
+        end
+        fprintf(fid, ['          warning(''%s: property %s overflow'');' newline], className, dsp);
+        if startsWith(ds_s.dtype, 'double') || startsWith(ds_s.dtype, 'single')
+          fprintf(fid, ['        elseif (-realmax(''%s'')) > val' newline], ds_s.dtype);
+        else
+          fprintf(fid, ['        elseif intmin(''%s'') > val' newline], ds_s.dtype);
+        end
+        fprintf(fid, ['          warning(''%s: property %s underflow'');' newline], className, dsp);
+        fprintf(fid, ['        end' newline]);
+        fprintf(fid, ['      end' newline]);
+        fprintf(fid, ['      val = %s(val);' newline], ds_s.dtype);
+    end
+    fprintf(fid, ['    end' newline]);
+  end
+end
+%links
+for lprop = link_props
+  lp = lprop{1};
+  fprintf(fid, ['    function val = validate_%s(~, val)' newline], lp);
+  fprintf(fid, ['      if ~isempty(val) && ~isa(val, ''types.untyped.Link'')' newline]);
+  fprintf(fid, ['        error(''%s: %s must be a Link object'');' newline], className, lp);
+  fprintf(fid, ['      end' newline]);
+  fprintf(fid, ['    end' newline]);
+end
+
 fprintf(fid, ['  end' newline]);
 
 %% export
@@ -240,26 +347,29 @@ fprintf(fid, 'end');
 fclose(fid);
 end
 
-function [propList, paramStruct, readOnlyStruct] = filterProperties(s, propname, filterFcn)
+function [propList, paramStruct, readOnlyStruct, inheritedList] = filterProperties(s, propname, filterFcn)
 validateattributes(propname, {'string', 'char'}, {'scalartext'});
 validateattributes(s, {'struct'}, {'scalar'});
 
 propList = {};
 paramStruct = struct();
 readOnlyStruct = struct();
+inheritedList = {};
 
 if isfield(s, propname)
   fn = fieldnames(s.(propname));
   for i=1:length(fn)
-    [propList, paramStruct, readOnlyStruct] = filterFcn(s, fn{i}, propList, paramStruct, readOnlyStruct);
+    [propList, paramStruct, readOnlyStruct, inheritedList] = filterFcn(s, fn{i}, propList, paramStruct, readOnlyStruct, inheritedList);
   end
 end
 end
 
-function [propList, paramStruct, readOnlyStruct] = filterAttributes(s)
-  function [pl, ps, ros] = filter(s, nm, pl, ps, ros)
+function [propList, paramStruct, readOnlyStruct, inheritedList] = filterAttributes(s)
+  function [pl, ps, ros, inher] = filter(s, nm, pl, ps, ros, inher)
     attr = s.attributes.(nm);
-    if ~attr.inherited
+    if attr.inherited
+      inher{length(inher)+1} = nm;
+    else
       pl{length(pl)+1} = nm;%attr_props does not include inherited fields.
     end
     
@@ -269,10 +379,10 @@ function [propList, paramStruct, readOnlyStruct] = filterAttributes(s)
       ps.(nm) = file.defaultFromStruct(attr);
     end
   end
-  [propList, paramStruct, readOnlyStruct] = filterProperties(s, 'attributes', @filter);
+[propList, paramStruct, readOnlyStruct, inheritedList] = filterProperties(s, 'attributes', @filter);
 end
 
-function [propList, paramStruct, readOnlyStruct] = filterDatasets(s)
+function [propList, paramStruct, readOnlyStruct, inheritedList] = filterDatasets(s)
 %ds_construct creation for non-inherited properties
 %side effect: assigns to readonlyStruct and paramStruct
   function [ps, ros] = constructDefaults(nm, prop, ps, ros)
@@ -288,9 +398,11 @@ function [propList, paramStruct, readOnlyStruct] = filterDatasets(s)
     end
   end
 
-  function [pl, ps, ros] = filter(s, nm, pl, ps, ros)
+  function [pl, ps, ros, inher] = filter(s, nm, pl, ps, ros, inher)
     ds = s.datasets.(nm);
-    if ~ds.inherited
+    if ds.inherited
+      inher{length(inher)+1} = nm;
+    else
       pl{length(pl)+1} = nm;
       [ps, ros] = constructDefaults(nm, s.datasets.(nm), ps, ros);
       if isfield(ds, 'attributes')
@@ -304,7 +416,7 @@ function [propList, paramStruct, readOnlyStruct] = filterDatasets(s)
       end
     end
   end
-  [propList, paramStruct, readOnlyStruct] = filterProperties(s, 'datasets', @filter);
+[propList, paramStruct, readOnlyStruct, inheritedList] = filterProperties(s, 'datasets', @filter);
 end
 
 function writeAddParam(fid, def_struct, varargin)
