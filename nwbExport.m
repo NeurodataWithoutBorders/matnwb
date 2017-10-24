@@ -1,8 +1,8 @@
-function nwbExport(matnwb, filenames)
-validateattributes(matnwb, {'matnwb'}, {});
+function nwbExport(nwb, filenames)
+validateattributes(nwb, {'nwbfile'}, {});
 validateattributes(filenames, {'cell', 'string', 'char'}, {});
 
-for i=1:length(matnwb)
+for i=1:length(nwb)
   if iscellstr(filenames)
     fn = filenames{i};
   elseif isstring(filenames)
@@ -10,10 +10,10 @@ for i=1:length(matnwb)
   else
     fn = filenames;
   end
-  if length(matnwb) > 1
-    mnwb = matnwb(i);
+  if length(nwb) > 1
+    mnwb = nwb(i);
   else
-    mnwb = matnwb;
+    mnwb = nwb;
   end
   export(mnwb, fn);
 end

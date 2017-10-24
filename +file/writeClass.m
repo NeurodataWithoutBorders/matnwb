@@ -1,10 +1,13 @@
 function writeClass(className, classStruct, namespace)
 validateattributes(className, {'char', 'string'}, {'scalartext'});
 validateattributes(classStruct, {'struct'}, {'scalar'});
-validateattributes(namespace, {'char', 'string'}, {'scalartext'});
+validateattributes(namespace, {'char', 'string'}, {'scalartext'}); %filepath to write to.  NOT NWB NAMESPACE
 
 [attr_props, attr_constructs, attr_readonly_constructs, attr_inherited] = filterAttributes(classStruct);
 [ds_props, ds_constructs, ds_readonly_constructs, ds_inherited] = filterDatasets(classStruct);
+[group_props, group_constructs, group_inherited, hasAnon] = filterGroups(classStruct);
+
+hasgroups = ~isempty(group_props) || ~isempty(group_inherited) || hasAnon;
 
 %filter links
 link_props = {};
@@ -24,10 +27,8 @@ for i=1:length(ds_props_flat)
   end
 end
 
-hasgroups = isfield(classStruct, 'groups') && ~isempty(fieldnames(classStruct.groups));
-
-nongroup_props = unique(cat(2, [link_props ds_props_flat attr_props]));
-if length(nongroup_props) ~= sum([length(link_props) length(ds_props_flat) length(attr_props)])
+preset_props = unique(horzcat(link_props, ds_props_flat, attr_props, group_props));
+if length(preset_props) ~= sum([length(link_props) length(ds_props_flat) length(attr_props) length(group_props)])
   error(['writeClass: properties have conflicting names.', ...
     'Check all dataset/attribute/group names and <dataset>_<attribute> constructions for conflicting names.']);
 end
@@ -69,26 +70,18 @@ if ~isempty(ds_props)
   end
 end
 %attributes
-for attr_prop = attr_props
-  ap = attr_prop{1};
-  ap_struct = classStruct.attributes.(ap);
-  if isfield(ap_struct, 'doc')
-    docstr = ap_struct.doc;
-  else
-    docstr = '';
-  end
-  fprintf(fid, ['    %s; %% %s' newline], ap, docstr);
+if ~isempty(attr_props)
+  writeProps(fid, attr_props, classStruct.attributes);
 end
+
 %links
-for link_prop=link_props
-  lp = link_prop{1};
-  lp_struct = classStruct.links.(lp);
-  if isfield(lp_struct, 'doc')
-    docstr = lp_struct.doc;
-  else
-    docstr = '';
-  end
-  fprintf(fid, ['    %s; %% %s' newline], lp, docstr);
+if ~isempty(link_props)
+  writeProps(fid, link_props, classStruct.links);
+end
+
+%groups
+if ~isempty(group_props)
+  writeProps(fid, group_props, classStruct.groups);
 end
 
 fprintf(fid, ['  end' newline]);
@@ -99,15 +92,39 @@ fprintf(fid, ['    function obj = %s(varargin)' newline], className);
 fprintf(fid, ['      p = inputParser;' newline]);
 fprintf(fid, ['      p.KeepUnmatched = true;' newline]);
 %write optional params with defaults
-for constructs={attr_constructs ds_constructs link_constructs}
+%note: group_constructs are a special case because they will never be a kwarg
+%      They are actually assigned below with the group extensions but we allow
+%      this 'optional' parameter for the sake of setting default value.
+for constructs={attr_constructs ds_constructs link_constructs group_constructs}
   writeAddParam(fid, constructs{1}, 'spaces', 6);
 end
 
-if hasgroups
+%allow group extension
+if hasgroups 
   writeAddParam(fid, struct('groups', 'struct()'), 'spaces', 6);
 end
 fprintf(fid, ['      p.parse(varargin{:});' newline]);
 if isfield(classStruct, 'neurodata_type_inc')
+  fprintf(fid, ['      hastypename = false;' newline]);
+  fprintf(fid, ['      hasnamespace = false;' newline]);
+  fprintf(fid, ['      for arg = varargin' newline]);
+  fprintf(fid, ['        if iscellstr(arg)' newline]);
+  fprintf(fid, ['          switch arg{1}' newline]);
+  fprintf(fid, ['            case ''neurodata_type''' newline]);
+  fprintf(fid, ['              hastypename = true;' newline]);
+  fprintf(fid, ['            case ''namespace''' newline]);
+  fprintf(fid, ['              hasnamespace = true;' newline]);
+  fprintf(fid, ['          end' newline]);
+  fprintf(fid, ['        end' newline]);
+  fprintf(fid, ['      end' newline]);
+  fprintf(fid, ['      if ~hastypename' newline]);
+  fprintf(fid, ['        varargin{length(varargin)+1} = ''neurodata_type'';' newline]);
+  fprintf(fid, ['        varargin{length(varargin)+1} = {''%s''};' newline], className);
+  fprintf(fid, ['      end' newline]);
+  fprintf(fid, ['      if ~hasnamespace' newline]);
+  fprintf(fid, ['        varargin{length(varargin)+1} = ''namespace'';' newline]);
+  fprintf(fid, ['        varargin{length(varargin)+1} = {''%s''};' newline], classStruct.namespace);
+  fprintf(fid, ['      end' newline]);
   fprintf(fid, ['      obj = obj@%s.%s(varargin{:});' newline],...
     namespace, classStruct.neurodata_type_inc);
 else
@@ -142,12 +159,10 @@ if hasgroups
   fprintf(fid, ['      if ~isempty(gn)' newline]);
   fprintf(fid, ['        for groupcell=gn''' newline]);
   fprintf(fid, ['          gnm = groupcell{1};' newline]);
-  fprintf(fid, ['          if isfield(obj, gnm)' newline]);
-  fprintf(fid, ['            error(''Naming conflict found in %s object property name: ''''%%s'''''', gnm);' newline], className);
-  fprintf(fid, ['          else' newline]);
+  fprintf(fid, ['          if ~isprop(obj, gnm)' newline]);
   fprintf(fid, ['            addprop(obj, gnm);' newline]);
-  fprintf(fid, ['            obj.(gnm) = p.Results.groups.(gnm);' newline']);
   fprintf(fid, ['          end' newline]);
+  fprintf(fid, ['          obj.(gnm) = p.Results.groups.(gnm);' newline]);
   fprintf(fid, ['        end' newline]);
   fprintf(fid, ['      end' newline]);
 end
@@ -157,8 +172,8 @@ fprintf(fid, ['  end' newline]);
 %% setters
 fprintf(fid, newline);
 fprintf(fid, ['  methods %%setters' newline]);
-if ~isempty(nongroup_props)
-  for ngprop = nongroup_props
+if ~isempty(preset_props)
+  for ngprop = preset_props
     ngp = ngprop{1};
     fprintf(fid, ['    function obj = set.%s(obj, val)' newline], ngp);
     fprintf(fid, ['      obj.%s = validate_%s(obj, val);' newline], ngp, ngp);
@@ -270,6 +285,16 @@ for lprop = link_props
   fprintf(fid, ['    end' newline]);
 end
 
+%groups
+for gprop = group_props
+  gp = gprop{1};
+  fprintf(fid, ['    function val = validate_%s(~, val)' newline], gp);
+  fprintf(fid, ['      if ~isa(val, ''types.untyped.Group'')' newline]);
+  fprintf(fid, ['        error(''%s: %s must be a Group object'');' newline], className, gp);
+  fprintf(fid, ['      end' newline]);
+  fprintf(fid, ['    end' newline]);
+end
+
 fprintf(fid, ['  end' newline]);
 
 %% export
@@ -364,13 +389,26 @@ if isfield(s, propname)
 end
 end
 
+function writeProps(fid, nmlist, propstruct)
+for nmprop = nmlist
+  p = nmprop{1};
+  p_struct = propstruct.(p);
+  if isfield(p_struct, 'doc')
+    docstr = p_struct.doc;
+  else
+    docstr = '';
+  end
+  fprintf(fid, ['    %s; %% %s' newline], p, docstr);
+end
+end
+
 function [propList, paramStruct, readOnlyStruct, inheritedList] = filterAttributes(s)
   function [pl, ps, ros, inher] = filter(s, nm, pl, ps, ros, inher)
     attr = s.attributes.(nm);
     if attr.inherited
       inher{length(inher)+1} = nm;
     else
-      pl{length(pl)+1} = nm;%attr_props does not include inherited fields.
+      pl{length(pl)+1} = nm;
     end
     
     if isfield(attr, 'value')
@@ -417,6 +455,24 @@ function [propList, paramStruct, readOnlyStruct, inheritedList] = filterDatasets
     end
   end
 [propList, paramStruct, readOnlyStruct, inheritedList] = filterProperties(s, 'datasets', @filter);
+end
+
+function [propList, paramStruct, inheritedList, hasAnon] = filterGroups(s)
+  function [pl, ps, ros, inher] = filter(s, nm, pl, ps, ros, inher)
+    g = s.groups.(nm);
+    if regexp(nm, '^Anon_\d+$')
+      hasAnon = true;
+    else
+      if g.inherited
+        inher{length(inher)+1} = nm;
+      else
+        pl{length(pl)+1} = nm;
+        ps.(nm) = 'types.untyped.Group';
+      end
+    end
+  end
+hasAnon = false;
+[propList, paramStruct, ~, inheritedList] = filterProperties(s, 'groups', @filter);
 end
 
 function writeAddParam(fid, def_struct, varargin)

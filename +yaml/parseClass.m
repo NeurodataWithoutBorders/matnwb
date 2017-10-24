@@ -1,5 +1,5 @@
 % Creates a struct of objects that need to be defined
-function classes = parseClass(filename)
+function classes = parseClass(filename, namespace)
   function s = verify(s)
     if isfield(s, 'neurodata_type_def')
       if isfield(s, 'groups')
@@ -36,6 +36,10 @@ for i=1:length(anonfn)
   typedefnm = s.neurodata_type_def;
   s = rmfield(s, 'neurodata_type_def');
   classes.(typedefnm) = s;
+end
+for field=fieldnames(classes)'
+  fn = field{1};
+  classes.(fn).namespace = namespace;
 end
 end
 

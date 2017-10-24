@@ -5,17 +5,23 @@ info = h5info(filename);
 
 linkRefs = {}; %links that need to be resolved later.
 [nwb, linkRefs] = processGroups(info, filename);
-%resolve links
-[filepath, ~, ~] = fileparts(filename);
+% we need full filepath to process this part.
+if java.io.File(filename).isAbsolute
+  ff = filename;
+else
+  ff = fullfile(pwd, filename);
+end
+[fp, ~, ~] = fileparts(ff); %complete filepath
 for lref = linkRefs
   lr = lref{1};
   if isempty(lr.filename)
     lr.ref = nwb(lr.path);
   else
     % we assume the external reference is to a dataset.
-    ff = fullfile(filepath, lr.filename);
-    lr.filename = ff;
-    lr.ref = h5read(ff, lr.path);
+    if ~java.io.File(lr.filename).isAbsolute
+      lr.filename = fullfile(fp, lr.filename);
+    end
+    lr.ref = h5read(lr.filename, lr.path);
   end
 end
 end
@@ -33,7 +39,7 @@ for i=1:length(propList)
   v = func(prop);
   if isa(v, 'util.StructMap')
     s = util.structUniqUnion(s, v);
-  elseif isa(v, 'matnwb')
+  elseif isa(v, 'nwbfile')
     s = v; %Return completed NWBFile
   else
     s.(path2name(path)) = v;
@@ -112,7 +118,7 @@ function [object, linkRefs] = processGroups(glist, filename)
       end
       ndata_type = go.attributes.neurodata_type;
       if strcmp(ndata_type{1}, 'NWBFile') %initialize the inherited object instead.
-        dt = 'matnwb';
+        dt = 'nwbfile';
       else
         dt = ['types.' ndata_type{1}];
       end
@@ -150,7 +156,7 @@ end
 function lnkobj = processLinks(llist)
   function v = procFun(l)
     % for some reason, h5info returns links in order {optional[<filename>]; path}
-    % So we flipud the value so that it represents function args properly.
+    % So we flipud() the value so that it represents function args properly.
     data = flipud(l.Value); 
     v = types.untyped.Link(data{:});
   end

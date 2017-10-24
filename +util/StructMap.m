@@ -77,5 +77,9 @@ classdef StructMap
     function s = rmfield(s, field)
       remove(s.map, field);
     end
+    
+    function tf = isempty(obj)
+      tf = size(obj.map, 1) == 0;
+    end
   end
 end

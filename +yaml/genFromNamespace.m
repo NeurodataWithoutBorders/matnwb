@@ -4,7 +4,7 @@ validateattributes(path, {'char', 'string'}, {'scalartext'});
 [dirname, ~, ~] = fileparts(path);
 classes = struct();
 for file=fileList
-  yml = yaml.parseClass(fullfile(dirname, file{1}));
+  yml = yaml.parseClass(fullfile(dirname, file{1}), name);
   classes = util.structUniqUnion(classes, yml);
 end
 end

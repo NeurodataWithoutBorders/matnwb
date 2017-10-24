@@ -1,6 +1,6 @@
-classdef matnwb < types.NWBFile
+classdef nwbfile < types.NWBFile
   methods
-    function obj = matnwb(varargin)
+    function obj = nwbfile(varargin)
       obj = obj@types.NWBFile(varargin{:});
     end
     

@@ -1,10 +1,10 @@
 classdef Group < handle & matlab.mixin.CustomDisplay %untyped group
   properties
-    attributes;
-    datasets;
-    links;
-    groups;
-    classes;
+    attributes = util.StructMap;
+    datasets = util.StructMap;
+    links = util.StructMap;
+    groups = util.StructMap;
+    classes = util.StructMap;
   end
   
   properties(Constant=true, Access=private)
