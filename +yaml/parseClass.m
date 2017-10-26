@@ -89,6 +89,27 @@ function astruct = processAttributes(alist)
     if isfield(s, 'dtype')
       s.dtype = yaml.util.schema2matlabTypes(s.dtype);
     end
+    
+    %process dims and shape into something readable
+    if isfield(s, 'dims')
+      % dims can sometimes be multileveled indicating options
+      s.dims = cell(s.dims.toArray());
+      if length(s.dims) > 1 && isa(s.dims{1}, 'java.util.ArrayList')
+        for id = 1:length(s.dims)
+          s.dims{id} = cell(s.dims{id}.toArray());
+        end
+      end
+    end
+    
+    if isfield(s, 'shape')
+      s.shape = cell(s.shape.toArray());
+      % same as dims
+      if length(s.shape) > 1 && isa(s.shape{1}, 'java.util.ArrayList')
+        for is = 1:length(s.shape)
+          s.shape{is} = cell(s.shape{is}.toArray());
+        end
+      end
+    end
   end
 astruct = processList(alist, @verify);
 end
@@ -99,17 +120,30 @@ function [dstruct, cstruct] = processDatasets(dlist)
       error('processDatasets:NameRequired Dataset name required.');
     end
     
-    %process dims and shape into something readable
+    
     if isfield(s, 'attributes')
       s.attributes = processAttributes(s.attributes);
     end
     
+    %process dims and shape into something readable
     if isfield(s, 'dims')
+      % dims can sometimes be multileveled indicating options
       s.dims = cell(s.dims.toArray());
+      if length(s.dims) > 1 && isa(s.dims{1}, 'java.util.ArrayList')
+        for id = 1:length(s.dims)
+          s.dims{id} = cell(s.dims{id}.toArray());
+        end
+      end
     end
     
     if isfield(s, 'shape')
       s.shape = cell(s.shape.toArray());
+      % same as dims
+      if length(s.shape) > 1 && isa(s.shape{1}, 'java.util.ArrayList')
+        for is = 1:length(s.shape)
+          s.shape{is} = cell(s.shape{is}.toArray());
+        end
+      end
     end
     
     if isfield(s, 'dtype')

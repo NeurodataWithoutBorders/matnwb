@@ -235,17 +235,70 @@ if ~isempty(allds)
     fprintf(fid, ['      end' newline]);
     
     if isfield(ds_s, 'shape')
-      threshold = length(ds_s.shape);
-      fprintf(fid, ['      if ~isempty(val)' newline]);
-      if threshold > 2
-        fprintf(fid, ['        if ndims(val) ~= %d' newline], threshold);
-      elseif threshold > 1
-        fprintf(fid, ['        if ~ismatrix(val)' newline], threshold);
+      % check lengths and dimensions
+      if iscell(ds_s.shape{1})
+        threshold = zeros(length(ds_s.shape), 1);
+        nonNullIndices = cell(length(ds_s.shape), 1);
+        for i = 1:length(ds_s.shape)
+          threshold(i) = length(ds_s.shape{i});
+          nonNullIndices{i} = find(~strcmp(ds_s.shape{i}, 'null'));
+        end
+        threshold = unique(threshold);
       else
-        fprintf(fid, ['        if ~isvector(val)' newline]);
+        threshold = length(ds_s.shape);
+        nonNullIndices = {find(~strcmp(ds_s.shape, 'null'))};
       end
-      fprintf(fid, ['          error(''%s: val must have at most %d dimensions'');' newline], className, threshold);
+      
+      fprintf(fid, ['      if ~isempty(val)' newline]);
+      fprintf(fid, '        if ');
+      for i=1:length(threshold)
+        if i > 1
+          fprintf(fid, ' || ');
+        end
+        if threshold(i) > 2
+          fprintf(fid, 'ndims(val) ~= %d', threshold(i));
+        elseif threshold(i) > 1
+          fprintf(fid, '~ismatrix(val)');
+        else
+          fprintf(fid, '~isvector(val)');
+        end
+      end
+      fprintf(fid, newline);
+      fprintf(fid, ['          error(''%s.%s: val must have [%s] dimensions'');' newline],...
+        className, dsp, string(join(split(num2str(threshold')), ',')));
       fprintf(fid, ['        end' newline]);
+      
+      %check actual dimensions if shape has non-'null' values
+      if any(~cellfun(@isempty, nonNullIndices))
+        fprintf(fid, ['        switch ndims(val)' newline]);
+        for i=1:length(threshold)
+          if ~isempty(nonNullIndices{i})
+            fprintf(fid, ['          case %d' newline], threshold(i));
+            fprintf(fid, '            if ');
+            for j=1:length(nonNullIndices{i})
+              if j > 1
+                fprintf(fid, ' || ');
+              end
+              index = nonNullIndices{i}(j);
+              if iscell(ds_s.shape{1})
+                shapesz = ds_s.shape{i}{index};
+              else
+                shapesz = ds_s.shape{index};
+              end
+              fprintf(fid, 'size(val, %d) ~= %s', index, shapesz);
+            end
+            if iscell(ds_s.shape{1})
+              expectedShape = ds_s.shape{i};
+            else
+              expectedShape = ds_s.shape;
+            end
+            fprintf(fid, [newline file.spaces(14) 'error(''%s.%s: val must have shape [%s]'');' newline],...
+              className, dsp, string(join(strrep(expectedShape, 'null', '~'), ',')));
+            fprintf(fid, [file.spaces(12) 'end' newline]);
+          end
+        end
+        fprintf(fid, ['        end' newline]);
+      end
       fprintf(fid, ['      end' newline]);
     end
     switch(ds_s.dtype)

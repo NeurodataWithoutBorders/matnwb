@@ -10,7 +10,7 @@ nwb = nwbRead('testdata\20080516_R1.nwb');
 nwbExport(nwb, 'testoutput\out.nwb');
 nwbRead('testoutput\out.nwb');
 
-%% Test 3: Create
+%% Test 3: Create Fake Data
 nwb = nwbfile;
 nwb.epochs = types.untyped.Group;
 nwb.epochs.stim = types.Epoch;
