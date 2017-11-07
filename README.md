@@ -16,8 +16,6 @@ The NWB:N schema is in a state of some evolution.  This package assumes a certai
 
 ## Examples
 
-### Initially generating matlab code from schema files
-
 From the Matlab command line, generate code from a copy of the NWB schema.
 
 ```matlab
