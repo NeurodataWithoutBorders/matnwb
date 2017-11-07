@@ -1,4 +1,16 @@
 classdef nwbfile < types.NWBFile
+  % nwbfile Root object representing data read from an NWB file.
+  %
+  % Requires that core and extension NWB types have been generated
+  % and reside in a 'types' package on the matlab path.
+  %
+  % Example. Construct an object from scratch for export:
+  %    nwb = nwbfile;
+  %    nwb.epochs = types.untyped.Group;
+  %    nwb.epochs.stim = types.Epoch;
+  %    nwbExport(nwb, 'epoch.nwb');
+  %
+  % See also NWBREAD, GENERATECORE, GENERATEEXTENSIONS
   methods
     function obj = nwbfile(varargin)
       obj = obj@types.NWBFile(varargin{:});

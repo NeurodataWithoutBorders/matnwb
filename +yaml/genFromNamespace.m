@@ -10,7 +10,10 @@ end
 end
 
 function [filelist, name, depends] = parseNamespace(fp)
-javaaddpath(fullfile('jar', 'schema.jar'));
+% add the local java path 
+cwd=fileparts(mfilename('fullpath'));
+javaaddpath(fullfile(cwd,'..','jar','schema.jar'));
+% do our buisiness
 schema = Schema;
 filelist = {};
 depends = {};

@@ -539,4 +539,6 @@ end
 function dir = namespace2dir(namespace)
 mapped = cellfun(@(s) ['+' s], split(namespace, '.'), 'UniformOutput', false);
 dir = fullfile(mapped{:});
+% make the directory if it down't exist
+[~,~]=mkdir(dir); % silence any warnings or errors
 end

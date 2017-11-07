@@ -23,7 +23,7 @@ function classes = parseClass(filename, namespace)
       error('yaml.read:InvalidSchema Highest group definition must contain a ''neurodata_type_def'' field.');
     end
   end
-javaaddpath(fullfile('jar', 'schema.jar'));
+%javaaddpath(fullfile('jar', 'schema.jar'));
 classes = struct();
 
 schema = Schema; %prevent screwy behavior when 'clear java' is called
