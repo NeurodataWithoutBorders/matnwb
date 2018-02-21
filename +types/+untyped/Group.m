@@ -1,10 +1,10 @@
 classdef Group < handle & matlab.mixin.CustomDisplay %untyped group
   properties
-    attributes = util.StructMap;
-    datasets = util.StructMap;
-    links = util.StructMap;
-    groups = util.StructMap;
-    classes = util.StructMap;
+    attributes;
+    datasets;
+    links;
+    groups;
+    classes;
   end
   
   properties(Constant=true, Access=private)
@@ -13,6 +13,11 @@ classdef Group < handle & matlab.mixin.CustomDisplay %untyped group
   
   methods
     function obj = Group(s)
+      obj.attributes = util.StructMap;
+      obj.datasets = util.StructMap;
+      obj.links = util.StructMap;
+      obj.groups = util.StructMap;
+      obj.classes = util.StructMap;
       if nargin > 0 %allow empty Group
         validateattributes(s, {'struct', 'util.StructMap'}, {'scalar'});
         
