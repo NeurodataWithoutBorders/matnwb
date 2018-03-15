@@ -1,5 +1,4 @@
 function id = defineSpace(dim)
-validateattributes(dim, {'numeric'}, {'vector', '>=', 0});
 if all(dim == 1) %scalar
   id = H5S.create('H5S_SCALAR');
 elseif any(dim == 0) %empty

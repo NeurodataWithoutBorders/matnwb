@@ -1,4 +1,4 @@
-function varargout = generateExtensions(corestruct, varargin)
+function generateExtension(source)
 % GENERATEEXTENSIONS Generate Matlab classes from NWB extension schema file
 %   registry = GENERATECORE(registry,extension_path...)  Generate classes 
 %   (Matlab m-files) from one or more NWB:N schema extension namespace 
@@ -23,39 +23,14 @@ function varargout = generateExtensions(corestruct, varargin)
 %      core=generateExtensions(registry,'schema\core\myextension.namespace.yaml')
 % 
 %   See also GENERATECORE
-namespaces = {'core'};
-depends = {};
-for i=1:(nargin-1)
-  extspc = varargin{i};
-  if (ischar(extspc) || isstring(extspc)) && ~strcmp(extspc, 'dryrun')
-    [e, extnm, extdepends] = yaml.genFromNamespace(extspc);
-    corestruct = util.structUniqUnion(corestruct, e);
-    namespaces{length(namespaces)+1} = extnm;
-    depends = [depends extdepends];
-  end
-end
+validateattributes(source, {'char', 'string'}, {'scalartext'});
 
-missingdep = setdiff(depends, namespaces);
-if ~isempty(missingdep)
-  error('generateClasses: Missing dependencies { %s }', strjoin(missingdep, ', '));
-end
+extSchema = util.generateSchema(source);
+save(fullfile('namespaces',[extSchema.name '.mat']), extSchema);
 
-corestruct = yaml.util.resolveDependencies(corestruct);
+%check/load dependency namespaces
+extmap = util.loadNamespace(extSchema.name);
 
-for cfn=fieldnames(corestruct)'
-  nm = cfn{1};
-  file.writeClass(nm, corestruct.(nm), 'types');
-end
-
-if nargout >= 1
-  varargout{1} = corestruct;
-end
-
-if nargout >= 2
-  varargout{2} = namespaces;
-end
-
-if nargout > 2
-  varargout{3} = depends;
-end
+%write files
+file.writeNamespace(extmap(extSchema.name));
 end
