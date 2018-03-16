@@ -7,10 +7,8 @@ classdef Link < handle
   
   methods
     function obj = Link(path, filename, ref)
-      validateattributes(path, {'string', 'char'}, {'scalartext'});
       obj.path = path;
       if nargin > 1
-        validateattributes(filename, {'string', 'char'}, {'scalartext'});
         obj.filename = filename;
       end
       

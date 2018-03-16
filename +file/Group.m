@@ -48,7 +48,6 @@ classdef Group < handle
             parent = source.get('neurodata_type_inc');
             if isempty(type) && ~isempty(parent)
                 obj.type = parent;
-                obj.isConstrainedSet;
             else
                 obj.type = type;
             end
@@ -67,6 +66,8 @@ classdef Group < handle
                         obj.scalar = false;
                 end
             end
+            
+            obj.isConstrainedSet = ~obj.scalar && ~isempty(obj.type);
             
             %do attributes
             attributes = source.get('attributes');

@@ -1,5 +1,4 @@
 function id = mat2hdf_typeid(def)
-validateattributes(def, {'string', 'char'}, {'scalartext'});
 switch(def)
   case {'string', 'char'}
     id = H5T.copy('H5T_C_S1');
@@ -18,6 +17,5 @@ switch(def)
       end
       rethrow(H5E);
     end
-    
 end
 end

@@ -25,6 +25,10 @@ classdef Link < handle
         end
         
         function [props, varargs] = getProps(obj)
+            props = containers.Map;
+            varargs = {};
+            
+            props(obj.name) = obj;
         end
     end
 end

@@ -8,16 +8,17 @@ fullpath = fullfile(path, [name '.m']);
 
 [processed, classprop, inherited] = processClass(name, namespace, pregenprops);
 class = processed(1);
-propertylist = setdiff(keys(classprop.properties), [inherited; {name}]);
 
+validationlist = setdiff(keys(classprop.properties), {name});
+propertylist = setdiff(validationlist, inherited);
 %% CLASSDEF
 if length(processed) <= 1
     depnm = 'types.untyped.MetaClass'; %WRITE
-    pname = depnm; %WRITE
+    parentname = depnm; %WRITE
 else
-    pname = processed(2).type; %WRITE
-    pnamespace = namespace.getNamespace(pname);
-    depnm = ['types.' pnamespace.name '.' pname]; %WRITE
+    parentname = processed(2).type; %WRITE
+    pnamespace = namespace.getNamespace(parentname);
+    depnm = ['types.' pnamespace.name '.' parentname]; %WRITE
 end
 
 %% PROPERTIES
@@ -28,20 +29,21 @@ opt_props = struct();
 for i=1:length(propertylist)
     propname = propertylist{i};
     prop = classprop.properties(propname);
+    
     if isa(prop, 'file.Attribute') && prop.readonly
         ro_props.(propname) = prop.doc;
     elseif ischar(prop)
         req_props.(propname) = ['property of type ' prop];
     elseif isa(prop, 'java.util.HashMap')
         req_props.(propname) = ['reference to type ' prop.get('target_type')];
+    elseif isstruct(prop)
+        req_props.(propname) = ['table with properties {' strtrim(evalc('disp(fieldnames(prop))')) '}'];
     elseif prop.required
         req_props.(propname) = prop.doc;
     else
         opt_props.(propname) = prop.doc;
     end
 end
-
-%% EXPORT BODY
 
 %% WRITE CLASS FILE
 template = [...
@@ -53,15 +55,13 @@ template = [...
     'methods' newline...
     file.addSpaces([file.fillConstructor(name,... %constructor
     namespace.name,...
-    pname,...
+    parentname,...
     fieldnames(ro_props)',...
     fieldnames(req_props)',...
     fieldnames(opt_props)',...
     classprop) newline...
     file.fillSetters(propertylist) newline... %setters
-    file.fillDynamicSetters(classprop.varargs) newline... %dynamic setters
-    file.fillValidators(propertylist, classprop) newline...%validators
-    file.fillDynamicValidators(classprop.varargs) newline... %dynamic validators
+    file.fillValidators(validationlist, classprop, namespace) newline...%validators
     file.fillExport(classprop, processed) newline... %exporters
     ], 4) newline...
     'end' newline...

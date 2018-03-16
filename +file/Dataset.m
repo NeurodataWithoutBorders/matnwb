@@ -12,6 +12,7 @@ classdef Dataset < handle
         dimnames;
         attributes;
         linkable;
+        isRef;
     end
     
     methods
@@ -24,6 +25,7 @@ classdef Dataset < handle
             obj.dtype = [];
             obj.required = true;
             obj.scalar = true;
+            obj.isRef = false;
             
             obj.shape = {};
             obj.dimnames = {};
@@ -48,6 +50,7 @@ classdef Dataset < handle
             end
             
             obj.dtype = file.mapType(source.get('dtype'));
+            obj.isRef = isa(obj.dtype, 'java.util.HashMap');
             
             quantity = source.get('quantity');
             if ~isempty(quantity)
@@ -100,18 +103,17 @@ classdef Dataset < handle
                 if obj.isClass
                     propname = obj.type;
                 else
-                    if isempty(obj.name)
-                        keyboard;
-                    end
                     propname = obj.name;
                 end
                 props(propname) = obj;
                 
                 if isstruct(obj.dtype)
-                    dtnames = fieldnames(obj.dtype);
-                    for i=1:length(dtnames)
-                        nm = dtnames{i};
-                        props(nm) = obj.dtype.(nm);
+                    props('table') = obj.dtype;
+                elseif isa(obj.dtype, 'java.util.HashMap')
+                    props('target') = obj.dtype;
+                    rt = obj.dtype.get('reftype');
+                    if strcmp(rt, 'region')
+                        props('region') = 'double';
                     end
                 end
                 
@@ -119,7 +121,11 @@ classdef Dataset < handle
                     attrnames = fieldnames(obj.attributes);
                     for i=1:length(attrnames)
                         nm = attrnames{i};
-                        props([propname '_' nm]) = obj.attributes.(nm);
+                        if obj.isClass
+                            props(nm) = obj.attributes.(nm);
+                        else
+                            props([propname '_' nm]) = obj.attributes.(nm);
+                        end
                     end
                 end
             end

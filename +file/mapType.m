@@ -5,7 +5,7 @@ if isempty(dtype)
     return;
 end
 if isa(dtype, 'java.util.ArrayList')
-    %compound type TODO
+    %compound type
     dt = struct();
     len = dtype.size();
     dtypeiter = dtype.iterator();
