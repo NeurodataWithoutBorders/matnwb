@@ -19,7 +19,7 @@ The NWB:N schema is in a state of some evolution.  This package assumes a certai
 From the Matlab command line, generate code from a copy of the NWB schema.
 
 ```matlab
-registry=generateCode('schema/core/nwb.namespace.yaml');
+registry=generateCore('schema/core/nwb.namespace.yaml');
 ```
 
 The `registry` is a collection of defined types and is used when adding extension schemas:
