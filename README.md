@@ -37,7 +37,7 @@ nwb=nwbRead('data.nwb');
 and for generating NWB objects for export:
 
 ```matlab
-%Create some fake fata and write 
+%Create some fake data and write 
 nwb = nwbfile;
 nwb.epochs = types.untyped.Group;
 nwb.epochs.stim = types.Epoch;
