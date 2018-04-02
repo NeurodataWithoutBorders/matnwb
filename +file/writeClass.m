@@ -253,7 +253,7 @@ if ~isempty(allds)
       fprintf(fid, '        if ');
       for i=1:length(threshold)
         if i > 1
-          fprintf(fid, ' || ');
+          fprintf(fid, ' && ');
         end
         if threshold(i) > 2
           fprintf(fid, 'ndims(val) ~= %d', threshold(i));
