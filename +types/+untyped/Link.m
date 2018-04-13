@@ -1,4 +1,4 @@
-classdef Link < handle
+classdef Link
   properties
     filename = '';
     path;
@@ -8,6 +8,7 @@ classdef Link < handle
   methods
     function obj = Link(path, filename, ref)
       obj.path = path;
+      
       if nargin > 1
         obj.filename = filename;
       end

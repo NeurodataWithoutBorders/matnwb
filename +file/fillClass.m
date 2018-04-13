@@ -1,16 +1,13 @@
-function writeClass(path, name, namespace, pregenprops)
-%path is full path to where the file is written
+function template = fillClass(name, namespace, pregenprops)
 %name is the name of the scheme
 %namespace is the namespace context for this class
 
 %% PROCESSING
-fullpath = fullfile(path, [name '.m']);
-
 [processed, classprop, inherited] = processClass(name, namespace, pregenprops);
 class = processed(1);
-
 validationlist = setdiff(keys(classprop.properties), {name});
 propertylist = setdiff(validationlist, inherited);
+
 %% CLASSDEF
 if length(processed) <= 1
     depnm = 'types.untyped.MetaClass'; %WRITE
@@ -45,31 +42,29 @@ for i=1:length(propertylist)
     end
 end
 
-%% WRITE CLASS FILE
-template = [...
+%% return classfile string
+classDef = [...
     'classdef ' name ' < ' depnm newline... %header, dependencies
-    '%% ' name ' ' class.doc newline... %name, docstr
-    file.fillProps(ro_props, 'READONLY', 'SetAccess=immutable') newline... %readonly properties
-    file.fillProps(req_props, 'REQUIRED') newline... %required properties
-    file.fillProps(opt_props, 'OPTIONAL') newline... %optional properties
-    'methods' newline...
-    file.addSpaces([file.fillConstructor(name,... %constructor
+    '% ' name ' ' class.doc]; %name, docstr
+propsDef = strjoin({...
+    file.fillProps(ro_props, 'READONLY', 'SetAccess=immutable')...%readonly properties
+    file.fillProps(req_props, 'REQUIRED')... %required properties
+    file.fillProps(opt_props, 'OPTIONAL')... %optional properties
+    }, newline);
+constructorBody = file.fillConstructor(name,...
     namespace.name,...
-    parentname,...
-    fieldnames(ro_props)',...
-    fieldnames(req_props)',...
+    depnm,...
+    [fieldnames(ro_props); fieldnames(req_props)]',... %all required properties (readonly being a subset)
     fieldnames(opt_props)',...
-    classprop) newline...
-    file.fillSetters(propertylist) newline... %setters
-    file.fillValidators(validationlist, classprop, namespace) newline...%validators
-    file.fillExport(classprop, processed) newline... %exporters
-    ], 4) newline...
-    'end' newline...
-    'end'];
-return;
-fid = fopen(fullpath, 'W');
-fwrite(fid, template, 'char');
-fclose(fid);
+    classprop);
+setterFcns = file.fillSetters(propertylist);
+validatorFcns = file.fillValidators(validationlist, classprop, namespace);
+exporterFcns = file.fillExport(classprop, processed);
+methodBody = strjoin({constructorBody...
+    '%% SETTERS' setterFcns...
+    '%% VALIDATORS' validatorFcns...
+    '%% EXPORT' exporterFcns}, newline);
+template = strjoin({classDef propsDef 'methods' file.addSpaces(methodBody, 4) 'end' 'end'}, newline);
 end
 
 function [processed, classprop, inherited] = processClass(name, namespace, pregenprops)

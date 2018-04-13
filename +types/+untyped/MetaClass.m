@@ -1,5 +1,5 @@
 classdef MetaClass < handle
-    properties(Access=protected)
+    properties(Access=protected, Hidden=true)
         associated_nwbfile; %determines if this class is actually tied to a file or not.
         dynamic_properties; % propname -> prop
         dynamic_prop_constraints % propname -> class name
