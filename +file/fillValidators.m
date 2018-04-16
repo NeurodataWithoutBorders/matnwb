@@ -2,12 +2,12 @@ function fvstr = fillValidators(propnames, props, namespacereg)
 fvstr = '';
 for i=1:length(propnames)
     nm = propnames{i};
-    prop = props.properties(nm);
+    prop = props.named(nm);
     
     if startsWith(class(prop), 'file.')
         validationBody = fillUnitValidation(nm, prop, namespacereg);
     else %primitive type
-        validationBody = fillDtypeValidation(nm, prop, {1}, namespacereg);
+        validationBody = fillDtypeValidation(nm, prop, namespacereg);
     end
     hdrstr = ['function validate_' nm '(obj, val)'];
     fcnStr = strjoin({hdrstr file.addSpaces(validationBody, 4) 'end'}, newline);
@@ -18,38 +18,60 @@ end
 function fuvstr = fillUnitValidation(name, prop, namespacereg)
 fuvstr = '';
 if isa(prop, 'file.Dataset')
-    if prop.linkable
-        fuvstr = strjoin({...
-            'if isa(val, ''types.untyped.Link'')'...
-            '    return;'...%TODO LINK VALIDATION
-            'end'
-            }, newline);
-    end
-    
     if prop.isClass
         namespace = namespacereg.getNamespace(prop.type).name;
         fullclassname = ['types.' namespace '.' prop.type];
-        fuvstr = [fuvstr newline fillClassValidation(fullclassname, prop.isConstrainedSet)];
+        fuvstr = [fuvstr newline fillDtypeValidation(name, fullclassname, namespacereg)];
     else
         fuvstr = strjoin({fuvstr...
-            fillDtypeValidation(name, prop.dtype, prop.shape, namespacereg)...
+            fillDtypeValidation(name, prop.dtype, namespacereg)...
             fillDimensionValidation(prop.dtype, prop.shape)...
             }, newline);
     end
 elseif isa(prop, 'file.Group')
-    namespace = namespacereg.getNamespace(prop.type).name;
-    fulltypename = ['types.' namespace '.' prop.type];
-    fuvstr = fillClassValidation(fulltypename, prop.isConstrainedSet);
+    if isempty(prop.type)
+        namedprops = struct();
+        constr = {};
+        for i=1:length(prop.datasets)
+            ds = prop.datasets(i);
+            if isempty(ds.name)
+                constr = [constr ds.type];
+            elseif ds.isClass
+                namedprops.(ds.name) = ds.type;
+            else
+                namedprops.(ds.name) = ds.dtype;
+            end
+        end
+        
+        for i=1:length(prop.subgroups)
+            sg = prop.subgroups(i);
+            if isempty(sg.name)
+                constr = [constr sg.type];
+            else
+                namedprops.(sg.name) = sg.type;
+            end
+        end
+        
+        propnames = fieldnames(namedprops);
+        fuvstr = 'namedprops = struct();';
+        for i=1:length(propnames)
+            nm = propnames{i};
+            fuvstr = strjoin({fuvstr...
+                ['namedprops.' nm ' = ' namedprops.(nm) ';']}, newline);
+        end
+        fuvstr = strjoin({fuvstr...
+            ['constrained = {' strtrim(evalc('disp(constr)')) '};']...
+            ['types.util.checkConstrained(''' name ''', namedprops, constrained, val);']...
+            }, newline);
+    else
+        namespace = namespacereg.getNamespace(prop.type).name;
+        fulltypename = ['types.' namespace '.' prop.type];
+        fuvstr = fillDtypeValidation(name, fulltypename, namespacereg);
+    end
 elseif isa(prop, 'file.Attribute')
-    fuvstr = fillDtypeValidation(name, prop.dtype, {1}, namespacereg);
+    fuvstr = fillDtypeValidation(name, prop.dtype, namespacereg);
 else %Link
-    namespace = namespacereg.getNamespace(prop.type).name;
-    errmsg = ['error(''Property ' prop.name ' must be a reference to a types.' ...
-        namespace '.' prop.type ''');'];
-    fuvstr = strjoin({...
-        ['if ~isa(val, ''' prop.type ''')']...
-        ['    ' errmsg]...
-        'end'}, newline);
+    fuvstr = fillDtypeValidation(name, prop.type, namespacereg);
 end
 end
 
@@ -79,98 +101,38 @@ else
 end
 end
 
-function fcvstr = fillClassValidation(fulltypename, constrained)
-if constrained
-    errmsg = ['error(''The class (or superclass) of this property must be '...
-        fulltypename ' or a cell array consisting of this class/superclass.'');'];
-    cellerrmsg = [...
-        'error(''All classes (or superclasses) in this cell array must be a '...
-        fulltypename ''');'];
-    fcvstr = strjoin({...
-        ['if ~isa(val, ''' fulltypename ''') || ~iscell(val)']...
-        ['    ' errmsg]...
-        'end'...
-        'if iscell(val)'...
-        '    for i=1:length(val)'...
-        ['        if ~isa(val{i}, ''' fulltypename ''')']...
-        ['            ' cellerrmsg]...
-        '        end'...
-        '    end'...
-        'end'}, newline);
-else
-    errmsg = ['error(''This property must be of type ' fulltypename ''');'];
-    fcvstr = strjoin({...
-        ['if ~isa(val, ''' fulltypename ''')']...
-        ['    ' errmsg]...
-        'end'}, newline);
-end
-end
-
 %NOTE: can return empty strings
-function fdvstr = fillDtypeValidation(name, type, shape, namespacereg)
-if ~ischar(type) %this type is either compound or a reference
-    if isstruct(type)
-        %compound types are tables
-        fnm = fieldnames(type);
-        fnmstr = ['{' strtrim(evalc('disp(fnm)')) '}'];
-        fdvstr = strjoin({...
-            'if ~istable(val)'...
-            ['    error(''Property ' name ' must be a table.'');']...
-            'end'...
-            ['allowedfnm = ' fnmstr ';']...
-            'if ~isempty(intersect(allowedfnm, val.Properties.VariableNames))'...
-            ['   error(''Property ' name ' must be a table with variables ' fnmstr '.'');']...
-            'end'}, newline);
-        for i=1:length(fnm)
-            nm = fnm{i};
-            subfill = fillDtypeValidation(nm, type.(nm), {inf}, namespacereg);
-            %change references to val with the actual table property
-            subfillrep = strrep(subfill, 'val', ['val.' nm]);
-            fdvstr = strjoin({fdvstr subfillrep}, newline);
+function fdvstr = fillDtypeValidation(name, type, namespacereg)
+if isstruct(type)
+    fnames = fieldnames(type);
+    fdvstr = strjoin({...
+        'if ~istable(val)'...
+        '    error(''Property `' name '` must be a table.'');'...
+        'end'...
+        }, newline);
+    for i=1:length(fnames)
+        nm = fnames{i};
+        subtypecheck = fillDtypeValidation([name '.' nm], type.(nm), namespacereg);
+        if ~isempty(subtypecheck)
+            fdvstr = [fdvstr newline strrep(subtypecheck, 'val', ['val.' nm])];
         end
-    else
+    end
+else
+    if isa(type, 'java.util.HashMap')
         %ref
         tt = type.get('target_type');
-        ptt = namespacereg.getNamespace(tt).name;
-        %handle object
-        fdvstr = strjoin({...
-            ['if ~isa(val, ''' tt ''')']...
-            ['    error(''Property ' name ' must be a reference to a types.' ptt '.' tt ''');']...
-            'end'}, newline);
-    end
-    return;
-end
-
-errmsg = ['error(''Property ' name ' must be a ' type '.'');'];
-typechck = '';
-switch type
-    case 'any'
+        ts = namespacereg.getNamespace(tt).name;
+    elseif strcmp(type, 'any')
         fdvstr = '';
         return;
-    case 'double'
-        typechck = '~isnumeric(val)';
-    case {'int64' 'uint64'}
-        typechck = '~isinteger(val)';
-        if strcmp(type, 'uint64')
-            typechck = [typechck ' || val < 0'];
-        end
-    case 'char'
-        dimsz = numel(shape{1});
-        if dimsz == 1
-            %regular char array
-            typechck = '~ischar(val)';
-        else
-            %multidim cell array
-            typechck = '~iscellstr(val)';
-        end
-end
-fdvstr = strjoin({...
-    ['if ' typechck]...
-    ['    ' errmsg]...
-    'end'}, newline);
-
-% special case for region reftype
-if strcmp(name, 'region') && strcmp(type, 'double')
-    fdvstr = [fdvstr newline 'types.util.checkRegion(obj, val);'];
+    else
+        ts = type;
+    end
+    fdvstr = ['types.util.checkDtype(''' name ''', ''' ts ''', val);'];
+    
+    % special case for region reftype
+    if strcmp(name, 'region') && strcmp(type, 'double')
+        fdvstr = [fdvstr newline 'types.util.checkRegion(obj, val);'];
+    end
 end
 end

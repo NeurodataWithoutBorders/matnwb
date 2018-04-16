@@ -3,8 +3,8 @@ caps = upper(name);
 fcnbody = strjoin({...
     ['% ' caps ' Constructor for ' name]...
     ['%     obj = ' caps '(parentname1,parentvalue1,..,parentvalueN,parentargN,name1,value1,...,nameN,valueN)']...
-    fillParamDocs('REQUIRED', req_names, props.properties)...
-    fillParamDocs('OPTIONAL', opt_names, props.properties)...
+    fillParamDocs('REQUIRED', req_names, props.named)...
+    fillParamDocs('OPTIONAL', opt_names, props.named)...
     fillSetDocs(props.varargs, namespacename)...
     fillBody(parentname, req_names, opt_names, props.varargs)...
     }, newline);
@@ -27,7 +27,7 @@ if ischar(prop)
     fdfp = prop;
 elseif isstruct(prop)
     fnm = fieldnames(prop);
-    subp = ['struct with values:' newline];
+    subp = ['table with values:' newline];
     if nargin >= 3
         spc = spaces;
     else
@@ -38,13 +38,15 @@ elseif isstruct(prop)
         nm = fnm{i};
         subp = [subp fillDocFromProp(prop.(nm), nm, 4) newline];
     end
-    fdfp = ['struct with values:' newline file.addSpaces(subp, spc)];
+    fdfp = ['table with values:' newline file.addSpaces(subp, spc)];
 elseif isa(prop, 'file.Attribute')
     fdfp = prop.dtype;
 elseif isa(prop, 'java.util.HashMap')
     fdfp = ['ref to ' prop.get('target_type')];
 elseif isa(prop, 'file.Dataset') && ~prop.isClass
     fdfp = fillDocFromProp(prop.dtype);
+elseif isempty(prop.type)
+    fdfp = 'struct';
 else
     fdfp = prop.type;
 end

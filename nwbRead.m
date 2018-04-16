@@ -1,7 +1,7 @@
 function nwb = nwbRead(filename)
 %NWBREAD Reads an NWB file.
 %  nwb = nwbRead(filename) Reads the nwb file at filename and returns an
-%  nwbfile object representing it's contents.
+%  NWBFile object representing its contents.
 %  
 %  Requires that core and extension NWB types have been generated
 %  and reside in a 'types' package on the matlab path.

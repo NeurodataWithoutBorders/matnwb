@@ -1,11 +1,11 @@
-function template = fillClass(name, namespace, pregenprops)
+function template = fillClass(name, namespace, pregen)
 %name is the name of the scheme
 %namespace is the namespace context for this class
 
 %% PROCESSING
-[processed, classprop, inherited] = processClass(name, namespace, pregenprops);
+[processed, classprops, inherited] = processClass(name, namespace, pregen);
 class = processed(1);
-validationlist = setdiff(keys(classprop.properties), {name});
+validationlist = setdiff(keys(classprops.named), {name});
 propertylist = setdiff(validationlist, inherited);
 
 %% CLASSDEF
@@ -25,7 +25,7 @@ req_props = struct();
 opt_props = struct();
 for i=1:length(propertylist)
     propname = propertylist{i};
-    prop = classprop.properties(propname);
+    prop = classprops.named(propname);
     
     if isa(prop, 'file.Attribute') && prop.readonly
         ro_props.(propname) = prop.doc;
@@ -56,10 +56,10 @@ constructorBody = file.fillConstructor(name,...
     depnm,...
     [fieldnames(ro_props); fieldnames(req_props)]',... %all required properties (readonly being a subset)
     fieldnames(opt_props)',...
-    classprop);
+    classprops);
 setterFcns = file.fillSetters(propertylist);
-validatorFcns = file.fillValidators(validationlist, classprop, namespace);
-exporterFcns = file.fillExport(classprop, processed);
+validatorFcns = file.fillValidators(validationlist, classprops, namespace);
+exporterFcns = file.fillExport(classprops, processed);
 methodBody = strjoin({constructorBody...
     '%% SETTERS' setterFcns...
     '%% VALIDATORS' validatorFcns...
@@ -67,7 +67,7 @@ methodBody = strjoin({constructorBody...
 template = strjoin({classDef propsDef 'methods' file.addSpaces(methodBody, 4) 'end' 'end'}, newline);
 end
 
-function [processed, classprop, inherited] = processClass(name, namespace, pregenprops)
+function [processed, classprops, inherited] = processClass(name, namespace, pregen)
 branch = [namespace.getClass(name) namespace.getRootBranch(name)];
 rootname = branch(end).get('neurodata_type_def');
 switch rootname
@@ -81,24 +81,26 @@ end
 for i=length(branch):-1:1
     node = branch(i);
     nodename = node.get('neurodata_type_def');
-    if isgroup
-        parsed = file.Group(node);
-    else
-        parsed = file.Dataset(node);
+
+    if ~isKey(pregen, nodename)
+        if isgroup
+            class = file.Group(node);
+        else
+            class = file.Dataset(node);
+        end
+        [namedprops, varargs] = class.getProps();
+        allprops = struct('named', namedprops,'varargs', {varargs});
+        pregen(nodename) = struct('class', class, 'props', allprops);
     end
-    processed(i) = parsed;
-    if ~isKey(pregenprops, nodename)
-        [parentprops, parentvarargs] = parsed.getProps();
-        pregenprops(nodename) = struct('properties', parentprops,...
-            'varargs', {parentvarargs});
-    end
+    
+    processed(i) = pregen(nodename).class;
 end
-classprop = pregenprops(name);
-propnames = keys(classprop.properties);
+classprops = pregen(name).props;
+names = keys(classprops.named);
 inherited = {};
 for i=2:length(processed)
     pname = processed(i).type;
-    parentprops = keys(pregenprops(pname).properties);
-    inherited = union(inherited, intersect(propnames, parentprops));
+    parentPropNames = keys(pregen(pname).props.named);
+    inherited = union(inherited, intersect(names, parentPropNames));
 end
 end

@@ -5,11 +5,11 @@ if exist(path, 'dir') == 7
 end
 mkdir(path);
 nmk = keys(namespace.registry);
-pregenprops = containers.Map; %generated props for faster dependency resolution
+pregenerated = containers.Map; %generated nodes and props for faster dependency resolution
 for i=1:length(nmk)
     k = nmk{i};
     fid = fopen(fullfile(path, [k '.m']), 'W');
-    fwrite(fid, file.fillClass(k, namespace, pregenprops), 'char');
+    fwrite(fid, file.fillClass(k, namespace, pregenerated), 'char');
     fclose(fid);
 end
 end

@@ -12,6 +12,7 @@ classdef Group < handle
         subgroups;
         links;
         elide; %this group can be skipped as a property
+        defaultEmpty; %The schema has decided that this group must be empty.
     end
     
     methods
@@ -28,6 +29,7 @@ classdef Group < handle
             obj.subgroups = [];
             obj.elide = false;
             obj.links = [];
+            obj.defaultEmpty = false;
             
             if nargin < 1
                 return;
@@ -53,7 +55,12 @@ classdef Group < handle
             end
             
             quantity = source.get('quantity');
-            if ~isempty(quantity)
+            if isempty(quantity)
+                if ~isempty(obj.type)
+                    obj.required = false;
+                    obj.scalar = false;
+                end
+            else
                 switch quantity
                     case '?'
                         obj.required = false;
@@ -83,23 +90,31 @@ classdef Group < handle
             
             %do datasets
             datasets = source.get('datasets');
+            constrainedDataCnt = 0;
             if ~isempty(datasets)
                 len = datasets.size();
                 datasetiter = datasets.iterator();
                 obj.datasets = repmat(file.Dataset, len, 1);
                 for i=1:len
                     obj.datasets(i) = file.Dataset(datasetiter.next());
+                    if obj.datasets(i).isConstrainedSet
+                        constrainedDataCnt = constrainedDataCnt + 1;
+                    end
                 end
             end
             
             %do groups
             subgroups = source.get('groups');
+            constrainedGroupCnt = 0;
             if ~isempty(subgroups)
                 len = subgroups.size();
                 subgroupiter = subgroups.iterator();
                 obj.subgroups = repmat(file.Group, len, 1);
                 for i=1:len
                     obj.subgroups(i) = file.Group(subgroupiter.next());
+                    if obj.subgroups(i).isConstrainedSet
+                        constrainedGroupCnt = constrainedGroupCnt + 1;
+                    end
                 end
             end
             
@@ -115,7 +130,12 @@ classdef Group < handle
                 end
             end
             
-            obj.elide = isempty(obj.type);
+            obj.defaultEmpty = (length(obj.datasets) - constrainedDataCnt) == 0 &&...
+                (length(obj.subgroups) - constrainedGroupCnt) == 0 &&...
+                isempty(obj.links);
+            
+            obj.elide = obj.scalar && isempty(obj.type) &&...
+                isempty(obj.attributes) && ~obj.defaultEmpty;
         end
         
         function [props, varargs] = getProps(obj)
