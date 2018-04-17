@@ -5,6 +5,8 @@ classdef Group < handle
         canRename;
         type;
         isConstrainedSet; %that is, a general list of objects constrained with a type
+        hasAnonData; %holds datasets that don't have names (either constrained or not)
+        hasAnonGroups; %holds groups that don't have names (either constrained or not)
         required;
         scalar;
         attributes;
@@ -30,6 +32,8 @@ classdef Group < handle
             obj.elide = false;
             obj.links = [];
             obj.defaultEmpty = false;
+            obj.hasAnonData = false;
+            obj.hasAnonGroups = false;
             
             if nargin < 1
                 return;
@@ -90,30 +94,30 @@ classdef Group < handle
             
             %do datasets
             datasets = source.get('datasets');
-            constrainedDataCnt = 0;
+            anonDataCnt = 0;
             if ~isempty(datasets)
                 len = datasets.size();
                 datasetiter = datasets.iterator();
                 obj.datasets = repmat(file.Dataset, len, 1);
                 for i=1:len
                     obj.datasets(i) = file.Dataset(datasetiter.next());
-                    if obj.datasets(i).isConstrainedSet
-                        constrainedDataCnt = constrainedDataCnt + 1;
+                    if isempty(obj.datasets(i).name)
+                        anonDataCnt = anonDataCnt + 1;
                     end
                 end
             end
             
             %do groups
             subgroups = source.get('groups');
-            constrainedGroupCnt = 0;
+            anonGroupCnt = 0;
             if ~isempty(subgroups)
                 len = subgroups.size();
                 subgroupiter = subgroups.iterator();
                 obj.subgroups = repmat(file.Group, len, 1);
                 for i=1:len
                     obj.subgroups(i) = file.Group(subgroupiter.next());
-                    if obj.subgroups(i).isConstrainedSet
-                        constrainedGroupCnt = constrainedGroupCnt + 1;
+                    if isempty(obj.subgroups(i).name)
+                        anonGroupCnt = anonGroupCnt + 1;
                     end
                 end
             end
@@ -130,12 +134,15 @@ classdef Group < handle
                 end
             end
             
-            obj.defaultEmpty = (length(obj.datasets) - constrainedDataCnt) == 0 &&...
-                (length(obj.subgroups) - constrainedGroupCnt) == 0 &&...
+            obj.defaultEmpty = (length(obj.datasets) - anonDataCnt) == 0 &&...
+                (length(obj.subgroups) - anonGroupCnt) == 0 &&...
                 isempty(obj.links);
             
-            obj.elide = obj.scalar && isempty(obj.type) &&...
-                isempty(obj.attributes) && ~obj.defaultEmpty;
+            obj.hasAnonData = anonDataCnt > 0;
+            obj.hasAnonGroups = anonGroupCnt > 0;
+            
+            obj.elide = obj.scalar && isempty(obj.type) && isempty(obj.attributes)...
+                && ~obj.hasAnonData && ~obj.hasAnonGroups;
         end
         
         function [props, varargs] = getProps(obj)
@@ -156,26 +163,29 @@ classdef Group < handle
                 end
             end
             
-            if ~isempty(obj.attributes)
-                names = fieldnames(obj.attributes);
-                for i=1:length(names)
-                    nm = names{i};
-                    if obj.elide
-                        propnm = [propertyname '_' nm];
-                    else
-                        propnm = nm;
+            if ~obj.hasAnonData && ~obj.hasAnonGroups 
+                if ~isempty(obj.attributes)
+                    names = fieldnames(obj.attributes);
+                    for i=1:length(names)
+                        nm = names{i};
+                        if obj.elide
+                            propnm = [propertyname '_' nm];
+                        else
+                            propnm = nm;
+                        end
+                        props(propnm) = obj.attributes.(nm);
                     end
-                    props(propnm) = obj.attributes.(nm);
                 end
-            end
-            [props, varargs] = processLists(obj.datasets, props, varargs);
-            [props, varargs] = processLists(obj.subgroups, props, varargs);
-            
-            if ~isempty(obj.links)
-                names = fieldnames(obj.links);
-                for i=1:length(names)
-                    nm = names{i};
-                    props(nm) = obj.links.(nm);
+                
+                [props, varargs] = processLists(obj.datasets, props, varargs);
+                [props, varargs] = processLists(obj.subgroups, props, varargs);
+                
+                if ~isempty(obj.links)
+                    names = fieldnames(obj.links);
+                    for i=1:length(names)
+                        nm = names{i};
+                        props(nm) = obj.links.(nm);
+                    end
                 end
             end
             

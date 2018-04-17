@@ -4,7 +4,6 @@ classdef Dataset < handle
         doc;
         type;
         dtype;
-        isClass;
         isConstrainedSet;
         required;
         scalar;
@@ -19,7 +18,6 @@ classdef Dataset < handle
         function obj = Dataset(source)
             obj.name = '';
             obj.doc = [];
-            obj.isClass = false;
             obj.isConstrainedSet = false;
             obj.type = [];
             obj.dtype = [];
@@ -43,10 +41,8 @@ classdef Dataset < handle
 
             if ~isempty(type)
                 obj.type = type;
-                obj.isClass = true;
             elseif ~isempty(parent)
                 obj.type = parent;
-                obj.isConstrainedSet = true;
             end
             
             obj.dtype = file.mapType(source.get('dtype'));
@@ -66,6 +62,8 @@ classdef Dataset < handle
                         obj.scalar = false;
                 end
             end
+            
+            obj.isConstrainedSet = ~isempty(obj.type) && ~obj.scalar;
             
             dims = source.get('dims');
             shape = source.get('shape');
@@ -100,7 +98,7 @@ classdef Dataset < handle
             if obj.isConstrainedSet
                 varargs = {obj};
             else
-                if obj.isClass
+                if isempty(obj.name)
                     propname = obj.type;
                 else
                     propname = obj.name;
@@ -121,10 +119,10 @@ classdef Dataset < handle
                     attrnames = fieldnames(obj.attributes);
                     for i=1:length(attrnames)
                         nm = attrnames{i};
-                        if obj.isClass
-                            props(nm) = obj.attributes.(nm);
-                        else
+                        if isempty(obj.type)
                             props([propname '_' nm]) = obj.attributes.(nm);
+                        else
+                            props(nm) = obj.attributes.(nm);
                         end
                     end
                 end

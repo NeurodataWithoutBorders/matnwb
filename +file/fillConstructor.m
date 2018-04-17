@@ -43,7 +43,7 @@ elseif isa(prop, 'file.Attribute')
     fdfp = prop.dtype;
 elseif isa(prop, 'java.util.HashMap')
     fdfp = ['ref to ' prop.get('target_type')];
-elseif isa(prop, 'file.Dataset') && ~prop.isClass
+elseif isa(prop, 'file.Dataset') && isempty(prop.type)
     fdfp = fillDocFromProp(prop.dtype);
 elseif isempty(prop.type)
     fdfp = 'struct';

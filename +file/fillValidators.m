@@ -18,15 +18,15 @@ end
 function fuvstr = fillUnitValidation(name, prop, namespacereg)
 fuvstr = '';
 if isa(prop, 'file.Dataset')
-    if prop.isClass
-        namespace = namespacereg.getNamespace(prop.type).name;
-        fullclassname = ['types.' namespace '.' prop.type];
-        fuvstr = [fuvstr newline fillDtypeValidation(name, fullclassname, namespacereg)];
-    else
+    if isempty(prop.type)
         fuvstr = strjoin({fuvstr...
             fillDtypeValidation(name, prop.dtype, namespacereg)...
             fillDimensionValidation(prop.dtype, prop.shape)...
             }, newline);
+    else
+        namespace = namespacereg.getNamespace(prop.type).name;
+        fullclassname = ['types.' namespace '.' prop.type];
+        fuvstr = [fuvstr newline fillDtypeValidation(name, fullclassname, namespacereg)];
     end
 elseif isa(prop, 'file.Group')
     if isempty(prop.type)
@@ -35,11 +35,16 @@ elseif isa(prop, 'file.Group')
         for i=1:length(prop.datasets)
             ds = prop.datasets(i);
             if isempty(ds.name)
-                constr = [constr ds.type];
-            elseif ds.isClass
-                namedprops.(ds.name) = ds.type;
-            else
+                if isempty(ds.type)
+                    typespec = ds.dtype;
+                else
+                    typespec = ds.type;
+                end
+                constr = [constr {typespec}];
+            elseif isempty(ds.type)
                 namedprops.(ds.name) = ds.dtype;
+            else
+                namedprops.(ds.name) = ds.type;
             end
         end
         
@@ -57,7 +62,7 @@ elseif isa(prop, 'file.Group')
         for i=1:length(propnames)
             nm = propnames{i};
             fuvstr = strjoin({fuvstr...
-                ['namedprops.' nm ' = ' namedprops.(nm) ';']}, newline);
+                ['namedprops.' nm ' = ''' namedprops.(nm) ''';']}, newline);
         end
         fuvstr = strjoin({fuvstr...
             ['constrained = {' strtrim(evalc('disp(constr)')) '};']...
@@ -76,29 +81,19 @@ end
 end
 
 function fdvstr = fillDimensionValidation(type, shape)
-if strcmp(type, 'any') || (strcmp(type, 'char') && isempty(shape))
+if strcmp(type, 'any') || strcmp(type, 'char')
     fdvstr = '';
     return;
 end
 
-if strcmp(type, 'char')
-    fdvstr = strjoin({...
-        'if (iscellstr(val) && length(val) ~= 1) ||...'...
-        '   (isstring(val) && length(val) ~= 1) ||...'...
-        '   ~ischar(val)'...
-        '    error(''val must be a vector char array, or a cellstring/string array of length 1'');'...
-        'end'...
-        }, newline);
-else
-    validshapetokens = cell(size(shape));
-    for i=1:length(shape)
-        validshapetokens{i} = ['[' strtrim(evalc('disp(shape{i})')) ']'];
-    end
-    fdvstr = strjoin({...
-        'valsz = size(val);'...
-        ['validshapes = {' strjoin(validshapetokens, ' ') '};']...
-        'types.util.checkDims(valsz, validshapes);'}, newline);
+validshapetokens = cell(size(shape));
+for i=1:length(shape)
+    validshapetokens{i} = ['[' strtrim(evalc('disp(shape{i})')) ']'];
 end
+fdvstr = strjoin({...
+    'valsz = size(val);'...
+    ['validshapes = {' strjoin(validshapetokens, ' ') '};']...
+    'types.util.checkDims(valsz, validshapes);'}, newline);
 end
 
 %NOTE: can return empty strings
