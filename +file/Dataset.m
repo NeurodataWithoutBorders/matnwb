@@ -97,33 +97,42 @@ classdef Dataset < handle
             
             if obj.isConstrainedSet
                 varargs = {obj};
+                return;
+            end
+            
+            if isempty(obj.name)
+                propname = obj.type;
             else
-                if isempty(obj.name)
-                    propname = obj.type;
-                else
-                    propname = obj.name;
+                propname = obj.name;
+            end
+            props(propname) = obj;
+            
+            %there are only two classes that do this and they're all under
+            %ecephys: ElectrodeTable and ElectrodeTableRegion.
+            % one of which is a region reference and the other is a compound
+            % type.
+            % therefore, we currently do not have a case for a regular typed
+            % dataset (because there isn't any.
+            if isstruct(obj.dtype)
+                props('table') = obj.dtype;
+            elseif isa(obj.dtype, 'java.util.HashMap')
+                props('target') = obj.dtype;
+                rt = obj.dtype.get('reftype');
+                if strcmp(rt, 'region')
+                    props('region') = 'double';
                 end
-                props(propname) = obj;
-                
-                if isstruct(obj.dtype)
-                    props('table') = obj.dtype;
-                elseif isa(obj.dtype, 'java.util.HashMap')
-                    props('target') = obj.dtype;
-                    rt = obj.dtype.get('reftype');
-                    if strcmp(rt, 'region')
-                        props('region') = 'double';
-                    end
-                end
-                
-                if ~isempty(obj.attributes)
-                    attrnames = fieldnames(obj.attributes);
-                    for i=1:length(attrnames)
-                        nm = attrnames{i};
-                        if isempty(obj.type)
-                            props([propname '_' nm]) = obj.attributes.(nm);
-                        else
-                            props(nm) = obj.attributes.(nm);
-                        end
+            else
+                %regular dataset.  TODO
+            end
+            
+            if ~isempty(obj.attributes)
+                attrnames = fieldnames(obj.attributes);
+                for i=1:length(attrnames)
+                    nm = attrnames{i};
+                    if isempty(obj.type)
+                        props([propname '_' nm]) = obj.attributes.(nm);
+                    else
+                        props(nm) = obj.attributes.(nm);
                     end
                 end
             end

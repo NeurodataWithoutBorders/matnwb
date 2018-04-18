@@ -17,8 +17,8 @@ function nwb = nwbRead(filename)
 validateattributes(filename, {'char', 'string'}, {'scalartext'});
 info = h5info(filename);
 
-linkRefs = {}; %links that need to be resolved later.
-[nwb, linkRefs] = processGroups(info, filename);
+[nwb, links, refs] = io.parseGroups(filename, info);
+
 % we need full filepath to process this part.
 if java.io.File(filename).isAbsolute
   ff = filename;
@@ -26,6 +26,7 @@ else
   ff = fullfile(pwd, filename);
 end
 [fp, ~, ~] = fileparts(ff); %complete filepath
+
 for lref = linkRefs
   lr = lref{1};
   if isempty(lr.filename)

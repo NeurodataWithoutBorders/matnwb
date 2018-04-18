@@ -11,7 +11,6 @@ propertylist = setdiff(validationlist, inherited);
 %% CLASSDEF
 if length(processed) <= 1
     depnm = 'types.untyped.MetaClass'; %WRITE
-    parentname = depnm; %WRITE
 else
     parentname = processed(2).type; %WRITE
     pnamespace = namespace.getNamespace(parentname);
@@ -34,11 +33,21 @@ for i=1:length(propertylist)
     elseif isa(prop, 'java.util.HashMap')
         req_props.(propname) = ['reference to type ' prop.get('target_type')];
     elseif isstruct(prop)
-        req_props.(propname) = ['table with properties {' strtrim(evalc('disp(fieldnames(prop))')) '}'];
+        req_props.(propname) = ['table with properties {' strtrim(evalc('disp(fieldnames(prop)'')')) '}'];
     elseif prop.required
         req_props.(propname) = prop.doc;
     else
         opt_props.(propname) = prop.doc;
+    end
+end
+
+%find all properties that contain hardcoded values or defaults
+vals_with_prop = {};
+for i=1:length(validationlist)
+    vlname = validationlist{i};
+    vprop = classprops.named(vlname);
+    if isa(vprop, 'file.Attribute') && ~isempty(vprop.value)
+        vals_with_prop = [vals_with_prop {vlname}];
     end
 end
 
@@ -54,12 +63,13 @@ propsDef = strjoin({...
 constructorBody = file.fillConstructor(name,...
     namespace.name,...
     depnm,...
-    [fieldnames(ro_props); fieldnames(req_props)]',... %all required properties (readonly being a subset)
+    vals_with_prop,... %we need these values to determine if we can hardcode or not
+    [fieldnames(ro_props); fieldnames(req_props)]',...
     fieldnames(opt_props)',...
     classprops);
 setterFcns = file.fillSetters(propertylist);
 validatorFcns = file.fillValidators(validationlist, classprops, namespace);
-exporterFcns = file.fillExport(classprops, processed);
+exporterFcns = file.fillExport(name, propertylist, classprops);
 methodBody = strjoin({constructorBody...
     '%% SETTERS' setterFcns...
     '%% VALIDATORS' validatorFcns...

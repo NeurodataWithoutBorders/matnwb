@@ -21,19 +21,19 @@ classdef Attribute < handle
             if nargin < 1
                 return;
             end
-            
+            %source is a java.util.HashMap
             obj.name = source.get('name');
             obj.doc = source.get('doc');
-            required = source.get('required');
-            if ~isempty(required)
-                obj.required = ~strcmp(required, 'false');
+            req = source.get('required');
+            if ~isempty(req)
+                obj.required = ~strcmp(req, 'false');
             end
             
-            value = source.get('value');
+            val = source.get('value');
             default = source.get('default_value');
             if isempty(default)
                 %constant attribute
-                obj.value = value;
+                obj.value = val;
                 obj.readonly = true;
             else
                 %changeable attribute

@@ -4,6 +4,11 @@ for i=1:length(propnames)
     nm = propnames{i};
     prop = props.named(nm);
     
+    %if readonly and value exists then ignore
+    if isa(prop, 'file.Attribute') && prop.readonly && ~isempty(prop.value)
+        continue;
+    end
+    
     if startsWith(class(prop), 'file.')
         validationBody = fillUnitValidation(nm, prop, namespacereg);
     else %primitive type
@@ -88,7 +93,13 @@ end
 
 validshapetokens = cell(size(shape));
 for i=1:length(shape)
-    validshapetokens{i} = ['[' strtrim(evalc('disp(shape{i})')) ']'];
+    %when there is more than one possible shape, the cells are nested
+    if iscell(shape{i})
+       shp = shape{i}{1}; 
+    else
+       shp = shape{i};
+    end
+    validshapetokens{i} = ['[' strtrim(evalc('disp(shp)')) ']'];
 end
 fdvstr = strjoin({...
     'valsz = size(val);'...
@@ -102,7 +113,7 @@ if isstruct(type)
     fnames = fieldnames(type);
     fdvstr = strjoin({...
         'if ~istable(val)'...
-        '    error(''Property `' name '` must be a table.'');'...
+        ['    error(''Property `' name '` must be a table.'');']...
         'end'...
         }, newline);
     for i=1:length(fnames)
@@ -116,7 +127,7 @@ else
     if isa(type, 'java.util.HashMap')
         %ref
         tt = type.get('target_type');
-        ts = namespacereg.getNamespace(tt).name;
+        ts = ['types.' namespacereg.getNamespace(tt).name '.' tt];
     elseif strcmp(type, 'any')
         fdvstr = '';
         return;

@@ -1,4 +1,7 @@
-function festr = fillExport(props, processed)
+function festr = fillExport(name, propnames, props)
+if strcmp(name, 'NWBFile')
+%     keyboard;
+end
 festr = '';
 % only export if your property is not inherited
 % recreate elided properties

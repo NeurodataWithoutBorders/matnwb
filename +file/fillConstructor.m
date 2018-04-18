@@ -1,44 +1,50 @@
-function fcstr = fillConstructor(name, namespacename, parentname, req_names, opt_names, props)
+function fcstr = fillConstructor(name, namespacename, parentname, pwithval, req_names, opt_names, props)
 caps = upper(name);
-fcnbody = strjoin({...
-    ['% ' caps ' Constructor for ' name]...
+fcnbody = strjoin({['% ' caps ' Constructor for ' name]...
     ['%     obj = ' caps '(parentname1,parentvalue1,..,parentvalueN,parentargN,name1,value1,...,nameN,valueN)']...
-    fillParamDocs('REQUIRED', req_names, props.named)...
-    fillParamDocs('OPTIONAL', opt_names, props.named)...
-    fillSetDocs(props.varargs, namespacename)...
-    fillBody(parentname, req_names, opt_names, props.varargs)...
     }, newline);
+fcns = {...
+    @() fillParamDocs('REQUIRED', req_names, props.named)...
+    @() fillParamDocs('OPTIONAL', opt_names, props.named)...
+    @() fillSetDocs(name, props.varargs, namespacename)...
+    @() fillBody(parentname, pwithval, req_names, opt_names, props)...
+    };
+for i=1:length(fcns)
+    fcn = fcns{i};
+    txt = fcn();
+    if ~isempty(txt)
+        fcnbody = [fcnbody newline txt];
+    end
+end
 fcstr = strjoin({...
     ['function obj = ' name '(varargin)']...
     file.addSpaces(fcnbody, 4)...
     'end'}, newline);
 end
 
-function fcstr = fillSetDocs(varprops, namespace)
+function fcstr = fillSetDocs(name, varprops, namespace)
 fcstr = '';
 for i=1:length(varprops)
     nm = varprops{i}.type;
+    if strcmp(nm, name)
+        continue;
+    end
     fcstr = [fcstr '%  ' nm ' = list of types.' namespace '.' nm newline];
 end
 end
 
-function fdfp = fillDocFromProp(prop, propnm, spaces)
+function fdfp = fillDocFromProp(prop, propnm)
 if ischar(prop)
     fdfp = prop;
 elseif isstruct(prop)
     fnm = fieldnames(prop);
-    subp = ['table with values:' newline];
-    if nargin >= 3
-        spc = spaces;
-    else
-        spc = 0;
-    end
-    
+    subp = '';
     for i=1:length(fnm)
         nm = fnm{i};
-        subp = [subp fillDocFromProp(prop.(nm), nm, 4) newline];
+        subpropl = file.addSpaces(fillDocFromProp(prop.(nm), nm), 4);
+        subp = [subp newline subpropl];
     end
-    fdfp = ['table with values:' newline file.addSpaces(subp, spc)];
+    fdfp = ['table with values:' newline subp];
 elseif isa(prop, 'file.Attribute')
     fdfp = prop.dtype;
 elseif isa(prop, 'java.util.HashMap')
@@ -46,7 +52,7 @@ elseif isa(prop, 'java.util.HashMap')
 elseif isa(prop, 'file.Dataset') && isempty(prop.type)
     fdfp = fillDocFromProp(prop.dtype);
 elseif isempty(prop.type)
-    fdfp = 'struct';
+    fdfp = 'containers.Map';
 else
     fdfp = prop.type;
 end
@@ -60,20 +66,33 @@ fcstr = '';
 if isempty(names)
     return;
 end
+
 if ~isempty(proptypenm)
-    fcstr = ['% ' proptypenm newline];
+    fcstr = ['% ' proptypenm];
 end
+
 for i=1:length(names)
     nm = names{i};
     prop = props(nm);
-    fcstr = [fcstr fillDocFromProp(prop, nm) newline];
+    fcstr = [fcstr newline fillDocFromProp(prop, nm)];
+end
 end
 
-end
+function bodystr = fillBody(pname, propwithvals, req_vars, opt_vars, props)
+bodystr = ['obj = obj@' pname '(varargin{:});'];
 
-function bodystr = fillBody(pname, req_vars, opt_vars, varargs)
-bodystr = strjoin({...
-    ['obj = obj@' pname '(varargin{:});']...
+for i=1:length(propwithvals)
+    pnm = propwithvals{i};
+    prop = props.named(pnm);
+    [~, status] = str2num(prop.value);
+    if status
+        wrapped_assgn = prop.value;
+    else
+        wrapped_assgn = ['''' prop.value ''''];
+    end
+    bodystr = [bodystr newline 'obj.' pnm ' = ' wrapped_assgn ';'];
+end
+bodystr = strjoin({bodystr...
     'p = inputParser;'...
     'p.KeepUnmatched = true;'... %suppress subclass/parent props
     'p.PartialMatching = false;'...
@@ -83,14 +102,11 @@ for i=1:length(all_vars)
     var = all_vars{i};
     bodystr = [bodystr newline 'addParameter(p, ''' var ''', []);'];
 end
-req_vars_str = '';
-for i=1:length(req_vars)
-    req_vars_str = [req_vars_str ' ''' req_vars{i} ''''];
-end
-req_vars_str = strtrim(req_vars_str);
+
+req_vars_str = util.cellPrettyPrint(req_vars);
 req_body = strjoin({...
     'parse(p, varargin{:});'...
-    ['required = { ' req_vars_str ' };']...
+    ['required = ' req_vars_str ';']...
     'missing = intersect(p.UsingDefaults, required);'...
     'if ~isempty(missing)'...
     '    error(''Missing Required Argument(s) { %s }'', strjoin(missing, '', ''));'...
@@ -99,21 +115,5 @@ bodystr = [bodystr newline req_body];
 for i=1:length(all_vars)
     var = all_vars{i};
     bodystr = [bodystr newline 'obj.' var ' = p.Results.' var ';'];
-end
-%assign variable args should they exist
-if ~isempty(varargs)
-    setconst_str = '';
-    for i=1:length(varargs)
-        setconst_str = [setconst_str ' ''' varargs{i}.type ''''];
-    end
-    dynbody = strjoin({...
-        ['obj.dynamic_constraints = [obj.dynamic_constraints {' setconst_str '}];']...
-        'unmatchednames = fieldnames(p.Unmatched);'...
-        'for i=1:length(unmatchednames)'...
-        '    nm = unmatchednames{i};'...
-        '    unmatched = p.Unmatched.(nm);'...
-        '    obj.addDynamicProperty(nm, unmatched);'...
-        'end'}, newline);
-    bodystr = [bodystr newline dynbody];
 end
 end

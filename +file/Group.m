@@ -177,8 +177,13 @@ classdef Group < handle
                     end
                 end
                 
-                [props, varargs] = processLists(obj.datasets, props, varargs);
-                [props, varargs] = processLists(obj.subgroups, props, varargs);
+                if obj.elide
+                    prefix = obj.name;
+                else
+                    prefix = '';
+                end
+                [props, varargs] = processLists(prefix, obj.datasets, props, varargs);
+                [props, varargs] = processLists(prefix, obj.subgroups, props, varargs);
                 
                 if ~isempty(obj.links)
                     names = fieldnames(obj.links);
@@ -189,9 +194,20 @@ classdef Group < handle
                 end
             end
             
-            function [subp, subv] = processLists(l, subp, subv)
+            function [subp, subv] = processLists(prefix, l, subp, subv)
                 for j=1:length(l)
                     [sp, sv] = l(j).getProps();
+                    
+                    %map prop names to add prefix
+                    if ~isempty(prefix)
+                        tempsp = containers.Map;
+                        pkeys = keys(sp);
+                        for k=1:length(pkeys)
+                            pk = pkeys{k};
+                            tempsp([prefix '_' pk]) = sp(pk);
+                        end
+                        sp = tempsp;
+                    end
                     subp = [subp; sp];
                     subv = [subv sv];
                 end
