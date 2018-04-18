@@ -1,44 +1,6 @@
 classdef MetaClass < handle
-    properties(Access=protected, Hidden=true)
-        associated_nwbfile; %determines if this class is actually tied to a file or not.
-        dynamic_properties; % propname -> prop
-        dynamic_prop_constraints % propname -> class name
-        dynamic_constraints; % { classname constraints }
-    end
-    
     methods
         function obj = MetaClass(varargin)
-            obj.dynamic_properties = containers.Map;
-            obj.dynamic_prop_constraints = containers.Map;
-            obj.dynamic_constraints = {};
-            p = inputParser;
-            p.KeepUnmatched = true;
-            p.PartialMatching = false;
-            p.StructExpand = false;
-            addParameter(p, 'associated_nwbfile', []);
-            parse(p, varargin);
-            obj.associated_nwbfile = p.Results.associated_nwbfile;
-        end
-        
-        function res = addDynamicProperty(obj, name, val)
-            if any(strcmp(properties(obj), name))
-                error('Cannot add a dynamic property with the same name as an object property.');
-            end
-            
-            validate_res = obj.validateDynamicProperty(val);
-            res = ~isempty(validate_res);
-            
-            if res
-                obj.dynamic_properties(name) = val;
-                obj.dynamic_prop_constraints(name) = validate_res;
-            end
-        end
-        
-        function res = getDynamicProperty(obj, name)
-            res = [];
-            if isKey(obj.dynamic_properties, name)
-                res = obj.dynamic_properties(name);
-            end
         end
         
         function export(~, loc_id)

@@ -79,31 +79,48 @@ end
 end
 
 function bodystr = fillBody(pname, propwithvals, req_vars, opt_vars, props)
-bodystr = ['obj = obj@' pname '(varargin{:});'];
+all_vars = [req_vars opt_vars];
 
+upstream = {}; %kwargs to be sent to parent
+hardcoded = {}; %hardcoded defaults that should be instantiated now.
 for i=1:length(propwithvals)
     pnm = propwithvals{i};
     prop = props.named(pnm);
-    [~, status] = str2num(prop.value);
-    if status
-        wrapped_assgn = prop.value;
+    if any(strcmp(all_vars, pnm)) %that is, it's noninherited
+        [~, status] = str2num(prop.value);
+        if status
+            wrapped_assgn = prop.value;
+        else
+            wrapped_assgn = ['''' prop.value ''''];
+        end
+        
+        hardcoded = [hardcoded {['obj.' pnm ' = ' wrapped_assgn ';']}];
     else
-        wrapped_assgn = ['''' prop.value ''''];
+        upstream = [upstream {pnm} {prop.value}];
     end
-    bodystr = [bodystr newline 'obj.' pnm ' = ' wrapped_assgn ';'];
+end
+if isempty(upstream)
+    bodystr = '';
+else
+    bodystr = ['varargin = [' util.cellPrettyPrint(upstream) ' varargin];' newline];
+end
+bodystr = [bodystr 'obj = obj@' pname '(varargin{:});'];
+
+if ~isempty(hardcoded)
+    bodystr = [bodystr newline strjoin(hardcoded, newline)];
 end
 bodystr = strjoin({bodystr...
     'p = inputParser;'...
     'p.KeepUnmatched = true;'... %suppress subclass/parent props
     'p.PartialMatching = false;'...
     'p.StructExpand = false;'}, newline);
-all_vars = [req_vars opt_vars];
+
 for i=1:length(all_vars)
     var = all_vars{i};
     bodystr = [bodystr newline 'addParameter(p, ''' var ''', []);'];
 end
-
-req_vars_str = util.cellPrettyPrint(req_vars);
+req_empty_vars = setdiff(req_vars, propwithvals); %check required values that don't have a set value
+req_vars_str = util.cellPrettyPrint(req_empty_vars);
 req_body = strjoin({...
     'parse(p, varargin{:});'...
     ['required = ' req_vars_str ';']...

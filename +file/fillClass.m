@@ -56,7 +56,7 @@ classDef = [...
     'classdef ' name ' < ' depnm newline... %header, dependencies
     '% ' name ' ' class.doc]; %name, docstr
 propsDef = strjoin({...
-    file.fillProps(ro_props, 'READONLY', 'SetAccess=immutable')...%readonly properties
+    file.fillProps(ro_props, 'READONLY', 'SetAccess=private')...%readonly properties
     file.fillProps(req_props, 'REQUIRED')... %required properties
     file.fillProps(opt_props, 'OPTIONAL')... %optional properties
     }, newline);

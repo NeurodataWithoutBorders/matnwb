@@ -13,7 +13,7 @@ classdef Attribute < handle
             %defaults
             obj.name = '';
             obj.doc = '';
-            obj.required = true;
+            obj.required = false;
             obj.value = [];
             obj.readonly = false;
             obj.dtype = [];
