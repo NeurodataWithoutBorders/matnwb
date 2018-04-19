@@ -5,8 +5,35 @@ function template = fillClass(name, namespace, pregen)
 %% PROCESSING
 [processed, classprops, inherited] = processClass(name, namespace, pregen);
 class = processed(1);
-validationlist = setdiff(keys(classprops.named), {name});
-propertylist = setdiff(validationlist, inherited);
+
+allprops = keys(classprops.named);
+required = {};
+optional = {};
+readonly = {};
+defaults = {};
+%separate into readonly, required, and optional properties
+for i=1:length(allprops)
+    pnm = allprops{i};
+    prop = classprops.named(pnm);
+    
+    if ischar(prop) || isa(prop, 'java.util.HashMap') || isstruct(prop) || prop.required
+        required = [required {pnm}];
+    else
+        optional = [optional {pnm}];
+    end
+    
+    if isa(prop, 'file.Attribute') && prop.readonly
+        readonly = [readonly {pnm}];
+    end
+    
+    if isa(prop, 'file.Attribute') && ~isempty(prop.value)
+        defaults = [defaults {pnm}];
+    end
+end
+non_inherited = setdiff(allprops, inherited);
+ro_unique = intersect(readonly, non_inherited);
+req_unique = intersect(required, non_inherited);
+opt_unique = intersect(optional, non_inherited);
 
 %% CLASSDEF
 if length(processed) <= 1
@@ -17,59 +44,38 @@ else
     depnm = ['types.' pnamespace.name '.' parentname]; %WRITE
 end
 
-%% PROPERTIES
-%in format <name> -> <docstring>
-ro_props = struct();
-req_props = struct();
-opt_props = struct();
-for i=1:length(propertylist)
-    propname = propertylist{i};
-    prop = classprops.named(propname);
-
-    if isa(prop, 'file.Attribute') && prop.readonly
-        ro_props.(propname) = prop.doc;
-    elseif ischar(prop)
-        req_props.(propname) = ['property of type ' prop];
-    elseif isa(prop, 'java.util.HashMap')
-        req_props.(propname) = ['reference to type ' prop.get('target_type')];
-    elseif isstruct(prop)
-        req_props.(propname) = ['table with properties {' strtrim(evalc('disp(fieldnames(prop)'')')) '}'];
-    elseif prop.required
-        req_props.(propname) = prop.doc;
-    else
-        opt_props.(propname) = prop.doc;
-    end
-end
-
-%find all properties that contain hardcoded values or defaults
-vals_with_prop = {};
-for i=1:length(validationlist)
-    vlname = validationlist{i};
-    vprop = classprops.named(vlname);
-    if isa(vprop, 'file.Attribute') && ~isempty(vprop.value)
-        vals_with_prop = [vals_with_prop {vlname}];
-    end
-end
-
 %% return classfile string
 classDef = [...
     'classdef ' name ' < ' depnm newline... %header, dependencies
     '% ' name ' ' class.doc]; %name, docstr
-propsDef = strjoin({...
-    file.fillProps(ro_props, 'READONLY', 'SetAccess=private')...%readonly properties
-    file.fillProps(req_props, 'REQUIRED')... %required properties
-    file.fillProps(opt_props, 'OPTIONAL')... %optional properties
-    }, newline);
+propgroups = {...
+    @()file.fillProps(classprops.named, ro_unique, 'SetAccess=protected')...
+    @()file.fillProps(classprops.named, req_unique)...
+    @()file.fillProps(classprops.named, opt_unique)...
+    };
+docsep = {...
+    '% READONLY'...
+    '% REQUIRED'...
+    '% OPTIONAL'...
+    };
+propsDef = '';
+for i=1:length(propgroups)
+    pg = propgroups{i};
+    pdef = pg();
+    if ~isempty(pdef)
+        propsDef = [propsDef newline docsep{i} newline pdef];
+    end
+end
+
 constructorBody = file.fillConstructor(name,...
-    namespace.name,...
     depnm,...
-    vals_with_prop,... %we need these values to determine if we can hardcode or not
-    [fieldnames(ro_props); fieldnames(req_props)]',...
-    fieldnames(opt_props)',...
+    defaults,... %all defaults, regardless of inheritance
+    req_unique,...
+    opt_unique,...
     classprops);
-setterFcns = file.fillSetters(propertylist);
-validatorFcns = file.fillValidators(validationlist, classprops, namespace);
-exporterFcns = file.fillExport(name, propertylist, classprops);
+setterFcns = file.fillSetters(setdiff(non_inherited, ro_unique));
+validatorFcns = file.fillValidators(allprops, classprops, namespace);
+exporterFcns = file.fillExport(name, [req_unique opt_unique], classprops);
 methodBody = strjoin({constructorBody...
     '%% SETTERS' setterFcns...
     '%% VALIDATORS' validatorFcns...
@@ -91,7 +97,7 @@ end
 for i=length(branch):-1:1
     node = branch(i);
     nodename = node.get('neurodata_type_def');
-
+    
     if ~isKey(pregen, nodename)
         if isgroup
             class = file.Group(node);

@@ -1,16 +1,18 @@
-%propstruct is a struct with name->docstring
-%options is a string containing prop attributes (i.e. Access=private)
-%s is the string output
-function s = fillProps(propstruct, propertydoc, options)
-propnames = fieldnames(propstruct);
-if isempty(propnames)
-    s = '';
-    return;
-end
-proplines = cell(size(propnames));
-for i=1:length(propnames)
-    pnm = propnames{i};
-    proplines{i} = ['    ' pnm '; % ' propstruct.(pnm)];
+function s = fillProps(props, names, options)
+proplines = cell(size(names));
+for i=1:length(names)
+    pnm = names{i};
+    p = props(pnm);
+    if ischar(p)
+        doc = ['property of type ' p];
+    elseif isa(p, 'java.util.HashMap')
+        doc = ['reference to type ' p.get('target_type')];
+    elseif isstruct(p)
+        doc = ['table with properties ' util.cellPrettyPrint(fieldnames(p)')];
+    else
+        doc = p.doc;
+    end
+    proplines{i} = [pnm '; % ' doc];
 end
 
 if nargin >= 3
@@ -19,15 +21,8 @@ else
     opt = '';
 end
 
-if nargin >= 2
-    pd = ['% ' propertydoc];
-else
-    pd = '';
-end
-
 s = strjoin({...
-    pd...
     ['properties' opt]...
-    strjoin(proplines, newline)...
+    file.addSpaces(strjoin(proplines, newline), 4)...
     'end'}, newline);
 end

@@ -1,5 +1,5 @@
 classdef Group < handle
-    properties(SetAccess=private)
+    properties
         doc;
         name;
         canRename;
@@ -88,6 +88,9 @@ classdef Group < handle
                 attriter = attributes.iterator();
                 for i=1:len
                     nextattr = file.Attribute(attriter.next());
+                    if isempty(obj.type)
+                        nextattr.dependent = obj.name;
+                    end
                     obj.attributes.(nextattr.name) = nextattr;
                 end
             end
@@ -100,10 +103,11 @@ classdef Group < handle
                 datasetiter = datasets.iterator();
                 obj.datasets = repmat(file.Dataset, len, 1);
                 for i=1:len
-                    obj.datasets(i) = file.Dataset(datasetiter.next());
-                    if isempty(obj.datasets(i).name)
+                    ds = file.Dataset(datasetiter.next());
+                    if isempty(ds.name)
                         anonDataCnt = anonDataCnt + 1;
                     end
+                    obj.datasets(i) = ds;
                 end
             end
             
@@ -115,10 +119,11 @@ classdef Group < handle
                 subgroupiter = subgroups.iterator();
                 obj.subgroups = repmat(file.Group, len, 1);
                 for i=1:len
-                    obj.subgroups(i) = file.Group(subgroupiter.next());
-                    if isempty(obj.subgroups(i).name)
+                    sg = file.Group(subgroupiter.next());
+                    if isempty(sg.name)
                         anonGroupCnt = anonGroupCnt + 1;
                     end
+                    obj.subgroups(i) = sg;
                 end
             end
             
@@ -149,16 +154,14 @@ classdef Group < handle
             props = containers.Map;
             varargs = {};
             
-            if ~isempty(obj.type)
-                propertyname = obj.type;
-            else
+            if ~isempty(obj.name)
                 propertyname = obj.name;
             end
             
             if ~obj.elide
                 if obj.isConstrainedSet
                     varargs = {obj};
-                else
+                elseif ~isempty(propertyname)
                     props(propertyname) = obj;
                 end
             end

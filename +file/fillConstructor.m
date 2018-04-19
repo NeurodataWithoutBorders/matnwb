@@ -1,13 +1,12 @@
-function fcstr = fillConstructor(name, namespacename, parentname, pwithval, req_names, opt_names, props)
+function fcstr = fillConstructor(name, parentname, defaults, required, optional, props)
 caps = upper(name);
 fcnbody = strjoin({['% ' caps ' Constructor for ' name]...
     ['%     obj = ' caps '(parentname1,parentvalue1,..,parentvalueN,parentargN,name1,value1,...,nameN,valueN)']...
     }, newline);
 fcns = {...
-    @() fillParamDocs('REQUIRED', req_names, props.named)...
-    @() fillParamDocs('OPTIONAL', opt_names, props.named)...
-    @() fillSetDocs(name, props.varargs, namespacename)...
-    @() fillBody(parentname, pwithval, req_names, opt_names, props)...
+    @()fillParamDocs('REQUIRED', required, props.named)...
+    @()fillParamDocs('OPTIONAL', optional, props.named)...
+    @()fillBody(parentname, defaults, required, optional, props)...
     };
 for i=1:length(fcns)
     fcn = fcns{i};
@@ -20,17 +19,6 @@ fcstr = strjoin({...
     ['function obj = ' name '(varargin)']...
     file.addSpaces(fcnbody, 4)...
     'end'}, newline);
-end
-
-function fcstr = fillSetDocs(name, varprops, namespace)
-fcstr = '';
-for i=1:length(varprops)
-    nm = varprops{i}.type;
-    if strcmp(nm, name)
-        continue;
-    end
-    fcstr = [fcstr '%  ' nm ' = list of types.' namespace '.' nm newline];
-end
 end
 
 function fdfp = fillDocFromProp(prop, propnm)
@@ -86,59 +74,40 @@ for i=1:length(names)
 end
 end
 
-function bodystr = fillBody(pname, propwithvals, req_vars, opt_vars, props)
-all_vars = [req_vars opt_vars];
-
-upstream = {}; %kwargs to be sent to parent
-hardcoded = {}; %hardcoded defaults that should be instantiated now.
-for i=1:length(propwithvals)
-    pnm = propwithvals{i};
-    prop = props.named(pnm);
-    if any(strcmp(all_vars, pnm)) %that is, it's noninherited
-        [~, status] = str2num(prop.value);
-        if status
-            wrapped_assgn = prop.value;
-        else
-            wrapped_assgn = ['''' prop.value ''''];
-        end
-        
-        hardcoded = [hardcoded {['obj.' pnm ' = ' wrapped_assgn ';']}];
-    else
-        upstream = [upstream {pnm} {prop.value}];
-    end
-end
-if isempty(upstream)
+function bodystr = fillBody(pname, defaults, required, optional, props)
+if isempty(defaults)
     bodystr = '';
 else
-    bodystr = ['varargin = [' util.cellPrettyPrint(upstream) ' varargin];' newline];
+    usmap = containers.Map;
+    for i=1:length(defaults)
+        nm = defaults{i};
+        usmap(nm) = props.named(nm).value;
+    end
+    kwargs = io.map2kwargs(usmap);
+    bodystr = ['varargin = [' util.cellPrettyPrint(kwargs) ' varargin];' newline];
 end
 bodystr = [bodystr 'obj = obj@' pname '(varargin{:});'];
-
-if ~isempty(hardcoded)
-    bodystr = [bodystr newline strjoin(hardcoded, newline)];
-end
 bodystr = strjoin({bodystr...
     'p = inputParser;'...
     'p.KeepUnmatched = true;'... %suppress subclass/parent props
     'p.PartialMatching = false;'...
     'p.StructExpand = false;'}, newline);
-
-for i=1:length(all_vars)
-    var = all_vars{i};
+params = [required optional];
+for i=1:length(params)
+    var = params{i};
     bodystr = [bodystr newline 'addParameter(p, ''' var ''', []);'];
 end
-req_empty_vars = setdiff(req_vars, propwithvals); %check required values that don't have a set value
-req_vars_str = util.cellPrettyPrint(req_empty_vars);
+req_unset = setdiff(required, defaults); %check required values that don't have a set value
 req_body = strjoin({...
     'parse(p, varargin{:});'...
-    ['required = ' req_vars_str ';']...
+    ['required = ' util.cellPrettyPrint(req_unset) ';']...
     'missing = intersect(p.UsingDefaults, required);'...
     'if ~isempty(missing)'...
     '    error(''Missing Required Argument(s) { %s }'', strjoin(missing, '', ''));'...
     'end'}, newline);
 bodystr = [bodystr newline req_body];
-for i=1:length(all_vars)
-    var = all_vars{i};
+for i=1:length(params)
+    var = params{i};
     bodystr = [bodystr newline 'obj.' var ' = p.Results.' var ';'];
 end
 end

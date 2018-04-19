@@ -12,7 +12,12 @@ for i=1:length(info.Datasets)
     ds_info = info.Datasets(i);
     fp = [info.Name '/' ds_info.Name];
     [ds, dsrefs] = io.parseDataset(filename, ds_info, fp);
-    props = [props; ds];
+    if isa(ds, 'containers.Map')
+        props = [props; ds];
+    else
+        props(ds_info.Name) = ds;
+    end
+    
     refs = [refs; dsrefs];
 end
 
@@ -36,11 +41,12 @@ if isempty(typename)
     keyboard;
 else
     %construct as kwargs and instantiate object
-    
     if isempty(root)
         %we are root
         parsed = types.core.NWBFile;
         return;
     end
+    kwargs = io.map2kwargs(props);
+    parsed = eval([typename '(kwargs{:})']);
 end
 end

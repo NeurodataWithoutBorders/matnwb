@@ -1,5 +1,5 @@
 classdef Dataset < handle
-    properties(SetAccess=private)
+    properties
         name;
         doc;
         type;
@@ -82,6 +82,9 @@ classdef Dataset < handle
                 attriter = attributes.iterator();
                 for i=1:len
                     nextattr = file.Attribute(attriter.next());
+                    if isempty(obj.type)
+                        nextattr.dependent = obj.name;
+                    end
                     obj.attributes.(nextattr.name) = nextattr;
                 end
             end
@@ -100,12 +103,10 @@ classdef Dataset < handle
                 return;
             end
             
-            if isempty(obj.name)
-                propname = obj.type;
-            else
+            if ~isempty(obj.name)
                 propname = obj.name;
+                props(propname) = obj;
             end
-            props(propname) = obj;
             
             %there are only two classes that do this and they're all under
             %ecephys: ElectrodeTable and ElectrodeTableRegion.

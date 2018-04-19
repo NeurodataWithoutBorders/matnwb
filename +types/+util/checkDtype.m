@@ -2,6 +2,9 @@ function checkDtype(name, type, val)
 %ref
 %any, double, int/uint, char
 errmsg = ['Property `' name '` must be a ' type '.'];
+if isempty(val)
+    return;
+end
 switch type
     case 'double'
         if ~isnumeric(val)
@@ -25,7 +28,7 @@ switch type
         end
         for i=1:length(val)
             subval = val{i};
-            if ~isa(subval(1), type)
+            if ~isa(subval, type)
                 error(errmsg);
             end
         end
