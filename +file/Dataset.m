@@ -113,16 +113,15 @@ classdef Dataset < handle
             % type.
             % therefore, we currently do not have a case for a regular typed
             % dataset (because there isn't any.
-            if isstruct(obj.dtype)
-                props('table') = obj.dtype;
-            elseif isa(obj.dtype, 'java.util.HashMap')
-                props('target') = obj.dtype;
-                rt = obj.dtype.get('reftype');
-                if strcmp(rt, 'region')
-                    props('region') = 'double';
+            if ~isempty(obj.dtype)
+                if isstruct(obj.dtype)
+                    props('table') = obj.dtype;
+                elseif isa(obj.dtype, 'java.util.HashMap')
+                    props('ref') = obj.dtype;
+                elseif ~isempty(obj.type)
+                    %regular dataset
+                    props('data') = obj.dtype;
                 end
-            else
-                %regular dataset.  TODO
             end
             
             if ~isempty(obj.attributes)

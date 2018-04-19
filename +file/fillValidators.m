@@ -135,10 +135,5 @@ else
         ts = type;
     end
     fdvstr = ['types.util.checkDtype(''' name ''', ''' ts ''', val);'];
-    
-    % special case for region reftype
-    if strcmp(name, 'region') && strcmp(type, 'double')
-        fdvstr = [fdvstr newline 'types.util.checkRegion(obj, val);'];
-    end
 end
 end

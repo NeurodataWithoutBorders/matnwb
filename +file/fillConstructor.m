@@ -48,7 +48,15 @@ elseif isstruct(prop)
 elseif isa(prop, 'file.Attribute')
     fdfp = prop.dtype;
 elseif isa(prop, 'java.util.HashMap')
-    fdfp = ['ref to ' prop.get('target_type')];
+    switch prop.get('reftype')
+        case 'region'
+            reftypenm = 'region';
+        case 'object'
+            reftypenm = 'object';
+        otherwise
+            error('Invalid reftype found whilst filling Constructor prop docs.');
+    end
+    fdfp = ['ref to ' prop.get('target_type') ' ' reftypenm];
 elseif isa(prop, 'file.Dataset') && isempty(prop.type)
     fdfp = fillDocFromProp(prop.dtype);
 elseif isempty(prop.type)

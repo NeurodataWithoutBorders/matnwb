@@ -25,7 +25,7 @@ opt_props = struct();
 for i=1:length(propertylist)
     propname = propertylist{i};
     prop = classprops.named(propname);
-    
+
     if isa(prop, 'file.Attribute') && prop.readonly
         ro_props.(propname) = prop.doc;
     elseif ischar(prop)

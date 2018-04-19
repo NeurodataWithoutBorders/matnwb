@@ -29,7 +29,6 @@ end
 %   compound data w/ reference (ElectrodeTable)
 %   All other cases do not exist in this current schema.
 props = attrargs;
-props('associated_nwbfile') = filename;
 
 fid = H5F.open(filename);
 did = H5D.open(fid, fullpath);
@@ -38,16 +37,17 @@ data = H5D.read(did); %this way, references are not automatically resolved
 datatype = info.Datatype;
 if strcmp(datatype.Class, 'H5T_REFERENCE')
     reftype = datatype.Type;
-    switch reftype
-        case 'H5R_OBJECT'
-            %TODO when included in schema
-        case 'H5R_DATASET_REGION'
-            sid = H5R.get_region(did, reftype, data);
-            [start, finish] = H5S.get_select_bounds(sid);
-            props('target') = H5R.get_name(did, reftype, data);
-            props('region') = [start+1 finish];
-            H5S.close(sid);
+    path = H5R.get_name(did, reftype, data);
+    props('ref') = [];
+    if strcmp(reftype, 'H5R_DATASET_REGION')
+        sid = H5R.get_region(did, reftype, data);
+        [start, finish] = H5S.get_select_bounds(sid);
+        H5S.close(sid);
+        reg = [start finish];
+    else
+        reg = [];
     end
+    refs([fullpath '/ref']) = struct('path', path, 'region', reg);
 elseif strcmp(datatype.Class, 'H5T_COMPOUND')
     t = table;
     compound = datatype.Type.Member;
@@ -58,6 +58,7 @@ elseif strcmp(datatype.Class, 'H5T_COMPOUND')
             isref(j) = true;
         end
     end
+else
 end
 kwargs = io.map2kwargs(props);
 parsed = eval([typename '(kwargs{:})']);
