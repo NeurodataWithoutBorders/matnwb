@@ -15,11 +15,11 @@ switch type
             error(errmsg);
         end
         
-        if strcmp(types, 'uint64') && val < 0
+        if strcmp(type, 'uint64') && val < 0
             error('Property `%s` must be greater than zero.', name);
         end
     case 'char'
-        if ~ischar(val)
+        if ~ischar(val) && ~iscellstr(val)
             error(errmsg);
         end
     otherwise %class or ref to class
@@ -28,6 +28,9 @@ switch type
         end
         for i=1:length(val)
             subval = val{i};
+            if isempty(subval)
+                continue;
+            end
             if ~isa(subval, type)
                 error(errmsg);
             end

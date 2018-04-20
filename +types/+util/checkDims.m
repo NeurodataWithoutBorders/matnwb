@@ -1,8 +1,13 @@
 function checkDims(valsize, validSizes)
+    if any(valsize == 0)
+        return; %ignore empty arrays
+    end
     validSizesStrings = cell(size(validSizes));
     for i=1:length(validSizes)
         vs = validSizes{i};
-        if length(valsize) ~= length(vs)
+        
+        if (length(vs) == 1 && (length(valsize) > 2 || ~any(valsize == 1))) ||...
+            (length(vs) > 1 && length(valsize) ~= length(vs))
             continue;
         end
         

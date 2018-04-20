@@ -25,18 +25,8 @@ if java.io.File(filename).isAbsolute
 else
   ff = fullfile(pwd, filename);
 end
-[fp, ~, ~] = fileparts(ff); %complete filepath
-
-for lref = linkRefs
-  lr = lref{1};
-  if isempty(lr.filename)
-    lr.ref = nwb(lr.path);
-  else
-    % we assume the external reference is to a dataset.
-    if ~java.io.File(lr.filename).isAbsolute
-      lr.filename = fullfile(fp, lr.filename);
-    end
-    lr.ref = h5read(lr.filename, lr.path);
-  end
-end
+keyboard;
+%process refs
+%process links
+[fp, ~, ~] = fileparts(ff);
 end

@@ -36,33 +36,46 @@ data = H5D.read(did); %this way, references are not automatically resolved
 
 datatype = info.Datatype;
 if strcmp(datatype.Class, 'H5T_REFERENCE')
-    reftype = datatype.Type;
-    path = H5R.get_name(did, reftype, data);
-    props('ref') = [];
-    if strcmp(reftype, 'H5R_DATASET_REGION')
-        sid = H5R.get_region(did, reftype, data);
-        [start, finish] = H5S.get_select_bounds(sid);
-        H5S.close(sid);
-        reg = [start finish];
-    else
-        reg = [];
-    end
+    [path, reg] = parseReference(did, datatype.Type, data);
     refs([fullpath '/ref']) = struct('path', path, 'region', reg);
+    props('ref') = [];
 elseif strcmp(datatype.Class, 'H5T_COMPOUND')
     t = table;
     compound = datatype.Type.Member;
-    isref = logical(size(compound));
     for j=1:length(compound)
         comp = compound(j);
         if strcmp(comp.Datatype.Class, 'H5T_REFERENCE')
-            isref(j) = true;
+            refnames = data.(comp.Name);
+            reflist = repmat(struct('path', [], 'region', []), size(refnames));
+            for k=1:size(refnames,2)
+                r = refnames(:,k);
+                [path, reg] = parseReference(did, comp.Datatype.Type, r);
+                reflist(k).path = path;
+                reflist(k).region = reg;
+            end
+            refs([fullpath '/' info.Name '.' comp.Name]) = reflist;
+            %for some reason, raw references are stored transposed.
+            data.(comp.Name) = cell(size(refnames, 2), 1);
         end
     end
+    props('table') = struct2table(data);
 else
+    keyboard;
 end
 kwargs = io.map2kwargs(props);
 parsed = eval([typename '(kwargs{:})']);
 
 H5D.close(did);
 H5F.close(fid);
+end
+
+function [target, region] = parseReference(did, type, data)
+target = H5R.get_name(did, type, data);
+region = [];
+if strcmp(type, 'H5R_DATASET_REGION')
+    sid = H5R.get_region(did, type, data);
+    [start, finish] = H5S.get_select_bounds(sid);
+    H5S.close(sid);
+    region = [start finish];
+end
 end

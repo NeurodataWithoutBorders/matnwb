@@ -1,4 +1,7 @@
 function checkConstrained(name, namedprops, constrained, val)
+if isempty(val)
+    return;
+end
 if ~isa(val, 'containers.Map')
     error('Property `%s` must be a containers.Map.', name);
 end

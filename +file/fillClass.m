@@ -11,6 +11,7 @@ required = {};
 optional = {};
 readonly = {};
 defaults = {};
+dependent = {};
 %separate into readonly, required, and optional properties
 for i=1:length(allprops)
     pnm = allprops{i};
@@ -22,12 +23,23 @@ for i=1:length(allprops)
         optional = [optional {pnm}];
     end
     
-    if isa(prop, 'file.Attribute') && prop.readonly
-        readonly = [readonly {pnm}];
-    end
-    
-    if isa(prop, 'file.Attribute') && ~isempty(prop.value)
-        defaults = [defaults {pnm}];
+    if isa(prop, 'file.Attribute')
+        if prop.readonly
+            readonly = [readonly {pnm}];
+        end
+        
+        if ~isempty(prop.value)
+            defaults = [defaults {pnm}];
+        end
+       
+        if ~isempty(prop.dependent)
+            %extract prefix
+            parentname = strrep(pnm, ['_' prop.name], '');
+            parent = classprops.named(parentname);
+            if ~parent.required
+                dependent = [dependent {pnm}];
+            end
+        end
     end
 end
 non_inherited = setdiff(allprops, inherited);
@@ -50,8 +62,8 @@ classDef = [...
     '% ' name ' ' class.doc]; %name, docstr
 propgroups = {...
     @()file.fillProps(classprops.named, ro_unique, 'SetAccess=protected')...
-    @()file.fillProps(classprops.named, req_unique)...
-    @()file.fillProps(classprops.named, opt_unique)...
+    @()file.fillProps(classprops.named, setdiff(req_unique, ro_unique))...
+    @()file.fillProps(classprops.named, setdiff(opt_unique, ro_unique))...
     };
 docsep = {...
     '% READONLY'...
@@ -70,6 +82,7 @@ end
 constructorBody = file.fillConstructor(name,...
     depnm,...
     defaults,... %all defaults, regardless of inheritance
+    dependent,...
     req_unique,...
     opt_unique,...
     classprops);

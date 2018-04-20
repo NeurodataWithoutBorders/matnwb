@@ -1,12 +1,12 @@
-function fcstr = fillConstructor(name, parentname, defaults, required, optional, props)
+function fcstr = fillConstructor(name, parentname, defaults, dependent, required, optional, props)
 caps = upper(name);
 fcnbody = strjoin({['% ' caps ' Constructor for ' name]...
     ['%     obj = ' caps '(parentname1,parentvalue1,..,parentvalueN,parentargN,name1,value1,...,nameN,valueN)']...
     }, newline);
 fcns = {...
-    @()fillParamDocs('REQUIRED', required, props.named)...
-    @()fillParamDocs('OPTIONAL', optional, props.named)...
-    @()fillBody(parentname, defaults, required, optional, props)...
+    @()fillParamDocs('REQUIRED', setdiff(required, dependent), props.named)...
+    @()fillParamDocs('OPTIONAL', setdiff(optional, dependent), props.named)...
+    @()fillBody(parentname, defaults, dependent, required, optional, props)...
     };
 for i=1:length(fcns)
     fcn = fcns{i};
@@ -74,7 +74,7 @@ for i=1:length(names)
 end
 end
 
-function bodystr = fillBody(pname, defaults, required, optional, props)
+function bodystr = fillBody(pname, defaults, dependent, required, optional, props)
 if isempty(defaults)
     bodystr = '';
 else
@@ -97,15 +97,46 @@ for i=1:length(params)
     var = params{i};
     bodystr = [bodystr newline 'addParameter(p, ''' var ''', []);'];
 end
-req_unset = setdiff(required, defaults); %check required values that don't have a set value
-req_body = strjoin({...
-    'parse(p, varargin{:});'...
-    ['required = ' util.cellPrettyPrint(req_unset) ';']...
-    'missing = intersect(p.UsingDefaults, required);'...
-    'if ~isempty(missing)'...
-    '    error(''Missing Required Argument(s) { %s }'', strjoin(missing, '', ''));'...
-    'end'}, newline);
-bodystr = [bodystr newline req_body];
+
+bodystr = [bodystr newline 'parse(p, varargin{:});'];
+
+%check required values that don't have a set value and are independent
+req_unset = setdiff(required, [defaults dependent]);
+if ~isempty(req_unset)
+    req_body = strjoin({...
+        ['required = ' util.cellPrettyPrint(req_unset) ';']...
+        'missing = intersect(p.UsingDefaults, required);'...
+        'if ~isempty(missing)'...
+        '    error(''Missing Required Argument(s) { %s }'', strjoin(missing, '', ''));'...
+        'end'}, newline);
+    bodystr = [bodystr newline req_body];
+end
+
+%construct parent->dependent structure
+dep_parents = struct();
+for i=1:length(dependent)
+    dep = dependent{i};
+    dep_p = props.named(dep);
+    parent = dep_p.dependent;
+    if ~startsWith(dep, parent)
+        parent = strrep(dep, ['_' dep_p.name], '');
+    end
+    if isfield(dep_parents, parent)
+        deps = dep_parents.(parent);
+        dep_parents.(parent) = [deps {dep}];
+    else
+        dep_parents.(parent) = {dep};
+    end
+end
+
+%check each optional parent if they exist, then check their required dependents
+dep_p_list = fieldnames(dep_parents);
+for i=1:length(dep_p_list)
+    parent = dep_p_list{i};
+    children = util.cellPrettyPrint(dep_parents.(parent));
+    bodystr = [bodystr newline 'types.util.checkDependent(''' parent ''', ' children ', p.UsingDefaults);'];
+end
+
 for i=1:length(params)
     var = params{i};
     bodystr = [bodystr newline 'obj.' var ' = p.Results.' var ';'];

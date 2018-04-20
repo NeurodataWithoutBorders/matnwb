@@ -39,26 +39,28 @@ elseif isa(prop, 'file.Group')
         constr = {};
         for i=1:length(prop.datasets)
             ds = prop.datasets(i);
-            if isempty(ds.name)
-                if isempty(ds.type)
-                    typespec = ds.dtype;
-                else
-                    typespec = ds.type;
-                end
-                constr = [constr {typespec}];
-            elseif isempty(ds.type)
-                namedprops.(ds.name) = ds.dtype;
+            if isempty(ds.type)
+                type = ds.dtype;
             else
-                namedprops.(ds.name) = ds.type;
+                ds_namespace = namespacereg.getNamespace(ds.type).name;
+                type = ['types.' ds_namespace '.' ds.type];
+            end
+            
+            if isempty(ds.name)
+                constr = [constr {type}];
+            else
+                namedprops.(ds.name) = type;
             end
         end
         
         for i=1:length(prop.subgroups)
             sg = prop.subgroups(i);
+            sg_namespace = namespacereg.getNamespace(sg.type).name;
+            sgfullname = ['types.' sg_namespace '.' sg.type];
             if isempty(sg.name)
-                constr = [constr sg.type];
+                constr = [constr {sgfullname}];
             else
-                namedprops.(sg.name) = sg.type;
+                namedprops.(sg.name) = sgfullname;
             end
         end
         
@@ -81,7 +83,8 @@ elseif isa(prop, 'file.Group')
 elseif isa(prop, 'file.Attribute')
     fuvstr = fillDtypeValidation(name, prop.dtype, namespacereg);
 else %Link
-    fuvstr = fillDtypeValidation(name, prop.type, namespacereg);
+    namespace = namespacereg.getNamespace(prop.type).name;
+    fuvstr = fillDtypeValidation(name, ['types.' namespace '.' prop.type], namespacereg);
 end
 end
 
