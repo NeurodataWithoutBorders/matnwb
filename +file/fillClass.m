@@ -101,7 +101,8 @@ switch rootname
     case {'NWBData', 'SpecFile', 'Image'}
         isgroup = false;
     otherwise
-        error('Unexpected root class %s', rootname);
+        warning('Unexpected root class `%s` found.  Skipping `name`', rootname, name);
+        return;
 end
 for i=length(branch):-1:1
     node = branch(i);
