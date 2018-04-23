@@ -23,10 +23,5 @@ classdef Link < handle
             quantity = source.get('quantity');
             obj.required = isempty(quantity) || strcmp(quantity, '+');
         end
-        
-        function props = getProps(obj)
-            props = containers.Map;
-            props(obj.name) = obj;
-        end
     end
 end

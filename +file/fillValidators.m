@@ -8,7 +8,6 @@ for i=1:length(propnames)
     if isa(prop, 'file.Attribute') && prop.readonly && ~isempty(prop.value)
         continue;
     end
-    
     if startsWith(class(prop), 'file.')
         validationBody = fillUnitValidation(nm, prop, namespacereg);
     else %primitive type
@@ -29,39 +28,71 @@ if isa(prop, 'file.Dataset')
             fillDimensionValidation(prop.dtype, prop.shape)...
             }, newline);
     else
-        namespace = namespacereg.getNamespace(prop.type).name;
-        fullclassname = ['types.' namespace '.' prop.type];
+        namespace = namespacereg.getNamespace(prop.type);
+        if isempty(namespace)
+            warning('Namespace could not be found for type `%s`.  Skipping Validation for property `%s`.', prop.type, name);
+            return;
+        end
+        fullclassname = ['types.' namespace.name '.' prop.type];
         fuvstr = [fuvstr newline fillDtypeValidation(name, fullclassname, namespacereg)];
     end
 elseif isa(prop, 'file.Group')
     if isempty(prop.type)
         namedprops = struct();
         constr = {};
+        
+        %process datasets
+        %if type, check if constrained
+        % if constrained, add to constr
+        % otherwise, check type once
+        %otherwise, check dtype
         for i=1:length(prop.datasets)
             ds = prop.datasets(i);
-            if isempty(ds.type)
-                type = ds.dtype;
-            else
-                ds_namespace = namespacereg.getNamespace(ds.type).name;
-                type = ['types.' ds_namespace '.' ds.type];
-            end
             
-            if isempty(ds.name)
-                constr = [constr {type}];
+            if isempty(ds.type)
+                namedprops.(ds.name) = ds.dtype;
             else
-                namedprops.(ds.name) = type;
+                ds_nmspc = namespacereg.getNamespace(ds.type).name;
+                type = ['types.' ds_namespace '.' ds.type];
+                if ds.isConstrainedSet
+                    constr = [constr {type}];
+                else
+                    namedprops.(ds.name) = type;
+                end
             end
         end
         
+        %process groups
+        %if type, check if constrained
+        % if constrained, add to constr
+        % otherwise, check type once
+        %otherwise, error.  This shouldn't happen.
         for i=1:length(prop.subgroups)
             sg = prop.subgroups(i);
             sg_namespace = namespacereg.getNamespace(sg.type).name;
             sgfullname = ['types.' sg_namespace '.' sg.type];
-            if isempty(sg.name)
+            if isempty(sg.type)
+                error('Weird case with two untyped groups');
+            end
+            if sg.isConstrainedSet
                 constr = [constr {sgfullname}];
             else
                 namedprops.(sg.name) = sgfullname;
             end
+        end
+        
+        %process attributes
+        for i=1:length(prop.attributes)
+            attr = prop.attributes(i);
+            namedprops.(attr.name) = attr.dtype;
+        end
+        
+        %process links
+        for i=1:length(prop.links)
+            link = prop.links(i);
+            lnk_nmspc = namespacereg.getNamespace(link.type);
+            typename = ['types.' lnk_nmspc '.' link.type];
+            namedprops.(link.name) = typename;
         end
         
         propnames = fieldnames(namedprops);
@@ -74,6 +105,12 @@ elseif isa(prop, 'file.Group')
         fuvstr = strjoin({fuvstr...
             ['constrained = {' strtrim(evalc('disp(constr)')) '};']...
             ['types.util.checkConstrained(''' name ''', namedprops, constrained, val);']...
+            }, newline);
+    elseif prop.isConstrainedSet
+        namespace = namespacereg.getNamespace(prop.type).name;
+        fuvstr = strjoin({fuvstr...
+            ['constrained = {''types.' namespace '.' prop.type '''};']...
+            ['types.util.checkConstrained(''' name ''', struct(), constrained, val);']...
             }, newline);
     else
         namespace = namespacereg.getNamespace(prop.type).name;
@@ -98,9 +135,9 @@ validshapetokens = cell(size(shape));
 for i=1:length(shape)
     %when there is more than one possible shape, the cells are nested
     if iscell(shape{i})
-       shp = shape{i}{1}; 
+        shp = shape{i}{1};
     else
-       shp = shape{i};
+        shp = shape{i};
     end
     validshapetokens{i} = ['[' strtrim(evalc('disp(shp)')) ']'];
 end

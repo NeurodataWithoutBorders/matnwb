@@ -12,6 +12,7 @@ classdef Dataset < handle
         attributes;
         linkable;
         isRef;
+        definesType;
     end
     
     methods
@@ -24,6 +25,7 @@ classdef Dataset < handle
             obj.required = true;
             obj.scalar = true;
             obj.isRef = false;
+            obj.definesType = false;
             
             obj.shape = {};
             obj.dimnames = {};
@@ -38,11 +40,12 @@ classdef Dataset < handle
             
             type = source.get('neurodata_type_def');
             parent = source.get('neurodata_type_inc');
-
-            if ~isempty(type)
-                obj.type = type;
-            elseif ~isempty(parent)
+            
+            if isempty(type)
                 obj.type = parent;
+            else
+                obj.type = type;
+                obj.definesType = true;
             end
             
             obj.dtype = file.mapType(source.get('dtype'));
@@ -78,14 +81,14 @@ classdef Dataset < handle
             attributes = source.get('attributes');
             if ~isempty(attributes)
                 len = attributes.size();
-                obj.attributes = struct();
+                obj.attributes = repmat(file.Attribute, len, 1);
                 attriter = attributes.iterator();
                 for i=1:len
                     nextattr = file.Attribute(attriter.next());
                     if isempty(obj.type)
                         nextattr.dependent = obj.name;
                     end
-                    obj.attributes.(nextattr.name) = nextattr;
+                    obj.attributes(i) = nextattr;
                 end
             end
             
@@ -102,19 +105,17 @@ classdef Dataset < handle
             % types
             
             %untyped
-            % Return data + all dependent attributes as separate props
+            % error, untyped should not hold any data.
             
             %constrained
-            % return itself
+            % error unless it defines the object.
             
-            if obj.isConstrainedSet
-                props(lower(obj.type)) = obj;
-                return;
+            if isempty(obj.type)
+                error('You shouldn''t be calling getProps on an untyped dataset');
             end
             
-            if ~isempty(obj.name)
-                propname = obj.name;
-                props(propname) = obj;
+            if obj.isConstrainedSet && ~obj.definesType
+                error('You shouldn''t be calling getProps on a constrained dataset');
             end
             
             %there are only two classes that do this and they're all under
@@ -134,16 +135,9 @@ classdef Dataset < handle
                 end
             end
             
-            if ~isempty(obj.attributes)
-                attrnames = fieldnames(obj.attributes);
-                for i=1:length(attrnames)
-                    nm = attrnames{i};
-                    if isempty(obj.type)
-                        props([propname '_' nm]) = obj.attributes.(nm);
-                    else
-                        props(nm) = obj.attributes.(nm);
-                    end
-                end
+            for i=1:length(obj.attributes)
+                attr = obj.attributes(i);
+                props(attr.name) = attr;
             end
         end
     end

@@ -4,6 +4,7 @@ classdef Group < handle
         name;
         canRename;
         type;
+        definesType;
         isConstrainedSet; %that is, a general list of objects constrained with a type
         hasAnonData; %holds datasets that don't have names (either constrained or not)
         hasAnonGroups; %holds groups that don't have names (either constrained or not)
@@ -34,6 +35,7 @@ classdef Group < handle
             obj.defaultEmpty = false;
             obj.hasAnonData = false;
             obj.hasAnonGroups = false;
+            obj.definesType = false;
             
             if nargin < 1
                 return;
@@ -52,19 +54,16 @@ classdef Group < handle
             
             type = source.get('neurodata_type_def');
             parent = source.get('neurodata_type_inc');
-            if isempty(type) && ~isempty(parent)
+            
+            if isempty(type)
                 obj.type = parent;
             else
+                obj.definesType = true;
                 obj.type = type;
             end
             
             quantity = source.get('quantity');
-            if isempty(quantity)
-                if ~isempty(obj.type)
-                    obj.required = false;
-                    obj.scalar = false;
-                end
-            else
+            if ~isempty(quantity)
                 switch quantity
                     case '?'
                         obj.required = false;
@@ -78,7 +77,7 @@ classdef Group < handle
                 end
             end
             
-            obj.isConstrainedSet = ~obj.scalar && isempty(type) && ~isempty(parent);
+            obj.isConstrainedSet = ~obj.scalar && ~isempty(type);
             
             %do attributes
             attributes = source.get('attributes');
@@ -154,60 +153,80 @@ classdef Group < handle
         function props = getProps(obj)
             props = containers.Map;
             %typed + constrained
-            % return itself as lower(obj.type) -> self
-            % only returns itself as type is defined elsewhere.
-            if ~isempty(obj.type) && obj.isConstrainedSet
-                props(lower(obj.type)) = obj;
-                return;
+            %should never happen
+            
+            if obj.isConstrainedSet && ~obj.definesType
+                error('getProps shouldn''t be called on a constrained set.');
             end
             
             %untyped
-            % returns itself
-            if isempty(obj.type) && ~obj.elide
-                props(obj.name) = obj;
-                return;
-            end
+            % parse props and return.
             
             %typed
             % containersMap of properties -> types
-            % can have links, groups, datasets, and attributes
-            
-            %untyped + elide
-            % return next level's props but with this name prefixed.
-            % has any subprops just not constrained sets
-            
-            if obj.elide
-                prefix = obj.name;
-            else
-                prefix = '';
-            end
+            % parse props and return;
             
             %subgroups
-            props = [props; parseList(obj.subgroups, prefix)];
-            
-            %datasets
-            props = [props; parseList(obj.datasets, prefix)];
-            
-            %attributes
-            props = [props; parseList(obj.attributes, prefix)];
-            
-            %links
-            props = [props; parseList(obj.links, prefix)];
-            
-            function props = parseList(l, prefix)
-                props = containers.Map;
-                for i=1:length(l)
-                    subp = l(i).getProps();
-                    if ~isempty(prefix)
-                        subkeys = keys(subp);
-                        for j=1:length(subkeys)
-                            k = subkeys{j};
-                            props([prefix '_' k]) = subp(k);
+            for i=1:length(obj.subgroups)
+                %if typed, check if constraint
+                % if constraint, add its type and continue
+                % otherwise, call getprops and assign to its name.
+                %if untyped, check if elided
+                % if elided, add to prefix and check all subgroups, attributes and datasets.
+                % otherwise, call getprops and assign to its name.
+                sub = obj.subgroups(i);
+                if isempty(sub.type)
+                    if sub.elide
+                        subprops = sub.getProps;
+                        epkeys = keys(subprops);
+                        for j=1:length(epkeys)
+                            epk = epkeys{j};
+                            props([sub.name '_' epk]) = subprops(epk);
                         end
                     else
-                        props = [props; subp];
+                        props(sub.name) = sub;
+                    end
+                else
+                    if isempty(sub.name)
+                        props(lower(sub.type)) = sub;
+                    else
+                        props(sub.name) = sub;
                     end
                 end
+            end
+            
+            %datasets
+            for i=1:length(obj.datasets)
+                %if typed, check if constraint
+                % if constraint, add its type and continue
+                % otherwise, call getprops and assign to its name.
+                %if untyped, assign data to its dtype and process attributes
+                sub = obj.datasets(i);
+                if isempty(sub.type)
+                    for j=1:length(sub.attributes)
+                        subattr = sub.attributes(j);
+                        props([sub.name '_' subattr.name]) = subattr;
+                    end
+                    props(sub.name) = sub;
+                else
+                    if isempty(sub.name)
+                        props(lower(sub.type)) = sub;
+                    else
+                        props(sub.name) = sub;
+                    end
+                end
+            end
+            
+            %attributes
+            for i=1:length(obj.attributes)
+                attr = obj.attributes(i);
+                props(attr.name) = attr;
+            end
+            
+            %links
+            for i=1:length(obj.links)
+                link = obj.links(i);
+                props(link.name) = link;
             end
         end
     end

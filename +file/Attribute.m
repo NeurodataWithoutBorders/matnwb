@@ -46,10 +46,5 @@ classdef Attribute < handle
             
             obj.dtype = file.mapType(source.get('dtype'));
         end
-        
-        function props = getProps(obj)
-            props = containers.Map;
-            props(obj.name) = obj.dtype;
-        end
     end
 end
