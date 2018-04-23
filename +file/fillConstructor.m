@@ -1,12 +1,11 @@
-function fcstr = fillConstructor(name, parentname, defaults, dependent, required, optional, props)
+function fcstr = fillConstructor(name, parentname, defaults, propnames, props)
 caps = upper(name);
 fcnbody = strjoin({['% ' caps ' Constructor for ' name]...
     ['%     obj = ' caps '(parentname1,parentvalue1,..,parentvalueN,parentargN,name1,value1,...,nameN,valueN)']...
     }, newline);
 fcns = {...
-    @()fillParamDocs('REQUIRED', setdiff(required, dependent), props.named)...
-    @()fillParamDocs('OPTIONAL', setdiff(optional, dependent), props.named)...
-    @()fillBody(parentname, defaults, dependent, required, optional, props)...
+    @()fillParamDocs(propnames, props)...
+    @()fillBody(parentname, defaults, propnames, props)...
     };
 for i=1:length(fcns)
     fcn = fcns{i};
@@ -57,14 +56,10 @@ if nargin >= 2
 end
 end
 
-function fcstr = fillParamDocs(proptypenm, names, props)
+function fcstr = fillParamDocs(names, props)
 fcstr = '';
 if isempty(names)
     return;
-end
-
-if ~isempty(proptypenm)
-    fcstr = ['% ' proptypenm];
 end
 
 for i=1:length(names)
@@ -74,14 +69,14 @@ for i=1:length(names)
 end
 end
 
-function bodystr = fillBody(pname, defaults, dependent, required, optional, props)
+function bodystr = fillBody(pname, defaults, names, props)
 if isempty(defaults)
     bodystr = '';
 else
     usmap = containers.Map;
     for i=1:length(defaults)
         nm = defaults{i};
-        usmap(nm) = props.named(nm).value;
+        usmap(nm) = props(nm).value;
     end
     kwargs = io.map2kwargs(usmap);
     bodystr = ['varargin = [' util.cellPrettyPrint(kwargs) ' varargin];' newline];
@@ -92,53 +87,15 @@ bodystr = strjoin({bodystr...
     'p.KeepUnmatched = true;'... %suppress subclass/parent props
     'p.PartialMatching = false;'...
     'p.StructExpand = false;'}, newline);
-params = [required optional];
-for i=1:length(params)
-    var = params{i};
+for i=1:length(names)
+    var = names{i};
     bodystr = [bodystr newline 'addParameter(p, ''' var ''', []);'];
 end
 
 bodystr = [bodystr newline 'parse(p, varargin{:});'];
 
-%check required values that don't have a set value and are independent
-req_unset = setdiff(required, [defaults dependent]);
-if ~isempty(req_unset)
-    req_body = strjoin({...
-        ['required = ' util.cellPrettyPrint(req_unset) ';']...
-        'missing = intersect(p.UsingDefaults, required);'...
-        'if ~isempty(missing)'...
-        '    error(''Missing Required Argument(s) { %s }'', strjoin(missing, '', ''));'...
-        'end'}, newline);
-    bodystr = [bodystr newline req_body];
-end
-
-%construct parent->dependent structure
-dep_parents = struct();
-for i=1:length(dependent)
-    dep = dependent{i};
-    dep_p = props.named(dep);
-    parent = dep_p.dependent;
-    if ~startsWith(dep, parent)
-        parent = strrep(dep, ['_' dep_p.name], '');
-    end
-    if isfield(dep_parents, parent)
-        deps = dep_parents.(parent);
-        dep_parents.(parent) = [deps {dep}];
-    else
-        dep_parents.(parent) = {dep};
-    end
-end
-
-%check each optional parent if they exist, then check their required dependents
-dep_p_list = fieldnames(dep_parents);
-for i=1:length(dep_p_list)
-    parent = dep_p_list{i};
-    children = util.cellPrettyPrint(dep_parents.(parent));
-    bodystr = [bodystr newline 'types.util.checkDependent(''' parent ''', ' children ', p.UsingDefaults);'];
-end
-
-for i=1:length(params)
-    var = params{i};
+for i=1:length(names)
+    var = names{i};
     bodystr = [bodystr newline 'obj.' var ' = p.Results.' var ';'];
 end
 end

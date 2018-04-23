@@ -6,7 +6,7 @@ function template = fillClass(name, namespace, pregen)
 [processed, classprops, inherited] = processClass(name, namespace, pregen);
 class = processed(1);
 
-allprops = keys(classprops.named);
+allprops = keys(classprops);
 required = {};
 optional = {};
 readonly = {};
@@ -15,7 +15,7 @@ dependent = {};
 %separate into readonly, required, and optional properties
 for i=1:length(allprops)
     pnm = allprops{i};
-    prop = classprops.named(pnm);
+    prop = classprops(pnm);
     
     if ischar(prop) || isa(prop, 'java.util.HashMap') || isstruct(prop) || prop.required
         required = [required {pnm}];
@@ -35,7 +35,7 @@ for i=1:length(allprops)
         if ~isempty(prop.dependent)
             %extract prefix
             parentname = strrep(pnm, ['_' prop.name], '');
-            parent = classprops.named(parentname);
+            parent = classprops(parentname);
             if ~parent.required
                 dependent = [dependent {pnm}];
             end
@@ -61,14 +61,12 @@ classDef = [...
     'classdef ' name ' < ' depnm newline... %header, dependencies
     '% ' name ' ' class.doc]; %name, docstr
 propgroups = {...
-    @()file.fillProps(classprops.named, ro_unique, 'SetAccess=protected')...
-    @()file.fillProps(classprops.named, setdiff(req_unique, ro_unique))...
-    @()file.fillProps(classprops.named, setdiff(opt_unique, ro_unique))...
+    @()file.fillProps(classprops, ro_unique, 'SetAccess=protected')...
+    @()file.fillProps(classprops, setdiff([req_unique opt_unique], ro_unique))...
     };
 docsep = {...
     '% READONLY'...
-    '% REQUIRED'...
-    '% OPTIONAL'...
+    '% PROPERTIES'...
     };
 propsDef = '';
 for i=1:length(propgroups)
@@ -82,9 +80,7 @@ end
 constructorBody = file.fillConstructor(name,...
     depnm,...
     defaults,... %all defaults, regardless of inheritance
-    dependent,...
-    req_unique,...
-    opt_unique,...
+    [req_unique opt_unique],...
     classprops);
 setterFcns = file.fillSetters(setdiff(non_inherited, ro_unique));
 validatorFcns = file.fillValidators(allprops, classprops, namespace);
@@ -102,7 +98,7 @@ rootname = branch(end).get('neurodata_type_def');
 switch rootname
     case 'NWBContainer'
         isgroup = true;
-    case {'NWBData', 'SpecFile'}
+    case {'NWBData', 'SpecFile', 'Image'}
         isgroup = false;
     otherwise
         error('Unexpected root class %s', rootname);
@@ -117,19 +113,18 @@ for i=length(branch):-1:1
         else
             class = file.Dataset(node);
         end
-        [namedprops, varargs] = class.getProps();
-        allprops = struct('named', namedprops,'varargs', {varargs});
-        pregen(nodename) = struct('class', class, 'props', allprops);
+        props = class.getProps();
+        pregen(nodename) = struct('class', class, 'props', props);
     end
     
     processed(i) = pregen(nodename).class;
 end
 classprops = pregen(name).props;
-names = keys(classprops.named);
+names = keys(classprops);
 inherited = {};
 for i=2:length(processed)
     pname = processed(i).type;
-    parentPropNames = keys(pregen(pname).props.named);
+    parentPropNames = keys(pregen(pname).props);
     inherited = union(inherited, intersect(names, parentPropNames));
 end
 end

@@ -2,7 +2,7 @@ function fvstr = fillValidators(propnames, props, namespacereg)
 fvstr = '';
 for i=1:length(propnames)
     nm = propnames{i};
-    prop = props.named(nm);
+    prop = props(nm);
     
     %if readonly and value exists then ignore
     if isa(prop, 'file.Attribute') && prop.readonly && ~isempty(prop.value)

@@ -78,20 +78,20 @@ classdef Group < handle
                 end
             end
             
-            obj.isConstrainedSet = ~obj.scalar && ~isempty(obj.type);
+            obj.isConstrainedSet = ~obj.scalar && isempty(type) && ~isempty(parent);
             
             %do attributes
             attributes = source.get('attributes');
             if ~isempty(attributes)
                 len = attributes.size();
-                obj.attributes = struct();
+                obj.attributes = repmat(file.Attribute, len, 1);
                 attriter = attributes.iterator();
                 for i=1:len
                     nextattr = file.Attribute(attriter.next());
                     if isempty(obj.type)
                         nextattr.dependent = obj.name;
                     end
-                    obj.attributes.(nextattr.name) = nextattr;
+                    obj.attributes(i) = nextattr;
                 end
             end
             
@@ -131,11 +131,11 @@ classdef Group < handle
             links = source.get('links');
             if ~isempty(links)
                 len = links.size();
-                obj.links = struct();
+                obj.links = repmat(file.Link, len, 1);
                 liter = links.iterator();
                 for i=1:len
                     nextlink = liter.next();
-                    obj.links.(nextlink.get('name')) = file.Link(nextlink);
+                    obj.links(i) = file.Link(nextlink);
                 end
             end
             
@@ -147,72 +147,66 @@ classdef Group < handle
             obj.hasAnonGroups = anonGroupCnt > 0;
             
             obj.elide = obj.scalar && isempty(obj.type) && isempty(obj.attributes)...
-                && ~obj.hasAnonData && ~obj.hasAnonGroups;
+                && isempty(obj.links) && ~obj.hasAnonData && ~obj.hasAnonGroups...
+                && ~obj.defaultEmpty;
         end
         
-        function [props, varargs] = getProps(obj)
+        function props = getProps(obj)
             props = containers.Map;
-            varargs = {};
-            
-            if ~isempty(obj.name)
-                propertyname = obj.name;
+            %typed + constrained
+            % return itself as lower(obj.type) -> self
+            % only returns itself as type is defined elsewhere.
+            if ~isempty(obj.type) && obj.isConstrainedSet
+                props(lower(obj.type)) = obj;
+                return;
             end
             
-            if ~obj.elide
-                if obj.isConstrainedSet
-                    varargs = {obj};
-                elseif ~isempty(propertyname)
-                    props(propertyname) = obj;
-                end
+            %untyped
+            % returns itself
+            if isempty(obj.type) && ~obj.elide
+                props(obj.name) = obj;
+                return;
             end
             
-            if ~obj.hasAnonData && ~obj.hasAnonGroups 
-                if ~isempty(obj.attributes)
-                    names = fieldnames(obj.attributes);
-                    for i=1:length(names)
-                        nm = names{i};
-                        if obj.elide
-                            propnm = [propertyname '_' nm];
-                        else
-                            propnm = nm;
-                        end
-                        props(propnm) = obj.attributes.(nm);
-                    end
-                end
-                
-                if obj.elide
-                    prefix = obj.name;
-                else
-                    prefix = '';
-                end
-                [props, varargs] = processLists(prefix, obj.datasets, props, varargs);
-                [props, varargs] = processLists(prefix, obj.subgroups, props, varargs);
-                
-                if ~isempty(obj.links)
-                    names = fieldnames(obj.links);
-                    for i=1:length(names)
-                        nm = names{i};
-                        props(nm) = obj.links.(nm);
-                    end
-                end
+            %typed
+            % containersMap of properties -> types
+            % can have links, groups, datasets, and attributes
+            
+            %untyped + elide
+            % return next level's props but with this name prefixed.
+            % has any subprops just not constrained sets
+            
+            if obj.elide
+                prefix = obj.name;
+            else
+                prefix = '';
             end
             
-            function [subp, subv] = processLists(prefix, l, subp, subv)
-                for j=1:length(l)
-                    [sp, sv] = l(j).getProps();
-                    
-                    %map prop names to add prefix
+            %subgroups
+            props = [props; parseList(obj.subgroups, prefix)];
+            
+            %datasets
+            props = [props; parseList(obj.datasets, prefix)];
+            
+            %attributes
+            props = [props; parseList(obj.attributes, prefix)];
+            
+            %links
+            props = [props; parseList(obj.links, prefix)];
+            
+            function props = parseList(l, prefix)
+                props = containers.Map;
+                for i=1:length(l)
+                    subp = l(i).getProps();
                     if ~isempty(prefix)
-                        tempsp = containers.Map;
-                        pkeys = keys(sp);
-                        for k=1:length(pkeys)
-                            pk = pkeys{k};
-                            tempsp([prefix '_' pk]) = sp(pk);
+                        subkeys = keys(subp);
+                        for j=1:length(subkeys)
+                            k = subkeys{j};
+                            props([prefix '_' k]) = subp(k);
                         end
-                        sp = tempsp;
+                    else
+                        props = [props; subp];
                     end
-                    subp = [subp; sp];
-                    subv = [subv sv];
                 end
             end
         end

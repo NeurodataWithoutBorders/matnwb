@@ -94,12 +94,21 @@ classdef Dataset < handle
                 (isempty(obj.attributes) || isempty(fieldnames(obj.attributes)));
         end
         
-        function [props, varargs] = getProps(obj)
+        function props = getProps(obj)
             props = containers.Map;
-            varargs = {};
+            
+            %typed
+            % return props as typed props with custom `data`, `ref`, or `table`
+            % types
+            
+            %untyped
+            % Return data + all dependent attributes as separate props
+            
+            %constrained
+            % return itself
             
             if obj.isConstrainedSet
-                varargs = {obj};
+                props(lower(obj.type)) = obj;
                 return;
             end
             
