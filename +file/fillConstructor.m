@@ -1,11 +1,11 @@
-function fcstr = fillConstructor(name, parentname, defaults, propnames, props)
+function fcstr = fillConstructor(name, parentname, defaults, propnames, props, namespace)
 caps = upper(name);
 fcnbody = strjoin({['% ' caps ' Constructor for ' name]...
     ['%     obj = ' caps '(parentname1,parentvalue1,..,parentvalueN,parentargN,name1,value1,...,nameN,valueN)']...
     }, newline);
 fcns = {...
     @()fillParamDocs(propnames, props)...
-    @()fillBody(parentname, defaults, propnames, props)...
+    @()fillBody(parentname, defaults, propnames, props, namespace)...
     };
 for i=1:length(fcns)
     fcn = fcns{i};
@@ -47,7 +47,7 @@ elseif isa(prop, 'java.util.HashMap')
 elseif isa(prop, 'file.Dataset') && isempty(prop.type)
     fdfp = fillDocFromProp(prop.dtype);
 elseif isempty(prop.type)
-    fdfp = 'containers.Map';
+    fdfp = 'types.untyped.Set';
 else
     fdfp = prop.type;
 end
@@ -69,7 +69,7 @@ for i=1:length(names)
 end
 end
 
-function bodystr = fillBody(pname, defaults, names, props)
+function bodystr = fillBody(pname, defaults, names, props, namespace)
 if isempty(defaults)
     bodystr = '';
 else
@@ -82,20 +82,51 @@ else
     bodystr = ['varargin = [' util.cellPrettyPrint(kwargs) ' varargin];' newline];
 end
 bodystr = [bodystr 'obj = obj@' pname '(varargin{:});'];
-bodystr = strjoin({bodystr...
-    'p = inputParser;'...
-    'p.KeepUnmatched = true;'... %suppress subclass/parent props
-    'p.PartialMatching = false;'...
-    'p.StructExpand = false;'}, newline);
+
+constrained = {};
+parseable = {};
 for i=1:length(names)
     var = names{i};
-    bodystr = [bodystr newline 'addParameter(p, ''' var ''', []);'];
+    pv = props(var);
+    if ((isa(pv, 'file.Group') || isa(pv, 'file.Dataset')) && pv.isConstrainedSet)
+        constrained = [constrained {var}];
+    else
+        parseable = [parseable {var}];
+    end
+end
+if ~isempty(parseable)
+    bodystr = strjoin({bodystr...
+        'p = inputParser;'...
+        'p.KeepUnmatched = true;'... %suppress subclass/parent props
+        'p.PartialMatching = false;'...
+        'p.StructExpand = false;'}, newline);
+    for i=1:length(parseable)
+        var = parseable{i};
+        bodystr = [bodystr newline 'addParameter(p, ''' var ''', []);'];
+    end
+    
+    bodystr = [bodystr newline 'parse(p, varargin{:});'];
+    
+    for i=1:length(parseable)
+        var = parseable{i};
+        bodystr = [bodystr newline 'obj.' var ' = p.Results.' var ';'];
+    end
 end
 
-bodystr = [bodystr newline 'parse(p, varargin{:});'];
-
-for i=1:length(names)
-    var = names{i};
-    bodystr = [bodystr newline 'obj.' var ' = p.Results.' var ';'];
+%if constrained sets exist, then check for nonstandard parameters and add as
+%container.map
+for i=1:length(constrained)
+    cname = constrained{i};
+    pc = props(cname);
+    varname = lower(pc.type);
+    pc_namespace = namespace.getNamespace(pc.type);
+    if isempty(pc_namespace)
+        warning('`%s`''s constructor is unable to check for type `%s` because its namespace could not be found.  Please generate the namespace or class definition for type `%s`.'...
+            , pname, pc.type, pc.type);
+        continue;
+    end
+    fulltypename = ['types.' pc_namespace.name '.' pc.type];
+    methodcall = ['types.util.parseConstrained(''' fulltypename ''', varargin{:})'];
+    bodystr = [bodystr newline 'obj.' varname ' = ' methodcall ';']; 
 end
 end

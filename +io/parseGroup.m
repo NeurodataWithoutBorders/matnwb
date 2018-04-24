@@ -53,7 +53,7 @@ if isempty(typename)
     %no typed objects in it.
     propnames = keys(props);
     if hasTypes
-        parsed = containers.Map({root}, {props});
+        parsed = types.untyped.Set(props);
     else
         parsed = containers.Map;
         for i=1:length(propnames)
@@ -61,6 +61,7 @@ if isempty(typename)
             p = props(pnm);
             parsed([root '_' pnm]) = p;
         end
+        parsed = types.untyped.Set(parsed);
     end
     
     if isempty(parsed)

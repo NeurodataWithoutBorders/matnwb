@@ -166,6 +166,7 @@ groups:
       - doc: One or more image stacks that the masks apply to (can be one-element
           stack)
         neurodata_type_inc: ImageSeries
+        quantity: +
       name: reference_images
     links:
     - doc: link to ImagingPlane group from which this TimeSeries data was generated

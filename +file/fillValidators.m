@@ -53,7 +53,7 @@ elseif isa(prop, 'file.Group')
                 namedprops.(ds.name) = ds.dtype;
             else
                 ds_nmspc = namespacereg.getNamespace(ds.type).name;
-                type = ['types.' ds_namespace '.' ds.type];
+                type = ['types.' ds_nmspc '.' ds.type];
                 if ds.isConstrainedSet
                     constr = [constr {type}];
                 else
@@ -74,7 +74,8 @@ elseif isa(prop, 'file.Group')
             if isempty(sg.type)
                 error('Weird case with two untyped groups');
             end
-            if sg.isConstrainedSet
+            
+            if isempty(sg.name)
                 constr = [constr {sgfullname}];
             else
                 namedprops.(sg.name) = sgfullname;
@@ -104,13 +105,13 @@ elseif isa(prop, 'file.Group')
         end
         fuvstr = strjoin({fuvstr...
             ['constrained = {' strtrim(evalc('disp(constr)')) '};']...
-            ['types.util.checkConstrained(''' name ''', namedprops, constrained, val);']...
+            ['types.util.checkSet(''' name ''', namedprops, constrained, val);']...
             }, newline);
     elseif prop.isConstrainedSet
         namespace = namespacereg.getNamespace(prop.type).name;
         fuvstr = strjoin({fuvstr...
             ['constrained = {''types.' namespace '.' prop.type '''};']...
-            ['types.util.checkConstrained(''' name ''', struct(), constrained, val);']...
+            ['types.util.checkSet(''' name ''', struct(), constrained, val);']...
             }, newline);
     else
         namespace = namespacereg.getNamespace(prop.type).name;

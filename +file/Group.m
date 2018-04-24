@@ -77,7 +77,7 @@ classdef Group < handle
                 end
             end
             
-            obj.isConstrainedSet = ~obj.scalar && ~isempty(type);
+            obj.isConstrainedSet = ~obj.scalar && ~isempty(obj.type);
             
             %do attributes
             attributes = source.get('attributes');
