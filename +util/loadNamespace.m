@@ -14,15 +14,19 @@ else
     extNamespaces = containers.Map;
 end
 
-deps = []; %create list of parent Namespaces to create Namespace object
-for i=length(namespace.dependencies):-1:1
-    depname = namespace.dependencies{i};
+deps = schemes.Namespace.empty(0,0); %create list of parent Namespaces to create Namespace object
+
+dependencies=namespace.dependencies;
+schema=namespace.schema;
+
+for i=length(dependencies):-1:1
+    depname = dependencies{i};
     if ~isKey(extNamespaces, depname)
         extNamespaces = [extNamespaces; util.loadNamespace(depname, extNamespaces)];
     end
     deps(i) = extNamespaces(depname);
 end
 
-extNamespaces(name) = schemes.Namespace(name, deps, namespace.schema);
+extNamespaces(name) = schemes.Namespace(name, deps, schema);
 
 end

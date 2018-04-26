@@ -123,7 +123,7 @@ classdef Dataset < handle
             % one of which is a region reference and the other is a compound
             % type.
             % therefore, we currently do not have a case for a regular typed
-            % dataset (because there isn't any.
+            % dataset (because there isn't any).
             if ~isempty(obj.dtype)
                 if isstruct(obj.dtype)
                     props('table') = obj.dtype;
