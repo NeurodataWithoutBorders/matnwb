@@ -56,34 +56,13 @@ classdef Set < handle & matlab.mixin.CustomDisplay
         function obj = clear(obj)
             obj.map = containers.Map;
         end
+        
+        function o = get(obj, name)
+            o = obj.map(name);
+        end      
     end
     
     methods(Access=protected)
-        function out = subsref(obj, s)
-            out = {};
-            if ischar(s.subs) || iscellstr(s.subs) || isstring(s.subs)
-                subs = obj.merge_stringtypes(s.subs);
-                
-                if length(subs) == 1 && any(strcmp(subs{1}, properties(obj)))
-                    out = obj.(subs{1});
-                    return;
-                end
-                for i=1:length(subs)
-                    sub = subs{i};
-                    if isKey(obj.map, sub)
-                        out = [out; obj.map(sub)];
-                    end
-                end
-            end
-            
-            switch length(out)
-                case 1
-                    out = out{1};
-                case 0
-                    out = [];
-            end
-        end
-        
         function displayScalarObject(obj)
             hdr = getHeader(obj);
             footer = getFooter(obj);
@@ -109,7 +88,7 @@ classdef Set < handle & matlab.mixin.CustomDisplay
     methods(Access=private)
         %converts to cell string.  Does not do type checking.
         function cellval = merge_stringtypes(obj, val)
-            if issstring(val)
+            if isstring(val)
                 val = convertStringsToChars(val);
             end
             

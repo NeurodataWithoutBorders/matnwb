@@ -12,6 +12,6 @@ if isempty(ikeys)
 else
     map = containers.Map(varargin(ikeys), varargin(ivals));
     set = types.untyped.Set(map,...
-        @(val)types.util.checkConstraint(pname, name, struct(), {type}, val));
+        @(nm, val)types.util.checkConstraint(pname, nm, struct(), {type}, val));
 end
 end

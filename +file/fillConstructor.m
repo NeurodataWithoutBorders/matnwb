@@ -126,7 +126,7 @@ for i=1:length(constrained)
         continue;
     end
     fulltypename = ['types.' pc_namespace.name '.' pc.type];
-    methodcall = ['types.util.parseConstrained(''' fulltypename ''', varargin{:})'];
+    methodcall = ['types.util.parseConstrained(''' pname ''', ''' cname ''', ''' fulltypename ''', varargin{:})'];
     bodystr = [bodystr newline 'obj.' varname ' = ' methodcall ';']; 
 end
 end

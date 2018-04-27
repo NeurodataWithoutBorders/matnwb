@@ -1,48 +1,52 @@
-function obj = resolvePath(nwb, path)
-    % given a HDF5 Path (delimited by forward slashes), resolved nwb object
-    if length(path) < 2 || ~contains(path, '/')
-        error('Invalid path, either too short or missing forward slash delimiters.');
-    end
-    
-    tokens = split(path, '/');
-    if isempty(tokens{1})
-        tokens = tokens(2:end);
-    end
-    
-    partial = '';
-    cursor = nwb;
-    for i=1:length(tokens)
-        tok = tokens{i};
-        if isempty(tok)
-            error('Path syntax error `%s`', path);
+function o = resolvePath(nwb, path)
+dotTok = split(path, '.');
+tokens = split(dotTok{1}, '/');
+%skip first `/` if it exists
+if isempty(tokens{1})
+    tokens(1) = [];
+end
+
+%process slash tokens
+o = nwb;
+prefix = '';
+for i=1:length(tokens)
+    tok = tokens{i};
+    if isa(o, 'types.untyped.Set')
+        if any(strcmp(keys(o), tok))
+            o = o.get(tok);
+        else
+            error('Could not resolve path `%s`.  Could not find `%s`.', path, tok);
         end
-        if ~isempty(partial)
-            tok = [partial '_' tok];
-        end
-        p = properties(cursor);
-        
-        %logical map indicating possible partial match
-        potential = logical(size(p));
-        found = false;
-        for j=1:length(p)
-            pnm = p{j};
-            if strcmp(pnm, tok)
-                found = true;
-                partial = '';
-                cursor = cursor.(pnm);
-                break;
-            elseif startsWith(pnm, tok)
-                potential(j) = true;
-            end
-        end
-        
-        if ~found
-            if any(potential)
-                partial = tok;
+    else %is class
+        props = properties(o);
+        if any(strcmp(props, tok))
+            o = o.(tok);
+        elseif any(strcmp(props, [prefix '_' tok]))
+            o = o.([prefix '_' tok]);
+            prefix = '';
+        elseif any(startsWith(props, tok))
+            if isempty(prefix)
+                prefix = tok;
             else
-                error('`%s` was not found in the nwb object.', path);
+                prefix = [prefix '_' tok];
+            end
+        else
+            %dig one level into untyped sets because we don't know
+            %if the untyped set is extraneous to the type or not.
+            found = false;
+            for j=1:length(props)
+                set = o.(props{j});
+                if isa(set, 'types.untyped.Set') &&...
+                        any(strcmp(keys(set), tok))
+                    o = set.get(tok);
+                    found = true;
+                    break;
+                end
+            end
+            if ~found
+                error('Could not resolve path `%s`.  Could not find `%s`.', path, tok);
             end
         end
     end
-    obj = cursor;
+end
 end

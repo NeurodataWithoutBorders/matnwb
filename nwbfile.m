@@ -12,7 +12,7 @@ classdef nwbfile < types.core.NWBFile
     %
     % See also NWBREAD, GENERATECORE, GENERATEEXTENSIONS
     methods
-        function obj = nwbfile(varargin)
+        function obj = nwbfile(varargin) 
             p = inputParser;
             p.KeepUnmatched = true;
             p.PartialMatching = false;
@@ -42,32 +42,9 @@ classdef nwbfile < types.core.NWBFile
                 h5write(filename, '/file_create_date', datestr(datetime, 30));
             end
         end
-    end
-    
-    methods(Access=protected)
-        function out = subsref(obj, s)
-            out = {};
-            if ischar(s.subs) || iscellstr(s.subs) || isstring(s.subs)
-                subs = obj.merge_stringtypes(s.subs);
-                
-                if length(subs) == 1 && any(strcmp(subs{1}, properties(obj)))
-                    out = obj.(subs{1});
-                    return;
-                end
-                for i=1:length(subs)
-                    sub = subs{i};
-                    if isKey(obj.map, sub)
-                        out = [out; obj.map(sub)];
-                    end
-                end
-            end
-            
-            switch length(out)
-                case 1
-                    out = out{1};
-                case 0
-                    out = [];
-            end
+        
+        function o = resolve(obj, path)
+            o = io.resolvePath(obj, path);
         end
     end
 end

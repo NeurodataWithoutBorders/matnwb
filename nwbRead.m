@@ -25,8 +25,31 @@ if java.io.File(filename).isAbsolute
 else
   ff = fullfile(pwd, filename);
 end
-keyboard;
-%process refs
+
 %process links
+lkeys = keys(links);
+for i=1:length(links)
+    lnk = lkeys{i};
+    [stem, root] = io.pathParts(lnk);
+    nwbstem = nwb.resolve(stem);
+    lnkdest = links(lnk);
+    
+    if strcmp(lnkdest.Type, 'soft link')
+        nwbstem.(root) = nwb.resolve(lnkdest.Value);
+    else
+        keyboard;
+    end
+end
+
+%process refs
+rkeys = keys(refs);
+for i=1:length(rkeys)
+    ref = rkeys{i};
+    [stem, ~] = io.pathParts(ref);
+    refstem = nwb.resolve(stem);
+    refdest = refs(ref);
+%     refstem.ref = 
+end
+
 [fp, ~, ~] = fileparts(ff);
 end
