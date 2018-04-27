@@ -26,7 +26,7 @@ function generateExtension(source)
 validateattributes(source, {'char', 'string'}, {'scalartext'});
 
 extSchema = util.generateSchema(source);
-save(fullfile('namespaces',[extSchema.name '.mat']), extSchema);
+save(fullfile('namespaces',[extSchema.name '.mat']), '-struct', 'extSchema');
 
 %check/load dependency namespaces
 extmap = util.loadNamespace(extSchema.name);
