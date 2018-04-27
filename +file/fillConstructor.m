@@ -102,7 +102,13 @@ if ~isempty(parseable)
         'p.StructExpand = false;'}, newline);
     for i=1:length(parseable)
         var = parseable{i};
-        bodystr = [bodystr newline 'addParameter(p, ''' var ''', []);'];
+        prop = props(var);
+        if isa(prop, 'file.Group') && (prop.hasAnonData || prop.hasAnonGroups)
+            def = 'types.untyped.Set()';
+        else
+            def = '[]';
+        end
+        bodystr = [bodystr newline 'addParameter(p, ''' var ''', ' def ');'];
     end
     
     bodystr = [bodystr newline 'parse(p, varargin{:});'];
