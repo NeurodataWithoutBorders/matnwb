@@ -42,23 +42,27 @@ if strcmp(datatype.Class, 'H5T_REFERENCE')
 elseif strcmp(datatype.Class, 'H5T_COMPOUND')
     t = table;
     compound = datatype.Type.Member;
-    for j=1:length(compound)
-        comp = compound(j);
-        if strcmp(comp.Datatype.Class, 'H5T_REFERENCE')
-            refnames = data.(comp.Name);
-            reflist = repmat(struct('path', [], 'region', []), size(refnames));
-            for k=1:size(refnames,2)
-                r = refnames(:,k);
-                [path, reg] = parseReference(did, comp.Datatype.Type, r);
-                reflist(k).path = path;
-                reflist(k).region = reg;
+    if isempty(data)
+        props('table') = [];
+    else
+        for j=1:length(compound)
+            comp = compound(j);
+            if strcmp(comp.Datatype.Class, 'H5T_REFERENCE')
+                refnames = data.(comp.Name);
+                reflist = repmat(struct('path', [], 'region', []), 1, size(refnames, 2));
+                for k=1:size(refnames,2)
+                    r = refnames(:,k);
+                    [path, reg] = parseReference(did, comp.Datatype.Type, r);
+                    reflist(k).path = path;
+                    reflist(k).region = reg;
+                end
+                refs([fullpath '.' comp.Name]) = reflist;
+                %for some reason, raw references are stored transposed.
+                data.(comp.Name) = cell(size(refnames, 2), 1);
             end
-            refs([fullpath '/' info.Name '.' comp.Name]) = reflist;
-            %for some reason, raw references are stored transposed.
-            data.(comp.Name) = cell(size(refnames, 2), 1);
         end
+        props('table') = struct2table(data);
     end
-    props('table') = struct2table(data);
 else
     keyboard;
 end

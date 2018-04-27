@@ -17,35 +17,36 @@ for i=1:length(tokens)
         else
             error('Could not resolve path `%s`.  Could not find `%s`.', path, tok);
         end
-    else %is class
-        props = properties(o);
-        if any(strcmp(props, tok))
-            o = o.(tok);
-        elseif any(strcmp(props, [prefix '_' tok]))
-            o = o.([prefix '_' tok]);
-            prefix = '';
-        elseif any(startsWith(props, tok))
-            if isempty(prefix)
-                prefix = tok;
-            else
-                prefix = [prefix '_' tok];
-            end
+        continue;
+    end
+    %is class
+    props = properties(o);
+    if any(strcmp(props, tok))
+        o = o.(tok);
+    elseif any(strcmp(props, [prefix '_' tok]))
+        o = o.([prefix '_' tok]);
+        prefix = '';
+    elseif any(startsWith(props, tok))
+        if isempty(prefix)
+            prefix = tok;
         else
-            %dig one level into untyped sets because we don't know
-            %if the untyped set is extraneous to the type or not.
-            found = false;
-            for j=1:length(props)
-                set = o.(props{j});
-                if isa(set, 'types.untyped.Set') &&...
-                        any(strcmp(keys(set), tok))
-                    o = set.get(tok);
-                    found = true;
-                    break;
-                end
+            prefix = [prefix '_' tok];
+        end
+    else
+        %dig one level into untyped sets because we don't know
+        %if the untyped set is extraneous to the type or not.
+        found = false;
+        for j=1:length(props)
+            set = o.(props{j});
+            if isa(set, 'types.untyped.Set') &&...
+                    any(strcmp(keys(set), tok))
+                o = set.get(tok);
+                found = true;
+                break;
             end
-            if ~found
-                error('Could not resolve path `%s`.  Could not find `%s`.', path, tok);
-            end
+        end
+        if ~found
+            error('Could not resolve path `%s`.  Could not find `%s`.', path, tok);
         end
     end
 end

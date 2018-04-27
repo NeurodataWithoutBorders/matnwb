@@ -13,7 +13,7 @@ for i=1:length(propnames)
     else %primitive type
         validationBody = fillDtypeValidation(nm, prop, namespacereg);
     end
-    hdrstr = ['function validate_' nm '(obj, val)'];
+    hdrstr = ['function val = validate_' nm '(obj, val)'];
     fcnStr = strjoin({hdrstr file.addSpaces(validationBody, 4) 'end'}, newline);
     fvstr = [fvstr newline fcnStr];
 end
@@ -153,6 +153,9 @@ function fdvstr = fillDtypeValidation(name, type, namespacereg)
 if isstruct(type)
     fnames = fieldnames(type);
     fdvstr = strjoin({...
+        'if isempty(val)'...
+        '    return;'...
+        'end'...
         'if ~istable(val)'...
         ['    error(''Property `' name '` must be a table.'');']...
         'end'...
@@ -175,6 +178,6 @@ else
     else
         ts = type;
     end
-    fdvstr = ['types.util.checkDtype(''' name ''', ''' ts ''', val);'];
+    fdvstr = ['val = types.util.checkDtype(''' name ''', ''' ts ''', val);'];
 end
 end

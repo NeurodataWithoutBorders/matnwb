@@ -1,10 +1,9 @@
 % converts dtype name to type name.  If struct, then returns a struct of mapped types
 function dt = mapType(dtype)
 dt = [];
-if isempty(dtype)
-    return;
-end
-if isa(dtype, 'java.util.ArrayList')
+if isempty(dtype) || any(strcmp({'None', 'any'}, dtype))
+    dt = 'any';
+elseif isa(dtype, 'java.util.ArrayList')
     %compound type
     dt = struct();
     len = dtype.size();
@@ -23,8 +22,6 @@ elseif isa(dtype, 'java.util.HashMap')
     dt = dtype;
 elseif startsWith(dtype, 'float') || strcmp(dtype, 'number')
     dt = 'double';
-elseif any(strcmp({'None', 'any'}, dtype)) || isempty(dtype)
-    dt = 'any';
 elseif any(strcmp({'ascii', 'str', 'text', 'utf8'}, dtype))
     dt = 'char';
 elseif startsWith(dtype, 'int')

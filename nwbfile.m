@@ -23,9 +23,6 @@ classdef nwbfile < types.core.NWBFile
             if any(strcmp('nwb_version', p.UsingDefaults))
                 varargin = [{'nwb_version'} {'1.0.2'}];
             end
-            if any(strcmp('file_create_date', p.UsingDefaults))
-                varargin = [{'file_create_date'} {''}];
-            end
             obj = obj@types.core.NWBFile(varargin{:});
         end
         
@@ -40,6 +37,10 @@ classdef nwbfile < types.core.NWBFile
             
             if isempty(obj.file_create_date)
                 h5write(filename, '/file_create_date', datestr(datetime, 30));
+            end
+            
+            if isempty(obj.nwb_version)
+                h5write(filename, '/nwb_version', {'1.0.2'});
             end
         end
         
