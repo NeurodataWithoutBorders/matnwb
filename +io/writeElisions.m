@@ -1,5 +1,5 @@
-function gids = writeElisions(loc_id, path)
-gids = [];
+function gid = writeElisions(loc_id, path)
+gid = [];
 if ~contains(path, '/')
     return;
 end
@@ -11,10 +11,11 @@ if isempty(path)
 end
 
 splitpath = split(path, '/');
-gids = zeros(size(splitpath));
 
-gids(1) = io.writeGroup(loc_id, splitpath{1});
+prevgid = io.writeGroup(loc_id, splitpath{1});
 for i=2:length(splitpath)
-    gids(i) = io.writeGroup(gids(i-1), splitpath{i});
+    gid = io.writeGroup(prevgid, splitpath{i});
+    H5G.close(prevgid);
+    prevgid = gid;
 end
 end

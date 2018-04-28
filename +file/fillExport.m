@@ -7,14 +7,25 @@ for i=1:length(pathlist)
     path = pathlist{i};
     pnm = propnames{i};
     prop = props(pnm);
+    writeloc = 'loc_id';
     if isempty(path)
         %constrained or open type
-    elseif any(strcmp(propnames, path))
-        %names are equal
-    else
+    elseif ~any(strcmp(propnames, path))
         %write elided values
-        bodystr = [bodystr newline 'gids = io.writeElisions(loc_id, ''' path ''');'];
+        bodystr = strjoin({bodystr...
+            ['subloc_id = io.writeElisions(loc_id, ''' path ''');']...
+            }, newline);
+        writeloc = 'subloc_id';
     end
+    
+    if isempty(path)
+        suffix = pnm;
+    else
+        suffix = [pnm '/' path];
+    end
+    
+    %name matches
+    bodystr = [bodystr newline fillDataExport(pnm, prop, writeloc, suffix)];
 end
 
 festr = strjoin({hdrstr file.addSpaces(bodystr, 4) 'end'}, newline);
@@ -25,10 +36,7 @@ function pplist = procProps(propnames, raw)
 pplist = cell(size(propnames));
 for i=1:length(propnames)
     pnm = propnames{i};
-    path = traverseRaw(pnm, raw);
-    if isempty(path)
-    else
-    end
+    pplist{i} = traverseRaw(pnm, raw);
 end
 end
 
@@ -87,5 +95,37 @@ switch class(raw)
         if any(strcmp(anames, propname))
             path = propname;
         end
+end
+end
+
+function fde = fillDataExport(name, prop, location, suffix)
+if (isa(prop, 'file.Group') || isa(prop, 'file.Dataset')) && ~isempty(prop.type)
+    % obj, filename, loc_id, path, links, refs
+    fde = strjoin({...
+        ['[l, r] = obj.' name '.export(filename, ''' location ''', [path ''' suffix '''], links, refs);']...
+        'links = [links l];'...
+        'refs = [refs r];'...
+        }, newline);
+    return;
+end
+
+if isa(prop, 'file.Group')
+elseif isa(prop, 'file.Link')
+    keyboard;
+    fde = strjoin({...
+        ['if isa(obj.' name ', ''types.untyped.External''']...
+        '    io.writeExternalLink();'...
+        'else'...
+        '    io.writeSoftLink()'...
+        'end'...
+        }, newline);
+else %dataset
+    fde = strjoin({...
+        ['if isa(obj.' name ', ''types.untyped.External''']...
+        '    io.writeExternalLink();'...
+        'else'...
+        '    io.writeDataset();'...
+        'end'...
+        }, newline);
 end
 end
