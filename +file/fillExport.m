@@ -1,131 +1,216 @@
-function festr = fillExport(name, propnames, raw, props)
-hdrstr = 'function [links, refs] = export(obj, filename, loc_id, path, links, refs)';
-bodystr = '';
-%map property names to full relative path
-pathlist = procProps(propnames, raw);
-for i=1:length(pathlist)
-    path = pathlist{i};
-    pnm = propnames{i};
-    prop = props(pnm);
-    writeloc = 'loc_id';
-    if isempty(path)
-        %constrained or open type
-    elseif ~any(strcmp(propnames, path))
-        %write elided values
-        bodystr = strjoin({bodystr...
-            ['subloc_id = io.writeElisions(loc_id, ''' path ''');']...
-            }, newline);
-        writeloc = 'subloc_id';
+function festr = fillExport(propnames, raw)
+hdrstr = 'function refs = export(obj, loc_id, name, path, refs)';
+%export this class first unless it's NWBFile
+if isa(raw, 'file.Dataset')
+    loc = 'did'; %Used later in `fillDataExport` to distinguish type of parent
+    %find the `data` field for the respective dataset
+    % it is either data|table|ref
+    if any(strcmp(propnames, 'ref'))
+        datapropname = 'ref';
+    elseif any(strcmp(propnames, 'table'))
+        datapropname = 'table';
+    else %data
+        datapropname = 'data';
     end
-    
-    if isempty(path)
-        suffix = pnm;
+    bodystr = ['[' loc ' refs] = io.writeDataset(loc_id, [path ''/'' name], name, class(' datapropname '), obj.' datapropname ', refs);'];
+    %filter propnames to remove data prop
+    propnames = propnames(~strcmp(propnames, datapropname));
+else %isa group
+    if strcmp(raw.type, 'NWBFile')
+        loc = 'loc_id';
+        bodystr = '';
     else
-        suffix = [pnm '/' path];
+        loc = 'gid';
+        bodystr = [loc ' = io.writeGroup(loc_id, name);'];
+    end
+end
+
+for i=1:length(propnames)
+    pnm = propnames{i};
+    pathProps = traverseRaw(pnm, raw);
+    prop = pathProps{end};
+    pathProps(end) = []; %delete prop
+    
+    %construct path for groups
+    path = '';
+    subloc = '';
+    while ~isempty(pathProps) && isa(pathProps{1}, 'file.Group')
+        path = [path '/' pathProps{1}.name];
+        pathProps = pathProps(2:end);
+    end
+    if isempty(pathProps) && ~isempty(path)
+        %this property has elided groups
+        subloc = 'sub_gid';
+        bodystr = strjoin({bodystr...
+            [subloc ' = io.writeElisions(loc_id, ''' path ''');']...
+            }, newline);
+    elseif ~isempty(pathProps)
+        %this property is dependent on an untyped dataset
+        path = [path '/' pathProps{1}.name];
+        subloc = 'sub_did';
+        bodystr = strjoin({bodystr...
+            [subloc ' = H5D.open(loc_id, ''' path ''');']...
+            }, newline);
     end
     
-    %name matches
-    bodystr = [bodystr newline fillDataExport(pnm, prop, writeloc, suffix)];
+    if isempty(subloc)
+        writeloc = loc;
+    else
+        writeloc = subloc;
+    end
+    
+    bodystr = [bodystr newline fillDataExport(pnm, prop, writeloc)];
+    
+    if ~isempty(subloc)
+        switch subloc
+            case 'sub_did'
+                closestr = ['H5D.close(' subloc ');'];
+            case 'sub_gid'
+                closestr = ['H5G.close(' subloc ');'];
+        end
+        bodystr = [bodystr newline closestr];
+    end
 end
+
+switch loc
+    case 'did'
+        closestr = ['H5D.close(' loc ');'];
+    case 'gid'
+        closestr = ['H5G.close(' loc ');'];
+end
+bodystr = [bodystr newline closestr];
 
 festr = strjoin({hdrstr file.addSpaces(bodystr, 4) 'end'}, newline);
 end
 
-%returns cell array propnames -> specific path
-function pplist = procProps(propnames, raw)
-pplist = cell(size(propnames));
-for i=1:length(propnames)
-    pnm = propnames{i};
-    pplist{i} = traverseRaw(pnm, raw);
-end
-end
-
 function path = traverseRaw(propname, raw)
-path = '';
+path = {};
 switch class(raw)
     case 'file.Group'
         %get names of both subgroups and datasets
-        gnames = cell(size(raw.subgroups));
-        dsnames = cell(size(raw.datasets));
-        for i=1:length(raw.subgroups)
-            sg = raw.subgroups(i);
-            if sg.isConstrainedSet || isempty(sg.name)
-                gnames{i} = lower(sg.type);
-            else
-                gnames{i} = sg.name;
-            end
+        gnames = {};
+        dsnames = {};
+        lnknames = {};
+        anames = {};
+        
+        if ~isempty(raw.attributes)
+            anames = {raw.attributes.name};
         end
-        for i=1:length(raw.datasets)
-            ds = raw.datasets(i);
-            if ds.isConstrainedSet
-                dsnames{i} = lower(ds.type);
-            else
-                dsnames{i} = ds.name;
-            end
+        
+        if ~isempty(raw.subgroups)
+            gnames = {raw.subgroups.name};
+            lowerGroupTypes = lower({raw.subgroups.type});
+            useLower = [raw.subgroups.isConstrainedSet] | cellfun('isempty', gnames);
+            gnames(useLower) = lowerGroupTypes(useLower);
         end
-        allnames = [{}; gnames; dsnames];
-        if any(strcmp(allnames, propname))
-            path = propname;
+        
+        if ~isempty(raw.datasets)
+            dsnames = {raw.datasets.name};
+            lowerDsTypes = lower({raw.datasets.type});
+            useLower = [raw.datasets.isConstrainedSet];
+            dsnames(useLower) = lowerDsTypes(useLower);
+        end
+        
+        if ~isempty(raw.links)
+            lnknames = {raw.links.name};
+        end
+        
+        if any(strcmp([anames gnames dsnames lnknames], propname))
+            amatch = strcmp(anames, propname);
+            gmatch = strcmp(gnames, propname);
+            dsmatch = strcmp(dsnames, propname);
+            lnkmatch = strcmp(lnknames, propname);
+            if any(amatch)
+                path = {raw.attributes(amatch)};
+            elseif any(gmatch)
+                path = {raw.subgroups(gmatch)};
+            elseif any(dsmatch)
+                path = {raw.datasets(dsmatch)};
+            elseif any(lnkmatch)
+                path = {raw.links(lnkmatch)};
+            end
             return;
         end
         
-        %recurse with prefix
-        if startsWith(propname, allnames)
+        %find true path for elided property
+        if startsWith(propname, dsnames) || startsWith(propname, gnames)
             for i=1:length(gnames)
                 nm = gnames{i};
+                suffix = propname(length(nm)+2:end);
                 if startsWith(propname, nm)
-                    suffix = propname(length(nm)+2:end);
-                    
-                    %relies on the fact that allnames is [gnames dsnames]
-                    if i > length(gnames)
-                        subraw = raw.datasets(i-length(gnames));
-                    else
-                        subraw = raw.subgroups(i);
+                    res = traverseRaw(suffix, raw.subgroups(i));
+                    if ~isempty(res)
+                        path = [{raw.subgroups(i)} res];
+                        return;
                     end
-                    path = [nm '/' traverseRaw(suffix, subraw)];
+                end
+            end
+            for i=1:length(dsnames)
+                nm = dsnames{i};
+                suffix = propname(length(nm)+2:end);
+                if startsWith(propname, nm)
+                    res = traverseRaw(suffix, raw.datasets(i));
+                    if ~isempty(res)
+                        path = [{raw.datasets(i)} res];
+                        return;
+                    end
                 end
             end
         end
     case 'file.Dataset'
-        anames = cell(size(raw.attributes));
-        for i=1:length(raw.attributes)
-            attr = raw.attributes(i);
-            anames{i} = attr.name;
-        end
-        if any(strcmp(anames, propname))
-            path = propname;
+        attrmatch = strcmp({raw.attributes.name}, propname);
+        if any(attrmatch)
+            path = {raw.attributes(attrmatch)};
         end
 end
 end
 
-function fde = fillDataExport(name, prop, location, suffix)
-if (isa(prop, 'file.Group') || isa(prop, 'file.Dataset')) && ~isempty(prop.type)
-    % obj, filename, loc_id, path, links, refs
-    fde = strjoin({...
-        ['[l, r] = obj.' name '.export(filename, ''' location ''', [path ''' suffix '''], links, refs);']...
-        'links = [links l];'...
-        'refs = [refs r];'...
-        }, newline);
+function fde = fillDataExport(name, prop, location)
+callExportStr = ['refs = obj.' name '.export(' location ', ''' name ''', refs);'];
+
+if isa(prop, 'file.Link') ||...
+        ((isa(prop, 'file.Group') || isa(prop, 'file.Dataset')) && ~isempty(prop.type))
+    % obj, loc_id, path, refs
+    fde = callExportStr;
     return;
 end
 
 if isa(prop, 'file.Group')
-elseif isa(prop, 'file.Link')
-    keyboard;
+    subloc_id = [name '_id'];
+    constrainedStr = ['obj.' name '.export(' location ', [path ''/'' ''' name '''], refs);'];
+    
+    fde = [subloc_id ' = io.writeGroup(' location ', name);'];
+    % recurse into group
+    for i=1:length(prop.subgroups)
+        sg = prop.subgroups(i);
+        if sg.isConstrainedSet
+            %export the set
+            fde = [fde newline constrainedStr];
+        else
+            fde = [fde newline fillDataExport(sg.name, sg, subloc_id)];
+        end
+    end
+    for i=1:length(prop.datasets)
+        ds = prop.datasets(i);
+        if ds.isConstrainedSet
+            %iterate over all constrained sets and export all
+            fde = [fde newline constrainedStr];
+        else
+            fde = [fde newline fillDataExport(ds.name, ds, subloc_id)];
+        end
+    end
+    fde = [fde newline 'H5G.close(' subloc_id ');'];
+elseif isa(prop, 'file.Dataset') %dataset
+    propcall = ['obj.' name];
     fde = strjoin({...
-        ['if isa(obj.' name ', ''types.untyped.External''']...
-        '    io.writeExternalLink();'...
+        ['if isa(' propcall ', ''types.untyped.Link'')']...
+        file.addSpaces(callExportStr, 4)...
         'else'...
-        '    io.writeSoftLink()'...
+        ['    [ddid, refs] = io.writeDataset(' location ', ''' name ''', ''' prop.dtype ''', ' propcall ', refs);']...
+        '    H5D.close(ddid);'...
         'end'...
         }, newline);
-else %dataset
-    fde = strjoin({...
-        ['if isa(obj.' name ', ''types.untyped.External''']...
-        '    io.writeExternalLink();'...
-        'else'...
-        '    io.writeDataset();'...
-        'end'...
-        }, newline);
+else
+    fde = ['writeAttribute(' location ', ''' prop.dtype ''', ''' prop.name ''', obj.' name ');'];
 end
 end

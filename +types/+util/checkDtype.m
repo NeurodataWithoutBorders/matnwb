@@ -31,8 +31,7 @@ switch type
             if isempty(subval)
                 continue;
             end
-            if ~isa(subval, type) && ~isa(subval, 'types.untyped.RegionView')...
-                    && ~isa(subval, 'types.untyped.External')
+            if ~isa(subval, type) && ~startsWith(class(subval), 'types.untyped.')
                 error(errmsg);
             end
         end

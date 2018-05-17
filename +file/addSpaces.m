@@ -3,6 +3,6 @@ if isempty(str)
     asstr = str;
 else
     indent = repmat(' ', [1 numspaces]);
-    asstr = [indent strtrim(strrep(str, newline, [newline indent]))];
+    asstr = [indent strrep(str, newline, [newline indent])];
 end
 end

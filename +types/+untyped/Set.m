@@ -59,7 +59,24 @@ classdef Set < handle & matlab.mixin.CustomDisplay
         
         function o = get(obj, name)
             o = obj.map(name);
-        end      
+        end
+        
+        function refs = export(obj, filename, loc_id, name, refs)
+            gid = io.writeGroup(loc_id, name);
+            k = keys(obj.map);
+            val = values(obj.map, k);
+            for i=1:length(k)
+                v = val{i};
+                nm = k{i};
+                if startsWith(class(v), 'types.')
+                    refs = v.export(filename, gid, nm, refs); 
+                else
+                    [did, refs] = io.writeDataset(gid, nm, class(v), v, refs);
+                    H5D.close(did);
+                end
+            end
+            H5G.close(gid);
+        end
     end
     
     methods(Access=protected)
@@ -78,7 +95,7 @@ classdef Set < handle & matlab.mixin.CustomDisplay
             for i=1:length(mkeys)
                 mk = mkeys{i};
                 mkspace = repmat(' ', 1, mklen - length(mk));
-                body{i} = [mk mkspace ': [' class(obj.map(mk)) ']'];
+                body{i} = [mkspace mk ': [' class(obj.map(mk)) ']'];
             end
             body = file.addSpaces(strjoin(body, newline), 4);
             disp([hdr newline body newline footer]);

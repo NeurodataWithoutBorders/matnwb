@@ -1,6 +1,6 @@
 % converts dtype name to type name.  If struct, then returns a struct of mapped types
 function dt = mapType(dtype)
-dt = [];
+dt = '';
 if isempty(dtype) || any(strcmp({'None', 'any'}, dtype))
     dt = 'any';
 elseif isa(dtype, 'java.util.ArrayList')

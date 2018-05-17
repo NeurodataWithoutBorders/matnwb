@@ -17,7 +17,7 @@ classdef Attribute < handle
             obj.required = false;
             obj.value = [];
             obj.readonly = false;
-            obj.dtype = [];
+            obj.dtype = '';
             obj.dependent = '';
             
             if nargin < 1

@@ -12,10 +12,18 @@ end
 
 splitpath = split(path, '/');
 
-prevgid = io.writeGroup(loc_id, splitpath{1});
-for i=2:length(splitpath)
-    gid = io.writeGroup(prevgid, splitpath{i});
-    H5G.close(prevgid);
+prevgid = loc_id;
+for i=1:length(splitpath)
+    try
+        %do not write if the path already exists
+        gid = H5G.open(prevgid, splitpath{i}, 'H5P_DEFAULT');
+    catch
+        %group dne
+        gid = io.writeGroup(prevgid, splitpath{i});
+    end
+    if prevgid ~= loc_id
+        H5G.close(prevgid);
+    end
     prevgid = gid;
 end
 end

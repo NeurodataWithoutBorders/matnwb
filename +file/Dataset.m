@@ -18,10 +18,10 @@ classdef Dataset < handle
     methods
         function obj = Dataset(source)
             obj.name = '';
-            obj.doc = [];
+            obj.doc = '';
             obj.isConstrainedSet = false;
-            obj.type = [];
-            obj.dtype = [];
+            obj.type = '';
+            obj.dtype = '';
             obj.required = true;
             obj.scalar = true;
             obj.isRef = false;
@@ -35,11 +35,11 @@ classdef Dataset < handle
                 return;
             end
             
-            obj.doc = source.get('doc');
-            obj.name = source.get('name');
+            obj.doc = char(source.get('doc'));
+            obj.name = char(source.get('name'));
             
-            type = source.get('neurodata_type_def');
-            parent = source.get('neurodata_type_inc');
+            type = char(source.get('neurodata_type_def'));
+            parent = char(source.get('neurodata_type_inc'));
             
             if isempty(type)
                 obj.type = parent;
@@ -135,9 +135,9 @@ classdef Dataset < handle
                 end
             end
             
-            for i=1:length(obj.attributes)
-                attr = obj.attributes(i);
-                props(attr.name) = attr;
+            if ~isempty(obj.attributes)
+                props = [props;...
+                    containers.Map({obj.attributes.name}, num2cell(obj.attributes))];
             end
         end
     end

@@ -1,4 +1,4 @@
-function [parsed, refs] = parseDataset(filename, info, fullpath)
+function parsed = parseDataset(filename, info, fullpath)
 %typed and untyped being container maps containing type and untyped datasets
 % the maps store information regarding information and stored data
 % NOTE, dataset name is in path format so we need to parse that out.

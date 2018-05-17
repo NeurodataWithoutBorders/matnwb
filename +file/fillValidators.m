@@ -14,7 +14,11 @@ for i=1:length(propnames)
         validationBody = fillDtypeValidation(nm, prop, namespacereg);
     end
     hdrstr = ['function val = validate_' nm '(obj, val)'];
-    fcnStr = strjoin({hdrstr file.addSpaces(validationBody, 4) 'end'}, newline);
+    if isempty(validationBody)
+        fcnStr = [hdrstr newline 'end'];
+    else
+        fcnStr = strjoin({hdrstr file.addSpaces(strtrim(validationBody), 4) 'end'}, newline);
+    end
     fvstr = [fvstr newline fcnStr];
 end
 end
@@ -83,17 +87,25 @@ elseif isa(prop, 'file.Group')
         end
         
         %process attributes
-        for i=1:length(prop.attributes)
-            attr = prop.attributes(i);
-            namedprops.(attr.name) = attr.dtype;
+        if ~isempty(prop.attributes)
+            namedprops = [namedprops;...
+                containers.Map({prop.attributes.name}, {prop.attributes.dtype})];
         end
+        %         for i=1:length(prop.attributes)
+        %             attr = prop.attributes(i);
+        %             namedprops.(attr.name) = attr.dtype;
+        %         end
         
         %process links
-        for i=1:length(prop.links)
-            link = prop.links(i);
-            lnk_nmspc = namespacereg.getNamespace(link.type);
-            typename = ['types.' lnk_nmspc '.' link.type];
-            namedprops.(link.name) = typename;
+        if ~isempty(prop.links)
+            linktypes = {prop.links.type};
+            linkNamespaces = cell(size(linktypes));
+            for i=1:length(linktypes)
+                lt = linktypes{i};
+                linkNamespaces{i} = namespacereg.getNamespace(lt);
+            end
+            linkTypenames = strcat('types.', linkNamespaces, '.', linktypes);
+            namedprops = [namedprops; containers.Map({prop.links.name}, linkTypenames)];
         end
         
         propnames = fieldnames(namedprops);

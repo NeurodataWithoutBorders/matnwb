@@ -41,10 +41,10 @@ classdef Group < handle
                 return;
             end
             
-            obj.doc = source.get('doc');
+            obj.doc = char(source.get('doc'));
             
-            name = source.get('name');
-            def_name = source.get('default_name');
+            name = char(source.get('name'));
+            def_name = char(source.get('default_name'));
             if isempty(name)
                 obj.name = def_name;
             else
@@ -52,8 +52,8 @@ classdef Group < handle
                 obj.canRename = false;
             end
             
-            type = source.get('neurodata_type_def');
-            parent = source.get('neurodata_type_inc');
+            type = char(source.get('neurodata_type_def'));
+            parent = char(source.get('neurodata_type_inc'));
             
             if isempty(type)
                 obj.type = parent;
@@ -203,9 +203,11 @@ classdef Group < handle
                 %if untyped, assign data to its dtype and process attributes
                 sub = obj.datasets(i);
                 if isempty(sub.type)
-                    for j=1:length(sub.attributes)
-                        subattr = sub.attributes(j);
-                        props([sub.name '_' subattr.name]) = subattr;
+                    if ~isempty(sub.attributes)
+                        subattrnames = {sub.attributes.name};
+                        newSubNames = strcat(sub.name, '_', subattrnames);
+                        props = [props;
+                            containers.Map(newSubNames, num2cell(sub.attributes))];
                     end
                     props(sub.name) = sub;
                 else
@@ -218,15 +220,15 @@ classdef Group < handle
             end
             
             %attributes
-            for i=1:length(obj.attributes)
-                attr = obj.attributes(i);
-                props(attr.name) = attr;
+            if ~isempty(obj.attributes)
+                props = [props;...
+                    containers.Map({obj.attributes.name}, num2cell(obj.attributes))];
             end
             
             %links
-            for i=1:length(obj.links)
-                link = obj.links(i);
-                props(link.name) = link;
+            if ~isempty(obj.links)
+                props = [props;...
+                    containers.Map({obj.links.name}, num2cell(obj.links))];
             end
         end
     end

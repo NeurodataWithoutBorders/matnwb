@@ -1,7 +1,7 @@
-function writeDataset(loc_id, name, type, data, attributes)
+function [did, refs] = writeDataset(loc_id, path, name, type, data, refs)
 if strcmp(type, 'ref')
     keyboard;
-elseif strcmp(type, 'compound')
+elseif strcmp(type, 'table') %compound
     keyboard;
 end
 
@@ -13,9 +13,4 @@ else
 end
 did = H5D.create(loc_id, name, tid, sid, 'H5P_DEFAULT');
 H5D.write(did, 'H5ML_DEFAULT', 'H5S_ALL', 'H5S_ALL', 'H5P_DEFAULT', data);
-for i=1:length(attributes)
-    attr = attributes(i);
-    io.writeAttribute(did, io.getBaseType(attr.dtype), attr.name, attr.value);
-end
-H5D.close(did);
 end

@@ -1,4 +1,4 @@
-function [parsed, links, refs] = parseGroup(filename, info)
+function parsed = parseGroup(filename, info)
 % NOTE, group name is in path format so we need to parse that out.
 % parsed is either a containers.Map containing properties mapped to values OR a
 % typed value
@@ -11,32 +11,34 @@ refs = containers.Map;
 for i=1:length(info.Datasets)
     ds_info = info.Datasets(i);
     fp = [info.Name '/' ds_info.Name];
-    [ds, dsrefs] = io.parseDataset(filename, ds_info, fp);
+    ds = io.parseDataset(filename, ds_info, fp);
     if isa(ds, 'containers.Map')
         props = [props; ds];
     else
         props(ds_info.Name) = ds;
     end
-    
-    refs = [refs; dsrefs];
 end
 
 %parse subgroups
 for i=1:length(info.Groups)
     g_info = info.Groups(i);
     [~, gname, ~] = io.pathParts(g_info.Name);
-    [subg, glinks, grefs] = io.parseGroup(filename, g_info);
+    subg = io.parseGroup(filename, g_info);
     props(gname) = subg;
-    links = [links; glinks];
-    refs = [refs; grefs];
 end
 
-%parse links and add to map of links
+%create link stub
 for i=1:length(info.Links)
     l = info.Links(i);
     fpname = [info.Name '/' l.Name];
-    props(l.Name) = [];
-    links([info.Name '/' l.Name]) = l;
+    switch l.Type
+        case 'soft link'
+            lnk = types.untyped.SoftLink(l.Value{1});
+        otherwise
+            
+            keyboard;
+    end
+    props(l.Name) = lnk;
     hasTypes = true;
 end
 

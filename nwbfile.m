@@ -32,7 +32,7 @@ classdef nwbfile < types.core.NWBFile
                 delete(filename);
             end
             fid = H5F.create(filename);
-            export@types.core.NWBFile(obj, fid);
+            refs = export@types.core.NWBFile(obj, fid, '/', '/', containers.Map);
             H5F.close(fid);
             
             if isempty(obj.file_create_date)
