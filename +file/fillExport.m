@@ -1,6 +1,14 @@
-function festr = fillExport(propnames, raw)
+function festr = fillExport(propnames, raw, parentName)
 hdrstr = 'function refs = export(obj, loc_id, name, path, refs)';
+%call parents if not empty
+if isempty(parentName)
+    bodystr = '';
+else
+    bodystr = ['refs = export@' parentName '(obj, loc_id, name, path, refs);'];
+end
+
 %export this class first unless it's NWBFile
+
 if isa(raw, 'file.Dataset')
     loc = 'did'; %Used later in `fillDataExport` to distinguish type of parent
     %find the `data` field for the respective dataset
@@ -12,16 +20,18 @@ if isa(raw, 'file.Dataset')
     else %data
         datapropname = 'data';
     end
-    bodystr = ['[' loc ' refs] = io.writeDataset(loc_id, [path ''/'' name], name, class(' datapropname '), obj.' datapropname ', refs);'];
+    propcall = ['obj.' datapropname];
+    bodystr = strjoin({bodystr...
+        ['[' loc ' refs] = io.writeDataset(loc_id, name, [path ''/'' name], class(' propcall '), ' propcall ', refs);']...
+        }, newline);
     %filter propnames to remove data prop
     propnames = propnames(~strcmp(propnames, datapropname));
 else %isa group
     if strcmp(raw.type, 'NWBFile')
         loc = 'loc_id';
-        bodystr = '';
     else
         loc = 'gid';
-        bodystr = [loc ' = io.writeGroup(loc_id, name);'];
+        bodystr = [bodystr newline loc ' = io.writeGroup(loc_id, name);'];
     end
 end
 
@@ -166,51 +176,27 @@ end
 end
 
 function fde = fillDataExport(name, prop, location)
-callExportStr = ['refs = obj.' name '.export(' location ', ''' name ''', refs);'];
-
-if isa(prop, 'file.Link') ||...
-        ((isa(prop, 'file.Group') || isa(prop, 'file.Dataset')) && ~isempty(prop.type))
+propcall = ['obj.' name];
+if isa(prop, 'file.Group') && prop.isConstrainedSet
+    fde = ['refs = ' propcall '.export(' location ', '''', path, refs);'];
+elseif isa(prop, 'file.Link') || isa(prop, 'file.Group') ||...
+        (isa(prop, 'file.Dataset') && ~isempty(prop.type))
     % obj, loc_id, path, refs
-    fde = callExportStr;
-    return;
-end
-
-if isa(prop, 'file.Group')
-    subloc_id = [name '_id'];
-    constrainedStr = ['obj.' name '.export(' location ', [path ''/'' ''' name '''], refs);'];
-    
-    fde = [subloc_id ' = io.writeGroup(' location ', name);'];
-    % recurse into group
-    for i=1:length(prop.subgroups)
-        sg = prop.subgroups(i);
-        if sg.isConstrainedSet
-            %export the set
-            fde = [fde newline constrainedStr];
-        else
-            fde = [fde newline fillDataExport(sg.name, sg, subloc_id)];
-        end
-    end
-    for i=1:length(prop.datasets)
-        ds = prop.datasets(i);
-        if ds.isConstrainedSet
-            %iterate over all constrained sets and export all
-            fde = [fde newline constrainedStr];
-        else
-            fde = [fde newline fillDataExport(ds.name, ds, subloc_id)];
-        end
-    end
-    fde = [fde newline 'H5G.close(' subloc_id ');'];
-elseif isa(prop, 'file.Dataset') %dataset
-    propcall = ['obj.' name];
+    fde = ['refs = ' propcall '.export(' location ', ''' prop.name ''', path, refs);'];
+elseif isa(prop, 'file.Dataset') %untyped dataset
     fde = strjoin({...
-        ['if isa(' propcall ', ''types.untyped.Link'')']...
-        file.addSpaces(callExportStr, 4)...
-        'else'...
-        ['    [ddid, refs] = io.writeDataset(' location ', ''' name ''', ''' prop.dtype ''', ' propcall ', refs);']...
+        ['if startsWith(class(' propcall '), ''types.untyped.'')']...
+        ['    refs = ' propcall '.export(' location ', ''' name ''', [path ''/' name '''], refs);']...
+        ['elseif ~isempty(' propcall ')']...
+        ['    [ddid, refs] = io.writeDataset(' location ', ''' prop.name ''', [path ''/' prop.name '''], ' propcall ', refs);']...
         '    H5D.close(ddid);'...
         'end'...
         }, newline);
 else
-    fde = ['writeAttribute(' location ', ''' prop.dtype ''', ''' prop.name ''', obj.' name ');'];
+    fde = strjoin({...
+        ['if ~isempty(' propcall ')']...
+        ['    io.writeAttribute(' location ', ''' prop.dtype ''', ''' prop.name ''', ' propcall ');']...
+        'end'...
+        }, newline);
 end
 end

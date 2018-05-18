@@ -11,16 +11,71 @@ classdef DataStub
             obj.path = path;
         end
         
-        function data = load(obj, range)
-            if nargin > 1 && ~isnumeric(range)
-                error('Optional Argument `range` must be numeric');
+        function d = dims(obj)
+            fid = H5F.open(obj.filename);
+            did = H5D.open(fid, obj.path);
+            sid = H5D.get_space(did);
+            [~, d, ~] = H5S.get_simple_extent_dims(sid);
+            H5S.close(sid);
+            H5D.close(did);
+            H5F.close(fid);
+        end
+        
+        function rank = ndims(obj)
+            fid = H5F.open(obj.filename);
+            did = H5D.open(fid, obj.path);
+            sid = H5D.get_space(did);
+            rank = H5S.get_simple_extent_ndims(sid);
+            H5S.close(sid);
+            H5D.close(did);
+            H5F.close(fid);
+        end
+        
+        function count = numel(obj)
+            fid = H5F.open(obj.filename);
+            did = H5D.open(fid, obj.path);
+            sid = H5D.get_space(did);
+            count = H5S.get_simple_extent_npoints(sid);
+            H5S.close(sid);
+            H5D.close(did);
+            H5F.close(fid);
+        end
+        
+        function data = load(obj, offset, dims, stride)
+            if nargin < 2
+                data = h5read(obj.filename, obj.path);
+                return;
             end
-            data = h5read(obj.filename, obj.path, range(:));
+            
+            if nargin < 4
+                stride = [];
+            end
+            
+            if ~isnumeric(offset) || ~isnumeric(dims)
+                error('Argument(s): `offset` and `dims` must be numeric');
+            end
+            
+            if ~isnumeric(stride)
+                error('Optional Argument(s): `stride` must be numeric.');
+            end
+            
+            fid = H5F.open(obj.filename);
+            did = H5D.open(fid, obj.path);
+            
+            mem_sid = H5S.create_simple(length(dims), dims, []);
+            file_sid = H5D.get_space(did);
+            H5S.select_hyperslab(file_sid, 'H5S_SELECT_SET', offset, stride, [], dims);
+            data = H5D.read(did, 'H5ML_DEFAULT', mem_sid, file_sid, 'H5P_DEFAULT');
+            H5S.close(mem_sid);
+            H5S.close(file_sid);
+            H5D.close(did);
+            H5F.close(fid);
         end
         
         function refs = export(obj, loc_id, name, path, refs)
-            data = obj.load();
-            refs = io.writeDataset(loc_id, path, name, class(data), refs);
+            data = load(obj);
+            [did, refs] = io.writeDataset(loc_id, name, path, class(data), data, refs);
+            H5D.close(did);
         end
     end
 end

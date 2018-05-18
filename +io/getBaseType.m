@@ -4,16 +4,15 @@ function id = getBaseType(type)
 % H5T_STRING
 switch type
     case 'char'
-        classid = H5ML.get_constant_value('H5T_STRING');
-        sz = 16;
+        typename = 'H5T_C_S1';
     case 'double'
-        classid = H5ML.get_constant_value('H5T_FLOAT');
-        sz = 8;
-    case {'int64' 'uint64'}
-        classid = H5ML.get_constant_value('H5T_INTEGER');
-        sz = 8;
+        typename = 'H5T_NATIVE_DOUBLE';
+    case 'int64'
+        typename = 'H5T_NATIVE_INT';
+    case 'uint64'
+        typename = 'H5T_NATIVE_UINT';
     otherwise
         error('call to io.getBaseType only accepts `char|double|int64|uint64` as argument.');
 end
-id = H5T.create(classid, sz);
+id = H5T.copy(typename);
 end

@@ -5,6 +5,11 @@ function template = fillClass(name, namespace, pregen)
 %% PROCESSING
 [processed, classprops, inherited] = processClass(name, namespace, pregen);
 class = processed(1);
+if length(processed) > 1
+    parentName = ['types.' namespace.name '.' processed(2).type];
+else
+    parentName = '';
+end
 
 allprops = keys(classprops);
 required = {};
@@ -86,7 +91,7 @@ constructorBody = file.fillConstructor(...
     namespace);
 setterFcns = file.fillSetters(setdiff(non_inherited, ro_unique));
 validatorFcns = file.fillValidators(allprops, classprops, namespace);
-exporterFcns = file.fillExport(non_inherited, class);
+exporterFcns = file.fillExport(non_inherited, class, parentName);
 methodBody = strjoin({constructorBody...
     '%% SETTERS' setterFcns...
     '%% VALIDATORS' validatorFcns...

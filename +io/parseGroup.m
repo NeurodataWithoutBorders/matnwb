@@ -34,12 +34,10 @@ for i=1:length(info.Links)
     switch l.Type
         case 'soft link'
             lnk = types.untyped.SoftLink(l.Value{1});
-        otherwise
-            
-            keyboard;
+        otherwise %todo assuming external link here
+            lnk = types.untyped.ExternalLink(l.Value{:});
     end
     props(l.Name) = lnk;
-    hasTypes = true;
 end
 
 if isempty(typename)

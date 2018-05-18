@@ -1,28 +1,18 @@
 classdef ObjectView
     properties(SetAccess=private)
-        ref;
         path;
     end
     
     methods
-        function obj = RegionView(nwb, path)
+        function obj = ObjectView(path)
             obj.path = path;
-            handle = nwb.resolve(path);
-            if ~startsWith(class(handle), 'types.')
-                error('DataView can only be instantiated with a generated class.');
-            end
-            
-            handleprops = properties(handle);
-            if ~any(strcmp(handleprops, 'data')) && ~any(strcmp(handleprops, 'table'))
-                error('Unsupported region reference to type `%s`', class(handle));
-            end
-            
-            obj.ref = handle;
-            obj.refresh();
         end
         
-        function v = refresh(obj)
-            v = obj.ref;
+        function v = refresh(obj, nwb)
+            if ~isa(nwb, 'nwbfile')
+                error('Argument `nwb` must be a valid `nwbfile`');
+            end
+            v = nwb.resolve(obj.path);
         end
         
         function refs = export(obj, ~, ~, path, refs)

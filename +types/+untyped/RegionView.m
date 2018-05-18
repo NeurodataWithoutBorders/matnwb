@@ -5,14 +5,13 @@ classdef RegionView
     end
     
     methods
-        function obj = RegionView(nwb, path, range)
-            obj.view = types.untyped.ObjectView(nwb, path);
+        function obj = RegionView(path, range)
+            obj.view = types.untyped.ObjectView(path);
             obj.range = range;
-            obj.refresh();
         end
         
-        function v = refresh(obj)
-            obj.view.refresh();
+        function v = refresh(obj, nwb)
+            vobj = obj.view.refresh(nwb);
             props = properties(obj.ref);
             if any(strcmp(props, 'table'))
                 v = obj.ref.table(obj.range, :);

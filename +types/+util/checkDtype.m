@@ -2,7 +2,17 @@ function val = checkDtype(name, type, val)
 %ref
 %any, double, int/uint, char
 errmsg = ['Property `' name '` must be a ' type '.'];
-if isempty(val)
+persistent WHITELIST;
+if isempty(WHITELIST)
+    WHITELIST = {...
+        'types.untyped.DataStub'...
+        'types.untyped.ExternalLink'...
+        'types.untyped.SoftLink'...
+        'types.untyped.ObjectView'...
+        'types.untyped.RegionView'...
+        };
+end
+if isempty(val) || any(strcmp(class(val), WHITELIST))
     return;
 end
 switch type
@@ -31,7 +41,7 @@ switch type
             if isempty(subval)
                 continue;
             end
-            if ~isa(subval, type) && ~startsWith(class(subval), 'types.untyped.')
+            if ~isa(subval, type) && ~any(strcmp(class(subval), WHITELIST))
                 error(errmsg);
             end
         end
