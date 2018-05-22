@@ -66,6 +66,7 @@ classdef Set < handle & matlab.mixin.CustomDisplay
                 id = loc_id;
             else
                 id = io.writeGroup(loc_id, name);
+                path = [path '/' name];
             end
             k = keys(obj.map);
             val = values(obj.map, k);

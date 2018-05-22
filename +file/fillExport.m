@@ -1,38 +1,67 @@
 function festr = fillExport(propnames, raw, parentName)
-hdrstr = 'function refs = export(obj, loc_id, name, path, refs)';
-%call parents if not empty
+hdrstr = 'function refs = export(obj, fid, fullpath, refs)';
+
 if isempty(parentName)
     bodystr = '';
 else
-    bodystr = ['refs = export@' parentName '(obj, loc_id, name, path, refs);'];
+    bodystr = ['refs = export@' parentName '(obj, fid, fullpath, refs);'];
 end
 
-%export this class first unless it's NWBFile
+nameparts = '[path, name, ~] = fileparts(fullpath);';
+
+if isempty(bodystr)
+    bodystr = nameparts;
+else
+    bodystr = [bodystr newline nameparts];
+end
 
 if isa(raw, 'file.Dataset')
-    loc = 'did'; %Used later in `fillDataExport` to distinguish type of parent
-    %find the `data` field for the respective dataset
-    % it is either data|table|ref
-    if any(strcmp(propnames, 'ref'))
-        datapropname = 'ref';
-    elseif any(strcmp(propnames, 'table'))
-        datapropname = 'table';
-    else %data
-        datapropname = 'data';
+    loc = 'did';
+    if any(strcmp(propnames, 'data'))
+        %find the `data` field for the respective dataset
+        bodystr = strjoin({bodystr...
+            ['if any(strcmp(class(obj.data), {''types.untyped.DataStub''...'...
+                '''types.untyped.ObjectView'' ''types.untyped.RegionView''}))']...
+            '    try'...
+            '        refs = obj.data.export(fid, fullpath, refs);'...
+            '    catch'...
+            '        refs(fullpath) = obj.data;'...
+            '        return;'...
+            '    end'...
+            'elseif isa(obj.data, ''table'')'...
+            '    try'...
+            ['        ' loc ' = io.writeTable();']...
+            '    catch'...
+            '        refs(fullpath) = obj.data;'...
+            '        return;'...
+            '    end'...
+            'else'...
+            ['    ' loc ' = io.writeDataset(fid, fullpath, class(obj.data), obj.data);']...
+            'end'...
+            }, newline);
+        %filter propnames to remove data prop
+        propnames = propnames(~strcmp(propnames, 'data'));
+    else
+        %did is inherited so reopen the data field
+        bodystr = strjoin({bodystr...
+            'try'...
+            ['    ' loc ' = H5D.open(fid, fullpath);']...
+            'catch'... %if the data contains a reference, it will be skipped.
+            '    return;'...
+            'end'}, newline);
     end
-    propcall = ['obj.' datapropname];
-    bodystr = strjoin({bodystr...
-        ['[' loc ' refs] = io.writeDataset(loc_id, name, [path ''/'' name], class(' propcall '), ' propcall ', refs);']...
-        }, newline);
-    %filter propnames to remove data prop
-    propnames = propnames(~strcmp(propnames, datapropname));
-else %isa group
+else %group
     if strcmp(raw.type, 'NWBFile')
         loc = 'loc_id';
     else
         loc = 'gid';
-        bodystr = [bodystr newline loc ' = io.writeGroup(loc_id, name);'];
+        bodystr = [bodystr newline loc ' = io.writeGroup(fid, fullpath);'];
     end
+end
+
+if isempty(parentName)
+    %Metaclass needs to be added after the class is made
+    bodystr = [bodystr newline 'refs = export@types.untyped.MetaClass(obj, nwb, ' loc ', name, path, refs);'];
 end
 
 for i=1:length(propnames)
@@ -42,25 +71,29 @@ for i=1:length(propnames)
     pathProps(end) = []; %delete prop
     
     %construct path for groups
-    path = '';
+    elisions = '';
     subloc = '';
     while ~isempty(pathProps) && isa(pathProps{1}, 'file.Group')
-        path = [path '/' pathProps{1}.name];
+        elisions = [elisions '/' pathProps{1}.name];
         pathProps = pathProps(2:end);
     end
-    if isempty(pathProps) && ~isempty(path)
+    elisions = elisions(2:end);
+    if isempty(pathProps) && ~isempty(elisions)
         %this property has elided groups
         subloc = 'sub_gid';
-        bodystr = strjoin({bodystr...
-            [subloc ' = io.writeElisions(loc_id, ''' path ''');']...
-            }, newline);
+        propstr = [subloc ' = io.writeElisions(loc_id, ''' elisions ''');'];
     elseif ~isempty(pathProps)
         %this property is dependent on an untyped dataset
-        path = [path '/' pathProps{1}.name];
+        propname = pathProps{1}.name;
+        if isempty(elisions)
+            elisions = propname;
+        else
+            elisions = [elisions '/' propname];
+        end
         subloc = 'sub_did';
-        bodystr = strjoin({bodystr...
-            [subloc ' = H5D.open(loc_id, ''' path ''');']...
-            }, newline);
+        propstr = [subloc ' = H5D.open(loc_id, [fullpath ''/' elisions ''']);'];
+    else
+        propstr = '';
     end
     
     if isempty(subloc)
@@ -69,7 +102,11 @@ for i=1:length(propnames)
         writeloc = subloc;
     end
     
-    bodystr = [bodystr newline fillDataExport(pnm, prop, writeloc)];
+    if isempty(propstr)
+        propstr = fillDataExport(pnm, prop, writeloc, elisions);
+    else
+        propstr = [propstr newline fillDataExport(pnm, prop, writeloc, elisions)];
+    end
     
     if ~isempty(subloc)
         switch subloc
@@ -78,8 +115,18 @@ for i=1:length(propnames)
             case 'sub_gid'
                 closestr = ['H5G.close(' subloc ');'];
         end
-        bodystr = [bodystr newline closestr];
+        propstr = [propstr newline closestr];
+        if strcmp(subloc, 'sub_did')
+            %since it's possible for datasets to be nonexistent, we have to
+            %check for the case when the datasets doesn't actually exist.
+            propstr = strjoin({...
+                'try'...
+                file.addSpaces(propstr, 4)...
+                'catch'...
+                'end'}, newline);
+        end
     end
+    bodystr = [bodystr newline propstr];
 end
 
 switch loc
@@ -87,8 +134,12 @@ switch loc
         closestr = ['H5D.close(' loc ');'];
     case 'gid'
         closestr = ['H5G.close(' loc ');'];
+    otherwise
+        closestr = '';
 end
-bodystr = [bodystr newline closestr];
+if ~isempty(closestr)
+    bodystr = [bodystr newline closestr];
+end
 
 festr = strjoin({hdrstr file.addSpaces(bodystr, 4) 'end'}, newline);
 end
@@ -175,28 +226,36 @@ switch class(raw)
 end
 end
 
-function fde = fillDataExport(name, prop, location)
+function fde = fillDataExport(name, prop, location, elisions)
 propcall = ['obj.' name];
-if isa(prop, 'file.Group') && prop.isConstrainedSet
-    fde = ['refs = ' propcall '.export(' location ', '''', path, refs);'];
+if isempty(elisions)
+    fpcall = 'fullpath';
+else
+    fpcall = ['[fullpath ''/' elisions ''']'];
+end
+if (isa(prop, 'file.Group') || isa(prop, 'file.Dataset')) && prop.isConstrainedSet
+    fde = ['refs = ' propcall '.export(' location ', nwb, '''', ' fpcall ', refs);'];
 elseif isa(prop, 'file.Link') || isa(prop, 'file.Group') ||...
         (isa(prop, 'file.Dataset') && ~isempty(prop.type))
     % obj, loc_id, path, refs
-    fde = ['refs = ' propcall '.export(' location ', ''' prop.name ''', path, refs);'];
+    fde = ['refs = ' propcall '.export(' location ', nwb, ''' prop.name ''', ' fpcall ', refs);'];
 elseif isa(prop, 'file.Dataset') %untyped dataset
     fde = strjoin({...
         ['if startsWith(class(' propcall '), ''types.untyped.'')']...
-        ['    refs = ' propcall '.export(' location ', ''' name ''', [path ''/' name '''], refs);']...
+        ['    refs = ' propcall '.export(' location ', nwb, ''' prop.name ''', ' fpcall ', refs);']...
         ['elseif ~isempty(' propcall ')']...
-        ['    [ddid, refs] = io.writeDataset(' location ', ''' prop.name ''', [path ''/' prop.name '''], ' propcall ', refs);']...
+        ['    ddid = io.writeDataset(' location ', ''' prop.name ''', class(' propcall '), ' propcall ');']...
         '    H5D.close(ddid);'...
         'end'...
         }, newline);
 else
+    fde = ['io.writeAttribute(' location ', ''' prop.dtype ''', ''' prop.name ''', ' propcall ');'];
+end
+if ~prop.required
+    %surround with check for empty array
     fde = strjoin({...
         ['if ~isempty(' propcall ')']...
-        ['    io.writeAttribute(' location ', ''' prop.dtype ''', ''' prop.name ''', ' propcall ');']...
-        'end'...
-        }, newline);
+        file.addSpaces(fde, 4)...
+        'end'}, newline);
 end
 end

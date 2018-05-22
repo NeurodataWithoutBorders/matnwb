@@ -20,7 +20,7 @@ if isempty(typename) %a Group's properties
         parsed = [parsed; containers.Map(anames, attrargs.values(afields))];
     end
     
-    if strcmp(info.Datatype.Class, 'H5T_STRING')
+    if strcmp(info.Datatype.Class, 'H5T_STRING') || ~strcmp(info.Dataspace.Type, 'simple')
         data = H5D.read(did);
         if iscellstr(data)
             data = data{1};
@@ -36,12 +36,12 @@ if isempty(typename) %a Group's properties
 end
 
 if strcmp(datatype.Class, 'H5T_REFERENCE')
-    props('ref') = parseReference(did, datatype.Type, H5D.read(did));
+    props('data') = parseReference(did, datatype.Type, H5D.read(did));
 elseif strcmp(datatype.Class, 'H5T_COMPOUND')
     compound = datatype.Type.Member;
     data = H5D.read(did);
     if isempty(data)
-        props('table') = [];
+        props('data') = [];
     else
         for j=1:length(compound)
             comp = compound(j);
@@ -55,7 +55,7 @@ elseif strcmp(datatype.Class, 'H5T_COMPOUND')
                 data.(comp.Name) = reflist;
             end
         end
-        props('table') = struct2table(data);
+        props('data') = struct2table(data);
     end
 else
     props('data') = types.untyped.DataStub(filename, fullpath);

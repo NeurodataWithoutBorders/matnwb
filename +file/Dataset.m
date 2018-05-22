@@ -11,7 +11,6 @@ classdef Dataset < handle
         dimnames;
         attributes;
         linkable;
-        isRef;
         definesType;
     end
     
@@ -24,7 +23,6 @@ classdef Dataset < handle
             obj.dtype = '';
             obj.required = true;
             obj.scalar = true;
-            obj.isRef = false;
             obj.definesType = false;
             
             obj.shape = {};
@@ -49,7 +47,6 @@ classdef Dataset < handle
             end
             
             obj.dtype = file.mapType(source.get('dtype'));
-            obj.isRef = isa(obj.dtype, 'java.util.HashMap');
             
             quantity = source.get('quantity');
             if ~isempty(quantity)
@@ -101,7 +98,7 @@ classdef Dataset < handle
             props = containers.Map;
             
             %typed
-            % return props as typed props with custom `data`, `ref`, or `table`
+            % return props as typed props with custom `data`
             % types
             
             %untyped
@@ -118,21 +115,8 @@ classdef Dataset < handle
                 error('You shouldn''t be calling getProps on a constrained dataset');
             end
             
-            %there are only two classes that do this and they're all under
-            %ecephys: ElectrodeTable and ElectrodeTableRegion.
-            % one of which is a region reference and the other is a compound
-            % type.
-            % therefore, we currently do not have a case for a regular typed
-            % dataset (because there isn't any).
             if ~isempty(obj.dtype)
-                if isstruct(obj.dtype)
-                    props('table') = obj.dtype;
-                elseif isa(obj.dtype, 'java.util.HashMap')
-                    props('ref') = obj.dtype;
-                elseif ~isempty(obj.type)
-                    %regular dataset
-                    props('data') = obj.dtype;
-                end
+                props('data') = obj.dtype;
             end
             
             if ~isempty(obj.attributes)

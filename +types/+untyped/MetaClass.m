@@ -3,11 +3,18 @@ classdef MetaClass < handle
         function obj = MetaClass(varargin)
         end
         
-        function export(~, loc_id)
-            [fp, ndt, ~] = fileparts(mfilename('fullpath'));
-            [~, namespace, ~] = fileparts(fp);
-            h5util.writeAttribute(loc_id, 'namespace', ndt(2:end), 'string');
-            h5util.writeAttribute(loc_id, 'neurodata_type', namespace(2:end), 'string');
+        function refs = export(obj, ~, loc_id, ~, ~, refs)
+            if isa(obj, 'nwbfile')
+                io.writeAttribute(loc_id, 'char', 'namespace', 'core');
+                io.writeAttribute(loc_id, 'char', 'neurodata_type', 'NWBFile');
+                return;
+            end
+            
+            dotparts = split(class(obj), '.');
+            namespace = dotparts{2};
+            classtype = dotparts{3};
+            io.writeAttribute(loc_id, 'char', 'namespace', namespace);
+            io.writeAttribute(loc_id, 'char', 'neurodata_type', classtype);
         end
     end
 end

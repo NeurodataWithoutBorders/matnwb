@@ -15,8 +15,8 @@ classdef ObjectView
             v = nwb.resolve(obj.path);
         end
         
-        function refs = export(obj, ~, ~, path, refs)
-            refs(path) = struct('loc', obj.path, 'range', []);
+        function refs = export(obj, ~, name, path, refs)
+            refs([path '/' name]) = struct('loc', obj.path, 'range', []);
         end
     end
 end

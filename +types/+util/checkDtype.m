@@ -5,15 +5,22 @@ errmsg = ['Property `' name '` must be a ' type '.'];
 persistent WHITELIST;
 if isempty(WHITELIST)
     WHITELIST = {...
-        'types.untyped.DataStub'...
         'types.untyped.ExternalLink'...
         'types.untyped.SoftLink'...
         'types.untyped.ObjectView'...
         'types.untyped.RegionView'...
         };
 end
-if isempty(val) || any(strcmp(class(val), WHITELIST))
+if isempty(val)
     return;
+end
+if isa(val, 'types.untyped.DataStub')
+    %grab first element and check
+    dimsize = [1 val.ndims()];
+    truval = val;
+    val = val.load(zeros(dimsize), ones(dimsize));
+else
+    truval = [];
 end
 switch type
     case {'double' 'int64' 'uint64'}
@@ -50,4 +57,8 @@ switch type
         end
 end
 
+%reset to datastub
+if ~isempty(truval)
+    val = truval;
+end
 end

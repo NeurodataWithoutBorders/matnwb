@@ -12,11 +12,13 @@ classdef RegionView
         
         function v = refresh(obj, nwb)
             vobj = obj.view.refresh(nwb);
-            props = properties(obj.ref);
-            if any(strcmp(props, 'table'))
-                v = obj.ref.table(obj.range, :);
-            else
-                v = obj.ref.data(obj.range);
+            switch class(vobj)
+                case 'table'
+                    v = vobj.data(obj.range, :);
+                case 'types.untyped.DataStub'
+                    v = vobj.data.load(obj, obj.range(1), obj.range(2));
+                otherwise
+                    v = vobj.data(obj.range);
             end
         end
         

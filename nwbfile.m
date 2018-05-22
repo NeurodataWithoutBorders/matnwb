@@ -21,7 +21,7 @@ classdef nwbfile < types.core.NWBFile
             addParameter(p, 'file_create_date', []);
             parse(p, varargin{:});
             if any(strcmp('nwb_version', p.UsingDefaults))
-                varargin = [{'nwb_version'} {'1.0.2'}];
+                varargin = [{'nwb_version'} {'1.2.0'}];
             end
             obj = obj@types.core.NWBFile(varargin{:});
         end
@@ -32,7 +32,7 @@ classdef nwbfile < types.core.NWBFile
                 delete(filename);
             end
             fid = H5F.create(filename);
-            refs = export@types.core.NWBFile(obj, fid, '/', '', containers.Map);
+            refs = export@types.core.NWBFile(obj, fid, '/', containers.Map);
             H5F.close(fid);
             
             if isempty(obj.file_create_date)
@@ -40,7 +40,7 @@ classdef nwbfile < types.core.NWBFile
             end
             
             if isempty(obj.nwb_version)
-                h5write(filename, '/nwb_version', {'1.0.2'});
+                h5write(filename, '/nwb_version', {'1.2.0'});
             end
         end
         
