@@ -43,16 +43,23 @@ else
     id = getRawType(type);
     if strcmp(id, 'H5T_C_S1')
         id = H5T.copy(id);
-        H5T.set_size(id, length(data));
+        if iscellstr(data)
+            tsize = max(cellfun('length', data));
+        else
+            tsize = length(data);
+        end
+        H5T.set_size(id, tsize);
     end
 end
 end
 
 function typename = getRawType(type)
 switch type
-    case {'types.untyped.RegionView' 'types.untyped.ObjectView'}
+    case 'types.untyped.ObjectView'
         typename = 'H5T_STD_REF_OBJ';
-    case 'char'
+    case 'types.untyped.RegionView'
+        typename = 'H5T_STD_REF_DSETREG';
+    case {'char' 'cell'}
         typename = 'H5T_C_S1';
     case 'double'
         typename = 'H5T_NATIVE_DOUBLE';
@@ -60,5 +67,7 @@ switch type
         typename = 'H5T_NATIVE_LLONG';
     case 'uint64'
         typename = 'H5T_NATIVE_ULLONG';
+    otherwise
+        error('Type `%s` is not a support raw type', type);
 end
 end

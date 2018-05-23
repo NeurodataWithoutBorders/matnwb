@@ -61,27 +61,19 @@ classdef Set < handle & matlab.mixin.CustomDisplay
             o = obj.map(name);
         end
         
-        function refs = export(obj, loc_id, name, path, refs)
-            if isempty(name)
-                id = loc_id;
-            else
-                id = io.writeGroup(loc_id, name);
-                path = [path '/' name];
-            end
+        function refs = export(obj, fid, fullpath, refs)
+            io.writeGroup(fid, fullpath);
             k = keys(obj.map);
             val = values(obj.map, k);
             for i=1:length(k)
                 v = val{i};
                 nm = k{i};
+                propfp = [fullpath '/' nm];
                 if startsWith(class(v), 'types.')
-                    refs = v.export(id, nm, path, refs); 
+                    refs = v.export(fid, propfp, refs); 
                 else
-                    [did, refs] = io.writeDataset(id, nm, class(v), v, refs);
-                    H5D.close(did);
+                    refs = io.writeDataset(fid, propfp, class(v), v, refs);
                 end
-            end
-            if ~isempty(name)
-                H5G.close(id);
             end
         end
     end

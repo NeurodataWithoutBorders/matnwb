@@ -72,16 +72,16 @@ classdef DataStub
             H5F.close(fid);
         end
         
-        function refs = export(obj, loc_id, name, ~, refs)
+        function refs = export(obj, fid, fullpath, refs)
             %copy data over and return destination
-            fid = H5F.open(obj.filename);
+            dest_id = H5F.open(obj.filename);
             
             ocpl = H5P.create('H5P_OBJECT_COPY');
             lcpl = H5P.create('H5P_LINK_CREATE');
-            H5O.copy(fid, obj.path, loc_id, name, ocpl, lcpl);
+            H5O.copy(dest_id, obj.path, fid, fullpath, ocpl, lcpl);
             H5P.close(ocpl);
             H5P.close(lcpl);
-            H5F.close(fid);
+            H5F.close(dest_id);
         end
     end
 end

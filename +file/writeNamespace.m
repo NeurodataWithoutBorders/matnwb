@@ -9,7 +9,12 @@ pregenerated = containers.Map; %generated nodes and props for faster dependency 
 for i=1:length(nmk)
     k = nmk{i};
     fid = fopen(fullfile(path, [k '.m']), 'W');
-    fwrite(fid, file.fillClass(k, namespace, pregenerated), 'char');
+    try
+        fwrite(fid, file.fillClass(k, namespace, pregenerated), 'char');
+    catch ME
+        fclose('all');
+        rethrow(ME)
+    end
     fclose(fid);
 end
 end

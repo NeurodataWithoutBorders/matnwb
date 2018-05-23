@@ -12,18 +12,9 @@ classdef nwbfile < types.core.NWBFile
     %
     % See also NWBREAD, GENERATECORE, GENERATEEXTENSIONS
     methods
-        function obj = nwbfile(varargin) 
-            p = inputParser;
-            p.KeepUnmatched = true;
-            p.PartialMatching = false;
-            p.StructExpand = false;
-            addParameter(p, 'nwb_version', []);
-            addParameter(p, 'file_create_date', []);
-            parse(p, varargin{:});
-            if any(strcmp('nwb_version', p.UsingDefaults))
-                varargin = [{'nwb_version'} {'1.2.0'}];
-            end
+        function obj = nwbfile(varargin)
             obj = obj@types.core.NWBFile(varargin{:});
+            obj.nwb_version = '1.2.0';
         end
         
         function export(obj, filename)
@@ -31,17 +22,15 @@ classdef nwbfile < types.core.NWBFile
                 warning('Overwriting %s', filename);
                 delete(filename);
             end
+            modtime = datestr(datetime, 30);
+            if ischar(obj.file_create_date)
+                obj.file_create_date = {obj.file_create_date modtime};
+            else
+                obj.file_create_date = [obj.file_create_date {modtime}];
+            end
             fid = H5F.create(filename);
             refs = export@types.core.NWBFile(obj, fid, '/', containers.Map);
             H5F.close(fid);
-            
-            if isempty(obj.file_create_date)
-                h5write(filename, '/file_create_date', datestr(datetime, 30));
-            end
-            
-            if isempty(obj.nwb_version)
-                h5write(filename, '/nwb_version', {'1.2.0'});
-            end
         end
         
         function o = resolve(obj, path)

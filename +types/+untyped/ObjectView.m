@@ -1,6 +1,8 @@
 classdef ObjectView
     properties(SetAccess=private)
         path;
+        type = 'H5T_STD_REF_OBJ';
+        reftype = 'H5R_OBJECT';
     end
     
     methods
@@ -15,8 +17,8 @@ classdef ObjectView
             v = nwb.resolve(obj.path);
         end
         
-        function refs = export(obj, ~, name, path, refs)
-            refs([path '/' name]) = struct('loc', obj.path, 'range', []);
+        function refs = export(obj, fid, fullpath, refs)
+            refs = io.writeDataset(fid, fullpath, class(obj), obj, refs);
         end
     end
 end

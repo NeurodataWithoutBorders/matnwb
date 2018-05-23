@@ -1,7 +1,10 @@
 classdef RegionView
     properties(SetAccess=private)
+        path;
         view;
         range;
+        type = 'H5T_STD_REF_DSETREG';
+        reftype = 'H5R_DATASET_REGION';
     end
     
     methods
@@ -16,14 +19,18 @@ classdef RegionView
                 case 'table'
                     v = vobj.data(obj.range, :);
                 case 'types.untyped.DataStub'
-                    v = vobj.data.load(obj, obj.range(1), obj.range(2));
+                    v = vobj.data.load(obj.range(1), obj.range(2));
                 otherwise
                     v = vobj.data(obj.range);
             end
         end
         
-        function refs = export(obj, ~, ~, path, refs)
-            refs(path) = struct('loc', obj.view.path, 'range', obj.range);
+        function refs = export(obj, fid, fullpath, refs)
+            refs = io.writeDataset(fid, fullpath, class(obj), obj, refs);
+        end
+        
+        function path = get.path(obj)
+            path = obj.view.path;
         end
     end
 end

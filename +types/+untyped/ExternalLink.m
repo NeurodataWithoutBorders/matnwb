@@ -12,9 +12,9 @@ classdef ExternalLink < handle
             data = obj.stub.load(nwb);
         end
         
-        function refs = export(obj, loc_id, name, ~, refs)
+        function refs = export(obj, fid, fullpath, refs)
             plist = 'H5P_DEFAULT';
-            H5L.create_external(obj.filename, obj.path, loc_id, name, plist, plist);
+            H5L.create_external(obj.filename, obj.path, fid, fullpath, plist, plist);
         end
     end
 end

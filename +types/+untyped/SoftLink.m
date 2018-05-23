@@ -29,9 +29,9 @@ classdef SoftLink < handle
             end
         end
         
-        function refs = export(obj, ~, loc_id, name, ~, refs)
+        function refs = export(obj, fid, fullpath, refs)
             plist = 'H5P_DEFAULT';
-            H5L.create_soft(obj.path, loc_id, name, plist, plist);
+            H5L.create_soft(obj.path, fid, fullpath, plist, plist);
         end
     end
 end
