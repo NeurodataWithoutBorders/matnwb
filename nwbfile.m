@@ -29,7 +29,25 @@ classdef nwbfile < types.core.NWBFile
                 obj.file_create_date = [obj.file_create_date {modtime}];
             end
             fid = H5F.create(filename);
-            refs = export@types.core.NWBFile(obj, fid, '/', containers.Map);
+            refs = export@types.core.NWBFile(obj, fid, '/', {});
+            
+            loop_offset = 0;
+            while ~isempty(refs)
+                if loop_offset >= length(refs)
+                    error('Could not resolve paths for the following reference(s):\n%s',...
+                        file.addSpaces(strjoin(refs, newline), 4));
+                end
+                src = refs{1};
+                refs(1) = []; %pop
+                srcobj = obj.resolve(src);
+                
+                if isempty(srcobj.export(fid, src, {}))
+                    loop_offset = 0;
+                else
+                    refs = [refs src]; %push back
+                    loop_offset = loop_offset + 1;
+                end
+            end
             H5F.close(fid);
         end
         

@@ -1,4 +1,4 @@
-function refs = writeDataset(fid, fullpath, type, data, refs)
+function writeDataset(fid, fullpath, type, data)
 tid = io.getBaseType(type, data);
 if isscalar(data) || strcmp(type, 'char')
     sid = H5S.create('H5S_SCALAR');
@@ -17,10 +17,10 @@ else
     end
     sid = H5S.create_simple(nd, dims, []);
 end
-did = H5D.create(fid, fullpath, tid, sid, 'H5P_DEFAULT');
 if any(strcmp({'types.untyped.RegionView' 'types.untyped.ObjectView'}, type))
     data = io.getRefData(fid, data);
 end
+did = H5D.create(fid, fullpath, tid, sid, 'H5P_DEFAULT');
 H5D.write(did, tid, sid, sid, 'H5P_DEFAULT', data .');
 H5D.close(did);
 end

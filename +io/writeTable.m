@@ -1,4 +1,4 @@
-function refs = writeTable(fid, fullpath, data, refs)
+function writeTable(fid, fullpath, data)
 %check for references
 names = data.Properties.VariableNames;
 classes = cell(size(names));
@@ -32,10 +32,7 @@ refs_i = strcmp(classes, 'types.untyped.ObjectView') |...
 %grab ref data if they exist.  Otherwise, assign zeros and do it on second
 %round.
 if any(refs_i)
-    [data(:, refs_i), unresolved] = writeReferences(fid, data(:, refs_i));
-    if ~isempty(unresolved)
-        refs(fullpath) = unresolved;
-    end
+    data(:, refs_i) = writeReferences(fid, data(:, refs_i));
 end
 
 %define data type
@@ -45,10 +42,6 @@ for i=1:length(names)
     H5T.insert(tid, names{i}, offset, types{i});
     offset = offset + sizes(i);
 end
-
-sid = H5S.create_simple(1, size(data, 1), []);
-did = H5D.create(fid, fullpath, tid, sid, 'H5P_DEFAULT');
-
 %needs to be a struct
 data = table2struct(data, 'ToScalar', true);
 
@@ -62,12 +55,12 @@ if any(cell_i)
     end
 end
 
+sid = H5S.create_simple(1, size(data, 1), []);
+did = H5D.create(fid, fullpath, tid, sid, 'H5P_DEFAULT');
 H5D.write(did, tid, sid, sid, 'H5P_DEFAULT', data);
-%     table2struct(data, 'ToScalar', true));
 end
 
-function [obj_refs, unresolved] = writeReferences(fid, obj_refs)
-unresolved = containers.Map;
+function obj_refs = writeReferences(fid, obj_refs)
 names = obj_refs.Properties.VariableNames;
 col_data = cell(size(obj_refs, 1), 1);
 for i=1:size(obj_refs, 2)
@@ -75,16 +68,7 @@ for i=1:size(obj_refs, 2)
     refcol = obj_refs.(col_name);
     for j=1:size(obj_refs, 1)
         ref = refcol{j};
-        ref_data = io.getRefData(fid, ref);
-        if ~any(ref_data) %that is, all zeros indicating failure
-            if ~isKey(unresolved, col_name)
-                unresolved(col_name) = cell(size(col_data));
-            end
-            unresolvedColumn = unresolved(col_name);
-            unresolvedColumn{j} = ref.path;
-            unresolved(col_name) = unresolvedColumn;
-        end
-        col_data{j} = ref_data;
+        col_data{j} = io.getRefData(fid, ref);
     end
     obj_refs.(col_name) = col_data;
 end
