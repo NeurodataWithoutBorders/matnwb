@@ -7,11 +7,17 @@ type = struct('namespace', '', 'name', '');
 for i=1:length(alist)
     attr = alist(i);
     if strcmp(attr.Name, 'neurodata_type')
-        type.name = attr.Value{1};
+        if iscellstr(attr.Value)
+            type.name = attr.Value{1};
+        else
+            type.name = attr.Value;
+        end
     elseif strcmp(attr.Name, 'namespace')
-        type.namespace = attr.Value{1};
-    elseif strcmp(attr.Datatype, 'H5T_STRING')
-        args(attr.Name) = attr.Value{1};
+        if iscellstr(attr.Value)
+            type.namespace = attr.Value{1};
+        else
+            type.namespace = attr.Value;
+        end
     elseif iscellstr(attr.Value)
         args(attr.Name) = attr.Value{1};
     else

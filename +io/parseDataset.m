@@ -24,6 +24,8 @@ if isempty(typename) %a Group's properties
         data = H5D.read(did);
         if iscellstr(data)
             data = data{1};
+        else
+            data = data .';
         end
     else
         data = types.untyped.DataStub(filename, fullpath);
@@ -43,16 +45,41 @@ elseif strcmp(datatype.Class, 'H5T_COMPOUND')
     if isempty(data)
         props('data') = [];
     else
-        for j=1:length(compound)
-            comp = compound(j);
-            if strcmp(comp.Datatype.Class, 'H5T_REFERENCE')
-                refnames = data.(comp.Name);
-                reflist = cell(size(refnames, 2), 1);
-                for k=1:size(refnames,2)
-                    r = refnames(:,k);
-                    reflist{k} = parseReference(did, comp.Datatype.Type, r);
+        datatypes = [compound.Datatype];
+        classes = {datatypes.Class};
+        dtTypes = {datatypes.Type}; %struct or char array
+        ref_i = strcmp(classes, 'H5T_REFERENCE');
+        char_i = strcmp(classes, 'H5T_STRING');
+        %Strings should be the only type whose type is not a char array
+        char_types = [dtTypes{char_i}];
+        %if length is an absolute value, then matlab treats it as a char
+        %array instead of a cell array.  We only care about transposing
+        %char arrays
+        char_i(char_i) = ~strcmp({char_types.Length}, 'H5T_VARIABLE');
+        propnames = {compound.Name};
+        if any(ref_i)
+            %resolve references
+            refPropNames = propnames(ref_i);
+            refTypes = dtTypes(ref_i);
+            for j=1:length(refPropNames)
+                rpname = refPropNames{j};
+                refdata = data.(rpname);
+                reflist = cell(size(refdata, 2), 1);
+                for k=1:size(refdata, 2)
+                    r = refdata(:,k);
+                    reflist{k} = parseReference(did, refTypes{j}, r);
                 end
-                data.(comp.Name) = reflist;
+                data.(rpname) = reflist;
+            end
+        end
+        
+        if any(char_i)
+            %transpose character arrays because they are column-ordered
+            %when read
+            charPropNames = propnames(char_i);
+            for j=1:length(charPropNames)
+                cpname = charPropNames{j};
+                data.(cpname) = data.(cpname) .';
             end
         end
         props('data') = struct2table(data);

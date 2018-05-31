@@ -13,7 +13,7 @@ function nwbExport(nwb, filename)
 %    nwbExport(nwb, 'epoch.nwb');
 %
 %  See also GENERATECORE, GENERATEEXTENSIONS, NWBFILE, NWBREAD
-validateattributes(nwb, {'types.core.NWBFile'}, {});
+validateattributes(nwb, {'nwbfile'}, {});
 validateattributes(filename, {'cell', 'string', 'char'}, {});
 
 if iscellstr(filename)

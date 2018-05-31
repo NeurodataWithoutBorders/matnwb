@@ -11,26 +11,27 @@ for i=1:length(classes)
     end
     
     if iscellstr(datum)
+        %for the sake of getBaseType, we pretend cell strings are char
+        %types
         typeclass = 'char';
     else
         typeclass = class(datum);
     end
-    
     type = io.getBaseType(typeclass, datum);
     typesize = H5T.get_size(type);
     if iscellstr(datum)
+        %pad cell string to match so data can be uniformally writable
         datum = io.padCellStr(datum, typesize);
         data.(data.Properties.VariableNames{i}) = datum;
     end
     sizes(i) = typesize;
-    classes{i} = typeclass;
+    classes{i} = class(datum);
     types{i} = type;
 end
 
 refs_i = strcmp(classes, 'types.untyped.ObjectView') |...
     strcmp(classes, 'types.untyped.RegionView');
-%grab ref data if they exist.  Otherwise, assign zeros and do it on second
-%round.
+
 if any(refs_i)
     data(:, refs_i) = writeReferences(fid, data(:, refs_i));
 end
@@ -43,10 +44,17 @@ for i=1:length(names)
     offset = offset + sizes(i);
 end
 %needs to be a struct
+numrows = height(data);
 data = table2struct(data, 'ToScalar', true);
 
-%convert all cells to multidim arrays (strings and refs)
-cell_i = strcmp(classes, 'char') | refs_i;
+%struct is ordered columnwise but H5D requires rowwise arrays to write
+%column data.  So we transpose the data before further conversion
+for i=1:length(names)
+    data.(names{i}) = data.(names{i}) .';
+end
+
+%convert all cells to matrices
+cell_i = strcmp(classes, 'cell') | refs_i;
 if any(cell_i)
     str_names = names(cell_i);
     for i=1:length(str_names)
@@ -55,12 +63,13 @@ if any(cell_i)
     end
 end
 
-sid = H5S.create_simple(1, size(data, 1), []);
+sid = H5S.create_simple(1, numrows, []);
 did = H5D.create(fid, fullpath, tid, sid, 'H5P_DEFAULT');
 H5D.write(did, tid, sid, sid, 'H5P_DEFAULT', data);
 end
 
 function obj_refs = writeReferences(fid, obj_refs)
+%maps obj_refs from ref classes to HDF5 writable ref types
 names = obj_refs.Properties.VariableNames;
 col_data = cell(size(obj_refs, 1), 1);
 for i=1:size(obj_refs, 2)

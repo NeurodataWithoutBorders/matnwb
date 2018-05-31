@@ -46,7 +46,7 @@ else
         if iscellstr(data)
             tsize = max(cellfun('length', data));
         else
-            tsize = length(data);
+            tsize = size(data, 2);
         end
         H5T.set_size(id, tsize);
     end

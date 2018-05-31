@@ -23,9 +23,16 @@ classdef nwbfile < types.core.NWBFile
                 delete(filename);
             end
             modtime = datestr(datetime, 30);
-            if ischar(obj.file_create_date)
+            if ischar(obj.file_create_date) && isvector(obj.file_create_date)
                 obj.file_create_date = {obj.file_create_date modtime};
             else
+                if ischar(obj.file_create_date) && ismatrix(obj.file_create_date)
+                    %convert multidim array to cell array
+                    split_dim1 = ones(1, size(obj.file_create_date, 1));
+                    dim2 = size(obj.file_create_date, 2);
+                    obj.file_create_date = mat2cell(obj.file_create_date,...
+                        split_dim1, dim2) .';
+                end
                 obj.file_create_date = [obj.file_create_date {modtime}];
             end
             fid = H5F.create(filename);
