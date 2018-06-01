@@ -2,26 +2,54 @@ classdef RegionView
     properties(SetAccess=private)
         path;
         view;
-        range;
+        region;
+        mode; %one of point|block|all|none indicating selection mode
         type = 'H5T_STD_REF_DSETREG';
         reftype = 'H5R_DATASET_REGION';
     end
     
     methods
-        function obj = RegionView(path, range)
+        function obj = RegionView(path, region, mode)
             obj.view = types.untyped.ObjectView(path);
-            obj.range = range;
+            obj.region = region;
+            obj.mode = mode;
         end
         
         function v = refresh(obj, nwb)
             vobj = obj.view.refresh(nwb);
-            switch class(vobj)
-                case 'table'
-                    v = vobj.data(obj.range, :);
-                case 'types.untyped.DataStub'
-                    v = vobj.data.load(obj.range(1), obj.range(2));
+            switch obj.mode
+                case 'point'
+                    if istable(vobj.data)
+                        indices = false(1, height(vobj.data));
+                        for i=1:length(obj.region)
+                            coord = obj.region{i};
+                            indices(coord(1)) = true;
+                        end
+                        v = vobj.data(indices, :);
+                    else
+                        error('types.untyped.RegionView Unsupported Feature!');
+                    end
+                case 'block'
+                    if istable(vobj.data)
+                        indices = false(1, height(vobj.data));
+                        for i=1:length(obj.region)
+                            coord = obj.region{i};
+                            indices(coord(1):coord(2)) = true;
+                        end
+                        v = vobj.data(indices, :);
+                    else
+                        error('types.untyped.RegionView Unsupported Feature!');
+                    end
+                case 'all'
+                    if isa(vobj.data, 'types.untyped.DataStub')
+                        v = vobj.data.load();
+                    else
+                        v = vobj.data;
+                    end
+                case 'none'
+                    v = [];
                 otherwise
-                    v = vobj.data(obj.range);
+                    error('RegionView invalid mode `%s`', obj.mode);
             end
         end
         

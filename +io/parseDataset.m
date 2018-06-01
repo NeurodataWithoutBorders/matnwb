@@ -97,16 +97,42 @@ end
 function refobj = parseReference(did, type, data)
 target = H5R.get_name(did, type, data);
 region = [];
+mode = '';
 if strcmp(type, 'H5R_DATASET_REGION')
     sid = H5R.get_region(did, type, data);
-    [start, finish] = H5S.get_select_bounds(sid);
+    sel_type = H5S.get_select_type(sid);
+    switch sel_type
+        case {H5ML.get_constant_value('H5S_SEL_POINTS')...
+                H5ML.get_constant_value('H5S_SEL_HYPERSLABS')}
+            %the method for grabbing relevant points are exactly the same
+            if sel_type == H5ML.get_constant_value('H5S_SEL_POINTS')
+                getnum = @H5S.get_select_elem_npoints;
+                getlist = @H5S.get_select_elem_pointlist;
+                mode = 'point';
+            else
+                getnum = @H5S.get_select_hyper_nblocks;
+                getlist = @H5S.get_select_hyper_blocklist;
+                mode = 'block';
+            end
+            
+            nSelections = getnum(sid);
+            region = cell(1, nSelections);
+            for i=1:nSelections
+                region{i} = 1 + getlist(sid, i-1, 1);
+            end
+        case H5ML.get_constant_value('H5S_SEL_ALL')
+            region = {};
+            mode = 'all';
+        case H5ML.get_constant_value('H5S_SEL_NONE')
+            region = {};
+            mode = 'none';
+    end
     H5S.close(sid);
-    region = [start finish];
 end
 
-if isempty(region)
+if isempty(mode)
     refobj = types.untyped.ObjectView(target);
 else
-    refobj = types.untyped.RegionView(target, region);
+    refobj = types.untyped.RegionView(target, region, mode);
 end
 end
