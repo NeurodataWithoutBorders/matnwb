@@ -62,7 +62,7 @@ classdef DataStub
             fid = H5F.open(obj.filename);
             did = H5D.open(fid, obj.path);
             
-            mem_sid = H5S.create_simple(length(dims), dims, []);
+            mem_sid = H5S.create_simple(length(dims), fliplr(dims), []);
             file_sid = H5D.get_space(did);
             H5S.select_hyperslab(file_sid, 'H5S_SELECT_SET', offset, stride, [], dims);
             data = H5D.read(did, 'H5ML_DEFAULT', mem_sid, file_sid, 'H5P_DEFAULT');
