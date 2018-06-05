@@ -20,6 +20,9 @@ function generateCore(core, varargin)
 %   See also GENERATEEXTENSIONS
 validateattributes(core, {'char', 'string'}, {'scalartext'});
 cs = util.generateSchema(core);
+if ~exist('namespaces','dir')
+    mkdir('namespaces')
+end
 save(fullfile('namespaces','core.mat'), '-struct', 'cs');
 
 %write core files
