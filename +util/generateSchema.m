@@ -1,5 +1,7 @@
 function namespace = generateSchema(source)
-javaaddpath(fullfile('jar', 'schema.jar'));
+%find jar from source
+matnwbDir = fileparts(which('nwbfile'));
+javaaddpath(fullfile(matnwbDir, 'jar', 'schema.jar'));
 [localpath, ~, ~] = fileparts(source);
 [filenames, nm, dep] = yaml.getNamespaceInfo(source);
 schema = yaml.getSourceInfo(localpath, filenames{:});
