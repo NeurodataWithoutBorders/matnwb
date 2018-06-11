@@ -22,6 +22,8 @@ classdef nwbfile < types.core.NWBFile
                 warning('Overwriting %s', filename);
                 delete(filename);
             end
+            
+            %add to file create date
             modtime = datestr(datetime, 30);
             if ischar(obj.file_create_date) && isvector(obj.file_create_date)
                 obj.file_create_date = {obj.file_create_date modtime};

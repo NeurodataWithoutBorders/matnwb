@@ -12,8 +12,8 @@ else
     end
     
     if iscellstr(data)
-        data = io.padCellStr(data, max(cellfun('length', data)));
-        data = cell2mat(data .');
+        data = io.padCellStr(data);
+        data = cell2mat(data);
     end
     sid = H5S.create_simple(nd, fliplr(dims), []);
 end

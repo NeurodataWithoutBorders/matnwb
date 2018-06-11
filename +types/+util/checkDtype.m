@@ -18,7 +18,7 @@ if isa(val, 'types.untyped.DataStub')
     %grab first element and check
     dimsize = [1 val.ndims()];
     truval = val;
-    val = val.load(zeros(dimsize), ones(dimsize));
+    val = val.load(ones(dimsize), zeros(dimsize), []);
 else
     truval = [];
 end

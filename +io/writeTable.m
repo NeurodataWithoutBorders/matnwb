@@ -1,32 +1,23 @@
 function writeTable(fid, fullpath, data)
 %check for references
-names = data.Properties.VariableNames;
-classes = cell(size(names));
-types = cell(size(names));
-sizes = zeros(size(names));
-for i=1:length(classes)
+if isstruct(data)
+    names = fieldnames(data);
+else %istable
+    names = data.Properties.VariableNames;
+end
+numNames = length(names);
+
+tid = io.getBaseType(class(data), data);
+
+classes = cell(numNames);
+for i=1:numNames
     datum = data.(names{i});
-    if iscell(datum) && ~iscellstr(datum)
-        datum = datum{1};
-    end
-    
-    if iscellstr(datum)
-        %for the sake of getBaseType, we pretend cell strings are char
-        %types
-        typeclass = 'char';
-    else
-        typeclass = class(datum);
-    end
-    type = io.getBaseType(typeclass, datum);
-    typesize = H5T.get_size(type);
     if iscellstr(datum)
         %pad cell string to match so data can be uniformally writable
-        datum = io.padCellStr(datum, typesize);
-        data.(data.Properties.VariableNames{i}) = datum;
+        datum = io.padCellStr(datum);
+        data.(names{i}) = datum;
     end
-    sizes(i) = typesize;
     classes{i} = class(datum);
-    types{i} = type;
 end
 
 refs_i = strcmp(classes, 'types.untyped.ObjectView') |...
@@ -36,16 +27,11 @@ if any(refs_i)
     data(:, refs_i) = writeReferences(fid, data(:, refs_i));
 end
 
-%define data type
-tid = H5T.create('H5T_COMPOUND', sum(sizes));
-offset = 0;
-for i=1:length(names)
-    H5T.insert(tid, names{i}, offset, types{i});
-    offset = offset + sizes(i);
-end
 %needs to be a struct
-numrows = height(data);
-data = table2struct(data, 'ToScalar', true);
+if istable(data)
+    numrows = height(data);
+    data = table2struct(data, 'ToScalar', true);
+end
 
 %struct is ordered columnwise but H5D requires rowwise arrays to write
 %column data.  So we transpose the data before further conversion

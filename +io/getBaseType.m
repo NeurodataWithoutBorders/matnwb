@@ -1,55 +1,54 @@
 function id = getBaseType(type, data)
-if isa(data, 'table')
-    %construct custom table
-    classes = cell(size(data.Properties.VariableNames));
-    sizes = zeros(size(classes));
-    rawnames = cell(size(classes));
-    for i=1:length(classes)
-        datum = data.(data.Properties.VariableNames{i});
-        if iscell(datum)
-            datum = datum{1};
-        end
-        classes{i} = class(datum);
-        switch classes{i}
-            case {'char' 'types.untyped.RegionView'}
-                %size of vlen string a pointer to region
-                typesize = 16;
-            case {'double' 'int64' 'uint64' 'types.untyped.ObjectView'}
-                typesize = 8;
-            case {'single' 'int32' 'uint32'}
-                typesize = 4;
-            otherwise
-                keyboard;
-        end
-        sizes(i) = typesize;
-        rawnames{i} = getRawType(classes{i});
-    end
-    
-    id = H5T.create('H5T_COMPOUND', sum(sizes));
-    offset = 0;
-    for i=1:length(classes)
-        if strcmp(rawnames{i}, 'H5T_C_S1')
-            %if is string, make it variable length
-            rawid = H5T.copy(rawnames{i});
-            H5T.set_size(rawid, 'H5T_VARIABLE');
+id = getRawType(type);
+switch id
+    case 'H5T_COMPOUND'
+        %create H5T_COMPOUND type with proper sizes
+        if isstruct(data)
+            variableNames = fieldnames(data);
+        elseif istable(data)
+            variableNames = data.Properties.VariableNames;
         else
-            rawid = rawnames{i};
+            error('io.getBaseType only support `struct` or `table` types as H5T_COMPOUND');
         end
-        %insert columns into compound type
-        H5T.insert(id, data.Properties.VariableNames{i}, offset, rawid);
-        offset = offset + sizes(i);
-    end
-else
-    id = getRawType(type);
-    if strcmp(id, 'H5T_C_S1')
+        
+        numVariables = length(variableNames);
+        %despite what it may seem, H5ML.get_constant_value returns a
+        %double, but H5T.copy returns a `H5ML.id`.  So you will basically
+        %be constantly juggling either char/id or double/id types.
+        tids = cell(numVariables, 1);
+        sizes = zeros(numVariables, 1);
+        for i=1:numVariables
+            datum = data.(variableNames{i});
+            %recurse
+            tids{i} = io.getBaseType(class(datum), datum);
+            sizes(i) = H5T.get_size(tids{i});
+        end
+        
+        id = H5T.create('H5T_COMPOUND', sum(sizes));
+        offset = 0;
+        for i=1:numVariables
+            %insert columns into compound type
+            propname = variableNames{i};
+            H5T.insert(id, propname, offset, tids{i});
+            offset = offset + sizes(i);
+            if isa(tids{i}, 'H5ML.id')
+                %close if custom type id (errors if char base type)
+                H5T.close(tids{i});
+            end
+        end
+        H5T.pack(id);
+    case 'H5T_C_S1'
+        %modify id to set the proper size
         id = H5T.copy(id);
         if iscellstr(data)
+            %if data is a cell array of str, then return the maximum size
+            %The data must now be converted to char array evenly padded to
+            %this maximum size
             tsize = max(cellfun('length', data));
         else
             tsize = size(data, 2);
         end
         H5T.set_size(id, tsize);
-    end
 end
 end
 
@@ -67,6 +66,12 @@ switch type
         typename = 'H5T_NATIVE_LLONG';
     case 'uint64'
         typename = 'H5T_NATIVE_ULLONG';
+    case 'int32'
+        typename = 'H5T_NATIVE_INT';
+    case 'single'
+        typename = 'H5T_NATIVE_FLOAT';
+    case {'table', 'struct'}
+        typename = 'H5T_COMPOUND';
     otherwise
         error('Type `%s` is not a support raw type', type);
 end

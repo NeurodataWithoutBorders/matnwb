@@ -3,53 +3,51 @@ classdef RegionView
         path;
         view;
         region;
-        mode; %one of point|block|all|none indicating selection mode
         type = 'H5T_STD_REF_DSETREG';
         reftype = 'H5R_DATASET_REGION';
     end
     
     methods
-        function obj = RegionView(path, region, mode)
+        function obj = RegionView(path, region)
             obj.view = types.untyped.ObjectView(path);
             obj.region = region;
-            obj.mode = mode;
+        end
+        
+        %given an sid, this region will return that sid but with the
+        %correct selection parameters
+        function sid = get_selection(obj, sid)
+            H5S.select_none(sid);
+            for i=1:length(obj.region)
+                coord = obj.region{i} - 1;
+                %reshape coord such offset and rank is indexable
+                remainder = length(coord) / 2;
+                coord = reshape(coord, [2 remainder]);
+                blocksz = coord(2, :) - coord(1, :) + 1;
+                H5S.select_hyperslab(sid, 'H5S_SELECT_OR', coord(1, :),...
+                    [], [], blocksz);
+            end
         end
         
         function v = refresh(obj, nwb)
             vobj = obj.view.refresh(nwb);
-            switch obj.mode
-                case 'point'
-                    if istable(vobj.data)
-                        indices = false(1, height(vobj.data));
-                        for i=1:length(obj.region)
-                            coord = obj.region{i};
-                            indices(coord(1)) = true;
-                        end
-                        v = vobj.data(indices, :);
-                    else
-                        error('types.untyped.RegionView Unsupported Feature!');
-                    end
-                case 'block'
-                    if istable(vobj.data)
-                        indices = false(1, height(vobj.data));
-                        for i=1:length(obj.region)
-                            coord = obj.region{i};
-                            indices(coord(1):coord(2)) = true;
-                        end
-                        v = vobj.data(indices, :);
-                    else
-                        error('types.untyped.RegionView Unsupported Feature!');
-                    end
-                case 'all'
-                    if isa(vobj.data, 'types.untyped.DataStub')
-                        v = vobj.data.load();
-                    else
-                        v = vobj.data;
-                    end
-                case 'none'
-                    v = [];
-                otherwise
-                    error('RegionView invalid mode `%s`', obj.mode);
+            
+            if isa(vobj.data, 'types.untyped.DataStub')
+                sid = obj.get_selection(vobj.data.get_space());
+                v = vobj.data.load(sid);
+                H5S.close(sid);
+            else
+                v = vobj.data;
+            end
+            
+            indices = [];
+            for i=1:length(obj.region)
+                coord = obj.region{i};
+                indices = [indices coord(1):coord(2)];
+            end
+            if istable(v)
+                v = v(indices, :); %tables only take 2d indexing
+            else
+                v = v(indices);
             end
         end
         
