@@ -14,7 +14,6 @@ classdef nwbfile < types.core.NWBFile
     methods
         function obj = nwbfile(varargin)
             obj = obj@types.core.NWBFile(varargin{:});
-            obj.nwb_version = '1.2.0';
         end
         
         function export(obj, filename)
