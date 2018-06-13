@@ -8,7 +8,7 @@ function nwbExport(nwb, filename)
 %    generateCore('schema\core\nwb.namespace.yaml');
 %    %Create some fake fata and write
 %    nwb = nwbfile;
-%    nwb.epochs = types.untyped.Group;
+%    nwb.epochs = types.core.Epochs;
 %    nwb.epochs.stim = types.Epoch;
 %    nwbExport(nwb, 'epoch.nwb');
 %

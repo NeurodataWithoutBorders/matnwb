@@ -1,8 +1,0 @@
-groups:
-- attributes:
-  - doc: the downsample bins
-    dtype: int
-    name: bins
-  doc: A custom ElectricalSeries for my lab
-  neurodata_type_def: OnePhotonSeries
-  neurodata_type_inc: ImageSeries

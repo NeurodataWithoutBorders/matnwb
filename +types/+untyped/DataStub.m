@@ -94,11 +94,11 @@ classdef DataStub
             if H5T.get_class(srctid) == H5ML.get_constant_value('H5T_COMPOUND')
                 ncol = H5T.get_nmembers(srctid);
                 ref_i = false(1, ncol);
-                subtids = zeros(1, ncol);
+                subtids = cell(1, ncol);
                 for i = 1:ncol
                     subclass = H5T.get_member_class(srctid, i-1);
                     subtid = H5T.get_member_type(srctid, i-1);
-                    subtids(i) = subtid;
+                    subtids{i} = subtid;
                     refTypeConst = H5ML.get_constant_value('H5T_REFERENCE');
                     ref_i(i) = subclass == refTypeConst;
                 end
@@ -148,7 +148,7 @@ classdef DataStub
                 reflist = cell(size(refdata, 2), 1);
                 for j=1:size(refdata, 2)
                     r = refdata(:,j);
-                    reflist{j} = io.parseReference(srcdid, reftids(i), r);
+                    reflist{j} = io.parseReference(srcdid, reftids{i}, r);
                 end
                 data.(rpname) = reflist;
             end

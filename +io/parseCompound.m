@@ -6,13 +6,13 @@ if isempty(data)
 end
 tid = H5D.get_type(did);
 ncol = H5T.get_nmembers(tid);
-subtids = zeros(1, ncol);
+subtids = cell(1, ncol);
 ref_i = false(1, ncol);
 char_i = false(1, ncol);
 for i = 1:ncol
     subclass = H5T.get_member_class(tid, i-1);
     subtid = H5T.get_member_type(tid, i-1);
-    subtids(i) = subtid;
+    subtids{i} = subtid;
     switch subclass
         case H5ML.get_constant_value('H5T_REFERENCE')
             ref_i(i) = true;
@@ -36,7 +36,7 @@ if any(ref_i)
         reflist = cell(size(refdata, 2), 1);
         for k=1:size(refdata, 2)
             r = refdata(:,k);
-            reflist{k} = io.parseReference(did, reftids(j), r);
+            reflist{k} = io.parseReference(did, reftids{j}, r);
         end
         data.(rpname) = reflist;
     end

@@ -1,6 +1,0 @@
-namespaces:
-- doc: Extension for use in my Lab
-  name: mylab
-  schema:
-  - namespace: core
-  - source: mylab.extensions.yaml
