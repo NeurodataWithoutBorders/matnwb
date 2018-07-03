@@ -7,6 +7,9 @@ classdef Attribute < handle
         readonly; %determines whether value can be changed or not
         dtype; %type of value
         dependent; %set externally.  If the attribute is actually dependent on an untyped dataset/group
+        scalar; %if the value is scalar or an array
+        dimnames;
+        shape;
     end
     
     methods
@@ -19,6 +22,9 @@ classdef Attribute < handle
             obj.readonly = false;
             obj.dtype = '';
             obj.dependent = '';
+            obj.scalar = false;
+            obj.shape = {};
+            obj.dimnames = {};
             
             if nargin < 1
                 return;
@@ -42,6 +48,15 @@ classdef Attribute < handle
                 %changeable attribute
                 obj.value = default;
                 obj.readonly = false;
+            end
+            
+            dims = source.get('dims');
+            shape = source.get('shape');
+            if isempty(dims)
+                obj.shape = {1};
+                obj.dimnames = {{obj.name}};
+            else
+                [obj.shape, obj.dimnames] = file.procdims(dims, shape);
             end
             
             obj.dtype = file.mapType(source.get('dtype'));

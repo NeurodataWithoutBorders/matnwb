@@ -1,6 +1,6 @@
 function writeDataset(fid, fullpath, type, data)
 tid = io.getBaseType(type, data);
-if isscalar(data) || strcmp(type, 'char')
+if (~iscell(data) && isscalar(data)) || strcmp(type, 'char')
     sid = H5S.create('H5S_SCALAR');
 else
     if isvector(data)

@@ -18,7 +18,7 @@ for i=1:length(alist)
         else
             type.namespace = attr.Value;
         end
-    elseif iscellstr(attr.Value)
+    elseif isscalar(attr.Value) && iscellstr(attr.Value)
         args(attr.Name) = attr.Value{1};
     else
         args(attr.Name) = attr.Value;
