@@ -12,7 +12,7 @@ if isa(dim, 'java.util.ArrayList')
             shapeopt = shape;
         end
         
-        [subsz, subnm] = file.procdims(dimopt, shapeopt);
+        [subsz, subnm] = file.Dataset.procdims(dimopt, shapeopt);
         if iscell(subsz)
             %nested declaration
             sz{i} = subsz;
