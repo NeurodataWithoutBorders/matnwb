@@ -5,7 +5,8 @@ end
 for i=1:length(cstr)
     cstrlen = length(cstr{i});
     if cstrlen < maxsize
-        cstr{i} = [cstr{i} char(zeros(1, maxsize - cstrlen))];
+        %32 is a regular space character
+        cstr{i} = [cstr{i} repmat(' ', 1, maxsize - cstrlen)];
     end
 end
 cs = cstr;

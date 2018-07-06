@@ -18,7 +18,14 @@ if isa(val, 'types.untyped.DataStub')
     %grab first element and check
     dimsize = [1 val.ndims()];
     truval = val;
-    val = val.load(ones(dimsize), zeros(dimsize), []);
+    if any(val.dims() == 0)
+        val = [];
+    else
+        val = val.load(ones(dimsize), zeros(dimsize), []);
+    end
+elseif isa(val, 'types.untyped.Anon')
+    truval = val;
+    val = val.value;
 else
     truval = [];
 end
@@ -57,7 +64,7 @@ switch type
         end
 end
 
-%reset to datastub
+%reset to datastub/anon
 if ~isempty(truval)
     val = truval;
 end

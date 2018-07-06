@@ -6,8 +6,7 @@ classdef nwbfile < types.core.NWBFile
     %
     % Example. Construct an object from scratch for export:
     %    nwb = nwbfile;
-    %    nwb.epochs = types.untyped.Group;
-    %    nwb.epochs.stim = types.Epoch;
+    %    nwb.epochs = types.core.Epochs;
     %    nwbExport(nwb, 'epoch.nwb');
     %
     % See also NWBREAD, GENERATECORE, GENERATEEXTENSIONS
@@ -24,18 +23,16 @@ classdef nwbfile < types.core.NWBFile
             
             %add to file create date
             modtime = datestr(datetime, 30);
-            if ischar(obj.file_create_date) && isvector(obj.file_create_date)
-                obj.file_create_date = {obj.file_create_date modtime};
-            else
-                if ischar(obj.file_create_date) && ismatrix(obj.file_create_date)
-                    %convert multidim array to cell array
-                    split_dim1 = ones(1, size(obj.file_create_date, 1));
-                    dim2 = size(obj.file_create_date, 2);
-                    obj.file_create_date = mat2cell(obj.file_create_date,...
-                        split_dim1, dim2) .';
-                end
-                obj.file_create_date = [obj.file_create_date {modtime}];
+            if ischar(obj.file_create_date)
+                obj.file_create_date = {obj.file_create_date};
             end
+            if ischar(obj.file_create_date) && ismatrix(obj.file_create_date)
+                %convert multidim array to cell array
+                dims = size(obj.file_create_date);
+                obj.file_create_date = mat2cell(obj.file_create_date,...
+                    ones(dims(1), 1), dims(2));
+            end
+            obj.file_create_date = [obj.file_create_date; {modtime}];
             fid = H5F.create(filename);
             refs = export@types.core.NWBFile(obj, fid, '/', {});
             

@@ -1,4 +1,4 @@
-function set = parseConstrained(pname, name, type, varargin)
+function set = parseConstrained(pname, type, varargin)
 ikeys = 1:2:length(varargin);
 for i=ikeys+1
     if ~isa(varargin{i}, type)

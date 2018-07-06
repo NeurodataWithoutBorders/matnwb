@@ -31,12 +31,10 @@ elseif strcmp(datatype.Class, 'H5T_STRING') ||...
         %cellstr.  We don't like that so convert to char arrays
         data = data{1};
     elseif ischar(data)
+        
         data = data .';
         datadim = size(data);
-        if datadim(1) > 1
-            %multidimensional strings should be using cell str
-            data = strtrim(mat2cell(data, ones(datadim(1), 1), datadim(2)));
-        end
+        data = mat2cell(data, ones(datadim(1), 1), datadim(2));
     end
 else
     data = types.untyped.DataStub(filename, fullpath);

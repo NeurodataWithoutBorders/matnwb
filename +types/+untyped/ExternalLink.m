@@ -8,8 +8,8 @@ classdef ExternalLink < handle
             obj.stub = types.untyped.DataStub(filename, path);
         end
         
-        function data = deref(obj, nwb)
-            data = obj.stub.load(nwb);
+        function data = deref(obj)
+            data = obj.stub.load();
         end
         
         function refs = export(obj, fid, fullpath, refs)

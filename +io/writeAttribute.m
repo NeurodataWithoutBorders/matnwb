@@ -34,8 +34,7 @@ catch ME
         rethrow(ME);
     end
 end
-% H5A.write(id, tid, eval([type '(value)']) .');
-H5A.write(id, tid, value .');
+H5A.write(id, tid, eval([type '(value)']) .');
 H5A.close(id);
 H5S.close(sid);
 H5O.close(oid);

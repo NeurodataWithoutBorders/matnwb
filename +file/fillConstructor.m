@@ -76,63 +76,89 @@ else
     usmap = containers.Map;
     for i=1:length(defaults)
         nm = defaults{i};
-        usmap(nm) = props(nm).value;
+        if strcmp(props(nm).dtype, 'char')
+            usmap(nm) = ['''' props(nm).value ''''];
+        else
+            usmap(nm) = [props(nm).dtype '(' props(nm).value ')'];
+        end
     end
     kwargs = io.map2kwargs(usmap);
     bodystr = ['varargin = [' util.cellPrettyPrint(kwargs) ' varargin];' newline];
 end
 bodystr = [bodystr 'obj = obj@' pname '(varargin{:});'];
 
-constrained = {};
-parseable = {};
-for i=1:length(names)
-    var = names{i};
-    pv = props(var);
-    if ((isa(pv, 'file.Group') || isa(pv, 'file.Dataset')) && pv.isConstrainedSet)
-        constrained = [constrained {var}];
-    else
-        parseable = [parseable {var}];
-    end
-end
-if ~isempty(parseable)
-    bodystr = strjoin({bodystr...
-        'p = inputParser;'...
-        'p.KeepUnmatched = true;'... %suppress subclass/parent props
-        'p.PartialMatching = false;'...
-        'p.StructExpand = false;'}, newline);
-    for i=1:length(parseable)
-        var = parseable{i};
-        prop = props(var);
-        if isa(prop, 'file.Group') && (prop.hasAnonData || prop.hasAnonGroups)
-            def = 'types.untyped.Set()';
-        else
-            def = '[]';
-        end
-        bodystr = [bodystr newline 'addParameter(p, ''' var ''', ' def ');'];
-    end
-    
-    bodystr = [bodystr newline 'parse(p, varargin{:});'];
-    
-    for i=1:length(parseable)
-        var = parseable{i};
-        bodystr = [bodystr newline 'obj.' var ' = p.Results.' var ';'];
-    end
+if isempty(names)
+    return;
 end
 
-%if constrained sets exist, then check for nonstandard parameters and add as
+bodystr = strjoin({bodystr...
+    'p = inputParser;'...
+    'p.KeepUnmatched = true;'... %suppress subclass/parent props
+    'p.PartialMatching = false;'...
+    'p.StructExpand = false;'}, newline);
+constrained = {};
+anon = {};
+for i=1:length(names)
+    nm = names{i};
+    prop = props(nm);
+    if ((isa(prop, 'file.Group') &&...
+            (prop.isConstrainedSet || prop.hasAnonData || prop.hasAnonGroups))...
+            || (isa(prop, 'file.Dataset') && prop.isConstrainedSet))
+        def = 'types.untyped.Set()';
+        if prop.isConstrainedSet
+            constrained = [constrained {nm}];
+        end
+    else
+        if (isa(prop, 'file.Group') || isa(prop, 'file.Dataset'))...
+                && isempty(prop.name)
+            anon = [anon {nm}];
+        end
+        def = '[]';
+    end
+    bodystr = [bodystr newline 'addParameter(p, ''' nm ''', ' def ');'];
+end
+
+bodystr = [bodystr newline 'parse(p, varargin{:});'];
+
+named = setdiff(names, [constrained anon]);
+for i=1:length(named)
+    var = named{i};
+    bodystr = [bodystr newline 'obj.' var ' = p.Results.' var ';'];
+end
+
+%if constrained/anon sets exist, then check for nonstandard parameters and add as
 %container.map
 for i=1:length(constrained)
-    cname = constrained{i};
-    pc = props(cname);
-    varname = lower(pc.type);
-    pc_namespace = namespace.getNamespace(pc.type);
+    type = props(constrained{i}).type;
+    varname = lower(type);
+    pc_namespace = namespace.getNamespace(type);
     if isempty(pc_namespace)
-        warning('`%s`''s constructor is unable to check for type `%s` because its namespace could not be found.  Please generate the namespace or class definition for type `%s`.'...
-            , pname, pc.type, pc.type);
+        warning(['`%s`''s constructor is unable to check for type `%s` ' ...
+            'because its namespace could not be found.  Please generate ' ...
+            'the namespace or class definition for type `%s`.']...
+            , pname, type, type);
         continue;
     end
-    fulltypename = ['types.' pc_namespace.name '.' pc.type];
-    methodcall = ['types.util.parseConstrained(''' pname ''', ''' cname ''', ''' fulltypename ''', varargin{:})'];
-    bodystr = [bodystr newline 'obj.' varname ' = ' methodcall ';']; 
+    fulltypename = ['types.' pc_namespace.name '.' type];
+    methodcall = ['types.util.parseConstrained(''' pname ''', ''' fulltypename ''', varargin{:})'];
+    bodystr = [bodystr newline 'obj.' varname ' = ' methodcall ';'];
+end
+
+%if anonymous values exist, then check for nonstandard parameters and add
+%as Anon
+for i=1:length(anon)
+    type = props(anon{i}).type;
+    varname = lower(type);
+    pc_namespace = namespace.getNamespace(type);
+    if isempty(pc_namespace)
+        warning(['`%s`''s constructor is unable to check for type `%s` ' ...
+            'because its namespace could not be found.  Please generate ' ...
+            'the namespace or class definition for type `%s`.']...
+            , pname, type, type);
+        continue;
+    end
+    fulltypename = ['types.' pc_namespace.name '.' type];
+    methodcall = ['types.util.parseAnon(''' fulltypename ''', varargin{:})'];
+    bodystr = [bodystr newline 'obj.' varname ' = ' methodcall ';'];
 end
 end

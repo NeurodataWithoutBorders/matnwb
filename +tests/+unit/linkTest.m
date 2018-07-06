@@ -12,15 +12,15 @@ testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
 end
 
 function testLinkConstructor(testCase)
-l = types.untyped.Link('/mypath', 'myfile.nwb');
+l = types.untyped.ExternalLink('myfile.nwb', '/mypath');
 testCase.verifyEqual(l.path, '/mypath');
 testCase.verifyEqual(l.filename, 'myfile.nwb');
 end
 
-function testLinkExport(testCase)
+function testLinkExportSoft(testCase)
 fid = H5F.create('test.nwb');
 close = onCleanup(@()H5F.close(fid));
-l = types.untyped.Link('/mypath');
+l = types.untyped.SoftLink('/mypath');
 l.export(fid, 'l1');
 info = h5info('test.nwb');
 testCase.verifyEqual(info.Links.Name, 'l1');
@@ -31,7 +31,7 @@ end
 function testLinkExportExternal(testCase)
 fid = H5F.create('test.nwb');
 close = onCleanup(@()H5F.close(fid));
-l = types.untyped.Link('/mypath', 'extern.nwb');
+l = types.untyped.ExternalLink('extern.nwb', '/mypath');
 l.export(fid, 'l1');
 info = h5info('test.nwb');
 testCase.verifyEqual(info.Links.Name, 'l1');

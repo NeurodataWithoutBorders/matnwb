@@ -27,6 +27,16 @@ classdef Set < handle & matlab.mixin.CustomDisplay
             k = keys(obj.map);
         end
         
+        %return values of backed map
+        function v = values(obj)
+            v = values(obj.map);
+        end
+        
+        %return number of entries
+        function cnt = Count(obj)
+            cnt = obj.map.Count;
+        end
+        
         function setValidationFcn(obj, fcn)
             if (~isnumeric(fcn) || ~isempty(fcn)) && ~isa(fcn, 'function_handle')
                 error('Validation must be a function handle of form @(name, val) or empty array.');

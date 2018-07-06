@@ -1,6 +1,6 @@
 function kwargs = map2kwargs(map)
 %containers.Map -> keyword args for types
-kwargs = cell(1, map.Count);
+kwargs = cell(1, map.Count * 2);
 mapkeys = keys(map);
 for i=1:length(mapkeys)
     k = mapkeys{i};

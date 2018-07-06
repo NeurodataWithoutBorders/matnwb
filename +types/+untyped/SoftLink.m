@@ -3,9 +3,9 @@ classdef SoftLink < handle
         path;
     end
     
-    properties(Hidden, SetAccess=immutable)
-        type; %type constraint, used by file generation
-    end
+%     properties(Hidden, SetAccess=immutable)
+%         type; %type constraint, used by file generation
+%     end
     
     methods
         function obj = SoftLink(path)
@@ -24,9 +24,9 @@ classdef SoftLink < handle
                 error('Argument `nwb` must be a valid `nwbfile`');
             end
             refobj = io.resolvePath(nwb, obj.path);
-            if ~isa(refobj, obj.type)
-                error('Expected link to point to a `%s`.  Got `%s`.', obj.type, class(refobj));
-            end
+%             if ~isempty(obj.type) && ~isa(refobj, obj.type)
+%                 error('Expected link to point to a `%s`.  Got `%s`.', obj.type, class(refobj));
+%             end
         end
         
         function refs = export(obj, fid, fullpath, refs)
