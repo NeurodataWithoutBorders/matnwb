@@ -3,6 +3,11 @@ classdef ExternalLink < handle
         stub;
     end
     
+    properties(Dependent=true)
+        filename;
+        path;
+    end
+    
     methods
         function obj = ExternalLink(filename, path)
             obj.stub = types.untyped.DataStub(filename, path);
@@ -15,6 +20,14 @@ classdef ExternalLink < handle
         function refs = export(obj, fid, fullpath, refs)
             plist = 'H5P_DEFAULT';
             H5L.create_external(obj.filename, obj.path, fid, fullpath, plist, plist);
+        end
+        
+        function fnm = get.filename(obj)
+            fnm = obj.stub.filename;
+        end
+        
+        function path = get.path(obj)
+            path = obj.stub.path;
         end
     end
 end

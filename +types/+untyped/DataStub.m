@@ -23,6 +23,10 @@ classdef DataStub
             did = H5D.open(fid, obj.path);
             sid = H5D.get_space(did);
             [~, d, ~] = H5S.get_simple_extent_dims(sid);
+            %to MATLAB array size format
+            if numel(d) == 1
+                d = [d 1];
+            end
             H5S.close(sid);
             H5D.close(did);
             H5F.close(fid);

@@ -1,7 +1,21 @@
 function s = cellPrettyPrint(val)
-val = strrep(val, '''', '`');
+%allows for numerical and casting values (0.0, NaN, int64(2.0), etc.)
 nummatch = regexp(val, '^(?:.+\()?(NaN|\d+(?:\.\d+)?)\)?', 'match', 'once');
-nonnums = ~strcmp(val, nummatch);
-val(nonnums) = strcat('''', val(nonnums), '''');
+iNonNums = ~strcmp(val, nummatch);
+
+%strip quotes
+iHasQuotes = iNonNums & startsWith(val, '''') & endsWith(val, '''');
+valHasQuotes = val(iHasQuotes);
+for i=1:length(valHasQuotes)
+    vhq = valHasQuotes{i};
+    valHasQuotes{i} = vhq(2:end-1);
+end
+val(iHasQuotes) = valHasQuotes;
+
+%escape interior quotes
+val = strrep(val, '''', '`');
+%re-add surrounding quotes for all non-numeric values
+val(iNonNums) = strcat('''', val(iNonNums), '''');
+
 s = ['{ ' strjoin(val, ' ') ' }'];
 end

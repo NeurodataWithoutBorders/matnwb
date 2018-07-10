@@ -23,16 +23,20 @@ classdef nwbfile < types.core.NWBFile
             
             %add to file create date
             modtime = datestr(datetime, 30);
-            if ischar(obj.file_create_date)
-                obj.file_create_date = {obj.file_create_date};
-            end
-            if ischar(obj.file_create_date) && ismatrix(obj.file_create_date)
-                %convert multidim array to cell array
+            if isempty(obj.file_create_date)
+                obj.file_create_date = modtime;
+            elseif ischar(obj.file_create_date)
+                if ismatrix(obj.file_create_date)
+                                    %convert multidim array to cell array
                 dims = size(obj.file_create_date);
                 obj.file_create_date = mat2cell(obj.file_create_date,...
                     ones(dims(1), 1), dims(2));
+                else
+                    obj.file_create_date = {obj.file_create_date};
+                end
+                obj.file_create_date = [obj.file_create_date; {modtime}];
             end
-            obj.file_create_date = [obj.file_create_date; {modtime}];
+            
             fid = H5F.create(filename);
             refs = export@types.core.NWBFile(obj, fid, '/', {});
             

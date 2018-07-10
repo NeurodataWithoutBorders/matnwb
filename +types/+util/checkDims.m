@@ -2,24 +2,37 @@ function checkDims(valsize, validSizes)
     if any(valsize == 0)
         return; %ignore empty arrays
     end
-    validSizesStrings = cell(size(validSizes));
+    
     for i=1:length(validSizes)
         vs = validSizes{i};
         
-        if (length(vs) == 1 && (length(valsize) > 2 || ~any(valsize == 1))) ||...
-            (length(vs) > 1 && length(valsize) ~= length(vs))
-            continue;
+        if numel(vs) == 1
+            vs = [vs 1];
         end
         
-        noninf = ~isinf(vs);
-        if ~any(noninf) || all(valsize(noninf) == vs(noninf))
-            %has a valid size
-            return;
+        try
+            if (all(valsize == 1) && all(vs == 1)) ...
+                    || all(vs >= valsize)
+                return;
+            end
+        catch ME
+            %dimensions disagreeing is an expected error here.
+            %rethrow all else
+            if ~strcmp(ME.identifier, 'MATLAB:dimagree')
+                rethrow(ME);
+            end
         end
-        validSizesStrings{i} = ['[' sizeFormatStr(vs) ']'];
     end
+    
     valsizef = ['[' sizeFormatStr(valsize) ']'];
+    
+    %format into cell array of strings of form `[Inf]` then join
+    validSizesStrings = cell(size(validSizes));
+    for i=1:length(validSizes)
+        validSizesStrings{i} = ['[' sizeFormatStr(validSizes{i}) ']'];
+    end
     validSizesf = ['{' strjoin(validSizesStrings, ' ') '}'];
+    
     error(['Values size ' valsizef ' is invalid.  Must be one of ' validSizesf],...
         valsize, validSizes{:});
 end
