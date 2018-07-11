@@ -78,7 +78,7 @@ for i=1:length(propgroups)
     pg = propgroups{i};
     pdef = pg();
     if ~isempty(pdef)
-        propsDef = [propsDef newline docsep{i} newline pdef];
+        propsDef = strjoin({propsDef docsep{i} pdef}, newline);
     end
 end
 
@@ -96,7 +96,10 @@ methodBody = strjoin({constructorBody...
     '%% SETTERS' setterFcns...
     '%% VALIDATORS' validatorFcns...
     '%% EXPORT' exporterFcns}, newline);
-template = strjoin({classDef propsDef 'methods' file.addSpaces(methodBody, 4) 'end' 'end'}, newline);
+fullMethodBody = strjoin({'methods' ...
+    file.addSpaces(methodBody, 4) 'end'}, newline);
+template = strjoin({classDef propsDef fullMethodBody 'end'}, ...
+    [newline newline]);
 end
 
 function [processed, classprops, inherited] = processClass(name, namespace, pregen)
