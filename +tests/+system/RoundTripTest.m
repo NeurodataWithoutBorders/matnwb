@@ -8,16 +8,6 @@ classdef RoundTripTest < matlab.unittest.TestCase
         function setupClass(testCase)
             rootPath = fullfile(fileparts(mfilename('fullpath')), '..', '..');
             testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
-%             corePath = fullfile(rootPath, 'schema', 'core', 'nwb.namespace.yaml');
-%             testCase.registry = generateCore(corePath);
-        end
-    end
-    
-    methods(TestClassTeardown)
-        function teardownClass(testCase)
-            %       classes = fieldnames(testCase.registry);
-            %       files = strcat(fullfile('+types', classes), '.m');
-            %       delete(files{:});
         end
     end
     

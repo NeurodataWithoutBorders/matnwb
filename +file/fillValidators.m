@@ -17,7 +17,8 @@ for i=1:length(propnames)
     if isempty(validationBody)
         fcnStr = [hdrstr newline 'end'];
     else
-        fcnStr = strjoin({hdrstr file.addSpaces(strtrim(validationBody), 4) 'end'}, newline);
+        fcnStr = strjoin({hdrstr ...
+            file.addSpaces(strtrim(validationBody), 4) 'end'}, newline);
     end
     fvstr = [fvstr newline fcnStr];
 end
@@ -40,11 +41,13 @@ if isa(prop, 'file.Dataset')
     else
         namespace = namespacereg.getNamespace(prop.type);
         if isempty(namespace)
-            warning('Namespace could not be found for type `%s`.  Skipping Validation for property `%s`.', prop.type, name);
+            warning(['Namespace could not be found for type `%s`.' ...
+                '  Skipping Validation for property `%s`.'], prop.type, name);
             return;
         end
         fullclassname = ['types.' namespace.name '.' prop.type];
-        fuvstr = [fuvstr newline fillDtypeValidation(name, fullclassname, namespacereg)];
+        fuvstr = [fuvstr newline ...
+            fillDtypeValidation(name, fullclassname, namespacereg)];
     end
 elseif isa(prop, 'file.Group')
     if isempty(prop.type)
@@ -94,7 +97,8 @@ elseif isa(prop, 'file.Group')
         %process attributes
         if ~isempty(prop.attributes)
             namedprops = [namedprops;...
-                containers.Map({prop.attributes.name}, {prop.attributes.dtype})];
+                containers.Map({prop.attributes.name}, ...
+                {prop.attributes.dtype})];
         end
         
         %process links
@@ -106,7 +110,8 @@ elseif isa(prop, 'file.Group')
                 linkNamespaces{i} = namespacereg.getNamespace(lt);
             end
             linkTypenames = strcat('types.', linkNamespaces, '.', linktypes);
-            namedprops = [namedprops; containers.Map({prop.links.name}, linkTypenames)];
+            namedprops = [namedprops; ...
+                containers.Map({prop.links.name}, linkTypenames)];
         end
         
         propnames = fieldnames(namedprops);
@@ -135,7 +140,8 @@ elseif isa(prop, 'file.Attribute')
     fuvstr = fillDtypeValidation(name, prop.dtype, namespacereg);
 else %Link
     namespace = namespacereg.getNamespace(prop.type).name;
-    fuvstr = fillDtypeValidation(name, ['types.' namespace '.' prop.type], namespacereg);
+    fuvstr = fillDtypeValidation(name, ...
+        ['types.' namespace '.' prop.type], namespacereg);
 end
 end
 
@@ -179,22 +185,35 @@ if isstruct(type)
         }, newline);
     for i=1:length(fnames)
         nm = fnames{i};
-        subtypecheck = fillDtypeValidation([name '.' nm], type.(nm), namespacereg);
+        subtypecheck = fillDtypeValidation([name '.' nm], ...
+            type.(nm), namespacereg);
         if ~isempty(subtypecheck)
             fdvstr = [fdvstr newline strrep(subtypecheck, 'val', ['val.' nm])];
         end
     end
 else
+    fdvstr = '';
     if isa(type, 'java.util.HashMap')
         %ref
+        ref_t = type.get('reftype');
+        switch ref_t
+            case 'region'
+                rt = 'RegionView';
+            case 'object'
+                rt = 'ObjectView';
+        end
+        ts = ['types.untyped.' rt];
+        %there is no objective way to guarantee a reference refers to the
+        %correct target type so p
         tt = type.get('target_type');
-        ts = ['types.' namespacereg.getNamespace(tt).name '.' tt];
+        fdvstr = ['% Reference to type `' tt '`' newline];
     elseif strcmp(type, 'any')
         fdvstr = '';
         return;
     else
         ts = type;
     end
-    fdvstr = ['val = types.util.checkDtype(''' name ''', ''' ts ''', val);'];
+    fdvstr = [fdvstr ...
+        'val = types.util.checkDtype(''' name ''', ''' ts ''', val);'];
 end
 end

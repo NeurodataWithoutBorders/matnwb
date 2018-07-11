@@ -7,8 +7,6 @@ if isempty(WHITELIST)
     WHITELIST = {...
         'types.untyped.ExternalLink'...
         'types.untyped.SoftLink'...
-        'types.untyped.ObjectView'...
-        'types.untyped.RegionView'...
         };
 end
 if isempty(val)
@@ -55,6 +53,7 @@ switch type
             if isempty(subval)
                 continue;
             end
+            
             if ~isa(subval, type) && ~any(strcmp(class(subval), WHITELIST))
                 error(errmsg);
             end

@@ -11,11 +11,12 @@ o = nwb;
 prefix = '';
 for i=1:length(tokens)
     tok = tokens{i};
+    errmsg = 'Could not resolve path `%s`.  Could not find `%s`.';
     if isa(o, 'types.untyped.Set')
         if any(strcmp(keys(o), tok))
             o = o.get(tok);
         else
-            error('Could not resolve path `%s`.  Could not find `%s`.', path, tok);
+            error(errmsg, path, tok);
         end
         continue;
     end
@@ -46,7 +47,7 @@ for i=1:length(tokens)
             end
         end
         if ~found
-            error('Could not resolve path `%s`.  Could not find `%s`.', path, tok);
+            error(errmsg, path, tok);
         end
     end
 end
