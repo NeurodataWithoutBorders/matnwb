@@ -3,7 +3,6 @@
 %extNamespaces is a merged containers.Map containing this namespace and its
 %   parents
 function extNamespaces = loadNamespace(name, loaded)
-classesPath = fullfile('+types', ['+' name]);
 schemaPath = fullfile('namespaces', [name '.mat']);
 
 namespace = load(schemaPath);
