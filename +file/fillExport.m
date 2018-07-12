@@ -1,7 +1,7 @@
 function festr = fillExport(propnames, raw, parentName)
 hdrstr = 'function refs = export(obj, fid, fullpath, refs)';
-
-if isempty(parentName)
+isRoot = strcmp(parentName, 'types.untyped.MetaClass');
+if isRoot
     bodystr = {};
 else
     bodystr = {strjoin({...
@@ -12,7 +12,7 @@ else
         }, newline)};
 end
 
-if isempty(parentName)
+if isRoot
     if isa(raw, 'file.Group')
         bodystr = [bodystr {'io.writeGroup(fid, fullpath);'}];
     elseif isa(raw, 'file.Dataset')
@@ -45,7 +45,7 @@ elseif isa(raw, 'file.Group') && strcmp(raw.type, 'NWBFile')
     bodystr = [bodystr {'fullpath = '''';'}];
 end
 
-if isempty(parentName)
+if isRoot
     %Metaclass needs to be added after the class is made
     bodystr = [bodystr...
         {'refs = export@types.untyped.MetaClass(obj, fid, fullpath, refs);'}];
