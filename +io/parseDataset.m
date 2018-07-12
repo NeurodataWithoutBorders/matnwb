@@ -11,6 +11,7 @@ fid = H5F.open(filename);
 did = H5D.open(fid, fullpath);
 props = attrargs;
 datatype = info.Datatype;
+dataspace = info.Dataspace;
 
 parsed = containers.Map;
 afields = keys(attrargs);
@@ -24,7 +25,7 @@ if strcmp(datatype.Class, 'H5T_REFERENCE')
     data = io.parseReference(did, tid, H5D.read(did));
     H5T.close(tid);
 elseif strcmp(datatype.Class, 'H5T_STRING') ||...
-        ~strcmp(info.Dataspace.Type, 'simple')
+        ~strcmp(dataspace.Type, 'simple')
     data = H5D.read(did);
     if iscellstr(data) && 1 == length(data)
         %pynwb will use variable string lengths which are read in as bulky
@@ -38,6 +39,8 @@ elseif strcmp(datatype.Class, 'H5T_STRING') ||...
             data = strtrim(mat2cell(data, ones(datadim(1), 1), datadim(2)));
         end
     end
+elseif strcmp(dataspace.Type, 'simple') && any(dataspace.Size == 0)
+    data = [];
 else
     data = types.untyped.DataStub(filename, fullpath);
 end
