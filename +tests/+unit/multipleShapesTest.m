@@ -1,0 +1,100 @@
+function tests = multipleShapesTest()
+tests = functiontests(localfunctions);
+end
+
+function setupOnce(testCase)
+fileLoc = fileparts(mfilename('fullpath'));
+rootPath = fullfile(fileLoc, '..', '..');
+schemaPath = fullfile(fileLoc, 'multipleShapesSchema', 'mss.namespace.yaml');
+generateExtension(schemaPath);
+testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
+end
+
+function setup(testCase)
+testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
+end
+
+function teardownOnce(~)
+rmdir(fullfile('+types', '+mss'), 's'); 
+end
+
+function testMultipleShapesDataset(testCase)
+msd = types.mss.MultiShapeDataset('data', rand(3, 1));
+msd.data = rand(1, 5, 7);
+roundabout(testCase, msd);
+end
+
+function testNullShapeDataset(testCase)
+nsd = types.mss.NullShapeDataset;
+randiMax = intmax('int8');
+for i=1:100
+    %test validation
+    nsd.data = rand(randi(randiMax), 3);
+end
+roundabout(testCase, nsd);
+end
+
+function testMultipleNullShapesDataset(testCase)
+mnsd = types.mss.MultiNullShapeDataset;
+randiMax = intmax('int8');
+for i=1:100
+    if rand() > 0.5
+        mnsd.data = rand(randi(randiMax), 1);
+    else
+        mnsd.data = rand(randi(randiMax), randi(randiMax));
+    end
+end
+roundabout(testCase, mnsd);
+end
+
+function testInheritedDtypeDataset(testCase)
+nid = types.mss.NarrowInheritedDataset;
+nid.data = 'Inherited Dtype Dataset';
+roundabout(testCase, nid);
+end
+
+%% Convenience
+function roundabout(testCase, dataset)
+nwb = nwbfile;
+wrapper = types.mss.MultiShapeWrapper('shaped_data', dataset);
+nwb.acquisition.set('wrapper', wrapper);
+filename = 'multipleShapesTest.nwb';
+nwbExport(nwb, filename);
+verifyContainerEqual(testCase, nwbRead(filename), nwb);
+end
+
+function verifyContainerEqual(testCase, actual, expected)
+testCase.verifyEqual(class(actual), class(expected));
+props = properties(actual);
+for i = 1:numel(props)
+    prop = props{i};
+    val1 = actual.(prop);
+    val2 = expected.(prop);
+    failmsg = ['Values for property ''' prop ''' are not equal']; 
+
+    if startsWith(class(val1), 'types.') && ~startsWith(class(val1), 'types.untyped')
+        verifyContainerEqual(testCase, val1, val2);
+    elseif isa(val1, 'types.untyped.Set')
+        verifySetEqual(testCase, val1, val2, failmsg);
+    else
+        if isa(val1, 'types.untyped.DataStub')
+            trueval = val1.load();
+        else
+            trueval = val1;
+        end
+        testCase.verifyEqual(trueval, val2, failmsg);
+    end
+end
+end
+
+function verifySetEqual(testCase, actual, expected, failmsg)
+testCase.verifyEqual(class(actual), class(expected));
+ak = actual.keys();
+ek = expected.keys();
+verifyTrue(testCase, isempty(setxor(ak, ek)), failmsg);
+for i=1:numel(ak)
+    key = ak{i};
+    verifyContainerEqual(testCase, actual.get(key), ...
+        expected.get(key));
+end
+end
