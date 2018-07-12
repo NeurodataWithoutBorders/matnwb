@@ -1,26 +1,26 @@
 function generateCore(core, varargin)
 % GENERATECORE Generate Matlab classes from NWB core schema files
-%   registry = GENERATECORE(core)  Generate classes (Matlab m-files) from the
+%   GENERATECORE(core)  Generate classes (Matlab m-files) from the
 %   NWB:N core namespace file.
 %
-%   registry = GENERATECORE(core,extension_paths,...)  Generate classes for the
+%   GENERATECORE(core,extension_paths,...)  Generate classes for the
 %   core namespace as well as one or more extenstions.  Each input filename
 %   should be an NWB namespace file.
+%
+%   A cache of schema data is generated in the 'namespaces' subdirectory in
+%   the current working directory.  This is for allowing cross-referencing
+%   classes between multiple namespaces.
 %
 %   Output files are generated placed in a '+types' subdirectory in the
 %   current working directory.
 %
-%   GENERATECORE returns a struct that acts as a type registry.  This
-%   contains metadata the will be used when generating code for extension
-%   NWB schemas.
-%
 %   Example:
 %      generateCore('schema\core\nwb.namespace.yaml');
 %
-%   See also GENERATEEXTENSIONS
+%   See also GENERATEEXTENSION
 validateattributes(core, {'char', 'string'}, {'scalartext'});
 cs = util.generateSchema(core);
-if ~exist('namespaces','dir')
+if 7 ~= exist('namespaces','dir')
     mkdir('namespaces')
 end
 save(fullfile('namespaces','core.mat'), '-struct', 'cs');
