@@ -8,11 +8,13 @@ nmk = keys(namespace.registry);
 pregenerated = containers.Map; %generated nodes and props for faster dependency resolution
 for i=1:length(nmk)
     k = nmk{i};
+    [processed, classprops, inherited] = file.processClass(k, namespace, pregenerated);
+    
     fid = fopen(fullfile(path, [k '.m']), 'W');
     try
-        fwrite(fid, file.fillClass(k, namespace, pregenerated), 'char');
+        fwrite(fid, file.fillClass(processed, classprops, inherited), 'char');
     catch ME
-        fclose('all');
+        fclose(fid);
         rethrow(ME)
     end
     fclose(fid);
