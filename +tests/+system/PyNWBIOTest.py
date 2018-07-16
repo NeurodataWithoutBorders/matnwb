@@ -8,6 +8,7 @@ from pynwb.ecephys import Device, ElectricalSeries, ElectrodeGroup, ElectrodeTab
 from pynwb.ophys import ImagingPlane, OpticalChannel, TwoPhotonSeries
 from pynwb.form.backends.hdf5 import HDF5IO
 
+
 class PyNWBIOTest(unittest.TestCase):
   def setUp(self):
     start_time = datetime(1970, 1, 1, 12, 0, 0)
@@ -80,7 +81,8 @@ class PyNWBIOTest(unittest.TestCase):
 
 class TimeSeriesIOTest(PyNWBIOTest):
   def addContainer(self, file):
-    ts = TimeSeries('test_timeseries', 'example_source', list(range(100, 200, 10)), 'SIunit', timestamps=list(range(10)), resolution=0.1)
+    ts = TimeSeries('test_timeseries', 'example_source', list(range(100, 200, 10)),
+                    'SIunit', timestamps=list(range(10)), resolution=0.1)
     file.add_acquisition(ts)
     return ts
 
@@ -89,10 +91,8 @@ class TimeSeriesIOTest(PyNWBIOTest):
 
 class ElectrodeGroupIOTest(PyNWBIOTest):
   def addContainer(self, file):
-    dev1 = Device('dev1', 'a test source')
-    file.set_device(dev1)
-    eg = ElectrodeGroup('elec1', 'a test source', 'a test ElectrodeGroup', 'a nonexistent place', dev1)
-    file.set_electrode_group(eg)
+    dev1 = file.create_device('dev1', 'a test source')
+    eg = file.create_electrode_group('elec1', 'a test source', 'a test ElectrodeGroup', 'a nonexistent place', dev1)
     return eg
 
   def getContainer(self, file):
@@ -100,16 +100,10 @@ class ElectrodeGroupIOTest(PyNWBIOTest):
 
 class ElectricalSeriesIOTest(PyNWBIOTest):
   def addContainer(self, file):
-    table = ElectrodeTable('electrodes')
-    dev1 = Device('dev1', 'a test source')
-    group = ElectrodeGroup('tetrode1', 'a test source', 'tetrode description', 'tetrode location', dev1)
-    table.add_row(1, 1.0, 2.0, 3.0, -1.0, 'CA1', 'none', 'first channel of tetrode', group)
-    table.add_row(2, 1.0, 2.0, 3.0, -2.0, 'CA1', 'none', 'second channel of tetrode', group)
-    table.add_row(3, 1.0, 2.0, 3.0, -3.0, 'CA1', 'none', 'third channel of tetrode', group)
-    table.add_row(4, 1.0, 2.0, 3.0, -4.0, 'CA1', 'none', 'fourth channel of tetrode', group)
-    file.set_device(dev1)
-    file.set_electrode_group(group)
-    file.set_electrode_table(table)
+    dev1 = file.create_device('dev1', 'a test source')
+    group = file.create_electrode_group('tetrode1', 'a test source', 'tetrode description', 'tetrode location', dev1)
+    for i in range(4):
+      file.add_electrode(i+1, 1.0, 2.0, 3.0, 1.0, 'CA1', 'none', 'first channel of tetrode', group)
     region = ElectrodeTableRegion(table, [0, 2], 'the first and third electrodes')  # noqa: F405
     data = list(zip(range(10), range(10, 20)))
     timestamps = list(range(10))
@@ -122,9 +116,9 @@ class ElectricalSeriesIOTest(PyNWBIOTest):
 
 class ImagingPlaneIOTest(PyNWBIOTest):
   def addContainer(self, file):
-    oc = OpticalChannel('optchan1', 'unit test TestImagingPlaneIO', 'a fake OpticalChannel', '3.14')
-    ip = ImagingPlane('imgpln1', 'unit test TestImagingPlaneIO', oc, 'a fake ImagingPlane', 'imaging_device_1', '6.28', '2.718', 'GFP', 'somewhere in the brain')
-    file.set_imaging_plane(ip)
+    oc = OpticalChannel('optchan1', 'unit test TestImagingPlaneIO', 'a fake OpticalChannel', 3.14)
+    ip = file.create_imaging_plane('imgpln1', 'unit test TestImagingPlaneIO', oc, 'a fake ImagingPlane',
+                      'imaging_device_1', 6.28, '2.718', 'GFP', 'somewhere in the brain')
     return ip
 
   def getContainer(self, file):
@@ -132,13 +126,15 @@ class ImagingPlaneIOTest(PyNWBIOTest):
 
 class PhotonSeriesIOTest(PyNWBIOTest):
   def addContainer(self, file):
-    oc = OpticalChannel('optchan1', 'unit test TestImagingPlaneIO', 'a fake OpticalChannel', '3.14')
-    ip = ImagingPlane('imgpln1', 'unit test TestImagingPlaneIO', oc, 'a fake ImagingPlane', 'imaging_device_1', '6.28', '2.718', 'GFP', 'somewhere in the brain')
-    file.set_imaging_plane(ip)
+    oc = OpticalChannel('optchan1', 'unit test TestImagingPlaneIO', 'a fake OpticalChannel', 3.14)
+    ip = file.create_imaging_plane('imgpln1', 'unit test TestImagingPlaneIO', oc,
+                      'a fake ImagingPlane', 'imaging_device_1', 6.28, '2.718',
+                      'GFP', 'somewhere in the brain')
     data = list(zip(range(10), range(10, 20)))
     timestamps = list(range(10))
     fov = [2.0, 2.0, 5.0]
-    tps = TwoPhotonSeries('test_2ps', 'unit test TestTwoPhotonSeries', data, ip, 'image_unit', 'raw', fov, 1.7, 3.4, timestamps=timestamps, dimension=[2])
+    tps = TwoPhotonSeries('test_2ps', 'unit test TestTwoPhotonSeries', ip, data,
+                          'image_unit', 'raw', fov, 1.7, 3.4, timestamps=timestamps, dimension=[200, 200])
     file.add_acquisition(tps)
 
   def getContainer(self, file):
@@ -146,10 +142,13 @@ class PhotonSeriesIOTest(PyNWBIOTest):
 
 class NWBFileIOTest(PyNWBIOTest):
   def addContainer(self, file):
-    ts = TimeSeries('test_timeseries', 'example_source', list(range(100, 200, 10)), 'SIunit', timestamps=list(range(10)), resolution=0.1)
+    ts = TimeSeries('test_timeseries', 'example_source', list(range(100, 200, 10)),
+                    'SIunit', timestamps=list(range(10)), resolution=0.1)
     self.file.add_acquisition(ts)
     mod = file.create_processing_module('test_module', 'a test source for a ProcessingModule', 'a test module')
-    mod.add_container(Clustering("an example source for Clustering", "A fake Clustering interface", [0, 1, 2, 0, 1, 2], [100, 101, 102], list(range(10, 61, 10))))
+    mod.add_container(Clustering("an example source for Clustering",
+                                 "A fake Clustering interface", [0, 1, 2, 0, 1, 2],
+                                 [100, 101, 102], list(range(10, 61, 10))))
 
   def getContainer(self, file):
     return file
