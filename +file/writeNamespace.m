@@ -12,7 +12,8 @@ for i=1:length(nmk)
     
     fid = fopen(fullfile(path, [k '.m']), 'W');
     try
-        fwrite(fid, file.fillClass(processed, classprops, inherited), 'char');
+        fwrite(fid, file.fillClass(k, namespace, processed, ...
+            classprops, inherited), 'char');
     catch ME
         fclose(fid);
         rethrow(ME)

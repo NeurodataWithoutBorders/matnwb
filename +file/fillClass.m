@@ -1,4 +1,4 @@
-function template = fillClass(processed, classprops, inherited)
+function template = fillClass(name, namespace, processed, classprops, inherited)
 %name is the name of the scheme
 %namespace is the namespace context for this class
 
