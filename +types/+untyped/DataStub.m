@@ -56,27 +56,40 @@ classdef DataStub
         function data = load(obj, varargin)
             fid = H5F.open(obj.filename);
             did = H5D.open(fid, obj.path);
-            tid = H5D.get_type(did);
-            info = h5info(obj.filename, obj.path);
+            %             tid = H5D.get_type(did);
+            %             info = h5info(obj.filename, obj.path);
             
             switch length(varargin)
                 case 0
                     sid = 'H5S_ALL';
+                    fsid = 'H5S_ALL';
                 case 1
                     sid = varargin{1};
+                    fsid = sid;
                 otherwise
                     dims = varargin{1};
                     offset = varargin{2};
                     stride = varargin{3};
-                    sid = H5D.get_space(did);
-                    H5S.select_hyperslab(sid, 'H5S_SELECT_SET',...
+                    fsid = H5D.get_space(did);
+                    H5S.select_hyperslab(fsid, 'H5S_SELECT_SET',...
                         offset,...
                         stride,...
                         [],... %everything is essentially one block
                         dims);
+                    
+                    if all(dims == 1)
+                        sid = H5S.create('H5S_SCALAR');
+                    elseif any(dims == 0)
+                        sid = H5S.create('H5S_NULL');
+                    else
+                        % set Inf to unlimited
+                        dims(isinf(dims)) = ...
+                            H5ML.get_constant_value('H5S_UNLIMITED');
+                        sid = H5S.create_simple(numel(dims), dims, dims);
+                    end
             end
             
-            data = H5D.read(did, 'H5ML_DEFAULT', sid, sid, 'H5P_DEFAULT');
+            data = H5D.read(did, 'H5ML_DEFAULT', sid, fsid, 'H5P_DEFAULT');
             if isstruct(data)
                 data = io.parseCompound(did, data);
             end
@@ -142,7 +155,7 @@ classdef DataStub
             %strings are also a little wonky but only because they're
             %nested
             data = H5D.read(srcdid);
-
+            
             propnames = fieldnames(data);
             %convert ref types so io.getBaseType recognizes it
             refPropNames = propnames(ref_i);
@@ -176,7 +189,7 @@ classdef DataStub
                     %convert cell str to transposed char array
                     data.(name) = cell2mat(io.padCellStr(prop)) .';
                 elseif iscell(prop) &&...
-                    (isa(prop{1}, 'types.untyped.ObjectView') ||...
+                        (isa(prop{1}, 'types.untyped.ObjectView') ||...
                         isa(prop{1}, 'types.untyped.RegionView'))
                     %convert references to raw using destination
                     refarr = uint8(zeros(typesizes(i), length(prop)));
