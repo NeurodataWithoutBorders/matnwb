@@ -1,7 +1,7 @@
 function fcstr = fillConstructor(name, parentname, defaults, propnames, props, namespace)
 caps = upper(name);
-fcnbody = strjoin({['% ' caps ' Constructor for ' name]...
-    ['%     obj = ' caps '(parentname1,parentvalue1,..,parentvalueN,parentargN,name1,value1,...,nameN,valueN)']...
+fcnbody = strjoin({['% ' caps ' Constructor for ' name] ...
+    ['%     obj = ' caps '(parentname1,parentvalue1,..,parentvalueN,parentargN,name1,value1,...,nameN,valueN)'] ...
     }, newline);
 fcns = {...
     @()fillParamDocs(propnames, props)...
@@ -62,11 +62,13 @@ if isempty(names)
     return;
 end
 
+fcstrlist = cell(length(names), 1);
 for i=1:length(names)
     nm = names{i};
     prop = props(nm);
-    fcstr = [fcstr newline fillDocFromProp(prop, nm)];
+    fcstrlist{i} = fillDocFromProp(prop, nm);
 end
+fcstr = strjoin(fcstrlist, newline);
 end
 
 function bodystr = fillBody(pname, defaults, names, props, namespace)
