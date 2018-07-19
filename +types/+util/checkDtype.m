@@ -19,7 +19,7 @@ if isa(val, 'types.untyped.DataStub')
     if any(val.dims() == 0)
         val = [];
     else
-        val = val.load(ones(dimsize), zeros(dimsize), []);
+        val = val.load(ones(dimsize), ones(dimsize));
     end
 elseif isa(val, 'types.untyped.Anon')
     truval = val;
