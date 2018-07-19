@@ -3,6 +3,9 @@ classdef RegionView
         path;
         view;
         region;
+    end
+    
+    properties(Constant,Hidden)
         type = 'H5T_STD_REF_DSETREG';
         reftype = 'H5R_DATASET_REGION';
     end

@@ -1,6 +1,9 @@
 classdef ObjectView
     properties(SetAccess=private)
         path;
+    end
+    
+    properties(Constant, Hidden)
         type = 'H5T_STD_REF_OBJ';
         reftype = 'H5R_OBJECT';
     end
