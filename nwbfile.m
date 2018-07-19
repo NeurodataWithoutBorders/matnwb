@@ -27,10 +27,10 @@ classdef nwbfile < types.core.NWBFile
                 obj.file_create_date = modtime;
             elseif ischar(obj.file_create_date)
                 if ismatrix(obj.file_create_date)
-                                    %convert multidim array to cell array
-                dims = size(obj.file_create_date);
-                obj.file_create_date = mat2cell(obj.file_create_date,...
-                    ones(dims(1), 1), dims(2));
+                    %convert multidim array to cell array
+                    dims = size(obj.file_create_date);
+                    obj.file_create_date = mat2cell(obj.file_create_date,...
+                        ones(dims(1), 1), dims(2));
                 else
                     obj.file_create_date = {obj.file_create_date};
                 end
