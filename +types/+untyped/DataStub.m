@@ -56,17 +56,38 @@ classdef DataStub
         function data = load(obj, varargin)
             %LOAD  Read data from HDF5 dataset.
             %   DATA = LOAD() retrieves all of the data.
+            
+            %   DATA = LOAD(SPACE) Load data specified by HDF5 SPACE
             %
-            %   DATA = LOAD(START,COUNT) reads a subset of data.  START is 
+            %   DATA = LOAD(START,COUNT) reads a subset of data. START is 
             %   the one-based index of the first element to be read.
             %   COUNT defines how many elements to read along each dimension.  If a
             %   particular element of COUNT is Inf, data is read until the end of the
             %   corresponding dimension.
             %
             %   DATA = LOAD(START,COUNT,STRIDE) reads a strided subset of 
-            %   data.  STRIDE is the inter-element spacing along each
+            %   data. STRIDE is the inter-element spacing along each
             %   data set extent and defaults to one along each extent.
-            data = h5read(obj.filename, obj.path, varargin{:});
+            
+            if length(varargin) == 1
+                fid = H5F.open(obj.filename);
+                did = H5D.open(fid, obj.path);
+                data = H5D.read(did, 'H5ML_DEFAULT', varargin{1}, ...
+                    varargin{1}, 'H5P_DEFAULT');
+            else
+                data = h5read(obj.filename, obj.path, varargin{:});
+            end
+            
+            if isstruct(data)
+                if length(varargin) ~= 1
+                    fid = H5F.open(obj.filename);
+                    did = H5D.open(fid, obj.path);
+                end
+                fsid = H5D.get_space(did);
+                data = H5D.read(did, 'H5ML_DEFAULT', fsid, fsid,...
+                    'H5P_DEFAULT');
+                data = io.parseCompound(did, data);
+            end
         end
         
         function refs = export(obj, fid, fullpath, refs)
