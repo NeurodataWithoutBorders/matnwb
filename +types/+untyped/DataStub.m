@@ -54,51 +54,19 @@ classdef DataStub
         
         %can be called without arg, with H5ML.id, or (dims, offset, stride)
         function data = load(obj, varargin)
-            fid = H5F.open(obj.filename);
-            did = H5D.open(fid, obj.path);
-            %             tid = H5D.get_type(did);
-            %             info = h5info(obj.filename, obj.path);
-            
-            switch length(varargin)
-                case 0
-                    sid = 'H5S_ALL';
-                    fsid = 'H5S_ALL';
-                case 1
-                    sid = varargin{1};
-                    fsid = sid;
-                otherwise
-                    dims = varargin{1};
-                    offset = varargin{2};
-                    stride = varargin{3};
-                    fsid = H5D.get_space(did);
-                    H5S.select_hyperslab(fsid, 'H5S_SELECT_SET',...
-                        offset,...
-                        stride,...
-                        [],... %everything is essentially one block
-                        dims);
-                    
-                    if all(dims == 1)
-                        sid = H5S.create('H5S_SCALAR');
-                    elseif any(dims == 0)
-                        sid = H5S.create('H5S_NULL');
-                    else
-                        % set Inf to unlimited
-                        dims(isinf(dims)) = ...
-                            H5ML.get_constant_value('H5S_UNLIMITED');
-                        sid = H5S.create_simple(numel(dims), dims, dims);
-                    end
-            end
-            
-            data = H5D.read(did, 'H5ML_DEFAULT', sid, fsid, 'H5P_DEFAULT');
-            if isstruct(data)
-                data = io.parseCompound(did, data);
-            end
-            if ~isempty(varargin) && ~isa(varargin{1}, 'H5ML.id')
-                %don't close a provided space id.
-                H5S.close(sid);
-            end
-            H5D.close(did);
-            H5F.close(fid);
+            %LOAD  Read data from HDF5 dataset.
+            %   DATA = LOAD() retrieves all of the data.
+            %
+            %   DATA = LOAD(START,COUNT) reads a subset of data.  START is 
+            %   the one-based index of the first element to be read.
+            %   COUNT defines how many elements to read along each dimension.  If a
+            %   particular element of COUNT is Inf, data is read until the end of the
+            %   corresponding dimension.
+            %
+            %   DATA = LOAD(START,COUNT,STRIDE) reads a strided subset of 
+            %   data.  STRIDE is the inter-element spacing along each
+            %   data set extent and defaults to one along each extent.
+            data = h5read(obj.filename, obj.path, varargin{:});
         end
         
         function refs = export(obj, fid, fullpath, refs)
