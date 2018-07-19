@@ -1,9 +1,19 @@
 function refobj = parseReference(did, tid, data)
+numref = size(data, 2);
 if H5T.equal(tid, 'H5T_STD_REF_OBJ')
     reftype = H5ML.get_constant_value('H5R_OBJECT');
+    refobj = repmat(types.untyped.ObjectView(''), 1, numref);
 else
     reftype = H5ML.get_constant_value('H5R_DATASET_REGION');
+    refobj = repmat(types.untyped.RegionView('', ''), 1, numref);
 end
+
+for i=1:numref
+    refobj(i) = parseSingleRef(did, reftype, data(:,i));
+end
+end
+
+function refobj = parseSingleRef(did, reftype, data)
 target = H5R.get_name(did, reftype, data);
 
 if isempty(target)
