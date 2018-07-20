@@ -32,6 +32,9 @@ classdef RegionView
         end
         
         function v = refresh(obj, nwb)
+        %REFRESH follows references and loads data to memory
+        %   DATA = REFRESH(NWB) returns the data defined by the RegionView.
+        %   NWB is the nwb object returned by nwbRead.
             vobj = obj.view.refresh(nwb);
             
             if isa(vobj.data, 'types.untyped.DataStub')
