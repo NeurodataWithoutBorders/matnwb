@@ -9,7 +9,7 @@ numNames = length(names);
 
 tid = io.getBaseType(class(data), data);
 
-classes = cell(numNames);
+classes = cell(numNames, 1);
 for i=1:numNames
     datum = data.(names{i});
     if iscellstr(datum)
@@ -24,7 +24,11 @@ refs_i = strcmp(classes, 'types.untyped.ObjectView') |...
     strcmp(classes, 'types.untyped.RegionView');
 
 if any(refs_i)
-    data(:, refs_i) = writeReferences(fid, data(:, refs_i));
+    rawrefs = writeReferences(fid, data(:, refs_i));
+    refnames = names(refs_i);
+    for i=1:length(refnames)
+        data.(refnames{i}) = rawrefs.(refnames{i});
+    end
 end
 
 %needs to be a struct
@@ -57,12 +61,17 @@ end
 function obj_refs = writeReferences(fid, obj_refs)
 %maps obj_refs from ref classes to HDF5 writable ref types
 names = obj_refs.Properties.VariableNames;
-col_data = cell(size(obj_refs, 1), 1);
-for i=1:size(obj_refs, 2)
+h = height(obj_refs);
+w = width(obj_refs);
+col_data = cell(h, 1);
+for i=1:w
     col_name = names{i};
     refcol = obj_refs.(col_name);
-    for j=1:size(obj_refs, 1)
-        ref = refcol{j};
+    for j=1:h
+        ref = refcol(j);
+        if iscell(ref) %if the number of rows is 1, then this value is not a cell.
+            ref = ref{1};
+        end
         col_data{j} = io.getRefData(fid, ref);
     end
     obj_refs.(col_name) = col_data;
