@@ -56,7 +56,7 @@ classdef DataStub
         function data = load(obj, varargin)
             %LOAD  Read data from HDF5 dataset.
             %   DATA = LOAD() retrieves all of the data.
-            
+            %
             %   DATA = LOAD(SPACE) Load data specified by HDF5 SPACE
             %
             %   DATA = LOAD(START,COUNT) reads a subset of data. START is 
