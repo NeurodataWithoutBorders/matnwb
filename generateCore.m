@@ -19,15 +19,7 @@ function generateCore(core, varargin)
 %
 %   See also GENERATEEXTENSION
 validateattributes(core, {'char', 'string'}, {'scalartext'});
-cs = util.generateSchema(core);
-if 7 ~= exist('namespaces','dir')
-    mkdir('namespaces')
-end
-save(fullfile('namespaces','core.mat'), '-struct', 'cs');
-
-%write core files
-namespaceMap = util.loadNamespace('core');
-file.writeNamespace(namespaceMap('core'));
+generateExtension(core);
 
 %write extensions
 for i=1:length(varargin)

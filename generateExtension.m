@@ -20,10 +20,11 @@ function generateExtension(source)
 validateattributes(source, {'char', 'string'}, {'scalartext'});
 
 extSchema = util.generateSchema(source);
-if 7 ~= exist('namespaces', 'dir')
-    mkdir('namespace');
+namespacePath = fullfile('.', 'namespaces');
+if 7 ~= exist(namespacePath, 'dir')
+    mkdir(namespacePath);
 end
-save(fullfile('namespaces',[extSchema.name '.mat']), '-struct', 'extSchema');
+save(fullfile(namespacePath,[extSchema.name '.mat']), '-struct', 'extSchema');
 
 %check/load dependency namespaces
 extmap = util.loadNamespace(extSchema.name);
