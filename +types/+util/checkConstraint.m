@@ -13,7 +13,8 @@ else
             return;
         end
     end
-    error(['Property `%s.%s` should be one of type(s) ' util.cellPrettyPrint(constrained) '.']...
+    error(['Property `%s.%s` should be one of type(s) ' ...
+        misc.cellPrettyPrint(constrained) '.']...
         ,pname, name);
 end
 end

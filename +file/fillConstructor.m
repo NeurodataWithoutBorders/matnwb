@@ -85,7 +85,7 @@ else
         end
     end
     kwargs = io.map2kwargs(usmap);
-    bodystr = ['varargin = [' util.cellPrettyPrint(kwargs) ' varargin];' newline];
+    bodystr = ['varargin = [' misc.cellPrettyPrint(kwargs) ' varargin];' newline];
 end
 bodystr = [bodystr 'obj = obj@' pname '(varargin{:});'];
 

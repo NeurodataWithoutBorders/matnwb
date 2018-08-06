@@ -19,7 +19,15 @@ function generateExtension(source)
 %   See also GENERATECORE
 validateattributes(source, {'char', 'string'}, {'scalartext'});
 
-extSchema = util.generateSchema(source);
+%find jar from source and generate Schema
+javapath = fullfile(fileparts(which('nwbfile')), 'jar', 'schema.jar');
+if ~any(strcmp(javaclasspath(), javapath))
+    javaaddpath(javapath);
+end
+[localpath, ~, ~] = fileparts(source);
+[filenames, nm, dep] = yaml.getNamespaceInfo(source);
+schema = yaml.getSourceInfo(localpath, filenames{:});
+extSchema = struct('name', nm, 'schema', schema, 'dependencies', {dep});
 namespacePath = fullfile('.', 'namespaces');
 if 7 ~= exist(namespacePath, 'dir')
     mkdir(namespacePath);
@@ -27,7 +35,7 @@ end
 save(fullfile(namespacePath,[extSchema.name '.mat']), '-struct', 'extSchema');
 
 %check/load dependency namespaces
-extmap = util.loadNamespace(extSchema.name);
+extmap = schemes.loadNamespace(extSchema.name);
 
 %write files
 file.writeNamespace(extmap(extSchema.name));

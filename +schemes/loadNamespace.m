@@ -3,7 +3,7 @@
 %extNamespaces is a merged containers.Map containing this namespace and its
 %   parents
 function extNamespaces = loadNamespace(name, loaded)
-schemaPath = fullfile('namespaces', [name '.mat']);
+schemaPath = fullfile('.', 'namespaces', [name '.mat']);
 
 namespace = load(schemaPath);
 
@@ -21,7 +21,7 @@ schema=namespace.schema;
 for i=length(dependencies):-1:1
     depname = dependencies{i};
     if ~isKey(extNamespaces, depname)
-        extNamespaces = [extNamespaces; util.loadNamespace(depname, extNamespaces)];
+        extNamespaces = [extNamespaces; schemes.loadNamespace(depname, extNamespaces)];
     end
     deps(i) = extNamespaces(depname);
 end
