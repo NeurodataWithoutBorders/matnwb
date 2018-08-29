@@ -89,8 +89,10 @@ while ~strcmp(prefix, propname)
         if startsWith(propname, pek)
             if isa(set, 'containers.Map')
                 set = set(ek);
-            else
+            elseif strcmp(propname, pek)
                 set = set.get(ek);
+            else
+                continue;
             end
             prefix = pek;
             found = true;
