@@ -201,7 +201,14 @@ end
 
 if isa(prop, 'file.Attribute') && ~isempty(prop.dependent)
     %if attribute is dependent, check before writing
-    checks = [checks {['~isempty(obj.' prop.dependent ')']}];
+    if isempty(elisions) || strcmp(elisions, prop.dependent);
+        depPropname = prop.dependent;
+    else
+        flattened = strfind(elisions, '/');
+        flattened = strrep(elisions(1:flattened(end)), '/', '_');
+        depPropname = [flattened prop.dependent];
+    end
+    checks = [checks {['~isempty(obj.' depPropname ')']}];
 end
 
 if ~isempty(checks)
