@@ -14,8 +14,12 @@ for i=1:numNames
     datum = data.(names{i});
     if iscellstr(datum)
         %pad cell string to match so data can be uniformally writable
-        datum = io.padCellStr(datum);
-        data.(names{i}) = datum;
+        data.(names{i}) = io.padCellStr(datum);
+    elseif iscell(datum) && ~isnumeric(datum{1})
+        for j=1:length(datum)
+            datarr(j) = datum{j};
+        end
+        datum = datarr;
     end
     classes{i} = class(datum);
 end
@@ -49,7 +53,17 @@ if any(cell_i)
     str_names = names(cell_i);
     for i=1:length(str_names)
         name = str_names{i};
-        data.(name) = cell2mat(data.(name));
+        dc = data.(name);
+        %type should be variable at this point
+        if iscellstr(dc) && all(cellfun('isempty', dc))
+            data.(name) = dc;
+            continue;
+        end
+        dc = cell2mat(dc);
+        if ~isvector(dc)
+            dc = reshape(dc, [1 numel(dc)]);
+        end
+        data.(name) = dc;
     end
 end
 

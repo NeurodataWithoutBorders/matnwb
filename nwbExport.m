@@ -13,16 +13,24 @@ function nwbExport(nwb, filename)
 %    nwbExport(nwb, 'epoch.nwb');
 %
 %  See also GENERATECORE, GENERATEEXTENSIONS, NWBFILE, NWBREAD
-validateattributes(nwb, {'nwbfile'}, {});
-validateattributes(filename, {'cell', 'string', 'char'}, {});
-
-if iscellstr(filename)
-    fn = filename{1};
-elseif isstring(filename)
-    fn = filename(1);
-else
-    fn = filename;
+validateattributes(nwb, {'nwbfile'}, {'nonempty'});
+validateattributes(filename, {'cell', 'string', 'char'}, {'nonempty'});
+if iscell(filename)
+    assert(iscellstr(filename), 'filename cell array must consist of strings');
+end
+if ~isscalar(nwb)
+    assert(~ischar(filename) && length(filename) == length(nwb), ...
+        'nwbfile and filename array dimensions must match.');
 end
 
-export(nwb, fn);
+for i=1:length(nwb)
+    if iscellstr(filename)
+        fn = filename{i};
+    elseif isstring(filename)
+        fn = filename(i);
+    else
+        fn = filename;
+    end
+    export(nwb(i), fn);
+end
 end

@@ -14,8 +14,26 @@ function nwb = nwbRead(filename)
 %    nwb=nwbRead('data.nwb');
 %
 %  See also GENERATECORE, GENERATEEXTENSIONS, NWBFILE, NWBEXPORT
-validateattributes(filename, {'char', 'string'}, {'scalartext'});
-info = h5info(filename);
-
-nwb = io.parseGroup(filename, info);
+if ischar(filename)
+    validateattributes(filename, {'char'}, {'scalartext', 'nonempty'});
+    info = h5info(filename);
+    nwb = io.parseGroup(filename, info);
+    return;
+elseif isstring(filename)
+    validateattributes(filename, {'string'}, {'nonempty'});
+else
+    validateattributes(filename, {'cell'}, {'nonempty'});
+    assert(iscellstr(filename));
+end
+nwb = nwbfile.empty(length(filename), 0);
+isStringArray = isstring(filename);
+for i=1:length(filename)
+    if isStringArray
+        fnm = filename(i);
+    else
+        fnm = filename{i};
+    end
+    info = h5info(fnm);
+    nwb(i) = io.parseGroup(fnm, info);
+end
 end

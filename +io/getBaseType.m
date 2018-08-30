@@ -20,6 +20,9 @@ switch id
         for i=1:numVariables
             datum = data.(variableNames{i});
             %recurse
+            if iscell(datum) && ~iscellstr(datum)
+                datum = datum{1};
+            end
             tids{i} = io.getBaseType(class(datum), datum);
             sizes(i) = H5T.get_size(tids{i});
         end
@@ -47,6 +50,9 @@ switch id
             tsize = max(cellfun('length', data));
         else
             tsize = size(data, 2);
+        end
+        if tsize <= 0
+            tsize = 'H5T_VARIABLE';
         end
         H5T.set_size(id, tsize);
 end
