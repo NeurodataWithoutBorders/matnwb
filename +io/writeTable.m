@@ -15,7 +15,8 @@ for i=1:numNames
     if iscellstr(datum)
         %pad cell string to match so data can be uniformally writable
         data.(names{i}) = io.padCellStr(datum);
-    elseif iscell(datum)
+    elseif iscell(datum) && ~isnumeric(datum{1})
+        % numeric cells are dealt with later but object must be noted.
         datum = datum{1};
     end
     classes{i} = class(datum);
