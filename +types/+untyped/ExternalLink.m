@@ -3,7 +3,7 @@ classdef ExternalLink < handle
         stub;
     end
     
-    properties(Dependent=true)
+    properties(Dependent)
         filename;
         path;
     end

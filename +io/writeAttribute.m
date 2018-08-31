@@ -1,6 +1,6 @@
 function writeAttribute(fid, type, fullpath, value)
 tid = io.getBaseType(type, value);
-if (~iscell(value) && isscalar(value)) || strcmp(type, 'char')
+if ~iscell(value) && (isscalar(value) || strcmp(type, 'char'))
     sid = H5S.create('H5S_SCALAR');
 else
     if isvector(value)

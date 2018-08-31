@@ -21,6 +21,9 @@ for i=1:length(alist)
     elseif isscalar(attr.Value) && iscellstr(attr.Value)
         args(attr.Name) = attr.Value{1};
     else
+        if iscellstr(attr.Value)
+            attr.Value = strip(attr.Value);
+        end
         args(attr.Name) = attr.Value;
     end
 end

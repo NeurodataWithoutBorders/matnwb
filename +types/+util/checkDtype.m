@@ -33,7 +33,7 @@ switch type
             error(errmsg);
         end
         
-        if strcmp(type, 'uint64') && val < 0
+        if strcmp(type, 'uint64') && any(reshape(val, [numel(val) 1]) < 0)
             warning('Property `%s` is a `uint64`.  Casted value will be zero.');
         end
         

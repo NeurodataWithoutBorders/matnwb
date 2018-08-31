@@ -78,6 +78,8 @@ switch type
         typename = 'H5T_NATIVE_FLOAT';
     case {'table', 'struct'}
         typename = 'H5T_COMPOUND';
+    case 'logical'
+        typename = 'H5T_NATIVE_HBOOL';
     otherwise
         error('Type `%s` is not a support raw type', type);
 end

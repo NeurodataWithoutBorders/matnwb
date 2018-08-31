@@ -19,6 +19,9 @@ else
 end
 if any(strcmp({'types.untyped.RegionView' 'types.untyped.ObjectView'}, type))
     data = io.getRefData(fid, data);
+elseif strcmp(type, 'logical')
+    %In HDF5, HBOOL is mapped to INT32LE
+    data = int32(data);
 end
 did = H5D.create(fid, fullpath, tid, sid, 'H5P_DEFAULT');
 H5D.write(did, tid, sid, sid, 'H5P_DEFAULT', data);
