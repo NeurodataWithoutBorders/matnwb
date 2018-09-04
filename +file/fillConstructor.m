@@ -14,14 +14,10 @@ for i=1:length(fcns)
         fcnbody = [fcnbody newline txt];
     end
 end
-fcnbody = [fcnbody, newline,...
-    strjoin({...
+fcnbody = strjoin({fcnbody,...
     ['if endsWith(class(obj), ''', namespace.name, '.', name, ''')'],...
-    '    dropped = setdiff(fieldnames(p.Unmatched), properties(obj));',...
-    '    if ~isempty(dropped)',...
-    '        error(''Properties %s are not valid property names.'', misc.cellPrettyPrint(dropped));',...
-    '    end',...
-    'end'}, newline)];
+    '    types.util.checkUnset(obj, unique(varargin(1:2:end)));',...
+    'end'}, newline);
 fcstr = strjoin({...
     ['function obj = ' name '(varargin)']...
     file.addSpaces(fcnbody, 4)...
@@ -151,11 +147,12 @@ for i=1:length(constrained)
     end
     fulltypename = ['types.' pc_namespace.name '.' type];
     methodcall = ['types.util.parseConstrained(''' pname ''', ''' fulltypename ''', varargin{:})'];
-    bodystr = [bodystr newline 'obj.' varname ' = ' methodcall ';'];
+    bodystr = [bodystr,newline,'obj.',varname,' = ',methodcall,';'];
 end
 
 %if anonymous values exist, then check for nonstandard parameters and add
 %as Anon
+
 for i=1:length(anon)
     type = props(anon{i}).type;
     varname = lower(type);
@@ -169,6 +166,6 @@ for i=1:length(anon)
     end
     fulltypename = ['types.' pc_namespace.name '.' type];
     methodcall = ['types.util.parseAnon(''' fulltypename ''', varargin{:})'];
-    bodystr = [bodystr newline 'obj.' varname ' = ' methodcall ';'];
+    bodystr = [bodystr,newline,'obj.',varname,' = ',methodcall,';'];
 end
 end
