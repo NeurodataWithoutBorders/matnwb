@@ -1,4 +1,4 @@
-classdef ObjectView
+classdef ObjectView < handle
     properties(SetAccess=private)
         path;
     end
@@ -21,7 +21,7 @@ classdef ObjectView
         end
         
         function refs = export(obj, fid, fullpath, refs)
-            refs = io.writeDataset(fid, fullpath, class(obj), obj, refs);
+            io.writeDataset(fid, fullpath, class(obj), obj);
         end
     end
 end

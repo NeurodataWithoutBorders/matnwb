@@ -2,18 +2,22 @@ classdef RoundTripTest < matlab.unittest.TestCase
     properties
         %     registry
         file
+        root;
     end
     
     methods(TestClassSetup)
         function setupClass(testCase)
             rootPath = fullfile(fileparts(mfilename('fullpath')), '..', '..');
             testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
+            testCase.root = rootPath;
         end
     end
     
     methods(TestMethodSetup)
         function setupMethod(testCase)
             testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
+            generateCore(fullfile(testCase.root, ...
+                'schema', 'core', 'nwb.namespace.yaml'));
             testCase.file = nwbfile( ...
                 'source', 'a test source', ...
                 'session_description', 'a test NWB File', ...

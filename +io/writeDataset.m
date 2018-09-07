@@ -18,6 +18,7 @@ else
     sid = H5S.create_simple(nd, fliplr(dims), []);
 end
 if any(strcmp({'types.untyped.RegionView' 'types.untyped.ObjectView'}, type))
+    %will throw errors if refdata DNE.  Caught at NWBData level.
     data = io.getRefData(fid, data);
 elseif strcmp(type, 'logical')
     %In HDF5, HBOOL is mapped to INT32LE

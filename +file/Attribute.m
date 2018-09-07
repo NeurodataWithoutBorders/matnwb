@@ -40,13 +40,17 @@ classdef Attribute < handle
             
             val = source.get('value');
             default = source.get('default_value');
-            if isempty(default)
+            
+            if ~isempty(default)
+                %changeable attribute
+                obj.value = default;
+                obj.readonly = false;
+            elseif ~isempty(val)
                 %constant attribute
                 obj.value = val;
                 obj.readonly = true;
             else
-                %changeable attribute
-                obj.value = default;
+                obj.value = [];
                 obj.readonly = false;
             end
             

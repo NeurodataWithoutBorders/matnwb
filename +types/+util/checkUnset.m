@@ -6,7 +6,7 @@ for i=1:length(props)
     if isa(p, 'types.untyped.Anon')
         anonNames = [anonNames;{p.name}];
     elseif isa(p, 'types.untyped.Set')
-        anonNames = [anonNames;keys(p)];
+        anonNames = [anonNames;keys(p) .'];
     end
 end
 dropped = setdiff(argin, [props;anonNames]);

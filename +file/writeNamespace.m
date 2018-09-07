@@ -1,5 +1,5 @@
 function writeNamespace(namespace)
-path = fullfile('+types', ['+' namespace.name]);
+path = fullfile('.', '+types', ['+' namespace.name]);
 if exist(path, 'dir') == 7
     rmdir(path, 's');
 end

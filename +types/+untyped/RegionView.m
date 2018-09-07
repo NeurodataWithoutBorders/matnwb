@@ -1,4 +1,4 @@
-classdef RegionView
+classdef RegionView < handle
     properties(SetAccess=private)
         path;
         view;
@@ -12,7 +12,13 @@ classdef RegionView
     
     methods
         function obj = RegionView(path, region)
+        %REGIONVIEW A region reference to a dataset in the same nwb file.
+        % obj = REGIONVIEW(path, region)
+        % path = char representing the internal path to the dataset.
+        % region = cell array whose contents are a 2xn array of bounds where n is
+        %   the subscript size
             obj.view = types.untyped.ObjectView(path);
+            assert(iscell(region),'RegionView only accepts a cell array of bounds');
             obj.region = region;
         end
         
@@ -21,20 +27,22 @@ classdef RegionView
         function sid = get_selection(obj, sid)
             H5S.select_none(sid);
             for i=1:length(obj.region)
-                coord = obj.region{i} - 1;
-                %reshape coord such offset and rank is indexable
-                remainder = length(coord) / 2;
-                coord = reshape(coord, [2 remainder]);
-                blocksz = coord(2, :) - coord(1, :) + 1;
-                H5S.select_hyperslab(sid, 'H5S_SELECT_OR', coord(1, :),...
-                    [], [], blocksz);
+                reg = obj.region{i};
+                H5S.select_hyperslab(sid, 'H5S_SELECT_OR', reg(1,:),...
+                    [], [], diff(reg, 1, 1)+1);
             end
         end
         
         function v = refresh(obj, nwb)
-        %REFRESH follows references and loads data to memory
-        %   DATA = REFRESH(NWB) returns the data defined by the RegionView.
-        %   NWB is the nwb object returned by nwbRead.
+            %REFRESH follows references and loads data to memory
+            %   DATA = REFRESH(NWB) returns the data defined by the RegionView.
+            %   NWB is the nwb object returned by nwbRead.
+            
+            if isempty(obj.region)
+                v = [];
+                return;
+            end
+            
             vobj = obj.view.refresh(nwb);
             
             if isa(vobj.data, 'types.untyped.DataStub')
@@ -45,20 +53,31 @@ classdef RegionView
                 v = vobj.data;
             end
             
-            indices = [];
+            %convert 0-indexed subscript bounds to 1-indexed linear indices.
+            dsz = size(v);
+            bsizes = zeros(length(obj.region),1);
+            boundLIdx = cell(length(obj.region),1);
             for i=1:length(obj.region)
-                coord = obj.region{i};
-                indices = [indices coord(1):coord(2)];
+                reg = num2cell(obj.region{i}+1);
+                boundLIdx{i} = [sub2ind(dsz,reg{1,:});sub2ind(dsz,reg{2,:})];
+                bsizes(i) = diff(boundLIdx{i},1,1) + 1;
             end
+            
+            lIdx = zeros(sum(bsizes),1);
+            for i=1:length(boundLIdx)
+                idx = sum(bsizes(1:i-1))+1;
+                lIdx(idx:bsizes(i)) = (boundLIdx{i}(1):boundLIdx{i}(2)) .'; 
+            end
+            
             if istable(v)
-                v = v(indices, :); %tables only take 2d indexing
+                v = v(lIdx, :); %tables only take 2d indexing
             else
-                v = v(indices);
+                v = v(lIdx);
             end
         end
         
         function refs = export(obj, fid, fullpath, refs)
-            refs = io.writeDataset(fid, fullpath, class(obj), obj, refs);
+            io.writeDataset(fid, fullpath, class(obj), obj);
         end
         
         function path = get.path(obj)

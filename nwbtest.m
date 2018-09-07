@@ -57,7 +57,6 @@ try
   mfilePaths = getMfilePaths(ws, {[mfilename '.m']}, {fullfile(ws, '+test')});
   addCoberturaCoverageIfPossible(runner, mfilePaths, coverageFile);
   
-  generateCore(fullfile('schema','core','nwb.namespace.yaml'));
   results = runner.run(suite);
   
   display(results);
