@@ -11,14 +11,19 @@ classdef RegionView < handle
     end
     
     methods
-        function obj = RegionView(path, region)
+        function obj = RegionView(path, region, datasize)
         %REGIONVIEW A region reference to a dataset in the same nwb file.
         % obj = REGIONVIEW(path, region)
         % path = char representing the internal path to the dataset.
         % region = cell array whose contents are a 2xn array of bounds where n is
         %   the subscript size
             obj.view = types.untyped.ObjectView(path);
-            assert(iscell(region),'RegionView only accepts a cell array of bounds');
+            assert((nargin > 2 && isreal(region)) || ...
+                (iscell(region) && all(cellfun('isreal', region))),...
+                'RegionView only accepts either numeric indices or cell array of bounds');
+            if nargin > 2 && isreal(region)
+                region = misc.idx2h5(region, datasize);
+            end
             obj.region = region;
         end
         

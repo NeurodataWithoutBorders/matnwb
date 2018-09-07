@@ -1,4 +1,4 @@
-function h5idx = idx2h5(matSize, idx)
+function h5idx = idx2h5(idx, matSize)
     if islogical(idx)
         idx = find(idx);
     end
@@ -14,6 +14,13 @@ function h5idx = idx2h5(matSize, idx)
     ranges{end} = [idx(startIdx);idx(end)];
     
     %transform linear ranges to subscripts
+    %compress matSize dimensions
+    lastDim = find(matSize > 1, 1, 'last');
+    if isempty(lastDim)
+        matSize = 1;
+    else
+        matSize = matSize(1:lastDim);
+    end
     for i=1:length(ranges)
         subRange = cell(2,length(matSize));
         [subRange{1,:}] = ind2sub(matSize, ranges{i}(1));
