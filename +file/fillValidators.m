@@ -11,7 +11,7 @@ for i=1:length(propnames)
     if startsWith(class(prop), 'file.')
         validationBody = fillUnitValidation(nm, prop, namespacereg);
     else %primitive type
-        validationBody = fillDtypeValidation(nm, prop, namespacereg);
+        validationBody = fillDtypeValidation(nm, prop);
     end
     hdrstr = ['function val = validate_' nm '(obj, val)'];
     if isempty(validationBody)
@@ -30,7 +30,7 @@ constr = {};
 if isa(prop, 'file.Dataset')
     if isempty(prop.type)
         fuvstr = strjoin({fuvstr...
-            fillDtypeValidation(name, prop.dtype, namespacereg)...
+            fillDtypeValidation(name, prop.dtype)...
             fillDimensionValidation(prop.dtype, prop.shape)...
             }, newline);
     elseif prop.isConstrainedSet
@@ -54,7 +54,7 @@ if isa(prop, 'file.Dataset')
         end
         fullclassname = ['types.' namespace.name '.' prop.type];
         fuvstr = [fuvstr newline ...
-            fillDtypeValidation(name, fullclassname, namespacereg)];
+            fillDtypeValidation(name, fullclassname)];
     end
 elseif isa(prop, 'file.Group')
     if isempty(prop.type)
@@ -141,14 +141,13 @@ elseif isa(prop, 'file.Group')
     else
         namespace = namespacereg.getNamespace(prop.type).name;
         fulltypename = ['types.' namespace '.' prop.type];
-        fuvstr = fillDtypeValidation(name, fulltypename, namespacereg);
+        fuvstr = fillDtypeValidation(name, fulltypename);
     end
 elseif isa(prop, 'file.Attribute')
-    fuvstr = fillDtypeValidation(name, prop.dtype, namespacereg);
+    fuvstr = fillDtypeValidation(name, prop.dtype);
 else %Link
     namespace = namespacereg.getNamespace(prop.type).name;
-    fuvstr = fillDtypeValidation(name, ...
-        ['types.' namespace '.' prop.type], namespacereg);
+    fuvstr = fillDtypeValidation(name, ['types.' namespace '.' prop.type]);
 end
 end
 
@@ -179,25 +178,37 @@ fdvstr = strjoin({...
 end
 
 %NOTE: can return empty strings
-function fdvstr = fillDtypeValidation(name, type, namespacereg)
+function fdvstr = fillDtypeValidation(name, type)
 if isstruct(type)
     fnames = fieldnames(type);
     fdvstr = strjoin({...
         'if isempty(val) || isa(val, ''types.untyped.DataStub'')'...
         '    return;'...
         'end'...
-        'if ~istable(val)'...
-        ['    error(''Property `' name '` must be a table.'');']...
+        'if ~istable(val) && ~isstruct(val) && ~isa(val, ''containers.Map'')'...
+        ['    error(''Property `' name '` must be a table,struct, or containers.Map.'');']...
         'end'...
+        'vprops = struct();'...
         }, newline);
+    vprops = cell(length(fnames),1);
     for i=1:length(fnames)
         nm = fnames{i};
-        subtypecheck = fillDtypeValidation([name '.' nm], ...
-            type.(nm), namespacereg);
-        if ~isempty(subtypecheck)
-            fdvstr = [fdvstr newline strrep(subtypecheck, 'val', ['val.' nm])];
+        if isa(type.(nm), 'java.util.HashMap')
+            %ref
+            switch type.(nm).get('reftype')
+                case 'region'
+                    rt = 'RegionView';
+                case 'object'
+                    rt = 'ObjectView';
+            end
+            typeval = ['types.untyped.' rt];
+        else
+            typeval = type.(nm);
         end
+        vprops{i} = ['vprops.' nm ' = ''' typeval ''';'];
     end
+    fdvstr = [fdvstr, newline, strjoin(vprops, newline), newline, ...
+        'val = types.util.checkDtype(''' name ''', vprops, val);'];
 else
     fdvstr = '';
     if isa(type, 'java.util.HashMap')
@@ -211,7 +222,7 @@ else
         end
         ts = ['types.untyped.' rt];
         %there is no objective way to guarantee a reference refers to the
-        %correct target type so p
+        %correct target type
         tt = type.get('target_type');
         fdvstr = ['% Reference to type `' tt '`' newline];
     elseif strcmp(type, 'any')

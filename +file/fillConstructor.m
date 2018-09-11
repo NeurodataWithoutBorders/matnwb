@@ -35,7 +35,7 @@ elseif isstruct(prop)
         subpropl = file.addSpaces(fillDocFromProp(prop.(nm), nm), 4);
         subp = [subp newline subpropl];
     end
-    fdfp = ['table with values:' newline subp];
+    fdfp = ['table/struct of vectors/struct array/containers.Map of vectors with values:' newline subp];
 elseif isa(prop, 'file.Attribute')
     fdfp = prop.dtype;
 elseif isa(prop, 'java.util.HashMap')
