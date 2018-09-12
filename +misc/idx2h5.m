@@ -22,10 +22,10 @@ function h5idx = idx2h5(idx, matSize)
         matSize = matSize(1:lastDim);
     end
     for i=1:length(ranges)
-        subRange = cell(2,length(matSize));
-        [subRange{1,:}] = ind2sub(matSize, ranges{i}(1));
-        [subRange{2,:}] = ind2sub(matSize, ranges{i}(2));
-        ranges{i} = fliplr(cell2mat(subRange) - 1);
+        subRange = zeros(2,length(matSize));
+        subRange(1,:) = ind2sub(matSize, ranges{i}(1));
+        subRange(2,:) = ind2sub(matSize, ranges{i}(2));
+        ranges{i} = fliplr(subRange - 1);
     end
     h5idx = ranges;
 end
