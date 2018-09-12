@@ -10,16 +10,14 @@ subtids = cell(1, ncol);
 ref_i = false(1, ncol);
 char_i = false(1, ncol);
 for i = 1:ncol
-    subclass = H5T.get_member_class(tid, i-1);
     subtid = H5T.get_member_type(tid, i-1);
     subtids{i} = subtid;
-    switch subclass
+    switch H5T.get_member_class(tid, i-1)
         case H5ML.get_constant_value('H5T_REFERENCE')
             ref_i(i) = true;
         case H5ML.get_constant_value('H5T_STRING')
             %if not variable len (which would make it a cell array)
             %then mark for transpose
-            sz = H5T.get_size(subtid);
             char_i(i) = ~H5T.is_variable_str(subtid);
         otherwise
             %do nothing

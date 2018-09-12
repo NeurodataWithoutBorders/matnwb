@@ -1,54 +1,44 @@
 function writeCompound(fid, fullpath, data)
-assert(isstruct(data) || istable(data) || isa(data, 'containers.Map'),...
-    'io.writeCompound error: data must be a struct, table, or containers.Map');
-
 %convert to a struct
-if istable(data) || isa(data, 'containers.Map')
-    if istable(data)
-        names = data.Properties.VariableNames;
-    else
-        names = keys(data);
-    end
+if istable(data)
+    data = table2struct(data);
+elseif isa(data, 'containers.Map')
+    names = keys(data);
+    vals = values(data, names);
+    
     s = struct();
     for i=1:length(names)
-        if istable(data)
-            val = data.(names{i});
-        else
-            val = data(names{i});
-        end
-        s.(misc.str2validName(names{i})) = val;
+        s.(misc.str2validName(names{i})) = vals{i};
     end
     data = s;
-    names = fieldnames(data);
-else
-    %convert to scalar struct
-    names = fieldnames(data);
-    if ~isscalar(data)
-        s = struct();
-        for i=1:length(names)
-            s.(names{i}) = {data.(names{i})};
-        end
-        data = s;
+end
+    
+%convert to scalar struct
+names = fieldnames(data);
+if isempty(names)
+    numrows = 0;
+elseif isscalar(data)
+    if ischar(data.(names{1}))
+        numrows = 1;
+    else
+        numrows = length(data.(names{1}));
     end
+else
+    numrows = length(data);
+    s = struct();
+    for i=1:length(names)
+        s.(names{i}) = {data.(names{i})};
+    end
+    data = s;
 end
 
 %check for references and construct tid.
 classes = cell(length(names), 1);
 tids = cell(size(classes));
 sizes = zeros(size(classes));
-rows = zeros(size(classes));
 for i=1:length(names)
     val = data.(names{i});
-    assert(isvector(val),...
-        'io.writeCompound error: data columns must be in a vector form');
-    if ischar(val)
-        rows(i) = 1;
-    else
-        rows(i) = length(val);
-    end
     if iscell(val) && ~iscellstr(val)
-        assert(all(cellfun('isclass', val, class(val{1}))),...
-            'io.writeCompound error: data rows must be homogenous with respect to column');
         data.(names{i}) = [val{:}];
         val = val{1};
     end
@@ -57,9 +47,6 @@ for i=1:length(names)
     tids{i} = io.getBaseType(classes{i}, val);
     sizes(i) = H5T.get_size(tids{i});
 end
-numrows = unique(rows);
-assert(isscalar(numrows),...
-    'io.writeCompound error: data must have matching number of rows');
 
 tid = H5T.create('H5T_COMPOUND', sum(sizes));
 for i=1:length(names)
@@ -82,31 +69,25 @@ ref_i = strcmp(classes, 'types.untyped.ObjectView') |...
 transposeNames = names(~ref_i);
 for i=1:length(transposeNames)
     nm = transposeNames{i};
-    val = data.(nm);
-    if iscolumn(val)
-        data.(nm) = val .';
+    if iscolumn(data.(nm))
+        data.(nm) = data.(nm) .';
     end
 end
 
 %attempt to convert raw reference information
 refNames = names(ref_i);
 for i=1:length(refNames)
-    nm = refNames{i};
-    data.(nm) = io.getRefData(fid, data.(nm)) .';
+    data.(refNames{i}) = io.getRefData(fid, data.(refNames{i}));
 end
 
 %convert all cellstr to multidim array
 str_names = names(strcmp(classes, 'cell'));
 for i=1:length(str_names)
     nm = str_names{i};
-    dc = data.(nm);
-    if all(cellfun('isempty', dc))
-        data.(nm) = {''};
-    else
-        data.(nm) = cell2mat(dc);
+    if any(~cellfun('isempty', data.(nm)))
+        data.(nm) = cell2mat(io.padCellStr(data.(nm)));
     end
 end
-
 sid = H5S.create_simple(1, numrows, []);
 did = H5D.create(fid, fullpath, tid, sid, 'H5P_DEFAULT');
 H5D.write(did, tid, sid, sid, 'H5P_DEFAULT', data);

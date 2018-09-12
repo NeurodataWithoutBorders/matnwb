@@ -53,10 +53,30 @@ classdef Set < handle & matlab.mixin.CustomDisplay
         end
         
         function obj = set(obj, name, val)
-            if ~isempty(obj.fcn)
-                obj.fcn(name, val);
+            if ischar(name)
+                name = {name};
             end
-            obj.map(name) = val;
+            cellExtract = iscell(val);
+            assert(length(name) == length(val),...
+                'number of property names should match number of vals on set.');
+            if ~isempty(obj.fcn)
+                for i=1:length(name)
+                    if cellExtract
+                        elem = val{i};
+                    else
+                        elem = val(i);
+                    end
+                    obj.fcn(name{i}, elem);
+                end
+            end
+            for i=1:length(name)
+                if cellExtract
+                    elem = val{i};
+                else
+                    elem = val(i);
+                end
+                obj.map(name{i}) = elem;
+            end
         end
         
         function obj = delete(obj, name)
@@ -68,7 +88,16 @@ classdef Set < handle & matlab.mixin.CustomDisplay
         end
         
         function o = get(obj, name)
-            o = obj.map(name);
+            if ischar(name)
+                name = {name};
+            end
+            o = cell(length(name),1);
+            for i=1:length(name)
+                o{i} = obj.map(name{i});
+            end
+            if isscalar(o)
+                o = o{1};
+            end
         end
         
         function refs = export(obj, fid, fullpath, refs)

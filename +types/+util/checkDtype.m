@@ -11,12 +11,46 @@ end
 if isstruct(type)
     names = fieldnames(type);
     assert(isstruct(val) || istable(val) || isa(val, 'containers.Map'), ...
-        'When type is a struct, val should be a struct, table, or a containers.Map');
+        'types.untyped.checkDtype: Compound Type must be a struct, table, or a containers.Map');
+    if (isstruct(val) && isscalar(val)) || isa(val, 'containers.Map')
+        %check for correct array shape
+        sizes = zeros(length(names),1);
+        for i=1:length(names)
+            if isstruct(val)
+                subv = val.(names{i});
+            else
+                subv = val(names{i});
+            end
+            assert(isvector(subv),...
+                ['types.util.checkDtype: struct of arrays as a compound type ',...
+                'cannot have multidimensional data in their fields.  Field data ',...
+                'shape must be scalar or vector to be valid.']);
+            sizes(i) = length(subv);
+        end
+        sizes = unique(sizes);
+        assert(isscalar(sizes),...
+            ['struct of arrays as a compound type ',...
+            'contains mismatched number of elements with unique sizes: [%s].  ',...
+            'Number of elements for each struct field must match to be valid.'], ...
+            num2str(sizes));
+    end
     for i=1:length(names)
-        subnm = [name '.' names{i}];
-        typenm = type.(names{i});
-        if isstruct(val) || istable(val)
-            val.(names{i}) = types.util.checkDtype(subnm,typenm,val.(names{i}));
+        pnm = names{i};
+        subnm = [name '.' pnm];
+        typenm = type.(pnm);
+        
+        if (isstruct(val) && isscalar(val)) || istable(val)
+            val.(pnm) = types.util.checkDtype(subnm,typenm,val.(pnm));
+        elseif isstruct(val)
+            for j=1:length(val)
+                elem = val(j).(pnm);
+                assert(~iscell(elem) && ...
+                    (isempty(elem) || ...
+                    (isscalar(elem) || (ischar(elem) && isvector(elem)))),...
+                    ['Fields for an array of structs for '...
+                'compound types should have non-cell scalar values or char arrays.']);
+                val(j).(pnm) = types.util.checkDtype(subnm, typenm, elem);
+            end
         else
             val(names{i}) = types.util.checkDtype(subnm,typenm,val(names{i}));
         end
