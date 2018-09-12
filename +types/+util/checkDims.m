@@ -5,21 +5,20 @@ function checkDims(valsize, validSizes)
     
     for i=1:length(validSizes)
         vs = validSizes{i};
-        
-        if numel(vs) == 1
-            vs = [vs 1];
+        if length(vs) > length(valsize)
+            continue;
         end
         
-        try
-            if (all(valsize == 1) && all(vs == 1)) ...
-                    || all(vs >= valsize)
+        if isscalar(vs)
+            if any(valsize(1:2) == 1) && all(valsize(3:end) == 1) &&...
+                    (isinf(vs) || vs == max(valsize(1:2)))
                 return;
             end
-        catch ME
-            %dimensions disagreeing is an expected error here.
-            %rethrow all else
-            if ~strcmp(ME.identifier, 'MATLAB:dimagree')
-                rethrow(ME);
+        else
+            nonInf = find(~isinf(vs));
+            if all(vs(nonInf) == valsize(nonInf)) &&...
+                    all(valsize(length(vs)+1:end) == 1)
+                return;
             end
         end
     end

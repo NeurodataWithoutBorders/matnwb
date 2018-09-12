@@ -17,7 +17,7 @@ else
     end
     sid = H5S.create_simple(nd, fliplr(dims), []);
 end
-[path, name, ~] = io.pathParts(fullpath);
+[path, name] = io.pathParts(fullpath);
 if isempty(path)
     path = '/'; %weird case if the property is in root
 end

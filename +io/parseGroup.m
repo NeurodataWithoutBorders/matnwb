@@ -4,7 +4,7 @@ function parsed = parseGroup(filename, info)
 % typed value
 links = containers.Map;
 refs = containers.Map;
-[~, root, ~] = io.pathParts(info.Name);
+[~, root] = io.pathParts(info.Name);
 [attrprops, typename] = io.parseAttributes(info.Attributes);
 
 %parse datasets
@@ -24,7 +24,7 @@ end
 gprops = containers.Map;
 for i=1:length(info.Groups)
     g_info = info.Groups(i);
-    [~, gname, ~] = io.pathParts(g_info.Name);
+    [~, gname] = io.pathParts(g_info.Name);
     subg = io.parseGroup(filename, g_info);
     gprops(gname) = subg;
 end

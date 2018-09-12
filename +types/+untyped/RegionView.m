@@ -33,8 +33,8 @@ classdef RegionView < handle
             H5S.select_none(sid);
             for i=1:length(obj.region)
                 reg = obj.region{i};
-                H5S.select_hyperslab(sid, 'H5S_SELECT_OR', reg(1,:),...
-                    [], [], diff(reg, 1, 1)+1);
+                H5S.select_hyperslab(sid, 'H5S_SELECT_OR', reg(:,1),...
+                    [], [], diff(reg)+1);
             end
         end
         

@@ -56,7 +56,12 @@ classdef Set < handle & matlab.mixin.CustomDisplay
             if ischar(name)
                 name = {name};
             end
+            
+            if ischar(val)
+                val = {val};
+            end
             cellExtract = iscell(val);
+            
             assert(length(name) == length(val),...
                 'number of property names should match number of vals on set.');
             if ~isempty(obj.fcn)
