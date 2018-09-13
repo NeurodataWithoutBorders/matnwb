@@ -31,6 +31,8 @@ catch ME
         H5A.delete(oid, name);
         id = H5A.create(oid, name, tid, sid, 'H5P_DEFAULT');
     else
+        H5O.close(oid);
+        H5S.close(sid);
         rethrow(ME);
     end
 end

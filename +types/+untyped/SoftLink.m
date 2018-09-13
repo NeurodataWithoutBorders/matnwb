@@ -24,9 +24,6 @@ classdef SoftLink < handle
                 error('Argument `nwb` must be a valid `nwbfile`');
             end
             refobj = io.resolvePath(nwb, obj.path);
-%             if ~isempty(obj.type) && ~isa(refobj, obj.type)
-%                 error('Expected link to point to a `%s`.  Got `%s`.', obj.type, class(refobj));
-%             end
         end
         
         function refs = export(obj, fid, fullpath, refs)

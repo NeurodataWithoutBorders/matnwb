@@ -10,8 +10,8 @@ function checkDims(valsize, validSizes)
         end
         
         if isscalar(vs)
-            if any(valsize(1:2) == 1) && all(valsize(3:end) == 1) &&...
-                    (isinf(vs) || vs == max(valsize(1:2)))
+            if max(valsize) == prod(valsize) && all(valsize(3:end) == 1) && ...
+                    (isinf(vs) || vs == max(valsize))
                 return;
             end
         else

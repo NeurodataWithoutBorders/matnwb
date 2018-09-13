@@ -7,7 +7,7 @@ name = info.Name;
 %check if typed and parse attributes
 [attrargs, typename] = io.parseAttributes(info.Attributes);
 
-fid = H5F.open(filename);
+fid = H5F.open(filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
 did = H5D.open(fid, fullpath);
 props = attrargs;
 datatype = info.Datatype;

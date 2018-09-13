@@ -2,12 +2,20 @@ classdef DataStub
     properties(SetAccess=private)
         filename;
         path;
+        dims;
     end
     
     methods
         function obj = DataStub(filename, path)
             obj.filename = filename;
             obj.path = path;
+            fid = H5F.open(obj.filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
+            did = H5D.open(fid, obj.path);
+            sid = H5D.get_space(did);
+            [~, obj.dims, ~] = H5S.get_simple_extent_dims(sid);
+            H5S.close(sid);
+            H5D.close(did);
+            H5F.close(fid);
         end
         
         function sid = get_space(obj)
@@ -18,38 +26,12 @@ classdef DataStub
             H5F.close(fid);
         end
         
-        function d = dims(obj)
-            fid = H5F.open(obj.filename);
-            did = H5D.open(fid, obj.path);
-            sid = H5D.get_space(did);
-            [~, d, ~] = H5S.get_simple_extent_dims(sid);
-            %to MATLAB array size format
-            if numel(d) == 1
-                d = [d 1];
-            end
-            H5S.close(sid);
-            H5D.close(did);
-            H5F.close(fid);
+        function nd = ndims(obj)
+            nd = length(obj.dims);
         end
         
-        function rank = ndims(obj)
-            fid = H5F.open(obj.filename);
-            did = H5D.open(fid, obj.path);
-            sid = H5D.get_space(did);
-            rank = H5S.get_simple_extent_ndims(sid);
-            H5S.close(sid);
-            H5D.close(did);
-            H5F.close(fid);
-        end
-        
-        function count = numel(obj)
-            fid = H5F.open(obj.filename);
-            did = H5D.open(fid, obj.path);
-            sid = H5D.get_space(did);
-            count = H5S.get_simple_extent_npoints(sid);
-            H5S.close(sid);
-            H5D.close(did);
-            H5F.close(fid);
+        function num = numel(obj)
+            num = prod(obj.dims);
         end
         
         %can be called without arg, with H5ML.id, or (dims, offset, stride)
@@ -68,7 +50,8 @@ classdef DataStub
             %   DATA = LOAD(START,COUNT,STRIDE) reads a strided subset of 
             %   data. STRIDE is the inter-element spacing along each
             %   data set extent and defaults to one along each extent.
-            
+            fid = [];
+            did = [];
             if length(varargin) == 1
                 fid = H5F.open(obj.filename);
                 did = H5D.open(fid, obj.path);
@@ -87,6 +70,13 @@ classdef DataStub
                 data = H5D.read(did, 'H5ML_DEFAULT', fsid, fsid,...
                     'H5P_DEFAULT');
                 data = io.parseCompound(did, data);
+                H5S.close(fsid);
+            end
+            if ~isempty(fid)
+                H5F.close(fid);
+            end
+            if ~isempty(did)
+                H5D.close(did);
             end
         end
         
@@ -97,16 +87,27 @@ classdef DataStub
             srctid = H5D.get_type(srcdid);
             srcsid = H5D.get_space(srcdid);
             ref_i = false;
+            char_i = false;
+            membname = {};
+            ref_tid = {};
             if H5T.get_class(srctid) == H5ML.get_constant_value('H5T_COMPOUND')
                 ncol = H5T.get_nmembers(srctid);
-                ref_i = false(1, ncol);
-                subtids = cell(1, ncol);
+                ref_i = false(ncol, 1);
+                membname = cell(ncol, 1);
+                char_i = false(ncol, 1);
+                ref_tid = cell(ncol, 1);
+                refTypeConst = H5ML.get_constant_value('H5T_REFERENCE');
+                strTypeConst = H5ML.get_constant_value('H5T_STRING');
                 for i = 1:ncol
+                    membname{i} = H5T.get_member_name(srctid, i-1);
                     subclass = H5T.get_member_class(srctid, i-1);
                     subtid = H5T.get_member_type(srctid, i-1);
-                    subtids{i} = subtid;
-                    refTypeConst = H5ML.get_constant_value('H5T_REFERENCE');
-                    ref_i(i) = subclass == refTypeConst;
+                    char_i(i) = subclass == strTypeConst && ...
+                        ~H5T.is_variable_str(subtid);
+                    if subclass == refTypeConst
+                        ref_i(i) = true;
+                        ref_tid{i} = subtid;
+                    end
                 end
             end
             
@@ -115,11 +116,22 @@ classdef DataStub
                 %This requires loading the entire table.
                 %Due to this HDF5 library's inability to delete/update
                 %dataset data, this is unfortunately required.
-                [data, tid] = obj.processCompound(...
-                    ref_i, subtids(ref_i), srcdid, fid);
-                did = H5D.create(fid, fullpath, tid, srcsid, 'H5P_DEFAULT');
-                H5D.write(did, tid, srcsid, srcsid, 'H5P_DEFAULT', data);
-                H5D.close(did);
+                ref_tid = ref_tid(~cellfun('isempty', ref_tid));
+                data = H5D.read(srcdid);
+                
+                refNames = membname(ref_i);
+                for i=1:length(refNames)
+                    data.(refNames{i}) = io.parseReference(srcdid, ref_tid{i}, ...
+                        data.(refNames{i}));
+                end
+                
+                strNames = membname(char_i);
+                for i=1:length(strNames)
+                    s = data.(strNames{i}) .';
+                    data.(strNames{i}) = mat2cell(s, ones(size(s,1),1));
+                end
+                
+                io.writeCompound(fid, fullpath, data);
             else
                 %copy data over and return destination
                 ocpl = H5P.create('H5P_OBJECT_COPY');
@@ -132,71 +144,6 @@ classdef DataStub
             H5S.close(srcsid);
             H5D.close(srcdid);
             H5F.close(srcfid);
-        end
-    end
-    
-    methods(Access=private)
-        function [data, tid] = processCompound(obj, ref_i, reftids, srcdid,...
-                destfid)
-            %ripped from io.parseCompound because struct2table is
-            %incredibly slow
-            %In the future, might use a more efficient intermediate type
-            %strings are also a little wonky but only because they're
-            %nested
-            data = H5D.read(srcdid);
-            
-            propnames = fieldnames(data);
-            %convert ref types so io.getBaseType recognizes it
-            refPropNames = propnames(ref_i);
-            for i=1:length(refPropNames)
-                rpname = refPropNames{i};
-                refdata = data.(rpname);
-                reflist = cell(size(refdata, 2), 1);
-                for j=1:size(refdata, 2)
-                    r = refdata(:,j);
-                    reflist{j} = io.parseReference(srcdid, reftids{i}, r);
-                end
-                data.(rpname) = reflist;
-            end
-            
-            %get typesize, compound tids, and data manipulation
-            typesizes = zeros(size(propnames));
-            subtid = cell(size(propnames));
-            for i=1:length(propnames)
-                name = propnames{i};
-                prop = data.(name);
-                if iscell(prop) && ~iscellstr(prop)
-                    %references are also stored in cell arrays so we want
-                    %to identify those
-                    typestr = class(prop{1});
-                else
-                    typestr = class(prop);
-                end
-                subtid{i} = io.getBaseType(typestr, prop .');
-                typesizes(i) = H5T.get_size(subtid{i});
-                if iscellstr(prop)
-                    %convert cell str to transposed char array
-                    data.(name) = cell2mat(io.padCellStr(prop)) .';
-                elseif iscell(prop) &&...
-                        (isa(prop{1}, 'types.untyped.ObjectView') ||...
-                        isa(prop{1}, 'types.untyped.RegionView'))
-                    %convert references to raw using destination
-                    refarr = uint8(zeros(typesizes(i), length(prop)));
-                    for j=1:length(prop)
-                        refarr(:, j) = io.getRefData(destfid, prop{j});
-                    end
-                    data.(name) = refarr;
-                end
-            end
-            
-            %construct type
-            tid = H5T.create('H5T_COMPOUND', sum(typesizes));
-            offset = 0;
-            for i=1:length(propnames)
-                H5T.insert(tid, propnames{i}, offset, subtid{i});
-                offset = offset + typesizes(i);
-            end
-            H5T.pack(tid);
         end
     end
 end
