@@ -184,12 +184,12 @@ conditions = containers.Map('correct', 0);
 % get ECoG data
 timeseries = nwb2.acquisition.get('ECoG');
 
-[trial_data, tt, unit] = util.loadTrialAlignedTimeSeriesData(nwb2, ...
+[trial_data, tt] = util.loadTrialAlignedTimeSeriesData(nwb2, ...
     timeseries, window, conditions);
 
 % plot data from the first electrode (it's just noise in this example)
 plot(tt, squeeze(trial_data(:,1,:)))
 xlabel('time (seconds)')
-ylabel(['ECoG (' unit ')'])
+ylabel(['ECoG (' timeseries.data_unit ')'])
 
 
