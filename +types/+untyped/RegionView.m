@@ -18,12 +18,23 @@ classdef RegionView < handle
         % region = cell array whose contents are a 2xn array of bounds where n is
         %   the subscript size
             obj.view = types.untyped.ObjectView(path);
-            assert((nargin > 2 && isreal(region)) || ...
+            assert(isreal(region) || ...
                 (iscell(region) && all(cellfun('isreal', region))),...
                 'RegionView only accepts either numeric indices or cell array of bounds');
-            if nargin > 2 && isreal(region)
-                region = misc.idx2h5(region, datasize);
+            if isreal(region)
+                if nargin > 2
+                    region = misc.idx2h5(region, datasize);
+                else
+                    region = misc.idx2h5(region);
+                end
+            elseif any(cellfun('size', region, 1) ~= 2)
+                assert(all(cellfun('size', region, 2) == 2),...
+                    'RegionView expects exactly 2 rows of index bounds per cell.');
+                for i=1:length(region)
+                    region{i} = region{i} .';
+                end
             end
+            
             obj.region = region;
         end
         

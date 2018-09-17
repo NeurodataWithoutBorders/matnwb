@@ -15,11 +15,15 @@ function h5idx = idx2h5(idx, matSize)
     
     %transform linear ranges to subscripts
     %compress matSize dimensions
-    lastDim = find(matSize > 1, 1, 'last');
-    if isempty(lastDim)
-        matSize = 1;
+    if nargin > 1
+        lastDim = find(matSize > 1, 1, 'last');
+        if isempty(lastDim)
+            matSize = 1;
+        else
+            matSize = matSize(1:lastDim);
+        end
     else
-        matSize = matSize(1:lastDim);
+        matSize = 1; % defaults to a vector shape
     end
     for i=1:length(ranges)
         subRange = zeros(2,length(matSize));
