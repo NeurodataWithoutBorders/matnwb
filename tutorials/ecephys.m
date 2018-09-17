@@ -1,8 +1,8 @@
-%% Neurodata Without Borders: Neurophysiology, Extracellular Electrophysiology Tutorial
+%% Neurodata Without Borders: Neurophysiology (NWB:N), Extracellular Electrophysiology Tutorial
 % This is a demonstration of how to properly write ecephys data to an NWB file using
 % matnwb.
 
-%% NWBFile
+%% NWB file
 % All contents get added to the NWB file, which is created with the
 % following command
 
@@ -70,7 +70,7 @@ for i_device = 1:length(udevice_labels)
     end        
 end
 %%
-% add the ElectrodeTable object to the NWBFile using the name 'electrodes' (not flexible)
+% add the |ElectrodeTable| object to the NWB file using the name |'electrodes'| (not flexible)
 et = types.core.ElectrodeTable('data', tbl);
 nwb.general_extracellular_ephys.set('electrodes', et);
 
@@ -82,7 +82,7 @@ nwb.general_extracellular_ephys.set('electrodes', et);
 % signal 1000 timepoints long from 10 channels
 
 rv = types.untyped.RegionView('/general/extracellular_ephys/electrodes',...
-    {[1 height(tbl)]});
+    {[1 height(tbl)]'});
 
 electrode_table_region = types.core.ElectrodeTableRegion('data', rv);
 
@@ -95,7 +95,7 @@ electrical_series = types.core.ElectricalSeries(...
     'source', 'my source', ...
     'starting_time', 0.0, ... % seconds
     'starting_time_rate', 200., ... % Hz
-    'data',randn(1000, 10),...
+    'data', randn(10, 1000),...
     'electrodes', electrode_table_region,...
     'data_unit','V');
 
@@ -108,11 +108,9 @@ nwb.acquisition.set('ECoG', electrical_series);
 electrical_series = types.core.ElectricalSeries(...
     'timestamps', (1:1000)/200, ...
     'starting_time_rate', 200., ... % Hz
-    'data', randn(1000, 10),...
+    'data', randn(10, 1000),...
     'electrodes', electrode_table_region,...
     'data_unit','V');
-
-nwb.acquisition.set('ECoG2', electrical_series);
 
 %% Trials
 % You can store trial information in the trials table
@@ -123,7 +121,7 @@ nwb.trials = types.core.DynamicTable(...
     'id', types.core.ElementIdentifiers('data', 1:3));
 
 nwb.trials.tablecolumn.set('start', ...
-    types.core.TableColumn('data', [.5, 1.5, 2.5]));
+    types.core.TableColumn('data', [.1, 1.5, 2.5]));
 
 nwb.trials.tablecolumn.set('stop', ...
     types.core.TableColumn('data', [1., 2., 3.]));
@@ -131,7 +129,7 @@ nwb.trials.tablecolumn.set('stop', ...
 nwb.trials.tablecolumn.set('correct', ...
     types.core.TableColumn('data', [0,1,0]));
 %%
-% `colnames` is flexible - it can store any column names and the entries can
+% |colnames| is flexible - it can store any column names and the entries can
 % be any data type, which allows you to store any information you need about 
 % trials. The units table stores information about cells and is created with
 % an analogous workflow.
@@ -148,7 +146,7 @@ nwbExport(nwb, 'ecephys_tutorial.nwb')
 nwb2 = nwbRead('ecephys_tutorial.nwb');
 
 %% Reading data
-% Note that `nwbRead` does NOT load all of the dataset contained 
+% Note that |nwbRead| does *not* load all of the dataset contained 
 % within the file. matnwb automatically supports "lazy read" which means
 % you only read data to memory when you need it, and only read the data you
 % need. Notice the command
@@ -156,14 +154,16 @@ nwb2 = nwbRead('ecephys_tutorial.nwb');
 disp(nwb2.acquisition.get('ECoG').data)
 
 %%
-% does not output the values contained in `data`. To get these values, run
+% returns a DataStub object and does not output the values contained in 
+% |data|. To get these values, run
 
-disp(nwb2.acquisition.get('ECoG').data.load);
+data = nwb2.acquisition.get('ECoG').data.load;
+disp(data(1:10,1:10));
 
 %%
-% Loading and displaying all of the data is not a problem for this small
+% Loading all of the data is not a problem for this small
 % dataset, but it can be a problem when dealing with real data that can be
-% several GBs or even TBs per session. You can load a specific secion of
+% several GBs or even TBs per session. In these cases you can load a specific secion of
 % data. For instance, here is how you would load just a single trial
 
 
@@ -176,9 +176,9 @@ window = [-.5, 1.]; % seconds
 % only data where correct is false
 conditions = containers.Map('correct',0);
 
-timeseries = file.acquisition.get('ECoG');
+timeseries = nwb2.acquisition.get('ECoG');
 
-utils.loadTrialAlignedTimeSeriesData(nwb2, timeseries, window, conditions)
+util.loadTrialAlignedTimeSeriesData(nwb2, timeseries, window, conditions)
 
 
 
