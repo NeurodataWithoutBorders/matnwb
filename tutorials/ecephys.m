@@ -164,21 +164,32 @@ disp(data(1:10,1:10));
 % Loading all of the data is not a problem for this small
 % dataset, but it can be a problem when dealing with real data that can be
 % several GBs or even TBs per session. In these cases you can load a specific secion of
-% data. For instance, here is how you would load just a single trial
+% data. For instance, here is how you would load data starting at the index
+% (1,1) and read 10 rows and 20 columns of data
 
+nwb2.acquisition.get('ECoG').data.load([1,1],[10,20])
 
 %%
-% The following convenience function loads data for all trials
+% run doc('types.untyped.DataStub') for more details on manual partial
+% loading. There are several convenience functions that make common data
+% loading patterns easier. The following convenience function loads data 
+% for all trials
 
-% data from half a second before and 1 second after start of each trial
-window = [-.5, 1.]; % seconds
+% data from .05 seconds before and half a second after start of each trial
+window = [-.05, 0.5]; % seconds
 
-% only data where correct is false
-conditions = containers.Map('correct',0);
+% only data where the attribute 'correct' == 0
+conditions = containers.Map('correct', 0);
 
+% get ECoG data
 timeseries = nwb2.acquisition.get('ECoG');
 
-util.loadTrialAlignedTimeSeriesData(nwb2, timeseries, window, conditions)
+[trial_data, tt, unit] = util.loadTrialAlignedTimeSeriesData(nwb2, ...
+    timeseries, window, conditions);
 
+% plot data from the first electrode (it's just noise in this example)
+plot(tt, squeeze(trial_data(:,1,:)))
+xlabel('time (seconds)')
+ylabel(['ECoG (' unit ')'])
 
 

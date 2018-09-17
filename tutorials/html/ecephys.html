@@ -79,7 +79,7 @@ nwb = nwbfile( <span class="string">'source'</span>, <span class="string">'acqui
                         acquisition: [1&times;1 types.untyped.Set]
                            analysis: [1&times;1 types.untyped.Set]
                              epochs: []
-                   file_create_date: '2018-09-17T14:35:43'
+                   file_create_date: '2018-09-17T16:02:21'
             general_data_collection: []
                     general_devices: [1&times;1 types.untyped.Set]
      general_experiment_description: []
@@ -195,51 +195,47 @@ nwb.trials.tablecolumn.set(<span class="string">'correct'</span>, <span class="k
 disp(data(1:10,1:10));
 </pre><pre class="codeoutput">  Columns 1 through 7
 
-    0.8712    0.6634   -0.2118   -0.9594    0.5558   -0.3128   -0.9804
-   -1.2956   -1.2162    1.2511    0.9529   -1.0882    0.6663   -0.4363
-    0.0313    0.3203   -1.1597   -1.4003   -0.2381   -1.0032   -0.0322
-   -0.9744    1.1505    0.1236   -0.7236    0.1238   -1.8539   -0.0727
-   -1.5486    0.7859   -0.0863    1.0412   -0.2460    0.4349    0.5832
-   -0.0828    0.7733   -0.0806   -0.6923   -0.4576    0.5791    2.1978
-   -0.6110   -2.9341   -0.4153    0.2911    1.2017    0.9456    0.4006
-    0.2588   -1.1590   -0.4819    1.5361   -0.2905   -1.5067    1.5317
-   -0.7201    0.3399    0.1473    0.8020    0.6699    2.1477    1.3344
-    0.1704   -0.7442    0.3085    2.9444    1.5805   -0.7340    0.5761
+   -0.6936    0.2240   -1.0878   -1.5047    1.7543    1.5297    0.8051
+   -0.8134   -0.9780   -1.0105   -0.9623    0.4165    0.7740   -1.9908
+   -0.0844   -0.4668    0.2928    0.6241   -1.6146    0.4207    0.6520
+   -2.0610    0.5217   -0.7898    0.5793   -0.4813    0.2765    0.8029
+   -1.4875   -0.3337    1.5672   -0.1045    0.2606   -0.6391    0.8795
+   -0.4397   -0.8410   -0.5468    1.7624    0.8022   -0.9741    0.5303
+   -1.1780   -2.4142    0.4477   -1.7392    0.5812    0.5413    3.9812
+    2.8060   -1.4064    1.1881   -2.5787   -0.3850    0.6477   -0.2500
+    0.5072    0.7785    0.2314    0.6882   -0.5815    1.0888   -1.1821
+   -1.0723    0.9298   -0.2157   -0.5946    1.3987    0.3055    0.6251
 
   Columns 8 through 10
 
-    1.3018   -0.2325   -0.9294
-   -0.4610   -0.6652    0.5046
-    0.4149   -1.0179    0.0663
-   -1.0779    1.0518    2.6391
-   -0.1483    0.5620    0.6799
-   -0.2278    0.8177   -0.7338
-    1.3859   -0.9473    0.6133
-   -1.3052   -1.6386    0.6008
-    1.8637    1.4693   -0.6966
-    0.8431    0.1522   -1.9376
+    1.0078   -0.3963    0.8828
+   -0.2236    0.0611    0.1928
+    1.0278    1.2719    0.0081
+   -0.7277    2.0288   -1.1325
+   -0.3218   -0.7245   -0.2870
+   -0.3319    0.8852    1.1579
+   -0.0737   -0.7908   -0.5727
+   -0.8658   -0.2267   -0.6829
+   -1.1423    0.4651   -0.4726
+    0.3055   -0.7963   -0.6231
 
-</pre><p>Loading all of the data is not a problem for this small dataset, but it can be a problem when dealing with real data that can be several GBs or even TBs per session. In these cases you can load a specific secion of data. For instance, here is how you would load just a single trial</p><p>The following convenience function loads data for all trials</p><pre class="codeinput"><span class="comment">% data from half a second before and 1 second after start of each trial</span>
-window = [-.5, 1.]; <span class="comment">% seconds</span>
+</pre><p>Loading all of the data is not a problem for this small dataset, but it can be a problem when dealing with real data that can be several GBs or even TBs per session. In these cases you can load a specific secion of data. For instance, here is how you would load just a single trial</p><p>The following convenience function loads data for all trials</p><pre class="codeinput"><span class="comment">% data from .05 seconds before and half a second after start of each trial</span>
+window = [-.05, 0.5]; <span class="comment">% seconds</span>
 
-<span class="comment">% only data where correct is false</span>
-conditions = containers.Map(<span class="string">'correct'</span>,0);
+<span class="comment">% only data where the attribute 'correct' == 0</span>
+conditions = containers.Map(<span class="string">'correct'</span>, 0);
 
+<span class="comment">% get ECoG data</span>
 timeseries = nwb2.acquisition.get(<span class="string">'ECoG'</span>);
 
-util.loadTrialAlignedTimeSeriesData(nwb2, timeseries, window, conditions)
-</pre><pre class="codeoutput error">Error using util.loadTimeSeriesData (line 42)
-interval bounds outside of time range
+[trial_data, tt, unit] = util.loadTrialAlignedTimeSeriesData(nwb2, <span class="keyword">...</span>
+    timeseries, window, conditions);
 
-Error in util.loadEventAlignedTimeSeriesData (line 31)
-        D(i,:,:) = util.loadTimeSeriesData(timeseries, window + times(i), ...
-
-Error in util.loadTrialAlignedTimeSeriesData (line 41)
-D = util.loadEventAlignedTimeSeriesData(timeseries, window, times, ...
-
-Error in ecephys (line 181)
-util.loadTrialAlignedTimeSeriesData(nwb2, timeseries, window, conditions)
-</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+<span class="comment">% plot data from the first electrode (it's just noise in this example)</span>
+plot(tt, squeeze(trial_data(:,1,:)))
+xlabel(<span class="string">'time (seconds)'</span>)
+ylabel([<span class="string">'ECoG ('</span> unit <span class="string">')'</span>])
+</pre><img vspace="5" hspace="5" src="ecephys_01.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% Neurodata Without Borders: Neurophysiology (NWB:N), Extracellular Electrophysiology Tutorial
 % This is a demonstration of how to properly write ecephys data to an NWB file using
@@ -413,16 +409,22 @@ disp(data(1:10,1:10));
 %%
 % The following convenience function loads data for all trials
 
-% data from half a second before and 1 second after start of each trial
-window = [-.5, 1.]; % seconds
+% data from .05 seconds before and half a second after start of each trial
+window = [-.05, 0.5]; % seconds
 
-% only data where correct is false
-conditions = containers.Map('correct',0);
+% only data where the attribute 'correct' == 0
+conditions = containers.Map('correct', 0);
 
+% get ECoG data
 timeseries = nwb2.acquisition.get('ECoG');
 
-util.loadTrialAlignedTimeSeriesData(nwb2, timeseries, window, conditions)
+[trial_data, tt, unit] = util.loadTrialAlignedTimeSeriesData(nwb2, ...
+    timeseries, window, conditions);
 
+% plot data from the first electrode (it's just noise in this example)
+plot(tt, squeeze(trial_data(:,1,:)))
+xlabel('time (seconds)')
+ylabel(['ECoG (' unit ')'])
 
 
 
