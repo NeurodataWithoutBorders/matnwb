@@ -1,17 +1,17 @@
-%% NWB Extracellular Electrophysiology Tutorial
+%% Neurodata Without Borders: Neurophysiology, Extracellular Electrophysiology Tutorial
 % This is a demonstration of how to properly write ecephys data to an NWB file using
-% matnwb after first installing matnwb.
+% matnwb.
 
 %% NWBFile
 % All contents get added to the NWB file, which is created with the
 % following command
 
-date = datetime(2018,3,1,12,0,0);
+date = datetime(2018, 3, 1, 12, 0, 0);
 nwb = nwbfile( 'source', 'acquired on rig2', ...
     'session_description', 'a test NWB File', ...
     'identifier', 'mouse004_day4', ...
-    'session_start_time', datestr(date, 'yyyy-mm-dd HH:MM:SS'), ...
-    'file_create_date', datestr(now, 'yyyy-mm-dd HH:MM:SS'));
+    'session_start_time', datestr(date, 'yyyy-mm-ddTHH:MM:SS'), ...
+    'file_create_date', datestr(now, 'yyyy-mm-ddTHH:MM:SS'));
 
 %%
 % You can check the contents by displaying the nwbfile object
@@ -19,17 +19,18 @@ nwb = nwbfile( 'source', 'acquired on rig2', ...
 disp(nwb);
 
 %% Data dependencies
-% The following table illustrates the data dependencies you need to take
-% into consideration to write extracellular electrophysiological data. In
-% order to write LFP, you need to specify what electrodes it came from. To
-% do that, you first need to construct an electrode table. 
+% The data needs to be added to nwb in a specific order, which is specified
+% by the data dependencies in the schema. The data dependencies for LFP are
+% illustrated in the following diagram. In order to write LFP, you need to 
+% specify what electrodes it came from. To do that, you first need to 
+% construct an electrode table. 
 %%
 % 
-% <<data_dependencies.png>>
+% <<ecephys_data_deps.png>>
 % 
 
 %% Electrode Table
-% Electrode tables hold the position and group information about eack 
+% Electrode tables hold the position and group information about each 
 % electrode and the brain region and filtering. Groups organize electrodes 
 % within a single device. Devices can have 1 or more groups. In this example, 
 % we have 2 devices that each only have a single group.
@@ -69,7 +70,7 @@ for i_device = 1:length(udevice_labels)
     end        
 end
 %%
-% add the ElectrodeTable object to the nwbfile using the name 'electrodes' (not flexible)
+% add the ElectrodeTable object to the NWBFile using the name 'electrodes' (not flexible)
 et = types.core.ElectrodeTable('data', tbl);
 nwb.general_extracellular_ephys.set('electrodes', et);
 
@@ -85,6 +86,11 @@ rv = types.untyped.RegionView('/general/extracellular_ephys/electrodes',...
 
 electrode_table_region = types.core.ElectrodeTableRegion('data', rv);
 
+%%
+% once you have the ElectrodeTableRegion object, you can create an
+% ElectricalSeries object to hold your LFP data. Here is an example using
+% starting_time and rate.
+
 electrical_series = types.core.ElectricalSeries(...
     'source', 'my source', ...
     'starting_time', 0.0, ... % seconds
@@ -92,6 +98,8 @@ electrical_series = types.core.ElectricalSeries(...
     'data',randn(1000, 10),...
     'electrodes', electrode_table_region,...
     'data_unit','V');
+
+nwb.acquisition.set('ECoG', electrical_series);
 %%
 % You can also specify time using timestamps. This is particularly useful if
 % the timestamps are not evenly sampled. In this case, the electrical series
@@ -104,14 +112,13 @@ electrical_series = types.core.ElectricalSeries(...
     'electrodes', electrode_table_region,...
     'data_unit','V');
 
-nwb.acquisition.set('ECoG', electrical_series);
+nwb.acquisition.set('ECoG2', electrical_series);
 
 %% Trials
-% NWB has a trials table for storing trial information. Here is how to
-% construct a trials table and write it to your NWBFile.
+% You can store trial information in the trials table
 
 nwb.trials = types.core.DynamicTable(...
-    'colnames', {'start','stop','condition'},...
+    'colnames', {'start','stop','correct'},...
     'description', 'trial data and properties', ...
     'id', types.core.ElementIdentifiers('data', 1:3));
 
@@ -121,7 +128,7 @@ nwb.trials.tablecolumn.set('start', ...
 nwb.trials.tablecolumn.set('stop', ...
     types.core.TableColumn('data', [1., 2., 3.]));
 
-nwb.trials.tablecolumn.set('condition', ...
+nwb.trials.tablecolumn.set('correct', ...
     types.core.TableColumn('data', [0,1,0]));
 %%
 % `colnames` is flexible - it can store any column names and the entries can
@@ -138,14 +145,40 @@ nwbExport(nwb, 'ecephys_tutorial.nwb')
 %% Reading the file
 % load an NWB file object into memory with
 
-nwbRead('ecephys_tutorial.nwb');
+nwb2 = nwbRead('ecephys_tutorial.nwb');
 
 %% Reading data
-% note that the above read does NOT load all of the dataset contained 
+% Note that `nwbRead` does NOT load all of the dataset contained 
 % within the file. matnwb automatically supports "lazy read" which means
-% you only read data to memory when you need it. 
+% you only read data to memory when you need it, and only read the data you
+% need. Notice the command
 
-file.acquisition.get('ECoG').data.load
+disp(nwb2.acquisition.get('ECoG').data)
+
+%%
+% does not output the values contained in `data`. To get these values, run
+
+disp(nwb2.acquisition.get('ECoG').data.load);
+
+%%
+% Loading and displaying all of the data is not a problem for this small
+% dataset, but it can be a problem when dealing with real data that can be
+% several GBs or even TBs per session. You can load a specific secion of
+% data. For instance, here is how you would load just a single trial
+
+
+%%
+% The following convenience function loads data for all trials
+
+% data from half a second before and 1 second after start of each trial
+window = [-.5, 1.]; % seconds
+
+% only data where correct is false
+conditions = containers.Map('correct',0);
+
+timeseries = file.acquisition.get('ECoG');
+
+utils.loadTrialAlignedTimeSeriesData(nwb2, timeseries, window, conditions)
 
 
 
