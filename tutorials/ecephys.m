@@ -23,7 +23,11 @@ disp(nwb);
 % into consideration to write extracellular electrophysiological data. In
 % order to write LFP, you need to specify what electrodes it came from. To
 % do that, you first need to construct an electrode table. 
-%
+%%
+% 
+% <<data_dependencies.png>>
+% 
+
 %% Electrode Table
 % Electrode tables hold the position and group information about eack 
 % electrode and the brain region and filtering. Groups organize electrodes 
@@ -64,17 +68,17 @@ for i_device = 1:length(udevice_labels)
         end
     end        
 end
-
+%%
 % add the ElectrodeTable object to the nwbfile using the name 'electrodes' (not flexible)
 et = types.core.ElectrodeTable('data', tbl);
 nwb.general_extracellular_ephys.set('electrodes', et);
 
 %% LFP
-%   In order to write LFP, you need to construct a region view of the electrode 
-%   table to link the signal to the electrodes that generated them. You must do
-%   this even if the signal is from all of the electrodes. Here we will create
-%   a reference that includes all electrodes. Then we will randomly generate a
-%   signal 1000 timepoints long from 10 channels
+% In order to write LFP, you need to construct a region view of the electrode 
+% table to link the signal to the electrodes that generated them. You must do
+% this even if the signal is from all of the electrodes. Here we will create
+% a reference that includes all electrodes. Then we will randomly generate a
+% signal 1000 timepoints long from 10 channels
 
 rv = types.untyped.RegionView('/general/extracellular_ephys/electrodes',...
     {[1 height(tbl)]});
@@ -88,10 +92,10 @@ electrical_series = types.core.ElectricalSeries(...
     'data',randn(1000, 10),...
     'electrodes', electrode_table_region,...
     'data_unit','V');
-
-%   You can also specify time using timestamps. This is particularly useful if
-%   the timestamps are not evenly sampled. In this case, the electrical series
-%   constructor will look like this
+%%
+% You can also specify time using timestamps. This is particularly useful if
+% the timestamps are not evenly sampled. In this case, the electrical series
+% constructor will look like this
 
 electrical_series = types.core.ElectricalSeries(...
     'timestamps', (1:1000)/200, ...
@@ -100,11 +104,11 @@ electrical_series = types.core.ElectricalSeries(...
     'electrodes', electrode_table_region,...
     'data_unit','V');
 
-nwb.acquisition.set('ECoG', file.acquisition.set('lfp', es););
+nwb.acquisition.set('ECoG', electrical_series);
 
 %% Trials
-%   NWB has a trials table for storing trial information. Here is how to
-%   construct a trials table and write it to your NWBFile.
+% NWB has a trials table for storing trial information. Here is how to
+% construct a trials table and write it to your NWBFile.
 
 nwb.trials = types.core.DynamicTable(...
     'colnames', {'start','stop','condition'},...
@@ -119,27 +123,27 @@ nwb.trials.tablecolumn.set('stop', ...
 
 nwb.trials.tablecolumn.set('condition', ...
     types.core.TableColumn('data', [0,1,0]));
-
-%   `colnames` is flexible - it can store any column names and the entries can
-%   be any data type, which allows you to store any information you need about 
-%   trials. The units table stores information about cells and is created with
-%   an analogous workflow.
+%%
+% `colnames` is flexible - it can store any column names and the entries can
+% be any data type, which allows you to store any information you need about 
+% trials. The units table stores information about cells and is created with
+% an analogous workflow.
 
 %% Writing the file
-%   Once you have added all of the data types you want to a file, you can save
-%   it with the following command
+% Once you have added all of the data types you want to a file, you can save
+% it with the following command
 
 nwbExport(nwb, 'ecephys_tutorial.nwb')
 
 %% Reading the file
-%   load an NWB file object into memory with
+% load an NWB file object into memory with
 
 nwbRead('ecephys_tutorial.nwb');
 
 %% Reading data
-%   note that the above read does NOT load all of the dataset contained 
-%   within the file. matnwb automatically supports "lazy read" which means
-%   you only read data to memory when you need it. 
+% note that the above read does NOT load all of the dataset contained 
+% within the file. matnwb automatically supports "lazy read" which means
+% you only read data to memory when you need it. 
 
 file.acquisition.get('ECoG').data.load
 
