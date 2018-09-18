@@ -1,19 +1,17 @@
-function D = loadTrialAlignedTimeSeriesData(nwb, timeseries, window, ...
-    conditions, downsample_factor, electrode)
-%LOADEVENTALIGNEDTIMESERIESDATA(TIMESERIES, WINDOW, TIMES, DOWNSAMPLE_FACTOR, ELECTRODES, CONDITIONS)
+function [D, tt] = loadTrialAlignedTimeSeriesData(nwb, timeseries, window, conditions, downsample_factor, electrode)
+%LOADTRIALALIGNEDTIMESERIESDATA load trial-aligned time series data
+%   D = LOADTRIALALIGNEDTIMESERIESDATA(NWB, TIMESERIES, WINDOW) is the
+%   trial-aligned data for TIMESERIES in NWB with intervals WINDOW,
+%   in seconds, for all electrodes. D is of shape trials x electrodes x time.
 %
-%   NWB: matnwb NWBFile object
-%   TIMESERIES: matnwb TimeSeries object
-%   WINDOW: [window_start, window_end] in seconds e.g. [-.5, 1.0] gets half
-%       a second before each time and 1 second after each time
-%   CONDITIONS: containers.Map(condition: value)
-%   DOWNSAMPLE_FACTOR: default = 1
-%   ELECTRODE: detault = [] (all electrodes). Takes a 1-indexed integer,
-%       (NOT AN ARRAY)
+%   D = LOADTRIALALIGNEDTIMESERIESDATA(NWB, TIMESERIES, WINDOW, TIMES, DOWNSAMPLE_FACTOR)
+%   specifies a temporal downsampling for D. Default is 1.
 %   
+%   D = LOADTRIALALIGNEDTIMESERIESDATA(NWB, TIMESERIES, WINDOW, TIMES, DOWNSAMPLE_FACTOR, ELECTRODES)
+%   specifies what electrode to pull data for. Default is []:
 %
-%   OUTPUT:[]
-%   array: trials x time x electrodes
+%   []  - all electrodes
+%   int - a single electrode (1-indexed)
 
 if ~exist('downsample_factor', 'var') || isempty(downsample_factor)
     downsample_factor = 1;
@@ -40,3 +38,7 @@ times = times(trials_to_take);
 
 D = util.loadEventAlignedTimeSeriesData(timeseries, window, times, ...
     downsample_factor, electrode);
+
+tt = linspace(window(1), window(2), size(D,3));
+
+

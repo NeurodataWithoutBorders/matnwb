@@ -1,16 +1,17 @@
 function D = loadEventAlignedTimeSeriesData(timeseries, window, times, downsample_factor, electrodes)
-%LOADEVENTALIGNEDTIMESERIESDATA(TIMESERIES, WINDOW, TIMES)
+%LOADEVENTALIGNEDTIMESERIESDATA load event-aligned time series data
+%   D = LOADEVENTALIGNEDTIMESERIESDATA(TIMESERIES, WINDOW, TIMES) is the
+%   event-aligned data for TIMESERIES in intervals with WINDOW around TIMES,
+%   in seconds, for all electrodes. D is of shape trials x electrodes x time.
 %
-%   TIMESERIES: matnwb TimeSeries object
-%   WINDOW: [window_start, window_end] in seconds e.g. [-.5, 1.0] gets half
-%       a second before each time and 1 second after each time
-%   TIMES: 1-D array of times in seconds
-%   DOWNSAMPLE_FACTOR: default = 1
-%   ELECTRODE: detault = [] (all electrodes). Takes a 1-indexed integer,
-%       (NOT AN ARRAY)
+%   D = LOADEVENTALIGNEDTIMESERIESDATA(TIMESERIES, WINDOW, TIMES, DOWNSAMPLE_FACTOR)
+%   specifies a temporal downsampling for D. Default is 1.
+%   
+%   D = LOADEVENTALIGNEDTIMESERIESDATA(TIMESERIES, WINDOW, TIMES, DOWNSAMPLE_FACTOR, ELECTRODES)
+%   specifies what electrode to pull data for. Default is []:
 %
-%   OUTPUT:
-%   array: trials x time x electrodes
+%   []  - all electrodes
+%   int - a single electrode (1-indexed)
 
 if ~exist('downsample_factor','var') || isempty(downsample_factor)
     downsample_factor = 1;
@@ -26,7 +27,7 @@ inds_len = diff(window) * fs / downsample_factor;
 dims = timeseries.data.dims;
 
 if isempty(electrode)
-    D = NaN(length(times), inds_len, dims(2));
+    D = NaN(length(times), dims(2), int16(inds_len));
     for i = 1:length(times)
         D(i,:,:) = util.loadTimeSeriesData(timeseries, window + times(i), ...
             downsample_factor, electrodes);

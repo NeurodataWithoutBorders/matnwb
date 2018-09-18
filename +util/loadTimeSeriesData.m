@@ -1,16 +1,19 @@
-function data = loadTimeSeriesData(timeseries, interval, downsample_factor, electrode)
-%LOADTIMESERIESDATA loads data within a time interval from a timeseries
+function data = loadTimeSeriesData(timeseries, interval, downsample_factor, electrodes)
+%LOADTIMESERIESDATA load time series data in a specific interval
+%   D = LOADTIMESERIESDATA(TIMESERIES, INTERVAL) is the
+%   event-aligned data for TIMESERIES in INTERVAL, specified in
+%   seconds. D is of shape electrodes x time.
 %
-%   DATA = loadTimeSeriesData(TIMESERIES, INTERVAL, DOWNSAMPLE_FACTOR)
-%   TIMESERIES: matnwb TimeSeries object
-%   INTERVAL: [start end] in seconds
-%   DOWNSAMPLE_FACTOR: default = 1
-%   ELECTRODE: detault = [] (all electrodes). Takes a 1-indexed integer,
-%   (NOT AN ARRAY)
-%   Works whether timestamps or starting_time & rate are stored. Assumes
-%   timestamps are sorted in ascending order.
+%   D = LOADTIMESERIESDATA(TIMESERIES, INTERVAL, DOWNSAMPLE_FACTOR)
+%   specifies a temporal downsampling for D. Default is 1.
+%   
+%   D = LOADTIMESERIESDATA(TIMESERIES, INTERVAL, DOWNSAMPLE_FACTOR, ELECTRODES)
+%   specifies what electrode to pull data for. Default is []:
+%
+%   []  - all electrodes
+%   int - a single electrode (1-indexed)
 
-if ~exist('interval','var')
+if ~exist('interval','var') || isempty(interval)
     interval = [0 Inf];
 end
 
@@ -18,58 +21,71 @@ if ~exist('downsample_factor','var') || isempty(downsample_factor)
     downsample_factor = 1;
 end
 
-if ~exist('electrode','var')
+if ~exist('electrode', 'var')
     electrode = [];
 end
 
-dims = timeseries.data.dims;
-
-if interval(1)
-    if isempty(timeseries.starting_time)
-        start_ind = fastsearch(timeseries.timestamps, interval(1), 1);
-    else
-        fs = timeseries.starting_time_rate;
-        t0 = timeseries.starting_time;
-        if interval(1) < t0
-            error('interval bounds outside of time range');
-        end
-        start_ind = (interval(1) - t0) * fs;
+if length(electrodes) > 1
+    fs = timesries.starting_time_rate;
+    data = NaN(diff(interval) * fs, length(electrodes));
+    for i = 1:length(electrodes)
+        data(:,i) = loadTimeSeriesData(timeseries, interval, ...
+            downsample_factor, electrodes(i));
     end
 else
-    start_ind = 1;
-end
-
-if isfinite(interval(2))
-
-    if isempty(timeseries.starting_time)
-        end_ind = fastsearch(timeseries.timestamps, interval(2), -1);
-    else
-        fs = timeseries.starting_time_rate;
-        t0 = timeseries.starting_time;
-        if interval(2) > (dims(1) * fs + t0)
-            error('interval bounds outside of time range');
+    
+    dims = timeseries.data.dims;
+    
+    if interval(1)
+        if isempty(timeseries.starting_time)
+            start_ind = fastsearch(timeseries.timestamps, interval(1), 1);
+        else
+            fs = timeseries.starting_time_rate;
+            t0 = timeseries.starting_time;
+            if interval(1) < t0
+                error('interval bounds outside of time range');
+            end
+            start_ind = (interval(1) - t0) * fs;
         end
-        end_ind = (interval(2) - t0) * fs;
+    else
+        start_ind = 1;
     end
-else
-    end_ind = Inf;
+    
+    if isfinite(interval(2))
+        
+        if isempty(timeseries.starting_time)
+            end_ind = fastsearch(timeseries.timestamps, interval(2), -1);
+        else
+            fs = timeseries.starting_time_rate;
+            t0 = timeseries.starting_time;
+            if interval(2) > (dims(1) * fs + t0)
+                error('interval bounds outside of time range');
+            end
+            end_ind = (interval(2) - t0) * fs;
+        end
+    else
+        end_ind = Inf;
+    end
+    
+    start = ones(1, length(dims));
+    start(end) = start_ind;
+    
+    count = fliplr(dims);
+    count(end) = ceil((end_ind - start_ind) / downsample_factor);
+    
+    if ~isempty(electrode)
+        start(end-1) = electrode;
+        count(end-1) = 1;
+    end
+    
+    if downsample_factor == 1
+        data = timeseries.data.load(start, count);
+    else
+        stride = ones(1, length(dims));
+        stride(end) = downsample_factor;
+        data = timeseries.data.load(start, count, stride)';
+    end
+    
 end
 
-start = ones(1, length(dims));
-start(end) = start_ind;
-
-count = fliplr(dims);
-count(end) = floor((end_ind - start_ind) / downsample_factor);
-
-if ~isempty(electrode)
-    start(end-1) = electrode;
-    count(end-1) = 1;
-end
-
-if downsample_factor == 1
-    data = timeseries.data.load(start, count)';
-else
-    stride = ones(1, length(dims));
-    stride(end) = downsample_factor;
-    data = timeseries.data.load(start, count, stride)';
-end
+data = data * timeseries.data_conversion;
