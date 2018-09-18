@@ -17,7 +17,8 @@ function h5idx = idx2h5(idx, matSize)
     %compress matSize dimensions
     if nargin > 1
         lastDim = find(matSize > 1, 1, 'last');
-        if isempty(lastDim)
+        if isempty(lastDim) ||...
+                (numel(matSize) == 2 && any(matSize == 1) && any(matSize > 1))
             matSize = 1;
         else
             matSize = matSize(1:lastDim);
