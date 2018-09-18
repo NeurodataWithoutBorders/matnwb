@@ -48,3 +48,6 @@ nwb = nwbfile;
 nwb.epochs.set('stim', types.Epoch);
 nwbExport(nwb, 'epoch.nwb');
 ```
+
+## Tutorials
+[Extracellular Electrophysiology IO](http://htmlpreview.github.io/?https://github.com/NeurodataWithoutBorders/matnwb/blob/master/tutorials/html/ecephys.html)
