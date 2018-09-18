@@ -66,7 +66,9 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Neurodata Without Borders: Neurophysiology (NWB:N), Extracellular Electrophysiology Tutorial</h1><!--introduction--><p>This is a demonstration of how to properly write ecephys data to an NWB file using matnwb.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">NWB file</a></li><li><a href="#3">Data dependencies</a></li><li><a href="#5">Electrode Table</a></li><li><a href="#7">LFP</a></li><li><a href="#10">Trials</a></li><li><a href="#13">Processing Modules</a></li><li><a href="#14">Spikes</a></li><li><a href="#18">Writing the file</a></li><li><a href="#19">Reading the file</a></li><li><a href="#20">Reading data</a></li><li><a href="#24">Reading UnitTimes (RegionViews)</a></li></ul></div><h2 id="1">NWB file</h2><p>All contents get added to the NWB file, which is created with the following command</p><pre class="codeinput">date = datetime(2018, 3, 1, 12, 0, 0);
+  </style></head><body><div class="content"><h1>Neurodata Without Borders: Neurophysiology (NWB:N), Extracellular Electrophysiology Tutorial</h1><!--introduction--><p>How to write ecephys data to an NWB file using matnwb.</p><pre>author: Ben Dichter/n
+contact: ben.dichter@gmail.com
+last edited: Sept 18, 2018</pre><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">NWB file</a></li><li><a href="#3">Data dependencies</a></li><li><a href="#5">Electrode Table</a></li><li><a href="#7">LFP</a></li><li><a href="#10">Trials</a></li><li><a href="#13">Processing Modules</a></li><li><a href="#14">Spikes</a></li><li><a href="#18">Writing the file</a></li><li><a href="#19">Reading the file</a></li><li><a href="#20">Reading data</a></li><li><a href="#24">Reading UnitTimes (RegionViews)</a></li></ul></div><h2 id="1">NWB file</h2><p>All contents get added to the NWB file, which is created with the following command</p><pre class="codeinput">date = datetime(2018, 3, 1, 12, 0, 0);
 nwb = nwbfile( <span class="string">'source'</span>, <span class="string">'acquired on rig2'</span>, <span class="keyword">...</span>
     <span class="string">'session_description'</span>, <span class="string">'a test NWB File'</span>, <span class="keyword">...</span>
     <span class="string">'identifier'</span>, <span class="string">'mouse004_day4'</span>, <span class="keyword">...</span>
@@ -79,7 +81,7 @@ nwb = nwbfile( <span class="string">'source'</span>, <span class="string">'acqui
                         acquisition: [1&times;1 types.untyped.Set]
                            analysis: [1&times;1 types.untyped.Set]
                              epochs: []
-                   file_create_date: '2018-09-18T15:36:10'
+                   file_create_date: '2018-09-18T16:24:30'
             general_data_collection: []
                     general_devices: [1&times;1 types.untyped.Set]
      general_experiment_description: []
@@ -218,11 +220,6 @@ nwb.trials = trials;
 </pre><h2 id="14">Spikes</h2><p>There are two different ways of storing spikes (aka action potentials), <tt>Clustering</tt> and <tt>UnitTimes</tt>. <tt>Clustering</tt> is more strightforward, and is used to mark measured threshold crossings that are spike-sorted into different clusters, indicating that they are believed to come from different neurons. The advantage of this structure is that it is easy to write data via a stream and it is easy to query based on time window (since the timestamps are ordered).</p><pre class="codeinput">spike_times = [0.1, 0.21, 0.34, 0.36, 0.4, 0.43, 0.5, 0.61, 0.66, 0.69];
 cluster_ids = [0, 0, 1, 1, 2, 2, 0, 0, 1, 1];
 
-rv = types.untyped.RegionView(<span class="string">'/general/extracellular_ephys/electrodes'</span>,<span class="keyword">...</span>
-    {[1 5]});
-
-electrode_table_region = types.core.ElectrodeTableRegion(<span class="string">'data'</span>, rv);
-
 clustering = types.core.Clustering( <span class="keyword">...</span>
     <span class="string">'description'</span>, <span class="string">'my_description'</span>,<span class="keyword">...</span>
     <span class="string">'source'</span>,<span class="string">'my source'</span>,<span class="keyword">...</span>
@@ -266,29 +263,29 @@ nwb.processing.set(<span class="string">'cellular'</span>, cell_mod);
 disp(data(1:10, 1:10));
 </pre><pre class="codeoutput">  Columns 1 through 7
 
-    0.2045    2.2731    0.2790   -0.8058    0.5442    1.7922    0.2434
-    1.0469    0.2651    1.8043    1.5620    0.6222   -0.5785    1.1606
-    0.4078   -0.2496   -0.6089    1.6545    0.1950    0.5063    0.5138
-    2.0274   -1.2540   -0.9762    0.1547    1.3876    1.1667   -2.4944
-    0.0726   -1.3727    0.9107    1.6205    1.1149   -1.3870   -0.2820
-    0.8500    0.0185   -0.1707    0.9608   -1.2072    0.4391    0.0272
-    0.9940   -0.0098   -0.3797    0.7468    1.8743    1.6725   -1.3822
-   -1.9652   -0.9170    0.3369   -1.5136   -0.4093    0.7651    1.2479
-   -1.3568    0.7869   -0.8687    0.7380    0.9043   -1.3486   -0.4183
-    0.0611    2.0111    0.8085   -0.7745    1.7833    1.1117    0.5570
+    0.5918    0.2163    0.0142   -1.0416    0.5331   -0.1334   -0.7842
+    0.0191    0.0681    0.9027   -1.0498    0.2876    2.6674    0.4778
+    1.4051    0.8468   -1.0751   -0.1053   -0.0892   -0.3263   -0.2617
+   -1.2595    0.0829    0.8717    2.2032   -0.3397    1.3518   -1.9675
+    1.1214    0.9303   -0.9479    0.7652    0.3124   -0.0545    0.5980
+   -1.6819   -1.1975    1.1149   -0.5425   -0.1705   -0.5629   -0.1125
+   -0.8291    0.1445   -2.4947   -0.8657    1.1217    0.7450   -0.3767
+   -0.1198    0.6971    0.3364    1.7580    0.0231   -0.6628   -0.1108
+    0.0278   -0.0258    0.0049   -0.0098    1.5604    0.1066   -2.3424
+    0.2381    0.5314   -0.2392    1.1700    0.6905    0.3783   -1.8302
 
   Columns 8 through 10
 
-   -0.6017   -1.0686    1.0810
-    0.1942    1.6936   -0.8153
-    0.7292   -2.0619   -0.6156
-    0.1872    0.3078    0.4325
-    0.9982   -0.4969   -0.5261
-    1.1988   -1.1657    0.0784
-   -0.9649   -0.6997    0.2438
-    0.6182    1.2840    0.4158
-    0.9806    1.0519   -1.3679
-   -0.1469   -0.6707   -0.6565
+   -0.5772    1.1728    0.9318
+   -0.5787    1.2591   -0.5205
+   -0.8890   -1.4132    1.7503
+    2.1663   -0.3288   -0.1129
+    0.2901    0.2660   -0.1796
+   -1.6638    0.0948    0.8642
+   -0.0228   -3.5943    0.3799
+    2.8775    0.2052    1.7721
+   -0.0515   -1.2951    1.3211
+    0.1352    0.2197   -0.3070
 
 </pre><p>Loading all of the data is not a problem for this small dataset, but it can be a problem when dealing with real data that can be several GBs or even TBs per session. In these cases you can load a specific secion of data. For instance, here is how you would load data starting at the index (1,1) and read 10 rows and 20 columns of data</p><pre class="codeinput">nwb2.acquisition.get(<span class="string">'ECoG'</span>).data.load([1,1],[10,20])
 </pre><pre class="codeoutput">
@@ -296,42 +293,42 @@ ans =
 
   Columns 1 through 7
 
-    0.2045    2.2731    0.2790   -0.8058    0.5442    1.7922    0.2434
-    1.0469    0.2651    1.8043    1.5620    0.6222   -0.5785    1.1606
-    0.4078   -0.2496   -0.6089    1.6545    0.1950    0.5063    0.5138
-    2.0274   -1.2540   -0.9762    0.1547    1.3876    1.1667   -2.4944
-    0.0726   -1.3727    0.9107    1.6205    1.1149   -1.3870   -0.2820
-    0.8500    0.0185   -0.1707    0.9608   -1.2072    0.4391    0.0272
-    0.9940   -0.0098   -0.3797    0.7468    1.8743    1.6725   -1.3822
-   -1.9652   -0.9170    0.3369   -1.5136   -0.4093    0.7651    1.2479
-   -1.3568    0.7869   -0.8687    0.7380    0.9043   -1.3486   -0.4183
-    0.0611    2.0111    0.8085   -0.7745    1.7833    1.1117    0.5570
+    0.5918    0.2163    0.0142   -1.0416    0.5331   -0.1334   -0.7842
+    0.0191    0.0681    0.9027   -1.0498    0.2876    2.6674    0.4778
+    1.4051    0.8468   -1.0751   -0.1053   -0.0892   -0.3263   -0.2617
+   -1.2595    0.0829    0.8717    2.2032   -0.3397    1.3518   -1.9675
+    1.1214    0.9303   -0.9479    0.7652    0.3124   -0.0545    0.5980
+   -1.6819   -1.1975    1.1149   -0.5425   -0.1705   -0.5629   -0.1125
+   -0.8291    0.1445   -2.4947   -0.8657    1.1217    0.7450   -0.3767
+   -0.1198    0.6971    0.3364    1.7580    0.0231   -0.6628   -0.1108
+    0.0278   -0.0258    0.0049   -0.0098    1.5604    0.1066   -2.3424
+    0.2381    0.5314   -0.2392    1.1700    0.6905    0.3783   -1.8302
 
   Columns 8 through 14
 
-   -0.6017   -1.0686    1.0810    0.2090    1.6850   -0.4715    0.1359
-    0.1942    1.6936   -0.8153   -0.4987   -1.6288    0.3477    0.7358
-    0.7292   -2.0619   -0.6156    1.2254   -0.9067   -1.3165    2.0246
-    0.1872    0.3078    0.4325    1.0314    1.0590    0.9296   -0.0930
-    0.9982   -0.4969   -0.5261   -0.4561   -0.5314    0.2601   -1.0474
-    1.1988   -1.1657    0.0784    0.1135   -1.5555   -0.5228   -0.4664
-   -0.9649   -0.6997    0.2438   -1.5322   -0.1739   -0.1081    2.5394
-    0.6182    1.2840    0.4158   -1.8110   -1.3391   -0.5704   -1.1106
-    0.9806    1.0519   -1.3679    0.2896    2.1199   -1.2494   -0.9153
-   -0.1469   -0.6707   -0.6565    0.8750   -0.3849   -2.3551    0.0715
+   -0.5772    1.1728    0.9318   -0.5203    0.4130   -0.0550    0.1262
+   -0.5787    1.2591   -0.5205    1.5861   -1.6696   -0.0291   -0.6969
+   -0.8890   -1.4132    1.7503    1.1816   -1.0953    1.7760    0.8174
+    2.1663   -0.3288   -0.1129    0.7618    0.0627    0.1181   -1.4681
+    0.2901    0.2660   -0.1796   -1.0689    0.7798   -0.3550    0.8307
+   -1.6638    0.0948    0.8642    1.4673   -0.2629   -0.0554   -1.1391
+   -0.0228   -3.5943    0.3799   -0.8569   -1.0556    1.5667   -0.3498
+    2.8775    0.2052    1.7721   -0.2750   -0.2903   -1.3329    0.3883
+   -0.0515   -1.2951    1.3211    0.1988    0.1424   -0.0239    0.1276
+    0.1352    0.2197   -0.3070    0.0508    0.3244    0.3983   -0.8837
 
   Columns 15 through 20
 
-    0.4014    0.4965    1.6709    0.3219   -0.9120    0.4918
-    1.4680   -0.3274   -0.6463   -0.7138    0.2803    0.5094
-   -1.2626    0.3819    0.1040    0.8104    0.5885    0.3331
-    0.1654    0.0999    0.2369    1.1058    0.1325   -1.5343
-   -0.7249    0.0602   -0.4026   -0.1411    1.1851    0.4035
-   -0.2824   -1.3410    0.4642    1.4439   -0.1585    1.4819
-   -1.7251   -0.6874    1.1148    1.3949    0.0786    1.0852
-   -0.2378   -1.6834    1.2315   -0.4803   -0.4039    0.9868
-   -2.4546   -0.2026    1.9967    0.6780   -1.6064   -0.0712
-   -0.1425   -0.2934    0.8539   -1.2423    0.1456    1.7515
+   -0.3230    0.8056   -0.3229   -1.0092    0.5676   -0.4811
+    1.4110   -0.0116    1.0355    0.9610   -2.5537    1.1631
+    0.4453    0.2367    0.7858    0.2819    0.5645    1.0133
+    0.2568    2.5472   -0.6280    1.2227    0.2657   -0.3529
+   -0.5408    0.1267   -1.6863   -0.6704   -0.8573   -1.3777
+   -0.4732    0.4575    0.4801    1.0806   -0.6036   -1.8501
+    0.1783    1.2201    1.3669    1.9648    0.5114   -0.3701
+   -1.7510    1.8197   -0.7838    0.8514    0.1041   -1.6693
+    0.5156    0.6042   -0.7628    0.3427   -1.2486    0.3098
+    0.3018   -0.1591   -1.9207    1.0235   -1.1395    0.1748
 
 </pre><p>run <tt>doc('types.untyped.DataStub')</tt> for more details on manual partial loading. There are several convenience functions that make common data loading patterns easier. The following convenience function loads data for all trials</p><pre class="codeinput"><span class="comment">% data from .05 seconds before and half a second after start of each trial</span>
 window = [-.05, 0.5]; <span class="comment">% seconds</span>
@@ -388,8 +385,11 @@ ans =
 </pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% Neurodata Without Borders: Neurophysiology (NWB:N), Extracellular Electrophysiology Tutorial
-% This is a demonstration of how to properly write ecephys data to an NWB file using
-% matnwb.
+% How to write ecephys data to an NWB file using matnwb.
+% 
+%  author: Ben Dichter/n
+%  contact: ben.dichter@gmail.com
+%  last edited: Sept 18, 2018
 
 %% NWB file
 % All contents get added to the NWB file, which is created with the
@@ -568,11 +568,6 @@ cell_mod = types.core.ProcessingModule( ...
 
 spike_times = [0.1, 0.21, 0.34, 0.36, 0.4, 0.43, 0.5, 0.61, 0.66, 0.69];
 cluster_ids = [0, 0, 1, 1, 2, 2, 0, 0, 1, 1];
-
-rv = types.untyped.RegionView('/general/extracellular_ephys/electrodes',...
-    {[1 5]});
-
-electrode_table_region = types.core.ElectrodeTableRegion('data', rv);
 
 clustering = types.core.Clustering( ...
     'description', 'my_description',...

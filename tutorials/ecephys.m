@@ -1,6 +1,9 @@
 %% Neurodata Without Borders: Neurophysiology (NWB:N), Extracellular Electrophysiology Tutorial
-% This is a demonstration of how to properly write ecephys data to an NWB file using
-% matnwb.
+% How to write ecephys data to an NWB file using matnwb.
+% 
+%  author: Ben Dichter
+%  contact: ben.dichter@gmail.com
+%  last edited: Sept 18, 2018
 
 %% NWB file
 % All contents get added to the NWB file, which is created with the
@@ -179,11 +182,6 @@ cell_mod = types.core.ProcessingModule( ...
 
 spike_times = [0.1, 0.21, 0.34, 0.36, 0.4, 0.43, 0.5, 0.61, 0.66, 0.69];
 cluster_ids = [0, 0, 1, 1, 2, 2, 0, 0, 1, 1];
-
-rv = types.untyped.RegionView('/general/extracellular_ephys/electrodes',...
-    {[1 5]});
-
-electrode_table_region = types.core.ElectrodeTableRegion('data', rv);
 
 clustering = types.core.Clustering( ...
     'description', 'my_description',...
