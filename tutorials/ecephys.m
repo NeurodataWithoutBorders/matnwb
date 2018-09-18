@@ -127,11 +127,36 @@ nwb.trials.tablecolumn.set('stop', ...
 
 nwb.trials.tablecolumn.set('correct', ...
     types.core.TableColumn('data', [0,1,0]));
+
+nwb.trials = trials;
+
 %%
 % |colnames| is flexible - it can store any column names and the entries can
 % be any data type, which allows you to store any information you need about 
 % trials. The units table stores information about cells and is created with
 % an analogous workflow.
+%
+% Here is an alternative workflow using a MATLAB table that yeilds the same
+% result
+
+T = table([.1, 1.5, 2.5]',[1., 2., 3.]',[0,1,0]',...
+    'VariableNames',{'start','stop','correct'});
+T.Properties.Description = 'my description';
+T.Properties.UserData = containers.Map('source','my source');
+T
+%%
+trials = types.core.DynamicTable( ...
+    'source',T.Properties.UserData('source'),...
+    'colnames', T.Properties.VariableNames,...
+    'description', T.Properties.Description, ...
+    'id', types.core.ElementIdentifiers('data', 1:height(T)));
+
+for col = T
+    trials.tablecolumn.set(col.Properties.VariableNames{1}, ...
+        types.core.TableColumn('data', col.Variables'));
+end
+
+nwb.trials = trials;
 
 %% Processing Modules
 % Measurements go in |acquisition| and subject or session data goes in
