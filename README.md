@@ -50,4 +50,4 @@ nwbExport(nwb, 'epoch.nwb');
 ```
 
 ## Tutorials
-[Extracellular Electrophysiology IO](http://htmlpreview.github.io/?https://github.com/NeurodataWithoutBorders/matnwb/blob/master/tutorials/html/ecephys.html)
+[Extracellular Electrophysiology IO](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ecephys.html)
