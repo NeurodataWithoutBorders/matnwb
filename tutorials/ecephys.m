@@ -15,7 +15,6 @@ nwb = nwbfile( 'source', 'acquired on rig2', ...
 
 %%
 % You can check the contents by displaying the nwbfile object
-
 disp(nwb);
 
 %% Data dependencies
@@ -198,7 +197,7 @@ end
 vi = types.core.VectorIndex('data', vd_ref);
 ei = types.core.ElementIdentifiers('data', int64(uids));
 ut = types.core.UnitTimes('spike_times', vd, ...
-    'spike_times_index', vi, 'unit_ids', ei);
+    'spike_times_index', vi, 'unit_ids', ei,'source','my source');
 
 cell_mod.nwbdatainterface.set('my_spike_times',ut);
 nwb.processing.set('cellular', cell_mod);
@@ -231,7 +230,7 @@ disp(nwb2.acquisition.get('ECoG').data)
 % |data|. To get these values, run
 
 data = nwb2.acquisition.get('ECoG').data.load;
-disp(data(1:10,1:10));
+disp(data(1:10, 1:10));
 
 %%
 % Loading all of the data is not a problem for this small
@@ -265,10 +264,17 @@ plot(tt, squeeze(trial_data(:,1,:)))
 xlabel('time (seconds)')
 ylabel(['ECoG (' timeseries.data_unit ')'])
 
-%% Reading RegionViews
-% RegionViews are like DataStubs in that returning them will not return
-% data but *references* to data inside the NWB file. Access the data that
-% the view points to like this
-
-nwb.processing.get('cellular').nwbdatainterface.get('my_spike_times').spike_times_index.data(1).refresh(nwb);
+%% Reading UnitTimes (RegionViews)
+% |UnitTimes| uses RegionViews to indicate which spikes belong to which cell.
+% The structure is split up into 3 datasets (see Spikes secion):
+my_spike_times = nwb.processing.get('cellular').nwbdatainterface.get('my_spike_times')
+%%
+% To get the data for cell 1, first determine the uid that equals 1.
+select = my_spike_times.unit_ids.data == 1
+%%
+% Then select the corresponding spike_times_index element
+my_index = my_spike_times.spike_times_index.data(select)
+%%
+% Finally, access the data that the view points to using |refresh|
+my_index.refresh(nwb)
 
