@@ -243,7 +243,7 @@ disp(data(1:10,1:10));
 nwb2.acquisition.get('ECoG').data.load([1,1],[10,20])
 
 %%
-% run doc('types.untyped.DataStub') for more details on manual partial
+% run |doc('types.untyped.DataStub')| for more details on manual partial
 % loading. There are several convenience functions that make common data
 % loading patterns easier. The following convenience function loads data 
 % for all trials
