@@ -87,7 +87,7 @@ rv = types.untyped.RegionView('/general/extracellular_ephys/electrodes',...
 electrode_table_region = types.core.ElectrodeTableRegion('data', rv);
 
 %%
-% once you have the ElectrodeTableRegion object, you can create an
+% once you have the |ElectrodeTableRegion| object, you can create an
 % ElectricalSeries object to hold your LFP data. Here is an example using
 % starting_time and rate.
 
@@ -115,7 +115,7 @@ electrical_series = types.core.ElectricalSeries(...
 %% Trials
 % You can store trial information in the trials table
 
-nwb.trials = types.core.DynamicTable(...
+nwb.trials = types.core.DynamicTable( ...
     'colnames', {'start','stop','correct'},...
     'description', 'trial data and properties', ...
     'id', types.core.ElementIdentifiers('data', 1:3));
@@ -133,6 +133,79 @@ nwb.trials.tablecolumn.set('correct', ...
 % be any data type, which allows you to store any information you need about 
 % trials. The units table stores information about cells and is created with
 % an analogous workflow.
+
+%% Processing Modules
+% Measurements go in |acquisition| and subject or session data goes in
+% |general|, but if you have the result of an analysis, e.g. spike times,
+% you need to store this in a processing module. Here we make a processing
+% module called "cellular"
+
+cell_mod = types.core.ProcessingModule( ...
+        'source', 'a test source for a ProcessingModule', ...
+        'description', 'a test module');
+
+%% Spikes
+% There are two different ways of storing spikes (aka action potentials),
+% |Clustering| and |UnitTimes|. |Clustering| is more strightforward, and is used to mark
+% measured threshold crossings that are spike-sorted into different clusters,
+% indicating that they are believed to come from different neurons. The
+% advantage of this structure is that it is easy to write data via a stream
+% and it is easy to query based on time window (since the timestamps are 
+% ordered).
+
+spike_times = [0.1, 0.21, 0.34, 0.36, 0.4, 0.43, 0.5, 0.61, 0.66, 0.69];
+cluster_ids = [0, 0, 1, 1, 2, 2, 0, 0, 1, 1];
+
+rv = types.untyped.RegionView('/general/extracellular_ephys/electrodes',...
+    {[1 5]});
+
+electrode_table_region = types.core.ElectrodeTableRegion('data', rv);
+
+clustering = types.core.Clustering( ...
+    'description', 'my_description',...
+    'source','my source',...
+    'times', spike_times, ...
+    'num', cluster_ids);
+
+cell_mod.nwbdatainterface.set('clustering',clustering);
+nwb.processing.set('cellular', cell_mod);
+
+%%
+% The other structure is |UnitTimes|, which is organized by cell instead of
+% by time. The advantage of |UnitTimes| is that it is more
+% parallel-friendly. It is easier to split the computation of by cells are
+% read/write in parallel, distributing the cells across the cores of your
+% computation network. 
+%%
+% 
+% <<UnitTimes.png>>
+% 
+
+[sorted_cluster_ids, order] = sort(cluster_ids);
+uids = unique(cluster_ids);
+vdata = spike_times(order);
+bounds = [0,find(diff(sorted_cluster_ids)),length(cluster_ids)];
+
+vd = types.core.VectorData('data', vdata);
+            
+spike_loc = '/processing/cellular/my_spike_times/spike_times';
+
+vd_ref = types.untyped.RegionView(spike_loc, 1:bounds(2), size(vdata));
+for i = 2:length(bounds)-1
+    vd_ref(end+1) = types.untyped.RegionView(spike_loc, bounds(i)+1:bounds(i+1), size(vdata));
+end
+
+vi = types.core.VectorIndex('data', vd_ref);
+ei = types.core.ElementIdentifiers('data', int64(uids));
+ut = types.core.UnitTimes('spike_times', vd, ...
+    'spike_times_index', vi, 'unit_ids', ei);
+
+cell_mod.nwbdatainterface.set('my_spike_times',ut);
+nwb.processing.set('cellular', cell_mod);
+
+%%
+% These two structures hold the same information.
+
 
 %% Writing the file
 % Once you have added all of the data types you want to a file, you can save
@@ -192,4 +265,10 @@ plot(tt, squeeze(trial_data(:,1,:)))
 xlabel('time (seconds)')
 ylabel(['ECoG (' timeseries.data_unit ')'])
 
+%% Reading RegionViews
+% RegionViews are like DataStubs in that returning them will not return
+% data but *references* to data inside the NWB file. Access the data that
+% the view points to like this
+
+nwb.processing.get('cellular').nwbdatainterface.get('my_spike_times').spike_times_index.data(1).refresh(nwb);
 
