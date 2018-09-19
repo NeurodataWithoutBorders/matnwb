@@ -41,7 +41,6 @@ device_labels = {'a','a','a','a','a','b','b','b','b','b'};
 
 udevice_labels = unique(device_labels, 'stable');
 
-
 variables = {'id', 'x', 'y', 'z', 'imp', 'location', 'filtering', ...
     'description', 'group', 'group_name'};
 for i_device = 1:length(udevice_labels)
@@ -108,6 +107,7 @@ nwb.acquisition.set('ECoG', electrical_series);
 % constructor will look like this
 
 electrical_series = types.core.ElectricalSeries(...
+    'source', 'my source', ...
     'timestamps', (1:1000)/200, ...
     'starting_time_rate', 200., ... % Hz
     'data', randn(10, 1000),...
@@ -130,8 +130,6 @@ nwb.trials.tablecolumn.set('stop', ...
 
 nwb.trials.tablecolumn.set('correct', ...
     types.core.TableColumn('data', [0,1,0]));
-
-nwb.trials = trials;
 
 %%
 % |colnames| is flexible - it can store any column names and the entries can
