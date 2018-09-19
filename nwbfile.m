@@ -16,7 +16,7 @@ classdef nwbfile < types.core.NWBFile
         end
         
         function export(obj, filename)
-            if exist(filename, 'file')
+            if 2 == exist(filename, 'file')
                 warning('Overwriting %s', filename);
                 delete(filename);
             end
