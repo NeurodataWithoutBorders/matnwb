@@ -1,11 +1,21 @@
 groups:
-- datasets:
+- attributes:
+  - name: help
+    dtype: text
+    doc: Value is 'Arbitrary shapes'
+    value: Arbitrary shapes
+  datasets:
   - name: shaped_data
     neurodata_type_inc: ShapeDataset
   neurodata_type_def: MultiShapeWrapper
   neurodata_type_inc: NWBDataInterface
 datasets:
-- dtype: any
+- attributes:
+  - name: help
+    dtype: text
+    doc: Value is 'Shape Data'
+    value: Shape Data
+  dtype: any
   shape:
   - null
   neurodata_type_def: ShapeDataset

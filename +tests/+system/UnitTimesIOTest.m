@@ -13,7 +13,7 @@ classdef UnitTimesIOTest < tests.system.RoundTripTest
             vi = types.core.VectorIndex('data', vd_ref);
             ei = types.core.ElementIdentifiers('data', int64(1));
             ut = types.core.UnitTimes('spike_times', vd, ...
-                'spike_times_index', vi, 'unit_ids', ei);
+                'spike_times_index', vi, 'unit_ids', ei, 'source', 'test');
             
             file.acquisition.set('test_uT', ut);
         end

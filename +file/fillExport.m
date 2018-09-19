@@ -28,7 +28,8 @@ if isRoot
             '    end'...
             'catch ME'...
             '    if strcmp(ME.stack(2).name, ''getRefData'') && ...'...
-            '          endsWith(ME.stack(1).file, [''+H5D'' filesep ''open.m''])'...
+            '          endsWith(ME.stack(1).file, ...'...
+            '            fullfile({''+H5D'',''+H5R''}, {''open.m'', ''create.m''}))'...
             '        refs = [refs {fullpath}];'...
             '        return;'...
             '    else'...
@@ -175,6 +176,7 @@ else
     fullpath = ['[fullpath ''/' elisions '/' prop.name ''']'];
     elisionpath = ['[fullpath ''/' elisions ''']'];
 end
+
 if (isa(prop, 'file.Group') || isa(prop, 'file.Dataset')) && prop.isConstrainedSet
     fde = ['refs = obj.' name '.export(fid, ' elisionpath ', refs);'];
 elseif isa(prop, 'file.Link') || isa(prop, 'file.Group') ||...
@@ -187,18 +189,13 @@ elseif isa(prop, 'file.Dataset') %untyped dataset
         ['    refs = obj.' name '.export(fid, ' fullpath ', refs);']...
         ['elseif ~isempty(obj.' name ')']...
         ['    io.writeDataset(fid, ' fullpath ', class(obj.' name '), obj.' name ');']...
-         'else'...
-        ['    error(''Property `' name '` is required.'');']...
          'end'...
         }, newline);
 else
     fde = ['io.writeAttribute(fid, ''' prop.dtype ''', ' fullpath ', obj.' name ');'];
 end
-checks = {};
-if ~prop.required
-    %Ignore if empty
-    checks = [checks {['~isempty(obj.' name ')']}];
-end
+
+emptycheck = ['if ~isempty(obj.' name ')'];
 
 if isa(prop, 'file.Attribute') && ~isempty(prop.dependent)
     %if attribute is dependent, check before writing
@@ -209,14 +206,21 @@ if isa(prop, 'file.Attribute') && ~isempty(prop.dependent)
         flattened = strrep(elisions(1:flattened(end)), '/', '_');
         depPropname = [flattened prop.dependent];
     end
-    checks = [checks {['~isempty(obj.' depPropname ')']}];
+    emptycheck = [emptycheck ' && ~isempty(obj.' depPropname ')'];
 end
 
-if ~isempty(checks)
-    fde = strjoin({...
-        ['if ' strjoin(checks, ' && ')]...
-        file.addSpaces(fde, 4)...
-        'end'}, newline);
+fde = [emptycheck newline file.addSpaces(fde, 4)];
+
+if prop.required
+    errmsg = ['    error(''Property `' name '` is required.'');'];
+    if isa(prop, 'file.Attribute') && ~isempty(prop.dependent)
+        errmsg = ['elseif ~isempty(obj.' depPropname ')' newline errmsg];
+    else
+        errmsg = ['else' newline errmsg];
+    end
+    fde = [fde newline errmsg];
 end
+
+fde = [fde newline 'end'];
 
 end

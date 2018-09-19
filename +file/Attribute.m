@@ -17,7 +17,7 @@ classdef Attribute < handle
             %defaults
             obj.name = '';
             obj.doc = '';
-            obj.required = false;
+            obj.required = true;
             obj.value = [];
             obj.readonly = false;
             obj.dtype = '';
@@ -34,9 +34,7 @@ classdef Attribute < handle
             obj.name = source.get('name');
             obj.doc = source.get('doc');
             req = source.get('required');
-            if ~isempty(req)
-                obj.required = ~strcmp(req, 'false');
-            end
+            obj.required = isempty(req) || ~strcmp(req, 'false');
             
             val = source.get('value');
             default = source.get('default_value');

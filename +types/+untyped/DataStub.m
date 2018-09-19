@@ -13,6 +13,7 @@ classdef DataStub
             did = H5D.open(fid, obj.path);
             sid = H5D.get_space(did);
             [~, obj.dims, ~] = H5S.get_simple_extent_dims(sid);
+            obj.dims = fliplr(obj.dims);
             H5S.close(sid);
             H5D.close(did);
             H5F.close(fid);
