@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Neurodata Without Borders: Neurophysiology (NWB:N), Extracellular Electrophysiology Tutorial</h1><!--introduction--><p>How to write ecephys data to an NWB file using matnwb.</p><pre>author: Ben Dichter/n
+  </style></head><body><div class="content"><h1>Neurodata Without Borders: Neurophysiology (NWB:N), Extracellular Electrophysiology Tutorial</h1><!--introduction--><p>How to write ecephys data to an NWB file using matnwb.</p><pre>author: Ben Dichter
 contact: ben.dichter@gmail.com
 last edited: Sept 18, 2018</pre><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">NWB file</a></li><li><a href="#3">Data dependencies</a></li><li><a href="#5">Electrode Table</a></li><li><a href="#7">LFP</a></li><li><a href="#10">Trials</a></li><li><a href="#13">Processing Modules</a></li><li><a href="#14">Spikes</a></li><li><a href="#18">Writing the file</a></li><li><a href="#19">Reading the file</a></li><li><a href="#20">Reading data</a></li><li><a href="#24">Reading UnitTimes (RegionViews)</a></li></ul></div><h2 id="1">NWB file</h2><p>All contents get added to the NWB file, which is created with the following command</p><pre class="codeinput">date = datetime(2018, 3, 1, 12, 0, 0);
 nwb = nwbfile( <span class="string">'source'</span>, <span class="string">'acquired on rig2'</span>, <span class="keyword">...</span>
