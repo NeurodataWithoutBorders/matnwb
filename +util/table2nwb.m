@@ -19,6 +19,8 @@ nwbtable = types.core.DynamicTable( ...
     'id', types.core.ElementIdentifiers('data', id));
 
 for col = T
-    nwbtable.tablecolumn.set(col.Properties.VariableNames{1}, ...
-        types.core.TableColumn('data', col.Variables'));
+    if ~strcmp(col.Properties.VariableNames{1},'id')
+        nwbtable.tablecolumn.set(col.Properties.VariableNames{1}, ...
+            types.core.TableColumn('data', col.Variables'));
+    end
 end
