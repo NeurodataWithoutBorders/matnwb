@@ -20,7 +20,7 @@ For those planning on using matnwb alongside pynwb, please the following in mind
  
 The `master` branch in this repository is considered perpetually unstable.  If you desire matnwb's full functionality (full round-trip with nwb data), please consider downloading the more stable releases in the Releases tab.  Keep in mind that the Releases are generally only compatible with older versions of pynwb and may not supported newer data types supported by pynwb (such as data references or compound types).
 
-## Examples
+## Setup
 
 From the Matlab command line, generate code from a copy of the NWB schema.  The command also takes variable arguments from any extensions.
 
@@ -39,15 +39,7 @@ Generated Matlab code will be put a `+types` subdirectory.  This is a Matlab pac
 ```matlab
 nwb=nwbRead('data.nwb');
 ```
-
-and for generating NWB objects for export:
-
-```matlab
-%Create some fake data and write 
-nwb = nwbfile;
-nwb.epochs.set('stim', types.Epoch);
-nwbExport(nwb, 'epoch.nwb');
-```
+For writing NWB files, follow the appropriate tutorial.
 
 ## Tutorials
 [Extracellular Electrophysiology IO](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ecephys.html)
