@@ -3,7 +3,7 @@
 % 
 %  author: Ben Dichter
 %  contact: ben.dichter@gmail.com
-%  last edited: Sept 18, 2018
+%  last edited: Sept 22, 2018
 
 %% NWB file
 % All contents get added to the NWB file, which is created with the
@@ -144,20 +144,10 @@ T = table([.1, 1.5, 2.5]',[1., 2., 3.]',[0,1,0]',...
     'VariableNames',{'start','stop','correct'});
 T.Properties.Description = 'my description';
 T.Properties.UserData = containers.Map('source','my source');
-T
+display(T);
 %%
-trials = types.core.DynamicTable( ...
-    'source',T.Properties.UserData('source'),...
-    'colnames', T.Properties.VariableNames,...
-    'description', T.Properties.Description, ...
-    'id', types.core.ElementIdentifiers('data', 1:height(T)));
-
-for col = T
-    trials.tablecolumn.set(col.Properties.VariableNames{1}, ...
-        types.core.TableColumn('data', col.Variables'));
-end
-
-nwb.trials = trials;
+nwb.trials = util.table2nwb(T);
+display(nwb.trials);
 
 %% Processing Modules
 % Measurements go in |acquisition| and subject or session data goes in
@@ -196,37 +186,30 @@ nwb.processing.set('cellular', cell_mod);
 % by time. The advantage of |UnitTimes| is that it is more
 % parallel-friendly. It is easier to split the computation of by cells are
 % read/write in parallel, distributing the cells across the cores of your
-% computation network. 
+% computation network. Writing |UnitTimes| is a bit involved, so you can use
+% this convenience function.
 %%
 % 
 % <<UnitTimes.png>>
 % 
-
-[sorted_cluster_ids, order] = sort(cluster_ids);
-uids = unique(cluster_ids);
-vdata = spike_times(order);
-bounds = [0,find(diff(sorted_cluster_ids)),length(cluster_ids)];
-
-vd = types.core.VectorData('data', vdata);
             
 spike_loc = '/processing/cellular/my_spike_times/spike_times';
 
-vd_ref = types.untyped.RegionView(spike_loc, 1:bounds(2), size(vdata));
-for i = 2:length(bounds)-1
-    vd_ref(end+1) = types.untyped.RegionView(spike_loc, bounds(i)+1:bounds(i+1), size(vdata));
-end
+ut = util.createUnitTimes(cluster_ids, spike_times, spike_loc);
 
-vi = types.core.VectorIndex('data', vd_ref);
-ei = types.core.ElementIdentifiers('data', int64(uids));
-ut = types.core.UnitTimes('spike_times', vd, ...
-    'spike_times_index', vi, 'unit_ids', ei,'source','my source');
-
-cell_mod.nwbdatainterface.set('my_spike_times',ut);
+cell_mod.nwbdatainterface.set('my_spike_times', ut);
 nwb.processing.set('cellular', cell_mod);
 
 %%
 % These two structures hold the same information.
 
+%% Units table
+T = table({'pyramidal', 'granule', 'mossy'}',...
+    'VariableNames', {'cell_type'});
+T.Properties.Description = 'my description';
+T.Properties.UserData = containers.Map('source','my source');
+display(T);
+nwb.units = util.table2nwb(T);
 
 %% Writing the file
 % Once you have added all of the data types you want to a file, you can save
@@ -261,7 +244,7 @@ disp(data(1:10, 1:10));
 % data. For instance, here is how you would load data starting at the index
 % (1,1) and read 10 rows and 20 columns of data
 
-nwb2.acquisition.get('ECoG').data.load([1,1],[10,20])
+nwb2.acquisition.get('ECoG').data.load([1,1], [10,20])
 
 %%
 % run |doc('types.untyped.DataStub')| for more details on manual partial
@@ -281,7 +264,7 @@ timeseries = nwb2.acquisition.get('ECoG');
 [trial_data, tt] = util.loadTrialAlignedTimeSeriesData(nwb2, ...
     timeseries, window, conditions);
 
-% plot data from the first electrode (it's just noise in this example)
+% plot data from the first electrode for those two trials (it's just noise in this example)
 plot(tt, squeeze(trial_data(:,1,:)))
 xlabel('time (seconds)')
 ylabel(['ECoG (' timeseries.data_unit ')'])
@@ -299,4 +282,8 @@ my_index = my_spike_times.spike_times_index.data(select)
 %%
 % Finally, access the data that the view points to using |refresh|
 my_index.refresh(nwb)
+
+%%
+% Putting those all together
+my_spike_times.spike_times_index.data(my_spike_times.unit_ids.data == 1).refresh(nwb)
 
