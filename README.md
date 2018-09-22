@@ -39,7 +39,6 @@ Generated Matlab code will be put a `+types` subdirectory.  This is a Matlab pac
 ```matlab
 nwb=nwbRead('data.nwb');
 ```
-For writing NWB files, follow the appropriate tutorial.
 
 ## Tutorials
 [Extracellular Electrophysiology IO](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ecephys.html)
