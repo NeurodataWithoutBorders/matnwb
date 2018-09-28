@@ -1,22 +1,6 @@
-function writeAttribute(fid, type, fullpath, value)
-tid = io.getBaseType(type, value);
-if ~iscell(value) && (isscalar(value) || strcmp(type, 'char'))
-    sid = H5S.create('H5S_SCALAR');
-else
-    if isvector(value)
-        nd = 1;
-        dims = length(value);
-    else
-        nd = ndims(value);
-        dims = size(value);
-    end
-    
-    if iscellstr(value)
-        value = io.padCellStr(value);
-        value = cell2mat(value);
-    end
-    sid = H5S.create_simple(nd, fliplr(dims), []);
-end
+function writeAttribute(fid, type, fullpath, data)
+[tid, sid, data] = io.mapData2H5(fid, type, data);
+data = data .';
 [path, name] = io.pathParts(fullpath);
 if isempty(path)
     path = '/'; %weird case if the property is in root
@@ -36,7 +20,7 @@ catch ME
         rethrow(ME);
     end
 end
-H5A.write(id, tid, eval([type '(value)']) .');
+H5A.write(id, tid, data);
 H5A.close(id);
 H5S.close(sid);
 H5O.close(oid);

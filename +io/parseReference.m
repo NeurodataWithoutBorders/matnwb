@@ -1,5 +1,11 @@
 function refobj = parseReference(did, tid, data)
-numref = size(data,2);
+szref = size(data);
+%first dimension is always the raw buffer size
+szref = szref(2:end);
+if isscalar(szref)
+    szref = [szref 1];
+end
+numref = prod(szref);
 if H5T.equal(tid, 'H5T_STD_REF_OBJ')
     reftype = H5ML.get_constant_value('H5R_OBJECT');
 else
@@ -8,6 +14,7 @@ end
 for i=1:numref
     refobj(i) = parseSingleRef(did, reftype, data(:,i));
 end
+refobj = reshape(refobj, szref);
 end
 
 function refobj = parseSingleRef(did, reftype, data)
@@ -16,7 +23,7 @@ target = H5R.get_name(did, reftype, data);
 if isempty(target)
     %if data is all zeros or if the ref does not exist, this is possible.
     % this can happen on normal use (say, selecting out of a dataset of
-    % references
+    % references)
     refobj = [];
     return;
 end
@@ -36,7 +43,7 @@ switch sel_type
     %However, since the format documentation doesn't specify which one
     %will be used, I'll leave the point selection functionality intact.
     %In the event of point-selection being the norm for nwb, you will
-    %only have to implement a way to export the regionview.
+    %only have to implement a way to write the reference back out (io.writeReference).
     case {H5ML.get_constant_value('H5S_SEL_POINTS')...
             H5ML.get_constant_value('H5S_SEL_HYPERSLABS')}
         if sel_type == H5ML.get_constant_value('H5S_SEL_POINTS')

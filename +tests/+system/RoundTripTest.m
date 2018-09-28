@@ -50,6 +50,9 @@ classdef RoundTripTest < matlab.unittest.TestCase
             props = properties(actual);
             for i = 1:numel(props)
                 prop = props{i};
+                if strcmp(prop, 'file_create_date')
+                    continue;
+                end
                 val1 = actual.(prop);
                 val2 = expected.(prop);
                 failmsg = ['Values for property ''' prop ''' are not equal'];
@@ -58,11 +61,14 @@ classdef RoundTripTest < matlab.unittest.TestCase
                 elseif isa(val1, 'types.untyped.Set')
                     verifySetEqual(testCase, val1, val2, failmsg);
                 else
-                    switch class(val1)
-                        case 'types.untyped.DataStub'
-                            trueval = val1.load();
-                        otherwise
-                            trueval = val1;
+                    if isa(val1, 'types.untyped.DataStub')
+                        trueval = val1.load();
+                    else
+                        trueval = val1;
+                    end
+                    
+                    if isvector(val2) && isvector(trueval)
+                        trueval = reshape(trueval, size(val2));
                     end
                     testCase.verifyEqual(trueval, val2, failmsg);
                 end
