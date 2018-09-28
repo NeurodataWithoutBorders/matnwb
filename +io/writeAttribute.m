@@ -1,6 +1,5 @@
 function writeAttribute(fid, type, fullpath, data)
 [tid, sid, data] = io.mapData2H5(fid, type, data);
-data = data .';
 [path, name] = io.pathParts(fullpath);
 if isempty(path)
     path = '/'; %weird case if the property is in root
