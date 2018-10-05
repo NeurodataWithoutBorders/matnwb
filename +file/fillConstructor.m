@@ -102,8 +102,9 @@ bodystr = strjoin({bodystr...
     'p.KeepUnmatched = true;'... %suppress subclass/parent props
     'p.PartialMatching = false;'...
     'p.StructExpand = false;'}, newline);
-constrained = {};
-anon = {};
+
+constrained = false(size(names));
+anon = false(size(names));
 for i=1:length(names)
     nm = names{i};
     prop = props(nm);
@@ -111,31 +112,27 @@ for i=1:length(names)
             (prop.isConstrainedSet || prop.hasAnonData || prop.hasAnonGroups))...
             || (isa(prop, 'file.Dataset') && prop.isConstrainedSet))
         def = 'types.untyped.Set()';
-        if prop.isConstrainedSet
-            constrained = [constrained {nm}];
-        end
+        constrained(i) = prop.isConstrainedSet;
     else
-        if (isa(prop, 'file.Group') || isa(prop, 'file.Dataset'))...
-                && isempty(prop.name)
-            anon = [anon {nm}];
-        end
+        anon(i) = (isa(prop, 'file.Group') || isa(prop, 'file.Dataset'))...
+            && isempty(prop.name);
         def = '[]';
     end
-    bodystr = [bodystr newline 'addParameter(p, ''' nm ''', ' def ');'];
+    s = [newline 'addParameter(p, ''' nm ''', ' def ');'];
+    bodystr(end+1:end+length(s)) = s;
 end
-
 bodystr = [bodystr newline 'parse(p, varargin{:});'];
 
-named = setdiff(names, [constrained anon]);
-for i=1:length(named)
-    var = named{i};
-    bodystr = [bodystr newline 'obj.' var ' = p.Results.' var ';'];
-end
+named = names(~(constrained | anon));
+s = strcat('obj.', named, ' = p.Results.', named, ';');
+s = strjoin(s, newline);
+bodystr(end+1:end+length(s)) = s;
 
 %if constrained/anon sets exist, then check for nonstandard parameters and add as
 %container.map
-for i=1:length(constrained)
-    type = props(constrained{i}).type;
+constrainedNames = names(constrained);
+for i=1:length(constrainedNames)
+    type = props(constrainedNames{i}).type;
     varname = lower(type);
     pc_namespace = namespace.getNamespace(type);
     if isempty(pc_namespace)
@@ -147,14 +144,15 @@ for i=1:length(constrained)
     end
     fulltypename = ['types.' pc_namespace.name '.' type];
     methodcall = ['types.util.parseConstrained(''' pname ''', ''' fulltypename ''', varargin{:})'];
-    bodystr = [bodystr,newline,'obj.',varname,' = ',methodcall,';'];
+    s = [newline 'obj.' varname ' = ' methodcall ';'];
+    bodystr(end+1:end+length(s)) = s;
 end
 
 %if anonymous values exist, then check for nonstandard parameters and add
 %as Anon
-
-for i=1:length(anon)
-    type = props(anon{i}).type;
+anonNames = names(anon);
+for i=1:length(anonNames)
+    type = props(anonNames{i}).type;
     varname = lower(type);
     pc_namespace = namespace.getNamespace(type);
     if isempty(pc_namespace)
@@ -166,6 +164,7 @@ for i=1:length(anon)
     end
     fulltypename = ['types.' pc_namespace.name '.' type];
     methodcall = ['types.util.parseAnon(''' fulltypename ''', varargin{:})'];
-    bodystr = [bodystr,newline,'obj.',varname,' = ',methodcall,';'];
+    s = [newline 'obj.' varname ' = ' methodcall ';'];
+    bodystr(end+1:end+length(s)) = s;
 end
 end

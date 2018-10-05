@@ -1,23 +1,11 @@
 function festr = fillExport(propnames, raw, parentName)
 hdrstr = 'function refs = export(obj, fid, fullpath, refs)';
-isRoot = strcmp(parentName, 'types.untyped.MetaClass');
-if isRoot
-    bodystr = {};
-else
-    bodystr = {strjoin({...
-        ['refs = export@' parentName '(obj, fid, fullpath, refs);']...
-        'if any(strcmp(refs, fullpath))'...
-        '    return;'...
-        'end'...
-        }, newline)};
-end
-
-if isRoot
+if strcmp(parentName, 'types.untyped.MetaClass') % NWBContainer or NWBData
     if isa(raw, 'file.Group')
-        bodystr = [bodystr {'io.writeGroup(fid, fullpath);'}];
+        bodystr = {'io.writeGroup(fid, fullpath);'};
     elseif isa(raw, 'file.Dataset')
-        %find the `data` field for the respective dataset
-        bodystr = [bodystr {strjoin({...
+        %find and export the `data` field for the respective dataset
+        bodystr = {strjoin({...
             'try'...
             '    if isa(obj.data, ''types.untyped.DataStub'')'...
             '        refs = obj.data.export(fid, fullpath, refs);'...
@@ -36,49 +24,46 @@ if isRoot
             '        rethrow(ME);'...
             '    end'...
             'end'...
-            }, newline)}];
+            }, newline)};
         %filter propnames to remove data prop
         propnames = propnames(~strcmp(propnames, 'data'));
     end
-elseif isa(raw, 'file.Group') && strcmp(raw.type, 'NWBFile')
-    %NWBFile is technically the root `group`, which in HDF5 is a single `/`
-    % this messes with property creation so we reassign the path here to
-    % empty string so concatenation looks right
-    bodystr = [bodystr {'fullpath = '''';'}];
-end
-
-if isRoot
-    %Metaclass needs to be added after the class is made
+    % Call MetaClass exporter (writes out meta attributes)
     bodystr = [bodystr...
         {'refs = export@types.untyped.MetaClass(obj, fid, fullpath, refs);'}];
+else
+    bodystr = {strjoin({...
+        ['refs = export@' parentName '(obj, fid, fullpath, refs);']...
+        'if any(strcmp(refs, fullpath))'...
+        '    return;'...
+        'end'...
+        }, newline)};
+    
+    if isa(raw, 'file.Group') && strcmp(raw.type, 'NWBFile')
+        %NWBFile is technically the root `group`, which in HDF5 is a single `/`
+        % this messes with property creation so we reassign the path here to
+        % empty string so concatenation looks right
+        bodystr = [bodystr {'fullpath = '''';'}];
+    end
 end
 
 for i=1:length(propnames)
     pnm = propnames{i};
     pathProps = traverseRaw(pnm, raw);
     prop = pathProps{end};
-    pathProps(end) = []; %delete prop
+    elideProps = pathProps(1:end-1);
     
-    %construct path for groups
-    elisions = '';
-    while ~isempty(pathProps) && isa(pathProps{1}, 'file.Group')
-        elisions = [elisions '/' pathProps{1}.name];
-        pathProps = pathProps(2:end);
+    %Construct elisions
+    elisions = cell(length(elideProps),1);
+    for j=1:length(elideProps)
+        elisions{j} = elideProps{j}.name;
     end
-    elisions = elisions(2:end);
-    propstr = '';
-    if isempty(pathProps) && ~isempty(elisions)
-        propstr = ['io.writeGroup(fid, [fullpath ''/' elisions ''']);'];
-    elseif ~isempty(pathProps)
-        %this property is dependent on an untyped dataset
-        propname = pathProps{1}.name;
-        if isempty(elisions)
-            elisions = propname;
-        else
-            elisions = [elisions '/' propname];
-        end
+    
+    elisions = strjoin(elisions, '/');
+    if ~isempty(elideProps) && all(cellfun('isclass', elideProps, 'file.Group'))
+        bodystr{end+1} = ['io.writeGroup(fid, [fullpath ''/' elisions ''']);'];
     end
-    bodystr = [bodystr {propstr} {fillDataExport(pnm, prop, elisions)}];
+    bodystr{end+1} = fillDataExport(pnm, prop, elisions);
 end
 
 festr = strjoin({hdrstr...
@@ -189,7 +174,7 @@ elseif isa(prop, 'file.Dataset') %untyped dataset
         ['    refs = obj.' name '.export(fid, ' fullpath ', refs);']...
         ['elseif ~isempty(obj.' name ')']...
         ['    io.writeDataset(fid, ' fullpath ', class(obj.' name '), obj.' name ');']...
-         'end'...
+        'end'...
         }, newline);
 else
     fde = ['io.writeAttribute(fid, ''' prop.dtype ''', ' fullpath ', obj.' name ');'];
