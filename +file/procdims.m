@@ -10,7 +10,10 @@ end
 
 sz = flatten(shape);
 if iscellstr(sz)
-    sz = misc.cellPrettyPrint(strrep(sz, 'null', 'Inf'));
+    sz = strrep(sz, 'null', 'Inf');
+    emptySz = cellfun('isempty', sz);
+    sz(emptySz) = {'Inf'};
+    sz = misc.cellPrettyPrint(sz);
 else
     for i=1:length(sz)
         sz{i} = strrep(sz{i}, 'null', 'Inf');
@@ -30,6 +33,9 @@ function flat = flatten(tree)
     for i=1:treelen
         flat{i} = tree.get(i-1);
     end
+    
+    emptyFlat = cellfun('isempty', flat);
+    flat(emptyFlat) = {''};
     
     if ~iscellstr(flat) %Reached end
         for i=1:treelen
