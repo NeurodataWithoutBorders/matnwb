@@ -3,17 +3,17 @@ caps = upper(name);
 fcnbody = strjoin({['% ' caps ' Constructor for ' name] ...
     ['%     obj = ' caps '(parentname1,parentvalue1,..,parentvalueN,parentargN,name1,value1,...,nameN,valueN)'] ...
     }, newline);
-fcns = {...
-    @()fillParamDocs(propnames, props)...
-    @()fillBody(parentname, defaults, propnames, props, namespace)...
-    };
-for i=1:length(fcns)
-    fcn = fcns{i};
-    txt = fcn();
-    if ~isempty(txt)
-        fcnbody = [fcnbody newline txt];
-    end
+
+txt = fillParamDocs(propnames, props);
+if ~isempty(txt)
+    fcnbody = [fcnbody newline txt];
 end
+
+txt = fillBody(parentname, defaults, propnames, props, namespace);
+if ~isempty(txt)
+    fcnbody = [fcnbody newline txt];
+end
+
 fcnbody = strjoin({fcnbody,...
     ['if endsWith(class(obj), ''', namespace.name, '.', name, ''')'],...
     '    types.util.checkUnset(obj, unique(varargin(1:2:end)));',...
@@ -89,7 +89,7 @@ else
         end
     end
     kwargs = io.map2kwargs(usmap);
-    bodystr = ['varargin = [' misc.cellPrettyPrint(kwargs) ' varargin];' newline];
+    bodystr = ['varargin = [{' misc.cellPrettyPrint(kwargs) '} varargin];' newline];
 end
 bodystr = [bodystr 'obj = obj@' pname '(varargin{:});'];
 

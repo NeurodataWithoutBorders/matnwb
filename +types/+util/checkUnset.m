@@ -11,7 +11,7 @@ for i=1:length(props)
 end
 dropped = setdiff(argin, [props;anonNames]);
 if ~isempty(dropped)
-    error('Properties %s are not valid property names.',...
+    error('Properties {%s} are not valid property names.',...
         misc.cellPrettyPrint(dropped));
 end
 end

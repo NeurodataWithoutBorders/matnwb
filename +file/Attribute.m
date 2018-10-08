@@ -54,11 +54,11 @@ classdef Attribute < handle
             
             dims = source.get('dims');
             shape = source.get('shape');
-            if isempty(dims)
-                obj.shape = {1};
-                obj.dimnames = {{obj.name}};
+            if isempty(shape)
+                obj.shape = '1';
+                obj.dimnames = {obj.name};
             else
-                [obj.shape, obj.dimnames] = file.procdims(dims, shape);
+                [obj.shape, obj.dimnames] = file.procdims(shape, dims);
             end
             
             obj.dtype = file.mapType(source.get('dtype'));

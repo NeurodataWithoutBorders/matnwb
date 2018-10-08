@@ -8,7 +8,7 @@ for i=1:length(names)
     elseif isa(p, 'java.util.HashMap')
         doc = ['reference to type ' p.get('target_type')];
     elseif isstruct(p)
-        doc = ['table with properties ' misc.cellPrettyPrint(fieldnames(p)')];
+        doc = ['table with properties {' misc.cellPrettyPrint(fieldnames(p)) '}'];
     else
         doc = p.doc;
     end

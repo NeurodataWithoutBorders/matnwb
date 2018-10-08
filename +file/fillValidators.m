@@ -157,23 +157,19 @@ if strcmp(type, 'any') || strcmp(type, 'char')
     return;
 end
 
-validshapetokens = cell(size(shape));
-for i=1:length(shape)
-    %when there is more than one possible shape, the cells are nested
-    if iscell(shape{i})
-        shp = shape{i}{1};
-    else
-        shp = shape{i};
-    end
-    validshapetokens{i} = ['[' strtrim(evalc('disp(shp)')) ']'];
+shape = strcat('[', shape, ']');
+if iscellstr(shape)
+    shape = strjoin(shape, ', ');
 end
+shape = strcat('{', shape, '}');
+
 fdvstr = strjoin({...
     'if isa(val, ''types.untyped.DataStub'')' ...
     '    valsz = fliplr(val.dims);' ...
     'else' ...
     '    valsz = size(val);'...
     'end' ...
-    ['validshapes = {' strjoin(validshapetokens, ' ') '};']...
+    ['validshapes = ' shape ';']...
     'types.util.checkDims(valsz, validshapes);'}, newline);
 end
 
