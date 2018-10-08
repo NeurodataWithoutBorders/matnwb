@@ -31,9 +31,9 @@ function checkDims(valsize, validSizes)
         validSizesStrings{i} = ['[' sizeFormatStr(validSizes{i}) ']'];
     end
     validSizesf = ['{' strjoin(validSizesStrings, ' ') '}'];
-    
-    error(['Values size ' valsizef ' is invalid.  Must be one of ' validSizesf],...
+    msg = sprintf(['Values size ' valsizef ' is invalid.  Must be one of ' validSizesf],...
         valsize, validSizes{:});
+    error(msg);
 end
 
 function s = sizeFormatStr(sz)
