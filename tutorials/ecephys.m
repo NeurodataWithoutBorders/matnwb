@@ -3,7 +3,7 @@
 % 
 %  author: Ben Dichter
 %  contact: ben.dichter@gmail.com
-%  last edited: Sept 22, 2018
+%  last edited: Oct 9, 2018
 
 %% NWB file
 % All contents get added to the NWB file, which is created with the
@@ -71,9 +71,13 @@ for i_device = 1:length(udevice_labels)
     end        
 end
 %%
-% add the |ElectrodeTable| object to the NWB file using the name |'electrodes'| (not flexible)
-et = types.core.ElectrodeTable('data', tbl);
-nwb.general_extracellular_ephys.set('electrodes', et);
+% add the |DynamicTable| object to the NWB file using the name |'electrodes'| (not flexible)
+
+tbl.Properties.UserData = containers.Map('source', 'my source');
+tbl.Properties.Description = 'my description';
+
+electrode_table = util.table2nwb(tbl);
+nwb.general_extracellular_ephys.set('electrodes', electrode_table);
 
 %% LFP
 % In order to write LFP, you need to construct a region view of the electrode 
@@ -82,10 +86,11 @@ nwb.general_extracellular_ephys.set('electrodes', et);
 % a reference that includes all electrodes. Then we will randomly generate a
 % signal 1000 timepoints long from 10 channels
 
-rv = types.untyped.RegionView('/general/extracellular_ephys/electrodes',...
-    {[1 height(tbl)]'});
+ov = types.untyped.ObjectView('/general/extracellular_ephys/electrodes');
 
-electrode_table_region = types.core.ElectrodeTableRegion('data', rv);
+electrode_table_region = types.core.DynamicTableRegion('table', ov, ...
+    'description', 'all electrodes',...
+    'data', [1 height(tbl)]');
 
 %%
 % once you have the |ElectrodeTableRegion| object, you can create an
