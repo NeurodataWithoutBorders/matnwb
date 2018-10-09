@@ -5,7 +5,7 @@ function parsed = parseGroup(filename, info)
 links = containers.Map;
 refs = containers.Map;
 [~, root] = io.pathParts(info.Name);
-[attrprops, typename] = io.parseAttributes(info.Attributes);
+[attrprops, typename] = io.parseAttributes(filename, info.Attributes, info.Name);
 
 %parse datasets
 dsprops = containers.Map;

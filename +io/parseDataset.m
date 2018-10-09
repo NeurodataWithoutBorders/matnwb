@@ -5,7 +5,7 @@ function parsed = parseDataset(filename, info, fullpath)
 name = info.Name;
 
 %check if typed and parse attributes
-[attrargs, typename] = io.parseAttributes(info.Attributes);
+[attrargs, typename] = io.parseAttributes(filename, info.Attributes, fullpath);
 
 fid = H5F.open(filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
 did = H5D.open(fid, fullpath);

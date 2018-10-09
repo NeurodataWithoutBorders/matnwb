@@ -1,4 +1,4 @@
-function [args, typename] = parseAttributes(alist)
+function [args, typename] = parseAttributes(filename, alist, context)
 %typename is the type of name if it exists.  Empty string otherwise
 %args is a containers.Map of all valid attributes
 args = containers.Map;
@@ -18,6 +18,14 @@ for i=1:length(alist)
         else
             type.namespace = attr.Value;
         end
+    elseif strcmp(attr.Datatype.Class, 'H5T_REFERENCE')
+        fid = H5F.open(filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
+        aid = H5A.open_by_name(fid, context, attr.Name);
+        tid = H5A.get_type(aid);
+        args(attr.Name) = io.parseReference(aid, tid, attr.Value);
+        H5T.close(tid);
+        H5A.close(aid);
+        H5F.close(fid);
     elseif isscalar(attr.Value) && iscellstr(attr.Value)
         args(attr.Name) = attr.Value{1};
     else

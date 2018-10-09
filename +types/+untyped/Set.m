@@ -15,10 +15,7 @@ classdef Set < handle & matlab.mixin.CustomDisplay
             obj.map = containers.Map;
             if nargin >= 1
                 mapkeys = keys(map);
-                for i=1:length(mapkeys)
-                    mk = mapkeys{i};
-                    obj.set(mk, map(mk));
-                end
+                obj.set(mapkeys, values(map, mapkeys));
             end
         end
         

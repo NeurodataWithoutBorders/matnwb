@@ -1,4 +1,4 @@
-function writeAttribute(fid, type, fullpath, data)
+function writeAttribute(fid, fullpath, type , data)
 [tid, sid, data] = io.mapData2H5(fid, type, data);
 [path, name] = io.pathParts(fullpath);
 if isempty(path)
@@ -10,6 +10,7 @@ try
 catch ME
     %when a dataset is copied over, it also copies all attributes with it.
     %So we have to open the Attribute for overwriting instead.
+    % this may also happen if the attribute is a reference
     if contains(ME.message, 'H5A_create    attribute already exists')
         H5A.delete(oid, name);
         id = H5A.create(oid, name, tid, sid, 'H5P_DEFAULT');

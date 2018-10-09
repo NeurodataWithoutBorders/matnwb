@@ -38,6 +38,17 @@ elseif isstruct(prop)
     fdfp = ['table/struct of vectors/struct array/containers.Map of vectors with values:' newline subp];
 elseif isa(prop, 'file.Attribute')
     fdfp = prop.dtype;
+    if isa(fdfp, 'java.util.HashMap')
+        switch fdfp.get('reftype')
+            case 'region'
+                reftypenm = 'region';
+            case 'object'
+                reftypenm = 'object';
+            otherwise
+                error('Invalid reftype found whilst filling Constructor prop docs.');
+        end
+        fdfp = ['ref to ' fdfp.get('target_type') ' ' reftypenm];
+    end
 elseif isa(prop, 'java.util.HashMap')
     switch prop.get('reftype')
         case 'region'
