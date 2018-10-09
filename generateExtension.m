@@ -20,7 +20,8 @@ function generateExtension(source)
 validateattributes(source, {'char', 'string'}, {'scalartext'});
 
 %find jar from source and generate Schema
-javapath = fullfile(fileparts(which('nwbfile')), 'jar', 'schema.jar');
+nwbloc = fileparts(mfilename('fullpath'));
+javapath = fullfile(nwbloc, 'jar', 'schema.jar');
 if ~any(strcmp(javaclasspath(), javapath))
     javaaddpath(javapath);
 end
@@ -28,7 +29,7 @@ end
 [filenames, nm, dep] = yaml.getNamespaceInfo(source);
 schema = yaml.getSourceInfo(localpath, filenames{:});
 extSchema = struct('name', nm, 'schema', schema, 'dependencies', {dep});
-namespacePath = fullfile('.', 'namespaces');
+namespacePath = fullfile(nwbloc, 'namespaces');
 if 7 ~= exist(namespacePath, 'dir')
     mkdir(namespacePath);
 end

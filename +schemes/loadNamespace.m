@@ -1,9 +1,11 @@
-%name is the pregenerated namespace name
-%loaded is a containers.Map containing preloaded namespace names (optional)
-%extNamespaces is a merged containers.Map containing this namespace and its
-%   parents
 function extNamespaces = loadNamespace(name, loaded)
-schemaPath = fullfile('.', 'namespaces', [name '.mat']);
+%LOADNAMESPACE loads dependent class metadata
+% name is the pregenerated namespace name
+% loaded is a containers.Map containing preloaded namespace names (optional)
+% extNamespaces is a merged containers.Map containing this namespace and its
+%   parents
+schemaPath = fullfile(fileparts(mfilename('fullpath')), '..',...
+    'namespaces', [name '.mat']);
 
 namespace = load(schemaPath);
 
