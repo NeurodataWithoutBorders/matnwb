@@ -126,7 +126,7 @@ bodystr = [bodystr newline 'parse(p, varargin{:});'];
 named = names(~(constrained | anon));
 s = strcat('obj.', named, ' = p.Results.', named, ';');
 s = strjoin(s, newline);
-bodystr(end+1:end+length(s)) = s;
+bodystr(end+1:end+length(s)+1) = [newline s];
 
 %if constrained/anon sets exist, then check for nonstandard parameters and add as
 %container.map
