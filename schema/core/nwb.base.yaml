@@ -1,6 +1,6 @@
 datasets:
 - neurodata_type_def: NWBData
-  doc: The attributes specified here are included in all interfaces.
+  doc: 'The attributes specified here are included in all interfaces.'
   attributes:
   - name: help
     dtype: text
@@ -11,7 +11,7 @@ datasets:
   attributes:
   - name: help
     dtype: text
-    doc: Value is 'One of many columns that can be added to a DynamicTable'
+    doc: Value is 'One of many columns that can be added to a DynamicTable'.
     value: One of many columns that can be added to a DynamicTable
   - name: description
     dtype: text
@@ -51,6 +51,23 @@ datasets:
   default_name: element_id
   shape:
   - null
+- neurodata_type_def: DynamicTableRegion
+  neurodata_type_inc: NWBData
+  dtype: int
+  doc: a region/index into a DynamicTable
+  attributes:
+  - name: help
+    dtype: text
+    doc: value is 'a subset (i.e. slice or region) of a DynamicTable'
+    value: a subset (i.e. slice or region) of a DynamicTable
+  - name: table
+    dtype:
+      target_type: DynamicTable
+      reftype: object
+    doc: a reference to the DynamicTable this region applies to
+  - name: description
+    dtype: text
+    doc: Description of what this table region points to
 groups:
 - neurodata_type_def: NWBContainer
   doc: The attributes specified here are included in all interfaces.
@@ -125,15 +142,15 @@ groups:
       doc: 'Smallest meaningful difference between values in data, stored in the specified
         by unit. COMMENT: E.g., the change in value of the least significant bit,
         or a larger number if signal noise is known to be present. If unknown, use
-        NaN'
+        -1.0'
       default_value: 0.0
       required: false
     - name: unit
       dtype: text
-      doc: "The base unit of measure used to store data. This should be in the SI\
-        \ unit. COMMENT: This is the SI unit (when appropriate) of the stored data,\
-        \ such as Volts. If the actual data is stored in millivolts, the field 'conversion'\
-        \ below describes how to convert the data to the specified SI unit."
+      doc: 'The base unit of measure used to store data. This should be in the SI
+        unit. COMMENT: This is the SI unit (when appropriate) of the stored data,
+        such as Volts. If the actual data is stored in millivolts, the field ''conversion''
+        below describes how to convert the data to the specified SI unit.'
     dims:
     - num_times
     shape:
@@ -173,12 +190,12 @@ groups:
     - null
   groups:
   - name: sync
-    doc: "Lab specific time and sync information as provided directly from hardware\
-      \ devices and that is necessary for aligning all acquired time information to\
-      \ a common timebase. The timestamp array stores time in the common timebase.\
-      \ COMMENT: This group will usually only be populated in TimeSeries that are\
-      \ stored external to the NWB file, in files storing raw data. Once timestamp\
-      \ data is calculated, the contents of 'sync' are mostly for archival purposes."
+    doc: 'Lab specific time and sync information as provided directly from hardware
+      devices and that is necessary for aligning all acquired time information to
+      a common timebase. The timestamp array stores time in the common timebase.
+      COMMENT: This group will usually only be populated in TimeSeries that are
+      stored external to the NWB file, in files storing raw data. Once timestamp
+      data is calculated, the contents of ''sync'' are mostly for archival purposes.'
     quantity: '?'
 - neurodata_type_def: ProcessingModule
   neurodata_type_inc: NWBContainer
@@ -211,7 +228,7 @@ groups:
   datasets:
   - neurodata_type_inc: Image
     doc: Images stored in this NWBDataInterface
-    quantity: +
+    quantity: '+'
   default_name: Images
 - neurodata_type_def: DynamicTable
   neurodata_type_inc: NWBDataInterface
