@@ -1,15 +1,15 @@
-function set = parseConstrained(pname, type, varargin)
-ikeys = 1:2:length(varargin);
-for i=ikeys+1
-    if ~isa(varargin{i}, type)
-        ikeys(i/2) = 0;
+function [set, ikeys] = parseConstrained(pname, type, varargin)
+assert(mod(length(varargin),2) == 0, 'Malformed varargin.  Should be even');
+ikeys = [];
+for i=2:2:length(varargin)
+    if isa(varargin{i}, type)
+        ikeys(end+1) = i-1;
     end
 end
-ikeys(ikeys == 0) = [];
-ivals = ikeys+1;
 if isempty(ikeys)
     set = types.untyped.Set();
 else
+    ivals = ikeys+1;
     map = containers.Map(varargin(ikeys), varargin(ivals));
     set = types.untyped.Set(map,...
         @(nm, val)types.util.checkConstraint(pname, nm, struct(), {type}, val));

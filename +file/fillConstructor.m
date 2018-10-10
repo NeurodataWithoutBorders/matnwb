@@ -15,7 +15,7 @@ if ~isempty(txt)
 end
 
 fcnbody = strjoin({fcnbody,...
-    ['if endsWith(class(obj), ''', namespace.name, '.', name, ''')'],...
+    ['if strcmp(class(obj), ''types.', namespace.name, '.', name, ''')'],...
     '    types.util.checkUnset(obj, unique(varargin(1:2:end)));',...
     'end'}, newline);
 fcstr = strjoin({...
@@ -108,74 +108,91 @@ if isempty(names)
     return;
 end
 
-bodystr = strjoin({bodystr...
-    'p = inputParser;'...
-    'p.KeepUnmatched = true;'... %suppress subclass/parent props
-    'p.PartialMatching = false;'...
-    'p.StructExpand = false;'}, newline);
-
 constrained = false(size(names));
 anon = false(size(names));
+typenames = repmat({''}, size(names));
+varnames = repmat({''}, size(names));
 for i=1:length(names)
     nm = names{i};
     prop = props(nm);
-    if ((isa(prop, 'file.Group') &&...
-            (prop.isConstrainedSet || prop.hasAnonData || prop.hasAnonGroups))...
-            || (isa(prop, 'file.Dataset') && prop.isConstrainedSet))
-        def = 'types.untyped.Set()';
+    
+    if isa(prop, 'file.Group') || isa(prop, 'file.Dataset')
         constrained(i) = prop.isConstrainedSet;
-    else
-        anon(i) = (isa(prop, 'file.Group') || isa(prop, 'file.Dataset'))...
-            && isempty(prop.name);
-        def = '[]';
+        anon(i) = ~prop.isConstrainedSet && isempty(prop.name);
+        
+        if ~isempty(prop.type)
+            pc_namespace = namespace.getNamespace(prop.type);
+            if ~isempty(pc_namespace)
+                typenames{i} = ['types.' pc_namespace.name '.' prop.type];
+                varnames{i} = prop.type;
+            end
+        end
     end
-    s = [newline 'addParameter(p, ''' nm ''', ' def ');'];
-    bodystr(end+1:end+length(s)) = s;
 end
-bodystr = [bodystr newline 'parse(p, varargin{:});'];
+varnames = lower(varnames);
 
-named = names(~(constrained | anon));
-s = strcat('obj.', named, ' = p.Results.', named, ';');
-s = strjoin(s, newline);
-bodystr(end+1:end+length(s)+1) = [newline s];
+%warn for missing namespaces/property types
+warnmsg = ['`' pname '`''s constructor is unable to check for type `%1$s` ' ...
+    'because its namespace or type specifier could not be found.  Try generating ' ...
+    'the namespace or class definition for type `%1$s` or fix its schema.'];
 
+invalid = cellfun('isempty', typenames) | cellfun('isempty', varnames);
+invalidWarn = invalid & (constrained | anon);
+invalidTypes = typenames(invalidWarn);
+for i=1:length(invalidTypes)
+    warning(warnmsg, invalidTypes{i});
+end
+
+%we delete the entry in varargin such that any conflicts do not show up in inputParser
+deleteFromVars = 'varargin([ivarargin ivarargin+1]) = [];';
 %if constrained/anon sets exist, then check for nonstandard parameters and add as
 %container.map
-constrainedNames = names(constrained);
-for i=1:length(constrainedNames)
-    type = props(constrainedNames{i}).type;
-    varname = lower(type);
-    pc_namespace = namespace.getNamespace(type);
-    if isempty(pc_namespace)
-        warning(['`%s`''s constructor is unable to check for type `%s` ' ...
-            'because its namespace could not be found.  Please generate ' ...
-            'the namespace or class definition for type `%s`.']...
-            , pname, type, type);
-        continue;
-    end
-    fulltypename = ['types.' pc_namespace.name '.' type];
-    methodcall = ['types.util.parseConstrained(''' pname ''', ''' fulltypename ''', varargin{:})'];
-    s = [newline 'obj.' varname ' = ' methodcall ';'];
-    bodystr(end+1:end+length(s)) = s;
-end
+constrainedTypes = typenames(constrained & ~invalid);
+constrainedVars = varnames(constrained & ~invalid);
+methodCalls = strcat('[obj.', constrainedVars, ',ivarargin] = ',...
+    ' types.util.parseConstrained(''', pname, ''', ''',...
+    constrainedTypes, ''', varargin{:});');
+fullBody = cell(length(methodCalls) * 2,1);
+fullBody(1:2:end) = methodCalls;
+fullBody(2:2:end) = {deleteFromVars};
+fullBody = strjoin(fullBody, newline);
+bodystr(end+1:end+length(fullBody)+1) = [newline fullBody];
 
 %if anonymous values exist, then check for nonstandard parameters and add
 %as Anon
-anonNames = names(anon);
-for i=1:length(anonNames)
-    type = props(anonNames{i}).type;
-    varname = lower(type);
-    pc_namespace = namespace.getNamespace(type);
-    if isempty(pc_namespace)
-        warning(['`%s`''s constructor is unable to check for type `%s` ' ...
-            'because its namespace could not be found.  Please generate ' ...
-            'the namespace or class definition for type `%s`.']...
-            , pname, type, type);
-        continue;
+
+anonTypes = typenames(anon & ~invalid);
+anonVars = varnames(anon & ~invalid);
+methodCalls = strcat('[obj.', anonVars, ',ivarargin] = ',...
+    ' types.util.parseAnon(''', anonTypes, ''', varargin{:});');
+fullBody = cell(length(methodCalls) * 2,1);
+fullBody(1:2:end) = methodCalls;
+fullBody(2:2:end) = {deleteFromVars};
+fullBody = strjoin(fullBody, newline);
+bodystr(end+1:end+length(fullBody)+1) = [newline fullBody];
+
+parser = {...
+    'p = inputParser;',...
+    'p.KeepUnmatched = true;',...
+    'p.PartialMatching = false;',...
+    'p.StructExpand = false;'};
+
+names = names(~constrained & ~anon);
+defaults = cell(size(names));
+for i=1:length(names)
+    prop = props(names{i});
+    if isa(prop, 'file.Group') && (prop.hasAnonData || prop.hasAnonGroups)
+        defaults{i} = 'types.untyped.Set()';
+    else
+        defaults{i} = '[]';
     end
-    fulltypename = ['types.' pc_namespace.name '.' type];
-    methodcall = ['types.util.parseAnon(''' fulltypename ''', varargin{:})'];
-    s = [newline 'obj.' varname ' = ' methodcall ';'];
-    bodystr(end+1:end+length(s)) = s;
 end
+% add parameters
+parser = [parser, strcat('addParameter(p, ''', names, ''', ', defaults,');')];
+% parse
+parser = [parser, {'parse(p, varargin{:});'}];
+% get results
+parser = [parser, strcat('obj.', names, ' = p.Results.', names, ';')];
+parser = strjoin(parser, newline);
+bodystr(end+1:end+length(parser)+1) = [newline parser];
 end
