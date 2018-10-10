@@ -57,16 +57,15 @@ classdef MetaClass < handle
             if isa(obj, 'nwbfile')
                 io.writeAttribute(fid,'/namespace', 'char', 'core');
                 io.writeAttribute(fid,'/neurodata_type','char', 'NWBFile');
-                return;
+            else
+                namespacePath = [fullpath '/namespace'];
+                neuroTypePath = [fullpath '/neurodata_type'];
+                dotparts = split(class(obj), '.');
+                namespace = dotparts{2};
+                classtype = dotparts{3};
+                io.writeAttribute(fid, namespacePath,'char', namespace);
+                io.writeAttribute(fid, neuroTypePath,'char', classtype);
             end
-            
-            namespacePath = [fullpath '/namespace'];
-            neuroTypePath = [fullpath '/neurodata_type'];
-            dotparts = split(class(obj), '.');
-            namespace = dotparts{2};
-            classtype = dotparts{3};
-            io.writeAttribute(fid, namespacePath,'char', namespace);
-            io.writeAttribute(fid, neuroTypePath,'char', classtype);
         end
         
         function data = loadAll(obj)
