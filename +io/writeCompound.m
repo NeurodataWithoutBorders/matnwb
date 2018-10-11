@@ -80,14 +80,6 @@ for i=1:length(refNames)
     data.(refNames{i}) = io.getRefData(fid, data.(refNames{i}));
 end
 
-%convert all cellstr to multidim array
-str_names = names(strcmp(classes, 'cell'));
-for i=1:length(str_names)
-    nm = str_names{i};
-    if any(~cellfun('isempty', data.(nm)))
-        data.(nm) = cell2mat(io.padCellStr(data.(nm)));
-    end
-end
 sid = H5S.create_simple(1, numrows, []);
 did = H5D.create(fid, fullpath, tid, sid, 'H5P_DEFAULT');
 H5D.write(did, tid, sid, sid, 'H5P_DEFAULT', data);

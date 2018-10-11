@@ -7,16 +7,11 @@ switch type
     case {'char' 'cell'}
         %modify id to set the proper size
         id = H5T.copy('H5T_C_S1');
-        if iscellstr(data)
-            %if data is a cell array of str, then return the maximum size
-            %The data must now be converted to char array evenly padded to
-            %this maximum size
-            tsize = max(cellfun('length', data));
+        if iscellstr(data) || isempty(data)
+            %can't make a string of size 0 so empty data must also be variable
+            tsize = 'H5T_VARIABLE';
         else
             tsize = size(data, 2);
-        end
-        if tsize <= 0
-            tsize = 'H5T_VARIABLE';
         end
         H5T.set_size(id, tsize);
     case 'double'

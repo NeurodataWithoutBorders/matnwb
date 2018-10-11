@@ -15,9 +15,6 @@ else
         dims = size(data);
     end
     
-    if iscellstr(data)
-        data = cell2mat(io.padCellStr(data)) .';
-    end
     sid = H5S.create_simple(nd, fliplr(dims), []);
 end
 
