@@ -1,5 +1,5 @@
 function generateExtension(source)
-% GENERATEEXTENSIONS Generate Matlab classes from NWB extension schema file
+% GENERATEEXTENSION Generate Matlab classes from NWB extension schema file
 %   GENERATECORE(extension_path...)  Generate classes 
 %   (Matlab m-files) from one or more NWB:N schema extension namespace 
 %   files.  A registry of already generated core types is used to resolve 
@@ -14,7 +14,7 @@ function generateExtension(source)
 %   
 %   Example:
 %      generateCore('schema\core\nwb.namespace.yaml');
-%      generateExtensions('schema\core\myextension.namespace.yaml')
+%      generateExtension('schema\core\myextension.namespace.yaml')
 % 
 %   See also GENERATECORE
 validateattributes(source, {'char', 'string'}, {'scalartext'});
