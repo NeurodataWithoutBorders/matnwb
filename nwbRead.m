@@ -13,7 +13,7 @@ function nwb = nwbRead(filename)
 %    %Now we can read nwb files!
 %    nwb=nwbRead('data.nwb');
 %
-%  See also GENERATECORE, GENERATEEXTENSIONS, NWBFILE, NWBEXPORT
+%  See also GENERATECORE, GENERATEEXTENSION, NWBFILE, NWBEXPORT
 if ischar(filename)
     validateattributes(filename, {'char'}, {'scalartext', 'nonempty'});
     info = h5info(filename);
