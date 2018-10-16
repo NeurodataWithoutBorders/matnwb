@@ -6,7 +6,7 @@ A Matlab interface for reading and writing NWB files.
 
 NWB files are HDF5 files with data stored according to the NWB:N schema. The schema is described in a set of yaml documents. These define the various types and their attributes.
 
-This package provides two functions `generateCore` and `generateExtensions` that transform the yaml files that describe the schema into Matlab m-files. The generated code defines classes that reflect the types defined in the schema.  Object attributes, relationships, and documentation are automatically generated to reflect the schema where possible.
+This package provides two functions `generateCore` and `generateExtension` that transform the yaml files that describe the schema into Matlab m-files. The generated code defines classes that reflect the types defined in the schema.  Object attributes, relationships, and documentation are automatically generated to reflect the schema where possible.
 
 Once the code generation step is done, NWB objects can be read, constructed and written from Matlab.
 
