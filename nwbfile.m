@@ -9,7 +9,7 @@ classdef nwbfile < types.core.NWBFile
     %    nwb.epochs = types.core.Epochs;
     %    nwbExport(nwb, 'epoch.nwb');
     %
-    % See also NWBREAD, GENERATECORE, GENERATEEXTENSIONS
+    % See also NWBREAD, GENERATECORE, GENERATEEXTENSION
     methods
         function obj = nwbfile(varargin)
             obj = obj@types.core.NWBFile(varargin{:});
