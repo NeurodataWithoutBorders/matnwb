@@ -12,7 +12,7 @@ function nwbExport(nwb, filename)
 %    nwb.epochs.stim = types.Epoch;
 %    nwbExport(nwb, 'epoch.nwb');
 %
-%  See also GENERATECORE, GENERATEEXTENSIONS, NWBFILE, NWBREAD
+%  See also GENERATECORE, GENERATEEXTENSION, NWBFILE, NWBREAD
 validateattributes(nwb, {'nwbfile'}, {'nonempty'});
 validateattributes(filename, {'cell', 'string', 'char'}, {'nonempty'});
 if iscell(filename)
