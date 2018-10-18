@@ -34,7 +34,7 @@ end
 
 function testSmokeReadWrite(testCase)
 file = nwbfile('source', 'smokeTest', 'identifier', 'st',...
-    'session_description', 'smokeTest', 'session_start_time', 'N/A');
+    'session_description', 'smokeTest', 'session_start_time', datetime);
 epochs = types.core.EpochTable;
 md = types.core.DynamicTable(...
     'description', 'testDynamicTable',...
@@ -48,39 +48,5 @@ nwbExport(file, 'epoch.nwb');
 readFile = nwbRead('epoch.nwb');
 % testCase.verifyEqual(testCase, readFile, file, ...
 %     'Could not write and then read a simple file');
-verifyContainerEqual(testCase, readFile, file);
-
-    function verifyContainerEqual(testCase, actual, expected)
-        testCase.verifyEqual(class(actual), class(expected));
-        props = properties(actual);
-        for i = 1:numel(props)
-            prop = props{i};
-            val1 = actual.(prop);
-            val2 = expected.(prop);
-            if startsWith(class(val1), 'types.core.')
-                verifyContainerEqual(testCase, val1, val2);
-            elseif isa(val1, 'types.untyped.Set')
-                verifySetEqual(testCase, val1, val2);
-            else
-                switch class(val1)
-                    case 'types.untyped.DataStub'
-                        trueval = val1.load();
-                    otherwise
-                        trueval = val1;
-                end
-                testCase.verifyEqual(trueval, val2);
-            end
-        end
-    end
-    function verifySetEqual(testCase, actual, expected)
-        testCase.verifyEqual(class(actual), class(expected));
-        ak = actual.keys();
-        ek = expected.keys();
-        verifyTrue(testCase, isempty(setxor(ak, ek)));
-        for i=1:numel(ak)
-            key = ak{i};
-            verifyContainerEqual(testCase, actual.get(key), ...
-                expected.get(key));
-        end
-    end
+tests.util.verifyContainerEqual(testCase, readFile, file);
 end

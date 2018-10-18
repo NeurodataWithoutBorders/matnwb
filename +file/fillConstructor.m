@@ -110,6 +110,7 @@ end
 
 constrained = false(size(names));
 anon = false(size(names));
+isattr = false(size(names));
 typenames = repmat({''}, size(names));
 varnames = repmat({''}, size(names));
 for i=1:length(names)
@@ -122,26 +123,28 @@ for i=1:length(names)
         
         if ~isempty(prop.type)
             pc_namespace = namespace.getNamespace(prop.type);
+            varnames{i} = prop.type;
             if ~isempty(pc_namespace)
                 typenames{i} = ['types.' pc_namespace.name '.' prop.type];
-                varnames{i} = prop.type;
             end
         end
+    elseif isa(prop, 'file.Attribute')
+        isattr(i) = true;
     end
 end
-varnames = lower(varnames);
 
 %warn for missing namespaces/property types
 warnmsg = ['`' pname '`''s constructor is unable to check for type `%1$s` ' ...
     'because its namespace or type specifier could not be found.  Try generating ' ...
     'the namespace or class definition for type `%1$s` or fix its schema.'];
 
-invalid = cellfun('isempty', typenames) | cellfun('isempty', varnames);
-invalidWarn = invalid & (constrained | anon);
-invalidTypes = typenames(invalidWarn);
-for i=1:length(invalidTypes)
-    warning(warnmsg, invalidTypes{i});
+invalid = cellfun('isempty', typenames);
+invalidWarn = invalid & (constrained | anon) & ~isattr;
+invalidVars = varnames(invalidWarn);
+for i=1:length(invalidVars)
+    warning(warnmsg, invalidVars{i});
 end
+varnames = lower(varnames);
 
 %we delete the entry in varargin such that any conflicts do not show up in inputParser
 deleteFromVars = 'varargin([ivarargin ivarargin+1]) = [];';
