@@ -22,12 +22,14 @@ elseif isa(dtype, 'java.util.HashMap')
     dt = dtype;
 elseif startsWith(dtype, 'float') || strcmp(dtype, 'number')
     dt = 'double';
-elseif any(strcmp({'ascii', 'str', 'text', 'utf8'}, dtype))
+elseif any(strcmpi({'ascii', 'str', 'text', 'utf8'}, dtype))
     dt = 'char';
 elseif startsWith(dtype, 'int')
     dt = 'int64';
 elseif startsWith(dtype, 'uint')
     dt = 'uint64';
+elseif strcmpi('isodatetime', dtype)
+    dt = 'isodatetime';
 end
 
 end

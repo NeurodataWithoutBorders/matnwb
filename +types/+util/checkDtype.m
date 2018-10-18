@@ -86,10 +86,13 @@ else
             end
             
             val = eval([type '(val)']);
-        case 'char'
-            if ~ischar(val) && ~iscellstr(val)
-                error(errmsg);
+        case 'isodatetime'
+            assert(ischar(val) || iscellstr(val) || isa(val, 'datetime'), errmsg);
+            if ischar(val) || iscellstr(val)
+                val = datetime(val);
             end
+        case 'char'
+            assert(ischar(val) || iscellstr(val), errmsg);
         otherwise %class, ref, or link
             noncell = false;
             if ~iscell(val)
