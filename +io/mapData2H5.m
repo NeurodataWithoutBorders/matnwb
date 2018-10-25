@@ -4,7 +4,10 @@ function [tid, sid, data] = mapData2H5(fid, type, data)
 %   and properly converted data
 
 tid = io.getBaseType(type, data);
-if ~iscell(data) && (isscalar(data) || strcmp(type, 'char'))
+if ischar(data) && ismatrix(data)
+    sid = H5S.create_simple(1, size(data,1), []);
+    data = data .';
+elseif ~iscell(data) && (isscalar(data) || ischar(data))
     sid = H5S.create('H5S_SCALAR');
 else
     if isvector(data)
