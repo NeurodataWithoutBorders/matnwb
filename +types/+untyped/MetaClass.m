@@ -68,13 +68,14 @@ classdef MetaClass < handle
             end
         end
         
-        function data = loadAll(obj)
-            assert(isa(obj, 'types.core.NWBData'),...
-                'load() is not supported for non-dataset objects');
-            if isa(obj.data, 'types.untyped.DataStub')
-                obj.data = obj.data.load();
+        function obj = loadAll(obj)
+            propnames = properties(obj);
+            for i=1:length(propnames)
+                prop = obj.(propnames{i});
+                if isa(prop, 'types.untyped.DataStub')
+                    obj.(propnames{i}) = prop.load();
+                end
             end
-            data = obj.data;
         end
     end
 end
