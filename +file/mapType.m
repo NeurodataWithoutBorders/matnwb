@@ -30,6 +30,8 @@ elseif startsWith(dtype, 'uint')
     dt = 'uint64';
 elseif strcmpi('isodatetime', dtype)
     dt = 'isodatetime';
+elseif strcmp('bool', dtype)
+    dt = 'logical';
 end
 
 end
