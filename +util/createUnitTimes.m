@@ -15,4 +15,4 @@ end
 vi = types.core.VectorIndex('data', vd_ref);
 ei = types.core.ElementIdentifiers('data', int64(uids));
 UnitTimes = types.core.UnitTimes('spike_times', vd, ...
-    'spike_times_index', vi, 'unit_ids', ei,'source','my source');
+    'spike_times_index', vi, 'unit_ids', ei);
