@@ -76,20 +76,21 @@ else
         truval = [];
     end
     switch type
-        case {'double' 'int64' 'uint64'}
-            if ~isnumeric(val)
-                error(errmsg);
-            end
+        case {'double' 'int64' 'uint64' 'logical'}
+            assert(isnumeric(val), errmsg);
             
             if strcmp(type, 'uint64') && any(reshape(val, [numel(val) 1]) < 0)
                 warning('Property `%s` is a `uint64`.  Casted value will be zero.');
             end
             
             val = eval([type '(val)']);
-        case 'char'
-            if ~ischar(val) && ~iscellstr(val)
-                error(errmsg);
+        case 'isodatetime'
+            assert(ischar(val) || iscellstr(val) || isa(val, 'datetime'), errmsg);
+            if ischar(val) || iscellstr(val)
+                val = datetime(val);
             end
+        case 'char'
+            assert(ischar(val) || iscellstr(val), errmsg);
         otherwise %class, ref, or link
             noncell = false;
             if ~iscell(val)

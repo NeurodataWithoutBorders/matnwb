@@ -2,7 +2,7 @@ classdef UnitTimesIOTest < tests.system.RoundTripTest
     methods
         function addContainer(~, file)
             vdata = rand(10,1);
-            vd = types.core.VectorData('data', vdata);
+            vd = types.core.VectorData('data', vdata, 'description', 'descr');
             
             spike_loc = '/acquisition/test_uT/spike_times';
             vd_ref = [...
@@ -10,7 +10,8 @@ classdef UnitTimesIOTest < tests.system.RoundTripTest
                 types.untyped.RegionView(spike_loc, 2:5, size(vdata)),...
                 types.untyped.RegionView(spike_loc, 9:10, size(vdata))...
                 ];
-            vi = types.core.VectorIndex('data', vd_ref);
+            vi = types.core.VectorIndex('data', vd_ref,...
+                'target', types.untyped.ObjectView(spike_loc));
             ei = types.core.ElementIdentifiers('data', int64(1));
             ut = types.core.UnitTimes('spike_times', vd, ...
                 'spike_times_index', vi, 'unit_ids', ei, 'source', 'test');

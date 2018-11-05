@@ -4,7 +4,10 @@ function [tid, sid, data] = mapData2H5(fid, type, data)
 %   and properly converted data
 
 tid = io.getBaseType(type, data);
-if ~iscell(data) && (isscalar(data) || strcmp(type, 'char'))
+if ischar(data) && ismatrix(data)
+    sid = H5S.create_simple(1, size(data,1), []);
+    data = data .';
+elseif ~iscell(data) && (isscalar(data) || ischar(data))
     sid = H5S.create('H5S_SCALAR');
 else
     if isvector(data)
@@ -18,12 +21,15 @@ else
     sid = H5S.create_simple(nd, fliplr(dims), []);
 end
 
-if any(strcmp({'types.untyped.RegionView' 'types.untyped.ObjectView'}, type))
-    %will throw errors if refdata DNE.  Caught at NWBData level.
-    data = io.getRefData(fid, data);
-elseif strcmp(type, 'logical')
-    %In HDF5, HBOOL is mapped to INT32LE
-    data = int32(data);
-end
+%% Do Data Conversions
+switch type
+    case {'types.untyped.RegionView' 'types.untyped.ObjectView'}
+        %will throw errors if refdata DNE.  Caught at NWBData level.
+        data = io.getRefData(fid, data);
+    case 'logical'
+        %In HDF5, HBOOL is mapped to INT32LE
+        data = int32(data);
+    case 'datetime'
+        data = datestr(data, 30) .';
 end
 

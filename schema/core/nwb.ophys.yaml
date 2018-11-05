@@ -107,6 +107,7 @@ groups:
     value: Stores groups of pixels that define regions of interest from one or more
       imaging planes
   groups:
+  ######### BEGIN: ROITable Refactor
   - neurodata_type_def: PlaneSegmentation
     neurodata_type_inc: DynamicTable
     doc: results for image segmentation of a specific imaging plane
@@ -189,6 +190,7 @@ groups:
       doc: link to ImagingPlane group from which this TimeSeries data was generated
       target_type: ImagingPlane
     quantity: '*'
+  ######### END: ROITable Refactor
   default_name: ImageSegmentation
 - neurodata_type_def: ImagingPlane
   neurodata_type_inc: NWBContainer

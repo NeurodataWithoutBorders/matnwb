@@ -5,17 +5,50 @@ classdef Set < handle & matlab.mixin.CustomDisplay
     end
     
     methods
-        function obj = Set(map, fcn)
-            if nargin >= 2
-                obj.fcn = fcn;
-            else
-                obj.fcn = [];
-            end
-            %clone the map
+        function obj = Set(varargin)
+            % obj = SET returns an empty set
+            % obj = SET(field1,value1,...,fieldN,valueN) returns a set from key value pairs
+            % obj = SET(src) can be a struct or map
+            % obj = SET(__,fcn) adds a validation function from a handle
             obj.map = containers.Map;
-            if nargin >= 1
-                mapkeys = keys(map);
-                obj.set(mapkeys, values(map, mapkeys));
+            
+            if nargin == 0
+                return;
+            end
+            
+            switch class(varargin{1})
+                case 'function_handle'
+                    obj.fcn = varargin{1};
+                case {'struct', 'containers.Map'}
+                    src = varargin{1};
+                    if isstruct(src)
+                        srcFields = fieldnames(src);
+                        for i=1:length(srcFields)
+                            obj.map(srcFields{i}) = src.(srcFields{i});
+                        end
+                    else
+                        srcKeys = keys(src);
+                        obj.set(srcKeys, values(src, srcKeys));
+                    end
+                    
+                    if nargin > 1
+                        assert(isa(varargin{2}, 'function_handle'),...
+                            '`fcn` Expected a function_handle type');
+                        obj.fcn = varargin{2};
+                    end
+                case 'char'
+                    if mod(length(varargin), 2) == 1
+                        assert(isa(varargin{end}, 'function_handle'),...
+                            '`fcn` Expected a function_handle type');
+                        obj.fcn = varargin{end};
+                        varargin(end) = [];
+                    end
+                    assert(mod(length(varargin), 2) == 0,...
+                        ['KeyWord Argument Count Mismatch.  '...
+                        'Number of Keys do not match number of values']);
+                    assert(iscellstr(varargin(1:2:end)),...
+                        'KeyWord Argument Error: Keys must be char');
+                    obj.map = containers.Map(varargin(1:2:end), varargin(2:2:end));
             end
         end
         
@@ -111,7 +144,7 @@ classdef Set < handle & matlab.mixin.CustomDisplay
                 nm = k{i};
                 propfp = [fullpath '/' nm];
                 if startsWith(class(v), 'types.')
-                    refs = v.export(fid, propfp, refs); 
+                    refs = v.export(fid, propfp, refs);
                 else
                     refs = io.writeDataset(fid, propfp, class(v), v, refs);
                 end
