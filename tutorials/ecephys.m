@@ -43,7 +43,7 @@ device_labels = {'a','a','a','a','a','b','b','b','b','b'};
 udevice_labels = unique(device_labels, 'stable');
 
 variables = {'id', 'x', 'y', 'z', 'imp', 'location', 'filtering', ...
-    'description', 'group', 'group_name'};
+    'group', 'group_name'};
 for i_device = 1:length(udevice_labels)
     device_label = udevice_labels{i_device};
     
@@ -62,12 +62,11 @@ for i_device = 1:length(udevice_labels)
     for i_elec = 1:length(elec_nums)
         elec_num = elec_nums(i_elec);
         if i_device == 1 && i_elec == 1
-            tbl = table(int64(1), NaN, NaN, NaN, NaN, {'CA1'}, {'filtering'}, ...
-                {'electrode label'}, ov, {'electrode_group'},...
-                'VariableNames', variables);
+            tbl = table(int64(1), NaN, NaN, NaN, NaN, {'CA1'}, {'filtering'}...
+                , ov, {'electrode_group'},'VariableNames', variables);
         else
             tbl = [tbl; {int64(elec_num), NaN, NaN, NaN, NaN,...
-                'CA1', 'filtering', 'another label', ov, 'electrode_group'}];
+                'CA1', 'filtering', ov, 'electrode_group'}];
         end
     end        
 end
@@ -249,18 +248,13 @@ ylabel(['ECoG (' timeseries.data_unit ')'])
 %% Reading UnitTimes (RegionViews)
 % |UnitTimes| uses RegionViews to indicate which spikes belong to which cell.
 % The structure is split up into 3 datasets (see Spikes secion):
-my_spike_times = nwb.processing.get('cellular').nwbdatainterface.get('my_spike_times')
+my_spike_times = nwb.units.spike_times;
 %%
 % To get the data for cell 1, first determine the uid that equals 1.
-select = my_spike_times.unit_ids.data == 1
+select = nwb.units.id.data == 1
 %%
 % Then select the corresponding spike_times_index element
-my_index = my_spike_times.spike_times_index.data(select)
+my_index = nwb.units.spike_times_index.data(select)
 %%
 % Finally, access the data that the view points to using |refresh|
 my_index.refresh(nwb)
-
-%%
-% Putting those all together
-my_spike_times.spike_times_index.data(my_spike_times.unit_ids.data == 1).refresh(nwb)
-

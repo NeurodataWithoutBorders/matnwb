@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Neurodata Without Borders: Neurophysiology (NWB:N), Extracellular Electrophysiology Tutorial</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-09-22"><meta name="DC.source" content="ecephys.m"><style type="text/css">
+      --><title>Neurodata Without Borders: Neurophysiology (NWB:N), Extracellular Electrophysiology Tutorial</title><meta name="generator" content="MATLAB 9.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-11-06"><meta name="DC.source" content="ecephys.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -68,20 +68,20 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
   </style></head><body><div class="content"><h1>Neurodata Without Borders: Neurophysiology (NWB:N), Extracellular Electrophysiology Tutorial</h1><!--introduction--><p>How to write ecephys data to an NWB file using matnwb.</p><pre>author: Ben Dichter
 contact: ben.dichter@gmail.com
-last edited: Sept 22, 2018</pre><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">NWB file</a></li><li><a href="#3">Data dependencies</a></li><li><a href="#5">Electrode Table</a></li><li><a href="#7">LFP</a></li><li><a href="#10">Trials</a></li><li><a href="#13">Processing Modules</a></li><li><a href="#14">Spikes</a></li><li><a href="#18">Units table</a></li><li><a href="#19">Writing the file</a></li><li><a href="#20">Reading the file</a></li><li><a href="#21">Reading data</a></li><li><a href="#25">Reading UnitTimes (RegionViews)</a></li></ul></div><h2 id="1">NWB file</h2><p>All contents get added to the NWB file, which is created with the following command</p><pre class="codeinput">date = datetime(2018, 3, 1, 12, 0, 0);
+last edited: Oct 9, 2018</pre><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">NWB file</a></li><li><a href="#3">Data dependencies</a></li><li><a href="#5">Electrode Table</a></li><li><a href="#7">LFP</a></li><li><a href="#10">Trials</a></li><li><a href="#12">Processing Modules</a></li><li><a href="#13">Spikes</a></li><li><a href="#17">Writing the file</a></li><li><a href="#18">Reading the file</a></li><li><a href="#19">Reading data</a></li><li><a href="#23">Reading UnitTimes (RegionViews)</a></li></ul></div><h2 id="1">NWB file</h2><p>All contents get added to the NWB file, which is created with the following command</p><pre class="codeinput">date = datetime(2018, 3, 1, 12, 0, 0);
+session_start_time = datetime(date,<span class="string">'Format'</span>,<span class="string">'yyyy-MM-dd''T''HH:mm:SSZZ'</span>,<span class="keyword">...</span>
+    <span class="string">'TimeZone'</span>,<span class="string">'local'</span>);
 nwb = nwbfile( <span class="string">'source'</span>, <span class="string">'acquired on rig2'</span>, <span class="keyword">...</span>
     <span class="string">'session_description'</span>, <span class="string">'a test NWB File'</span>, <span class="keyword">...</span>
     <span class="string">'identifier'</span>, <span class="string">'mouse004_day4'</span>, <span class="keyword">...</span>
-    <span class="string">'session_start_time'</span>, datestr(date, <span class="string">'yyyy-mm-ddTHH:MM:SS'</span>), <span class="keyword">...</span>
-    <span class="string">'file_create_date'</span>, datestr(now, <span class="string">'yyyy-mm-ddTHH:MM:SS'</span>));
+    <span class="string">'session_start_time'</span>, session_start_time);
 </pre><p>You can check the contents by displaying the nwbfile object</p><pre class="codeinput">disp(nwb);
 </pre><pre class="codeoutput">  nwbfile with properties:
 
                         nwb_version: '2.0b'
                         acquisition: [1&times;1 types.untyped.Set]
                            analysis: [1&times;1 types.untyped.Set]
-                             epochs: []
-                   file_create_date: '2018-09-22T16:24:00'
+                   file_create_date: []
             general_data_collection: []
                     general_devices: [1&times;1 types.untyped.Set]
      general_experiment_description: []
@@ -89,6 +89,7 @@ nwb = nwbfile( <span class="string">'source'</span>, <span class="string">'acqui
         general_extracellular_ephys: [1&times;1 types.untyped.Set]
                 general_institution: []
         general_intracellular_ephys: [1&times;1 types.untyped.Set]
+                   general_keywords: []
                         general_lab: []
                       general_notes: []
                general_optogenetics: [1&times;1 types.untyped.Set]
@@ -106,30 +107,29 @@ nwb = nwbfile( <span class="string">'source'</span>, <span class="string">'acqui
                     general_surgery: []
                       general_virus: []
                          identifier: 'mouse004_day4'
+                          intervals: [1&times;1 types.untyped.Set]
                          processing: [1&times;1 types.untyped.Set]
                 session_description: 'a test NWB File'
-                 session_start_time: '2018-03-01T12:00:00'
+                 session_start_time: 2018-03-01T12:00:00-0500
               stimulus_presentation: [1&times;1 types.untyped.Set]
                  stimulus_templates: [1&times;1 types.untyped.Set]
-                             trials: []
                               units: []
                                help: 'an NWB:N file for storing cellular-based neurophysiology data'
-                             source: 'acquired on rig2'
 
 </pre><h2 id="3">Data dependencies</h2><p>The data needs to be added to nwb in a specific order, which is specified by the data dependencies in the schema. The data dependencies for LFP are illustrated in the following diagram. In order to write LFP, you need to specify what electrodes it came from. To do that, you first need to construct an electrode table.</p><p><img vspace="5" hspace="5" src="ecephys_data_deps.png" alt=""> </p><h2 id="5">Electrode Table</h2><p>Electrode tables hold the position and group information about each electrode and the brain region and filtering. Groups organize electrodes within a single device. Devices can have 1 or more groups. In this example, we have 2 devices that each only have a single group.</p><pre class="codeinput">device_labels = {<span class="string">'a'</span>,<span class="string">'a'</span>,<span class="string">'a'</span>,<span class="string">'a'</span>,<span class="string">'a'</span>,<span class="string">'b'</span>,<span class="string">'b'</span>,<span class="string">'b'</span>,<span class="string">'b'</span>,<span class="string">'b'</span>};
 
 udevice_labels = unique(device_labels, <span class="string">'stable'</span>);
 
 variables = {<span class="string">'id'</span>, <span class="string">'x'</span>, <span class="string">'y'</span>, <span class="string">'z'</span>, <span class="string">'imp'</span>, <span class="string">'location'</span>, <span class="string">'filtering'</span>, <span class="keyword">...</span>
-    <span class="string">'description'</span>, <span class="string">'group'</span>, <span class="string">'group_name'</span>};
+    <span class="string">'group'</span>, <span class="string">'group_name'</span>};
 <span class="keyword">for</span> i_device = 1:length(udevice_labels)
     device_label = udevice_labels{i_device};
 
     nwb.general_devices.set(device_label,<span class="keyword">...</span>
-        types.core.Device(<span class="string">'source'</span>, <span class="string">'lab notebook'</span>));
+        types.core.Device());
 
     nwb.general_extracellular_ephys.set(device_label,<span class="keyword">...</span>
-        types.core.ElectrodeGroup(<span class="string">'source'</span>, <span class="string">'my source'</span>, <span class="keyword">...</span>
+        types.core.ElectrodeGroup(<span class="keyword">...</span>
         <span class="string">'description'</span>, <span class="string">'a test ElectrodeGroup'</span>, <span class="keyword">...</span>
         <span class="string">'location'</span>, <span class="string">'unknown'</span>, <span class="keyword">...</span>
         <span class="string">'device'</span>, types.untyped.SoftLink([<span class="string">'/general/devices/'</span> device_label])));
@@ -140,23 +140,24 @@ variables = {<span class="string">'id'</span>, <span class="string">'x'</span>, 
     <span class="keyword">for</span> i_elec = 1:length(elec_nums)
         elec_num = elec_nums(i_elec);
         <span class="keyword">if</span> i_device == 1 &amp;&amp; i_elec == 1
-            tbl = table(int64(1), NaN, NaN, NaN, NaN, {<span class="string">'CA1'</span>}, {<span class="string">'filtering'</span>}, <span class="keyword">...</span>
-                {<span class="string">'electrode label'</span>}, ov, {<span class="string">'electrode_group'</span>},<span class="keyword">...</span>
-                <span class="string">'VariableNames'</span>, variables);
+            tbl = table(int64(1), NaN, NaN, NaN, NaN, {<span class="string">'CA1'</span>}, {<span class="string">'filtering'</span>}<span class="keyword">...</span>
+                , ov, {<span class="string">'electrode_group'</span>},<span class="string">'VariableNames'</span>, variables);
         <span class="keyword">else</span>
             tbl = [tbl; {int64(elec_num), NaN, NaN, NaN, NaN,<span class="keyword">...</span>
-                <span class="string">'CA1'</span>, <span class="string">'filtering'</span>, <span class="string">'another label'</span>, ov, <span class="string">'electrode_group'</span>}];
+                <span class="string">'CA1'</span>, <span class="string">'filtering'</span>, ov, <span class="string">'electrode_group'</span>}];
         <span class="keyword">end</span>
     <span class="keyword">end</span>
 <span class="keyword">end</span>
-</pre><p>add the <tt>ElectrodeTable</tt> object to the NWB file using the name <tt>'electrodes'</tt> (not flexible)</p><pre class="codeinput">et = types.core.ElectrodeTable(<span class="string">'data'</span>, tbl);
-nwb.general_extracellular_ephys.set(<span class="string">'electrodes'</span>, et);
-</pre><h2 id="7">LFP</h2><p>In order to write LFP, you need to construct a region view of the electrode table to link the signal to the electrodes that generated them. You must do this even if the signal is from all of the electrodes. Here we will create a reference that includes all electrodes. Then we will randomly generate a signal 1000 timepoints long from 10 channels</p><pre class="codeinput">rv = types.untyped.RegionView(<span class="string">'/general/extracellular_ephys/electrodes'</span>,<span class="keyword">...</span>
-    {[1 height(tbl)]'});
+</pre><p>add the <tt>DynamicTable</tt> object to the NWB file using the name <tt>'electrodes'</tt> (not flexible)</p><pre class="codeinput">tbl.Properties.Description = <span class="string">'my description'</span>;
 
-electrode_table_region = types.core.ElectrodeTableRegion(<span class="string">'data'</span>, rv);
+electrode_table = util.table2nwb(tbl);
+nwb.general_extracellular_ephys.set(<span class="string">'electrodes'</span>, electrode_table);
+</pre><h2 id="7">LFP</h2><p>In order to write LFP, you need to construct a region view of the electrode table to link the signal to the electrodes that generated them. You must do this even if the signal is from all of the electrodes. Here we will create a reference that includes all electrodes. Then we will randomly generate a signal 1000 timepoints long from 10 channels</p><pre class="codeinput">ov = types.untyped.ObjectView(<span class="string">'/general/extracellular_ephys/electrodes'</span>);
+
+electrode_table_region = types.core.DynamicTableRegion(<span class="string">'table'</span>, ov, <span class="keyword">...</span>
+    <span class="string">'description'</span>, <span class="string">'all electrodes'</span>,<span class="keyword">...</span>
+    <span class="string">'data'</span>, [1 height(tbl)]');
 </pre><p>once you have the <tt>ElectrodeTableRegion</tt> object, you can create an ElectricalSeries object to hold your LFP data. Here is an example using starting_time and rate.</p><pre class="codeinput">electrical_series = types.core.ElectricalSeries(<span class="keyword">...</span>
-    <span class="string">'source'</span>, <span class="string">'my source'</span>, <span class="keyword">...</span>
     <span class="string">'starting_time'</span>, 0.0, <span class="keyword">...</span><span class="comment"> % seconds</span>
     <span class="string">'starting_time_rate'</span>, 200., <span class="keyword">...</span><span class="comment"> % Hz</span>
     <span class="string">'data'</span>, randn(10, 1000),<span class="keyword">...</span>
@@ -165,96 +166,45 @@ electrode_table_region = types.core.ElectrodeTableRegion(<span class="string">'d
 
 nwb.acquisition.set(<span class="string">'ECoG'</span>, electrical_series);
 </pre><p>You can also specify time using timestamps. This is particularly useful if the timestamps are not evenly sampled. In this case, the electrical series constructor will look like this</p><pre class="codeinput">electrical_series = types.core.ElectricalSeries(<span class="keyword">...</span>
-    <span class="string">'source'</span>, <span class="string">'my source'</span>, <span class="keyword">...</span>
     <span class="string">'timestamps'</span>, (1:1000)/200, <span class="keyword">...</span>
     <span class="string">'starting_time_rate'</span>, 200., <span class="keyword">...</span><span class="comment"> % Hz</span>
     <span class="string">'data'</span>, randn(10, 1000),<span class="keyword">...</span>
     <span class="string">'electrodes'</span>, electrode_table_region,<span class="keyword">...</span>
     <span class="string">'data_unit'</span>,<span class="string">'V'</span>);
-</pre><h2 id="10">Trials</h2><p>You can store trial information in the trials table</p><pre class="codeinput">nwb.trials = types.core.DynamicTable( <span class="keyword">...</span>
-    <span class="string">'colnames'</span>, {<span class="string">'start'</span>,<span class="string">'stop'</span>,<span class="string">'correct'</span>},<span class="keyword">...</span>
+</pre><h2 id="10">Trials</h2><p>You can store trial information in the trials table</p><pre class="codeinput">trials = types.core.TimeIntervals( <span class="keyword">...</span>
+    <span class="string">'colnames'</span>, {<span class="string">'correct'</span>,<span class="string">'start_time'</span>,<span class="string">'stop_time'</span>},<span class="keyword">...</span>
     <span class="string">'description'</span>, <span class="string">'trial data and properties'</span>, <span class="keyword">...</span>
-    <span class="string">'id'</span>, types.core.ElementIdentifiers(<span class="string">'data'</span>, 1:3));
+    <span class="string">'id'</span>, types.core.ElementIdentifiers(<span class="string">'data'</span>, 1:3),<span class="keyword">...</span>
+    <span class="string">'start_time'</span>, types.core.TableColumn(<span class="string">'data'</span>, [.1, 1.5, 2.5],<span class="keyword">...</span>
+        <span class="string">'description'</span>,<span class="string">'hi'</span>),<span class="keyword">...</span>
+    <span class="string">'stop_time'</span>, types.core.TableColumn(<span class="string">'data'</span>, [1., 2., 3.],<span class="keyword">...</span>
+        <span class="string">'description'</span>,<span class="string">'hi'</span>),<span class="keyword">...</span>
+    <span class="string">'correct'</span>, types.core.TableColumn(<span class="string">'data'</span>, [false,true,false],<span class="keyword">...</span>
+        <span class="string">'description'</span>,<span class="string">'my description'</span>));
 
-nwb.trials.tablecolumn.set(<span class="string">'start'</span>, <span class="keyword">...</span>
-    types.core.TableColumn(<span class="string">'data'</span>, [.1, 1.5, 2.5]));
-
-nwb.trials.tablecolumn.set(<span class="string">'stop'</span>, <span class="keyword">...</span>
-    types.core.TableColumn(<span class="string">'data'</span>, [1., 2., 3.]));
-
-nwb.trials.tablecolumn.set(<span class="string">'correct'</span>, <span class="keyword">...</span>
-    types.core.TableColumn(<span class="string">'data'</span>, [0,1,0]));
-</pre><p><tt>colnames</tt> is flexible - it can store any column names and the entries can be any data type, which allows you to store any information you need about trials. The units table stores information about cells and is created with an analogous workflow.</p><p>Here is an alternative workflow using a MATLAB table that yeilds the same result</p><pre class="codeinput">T = table([.1, 1.5, 2.5]',[1., 2., 3.]',[0,1,0]',<span class="keyword">...</span>
-    <span class="string">'VariableNames'</span>,{<span class="string">'start'</span>,<span class="string">'stop'</span>,<span class="string">'correct'</span>});
-T.Properties.Description = <span class="string">'my description'</span>;
-T.Properties.UserData = containers.Map(<span class="string">'source'</span>,<span class="string">'my source'</span>);
-display(T);
-</pre><pre class="codeoutput">
-T =
-
-  3&times;3 table
-
-    start    stop    correct
-    _____    ____    _______
-
-    0.1      1       0      
-    1.5      2       1      
-    2.5      3       0      
-
-</pre><pre class="codeinput">nwb.trials = util.table2nwb(T);
-display(nwb.trials);
-</pre><pre class="codeoutput">  DynamicTable with properties:
-
-       colnames: {'start'  'stop'  'correct'}
-    description: 'my description'
-             id: [1&times;1 types.core.ElementIdentifiers]
-    tablecolumn: [1&times;1 types.untyped.Set]
-           help: 'A column-centric table'
-         source: 'my source'
-
-</pre><h2 id="13">Processing Modules</h2><p>Measurements go in <tt>acquisition</tt> and subject or session data goes in <tt>general</tt>, but if you have the result of an analysis, e.g. spike times, you need to store this in a processing module. Here we make a processing module called "cellular"</p><pre class="codeinput">cell_mod = types.core.ProcessingModule( <span class="keyword">...</span>
-        <span class="string">'source'</span>, <span class="string">'a test source for a ProcessingModule'</span>, <span class="keyword">...</span>
-        <span class="string">'description'</span>, <span class="string">'a test module'</span>);
-</pre><h2 id="14">Spikes</h2><p>There are two different ways of storing spikes (aka action potentials), <tt>Clustering</tt> and <tt>UnitTimes</tt>. <tt>Clustering</tt> is more strightforward, and is used to mark measured threshold crossings that are spike-sorted into different clusters, indicating that they are believed to come from different neurons. The advantage of this structure is that it is easy to write data via a stream and it is easy to query based on time window (since the timestamps are ordered).</p><pre class="codeinput">spike_times = [0.1, 0.21, 0.34, 0.36, 0.4, 0.43, 0.5, 0.61, 0.66, 0.69];
+nwb.intervals.set(<span class="string">'trials'</span>, trials);
+</pre><p><tt>colnames</tt> is flexible - it can store any column names and the entries can be any data type, which allows you to store any information you need about trials. The units table stores information about cells and is created with an analogous workflow.</p><h2 id="12">Processing Modules</h2><p>Measurements go in <tt>acquisition</tt> and subject or session data goes in <tt>general</tt>, but if you have the result of an analysis, e.g. spike times, you need to store this in a processing module. Here we make a processing module called "cellular"</p><pre class="codeinput">cell_mod = types.core.ProcessingModule(<span class="string">'description'</span>, <span class="string">'a test module'</span>);
+</pre><h2 id="13">Spikes</h2><p>There are two different ways of storing spikes (aka action potentials), <tt>Clustering</tt> and <tt>UnitTimes</tt>. <tt>Clustering</tt> is more strightforward, and is used to mark measured threshold crossings that are spike-sorted into different clusters, indicating that they are believed to come from different neurons. The advantage of this structure is that it is easy to write data via a stream and it is easy to query based on time window (since the timestamps are ordered).</p><pre class="codeinput">spike_times = [0.1, 0.21, 0.34, 0.36, 0.4, 0.43, 0.5, 0.61, 0.66, 0.69];
 cluster_ids = [0, 0, 1, 1, 2, 2, 0, 0, 1, 1];
 
 clustering = types.core.Clustering( <span class="keyword">...</span>
     <span class="string">'description'</span>, <span class="string">'my_description'</span>,<span class="keyword">...</span>
-    <span class="string">'source'</span>,<span class="string">'my source'</span>,<span class="keyword">...</span>
     <span class="string">'peak_over_rms'</span>,[1,2,3],<span class="keyword">...</span>
     <span class="string">'times'</span>, spike_times, <span class="keyword">...</span>
     <span class="string">'num'</span>, cluster_ids);
 
 cell_mod.nwbdatainterface.set(<span class="string">'clustering'</span>,clustering);
 nwb.processing.set(<span class="string">'cellular'</span>, cell_mod);
-</pre><p>The other structure is <tt>UnitTimes</tt>, which is organized by cell instead of by time. The advantage of <tt>UnitTimes</tt> is that it is more parallel-friendly. It is easier to split the computation of by cells are read/write in parallel, distributing the cells across the cores of your computation network. Writing <tt>UnitTimes</tt> is a bit involved, so you can use this convenience function.</p><p><img vspace="5" hspace="5" src="UnitTimes.png" alt=""> </p><pre class="codeinput">spike_loc = <span class="string">'/processing/cellular/my_spike_times/spike_times'</span>;
-
-ut = util.createUnitTimes(cluster_ids, spike_times, spike_loc);
-
-cell_mod.nwbdatainterface.set(<span class="string">'my_spike_times'</span>, ut);
-nwb.processing.set(<span class="string">'cellular'</span>, cell_mod);
-</pre><p>These two structures hold the same information.</p><h2 id="18">Units table</h2><pre class="codeinput">T = table({<span class="string">'pyramidal'</span>, <span class="string">'granule'</span>, <span class="string">'mossy'</span>}',<span class="keyword">...</span>
-    <span class="string">'VariableNames'</span>, {<span class="string">'cell_type'</span>});
-T.Properties.Description = <span class="string">'my description'</span>;
-T.Properties.UserData = containers.Map(<span class="string">'source'</span>,<span class="string">'my source'</span>);
-display(T);
-nwb.units = util.table2nwb(T);
-</pre><pre class="codeoutput">
-T =
-
-  3&times;1 table
-
-     cell_type 
-    ___________
-
-    'pyramidal'
-    'granule'  
-    'mossy'    
-
-</pre><h2 id="19">Writing the file</h2><p>Once you have added all of the data types you want to a file, you can save it with the following command</p><pre class="codeinput">nwbExport(nwb, <span class="string">'ecephys_tutorial.nwb'</span>)
+</pre><p>The other structure is within the <tt>units</tt> table, which is organized by cell instead of by time. The advantage of <tt>units</tt> is that it is more parallel-friendly. It is easier to split the computation of by cells are read/write in parallel, distributing the cells across the cores of your computation network.</p><p><img vspace="5" hspace="5" src="UnitTimes.png" alt=""> </p><pre class="codeinput">[spike_times_vector, spike_times_index] = util.create_spike_times(cluster_ids, spike_times);
+nwb.units = types.core.Units(<span class="string">'colnames'</span>,{<span class="string">'spike_times'</span>,<span class="string">'spike_times_index'</span>},<span class="keyword">...</span>
+    <span class="string">'description'</span>,<span class="string">'units table'</span>,<span class="keyword">...</span>
+    <span class="string">'id'</span>, types.core.ElementIdentifiers(<span class="string">'data'</span>,1:length(spike_times_index.data)));
+nwb.units.spike_times = spike_times_vector;
+nwb.units.spike_times_index = spike_times_index;
+</pre><h2 id="17">Writing the file</h2><p>Once you have added all of the data types you want to a file, you can save it with the following command</p><pre class="codeinput">nwbExport(nwb, <span class="string">'ecephys_tutorial.nwb'</span>)
 </pre><pre class="codeoutput">Warning: Overwriting ecephys_tutorial.nwb 
-</pre><h2 id="20">Reading the file</h2><p>load an NWB file object into memory with</p><pre class="codeinput">nwb2 = nwbRead(<span class="string">'ecephys_tutorial.nwb'</span>);
-</pre><h2 id="21">Reading data</h2><p>Note that <tt>nwbRead</tt> does <b>not</b> load all of the dataset contained within the file. matnwb automatically supports "lazy read" which means you only read data to memory when you need it, and only read the data you need. Notice the command</p><pre class="codeinput">disp(nwb2.acquisition.get(<span class="string">'ECoG'</span>).data)
+</pre><h2 id="18">Reading the file</h2><p>load an NWB file object into memory with</p><pre class="codeinput">nwb2 = nwbRead(<span class="string">'ecephys_tutorial.nwb'</span>);
+</pre><h2 id="19">Reading data</h2><p>Note that <tt>nwbRead</tt> does <b>not</b> load all of the dataset contained within the file. matnwb automatically supports "lazy read" which means you only read data to memory when you need it, and only read the data you need. Notice the command</p><pre class="codeinput">disp(nwb2.acquisition.get(<span class="string">'ECoG'</span>).data)
 </pre><pre class="codeoutput">  DataStub with properties:
 
     filename: 'ecephys_tutorial.nwb'
@@ -265,29 +215,29 @@ T =
 disp(data(1:10, 1:10));
 </pre><pre class="codeoutput">  Columns 1 through 7
 
-    0.7201    1.4246    0.1506    0.0753   -1.0988    0.6963   -0.4047
-   -1.7802   -0.2145   -0.9330    0.7836    0.1101   -0.7135   -0.2285
-   -0.3351   -0.2791    0.8679   -1.4860   -1.0610    0.1704   -0.0396
-   -0.2833   -0.5810   -0.2602   -0.2239   -0.6090   -0.0332   -0.1991
-   -1.3136   -0.7351   -0.1658    0.0585    0.2833    0.4384   -1.2893
-    0.1307    0.4246   -0.5319   -0.1985    0.5839    0.2458    1.3184
-   -0.3520    0.2587    0.1896    1.1538   -0.8928    0.1330   -1.1876
-   -0.8793    1.4977    0.8856    1.1219    0.5345   -0.0816    0.8783
-    0.0779    0.4889    1.0781    0.5164   -1.1085    0.7508   -0.1613
-    1.1821   -0.2818    2.9949   -1.3598   -0.7113    1.3835    0.3538
+   -0.6962   -0.1245    0.3595    0.8523   -0.5099   -0.2073   -1.3611
+   -0.5556    0.2406    0.2671   -0.4307    0.6040    0.5299    1.7365
+    0.8902   -1.8579   -1.5810   -1.5319   -1.0424   -0.2391    0.2359
+   -0.3916    0.2625    0.6735    0.0462   -1.1218    1.1449    1.5930
+    0.4605   -0.8068    0.0422    1.6687    0.9127   -0.7551    0.1840
+   -1.2723    0.4912    1.0257    0.4232   -1.5369    0.8131    0.3482
+   -2.2893    2.0255    2.9467   -1.1388    0.5628   -0.4820   -1.0172
+    0.6693    0.6781    1.6187   -1.5278   -0.6727    1.1358    0.8392
+    0.0903    1.2372    0.3658    1.4420   -0.9443    0.0522    0.3361
+    1.2793    0.7854    1.9125   -0.9178    0.2913   -1.0658   -0.3931
 
   Columns 8 through 10
 
-    1.0104   -1.2230    1.3145
-    0.0396   -0.5333    0.4814
-   -0.4969   -0.6798   -0.3250
-    1.0297    0.5022    1.8021
-    0.0856   -1.0344   -0.8885
-    0.7289   -0.6166    0.9578
-   -0.8552   -0.6729    0.6963
-   -1.4270    0.1231    0.0627
-    1.4074   -0.1463    1.3478
-    2.6839   -1.2868   -1.1270
+   -0.9159    0.6004   -0.2872
+   -0.4343    0.9218   -0.2017
+   -1.5571    0.6111    0.5153
+   -0.2637   -1.0110   -0.6516
+   -0.6212    0.7739    0.8296
+    1.2492   -0.2267   -1.1079
+    1.1499    0.7936    0.2116
+    0.4263    2.0570   -0.0016
+   -0.6243    0.2334    1.6775
+    0.6326   -0.8447   -0.7420
 
 </pre><p>Loading all of the data is not a problem for this small dataset, but it can be a problem when dealing with real data that can be several GBs or even TBs per session. In these cases you can load a specific secion of data. For instance, here is how you would load data starting at the index (1,1) and read 10 rows and 20 columns of data</p><pre class="codeinput">nwb2.acquisition.get(<span class="string">'ECoG'</span>).data.load([1,1], [10,20])
 </pre><pre class="codeoutput">
@@ -295,42 +245,42 @@ ans =
 
   Columns 1 through 7
 
-    0.7201    1.4246    0.1506    0.0753   -1.0988    0.6963   -0.4047
-   -1.7802   -0.2145   -0.9330    0.7836    0.1101   -0.7135   -0.2285
-   -0.3351   -0.2791    0.8679   -1.4860   -1.0610    0.1704   -0.0396
-   -0.2833   -0.5810   -0.2602   -0.2239   -0.6090   -0.0332   -0.1991
-   -1.3136   -0.7351   -0.1658    0.0585    0.2833    0.4384   -1.2893
-    0.1307    0.4246   -0.5319   -0.1985    0.5839    0.2458    1.3184
-   -0.3520    0.2587    0.1896    1.1538   -0.8928    0.1330   -1.1876
-   -0.8793    1.4977    0.8856    1.1219    0.5345   -0.0816    0.8783
-    0.0779    0.4889    1.0781    0.5164   -1.1085    0.7508   -0.1613
-    1.1821   -0.2818    2.9949   -1.3598   -0.7113    1.3835    0.3538
+   -0.6962   -0.1245    0.3595    0.8523   -0.5099   -0.2073   -1.3611
+   -0.5556    0.2406    0.2671   -0.4307    0.6040    0.5299    1.7365
+    0.8902   -1.8579   -1.5810   -1.5319   -1.0424   -0.2391    0.2359
+   -0.3916    0.2625    0.6735    0.0462   -1.1218    1.1449    1.5930
+    0.4605   -0.8068    0.0422    1.6687    0.9127   -0.7551    0.1840
+   -1.2723    0.4912    1.0257    0.4232   -1.5369    0.8131    0.3482
+   -2.2893    2.0255    2.9467   -1.1388    0.5628   -0.4820   -1.0172
+    0.6693    0.6781    1.6187   -1.5278   -0.6727    1.1358    0.8392
+    0.0903    1.2372    0.3658    1.4420   -0.9443    0.0522    0.3361
+    1.2793    0.7854    1.9125   -0.9178    0.2913   -1.0658   -0.3931
 
   Columns 8 through 14
 
-    1.0104   -1.2230    1.3145    1.5256    1.3880    0.5212    0.5026
-    0.0396   -0.5333    0.4814   -0.0529   -0.0052   -0.5552   -0.9309
-   -0.4969   -0.6798   -0.3250   -0.7633   -0.1843    0.5281   -0.7938
-    1.0297    0.5022    1.8021    1.6279    1.3961   -0.1521    0.5961
-    0.0856   -1.0344   -0.8885    0.2809   -2.3407    2.4991   -0.4561
-    0.7289   -0.6166    0.9578    1.5684   -1.1757    0.2916    0.5852
-   -0.8552   -0.6729    0.6963   -0.0319    1.1066   -1.3527    0.1447
-   -1.4270    0.1231    0.0627    2.0113    0.8235   -0.1387    1.4016
-    1.4074   -0.1463    1.3478   -0.0019    0.1625   -0.3545   -0.4528
-    2.6839   -1.2868   -1.1270   -0.8598   -1.6933   -0.7582    0.0550
+   -0.9159    0.6004   -0.2872    0.0249    0.1010    0.5857    0.1023
+   -0.4343    0.9218   -0.2017   -0.1840   -0.5813   -0.1568    1.1158
+   -1.5571    0.6111    0.5153   -1.2047   -1.2210   -1.7087    0.3182
+   -0.2637   -1.0110   -0.6516    0.6606    0.1199   -0.2045    0.0614
+   -0.6212    0.7739    0.8296    1.0247    0.4201    1.5143    0.5627
+    1.2492   -0.2267   -1.1079    1.2686    0.8065   -1.0668   -1.0842
+    1.1499    0.7936    0.2116    1.8926   -0.3114   -0.6234   -0.1634
+    0.4263    2.0570   -0.0016    1.4539   -0.1285    0.1450   -0.0475
+   -0.6243    0.2334    1.6775    0.1305    0.1578   -1.2834    0.0342
+    0.6326   -0.8447   -0.7420    1.7184   -2.2482   -1.2406   -0.0193
 
   Columns 15 through 20
 
-   -0.0248    0.0640    0.2425   -0.7952    1.8778   -0.4651
-    0.0156    1.0252    0.6081    0.5726    1.2339   -0.0557
-    0.3064   -0.0059   -0.8890    0.7804   -1.7100   -1.6605
-   -1.3876   -1.0484    2.6374    0.4240   -0.1835   -0.3490
-   -0.9668    0.7804   -0.2071    0.4571   -1.4814   -0.7635
-    0.4935    0.3544    0.9699    2.1413   -0.1994    1.3365
-    0.9893   -0.1809    0.8530   -0.3767   -0.5488    1.3450
-    2.0095   -1.4585    0.3652    0.7400    0.2897   -0.7897
-    0.3022    0.1953   -0.1581   -0.8374   -1.2946    0.9414
-   -0.2042   -0.5068   -0.3541   -1.2882   -0.7053    1.9504
+    0.1914   -0.3955   -1.1272   -0.3482   -0.1212    0.3667
+    0.2934    0.0033    2.1157   -0.1394   -0.3933   -1.1943
+    0.4824    0.7147   -0.3525   -0.1370   -0.4642   -0.5109
+   -0.0899    0.1712    1.2616    0.7004   -0.6931    1.1825
+   -0.3839   -2.7882    1.2582   -0.4554   -0.3030   -0.8830
+   -0.6024   -0.5247   -0.9397    0.8685   -0.1949   -0.6727
+   -2.9063   -1.0859   -0.4230   -1.2031   -2.2766    0.6824
+    1.2565   -1.7945    0.2652   -0.3147   -0.5482    1.0558
+   -0.6200   -1.5957    0.9450   -0.9040    1.8405    0.0112
+    0.0827   -2.9820    0.3774   -0.1613    1.0201    2.0972
 
 </pre><p>run <tt>doc('types.untyped.DataStub')</tt> for more details on manual partial loading. There are several convenience functions that make common data loading patterns easier. The following convenience function loads data for all trials</p><pre class="codeinput"><span class="comment">% data from .05 seconds before and half a second after start of each trial</span>
 window = [-.05, 0.5]; <span class="comment">% seconds</span>
@@ -348,33 +298,22 @@ timeseries = nwb2.acquisition.get(<span class="string">'ECoG'</span>);
 plot(tt, squeeze(trial_data(:,1,:)))
 xlabel(<span class="string">'time (seconds)'</span>)
 ylabel([<span class="string">'ECoG ('</span> timeseries.data_unit <span class="string">')'</span>])
-</pre><img vspace="5" hspace="5" src="ecephys_01.png" alt=""> <h2 id="25">Reading UnitTimes (RegionViews)</h2><p><tt>UnitTimes</tt> uses RegionViews to indicate which spikes belong to which cell. The structure is split up into 3 datasets (see Spikes secion):</p><pre class="codeinput">my_spike_times = nwb.processing.get(<span class="string">'cellular'</span>).nwbdatainterface.get(<span class="string">'my_spike_times'</span>)
-</pre><pre class="codeoutput">
-my_spike_times = 
-
-  UnitTimes with properties:
-
-          spike_times: [1&times;1 types.core.VectorData]
-    spike_times_index: [1&times;1 types.core.VectorIndex]
-             unit_ids: [1&times;1 types.core.ElementIdentifiers]
-                 help: 'Estimated spike times from a single unit'
-               source: 'my source'
-
-</pre><p>To get the data for cell 1, first determine the uid that equals 1.</p><pre class="codeinput">select = my_spike_times.unit_ids.data == 1
+</pre><img vspace="5" hspace="5" src="ecephys_01.png" alt=""> <h2 id="23">Reading UnitTimes (RegionViews)</h2><p><tt>UnitTimes</tt> uses RegionViews to indicate which spikes belong to which cell. The structure is split up into 3 datasets (see Spikes secion):</p><pre class="codeinput">my_spike_times = nwb.units.spike_times;
+</pre><p>To get the data for cell 1, first determine the uid that equals 1.</p><pre class="codeinput">select = nwb.units.id.data == 1
 </pre><pre class="codeoutput">
 select =
 
   1&times;3 logical array
 
-   0   1   0
+   1   0   0
 
-</pre><p>Then select the corresponding spike_times_index element</p><pre class="codeinput">my_index = my_spike_times.spike_times_index.data(select)
+</pre><p>Then select the corresponding spike_times_index element</p><pre class="codeinput">my_index = nwb.units.spike_times_index.data(select)
 </pre><pre class="codeoutput">
 my_index = 
 
   RegionView with properties:
 
-      path: '/processing/cellular/my_spike_times/spike_times'
+      path: '/units/spike_times'
       view: [1&times;1 types.untyped.ObjectView]
     region: {[2&times;1 double]}
 
@@ -382,33 +321,28 @@ my_index =
 </pre><pre class="codeoutput">
 ans =
 
-    0.3400    0.3600    0.6600    0.6900
+    0.1000    0.2100    0.5000    0.6100
 
-</pre><p>Putting those all together</p><pre class="codeinput">my_spike_times.spike_times_index.data(my_spike_times.unit_ids.data == 1).refresh(nwb)
-</pre><pre class="codeoutput">
-ans =
-
-    0.3400    0.3600    0.6600    0.6900
-
-</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% Neurodata Without Borders: Neurophysiology (NWB:N), Extracellular Electrophysiology Tutorial
 % How to write ecephys data to an NWB file using matnwb.
 % 
 %  author: Ben Dichter
 %  contact: ben.dichter@gmail.com
-%  last edited: Sept 22, 2018
+%  last edited: Oct 9, 2018
 
 %% NWB file
 % All contents get added to the NWB file, which is created with the
 % following command
 
 date = datetime(2018, 3, 1, 12, 0, 0);
+session_start_time = datetime(date,'Format','yyyy-MM-dd''T''HH:mm:SSZZ',...
+    'TimeZone','local');
 nwb = nwbfile( 'source', 'acquired on rig2', ...
     'session_description', 'a test NWB File', ...
     'identifier', 'mouse004_day4', ...
-    'session_start_time', datestr(date, 'yyyy-mm-ddTHH:MM:SS'), ...
-    'file_create_date', datestr(now, 'yyyy-mm-ddTHH:MM:SS'));
+    'session_start_time', session_start_time);
 
 %%
 % You can check the contents by displaying the nwbfile object
@@ -436,15 +370,15 @@ device_labels = {'a','a','a','a','a','b','b','b','b','b'};
 udevice_labels = unique(device_labels, 'stable');
 
 variables = {'id', 'x', 'y', 'z', 'imp', 'location', 'filtering', ...
-    'description', 'group', 'group_name'};
+    'group', 'group_name'};
 for i_device = 1:length(udevice_labels)
     device_label = udevice_labels{i_device};
     
     nwb.general_devices.set(device_label,...
-        types.core.Device('source', 'lab notebook'));
+        types.core.Device());
     
     nwb.general_extracellular_ephys.set(device_label,...
-        types.core.ElectrodeGroup('source', 'my source', ...
+        types.core.ElectrodeGroup(...
         'description', 'a test ElectrodeGroup', ...
         'location', 'unknown', ...
         'device', types.untyped.SoftLink(['/general/devices/' device_label])));
@@ -455,19 +389,21 @@ for i_device = 1:length(udevice_labels)
     for i_elec = 1:length(elec_nums)
         elec_num = elec_nums(i_elec);
         if i_device == 1 && i_elec == 1
-            tbl = table(int64(1), NaN, NaN, NaN, NaN, {'CA1'}, {'filtering'}, ...
-                {'electrode label'}, ov, {'electrode_group'},...
-                'VariableNames', variables);
+            tbl = table(int64(1), NaN, NaN, NaN, NaN, {'CA1'}, {'filtering'}...
+                , ov, {'electrode_group'},'VariableNames', variables);
         else
             tbl = [tbl; {int64(elec_num), NaN, NaN, NaN, NaN,...
-                'CA1', 'filtering', 'another label', ov, 'electrode_group'}];
+                'CA1', 'filtering', ov, 'electrode_group'}];
         end
     end        
 end
 %%
-% add the |ElectrodeTable| object to the NWB file using the name |'electrodes'| (not flexible)
-et = types.core.ElectrodeTable('data', tbl);
-nwb.general_extracellular_ephys.set('electrodes', et);
+% add the |DynamicTable| object to the NWB file using the name |'electrodes'| (not flexible)
+
+tbl.Properties.Description = 'my description';
+
+electrode_table = util.table2nwb(tbl);
+nwb.general_extracellular_ephys.set('electrodes', electrode_table);
 
 %% LFP
 % In order to write LFP, you need to construct a region view of the electrode 
@@ -476,10 +412,11 @@ nwb.general_extracellular_ephys.set('electrodes', et);
 % a reference that includes all electrodes. Then we will randomly generate a
 % signal 1000 timepoints long from 10 channels
 
-rv = types.untyped.RegionView('/general/extracellular_ephys/electrodes',...
-    {[1 height(tbl)]'});
+ov = types.untyped.ObjectView('/general/extracellular_ephys/electrodes');
 
-electrode_table_region = types.core.ElectrodeTableRegion('data', rv);
+electrode_table_region = types.core.DynamicTableRegion('table', ov, ...
+    'description', 'all electrodes',...
+    'data', [1 height(tbl)]');
 
 %%
 % once you have the |ElectrodeTableRegion| object, you can create an
@@ -487,7 +424,6 @@ electrode_table_region = types.core.ElectrodeTableRegion('data', rv);
 % starting_time and rate.
 
 electrical_series = types.core.ElectricalSeries(...
-    'source', 'my source', ...
     'starting_time', 0.0, ... % seconds
     'starting_time_rate', 200., ... % Hz
     'data', randn(10, 1000),...
@@ -501,7 +437,6 @@ nwb.acquisition.set('ECoG', electrical_series);
 % constructor will look like this
 
 electrical_series = types.core.ElectricalSeries(...
-    'source', 'my source', ...
     'timestamps', (1:1000)/200, ...
     'starting_time_rate', 200., ... % Hz
     'data', randn(10, 1000),...
@@ -511,37 +446,24 @@ electrical_series = types.core.ElectricalSeries(...
 %% Trials
 % You can store trial information in the trials table
 
-nwb.trials = types.core.DynamicTable( ...
-    'colnames', {'start','stop','correct'},...
+trials = types.core.TimeIntervals( ...
+    'colnames', {'correct','start_time','stop_time'},...
     'description', 'trial data and properties', ...
-    'id', types.core.ElementIdentifiers('data', 1:3));
+    'id', types.core.ElementIdentifiers('data', 1:3),...
+    'start_time', types.core.TableColumn('data', [.1, 1.5, 2.5],...
+        'description','hi'),...
+    'stop_time', types.core.TableColumn('data', [1., 2., 3.],...
+        'description','hi'),...
+    'correct', types.core.TableColumn('data', [false,true,false],...
+        'description','my description'));
 
-nwb.trials.tablecolumn.set('start', ...
-    types.core.TableColumn('data', [.1, 1.5, 2.5]));
-
-nwb.trials.tablecolumn.set('stop', ...
-    types.core.TableColumn('data', [1., 2., 3.]));
-
-nwb.trials.tablecolumn.set('correct', ...
-    types.core.TableColumn('data', [0,1,0]));
+nwb.intervals.set('trials', trials);
 
 %%
 % |colnames| is flexible - it can store any column names and the entries can
 % be any data type, which allows you to store any information you need about 
 % trials. The units table stores information about cells and is created with
 % an analogous workflow.
-%
-% Here is an alternative workflow using a MATLAB table that yeilds the same
-% result
-
-T = table([.1, 1.5, 2.5]',[1., 2., 3.]',[0,1,0]',...
-    'VariableNames',{'start','stop','correct'});
-T.Properties.Description = 'my description';
-T.Properties.UserData = containers.Map('source','my source');
-display(T);
-%%
-nwb.trials = util.table2nwb(T);
-display(nwb.trials);
 
 %% Processing Modules
 % Measurements go in |acquisition| and subject or session data goes in
@@ -549,9 +471,7 @@ display(nwb.trials);
 % you need to store this in a processing module. Here we make a processing
 % module called "cellular"
 
-cell_mod = types.core.ProcessingModule( ...
-        'source', 'a test source for a ProcessingModule', ...
-        'description', 'a test module');
+cell_mod = types.core.ProcessingModule('description', 'a test module');
 
 %% Spikes
 % There are two different ways of storing spikes (aka action potentials),
@@ -567,7 +487,6 @@ cluster_ids = [0, 0, 1, 1, 2, 2, 0, 0, 1, 1];
 
 clustering = types.core.Clustering( ...
     'description', 'my_description',...
-    'source','my source',...
     'peak_over_rms',[1,2,3],...
     'times', spike_times, ...
     'num', cluster_ids);
@@ -576,34 +495,24 @@ cell_mod.nwbdatainterface.set('clustering',clustering);
 nwb.processing.set('cellular', cell_mod);
 
 %%
-% The other structure is |UnitTimes|, which is organized by cell instead of
-% by time. The advantage of |UnitTimes| is that it is more
+% The other structure is within the |units| table, which is organized by cell instead of
+% by time. The advantage of |units| is that it is more
 % parallel-friendly. It is easier to split the computation of by cells are
 % read/write in parallel, distributing the cells across the cores of your
-% computation network. Writing |UnitTimes| is a bit involved, so you can use
-% this convenience function.
+% computation network.
 %%
 % 
 % <<UnitTimes.png>>
 % 
-            
-spike_loc = '/processing/cellular/my_spike_times/spike_times';
-
-ut = util.createUnitTimes(cluster_ids, spike_times, spike_loc);
-
-cell_mod.nwbdatainterface.set('my_spike_times', ut);
-nwb.processing.set('cellular', cell_mod);
-
 %%
-% These two structures hold the same information.
 
-%% Units table
-T = table({'pyramidal', 'granule', 'mossy'}',...
-    'VariableNames', {'cell_type'});
-T.Properties.Description = 'my description';
-T.Properties.UserData = containers.Map('source','my source');
-display(T);
-nwb.units = util.table2nwb(T);
+[spike_times_vector, spike_times_index] = util.create_spike_times(cluster_ids, spike_times);
+nwb.units = types.core.Units('colnames',{'spike_times','spike_times_index'},...
+    'description','units table',...
+    'id', types.core.ElementIdentifiers('data',1:length(spike_times_index.data)));
+nwb.units.spike_times = spike_times_vector;
+nwb.units.spike_times_index = spike_times_index;
+
 
 %% Writing the file
 % Once you have added all of the data types you want to a file, you can save
@@ -666,21 +575,16 @@ ylabel(['ECoG (' timeseries.data_unit ')'])
 %% Reading UnitTimes (RegionViews)
 % |UnitTimes| uses RegionViews to indicate which spikes belong to which cell.
 % The structure is split up into 3 datasets (see Spikes secion):
-my_spike_times = nwb.processing.get('cellular').nwbdatainterface.get('my_spike_times')
+my_spike_times = nwb.units.spike_times;
 %%
 % To get the data for cell 1, first determine the uid that equals 1.
-select = my_spike_times.unit_ids.data == 1
+select = nwb.units.id.data == 1
 %%
 % Then select the corresponding spike_times_index element
-my_index = my_spike_times.spike_times_index.data(select)
+my_index = nwb.units.spike_times_index.data(select)
 %%
 % Finally, access the data that the view points to using |refresh|
 my_index.refresh(nwb)
-
-%%
-% Putting those all together
-my_spike_times.spike_times_index.data(my_spike_times.unit_ids.data == 1).refresh(nwb)
-
 
 ##### SOURCE END #####
 --></body></html>
