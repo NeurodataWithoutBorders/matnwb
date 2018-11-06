@@ -10,10 +10,12 @@
 % following command
 
 date = datetime(2018, 3, 1, 12, 0, 0);
-nwb = nwbfile('session_description', 'a test NWB File', ...
+session_start_time = datetime(date,'Format','yyyy-MM-dd''T''HH:mm:SSZZ',...
+    'TimeZone','local');
+nwb = nwbfile( 'source', 'acquired on rig2', ...
+    'session_description', 'a test NWB File', ...
     'identifier', 'mouse004_day4', ...
-    'session_start_time', datestr(date, 'yyyy-mm-ddTHH:MM:SS'), ...
-    'file_create_date', datestr(now, 'yyyy-mm-ddTHH:MM:SS'));
+    'session_start_time', session_start_time);
 
 %%
 % You can check the contents by displaying the nwbfile object
@@ -118,36 +120,24 @@ electrical_series = types.core.ElectricalSeries(...
 %% Trials
 % You can store trial information in the trials table
 
-nwb.trials = types.core.DynamicTable( ...
-    'colnames', {'start','stop','correct'},...
+trials = types.core.TimeIntervals( ...
+    'colnames', {'correct','start_time','stop_time'},...
     'description', 'trial data and properties', ...
-    'id', types.core.ElementIdentifiers('data', 1:3));
+    'id', types.core.ElementIdentifiers('data', 1:3),...
+    'start_time', types.core.TableColumn('data', [.1, 1.5, 2.5],...
+        'description','hi'),...
+    'stop_time', types.core.TableColumn('data', [1., 2., 3.],...
+        'description','hi'),...
+    'correct', types.core.TableColumn('data', [false,true,false],...
+        'description','my description'));
 
-nwb.trials.tablecolumn.set('start', ...
-    types.core.TableColumn('data', [.1, 1.5, 2.5]));
-
-nwb.trials.tablecolumn.set('stop', ...
-    types.core.TableColumn('data', [1., 2., 3.]));
-
-nwb.trials.tablecolumn.set('correct', ...
-    types.core.TableColumn('data', [0,1,0]));
+nwb.intervals.set('trials', trials);
 
 %%
 % |colnames| is flexible - it can store any column names and the entries can
 % be any data type, which allows you to store any information you need about 
 % trials. The units table stores information about cells and is created with
 % an analogous workflow.
-%
-% Here is an alternative workflow using a MATLAB table that yeilds the same
-% result
-
-T = table([.1, 1.5, 2.5]',[1., 2., 3.]',[0,1,0]',...
-    'VariableNames',{'start','stop','correct'});
-T.Properties.Description = 'my description';
-display(T);
-%%
-nwb.trials = util.table2nwb(T);
-display(nwb.trials);
 
 %% Processing Modules
 % Measurements go in |acquisition| and subject or session data goes in
@@ -179,33 +169,24 @@ cell_mod.nwbdatainterface.set('clustering',clustering);
 nwb.processing.set('cellular', cell_mod);
 
 %%
-% The other structure is |UnitTimes|, which is organized by cell instead of
-% by time. The advantage of |UnitTimes| is that it is more
+% The other structure is within the |units| table, which is organized by cell instead of
+% by time. The advantage of |units| is that it is more
 % parallel-friendly. It is easier to split the computation of by cells are
 % read/write in parallel, distributing the cells across the cores of your
-% computation network. Writing |UnitTimes| is a bit involved, so you can use
-% this convenience function.
+% computation network.
 %%
 % 
 % <<UnitTimes.png>>
 % 
-            
-spike_loc = '/processing/cellular/my_spike_times/spike_times';
-
-ut = util.createUnitTimes(cluster_ids, spike_times, spike_loc);
-
-cell_mod.nwbdatainterface.set('my_spike_times', ut);
-nwb.processing.set('cellular', cell_mod);
-
 %%
-% These two structures hold the same information.
 
-%% Units table
-T = table({'pyramidal', 'granule', 'mossy'}',...
-    'VariableNames', {'cell_type'});
-T.Properties.Description = 'my description';
-display(T);
-nwb.units = util.table2nwb(T);
+[spike_times_vector, spike_times_index] = util.create_spike_times(cluster_ids, spike_times);
+nwb.units = types.core.Units('colnames',{'spike_times','spike_times_index'},...
+    'description','units table',...
+    'id', types.core.ElementIdentifiers('data',1:length(spike_times_index.data)));
+nwb.units.spike_times = spike_times_vector;
+nwb.units.spike_times_index = spike_times_index;
+
 
 %% Writing the file
 % Once you have added all of the data types you want to a file, you can save
