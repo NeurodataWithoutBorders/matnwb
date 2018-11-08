@@ -6,3 +6,4 @@ namespaces/
 workspace/
 *.asv
 *.swp
+.DS_Store

@@ -147,13 +147,13 @@ end
 varnames = lower(varnames);
 
 %we delete the entry in varargin such that any conflicts do not show up in inputParser
-deleteFromVars = 'varargin([ivarargin ivarargin+1]) = [];';
+deleteFromVars = 'varargin(ivarargin) = [];';
 %if constrained/anon sets exist, then check for nonstandard parameters and add as
 %container.map
 constrainedTypes = typenames(constrained & ~invalid);
 constrainedVars = varnames(constrained & ~invalid);
-methodCalls = strcat('[obj.', constrainedVars, ',ivarargin] = ',...
-    ' types.util.parseConstrained(''', pname, ''', ''',...
+methodCalls = strcat('[obj.', constrainedVars, ', ivarargin] = ',...
+    ' types.util.parseConstrained(obj,''', pname, ''', ''',...
     constrainedTypes, ''', varargin{:});');
 fullBody = cell(length(methodCalls) * 2,1);
 fullBody(1:2:end) = methodCalls;

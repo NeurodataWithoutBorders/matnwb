@@ -55,10 +55,9 @@ end
 
 %% Convenience
 function roundabout(testCase, dataset)
-nwb = nwbfile('source', 'multipleShapesTest', 'identifier', 'MSS',...
-    'session_description', 'test', 'session_start_time', datetime);
-wrapper = types.mss.MultiShapeWrapper('shaped_data', dataset,...
-    'source', 'multipleShapesTest');
+nwb = nwbfile('identifier', 'MSS', 'session_description', 'test',...
+    'session_start_time', datetime);
+wrapper = types.mss.MultiShapeWrapper('shaped_data', dataset);
 nwb.acquisition.set('wrapper', wrapper);
 filename = 'multipleShapesTest.nwb';
 nwbExport(nwb, filename);

@@ -4,7 +4,7 @@ if ~exist('labels','var') || isempty(labels)
     labels = {'eye_h', 'eye_v'};
 end
 
-[~,fname] = fileparts(mwk_path);
+[~, fname] = fileparts(mwk_path);
 
 reverse_codec = getReverseCodec(mwk_path);
 
@@ -33,12 +33,10 @@ data = [eye_h', eye_v'];
 spatial_series = types.core.SpatialSeries( ...,
     'timestamps', timestamps, ...
     'data', data, ...
-    'source', fname, ...
     'reference_frame', 'h,v', ...
     'data_unit', 'unknown');
 
 eye_tracking = types.core.EyeTracking( ...
-    'source', fname, ...
     'spatialseries', spatial_series);
 
 nwbfile.acquisition.set('Eye Tracking', eye_tracking);
