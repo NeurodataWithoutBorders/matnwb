@@ -204,16 +204,6 @@ groups:
       doc: 'Notes about stimuli, such as how and where presented. COMMENT: Can be from
         Methods.'
       quantity: '?'
-    - name: surgery
-      dtype: text
-      doc: 'Narrative description about surgery/surgeries, including date(s) and who
-        performed surgery. COMMENT: Much can be copied from Methods.'
-      quantity: '?'
-    - name: virus
-      dtype: text
-      doc: Information about virus(es) used in experiments, including virus ID, source,
-        date made, injection location, volume, etc.
-      quantity: '?'
     groups:
     - name: devices
       doc: 'Description of hardware devices used during experiment. COMMENT: Eg, monitors,
@@ -254,44 +244,184 @@ groups:
     - neurodata_type_def: Subject
       neurodata_type_inc: NWBContainer
       name: subject
-      doc: Information about the animal or person from which the data was measured.
+      doc: information about subject
       attributes:
-      - name: help
-        dtype: text
-        doc: Value is 'Information about the subject'
-        value: Information about the subject
-      datasets:
-      - name: age
-        dtype: text
-        doc: Age of subject
-        quantity: '?'
-      - name: description
-        dtype: text
-        doc: Description of subject and where subject came from (e.g., breeder, if
-          animal).
-        quantity: '?'
-      - name: genotype
-        dtype: text
-        doc: 'Genetic strain COMMENT: If absent, assume Wild Type (WT)'
-        quantity: '?'
       - name: sex
         dtype: text
-        doc: Gender of subject
-        quantity: '?'
+        doc: 'Sex of subject. Options: "M": male, "F": female, "O": other, "U": unknown'
+        required: false
       - name: species
         dtype: text
         doc: Species of subject
-        quantity: '?'
-      - name: subject_id
+        required: false
+      - name: strain
         dtype: text
-        doc: ID of animal/person used/participating in experiment (lab convention)
-        quantity: '?'
+        doc: strain of animal
+        required: false
+      - name: genotype
+        dtype: text
+        doc: genetic line of animal
+        required: false
+      - name: date_of_birth
+        dtype: text
+        doc: in ISO 8601 format
+        required: false
+      - name: date_of_death
+        dtype: text
+        doc: in ISO 8601 format
+        required: false
+      - name: age
+        dtype: text
+        doc: age of subject. No specific format enforced.
+        required: false
+      - name: gender
+        dtype: text
+        doc: Gender of subject if different from sex.
+        required: false
+      - name: earmark
+        dtype: text
+        doc: Earmark of subject
+        required: false
       - name: weight
         dtype: text
-        doc: Weight at time of experiment, at time of surgery and at other important
-          times
+        doc: Weight at time of experiment, at time of surgery in grams
+        required: false
+      - name: help
+        dtype: text
+        doc: help
+        value: Buzsaki subject structure
+      groups:
+      - neurodata_type_def: Surgeries
+        neurodata_type_inc: NWBDataInterface
+        name: surgeries
+        doc: relevant data for surgeries
+        attributes:
+        - name: help
+          dtype: text
+          doc: help
+          value: Container for surgeries
+        groups:
+        - neurodata_type_def: Surgery
+          neurodata_type_inc: NWBDataInterface
+          doc: information about a specific surgery
+          attributes:
+          - name: start_datetime
+            dtype: text
+            doc: datetime in ISO 8601
+            required: false
+          - name: end_datetime
+            dtype: text
+            doc: datetime in ISO 8601
+            required: false
+          - name: weight
+            dtype: text
+            doc: Weight at time of experiment, at time of surgery and at other important
+              times
+            required: false
+          - name: notes
+            dtype: text
+            doc: notes and complications
+            required: false
+          - name: anesthesia
+            dtype: text
+            doc: anesthesia
+            required: false
+          - name: analgesics
+            dtype: text
+            doc: analgesics
+            required: false
+          - name: antibiotics
+            dtype: text
+            doc: antibiotics
+            required: false
+          - name: complications
+            dtype: text
+            doc: complications
+            required: false
+          - name: target_anatomy
+            dtype: text
+            doc: target anatomy
+            required: false
+          - name: room
+            dtype: text
+            doc: place where the surgery took place
+            required: false
+          - name: surgery_type
+            dtype: text
+            doc: '"chronic" or "acute"'
+            required: false
+          - name: help
+            dtype: text
+            doc: help
+            value: Information about surgery
+          datasets:
+          - name: devices
+            dtype:
+              reftype: object
+              target_type: Device
+            doc: links to implanted/explanted devices
+            quantity: '?'
+          groups:
+          - neurodata_type_def: VirusInjections
+            neurodata_type_inc: NWBDataInterface
+            name: virus_injections
+            doc: stores virus injections
+            attributes:
+            - name: help
+              dtype: text
+              doc: help
+              value: Container for virus injections
+            groups:
+            - neurodata_type_def: VirusInjection
+              neurodata_type_inc: NWBDataInterface
+              doc: notes about surgery that includes virus injection
+              attributes:
+              - name: virus
+                dtype: text
+                doc: type of virus
+              - name: volume
+                dtype: float
+                doc: volume of injecting in nL
+              - name: rate
+                dtype: float
+                doc: rate of injection (nL/s)
+                required: false
+              - name: scheme
+                dtype: text
+                doc: scheme of injection
+                required: false
+              - name: help
+                dtype: text
+                doc: help
+                value: Information about a virus injection
+              datasets:
+              - name: coordinates
+                dtype: float
+                doc: (AP, ML, DV) of virus injection
+                shape:
+                - 3
+              quantity: +
+            quantity: '?'
+          - neurodata_type_def: Manipulations
+            neurodata_type_inc: NWBDataInterface
+            name: manipulations
+            doc: stores maipulations
+            groups:
+            - neurodata_type_def: Manipulation
+              neurodata_type_inc: NWBDataInterface
+              doc: manipulation
+              attributes:
+              - name: brain_region_target
+                dtype: text
+                doc: Allen Institute Acronym
+              - name: help
+                dtype: text
+                doc: help
+                value: Information about a virus injection
+              quantity: +
+            quantity: '?'
+          quantity: +
         quantity: '?'
-      quantity: '?'
     - name: extracellular_ephys
       doc: Metadata related to extracellular electrophysiology.
       groups:
