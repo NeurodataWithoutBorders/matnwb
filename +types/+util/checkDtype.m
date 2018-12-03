@@ -87,7 +87,14 @@ else
         case 'isodatetime'
             assert(ischar(val) || iscellstr(val) || isa(val, 'datetime'), errmsg);
             if ischar(val) || iscellstr(val)
-                val = datetime(val);
+                try
+                    val = datetime(val);
+                catch
+                    % python's default time format
+                    val = datetime(val, ...
+                        'InputFormat', 'yyyy-MM-dd''T''HH:mm:ss.SSSSSSXXX', ...
+                        'TimeZone', val(end-5:end));
+                end
             end
         case 'char'
             assert(ischar(val) || iscellstr(val), errmsg);
