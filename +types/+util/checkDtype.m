@@ -87,13 +87,20 @@ else
         case 'isodatetime'
             assert(ischar(val) || iscellstr(val) || isa(val, 'datetime'), errmsg);
             if ischar(val) || iscellstr(val)
-                try
-                    val = datetime(val);
-                catch
-                    % python's default time format
+                if regexp(val, '[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{6}')
                     val = datetime(val, ...
                         'InputFormat', 'yyyy-MM-dd''T''HH:mm:ss.SSSSSSXXX', ...
                         'TimeZone', val(end-5:end));
+                elseif regexp(val, '[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}')
+                    val = datetime(val, ...
+                        'InputFormat', 'yyyy-MM-dd''T''HH:mm:ss.SSSXXX', ...
+                        'TimeZone', val(end-5:end));
+                elseif regexp(val, '[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}')
+                    val = datetime(val, ...
+                        'InputFormat', 'yyyy-MM-dd''T''HH:mm:ssXXX', ...
+                        'TimeZone', val(end-5:end));
+                else
+                    val = datetime(val);
                 end
             end
         case 'char'
