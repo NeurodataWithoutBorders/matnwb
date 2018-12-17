@@ -28,6 +28,11 @@ classdef nwbfile < types.core.NWBFile
                 obj.file_create_date(end+1) = datetime;
             end
             
+            %equate reference time to session_start_time if empty
+            if isempty(obj.timestamps_reference_time)
+                obj.timestamps_reference_time = obj.session_start_time;
+            end
+            
             fid = H5F.create(filename);
             try
                 refs = export@types.core.NWBFile(obj, fid, '/', {});
