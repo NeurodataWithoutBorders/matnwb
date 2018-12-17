@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Neurodata Without Borders: Neurophysiology (NWB:N), Extracellular Electrophysiology Tutorial</title><meta name="generator" content="MATLAB 9.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-11-06"><meta name="DC.source" content="ecephys.m"><style type="text/css">
+      --><title>Neurodata Without Borders: Neurophysiology (NWB:N), Extracellular Electrophysiology Tutorial</title><meta name="generator" content="MATLAB 9.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-12-17"><meta name="DC.source" content="ecephys.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -113,6 +113,7 @@ nwb = nwbfile( <span class="string">'source'</span>, <span class="string">'acqui
                  session_start_time: 2018-03-01T12:00:00-0500
               stimulus_presentation: [1&times;1 types.untyped.Set]
                  stimulus_templates: [1&times;1 types.untyped.Set]
+          timestamps_reference_time: []
                               units: []
                                help: 'an NWB:N file for storing cellular-based neurophysiology data'
 
@@ -175,11 +176,11 @@ nwb.acquisition.set(<span class="string">'ECoG'</span>, electrical_series);
     <span class="string">'colnames'</span>, {<span class="string">'correct'</span>,<span class="string">'start_time'</span>,<span class="string">'stop_time'</span>},<span class="keyword">...</span>
     <span class="string">'description'</span>, <span class="string">'trial data and properties'</span>, <span class="keyword">...</span>
     <span class="string">'id'</span>, types.core.ElementIdentifiers(<span class="string">'data'</span>, 1:3),<span class="keyword">...</span>
-    <span class="string">'start_time'</span>, types.core.TableColumn(<span class="string">'data'</span>, [.1, 1.5, 2.5],<span class="keyword">...</span>
+    <span class="string">'start_time'</span>, types.core.VectorData(<span class="string">'data'</span>, [.1, 1.5, 2.5],<span class="keyword">...</span>
         <span class="string">'description'</span>,<span class="string">'hi'</span>),<span class="keyword">...</span>
-    <span class="string">'stop_time'</span>, types.core.TableColumn(<span class="string">'data'</span>, [1., 2., 3.],<span class="keyword">...</span>
+    <span class="string">'stop_time'</span>, types.core.VectorData(<span class="string">'data'</span>, [1., 2., 3.],<span class="keyword">...</span>
         <span class="string">'description'</span>,<span class="string">'hi'</span>),<span class="keyword">...</span>
-    <span class="string">'correct'</span>, types.core.TableColumn(<span class="string">'data'</span>, [false,true,false],<span class="keyword">...</span>
+    <span class="string">'correct'</span>, types.core.VectorData(<span class="string">'data'</span>, [false,true,false],<span class="keyword">...</span>
         <span class="string">'description'</span>,<span class="string">'my description'</span>));
 
 nwb.intervals.set(<span class="string">'trials'</span>, trials);
@@ -215,29 +216,29 @@ nwb.units.spike_times_index = spike_times_index;
 disp(data(1:10, 1:10));
 </pre><pre class="codeoutput">  Columns 1 through 7
 
-   -0.6962   -0.1245    0.3595    0.8523   -0.5099   -0.2073   -1.3611
-   -0.5556    0.2406    0.2671   -0.4307    0.6040    0.5299    1.7365
-    0.8902   -1.8579   -1.5810   -1.5319   -1.0424   -0.2391    0.2359
-   -0.3916    0.2625    0.6735    0.0462   -1.1218    1.1449    1.5930
-    0.4605   -0.8068    0.0422    1.6687    0.9127   -0.7551    0.1840
-   -1.2723    0.4912    1.0257    0.4232   -1.5369    0.8131    0.3482
-   -2.2893    2.0255    2.9467   -1.1388    0.5628   -0.4820   -1.0172
-    0.6693    0.6781    1.6187   -1.5278   -0.6727    1.1358    0.8392
-    0.0903    1.2372    0.3658    1.4420   -0.9443    0.0522    0.3361
-    1.2793    0.7854    1.9125   -0.9178    0.2913   -1.0658   -0.3931
+   -0.6936    0.2240   -1.0878   -1.5047    1.7543    1.5297    0.8051
+   -0.8134   -0.9780   -1.0105   -0.9623    0.4165    0.7740   -1.9908
+   -0.0844   -0.4668    0.2928    0.6241   -1.6146    0.4207    0.6520
+   -2.0610    0.5217   -0.7898    0.5793   -0.4813    0.2765    0.8029
+   -1.4875   -0.3337    1.5672   -0.1045    0.2606   -0.6391    0.8795
+   -0.4397   -0.8410   -0.5468    1.7624    0.8022   -0.9741    0.5303
+   -1.1780   -2.4142    0.4477   -1.7392    0.5812    0.5413    3.9812
+    2.8060   -1.4064    1.1881   -2.5787   -0.3850    0.6477   -0.2500
+    0.5072    0.7785    0.2314    0.6882   -0.5815    1.0888   -1.1821
+   -1.0723    0.9298   -0.2157   -0.5946    1.3987    0.3055    0.6251
 
   Columns 8 through 10
 
-   -0.9159    0.6004   -0.2872
-   -0.4343    0.9218   -0.2017
-   -1.5571    0.6111    0.5153
-   -0.2637   -1.0110   -0.6516
-   -0.6212    0.7739    0.8296
-    1.2492   -0.2267   -1.1079
-    1.1499    0.7936    0.2116
-    0.4263    2.0570   -0.0016
-   -0.6243    0.2334    1.6775
-    0.6326   -0.8447   -0.7420
+    1.0078   -0.3963    0.8828
+   -0.2236    0.0611    0.1928
+    1.0278    1.2719    0.0081
+   -0.7277    2.0288   -1.1325
+   -0.3218   -0.7245   -0.2870
+   -0.3319    0.8852    1.1579
+   -0.0737   -0.7908   -0.5727
+   -0.8658   -0.2267   -0.6829
+   -1.1423    0.4651   -0.4726
+    0.3055   -0.7963   -0.6231
 
 </pre><p>Loading all of the data is not a problem for this small dataset, but it can be a problem when dealing with real data that can be several GBs or even TBs per session. In these cases you can load a specific secion of data. For instance, here is how you would load data starting at the index (1,1) and read 10 rows and 20 columns of data</p><pre class="codeinput">nwb2.acquisition.get(<span class="string">'ECoG'</span>).data.load([1,1], [10,20])
 </pre><pre class="codeoutput">
@@ -245,42 +246,42 @@ ans =
 
   Columns 1 through 7
 
-   -0.6962   -0.1245    0.3595    0.8523   -0.5099   -0.2073   -1.3611
-   -0.5556    0.2406    0.2671   -0.4307    0.6040    0.5299    1.7365
-    0.8902   -1.8579   -1.5810   -1.5319   -1.0424   -0.2391    0.2359
-   -0.3916    0.2625    0.6735    0.0462   -1.1218    1.1449    1.5930
-    0.4605   -0.8068    0.0422    1.6687    0.9127   -0.7551    0.1840
-   -1.2723    0.4912    1.0257    0.4232   -1.5369    0.8131    0.3482
-   -2.2893    2.0255    2.9467   -1.1388    0.5628   -0.4820   -1.0172
-    0.6693    0.6781    1.6187   -1.5278   -0.6727    1.1358    0.8392
-    0.0903    1.2372    0.3658    1.4420   -0.9443    0.0522    0.3361
-    1.2793    0.7854    1.9125   -0.9178    0.2913   -1.0658   -0.3931
+   -0.6936    0.2240   -1.0878   -1.5047    1.7543    1.5297    0.8051
+   -0.8134   -0.9780   -1.0105   -0.9623    0.4165    0.7740   -1.9908
+   -0.0844   -0.4668    0.2928    0.6241   -1.6146    0.4207    0.6520
+   -2.0610    0.5217   -0.7898    0.5793   -0.4813    0.2765    0.8029
+   -1.4875   -0.3337    1.5672   -0.1045    0.2606   -0.6391    0.8795
+   -0.4397   -0.8410   -0.5468    1.7624    0.8022   -0.9741    0.5303
+   -1.1780   -2.4142    0.4477   -1.7392    0.5812    0.5413    3.9812
+    2.8060   -1.4064    1.1881   -2.5787   -0.3850    0.6477   -0.2500
+    0.5072    0.7785    0.2314    0.6882   -0.5815    1.0888   -1.1821
+   -1.0723    0.9298   -0.2157   -0.5946    1.3987    0.3055    0.6251
 
   Columns 8 through 14
 
-   -0.9159    0.6004   -0.2872    0.0249    0.1010    0.5857    0.1023
-   -0.4343    0.9218   -0.2017   -0.1840   -0.5813   -0.1568    1.1158
-   -1.5571    0.6111    0.5153   -1.2047   -1.2210   -1.7087    0.3182
-   -0.2637   -1.0110   -0.6516    0.6606    0.1199   -0.2045    0.0614
-   -0.6212    0.7739    0.8296    1.0247    0.4201    1.5143    0.5627
-    1.2492   -0.2267   -1.1079    1.2686    0.8065   -1.0668   -1.0842
-    1.1499    0.7936    0.2116    1.8926   -0.3114   -0.6234   -0.1634
-    0.4263    2.0570   -0.0016    1.4539   -0.1285    0.1450   -0.0475
-   -0.6243    0.2334    1.6775    0.1305    0.1578   -1.2834    0.0342
-    0.6326   -0.8447   -0.7420    1.7184   -2.2482   -1.2406   -0.0193
+    1.0078   -0.3963    0.8828   -0.1250    0.0551   -2.5611   -0.4218
+   -0.2236    0.0611    0.1928    0.5603    0.4039    0.4784    0.1730
+    1.0278    1.2719    0.0081   -1.0298   -1.0056   -1.8454   -0.4532
+   -0.7277    2.0288   -1.1325   -0.1076    0.1223    0.6692    0.0406
+   -0.3218   -0.7245   -0.2870    0.7564   -2.0511    0.3506   -2.0201
+   -0.3319    0.8852    1.1579    0.1048    1.1934    0.3792    0.5551
+   -0.0737   -0.7908   -0.5727   -0.1828   -1.0185   -1.0451    1.7513
+   -0.8658   -0.2267   -0.6829    0.4321   -0.8856   -2.5323   -1.0021
+   -1.1423    0.4651   -0.4726    0.9816   -0.0088   -1.3650   -0.5839
+    0.3055   -0.7963   -0.6231   -0.7966    0.0154   -1.9234    0.3494
 
   Columns 15 through 20
 
-    0.1914   -0.3955   -1.1272   -0.3482   -0.1212    0.3667
-    0.2934    0.0033    2.1157   -0.1394   -0.3933   -1.1943
-    0.4824    0.7147   -0.3525   -0.1370   -0.4642   -0.5109
-   -0.0899    0.1712    1.2616    0.7004   -0.6931    1.1825
-   -0.3839   -2.7882    1.2582   -0.4554   -0.3030   -0.8830
-   -0.6024   -0.5247   -0.9397    0.8685   -0.1949   -0.6727
-   -2.9063   -1.0859   -0.4230   -1.2031   -2.2766    0.6824
-    1.2565   -1.7945    0.2652   -0.3147   -0.5482    1.0558
-   -0.6200   -1.5957    0.9450   -0.9040    1.8405    0.0112
-    0.0827   -2.9820    0.3774   -0.1613    1.0201    2.0972
+    0.3587   -0.0430    0.9137   -0.1743    0.7064    0.5040
+    1.4069    1.3652   -1.3192   -1.3934    1.2479    0.6959
+   -1.1303   -0.7657    0.4718   -0.8550   -1.2778   -0.1092
+   -1.2370   -0.1967    0.3083    1.4092    0.6678    0.0654
+   -2.0317   -1.3768    0.4908    0.0017   -0.9617    1.4020
+   -1.5357    0.4171    1.1704    0.5469    0.0140    2.2483
+    0.6528    0.2167    0.1978   -0.4496   -2.1267   -0.8044
+   -0.0282   -1.3720    1.5665   -1.0852   -0.1533   -0.8188
+    0.7882   -0.0916   -0.3588    0.1688    0.7479    0.8679
+    1.7643    0.7474   -1.3854    0.7336    0.0287   -1.7593
 
 </pre><p>run <tt>doc('types.untyped.DataStub')</tt> for more details on manual partial loading. There are several convenience functions that make common data loading patterns easier. The following convenience function loads data for all trials</p><pre class="codeinput"><span class="comment">% data from .05 seconds before and half a second after start of each trial</span>
 window = [-.05, 0.5]; <span class="comment">% seconds</span>
@@ -450,11 +451,11 @@ trials = types.core.TimeIntervals( ...
     'colnames', {'correct','start_time','stop_time'},...
     'description', 'trial data and properties', ...
     'id', types.core.ElementIdentifiers('data', 1:3),...
-    'start_time', types.core.TableColumn('data', [.1, 1.5, 2.5],...
+    'start_time', types.core.VectorData('data', [.1, 1.5, 2.5],...
         'description','hi'),...
-    'stop_time', types.core.TableColumn('data', [1., 2., 3.],...
+    'stop_time', types.core.VectorData('data', [1., 2., 3.],...
         'description','hi'),...
-    'correct', types.core.TableColumn('data', [false,true,false],...
+    'correct', types.core.VectorData('data', [false,true,false],...
         'description','my description'));
 
 nwb.intervals.set('trials', trials);
