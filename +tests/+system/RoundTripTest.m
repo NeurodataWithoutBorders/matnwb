@@ -21,8 +21,9 @@ classdef RoundTripTest < matlab.unittest.TestCase
             testCase.file = nwbfile( ...
                 'session_description', 'a test NWB File', ...
                 'identifier', 'TEST123', ...
-                'session_start_time', datestr([1970, 1, 1, 12, 0, 0], 'yyyy-mm-dd HH:MM:SS'), ...
-                'file_create_date', datestr([2017, 4, 15, 12, 0, 0], 'yyyy-mm-dd HH:MM:SS'));
+                'session_start_time', '2018-12-02T12:57:27.371444-08:00', ...
+                'file_create_date', datestr([2017, 4, 15, 12, 0, 0], 'yyyy-mm-dd HH:MM:SS'),...
+                'timestamps_reference_time', datestr([1970, 1, 1, 12, 0, 0], 'yyyy-mm-dd HH:MM:SS'));
             testCase.addContainer(testCase.file);
         end
     end
@@ -59,6 +60,8 @@ classdef RoundTripTest < matlab.unittest.TestCase
                     verifyContainerEqual(testCase, val1, val2);
                 elseif isa(val1, 'types.untyped.Set')
                     verifySetEqual(testCase, val1, val2, failmsg);
+                elseif isa(val1, 'datetime')
+                    testCase.verifyEqual(datestr(val1,30), datestr(val2,30));
                 else
                     if isa(val1, 'types.untyped.DataStub')
                         trueval = val1.load();
