@@ -48,7 +48,7 @@ if isstruct(type)
                     (isempty(elem) || ...
                     (isscalar(elem) || (ischar(elem) && isvector(elem)))),...
                     ['Fields for an array of structs for '...
-                'compound types should have non-cell scalar values or char arrays.']);
+                    'compound types should have non-cell scalar values or char arrays.']);
                 val(j).(pnm) = types.util.checkDtype(subnm, typenm, elem);
             end
         else
@@ -85,16 +85,17 @@ else
             
             val = eval([type '(val)']);
         case 'isodatetime'
+            addpath(fullfile(fileparts(which('nwbfile')), 'external_packages', 'datenum8601'));
             assert(ischar(val) || iscellstr(val) || isa(val, 'datetime'), errmsg);
-            if ischar(val) || iscellstr(val)
-                try
-                    val = datetime(val);
-                catch
-                    % python's default time format
-                    val = datetime(val, ...
-                        'InputFormat', 'yyyy-MM-dd''T''HH:mm:ss.SSSSSSXXX', ...
-                        'TimeZone', val(end-5:end));
+            
+            if ischar(val)
+                val = datetime(datenum8601(val), 'ConvertFrom', 'datenum');
+            elseif iscellstr(val)
+                datevals = repmat(datetime, size(val));
+                for i = 1:length(val)
+                    datevals(i) = datetime(datenum8601(val{i}), 'ConvertFrom', 'datenum');
                 end
+                val = datevals;
             end
         case 'char'
             assert(ischar(val) || iscellstr(val), errmsg);
