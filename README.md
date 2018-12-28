@@ -42,7 +42,9 @@ nwb=nwbRead('data.nwb');
 
 ## Tutorials
 [Extracellular Electrophysiology IO by Ben Dichter](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ecephys.html)
+
 [Conversion From Trial Data by Lawrence Niu](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/alm3ToNwb.html)
+
 [Basic Data Retrieval by Lawrence Niu](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/plotSession.html)
 
 ## third-party support
