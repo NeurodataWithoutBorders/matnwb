@@ -80,6 +80,48 @@ classdef DataStub
             end
         end
         
+        function data = load_matlab_style(obj, varargin)
+            %LOAD  Read data from HDF5 dataset with syntax more similar to
+            %core MATLAB
+            %   DATA = LOAD_MATLAB_STYLE() retrieves all of the data.
+            %
+            %   DATA = LOAD_MATLAB_STYLE(INDEX)
+            %   
+            %   DATA = LOAD_MATLAB_STYLE(START,END) reads a subset of data.
+            %   START and END are 1-based index indicating the beginning
+            %   and end indices of the region to read
+            %
+            %   DATA = LOAD_MATLAB_STYLE(START,STRIDE,END) reads a strided subset of 
+            %   data. STRIDE is the inter-element spacing along each
+            %   data set extent and defaults to one along each extent.
+            
+            if isempty(varargin)
+                obj.load()
+            elseif length(varargin) == 1
+                data = obj.load(varargin{1}, [1, 1]);
+            else
+                if length(varargin) == 2
+                    START = varargin{1};
+                    END = varargin{2};
+                    STRIDE = ones(size(START));
+                elseif length(varargin) == 3
+                    START = varargin{1};
+                    STRIDE = varargin{2};
+                    END = varargin{3};
+                end
+                
+                for i = 1:length(END)
+                    if strcmp(END(i), 'end')
+                        count(i) = Inf;
+                    else
+                        count(i) = floor((END - START) / STRIDE + 1);
+                    end
+                end               
+                data = obj.load(START, count, STRIDE);  
+            end
+        end
+   
+        
         function refs = export(obj, fid, fullpath, refs)
             %Check for compound data type refs
             srcfid = H5F.open(obj.filename);
