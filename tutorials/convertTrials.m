@@ -9,16 +9,13 @@
 % 
 %  author: Lawrence Niu
 %  contact: lawrence@vidriotech.com
-%  last updated: Dec 27, 2018
+%  last updated: Jan 01, 2018
 
 %% Script Configuration
-% The following details configuration information specific to this script.  Parameters
-% can be changed to fit any of the available sessions.
-%%
-% The animal and session specifier can be changed below with the *animal* and *session*
-% variable name respectively.  *metadata_loc*, *datastructure_loc*, and *rawdata_loc*
-% should refer to: the metadata .mat file, the data structure .mat file, 
-% and the raw .tar file.
+% The following details configuration parameters specific to the publishing script,
+% and can be skipped when implementing your own conversion.
+% The parameters can be changed to fit any of the available sessions.
+
 animal = 'ANM255200';
 session = '20140910';
 
@@ -29,7 +26,11 @@ datastructure_loc = fullfile('data','data_structure_files',...
     ['data_structure_' identifier '.mat']);
 rawdata_loc = fullfile('data', 'RawVoltageTraces', [identifier '.tar']);
 %%
-% The NWB file will be saved in the output directory indicated by *outdir*
+% The animal and session specifier can be changed with the |animal| and |session|
+% variable name respectively.  |metadata_loc|, |datastructure_loc|, and |rawdata_loc|
+% should refer to the metadata .mat file, the data structure .mat file, 
+% and the raw .tar file.
+
 outloc = 'out';
 
 if 7 ~= exist(outloc, 'dir')
@@ -38,15 +39,11 @@ end
 
 source_file = [mfilename() '.m'];
 [~, source_script, ~] = fileparts(source_file);
+%%
+% The NWB file will be saved in the output directory indicated by |outdir|
 
 %% General Information
-% The first thing we fill out are general experiment context information.  The only
-% required information here is the identifier, which distinguishes one session from
-% another.  The ALM-3 data is separated by session date and experimented animal ID so
-% we will do the same with our identifier.
-%%
-% Not all general information can be found in the data files.  Certain properties like
-% keywords, institutions, and related publications were derived from the published paper.
+
 nwb = nwbfile();
 nwb.identifier = identifier;
 nwb.general_source_script = source_script;
@@ -73,15 +70,27 @@ nwb.general_surgery = ['Mice were prepared for photoinhibition and ',...
     'covering the entire exposed skull, ',...
     'followed by a thin layer of clear nail polish (Electron Microscopy Sciences, 72180).'];
 nwb.session_description = sprintf('Animal `%s` on Session `%s`', animal, session);
-%% File Overview
-% Each session has three files: a metadata .mat file describing the experiment, the
-% data structures .mat file containing trial/analysis data, and the raw data .tar
-% file containing the raw electrophysiology data separated by trial.
+%%
+% All properties with the prefix |general| contain context for the entire experiment
+% such as lab, institution, and experimentors.  For session-delimited data from the
+% same experiment, these fields will all be the same.  Note that most of this
+% information was pulled from the publishing paper and not from any of the downloadable data.
+%%
+% The only required property is the |identifier|, which distinguishes one session from
+% another within an experiment.  In our case, the ALM-3 data uses a combination of
+% session date and animal ID.
+
+%% The ALM-3 File Structure
+% Each ALM-3 session has three files: a metadata .mat file describing the experiment, a
+% data structures .mat file containing analyzed data, and a raw .tar archive
+% containing multiple raw electrophysiology data separated by trial as .mat files.
+% All files will be merged into a single NWB file.
+
 %% Metadata
 % ALM-3 Metadata contains information about the reference times, experimental context,
 % methodology, as well as details of the electrophysiology, optophysiology, and behavioral
-% portions of the experiment.  A vast majority of these details will be placed in the
-% _general_ subgroup in NWB.
+% portions of the experiment.  A vast majority of these details are placed in |general|
+% prefixed properties in NWB.
 loaded = load(metadata_loc, 'meta_data');
 meta = loaded.meta_data;
 
@@ -91,7 +100,7 @@ isreachr = any(cell2mat(strfind(meta.animalGeneModification, 'ReaChR')));
 %sessions are separated by date of experiment.
 nwb.general_session_id = meta.dateOfExperiment;
 
-%ALM-3 data start time is reference time.
+%ALM-3 data start time is equivalent to the reference time.
 nwb.session_start_time = datetime([meta.dateOfExperiment meta.timeOfExperiment],...
     'InputFormat', 'yyyyMMddHHmmss');
 nwb.timestamps_reference_time = nwb.session_start_time;
@@ -99,11 +108,6 @@ nwb.timestamps_reference_time = nwb.session_start_time;
 nwb.general_experimenter = strjoin(meta.experimenters, ', ');
 
 %%
-% Ideally, if a raw data field does not correspond directly to a NWB field, one would
-% create their own using a
-% <https://pynwb.readthedocs.io/en/latest/extensions.html custom NWB extension class>.
-% To keep this tutorial simple, we instead pack the extra values into the _description_
-% field as a string, which works with miscellaneous configuration parameters such as these.
 nwb.general_subject = types.core.Subject(...
     'species', meta.species{1}, ...
     'subject_id', meta.animalID{1}(1,:), ... %weird case with duplicate Animal ID
@@ -112,9 +116,16 @@ nwb.general_subject = types.core.Subject(...
     'description', [...
         'Whisker Config: ' strjoin(meta.whiskerConfig, ', ') newline...
         'Animal Source: ' strjoin(meta.animalSource, ', ')]);
+%%
+% Ideally, if a raw data field does not correspond directly to a NWB field, one would
+% create their own using a
+% <https://pynwb.readthedocs.io/en/latest/extensions.html custom NWB extension class>.
+% However, since these fields are mostly experimental annotations, we instead pack the
+% extra values into the |description| field as a string.
 
-%formatStruct simply prints the field and values given the struct.  Optional cell
-%array of field names specifies whitelist of fields to print.
+%The formatStruct function simply prints the field and values given the struct.
+%An optional cell array of field names specifies whitelist of fields to print.  This
+%function is provided with this script in the tutorials directory.
 nwb.general_subject.genotype = formatStruct(...
     meta, ...
     {'animalStrain'; 'animalGeneModification'; 'animalGeneCopy';...
@@ -159,12 +170,6 @@ end
 nwb.general_devices.set(laserName, types.core.Device());
 
 %%
-% The NWB *ElectrodeGroup* object stores experimental information regarding a group of
-% probes (presumably defined in the *Device* section).  The object requires
-% a *SoftLink* to the probe specified under _devices_.
-% SoftLink objects are direct maps to
-% <https://portal.hdfgroup.org/display/HDF5/H5L_CREATE_SOFT HDF5 Soft Links> on export,
-% and thus, require a true HDF5 path.
 structDesc = {'recordingCoordinates';'recordingMarker';'recordingType';'penetrationN';...
     'groundCoordinates'};
 if ~isempty(meta.extracellular.referenceCoordinates)
@@ -176,24 +181,16 @@ egroup = types.core.ElectrodeGroup(...
     'location', recordingLocation,...
     'device', types.untyped.SoftLink(['/general/devices/' probetype]));
 nwb.general_extracellular_ephys.set(probetype, egroup);
+%%
+% The NWB *ElectrodeGroup* object stores experimental information regarding a group of
+% probes.  Doing so requires a *SoftLink* to the probe specified under
+% |general_devices|.  SoftLink objects are direct maps to
+% <https://portal.hdfgroup.org/display/HDF5/H5L_CREATE_SOFT HDF5 Soft Links> on export,
+% and thus, require a true HDF5 path.
+
+%raw HDF5 path to the above electrode group.  Used in the DynamicTable below.
 egroupPath = ['/general/extracellular_ephys/' probetype];
 
-%%
-% The _electrodes_ property in _extracellular_ephys_ is a special keyword in NWB that
-% must be paired with a *Dynamic Table*.  These are tables which can have an unbounded
-% number of columns and rows, each as their own dataset.  With the exception of _id_,
-% all columns must be *VectorData* or *VectorIndex* objects.  The _id_ column, meanwhile,
-% must be an *ElementIdentifiers* object.
-% The names of all used columns are specified in the in the _colnames_ property
-% as a cell array of strings.
-%%
-% The _group_ column in the Dynamic Table contains an *ObjectView* to the ElectrodeGroup
-% created above.  An ObjectView can be best thought of as a direct pointer to another
-% typed object.  It also directly maps to a 
-% <https://portal.hdfgroup.org/display/HDF5/H5R_CREATE HDF5 Object Reference>
-% , thus the HDF5 path requirement.  ObjectViews are slightly different from SoftLinks
-% in that they can be stored in datasets (data columns, tables, and _data_ fields in
-% *NWBData* objects).
 etrodeNum = length(meta.extracellular.siteLocations);
 etrodeMat = cell2mat(meta.extracellular.siteLocations .');
 emptyStr = repmat({''}, etrodeNum,1);
@@ -223,8 +220,23 @@ dynTable = types.core.DynamicTable(...
         'description', 'a reference to the ElectrodeGroup this electrode is a part of'),...
     'group_name', types.core.VectorData('data', repmat({probetype}, etrodeNum, 1),...
         'description', 'the name of the ElectrodeGroup this electrode is a part of'));
+%%
+% The |group| column in the Dynamic Table contains an *ObjectView* to the previously
+% created |ElectrodeGroup|.  An |ObjectView| can be best thought of as a direct
+% pointer to another typed object.  It also directly maps to a 
+% <https://portal.hdfgroup.org/display/HDF5/H5R_CREATE HDF5 Object Reference>,
+% thus the HDF5 path requirement.  |ObjectViews| are slightly different from |SoftLinks|
+% in that they can be stored in datasets (data columns, tables, and |data| fields in
+% |NWBData| objects).
+
 nwb.general_extracellular_ephys.set('electrodes', dynTable);
 %%
+% The |electrodes| property in |extracellular_ephys| is a special keyword in NWB that
+% must be paired with a *Dynamic Table*.  These are tables which can have an unbounded
+% number of columns and rows, each as their own dataset.  With the exception of the |id|
+% column, all other columns must be *VectorData* or *VectorIndex* objects.  The |id|
+% column, meanwhile, must be an *ElementIdentifiers* object.  The names of all used
+% columns are specified in the in the |colnames| property as a cell array of strings.
 
 % general/optogenetics/photostim
 nwb.general_optogenetics.set('photostim', ...
@@ -234,24 +246,21 @@ nwb.general_optogenetics.set('photostim', ...
     'device', laserName, ...
     'description', formatStruct(meta.photostim, {...
     'stimulationMethod';'photostimCoordinates';'identificationMethod'})));
-
-%% Data Structures and Hashes
-% ALM-3 stores its data structures in the form of *Hashes* which are essentially the
-% same as Dictionaries or containers.Maps but where the keys and values are stored
-% under separate struct fields.  Getting a "hashed" value from a key involves retrieving
-% the array index that the key is in and applying it to the parallel array in the values
-% field.  In that way, it's fairly simple to convert from Hashes to equivalent Sets
-% or Dynamic Tables.
+%% Analysis Data Structure
+% The ALM-3 data structures .mat file contains analyzed spike data, trial-specific
+% parameters, and behavioral analysis data.
+%% Hashes
+% ALM-3 stores its data structures in the form of *hashes* which are essentially the
+% same as python's dictionaries or MATLAB's maps but where the keys and values
+% are stored under separate struct fields.  Getting a hashed value from a key
+% involves retrieving the array index that the key is in and applying it to the
+% parallel array in the values field.
 %%
-% You can find more information about Hashes and how they're used on the
+% You can find more information about hashes and how they're used on the
 % <https://crcns.org/data-sets/motor-cortex/alm-3/about-alm-3 ALM-3 about page>.
 loaded = load(datastructure_loc, 'obj');
 data = loaded.obj;
 
-%%
-% NWB comes with default support for trial-based data.  These must be *TimeIntervals* that
-% are placed in the _intervals_ property in NWB.  Note that _trials_ is a special
-% keyword that is required for pyNWB compatibility.
 trials = types.core.TimeIntervals(...
     'start_time', types.core.VectorData('data', data.trialStartTimes,...
     'description', 'the start time of each trial'),...
@@ -270,23 +279,16 @@ for i=1:length(data.trialPropertiesHash.keyNames)
         'data', data.trialPropertiesHash.value{i}, ...
         'description', data.trialPropertiesHash.descr{i}));
 end
-nwb.intervals.set('trials', trials); %MUST be called `trials` for pynwb compatibility
+nwb.intervals.set('trials', trials);
+%%
+% NWB comes with default support for trial-based data.  These must be *TimeIntervals* that
+% are placed in the |intervals| property.  Note that |trials| is a special
+% keyword that is required for PyNWB compatibility.
 
 ephus = data.timeSeriesArrayHash.value{1};
 ephusUnit = data.timeUnitNames{data.timeUnitIds(ephus.timeUnit)};
 
-%%
-% Ephus behavioral data is stored in separate NWB locations:
-%
-% * Lick trace data is stored in _acquisition_ under _lick_trace_
-% * AOM input trace and laser power are stored in _stimulus/presentation_ as
-% _aom_input_trace_ and _laser_power_ respectively.
-%
-% Trial IDs, wherever they are used, will be placed in a relevent _control_ property in the
-% data object and will indicate what data is associated with what trial as
-% defined in the trials id column.
-
-% lick_trace
+% lick direction and timestamps trace
 tsIdx = strcmp(ephus.idStr, 'lick_trace');
 bts = types.core.BehavioralTimeSeries();
 bts.timeseries.set('lick_trace_ts', ...
@@ -300,7 +302,7 @@ bts.timeseries.set('lick_trace_ts', ...
     'timestamps_unit', ephusUnit));
 nwb.acquisition.set('lick_trace', bts);
 
-% aom
+% acousto-optic modulator input trace
 tsIdx = strcmp(ephus.idStr, 'aom_input_trace');
 ts = types.core.TimeSeries(...
     'control', ephus.trial, ...
@@ -311,7 +313,7 @@ ts = types.core.TimeSeries(...
     'timestamps', ephus.time, ...
     'timestamps_unit', ephusUnit);
 nwb.stimulus_presentation.set('aom_input_trace', ts);
-% laser_power
+% laser power
 tsIdx = strcmp(ephus.idStr, 'laser_power');
 ots = types.core.OptogeneticSeries(...
     'control', ephus.trial, ...
@@ -323,24 +325,11 @@ ots = types.core.OptogeneticSeries(...
     'timestamps_unit', ephusUnit, ...
     'site', types.untyped.SoftLink('/general/optogenetics/photostim'));
 nwb.stimulus_presentation.set('laser_power', ots);
+%%
+% Trial IDs, wherever they are used, are placed in a relevent |control| property in the
+% data object and will indicate what data is associated with what trial as
+% defined in |trials|'s |id| column.
 
-%%
-% Ephus spike data is separated into units which directly maps to the NWB property
-% of the same name.  Each such unit contains a group of analysed waveforms and spike
-% times, all linked to a different subset of trials IDs.  The waveforms are placed
-% in the _analysis_ Set and are paired with their unit name ('unitx' where 'x' is
-% some unit ID).  The spike times and trial IDs are kept in the *Units* object (under
-% the _units_ property) along with references to the _analysis_ waveforms.
-% To better how _spike_times_index_ and _spike_times_ map to each other, refer to
-% <https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ecephys.html#13 this
-% diagram> from the Extracellular Electrophysiology Tutorial.
-%%
-% To index the relevent trial IDs, The _trials_ column uses *RegionView* objects.
-% RegionViews are ObjectViews with extra embedded indexing information which allows
-% for referring to subsets of data within a dataset.
-%%
-% *NOTE*: To reference indices in dynamic tables such as _intervals/trials_, the raw
-% HDF5 path must point to the column (_intervals/trials/id_ in this case).
 nwb.units = types.core.Units('colnames',...
     {'spike_times_index', 'spike_times', 'trials', 'waveforms'},...
     'description', 'Analysed Spike Events');
@@ -353,22 +342,45 @@ nwb.units.spike_times_index = types.core.VectorIndex(...
     'target', types.untyped.ObjectView('/units/spike_times'));
 nwb.units.spike_times = types.core.VectorData(...
     'description', 'timestamps of spikes');
+%%
+% Ephus spike data is separated into units which directly maps to the NWB property
+% of the same name.  Each such unit contains a group of analysed waveforms and spike
+% times, all linked to a different subset of trials IDs.
+
+
 trials = types.core.VectorIndex(...
     'data', types.untyped.RegionView.empty,...
     'target', types.untyped.ObjectView('/intervals/trials'));
+%%
+% To index the relevent trial IDs, The |trials| column uses *RegionView* objects.
+% |RegionViews| are |ObjectViews| with extra embedded indexing information which allows
+% for referring to subsets of data within a dataset.
+%%
+% *NOTE*: To reference indices in dynamic tables such as intervals/trials, the raw
+% HDF5 path must point to the specific column (intervals/trials/id in this case).
+
 wav_idx = types.core.VectorData('data',types.untyped.ObjectView.empty,...
     'description', 'waveform references');
+%%
+% The waveforms are placed in the |analysis| Set and are paired with their unit name
+% ('unitx' where 'x' is some unit ID).
+
 trial_ids = nwb.intervals.get('trials').id.data;
 for i=1:length(ids)
     esData = esHash.value{i};
+    % add trials ID reference
     trials.data(end+1) = types.untyped.RegionView('/intervals/trials/id',...
         trial_ids == esData.eventTrials);
-
+    
+    % add spike times index and data
+    % spike times index is a RegionView reference to the spike times data whose rows
+    % DO NOT correspond with any other column.
     nwb.units.spike_times_index.data(end+1) = ...
         types.untyped.RegionView('/units/spike_times',...
         length(nwb.units.spike_times.data) + (1:length(esData.eventTimes)));
     nwb.units.spike_times.data = [nwb.units.spike_times.data;esData.eventTimes];
     
+    % add waveform data to "unitx" and associate with "waveform" column as ObjectView.
     ses = types.core.SpikeEventSeries(...
         'control', esData.eventTrials,...
         'control_description', 'trial indices', ...
@@ -388,12 +400,17 @@ for i=1:length(ids)
 end
 nwb.units.vectorindex.set('trials', trials);
 nwb.units.vectordata.set('waveforms', wav_idx);
+%%
+% To better how |spike_times_index| and |spike_times| map to each other, refer to
+% <https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ecephys.html#13 this
+% diagram> from the Extracellular Electrophysiology Tutorial.
 
 
 %% Raw Acquisition Data
 % Each ALM-3 session is associated with a large number of raw voltage data grouped by
 % trial ID. To map this data to NWB, each trial is created as its own *ElectricalSeries*
-% object under the name 'trial n' where 'n' is the trial ID.
+% object under the name 'trial n' where 'n' is the trial ID.  The trials are then linked
+% to the |trials| dynamic table for easy referencing.
 untarLoc = fullfile(pwd, identifier);
 if 7 ~= exist(untarLoc, 'dir')
     untar(rawdata_loc, pwd);
@@ -426,7 +443,7 @@ for i=1:length(rawfiles)
     objrefs{tnum} = types.untyped.ObjectView(['/acquisition/' tname]);
 end
 
-%we then link to the raw data by adding the acquisition column with ObjectViews
+%Link to the raw data by adding the acquisition column with ObjectViews
 %to the data
 emptyrefs = cellfun('isempty', objrefs);
 objrefs(emptyrefs) = {types.untyped.ObjectView('')};
@@ -441,6 +458,5 @@ trials.stop_time = types.core.VectorData(...
 rmdir(untarLoc, 's');
 
 %% Export
-% Finally, we export using the 'session_animalID' notation used in the raw data files.
 outDest = fullfile(outloc, [identifier '.nwb']);
 nwbExport(nwb, outDest);
