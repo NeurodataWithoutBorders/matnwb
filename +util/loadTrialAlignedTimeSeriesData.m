@@ -31,7 +31,7 @@ if exist('conditions', 'var')
     for i = 1:length(keys)
         key = keys{i};
         val = conditions(key);
-        trials_to_take = (trials.tablecolumn.get(key).data.load == val) & trials_to_take;
+        trials_to_take = (trials.vectordata.get(key).data.load == val) & trials_to_take;
     end
 end
 

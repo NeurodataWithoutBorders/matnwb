@@ -33,9 +33,9 @@ else
     end
     start_ind = fastsearch(timeseries.timestamps, interval(1), 1);
     if isinf(interval(2))
-        timestamps = timeseries.timestamps.load(start_ind, [], downsample_factor);
+        timestamps = timeseries.timestamps.load_h5_style(start_ind, [], downsample_factor);
     else
         end_ind = fastsearch(timeseries.timestamps, interval(2), -1);
-        timestamps = timeseries.timestamps.load(start_ind, end_ind - start_ind, downsample_factor);
+        timestamps = timeseries.timestamps.load_h5_style(start_ind, end_ind - start_ind, downsample_factor);
     end
 end
