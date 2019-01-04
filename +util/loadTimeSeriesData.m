@@ -79,11 +79,11 @@ else
     end
     
     if downsample_factor == 1
-        data = timeseries.data.load(start, count);
+        data = timeseries.data.load_h5_style(start, count);
     else
         stride = ones(1, length(dims));
         stride(end) = downsample_factor;
-        data = timeseries.data.load(start, count, stride)';
+        data = timeseries.data.load_h5_style(start, stride, end)';
     end
     
 end
