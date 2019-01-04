@@ -62,12 +62,11 @@ else
     end
     if isa(val, 'types.untyped.DataStub')
         %grab first element and check
-        dimsize = [1 ndims(val)];
         truval = val;
         if any(val.dims == 0)
             val = [];
         else
-            val = val.load(ones(dimsize), ones(dimsize));
+            val = val.load(1);
         end
     elseif isa(val, 'types.untyped.Anon')
         truval = val;

@@ -63,7 +63,7 @@ classdef RegionView < handle
             
             if isa(vobj.data, 'types.untyped.DataStub')
                 sid = obj.get_selection(vobj.data.get_space());
-                v = vobj.data.load(sid);
+                v = vobj.data.load_h5_style(sid);
                 H5S.close(sid);
             else
                 v = vobj.data;
