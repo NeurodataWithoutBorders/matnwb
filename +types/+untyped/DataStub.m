@@ -98,7 +98,16 @@ classdef DataStub
             if isempty(varargin)
                 data = obj.load_h5_style();
             elseif length(varargin) == 1
-                data = obj.load_h5_style(varargin{1}, [1, 1]);
+                region = misc.idx2h5(varargin{1}, obj.dims);
+                sid = obj.get_space();
+                H5S.select_none(sid);
+                for i=1:length(region)
+                    reg = region{i};
+                    H5S.select_hyperslab(sid, 'H5S_SELECT_OR', reg(1,:),...
+                        [], [], diff(reg, 1, 1)+1);
+                end
+                data = obj.load_h5_style(sid);
+                H5S.close(sid);
             else
                 if length(varargin) == 2
                     START = varargin{1};
