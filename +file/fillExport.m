@@ -164,12 +164,15 @@ if isa(prop, 'file.Attribute') && ~isempty(prop.dependent)
         depPropname = [flattened prop.dependent];
     end
     emptycheck = [emptycheck ' && ~isempty(obj.' depPropname ')'];
+elseif (isa(prop, 'file.Group') || isa(prop, 'file.Dataset')) &&...
+        prop.required && prop.isConstrainedSet
+    emptycheck = [emptycheck ' && obj.' name '.Count > 0'];
 end
 
 fde = [emptycheck newline file.addSpaces(fde, 4)];
 
 if prop.required
-    errmsg = ['    error(''Property `' name '` is required.'');'];
+    errmsg = ['    error(''Property `' name '` cannot be empty.'');'];
     if isa(prop, 'file.Attribute') && ~isempty(prop.dependent)
         errmsg = ['elseif ~isempty(obj.' depPropname ')' newline errmsg];
     else

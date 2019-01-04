@@ -184,7 +184,12 @@ names = names(~constrained & ~anon);
 defaults = cell(size(names));
 for i=1:length(names)
     prop = props(names{i});
-    if isa(prop, 'file.Group') && (prop.hasAnonData || prop.hasAnonGroups)
+    if (isa(prop, 'file.Group') || isa(prop, 'file.Dataset')) &&...
+            ~isempty(prop.type) && ~prop.isConstrainedSet && prop.required
+        nmspcName = namespace.getNamespace(prop.type).name;
+        defaults{i} = ['types.' nmspcName '.' prop.type];
+    elseif isa(prop, 'file.Group') &&...
+            isempty(prop.type) && (prop.hasAnonData || prop.hasAnonGroups)
         defaults{i} = 'types.untyped.Set()';
     else
         defaults{i} = '[]';
