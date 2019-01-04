@@ -41,6 +41,10 @@ nwb=nwbRead('data.nwb');
 ```
 
 ## Tutorials
+[Basic Data Retrieval](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/basicUsage.html)
+
+[Conversion From Trial Data](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/convertTrials.html)
+
 [Extracellular Electrophysiology IO](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ecephys.html)
 
 ## third-party support
