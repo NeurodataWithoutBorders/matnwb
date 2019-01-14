@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>NWB File Conversion Tutorial</title><meta name="generator" content="MATLAB 9.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-01-02"><meta name="DC.source" content="convertTrials.m"><style type="text/css">
+      --><title>NWB File Conversion Tutorial</title><meta name="generator" content="MATLAB 9.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-01-14"><meta name="DC.source" content="convertTrials.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -68,7 +68,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
   </style></head><body><div class="content"><h1>NWB File Conversion Tutorial</h1><!--introduction--><p>How to convert trial-based experimental data to the Neurodata Without Borders file format using MatNWB. This example uses the <a href="https://crcns.org/data-sets/motor-cortex/alm-3">CRCNS ALM-3</a> data set.  Information on how to download the data can be found on the <a href="https://crcns.org/data-sets/motor-cortex/download">CRCNS Download Page</a>.  One should first familiarize themselves with the file format, which can be found on the <a href="https://crcns.org/data-sets/motor-cortex/alm-3/about-alm-3">ALM-3 About Page</a> under the Documentation files.</p><pre>author: Lawrence Niu
 contact: lawrence@vidriotech.com
-last updated: Jan 01, 2018</pre><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Script Configuration</a></li><li><a href="#4">General Information</a></li><li><a href="#7">The ALM-3 File Structure</a></li><li><a href="#8">Metadata</a></li><li><a href="#15">Analysis Data Structure</a></li><li><a href="#16">Hashes</a></li><li><a href="#25">Raw Acquisition Data</a></li><li><a href="#26">Export</a></li></ul></div><h2 id="1">Script Configuration</h2><p>The following details configuration parameters specific to the publishing script, and can be skipped when implementing your own conversion. The parameters can be changed to fit any of the available sessions.</p><pre class="codeinput">animal = <span class="string">'ANM255200'</span>;
+last updated: Jan 11, 2019</pre><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Script Configuration</a></li><li><a href="#4">General Information</a></li><li><a href="#7">The ALM-3 File Structure</a></li><li><a href="#8">Metadata</a></li><li><a href="#15">Analysis Data Structure</a></li><li><a href="#16">Hashes</a></li><li><a href="#25">Raw Acquisition Data</a></li><li><a href="#26">Export</a></li></ul></div><h2 id="1">Script Configuration</h2><p>The following details configuration parameters specific to the publishing script, and can be skipped when implementing your own conversion. The parameters can be changed to fit any of the available sessions.</p><pre class="codeinput">animal = <span class="string">'ANM255200'</span>;
 session = <span class="string">'20140910'</span>;
 
 identifier = [animal <span class="string">'_'</span> session];
@@ -170,7 +170,8 @@ nwb.general_data_collection = formatStruct(meta.extracellular,<span class="keywo
 <span class="comment">% and laser hardware names here.</span>
 probetype = meta.extracellular.probeType{1};
 probeSource = meta.extracellular.probeSource{1};
-nwb.general_devices.set([probetype <span class="string">' ('</span> probeSource <span class="string">')'</span>],<span class="keyword">...</span>
+deviceName = [probetype <span class="string">' ('</span> probeSource <span class="string">')'</span>];
+nwb.general_devices.set(deviceName,<span class="keyword">...</span>
     types.core.Device());
 
 <span class="keyword">if</span> isreachr
@@ -188,15 +189,15 @@ recordingLocation = meta.extracellular.recordingLocation{1};
 egroup = types.core.ElectrodeGroup(<span class="keyword">...</span>
     <span class="string">'description'</span>, formatStruct(meta.extracellular, structDesc),<span class="keyword">...</span>
     <span class="string">'location'</span>, recordingLocation,<span class="keyword">...</span>
-    <span class="string">'device'</span>, types.untyped.SoftLink([<span class="string">'/general/devices/'</span> probetype]));
-nwb.general_extracellular_ephys.set(probetype, egroup);
+    <span class="string">'device'</span>, types.untyped.SoftLink([<span class="string">'/general/devices/'</span> deviceName]));
+nwb.general_extracellular_ephys.set(deviceName, egroup);
 </pre><p>The NWB <b>ElectrodeGroup</b> object stores experimental information regarding a group of probes.  Doing so requires a <b>SoftLink</b> to the probe specified under <tt>general_devices</tt>.  SoftLink objects are direct maps to <a href="https://portal.hdfgroup.org/display/HDF5/H5L_CREATE_SOFT">HDF5 Soft Links</a> on export, and thus, require a true HDF5 path.</p><pre class="codeinput"><span class="comment">%raw HDF5 path to the above electrode group.  Used in the DynamicTable below.</span>
-egroupPath = [<span class="string">'/general/extracellular_ephys/'</span> probetype];
+egroupPath = [<span class="string">'/general/extracellular_ephys/'</span> deviceName];
 
 etrodeNum = length(meta.extracellular.siteLocations);
 etrodeMat = cell2mat(meta.extracellular.siteLocations .');
 emptyStr = repmat({<span class="string">''</span>}, etrodeNum,1);
-dtColNames = {<span class="string">'x'</span>, <span class="string">'y'</span>, <span class="string">'z'</span>, <span class="string">'imp'</span>, <span class="string">'location'</span>, <span class="string">'description'</span>, <span class="string">'filtering'</span>,<span class="string">'group'</span>,<span class="keyword">...</span>
+dtColNames = {<span class="string">'x'</span>, <span class="string">'y'</span>, <span class="string">'z'</span>, <span class="string">'imp'</span>, <span class="string">'location'</span>, <span class="string">'filtering'</span>,<span class="string">'group'</span>,<span class="keyword">...</span>
     <span class="string">'group_name'</span>};
 <span class="comment">% you can specify column names and values as key-value arguments in the DynamicTable</span>
 <span class="comment">% constructor.</span>
@@ -236,7 +237,7 @@ data = loaded.obj;
 
 trials = types.core.TimeIntervals(<span class="keyword">...</span>
     <span class="string">'start_time'</span>, types.core.VectorData(<span class="string">'data'</span>, data.trialStartTimes,<span class="keyword">...</span>
-    <span class="string">'description'</span>, <span class="string">'the start time of each trial'</span>),<span class="keyword">...</span>
+        <span class="string">'description'</span>, <span class="string">'the start time of each trial'</span>),<span class="keyword">...</span>
     <span class="string">'colnames'</span>, [data.trialTypeStr; data.trialPropertiesHash.keyNames .'],<span class="keyword">...</span>
     <span class="string">'description'</span>, <span class="string">'trial data and properties'</span>, <span class="keyword">...</span>
     <span class="string">'id'</span>, types.core.ElementIdentifiers(<span class="string">'data'</span>, data.trialIds));
@@ -329,14 +330,14 @@ nwb.units.spike_times = types.core.VectorData(<span class="keyword">...</span>
     ses = types.core.SpikeEventSeries(<span class="keyword">...</span>
         <span class="string">'control'</span>, esData.eventTrials,<span class="keyword">...</span>
         <span class="string">'control_description'</span>, <span class="string">'trial indices'</span>, <span class="keyword">...</span>
-        <span class="string">'data'</span>, esData.waveforms, <span class="keyword">...</span>
+        <span class="string">'data'</span>, esData.waveforms .', <span class="keyword">...</span>
         <span class="string">'description'</span>, esHash.descr{i}, <span class="keyword">...</span>
         <span class="string">'timestamps'</span>, esData.eventTimes, <span class="keyword">...</span>
         <span class="string">'timestamps_unit'</span>, data.timeUnitNames{data.timeUnitIds(esData.timeUnit)},<span class="keyword">...</span>
         <span class="string">'electrodes'</span>, types.core.DynamicTableRegion(<span class="keyword">...</span>
             <span class="string">'description'</span>, <span class="string">'Electrodes involved with these spike events'</span>,<span class="keyword">...</span>
             <span class="string">'table'</span>, types.untyped.ObjectView(<span class="string">'/general/extracellular_ephys/electrodes'</span>),<span class="keyword">...</span>
-            <span class="string">'data'</span>, esData.channel));
+            <span class="string">'data'</span>, esData.channel - 1));
     <span class="keyword">if</span> ~isempty(esData.cellType)
         ses.comments = [<span class="string">'cellType: '</span> esData.cellType{1}];
     <span class="keyword">end</span>
@@ -357,7 +358,7 @@ nrows = length(nwb.general_extracellular_ephys.get(<span class="string">'electro
 tablereg = types.core.DynamicTableRegion(<span class="keyword">...</span>
     <span class="string">'description'</span>,<span class="string">'Relevent Electrodes for this Electrical Series'</span>,<span class="keyword">...</span>
     <span class="string">'table'</span>,types.untyped.ObjectView(<span class="string">'/general/extracellular_ephys/electrodes'</span>),<span class="keyword">...</span>
-    <span class="string">'data'</span>,1:nrows);
+    <span class="string">'data'</span>,(1:nrows) - 1);
 objrefs = cell(size(rawfiles));
 trials = nwb.intervals.get(<span class="string">'trials'</span>);
 endTimestamps = trials.start_time.data;
@@ -389,7 +390,7 @@ trials.stop_time = types.core.VectorData(<span class="keyword">...</span>
     <span class="string">'data'</span>, endTimestamps,<span class="keyword">...</span>
     <span class="string">'description'</span>, <span class="string">'the end time of each trial'</span>);
 
-rmdir(untarLoc, <span class="string">'s'</span>);
+<span class="comment">% rmdir(untarLoc, 's');</span>
 </pre><h2 id="26">Export</h2><pre class="codeinput">outDest = fullfile(outloc, [identifier <span class="string">'.nwb'</span>]);
 nwbExport(nwb, outDest);
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018b</a><br></p></div><!--
@@ -405,7 +406,7 @@ nwbExport(nwb, outDest);
 % 
 %  author: Lawrence Niu
 %  contact: lawrence@vidriotech.com
-%  last updated: Jan 01, 2018
+%  last updated: Jan 11, 2019
 
 %% Script Configuration
 % The following details configuration parameters specific to the publishing script,
@@ -555,7 +556,8 @@ nwb.general_data_collection = formatStruct(meta.extracellular,...
 % and laser hardware names here.
 probetype = meta.extracellular.probeType{1};
 probeSource = meta.extracellular.probeSource{1};
-nwb.general_devices.set([probetype ' (' probeSource ')'],...
+deviceName = [probetype ' (' probeSource ')'];
+nwb.general_devices.set(deviceName,...
     types.core.Device());
 
 if isreachr
@@ -575,8 +577,8 @@ recordingLocation = meta.extracellular.recordingLocation{1};
 egroup = types.core.ElectrodeGroup(...
     'description', formatStruct(meta.extracellular, structDesc),...
     'location', recordingLocation,...
-    'device', types.untyped.SoftLink(['/general/devices/' probetype]));
-nwb.general_extracellular_ephys.set(probetype, egroup);
+    'device', types.untyped.SoftLink(['/general/devices/' deviceName]));
+nwb.general_extracellular_ephys.set(deviceName, egroup);
 %%
 % The NWB *ElectrodeGroup* object stores experimental information regarding a group of
 % probes.  Doing so requires a *SoftLink* to the probe specified under
@@ -585,12 +587,12 @@ nwb.general_extracellular_ephys.set(probetype, egroup);
 % and thus, require a true HDF5 path.
 
 %raw HDF5 path to the above electrode group.  Used in the DynamicTable below.
-egroupPath = ['/general/extracellular_ephys/' probetype];
+egroupPath = ['/general/extracellular_ephys/' deviceName];
 
 etrodeNum = length(meta.extracellular.siteLocations);
 etrodeMat = cell2mat(meta.extracellular.siteLocations .');
 emptyStr = repmat({''}, etrodeNum,1);
-dtColNames = {'x', 'y', 'z', 'imp', 'location', 'description', 'filtering','group',...
+dtColNames = {'x', 'y', 'z', 'imp', 'location', 'filtering','group',...
     'group_name'};
 % you can specify column names and values as key-value arguments in the DynamicTable
 % constructor.
@@ -659,7 +661,7 @@ data = loaded.obj;
 
 trials = types.core.TimeIntervals(...
     'start_time', types.core.VectorData('data', data.trialStartTimes,...
-    'description', 'the start time of each trial'),...
+        'description', 'the start time of each trial'),...
     'colnames', [data.trialTypeStr; data.trialPropertiesHash.keyNames .'],...
     'description', 'trial data and properties', ...
     'id', types.core.ElementIdentifiers('data', data.trialIds));
@@ -780,14 +782,14 @@ for i=1:length(ids)
     ses = types.core.SpikeEventSeries(...
         'control', esData.eventTrials,...
         'control_description', 'trial indices', ...
-        'data', esData.waveforms, ...
+        'data', esData.waveforms .', ...
         'description', esHash.descr{i}, ...
         'timestamps', esData.eventTimes, ...
         'timestamps_unit', data.timeUnitNames{data.timeUnitIds(esData.timeUnit)},...
         'electrodes', types.core.DynamicTableRegion(...
             'description', 'Electrodes involved with these spike events',...
             'table', types.untyped.ObjectView('/general/extracellular_ephys/electrodes'),...
-            'data', esData.channel));
+            'data', esData.channel - 1));
     if ~isempty(esData.cellType)
         ses.comments = ['cellType: ' esData.cellType{1}];
     end
@@ -819,7 +821,7 @@ nrows = length(nwb.general_extracellular_ephys.get('electrodes').id.data);
 tablereg = types.core.DynamicTableRegion(...
     'description','Relevent Electrodes for this Electrical Series',...
     'table',types.untyped.ObjectView('/general/extracellular_ephys/electrodes'),...
-    'data',1:nrows);
+    'data',(1:nrows) - 1);
 objrefs = cell(size(rawfiles));
 trials = nwb.intervals.get('trials');
 endTimestamps = trials.start_time.data;
@@ -851,7 +853,7 @@ trials.stop_time = types.core.VectorData(...
     'data', endTimestamps,...
     'description', 'the end time of each trial');
 
-rmdir(untarLoc, 's');
+% rmdir(untarLoc, 's');
 
 %% Export
 outDest = fullfile(outloc, [identifier '.nwb']);
