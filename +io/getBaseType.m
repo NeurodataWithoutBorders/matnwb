@@ -1,4 +1,4 @@
-function id = getBaseType(type, data)
+function id = getBaseType(type)
 switch type
     case 'types.untyped.ObjectView'
         id = 'H5T_STD_REF_OBJ';
@@ -10,10 +10,11 @@ switch type
         H5T.set_size(id, 'H5T_VARIABLE');
     case 'double'
         id = 'H5T_NATIVE_DOUBLE';
-    case 'int64'
+    case {'int64' 'uint64'}
         id = 'H5T_NATIVE_LLONG';
-    case 'uint64'
-        id = 'H5T_NATIVE_ULLONG';
+%    pynwb currently doesn't check for uint64 values
+%    case 'uint64'
+%        id = 'H5T_NATIVE_ULLONG';
     case 'int32'
         id = 'H5T_NATIVE_INT';
     case 'single'

@@ -87,12 +87,25 @@ else
             addpath(fullfile(fileparts(which('nwbfile')), 'external_packages', 'datenum8601'));
             assert(ischar(val) || iscellstr(val) || isa(val, 'datetime'), errmsg);
             
-            if ischar(val)
-                val = datetime(datenum8601(val), 'ConvertFrom', 'datenum');
-            elseif iscellstr(val)
-                datevals = repmat(datetime, size(val));
+            if ischar(val) || iscellstr(val)
+                if ischar(val)
+                    val = {val};
+                end
+                
+                datevals = repmat(datetime('now', 'TimeZone', 'local'), size(val));
                 for i = 1:length(val)
-                    datevals(i) = datetime(datenum8601(val{i}), 'ConvertFrom', 'datenum');
+                    dnum = datenum8601(val{i});
+                    % timezones
+                    if length(dnum) > 1 && contains(val{i}, {'+', '-'})
+                        if contains(val{i}, '+')
+                            tz = val{i}(strfind(val{i}, '+'):end);
+                        else
+                            tz = val{i}(strfind(val{i}, '-'):end);
+                        end
+                    else
+                        tz = 'local';
+                    end
+                    datevals(i) = datetime(dnum(1), 'TimeZone', tz,'ConvertFrom', 'datenum');
                 end
                 val = datevals;
             end

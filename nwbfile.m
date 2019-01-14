@@ -22,10 +22,11 @@ classdef nwbfile < types.core.NWBFile
             end
             
             %add to file create date
+            dt = datetime('now', 'TimeZone', 'local');
             if isempty(obj.file_create_date)
-                obj.file_create_date = datetime;
+                obj.file_create_date = dt;
             else
-                obj.file_create_date(end+1) = datetime;
+                obj.file_create_date(end+1) = dt;
             end
             
             %equate reference time to session_start_time if empty

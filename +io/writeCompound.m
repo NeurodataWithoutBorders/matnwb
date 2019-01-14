@@ -44,7 +44,7 @@ for i=1:length(names)
     end
     
     classes{i} = class(val);
-    tids{i} = io.getBaseType(classes{i}, val);
+    tids{i} = io.getBaseType(classes{i});
     sizes(i) = H5T.get_size(tids{i});
 end
 
