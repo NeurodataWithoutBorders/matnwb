@@ -98,7 +98,7 @@ classdef DataStub
             if isempty(varargin)
                 data = obj.load_h5_style();
             elseif length(varargin) == 1
-                region = misc.idx2h5(varargin{1}, obj.dims);
+                region = misc.idx2h5(varargin{1}, obj.dims, 'preserve');
                 sid = obj.get_space();
                 H5S.select_none(sid);
                 for i=1:length(region)

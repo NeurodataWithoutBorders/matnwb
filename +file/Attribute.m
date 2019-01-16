@@ -22,7 +22,7 @@ classdef Attribute < handle
             obj.readonly = false;
             obj.dtype = '';
             obj.dependent = '';
-            obj.scalar = false;
+            obj.scalar = true;
             obj.shape = {};
             obj.dimnames = {};
             

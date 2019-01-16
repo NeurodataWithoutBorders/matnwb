@@ -52,6 +52,6 @@ end
 %% sanitize strings and cell strings
 if iscellstr(data)
     for i=1:length(data)
-        data{i} = native2unicode(unicode2native(data{i}), 'UTF-8');
+        data{i} = char(unicode2native(data{i}));
     end
 end
