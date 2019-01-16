@@ -10,6 +10,10 @@ This package provides two functions `generateCore` and `generateExtension` that 
 
 Once the code generation step is done, NWB objects can be read, constructed and written from Matlab.
 
+## Sources
+
+MatNWB is availbale online at https://github.com/NeurodataWithoutBorders/matnwb
+
 ## Caveats
 
 The NWB:N schema is in a state of some evolution.  This package assumes a certain set of rules are used to define the schema.  As the schema is updated, some of the rules may be changed and these will break this package.
