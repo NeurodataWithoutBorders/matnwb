@@ -74,49 +74,65 @@ else
     else
         truval = [];
     end
-    switch type
-        case {'double' 'int64' 'uint64' 'logical'}
-            assert(isnumeric(val), errmsg);
-            
-            if strcmp(type, 'uint64') && any(reshape(val, [numel(val) 1]) < 0)
-                warning('Property `%s` is a `uint64`.  Casted value will be zero.');
-            end
-            
-            val = eval([type '(val)']);
-        case 'isodatetime'
-            addpath(fullfile(fileparts(which('nwbfile')), 'external_packages', 'datenum8601'));
-            assert(ischar(val) || iscellstr(val) || isa(val, 'datetime'), errmsg);
-            
+    
+    if any(strcmpi(type, {'single' 'double' 'logical' 'numeric'})) ||...
+            startsWith(type, {'int' 'uint' 'float'})
+        %all numeric types
+        try
+            val = types.util.correctType(val, type);
+        catch ME
+            keyboard;
+            error('MATNWB:CASTERROR', 'Could not cast type `%s` to `%s` for property `%s`',...
+                class(val), type, name);
+        end
+    elseif strcmp(type, 'isodatetime')
+        addpath(fullfile(fileparts(which('nwbfile')), 'external_packages', 'datenum8601'));
+        assert(ischar(val) || iscellstr(val) || isa(val, 'datetime'), errmsg);
+        
+        if ischar(val) || iscellstr(val)
             if ischar(val)
-                val = datetime(datenum8601(val), 'ConvertFrom', 'datenum');
-            elseif iscellstr(val)
-                datevals = repmat(datetime, size(val));
-                for i = 1:length(val)
-                    datevals(i) = datetime(datenum8601(val{i}), 'ConvertFrom', 'datenum');
-                end
-                val = datevals;
-            end
-        case 'char'
-            assert(ischar(val) || iscellstr(val), errmsg);
-        otherwise %class, ref, or link
-            noncell = false;
-            if ~iscell(val)
                 val = {val};
-                noncell = true;
             end
-            for i=1:length(val)
-                subval = val{i};
-                if isempty(subval)
-                    continue;
+            
+            datevals = repmat(datetime('now', 'TimeZone', 'local'), size(val));
+            for i = 1:length(val)
+                dnum = datenum8601(val{i});
+                % timezones
+                if length(dnum) > 1 && contains(val{i}, {'+', '-'})
+                    if contains(val{i}, '+')
+                        tz = val{i}(strfind(val{i}, '+'):end);
+                    else
+                        tz = val{i}(strfind(val{i}, '-'):end);
+                    end
+                else
+                    tz = 'local';
                 end
-                
-                if ~isa(subval, type) && ~any(strcmp(class(subval), WHITELIST))
-                    error(errmsg);
-                end
+                datevals(i) = datetime(dnum(1), 'TimeZone', tz,'ConvertFrom', 'datenum');
             end
-            if noncell
-                val = val{1};
+            val = datevals;
+        end
+    elseif strcmp(type, 'char')
+        assert(ischar(val) || iscellstr(val), errmsg);
+    else%class, ref, or link
+        
+        noncell = false;
+        if ~iscell(val)
+            val = {val};
+            noncell = true;
+        end
+        for i=1:length(val)
+            subval = val{i};
+            if isempty(subval)
+                continue;
             end
+            
+            if ~isa(subval, type) && ~any(strcmp(class(subval), WHITELIST))
+                error(errmsg);
+            end
+        end
+        if noncell
+            val = val{1};
+        end
     end
     
     %reset to datastub/anon

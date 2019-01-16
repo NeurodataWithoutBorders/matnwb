@@ -10,7 +10,7 @@ for i=1:length(fields)
         if ~iscellstr(val)
             for j=1:length(val)
                 if isnumeric(val{j})
-                    val{j} = num2str(val{j});
+                    val{j} = ['[' num2str(val{j}) ']'];
                 end
             end
         end

@@ -1,21 +1,22 @@
-function [tid, sid, data] = mapData2H5(fid, type, data)
+function [tid, sid, data] = mapData2H5(fid, type, data, forceArray)
 %MAPDATA2H5 Convert MATLAB type specifier and data to HDF5 compatible data
 %   Given base file_id, type string and data value, returns HDF5 type id, space id,
 %   and properly converted data
 
-tid = io.getBaseType(type, data);
+if nargin < 4
+    forceArray = false;
+end
 
+tid = io.getBaseType(type);
+
+%determine space size
 if ischar(data)
-    data = mat2cell(data, ones(size(data,1),1), size(data,2));
-    for i=1:length(data)
-        data{i} = char(unicode2native(data{i}));
-    end
-    if isscalar(data)
+    if ~forceArray && size(data,1) == 1
         sid = H5S.create('H5S_SCALAR');
     else
         sid = H5S.create_simple(1, size(data,1), []);
     end
-elseif isscalar(data)
+elseif ~forceArray && isscalar(data)
     sid = H5S.create('H5S_SCALAR');
 else
     if isvector(data)
@@ -37,10 +38,20 @@ switch type
     case 'logical'
         %In HDF5, HBOOL is mapped to INT32LE
         data = int32(data);
-    case 'datetime'
-        data = datestr(data, 30);
-        data = mat2cell(data, ones(size(data,1),1), size(data,2));
-        for i=1:length(data)
-            data{i} = char(unicode2native(data{i}));
+    case {'char' 'datetime'}
+        if isa(data, 'datetime')
+            if isempty(data.TimeZone)
+                data.TimeZone = 'local';
+            end
+            data.Format = 'yyyyMMdd''T''HHmmssZ'; % ISO8601
+            data = char(data);
         end
+        data = mat2cell(data, ones(size(data,1),1), size(data,2));
+end
+
+%% sanitize strings and cell strings
+if iscellstr(data)
+    for i=1:length(data)
+        data{i} = char(unicode2native(data{i}));
+    end
 end

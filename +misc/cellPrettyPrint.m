@@ -1,11 +1,11 @@
 function s = cellPrettyPrint(val)
 %NOTE: Returns str without curly brackets
 %allows for numerical and casting values (0.0, NaN, int64(2.0), etc.)
-nummatch = regexp(val, '^(?:.+\()?(Inf|NaN|\d+(?:\.\d+)?)\)?', 'match', 'once');
-iNonNums = ~strcmp(val, nummatch);
+% nummatch = regexp(val, '^(?:.+\()?(Inf|NaN|\d+(?:\.\d+)?)\)?', 'match', 'once');
+% iNonNums = ~strcmp(val, nummatch);
 
 %strip quotes
-iHasQuotes = iNonNums & startsWith(val, '''') & endsWith(val, '''');
+iHasQuotes = startsWith(val, '''') & endsWith(val, '''');
 valHasQuotes = val(iHasQuotes);
 for i=1:length(valHasQuotes)
     vhq = valHasQuotes{i};
@@ -14,9 +14,9 @@ end
 val(iHasQuotes) = valHasQuotes;
 
 %escape interior quotes
-val = strrep(val, '''', '`');
+val(iHasQuotes) = strrep(val(iHasQuotes), '''', '`');
 %re-add surrounding quotes for all non-numeric values
-val(iNonNums) = strcat('''', val(iNonNums), '''');
+val(iHasQuotes) = strcat('''', val(iHasQuotes), '''');
 
 s = strjoin(val, ' ');
 end

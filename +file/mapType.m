@@ -1,6 +1,6 @@
 % converts dtype name to type name.  If struct, then returns a struct of mapped types
+% all this does is narrow the possible range of names per type.
 function dt = mapType(dtype)
-dt = '';
 if isempty(dtype) || any(strcmp({'None', 'any'}, dtype))
     dt = 'any';
 elseif isa(dtype, 'java.util.ArrayList')
@@ -20,18 +20,13 @@ elseif isa(dtype, 'java.util.ArrayList')
     end
 elseif isa(dtype, 'java.util.HashMap')
     dt = dtype;
-elseif startsWith(dtype, 'float') || strcmp(dtype, 'number')
-    dt = 'double';
 elseif any(strcmpi({'ascii', 'str', 'text', 'utf8'}, dtype))
     dt = 'char';
-elseif startsWith(dtype, 'int')
-    dt = 'int64';
-elseif startsWith(dtype, 'uint')
-    dt = 'uint64';
-elseif strcmpi('isodatetime', dtype)
-    dt = 'isodatetime';
 elseif strcmp('bool', dtype)
     dt = 'logical';
+elseif strcmpi('isodatetime', dtype)
+    dt = 'isodatetime';
+else
+    dt = dtype;
 end
-
 end

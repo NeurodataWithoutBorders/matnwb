@@ -90,16 +90,21 @@ function bodystr = fillBody(pname, defaults, names, props, namespace)
 if isempty(defaults)
     bodystr = '';
 else
-    usmap = containers.Map;
+    overridemap = containers.Map;
     for i=1:length(defaults)
         nm = defaults{i};
         if strcmp(props(nm).dtype, 'char')
-            usmap(nm) = ['''' props(nm).value ''''];
+            overridemap(nm) = ['''' props(nm).value ''''];
         else
-            usmap(nm) = [props(nm).dtype '(' props(nm).value ')'];
+            overridemap(nm) =...
+                sprintf('types.util.correctType(%s, ''%s'')',...
+                    props(nm).value,...
+                    props(nm).dtype);
         end
     end
-    kwargs = io.map2kwargs(usmap);
+    kwargs = io.map2kwargs(overridemap);
+    %add surrounding quotes to kwargs so misc.cellPrettyPrint can print them correctly
+    kwargs(1:2:end) = strcat('''', kwargs(1:2:end), '''');
     bodystr = ['varargin = [{' misc.cellPrettyPrint(kwargs) '} varargin];' newline];
 end
 bodystr = [bodystr 'obj = obj@' pname '(varargin{:});'];

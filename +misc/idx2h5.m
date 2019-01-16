@@ -1,4 +1,13 @@
-function h5idx = idx2h5(idx, matSize)
+function h5idx = idx2h5(idx, matSize, opt)
+    % option flag `preserve` specifies whether or not to condense indices
+    % the distinction is important if you're reading from either MATLAB or DataStub objects.
+    preserve = false;
+    if nargin > 2
+        switch opt
+            case 'preserve'
+                preserve = true;
+        end
+    end
     if islogical(idx)
         idx = find(idx);
     end
@@ -15,10 +24,13 @@ function h5idx = idx2h5(idx, matSize)
     
     %transform linear ranges to subscripts
     %compress matSize dimensions
-    if nargin == 1 || all(matSize == 1) || (numel(matSize == 2) && any(matSize == 1))
-        matSize = 1;
-    else
-        matSize = matSize(1:find(matSize > 1, 1, 'last'));
+    %don't touch if preserved
+    if nargin < 3 || ~preserve
+        if nargin == 1 || all(matSize == 1) || (numel(matSize) == 2 && any(matSize == 1))
+            matSize = 1;
+        else
+            matSize = matSize(1:find(matSize > 1, 1, 'last'));
+        end
     end
     
     for i=1:length(ranges)

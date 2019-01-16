@@ -72,6 +72,11 @@ classdef Dataset < handle
                 obj.dimnames = {obj.name};
             else
                 [obj.shape, obj.dimnames] = file.procdims(shape, dims);
+                if iscellstr(obj.shape)
+                    obj.scalar = any(strcmp(obj.shape, '1'));
+                else
+                    obj.scalar = strcmp(obj.shape, '1');
+                end
             end
             
             %do attributes
