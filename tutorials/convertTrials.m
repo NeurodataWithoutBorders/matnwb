@@ -61,7 +61,7 @@ nwb.general_protocol = 'IACUC';
 nwb.general_surgery = ['Mice were prepared for photoinhibition and ',...
     'electrophysiology with a clear-skull cap and a headpost. ',...
     'The scalp and periosteum over the dorsal surface of the skull were removed. ',...
-    'A layer of cyanoacrylate adhesive (Krazy glue, Elmer’s Products Inc.) ',...
+    'A layer of cyanoacrylate adhesive (Krazy glue, Elmer''s Products Inc.) ',...
     'was directly applied to the intact skull. A custom made headpost ',...
     'was placed on the skull with its anterior edge aligned with the suture lambda ',...
     '(approximately over cerebellum) and cemented in place ',...
@@ -230,7 +230,7 @@ dynTable = types.core.DynamicTable(...
 % in that they can be stored in datasets (data columns, tables, and |data| fields in
 % |NWBData| objects).
 
-nwb.general_extracellular_ephys.set('electrodes', dynTable);
+nwb.general_extracellular_ephys_electrodes = dynTable;
 %%
 % The |electrodes| property in |extracellular_ephys| is a special keyword in NWB that
 % must be paired with a *Dynamic Table*.  These are tables which can have an unbounded
@@ -262,25 +262,30 @@ nwb.general_optogenetics.set('photostim', ...
 loaded = load(datastructure_loc, 'obj');
 data = loaded.obj;
 
-trials = types.core.TimeIntervals(...
+trials_idx = types.core.TimeIntervals(...
     'start_time', types.core.VectorData('data', data.trialStartTimes,...
         'description', 'the start time of each trial'),...
-    'colnames', [data.trialTypeStr; data.trialPropertiesHash.keyNames .'],...
+    'colnames', [data.trialTypeStr; data.trialPropertiesHash.keyNames .';...
+        {'start_time'; 'stop_time'}],... %stop_time will be determined later
     'description', 'trial data and properties', ...
     'id', types.core.ElementIdentifiers('data', data.trialIds));
 for i=1:length(data.trialTypeStr)
-    trials.vectordata.set(data.trialTypeStr{i}, ...
+    trials_idx.vectordata.set(data.trialTypeStr{i}, ...
         types.core.VectorData('data', data.trialTypeMat(i,:),...
             'description', data.trialTypeStr{i}));
 end
 
 for i=1:length(data.trialPropertiesHash.keyNames)
-    trials.vectordata.set(data.trialPropertiesHash.keyNames{i}, ...
+    descr = data.trialPropertiesHash.descr{i};
+    if iscellstr(descr)
+        descr = strjoin(descr, newline);
+    end
+    trials_idx.vectordata.set(data.trialPropertiesHash.keyNames{i}, ...
         types.core.VectorData(...
         'data', data.trialPropertiesHash.value{i}, ...
-        'description', data.trialPropertiesHash.descr{i}));
+        'description', descr));
 end
-nwb.intervals.set('trials', trials);
+nwb.intervals_trials = trials_idx;
 %%
 % NWB comes with default support for trial-based data.  These must be *TimeIntervals* that
 % are placed in the |intervals| property.  Note that |trials| is a special
@@ -332,7 +337,7 @@ nwb.stimulus_presentation.set('laser_power', ots);
 % defined in |trials|'s |id| column.
 
 nwb.units = types.core.Units('colnames',...
-    {'spike_times_index', 'spike_times', 'trials', 'waveforms'},...
+    {'spike_times', 'trials', 'waveforms'},...
     'description', 'Analysed Spike Events');
 esHash = data.eventSeriesHash;
 ids = regexp(esHash.keyNames, '^unit(\d+)$', 'once', 'tokens');
@@ -347,31 +352,31 @@ nwb.units.spike_times = types.core.VectorData(...
 % Ephus spike data is separated into units which directly maps to the NWB property
 % of the same name.  Each such unit contains a group of analysed waveforms and spike
 % times, all linked to a different subset of trials IDs.
+unitTrials = types.core.VectorData(...
+    'description', 'A large group of trial IDs for each unit',...
+    'data', []);
 
-
-trials = types.core.VectorIndex(...
-    'data', types.untyped.RegionView.empty,...
-    'target', types.untyped.ObjectView('/intervals/trials'));
+trials_idx = types.core.VectorIndex(...
+    'data', [],...
+    'target', types.untyped.ObjectView('/units/trials'));
 %%
-% To index the relevent trial IDs, The |trials| column uses *RegionView* objects.
-% |RegionViews| are |ObjectViews| with extra embedded indexing information which allows
-% for referring to subsets of data within a dataset.
-%%
-% *NOTE*: To reference indices in dynamic tables such as intervals/trials, the raw
-% HDF5 path must point to the specific column (intervals/trials/id in this case).
-
+% |VectorIndex| objects index into a larger |VectorData| column, generally in the same
+% DynamicTable.  Each element marking the *last* element in the corresponding vector
+% data object for this row.  Thus, starting index for this segment would be the previous
+% index + 1.  Note that these indices must be 0-indexed for compatibility with pynwb.
 wav_idx = types.core.VectorData('data',types.untyped.ObjectView.empty,...
     'description', 'waveform references');
 %%
 % The waveforms are placed in the |analysis| Set and are paired with their unit name
 % ('unitx' where 'x' is some unit ID).
 
-trial_ids = nwb.intervals.get('trials').id.data;
+trial_ids = nwb.intervals_trials.id.data;
 for i=1:length(ids)
     esData = esHash.value{i};
     % add trials ID reference
-    trials.data(end+1) = types.untyped.RegionView('/intervals/trials/id',...
-        trial_ids == esData.eventTrials);
+    
+    unitTrials.data = [unitTrials.data; esData.eventTrials];
+    trials_idx.data(end+1) = length(unitTrials.data) - 1;
     
     % add spike times index and data
     % spike times index is a RegionView reference to the spike times data whose rows
@@ -399,7 +404,8 @@ for i=1:length(ids)
     nwb.analysis.set(esHash.keyNames{i}, ses);
     wav_idx.data(end+1) = types.untyped.ObjectView(['/analysis/' esHash.keyNames{i}]);
 end
-nwb.units.vectorindex.set('trials', trials);
+nwb.units.vectorindex.set('trials_index', trials_idx);
+nwb.units.vectordata.set('trials', unitTrials);
 nwb.units.vectordata.set('waveforms', wav_idx);
 %%
 % To better how |spike_times_index| and |spike_times| map to each other, refer to
@@ -420,14 +426,14 @@ end
 rawfiles = dir(untarLoc);
 rawfiles = fullfile(untarLoc, {rawfiles(~[rawfiles.isdir]).name});
 
-nrows = length(nwb.general_extracellular_ephys.get('electrodes').id.data);
+nrows = length(nwb.general_extracellular_ephys_electrodes.id.data);
 tablereg = types.core.DynamicTableRegion(...
     'description','Relevent Electrodes for this Electrical Series',...
     'table',types.untyped.ObjectView('/general/extracellular_ephys/electrodes'),...
     'data',(1:nrows) - 1);
 objrefs = cell(size(rawfiles));
-trials = nwb.intervals.get('trials');
-endTimestamps = trials.start_time.data;
+trials_idx = nwb.intervals_trials;
+endTimestamps = trials_idx.start_time.data;
 for i=1:length(rawfiles)
     tnumstr = regexp(rawfiles{i}, '_trial_(\d+)\.mat$', 'tokens', 'once');
     tnumstr = tnumstr{1};
@@ -448,15 +454,15 @@ end
 %to the data
 emptyrefs = cellfun('isempty', objrefs);
 objrefs(emptyrefs) = {types.untyped.ObjectView('')};
-trials.colnames{end+1} = 'acquisition';
-trials.vectordata.set('acquisition', types.core.VectorData(...
+trials_idx.colnames{end+1} = 'acquisition';
+trials_idx.vectordata.set('acquisition', types.core.VectorData(...
     'description', 'soft link to acquisition data for this trial',...
     'data', [objrefs{:}]));
-trials.stop_time = types.core.VectorData(...
+trials_idx.stop_time = types.core.VectorData(...
     'data', endTimestamps,...
     'description', 'the end time of each trial');
 
-% rmdir(untarLoc, 's');
+
 
 %% Export
 outDest = fullfile(outloc, [identifier '.nwb']);
