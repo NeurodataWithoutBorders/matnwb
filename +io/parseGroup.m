@@ -54,25 +54,8 @@ if isempty(typename)
 else
     if gprops.Count > 0
         %elide group properties
-        propnames = keys(gprops);
-        typeprops = setdiff(properties(typename), propnames);
-        elided_typeprops = typeprops(startsWith(typeprops, propnames));
-        gprops = [gprops; elide(gprops, elided_typeprops)];
-        %remove all properties that are embedded sets (sets within sets)
-        propnames = keys(gprops);
-        propvals = values(gprops);
-        valueSetIdx = cellfun('isclass', propvals, 'types.untyped.Set');
-        setNames = propnames(valueSetIdx);
-        setValues = propvals(valueSetIdx);
-        for i=1:length(setValues)
-            nlevel = setValues{i};
-            nlevelkeys = keys(nlevel);
-            deepsetIdx = cellfun('isclass', values(nlevel), 'types.untyped.Set');
-            nlevel.delete(nlevelkeys(deepsetIdx));
-            if nlevel.Count == 0
-                remove(gprops, setNames{i}); %delete this set too if it's empty
-            end
-        end
+        elided_gprops = elide(gprops, properties(typename));
+        gprops = [gprops; elided_gprops];
     end
     %construct as kwargs and instantiate object
     kwargs = io.map2kwargs([attrprops; dsprops; gprops; lprops]);
@@ -85,17 +68,18 @@ else
 end
 end
 
-function set = elide(elideset, elided_typeprops, prefix)
+%NOTE: SIDE EFFECTS ALTER THE SET
+function elided = elide(set, prop, prefix)
 %given raw data representation, match to closest property.
 % return a typemap of matching typeprops and their prop values to turn into kwargs
 % depth first search through the set to construct a possible type prop
-set = containers.Map;
 if nargin < 3
     prefix = '';
 end
-elidekeys = keys(elideset);
-elidevals = values(elideset);
-constrained = types.untyped.Set();
+elided = containers.Map;
+elidekeys = keys(set);
+elidevals = values(set);
+drop = false(size(elidekeys));
 if ~isempty(prefix)
     potentials = strcat(prefix, '_', elidekeys);
 else
@@ -105,24 +89,29 @@ for i=1:length(potentials)
     pvar = potentials{i};
     pvalue = elidevals{i};
     if isa(pvalue, 'containers.Map') || isa(pvalue, 'types.untyped.Set')
-        if isa(elideset, 'containers.Map')
-            nextSet = elideset(elidekeys{i});
-        else % types.untyped.Set
-            nextSet = elideset.get(elidekeys{i});
+        if pvalue.Count == 0
+            drop(i) = true;
+            continue; %delete
         end
-        leads = startsWith(elided_typeprops, pvar);
-        if ~any(leads)
-            %this group probably doesn't have any elided values in it.
-            continue;
+        leads = startsWith(prop, pvar);
+        if any(leads)
+            %since set has been edited, we bubble up deletion of the old keys.
+            subset = elide(pvalue, prop(leads), pvar);
+            elided = [elided; subset];
+            if pvalue.Count == 0
+                drop(i) = true;
+            elseif any(strcmp(pvar, prop))
+                elided(pvar) = pvalue;
+                drop(i) = true;
+            else
+                warning('Unable to match property `%s` under prefix `%s`',...
+                    pvar, prefix);
+            end
         end
-        set = [set; elide(nextSet, elided_typeprops(leads), pvar)];
-    elseif any(strcmp(pvar, elided_typeprops))
-        set(pvar) = pvalue;
-    elseif ~isempty(prefix) %attempt to combine into a Set
-        constrained.set(elidekeys{i}, pvalue);
+    elseif any(strcmp(pvar, prop))
+        elided(pvar) = pvalue;
+        drop(i) = true;
     end
 end
-if constrained.Count > 0
-    set(prefix) = constrained;
-end
+remove(set, elidekeys(drop)); %delete all leftovers that were yielded
 end
