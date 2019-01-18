@@ -52,15 +52,28 @@ if isempty(typename)
         parsed(root) = [];
     end
 else
-    %elide group properties
-    propnames = keys(gprops);
-    typeprops = setdiff(properties(typename), propnames);
-    elided_typeprops = typeprops(startsWith(typeprops, propnames));
-    for i=1:length(elided_typeprops)
-        etp = elided_typeprops{i};
-        gprops(etp) = elide(etp, gprops);
+    if gprops.Count > 0
+        %elide group properties
+        propnames = keys(gprops);
+        typeprops = setdiff(properties(typename), propnames);
+        elided_typeprops = typeprops(startsWith(typeprops, propnames));
+        gprops = [gprops; elide(gprops, elided_typeprops)];
+        %remove all properties that are embedded sets (sets within sets)
+        propnames = keys(gprops);
+        propvals = values(gprops);
+        valueSetIdx = cellfun('isclass', propvals, 'types.untyped.Set');
+        setNames = propnames(valueSetIdx);
+        setValues = propvals(valueSetIdx);
+        for i=1:length(setValues)
+            nlevel = setValues{i};
+            nlevelkeys = keys(nlevel);
+            deepsetIdx = cellfun('isclass', values(nlevel), 'types.untyped.Set');
+            nlevel.delete(nlevelkeys(deepsetIdx));
+            if nlevel.Count == 0
+                remove(gprops, setNames{i}); %delete this set too if it's empty
+            end
+        end
     end
-    
     %construct as kwargs and instantiate object
     kwargs = io.map2kwargs([attrprops; dsprops; gprops; lprops]);
     if isempty(root)
@@ -72,36 +85,44 @@ else
 end
 end
 
-function set = elide(propname, elideset)
-%given propname and a nested set, elide and return flattened set
-set = elideset;
-prefix = '';
-while ~strcmp(prefix, propname)
-    ekeys = keys(set);
-    found = false;
-    for i=1:length(ekeys)
-        ek = ekeys{i};
-        if isempty(prefix)
-            pek = ek;
-        else
-            pek = [prefix '_' ek];
+function set = elide(elideset, elided_typeprops, prefix)
+%given raw data representation, match to closest property.
+% return a typemap of matching typeprops and their prop values to turn into kwargs
+% depth first search through the set to construct a possible type prop
+set = containers.Map;
+if nargin < 3
+    prefix = '';
+end
+elidekeys = keys(elideset);
+elidevals = values(elideset);
+constrained = types.untyped.Set();
+if ~isempty(prefix)
+    potentials = strcat(prefix, '_', elidekeys);
+else
+    potentials = elidekeys;
+end
+for i=1:length(potentials)
+    pvar = potentials{i};
+    pvalue = elidevals{i};
+    if isa(pvalue, 'containers.Map') || isa(pvalue, 'types.untyped.Set')
+        if isa(elideset, 'containers.Map')
+            nextSet = elideset(elidekeys{i});
+        else % types.untyped.Set
+            nextSet = elideset.get(elidekeys{i});
         end
-        if startsWith(propname, pek)
-            if isa(set, 'containers.Map')
-                set = set(ek);
-            elseif strcmp(propname, pek)
-                set = set.get(ek);
-            else
-                continue;
-            end
-            prefix = pek;
-            found = true;
-            break;
+        leads = startsWith(elided_typeprops, pvar);
+        if ~any(leads)
+            %this group probably doesn't have any elided values in it.
+            continue;
         end
+        set = [set; elide(nextSet, elided_typeprops(leads), pvar)];
+    elseif any(strcmp(pvar, elided_typeprops))
+        set(pvar) = pvalue;
+    elseif ~isempty(prefix) %attempt to combine into a Set
+        constrained.set(elidekeys{i}, pvalue);
     end
-    if ~found
-        set = [];
-        return;
-    end
+end
+if constrained.Count > 0
+    set(prefix) = constrained;
 end
 end

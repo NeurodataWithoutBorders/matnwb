@@ -115,7 +115,7 @@ classdef Set < handle & matlab.mixin.CustomDisplay
         end
         
         function obj = delete(obj, name)
-            obj.map(name) = [];
+            remove(obj.map, name);
         end
         
         function obj = clear(obj)
