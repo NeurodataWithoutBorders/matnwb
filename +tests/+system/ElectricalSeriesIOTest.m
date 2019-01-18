@@ -1,15 +1,4 @@
 classdef ElectricalSeriesIOTest < tests.system.PyNWBIOTest
-    methods(Test)
-        function testOutToPyNWB(testCase)
-            testCase.assumeFail(['Current schema in MatNWB does not include a ElectrodeTable class used by Python tests. ', ...
-                'When it does, addContainer in this test will need to be updated to match the Python test']);
-        end
-        
-        function testInFromPyNWB(testCase)
-            testCase.assumeFail(['Current schema in MatNWB does not include a ElectrodeTable class used by Python tests. ', ...
-                'When it does, addContainer in this test will need to be updated to match the Python test']);
-        end
-    end
     
     methods
         function addContainer(testCase, file) %#ok<INUSL>
