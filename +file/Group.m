@@ -145,9 +145,8 @@ classdef Group < handle
             obj.hasAnonData = anonDataCnt > 0;
             obj.hasAnonGroups = anonGroupCnt > 0;
             
-            obj.elide = obj.scalar && isempty(obj.type) && isempty(obj.attributes)...
-                && isempty(obj.links) && ~obj.hasAnonData && ~obj.hasAnonGroups...
-                && ~obj.defaultEmpty;
+            obj.elide = ~isempty(obj.name) && obj.scalar && isempty(obj.type) &&...
+                isempty(obj.attributes);
         end
         
         function props = getProps(obj)
@@ -157,42 +156,6 @@ classdef Group < handle
             
             if obj.isConstrainedSet && ~obj.definesType
                 error('getProps shouldn''t be called on a constrained set.');
-            end
-            
-            %untyped
-            % parse props and return.
-            
-            %typed
-            % containersMap of properties -> types
-            % parse props and return;
-            
-            %subgroups
-            for i=1:length(obj.subgroups)
-                %if typed, check if constraint
-                % if constraint, add its type and continue
-                % otherwise, call getprops and assign to its name.
-                %if untyped, check if elided
-                % if elided, add to prefix and check all subgroups, attributes and datasets.
-                % otherwise, call getprops and assign to its name.
-                sub = obj.subgroups(i);
-                if isempty(sub.type)
-                    if sub.elide
-                        subprops = sub.getProps;
-                        epkeys = keys(subprops);
-                        for j=1:length(epkeys)
-                            epk = epkeys{j};
-                            props([sub.name '_' epk]) = subprops(epk);
-                        end
-                    else
-                        props(sub.name) = sub;
-                    end
-                else
-                    if isempty(sub.name)
-                        props(lower(sub.type)) = sub;
-                    else
-                        props(sub.name) = sub;
-                    end
-                end
             end
             
             %datasets
@@ -229,6 +192,58 @@ classdef Group < handle
             if ~isempty(obj.links)
                 props = [props;...
                     containers.Map({obj.links.name}, num2cell(obj.links))];
+            end
+            
+            %untyped
+            % parse props and return.
+            
+            %typed
+            % containersMap of properties -> types
+            % parse props and return;
+            
+            %subgroups
+            for i=1:length(obj.subgroups)
+                %if typed, check if constraint
+                % if constraint, add its type and continue
+                % otherwise, call getprops and assign to its name.
+                %if untyped, check if elided
+                % if elided, add to prefix and check all subgroups, attributes and datasets.
+                % otherwise, call getprops and assign to its name.
+                sub = obj.subgroups(i);
+                if isempty(sub.type)
+                    if sub.elide
+                        subprops = sub.getProps;
+                        epkeys = keys(subprops);
+                        for j=1:length(epkeys)
+                            epk = epkeys{j};
+                            epval = subprops(epk);
+                            % hoist constrained sets to the current 
+                            % subname.
+                            if (isa(epval, 'file.Group') ||...
+                                    isa(epval, 'file.Dataset')) &&...
+                                    strcmpi(epk, epval.type) &&...
+                                    epval.isConstrainedSet
+                                propname = sub.name;
+                            else
+                                propname = [sub.name '_' epk];
+                            end
+                            if isKey(props, propname)
+                                keyboard;
+                                props(propname) = {props(propname); subprops(epk)};
+                            else
+                                props(propname) = subprops(epk);
+                            end
+                        end
+                    else
+                        props(sub.name) = sub;
+                    end
+                else
+                    if isempty(sub.name)
+                        props(lower(sub.type)) = sub;
+                    else
+                        props(sub.name) = sub;
+                    end
+                end
             end
         end
     end

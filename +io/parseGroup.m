@@ -52,15 +52,11 @@ if isempty(typename)
         parsed(root) = [];
     end
 else
-    %elide group properties
-    propnames = keys(gprops);
-    typeprops = setdiff(properties(typename), propnames);
-    elided_typeprops = typeprops(startsWith(typeprops, propnames));
-    for i=1:length(elided_typeprops)
-        etp = elided_typeprops{i};
-        gprops(etp) = elide(etp, gprops);
+    if gprops.Count > 0
+        %elide group properties
+        elided_gprops = elide(gprops, properties(typename));
+        gprops = [gprops; elided_gprops];
     end
-    
     %construct as kwargs and instantiate object
     kwargs = io.map2kwargs([attrprops; dsprops; gprops; lprops]);
     if isempty(root)
@@ -72,36 +68,50 @@ else
 end
 end
 
-function set = elide(propname, elideset)
-%given propname and a nested set, elide and return flattened set
-set = elideset;
-prefix = '';
-while ~strcmp(prefix, propname)
-    ekeys = keys(set);
-    found = false;
-    for i=1:length(ekeys)
-        ek = ekeys{i};
-        if isempty(prefix)
-            pek = ek;
-        else
-            pek = [prefix '_' ek];
+%NOTE: SIDE EFFECTS ALTER THE SET
+function elided = elide(set, prop, prefix)
+%given raw data representation, match to closest property.
+% return a typemap of matching typeprops and their prop values to turn into kwargs
+% depth first search through the set to construct a possible type prop
+if nargin < 3
+    prefix = '';
+end
+elided = containers.Map;
+elidekeys = keys(set);
+elidevals = values(set);
+drop = false(size(elidekeys));
+if ~isempty(prefix)
+    potentials = strcat(prefix, '_', elidekeys);
+else
+    potentials = elidekeys;
+end
+for i=1:length(potentials)
+    pvar = potentials{i};
+    pvalue = elidevals{i};
+    if isa(pvalue, 'containers.Map') || isa(pvalue, 'types.untyped.Set')
+        if pvalue.Count == 0
+            drop(i) = true;
+            continue; %delete
         end
-        if startsWith(propname, pek)
-            if isa(set, 'containers.Map')
-                set = set(ek);
-            elseif strcmp(propname, pek)
-                set = set.get(ek);
+        leads = startsWith(prop, pvar);
+        if any(leads)
+            %since set has been edited, we bubble up deletion of the old keys.
+            subset = elide(pvalue, prop(leads), pvar);
+            elided = [elided; subset];
+            if pvalue.Count == 0
+                drop(i) = true;
+            elseif any(strcmp(pvar, prop))
+                elided(pvar) = pvalue;
+                drop(i) = true;
             else
-                continue;
+                warning('Unable to match property `%s` under prefix `%s`',...
+                    pvar, prefix);
             end
-            prefix = pek;
-            found = true;
-            break;
         end
-    end
-    if ~found
-        set = [];
-        return;
+    elseif any(strcmp(pvar, prop))
+        elided(pvar) = pvalue;
+        drop(i) = true;
     end
 end
+remove(set, elidekeys(drop)); %delete all leftovers that were yielded
 end
