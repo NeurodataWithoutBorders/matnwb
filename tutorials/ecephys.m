@@ -79,12 +79,13 @@ tbl.Properties.Description = 'my description';
 electrode_table = util.table2nwb(tbl);
 nwb.general_extracellular_ephys_electrodes = electrode_table;
 
-%% LFP
-% In order to write LFP, you need to construct a region view of the electrode 
-% table to link the signal to the electrodes that generated them. You must do
-% this even if the signal is from all of the electrodes. Here we will create
-% a reference that includes all electrodes. Then we will randomly generate a
-% signal 1000 timepoints long from 10 channels
+%% Multielectrode recording
+% In order to write a multielectrode recording, you need to construct a 
+% region view of the electrode table to link the signal to the electrodes 
+% that generated them. You must do this even if the signal is from all of 
+% the electrodes. Here we will create a reference that includes all 
+% electrodes. Then we will generate a signal 1000 timepoints long from 10 
+% channels.
 
 ov = types.untyped.ObjectView('/general/extracellular_ephys/electrodes');
 
@@ -94,8 +95,10 @@ electrode_table_region = types.core.DynamicTableRegion('table', ov, ...
 
 %%
 % once you have the |ElectrodeTableRegion| object, you can create an
-% ElectricalSeries object to hold your LFP data. Here is an example using
-% starting_time and rate.
+% |ElectricalSeries| object to hold your multielectrode data. An 
+% |ElectricalSeries| is an example of a |TimeSeries| object. For all 
+% |TimeSeries| objects, you have 2 options for storing time information.
+% The first is to use |starting_time| and |rate|:
 
 % generate data for demonstration
 data = reshape(1:10000, 10, 1000);
@@ -109,13 +112,12 @@ electrical_series = types.core.ElectricalSeries(...
 
 nwb.acquisition.set('ECoG', electrical_series);
 %%
-% You can also specify time using timestamps. This is particularly useful if
-% the timestamps are not evenly sampled. In this case, the electrical series
+% You can also specify time using |timestamps|. This is particularly useful if
+% the sample times are not evenly sampled. In this case, the electrical series
 % constructor will look like this
 
 electrical_series = types.core.ElectricalSeries(...
     'timestamps', (1:1000)/200, ...
-    'starting_time_rate', 200., ... % Hz
     'data', data,...
     'electrodes', electrode_table_region,...
     'data_unit','V');
@@ -126,11 +128,11 @@ electrical_series = types.core.ElectricalSeries(...
 trials = types.core.TimeIntervals( ...
     'colnames', {'correct','start_time','stop_time'},...
     'description', 'trial data and properties', ...
-    'id', types.core.ElementIdentifiers('data', 1:3),...
+    'id', types.core.ElementIdentifiers('data', 0:2),...
     'start_time', types.core.VectorData('data', [.1, 1.5, 2.5],...
-        'description','hi'),...
+        'description','start time of trial'),...
     'stop_time', types.core.VectorData('data', [1., 2., 3.],...
-        'description','hi'),...
+        'description','end of each trial'),...
     'correct', types.core.VectorData('data', [false,true,false],...
         'description','my description'));
 
@@ -139,57 +141,54 @@ nwb.intervals_trials = trials;
 %%
 % |colnames| is flexible - it can store any column names and the entries can
 % be any data type, which allows you to store any information you need about 
-% trials. The units table stores information about cells and is created with
-% an analogous workflow.
-
-%% Processing Modules
-% Measurements go in |acquisition| and subject or session data goes in
-% |general|, but if you have the result of an analysis, e.g. spike times,
-% you need to store this in a processing module. Here we make a processing
-% module called "cellular"
-
-cell_mod = types.core.ProcessingModule('description', 'a test module');
+% trials.
 
 %% Spikes
-% There are two different ways of storing spikes (aka action potentials),
-% |Clustering| and |UnitTimes|. |Clustering| is more strightforward, and is used to mark
-% measured threshold crossings that are spike-sorted into different clusters,
-% indicating that they are believed to come from different neurons. The
-% advantage of this structure is that it is easy to write data via a stream
-% and it is easy to query based on time window (since the timestamps are 
-% ordered).
+% Spikes are stored in the |units| table, which uses 3 arrays to store the
+% spike times of all the cells.
 
-spike_times = [0.1, 0.21, 0.34, 0.36, 0.4, 0.43, 0.5, 0.61, 0.66, 0.69];
-cluster_ids = [0, 0, 1, 1, 2, 2, 0, 0, 1, 1];
-
-clustering = types.core.Clustering( ...
-    'description', 'my_description',...
-    'peak_over_rms',[1,2,3],...
-    'times', spike_times, ...
-    'num', cluster_ids);
-
-cell_mod.nwbdatainterface.set('clustering',clustering);
-nwb.processing.set('cellular', cell_mod);
-
-%%
-% The other structure is within the |units| table, which is organized by cell instead of
-% by time. The advantage of |units| is that it is more
-% parallel-friendly. It is easier to split the computation of by cells are
-% read/write in parallel, distributing the cells across the cores of your
-% computation network.
 %%
 % 
 % <<UnitTimes.png>>
 % 
 %%
+% to add spike data to the units table
 
-[spike_times_vector, spike_times_index] = util.create_spike_times(cluster_ids, spike_times);
-nwb.units = types.core.Units('colnames',{'spike_times','spike_times_index'},...
+spike_times = [0.1, 0.21, 0.34, 0.36, 0.4, 0.43, 0.5, 0.61, 0.66, 0.69];
+unit_ids = [0, 0, 1, 1, 2, 2, 0, 0, 1, 1];
+
+[spike_times_vector, spike_times_index] = util.create_spike_times(unit_ids, spike_times);
+nwb.units = types.core.Units('colnames', {'spike_times', 'spike_times_index'},...
     'description','units table',...
-    'id', types.core.ElementIdentifiers('data',1:length(spike_times_index.data)));
+    'id', types.core.ElementIdentifiers('data', 0:length(spike_times_index.data) - 1));
 nwb.units.spike_times = spike_times_vector;
 nwb.units.spike_times_index = spike_times_index;
 
+%% Processing Modules
+% Measurements go in |acquisition| and subject or session data goes in
+% |general|, but if you have the intermediate processing results, you
+% should put them in a processing module.
+
+ecephys_mod = types.core.ProcessingModule('description', 'contains clustering data');
+
+%%
+% The |Clustering| data structure holds information about the spike-sorting
+% process.
+
+clustering = types.core.Clustering( ...
+    'description', 'my_description',...
+    'peak_over_rms', [1, 2, 3],...
+    'times', spike_times, ...
+    'num', cluster_ids);
+
+cell_mod.nwbdatainterface.set('clustering', clustering);
+
+%%
+% I am going to call this processing module "ecephys." As a convention, I 
+% use the names of the NWB core namespace modules as the names of my 
+% processing modules, however this is not a rule and you may use any name.
+
+nwb.processing.set('ecephys', ecephys_mod);
 
 %% Writing the file
 % Once you have added all of the data types you want to a file, you can save
@@ -198,7 +197,7 @@ nwb.units.spike_times_index = spike_times_index;
 nwbExport(nwb, 'ecephys_tutorial.nwb')
 
 %% Reading the file
-% load an NWB file object into memory with
+% load an NWB file object with
 
 nwb2 = nwbRead('ecephys_tutorial.nwb');
 
@@ -218,9 +217,8 @@ data = nwb2.acquisition.get('ECoG').data.load;
 disp(data(1:10, 1:10));
 
 %%
-% Loading all of the data is not a problem for this small
-% dataset, but it can be a problem when dealing with real data that can be
-% several GBs or even TBs per session. In these cases you can load a specific secion of
+% Loading all of the data can be a problem when dealing with real data that can be
+% several GBs or even TBs per session. In these cases you can load a specific section of
 % data. For instance, here is how you would load data starting at the index
 % (1,1) and read 10 rows and 20 columns of data
 
@@ -244,13 +242,13 @@ timeseries = nwb2.acquisition.get('ECoG');
 [trial_data, tt] = util.loadTrialAlignedTimeSeriesData(nwb2, ...
     timeseries, window, conditions);
 
-% plot data from the first electrode for those two trials (it's just noise in this example)
+% plot data from the first electrode for those two trials
 plot(tt, squeeze(trial_data(:,1,:)))
 xlabel('time (seconds)')
 ylabel(['ECoG (' timeseries.data_unit ')'])
 
-%% Reading UnitTimes (RegionViews)
-% |UnitTimes| uses RegionViews to indicate which spikes belong to which cell.
+%% Reading units (RegionViews)
+% The |units| table uses an index array to indicate which spikes belong to which cell.
 % The structure is split up into 3 datasets (see Spikes secion):
 my_spike_times = nwb.units.spike_times;
 %%
@@ -265,9 +263,9 @@ my_index.refresh(nwb)
 
 %% External Links
 % NWB allows you to link to datasets within another file through HDF5
-% ExternalLinks. This is useful for separating out large datasets that are
+% |ExternalLink|s. This is useful for separating out large datasets that are
 % not always needed. It also allows you to store data once, and access it 
-% across many NWB files, so it is useful for storing e.g. subject-related
+% across many NWB files, so it is useful for storing subject-related
 % data that is the same for all sessions. Here is an example of creating a
 % link from the Subject object from the |ecephys_tutorial.nwb| file we just
 % created in a new file.
