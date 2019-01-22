@@ -3,7 +3,7 @@
 % 
 %  author: Ben Dichter
 %  contact: ben.dichter@gmail.com
-%  last edited: Dec 17, 2018
+%  last edited: Jan 22, 2019
 
 %% NWB file
 % All contents get added to the NWB file, which is created with the
@@ -71,12 +71,13 @@ for i_device = 1:length(udevice_labels)
     end        
 end
 %%
-% add the |DynamicTable| object to the NWB file using the name |'electrodes'| (not flexible)
+% add the |DynamicTable| object to the NWB file in
+% /general/extracellular_ephys/electrodes
 
 tbl.Properties.Description = 'my description';
 
 electrode_table = util.table2nwb(tbl);
-nwb.general_extracellular_ephys.set('electrodes', electrode_table);
+nwb.general_extracellular_ephys_electrodes = electrode_table;
 
 %% LFP
 % In order to write LFP, you need to construct a region view of the electrode 
@@ -133,7 +134,7 @@ trials = types.core.TimeIntervals( ...
     'correct', types.core.VectorData('data', [false,true,false],...
         'description','my description'));
 
-nwb.intervals.set('trials', trials);
+nwb.intervals_trials = trials;
 
 %%
 % |colnames| is flexible - it can store any column names and the entries can
