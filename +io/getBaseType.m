@@ -10,13 +10,13 @@ elseif any(strcmp(type, {'char' 'cell' 'datetime'}))
     id = H5T.copy('H5T_C_S1');
     H5T.set_size(id, 'H5T_VARIABLE');
 elseif strcmp(type, 'double')
-    id = 'H5T_NATIVE_DOUBLE';
+    id = 'H5T_IEEE_F64LE';
 elseif strcmp(type, 'single')
-    id = 'H5T_NATIVE_FLOAT';
+    id = 'H5T_IEEE_F32LE';
 elseif strcmp(type, 'logical')
-    id = 'H5T_NATIVE_HBOOL';
+    id = 'H5T_STD_I32LE';
 elseif startsWith(type, {'int' 'uint'})
-    prefix = 'H5T_NATIVE_';
+    prefix = 'H5T_STD_';
     pattern = 'int%d';
     if type(1) == 'u'
         pattern = ['u' pattern];
@@ -25,17 +25,19 @@ elseif startsWith(type, {'int' 'uint'})
     
     switch suffix
         case 8
-            suffix = 'CHAR';
+            suffix = '8LE';
         case 16
-            suffix = 'SHORT';
+            suffix = '16LE';
         case 32
-            suffix = 'LONG';
+            suffix = '32LE';
         case 64
-            suffix = 'LLONG';
+            suffix = '64LE';
     end
     
     if type(1) == 'u'
         suffix = ['U' suffix];
+    else
+        suffix = ['I' suffix];
     end
     
     id = [prefix suffix];
