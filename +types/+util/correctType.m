@@ -1,36 +1,30 @@
-function val = correctType(val, type)
+function val = correctType(val, type, allowDowncast)
 %CORRECTTYPE upcasts if type is smaller than minimum
 %   Will error if type is simply incompatible
 %   Will throw if casting is impossible
 
 %check different types and correct
-switch (type)
-    case {'float64' 'float32' 'float'}
-        if ~isfloat(val)
-            val = double(val);
-        end
-    case 'int'
-        if ~isinteger(val)
-            val = int64(val);
-        end
-    case 'uint'
-        if ~isinteger(val)
-            val = uint64(val);
-        end
-    case 'numeric'
-        if ~isnumeric(val)
-            val = double(val);
-        end
-    case 'logical'
-        if ~islogical(val)
-            val = logical(val);
-        end
+
+if startsWith(type, 'float') && ~isfloat(val)
+    val = double(val);
+elseif startsWith(type, 'int') && ~isinteger(val)
+    val = int64(val);
+elseif startsWith(type, 'uint') && ~isinteger(val)
+    val = uint64(val);
+elseif strcmp(type, 'numeric') && ~isnumeric(val)
+    val = double(val);
+elseif strcmp(type, 'bool') && ~islogical(val)
+    val = logical(val);
 end
 
 %check different types sizes and upcast to meet minimum (if applicable)
-if strcmp(type, 'float64') && strcmp(class(val), 'single')
-    val = double(val);
-if (~strcmp(type, 'int') && startsWith(type, 'int')) ||...
+if any(strcmp(type, {'float64' 'float32'})
+    if issingle(val)
+        val = double(val);
+    elseif allowDowncast && strcmp(type, 'float32')
+        val = single(val);
+    end
+elseif (~strcmp(type, 'int') && startsWith(type, 'int')) ||...
         (~strcmp(type, 'uint') && startsWith(type, 'uint'))
     pattern = 'int%d';
     if startsWith(type, 'u')
@@ -39,8 +33,8 @@ if (~strcmp(type, 'int') && startsWith(type, 'int')) ||...
     typsz = sscanf(type, pattern);
     valsz = sscanf(class(val), pattern);
     
-    if valsz < typsz
-       val = eval([type '(val)']); 
+    if valsz < typsz || (nargin > 2 && allowDowncast)
+        val = eval([type '(val)']);
     end
 end
 end
