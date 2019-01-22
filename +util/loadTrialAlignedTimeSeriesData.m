@@ -21,7 +21,7 @@ if ~exist('electrode', 'var')
     electrode = [];
 end
 
-trials = nwb.intervals.get('trials');
+trials = nwb.intervals_trials;
 
 times = trials.start_time.data.load;
 
