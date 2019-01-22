@@ -2,7 +2,9 @@ function val = correctType(val, type, allowDowncast)
 %CORRECTTYPE upcasts if type is smaller than minimum
 %   Will error if type is simply incompatible
 %   Will throw if casting is impossible
-
+if nargin < 3
+    allowDowncast = false;
+end
 %check different types and correct
 
 if startsWith(type, 'float') && ~isfloat(val)
@@ -18,8 +20,8 @@ elseif strcmp(type, 'bool') && ~islogical(val)
 end
 
 %check different types sizes and upcast to meet minimum (if applicable)
-if any(strcmp(type, {'float64' 'float32'})
-    if issingle(val)
+if any(strcmp(type, {'float64' 'float32'}))
+    if isa(val, 'single')
         val = double(val);
     elseif allowDowncast && strcmp(type, 'float32')
         val = single(val);
@@ -33,7 +35,7 @@ elseif (~strcmp(type, 'int') && startsWith(type, 'int')) ||...
     typsz = sscanf(type, pattern);
     valsz = sscanf(class(val), pattern);
     
-    if valsz < typsz || (nargin > 2 && allowDowncast)
+    if valsz < typsz || allowDowncast
         val = eval([type '(val)']);
     end
 end

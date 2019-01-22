@@ -81,7 +81,6 @@ else
         try
             val = types.util.correctType(val, type);
         catch ME
-            keyboard;
             error('MATNWB:CASTERROR', 'Could not cast type `%s` to `%s` for property `%s`',...
                 class(val), type, name);
         end
