@@ -43,7 +43,7 @@ switch type
             if isempty(data.TimeZone)
                 data.TimeZone = 'local';
             end
-            data.Format = 'yyyyMMdd''T''HHmmssZ'; % ISO8601
+            data.Format = 'yyyy-MM-dd''T''HH:mm:SSZZ'; % ISO8601
             data = char(data);
         end
         data = mat2cell(data, ones(size(data,1),1), size(data,2));
