@@ -42,8 +42,8 @@ device_labels = {'a','a','a','a','a','b','b','b','b','b'};
 
 udevice_labels = unique(device_labels, 'stable');
 
-variables = {'id', 'x', 'y', 'z', 'imp', 'location', 'filtering', ...
-    'group', 'group_name'};
+variables = {'x', 'y', 'z', 'imp', 'location', 'filtering', ...
+    'group', 'label'};
 for i_device = 1:length(udevice_labels)
     device_label = udevice_labels{i_device};
     
@@ -62,11 +62,11 @@ for i_device = 1:length(udevice_labels)
     for i_elec = 1:length(elec_nums)
         elec_num = elec_nums(i_elec);
         if i_device == 1 && i_elec == 1
-            tbl = table(int64(1), NaN, NaN, NaN, NaN, {'CA1'}, {'filtering'}...
-                , ov, {'electrode_group'},'VariableNames', variables);
+            tbl = table(NaN, NaN, NaN, NaN, {'CA1'}, {'filtering'}, ...
+                ov, {'electrode_label'},'VariableNames', variables);
         else
-            tbl = [tbl; {int64(elec_num), NaN, NaN, NaN, NaN,...
-                'CA1', 'filtering', ov, 'electrode_group'}];
+            tbl = [tbl; {NaN, NaN, NaN, NaN,...
+                'CA1', 'filtering', ov, 'electrode_label'}];
         end
     end        
 end
@@ -74,9 +74,7 @@ end
 % add the |DynamicTable| object to the NWB file in
 % /general/extracellular_ephys/electrodes
 
-tbl.Properties.Description = 'my description';
-
-electrode_table = util.table2nwb(tbl);
+electrode_table = util.table2nwb(tbl, 'all electrodes');
 nwb.general_extracellular_ephys_electrodes = electrode_table;
 
 %% Multielectrode recording
@@ -91,7 +89,7 @@ ov = types.untyped.ObjectView('/general/extracellular_ephys/electrodes');
 
 electrode_table_region = types.core.DynamicTableRegion('table', ov, ...
     'description', 'all electrodes',...
-    'data', [1 height(tbl)]');
+    'data', [0 height(tbl)-1]');
 
 %%
 % once you have the |ElectrodeTableRegion| object, you can create an
@@ -159,7 +157,7 @@ unit_ids = [0, 0, 1, 1, 2, 2, 0, 0, 1, 1];
 
 [spike_times_vector, spike_times_index] = util.create_spike_times(unit_ids, spike_times);
 nwb.units = types.core.Units('colnames', {'spike_times', 'spike_times_index'},...
-    'description','units table',...
+    'description', 'units table', ...
     'id', types.core.ElementIdentifiers('data', 0:length(spike_times_index.data) - 1));
 nwb.units.spike_times = spike_times_vector;
 nwb.units.spike_times_index = spike_times_index;
@@ -253,13 +251,18 @@ ylabel(['ECoG (' timeseries.data_unit ')'])
 my_spike_times = nwb.units.spike_times;
 %%
 % To get the data for cell 1, first determine the uid that equals 1.
-select = nwb.units.id.data == 1
+upper_bound_ind = find(nwb.units.id.data == 1);
+
+upper_bound = nwb.units.spike_times_index.data(upper_bound_ind);
+if upper_bound_ind == 1
+    lower_bound = 1;
+else
+    lower_bound = nwb.units.spike_times_index.data(upper_bound_ind-1);
+end
 %%
 % Then select the corresponding spike_times_index element
-my_index = nwb.units.spike_times_index.data(select)
-%%
-% Finally, access the data that the view points to using |refresh|
-my_index.refresh(nwb)
+data = nwb.units.spike_times.data(lower_bound + 1:upper_bound);
+
 
 %% External Links
 % NWB allows you to link to datasets within another file through HDF5
