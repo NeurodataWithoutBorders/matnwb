@@ -101,7 +101,8 @@ else
                     if contains(val{i}, '+')
                         tz = val{i}(strfind(val{i}, '+'):end);
                     else
-                        tz = val{i}(strfind(val{i}, '-'):end);
+                        dashidx = strfind(val{i}, '-');
+                        tz = val{i}(dashidx(end):end);
                     end
                 else
                     tz = 'local';
