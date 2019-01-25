@@ -1,11 +1,19 @@
-function nwbtable = table2nwb(T)
-
+function nwbtable = table2nwb(T, description)
+%TABLE2NWB converts from a MATLAB table to an NWB DynamicTable
+%   NWBTABLE = TABLE2NWB(T) converts table T into a
+%   types.core.DynamicTable
+%
+%   NWBTABLE = TABLE2NWB(T, DESCRIPTION) includes the DESCRIPTION in the 
+%   DynamicTable 
+% 
 %EXAMPLE
-%   T = table([.1, 1.5, 2.5]',[1., 2., 3.]',[0,1,0]',...
-%       'VariableNames',{'start','stop','condition'});
-%   T.Properties.Description = 'my description';
-%   T.Properties.UserData = containers.Map('source','my source');
-%nwbfile.trials = table2nwb(T)
+%   T = table([.1, 1.5, 2.5]', [1., 2., 3.]', [0, 1, 0]', ...
+%       'VariableNames', {'start', 'stop', 'condition'});
+%nwbfile.trials = table2nwb(T, 'my description')
+
+if ~exist('description', 'var')
+    description = 'no description';
+end
 
 if ismember('id', T.Properties.VariableNames)
     id = T.id;
@@ -15,7 +23,7 @@ end
 
 nwbtable = types.core.DynamicTable( ...
     'colnames', T.Properties.VariableNames,...
-    'description', T.Properties.Description, ...
+    'description', description, ...
     'id', types.core.ElementIdentifiers('data', id));
 
 for col = T
