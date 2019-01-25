@@ -10,8 +10,8 @@
 % following command
 
 date = datetime(2018, 3, 1, 12, 0, 0);
-session_start_time = datetime(date,'Format','yyyy-MM-dd''T''HH:mm:SSZZ',...
-    'TimeZone','local');
+session_start_time = datetime(date, 'Format', 'yyyy-MM-dd''T''HH:mm:ssZZ',...
+    'TimeZone', 'local');
 nwb = nwbfile( 'source', 'acquired on rig2', ...
     'session_description', 'a test NWB File', ...
     'identifier', 'mouse004_day4', ...
@@ -150,17 +150,29 @@ nwb.intervals_trials = trials;
 % <<UnitTimes.png>>
 % 
 %%
-% to add spike data to the units table
+% The |units| table is a |DynamicTable| meaning it has some key terms that
+% are optional: electrode_group, electrodes,
+% obs_intervals, spike_times, waveform_mean, waveform_sd.
+% If there is a value you would like to store that is not
+% in this list, you can add it yourself (demonstrated with "quality")
 
 spike_times = [0.1, 0.21, 0.34, 0.36, 0.4, 0.43, 0.5, 0.61, 0.66, 0.69];
 unit_ids = [0, 0, 1, 1, 2, 2, 0, 0, 1, 1];
-
 [spike_times_vector, spike_times_index] = util.create_spike_times(unit_ids, spike_times);
-nwb.units = types.core.Units('colnames', {'spike_times', 'spike_times_index'},...
+
+waveform_mean = types.core.VectorData('data', ones(30, 3),...
+    'description', 'mean of waveform');
+
+quality = types.core.VectorData('data', [.9, .1, .2],...
+    'description', 'sorting quality score out of 1');
+
+nwb.units = types.core.Units('colnames', {'spike_times', 'waveform_mean', 'quality'}, ...
     'description', 'units table', ...
     'id', types.core.ElementIdentifiers('data', 0:length(spike_times_index.data) - 1));
 nwb.units.spike_times = spike_times_vector;
 nwb.units.spike_times_index = spike_times_index;
+nwb.units.waveform_mean = waveform_mean;
+nwb.units.vectordata.set('quality', quality);
 
 %% Processing Modules
 % Measurements go in |acquisition| and subject or session data goes in
@@ -174,8 +186,8 @@ ecephys_mod = types.core.ProcessingModule('description', 'contains clustering da
 % process.
 
 clustering = types.core.Clustering( ...
-    'description', 'my_description',...
-    'peak_over_rms', [1, 2, 3],...
+    'description', 'my_description', ...
+    'peak_over_rms', [1, 2, 3], ...
     'times', spike_times, ...
     'num', cluster_ids);
 
