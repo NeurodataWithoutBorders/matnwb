@@ -3,7 +3,7 @@
 % 
 %  author: Ben Dichter
 %  contact: ben.dichter@gmail.com
-%  last edited: Jan 28, 2019
+%  last edited: Jan 29, 2019
 
 %% NWB file
 % All contents get added to the NWB file, which is created with the
@@ -55,17 +55,19 @@ for i_device = 1:length(udevice_labels)
         'location', 'unknown', ...
         'device', types.untyped.SoftLink(['/general/devices/' device_label])));
     
-    ov = types.untyped.ObjectView(['/general/extracellular_ephys/' device_label]);
+    device_object_view = types.untyped.ObjectView( ...
+        ['/general/extracellular_ephys/' device_label]);
     
     elec_nums = find(strcmp(device_labels, device_label));
     for i_elec = 1:length(elec_nums)
         elec_num = elec_nums(i_elec);
         if i_device == 1 && i_elec == 1
             tbl = table(NaN, NaN, NaN, NaN, {'CA1'}, {'filtering'}, ...
-                ov, {'electrode_label'},'VariableNames', variables);
+                device_object_view, {'electrode_label'}, ...
+                'VariableNames', variables);
         else
-            tbl = [tbl; {NaN, NaN, NaN, NaN, ...
-                'CA1', 'filtering', ov, 'electrode_label'}];
+            tbl = [tbl; {NaN, NaN, NaN, NaN, 'CA1', 'filtering', ...
+                device_object_view, 'electrode_label'}];
         end
     end        
 end
@@ -84,9 +86,11 @@ nwb.general_extracellular_ephys_electrodes = electrode_table;
 % electrodes. Then we will generate a signal 1000 timepoints long from 10 
 % channels.
 
-ov = types.untyped.ObjectView('/general/extracellular_ephys/electrodes');
+electrodes_object_view = types.untyped.ObjectView( ...
+    '/general/extracellular_ephys/electrodes');
 
-electrode_table_region = types.core.DynamicTableRegion('table', ov, ...
+electrode_table_region = types.core.DynamicTableRegion( ...
+    'table', electrodes_object_view, ...
     'description', 'all electrodes', ...
     'data', [0 height(tbl)-1]');
 
@@ -207,7 +211,8 @@ nwb.units.spike_times = spike_times_vector;
 nwb.units.spike_times_index = spike_times_index;
 
 [electrodes, electrodes_index] = util.create_indexed_column( ...
-    {[0,1], [1,2], [2,3]}, '/units/electrodes', [], [], ov);
+    {[0,1], [1,2], [2,3]}, '/units/electrodes', [], [], ...
+    electrodes_object_view);
 nwb.units.electrodes = electrodes;
 nwb.units.electrodes_index = electrodes_index;
 
@@ -221,8 +226,12 @@ nwb.units.electrodes_index = electrodes_index;
 
 % clear electrodes_index (not generally necessary)
 nwb.units.electrodes_index = [];
-nwb.units.electrodes = types.core.DynamicTableRegion('table', ov, ...
-    'description', 'single electrodes', 'data', int64([0, 0, 1]));
+
+% assign DynamicTableRegion object with n elements
+nwb.units.electrodes = types.core.DynamicTableRegion( ...
+    'table', electrodes_object_view, ...
+    'description', 'single electrodes', ...
+    'data', int64([0, 0, 1]));
 
 %% Processing Modules
 % Measurements go in |acquisition| and subject or session data goes in

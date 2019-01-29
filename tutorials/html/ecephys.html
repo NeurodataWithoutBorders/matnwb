@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Neurodata Without Borders: Neurophysiology (NWB:N), Extracellular Electrophysiology Tutorial</title><meta name="generator" content="MATLAB 9.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-01-28"><meta name="DC.source" content="ecephys.m"><style type="text/css">
+      --><title>Neurodata Without Borders: Neurophysiology (NWB:N), Extracellular Electrophysiology Tutorial</title><meta name="generator" content="MATLAB 9.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-01-29"><meta name="DC.source" content="ecephys.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -68,7 +68,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
   </style></head><body><div class="content"><h1>Neurodata Without Borders: Neurophysiology (NWB:N), Extracellular Electrophysiology Tutorial</h1><!--introduction--><p>How to write ecephys data to an NWB file using matnwb.</p><pre>author: Ben Dichter
 contact: ben.dichter@gmail.com
-last edited: Jan 28, 2019</pre><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">NWB file</a></li><li><a href="#3">Data dependencies</a></li><li><a href="#5">Electrode Table</a></li><li><a href="#7">Multielectrode recording</a></li><li><a href="#10">Trials</a></li><li><a href="#12">DynamicTables</a></li><li><a href="#13">Side note about electrodes</a></li><li><a href="#14">Processing Modules</a></li><li><a href="#17">Writing the file</a></li><li><a href="#18">Reading the file</a></li><li><a href="#19">Reading data</a></li><li><a href="#23">Reading indexed column (e.g. spike times)</a></li><li><a href="#24">External Links</a></li></ul></div><h2 id="1">NWB file</h2><p>All contents get added to the NWB file, which is created with the following command</p><pre class="codeinput">date = datetime(2018, 3, 1, 12, 0, 0);
+last edited: Jan 29, 2019</pre><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">NWB file</a></li><li><a href="#3">Data dependencies</a></li><li><a href="#5">Electrode Table</a></li><li><a href="#7">Multielectrode recording</a></li><li><a href="#10">Trials</a></li><li><a href="#12">DynamicTables</a></li><li><a href="#13">Side note about electrodes</a></li><li><a href="#14">Processing Modules</a></li><li><a href="#17">Writing the file</a></li><li><a href="#18">Reading the file</a></li><li><a href="#19">Reading data</a></li><li><a href="#23">Reading indexed column (e.g. spike times)</a></li><li><a href="#24">External Links</a></li></ul></div><h2 id="1">NWB file</h2><p>All contents get added to the NWB file, which is created with the following command</p><pre class="codeinput">date = datetime(2018, 3, 1, 12, 0, 0);
 session_start_time = datetime(date, <span class="string">'Format'</span>, <span class="string">'yyyy-MM-dd''T''HH:mm:ssZZ'</span>, <span class="keyword">...</span>
     <span class="string">'TimeZone'</span>, <span class="string">'local'</span>);
 nwb = nwbfile( <span class="string">'source'</span>, <span class="string">'acquired on rig2'</span>, <span class="keyword">...</span>
@@ -142,25 +142,29 @@ variables = {<span class="string">'x'</span>, <span class="string">'y'</span>, <
         <span class="string">'location'</span>, <span class="string">'unknown'</span>, <span class="keyword">...</span>
         <span class="string">'device'</span>, types.untyped.SoftLink([<span class="string">'/general/devices/'</span> device_label])));
 
-    ov = types.untyped.ObjectView([<span class="string">'/general/extracellular_ephys/'</span> device_label]);
+    device_object_view = types.untyped.ObjectView( <span class="keyword">...</span>
+        [<span class="string">'/general/extracellular_ephys/'</span> device_label]);
 
     elec_nums = find(strcmp(device_labels, device_label));
     <span class="keyword">for</span> i_elec = 1:length(elec_nums)
         elec_num = elec_nums(i_elec);
         <span class="keyword">if</span> i_device == 1 &amp;&amp; i_elec == 1
             tbl = table(NaN, NaN, NaN, NaN, {<span class="string">'CA1'</span>}, {<span class="string">'filtering'</span>}, <span class="keyword">...</span>
-                ov, {<span class="string">'electrode_label'</span>},<span class="string">'VariableNames'</span>, variables);
+                device_object_view, {<span class="string">'electrode_label'</span>}, <span class="keyword">...</span>
+                <span class="string">'VariableNames'</span>, variables);
         <span class="keyword">else</span>
-            tbl = [tbl; {NaN, NaN, NaN, NaN, <span class="keyword">...</span>
-                <span class="string">'CA1'</span>, <span class="string">'filtering'</span>, ov, <span class="string">'electrode_label'</span>}];
+            tbl = [tbl; {NaN, NaN, NaN, NaN, <span class="string">'CA1'</span>, <span class="string">'filtering'</span>, <span class="keyword">...</span>
+                device_object_view, <span class="string">'electrode_label'</span>}];
         <span class="keyword">end</span>
     <span class="keyword">end</span>
 <span class="keyword">end</span>
 </pre><p>add the <tt>DynamicTable</tt> object to the NWB file in /general/extracellular_ephys/electrodes</p><pre class="codeinput">electrode_table = util.table2nwb(tbl, <span class="string">'all electrodes'</span>);
 nwb.general_extracellular_ephys_electrodes = electrode_table;
-</pre><h2 id="7">Multielectrode recording</h2><p>In order to write a multielectrode recording, you need to construct a region view of the electrode table to link the signal to the electrodes that generated them. You must do this even if the signal is from all of the electrodes. Here we will create a reference that includes all electrodes. Then we will generate a signal 1000 timepoints long from 10 channels.</p><pre class="codeinput">ov = types.untyped.ObjectView(<span class="string">'/general/extracellular_ephys/electrodes'</span>);
+</pre><h2 id="7">Multielectrode recording</h2><p>In order to write a multielectrode recording, you need to construct a region view of the electrode table to link the signal to the electrodes that generated them. You must do this even if the signal is from all of the electrodes. Here we will create a reference that includes all electrodes. Then we will generate a signal 1000 timepoints long from 10 channels.</p><pre class="codeinput">electrodes_object_view = types.untyped.ObjectView( <span class="keyword">...</span>
+    <span class="string">'/general/extracellular_ephys/electrodes'</span>);
 
-electrode_table_region = types.core.DynamicTableRegion(<span class="string">'table'</span>, ov, <span class="keyword">...</span>
+electrode_table_region = types.core.DynamicTableRegion( <span class="keyword">...</span>
+    <span class="string">'table'</span>, electrodes_object_view, <span class="keyword">...</span>
     <span class="string">'description'</span>, <span class="string">'all electrodes'</span>, <span class="keyword">...</span>
     <span class="string">'data'</span>, [0 height(tbl)-1]');
 </pre><p>once you have the <tt>ElectrodeTableRegion</tt> object, you can create an <tt>ElectricalSeries</tt> object to hold your multielectrode data. An <tt>ElectricalSeries</tt> is an example of a <tt>TimeSeries</tt> object. For all <tt>TimeSeries</tt> objects, you have 2 options for storing time information. The first is to use <tt>starting_time</tt> and <tt>rate</tt>:</p><pre class="codeinput"><span class="comment">% generate data for demonstration</span>
@@ -216,13 +220,18 @@ nwb.units.spike_times = spike_times_vector;
 nwb.units.spike_times_index = spike_times_index;
 
 [electrodes, electrodes_index] = util.create_indexed_column( <span class="keyword">...</span>
-    {[0,1], [1,2], [2,3]}, <span class="string">'/units/electrodes'</span>, [], [], ov);
+    {[0,1], [1,2], [2,3]}, <span class="string">'/units/electrodes'</span>, [], [], <span class="keyword">...</span>
+    electrodes_object_view);
 nwb.units.electrodes = electrodes;
 nwb.units.electrodes_index = electrodes_index;
 </pre><h2 id="13">Side note about electrodes</h2><p>In the above example, we assigned multiple electrodes to each unit. This is useful in some recording setups, where electrodes are close together and multiple electrodes pick up signal from a single cell. In other instances, it makes more sense to only assign a single electrode per cell. In this case you do not need to define an <tt>electrodes_index</tt>. Instead, you can add electrodes like this:</p><pre class="codeinput"><span class="comment">% clear electrodes_index (not generally necessary)</span>
 nwb.units.electrodes_index = [];
-nwb.units.electrodes = types.core.DynamicTableRegion(<span class="string">'table'</span>, ov, <span class="keyword">...</span>
-    <span class="string">'description'</span>, <span class="string">'single electrodes'</span>, <span class="string">'data'</span>, int64([0, 0, 1]));
+
+<span class="comment">% assign DynamicTableRegion object with n elements</span>
+nwb.units.electrodes = types.core.DynamicTableRegion( <span class="keyword">...</span>
+    <span class="string">'table'</span>, electrodes_object_view, <span class="keyword">...</span>
+    <span class="string">'description'</span>, <span class="string">'single electrodes'</span>, <span class="keyword">...</span>
+    <span class="string">'data'</span>, int64([0, 0, 1]));
 </pre><h2 id="14">Processing Modules</h2><p>Measurements go in <tt>acquisition</tt> and subject or session data goes in <tt>general</tt>, but if you have the intermediate processing results, you should put them in a processing module.</p><pre class="codeinput">ecephys_mod = types.core.ProcessingModule(<span class="string">'description'</span>, <span class="string">'contains clustering data'</span>);
 </pre><p>The <tt>Clustering</tt> data structure holds information about the spike-sorting process. <tt>units</tt> should be used in most cases, but <tt>Clustering</tt> can be useful for some specific applications like streaming spike sorting results directly from an acquisition system.</p><pre class="codeinput">clustering = types.core.Clustering( <span class="keyword">...</span>
     <span class="string">'description'</span>, <span class="string">'my_description'</span>, <span class="keyword">...</span>
@@ -233,8 +242,6 @@ nwb.units.electrodes = types.core.DynamicTableRegion(<span class="string">'table
 ecephys_mod.nwbdatainterface.set(<span class="string">'clustering'</span>, clustering);
 </pre><p>I am going to call this processing module "ecephys." As a convention, I use the names of the NWB core namespace modules as the names of my processing modules, however this is not a rule and you may use any name.</p><pre class="codeinput">nwb.processing.set(<span class="string">'ecephys'</span>, ecephys_mod);
 </pre><h2 id="17">Writing the file</h2><p>Once you have added all of the data types you want to a file, you can save it with the following command</p><pre class="codeinput">nwbExport(nwb, <span class="string">'ecephys_tutorial.nwb'</span>)
-</pre><pre class="codeoutput">Warning: Overwriting ecephys_tutorial.nwb 
-Warning: File 'ecephys_tutorial.nwb' not found. 
 </pre><h2 id="18">Reading the file</h2><p>load an NWB file object with</p><pre class="codeinput">nwb2 = nwbRead(<span class="string">'ecephys_tutorial.nwb'</span>);
 </pre><h2 id="19">Reading data</h2><p>Note that <tt>nwbRead</tt> does <b>not</b> load all of the dataset contained within the file. matnwb automatically supports "lazy read" which means you only read data to memory when you need it, and only read the data you need. Notice the command</p><pre class="codeinput">disp(nwb2.acquisition.get(<span class="string">'multielectrode_recording'</span>).data)
 </pre><pre class="codeoutput">  DataStub with properties:
@@ -299,7 +306,7 @@ timeseries = nwb2.acquisition.get(<span class="string">'multielectrode_recording
     timeseries, window, conditions);
 
 <span class="comment">% plot data from the first electrode for those two trials</span>
-plot(tt, squeeze(trial_data(:,1,:)))
+plot(tt, squeeze(trial_data(:, 1, :)))
 xlabel(<span class="string">'time (seconds)'</span>)
 ylabel([<span class="string">'data ('</span> timeseries.data_unit <span class="string">')'</span>])
 </pre><img vspace="5" hspace="5" src="ecephys_01.png" alt=""> <h2 id="23">Reading indexed column (e.g. spike times)</h2><pre class="codeinput">data = util.read_indexed_column(nwb.units.spike_times_index, nwb.units.spike_times, 2);
@@ -310,8 +317,6 @@ nwb3.general_subject = types.untyped.ExternalLink(<span class="string">'ecephys_
     <span class="string">'/general/subject'</span>);
 
 nwbExport(nwb3, <span class="string">'link_test.nwb'</span>)
-</pre><pre class="codeoutput">Warning: Overwriting link_test.nwb 
-Warning: File 'link_test.nwb' not found. 
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% Neurodata Without Borders: Neurophysiology (NWB:N), Extracellular Electrophysiology Tutorial
@@ -319,7 +324,7 @@ Warning: File 'link_test.nwb' not found.
 % 
 %  author: Ben Dichter
 %  contact: ben.dichter@gmail.com
-%  last edited: Jan 28, 2019
+%  last edited: Jan 29, 2019
 
 %% NWB file
 % All contents get added to the NWB file, which is created with the
@@ -371,17 +376,19 @@ for i_device = 1:length(udevice_labels)
         'location', 'unknown', ...
         'device', types.untyped.SoftLink(['/general/devices/' device_label])));
     
-    ov = types.untyped.ObjectView(['/general/extracellular_ephys/' device_label]);
+    device_object_view = types.untyped.ObjectView( ...
+        ['/general/extracellular_ephys/' device_label]);
     
     elec_nums = find(strcmp(device_labels, device_label));
     for i_elec = 1:length(elec_nums)
         elec_num = elec_nums(i_elec);
         if i_device == 1 && i_elec == 1
             tbl = table(NaN, NaN, NaN, NaN, {'CA1'}, {'filtering'}, ...
-                ov, {'electrode_label'},'VariableNames', variables);
+                device_object_view, {'electrode_label'}, ...
+                'VariableNames', variables);
         else
-            tbl = [tbl; {NaN, NaN, NaN, NaN, ...
-                'CA1', 'filtering', ov, 'electrode_label'}];
+            tbl = [tbl; {NaN, NaN, NaN, NaN, 'CA1', 'filtering', ...
+                device_object_view, 'electrode_label'}];
         end
     end        
 end
@@ -400,9 +407,11 @@ nwb.general_extracellular_ephys_electrodes = electrode_table;
 % electrodes. Then we will generate a signal 1000 timepoints long from 10 
 % channels.
 
-ov = types.untyped.ObjectView('/general/extracellular_ephys/electrodes');
+electrodes_object_view = types.untyped.ObjectView( ...
+    '/general/extracellular_ephys/electrodes');
 
-electrode_table_region = types.core.DynamicTableRegion('table', ov, ...
+electrode_table_region = types.core.DynamicTableRegion( ...
+    'table', electrodes_object_view, ...
     'description', 'all electrodes', ...
     'data', [0 height(tbl)-1]');
 
@@ -523,7 +532,8 @@ nwb.units.spike_times = spike_times_vector;
 nwb.units.spike_times_index = spike_times_index;
 
 [electrodes, electrodes_index] = util.create_indexed_column( ...
-    {[0,1], [1,2], [2,3]}, '/units/electrodes', [], [], ov);
+    {[0,1], [1,2], [2,3]}, '/units/electrodes', [], [], ...
+    electrodes_object_view);
 nwb.units.electrodes = electrodes;
 nwb.units.electrodes_index = electrodes_index;
 
@@ -537,8 +547,12 @@ nwb.units.electrodes_index = electrodes_index;
 
 % clear electrodes_index (not generally necessary)
 nwb.units.electrodes_index = [];
-nwb.units.electrodes = types.core.DynamicTableRegion('table', ov, ...
-    'description', 'single electrodes', 'data', int64([0, 0, 1]));
+
+% assign DynamicTableRegion object with n elements
+nwb.units.electrodes = types.core.DynamicTableRegion( ...
+    'table', electrodes_object_view, ...
+    'description', 'single electrodes', ...
+    'data', int64([0, 0, 1]));
 
 %% Processing Modules
 % Measurements go in |acquisition| and subject or session data goes in
@@ -621,7 +635,7 @@ timeseries = nwb2.acquisition.get('multielectrode_recording');
     timeseries, window, conditions);
 
 % plot data from the first electrode for those two trials
-plot(tt, squeeze(trial_data(:,1,:)))
+plot(tt, squeeze(trial_data(:, 1, :)))
 xlabel('time (seconds)')
 ylabel(['data (' timeseries.data_unit ')'])
 
