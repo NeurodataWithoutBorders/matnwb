@@ -28,7 +28,7 @@ while ~isempty(tokens)
                 break;
             end
         end
-        if strcmp(tokens{1}, tok)
+        if ~isempty(tokens) && strcmp(tokens{1}, tok)
             error(errmsg, path);
         else
             o = o.(eager);

@@ -11,10 +11,15 @@ function setup(testCase)
 testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
 end
 
-function testLinkConstructor(testCase)
+function testExternLinkConstructor(testCase)
 l = types.untyped.ExternalLink('myfile.nwb', '/mypath');
 testCase.verifyEqual(l.path, '/mypath');
 testCase.verifyEqual(l.filename, 'myfile.nwb');
+end
+
+function testSoftLinkConstructor(testCase)
+l = types.untyped.SoftLink('/mypath');
+testCase.verifyEqual(l.path, '/mypath');
 end
 
 function testLinkExportSoft(testCase)
@@ -37,4 +42,15 @@ info = h5info('test.nwb');
 testCase.verifyEqual(info.Links.Name, 'l1');
 testCase.verifyEqual(info.Links.Type, 'external link');
 testCase.verifyEqual(info.Links.Value, {'extern.nwb';'/mypath'});
+end
+
+function testPathResolution(testCase)
+nwb = nwbfile;
+dev = types.core.Device;
+nwb.general_devices.set('testDevice', dev);
+nwb.general_extracellular_ephys.set('testEphys',...
+    types.core.ElectrodeGroup('device',...
+    types.untyped.SoftLink('/general/devices/testDevice')));
+testCase.verifyEqual(dev,...
+    nwb.general_extracellular_ephys.get('testEphys').device.deref(nwb));
 end
