@@ -8,47 +8,30 @@ end
 
 %process slash tokens
 o = nwb;
-prefix = '';
-for i=1:length(tokens)
-    tok = tokens{i};
-    errmsg = 'Could not resolve path `%s`.  Could not find `%s`.';
+errmsg = 'Could not resolve path `%s`.';
+while ~isempty(tokens)
     if isa(o, 'types.untyped.Set')
+        tok = tokens{1};
+        tokens(1) = [];
         if any(strcmp(keys(o), tok))
             o = o.get(tok);
         else
-            error(errmsg, path, tok);
-        end
-        continue;
-    end
-    %is class
-    props = properties(o);
-    if any(strcmp(props, tok))
-        o = o.(tok);
-    elseif any(strcmp(props, [prefix '_' tok]))
-        o = o.([prefix '_' tok]);
-        prefix = '';
-    elseif any(startsWith(props, tok))
-        if isempty(prefix)
-            prefix = tok;
-        else
-            prefix = [prefix '_' tok];
+            error(errmsg, path);
         end
     else
-        %dig one level into untyped sets because we don't know
-        %if the untyped set is extraneous to the type or not.
-        found = false;
-        for j=1:length(props)
-            set = o.(props{j});
-            if isa(set, 'types.untyped.Set') &&...
-                    any(strcmp(keys(set), tok))
-                o = set.get(tok);
-                found = true;
+        props = properties(o);
+        tok = tokens{1};
+        for i=length(tokens):-1:1
+            eager = strjoin(tokens(1:i), '_');
+            if any(strcmp(props, eager))
+                tokens = tokens(i+1:end);
                 break;
             end
         end
-        if ~found
-            error(errmsg, path, tok);
+        if strcmp(tokens{1}, tok)
+            error(errmsg, path);
+        else
+            o = o.(eager);
         end
     end
-end
 end
