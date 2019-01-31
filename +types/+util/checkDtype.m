@@ -56,6 +56,7 @@ if isstruct(type)
         end
     end
 else
+    errid = 'MATNWB:INVALIDTYPE';
     errmsg = ['Property `' name '` must be a ' type '.'];
     if isempty(val)
         return;
@@ -86,7 +87,7 @@ else
         end
     elseif strcmp(type, 'isodatetime')
         addpath(fullfile(fileparts(which('nwbfile')), 'external_packages', 'datenum8601'));
-        assert(ischar(val) || iscellstr(val) || isa(val, 'datetime'), errmsg);
+        assert(ischar(val) || iscellstr(val) || isa(val, 'datetime'), errid, errmsg);
         
         if ischar(val) || iscellstr(val)
             if ischar(val)
@@ -112,7 +113,7 @@ else
             val = datevals;
         end
     elseif strcmp(type, 'char')
-        assert(ischar(val) || iscellstr(val), errmsg);
+        assert(ischar(val) || iscellstr(val), errid, errmsg);
     else%class, ref, or link
         
         noncell = false;
@@ -127,7 +128,7 @@ else
             end
             
             if ~isa(subval, type) && ~any(strcmp(class(subval), WHITELIST))
-                error(errmsg);
+                error(errid, errmsg);
             end
         end
         if noncell
