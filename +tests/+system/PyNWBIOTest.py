@@ -105,7 +105,7 @@ class PyNWBIOTest(unittest.TestCase):
 
 class TimeSeriesIOTest(PyNWBIOTest):
     def addContainer(self, file):
-        ts = TimeSeries('test_timeseries', list(range(100, 200, 10)),
+        ts = TimeSeries('test_timeseries', np.arange(100, 200, 10).astype(np.double),
                         'SIunit', timestamps=np.arange(10, dtype=float), resolution=0.1)
         file.add_acquisition(ts)
         return ts
