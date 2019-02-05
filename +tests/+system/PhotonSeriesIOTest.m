@@ -26,7 +26,7 @@ classdef PhotonSeriesIOTest < tests.system.PyNWBIOTest
                 'timestamps', (0:9) .', ...
                 'dimension', 2);
             
-            file.general_devices.set('test_device_1', dev);
+            file.general_devices.set('dev1', dev);
             file.general_optophysiology.set('imgpln1', ip);
             file.acquisition.set('test_2ps', tps);
         end
