@@ -156,7 +156,7 @@ class ImagingPlaneIOTest(PyNWBIOTest):
 class PhotonSeriesIOTest(PyNWBIOTest):
     def addContainer(self, file):
         dev1 = file.create_device('dev1', 'dev1 description')
-        oc = OpticalChannel('optchan1', 'unit test TestImagingPlaneIO', 3.14)
+        oc = OpticalChannel('optchan1', 'a fake OpticalChannel', 3.14)
         ip = file.create_imaging_plane('imgpln1', oc, 'a fake ImagingPlane',
                                        dev1, 6.28, 2.718, 'GFP', 'somewhere in the brain')
         data = np.ones((3, 3, 3))
@@ -165,6 +165,7 @@ class PhotonSeriesIOTest(PyNWBIOTest):
         tps = TwoPhotonSeries('test_2ps', ip, data, 'image_unit', 'raw',
                               fov, 1.7, 3.4, timestamps=timestamps, dimension=[200, 200])
         file.add_acquisition(tps)
+        return tps
 
     def getContainer(self, file):
         return file.get_acquisition(self.container.name)
