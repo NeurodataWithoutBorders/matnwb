@@ -108,7 +108,6 @@ else
                 if isempty(tzre_match)
                     tz = 'local';
                 else
-                    
                     tz = val{i}(tzre_match:end);
                     if strcmp(tz, 'Z')
                         tz = 'UTC';
