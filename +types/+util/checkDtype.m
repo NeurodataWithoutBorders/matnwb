@@ -87,30 +87,43 @@ else
         end
     elseif strcmp(type, 'isodatetime')
         addpath(fullfile(fileparts(which('nwbfile')), 'external_packages', 'datenum8601'));
-        assert(ischar(val) || iscellstr(val) || isa(val, 'datetime'), errid, errmsg);
+        assert(ischar(val) || iscellstr(val) || isa(val, 'datetime') ||...
+            (iscell(val) && all(cellfun('isclass', val, 'datetime'))), errid, errmsg);
         
         if ischar(val) || iscellstr(val)
             if ischar(val)
                 val = {val};
             end
             
-            datevals = repmat(datetime('now', 'TimeZone', 'local'), size(val));
+            datevals = cell(size(val));
+            % one of:
+            % +-hh:mm
+            % +-hhmm
+            % +-hh
+            % Z
+            tzre_pattern = '(?:[+-]\d{2}(?::?\d{2})?|Z)$';
             for i = 1:length(val)
                 dnum = datenum8601(val{i});
-                % timezones
-                if length(dnum) > 1 && contains(val{i}, {'+', '-'})
-                    if contains(val{i}, '+')
-                        tz = val{i}(strfind(val{i}, '+'):end);
-                    else
-                        dashidx = strfind(val{i}, '-');
-                        tz = val{i}(dashidx(end):end);
-                    end
-                else
+                
+                tzre_match = regexp(val{i}, tzre_pattern, 'once');
+                if isempty(tzre_match)
                     tz = 'local';
+                else
+                    tz = val{i}(tzre_match:end);
+                    if strcmp(tz, 'Z')
+                        tz = 'UTC';
+                    end
                 end
-                datevals(i) = datetime(dnum(1), 'TimeZone', tz,'ConvertFrom', 'datenum');
+                dt = datetime(dnum(1), 'TimeZone', tz, 'ConvertFrom', 'datenum');
+                dt.Format = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSSZZZZZ';
+                %datetime arrays assume that time zones are the same.  We cannot assume this.
+                datevals{i} = dt; 
             end
-            val = datevals;
+            if length(datevals) == 1
+                val = datevals{1};
+            else
+                val = datevals;
+            end
         end
     elseif strcmp(type, 'char')
         assert(ischar(val) || iscellstr(val), errid, errmsg);

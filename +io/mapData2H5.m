@@ -38,15 +38,24 @@ switch type
     case 'logical'
         %In HDF5, HBOOL is mapped to INT32LE
         data = int32(data);
-    case {'char' 'datetime'}
-        if isa(data, 'datetime')
-            if isempty(data.TimeZone)
-                data.TimeZone = 'local';
+    case {'char' 'datetime' 'cell'}
+        % yes, datetime can come from cell arrays as well.
+        % note, cell strings fall through
+        if (iscell(data) && all(cellfun('isclass', data, 'datetime'))) ||...
+                isa(data, 'datetime')
+            if ~iscell(data)
+                data = {data};
             end
-            data.Format = 'yyyy-MM-dd''T''HH:mm:ssZZZZZ'; % ISO8601
-            data = char(data);
+            for i=1:length(data)
+                if isempty(data{i}.TimeZone)
+                    data{i}.TimeZone = 'local';
+                end
+                data{i}.Format = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSSZZZZZ'; % ISO8601
+                data{i} = char(data{i});
+            end
+        elseif ~iscell(data)
+            data = mat2cell(data, ones(size(data,1),1), size(data,2));
         end
-        data = mat2cell(data, ones(size(data,1),1), size(data,2));
 end
 
 %% sanitize strings and cell strings
