@@ -87,7 +87,8 @@ else
         end
     elseif strcmp(type, 'isodatetime')
         addpath(fullfile(fileparts(which('nwbfile')), 'external_packages', 'datenum8601'));
-        assert(ischar(val) || iscellstr(val) || isa(val, 'datetime'), errid, errmsg);
+        assert(ischar(val) || iscellstr(val) || isa(val, 'datetime') ||...
+            (iscell(val) && all(cellfun('isclass', val, 'datetime'))), errid, errmsg);
         
         if ischar(val) || iscellstr(val)
             if ischar(val)
