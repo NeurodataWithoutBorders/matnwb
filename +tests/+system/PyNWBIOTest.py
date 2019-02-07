@@ -2,7 +2,7 @@ import unittest2 as unittest
 from datetime import datetime
 import os.path
 import numpy as np
-from dateutil.tz import tzlocal
+from dateutil.tz import tzlocal, tzoffset
 import numpy.testing as npt
 
 from pynwb import NWBContainer, get_manager, NWBFile, NWBData, TimeSeries
@@ -13,8 +13,10 @@ from pynwb.form.backends.hdf5 import HDF5IO
 
 class PyNWBIOTest(unittest.TestCase):
     def setUp(self):
-        start_time = datetime(1970, 1, 1, 12, 0, 0, tzinfo=tzlocal())
-        create_date = datetime(2017, 4, 15, 12, 0, 0, tzinfo=tzlocal())
+        #tzoffset requires offset in seconds
+        tz = tzoffset('TEST', -8 * 60 * 60)
+        start_time = datetime(2018, 12, 2, 12, 57, 27, 371444, tzinfo=tz)
+        create_date = datetime(2017, 4, 15, 12, 0, 0, tzinfo=tz)
         self.__file = NWBFile('a test NWB File', 'TEST123', start_time, file_create_date=create_date)
         self.__container = self.addContainer(self.file)
 
