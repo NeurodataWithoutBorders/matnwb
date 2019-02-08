@@ -1,42 +1,28 @@
-function val = correctType(val, type, allowDowncast)
-%CORRECTTYPE upcasts if type is smaller than minimum
+function val = correctType(val, type)
+%CORRECTTYPE
 %   Will error if type is simply incompatible
 %   Will throw if casting is impossible
-if nargin < 3
-    allowDowncast = false;
-end
+
 %check different types and correct
 
-if startsWith(type, 'float') && ~isfloat(val)
-    val = double(val);
-elseif startsWith(type, 'int') && ~isinteger(val)
-    val = int64(val);
-elseif startsWith(type, 'uint') && ~isinteger(val)
-    val = uint64(val);
+if startsWith(type, 'float')
+% Compatibility with PyNWB
+%     if strcmp(type, 'float32')
+%         val = single(val);
+%     else
+        val = double(val);
+%     end
+elseif startsWith(type, 'int') || startsWith(type, 'uint')
+    if strcmp(type, 'int')
+        val = int32(val);
+    elseif strcmp(type, 'uint')
+        val = uint32(val);
+    else
+        val = feval(type, val);
+    end
 elseif strcmp(type, 'numeric') && ~isnumeric(val)
     val = double(val);
-elseif strcmp(type, 'bool') && ~islogical(val)
+elseif strcmp(type, 'bool')
     val = logical(val);
-end
-
-%check different types sizes and upcast to meet minimum (if applicable)
-if any(strcmp(type, {'float64' 'float32'}))
-    if isa(val, 'single')
-        val = double(val);
-    elseif allowDowncast && strcmp(type, 'float32')
-        val = single(val);
-    end
-elseif (~strcmp(type, 'int') && startsWith(type, 'int')) ||...
-        (~strcmp(type, 'uint') && startsWith(type, 'uint'))
-    pattern = 'int%d';
-    if startsWith(type, 'u')
-        pattern = ['u' pattern];
-    end
-    typsz = sscanf(type, pattern);
-    valsz = sscanf(class(val), pattern);
-    
-    if valsz < typsz || allowDowncast
-        val = eval([type '(val)']);
-    end
 end
 end
