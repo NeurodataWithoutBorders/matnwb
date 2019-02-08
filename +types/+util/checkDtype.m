@@ -87,9 +87,8 @@ else
         end
     elseif strcmp(type, 'isodatetime')
         addpath(fullfile(fileparts(which('nwbfile')), 'external_packages', 'datenum8601'));
-        assert(ischar(val) || iscellstr(val) || isa(val, 'datetime') ||...
+        assert(ischar(val) || iscellstr(val) || isdatetime(val) ||...
             (iscell(val) && all(cellfun('isclass', val, 'datetime'))), errid, errmsg);
-        
         if ischar(val) || iscellstr(val)
             if ischar(val)
                 val = {val};
@@ -114,16 +113,25 @@ else
                         tz = 'UTC';
                     end
                 end
-                dt = datetime(dnum(1), 'TimeZone', tz, 'ConvertFrom', 'datenum');
-                dt.Format = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSSZZZZZ';
-                %datetime arrays assume that time zones are the same.  We cannot assume this.
-                datevals{i} = dt; 
+                datevals{i} = ...
+                    datetime(dnum(1), 'TimeZone', tz, 'ConvertFrom', 'datenum');
             end
-            if length(datevals) == 1
-                val = datevals{1};
-            else
-                val = datevals;
+            val = datevals;
+        end
+        
+        if isdatetime(val)
+            val = {val};
+        end
+        
+        for i=1:length(val)
+            if isempty(val{i}.TimeZone)
+                val{i}.TimeZone = 'local';
             end
+            val{i}.Format = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSSZZZZZ';
+        end
+        
+        if isscalar(val)
+            val = val{1};
         end
     elseif strcmp(type, 'char')
         assert(ischar(val) || iscellstr(val), errid, errmsg);

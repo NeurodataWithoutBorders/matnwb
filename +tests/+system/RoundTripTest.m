@@ -60,8 +60,8 @@ classdef RoundTripTest < matlab.unittest.TestCase
                     verifyContainerEqual(testCase, val1, val2);
                 elseif isa(val1, 'types.untyped.Set')
                     verifySetEqual(testCase, val1, val2, failmsg);
-                elseif isa(val1, 'datetime')
-                    testCase.verifyEqual(datestr(val1,30), datestr(val2,30));
+                elseif isdatetime(val1)
+                    testCase.verifyEqual(char(val1), char(val2));
                 else
                     if isa(val1, 'types.untyped.DataStub')
                         trueval = val1.load();

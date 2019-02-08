@@ -11,9 +11,9 @@ for i = 1:numel(props)
         tests.util.verifyContainerEqual(testCase, val1, val2);
     elseif isa(val1, 'types.untyped.Set')
         tests.util.verifySetEqual(testCase, val1, val2, failmsg);
-    elseif isa(val1, 'datetime')
-        testCase.verifyTrue(isa(val2, 'datetime'));
-        testCase.verifyEqual(datestr(val1,30), datestr(val2,30), failmsg);
+    elseif isdatetime(val1)
+        testCase.verifyTrue(isdatetime(val2));
+        testCase.verifyEqual(char(val1), char(val2), failmsg);
     else
         if isa(val1, 'types.untyped.DataStub')
             trueval = val1.load();
