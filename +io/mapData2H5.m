@@ -42,7 +42,7 @@ switch type
         % yes, datetime can come from cell arrays as well.
         % note, cell strings fall through
         if (iscell(data) && all(cellfun('isclass', data, 'datetime'))) ||...
-                isa(data, 'datetime')
+                isdatetime(data)
             if ~iscell(data)
                 data = {data};
             end

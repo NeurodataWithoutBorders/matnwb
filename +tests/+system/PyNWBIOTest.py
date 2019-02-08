@@ -133,7 +133,7 @@ class ElectricalSeriesIOTest(PyNWBIOTest):
         for i in range(4):
             file.add_electrode(1.0, 2.0, 3.0, 1.0, 'CA1', 'none', group)
         region = file.create_electrode_table_region([0, 2], 'the first and third electrodes')
-        data = list(zip(range(10), range(10, 20)))
+        data = list(zip(np.arange(10).astype(np.double), np.arange(10, 20).astype(np.double)))
         timestamps = list(range(10))
         es = ElectricalSeries('test_eS', data, region, timestamps=timestamps)
         file.add_acquisition(es)
