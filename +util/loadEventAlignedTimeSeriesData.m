@@ -11,7 +11,7 @@ function D = loadEventAlignedTimeSeriesData(timeseries, window, times, downsampl
 %   specifies what electrode to pull data for. Default is []:
 %
 %   []  - all electrodes
-%   int - a single electrode (1-indexed)
+%   [ints] - list of electrodes (1-indexed)
 
 if ~exist('downsample_factor','var') || isempty(downsample_factor)
     downsample_factor = 1;

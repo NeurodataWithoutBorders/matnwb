@@ -3,16 +3,17 @@
 % 
 %  author: Ben Dichter
 %  contact: ben.dichter@gmail.com
-%  last edited: Jan 29, 2019
+%  last edited: March 5, 2019
 
 %% NWB file
 % All contents get added to the NWB file, which is created with the
 % following command
 
 date = datetime(2018, 3, 1, 12, 0, 0);
-session_start_time = datetime(date, 'Format', 'yyyy-MM-dd''T''HH:mm:ssZZ', ...
+session_start_time = datetime(date, ...
+    'Format', 'yyyy-MM-dd''T''HH:mm:ssZZ', ...
     'TimeZone', 'local');
-nwb = nwbfile( 'source', 'acquired on rig2', ...
+nwb = nwbfile( ...
     'session_description', 'a test NWB File', ...
     'identifier', 'mouse004_day4', ...
     'session_start_time', session_start_time);
@@ -20,6 +21,14 @@ nwb = nwbfile( 'source', 'acquired on rig2', ...
 %%
 % You can check the contents by displaying the nwbfile object
 disp(nwb);
+
+%% Subject
+% Subject-specific information goes in type |Subject| in location 
+% |general_subject|.
+
+nwb.general_subject = types.core.Subject( ...
+    'description', 'mouse 5', 'age', '9 months', ...
+    'sex', 'M', 'species', 'Mus musculus');
 
 %% Data dependencies
 % The data needs to be added to nwb in a specific order, which is specified
@@ -37,41 +46,33 @@ disp(nwb);
 % within a single device. Devices can have 1 or more groups. In this example, 
 % we have 2 devices that each only have a single group.
 
-device_labels = {'a', 'a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'b'};
-
-udevice_labels = unique(device_labels, 'stable');
-
-variables = {'x', 'y', 'z', 'imp', 'location', 'filtering', 'group', ...
-    'label'};
-for i_device = 1:length(udevice_labels)
-    device_label = udevice_labels{i_device};
-    
-    nwb.general_devices.set(device_label, ...
-        types.core.Device());
-    
-    nwb.general_extracellular_ephys.set(device_label, ...
+shank_channels = [3, 4];
+variables = {'x', 'y', 'z', 'imp', 'location', 'filtering', 'group', 'label'};
+device_name = 'implant';
+nwb.general_devices.set(device_name, types.core.Device());
+device_link = types.untyped.SoftLink(['/general/devices/' device_name]);
+for ishank = 1:length(shank_channels)
+    nelecs = shank_channels(ishank);
+    group_name = ['shank' num2str(ishank)];
+    nwb.general_extracellular_ephys.set(group_name, ...
         types.core.ElectrodeGroup( ...
-        'description', 'a test ElectrodeGroup', ...
-        'location', 'unknown', ...
-        'device', types.untyped.SoftLink(['/general/devices/' device_label])));
-    
-    device_object_view = types.untyped.ObjectView( ...
-        ['/general/extracellular_ephys/' device_label]);
-    
-    elec_nums = find(strcmp(device_labels, device_label));
-    for i_elec = 1:length(elec_nums)
-        elec_num = elec_nums(i_elec);
-        if i_device == 1 && i_elec == 1
-            tbl = table(NaN, NaN, NaN, NaN, {'CA1'}, {'filtering'}, ...
-                device_object_view, {'electrode_label'}, ...
+        'description', ['electrode group for shank' num2str(ishank)], ...
+        'location', 'brain area', ...
+        'device', device_link));
+    group_object_view = types.untyped.ObjectView( ...
+        ['/general/extracellular_ephys/' group_name]);
+    for ielec = 1:length(nelecs)
+        if ishank == 1 && ielec == 1
+            tbl = table(NaN, NaN, NaN, NaN, {'unknown'}, {'unknown'}, ...
+                group_object_view, {[group_name 'elec' num2str(ielec)]}, ...
                 'VariableNames', variables);
         else
-            tbl = [tbl; {NaN, NaN, NaN, NaN, 'CA1', 'filtering', ...
-                device_object_view, 'electrode_label'}];
+            tbl = [tbl; {NaN, NaN, NaN, NaN, 'unknown', 'unknown', ...
+                group_object_view, [group_name 'elec' num2str(ielec)]}];
         end
     end        
 end
-%%
+
 % add the |DynamicTable| object to the NWB file in
 % /general/extracellular_ephys/electrodes
 
@@ -121,20 +122,30 @@ electrical_series = types.core.ElectricalSeries(...
     'timestamps', (1:1000)/200, ...
     'data', data,...
     'electrodes', electrode_table_region,...
-    'data_unit','V');
+    'data_unit', 'V');
+
+%% LFP
+% Store LFP (generally downsampled and/or filtered data) as an 
+% |ElectricalSeries| in a processing module called |'ecephys'|.
+
+ecephys_module = types.core.ProcessingModule(...
+    'description', 'holds extracellular electrophysiology data');
+ecephys_module.nwbdatainterface.set('LFP', ...
+    types.core.LFP('lfp', electrical_series));
+nwb.processing.set('ecephys', ecephys_module);
 
 %% Trials
 % You can store trial information in the trials table
 
 trials = types.core.TimeIntervals( ...
-    'colnames', {'correct','start_time','stop_time'},...
+    'colnames', {'correct','start_time','stop_time'}, ...
     'description', 'trial data and properties', ...
-    'id', types.core.ElementIdentifiers('data', 0:2),...
-    'start_time', types.core.VectorData('data', [.1, 1.5, 2.5],...
-        'description','start time of trial'),...
-    'stop_time', types.core.VectorData('data', [1., 2., 3.],...
-        'description','end of each trial'),...
-    'correct', types.core.VectorData('data', [false, true, false],...
+    'id', types.core.ElementIdentifiers('data', 0:2), ...
+    'start_time', types.core.VectorData('data', [.1, 1.5, 2.5], ...
+        'description','start time of trial'), ...
+    'stop_time', types.core.VectorData('data', [1., 2., 3.], ...
+        'description','end of each trial'), ...
+    'correct', types.core.VectorData('data', [false, true, false], ...
         'description','my description'));
 
 nwb.intervals_trials = trials;
@@ -238,28 +249,29 @@ nwb.units.electrodes = types.core.DynamicTableRegion( ...
 % |general|, but if you have the intermediate processing results, you
 % should put them in a processing module.
 
-ecephys_mod = types.core.ProcessingModule('description', 'contains clustering data');
+behavior_mod = types.core.ProcessingModule('description', 'contains behavioral data');
 
 %%
-% The |Clustering| data structure holds information about the spike-sorting
-% process. |units| should be used in most cases, but |Clustering| can be
-% useful for some specific applications like streaming spike sorting results
-% directly from an acquisition system.
+% Position data is stored first in a |SpatialSeries| object, which is a
+% |TimeSeries|. This is then stored in |Position|
+% (a |MultiContainerInterface|), which is stored in a processing module
 
-clustering = types.core.Clustering( ...
-    'description', 'my_description', ...
-    'peak_over_rms', [1, 2, 3], ...
-    'times', [0.1, 0.2, 0.3, 0.4, 0.5], ...
-    'num', int64([0, 0, 1, 1, 2]));
+position_data = [linspace(0,10,100); linspace(1,8,100)]';
+position_ts = types.core.SpatialSeries( ...
+    'data', position_data, ...
+    'reference_frame', 'unknown', ...
+    'data_conversion', 1.0, 'data_resolution', NaN, ...
+    'timestamps', linspace(0, 100)/200);
 
-ecephys_mod.nwbdatainterface.set('clustering', clustering);
+Position = types.core.Position('Position', position_ts);
+behavior_mod.nwbdatainterface.set('Position', Position);
 
 %%
-% I am going to call this processing module "ecephys." As a convention, I 
-% use the names of the NWB core namespace modules as the names of my 
-% processing modules, however this is not a rule and you may use any name.
+% I am going to call this processing module "behavior." As a convention,
+% try to use the names of the NWB core namespace modules as the names of 
+% processing modules. However this is not a rule and you may use any name.
 
-nwb.processing.set('ecephys', ecephys_mod);
+nwb.processing.set('behavior', behavior_mod);
 
 %% Writing the file
 % Once you have added all of the data types you want to a file, you can save
@@ -285,7 +297,7 @@ disp(nwb2.acquisition.get('multielectrode_recording').data)
 % |data|. To get these values, run
 
 data = nwb2.acquisition.get('multielectrode_recording').data.load;
-disp(data(1:10, 1:10));
+disp(data(:, 1:10));
 
 %%
 % Loading all of the data can be a problem when dealing with real data that can be
@@ -304,8 +316,8 @@ nwb2.acquisition.get('multielectrode_recording').data.load([1,1], [10,20])
 % data from .05 seconds before and half a second after start of each trial
 window = [-.05, 0.5]; % seconds
 
-% only data where the attribute 'correct' == 0
-conditions = containers.Map('correct', 0);
+% only trials where the attribute 'correct' == 0 and 'start_time' is > 0.5
+conditions = containers.Map({'correct', 'start_time'}, {0, @(x)x>0.5});
 
 % get multielectode data
 timeseries = nwb2.acquisition.get('multielectrode_recording');
@@ -313,7 +325,7 @@ timeseries = nwb2.acquisition.get('multielectrode_recording');
 [trial_data, tt] = util.loadTrialAlignedTimeSeriesData(nwb2, ...
     timeseries, window, conditions);
 
-% plot data from the first electrode for those two trials
+% plot data from the first electrode for that one
 plot(tt, squeeze(trial_data(:, 1, :)))
 xlabel('time (seconds)')
 ylabel(['data (' timeseries.data_unit ')'])
@@ -324,7 +336,7 @@ data = util.read_indexed_column(nwb.units.spike_times_index, nwb.units.spike_tim
 
 %% External Links
 % NWB allows you to link to datasets within another file through HDF5
-% |ExternalLink|s. This is useful for separating out large datasets that are
+% |ExternalLink| s. This is useful for separating out large datasets that are
 % not always needed. It also allows you to store data once, and access it 
 % across many NWB files, so it is useful for storing subject-related
 % data that is the same for all sessions. Here is an example of creating a
