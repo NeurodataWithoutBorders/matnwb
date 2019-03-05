@@ -71,7 +71,7 @@ else
     start(end) = start_ind;
     
     count = fliplr(dims);
-    count(end) = ceil((end_ind - start_ind) / downsample_factor);
+    count(end) = round((end_ind - start_ind) / downsample_factor);
     
     if ~isempty(electrode)
         start(end-1) = electrode;
