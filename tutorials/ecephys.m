@@ -3,7 +3,7 @@
 % 
 %  author: Ben Dichter
 %  contact: ben.dichter@gmail.com
-%  last edited: Jan 29, 2019
+%  last edited: March 5, 2019
 
 %% NWB file
 % All contents get added to the NWB file, which is created with the
@@ -325,7 +325,7 @@ timeseries = nwb2.acquisition.get('multielectrode_recording');
 [trial_data, tt] = util.loadTrialAlignedTimeSeriesData(nwb2, ...
     timeseries, window, conditions);
 
-% plot data from the first electrode for those two trials
+% plot data from the first electrode for that one
 plot(tt, squeeze(trial_data(:, 1, :)))
 xlabel('time (seconds)')
 ylabel(['data (' timeseries.data_unit ')'])
@@ -336,7 +336,7 @@ data = util.read_indexed_column(nwb.units.spike_times_index, nwb.units.spike_tim
 
 %% External Links
 % NWB allows you to link to datasets within another file through HDF5
-% |ExternalLink|s. This is useful for separating out large datasets that are
+% |ExternalLink| s. This is useful for separating out large datasets that are
 % not always needed. It also allows you to store data once, and access it 
 % across many NWB files, so it is useful for storing subject-related
 % data that is the same for all sessions. Here is an example of creating a
