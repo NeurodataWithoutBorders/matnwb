@@ -11,7 +11,7 @@ function data = loadTimeSeriesData(timeseries, interval, downsample_factor, elec
 %   specifies what electrode to pull data for. Default is []:
 %
 %   []  - all electrodes
-%   int - a single electrode (1-indexed)
+%   [ints] - list of electrodes (1-indexed)
 
 if ~exist('interval','var') || isempty(interval)
     interval = [0 Inf];
