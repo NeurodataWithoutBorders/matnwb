@@ -35,7 +35,7 @@ classdef DataStub
         end
         
         %can be called without arg, with H5ML.id, or (dims, offset, stride)
-        function data = load_h5_style(obj, varargin)
+         function data = load_h5_style(obj, varargin)
             %LOAD  Read data from HDF5 dataset.
             %   DATA = LOAD_H5_STYLE() retrieves all of the data.
             %
@@ -55,8 +55,32 @@ classdef DataStub
             if length(varargin) == 1
                 fid = H5F.open(obj.filename);
                 did = H5D.open(fid, obj.path);
-                data = H5D.read(did, 'H5ML_DEFAULT', varargin{1}, ...
-                    varargin{1}, 'H5P_DEFAULT');
+                
+                sid = varargin{1};
+                % in event of multiple hyperslab selections, return as a cell array
+                nb = H5S.get_select_hyper_nblocks(sid);
+                % format blocklist to cell array of region indices separated by
+                % block
+                bl = mat2cell(H5S.get_select_hyper_blocklist(sid, 0, nb) .',...
+                    repmat(2, 1, nb), obj.ndims());
+                
+                data = cell(nb,1);
+                % go through each hyperslab selection and read data from H5D,
+                % populating cell array of hyperslab selections
+                selsid = H5S.create('H5S_SIMPLE');
+                H5S.extent_copy(selsid, sid);
+                for i=1:nb
+                    selsz = diff(bl{i})+1;
+                    sizesid = H5S.create_simple(obj.ndims(), selsz, selsz);
+                    H5S.select_hyperslab(selsid, 'H5S_SELECT_SET',...
+                        bl{i}(1,:), [], [], selsz);
+                    data{i} = H5D.read(did, 'H5ML_DEFAULT', sizesid, selsid, 'H5P_DEFAULT') .';
+                end
+                H5S.close(selsid);
+                
+                if 1 == numel(data)
+                    data = data{1};
+                end
             else
                 data = h5read(obj.filename, obj.path, varargin{:});
             end
@@ -98,7 +122,7 @@ classdef DataStub
             if isempty(varargin)
                 data = obj.load_h5_style();
             elseif length(varargin) == 1
-                region = misc.idx2h5(varargin{1}, obj.dims, 'preserve');
+                region = misc.idx2h5(varargin{1}, fliplr(obj.dims), 'preserve');
                 sid = obj.get_space();
                 H5S.select_none(sid);
                 for i=1:length(region)
