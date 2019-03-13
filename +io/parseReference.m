@@ -38,7 +38,7 @@ if sel_type == H5ML.get_constant_value('H5S_SEL_HYPERSLABS')
     nblocks = H5S.get_select_hyper_nblocks(sid);
     blocklist = H5S.get_select_hyper_blocklist(sid, 0, nblocks);
     
-    region = rot90(blocklist, -1);
+    region = rot90(blocklist, -1); %transpose + fliplr
     region = mat2cell(region, ones(size(region,1)/2,1)+1);
 end
 H5S.close(sid);
