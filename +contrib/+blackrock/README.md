@@ -1,3 +1,3 @@
-# NWB BLACKROCK UTILS
+# NWB Blackrock Utils
 
 Requires NPMK
