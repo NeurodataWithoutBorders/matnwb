@@ -49,15 +49,15 @@ if isempty(eagers)
         issetprops(i) = isa(obj.(props{i}), 'types.untyped.Set');
     end
     setprops = props(issetprops);
-    new_objects = cell(length(setprops),3);
+    setpropslen = length(setprops);
+    minlen = setpropslen + 1;
     for i=1:length(setprops)
         [new_o, new_tokens] = resolveSet(obj.(setprops{i}), tokens);
-        new_objects(i,:) = {new_o, new_tokens, length(new_tokens)};
+        if length(new_tokens) < minlen
+            o = new_o;
+            remainder = new_tokens;
+        end
     end
-    
-    [~,minidx] = min(cell2mat(new_objects(:,3)));
-    o = new_objects{minidx,1};
-    remainder = new_objects{minidx,2};
 else
     o = obj.(eagers{end});
     remainder = tokens(ei(end)+1:end);
