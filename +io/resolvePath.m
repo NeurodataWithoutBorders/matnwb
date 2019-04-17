@@ -52,22 +52,12 @@ if isempty(eagers)
     new_objects = cell(length(setprops),3);
     for i=1:length(setprops)
         [new_o, new_tokens] = resolveSet(obj.(setprops{i}), tokens);
-        if ~isempty(new_o)
-            new_objects(i,:) = {new_o, new_tokens, length(new_tokens)};
-        end
+        new_objects(i,:) = {new_o, new_tokens, length(new_tokens)};
     end
-    %compress empties
-    new_objects = new_objects(~cellfun('isempty', new_objects));
     
-    if isempty(new_objects)
-        o = [];
-        remainder = tokens;
-    else
-        %find row with minimal token size
-        [~,minidx] = min(cell2mat(new_objects(:,3)));
-        o = new_objects{minidx,1};
-        remainder = new_objects{minidx,2};
-    end
+    [~,minidx] = min(cell2mat(new_objects(:,3)));
+    o = new_objects{minidx,1};
+    remainder = new_objects{minidx,2};
 else
     o = obj.(eagers{end});
     remainder = tokens(ei(end)+1:end);
