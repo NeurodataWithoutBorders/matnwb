@@ -49,24 +49,16 @@ if isempty(eagers)
         issetprops(i) = isa(obj.(props{i}), 'types.untyped.Set');
     end
     setprops = props(issetprops);
-    new_objects = cell(length(setprops),3);
-    for i=1:length(setprops)
+    setpropslen = length(setprops);
+    minlen = setpropslen + 1;
+    for i=1:setpropslen
         [new_o, new_tokens] = resolveSet(obj.(setprops{i}), tokens);
-        if ~isempty(new_o)
-            new_objects(i,:) = {new_o, new_tokens, length(new_tokens)};
+        new_toklen = length(new_tokens);
+        if new_toklen < minlen
+            o = new_o;
+            remainder = new_tokens;
+            minlen = new_toklen;
         end
-    end
-    %compress empties
-    new_objects = new_objects(~cellfun('isempty', new_objects));
-    
-    if isempty(new_objects)
-        o = [];
-        remainder = tokens;
-    else
-        %find row with minimal token size
-        [~,minidx] = min(cell2mat(new_objects(:,3)));
-        o = new_objects{minidx,1};
-        remainder = new_objects{minidx,2};
     end
 else
     o = obj.(eagers{end});
