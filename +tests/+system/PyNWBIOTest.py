@@ -4,6 +4,7 @@ import os.path
 import numpy as np
 from dateutil.tz import tzlocal, tzoffset
 import numpy.testing as npt
+import h5py
 
 from pynwb import NWBContainer, get_manager, NWBFile, NWBData, TimeSeries
 from pynwb.ecephys import ElectricalSeries, Clustering
@@ -95,7 +96,7 @@ class PyNWBIOTest(unittest.TestCase):
                     elif isinstance(f2, NWBData):
                         self.assertTrue(np.array_equal(f1.data, f2))
                 else:
-                    if isinstance(f1, (float, np.float32, np.float16)):
+                    if isinstance(f1, (float, np.float32, np.float16, h5py.Dataset)):
                         npt.assert_almost_equal(f1, f2)
                     else:
                         self.assertEqual(f1, f2)
