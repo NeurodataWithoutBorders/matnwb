@@ -51,12 +51,13 @@ if isempty(eagers)
     setprops = props(issetprops);
     setpropslen = length(setprops);
     minlen = setpropslen + 1;
-    for i=1:length(setprops)
+    for i=1:setpropslen
         [new_o, new_tokens] = resolveSet(obj.(setprops{i}), tokens);
-        if length(new_tokens) < minlen
+        new_toklen = length(new_tokens);
+        if new_toklen < minlen
             o = new_o;
             remainder = new_tokens;
-            minlen = length(new_tokens);
+            minlen = new_toklen;
         end
     end
 else
