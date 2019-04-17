@@ -56,6 +56,7 @@ if isempty(eagers)
         if length(new_tokens) < minlen
             o = new_o;
             remainder = new_tokens;
+            minlen = length(new_tokens);
         end
     end
 else
