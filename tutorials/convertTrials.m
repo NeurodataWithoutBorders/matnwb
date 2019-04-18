@@ -91,6 +91,7 @@ nwb.session_description = sprintf('Animal `%s` on Session `%s`', animal, session
 % methodology, as well as details of the electrophysiology, optophysiology, and behavioral
 % portions of the experiment.  A vast majority of these details are placed in |general|
 % prefixed properties in NWB.
+fprintf('Processing Meta Data from `%s`\n', metadata_loc);
 loaded = load(metadata_loc, 'meta_data');
 meta = loaded.meta_data;
 
@@ -259,16 +260,41 @@ nwb.general_optogenetics.set('photostim', ...
 %%
 % You can find more information about hashes and how they're used on the
 % <https://crcns.org/data-sets/motor-cortex/alm-3/about-alm-3 ALM-3 about page>.
+fprintf('Processing Data Structure `%s`\n', datastructure_loc);
 loaded = load(datastructure_loc, 'obj');
 data = loaded.obj;
 
+%%
+% The |timeseries| property of the |TimeIntervals| object is an example of a
+% *compound data type*.  These types are essentially tables of data in HDF5 and can
+% be represented by a MATLAB table, an array of structs, or a struct of arrays.
+% Beware: validation of column lengths here is not guaranteed by the type checker
+% until export.
+%%
+% *VectorIndex* objects index into a larger *VectorData* column.  The object that is
+% being referenced is indicated by the |target| property, which uses an ObjectView.
+% Each element in the VectorIndex marks the *last* element in the corresponding
+% vector data object for the VectorIndex row.  Thus, the starting index for this
+% row would be the previous index + 1.  Note that these indices must be 0-indexed
+% for compatibility with pynwb.  You can see this in effect with the |timeseries|
+% property which is indexed by the |timeseries_index| property.
 trials_idx = types.core.TimeIntervals(...
     'start_time', types.core.VectorData('data', data.trialStartTimes,...
         'description', 'the start time of each trial'),...
     'colnames', [data.trialTypeStr; data.trialPropertiesHash.keyNames .';...
         {'start_time'; 'stop_time'}],... %stop_time will be determined later
     'description', 'trial data and properties', ...
-    'id', types.core.ElementIdentifiers('data', data.trialIds));
+    'id', types.core.ElementIdentifiers('data', data.trialIds),...
+    'timeseries', types.core.VectorData(...
+        'data', struct('idx_start', {}, 'count', {}, 'timeseries', {}),...
+        'description', 'A group of timeseries'),...
+    'timeseries_index', types.core.VectorIndex(...
+        'data', [],...
+        'target', types.untyped.ObjectView('/intervals/trials/timeseries')));
+% we use a cell array here as a simple form of the VectorIndex -> VectorData pair.
+% this data is populated and structured right before export.
+trial_timeseries = cell(size(data.trialIds));
+
 for i=1:length(data.trialTypeStr)
     trials_idx.vectordata.set(data.trialTypeStr{i}, ...
         types.core.VectorData('data', data.trialTypeMat(i,:),...
@@ -297,33 +323,31 @@ ephusUnit = data.timeUnitNames{data.timeUnitIds(ephus.timeUnit)};
 % lick direction and timestamps trace
 tsIdx = strcmp(ephus.idStr, 'lick_trace');
 bts = types.core.BehavioralTimeSeries();
+
 bts.timeseries.set('lick_trace_ts', ...
     types.core.TimeSeries(...
-    'control', ephus.trial, ...
-    'control_description', 'trial index', ...
     'data', ephus.valueMatrix(:,tsIdx),...
     'data_unit', ephusUnit,...
     'description', ephus.idStrDetailed{tsIdx}, ...
     'timestamps', ephus.time, ...
     'timestamps_unit', ephusUnit));
 nwb.acquisition.set('lick_trace', bts);
+bts_ref = types.untyped.ObjectView('/acquisition/lick_trace/lick_trace_ts');
 
 % acousto-optic modulator input trace
 tsIdx = strcmp(ephus.idStr, 'aom_input_trace');
 ts = types.core.TimeSeries(...
-    'control', ephus.trial, ...
-    'control_description', 'trial index', ...
     'data', ephus.valueMatrix(:,tsIdx), ...
     'data_unit', 'Volts', ...
     'description', ephus.idStrDetailed{tsIdx}, ...
     'timestamps', ephus.time, ...
     'timestamps_unit', ephusUnit);
 nwb.stimulus_presentation.set('aom_input_trace', ts);
+ts_ref = types.untyped.ObjectView('/stimulus/presentation/aom_input_trace');
+
 % laser power
 tsIdx = strcmp(ephus.idStr, 'laser_power');
 ots = types.core.OptogeneticSeries(...
-    'control', ephus.trial, ...
-    'control_description', 'trial index', ...
     'data', ephus.valueMatrix(:,tsIdx), ...
     'data_unit', 'mW', ...
     'description', ephus.idStrDetailed{tsIdx}, ...
@@ -331,6 +355,22 @@ ots = types.core.OptogeneticSeries(...
     'timestamps_unit', ephusUnit, ...
     'site', types.untyped.SoftLink('/general/optogenetics/photostim'));
 nwb.stimulus_presentation.set('laser_power', ots);
+ots_ref = types.untyped.ObjectView('/stimulus/presentation/laser_power');
+
+% append trials timeseries references in order
+[ephus_trials, ~, trials_to_data] = unique(ephus.trial);
+for i=1:length(ephus_trials)
+    i_loc = i == trials_to_data;
+    t_start = find(i_loc, 1);
+    t_count = sum(i_loc);
+    trial = ephus_trials(i);
+    
+    trial_timeseries{trial}(end+(1:3)) = [...
+        struct('timeseries', bts_ref, 'idx_start', t_start, 'count', t_count);...
+        struct('timeseries', ts_ref, 'idx_start', t_start, 'count', t_count);...
+        struct('timeseries', ots_ref, 'idx_start', t_start, 'count', t_count)];
+end
+
 %%
 % Trial IDs, wherever they are used, are placed in a relevent |control| property in the
 % data object and will indicate what data is associated with what trial as
@@ -344,7 +384,6 @@ ids = regexp(esHash.keyNames, '^unit(\d+)$', 'once', 'tokens');
 ids = str2double([ids{:}]);
 nwb.units.id = types.core.ElementIdentifiers('data', ids);
 nwb.units.spike_times_index = types.core.VectorIndex(...
-    'data', types.untyped.RegionView.empty,...
     'target', types.untyped.ObjectView('/units/spike_times'));
 nwb.units.spike_times = types.core.VectorData(...
     'description', 'timestamps of spikes');
@@ -359,37 +398,28 @@ unitTrials = types.core.VectorData(...
 trials_idx = types.core.VectorIndex(...
     'data', [],...
     'target', types.untyped.ObjectView('/units/trials'));
-%%
-% |VectorIndex| objects index into a larger |VectorData| column, generally in the same
-% DynamicTable.  Each element marking the *last* element in the corresponding vector
-% data object for this row.  Thus, starting index for this segment would be the previous
-% index + 1.  Note that these indices must be 0-indexed for compatibility with pynwb.
+
 wav_idx = types.core.VectorData('data',types.untyped.ObjectView.empty,...
     'description', 'waveform references');
 %%
 % The waveforms are placed in the |analysis| Set and are paired with their unit name
 % ('unitx' where 'x' is some unit ID).
 
-trial_ids = nwb.intervals_trials.id.data;
 for i=1:length(ids)
     esData = esHash.value{i};
     % add trials ID reference
     
     unitTrials.data = [unitTrials.data; esData.eventTrials];
-    trials_idx.data(end+1) = length(unitTrials.data) - 1;
+    trials_idx.data(end+1) = length(unitTrials.data);
     
-    % add spike times index and data
-    % spike times index is a RegionView reference to the spike times data whose rows
-    % DO NOT correspond with any other column.
-    nwb.units.spike_times_index.data(end+1) = ...
-        types.untyped.RegionView('/units/spike_times',...
-        length(nwb.units.spike_times.data) + (1:length(esData.eventTimes)));
+    % add spike times index and data.  note that these are also VectorIndex and VectorData pairs.
     nwb.units.spike_times.data = [nwb.units.spike_times.data;esData.eventTimes];
+    nwb.units.spike_times_index.data(end+1) = length(nwb.units.spike_times.data);
     
     % add waveform data to "unitx" and associate with "waveform" column as ObjectView.
     ses = types.core.SpikeEventSeries(...
-        'control', esData.eventTrials,...
-        'control_description', 'trial indices', ...
+        'control', length(nwb.units.spike_times_index.data),...
+        'control_description', 'Unit ID',...
         'data', esData.waveforms .', ...
         'description', esHash.descr{i}, ...
         'timestamps', esData.eventTimes, ...
@@ -398,26 +428,40 @@ for i=1:length(ids)
             'description', 'Electrodes involved with these spike events',...
             'table', types.untyped.ObjectView('/general/extracellular_ephys/electrodes'),...
             'data', esData.channel - 1));
+    ses_name = esHash.keyNames{i};
+    ses_ref = types.untyped.ObjectView(['/analysis/', ses_name]);
     if ~isempty(esData.cellType)
         ses.comments = ['cellType: ' esData.cellType{1}];
     end
-    nwb.analysis.set(esHash.keyNames{i}, ses);
-    wav_idx.data(end+1) = types.untyped.ObjectView(['/analysis/' esHash.keyNames{i}]);
+    nwb.analysis.set(ses_name, ses);
+    wav_idx.data(end+1) = ses_ref;
+    
+    %add this timeseries into the trials table as well.
+    [s_trials, ~, trials_to_data] = unique(esData.eventTrials);
+    for j=1:length(s_trials)
+        trial = s_trials(j);
+        i_loc = i == trials_to_data;
+        t_start = find(i_loc, 1);
+        t_count = sum(i_loc);
+        
+        trial_timeseries{trial}(end+1) = struct(...
+            'timeseries', ses_ref, 'idx_start', t_start, 'count', t_count);
+    end
 end
 nwb.units.vectorindex.set('trials_index', trials_idx);
 nwb.units.vectordata.set('trials', unitTrials);
 nwb.units.vectordata.set('waveforms', wav_idx);
 %%
-% To better how |spike_times_index| and |spike_times| map to each other, refer to
+% To better understand how |spike_times_index| and |spike_times| map to each other, refer to
 % <https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ecephys.html#13 this
 % diagram> from the Extracellular Electrophysiology Tutorial.
-
 
 %% Raw Acquisition Data
 % Each ALM-3 session is associated with a large number of raw voltage data grouped by
 % trial ID. To map this data to NWB, each trial is created as its own *ElectricalSeries*
 % object under the name 'trial n' where 'n' is the trial ID.  The trials are then linked
 % to the |trials| dynamic table for easy referencing.
+fprintf('Processing Raw Acquisition Data from `%s` (will take a while)\n', rawdata_loc);
 untarLoc = fullfile(pwd, identifier);
 if 7 ~= exist(untarLoc, 'dir')
     untar(rawdata_loc, pwd);
@@ -462,8 +506,16 @@ trials_idx.stop_time = types.core.VectorData(...
     'data', endTimestamps,...
     'description', 'the end time of each trial');
 
-
-
 %% Export
+
+%first, we'll format and store |trial_timeseries| into |intervals_trials|.
+% note that |timeseries_index| data is 0-indexed.
+ts_len = cellfun('length', trial_timeseries);
+empties = ts_len == 0;
+trial_timeseries(empties) = {struct('timeseries', {}, 'idx_start', {}, 'count', {})};
+
+nwb.intervals_trials.timeseries_index.data = cumsum(ts_len);
+nwb.intervals_trials.timeseries.data = cell2mat(trial_timeseries);
+
 outDest = fullfile(outloc, [identifier '.nwb']);
 nwbExport(nwb, outDest);

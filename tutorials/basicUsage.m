@@ -25,17 +25,16 @@ nwb = nwbRead('out\ANM255200_20140910.nwb');
 % respectively, and retrieve all Set properties using the |keys()| method;
 units = keys(nwb.analysis);
 %% Accessing Data
-startTimes = nwb.intervals.get('trials').start_time.data.load();
+startTimes = nwb.intervals_trials.start_time.data.load();
 %%
 % The above line on its own can be quite intimidating but should be fairly intuitive when broken down.
 %%
-%   nwb.intervals
+%   nwb.intervals_trials
 %%
-% This call returns a Constrained Set containing interval data, with which we retrieve the
-% |trials| table using the |get()| method.  |trials| is a time interval object
+% This call returns a |trials| table.  |trials| is a time interval object
 % (|types.core.TimeInterval|) which is a dynamic table.  Dynamic tables (which
 % inherit from |types.core.DynamicTable|) allow for an arbitrary number of columns
-% which can be dynamically.  The columns are stored as individual datasets.
+% which can be dynamically modified.  The columns are stored as individual datasets.
 %%
 %   start_time.data.load()
 %%
@@ -45,25 +44,35 @@ startTimes = nwb.intervals.get('trials').start_time.data.load();
 % will retrieve the data for you.
 %
 % We now read from all units and plot out all detected spikes relative to their respective start times.
-% The structure of the NWB file is elaborated upon in the
-% <https://neurodatawithoutborders.github.io/matnwb/tutorials/html/alm3ToNwb.html File Conversion Tutorial>.
+% The structure of the NWB file and references for more advanced details like vector
+% indices and vector data can be found in the
+% <https://neurodatawithoutborders.github.io/matnwb/tutorials/html/convertTrials.html Conversion From Trial Data> Tutorial.
 
+unit_trial = nwb.units.vectordata.get('trials');
+unit_trial_idx = nwb.units.vectorindex.get('trials_index').data.load();
+unit_times = nwb.units.spike_times;
+unit_times_idx = nwb.units.spike_times_index.data.load();
 xs = [];
 ys = [];
 for i=1:length(units)
     u = nwb.analysis.get(units{i});
+    id = u.control.load();
     
-    %grab unique trial IDs and mapping indices to this unit
-    [tIdentifier, ~, tIndex] = unique(u.control.load());
-    unit_ts = u.timestamps.load();
-    % for each trial id, grab all its relative timestamps and add them as X-Axis data.
-    for k=1:length(tIdentifier)
-        id = tIdentifier(k);
-        tLogical = tIndex == k;
-        len = sum(tLogical);
-        xs(end+1:end+len) = unit_ts(tLogical) - startTimes(id);
-        ys(end+1:end+len) = id;
+    if id == 1
+        trial_start_i = 1;
+        times_start_i = 1;
+    else
+        trial_start_i = unit_trial_idx(id-1) + 1;
+        times_start_i = unit_times_idx(id-1) + 1;
     end
+    trial_end_i = unit_trial_idx(id);
+    times_end_i = unit_times_idx(id);
+    
+    trials = unit_trial.data.load(trial_start_i, trial_end_i);
+    times = unit_times.data.load(times_start_i, times_end_i);
+    len = length(trials);
+    xs(end+1:end+len) = times - startTimes(trials);
+    ys(end+1:end+len) = trials;    
 end
 
 hScatter = scatter(xs, ys, 'Marker', '.', 'MarkerFaceColor', 'flat',...
