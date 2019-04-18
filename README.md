@@ -51,5 +51,7 @@ nwb=nwbRead('data.nwb');
 
 [Extracellular Electrophysiology IO](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ecephys.html)
 
+[Calcium Imaging](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ophys.html)
+
 ## third-party support
 The `+contrib` folder contains tools for converting from other common data formats/specifications to NWB. Currently supported data types are TDT, MWorks, and Blackrock. We are interested in expanding this section to other data specifications and would greatly value your contribution!

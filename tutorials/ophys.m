@@ -40,7 +40,7 @@ optical_channel = types.core.OpticalChannel( ...
 device_name = 'my_device';
 nwb.general_devices.set(device_name, types.core.Device());
 
-imaging_plane_name = 'my_img_plane';
+imaging_plane_name = 'imaging_plane';
 imaging_plane = types.core.ImagingPlane( ...
     'optical_channel', optical_channel, ...
     'description', 'a very interesting part of the brain', ...
@@ -59,7 +59,20 @@ nwb.general_optophysiology.set(imaging_plane_name, imaging_plane);
 imaging_plane_path = ['/general/optophysiology/' imaging_plane_name];
 
 %% Two Photon Series
+% You may store the image series data in the HDF5 file
+image_series_name = 'image_series1';
+
+image_series = types.core.TwoPhotonSeries( ...
+    'imaging_plane', types.untyped.SoftLink(imaging_plane_path), ...
+    'starting_time_rate', 3.0, ...
+    'data', ones(200, 100, 1000), ...
+    'data_unit', 'lumens');
+
+nwb.acquisition.set(image_series_name, image_series);
+
+%%
 % You may link to a tiff file externally
+image_series_name = 'image_series2';
 
 image_series = types.core.TwoPhotonSeries( ...
     'external_file', 'images.tiff', ...
@@ -70,7 +83,7 @@ image_series = types.core.TwoPhotonSeries( ...
     'data', NaN, ...
     'data_unit', 'na');
 
-nwb.acquisition.set('test_iS', image_series);
+nwb.acquisition.set(image_series_name, image_series);
 
 %% Ophys Processing Module
 
@@ -140,8 +153,11 @@ nwb.processing.set('ophys', ophys_module);
 
 nwbExport(nwb, 'ophys_tutorial.nwb');
 
+%% Read
 
+nwb = nwbRead('ophys_tutorial.nwb');
 
+nwb.general_optophysiology.get('imaging_plane')
 
-
+%nwb.acquisition.get('image_series1').data.load
 
