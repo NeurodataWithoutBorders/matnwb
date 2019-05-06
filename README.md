@@ -12,13 +12,13 @@ Once the code generation step is done, NWB objects can be read, constructed and 
 
 ## Sources
 
-MatNWB is availbale online at https://github.com/NeurodataWithoutBorders/matnwb
+MatNWB is available online at https://github.com/NeurodataWithoutBorders/matnwb
 
 ## Caveats
 
 The NWB:N schema is in a state of some evolution.  This package assumes a certain set of rules are used to define the schema.  As the schema is updated, some of the rules may be changed and these will break this package.
 
-For those planning on using matnwb alongside pynwb, please the following in mind:
+For those planning on using matnwb alongside pynwb, please keep the following in mind:
  - The ordering of dimensions in MATLAB are reversed compared to numpy (and pynwb).  Thus, a 3-D ```SpikeEventSeries```, which in pynwb would normally be indexed in order ```(num_samples, num_channels, num_events)```, would be indexed in form ```(num_events, num_channels, num_samples)``` in matnwb.
  - matnwb is dependent on the schema, which may not necessary correspond with the nwb-version.  In the future, the matnwb release will point to the most compatible pynwb commit, but at the current moment, please consider overwriting the contents within matnwb's **~/schema/core** directory with the generating pynwb's **~/src/pynwb/data directory** (`~` in this case referring to the installation directory of the application) and running generateCore.
  
@@ -55,9 +55,12 @@ nwb=nwbRead('data.nwb');
 ## Examples
 
 [Basic Data Retrieval](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/basicUsage.html)
+| showcases how one would read and process converted NWB file data to display a raster diagram.
 
-[Conversion From Trial Data](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/convertTrials.html)
-
+[Conversion of Real Electrophysiology/Optophysiology Data](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/convertTrials.html)
+| converts Electrophysiology/Optophysiology Data recorded from:
+>Li, Daie, Svoboda, Druckman (2016); Data and simulations related to: Robust neuronal dynamics in premotor cortex during motor planning. Li, Daie, Svoboda, Druckman, Nature. CRCNS.org
+http://dx.doi.org/10.6080/K0RB72JW
 
 ## third-party support
 The `+contrib` folder contains tools for converting from other common data formats/specifications to NWB. Currently supported data types are TDT, MWorks, and Blackrock. We are interested in expanding this section to other data specifications and would greatly value your contribution!
