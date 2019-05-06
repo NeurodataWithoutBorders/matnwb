@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>icephys</title><meta name="generator" content="MATLAB 9.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-05-06"><meta name="DC.source" content="icephys.m"><style type="text/css">
+      --><title>Neurodata Without Borders: Neurophysiology (NWB:N), Intracellular Electrophysiology Tutorial</title><meta name="generator" content="MATLAB 9.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-05-06"><meta name="DC.source" content="icephys.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,7 +66,9 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">NWB file</a></li><li><a href="#3">Subject</a></li><li><a href="#4">Set up meta-data</a></li><li><a href="#5">Stimulus</a></li><li><a href="#6">Response</a></li><li><a href="#7">Write</a></li><li><a href="#8">Read</a></li></ul></div><h2 id="1">NWB file</h2><p>All contents get added to the NWB file, which is created with the following command</p><pre class="codeinput">date = datetime(2018, 3, 1, 12, 0, 0);
+  </style></head><body><div class="content"><h1>Neurodata Without Borders: Neurophysiology (NWB:N), Intracellular Electrophysiology Tutorial</h1><!--introduction--><p>How to write intracellular ephys data to an NWB file using matnwb.</p><pre>author: Ben Dichter
+contact: ben.dichter@lbl.gov
+last edited: May 6, 2019</pre><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">NWB file</a></li><li><a href="#3">Subject</a></li><li><a href="#4">Recording Meta-data</a></li><li><a href="#5">Stimulus</a></li><li><a href="#6">Response</a></li><li><a href="#7">Write</a></li><li><a href="#8">Read</a></li></ul></div><h2 id="1">NWB file</h2><p>All contents get added to the NWB file, which is created with the following command</p><pre class="codeinput">date = datetime(2018, 3, 1, 12, 0, 0);
 session_start_time = datetime(date, <span class="keyword">...</span>
     <span class="string">'Format'</span>, <span class="string">'yyyy-MM-dd''T''HH:mm:ssZZ'</span>, <span class="keyword">...</span>
     <span class="string">'TimeZone'</span>, <span class="string">'local'</span>);
@@ -127,7 +129,7 @@ nwb = nwbfile( <span class="keyword">...</span>
 </pre><h2 id="3">Subject</h2><p>Subject-specific information goes in type <tt>Subject</tt> in location <tt>general_subject</tt>.</p><pre class="codeinput">nwb.general_subject = types.core.Subject( <span class="keyword">...</span>
     <span class="string">'description'</span>, <span class="string">'mouse 5'</span>, <span class="string">'age'</span>, <span class="string">'9 months'</span>, <span class="keyword">...</span>
     <span class="string">'sex'</span>, <span class="string">'M'</span>, <span class="string">'species'</span>, <span class="string">'Mus musculus'</span>);
-</pre><h2 id="4">Set up meta-data</h2><pre class="codeinput">device_name = <span class="string">'device name here'</span>;
+</pre><h2 id="4">Recording Meta-data</h2><pre class="codeinput">device_name = <span class="string">'device name here'</span>;
 ic_elec_name = <span class="string">'ic_elec'</span>;
 
 nwb.general_devices.set(device_name, types.core.Device());
@@ -278,6 +280,13 @@ ans =
 
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
+%% Neurodata Without Borders: Neurophysiology (NWB:N), Intracellular Electrophysiology Tutorial
+% How to write intracellular ephys data to an NWB file using matnwb.
+% 
+%  author: Ben Dichter
+%  contact: ben.dichter@lbl.gov
+%  last edited: May 6, 2019
+
 %% NWB file
 % All contents get added to the NWB file, which is created with the
 % following command
@@ -304,7 +313,7 @@ nwb.general_subject = types.core.Subject( ...
     'description', 'mouse 5', 'age', '9 months', ...
     'sex', 'M', 'species', 'Mus musculus');
 
-%% Set up meta-data
+%% Recording Meta-data
 
 device_name = 'device name here';
 ic_elec_name = 'ic_elec';

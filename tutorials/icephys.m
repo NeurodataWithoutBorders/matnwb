@@ -1,3 +1,10 @@
+%% Neurodata Without Borders: Neurophysiology (NWB:N), Intracellular Electrophysiology Tutorial
+% How to write intracellular ephys data to an NWB file using matnwb.
+% 
+%  author: Ben Dichter
+%  contact: ben.dichter@lbl.gov
+%  last edited: May 6, 2019
+
 %% NWB file
 % All contents get added to the NWB file, which is created with the
 % following command
@@ -24,7 +31,7 @@ nwb.general_subject = types.core.Subject( ...
     'description', 'mouse 5', 'age', '9 months', ...
     'sex', 'M', 'species', 'Mus musculus');
 
-%% Set up meta-data
+%% Recording Meta-data
 
 device_name = 'device name here';
 ic_elec_name = 'ic_elec';
