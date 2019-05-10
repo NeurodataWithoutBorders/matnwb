@@ -12,7 +12,8 @@ classdef DataStub
             fid = H5F.open(obj.filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
             did = H5D.open(fid, obj.path);
             sid = H5D.get_space(did);
-            [~, obj.dims, ~] = H5S.get_simple_extent_dims(sid);
+            [~, h5_dims, ~] = H5S.get_simple_extent_dims(sid);
+            obj.dims = fliplr(h5_dims);
             H5S.close(sid);
             H5D.close(did);
             H5F.close(fid);
@@ -122,7 +123,7 @@ classdef DataStub
             if isempty(varargin)
                 data = obj.load_h5_style();
             elseif length(varargin) == 1
-                region = misc.idx2h5(varargin{1}, fliplr(obj.dims), 'preserve');
+                region = misc.idx2h5(varargin{1}, obj.dims, 'preserve');
                 sid = obj.get_space();
                 H5S.select_none(sid);
                 for i=1:length(region)
