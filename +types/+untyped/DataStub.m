@@ -36,7 +36,7 @@ classdef DataStub
         end
         
         %can be called without arg, with H5ML.id, or (dims, offset, stride)
-         function data = load_h5_style(obj, varargin)
+        function data = load_h5_style(obj, varargin)
             %LOAD  Read data from HDF5 dataset.
             %   DATA = LOAD_H5_STYLE() retrieves all of the data.
             %
@@ -75,13 +75,11 @@ classdef DataStub
                     sizesid = H5S.create_simple(obj.ndims(), selsz, selsz);
                     H5S.select_hyperslab(selsid, 'H5S_SELECT_SET',...
                         bl{i}(1,:), [], [], selsz);
-                    data{i} = H5D.read(did, 'H5ML_DEFAULT', sizesid, selsid, 'H5P_DEFAULT') .';
+                    data{i} = H5D.read(did, 'H5ML_DEFAULT', sizesid, selsid, 'H5P_DEFAULT');
                 end
                 H5S.close(selsid);
                 
-                if 1 == numel(data)
-                    data = data{1};
-                end
+                data = cell2mat(data);
             else
                 data = h5read(obj.filename, obj.path, varargin{:});
             end
@@ -155,7 +153,6 @@ classdef DataStub
             end
         end
    
-        
         function refs = export(obj, fid, fullpath, refs)
             %Check for compound data type refs
             srcfid = H5F.open(obj.filename);
