@@ -35,19 +35,19 @@ classdef DataStub
         end
         
         %can be called without arg, with H5ML.id, or (dims, offset, stride)
-         function data = load_h5_style(obj, varargin)
+        function data = load_h5_style(obj, varargin)
             %LOAD  Read data from HDF5 dataset.
             %   DATA = LOAD_H5_STYLE() retrieves all of the data.
             %
             %   DATA = LOAD_H5_STYLE(SPACE) Load data specified by HDF5 SPACE
             %
-            %   DATA = LOAD_H5_STYLE(START,COUNT) reads a subset of data. START is 
+            %   DATA = LOAD_H5_STYLE(START,COUNT) reads a subset of data. START is
             %   the one-based index of the first element to be read.
             %   COUNT defines how many elements to read along each dimension.  If a
             %   particular element of COUNT is Inf, data is read until the end of the
             %   corresponding dimension.
             %
-            %   DATA = LOAD_H5_STYLE(START,COUNT,STRIDE) reads a strided subset of 
+            %   DATA = LOAD_H5_STYLE(START,COUNT,STRIDE) reads a strided subset of
             %   data. STRIDE is the inter-element spacing along each
             %   data set extent and defaults to one along each extent.
             fid = [];
@@ -78,11 +78,16 @@ classdef DataStub
                 end
                 H5S.close(selsid);
                 
-                if 1 == numel(data)
+                if isscalar(data)
                     data = data{1};
                 end
             else
                 data = h5read(obj.filename, obj.path, varargin{:});
+                
+                % dataset strings are defaulted to cell arrays regardless of size
+                if iscellstr(data) && isscalar(data)
+                    data = data{1};
+                end
             end
             
             if isstruct(data)
@@ -110,12 +115,12 @@ classdef DataStub
             %   DATA = LOAD() retrieves all of the data.
             %
             %   DATA = LOAD(INDEX)
-            %   
+            %
             %   DATA = LOAD(START,END) reads a subset of data.
             %   START and END are 1-based index indicating the beginning
             %   and end indices of the region to read
             %
-            %   DATA = LOAD(START,STRIDE,END) reads a strided subset of 
+            %   DATA = LOAD(START,STRIDE,END) reads a strided subset of
             %   data. STRIDE is the inter-element spacing along each
             %   data set extent and defaults to one along each extent.
             
@@ -150,10 +155,10 @@ classdef DataStub
                         count(i) = floor((END(i) - START(i)) / STRIDE(i) + 1);
                     end
                 end
-                data = obj.load_h5_style(START, count, STRIDE);  
+                data = obj.load_h5_style(START, count, STRIDE);
             end
         end
-   
+        
         
         function refs = export(obj, fid, fullpath, refs)
             %Check for compound data type refs
