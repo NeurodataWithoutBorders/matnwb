@@ -26,6 +26,10 @@ classdef Anon < handle
             obj.value = val;
         end
         
+        function tf = isempty(obj)
+            tf = isempty(obj.name);
+        end
+        
         function refs = export(obj, fid, fullpath, refs)
             refs = obj.value.export(fid, [fullpath obj.name '/'], refs);
         end
