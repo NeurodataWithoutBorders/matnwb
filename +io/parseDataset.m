@@ -20,12 +20,13 @@ if ~isempty(afields)
     parsed = [parsed; containers.Map(anames, attrargs.values(afields))];
 end
 
+% loading h5t references are required
+% unfortunately also a bottleneck
 if strcmp(datatype.Class, 'H5T_REFERENCE')
     tid = H5D.get_type(did);
     data = io.parseReference(did, tid, H5D.read(did));
     H5T.close(tid);
-elseif strcmp(datatype.Class, 'H5T_STRING') ||...
-        ~strcmp(dataspace.Type, 'simple')
+elseif ~strcmp(dataspace.Type, 'simple')
     data = H5D.read(did);
     if iscellstr(data) && 1 == length(data)
         %pynwb will use variable string lengths which are read in as bulky
