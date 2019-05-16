@@ -26,8 +26,6 @@ if ischar(filename)
         ref_data = H5A.read(attr_id);
         blacklist = H5R.get_name(attr_id, 'H5R_OBJECT', ref_data);
         if ~ignorecache
-            warning('MATNWB:CACHE',...
-                'Generating from cached schema (use the ''ignorecache'' flag with nwbRead to disable generating from cache)...');
             generateSpec(fid, h5info(filename, blacklist));
             rehash(); %required if we want parseGroup to read the right files.
         end
@@ -35,7 +33,9 @@ if ischar(filename)
         H5A.close(attr_id);
         H5F.close(fid);
     catch ME
-        rethrow(ME);
+        if ~strcmp(ME.identifier, 'MATLAB:imagesci:hdf5lib:libraryError')
+            rethrow(ME);
+        end
         blacklist = '';
     end
     nwb = io.parseGroup(filename, info, blacklist);

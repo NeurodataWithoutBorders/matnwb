@@ -29,15 +29,5 @@ fid = fopen(source);
 namespace_map = schema.read(fread(fid, '*char') .');
 fclose(fid);
 
-schema_map = containers.Map;
-for i=1:length(namespace.filenames)
-    filename = namespace.filenames{i};
-    if ~endsWith(filename, '.yaml')
-        filename = [filename '.yaml'];
-    end
-    fid = fopen(fullfile(localpath, filename));
-    schema_map(filename) = fread(fid, '*char') .';
-    fclose(fid);
-end
-spec.generate(namespace_map, schema_map);
+spec.generate(namespace_map, localpath);
 end
