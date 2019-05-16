@@ -25,7 +25,7 @@ while namespaceIter.hasNext()
         if schemaFile.containsKey('source')
             filenames{end+1} = schemaFile.get('source');
         elseif schemaFile.containsKey('namespace')
-            dependencies{end+1} = schemafile.get('namespace');
+            dependencies{end+1} = schemaFile.get('namespace');
         else
             error(errid, errmsg);
         end
