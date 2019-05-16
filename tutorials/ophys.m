@@ -3,16 +3,28 @@
 % 
 %  author: Ben Dichter
 %  contact: ben.dichter@gmail.com
-%  last edited: April 16, 2019
+%  last edited: May 14, 2019
+%
+%%
+% This tutorial will demonstrate how to write calcium imaging data. 
+% The workflow demonstrated here involves three main steps:
+%
+% 1. Acquiring two-photon images
+% 2. Image segmentation
+% 3. Fluorescence and dF/F response
+% 
+% The data we output will be in the following structure:
+%%
+% 
+% <<ophys_tutorial_schematic.png>>
+% 
 
 %% NWB file
 % All contents get added to the NWB file, which is created with the
 % following command
 
 date = datetime(2018, 3, 1, 12, 0, 0);
-session_start_time = datetime(date, ...
-    'Format', 'yyyy-MM-dd''T''HH:mm:ssZZ', ...
-    'TimeZone', 'local');
+session_start_time = datetime(date, 'TimeZone', 'local');
 
 nwb = nwbfile( ...
     'session_description', 'a test NWB File', ...
@@ -31,7 +43,10 @@ nwb.general_subject = types.core.Subject( ...
     'description', 'mouse 5', 'age', '9 months', ...
     'sex', 'M', 'species', 'Mus musculus');
 
-%% Imaging Plane
+%% Adding metadata about acquisition
+% Before you can add your data, you will need to provide some information 
+% about how that data was generated. This amounts describing the device, 
+% imaging plane and the optical channel used.
 
 optical_channel = types.core.OpticalChannel( ...
     'description', 'description', ...
@@ -58,8 +73,10 @@ nwb.general_optophysiology.set(imaging_plane_name, imaging_plane);
 
 imaging_plane_path = ['/general/optophysiology/' imaging_plane_name];
 
-%% Two Photon Series
-% You may store the image series data in the HDF5 file
+%% TwoPhotonSeries
+% Acquired imaging data is stored an an object called TwoPhotonSeries and
+% put in the acquisition folder. You may store the image series data in the
+% HDF5 file
 image_series_name = 'image_series1';
 
 image_series = types.core.TwoPhotonSeries( ...
@@ -71,7 +88,7 @@ image_series = types.core.TwoPhotonSeries( ...
 nwb.acquisition.set(image_series_name, image_series);
 
 %%
-% You may link to a tiff file externally
+% Or you may link to a tiff file externally
 image_series_name = 'image_series2';
 
 image_series = types.core.TwoPhotonSeries( ...
@@ -86,11 +103,22 @@ image_series = types.core.TwoPhotonSeries( ...
 nwb.acquisition.set(image_series_name, image_series);
 
 %% Ophys Processing Module
+% Processed data should go in the ophys ProcessingModule. Here we create
+% the module
 
 ophys_module = types.core.ProcessingModule(...
     'description', 'holds processed calcium imaging data');
 
 %% Plane Segmentation
+% Now that the raw data is stored, you can add the image segmentation 
+% results. This is done with the ImageSegmentation data interface. This 
+% class has the ability to store segmentation from one or more imaging 
+% planes, which are stored via the PlaneSegmentation class. 
+% PlaneSegmentation is a table where each row represents a single ROI. 
+% Once you have  your PlaneSegmentation object, you can add the an 
+% image_mask object to PlaneSegmenation. PlaneSegmentation is also a 
+% DynamicTable, which means you can add additional custom columns about the
+% ROIs.
 
 % generate fake image_mask data
 imaging_shape = [100, 200];
@@ -126,7 +154,15 @@ ophys_module.nwbdatainterface.set('image_segmentation', img_seg);
 nwb.processing.set('ophys', ophys_module);
 
 
-%% Fluoresence
+
+%% Fluoresence and RoiResponseSeries
+% Now that ROIs are stored, you can store RoiResponseSeries. These objects
+% go in a Fluorescence object, which can contain one or more instances of
+% RoiResponseSeries. Each RoiResponse Series requires a DynamicTableRegion
+% of a PlaneSegmentation, which indicates which ROIs are being reported. In
+% order to construct this DynamicTableRegion, you must first construct
+% an ObjectView of the PlaneSegmentation table.
+
 
 plane_seg_object_view = types.untyped.ObjectView( ...
     '/processing/ophys/image_segmentation/plane_segmentation');
@@ -146,6 +182,12 @@ fluorescence = types.core.Fluorescence();
 fluorescence.roiresponseseries.set('roi_response_series', roi_response_series);
 
 ophys_module.nwbdatainterface.set('fluorescence', fluorescence);
+
+%% 
+% You can also use a DfOverF object instead of a Fluorescence object.
+
+%%
+% Finally, the ophys ProcessingModule is added to the NWBFile.
 nwb.processing.set('ophys', ophys_module);
 
 
