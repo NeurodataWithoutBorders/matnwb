@@ -14,30 +14,20 @@ function generateExtension(source)
 %   
 %   Example:
 %      generateCore('schema\core\nwb.namespace.yaml');
-%      generateExtension('schema\core\myextension.namespace.yaml')
+%      generateExtension('schema\myext\myextension.namespace.yaml')
 % 
 %   See also GENERATECORE
 validateattributes(source, {'char', 'string'}, {'scalartext'});
 
 %find jar from source and generate Schema
-nwbloc = fileparts(mfilename('fullpath'));
-javapath = fullfile(nwbloc, 'jar', 'schema.jar');
-if ~any(strcmp(javaclasspath(), javapath))
-    javaaddpath(javapath);
-end
+schema = spec.loadSchema();
+
 [localpath, ~, ~] = fileparts(source);
-[filenames, nm, dep] = yaml.getNamespaceInfo(source);
-schema = yaml.getSourceInfo(localpath, filenames{:});
-extSchema = struct('name', nm, 'schema', schema, 'dependencies', {dep});
-namespacePath = fullfile(nwbloc, 'namespaces');
-if 7 ~= exist(namespacePath, 'dir')
-    mkdir(namespacePath);
-end
-save(fullfile(namespacePath,[extSchema.name '.mat']), '-struct', 'extSchema');
+assert(2 == exist(source, 'file'),...
+    'MATNWB:FILE', 'Path to file `%s` could not be found.', source);
+fid = fopen(source);
+namespace_map = schema.read(fread(fid, '*char') .');
+fclose(fid);
 
-%check/load dependency namespaces
-extmap = schemes.loadNamespace(extSchema.name);
-
-%write files
-file.writeNamespace(extmap(extSchema.name));
+spec.generate(namespace_map, localpath);
 end

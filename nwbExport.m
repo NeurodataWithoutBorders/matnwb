@@ -3,14 +3,15 @@ function nwbExport(nwb, filename)
 %  nwbRead(nwb,filename) Writes the nwb object to a file at filename.
 %
 %  Example:
-%    %Generate Matlab code for the NWB objects from the core schema.
-%    %This only needs to be done once.
+%    % Generate Matlab code for the NWB objects from the core schema.
+%    % This only needs to be done once.
 %    generateCore('schema\core\nwb.namespace.yaml');
-%    %Create some fake fata and write
+%    % Create some fake fata and write
 %    nwb = nwbfile;
-%    nwb.epochs = types.core.Epochs;
-%    nwb.epochs.stim = types.Epoch;
-%    nwbExport(nwb, 'epoch.nwb');
+%    nwb.session_start_time = datetime('now');
+%    nwb.identifier = 'EMPTY';
+%    nwb.session_description = 'empty test file';
+%    nwbExport(nwb, 'empty.nwb');
 %
 %  See also GENERATECORE, GENERATEEXTENSION, NWBFILE, NWBREAD
 validateattributes(nwb, {'nwbfile'}, {'nonempty'});
