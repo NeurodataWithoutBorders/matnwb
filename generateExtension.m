@@ -20,12 +20,15 @@ function generateExtension(source)
 validateattributes(source, {'char', 'string'}, {'scalartext'});
 
 %find jar from source and generate Schema
-nwbloc = fileparts(mfilename('fullpath'));
-javapath = fullfile(nwbloc, 'jar', 'schema.jar');
-if ~any(strcmp(javaclasspath(), javapath))
+try
+    schema = Schema;
+catch
+    nwbloc = fileparts(which('nwbfile'));
+    javapath = fullfile(nwbloc, 'jar', 'schema.jar');
     javaaddpath(javapath);
+    schema = Schema;
 end
-schema = Schema();
+
 [localpath, ~, ~] = fileparts(source);
 assert(2 == exist(source, 'file'),...
     'MATNWB:FILE', 'Path to file `%s` could not be found.', source);
