@@ -35,6 +35,7 @@ if ischar(filename)
         H5A.close(attr_id);
         H5F.close(fid);
     catch ME
+        rethrow(ME);
         blacklist = '';
     end
     nwb = io.parseGroup(filename, info, blacklist);
@@ -66,10 +67,6 @@ for i=1:length(specinfo.Groups)
     
     namespace_name = split(specinfo.Groups(i).Name, '/');
     namespace_name = namespace_name{end};
-    out_loc = fullfile('schema', namespace_name);
-    if ~exist(out_loc, 'dir')
-        mkdir('schema', namespace_name);
-    end
     
     filenames = {location.Datasets.Name};
     if ~any(strcmp('namespace', filenames))
@@ -79,17 +76,18 @@ for i=1:length(specinfo.Groups)
         return;
     end
     source_names = {location.Datasets.Name};
-    file_names = strcat(source_names, '.yaml');
     file_loc = strcat(location.Name, '/', source_names);
+    schema_map = containers.Map;
     for j=1:length(file_loc)
         did = H5D.open(fid, file_loc{j});
-        out_id = fopen(fullfile(out_loc, file_names{j}), 'W');
-        formatted_str = schema.export(schema.read(H5D.read(did)));
-        fwrite(out_id, char(formatted_str), 'char');
+        if strcmp('namespace', source_names{j})
+            namespace_map = schema.read(H5D.read(did));
+        else
+            schema_map(source_names{j}) = H5D.read(did);    
+        end
         H5D.close(did);
-        fclose(out_id);
     end
     
-    generateExtension(fullfile(out_loc, 'namespace.yaml'));
+    spec.generate(namespace_map, schema_map);
 end
 end
