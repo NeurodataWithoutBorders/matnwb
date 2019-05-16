@@ -1,4 +1,4 @@
-function parsed = parseGroup(filename, info)
+function parsed = parseGroup(filename, info, blacklist)
 % NOTE, group name is in path format so we need to parse that out.
 % parsed is either a containers.Map containing properties mapped to values OR a
 % typed value
@@ -22,10 +22,15 @@ end
 
 %parse subgroups
 gprops = containers.Map;
+
+%handle blacklist (which should be a Group)
 for i=1:length(info.Groups)
-    g_info = info.Groups(i);
-    [~, gname] = io.pathParts(g_info.Name);
-    subg = io.parseGroup(filename, g_info);
+    group = info.Groups(i);
+    if strcmp(blacklist, group.Name)
+        continue;
+    end
+    [~, gname] = io.pathParts(group.Name);
+    subg = io.parseGroup(filename, group, blacklist);
     gprops(gname) = subg;
 end
 

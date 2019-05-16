@@ -17,7 +17,22 @@ function nwb = nwbRead(filename)
 if ischar(filename)
     validateattributes(filename, {'char'}, {'scalartext', 'nonempty'});
     info = h5info(filename);
-    nwb = io.parseGroup(filename, info);
+    
+    %check for .specloc
+    attr_names = {info.Attributes.Name};
+    specloc_ind = strcmp('.specloc', attr_names);
+    if any(specloc_ind)
+        ref_data = info.Attributes(specloc_ind).Value;
+        fid = H5F.open(filename);
+        attr_id = H5A.open(fid, '.specloc');
+        blacklist = H5R.get_name(attr_id, 'H5R_OBJECT', ref_data);
+        H5A.close(attr_id);
+        H5F.close(fid);
+        info.Attributes(specloc_ind) = [];
+    else
+        blacklist = '';
+    end
+    nwb = io.parseGroup(filename, info, blacklist);
     return;
 elseif isstring(filename)
     validateattributes(filename, {'string'}, {'nonempty'});
