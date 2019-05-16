@@ -20,14 +20,7 @@ function generateExtension(source)
 validateattributes(source, {'char', 'string'}, {'scalartext'});
 
 %find jar from source and generate Schema
-try
-    schema = Schema;
-catch
-    nwbloc = fileparts(which('nwbfile'));
-    javapath = fullfile(nwbloc, 'jar', 'schema.jar');
-    javaaddpath(javapath);
-    schema = Schema;
-end
+schema = spec.loadSchema();
 
 [localpath, ~, ~] = fileparts(source);
 assert(2 == exist(source, 'file'),...
@@ -40,6 +33,9 @@ namespace = spec.getNamespaceInfo(namespace_map);
 schema_map = containers.Map;
 for i=1:length(namespace.filenames)
     filename = namespace.filenames{i};
+    if ~endsWith(filename, '.yaml')
+        filename = [filename '.yaml'];
+    end
     fid = fopen(fullfile(localpath, filename));
     schema_map(filename) = fread(fid, '*char') .';
     fclose(fid);
@@ -50,7 +46,7 @@ extSchema = struct('name', namespace.name,...
     'schema', schema,...
     'dependencies', {namespace.dependencies},...
     'version', namespace.version);
-namespacePath = fullfile(nwbloc, 'namespaces');
+namespacePath = 'namespaces';
 if 7 ~= exist(namespacePath, 'dir')
     mkdir(namespacePath);
 end

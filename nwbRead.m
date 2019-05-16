@@ -1,4 +1,4 @@
-function nwb = nwbRead(filename)
+function nwb = nwbRead(filename, varargin)
 %NWBREAD Reads an NWB file.
 %  nwb = nwbRead(filename) Reads the nwb file at filename and returns an
 %  NWBFile object representing its contents.
@@ -14,22 +14,28 @@ function nwb = nwbRead(filename)
 %    nwb=nwbRead('data.nwb');
 %
 %  See also GENERATECORE, GENERATEEXTENSION, NWBFILE, NWBEXPORT
+ignorecache = ~isempty(varargin) && ischar(varargin{1}) &&...
+    strcmp('ignorecache', varargin{1});
 if ischar(filename)
     validateattributes(filename, {'char'}, {'scalartext', 'nonempty'});
     info = h5info(filename);
-    
-    %check for .specloc
-    attr_names = {info.Attributes.Name};
-    specloc_ind = strcmp('.specloc', attr_names);
-    if any(specloc_ind)
-        ref_data = info.Attributes(specloc_ind).Value;
+    try
+        %check for .specloc
         fid = H5F.open(filename);
         attr_id = H5A.open(fid, '.specloc');
+        ref_data = H5A.read(attr_id);
         blacklist = H5R.get_name(attr_id, 'H5R_OBJECT', ref_data);
+        if ~ignorecache
+            warning('MATNWB:CACHE',...
+                'Generating from cached schema (use the ''ignorecache'' flag with nwbRead to disable generating from cache)...');
+            generateSpec(fid, h5info(filename, blacklist));
+            rehash(); %required if we want parseGroup to read the right files.
+        end
+        info.Attributes(strcmp('.specloc', {info.Attributes.Name})) = [];
         H5A.close(attr_id);
         H5F.close(fid);
-        info.Attributes(specloc_ind) = [];
-    else
+    catch ME
+        rethrow(ME);
         blacklist = '';
     end
     nwb = io.parseGroup(filename, info, blacklist);
@@ -50,5 +56,41 @@ for i=1:length(filename)
     end
     info = h5info(fnm);
     nwb(i) = io.parseGroup(fnm, info);
+end
+end
+
+function generateSpec(fid, specinfo)
+schema = spec.loadSchema();
+
+for i=1:length(specinfo.Groups)
+    location = specinfo.Groups(i).Groups(1);
+    
+    namespace_name = split(specinfo.Groups(i).Name, '/');
+    namespace_name = namespace_name{end};
+    out_loc = fullfile('schema', namespace_name);
+    if ~exist(out_loc, 'dir')
+        mkdir('schema', namespace_name);
+    end
+    
+    filenames = {location.Datasets.Name};
+    if ~any(strcmp('namespace', filenames))
+        warning('MATNWB:INVALIDCACHE',...
+        'Couldn''t find a `namespace` in namespace `%s`.  Skipping cache generation.',...
+        namespace_name);
+        return;
+    end
+    source_names = {location.Datasets.Name};
+    file_names = strcat(source_names, '.yaml');
+    file_loc = strcat(location.Name, '/', source_names);
+    for j=1:length(file_loc)
+        did = H5D.open(fid, file_loc{j});
+        out_id = fopen(fullfile(out_loc, file_names{j}), 'W');
+        formatted_str = schema.export(schema.read(H5D.read(did)));
+        fwrite(out_id, char(formatted_str), 'char');
+        H5D.close(did);
+        fclose(out_id);
+    end
+    
+    generateExtension(fullfile(out_loc, 'namespace.yaml'));
 end
 end
