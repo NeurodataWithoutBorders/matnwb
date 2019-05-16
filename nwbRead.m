@@ -35,7 +35,6 @@ if ischar(filename)
         H5A.close(attr_id);
         H5F.close(fid);
     catch ME
-        rethrow(ME);
         blacklist = '';
     end
     nwb = io.parseGroup(filename, info, blacklist);
