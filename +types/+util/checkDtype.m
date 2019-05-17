@@ -8,6 +8,7 @@ if isempty(WHITELIST)
         'types.untyped.SoftLink'...
         };
 end
+
 if isstruct(type)
     names = fieldnames(type);
     assert(isstruct(val) || istable(val) || isa(val, 'containers.Map'), ...
@@ -61,6 +62,7 @@ else
     if isempty(val)
         return;
     end
+    
     if isa(val, 'types.untyped.DataStub')
         %grab first element and check
         truval = val;
@@ -72,18 +74,41 @@ else
     elseif isa(val, 'types.untyped.Anon')
         truval = val;
         val = val.value;
+    elseif isa(val, 'types.untyped.ExternalLink') &&...
+            ~strcmp(type, 'types.untyped.ExternalLink')
+        truval = val;
+        val = val.deref();
     else
         truval = [];
     end
     
     if any(strcmpi(type, {'single' 'double' 'logical' 'numeric'})) ||...
             startsWith(type, {'int' 'uint' 'float'})
-        %all numeric types
-        try
-            val = types.util.correctType(val, type);
-        catch ME
-            error('MATNWB:CASTERROR', 'Could not cast type `%s` to `%s` for property `%s`',...
-                class(val), type, name);
+        if isa(val, 'types.untyped.SoftLink')
+            %derefing through softlink would require writing and/or the root nwbfile object
+            return;
+        end
+        
+        if isa(truval, 'types.untyped.ExternalLink')
+            assert(any(strcmp('data', properties(val))), errid, errmsg);
+            val = val.data;
+            if isa(val, 'types.untyped.DataStub')
+                val = val.load(1);
+            end
+            
+            if ~isa(val, type)
+                warning(errid,...
+                    'Externally Linked Numeric Property `%s` is not of type `%s` (actual type is `%s`).',...
+                    name, type, class(val));
+            end
+        else
+            %all numeric types
+            try
+                val = types.util.correctType(val, type);
+            catch ME
+                error('MATNWB:CASTERROR', 'Could not cast type `%s` to `%s` for property `%s`',...
+                    class(val), type, name);
+            end
         end
     elseif strcmp(type, 'isodatetime')
         addpath(fullfile(fileparts(which('nwbfile')), 'external_packages', 'datenum8601'));

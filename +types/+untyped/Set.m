@@ -67,6 +67,36 @@ classdef Set < handle & matlab.mixin.CustomDisplay
             cnt = obj.map.Count;
         end
         
+        %overloads size(obj)
+        function varargout = size(obj, dim)
+            if nargin > 1
+                if dim > 1
+                    varargout{1} = 1;
+                else
+                    varargout{1} = obj.Count;
+                end
+            else
+                if nargout == 1
+                    varargout{1} = [obj.Count, 1];
+                else
+                    [varargout{:}] = ones(nargout,1);
+                    varargout{1} = obj.Count;
+                end
+            end
+        end
+        
+        %overloads horzcat(A1,A2,...,An)
+        function C = horzcat(varargin)
+            error('MATNWB:SET:UNSUPPORTED',...
+                'types.untyped.Set does not support concatenation');
+        end
+        
+        %overloads vertcat(A1, A2,...,An)
+        function C = vertcat(varargin)
+            error('MATNWB:SET:UNSUPPORTED',...
+                'types.untyped.Set does not support concatenation.');
+        end
+         
         function setValidationFcn(obj, fcn)
             if (~isnumeric(fcn) || ~isempty(fcn)) && ~isa(fcn, 'function_handle')
                 error('Validation must be a function handle of form @(name, val) or empty array.');
@@ -153,21 +183,28 @@ classdef Set < handle & matlab.mixin.CustomDisplay
     end
     
     methods(Access=protected)
+        function displayEmptyObject(obj)
+            hdr = ['  Empty '...
+                '<a href="matlab:helpPopup types.untyped.Set" style="font-weight:bold">'...
+                'Set</a>'];
+            footer = getFooter(obj);
+            disp([hdr newline footer]);
+        end
+        
         function displayScalarObject(obj)
+            displayNonScalarObject(obj)
+        end
+        
+        function displayNonScalarObject(obj)
             hdr = getHeader(obj);
             footer = getFooter(obj);
             mkeys = keys(obj);
-            mklen = 0;
-            for i=1:length(mkeys)
-                mk = mkeys{i};
-                if length(mk) > mklen
-                    mklen = length(mk);
-                end
-            end
+            mklen = cellfun('length', mkeys);
+            max_mklen = max(mklen);
             body = cell(size(mkeys));
             for i=1:length(mkeys)
                 mk = mkeys{i};
-                mkspace = repmat(' ', 1, mklen - length(mk));
+                mkspace = repmat(' ', 1, max_mklen - mklen(i));
                 body{i} = [mkspace mk ': [' class(obj.map(mk)) ']'];
             end
             body = file.addSpaces(strjoin(body, newline), 4);

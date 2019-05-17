@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Neurodata Without Borders: Neurophysiology (NWB:N), Extracellular Electrophysiology Tutorial</title><meta name="generator" content="MATLAB 9.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-03-05"><meta name="DC.source" content="ecephys.m"><style type="text/css">
+      --><title>Neurodata Without Borders: Neurophysiology (NWB:N), Extracellular Electrophysiology Tutorial</title><meta name="generator" content="MATLAB 9.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-05-14"><meta name="DC.source" content="ecephys.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -68,10 +68,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
   </style></head><body><div class="content"><h1>Neurodata Without Borders: Neurophysiology (NWB:N), Extracellular Electrophysiology Tutorial</h1><!--introduction--><p>How to write ecephys data to an NWB file using matnwb.</p><pre>author: Ben Dichter
 contact: ben.dichter@gmail.com
-last edited: March 5, 2019</pre><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">NWB file</a></li><li><a href="#3">Subject</a></li><li><a href="#4">Data dependencies</a></li><li><a href="#6">Electrode Table</a></li><li><a href="#7">Multielectrode recording</a></li><li><a href="#10">LFP</a></li><li><a href="#11">Trials</a></li><li><a href="#13">DynamicTables</a></li><li><a href="#14">Side note about electrodes</a></li><li><a href="#15">Processing Modules</a></li><li><a href="#18">Writing the file</a></li><li><a href="#19">Reading the file</a></li><li><a href="#20">Reading data</a></li><li><a href="#24">Reading indexed column (e.g. spike times)</a></li><li><a href="#25">External Links</a></li></ul></div><h2 id="1">NWB file</h2><p>All contents get added to the NWB file, which is created with the following command</p><pre class="codeinput">date = datetime(2018, 3, 1, 12, 0, 0);
-session_start_time = datetime(date, <span class="keyword">...</span>
-    <span class="string">'Format'</span>, <span class="string">'yyyy-MM-dd''T''HH:mm:ssZZ'</span>, <span class="keyword">...</span>
-    <span class="string">'TimeZone'</span>, <span class="string">'local'</span>);
+last edited: March 5, 2019</pre><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">NWB file</a></li><li><a href="#3">Subject</a></li><li><a href="#4">Data dependencies</a></li><li><a href="#6">Electrode Table</a></li><li><a href="#7">Multielectrode recording</a></li><li><a href="#10">LFP</a></li><li><a href="#11">Trials</a></li><li><a href="#13">DynamicTables</a></li><li><a href="#14">Side note about electrodes</a></li><li><a href="#15">Processing Modules</a></li><li><a href="#18">Writing the file</a></li><li><a href="#19">Reading the file</a></li><li><a href="#20">Reading data</a></li><li><a href="#24">Reading indexed column (e.g. spike times)</a></li><li><a href="#25">External Links</a></li></ul></div><h2 id="1">NWB file</h2><p>All contents get added to the NWB file, which is created with the following command</p><pre class="codeinput">session_start_time = datetime(2018, 3, 1, 12, 0, 0, <span class="string">'TimeZone'</span>, <span class="string">'local'</span>);
+
 nwb = nwbfile( <span class="keyword">...</span>
     <span class="string">'session_description'</span>, <span class="string">'a test NWB File'</span>, <span class="keyword">...</span>
     <span class="string">'identifier'</span>, <span class="string">'mouse004_day4'</span>, <span class="keyword">...</span>
@@ -118,7 +116,7 @@ nwb = nwbfile( <span class="keyword">...</span>
                            intervals_trials: []
                                  processing: [1&times;1 types.untyped.Set]
                         session_description: 'a test NWB File'
-                         session_start_time: 2018-03-01T12:00:00+0000
+                         session_start_time: 2018-03-01T12:00:00.000000-05:00
                       stimulus_presentation: [1&times;1 types.untyped.Set]
                          stimulus_templates: [1&times;1 types.untyped.Set]
                   timestamps_reference_time: []
@@ -339,10 +337,8 @@ nwbExport(nwb3, <span class="string">'link_test.nwb'</span>)
 % All contents get added to the NWB file, which is created with the
 % following command
 
-date = datetime(2018, 3, 1, 12, 0, 0);
-session_start_time = datetime(date, ...
-    'Format', 'yyyy-MM-dd''T''HH:mm:ssZZ', ...
-    'TimeZone', 'local');
+session_start_time = datetime(2018, 3, 1, 12, 0, 0, 'TimeZone', 'local');
+
 nwb = nwbfile( ...
     'session_description', 'a test NWB File', ...
     'identifier', 'mouse004_day4', ...
