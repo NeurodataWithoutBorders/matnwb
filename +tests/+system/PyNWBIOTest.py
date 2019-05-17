@@ -9,8 +9,7 @@ import h5py
 from pynwb import NWBContainer, get_manager, NWBFile, NWBData, TimeSeries
 from pynwb.ecephys import ElectricalSeries, Clustering
 from pynwb.ophys import OpticalChannel, TwoPhotonSeries
-from pynwb.form.backends.hdf5 import HDF5IO
-
+from hdmf.backends.hdf5 import HDF5IO
 
 class PyNWBIOTest(unittest.TestCase):
     def setUp(self):
