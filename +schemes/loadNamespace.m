@@ -4,10 +4,8 @@ function extNamespaces = loadNamespace(name, loaded)
 % loaded is a containers.Map containing preloaded namespace names (optional)
 % extNamespaces is a merged containers.Map containing this namespace and its
 %   parents
-schemaPath = fullfile(fileparts(mfilename('fullpath')), '..',...
-    'namespaces', [name '.mat']);
 
-namespace = load(schemaPath);
+namespace = load(fullfile('namespaces', [name '.mat']));
 
 if nargin > 1
     extNamespaces = loaded;
