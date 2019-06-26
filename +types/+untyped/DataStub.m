@@ -58,26 +58,27 @@ classdef DataStub
                 did = H5D.open(fid, obj.path);
                 
                 sid = varargin{1};
+                numBlocks = H5S.get_select_hyper_nblocks(sid);
                 % in event of multiple hyperslab selections, return as a cell array
-                nb = H5S.get_select_hyper_nblocks(sid);
                 % format blocklist to cell array of region indices separated by
                 % block
-                bl = mat2cell(H5S.get_select_hyper_blocklist(sid, 0, nb) .',...
-                    repmat(2, 1, nb), obj.ndims());
+                bl = mat2cell(H5S.get_select_hyper_blocklist(sid, 0, numBlocks) .',...
+                    repmat(2, 1, numBlocks), obj.ndims());
                 
-                data = cell(nb,1);
+                data = cell(numBlocks,1);
                 % go through each hyperslab selection and read data from H5D,
                 % populating cell array of hyperslab selections
-                selsid = H5S.create('H5S_SIMPLE');
-                H5S.extent_copy(selsid, sid);
-                for i=1:nb
+                for i=1:numBlocks
                     selsz = diff(bl{i})+1;
                     sizesid = H5S.create_simple(obj.ndims(), selsz, selsz);
-                    H5S.select_hyperslab(selsid, 'H5S_SELECT_SET',...
+                    H5S.select_hyperslab(sid, 'H5S_SELECT_SET',...
                         bl{i}(1,:), [], [], selsz);
-                    data{i} = H5D.read(did, 'H5ML_DEFAULT', sizesid, selsid, 'H5P_DEFAULT');
+                    data{i} = H5D.read(did,...
+                        'H5ML_DEFAULT',...
+                        sizesid,...
+                        sid,...
+                        'H5P_DEFAULT') .';
                 end
-                H5S.close(selsid);
                 
                 data = cell2mat(data);
             else
