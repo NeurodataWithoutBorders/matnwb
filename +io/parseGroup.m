@@ -69,6 +69,7 @@ else
         parsed = nwbfile(kwargs{:});
         return;
     end
+    typename = misc.str2validName(typename);
     parsed = eval([typename '(kwargs{:})']);
 end
 end
