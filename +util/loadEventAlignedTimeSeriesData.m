@@ -27,7 +27,7 @@ inds_len = diff(window) * fs / downsample_factor;
 dims = timeseries.data.dims;
 
 if isempty(electrode)
-    D = NaN(length(times), dims(2), int16(inds_len));
+    D = NaN(length(times), dims(1), int16(inds_len));
     for i = 1:length(times)
         D(i,:,:) = util.loadTimeSeriesData(timeseries, window + times(i), ...
             downsample_factor, electrodes);
