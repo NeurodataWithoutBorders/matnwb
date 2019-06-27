@@ -58,7 +58,7 @@ else
         else
             fs = timeseries.starting_time_rate;
             t0 = timeseries.starting_time;
-            if interval(2) > (dims(1) * fs + t0)
+            if interval(2) > (dims(end) * fs + t0)
                 error('interval bounds outside of time range');
             end
             end_ind = (interval(2) - t0) * fs;
@@ -70,7 +70,7 @@ else
     start = ones(1, length(dims));
     start(end) = start_ind;
     
-    count = fliplr(dims);
+    count = dims;
     count(end) = round((end_ind - start_ind) / downsample_factor);
     
     if ~isempty(electrode)
