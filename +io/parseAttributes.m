@@ -33,6 +33,8 @@ for i=1:length(alist)
     end
 end
 if ~isempty(type.namespace) && ~isempty(type.name)
-    typename = ['types.' type.namespace '.' type.name];
+    valid_namespace = misc.str2validName(type.namespace);
+    valid_name = misc.str2validName(type.name);
+    typename = ['types.' valid_namespace '.' valid_name];
 end
 end

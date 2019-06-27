@@ -52,7 +52,6 @@ if isempty(typename)
 else
     props('data') = data;
     kwargs = io.map2kwargs(props);
-    typename = misc.str2validname(typename);
     parsed = eval([typename '(kwargs{:})']);
 end
 H5D.close(did);
