@@ -80,7 +80,9 @@ classdef DataStub
                         'H5P_DEFAULT') .';
                 end
                 
-                data = cell2mat(data);
+                if numBlocks == 1
+                    data = data{1};
+                end
             else
                 data = h5read(obj.filename, obj.path, varargin{:});
                 
