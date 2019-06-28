@@ -32,7 +32,7 @@ for i=1:length(propname)
     if isempty(p) || ~isstrprop(p(1), 'alpha') || iskeyword(p)
         p = [prefix p];
     end
-    valid{i} = p;
+    valid{i} = p(1:min(length(p),namelengthmax));
 end
 
 if isscalar(valid)
