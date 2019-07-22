@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>NWB File Conversion Tutorial</title><meta name="generator" content="MATLAB 9.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-04-18"><meta name="DC.source" content="convertALM3.m"><style type="text/css">
+      --><title>NWB File Conversion Tutorial</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-07-22"><meta name="DC.source" content="convertTrials.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -68,8 +68,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
   </style></head><body><div class="content"><h1>NWB File Conversion Tutorial</h1><!--introduction--><p>How to convert trial-based experimental data to the Neurodata Without Borders file format using MatNWB. This example uses the <a href="https://crcns.org/data-sets/motor-cortex/alm-3">CRCNS ALM-3</a> data set.  Information on how to download the data can be found on the <a href="https://crcns.org/data-sets/motor-cortex/download">CRCNS Download Page</a>.  One should first familiarize themselves with the file format, which can be found on the <a href="https://crcns.org/data-sets/motor-cortex/alm-3/about-alm-3">ALM-3 About Page</a> under the Documentation files.</p><pre>author: Lawrence Niu
 contact: lawrence@vidriotech.com
-last updated: Jan 11, 2019</pre><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Script Configuration</a></li><li><a href="#4">General Information</a></li><li><a href="#7">The ALM-3 File Structure</a></li><li><a href="#8">Metadata</a></li><li><a href="#15">Analysis Data Structure</a></li><li><a href="#16">Hashes</a></li><li><a href="#25">Raw Acquisition Data</a></li><li><a href="#26">Export</a></li></ul></div><h2 id="1">Script Configuration</h2><p>The following details configuration parameters specific to the publishing script, and can be skipped when implementing your own conversion. The parameters can be changed to fit any of the available sessions.</p><pre class="codeinput">animal = <span class="string">'ANM255200'</span>;
-session = <span class="string">'20140910'</span>;
+last updated: Jan 11, 2019</pre><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Script Configuration</a></li><li><a href="#4">General Information</a></li><li><a href="#7">The ALM-3 File Structure</a></li><li><a href="#8">Metadata</a></li><li><a href="#15">Analysis Data Structure</a></li><li><a href="#16">Hashes</a></li><li><a href="#25">Raw Acquisition Data</a></li><li><a href="#26">Export</a></li></ul></div><h2 id="1">Script Configuration</h2><p>The following details configuration parameters specific to the publishing script, and can be skipped when implementing your own conversion. The parameters can be changed to fit any of the available sessions.</p><pre class="codeinput">animal = <span class="string">'ANM255201'</span>;
+session = <span class="string">'20141125'</span>;
 
 identifier = [animal <span class="string">'_'</span> session];
 
@@ -127,7 +127,7 @@ nwb.session_start_time = datetime([meta.dateOfExperiment meta.timeOfExperiment],
 nwb.timestamps_reference_time = nwb.session_start_time;
 
 nwb.general_experimenter = strjoin(meta.experimenters, <span class="string">', '</span>);
-</pre><pre class="codeoutput">Processing Meta Data from `data\metadata\meta_data_ANM255200_20140910.mat`
+</pre><pre class="codeoutput">Processing Meta Data from `data\metadata\meta_data_ANM255201_20141125.mat`
 </pre><pre class="codeinput">nwb.general_subject = types.core.Subject(<span class="keyword">...</span>
     <span class="string">'species'</span>, meta.species{1}, <span class="keyword">...</span>
     <span class="string">'subject_id'</span>, meta.animalID{1}(1,:), <span class="keyword">...</span><span class="comment"> %weird case with duplicate Animal ID</span>
@@ -237,7 +237,7 @@ nwb.general_optogenetics.set(<span class="string">'photostim'</span>, <span clas
 </pre><h2 id="15">Analysis Data Structure</h2><p>The ALM-3 data structures .mat file contains analyzed spike data, trial-specific parameters, and behavioral analysis data.</p><h2 id="16">Hashes</h2><p>ALM-3 stores its data structures in the form of <b>hashes</b> which are essentially the same as python's dictionaries or MATLAB's maps but where the keys and values are stored under separate struct fields.  Getting a hashed value from a key involves retrieving the array index that the key is in and applying it to the parallel array in the values field.</p><p>You can find more information about hashes and how they're used on the <a href="https://crcns.org/data-sets/motor-cortex/alm-3/about-alm-3">ALM-3 about page</a>.</p><pre class="codeinput">fprintf(<span class="string">'Processing Data Structure `%s`\n'</span>, datastructure_loc);
 loaded = load(datastructure_loc, <span class="string">'obj'</span>);
 data = loaded.obj;
-</pre><pre class="codeoutput">Processing Data Structure `data\data_structure_files\data_structure_ANM255200_20140910.mat`
+</pre><pre class="codeoutput">Processing Data Structure `data\data_structure_files\data_structure_ANM255201_20141125.mat`
 </pre><p>The <tt>timeseries</tt> property of the <tt>TimeIntervals</tt> object is an example of a <b>compound data type</b>.  These types are essentially tables of data in HDF5 and can be represented by a MATLAB table, an array of structs, or a struct of arrays. Beware: validation of column lengths here is not guaranteed by the type checker until export.</p><p><b>VectorIndex</b> objects index into a larger <b>VectorData</b> column.  The object that is being referenced is indicated by the <tt>target</tt> property, which uses an ObjectView. Each element in the VectorIndex marks the <b>last</b> element in the corresponding vector data object for the VectorIndex row.  Thus, the starting index for this row would be the previous index + 1.  Note that these indices must be 0-indexed for compatibility with pynwb.  You can see this in effect with the <tt>timeseries</tt> property which is indexed by the <tt>timeseries_index</tt> property.</p><pre class="codeinput">trials_idx = types.core.TimeIntervals(<span class="keyword">...</span>
     <span class="string">'start_time'</span>, types.core.VectorData(<span class="string">'data'</span>, data.trialStartTimes,<span class="keyword">...</span>
         <span class="string">'description'</span>, <span class="string">'the start time of each trial'</span>),<span class="keyword">...</span>
@@ -350,25 +350,31 @@ wav_idx = types.core.VectorData(<span class="string">'data'</span>,types.untyped
     esData = esHash.value{i};
     <span class="comment">% add trials ID reference</span>
 
-    unitTrials.data = [unitTrials.data; esData.eventTrials];
+    good_trials_mask = ismember(esData.eventTrials, nwb.intervals_trials.id.data);
+    eventTrials = esData.eventTrials(good_trials_mask);
+    eventTimes = esData.eventTimes(good_trials_mask);
+    waveforms = esData.waveforms(good_trials_mask,:);
+    channel = esData.channel(good_trials_mask);
+
+    unitTrials.data = [unitTrials.data; eventTrials];
     trials_idx.data(end+1) = length(unitTrials.data);
 
     <span class="comment">% add spike times index and data.  note that these are also VectorIndex and VectorData pairs.</span>
-    nwb.units.spike_times.data = [nwb.units.spike_times.data;esData.eventTimes];
+    nwb.units.spike_times.data = [nwb.units.spike_times.data;eventTimes];
     nwb.units.spike_times_index.data(end+1) = length(nwb.units.spike_times.data);
 
     <span class="comment">% add waveform data to "unitx" and associate with "waveform" column as ObjectView.</span>
     ses = types.core.SpikeEventSeries(<span class="keyword">...</span>
-        <span class="string">'control'</span>, length(nwb.units.spike_times_index.data),<span class="keyword">...</span>
-        <span class="string">'control_description'</span>, <span class="string">'Unit ID'</span>,<span class="keyword">...</span>
-        <span class="string">'data'</span>, esData.waveforms .', <span class="keyword">...</span>
+        <span class="string">'control'</span>, ids(i),<span class="keyword">...</span>
+        <span class="string">'control_description'</span>, <span class="string">'Units Table ID'</span>,<span class="keyword">...</span>
+        <span class="string">'data'</span>, waveforms .', <span class="keyword">...</span>
         <span class="string">'description'</span>, esHash.descr{i}, <span class="keyword">...</span>
-        <span class="string">'timestamps'</span>, esData.eventTimes, <span class="keyword">...</span>
+        <span class="string">'timestamps'</span>, eventTimes, <span class="keyword">...</span>
         <span class="string">'timestamps_unit'</span>, data.timeUnitNames{data.timeUnitIds(esData.timeUnit)},<span class="keyword">...</span>
         <span class="string">'electrodes'</span>, types.core.DynamicTableRegion(<span class="keyword">...</span>
             <span class="string">'description'</span>, <span class="string">'Electrodes involved with these spike events'</span>,<span class="keyword">...</span>
             <span class="string">'table'</span>, types.untyped.ObjectView(<span class="string">'/general/extracellular_ephys/electrodes'</span>),<span class="keyword">...</span>
-            <span class="string">'data'</span>, esData.channel - 1));
+            <span class="string">'data'</span>, channel - 1));
     ses_name = esHash.keyNames{i};
     ses_ref = types.untyped.ObjectView([<span class="string">'/analysis/'</span>, ses_name]);
     <span class="keyword">if</span> ~isempty(esData.cellType)
@@ -378,12 +384,12 @@ wav_idx = types.core.VectorData(<span class="string">'data'</span>,types.untyped
     wav_idx.data(end+1) = ses_ref;
 
     <span class="comment">%add this timeseries into the trials table as well.</span>
-    [s_trials, ~, trials_to_data] = unique(esData.eventTrials);
+    [s_trials, ~, trials_to_data] = unique(eventTrials);
     <span class="keyword">for</span> j=1:length(s_trials)
         trial = s_trials(j);
-        i_loc = i == trials_to_data;
-        t_start = find(i_loc, 1);
-        t_count = sum(i_loc);
+        j_loc = j == trials_to_data;
+        t_start = find(j_loc, 1);
+        t_count = sum(j_loc);
 
         trial_timeseries{trial}(end+1) = struct(<span class="keyword">...</span>
             <span class="string">'timeseries'</span>, ses_ref, <span class="string">'idx_start'</span>, t_start, <span class="string">'count'</span>, t_count);
@@ -414,6 +420,11 @@ endTimestamps = trials_idx.start_time.data;
     tnumstr = tnumstr{1};
     rawdata = load(rawfiles{i}, <span class="string">'ch_MUA'</span>, <span class="string">'TimeStamps'</span>);
     tnum = str2double(tnumstr);
+
+    <span class="keyword">if</span> tnum &gt; length(endTimestamps)
+        <span class="keyword">continue</span>; <span class="comment">% sometimes there are extra trials without an associated start time.</span>
+    <span class="keyword">end</span>
+
     es = types.core.ElectricalSeries(<span class="keyword">...</span>
         <span class="string">'data'</span>, rawdata.ch_MUA,<span class="keyword">...</span>
         <span class="string">'description'</span>, [<span class="string">'Raw Voltage Acquisition for trial '</span> tnumstr],<span class="keyword">...</span>
@@ -421,6 +432,7 @@ endTimestamps = trials_idx.start_time.data;
         <span class="string">'timestamps'</span>, rawdata.TimeStamps);
     tname = [<span class="string">'trial '</span> tnumstr];
     nwb.acquisition.set(tname, es);
+
     endTimestamps(tnum) = endTimestamps(tnum) + rawdata.TimeStamps(end);
     objrefs{tnum} = types.untyped.ObjectView([<span class="string">'/acquisition/'</span> tname]);
 <span class="keyword">end</span>
@@ -436,7 +448,7 @@ trials_idx.vectordata.set(<span class="string">'acquisition'</span>, types.core.
 trials_idx.stop_time = types.core.VectorData(<span class="keyword">...</span>
     <span class="string">'data'</span>, endTimestamps,<span class="keyword">...</span>
     <span class="string">'description'</span>, <span class="string">'the end time of each trial'</span>);
-</pre><pre class="codeoutput">Processing Raw Acquisition Data from `data\RawVoltageTraces\ANM255200_20140910.tar` (will take a while)
+</pre><pre class="codeoutput">Processing Raw Acquisition Data from `data\RawVoltageTraces\ANM255201_20141125.tar` (will take a while)
 </pre><h2 id="26">Export</h2><pre class="codeinput"><span class="comment">%first, we'll format and store |trial_timeseries| into |intervals_trials|.</span>
 <span class="comment">% note that |timeseries_index| data is 0-indexed.</span>
 ts_len = cellfun(<span class="string">'length'</span>, trial_timeseries);
@@ -448,7 +460,9 @@ nwb.intervals_trials.timeseries.data = cell2mat(trial_timeseries);
 
 outDest = fullfile(outloc, [identifier <span class="string">'.nwb'</span>]);
 nwbExport(nwb, outDest);
-</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018b</a><br></p></div><!--
+</pre><pre class="codeoutput">Warning: Overwriting
+out\ANM255201_20141125.nwb 
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% NWB File Conversion Tutorial
 % How to convert trial-based experimental data to the Neurodata Without Borders file format using MatNWB.
@@ -468,8 +482,8 @@ nwbExport(nwb, outDest);
 % and can be skipped when implementing your own conversion.
 % The parameters can be changed to fit any of the available sessions.
 
-animal = 'ANM255200';
-session = '20140910';
+animal = 'ANM255201';
+session = '20141125';
 
 identifier = [animal '_' session];
 
@@ -861,25 +875,31 @@ for i=1:length(ids)
     esData = esHash.value{i};
     % add trials ID reference
     
-    unitTrials.data = [unitTrials.data; esData.eventTrials];
+    good_trials_mask = ismember(esData.eventTrials, nwb.intervals_trials.id.data);
+    eventTrials = esData.eventTrials(good_trials_mask);
+    eventTimes = esData.eventTimes(good_trials_mask);
+    waveforms = esData.waveforms(good_trials_mask,:);
+    channel = esData.channel(good_trials_mask);
+    
+    unitTrials.data = [unitTrials.data; eventTrials];
     trials_idx.data(end+1) = length(unitTrials.data);
     
     % add spike times index and data.  note that these are also VectorIndex and VectorData pairs.
-    nwb.units.spike_times.data = [nwb.units.spike_times.data;esData.eventTimes];
+    nwb.units.spike_times.data = [nwb.units.spike_times.data;eventTimes];
     nwb.units.spike_times_index.data(end+1) = length(nwb.units.spike_times.data);
     
     % add waveform data to "unitx" and associate with "waveform" column as ObjectView.
     ses = types.core.SpikeEventSeries(...
-        'control', length(nwb.units.spike_times_index.data),...
-        'control_description', 'Unit ID',...
-        'data', esData.waveforms .', ...
+        'control', ids(i),...
+        'control_description', 'Units Table ID',...
+        'data', waveforms .', ...
         'description', esHash.descr{i}, ...
-        'timestamps', esData.eventTimes, ...
+        'timestamps', eventTimes, ...
         'timestamps_unit', data.timeUnitNames{data.timeUnitIds(esData.timeUnit)},...
         'electrodes', types.core.DynamicTableRegion(...
             'description', 'Electrodes involved with these spike events',...
             'table', types.untyped.ObjectView('/general/extracellular_ephys/electrodes'),...
-            'data', esData.channel - 1));
+            'data', channel - 1));
     ses_name = esHash.keyNames{i};
     ses_ref = types.untyped.ObjectView(['/analysis/', ses_name]);
     if ~isempty(esData.cellType)
@@ -889,12 +909,12 @@ for i=1:length(ids)
     wav_idx.data(end+1) = ses_ref;
     
     %add this timeseries into the trials table as well.
-    [s_trials, ~, trials_to_data] = unique(esData.eventTrials);
+    [s_trials, ~, trials_to_data] = unique(eventTrials);
     for j=1:length(s_trials)
         trial = s_trials(j);
-        i_loc = i == trials_to_data;
-        t_start = find(i_loc, 1);
-        t_count = sum(i_loc);
+        j_loc = j == trials_to_data;
+        t_start = find(j_loc, 1);
+        t_count = sum(j_loc);
         
         trial_timeseries{trial}(end+1) = struct(...
             'timeseries', ses_ref, 'idx_start', t_start, 'count', t_count);
@@ -935,6 +955,11 @@ for i=1:length(rawfiles)
     tnumstr = tnumstr{1};
     rawdata = load(rawfiles{i}, 'ch_MUA', 'TimeStamps');
     tnum = str2double(tnumstr);
+    
+    if tnum > length(endTimestamps)
+        continue; % sometimes there are extra trials without an associated start time.
+    end
+    
     es = types.core.ElectricalSeries(...
         'data', rawdata.ch_MUA,...
         'description', ['Raw Voltage Acquisition for trial ' tnumstr],...
@@ -942,6 +967,7 @@ for i=1:length(rawfiles)
         'timestamps', rawdata.TimeStamps);
     tname = ['trial ' tnumstr];
     nwb.acquisition.set(tname, es);
+    
     endTimestamps(tnum) = endTimestamps(tnum) + rawdata.TimeStamps(end);
     objrefs{tnum} = types.untyped.ObjectView(['/acquisition/' tname]);
 end

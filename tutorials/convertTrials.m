@@ -16,8 +16,8 @@
 % and can be skipped when implementing your own conversion.
 % The parameters can be changed to fit any of the available sessions.
 
-animal = 'ANM255200';
-session = '20140910';
+animal = 'ANM255201';
+session = '20141125';
 
 identifier = [animal '_' session];
 
@@ -409,25 +409,31 @@ for i=1:length(ids)
     esData = esHash.value{i};
     % add trials ID reference
     
-    unitTrials.data = [unitTrials.data; esData.eventTrials];
+    good_trials_mask = ismember(esData.eventTrials, nwb.intervals_trials.id.data);
+    eventTrials = esData.eventTrials(good_trials_mask);
+    eventTimes = esData.eventTimes(good_trials_mask);
+    waveforms = esData.waveforms(good_trials_mask,:);
+    channel = esData.channel(good_trials_mask);
+    
+    unitTrials.data = [unitTrials.data; eventTrials];
     trials_idx.data(end+1) = length(unitTrials.data);
     
     % add spike times index and data.  note that these are also VectorIndex and VectorData pairs.
-    nwb.units.spike_times.data = [nwb.units.spike_times.data;esData.eventTimes];
+    nwb.units.spike_times.data = [nwb.units.spike_times.data;eventTimes];
     nwb.units.spike_times_index.data(end+1) = length(nwb.units.spike_times.data);
     
     % add waveform data to "unitx" and associate with "waveform" column as ObjectView.
     ses = types.core.SpikeEventSeries(...
-        'control', length(nwb.units.spike_times_index.data),...
-        'control_description', 'Unit ID',...
-        'data', esData.waveforms .', ...
+        'control', ids(i),...
+        'control_description', 'Units Table ID',...
+        'data', waveforms .', ...
         'description', esHash.descr{i}, ...
-        'timestamps', esData.eventTimes, ...
+        'timestamps', eventTimes, ...
         'timestamps_unit', data.timeUnitNames{data.timeUnitIds(esData.timeUnit)},...
         'electrodes', types.core.DynamicTableRegion(...
             'description', 'Electrodes involved with these spike events',...
             'table', types.untyped.ObjectView('/general/extracellular_ephys/electrodes'),...
-            'data', esData.channel - 1));
+            'data', channel - 1));
     ses_name = esHash.keyNames{i};
     ses_ref = types.untyped.ObjectView(['/analysis/', ses_name]);
     if ~isempty(esData.cellType)
@@ -437,12 +443,12 @@ for i=1:length(ids)
     wav_idx.data(end+1) = ses_ref;
     
     %add this timeseries into the trials table as well.
-    [s_trials, ~, trials_to_data] = unique(esData.eventTrials);
+    [s_trials, ~, trials_to_data] = unique(eventTrials);
     for j=1:length(s_trials)
         trial = s_trials(j);
-        i_loc = i == trials_to_data;
-        t_start = find(i_loc, 1);
-        t_count = sum(i_loc);
+        j_loc = j == trials_to_data;
+        t_start = find(j_loc, 1);
+        t_count = sum(j_loc);
         
         trial_timeseries{trial}(end+1) = struct(...
             'timeseries', ses_ref, 'idx_start', t_start, 'count', t_count);
@@ -483,6 +489,11 @@ for i=1:length(rawfiles)
     tnumstr = tnumstr{1};
     rawdata = load(rawfiles{i}, 'ch_MUA', 'TimeStamps');
     tnum = str2double(tnumstr);
+    
+    if tnum > length(endTimestamps)
+        continue; % sometimes there are extra trials without an associated start time.
+    end
+    
     es = types.core.ElectricalSeries(...
         'data', rawdata.ch_MUA,...
         'description', ['Raw Voltage Acquisition for trial ' tnumstr],...
@@ -490,6 +501,7 @@ for i=1:length(rawfiles)
         'timestamps', rawdata.TimeStamps);
     tname = ['trial ' tnumstr];
     nwb.acquisition.set(tname, es);
+    
     endTimestamps(tnum) = endTimestamps(tnum) + rawdata.TimeStamps(end);
     objrefs{tnum} = types.untyped.ObjectView(['/acquisition/' tname]);
 end
