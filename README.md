@@ -1,6 +1,6 @@
 # MatNWB
 
-A Matlab interface for reading and writing Neurodata Without Borders (NWB) files.
+A Matlab interface for reading and writing Neurodata Without Borders (NWB) 2.0 files.
 
 ## How does it work
 
@@ -23,6 +23,8 @@ For those planning on using matnwb alongside pynwb, please keep the following in
  - matnwb is dependent on the schema, which may not necessary correspond with the nwb-version.  In the future, the matnwb release will point to the most compatible pynwb commit, but at the current moment, please consider overwriting the contents within matnwb's **~/schema/core** directory with the generating pynwb's **~/src/pynwb/data directory** (`~` in this case referring to the installation directory of the application) and running generateCore.
  
 The `master` branch in this repository is considered perpetually unstable.  If you desire matnwb's full functionality (full round-trip with nwb data), please consider downloading the more stable releases in the Releases tab.  Keep in mind that the Releases are generally only compatible with older versions of pynwb and may not supported newer data types supported by pynwb (such as data references or compound types).
+
+This package reads and writes NWB:N 2.0 files and does not support older formats.
 
 ## Setup
 
