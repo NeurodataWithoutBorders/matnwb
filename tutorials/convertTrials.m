@@ -17,7 +17,7 @@
 % The parameters can be changed to fit any of the available sessions.
 
 animal = 'ANM255201';
-session = '20141125';
+session = '20141124';
 
 identifier = [animal '_' session];
 
