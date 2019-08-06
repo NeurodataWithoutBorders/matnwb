@@ -52,7 +52,7 @@ Generated Matlab code will be put a `+types` subdirectory.  This is a Matlab pac
 nwb=nwbRead('data.nwb');
 ```
 
-More API Documentation can be found [here](https://neurodatawithoutborders.github.io/matnwb/docs/index.html)
+[API Documentation](https://neurodatawithoutborders.github.io/matnwb/docs/index.html)
 
 ## Tutorials
 
