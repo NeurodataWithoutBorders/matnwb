@@ -31,7 +31,13 @@ This package reads and writes NWB:N 2.0 files and does not support older formats
 From the Matlab command line, generate code from a copy of the NWB schema.  The command also takes variable arguments from any extensions.
 
 ```matlab
-generateCore('schema/core/nwb.namespace.yaml', .../my_extensions1.namespace.yaml,...);
+generateCore(); % generate core namespace located in the repository.
+```
+
+The command also takes variable arguments from any extensions.
+
+```matlab
+generateCore('schema/core/nwb.namespace.yaml', '.../my_extensions1.namespace.yaml',...);
 ```
 
 You can also generate extensions without generating the core classes in this way:
@@ -45,6 +51,8 @@ Generated Matlab code will be put a `+types` subdirectory.  This is a Matlab pac
 ```matlab
 nwb=nwbRead('data.nwb');
 ```
+
+More API Documentation can be found [here](https://neurodatawithoutborders.github.io/matnwb/docs/index.html)
 
 ## Tutorials
 
