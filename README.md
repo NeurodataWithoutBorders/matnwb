@@ -54,7 +54,7 @@ nwb=nwbRead('data.nwb');
 
 ## API Documentation
 
-For more information regarding the MatNWB API or any of the NWB Core types in MatNWB, visit the [MatNWB API Documentation pages](https://neurodatawithoutborders.github.io/matnwb/docs/index.html).
+For more information regarding the MatNWB API or any of the NWB Core types in MatNWB, visit the [MatNWB API Documentation pages](https://neurodatawithoutborders.github.io/matnwb/doc/index.html).
 
 ## Tutorials
 
