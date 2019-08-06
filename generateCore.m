@@ -1,9 +1,9 @@
 function generateCore(varargin)
 % GENERATECORE Generate Matlab classes from NWB core schema files
-%   GENERATECORE(core)  Generate classes (Matlab m-files) from the
+%   GENERATECORE()  Generate classes (Matlab m-files) from the
 %   NWB:N core namespace file.
 %
-%   GENERATECORE(core,extension_paths,...)  Generate classes for the
+%   GENERATECORE(extension_paths,...)  Generate classes for the
 %   core namespace as well as one or more extenstions.  Each input filename
 %   should be an NWB namespace file.
 %
@@ -15,12 +15,14 @@ function generateCore(varargin)
 %   current working directory.
 %
 %   Example:
-%      generateCore('schema\core\nwb.namespace.yaml');
+%      generateCore();
+%      generateCore('schema/my_ext/myext.namespace.yaml');
 %
 %   See also GENERATEEXTENSION
 if nargin == 0
     [nwbLocation, ~, ~] = fileparts(mfilename('fullpath'));
-    generateExtension(fullfile(nwbLocation, 'schema', 'core', 'nwb.namespace.yaml'));
+    namespacePath = fullfile(nwbLocation, 'schema', 'core', 'nwb.namespace.yaml');
+    generateExtension(namespacePath);
 else
     for i=1:length(varargin)
         generateExtension(varargin{i});
