@@ -6,12 +6,9 @@ function generateDocs()
 %   web('https://www.artefact.tk/software/matlab/m2html/')">m2html</a> in your path.
 rootFiles = dir('.');
 rootFiles = {rootFiles.name};
-rootBlacklist = {'nwbfile.m', 'nwbtest.m'};
-isBlacklisted = ismember(rootFiles, rootBlacklist);
-matlabFileMatches = regexp(rootFiles, '\.m$', 'once');
-isMatlabFiles = ~cellfun('isempty', matlabFileMatches);
-isInvalid = isBlacklisted | ~isMatlabFiles;
-rootFiles(isInvalid) = [];
+rootWhitelist = {'generateCore.m', 'generateExtension.m', 'nwbRead.m', 'nwbExport.m'};
+isWhitelisted = ismember(rootFiles, rootWhitelist);
+rootFiles(~isWhitelisted) = [];
 
 m2html('mfiles', rootFiles, 'htmldir', 'doc');
 
