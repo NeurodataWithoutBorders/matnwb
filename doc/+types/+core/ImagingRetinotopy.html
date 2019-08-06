@@ -1,0 +1,570 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <link rel="stylesheet" href="helpwin.css">
+      <title>types.core.ImagingRetinotopy - MATLAB File Help</title>
+   </head>
+   <body>
+      <!--Single-page help-->
+      <table border="0" cellspacing="0" width="100%">
+         <tr class="subheader">
+            <td class="headertitle">types.core.ImagingRetinotopy - MATLAB File Help</td>
+            <td class="subheader-left"><a href="matlab:edit types.core.ImagingRetinotopy">View code for types.core.ImagingRetinotopy</a></td>
+            <td class="subheader-left"><a href="matlab:doc types.core.ImagingRetinotopy">Go to online doc for types.core.ImagingRetinotopy</a></td>
+            <td class="subheader-right"><a href="matlab:helpwin">Default Topics</a></td>
+         </tr>
+      </table>
+      <div class="title">types.core.ImagingRetinotopy</div>
+      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">ImagingRetinotopy</span> Intrinsic signal optical imaging or widefield imaging for measuring retinotopy. Stores orthogonal maps (e.g., altitude/azimuth; radius/theta) of responses to specific stimuli and a combined polarity map from which to identify visual areas.&lt;br /&gt;Note: for data consistency, all images and arrays are stored in the format [row][column] and [row, col], which equates to [y][x]. Field of view and dimension arrays may appear backward (i.e., y before x).</pre></div><!--after help -->
+      <!--Class-->
+      <div class="sectiontitle">Class Details</div>
+      <table class="class-details">
+         <tr>
+            <td class="class-detail-label">Superclasses</td>
+            <td><a href="matlab:helpwin('types.core.NWBContainer')">types.core.NWBContainer</a></td>
+         </tr>
+         <tr>
+            <td class="class-detail-label">Sealed</td>
+            <td>false</td>
+         </tr>
+         <tr>
+            <td class="class-detail-label">Construct on load</td>
+            <td>false</td>
+         </tr>
+      </table>
+      <!--Constructors-->
+      <div class="sectiontitle"><a name="constructors"></a>Constructor Summary
+      </div>
+      <table class="summary-list">
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.ImagingRetinotopy')">ImagingRetinotopy</a></td>
+            <td class="m-help">Constructor for ImagingRetinotopy&nbsp;</td>
+         </tr>
+      </table>
+      <!--Properties-->
+      <div class="sectiontitle"><a name="properties"></a>Property Summary
+      </div>
+      <table class="summary-list">
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.axis_1_phase_map')">axis_1_phase_map</a></td>
+            <td class="m-help">Phase response to stimulus on the first measured axis&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.axis_1_phase_map_dimension')">axis_1_phase_map_dimension</a></td>
+            <td class="m-help">Number of rows and columns in the image. NOTE: row, column representation is equivalent to height,width.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.axis_1_phase_map_field_of_view')">axis_1_phase_map_field_of_view</a></td>
+            <td class="m-help">Size of viewing area, in meters&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.axis_1_phase_map_unit')">axis_1_phase_map_unit</a></td>
+            <td class="m-help">Unit that axis data is stored in (e.g., degrees)&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.axis_1_power_map')">axis_1_power_map</a></td>
+            <td class="m-help">Power response on the first measured axis. Response is scaled so 0.0 is no power in the response and 1.0 is maximum relative
+               power.&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.axis_1_power_map_dimension')">axis_1_power_map_dimension</a></td>
+            <td class="m-help">Number of rows and columns in the image. NOTE: row, column representation is equivalent to height,width.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.axis_1_power_map_field_of_view')">axis_1_power_map_field_of_view</a></td>
+            <td class="m-help">Size of viewing area, in meters&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.axis_1_power_map_unit')">axis_1_power_map_unit</a></td>
+            <td class="m-help">Unit that axis data is stored in (e.g., degrees)&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.axis_2_phase_map')">axis_2_phase_map</a></td>
+            <td class="m-help">Phase response to stimulus on the second measured axis&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.axis_2_phase_map_dimension')">axis_2_phase_map_dimension</a></td>
+            <td class="m-help">Number of rows and columns in the image. NOTE: row, column representation is equivalent to height,width.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.axis_2_phase_map_field_of_view')">axis_2_phase_map_field_of_view</a></td>
+            <td class="m-help">Size of viewing area, in meters&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.axis_2_phase_map_unit')">axis_2_phase_map_unit</a></td>
+            <td class="m-help">Unit that axis data is stored in (e.g., degrees)&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.axis_2_power_map')">axis_2_power_map</a></td>
+            <td class="m-help">Power response on the second measured axis. Response is scaled so 0.0 is no power in the response and 1.0 is maximum relative
+               power.&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.axis_2_power_map_dimension')">axis_2_power_map_dimension</a></td>
+            <td class="m-help">Number of rows and columns in the image. NOTE: row, column representation is equivalent to height,width.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.axis_2_power_map_field_of_view')">axis_2_power_map_field_of_view</a></td>
+            <td class="m-help">Size of viewing area, in meters&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.axis_2_power_map_unit')">axis_2_power_map_unit</a></td>
+            <td class="m-help">Unit that axis data is stored in (e.g., degrees)&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.axis_descriptions')">axis_descriptions</a></td>
+            <td class="m-help">Two-element array describing the contents of the two response axis fields. Description should be something like ['altitude',
+               'azimuth'] or '['radius', 'theta']&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.focal_depth_image')">focal_depth_image</a></td>
+            <td class="m-help">Gray-scale image taken with same settings/parameters (e.g., focal depth, wavelength) as data collection. Array format: [rows][columns]&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.focal_depth_image_bits_per_pixel')">focal_depth_image_bits_per_pixel</a></td>
+            <td class="m-help">Number of bits used to represent each value. This is necessary to determine maximum (white) pixel value&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.focal_depth_image_dimension')">focal_depth_image_dimension</a></td>
+            <td class="m-help">Number of rows and columns in the image. NOTE: row, column representation is equivalent to height,width.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.focal_depth_image_field_of_view')">focal_depth_image_field_of_view</a></td>
+            <td class="m-help">Size of viewing area, in meters&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.focal_depth_image_focal_depth')">focal_depth_image_focal_depth</a></td>
+            <td class="m-help">Focal depth offset, in meters&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.focal_depth_image_format')">focal_depth_image_format</a></td>
+            <td class="m-help">Format of image. Right now only 'raw' supported&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.help')">help</a></td>
+            <td class="m-help">Short description of what this type of NWBContainer contains.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.sign_map')">sign_map</a></td>
+            <td class="m-help">Sine of the angle between the direction of the gradient in axis_1 and axis_2&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.sign_map_dimension')">sign_map_dimension</a></td>
+            <td class="m-help">Number of rows and columns in the image. NOTE: row, column representation is equivalent to height,width.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.sign_map_field_of_view')">sign_map_field_of_view</a></td>
+            <td class="m-help">Size of viewing area, in meters.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.vasculature_image')">vasculature_image</a></td>
+            <td class="m-help">Gray-scale anatomical image of cortical surface. Array structure: [rows][columns]&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.vasculature_image_bits_per_pixel')">vasculature_image_bits_per_pixel</a></td>
+            <td class="m-help">Number of bits used to represent each value. This is necessary to determine maximum (white) pixel value&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.vasculature_image_dimension')">vasculature_image_dimension</a></td>
+            <td class="m-help">Number of rows and columns in the image. NOTE: row, column representation is equivalent to height,width.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.vasculature_image_field_of_view')">vasculature_image_field_of_view</a></td>
+            <td class="m-help">Size of viewing area, in meters&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.vasculature_image_format')">vasculature_image_format</a></td>
+            <td class="m-help">Format of image. Right now only 'raw' supported&nbsp;</td>
+         </tr>
+      </table>
+      <!--Methods-->
+      <div class="sectiontitle"><a name="methods"></a>Method Summary
+      </div>
+      <table class="summary-list">
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.addlistener')">addlistener</a></td>
+            <td class="m-help">Add listener for event.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.delete')">delete</a></td>
+            <td class="m-help">Delete a handle object.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.eq')">eq</a></td>
+            <td class="m-help">== (EQ)   Test handle equality.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.export')">export</a></td>
+            <td class="m-help">find reference properties&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.findobj')">findobj</a></td>
+            <td class="m-help">Find objects matching specified conditions.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.findprop')">findprop</a></td>
+            <td class="m-help">Find property of MATLAB handle object.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.ge')">ge</a></td>
+            <td class="m-help">>= (GE)   Greater than or equal relation for handles.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.gt')">gt</a></td>
+            <td class="m-help">> (GT)   Greater than relation for handles.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Sealed 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.isvalid')">isvalid</a></td>
+            <td class="m-help">Test handle validity.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.le')">le</a></td>
+            <td class="m-help"><= (LE)   Less than or equal relation for handles.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.listener')">listener</a></td>
+            <td class="m-help">Add listener for event without binding the listener to the source object.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.loadAll')">loadAll</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.lt')">lt</a></td>
+            <td class="m-help">< (LT)   Less than relation for handles.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.ne')">ne</a></td>
+            <td class="m-help">~= (NE)   Not equal relation for handles.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.notify')">notify</a></td>
+            <td class="m-help">Notify listeners of event.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_axis_1_phase_map')">validate_axis_1_phase_map</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_axis_1_phase_map_dimension')">validate_axis_1_phase_map_dimension</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_axis_1_phase_map_field_of_view')">validate_axis_1_phase_map_field_of_view</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_axis_1_phase_map_unit')">validate_axis_1_phase_map_unit</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_axis_1_power_map')">validate_axis_1_power_map</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_axis_1_power_map_dimension')">validate_axis_1_power_map_dimension</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_axis_1_power_map_field_of_view')">validate_axis_1_power_map_field_of_view</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_axis_1_power_map_unit')">validate_axis_1_power_map_unit</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_axis_2_phase_map')">validate_axis_2_phase_map</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_axis_2_phase_map_dimension')">validate_axis_2_phase_map_dimension</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_axis_2_phase_map_field_of_view')">validate_axis_2_phase_map_field_of_view</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_axis_2_phase_map_unit')">validate_axis_2_phase_map_unit</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_axis_2_power_map')">validate_axis_2_power_map</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_axis_2_power_map_dimension')">validate_axis_2_power_map_dimension</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_axis_2_power_map_field_of_view')">validate_axis_2_power_map_field_of_view</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_axis_2_power_map_unit')">validate_axis_2_power_map_unit</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_axis_descriptions')">validate_axis_descriptions</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_focal_depth_image')">validate_focal_depth_image</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_focal_depth_image_bits_per_pixel')">validate_focal_depth_image_bits_per_pixel</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_focal_depth_image_dimension')">validate_focal_depth_image_dimension</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_focal_depth_image_field_of_view')">validate_focal_depth_image_field_of_view</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_focal_depth_image_focal_depth')">validate_focal_depth_image_focal_depth</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_focal_depth_image_format')">validate_focal_depth_image_format</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_help')">validate_help</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_sign_map')">validate_sign_map</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_sign_map_dimension')">validate_sign_map_dimension</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_sign_map_field_of_view')">validate_sign_map_field_of_view</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_vasculature_image')">validate_vasculature_image</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_vasculature_image_bits_per_pixel')">validate_vasculature_image_bits_per_pixel</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_vasculature_image_dimension')">validate_vasculature_image_dimension</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_vasculature_image_field_of_view')">validate_vasculature_image_field_of_view</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.ImagingRetinotopy.validate_vasculature_image_format')">validate_vasculature_image_format</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+      </table>
+      <!--Events-->
+      <div class="sectiontitle"><a name="events"></a>Event Summary
+      </div>
+      <table class="summary-list"></table>
+   </body>
+</html>

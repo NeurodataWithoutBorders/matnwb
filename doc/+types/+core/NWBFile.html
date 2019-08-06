@@ -1,0 +1,738 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <link rel="stylesheet" href="helpwin.css">
+      <title>types.core.NWBFile - MATLAB File Help</title>
+   </head>
+   <body>
+      <!--Single-page help-->
+      <table border="0" cellspacing="0" width="100%">
+         <tr class="subheader">
+            <td class="headertitle">types.core.NWBFile - MATLAB File Help</td>
+            <td class="subheader-left"><a href="matlab:edit types.core.NWBFile">View code for types.core.NWBFile</a></td>
+            <td class="subheader-left"><a href="matlab:doc types.core.NWBFile">Go to online doc for types.core.NWBFile</a></td>
+            <td class="subheader-right"><a href="matlab:helpwin">Default Topics</a></td>
+         </tr>
+      </table>
+      <div class="title">types.core.NWBFile</div>
+      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">NWBFile</span> Top level of NWB file.</pre></div><!--after help -->
+      <!--Class-->
+      <div class="sectiontitle">Class Details</div>
+      <table class="class-details">
+         <tr>
+            <td class="class-detail-label">Superclasses</td>
+            <td><a href="matlab:helpwin('types.core.NWBContainer')">types.core.NWBContainer</a></td>
+         </tr>
+         <tr>
+            <td class="class-detail-label">Sealed</td>
+            <td>false</td>
+         </tr>
+         <tr>
+            <td class="class-detail-label">Construct on load</td>
+            <td>false</td>
+         </tr>
+      </table>
+      <!--Constructors-->
+      <div class="sectiontitle"><a name="constructors"></a>Constructor Summary
+      </div>
+      <table class="summary-list">
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.NWBFile')">NWBFile</a></td>
+            <td class="m-help">Constructor for NWBFile&nbsp;</td>
+         </tr>
+      </table>
+      <!--Properties-->
+      <div class="sectiontitle"><a name="properties"></a>Property Summary
+      </div>
+      <table class="summary-list">
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.acquisition')">acquisition</a></td>
+            <td class="m-help">Any objects representing acquired data&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.analysis')">analysis</a></td>
+            <td class="m-help">Custom analysis results&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.file_create_date')">file_create_date</a></td>
+            <td class="m-help">A record of the date the file was created and of subsequent modifications. COMMENT: - The date is stored in UTC with local
+               timezone offset as ISO 8601 extended formatted strings: 2018-09-28T14:43:54.123+02:00 - Dates stored in UTC end in "Z" with
+               no timezone offset. - Date accuracy is up to milliseconds. - The file can be created after the experiment was run, so this
+               may differ from the experiment start time. - Each modification to the nwb file adds a new entry to the array.&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.general')">general</a></td>
+            <td class="m-help">place-holder than can be extended so that lab-specific meta-data can be placed in /general&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.general_data_collection')">general_data_collection</a></td>
+            <td class="m-help">Notes about data collection and analysis.COMMENT: Can be from Methods&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.general_devices')">general_devices</a></td>
+            <td class="m-help">One of possibly many. Information about device and device description.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.general_experiment_description')">general_experiment_description</a></td>
+            <td class="m-help">General description of the experiment.COMMENT: Can be from Methods&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.general_experimenter')">general_experimenter</a></td>
+            <td class="m-help">Name of person who performed the experiment.COMMENT: More than one person OK. Can specify roles of different people involved.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.general_extracellular_ephys')">general_extracellular_ephys</a></td>
+            <td class="m-help">One of possibly many groups, one for each electrode group.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.general_extracellular_ephys_electrodes')">general_extracellular_ephys_electrodes</a></td>
+            <td class="m-help">A table of all electrodes (i.e. channels) used for recording.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.general_institution')">general_institution</a></td>
+            <td class="m-help">Institution(s) where experiment was performed&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.general_intracellular_ephys')">general_intracellular_ephys</a></td>
+            <td class="m-help">One of possibly many. COMMENT: Name should be informative.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.general_intracellular_ephys_filtering')">general_intracellular_ephys_filtering</a></td>
+            <td class="m-help">Description of filtering used. COMMENT: Includes filtering type and parameters, frequency fall- off, etc. If this changes
+               between TimeSeries, filter description should be stored as a text attribute for each TimeSeries.&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.general_intracellular_ephys_sweep_table')">general_intracellular_ephys_sweep_table</a></td>
+            <td class="m-help">The table which groups different PatchClampSeries together.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.general_keywords')">general_keywords</a></td>
+            <td class="m-help">Terms to search over&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.general_lab')">general_lab</a></td>
+            <td class="m-help">Lab where experiment was performed&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.general_notes')">general_notes</a></td>
+            <td class="m-help">Notes about the experiment.  COMMENT: Things particular to this experiment&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.general_optogenetics')">general_optogenetics</a></td>
+            <td class="m-help">One of possibly many groups describing an optogenetic stimulation site. COMMENT: Name is arbitrary but should be meaningful.
+               Name is referenced by OptogeneticSeries.&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.general_optophysiology')">general_optophysiology</a></td>
+            <td class="m-help">One of possibly many groups describing an imaging plane. COMMENT: Name is arbitrary but should be meaningful. It is referenced
+               by TwoPhotonSeries and also ImageSegmentation and DfOverF interfaces.&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.general_pharmacology')">general_pharmacology</a></td>
+            <td class="m-help">Description of drugs used, including how and when they were administered. COMMENT: Anesthesia(s), painkiller(s), etc., plus
+               dosage, concentration, etc.&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.general_protocol')">general_protocol</a></td>
+            <td class="m-help">Experimental protocol, if applicable. COMMENT: E.g., include IACUC protocol.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.general_related_publications')">general_related_publications</a></td>
+            <td class="m-help">Publication information. COMMENT: PMID, DOI, URL, etc. If multiple, concatenate together and describe which is which. such
+               as PMID, DOI, URL, etc&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.general_session_id')">general_session_id</a></td>
+            <td class="m-help">Lab-specific ID for the session.COMMENT: Only 1 session_id per file, with all time aligned to experiment start time.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.general_slices')">general_slices</a></td>
+            <td class="m-help">Description of slices, including information about preparation thickness, orientation, temperature and bath solution&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.general_source_script')">general_source_script</a></td>
+            <td class="m-help">Script file used to create this NWB file.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.general_source_script_file_name')">general_source_script_file_name</a></td>
+            <td class="m-help">Name of script file&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.general_specifications')">general_specifications</a></td>
+            <td class="m-help">Dataset for storing contents of a specification file for either the core format or an extension.  Name should match name of
+               file.`&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.general_stimulus')">general_stimulus</a></td>
+            <td class="m-help">Notes about stimuli, such as how and where presented. COMMENT: Can be from Methods.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.general_subject')">general_subject</a></td>
+            <td class="m-help">Information about the animal or person from which the data was measured.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.general_surgery')">general_surgery</a></td>
+            <td class="m-help">Narrative description about surgery/surgeries, including date(s) and who performed surgery. COMMENT: Much can be copied from
+               Methods.&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.general_virus')">general_virus</a></td>
+            <td class="m-help">Information about virus(es) used in experiments, including virus ID, source, date made, injection location, volume, etc.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.help')">help</a></td>
+            <td class="m-help">Short description of what this type of NWBContainer contains.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.identifier')">identifier</a></td>
+            <td class="m-help">A unique text identifier for the file. COMMENT: Eg, concatenated lab name, file creation date/time and experimentalist, or
+               a hash of these and/or other values. The goal is that the string should be unique to all other files.&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.intervals')">intervals</a></td>
+            <td class="m-help">an optional additional table for describing other experimental time intervals&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.intervals_epochs')">intervals_epochs</a></td>
+            <td class="m-help">divisions in time marking experimental stages or sub-divisions of a single recording session&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.intervals_invalid_times')">intervals_invalid_times</a></td>
+            <td class="m-help">time intervals that should be removed from analysis&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.intervals_trials')">intervals_trials</a></td>
+            <td class="m-help">repeated experimental events that have a logical grouping&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.nwb_version')">nwb_version</a></td>
+            <td class="m-help">File version string. COMMENT: Eg, NWB-1.0.0. This will be the name of the format with trailing major, minor and patch numbers.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.processing')">processing</a></td>
+            <td class="m-help">Intermediate analysis of acquired data&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.session_description')">session_description</a></td>
+            <td class="m-help">One or two sentences describing the experiment and data in the file.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.session_start_time')">session_start_time</a></td>
+            <td class="m-help">Date and time of the experiment/session start. COMMENT: - The date is stored in UTC with local timezone offset as ISO 8601
+               extended formatted string: 2018-09-28T14:43:54.123+02:00 - Dates stored in UTC end in "Z" with no timezone offset. - Date
+               accuracy is up to milliseconds.&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.stimulus_presentation')">stimulus_presentation</a></td>
+            <td class="m-help">TimeSeries objects containing data of presented stimuli&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.stimulus_templates')">stimulus_templates</a></td>
+            <td class="m-help">TimeSeries objects containing template data of presented stimuli&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.timestamps_reference_time')">timestamps_reference_time</a></td>
+            <td class="m-help">Date and time corresponding to time zero of all timestamps. COMMENT: - The date is stored in UTC with local timezone offset
+               as ISO 8601 extended formatted string: 2018-09-28T14:43:54.123+02:00 - Dates stored in UTC end in "Z" with no timezone offset.
+               - Date accuracy is up to milliseconds. - All times stored in the file use this time as reference (ie, time zero).&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.units')">units</a></td>
+            <td class="m-help">Data about units&nbsp;</td>
+         </tr>
+      </table>
+      <!--Methods-->
+      <div class="sectiontitle"><a name="methods"></a>Method Summary
+      </div>
+      <table class="summary-list">
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.addlistener')">addlistener</a></td>
+            <td class="m-help">Add listener for event.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.delete')">delete</a></td>
+            <td class="m-help">Delete a handle object.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.eq')">eq</a></td>
+            <td class="m-help">== (EQ)   Test handle equality.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.export')">export</a></td>
+            <td class="m-help">find reference properties&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.findobj')">findobj</a></td>
+            <td class="m-help">Find objects matching specified conditions.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.findprop')">findprop</a></td>
+            <td class="m-help">Find property of MATLAB handle object.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.ge')">ge</a></td>
+            <td class="m-help">>= (GE)   Greater than or equal relation for handles.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.gt')">gt</a></td>
+            <td class="m-help">> (GT)   Greater than relation for handles.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Sealed 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.isvalid')">isvalid</a></td>
+            <td class="m-help">Test handle validity.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.le')">le</a></td>
+            <td class="m-help"><= (LE)   Less than or equal relation for handles.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.listener')">listener</a></td>
+            <td class="m-help">Add listener for event without binding the listener to the source object.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.loadAll')">loadAll</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.lt')">lt</a></td>
+            <td class="m-help">< (LT)   Less than relation for handles.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.ne')">ne</a></td>
+            <td class="m-help">~= (NE)   Not equal relation for handles.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.notify')">notify</a></td>
+            <td class="m-help">Notify listeners of event.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_acquisition')">validate_acquisition</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_analysis')">validate_analysis</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_file_create_date')">validate_file_create_date</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_general')">validate_general</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_general_data_collection')">validate_general_data_collection</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_general_devices')">validate_general_devices</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_general_experiment_description')">validate_general_experiment_description</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_general_experimenter')">validate_general_experimenter</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_general_extracellular_ephys')">validate_general_extracellular_ephys</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_general_extracellular_ephys_electrodes')">validate_general_extracellular_ephys_electrodes</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_general_institution')">validate_general_institution</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_general_intracellular_ephys')">validate_general_intracellular_ephys</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_general_intracellular_ephys_filtering')">validate_general_intracellular_ephys_filtering</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_general_intracellular_ephys_sweep_table')">validate_general_intracellular_ephys_sweep_table</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_general_keywords')">validate_general_keywords</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_general_lab')">validate_general_lab</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_general_notes')">validate_general_notes</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_general_optogenetics')">validate_general_optogenetics</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_general_optophysiology')">validate_general_optophysiology</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_general_pharmacology')">validate_general_pharmacology</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_general_protocol')">validate_general_protocol</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_general_related_publications')">validate_general_related_publications</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_general_session_id')">validate_general_session_id</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_general_slices')">validate_general_slices</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_general_source_script')">validate_general_source_script</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_general_source_script_file_name')">validate_general_source_script_file_name</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_general_specifications')">validate_general_specifications</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_general_stimulus')">validate_general_stimulus</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_general_subject')">validate_general_subject</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_general_surgery')">validate_general_surgery</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_general_virus')">validate_general_virus</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_help')">validate_help</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_identifier')">validate_identifier</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_intervals')">validate_intervals</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_intervals_epochs')">validate_intervals_epochs</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_intervals_invalid_times')">validate_intervals_invalid_times</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_intervals_trials')">validate_intervals_trials</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_processing')">validate_processing</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_session_description')">validate_session_description</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_session_start_time')">validate_session_start_time</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_stimulus_presentation')">validate_stimulus_presentation</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_stimulus_templates')">validate_stimulus_templates</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_timestamps_reference_time')">validate_timestamps_reference_time</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.NWBFile.validate_units')">validate_units</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+      </table>
+      <!--Events-->
+      <div class="sectiontitle"><a name="events"></a>Event Summary
+      </div>
+      <table class="summary-list"></table>
+   </body>
+</html>

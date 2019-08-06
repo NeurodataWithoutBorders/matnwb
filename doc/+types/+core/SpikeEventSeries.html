@@ -1,0 +1,365 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <link rel="stylesheet" href="helpwin.css">
+      <title>types.core.SpikeEventSeries - MATLAB File Help</title>
+   </head>
+   <body>
+      <!--Single-page help-->
+      <table border="0" cellspacing="0" width="100%">
+         <tr class="subheader">
+            <td class="headertitle">types.core.SpikeEventSeries - MATLAB File Help</td>
+            <td class="subheader-left"><a href="matlab:edit types.core.SpikeEventSeries">View code for types.core.SpikeEventSeries</a></td>
+            <td class="subheader-left"><a href="matlab:doc types.core.SpikeEventSeries">Go to online doc for types.core.SpikeEventSeries</a></td>
+            <td class="subheader-right"><a href="matlab:helpwin">Default Topics</a></td>
+         </tr>
+      </table>
+      <div class="title">types.core.SpikeEventSeries</div>
+      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">SpikeEventSeries</span> Stores 'snapshots' of spike events (i.e., threshold crossings) in data. This may also be raw data, as reported by ephys hardware. If so, the TimeSeries::description field should describing how events were detected. All <span class="helptopic">SpikeEventSeries</span> should reside in a module (under EventWaveform interface) even if the spikes were reported and stored by hardware. All events span the same recording channels and store snapshots of equal duration. TimeSeries::data array structure: [num events] [num channels] [num samples] (or [num events] [num samples] for single electrode).</pre></div><!--after help -->
+      <!--Class-->
+      <div class="sectiontitle">Class Details</div>
+      <table class="class-details">
+         <tr>
+            <td class="class-detail-label">Superclasses</td>
+            <td><a href="matlab:helpwin('types.core.ElectricalSeries')">types.core.ElectricalSeries</a></td>
+         </tr>
+         <tr>
+            <td class="class-detail-label">Sealed</td>
+            <td>false</td>
+         </tr>
+         <tr>
+            <td class="class-detail-label">Construct on load</td>
+            <td>false</td>
+         </tr>
+      </table>
+      <!--Constructors-->
+      <div class="sectiontitle"><a name="constructors"></a>Constructor Summary
+      </div>
+      <table class="summary-list">
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.SpikeEventSeries')">SpikeEventSeries</a></td>
+            <td class="m-help">Constructor for SpikeEventSeries&nbsp;</td>
+         </tr>
+      </table>
+      <!--Properties-->
+      <div class="sectiontitle"><a name="properties"></a>Property Summary
+      </div>
+      <table class="summary-list">
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.comments')">comments</a></td>
+            <td class="m-help">Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or
+               descriptive information if the primary description field is populated with a computer-readable string.&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.control')">control</a></td>
+            <td class="m-help">Numerical labels that apply to each element in data[]. COMMENT: Optional field. If present, the control array should have
+               the same number of elements as data[].&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.control_description')">control_description</a></td>
+            <td class="m-help">Description of each control value. COMMENT: Array length should be as long as the highest number in control minus one, generating
+               an zero-based indexed array for control values.&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.data')">data</a></td>
+            <td class="m-help">Data values. Can also store binary data (eg, image frames) COMMENT: This field may be a link to data stored in an external
+               file, especially in the case of raw data.&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.data_conversion')">data_conversion</a></td>
+            <td class="m-help">Scalar to multiply each element in data to convert it to the specified unit&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.data_resolution')">data_resolution</a></td>
+            <td class="m-help">Smallest meaningful difference between values in data, stored in the specified by unit. COMMENT: E.g., the change in value
+               of the least significant bit, or a larger number if signal noise is known to be present. If unknown, use -1.0&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.data_unit')">data_unit</a></td>
+            <td class="m-help">The base unit of measure used to store data. This should be in the SI unit. COMMENT: This is the SI unit (when appropriate)
+               of the stored data, such as Volts. If the actual data is stored in millivolts, the field 'conversion' below describes how
+               to convert the data to the specified SI unit.&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.description')">description</a></td>
+            <td class="m-help">Description of TimeSeries&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.electrodes')">electrodes</a></td>
+            <td class="m-help">the electrodes that this series was generated from&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.help')">help</a></td>
+            <td class="m-help">Short description of what this type of NWBContainer contains.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.starting_time')">starting_time</a></td>
+            <td class="m-help">The timestamp of the first sample. COMMENT: When timestamps are uniformly spaced, the timestamp of the first sample can be
+               specified and all subsequent ones calculated from the sampling rate.&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.starting_time_rate')">starting_time_rate</a></td>
+            <td class="m-help">Sampling rate, in Hz COMMENT: Rate information is stored in Hz&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.starting_time_unit')">starting_time_unit</a></td>
+            <td class="m-help">Value is 'Seconds'&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.timestamps')">timestamps</a></td>
+            <td class="m-help">Timestamps for samples stored in data.COMMENT: Timestamps here have all been corrected to the common experiment master-clock.
+               Time is stored as seconds and all timestamps are relative to experiment start time.&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.timestamps_interval')">timestamps_interval</a></td>
+            <td class="m-help">Value is '1'&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.timestamps_unit')">timestamps_unit</a></td>
+            <td class="m-help">Value is 'Seconds'&nbsp;</td>
+         </tr>
+      </table>
+      <!--Methods-->
+      <div class="sectiontitle"><a name="methods"></a>Method Summary
+      </div>
+      <table class="summary-list">
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.addlistener')">addlistener</a></td>
+            <td class="m-help">Add listener for event.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.delete')">delete</a></td>
+            <td class="m-help">Delete a handle object.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.eq')">eq</a></td>
+            <td class="m-help">== (EQ)   Test handle equality.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.export')">export</a></td>
+            <td class="m-help">find reference properties&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.findobj')">findobj</a></td>
+            <td class="m-help">Find objects matching specified conditions.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.findprop')">findprop</a></td>
+            <td class="m-help">Find property of MATLAB handle object.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.ge')">ge</a></td>
+            <td class="m-help">>= (GE)   Greater than or equal relation for handles.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.gt')">gt</a></td>
+            <td class="m-help">> (GT)   Greater than relation for handles.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Sealed 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.isvalid')">isvalid</a></td>
+            <td class="m-help">Test handle validity.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.le')">le</a></td>
+            <td class="m-help"><= (LE)   Less than or equal relation for handles.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.listener')">listener</a></td>
+            <td class="m-help">Add listener for event without binding the listener to the source object.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.loadAll')">loadAll</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.lt')">lt</a></td>
+            <td class="m-help">< (LT)   Less than relation for handles.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.ne')">ne</a></td>
+            <td class="m-help">~= (NE)   Not equal relation for handles.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.notify')">notify</a></td>
+            <td class="m-help">Notify listeners of event.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.validate_comments')">validate_comments</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.validate_control')">validate_control</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.validate_control_description')">validate_control_description</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.validate_data')">validate_data</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.validate_data_conversion')">validate_data_conversion</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.validate_data_resolution')">validate_data_resolution</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.validate_data_unit')">validate_data_unit</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.validate_description')">validate_description</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.validate_electrodes')">validate_electrodes</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.validate_help')">validate_help</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.validate_starting_time')">validate_starting_time</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.validate_starting_time_rate')">validate_starting_time_rate</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('types.core.SpikeEventSeries.validate_timestamps')">validate_timestamps</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+      </table>
+      <!--Events-->
+      <div class="sectiontitle"><a name="events"></a>Event Summary
+      </div>
+      <table class="summary-list"></table>
+   </body>
+</html>
