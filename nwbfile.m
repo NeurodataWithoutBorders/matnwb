@@ -1,5 +1,5 @@
 classdef nwbfile < types.core.NWBFile
-    % nwbfile Root object representing data read from an NWB file.
+    % NWBFILE Root object representing data read from an NWB file.
     %
     % Requires that core and extension NWB types have been generated
     % and reside in a 'types' package on the matlab path.
@@ -10,6 +10,11 @@ classdef nwbfile < types.core.NWBFile
     %    nwbExport(nwb, 'epoch.nwb');
     %
     % See also NWBREAD, GENERATECORE, GENERATEEXTENSION
+    
+    properties(Access=private)
+        mat_internal_data_source;
+    end
+    
     methods
         function obj = nwbfile(varargin)
             obj = obj@types.core.NWBFile(varargin{:});
@@ -21,28 +26,27 @@ classdef nwbfile < types.core.NWBFile
             end
             
             %add to file create date
-            dt = datetime('now', 'TimeZone', 'local');
+            current_time = datetime('now', 'TimeZone', 'local');
             if isa(obj.file_create_date, 'types.untyped.DataStub')
                 obj.file_create_date = obj.file_create_date.load();
             end
-            
+
             if isempty(obj.file_create_date)
-                obj.file_create_date = dt;
+                obj.file_create_date = current_time;
             elseif iscell(obj.file_create_date)
-                obj.file_create_date(end+1) = {dt};
+                obj.file_create_date(end+1) = {current_time};
             else
-                obj.file_create_date = {obj.file_create_date dt};
+                obj.file_create_date = {obj.file_create_date current_time};
             end
             
             %equate reference time to session_start_time if empty
             if isempty(obj.timestamps_reference_time)
                 obj.timestamps_reference_time = obj.session_start_time;
             end
-            
-            
-            fid = H5F.create(filename);
+
+            output_file_id = H5F.create(filename);
             try
-                refs = export@types.core.NWBFile(obj, fid, '/', {});
+                refs = export@types.core.NWBFile(obj, output_file_id, '/', {});
                 
                 loop_offset = 0;
                 while ~isempty(refs)
@@ -50,21 +54,21 @@ classdef nwbfile < types.core.NWBFile
                         error('Could not resolve paths for the following reference(s):\n%s',...
                             file.addSpaces(strjoin(refs, newline), 4));
                     end
-                    src = refs{1};
+                    reference_path = refs{1};
                     refs(1) = []; %pop
-                    srcobj = obj.resolve(src);
+                    obj_to_write = obj.resolve(reference_path);
                     
-                    if isempty(srcobj.export(fid, src, {}))
+                    if isempty(obj_to_write.export(output_file_id, reference_path, {}))
                         loop_offset = 0;
                     else
-                        refs = [refs src]; %push back
+                        refs = [refs reference_path]; %push back
                         loop_offset = loop_offset + 1;
                     end
                 end
-                H5F.close(fid);
+                H5F.close(output_file_id);
             catch ME
                 obj.file_create_date(end) = [];
-                H5F.close(fid);
+                H5F.close(output_file_id);
                 rethrow(ME);
             end
         end
