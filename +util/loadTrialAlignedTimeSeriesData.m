@@ -1,19 +1,22 @@
-function [D, tt] = loadTrialAlignedTimeSeriesData(nwb, timeseries, window, conditions, downsample_factor, electrode)
+function [D, tt] = loadTrialAlignedTimeSeriesData(nwb, timeseries, window, align_to, conditions, downsample_factor, electrode)
 %LOADTRIALALIGNEDTIMESERIESDATA load trial-aligned time series data
 %   D = LOADTRIALALIGNEDTIMESERIESDATA(NWB, TIMESERIES, WINDOW) is the
 %   trial-aligned data for TIMESERIES in NWB with intervals WINDOW,
 %   in seconds, for all electrodes. D is of shape trials x electrodes x time.
 %
-%   D = LOADTRIALALIGNEDTIMESERIESDATA(NWB, TIMESERIES, WINDOW, CONDITIONS)
+%   D = LOADTRIALALIGNEDTIMESERIESDATA(NWB, TIMESERIES, WINDOW, ALIGN_TO)
+%   aligns data to the column named ALIGN_TO. Default is 'start_time'.
+%
+%   D = LOADTRIALALIGNEDTIMESERIESDATA(NWB, TIMESERIES, WINDOW, ALIGN_TO, CONDITIONS)
 %   takes a containers.Map object where the keys are the column names and
 %   the values are the tests. A function can be entered for the value here, and
 %   Only columns where the function evaluates as true will be used. If a
 %   non-funcion is entered, an equality test is used.
 %
-%   D = LOADTRIALALIGNEDTIMESERIESDATA(NWB, TIMESERIES, WINDOW, CONDITIONS, DOWNSAMPLE_FACTOR)
+%   D = LOADTRIALALIGNEDTIMESERIESDATA(NWB, TIMESERIES, WINDOW, ALIGN_TO, CONDITIONS, DOWNSAMPLE_FACTOR)
 %   specifies a temporal downsampling for D. Default is 1.
 %   
-%   D = LOADTRIALALIGNEDTIMESERIESDATA(NWB, TIMESERIES, WINDOW, CONDITIONS, DOWNSAMPLE_FACTOR, ELECTRODES)
+%   D = LOADTRIALALIGNEDTIMESERIESDATA(NWB, TIMESERIES, WINDOW, ALIGN_TO, CONDITIONS, DOWNSAMPLE_FACTOR, ELECTRODES)
 %   specifies what electrode to pull data for. Default is []:
 %
 %   []  - all electrodes
@@ -27,9 +30,19 @@ if ~exist('electrode', 'var')
     electrode = [];
 end
 
+if ~exist('align_to', 'var')
+    align_to = 'start_time';
+end
+
 trials = nwb.intervals_trials;
 
-times = trials.start_time.data.load;
+if strcmp(align_to, 'start_time')
+    times = trials.start_time.data.load;
+elseif strcmp(align_to, 'stop_time')
+    times = trials.stop_time.data.load;
+else
+    times = trials.vectordata.get(align_to);
+end
 
 trials_to_take = true(length(times),1);
 if exist('conditions', 'var')
