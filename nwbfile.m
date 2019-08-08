@@ -18,11 +18,14 @@ classdef nwbfile < types.core.NWBFile
         function export(obj, filename)
             if 2 == exist(filename, 'file')
                 warning('Overwriting %s', filename);
-                delete(filename);
             end
             
             %add to file create date
             dt = datetime('now', 'TimeZone', 'local');
+            if isa(obj.file_create_date, 'types.untyped.DataStub')
+                obj.file_create_date = obj.file_create_date.load();
+            end
+            
             if isempty(obj.file_create_date)
                 obj.file_create_date = dt;
             elseif iscell(obj.file_create_date)
@@ -35,6 +38,7 @@ classdef nwbfile < types.core.NWBFile
             if isempty(obj.timestamps_reference_time)
                 obj.timestamps_reference_time = obj.session_start_time;
             end
+            
             
             fid = H5F.create(filename);
             try
