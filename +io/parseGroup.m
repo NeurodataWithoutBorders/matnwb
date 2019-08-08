@@ -11,7 +11,11 @@ refs = containers.Map;
 dsprops = containers.Map;
 for i=1:length(info.Datasets)
     ds_info = info.Datasets(i);
-    fp = [info.Name '/' ds_info.Name];
+    if strcmp(info.Name, '/')
+        fp = ['/' ds_info.Name];
+    else
+        fp = [info.Name '/' ds_info.Name];
+    end
     ds = io.parseDataset(filename, ds_info, fp);
     if isa(ds, 'containers.Map')
         dsprops = [dsprops; ds];
