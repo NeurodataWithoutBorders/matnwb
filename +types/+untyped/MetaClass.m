@@ -54,7 +54,7 @@ classdef MetaClass < handle
             end
             
             
-            if isa(obj, 'nwbfile')
+            if isa(obj, 'NwbFile')
                 io.writeAttribute(fid,'/namespace', 'char', 'core', false);
                 io.writeAttribute(fid,'/neurodata_type','char', 'NWBFile', false);
             else
