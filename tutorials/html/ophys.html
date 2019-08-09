@@ -71,12 +71,12 @@ contact: ben.dichter@gmail.com
 last edited: May 14, 2019</pre><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#3">NWB file</a></li><li><a href="#5">Subject</a></li><li><a href="#6">Adding metadata about acquisition</a></li><li><a href="#7">TwoPhotonSeries</a></li><li><a href="#9">Ophys Processing Module</a></li><li><a href="#10">Plane Segmentation</a></li><li><a href="#11">Fluoresence and RoiResponseSeries</a></li><li><a href="#14">Write</a></li><li><a href="#15">Read</a></li></ul></div><p>This tutorial will demonstrate how to write calcium imaging data. The workflow demonstrated here involves three main steps:</p><p>1. Acquiring two-photon images 2. Image segmentation 3. Fluorescence and dF/F response</p><p>The data we output will be in the following structure:</p><p><img vspace="5" hspace="5" src="ophys_tutorial_schematic.png" alt=""> </p><h2 id="3">NWB file</h2><p>All contents get added to the NWB file, which is created with the following command</p><pre class="codeinput">date = datetime(2018, 3, 1, 12, 0, 0);
 session_start_time = datetime(date, <span class="string">'TimeZone'</span>, <span class="string">'local'</span>);
 
-nwb = nwbfile( <span class="keyword">...</span>
+nwb = NwbFile( <span class="keyword">...</span>
     <span class="string">'session_description'</span>, <span class="string">'a test NWB File'</span>, <span class="keyword">...</span>
     <span class="string">'identifier'</span>, <span class="string">'mouse004_day4'</span>, <span class="keyword">...</span>
     <span class="string">'session_start_time'</span>, session_start_time);
-</pre><p>You can check the contents by displaying the nwbfile object</p><pre class="codeinput">disp(nwb);
-</pre><pre class="codeoutput">  nwbfile with properties:
+</pre><p>You can check the contents by displaying the NwbFile object</p><pre class="codeinput">disp(nwb);
+</pre><pre class="codeoutput">  NwbFile with properties:
 
                                 nwb_version: '2.0b'
                                 acquisition: [1&times;1 types.untyped.Set]
@@ -287,13 +287,13 @@ ans =
 date = datetime(2018, 3, 1, 12, 0, 0);
 session_start_time = datetime(date, 'TimeZone', 'local');
 
-nwb = nwbfile( ...
+nwb = NwbFile( ...
     'session_description', 'a test NWB File', ...
     'identifier', 'mouse004_day4', ...
     'session_start_time', session_start_time);
 
 %%
-% You can check the contents by displaying the nwbfile object
+% You can check the contents by displaying the NwbFile object
 disp(nwb);
 
 %% Subject

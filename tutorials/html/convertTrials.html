@@ -85,7 +85,7 @@ rawdata_loc = fullfile(<span class="string">'data'</span>, <span class="string">
 
 source_file = [mfilename() <span class="string">'.m'</span>];
 [~, source_script, ~] = fileparts(source_file);
-</pre><p>The NWB file will be saved in the output directory indicated by <tt>outdir</tt></p><h2 id="4">General Information</h2><pre class="codeinput">nwb = nwbfile();
+</pre><p>The NWB file will be saved in the output directory indicated by <tt>outdir</tt></p><h2 id="4">General Information</h2><pre class="codeinput">nwb = NwbFile();
 nwb.identifier = identifier;
 nwb.general_source_script = source_script;
 nwb.general_source_script_file_name = source_file;
@@ -510,7 +510,7 @@ source_file = [mfilename() '.m'];
 
 %% General Information
 
-nwb = nwbfile();
+nwb = NwbFile();
 nwb.identifier = identifier;
 nwb.general_source_script = source_script;
 nwb.general_source_script_file_name = source_file;
