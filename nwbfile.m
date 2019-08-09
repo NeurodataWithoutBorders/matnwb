@@ -21,10 +21,6 @@ classdef nwbfile < types.core.NWBFile
         end
         
         function export(obj, filename)
-            if 2 == exist(filename, 'file')
-                warning('Overwriting %s', filename);
-            end
-            
             %add to file create date
             current_time = datetime('now', 'TimeZone', 'local');
             if isa(obj.file_create_date, 'types.untyped.DataStub')
@@ -43,8 +39,21 @@ classdef nwbfile < types.core.NWBFile
             if isempty(obj.timestamps_reference_time)
                 obj.timestamps_reference_time = obj.session_start_time;
             end
-
-            output_file_id = H5F.create(filename);
+            
+            try
+                output_file_id = H5F.create(filename);
+            catch ME % if file exists, open and edit
+                isLibraryError = strcmp(ME.identifier,...
+                    'MATLAB:imagesci:hdf5lib:libraryError');
+                isFileExistsError = isLibraryError &&...
+                    contains(ME.message, '''File exists''');
+                if isFileExistsError
+                    output_file_id = H5F.open(filename, 'H5F_ACC_RDWR', 'H5P_DEFAULT');
+                else
+                   rethrow(ME); 
+                end
+            end
+            
             try
                 refs = export@types.core.NWBFile(obj, output_file_id, '/', {});
                 
