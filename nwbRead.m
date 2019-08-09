@@ -46,7 +46,7 @@ else
     validateattributes(filename, {'cell'}, {'nonempty'});
     assert(iscellstr(filename));
 end
-nwb = nwbfile.empty(length(filename), 0);
+nwb = NwbFile.empty(length(filename), 0);
 isStringArray = isstring(filename);
 for i=1:length(filename)
     if isStringArray

@@ -45,7 +45,7 @@ testCase.verifyEqual(info.Links.Value, {'extern.nwb';'/mypath'});
 end
 
 function testPathResolution(testCase)
-nwb = nwbfile;
+nwb = NwbFile;
 dev = types.core.Device;
 nwb.general_devices.set('testDevice', dev);
 nwb.general_extracellular_ephys.set('testEphys',...

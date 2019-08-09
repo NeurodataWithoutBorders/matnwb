@@ -2,27 +2,36 @@
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
    
-      <link rel="stylesheet" href="helpwin.css">
-      <title>types.core.NWBFile - MATLAB File Help</title>
+      <link rel="stylesheet" href="+types/+core/helpwin.css">
+      <title>NwbFile - MATLAB File Help</title>
    </head>
    <body>
       <!--Single-page help-->
       <table border="0" cellspacing="0" width="100%">
          <tr class="subheader">
-            <td class="headertitle">types.core.NWBFile - MATLAB File Help</td>
+            <td class="headertitle">NwbFile - MATLAB File Help</td>
             
             
             
          </tr>
       </table>
-      <div class="title">types.core.NWBFile</div>
-      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">NWBFile</span> Top level of NWB file.</pre></div><!--after help -->
+      <div class="title">NwbFile</div>
+      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">NwbFile</span> Root object representing data read from an NWB file.
+ 
+  Requires that core and extension NWB types have been generated
+  and reside in a 'types' package on the matlab path.
+ 
+  Example. Construct an object from scratch for export:
+     nwb = <span class="helptopic">NwbFile</span>;
+     nwb.epochs = types.core.Epochs;
+     nwbExport(nwb, 'epoch.nwb');</pre></div><!--after help --><!--seeAlso--><div class="footerlinktitle">See also</div><div class="footerlink"> <a href="nwbRead.html">nwbRead</a>, <a href="generateCore.html">generateCore</a>, <a href="generateExtension.html">generateExtension</a>
+</div>
       <!--Class-->
       <div class="sectiontitle">Class Details</div>
       <table class="class-details">
          <tr>
             <td class="class-detail-label">Superclasses</td>
-            <td><a href="NWBContainer.html">types.core.NWBContainer</a></td>
+            <td><a href="+types/+core/NWBFile.html">types.core.NWBFile</a></td>
          </tr>
          <tr>
             <td class="class-detail-label">Sealed</td>
@@ -38,8 +47,8 @@
       </div>
       <table class="summary-list">
          <tr class="summary-item">
-            <td class="name">NWBFile</td>
-            <td class="m-help">Constructor for NWBFile&nbsp;</td>
+            <td class="name">NwbFile</td>
+            <td class="m-help">Root object representing data read from an NWB file.&nbsp;</td>
          </tr>
       </table>
       <!--Properties-->
@@ -376,6 +385,14 @@
             </td>
             <td class="name">notify</td>
             <td class="m-help">Notify listeners of event.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">resolve</td>
+            <td class="m-help">&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="attributes">

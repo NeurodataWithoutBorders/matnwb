@@ -9,7 +9,7 @@ function nwbtable = table2nwb(T, description)
 %EXAMPLE
 %   T = table([.1, 1.5, 2.5]', [1., 2., 3.]', [0, 1, 0]', ...
 %       'VariableNames', {'start', 'stop', 'condition'});
-%nwbfile.trials = table2nwb(T, 'my description')
+%NwbFile.trials = table2nwb(T, 'my description')
 
 if ~exist('description', 'var')
     description = 'no description';

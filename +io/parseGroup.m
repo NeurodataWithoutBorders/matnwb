@@ -66,7 +66,7 @@ else
     kwargs = io.map2kwargs([attrprops; dsprops; gprops; lprops]);
     if isempty(root)
         %we are root
-        parsed = nwbfile(kwargs{:});
+        parsed = NwbFile(kwargs{:});
         return;
     end
     parsed = eval([typename '(kwargs{:})']);

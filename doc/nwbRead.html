@@ -41,7 +41,7 @@
     %Now we can read nwb files!
     nwb=nwbRead('data.nwb');
 
-  See also <a href="generateCore.html" class="code" title="function generateCore(varargin)">GENERATECORE</a>, <a href="generateExtension.html" class="code" title="function generateExtension(source)">GENERATEEXTENSION</a>, NWBFILE, <a href="nwbExport.html" class="code" title="function nwbExport(nwb, filename)">NWBEXPORT</a></pre></div>
+  See also <a href="generateCore.html" class="code" title="function generateCore(varargin)">GENERATECORE</a>, <a href="generateExtension.html" class="code" title="function generateExtension(source)">GENERATEEXTENSION</a>, NWBFILE, <a href="nwbExport.html" class="code" title="function nwbExport(nwb, filenames)">NWBEXPORT</a></pre></div>
 
 <!-- crossreference -->
 <h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="up.png"></a></h2>
@@ -106,7 +106,7 @@ This function is called by:
 0046     validateattributes(filename, {<span class="string">'cell'</span>}, {<span class="string">'nonempty'</span>});
 0047     assert(iscellstr(filename));
 0048 <span class="keyword">end</span>
-0049 nwb = nwbfile.empty(length(filename), 0);
+0049 nwb = NwbFile.empty(length(filename), 0);
 0050 isStringArray = isstring(filename);
 0051 <span class="keyword">for</span> i=1:length(filename)
 0052     <span class="keyword">if</span> isStringArray
@@ -151,6 +151,6 @@ This function is called by:
 0091     spec.generate(namespace_map, schema_map);
 0092 <span class="keyword">end</span>
 0093 <span class="keyword">end</span></pre></div>
-<hr><address>Generated on Tue 06-Aug-2019 16:41:23 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+<hr><address>Generated on Fri 09-Aug-2019 14:27:49 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
 </body>
 </html>

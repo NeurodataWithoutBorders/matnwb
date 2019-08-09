@@ -26,13 +26,13 @@
 date = datetime(2018, 3, 1, 12, 0, 0);
 session_start_time = datetime(date, 'TimeZone', 'local');
 
-nwb = nwbfile( ...
+nwb = NwbFile( ...
     'session_description', 'a test NWB File', ...
     'identifier', 'mouse004_day4', ...
     'session_start_time', session_start_time);
 
 %%
-% You can check the contents by displaying the nwbfile object
+% You can check the contents by displaying the NwbFile object
 disp(nwb);
 
 %% Subject

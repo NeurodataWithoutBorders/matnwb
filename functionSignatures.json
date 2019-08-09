@@ -5,7 +5,7 @@
     [
       {
         "name":"core namespace",
-        "kind":"required",
+        "kind":"optional",
         "type":"filepath=*.yaml,*.yml"
       },
       {
@@ -35,14 +35,15 @@
     ],
     "outputs":
     [
-      {"name":"nwbfile Object", "type":"nwbfile"}
+      {"name":"NwbFile Object", "type":"nwbfile"}
     ]
   },
   "nwbExport":
   {
     "inputs":
     [
-      {"name":"nwbfile Object", "kind":"required", "type":"nwbfile"}
+      {"name":"NwbFile Object", "kind":"required", "type":"NwbFile"},
+      {"name":"path to output file", "kind":"required", "type":"filepath=*.nwb"}
     ]
   }
 }
