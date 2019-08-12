@@ -20,7 +20,7 @@ classdef Dataset < handle
             obj.doc = '';
             obj.isConstrainedSet = false;
             obj.type = '';
-            obj.dtype = '';
+            obj.dtype = 'any';
             obj.required = true;
             obj.scalar = true;
             obj.definesType = false;
@@ -33,23 +33,33 @@ classdef Dataset < handle
                 return;
             end
             
-            obj.doc = char(source.get('doc'));
-            obj.name = char(source.get('name'));
-            
-            type = char(source.get('neurodata_type_def'));
-            parent = char(source.get('neurodata_type_inc'));
-            
-            if isempty(type)
-                obj.type = parent;
-            else
-                obj.type = type;
-                obj.definesType = true;
+            docKey = 'doc';
+            if isKey(source, docKey)
+                obj.doc = source(docKey);
             end
             
-            obj.dtype = file.mapType(source.get('dtype'));
+            nameKey = 'name';
+            if isKey(source, nameKey)
+                obj.name = source(nameKey);
+            end
             
-            quantity = source.get('quantity');
-            if ~isempty(quantity)
+            typeKey = 'neurodata_type_def';
+            parentKey = 'neurodata_type_inc';
+            if isKey(source, typeKey)
+                obj.type = source(typeKey);
+                obj.definesType = true;
+            elseif isKey(source, parentKey)
+                obj.type = source(parentKey);
+            end
+            
+            dataTypeKey = 'dtype';
+            if isKey(source, dataTypeKey)
+                dataType = source(dataTypeKey);
+                obj.dtype = file.mapType(dataType);
+            end
+            
+            if isKey(source, 'quantity')
+                quantity = source('quantity');
                 switch quantity
                     case '?'
                         obj.required = false;
@@ -65,38 +75,39 @@ classdef Dataset < handle
             
             obj.isConstrainedSet = ~isempty(obj.type) && ~obj.scalar;
             
-            dims = source.get('dims');
-            shape = source.get('shape');
-            if isempty(shape)
-                obj.shape = '1';
-                obj.dimnames = {obj.name};
-            else
-                [obj.shape, obj.dimnames] = file.procdims(shape, dims);
+            boundsKey = 'dims';
+            shapeKey = 'shape';
+            if isKey(source, shapeKey) && isKey(source, boundsKey)
+                shape = source(shapeKey);
+                bounds = source(boundsKey);
+                [obj.shape, obj.dimnames] = file.procdims(shape, bounds);
                 if iscellstr(obj.shape)
                     obj.scalar = any(strcmp(obj.shape, '1'));
                 else
                     obj.scalar = strcmp(obj.shape, '1');
                 end
+            else
+                obj.shape = '1';
+                obj.dimnames = {obj.name};
             end
             
-            %do attributes
-            attributes = source.get('attributes');
-            if ~isempty(attributes)
-                len = attributes.size();
-                obj.attributes = repmat(file.Attribute, len, 1);
-                attriter = attributes.iterator();
-                for i=1:len
-                    nextattr = file.Attribute(attriter.next());
+            attributeKey = 'attributes';
+            if isKey(source, attributeKey)
+                sourceAttributes = source(attributeKey);
+                numAttributes = length(sourceAttributes);
+                obj.attributes = repmat(file.Attribute, numAttributes, 1);
+                for i=1:numAttributes
+                    attribute = file.Attribute(sourceAttributes{i});
                     if isempty(obj.type)
-                        nextattr.dependent = obj.name;
+                        attribute.dependent = obj.name;
                     end
-                    obj.attributes(i) = nextattr;
+                    obj.attributes(i) = attribute;
                 end
             end
             
             %linkable if named and has no attributes
-            obj.linkable = ~isempty(obj.name) &&...
-                (isempty(obj.attributes) || isempty(fieldnames(obj.attributes)));
+            hasNoAttributes = isempty(obj.attributes) || isempty(fieldnames(obj.attributes));
+            obj.linkable = ~isempty(obj.name) && hasNoAttributes;
         end
         
         function props = getProps(obj)

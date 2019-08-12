@@ -10,18 +10,21 @@ classdef Link < handle
         function obj = Link(source)
             obj.doc = [];
             obj.name = [];
-            obj.required = [];
+            obj.required = true;
             obj.type = [];
             if nargin < 1
                 return;
             end
             
-            obj.doc = source.get('doc');
-            obj.name = source.get('name');
-            obj.type = source.get('target_type');
+            obj.doc = source('doc');
+            obj.name = source('name');
+            obj.type = source('target_type');
             
-            quantity = source.get('quantity');
-            obj.required = isempty(quantity) || strcmp(quantity, '+');
+            quantityKey = 'quantity';
+            if isKey(source, quantityKey)
+                quantity = source(quantityKey);
+                obj.required = strcmp(quantity, '+');
+            end
         end
     end
 end

@@ -60,8 +60,6 @@ end
 end
 
 function generateSpec(fid, specinfo)
-schema = spec.loadSchema();
-
 for i=1:length(specinfo.Groups)
     location = specinfo.Groups(i).Groups(1);
     
@@ -81,13 +79,13 @@ for i=1:length(specinfo.Groups)
     for j=1:length(file_loc)
         did = H5D.open(fid, file_loc{j});
         if strcmp('namespace', source_names{j})
-            namespace_map = schema.read(H5D.read(did));
+            namespaceText = H5D.read(did);
         else
             schema_map(source_names{j}) = H5D.read(did);    
         end
         H5D.close(did);
     end
     
-    spec.generate(namespace_map, schema_map);
+    spec.generate(namespaceText, schema_map);
 end
 end

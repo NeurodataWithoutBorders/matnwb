@@ -30,43 +30,44 @@ classdef Attribute < handle
                 return;
             end
             
-            %source is a java.util.HashMap
-            obj.name = source.get('name');
-            obj.doc = source.get('doc');
-            req = source.get('required');
-            obj.required = isempty(req) || ~strcmp(req, 'false');
+            obj.name = source('name');
+            obj.doc = source('doc');
+            requiredKey = 'required';
+            if isKey(source, requiredKey)
+                requiredFlag = source(requiredKey);
+                obj.required = ~strcmp(requiredFlag, 'false');
+            end
             
-            val = source.get('value');
-            default = source.get('default_value');
-            
-            if ~isempty(default)
-                %changeable attribute
-                obj.value = default;
+            valueKey = 'value';
+            defaultKey = 'default_value';
+            if isKey(source, defaultKey)
+                obj.value = source(defaultKey);
                 obj.readonly = false;
-            elseif ~isempty(val)
-                %constant attribute
-                obj.value = val;
+            elseif isKey(source, valueKey)
+                obj.value = source(valueKey);
                 obj.readonly = true;
             else
                 obj.value = [];
                 obj.readonly = false;
             end
             
-            dims = source.get('dims');
-            shape = source.get('shape');
-            if isempty(shape)
-                obj.shape = '1';
-                obj.dimnames = {obj.name};
-            else
-                [obj.shape, obj.dimnames] = file.procdims(shape, dims);
+            boundsKey = 'dims';
+            shapeKey = 'shape';
+            if isKey(source, shapeKey) && isKey(source, boundsKey)
+                shape = source(shapeKey);
+                bounds = source(boundsKey);
+                [obj.shape, obj.dimnames] = file.procdims(shape, bounds);
                 if ischar(obj.shape)
                     obj.scalar = ~strcmp(obj.shape, 'Inf');
                 elseif iscellstr(obj.shape)
                     obj.scalar = ~any(strcmp(obj.shape, 'Inf'));
                 end
+            else
+                obj.shape = '1';
+                obj.dimnames = {obj.name};
             end
             
-            obj.dtype = file.mapType(source.get('dtype'));
+            obj.dtype = file.mapType(source('dtype'));
         end
     end
 end
