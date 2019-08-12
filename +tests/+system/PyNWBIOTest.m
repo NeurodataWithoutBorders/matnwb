@@ -32,7 +32,7 @@ classdef PyNWBIOTest < tests.system.RoundTripTest
   methods
     function [status, cmdout] = runPyTest(testCase, testName)
       setenv('PYTHONPATH', fileparts(mfilename('fullpath')));
-      cmd = sprintf('"C:/Users/Lawrence Niu/Miniconda3/envs/py3/python.exe" -B -m unittest %s.%s.%s', 'PyNWBIOTest', testCase.className(), testName);
+      cmd = sprintf('python -B -m unittest %s.%s.%s', 'PyNWBIOTest', testCase.className(), testName);
       [status, cmdout] = system(cmd);
     end
   end
