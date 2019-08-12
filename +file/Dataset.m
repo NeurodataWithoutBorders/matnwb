@@ -79,8 +79,8 @@ classdef Dataset < handle
             shapeKey = 'shape';
             if isKey(source, shapeKey) && isKey(source, boundsKey)
                 shape = source(shapeKey);
-                bounds = source(boundsKey);
-                [obj.shape, obj.dimnames] = file.procdims(shape, bounds);
+                obj.dimnames = source(boundsKey);
+                obj.shape = file.formatShape(shape);
                 if iscellstr(obj.shape)
                     obj.scalar = any(strcmp(obj.shape, '1'));
                 else

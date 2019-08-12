@@ -1,10 +1,9 @@
-function [sz, names] = procdims(shape, dim)
+function sz = formatShape(shape)
 %check for optional dims
 assert(iscell(shape), '`shape` must be a cell.');
 
 if isempty(shape)
     sz = {};
-    names = {};
     return;
 end
 
@@ -22,18 +21,4 @@ else
         sz{i} = misc.cellPrettyPrint(sz{i});
     end
 end
-
-names = dim;
-end
-
-function flat = flatten(tree)
-    emptyFlat = cellfun('isempty', flat);
-    flat(emptyFlat) = {''};
-    
-    if ~iscellstr(flat) %Reached end
-        for i=1:numBranches
-            %recurse
-            flat{i} = flatten(flat{i});
-        end
-    end
 end
