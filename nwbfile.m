@@ -11,10 +11,6 @@ classdef nwbfile < types.core.NWBFile
     %
     % See also NWBREAD, GENERATECORE, GENERATEEXTENSION
     
-    properties(Access=private)
-        mat_internal_data_source;
-    end
-    
     methods
         function obj = nwbfile(varargin)
             obj = obj@types.core.NWBFile(varargin{:});
