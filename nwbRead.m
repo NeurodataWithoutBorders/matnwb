@@ -2,6 +2,8 @@ function nwb = nwbRead(filename, varargin)
 %NWBREAD Reads an NWB file.
 %  nwb = nwbRead(filename) Reads the nwb file at filename and returns an
 %  NWBFile object representing its contents.
+%  nwb = nwbRead(filename, 'ignorecache') Reads the nwb file without generating classes
+%  off of the cached schema if one exists.
 %
 %  Requires that core and extension NWB types have been generated
 %  and reside in a 'types' package on the matlab path.
@@ -73,19 +75,19 @@ for i=1:length(specinfo.Groups)
         namespace_name);
         return;
     end
-    source_names = {location.Datasets.Name};
-    file_loc = strcat(location.Name, '/', source_names);
-    schema_map = containers.Map;
-    for j=1:length(file_loc)
-        did = H5D.open(fid, file_loc{j});
-        if strcmp('namespace', source_names{j})
+    sourceNames = {location.Datasets.Name};
+    fileLocation = strcat(location.Name, '/', sourceNames);
+    schemaMap = containers.Map;
+    for j=1:length(fileLocation)
+        did = H5D.open(fid, fileLocation{j});
+        if strcmp('namespace', sourceNames{j})
             namespaceText = H5D.read(did);
         else
-            schema_map(source_names{j}) = H5D.read(did);    
+            schemaMap(sourceNames{j}) = H5D.read(did);    
         end
         H5D.close(did);
     end
     
-    spec.generate(namespaceText, schema_map);
+    spec.generate(namespaceText, schemaMap);
 end
 end

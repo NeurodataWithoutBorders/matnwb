@@ -3,9 +3,10 @@ function generate(namespaceText, schemaSource)
 % optionally, include schema mapping as second argument OR path of specs
 % schemaSource is either a path to a directory where the source is
 % OR a containers.Map of filenames
-Schema = spec.loadSchema();
+Schema = spec.loadSchemaObject();
 namespace = spec.schema2matlab(Schema.read(namespaceText));
 NamespaceInfo = spec.getNamespaceInfo(namespace);
+NamespaceInfo.namespace = namespace;
 if ischar(schemaSource)
     schema = containers.Map;
     for i=1:length(NamespaceInfo.filenames)
@@ -23,17 +24,14 @@ else % map of schemas with their locations
 end
 
 NamespaceInfo.schema = schema;
-namespacePath = 'namespaces';
+namespacePath = fullfile(misc.getWorkspace(), 'namespaces');
 if 7 ~= exist(namespacePath, 'dir')
     mkdir(namespacePath);
 end
 cachePath = fullfile(namespacePath, [NamespaceInfo.name '.mat']);
 save(cachePath, '-struct', 'NamespaceInfo');
 
-%check/load dependency namespaces
-extmap = schemes.loadNamespace(NamespaceInfo.name);
-
 %write files
-file.writeNamespace(extmap(NamespaceInfo.name));
+file.writeNamespace(NamespaceInfo.name);
 end
 

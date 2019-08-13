@@ -21,7 +21,6 @@ classdef NwbFile < types.core.NWBFile
                 delete(filename);
             end
             
-            %add to file create date
             dt = datetime('now', 'TimeZone', 'local');
             if isempty(obj.file_create_date)
                 obj.file_create_date = dt;
@@ -38,25 +37,9 @@ classdef NwbFile < types.core.NWBFile
             
             fid = H5F.create(filename);
             try
+                obj.embedSpecifications(fid);
                 refs = export@types.core.NWBFile(obj, fid, '/', {});
-                
-                loop_offset = 0;
-                while ~isempty(refs)
-                    if loop_offset >= length(refs)
-                        error('Could not resolve paths for the following reference(s):\n%s',...
-                            file.addSpaces(strjoin(refs, newline), 4));
-                    end
-                    src = refs{1};
-                    refs(1) = []; %pop
-                    srcobj = obj.resolve(src);
-                    
-                    if isempty(srcobj.export(fid, src, {}))
-                        loop_offset = 0;
-                    else
-                        refs = [refs src]; %push back
-                        loop_offset = loop_offset + 1;
-                    end
-                end
+                obj.resolveReferences(fid, refs);
                 H5F.close(fid);
             catch ME
                 obj.file_create_date(end) = [];
@@ -67,6 +50,53 @@ classdef NwbFile < types.core.NWBFile
         
         function o = resolve(obj, path)
             o = io.resolvePath(obj, path);
+        end
+    end
+    
+    %% PRIVATE
+    methods(Access=private)
+        function resolveReferences(obj, fid, references)
+            while ~isempty(references)
+                resolved = false(size(references));
+                for iRef = 1:length(references)
+                    refSource = references{iRef};
+                    sourceObj = obj.resolve(refSource);
+                    unresolvedRefs = sourceObj.export(fid, refSource, {});
+                    exportSuccess = isempty(unresolvedRefs);
+                    resolved(iRef) = exportSuccess;
+                end
+                
+                if any(resolved)
+                    references(resolved) = [];
+                else
+                    errorFormat =...
+                        'Could not resolve paths for the following reference(s):\n%s';
+                    unresolvedRefs = strjoin(references, newline);
+                    error(errorFormat, file.addSpaces(unresolvedRefs, 4));
+                end
+            end
+        end
+        
+        function embedSpecifications(~, fid)
+            specLocation = '/specifications';
+            io.writeGroup(fid, specLocation);
+            specView = types.untyped.ObjectView(specLocation);
+            io.writeAttribute(fid, '/.specloc', specView);
+            
+            JsonData = schemes.exportJson();
+            for iJson = 1:length(JsonData)
+                JsonDatum = JsonData(iJson);
+                schemaLocation =...
+                    strjoin({specLocation, JsonDatum.name, JsonDatum.version}, '/');
+                io.writeGroup(fid, schemaLocation);
+                Json = JsonDatum.json;
+                schemeNames = keys(Json);
+                for iScheme = 1:length(schemeNames)
+                    name = schemeNames{iScheme};
+                    path = [schemaLocation '/' name];
+                    io.writeDataset(fid, path, Json(name));
+                end
+            end
         end
     end
 end
