@@ -39,7 +39,7 @@ classdef MetaClass < handle
                             isa(obj.data, 'containers.Map')
                         io.writeCompound(fid, fullpath, obj.data);
                     else
-                        io.writeDataset(fid, fullpath, class(obj.data), obj.data, true);
+                        io.writeDataset(fid, fullpath, obj.data, 'forceArray');
                     end
                 catch ME
                     if strcmp(ME.stack(2).name, 'getRefData') && ...
@@ -55,16 +55,16 @@ classdef MetaClass < handle
             
             
             if isa(obj, 'NwbFile')
-                io.writeAttribute(fid,'/namespace', 'char', 'core', false);
-                io.writeAttribute(fid,'/neurodata_type','char', 'NWBFile', false);
+                io.writeAttribute(fid,'/namespace', 'core');
+                io.writeAttribute(fid,'/neurodata_type', 'NWBFile');
             else
                 namespacePath = [fullpath '/namespace'];
                 neuroTypePath = [fullpath '/neurodata_type'];
                 dotparts = split(class(obj), '.');
                 namespace = dotparts{2};
                 classtype = dotparts{3};
-                io.writeAttribute(fid, namespacePath,'char', namespace, false);
-                io.writeAttribute(fid, neuroTypePath,'char', classtype, false);
+                io.writeAttribute(fid, namespacePath, namespace);
+                io.writeAttribute(fid, neuroTypePath, classtype);
             end
         end
         
