@@ -1,24 +1,46 @@
-function [args, typename] = parseAttributes(filename, alist, context)
+function [args, typename] = parseAttributes(filename, attributes, context, Blacklist)
 %typename is the type of name if it exists.  Empty string otherwise
 %args is a containers.Map of all valid attributes
 args = containers.Map;
 typename = '';
 type = struct('namespace', '', 'name', '');
-for i=1:length(alist)
-    attr = alist(i);
-    if strcmp(attr.Name, 'neurodata_type')
-        if iscellstr(attr.Value)
-            type.name = attr.Value{1};
-        else
-            type.name = attr.Value;
-        end
-    elseif strcmp(attr.Name, 'namespace')
-        if iscellstr(attr.Value)
-            type.namespace = attr.Value{1};
-        else
-            type.namespace = attr.Value;
-        end
-    elseif strcmp(attr.Datatype.Class, 'H5T_REFERENCE')
+if isempty(attributes)
+    return;
+end
+names = {attributes.Name};
+
+typeDefMask = strcmp(names, 'neurodata_type');
+hasTypeDef = any(typeDefMask);
+if hasTypeDef
+    typeDef = attributes(typeDefMask).Value;
+    if iscellstr(typeDef)
+        typeDef = typeDef{1};
+    end
+    type.name = typeDef;
+end
+
+namespaceMask = strcmp(names, 'namespace');
+hasNamespace = any(namespaceMask);
+if hasNamespace
+    namespace = attributes(namespaceMask).Value;
+    if iscellstr(namespace)
+        namespace = namespace{1};
+    end
+    type.namespace = namespace;
+end
+
+if hasTypeDef && hasNamespace
+    validNamespace = misc.str2validName(type.namespace);
+    validName = misc.str2validName(type.name);
+    typename = ['types.' validNamespace '.' validName];
+end
+
+blacklistMask = ismember(names, Blacklist.attributes);
+deleteMask = typeDefMask | namespaceMask | blacklistMask;
+attributes(deleteMask) = [];
+for i=1:length(attributes)
+    attr = attributes(i);
+    if strcmp(attr.Datatype.Class, 'H5T_REFERENCE')
         fid = H5F.open(filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
         aid = H5A.open_by_name(fid, context, attr.Name);
         tid = H5A.get_type(aid);
@@ -31,10 +53,5 @@ for i=1:length(alist)
     else
         args(attr.Name) = attr.Value;
     end
-end
-if ~isempty(type.namespace) && ~isempty(type.name)
-    valid_namespace = misc.str2validName(type.namespace);
-    valid_name = misc.str2validName(type.name);
-    typename = ['types.' valid_namespace '.' valid_name];
 end
 end

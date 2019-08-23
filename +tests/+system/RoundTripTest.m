@@ -69,7 +69,7 @@ classdef RoundTripTest < matlab.unittest.TestCase
                         trueval = val1;
                     end
                     
-                    if isvector(val2) && isvector(trueval)
+                    if isvector(val2) && isvector(trueval) && numel(val2) == numel(trueval)
                         trueval = reshape(trueval, size(val2));
                     end
                     testCase.verifyEqual(trueval, val2, failmsg);
