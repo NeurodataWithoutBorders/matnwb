@@ -4,6 +4,7 @@ function [tid, sid, data] = mapData2H5(fid, type, data, varargin)
 %   and properly converted data
 
 forceArray = any(strcmp('forceArray', varargin));
+forceChunked = any(strcmp('forceChunked', varargin));
 
 tid = io.getBaseType(type);
 
@@ -15,7 +16,11 @@ if ischar(data)
         sid = H5S.create('H5S_SCALAR');
     else
         dims = size(data, 1);
-        max_dims = repmat(unlimited_size, size(dims));
+        if forceChunked
+            max_dims = repmat(unlimited_size, size(dims));
+        else
+            max_dims = [];
+        end
         sid = H5S.create_simple(1, size(data,1), max_dims);
     end
 elseif ~forceArray && isscalar(data)
@@ -30,7 +35,11 @@ else
     end
     
     dims = fliplr(dims);
-    max_dims = repmat(unlimited_size, size(dims));
+    if forceChunked
+        max_dims = repmat(unlimited_size, size(dims));
+    else
+        max_dims = [];
+    end
     sid = H5S.create_simple(num_dims, dims, max_dims);
 end
 
