@@ -1,33 +1,37 @@
-function [tid, sid, data] = mapData2H5(fid, type, data, forceArray)
+function [tid, sid, data] = mapData2H5(fid, type, data, varargin)
 %MAPDATA2H5 Convert MATLAB type specifier and data to HDF5 compatible data
 %   Given base file_id, type string and data value, returns HDF5 type id, space id,
 %   and properly converted data
 
-if nargin < 4
-    forceArray = false;
-end
+forceArray = any(strcmp('forceArray', varargin));
 
 tid = io.getBaseType(type);
 
+% max size is always unlimited
+unlimited_size = H5ML.get_constant_value('H5S_UNLIMITED');
 %determine space size
 if ischar(data)
     if ~forceArray && size(data,1) == 1
         sid = H5S.create('H5S_SCALAR');
     else
-        sid = H5S.create_simple(1, size(data,1), []);
+        dims = size(data, 1);
+        max_dims = repmat(unlimited_size, size(dims));
+        sid = H5S.create_simple(1, size(data,1), max_dims);
     end
 elseif ~forceArray && isscalar(data)
     sid = H5S.create('H5S_SCALAR');
 else
     if isvector(data)
-        nd = 1;
+        num_dims = 1;
         dims = length(data);
     else
-        nd = ndims(data);
+        num_dims = ndims(data);
         dims = size(data);
     end
     
-    sid = H5S.create_simple(nd, fliplr(dims), []);
+    dims = fliplr(dims);
+    max_dims = repmat(unlimited_size, size(dims));
+    sid = H5S.create_simple(num_dims, dims, max_dims);
 end
 
 %% Do Data Conversions
