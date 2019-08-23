@@ -39,7 +39,7 @@ classdef MetaClass < handle
                             isa(obj.data, 'containers.Map')
                         io.writeCompound(fid, fullpath, obj.data);
                     else
-                        io.writeDataset(fid, fullpath, class(obj.data), obj.data, true);
+                        io.writeDataset(fid, fullpath, class(obj.data), obj.data, 'forceArray');
                     end
                 catch ME
                     if strcmp(ME.stack(2).name, 'getRefData') && ...
