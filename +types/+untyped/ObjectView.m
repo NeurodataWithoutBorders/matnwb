@@ -14,8 +14,8 @@ classdef ObjectView < handle
         end
         
         function v = refresh(obj, nwb)
-            if ~isa(nwb, 'nwbfile')
-                error('Argument `nwb` must be a valid `nwbfile`');
+            if ~isa(nwb, 'NwbFile')
+                error('Argument `nwb` must be a valid `NwbFile`');
             end
             v = nwb.resolve(obj.path);
         end

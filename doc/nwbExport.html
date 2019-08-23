@@ -24,7 +24,7 @@
 <div class="box"><strong>NWBEXPORT Writes an NWB file.</strong></div>
 
 <h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="up.png"></a></h2>
-<div class="box"><strong>function nwbExport(nwb, filename) </strong></div>
+<div class="box"><strong>function nwbExport(nwb, filenames) </strong></div>
 
 <h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="up.png"></a></h2>
 <div class="fragment"><pre class="comment">NWBEXPORT Writes an NWB file.
@@ -35,7 +35,7 @@
     % This only needs to be done once.
     generateCore('schema\core\nwb.namespace.yaml');
     % Create some fake fata and write
-    nwb = nwbfile;
+    nwb = NwbFile;
     nwb.session_start_time = datetime('now');
     nwb.identifier = 'EMPTY';
     nwb.session_description = 'empty test file';
@@ -56,7 +56,7 @@ This function is called by:
 
 
 <h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="up.png"></a></h2>
-<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function nwbExport(nwb, filename)</a>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function nwbExport(nwb, filenames)</a>
 0002 <span class="comment">%NWBEXPORT Writes an NWB file.</span>
 0003 <span class="comment">%  nwbRead(nwb,filename) Writes the nwb object to a file at filename.</span>
 0004 <span class="comment">%</span>
@@ -65,34 +65,34 @@ This function is called by:
 0007 <span class="comment">%    % This only needs to be done once.</span>
 0008 <span class="comment">%    generateCore('schema\core\nwb.namespace.yaml');</span>
 0009 <span class="comment">%    % Create some fake fata and write</span>
-0010 <span class="comment">%    nwb = nwbfile;</span>
+0010 <span class="comment">%    nwb = NwbFile;</span>
 0011 <span class="comment">%    nwb.session_start_time = datetime('now');</span>
 0012 <span class="comment">%    nwb.identifier = 'EMPTY';</span>
 0013 <span class="comment">%    nwb.session_description = 'empty test file';</span>
 0014 <span class="comment">%    nwbExport(nwb, 'empty.nwb');</span>
 0015 <span class="comment">%</span>
 0016 <span class="comment">%  See also GENERATECORE, GENERATEEXTENSION, NWBFILE, NWBREAD</span>
-0017 validateattributes(nwb, {<span class="string">'nwbfile'</span>}, {<span class="string">'nonempty'</span>});
-0018 validateattributes(filename, {<span class="string">'cell'</span>, <span class="string">'string'</span>, <span class="string">'char'</span>}, {<span class="string">'nonempty'</span>});
-0019 <span class="keyword">if</span> iscell(filename)
-0020     assert(iscellstr(filename), <span class="string">'filename cell array must consist of strings'</span>);
+0017 validateattributes(nwb, {<span class="string">'NwbFile'</span>}, {<span class="string">'nonempty'</span>});
+0018 validateattributes(filenames, {<span class="string">'cell'</span>, <span class="string">'string'</span>, <span class="string">'char'</span>}, {<span class="string">'nonempty'</span>});
+0019 <span class="keyword">if</span> iscell(filenames)
+0020     assert(iscellstr(filenames), <span class="string">'filename cell array must consist of strings'</span>);
 0021 <span class="keyword">end</span>
 0022 <span class="keyword">if</span> ~isscalar(nwb)
-0023     assert(~ischar(filename) &amp;&amp; length(filename) == length(nwb), <span class="keyword">...</span>
-0024         <span class="string">'nwbfile and filename array dimensions must match.'</span>);
+0023     assert(~ischar(filenames) &amp;&amp; length(filenames) == length(nwb), <span class="keyword">...</span>
+0024         <span class="string">'NwbFile and filename array dimensions must match.'</span>);
 0025 <span class="keyword">end</span>
 0026 
 0027 <span class="keyword">for</span> i=1:length(nwb)
-0028     <span class="keyword">if</span> iscellstr(filename)
-0029         fn = filename{i};
-0030     <span class="keyword">elseif</span> isstring(filename)
-0031         fn = filename(i);
+0028     <span class="keyword">if</span> iscellstr(filenames)
+0029         filename = filenames{i};
+0030     <span class="keyword">elseif</span> isstring(filenames)
+0031         filename = filenames(i);
 0032     <span class="keyword">else</span>
-0033         fn = filename;
+0033         filename = filenames;
 0034     <span class="keyword">end</span>
-0035     export(nwb(i), fn);
+0035     export(nwb(i), filename);
 0036 <span class="keyword">end</span>
 0037 <span class="keyword">end</span></pre></div>
-<hr><address>Generated on Tue 06-Aug-2019 16:41:23 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+<hr><address>Generated on Fri 09-Aug-2019 14:27:49 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
 </body>
 </html>

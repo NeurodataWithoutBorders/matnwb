@@ -44,7 +44,7 @@ source_file = [mfilename() '.m'];
 
 %% General Information
 
-nwb = nwbfile();
+nwb = NwbFile();
 nwb.identifier = identifier;
 nwb.general_source_script = source_script;
 nwb.general_source_script_file_name = source_file;

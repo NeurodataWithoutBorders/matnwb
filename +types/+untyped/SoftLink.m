@@ -20,8 +20,8 @@ classdef SoftLink < handle
         end
         
         function refobj = deref(obj, nwb)
-            if ~isa(nwb, 'nwbfile')
-                error('Argument `nwb` must be a valid `nwbfile`');
+            if ~isa(nwb, 'NwbFile')
+                error('Argument `nwb` must be a valid `NwbFile`');
             end
             refobj = io.resolvePath(nwb, obj.path);
         end

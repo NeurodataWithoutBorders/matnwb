@@ -1,59 +1,54 @@
-function parsed = parseGroup(filename, info, blacklist)
+function parsed = parseGroup(filename, info, Blacklist)
 % NOTE, group name is in path format so we need to parse that out.
 % parsed is either a containers.Map containing properties mapped to values OR a
 % typed value
 links = containers.Map;
 refs = containers.Map;
 [~, root] = io.pathParts(info.Name);
-[attrprops, typename] = io.parseAttributes(filename, info.Attributes, info.Name);
+[attributeProperties, typename] =...
+    io.parseAttributes(filename, info.Attributes, info.Name, Blacklist);
 
 %parse datasets
-dsprops = containers.Map;
+datasetProperties = containers.Map;
 for i=1:length(info.Datasets)
-    ds_info = info.Datasets(i);
-    if strcmp(info.Name, '/')
-        fp = ['/' ds_info.Name];
+    datasetInfo = info.Datasets(i);
+    fullPath = [info.Name '/' datasetInfo.Name];
+    dataset = io.parseDataset(filename, datasetInfo, fullPath, Blacklist);
+    if isa(dataset, 'containers.Map')
+        datasetProperties = [datasetProperties; dataset];
     else
-        fp = [info.Name '/' ds_info.Name];
-    end
-    ds = io.parseDataset(filename, ds_info, fp);
-    if isa(ds, 'containers.Map')
-        dsprops = [dsprops; ds];
-    else
-        dsprops(ds_info.Name) = ds;
+        datasetProperties(datasetInfo.Name) = dataset;
     end
 end
 
 %parse subgroups
-gprops = containers.Map;
-
-%handle blacklist (which should be a Group)
+groupProperties = containers.Map;
 for i=1:length(info.Groups)
     group = info.Groups(i);
-    if strcmp(blacklist, group.Name)
+    if any(strcmp(group.Name, Blacklist.groups))
         continue;
     end
     [~, gname] = io.pathParts(group.Name);
-    subg = io.parseGroup(filename, group, blacklist);
-    gprops(gname) = subg;
+    subg = io.parseGroup(filename, group, Blacklist);
+    groupProperties(gname) = subg;
 end
 
 %create link stub
-lprops = containers.Map;
+linkProperties = containers.Map;
 for i=1:length(info.Links)
-    l = info.Links(i);
-    fpname = [info.Name '/' l.Name];
-    switch l.Type
+    link = info.Links(i);
+    switch link.Type
         case 'soft link'
-            lnk = types.untyped.SoftLink(l.Value{1});
+            lnk = types.untyped.SoftLink(link.Value{1});
         otherwise %todo assuming external link here
-            lnk = types.untyped.ExternalLink(l.Value{:});
+            lnk = types.untyped.ExternalLink(link.Value{:});
     end
-    lprops(l.Name) = lnk;
+    linkProperties(link.Name) = lnk;
 end
 
 if isempty(typename)
-    parsed = types.untyped.Set([attrprops; dsprops; gprops; lprops]);
+    parsed = types.untyped.Set(...
+        [attributeProperties; datasetProperties; groupProperties; linkProperties]);
     
     if isempty(parsed)
         %special case where a directory is simply empty.  Return itself but
@@ -61,16 +56,17 @@ if isempty(typename)
         parsed(root) = [];
     end
 else
-    if gprops.Count > 0
+    if groupProperties.Count > 0
         %elide group properties
-        elided_gprops = elide(gprops, properties(typename));
-        gprops = [gprops; elided_gprops];
+        elided_gprops = elide(groupProperties, properties(typename));
+        groupProperties = [groupProperties; elided_gprops];
     end
     %construct as kwargs and instantiate object
-    kwargs = io.map2kwargs([attrprops; dsprops; gprops; lprops]);
+    kwargs = io.map2kwargs(...
+        [attributeProperties; datasetProperties; groupProperties; linkProperties]);
     if isempty(root)
         %we are root
-        parsed = nwbfile(kwargs{:});
+        parsed = NwbFile(kwargs{:});
         return;
     end
     parsed = eval([typename '(kwargs{:})']);

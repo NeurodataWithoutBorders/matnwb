@@ -85,7 +85,7 @@ else
     if any(strcmpi(type, {'single' 'double' 'logical' 'numeric'})) ||...
             startsWith(type, {'int' 'uint' 'float'})
         if isa(val, 'types.untyped.SoftLink')
-            %derefing through softlink would require writing and/or the root nwbfile object
+            %derefing through softlink would require writing and/or the root NwbFile object
             return;
         end
         
@@ -111,7 +111,7 @@ else
             end
         end
     elseif strcmp(type, 'isodatetime')
-        addpath(fullfile(fileparts(which('nwbfile')), 'external_packages', 'datenum8601'));
+        addpath(fullfile(fileparts(which('NwbFile')), 'external_packages', 'datenum8601'));
         assert(ischar(val) || iscellstr(val) || isdatetime(val) ||...
             (iscell(val) && all(cellfun('isclass', val, 'datetime'))), errid, errmsg);
         if ischar(val) || iscellstr(val)

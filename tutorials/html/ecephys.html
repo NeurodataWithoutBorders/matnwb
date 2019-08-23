@@ -70,12 +70,12 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 contact: ben.dichter@gmail.com
 last edited: March 5, 2019</pre><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">NWB file</a></li><li><a href="#3">Subject</a></li><li><a href="#4">Data dependencies</a></li><li><a href="#6">Electrode Table</a></li><li><a href="#7">Multielectrode recording</a></li><li><a href="#10">LFP</a></li><li><a href="#11">Trials</a></li><li><a href="#13">DynamicTables</a></li><li><a href="#14">Side note about electrodes</a></li><li><a href="#15">Processing Modules</a></li><li><a href="#18">Writing the file</a></li><li><a href="#19">Reading the file</a></li><li><a href="#20">Reading data</a></li><li><a href="#24">Reading indexed column (e.g. spike times)</a></li><li><a href="#25">External Links</a></li></ul></div><h2 id="1">NWB file</h2><p>All contents get added to the NWB file, which is created with the following command</p><pre class="codeinput">session_start_time = datetime(2018, 3, 1, 12, 0, 0, <span class="string">'TimeZone'</span>, <span class="string">'local'</span>);
 
-nwb = nwbfile( <span class="keyword">...</span>
+nwb = NwbFile( <span class="keyword">...</span>
     <span class="string">'session_description'</span>, <span class="string">'a test NWB File'</span>, <span class="keyword">...</span>
     <span class="string">'identifier'</span>, <span class="string">'mouse004_day4'</span>, <span class="keyword">...</span>
     <span class="string">'session_start_time'</span>, session_start_time);
-</pre><p>You can check the contents by displaying the nwbfile object</p><pre class="codeinput">disp(nwb);
-</pre><pre class="codeoutput">  nwbfile with properties:
+</pre><p>You can check the contents by displaying the NwbFile object</p><pre class="codeinput">disp(nwb);
+</pre><pre class="codeoutput">  NwbFile with properties:
 
                                 nwb_version: '2.0b'
                                 acquisition: [1&times;1 types.untyped.Set]
@@ -316,7 +316,7 @@ plot(tt, squeeze(trial_data(:, 1, :)))
 xlabel(<span class="string">'time (seconds)'</span>)
 ylabel([<span class="string">'data ('</span> timeseries.data_unit <span class="string">')'</span>])
 </pre><img vspace="5" hspace="5" src="ecephys_01.png" alt=""> <h2 id="24">Reading indexed column (e.g. spike times)</h2><pre class="codeinput">data = util.read_indexed_column(nwb.units.spike_times_index, nwb.units.spike_times, 2);
-</pre><h2 id="25">External Links</h2><p>NWB allows you to link to datasets within another file through HDF5 <tt>ExternalLink</tt> s. This is useful for separating out large datasets that are not always needed. It also allows you to store data once, and access it across many NWB files, so it is useful for storing subject-related data that is the same for all sessions. Here is an example of creating a link from the Subject object from the <tt>ecephys_tutorial.nwb</tt> file we just created in a new file.</p><pre class="codeinput">nwb3 = nwbfile(<span class="string">'session_description'</span>, <span class="string">'a test NWB File'</span>, <span class="keyword">...</span>
+</pre><h2 id="25">External Links</h2><p>NWB allows you to link to datasets within another file through HDF5 <tt>ExternalLink</tt> s. This is useful for separating out large datasets that are not always needed. It also allows you to store data once, and access it across many NWB files, so it is useful for storing subject-related data that is the same for all sessions. Here is an example of creating a link from the Subject object from the <tt>ecephys_tutorial.nwb</tt> file we just created in a new file.</p><pre class="codeinput">nwb3 = NwbFile(<span class="string">'session_description'</span>, <span class="string">'a test NWB File'</span>, <span class="keyword">...</span>
     <span class="string">'identifier'</span>, <span class="string">'mouse004_day4'</span>, <span class="keyword">...</span>
     <span class="string">'session_start_time'</span>, session_start_time);
 nwb3.general_subject = types.untyped.ExternalLink(<span class="string">'ecephys_tutorial.nwb'</span>,<span class="keyword">...</span>
@@ -339,13 +339,13 @@ nwbExport(nwb3, <span class="string">'link_test.nwb'</span>)
 
 session_start_time = datetime(2018, 3, 1, 12, 0, 0, 'TimeZone', 'local');
 
-nwb = nwbfile( ...
+nwb = NwbFile( ...
     'session_description', 'a test NWB File', ...
     'identifier', 'mouse004_day4', ...
     'session_start_time', session_start_time);
 
 %%
-% You can check the contents by displaying the nwbfile object
+% You can check the contents by displaying the NwbFile object
 disp(nwb);
 
 %% Subject
@@ -669,7 +669,7 @@ data = util.read_indexed_column(nwb.units.spike_times_index, nwb.units.spike_tim
 % link from the Subject object from the |ecephys_tutorial.nwb| file we just
 % created in a new file.
  
-nwb3 = nwbfile('session_description', 'a test NWB File', ...
+nwb3 = NwbFile('session_description', 'a test NWB File', ...
     'identifier', 'mouse004_day4', ...
     'session_start_time', session_start_time);
 nwb3.general_subject = types.untyped.ExternalLink('ecephys_tutorial.nwb',...
