@@ -1,4 +1,6 @@
 function checkUnset(obj, argin)
+% CHECKUNSET used for validating keyword arguments for nested property types.
+% note related to types.util.checkSet.
 props = properties(obj);
 anonNames = {};
 for i=1:length(props)
@@ -10,8 +12,7 @@ for i=1:length(props)
     end
 end
 dropped = setdiff(argin, [props;anonNames]);
-if ~isempty(dropped)
-    error('Properties {%s} are not valid property names.',...
+assert(isempty(dropped),...
+    'Propertyes {%s} are not valid property names.',...
         misc.cellPrettyPrint(dropped));
-end
 end

@@ -5,12 +5,12 @@ end
 
 names = fieldnames(namedprops);
 if any(strcmp(name, names))
-    types.util.checkDtype([pname '.' name], namedprops.(name), val);
+    types.util.checkDatatype([pname '.' name], namedprops.(name), val);
 else
     for i=1:length(constrained)
         allowedType = constrained{i};
         try
-            types.util.checkDtype([pname '.' name], allowedType, val);
+            types.util.coerce_datatype([pname '.' name], allowedType, val);
             return;
         catch ME
             if ~strcmp(ME.identifier, 'MATNWB:INVALIDTYPE')

@@ -204,9 +204,14 @@ if isstruct(type)
         vprops{i} = ['vprops.' nm ' = ''' typeval ''';'];
     end
     fdvstr = [fdvstr, newline, strjoin(vprops, newline), newline, ...
-        'val = types.util.checkDtype(''' name ''', vprops, val);'];
+        'types.util.checkDatatype(''' name ''', vprops, val);',...
+        newline, 'val = types.util.coerceType(''' name ''', vprops, val);'];
 else
     fdvstr = '';
+    if strcmp(type, 'any')
+        return;
+    end
+    
     if isa(type, 'java.util.HashMap')
         %ref
         ref_t = type.get('reftype');
@@ -221,13 +226,12 @@ else
         %correct target type
         tt = type.get('target_type');
         fdvstr = ['% Reference to type `' tt '`' newline];
-    elseif strcmp(type, 'any')
-        fdvstr = '';
-        return;
     else
         ts = type;
     end
     fdvstr = [fdvstr ...
-        'val = types.util.checkDtype(''' name ''', ''' ts ''', val);'];
+        'types.util.checkDatatype(''' name ''', ''' ts ''', val);',...
+        newline,...
+        'val = types.utile.coerceType(''' name ''', ''' ts ''', val);'];
 end
 end
