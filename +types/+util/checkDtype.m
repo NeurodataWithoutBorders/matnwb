@@ -160,7 +160,7 @@ else
         end
     elseif strcmp(type, 'char')
         assert(ischar(val) || iscellstr(val), errid, errmsg);
-    else%class, ref, or link
+    else %class, ref, or link
         
         noncell = false;
         if ~iscell(val)

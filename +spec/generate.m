@@ -27,7 +27,9 @@ namespacePath = 'namespaces';
 if 7 ~= exist(namespacePath, 'dir')
     mkdir(namespacePath);
 end
-save(fullfile(namespacePath,[extSchema.name '.mat']), '-struct', 'extSchema');
+
+fullPath = fullfile(namespacePath, [extSchema.name '.mat']);
+save(fullPath, '-struct', 'extSchema');
 
 %check/load dependency namespaces
 extmap = schemes.loadNamespace(extSchema.name);
