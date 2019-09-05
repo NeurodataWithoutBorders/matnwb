@@ -149,8 +149,8 @@ classdef Group < handle
                 isempty(obj.attributes);
         end
         
-        function props = getProps(obj)
-            props = containers.Map;
+        function Prop_Map = getProps(obj)
+            Prop_Map = containers.Map;
             %typed + constrained
             %should never happen
             
@@ -164,33 +164,34 @@ classdef Group < handle
                 % if constraint, add its type and continue
                 % otherwise, call getprops and assign to its name.
                 %if untyped, assign data to its dtype and process attributes
-                sub = obj.datasets(i);
-                if isempty(sub.type)
-                    if ~isempty(sub.attributes)
-                        subattrnames = {sub.attributes.name};
-                        newSubNames = strcat(sub.name, '_', subattrnames);
-                        props = [props;
-                            containers.Map(newSubNames, num2cell(sub.attributes))];
+                SubData = obj.datasets(i);
+                if isempty(SubData.type)
+                    if ~isempty(SubData.attributes)
+                        attr_names = {SubData.attributes.name};
+                        attr_names = strcat(SubData.name, '_', attr_names);
+                        Sub_Attribute_Map =...
+                            containers.Map(attr_names, num2cell(SubData.attributes));
+                        Prop_Map = [Prop_Map; Sub_Attribute_Map];
                     end
-                    props(sub.name) = sub;
+                    Prop_Map(SubData.name) = SubData;
                 else
-                    if isempty(sub.name)
-                        props(lower(sub.type)) = sub;
+                    if isempty(SubData.name)
+                        Prop_Map(lower(SubData.type)) = SubData;
                     else
-                        props(sub.name) = sub;
+                        Prop_Map(SubData.name) = SubData;
                     end
                 end
             end
             
             %attributes
             if ~isempty(obj.attributes)
-                props = [props;...
+                Prop_Map = [Prop_Map;...
                     containers.Map({obj.attributes.name}, num2cell(obj.attributes))];
             end
             
             %links
             if ~isempty(obj.links)
-                props = [props;...
+                Prop_Map = [Prop_Map;...
                     containers.Map({obj.links.name}, num2cell(obj.links))];
             end
             
@@ -202,47 +203,56 @@ classdef Group < handle
             % parse props and return;
             
             %subgroups
-            for i=1:length(obj.subgroups)
+            for i = 1:length(obj.subgroups)
                 %if typed, check if constraint
                 % if constraint, add its type and continue
                 % otherwise, call getprops and assign to its name.
                 %if untyped, check if elided
                 % if elided, add to prefix and check all subgroups, attributes and datasets.
                 % otherwise, call getprops and assign to its name.
-                sub = obj.subgroups(i);
-                if isempty(sub.type)
-                    if sub.elide
-                        subprops = sub.getProps;
-                        epkeys = keys(subprops);
-                        for j=1:length(epkeys)
-                            epk = epkeys{j};
-                            epval = subprops(epk);
-                            % hoist constrained sets to the current 
-                            % subname.
-                            if (isa(epval, 'file.Group') ||...
-                                    isa(epval, 'file.Dataset')) &&...
-                                    strcmpi(epk, epval.type) &&...
-                                    epval.isConstrainedSet
-                                propname = sub.name;
-                            else
-                                propname = [sub.name '_' epk];
-                            end
-                            if isKey(props, propname)
-                                keyboard;
-                                props(propname) = {props(propname); subprops(epk)};
-                            else
-                                props(propname) = subprops(epk);
-                            end
-                        end
+                Sub_Group = obj.subgroups(i);
+                group_name = Sub_Group.name;
+                group_type = Sub_Group.type;
+                if ~isempty(group_type)
+                    if isempty(group_name)
+                        Prop_Map(lower(group_type)) = Sub_Group;
                     else
-                        props(sub.name) = sub;
+                        Prop_Map(group_name) = Sub_Group;
                     end
-                else
-                    if isempty(sub.name)
-                        props(lower(sub.type)) = sub;
+                    continue;
+                end
+                
+                if ~Sub_Group.elide
+                    Prop_Map(group_name) = Sub_Group;
+                    continue;
+                end
+                
+                Descendant_Map = Sub_Group.getProps;
+                descendant_names = keys(Descendant_Map);
+                for sub_group_i = 1:length(descendant_names)
+                    descendant_name = descendant_names{sub_group_i};
+                    Descendant = Descendant_Map(descendant_name);
+                    % hoist constrained sets to the current
+                    % subname.
+                    can_be_constrained =...
+                        isa(Descendant, 'file.Group')...
+                        || isa(Descendant, 'file.Dataset');
+                    is_constrained = can_be_constrained...
+                        && strcmpi(descendant_name, Descendant.type)...
+                        && Descendant.isConstrainedSet;
+                    if is_constrained
+                        prop_name = group_name;
                     else
-                        props(sub.name) = sub;
+                        prop_name = [group_name '_' descendant_name];
                     end
+                    
+                    if isKey(Prop_Map, prop_name)
+                        warning(['Generic group `%s` is currently unsupported '...
+                            'in MatNwb and is ignored.'], prop_name);
+                        continue;
+                    end
+                    
+                    Prop_Map(prop_name) = Descendant_Map(descendant_name);
                 end
             end
         end
