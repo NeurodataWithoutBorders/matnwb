@@ -34,4 +34,3 @@ save(cachePath, '-struct', 'NamespaceInfo');
 %write files
 file.writeNamespace(NamespaceInfo.name);
 end
-

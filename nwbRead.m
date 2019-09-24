@@ -16,48 +16,40 @@ function nwb = nwbRead(filename, varargin)
 %    nwb=nwbRead('data.nwb');
 %
 %  See also GENERATECORE, GENERATEEXTENSION, NWBFILE, NWBEXPORT
-ignorecache = ~isempty(varargin) && ischar(varargin{1}) &&...
+ignoreCache = ~isempty(varargin) && ischar(varargin{1}) &&...
     strcmp('ignorecache', varargin{1});
-if ischar(filename)
-    validateattributes(filename, {'char'}, {'scalartext', 'nonempty'});
-    info = h5info(filename);
-    try
-        %check for .specloc
-        fid = H5F.open(filename);
-        attr_id = H5A.open(fid, '.specloc');
-        ref_data = H5A.read(attr_id);
-        blacklist = H5R.get_name(attr_id, 'H5R_OBJECT', ref_data);
-        if ~ignorecache
-            generateSpec(fid, h5info(filename, blacklist));
-            rehash(); %required if we want parseGroup to read the right files.
-        end
-        info.Attributes(strcmp('.specloc', {info.Attributes.Name})) = [];
-        H5A.close(attr_id);
-        H5F.close(fid);
-    catch ME
-        if ~strcmp(ME.identifier, 'MATLAB:imagesci:hdf5lib:libraryError')
-            rethrow(ME);
-        end
-        blacklist = '';
+Blacklist = struct(...
+    'attributes', {{'.specloc', 'object_id'}},...
+    'groups', {{}});
+validateattributes(filename, {'char', 'string'}, {'scalartext', 'nonempty'});
+
+if ~ignoreCache
+    specLocation = checkEmbeddedSpec(filename);
+    if ~isempty(specLocation)
+        Blacklist.groups{end+1} = specLocation;
     end
-    nwb = io.parseGroup(filename, info, blacklist);
-    return;
-elseif isstring(filename)
-    validateattributes(filename, {'string'}, {'nonempty'});
-else
-    validateattributes(filename, {'cell'}, {'nonempty'});
-    assert(iscellstr(filename));
 end
-nwb = NwbFile.empty(length(filename), 0);
-isStringArray = isstring(filename);
-for i=1:length(filename)
-    if isStringArray
-        fnm = filename(i);
-    else
-        fnm = filename{i};
+
+nwb = io.parseGroup(filename, h5info(filename), Blacklist);
+end
+
+function specLocation = checkEmbeddedSpec(filename)
+specLocation = '';
+try
+    %check for .specloc
+    fid = H5F.open(filename);
+    attributeId = H5A.open(fid, '.specloc');
+    referenceRawData = H5A.read(attributeId);
+    specLocation = H5R.get_name(attributeId, 'H5R_OBJECT', referenceRawData);
+    generateSpec(fid, h5info(filename, specLocation));
+    rehash(); %required if we want parseGroup to read the right files.
+    H5A.close(attributeId);
+    H5F.close(fid);
+catch ME
+    if ~strcmp(ME.identifier, 'MATLAB:imagesci:hdf5lib:libraryError')
+        rethrow(ME);
     end
-    info = h5info(fnm);
-    nwb(i) = io.parseGroup(fnm, info);
+    % attribute doesn't exist which is fine.
 end
 end
 

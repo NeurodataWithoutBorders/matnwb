@@ -66,6 +66,10 @@ classdef MetaClass < handle
                 io.writeAttribute(fid, namespacePath, namespace);
                 io.writeAttribute(fid, neuroTypePath, classtype);
             end
+            
+            % UUID
+            uuid = char(java.util.UUID.randomUUID().toString());
+            io.writeAttribute(fid, [fullpath '/object_id'], 'char', uuid, false);
         end
         
         function obj = loadAll(obj)

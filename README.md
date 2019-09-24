@@ -28,7 +28,17 @@ This package reads and writes NWB:N 2.0 files and does not support older formats
 
 ## Setup
 
-From the Matlab command line, generate code from a copy of the NWB schema.  The command also takes variable arguments from any extensions.
+#### Step 1: Download MatNWB
+
+Download the current release of MatNWB from https://github.com/NeurodataWithoutBorders/matnwb/releases or check out the latest development version via ``git clone https://github.com/NeurodataWithoutBorders/matnwb.git``
+
+#### Step 2: Download the NWB Schema
+
+Download the current release of the NWB format schema from https://github.com/NeurodataWithoutBorders/nwb-schema/releases or check out the latest development via ``git clone https://github.com/NeurodataWithoutBorders/nwb-schema.git``
+
+#### Step 3: Generate the API
+
+From the Matlab command line, generate code from the copy of the NWB schema.  The command also takes variable arguments from any extensions.
 
 ```matlab
 generateCore(); % generate core namespace located in the repository.
