@@ -22,8 +22,7 @@ for iCache = 1:length(Caches)
     JsonMap = containers.Map({'namespace'}, {jsonencode(Cache.namespace)});
     for iScheme = 1:length(Cache.filenames)
         filename = Cache.filenames{iScheme};
-        [~, schemeName, ~] = fileparts(filename);
-        JsonMap(schemeName) = jsonencode(Cache.schema(filename));
+        JsonMap(filename) = jsonencode(Cache.schema(filename));
     end
     
     JsonData(iCache).version = Cache.version;
@@ -37,6 +36,9 @@ Namespace = Namespace{1};
 Schema = Namespace('schema');
 for iScheme = 1:length(Schema)
     Scheme = Schema{iScheme};
-    [~, Scheme('source'), ~] = fileparts(Scheme('source'));
+    source = Scheme('source');
+    if endsWith(source, '.yaml')
+        [~, Scheme('source'), ~] = fileparts(source);
+    end
 end
 end

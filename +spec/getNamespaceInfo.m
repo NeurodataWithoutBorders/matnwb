@@ -21,7 +21,11 @@ Namespace = struct(...
 for iSchemaSource=1:length(schema)
     schemaReference = schema{iSchemaSource};
     if isKey(schemaReference, 'source')
-        Namespace.filenames{iSchemaSource} = schemaReference('source');
+        sourceReference = schemaReference('source');
+        if endsWith(sourceReference, '.yaml')
+            [~, sourceReference, ~] = fileparts(sourceReference);
+        end
+        Namespace.filenames{iSchemaSource} = sourceReference;
     elseif isKey(schemaReference, 'namespace')
         Namespace.dependencies{iSchemaSource} = schemaReference('namespace');
     else

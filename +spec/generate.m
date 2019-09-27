@@ -10,12 +10,10 @@ NamespaceInfo.namespace = namespace;
 if ischar(schemaSource)
     schema = containers.Map;
     for i=1:length(NamespaceInfo.filenames)
-        filename = NamespaceInfo.filenames{i};
-        if ~endsWith(filename, '.yaml')
-            filename = [filename '.yaml'];
-        end
+        filenameStub = NamespaceInfo.filenames{i};
+        filename = [filenameStub '.yaml'];
         fid = fopen(fullfile(schemaSource, filename));
-        schema(filename) = fread(fid, '*char') .';
+        schema(filenameStub) = fread(fid, '*char') .';
         fclose(fid);
     end
     schema = spec.getSourceInfo(schema);
