@@ -69,7 +69,7 @@ classdef MetaClass < handle
             
             % UUID
             uuid = char(java.util.UUID.randomUUID().toString());
-            io.writeAttribute(fid, [fullpath '/object_id'], 'char', uuid, false);
+            io.writeAttribute(fid, [fullpath '/object_id'], uuid);
         end
         
         function obj = loadAll(obj)
