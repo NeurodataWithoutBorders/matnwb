@@ -3,7 +3,7 @@
 % 
 %  author: Ben Dichter
 %  contact: ben.dichter@gmail.com
-%  last edited: March 5, 2019
+%  last edited: Sept 27, 2019
 
 %% NWB file
 % All contents get added to the NWB file, which is created with the
@@ -321,7 +321,7 @@ conditions = containers.Map({'correct', 'start_time'}, {0, @(x)x>0.5});
 timeseries = nwb2.acquisition.get('multielectrode_recording');
 
 [trial_data, tt] = util.loadTrialAlignedTimeSeriesData(nwb2, ...
-    timeseries, window, conditions);
+    timeseries, window, 'start_time', conditions);
 
 % plot data from the first electrode for that one
 plot(tt, squeeze(trial_data(:, 1, :)))

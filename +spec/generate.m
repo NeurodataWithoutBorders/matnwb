@@ -1,40 +1,34 @@
-function generate(namespace_map, schema_map)
+function generate(namespaceText, schemaSource)
 %GENERATE Generates MATLAB classes from namespace mappings.
 % optionally, include schema mapping as second argument OR path of specs
-
-namespace = spec.getNamespaceInfo(namespace_map);
-if ischar(schema_map)
+% schemaSource is either a path to a directory where the source is
+% OR a containers.Map of filenames
+Schema = spec.loadSchemaObject();
+namespace = spec.schema2matlab(Schema.read(namespaceText));
+NamespaceInfo = spec.getNamespaceInfo(namespace);
+NamespaceInfo.namespace = namespace;
+if ischar(schemaSource)
     schema = containers.Map;
-    for i=1:length(namespace.filenames)
-        filename = namespace.filenames{i};
-        if ~endsWith(filename, '.yaml')
-            filename = [filename '.yaml'];
-        end
-        fid = fopen(fullfile(schema_map, filename));
-        schema(filename) = fread(fid, '*char') .';
+    for i=1:length(NamespaceInfo.filenames)
+        filenameStub = NamespaceInfo.filenames{i};
+        filename = [filenameStub '.yaml'];
+        fid = fopen(fullfile(schemaSource, filename));
+        schema(filenameStub) = fread(fid, '*char') .';
         fclose(fid);
     end
     schema = spec.getSourceInfo(schema);
-else
-    schema = spec.getSourceInfo(schema_map);
+else % map of schemas with their locations
+    schema = spec.getSourceInfo(schemaSource);
 end
 
-extSchema = struct('name', namespace.name,...
-    'schema', schema,...
-    'dependencies', {namespace.dependencies},...
-    'version', namespace.version);
-namespacePath = 'namespaces';
+NamespaceInfo.schema = schema;
+namespacePath = fullfile(misc.getWorkspace(), 'namespaces');
 if 7 ~= exist(namespacePath, 'dir')
     mkdir(namespacePath);
 end
-
-fullPath = fullfile(namespacePath, [extSchema.name '.mat']);
-save(fullPath, '-struct', 'extSchema');
-
-%check/load dependency namespaces
-extmap = schemes.loadNamespace(extSchema.name);
+cachePath = fullfile(namespacePath, [NamespaceInfo.name '.mat']);
+save(cachePath, '-struct', 'NamespaceInfo');
 
 %write files
-file.writeNamespace(extmap(extSchema.name));
+file.writeNamespace(NamespaceInfo.name);
 end
-

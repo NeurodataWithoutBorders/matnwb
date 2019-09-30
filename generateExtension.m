@@ -19,15 +19,12 @@ function generateExtension(source)
 %   See also GENERATECORE
 validateattributes(source, {'char', 'string'}, {'scalartext'});
 
-%find jar from source and generate Schema
-schema = spec.loadSchema();
-
 [localpath, ~, ~] = fileparts(source);
 assert(2 == exist(source, 'file'),...
     'MATNWB:FILE', 'Path to file `%s` could not be found.', source);
 fid = fopen(source);
-namespace_map = schema.read(fread(fid, '*char') .');
+namespaceText = fread(fid, '*char') .';
 fclose(fid);
 
-spec.generate(namespace_map, localpath);
+spec.generate(namespaceText, localpath);
 end

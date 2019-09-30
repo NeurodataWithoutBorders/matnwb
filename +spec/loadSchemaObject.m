@@ -1,6 +1,6 @@
-function schema = loadSchema()
-%LOADSCHEMA Summary of this function goes here
-%   Detailed explanation goes here
+function schema = loadSchemaObject()
+%LOADSCHEMAOBJECT Loads YAML reader from jar
+%   Returns a Java object which can read() yaml text
 try
     schema = Schema();
 catch
@@ -10,4 +10,3 @@ catch
     schema = Schema();
 end
 end
-

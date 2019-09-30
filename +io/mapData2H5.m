@@ -1,13 +1,15 @@
-function [tid, sid, data] = mapData2H5(fid, type, data, forceArray)
+function [tid, sid, data] = mapData2H5(fid, data, varargin)
 %MAPDATA2H5 Convert MATLAB type specifier and data to HDF5 compatible data
 %   Given base file_id, type string and data value, returns HDF5 type id, space id,
 %   and properly converted data
 
-if nargin < 4
-    forceArray = false;
+forceArray = false;
+if ~isempty(varargin)
+    assert(iscellstr(varargin), 'options must be character arrays.');
+    forceArray = any(strcmp(varargin, 'forceArray'));
 end
 
-tid = io.getBaseType(type);
+tid = io.getBaseType(class(data));
 
 %determine space size
 if ischar(data)
@@ -31,7 +33,7 @@ else
 end
 
 %% Do Data Conversions
-switch type
+switch class(data)
     case {'types.untyped.RegionView' 'types.untyped.ObjectView'}
         %will throw errors if refdata DNE.  Caught at NWBData level.
         data = io.getRefData(fid, data);

@@ -2,6 +2,12 @@ function parsed = parseGroup(filename, info, Blacklist)
 % NOTE, group name is in path format so we need to parse that out.
 % parsed is either a containers.Map containing properties mapped to values OR a
 % typed value
+if nargin < 3
+    Blacklist = struct(...
+        'attributes', {{'.specloc', 'object_id'}},...
+        'groups', {{}});
+end
+
 links = containers.Map;
 refs = containers.Map;
 [~, root] = io.pathParts(info.Name);
