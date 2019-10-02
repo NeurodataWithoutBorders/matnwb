@@ -176,7 +176,7 @@ classdef Set < handle & matlab.mixin.CustomDisplay
                 if startsWith(class(v), 'types.')
                     refs = v.export(fid, propfp, refs);
                 else
-                    refs = io.writeDataset(fid, propfp, class(v), v, refs);
+                    refs = io.writeDataset(fid, propfp, v, refs);
                 end
             end
         end

@@ -1,7 +1,7 @@
-function writeDataset(fid, fullpath, type, data, varargin)
+function writeDataset(fid, fullpath, data, varargin)
 assert(isempty(varargin) || iscellstr(varargin),...
     'options should be character arrays.');
-[tid, sid, data] = io.mapData2H5(fid, type, data, varargin{:});
+[tid, sid, data] = io.mapData2H5(fid, data, varargin{:});
 [~, dims, ~] = H5S.get_simple_extent_dims(sid);
 try
     dcpl = H5P.create('H5P_DATASET_CREATE');

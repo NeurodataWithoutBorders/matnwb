@@ -20,10 +20,10 @@ classdef Group < handle
     
     methods
         function obj = Group(source)
-            obj.doc = [];
+            obj.doc = '';
             obj.name = '';
             obj.canRename = true;
-            obj.type = [];
+            obj.type = '';
             obj.isConstrainedSet = false;
             obj.required = true;
             obj.scalar = true;
@@ -41,29 +41,29 @@ classdef Group < handle
                 return;
             end
             
-            obj.doc = char(source.get('doc'));
+            docKey = 'doc';
+            if isKey(source, docKey)
+                obj.doc = source(docKey);
+            end
             
-            name = char(source.get('name'));
-            def_name = char(source.get('default_name'));
-            if isempty(name)
-                obj.name = def_name;
-            else
-                obj.name = name;
+            if isKey(source, 'name')
+                obj.name = source('name');
                 obj.canRename = false;
+            elseif isKey(source, 'default_name')
+                obj.name = source('default_name');
             end
             
-            type = char(source.get('neurodata_type_def'));
-            parent = char(source.get('neurodata_type_inc'));
-            
-            if isempty(type)
-                obj.type = parent;
-            else
+            typeDefKey = 'neurodata_type_def';
+            parentKey = 'neurodata_type_inc';
+            if isKey(source, typeDefKey)
+                obj.type = source(typeDefKey);
                 obj.definesType = true;
-                obj.type = type;
+            elseif isKey(source, parentKey)
+                obj.type = source(parentKey);
             end
             
-            quantity = source.get('quantity');
-            if ~isempty(quantity)
+            if isKey(source, 'quantity')
+                quantity = source('quantity');
                 switch quantity
                     case '?'
                         obj.required = false;
@@ -78,69 +78,57 @@ classdef Group < handle
             end
             
             obj.isConstrainedSet = ~obj.scalar && ~isempty(obj.type);
-            
-            %do attributes
-            attributes = source.get('attributes');
-            if ~isempty(attributes)
-                len = attributes.size();
-                obj.attributes = repmat(file.Attribute, len, 1);
-                attriter = attributes.iterator();
-                for i=1:len
-                    nextattr = file.Attribute(attriter.next());
+
+            if isKey(source, 'attributes')
+                sourceAttributes = source('attributes');
+                obj.attributes = repmat(file.Attribute, length(sourceAttributes), 1);
+                for i=1:length(sourceAttributes)
+                    attribute = file.Attribute(sourceAttributes{i});
                     if isempty(obj.type)
-                        nextattr.dependent = obj.name;
+                        attribute.dependent = obj.name;
                     end
-                    obj.attributes(i) = nextattr;
+                    obj.attributes(i) = attribute;
                 end
             end
             
-            %do datasets
-            datasets = source.get('datasets');
             anonDataCnt = 0;
-            if ~isempty(datasets)
-                len = datasets.size();
-                datasetiter = datasets.iterator();
-                obj.datasets = repmat(file.Dataset, len, 1);
-                for i=1:len
-                    ds = file.Dataset(datasetiter.next());
-                    if isempty(ds.name)
+            if isKey(source, 'datasets')
+                sourceDatasets = source('datasets');
+                obj.datasets = repmat(file.Dataset, length(sourceDatasets), 1);
+                for i=1:length(sourceDatasets)
+                    dataset = file.Dataset(sourceDatasets{i});
+                    if isempty(dataset.name)
                         anonDataCnt = anonDataCnt + 1;
                     end
-                    obj.datasets(i) = ds;
+                    obj.datasets(i) = dataset;
                 end
             end
-            
-            %do groups
-            subgroups = source.get('groups');
+
             anonGroupCnt = 0;
-            if ~isempty(subgroups)
-                len = subgroups.size();
-                subgroupiter = subgroups.iterator();
-                obj.subgroups = repmat(file.Group, len, 1);
-                for i=1:len
-                    sg = file.Group(subgroupiter.next());
-                    if isempty(sg.name)
+            if isKey(source, 'groups')
+                subGroups = source('groups');
+                obj.subgroups = repmat(file.Group, length(subGroups), 1);
+                for i=1:length(subGroups)
+                    group = file.Group(subGroups{i});
+                    if isempty(group.name)
                         anonGroupCnt = anonGroupCnt + 1;
                     end
-                    obj.subgroups(i) = sg;
+                    obj.subgroups(i) = group;
                 end
             end
             
-            %do links
-            links = source.get('links');
-            if ~isempty(links)
-                len = links.size();
-                obj.links = repmat(file.Link, len, 1);
-                liter = links.iterator();
-                for i=1:len
-                    nextlink = liter.next();
-                    obj.links(i) = file.Link(nextlink);
+            if isKey(source, 'links')
+                sourceLinks = source('links');
+                obj.links = repmat(file.Link, length(sourceLinks), 1);
+                for i=1:length(sourceLinks)
+                    obj.links(i) = file.Link(sourceLinks{i});
                 end
             end
             
-            obj.defaultEmpty = (length(obj.datasets) - anonDataCnt) == 0 &&...
-                (length(obj.subgroups) - anonGroupCnt) == 0 &&...
-                isempty(obj.links);
+            allDatasetsAnon = length(obj.datasets) == anonDataCnt;
+            allGroupsAnon = length(obj.subgroups) == anonGroupCnt;
+            hasLinks = ~isempty(obj.links);
+            obj.defaultEmpty = allDatasetsAnon && allGroupsAnon && ~hasLinks;
             
             obj.hasAnonData = anonDataCnt > 0;
             obj.hasAnonGroups = anonGroupCnt > 0;

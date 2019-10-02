@@ -189,9 +189,9 @@ if isstruct(type)
     vprops = cell(length(fnames),1);
     for i=1:length(fnames)
         nm = fnames{i};
-        if isa(type.(nm), 'java.util.HashMap')
+        if isa(type.(nm), 'containers.Map')
             %ref
-            switch type.(nm).get('reftype')
+            switch type.(nm)('reftype')
                 case 'region'
                     rt = 'RegionView';
                 case 'object'
@@ -207,9 +207,9 @@ if isstruct(type)
         'val = types.util.checkDtype(''' name ''', vprops, val);'];
 else
     fdvstr = '';
-    if isa(type, 'java.util.HashMap')
+    if isa(type, 'containers.Map')
         %ref
-        ref_t = type.get('reftype');
+        ref_t = type('reftype');
         switch ref_t
             case 'region'
                 rt = 'RegionView';
@@ -219,7 +219,7 @@ else
         ts = ['types.untyped.' rt];
         %there is no objective way to guarantee a reference refers to the
         %correct target type
-        tt = type.get('target_type');
+        tt = type('target_type');
         fdvstr = ['% Reference to type `' tt '`' newline];
     elseif strcmp(type, 'any')
         fdvstr = '';

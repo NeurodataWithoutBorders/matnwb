@@ -2,15 +2,16 @@ function s = fillProps(props, names, options)
 proplines = cell(size(names));
 for i=1:length(names)
     pnm = names{i};
-    p = props(pnm);
-    if ischar(p)
-        doc = ['property of type ' p];
-    elseif isa(p, 'java.util.HashMap')
-        doc = ['reference to type ' p.get('target_type')];
-    elseif isstruct(p)
-        doc = ['table with properties {' misc.cellPrettyPrint(fieldnames(p)) '}'];
+    property = props(pnm);
+    if ischar(property)
+        doc = ['property of type ' property];
+    elseif isa(property, 'containers.Map')
+        doc = ['reference to type ' property('target_type')];
+    elseif isstruct(property)
+        propertyNames = fieldnames(property);
+        doc = ['table with properties {' misc.cellPrettyPrint(propertyNames) '}'];
     else
-        doc = p.doc;
+        doc = property.doc;
     end
     proplines{i} = [pnm '; % ' doc];
 end

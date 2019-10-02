@@ -1,4 +1,4 @@
-function [tid, sid, data] = mapData2H5(fid, type, data, varargin)
+function [tid, sid, data] = mapData2H5(fid, data, varargin)
 %MAPDATA2H5 Convert MATLAB type specifier and data to HDF5 compatible data
 %   Given base file_id, type string and data value, returns HDF5 type id, space id,
 %   and properly converted data
@@ -6,7 +6,7 @@ function [tid, sid, data] = mapData2H5(fid, type, data, varargin)
 forceArray = any(strcmp('forceArray', varargin));
 forceChunked = any(strcmp('forceChunked', varargin));
 
-tid = io.getBaseType(type);
+tid = io.getBaseType(class(data));
 
 % max size is always unlimited
 unlimited_size = H5ML.get_constant_value('H5S_UNLIMITED');
@@ -44,7 +44,7 @@ else
 end
 
 %% Do Data Conversions
-switch type
+switch class(data)
     case {'types.untyped.RegionView' 'types.untyped.ObjectView'}
         %will throw errors if refdata DNE.  Caught at NWBData level.
         data = io.getRefData(fid, data);
