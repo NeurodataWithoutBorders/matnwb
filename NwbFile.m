@@ -110,8 +110,12 @@ classdef NwbFile < types.core.NWBFile
                 namespaceExists = io.writeGroup(fid, schemaNamespaceLocation);
                 if namespaceExists
                     namespaceGroupId = H5G.open(fid, schemaNamespaceLocation);
-                    removeOtherVersions(namespaceGroupId);
+                    names = getVersionNames(namespaceGroupId);
                     H5G.close(namespaceGroupId);
+                    for iNames = 1:length(names)
+                        H5L.delete(fid, [schemaNamespaceLocation '/' names{iNames}],...
+                            'H5P_DEFAULT');
+                    end
                 end
                 schemaLocation =...
                     strjoin({schemaNamespaceLocation, JsonDatum.version}, '/');
@@ -125,12 +129,12 @@ classdef NwbFile < types.core.NWBFile
                 end
             end
             
-            function removeOtherVersions(namespaceGroupId)
-                H5L.iterate(namespaceGroupId,...
+            function versionNames = getVersionNames(namespaceGroupId)
+                [~, ~, versionNames] = H5L.iterate(namespaceGroupId,...
                     'H5_INDEX_NAME', 'H5_ITER_NATIVE',...
-                    0, @removeGroups, []);
-                function [status, UserData] = removeGroups(~, name, UserData)
-                    H5L.delete(namespaceGroupId, name);
+                    0, @removeGroups, {});
+                function [status, versionNames] = removeGroups(~, name, versionNames)
+                    versionNames{end+1} = name;
                     status = 0;
                 end
             end
