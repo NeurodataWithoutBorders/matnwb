@@ -51,9 +51,9 @@ classdef NwbFile < types.core.NWBFile
             end
             
             try
-                obj.embedSpecifications(fid);
+                obj.embedSpecifications(output_file_id);
                 refs = export@types.core.NWBFile(obj, output_file_id, '/', {});
-                obj.resolveReferences(fid, refs);
+                obj.resolveReferences(output_file_id, refs);
                 H5F.close(output_file_id);
             catch ME
                 obj.file_create_date(end) = [];
@@ -121,7 +121,7 @@ classdef NwbFile < types.core.NWBFile
                 for iScheme = 1:length(schemeNames)
                     name = schemeNames{iScheme};
                     path = [schemaLocation '/' name];
-                    io.writeDataset(fid, path, Json(name), 'forceChunking');
+                    io.writeDataset(fid, path, Json(name));
                 end
             end
             
