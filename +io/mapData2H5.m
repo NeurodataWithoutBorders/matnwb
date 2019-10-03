@@ -4,7 +4,7 @@ function [tid, sid, data] = mapData2H5(fid, data, varargin)
 %   and properly converted data
 
 forceArray = any(strcmp('forceArray', varargin));
-forceChunked = any(strcmp('forceChunked', varargin));
+forceChunked = any(strcmp('forceChunking', varargin));
 
 tid = io.getBaseType(class(data));
 
