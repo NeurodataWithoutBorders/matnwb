@@ -106,8 +106,15 @@ classdef NwbFile < types.core.NWBFile
             JsonData = schemes.exportJson();
             for iJson = 1:length(JsonData)
                 JsonDatum = JsonData(iJson);
+                schemaNamespaceLocation = strjoin({specLocation, JsonDatum.name}, '/');
+                namespaceExists = io.writeGroup(fid, schemaNamespaceLocation);
+                if namespaceExists
+                    namespaceGroupId = H5G.open(fid, schemaNamespaceLocation);
+                    removeOtherVersions(namespaceGroupId);
+                    H5G.close(namespaceGroupId);
+                end
                 schemaLocation =...
-                    strjoin({specLocation, JsonDatum.name, JsonDatum.version}, '/');
+                    strjoin({schemaNamespaceLocation, JsonDatum.version}, '/');
                 io.writeGroup(fid, schemaLocation);
                 Json = JsonDatum.json;
                 schemeNames = keys(Json);
@@ -115,6 +122,16 @@ classdef NwbFile < types.core.NWBFile
                     name = schemeNames{iScheme};
                     path = [schemaLocation '/' name];
                     io.writeDataset(fid, path, Json(name), 'forceChunking');
+                end
+            end
+            
+            function removeOtherVersions(namespaceGroupId)
+                H5L.iterate(namespaceGroupId,...
+                    'H5_INDEX_NAME', 'H5_ITER_NATIVE',...
+                    0, @removeGroups, []);
+                function [status, UserData] = removeGroups(~, name, UserData)
+                    H5L.delete(namespaceGroupId, name);
+                    status = 0;
                 end
             end
         end

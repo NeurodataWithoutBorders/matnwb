@@ -1,4 +1,5 @@
-function writeGroup(fid, fullpath)
+function groupExists = writeGroup(fid, fullpath)
+groupExists = false;
 defaultProplist = 'H5P_DEFAULT';
 
 % validate path
@@ -24,6 +25,7 @@ for i=length(partsIndices):-1:1
         groupId = H5G.open(fid, path, defaultProplist);
         if strcmp(path, fullpath) % fullpath already exists
             H5G.close(groupId);
+            groupExists = true;
             return; 
         end
         deepestGroup = groupId;
