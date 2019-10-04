@@ -68,6 +68,9 @@ classdef ExternalLink < handle
         
         function refs = export(obj, fid, fullpath, refs)
             plist = 'H5P_DEFAULT';
+            if H5L.exists(fid, fullpath, plist)
+                H5L.delete(fid, fullpath, plist);
+            end
             H5L.create_external(obj.filename, obj.path, fid, fullpath, plist, plist);
         end
     end

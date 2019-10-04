@@ -1,4 +1,4 @@
-classdef DynamicTableTest < tests.system.RoundTripTest
+classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
     methods
         function addContainer(~, file)
             start_time = types.core.VectorData(...
@@ -30,6 +30,16 @@ classdef DynamicTableTest < tests.system.RoundTripTest
         
         function c = getContainer(~, file)
             c = file.intervals_trials.vectordata.get('randomvalues');
+        end
+        
+        function appendContainer(testCase, file)
+            container = testCase.getContainer(file);
+            container.data = rand(500, 1); % new random values.
+            file.intervals_trials.colnames{end+1} = 'newcolumn';
+            file.intervals_trials.vectordata.set('newcolumn',...
+                types.core.VectorData(...
+                'description', 'newly added column',...
+                'data', 100:-1:1));
         end
     end
 end
