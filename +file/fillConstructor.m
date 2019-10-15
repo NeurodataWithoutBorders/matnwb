@@ -14,8 +14,9 @@ if ~isempty(txt)
     fcnbody = [fcnbody newline txt];
 end
 
+%     ['if strcmp(class(obj), ''types.', namespace.name, '.', name, ''')'],...
 fcnbody = strjoin({fcnbody,...
-    ['if strcmp(class(obj), ''types.', namespace.name, '.', name, ''')'],...
+    ['if strcmp(class(obj), ''', namespace.name, '.', name, ''')'],...
     '    types.util.checkUnset(obj, unique(varargin(1:2:end)));',...
     'end'}, newline);
 fcstr = strjoin({...
@@ -130,7 +131,8 @@ for i=1:length(names)
             pc_namespace = namespace.getNamespace(prop.type);
             varnames{i} = nm;
             if ~isempty(pc_namespace)
-                typenames{i} = ['types.' pc_namespace.name '.' prop.type];
+%                 typenames{i} = ['types.' pc_namespace.name '.' prop.type];
+                typenames{i} = [pc_namespace.name '.' prop.type];
             end
         end
     elseif isa(prop, 'file.Attribute')

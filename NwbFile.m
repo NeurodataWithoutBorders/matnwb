@@ -1,4 +1,4 @@
-classdef NwbFile < types.core.NWBFile
+classdef NwbFile < core.NWBFile
     % NWBFILE Root object representing data read from an NWB file.
     %
     % Requires that core and extension NWB types have been generated
@@ -13,7 +13,7 @@ classdef NwbFile < types.core.NWBFile
     
     methods
         function obj = NwbFile(varargin)
-            obj = obj@types.core.NWBFile(varargin{:});
+            obj = obj@core.NWBFile(varargin{:});
         end
         
         function export(obj, filename)
