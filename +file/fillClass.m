@@ -16,7 +16,7 @@ for i=1:length(allprops)
     pnm = allprops{i};
     prop = classprops(pnm);
     
-    if ischar(prop) || isa(prop, 'java.util.HashMap') || isstruct(prop) || prop.required
+    if ischar(prop) || isa(prop, 'containers.Map') || isstruct(prop) || prop.required
         required = [required {pnm}];
     else
         optional = [optional {pnm}];

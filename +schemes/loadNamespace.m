@@ -1,31 +1,15 @@
-function extNamespaces = loadNamespace(name, loaded)
+function Namespace = loadNamespace(name)
 %LOADNAMESPACE loads dependent class metadata
 % name is the pregenerated namespace name
-% loaded is a containers.Map containing preloaded namespace names (optional)
-% extNamespaces is a merged containers.Map containing this namespace and its
-%   parents
+% Namespaces a schemes.Namespace object with dependency graph
 
-namespace = load(fullfile('namespaces', [name '.mat']));
+Cache = schemes.loadCache(name);
+ancestry = schemes.Namespace.empty(length(Cache.dependencies), 0);
 
-if nargin > 1
-    extNamespaces = loaded;
-else
-    extNamespaces = containers.Map;
+for i=length(Cache.dependencies):-1:1
+    ancestorName = Cache.dependencies{i};
+    ancestry(i) = schemes.loadNamespace(ancestorName);
 end
 
-deps = schemes.Namespace.empty(0,0); %create list of parent Namespaces to create Namespace object
-
-dependencies=namespace.dependencies;
-schema=namespace.schema;
-
-for i=length(dependencies):-1:1
-    depname = dependencies{i};
-    if ~isKey(extNamespaces, depname)
-        extNamespaces = [extNamespaces; schemes.loadNamespace(depname, extNamespaces)];
-    end
-    deps(i) = extNamespaces(depname);
-end
-
-extNamespaces(name) = schemes.Namespace(name, deps, schema);
-
+Namespace = schemes.Namespace(name, ancestry, Cache.schema);
 end

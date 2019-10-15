@@ -5,13 +5,9 @@ classdef ExternalLink < handle
     end
     
     methods
-        function obj = ExternalLink(filename, varargin)
+        function obj = ExternalLink(filename, path)
             obj.filename = filename;
-            if isempty(varargin)
-                obj.path = '';
-            else
-                obj.path = varargin{1};
-            end
+            obj.path = path;
         end
         
         function data = deref(obj)
@@ -19,11 +15,6 @@ classdef ExternalLink < handle
             % otherwise, returns the file id of the referenced link.
             assert(ischar(obj.filename), 'expecting filename to be a char array.');
             assert(2 == exist(obj.filename, 'file'), '%s does not exist.', obj.filename);
-            
-            if isempty(obj.path)
-                data = fopen(obj.filename);
-                return;
-            end
             
             fid = H5F.open(obj.filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
             info = h5info(obj.filename, obj.path);
@@ -77,6 +68,9 @@ classdef ExternalLink < handle
         
         function refs = export(obj, fid, fullpath, refs)
             plist = 'H5P_DEFAULT';
+            if H5L.exists(fid, fullpath, plist)
+                H5L.delete(fid, fullpath, plist);
+            end
             H5L.create_external(obj.filename, obj.path, fid, fullpath, plist, plist);
         end
     end

@@ -140,27 +140,35 @@ elseif isa(prop, 'file.Link') || isa(prop, 'file.Group') ||...
     % obj, loc_id, path, refs
     fde = ['refs = obj.' name '.export(fid, ' fullpath ', refs);'];
 elseif isa(prop, 'file.Dataset') %untyped dataset
-    if prop.scalar
-        forceArray = 'false';
-    else
-        forceArray = 'true';
+    options = {};
+    if ~prop.scalar
+        options = [options {'''forceArray'''}];
     end
+    
+    % special case due to unique behavior of file_create_date
+    if strcmp(name, 'file_create_date')
+        options = [options {'''forceChunking'''}];
+    end
+    % just to guarantee optional arguments are correct syntax
+    nameProp = sprintf('obj.%s', name);
+    nameArgs = [{nameProp} options];
+    nameArgs = strjoin(nameArgs, ', ');
     fde = strjoin({...
         ['if startsWith(class(obj.' name '), ''types.untyped.'')']...
         ['    refs = obj.' name '.export(fid, ' fullpath ', refs);']...
         ['elseif ~isempty(obj.' name ')']...
-        ['    ' sprintf('io.writeDataset(fid, %1$s, class(obj.%2$s), obj.%2$s, %3$s);',...
-            fullpath, name, forceArray)]...
+        ['    ' sprintf('io.writeDataset(fid, %1$s, %2$s);',...
+            fullpath, nameArgs)]...
         'end'...
         }, newline);
 else
     if prop.scalar
-        forceArray = 'false';
+        forceArrayFlag = '';
     else
-        forceArray = 'true';
+        forceArrayFlag = ', ''forceArray''';
     end
-    fde = sprintf('io.writeAttribute(fid, %1$s, class(obj.%2$s), obj.%2$s, %3$s);',...
-        fullpath, name, forceArray);
+    fde = sprintf('io.writeAttribute(fid, %1$s, obj.%2$s%3$s);',...
+        fullpath, name, forceArrayFlag);
 end
 
 emptycheck = ['if ~isempty(obj.' name ')'];

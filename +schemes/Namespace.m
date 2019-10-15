@@ -52,12 +52,13 @@ classdef Namespace < handle
             end
             
             parent = [];
-            pname = class.get('neurodata_type_inc');
-            if ~isempty(pname)
-                parent = obj.getClass(pname);
-                if isempty(parent)
-                    error('Parent %s for class %s doesn''t exist!  Missing Dependency?', pname, classname);
-                end
+            if isKey(class, 'neurodata_type_inc')
+                parentName = class('neurodata_type_inc');
+                parent = obj.getClass(parentName);
+                assert(~isempty(parent),...
+                    'Parent %s for class %s doesn''t exist!  Missing Dependency?',...
+                    parentName,...
+                    classname);
             end
         end
         
@@ -95,14 +96,15 @@ classdef Namespace < handle
         end
         
         %gets this particular branch to root from class name
-        %the returned value is a list of java HashMaps in order [parent -> root]
+        %the returned value is a cell array of coantainers.Maps [parent -> root]
         function branch = getRootBranch(obj, classname)
             cursor = obj.getClass(classname);
-            branch = [];
-            while ~isempty(cursor)
-                parent = obj.getParent(cursor.get('neurodata_type_def'));
-                branch = [branch parent];
+            branch = {};
+            parent = obj.getParent(cursor('neurodata_type_def'));
+            while ~isempty(parent)
+                branch = [branch {parent}];
                 cursor = parent;
+                parent = obj.getParent(cursor('neurodata_type_def'));
             end
         end
     end

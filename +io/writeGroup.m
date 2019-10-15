@@ -1,5 +1,8 @@
-function writeGroup(fid, fullpath)
-plist = 'H5P_DEFAULT';
+function groupExists = writeGroup(fid, fullpath)
+groupExists = false;
+defaultProplist = 'H5P_DEFAULT';
+
+% validate path
 if startsWith(fullpath, '/')
     fullpath = fullpath(2:end);
 end
@@ -12,39 +15,39 @@ if isempty(fullpath)
     return;
 end
 
-partsIdx = strfind(fullpath, '/');
-partsIdx(end+1) = length(fullpath);
+partsIndices = strfind(fullpath, '/');
+partsIndices(end+1) = length(fullpath);
 
-base_id = [];
-for i=length(partsIdx):-1:1
+for i=length(partsIndices):-1:1
     try
-        base_id = H5G.open(fid, fullpath(1:partsIdx(i)), plist);
+        pathIdx = partsIndices(i);
+        path = fullpath(1:partsIndices(i));
+        groupId = H5G.open(fid, path, defaultProplist);
+        if strcmp(path, fullpath) % fullpath already exists
+            H5G.close(groupId);
+            groupExists = true;
+            return; 
+        end
+        deepestGroup = groupId;
+        partOffsetIdx = i + 1;
+        offsetStart = pathIdx + 1;
         break;
     catch
+        if i == 1 % no part of this path exists
+            deepestGroup = fid;
+            partOffsetIdx = 1;
+            offsetStart = 1;
+        end
     end
-end
+end % find deepest pre-existing Group
 
-if ~isempty(base_id) && i == length(partsIdx)
-    %nothing to write
-    H5G.close(base_id);
-    return;
-end
-
-% write phase
-if isempty(base_id)
-    base_id = fid;
-    ioffset = 1;
-    offsetStart = 1;
-else
-    ioffset = i+1;
-    offsetStart = partsIdx(i)+1;
-end
-offsets = [offsetStart partsIdx(ioffset:end-1)+1];
-partsIdx = partsIdx(ioffset:end);
-closeBuf = repmat(H5ML.id, length(partsIdx),1);
-gid = base_id;
-for i=1:length(partsIdx)
-    gid = H5G.create(gid, fullpath(offsets(i):partsIdx(i)), plist, plist, plist);
+offsets = [offsetStart partsIndices(partOffsetIdx:end-1)+1];
+partsIndices = partsIndices(partOffsetIdx:end);
+closeBuf = repmat(H5ML.id, length(partsIndices),1);
+gid = deepestGroup;
+for i=1:length(partsIndices)
+    groupPath = fullpath(offsets(i):partsIndices(i));
+    gid = H5G.create(gid, groupPath, defaultProplist, defaultProplist, defaultProplist);
     closeBuf(i) = gid;
 end
 
@@ -52,7 +55,7 @@ for i=length(closeBuf):-1:1
     H5G.close(closeBuf(i));
 end
 
-if base_id ~= fid
-    H5G.close(base_id);
+if deepestGroup ~= fid
+    H5G.close(deepestGroup);
 end
 end

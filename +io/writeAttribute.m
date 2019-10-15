@@ -1,6 +1,6 @@
-function writeAttribute(fid, fullpath, type , data, forceArray)
+function writeAttribute(fid, fullpath, data, varargin)
 
-[tid, sid, data] = io.mapData2H5(fid, type, data, forceArray);
+[tid, sid, data] = io.mapData2H5(fid, data, varargin{:});
 [path, name] = io.pathParts(fullpath);
 if isempty(path)
     path = '/'; %weird case if the property is in root

@@ -1,6 +1,6 @@
 function [processed, classprops, inherited] = processClass(name, namespace, pregen)
-branch = [namespace.getClass(name) namespace.getRootBranch(name)];
-rootname = branch(end).get('neurodata_type_def');
+branch = [{namespace.getClass(name)} namespace.getRootBranch(name)];
+rootname = branch{end}('neurodata_type_def');
 switch rootname
     case 'NWBContainer'
         isgroup = true;
@@ -10,9 +10,9 @@ switch rootname
         warning('Unexpected root class `%s` found.  Skipping `%s`', rootname, name);
         return;
 end
-for i=length(branch):-1:1
-    node = branch(i);
-    nodename = node.get('neurodata_type_def');
+for iAncestor=length(branch):-1:1
+    node = branch{iAncestor};
+    nodename = node('neurodata_type_def');
     
     if ~isKey(pregen, nodename)
         if isgroup
@@ -24,13 +24,13 @@ for i=length(branch):-1:1
         pregen(nodename) = struct('class', class, 'props', props);
     end
     
-    processed(i) = pregen(nodename).class;
+    processed(iAncestor) = pregen(nodename).class;
 end
 classprops = pregen(name).props;
 names = keys(classprops);
 inherited = {};
-for i=2:length(processed)
-    pname = processed(i).type;
+for iAncestor=2:length(processed)
+    pname = processed(iAncestor).type;
     parentPropNames = keys(pregen(pname).props);
     inherited = union(inherited, intersect(names, parentPropNames));
 end

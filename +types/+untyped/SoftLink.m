@@ -28,7 +28,19 @@ classdef SoftLink < handle
         
         function refs = export(obj, fid, fullpath, refs)
             plist = 'H5P_DEFAULT';
-            H5L.create_soft(obj.path, fid, fullpath, plist, plist);
+            try
+                H5L.create_soft(obj.path, fid, fullpath, plist, plist);
+            catch ME
+                if contains(ME.message, 'name already exists')
+                    previousLink = H5L.get_val(fid, fullpath, plist);
+                    if ~strcmp(previousLink{1}, obj.path)
+                        H5L.delete(fid, fullpath, plist);
+                        H5L.create_soft(obj.path, fid, fullpath, plist, plist);
+                    end
+                else
+                    rethrow(ME);
+                end
+            end
         end
     end
 end

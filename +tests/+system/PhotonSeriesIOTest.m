@@ -1,4 +1,4 @@
-classdef PhotonSeriesIOTest < tests.system.PyNWBIOTest
+classdef PhotonSeriesIOTest < tests.system.PyNWBIOTest & tests.system.AmendTest
     methods
         function addContainer(testCase, file) %#ok<INUSL>
             dev = types.core.Device();
@@ -33,6 +33,23 @@ classdef PhotonSeriesIOTest < tests.system.PyNWBIOTest
         
         function c = getContainer(testCase, file) %#ok<INUSL>
             c = file.acquisition.get('test_2ps');
+        end
+        
+        function appendContainer(~, file)
+            oldImagingPlane = file.general_optophysiology.get('imgpln1');
+            file.general_optophysiology.set('imgpln2',...
+                types.core.ImagingPlane(...
+                'description', 'a different imaging plane',...
+                'device', oldImagingPlane.device,...
+                'optchan1', oldImagingPlane.opticalchannel.value,...
+                'excitation_lambda', 1,...
+                'imaging_rate', 2,...
+                'indicator', 'ASL',...
+                'location', 'somewhere else in the brain'));
+            
+            hTwoPhotonSeries = file.acquisition.get('test_2ps');
+            hTwoPhotonSeries.imaging_plane.path = '/general/optophysiology/imgpln2';
+            hTwoPhotonSeries.data = hTwoPhotonSeries.data + rand();
         end
     end
 end
