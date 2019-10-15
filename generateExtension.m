@@ -26,5 +26,6 @@ fid = fopen(source);
 namespaceText = fread(fid, '*char') .';
 fclose(fid);
 
-spec.generate(namespaceText, localpath);
+Namespace = spec.generate(namespaceText, localpath);
+file.writeNamespace(Namespace.name);
 end

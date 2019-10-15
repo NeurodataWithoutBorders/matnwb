@@ -201,48 +201,48 @@ classdef Group < handle
                 % if elided, add to prefix and check all subgroups, attributes and datasets.
                 % otherwise, call getprops and assign to its name.
                 Sub_Group = obj.subgroups(i);
-                group_name = Sub_Group.name;
-                group_type = Sub_Group.type;
-                if ~isempty(group_type)
-                    if isempty(group_name)
-                        Prop_Map(lower(group_type)) = Sub_Group;
+                groupName = Sub_Group.name;
+                groupType = Sub_Group.type;
+                if ~isempty(groupType)
+                    if isempty(groupName)
+                        Prop_Map(lower(groupType)) = Sub_Group;
                     else
-                        Prop_Map(group_name) = Sub_Group;
+                        Prop_Map(groupName) = Sub_Group;
                     end
                     continue;
                 end
                 
                 if ~Sub_Group.elide
-                    Prop_Map(group_name) = Sub_Group;
+                    Prop_Map(groupName) = Sub_Group;
                     continue;
                 end
                 
                 Descendant_Map = Sub_Group.getProps;
                 descendant_names = keys(Descendant_Map);
-                for sub_group_i = 1:length(descendant_names)
-                    descendant_name = descendant_names{sub_group_i};
-                    Descendant = Descendant_Map(descendant_name);
+                for iSubGroup = 1:length(descendant_names)
+                    descendantName = descendant_names{iSubGroup};
+                    Descendant = Descendant_Map(descendantName);
                     % hoist constrained sets to the current
                     % subname.
-                    can_be_constrained =...
+                    isPossiblyConstrained =...
                         isa(Descendant, 'file.Group')...
                         || isa(Descendant, 'file.Dataset');
-                    is_constrained = can_be_constrained...
-                        && strcmpi(descendant_name, Descendant.type)...
+                    isConstrained = isPossiblyConstrained...
+                        && strcmpi(descendantName, Descendant.type)...
                         && Descendant.isConstrainedSet;
-                    if is_constrained
-                        prop_name = group_name;
+                    if isConstrained
+                        propName = groupName;
                     else
-                        prop_name = [group_name '_' descendant_name];
+                        propName = [groupName '_' descendantName];
                     end
                     
-                    if isKey(Prop_Map, prop_name)
+                    if isKey(Prop_Map, propName) && ~isConstrained
                         warning(['Generic group `%s` is currently unsupported '...
-                            'in MatNwb and is ignored.'], prop_name);
+                            'in MatNwb and is ignored.'], propName);
                         continue;
                     end
                     
-                    Prop_Map(prop_name) = Descendant_Map(descendant_name);
+                    Prop_Map(propName) = Descendant_Map(descendantName);
                 end
             end
         end

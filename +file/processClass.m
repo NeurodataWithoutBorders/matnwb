@@ -8,7 +8,7 @@ for i = 1:length(branch)
     branchNames{i} = branch{i}(TYPEDEF_KEYS{hasTypeDefs});
 end
 
-isGroup = any(strcmp(branchNames, 'NWBContainer'));
+isGroup = any(strcmp(branchNames, 'CSRMatrix') | strcmp(branchNames, 'Container'));
 for iAncestor=length(branch):-1:1
     node = branch{iAncestor};
     hasTypeDefs = isKey(node, TYPEDEF_KEYS);
@@ -23,8 +23,11 @@ for iAncestor=length(branch):-1:1
         props = class.getProps();
         pregen(nodename) = struct('class', class, 'props', props);
     end
-    
+    try
     Processed(iAncestor) = pregen(nodename).class;
+    catch
+        keyboard;
+    end
 end
 classprops = pregen(name).props;
 names = keys(classprops);

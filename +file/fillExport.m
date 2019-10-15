@@ -1,6 +1,6 @@
 function festr = fillExport(propnames, raw, parentName)
 hdrstr = 'function refs = export(obj, fid, fullpath, refs)';
-if any(strcmp(raw.type, {'NWBData', 'SpecFile'}))
+if isa(raw, 'file.Dataset')
     propnames = propnames(~strcmp(propnames, 'data'));
 end
 
