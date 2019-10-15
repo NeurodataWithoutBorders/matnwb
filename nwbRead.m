@@ -54,17 +54,18 @@ end
 end
 
 function generateSpec(fid, specinfo)
+specNames = cell(size(specinfo.Groups));
 for i=1:length(specinfo.Groups)
     location = specinfo.Groups(i).Groups(1);
     
-    namespace_name = split(specinfo.Groups(i).Name, '/');
-    namespace_name = namespace_name{end};
+    namespaceName = split(specinfo.Groups(i).Name, '/');
+    namespaceName = namespaceName{end};
     
     filenames = {location.Datasets.Name};
     if ~any(strcmp('namespace', filenames))
-        warning('MATNWB:INVALIDCACHE',...
+        warning('Nwb:Namespace:CacheInvalid',...
         'Couldn''t find a `namespace` in namespace `%s`.  Skipping cache generation.',...
-        namespace_name);
+        namespaceName);
         return;
     end
     sourceNames = {location.Datasets.Name};
@@ -80,6 +81,31 @@ for i=1:length(specinfo.Groups)
         H5D.close(did);
     end
     
-    spec.generate(namespaceText, schemaMap);
+    Namespace = spec.generate(namespaceText, schemaMap);
+    specNames{i} = Namespace.name;
+end
+
+missingNames = cell(size(specNames));
+for i = 1:length(specNames)
+    name = specNames{i};
+    if ~tryWriteSpec(name)
+        missingNames{i} = name;
+    end
+end
+missingNames(cellfun('isempty', missingNames)) = [];
+assert(isempty(missingNames), 'Nwb:Namespace:DependencyMissing',...
+    'Missing generated caches and dependent caches for the following namespaces:\n%s',...
+            misc.cellPrettyPrint(missingNames));
+end
+
+function writeSuccessful = tryWriteSpec(namespaceName)
+try
+    file.writeNamespace(namespaceName);
+    writeSuccessful = true;
+catch ME
+    if ~strcmp(ME.identifier, 'Nwb:Namespace:CacheMissing')
+        rethrow(ME);
+    end
+    writeSuccessful = false;
 end
 end

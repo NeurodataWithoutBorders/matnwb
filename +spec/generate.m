@@ -1,4 +1,4 @@
-function generate(namespaceText, schemaSource)
+function NamespaceInfo = generate(namespaceText, schemaSource)
 %GENERATE Generates MATLAB classes from namespace mappings.
 % optionally, include schema mapping as second argument OR path of specs
 % schemaSource is either a path to a directory where the source is
@@ -28,7 +28,4 @@ if 7 ~= exist(namespacePath, 'dir')
 end
 cachePath = fullfile(namespacePath, [NamespaceInfo.name '.mat']);
 save(cachePath, '-struct', 'NamespaceInfo');
-
-%write files
-file.writeNamespace(NamespaceInfo.name);
 end

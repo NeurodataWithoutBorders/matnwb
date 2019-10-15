@@ -23,12 +23,14 @@ end
 end
 
 function classMap = searchForClasses(list, whitelist)
+allowedTypeDefNames = {'neurodata_type_def', 'data_type_def'};
 classMap = containers.Map;
 shouldSkipWhitelist = isempty(whitelist);
 for iObj=1:length(list)
     dataObject = list{iObj};
-    if isKey(dataObject, 'neurodata_type_def')
-        typeDef = dataObject('neurodata_type_def');
+    hasTypeDef = isKey(dataObject, allowedTypeDefNames);
+    if any(hasTypeDef)
+        typeDef = dataObject(allowedTypeDefNames{hasTypeDef});
         if shouldSkipWhitelist || ismember(typeDef, whitelist)
             classMap(typeDef) = dataObject;
         end

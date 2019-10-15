@@ -53,13 +53,15 @@ classdef Group < handle
                 obj.name = source('default_name');
             end
             
-            typeDefKey = 'neurodata_type_def';
-            parentKey = 'neurodata_type_inc';
-            if isKey(source, typeDefKey)
-                obj.type = source(typeDefKey);
+            typeKeys = {'neurodata_type_def', 'data_type_def'};
+            parentKeys = {'neurodata_type_inc', 'data_type_inc'};
+            hasTypeKeys = isKey(source, typeKeys);
+            hasParentKeys = isKey(source, parentKeys);
+            if any(hasTypeKeys)
+                obj.type = source(typeKeys{hasTypeKeys});
                 obj.definesType = true;
-            elseif isKey(source, parentKey)
-                obj.type = source(parentKey);
+            elseif any(hasParentKeys)
+                obj.type = source(parentKeys{hasParentKeys});
             end
             
             if isKey(source, 'quantity')
