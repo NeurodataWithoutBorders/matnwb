@@ -16,10 +16,6 @@ function nwb = nwbRead(filename, varargin)
 %    nwb=nwbRead('data.nwb');
 %
 %  See also GENERATECORE, GENERATEEXTENSION, NWBFILE, NWBEXPORT
-% generatedPath = fullfile(pwd, 'generated');
-% if 7 == exist(fullfile(generatedPath, '+core'), 'dir')
-%         addpath(generatedPath);
-% end
 ignoreCache = ~isempty(varargin) && ischar(varargin{1}) &&...
     strcmp('ignorecache', varargin{1});
 Blacklist = struct(...

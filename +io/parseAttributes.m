@@ -32,8 +32,7 @@ end
 if hasTypeDef && hasNamespace
     validNamespace = misc.str2validName(type.namespace);
     validName = misc.str2validName(type.name);
-%     typename = ['types.' validNamespace '.' validName];
-    typename = [validNamespace '.' validName];
+    typename = ['types.' validNamespace '.' validName];
 end
 
 blacklistMask = ismember(names, Blacklist.attributes);

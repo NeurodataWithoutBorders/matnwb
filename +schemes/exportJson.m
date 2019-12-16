@@ -1,7 +1,7 @@
 function JsonData = exportJson()
 %TOJSON loads and converts loaded namespaces to json strings
 %   returns containers.map of namespace names.
-namespaceDir = fullfile(pwd, 'namespaces');
+namespaceDir = fullfile(misc.getWorkspace(), 'namespaces');
 namespaceList = dir(namespaceDir);
 isFileMask = ~[namespaceList.isdir];
 namespaceFiles = namespaceList(isFileMask);

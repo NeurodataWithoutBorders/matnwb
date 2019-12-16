@@ -52,8 +52,7 @@ if length(processed) <= 1
 else
     parentName = processed(2).type; %WRITE
     ParentNamespace = namespace.getNamespace(parentName);
-%     depnm = ['types.' strrep(ParentNamespace.name, '-', '_') '.' parentName]; %WRITE
-    depnm = [strrep(ParentNamespace.name, '-', '_') '.' parentName];
+    depnm = ['types.' strrep(ParentNamespace.name, '-', '_') '.' parentName]; %WRITE
 end
 
 %% return classfile string

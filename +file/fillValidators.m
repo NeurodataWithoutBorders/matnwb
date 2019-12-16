@@ -40,8 +40,7 @@ if isa(prop, 'file.Dataset')
                 '  Skipping Validation for property `%s`.'], prop.type, name);
             return;
         end
-%         fullname = ['types.' namespace.name '.' prop.type ];
-        fullname = [namespace.name '.' prop.type ];
+        fullname = ['types.' namespace.name '.' prop.type ];
         fuvstr = strjoin({fuvstr...
             ['constrained = { ''' fullname ''' };']...
             ['types.util.checkSet(''' name ''', struct(), constrained, val);']...
@@ -53,8 +52,7 @@ if isa(prop, 'file.Dataset')
                 '  Skipping Validation for property `%s`.'], prop.type, name);
             return;
         end
-%         fullclassname = ['types.' namespace.name '.' prop.type];
-        fullclassname = [namespace.name '.' prop.type];
+        fullclassname = ['types.' namespace.name '.' prop.type];
         fuvstr = [fuvstr newline ...
             fillDtypeValidation(name, fullclassname)];
     end
@@ -74,8 +72,7 @@ elseif isa(prop, 'file.Group')
                 namedprops.(ds.name) = ds.dtype;
             else
                 ds_nmspc = namespacereg.getNamespace(ds.type).name;
-%                 type = ['types.' ds_nmspc '.' ds.type];
-                type = [ds_nmspc '.' ds.type];
+                type = ['types.' ds_nmspc '.' ds.type];
                 if ds.isConstrainedSet
                     constr = [constr {type}];
                 else
@@ -92,8 +89,7 @@ elseif isa(prop, 'file.Group')
         for i=1:length(prop.subgroups)
             sg = prop.subgroups(i);
             sg_namespace = namespacereg.getNamespace(sg.type).name;
-%             sgfullname = ['types.' sg_namespace '.' sg.type];
-            sgfullname = [sg_namespace '.' sg.type];
+            sgfullname = ['types.' sg_namespace '.' sg.type];
             if isempty(sg.type)
                 error('Weird case with two untyped groups');
             end
@@ -120,8 +116,7 @@ elseif isa(prop, 'file.Group')
                 lt = linktypes{i};
                 linkNamespaces{i} = namespacereg.getNamespace(lt);
             end
-%             linkTypenames = strcat('types.', linkNamespaces, '.', linktypes);
-            linkTypenames = strcat(linkNamespaces, '.', linktypes);
+            linkTypenames = strcat('types.', linkNamespaces, '.', linktypes);
             namedprops = [namedprops; ...
                 containers.Map({prop.links.name}, linkTypenames)];
         end
@@ -139,24 +134,20 @@ elseif isa(prop, 'file.Group')
             }, newline);
     elseif prop.isConstrainedSet
         namespace = namespacereg.getNamespace(prop.type).name;
-%         ['constrained = {''types.' namespace '.' prop.type '''};']...
         fuvstr = strjoin({fuvstr...
-            ['constrained = {''' namespace '.' prop.type '''};']...
+            ['constrained = {''types.' namespace '.' prop.type '''};']...
             ['types.util.checkSet(''' name ''', struct(), constrained, val);']...
             }, newline);
     else
         namespace = namespacereg.getNamespace(prop.type).name;
-%         fulltypename = ['types.' namespace '.' prop.type];
-        fulltypename = [namespace '.' prop.type];
+        fulltypename = ['types.' namespace '.' prop.type];
         fuvstr = fillDtypeValidation(name, fulltypename);
     end
 elseif isa(prop, 'file.Attribute')
     fuvstr = fillDtypeValidation(name, prop.dtype);
 else %Link
     namespace = namespacereg.getNamespace(prop.type).name;
-%     fuvstr = fillDtypeValidation(name, ['types.' namespace '.' prop.type]);
-    fuvstr = fillDtypeValidation(name, [namespace '.' prop.type]);
-
+    fuvstr = fillDtypeValidation(name, ['types.' namespace '.' prop.type]);
 end
 end
 
