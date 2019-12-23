@@ -8,17 +8,20 @@ for i = 1:length(branch)
     branchNames{i} = branch{i}(TYPEDEF_KEYS{hasTypeDefs});
 end
 
-isGroup = any(strcmp(branchNames, 'CSRMatrix') | strcmp(branchNames, 'Container'));
 for iAncestor=length(branch):-1:1
     node = branch{iAncestor};
     hasTypeDefs = isKey(node, TYPEDEF_KEYS);
     nodename = node(TYPEDEF_KEYS{hasTypeDefs});
     
     if ~isKey(pregen, nodename)
-        if isGroup
-            class = file.Group(node);
-        else
-            class = file.Dataset(node);
+        switch node('class_type')
+            case 'groups'
+                class = file.Group(node);
+            case 'datasets'
+                class = file.Dataset(node);
+            otherwise
+                error('NWB:FileGen:InvalidClassType',...
+                    'Class type %s is invalid', node('class_type'));
         end
         props = class.getProps();
         pregen(nodename) = struct('class', class, 'props', props);

@@ -73,7 +73,7 @@ classdef Namespace < handle
         end
         
         %gets this particular branch to root from class name
-        %the returned value is a cell array of coantainers.Maps [parent -> root]
+        %the returned value is a cell array of containers.Maps [parent -> root]
         function branch = getRootBranch(obj, classname)
             cursor = obj.getClass(classname);
             branch = {};
