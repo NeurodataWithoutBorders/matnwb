@@ -225,7 +225,7 @@ else
         fdvstr = '';
         return;
     else
-        ts = type;
+        ts = strrep(type, '-', '_');
     end
     fdvstr = [fdvstr ...
         'val = types.util.checkDtype(''' name ''', ''' ts ''', val);'];

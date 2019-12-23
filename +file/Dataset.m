@@ -43,13 +43,15 @@ classdef Dataset < handle
                 obj.name = source(nameKey);
             end
             
-            typeKey = 'neurodata_type_def';
-            parentKey = 'neurodata_type_inc';
-            if isKey(source, typeKey)
-                obj.type = source(typeKey);
+            typeKeys = {'neurodata_type_def', 'data_type_def'};
+            parentKeys = {'neurodata_type_inc', 'data_type_inc'};
+            hasTypeKeys = isKey(source, typeKeys);
+            hasParentKeys = isKey(source, parentKeys);
+            if any(hasTypeKeys)
+                obj.type = source(typeKeys{hasTypeKeys});
                 obj.definesType = true;
-            elseif isKey(source, parentKey)
-                obj.type = source(parentKey);
+            elseif any(hasParentKeys)
+                obj.type = source(parentKeys{hasParentKeys});
             end
             
             dataTypeKey = 'dtype';

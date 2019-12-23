@@ -13,6 +13,10 @@ for i=1:length(classes)
     className = classes{i};
     [processed, classprops, inherited] = file.processClass(className, Namespace, pregenerated);
     
+    if isempty(processed)
+        continue;
+    end
+    
     fid = fopen(fullfile(path, [className '.m']), 'W');
     try
         fwrite(fid, file.fillClass(className, Namespace, processed, ...

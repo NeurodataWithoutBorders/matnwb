@@ -7,11 +7,11 @@ function Classes = getClasses(scheme, varargin)
 Classes = containers.Map;
 
 if isKey(scheme, 'datasets')
-     Classes = [Classes; searchForClasses(scheme('datasets'), varargin)];
+     Classes = [Classes; searchForClasses('datasets', scheme('datasets'), varargin)];
 end
 
 if isKey(scheme, 'groups')
-    Classes = [Classes; searchForClasses(scheme('groups'), varargin)];
+    Classes = [Classes; searchForClasses('groups', scheme('groups'), varargin)];
     groups = scheme('groups');
     for iGroup=1:length(groups)
         groupMap = groups{iGroup};
@@ -22,14 +22,17 @@ if isKey(scheme, 'groups')
 end
 end
 
-function classMap = searchForClasses(list, whitelist)
+function classMap = searchForClasses(type, list, whitelist)
+allowedTypeDefNames = {'neurodata_type_def', 'data_type_def'};
 classMap = containers.Map;
 shouldSkipWhitelist = isempty(whitelist);
 for iObj=1:length(list)
     dataObject = list{iObj};
-    if isKey(dataObject, 'neurodata_type_def')
-        typeDef = dataObject('neurodata_type_def');
+    hasTypeDef = isKey(dataObject, allowedTypeDefNames);
+    if any(hasTypeDef)
+        typeDef = dataObject(allowedTypeDefNames{hasTypeDef});
         if shouldSkipWhitelist || ismember(typeDef, whitelist)
+            dataObject('class_type') = type;
             classMap(typeDef) = dataObject;
         end
     end

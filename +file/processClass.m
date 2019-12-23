@@ -1,36 +1,41 @@
-function [processed, classprops, inherited] = processClass(name, namespace, pregen)
+function [Processed, classprops, inherited] = processClass(name, namespace, pregen)
+inherited = {};
 branch = [{namespace.getClass(name)} namespace.getRootBranch(name)];
-rootname = branch{end}('neurodata_type_def');
-switch rootname
-    case 'NWBContainer'
-        isgroup = true;
-    case {'NWBData', 'SpecFile', 'Image'}
-        isgroup = false;
-    otherwise
-        warning('Unexpected root class `%s` found.  Skipping `%s`', rootname, name);
-        return;
+branchNames = cell(size(branch));
+TYPEDEF_KEYS = {'neurodata_type_def', 'data_type_def'};
+for i = 1:length(branch)
+    hasTypeDefs = isKey(branch{i}, TYPEDEF_KEYS);
+    branchNames{i} = branch{i}(TYPEDEF_KEYS{hasTypeDefs});
 end
+
 for iAncestor=length(branch):-1:1
     node = branch{iAncestor};
-    nodename = node('neurodata_type_def');
+    hasTypeDefs = isKey(node, TYPEDEF_KEYS);
+    nodename = node(TYPEDEF_KEYS{hasTypeDefs});
     
     if ~isKey(pregen, nodename)
-        if isgroup
-            class = file.Group(node);
-        else
-            class = file.Dataset(node);
+        switch node('class_type')
+            case 'groups'
+                class = file.Group(node);
+            case 'datasets'
+                class = file.Dataset(node);
+            otherwise
+                error('NWB:FileGen:InvalidClassType',...
+                    'Class type %s is invalid', node('class_type'));
         end
         props = class.getProps();
         pregen(nodename) = struct('class', class, 'props', props);
     end
-    
-    processed(iAncestor) = pregen(nodename).class;
+    try
+    Processed(iAncestor) = pregen(nodename).class;
+    catch
+        keyboard;
+    end
 end
 classprops = pregen(name).props;
 names = keys(classprops);
-inherited = {};
-for iAncestor=2:length(processed)
-    pname = processed(iAncestor).type;
+for iAncestor=2:length(Processed)
+    pname = Processed(iAncestor).type;
     parentPropNames = keys(pregen(pname).props);
     inherited = union(inherited, intersect(names, parentPropNames));
 end

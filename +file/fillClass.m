@@ -33,26 +33,26 @@ for i=1:length(allprops)
        
         if ~isempty(prop.dependent)
             %extract prefix
-            parentname = strrep(pnm, ['_' prop.name], '');
-            parent = classprops(parentname);
+            parentName = strrep(pnm, ['_' prop.name], '');
+            parent = classprops(parentName);
             if ~parent.required
                 dependent = [dependent {pnm}];
             end
         end
     end
 end
-non_inherited = setdiff(allprops, inherited);
-ro_unique = intersect(readonly, non_inherited);
-req_unique = intersect(required, non_inherited);
-opt_unique = intersect(optional, non_inherited);
+nonInherited = setdiff(allprops, inherited);
+readonly = intersect(readonly, nonInherited);
+required = intersect(required, nonInherited);
+optional = intersect(optional, nonInherited);
 
 %% CLASSDEF
 if length(processed) <= 1
     depnm = 'types.untyped.MetaClass'; %WRITE
 else
-    parentname = processed(2).type; %WRITE
-    pnamespace = namespace.getNamespace(parentname);
-    depnm = ['types.' pnamespace.name '.' parentname]; %WRITE
+    parentName = processed(2).type; %WRITE
+    ParentNamespace = namespace.getNamespace(parentName);
+    depnm = ['types.' strrep(ParentNamespace.name, '-', '_') '.' parentName]; %WRITE
 end
 
 %% return classfile string
@@ -60,8 +60,8 @@ classDef = [...
     'classdef ' name ' < ' depnm newline... %header, dependencies
     '% ' upper(name) ' ' class.doc]; %name, docstr
 propgroups = {...
-    @()file.fillProps(classprops, ro_unique, 'SetAccess=protected')...
-    @()file.fillProps(classprops, setdiff([req_unique opt_unique], ro_unique))...
+    @()file.fillProps(classprops, readonly, 'SetAccess=protected')...
+    @()file.fillProps(classprops, setdiff([required optional], readonly))...
     };
 docsep = {...
     '% READONLY'...
@@ -80,12 +80,12 @@ constructorBody = file.fillConstructor(...
     name,...
     depnm,...
     defaults,... %all defaults, regardless of inheritance
-    [req_unique opt_unique],...
+    [required optional],...
     classprops,...
     namespace);
-setterFcns = file.fillSetters(setdiff(non_inherited, ro_unique));
+setterFcns = file.fillSetters(setdiff(nonInherited, readonly));
 validatorFcns = file.fillValidators(allprops, classprops, namespace);
-exporterFcns = file.fillExport(non_inherited, class, depnm);
+exporterFcns = file.fillExport(nonInherited, class, depnm);
 methodBody = strjoin({constructorBody...
     '%% SETTERS' setterFcns...
     '%% VALIDATORS' validatorFcns...

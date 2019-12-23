@@ -1,6 +1,6 @@
 function festr = fillExport(propnames, raw, parentName)
 hdrstr = 'function refs = export(obj, fid, fullpath, refs)';
-if any(strcmp(raw.type, {'NWBData', 'SpecFile'}))
+if isa(raw, 'file.Dataset')
     propnames = propnames(~strcmp(propnames, 'data'));
 end
 
@@ -188,7 +188,7 @@ end
 fde = [emptycheck newline file.addSpaces(fde, 4)];
 
 if prop.required
-    errmsg = ['    error(''Property `' name '` is required.'');'];
+    errmsg = ['    error(''Property `' name '` is required in `%s`.'', fullpath);'];
     if isa(prop, 'file.Attribute') && ~isempty(prop.dependent)
         errmsg = ['elseif ~isempty(obj.' depPropname ')' newline errmsg];
     else
