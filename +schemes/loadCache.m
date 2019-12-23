@@ -17,7 +17,7 @@ if isempty(fileList)
 end
 
 matPath = fullfile(namespaceDir, fileList(1).name);
-Cache = load(matPath);
+Cache = load(matPath); % initialize Cache first
 for iMat = 2:length(fileList)
     matPath = fullfile(namespaceDir, fileList(iMat).name);
     Cache(iMat) = load(matPath);

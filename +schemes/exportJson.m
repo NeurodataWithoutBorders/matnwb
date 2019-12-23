@@ -36,7 +36,11 @@ Namespace = Namespace{1};
 Schema = Namespace('schema');
 for iScheme = 1:length(Schema)
     Scheme = Schema{iScheme};
+    if ~Scheme.isKey('source')
+        continue;
+    end
     source = Scheme('source');
+        
     if endsWith(source, '.yaml')
         [~, Scheme('source'), ~] = fileparts(source);
     end
