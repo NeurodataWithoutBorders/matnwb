@@ -188,7 +188,7 @@ end
 fde = [emptycheck newline file.addSpaces(fde, 4)];
 
 if prop.required
-    errmsg = ['    error(''Property `' name '` is required.'');'];
+    errmsg = ['    error(''Property `' name '` is required in `%s`.'', fullpath);'];
     if isa(prop, 'file.Attribute') && ~isempty(prop.dependent)
         errmsg = ['elseif ~isempty(obj.' depPropname ')' newline errmsg];
     else
