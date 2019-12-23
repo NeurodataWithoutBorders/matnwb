@@ -1,4 +1,5 @@
 +types/+core
++types/+hdmf_common
 testResults.xml
 coverage.xml
 .ropeproject

@@ -25,7 +25,11 @@ if nargin == 0
     schemaPath = fullfile(nwbLocation, 'schema');
     corePath = fullfile(schemaPath, 'core', 'nwb.namespace.yaml');
     commonPath = fullfile(schemaPath, 'common', 'namespace.yaml');
-    generateExtension(commonPath);
+    
+    if 2 == exist(commonPath, 'file')
+        generateExtension(commonPath);
+    end
+    
     generateExtension(corePath);
 else
     for i=1:length(varargin)
