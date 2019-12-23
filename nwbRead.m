@@ -28,8 +28,8 @@ if ~ignoreCache
     if ~isempty(specLocation)
         Blacklist.groups{end+1} = specLocation;
     end
+    rehash(); %required if we want parseGroup to read the right files.
 end
-
 nwb = io.parseGroup(filename, h5info(filename), Blacklist);
 end
 
@@ -42,7 +42,6 @@ try
     referenceRawData = H5A.read(attributeId);
     specLocation = H5R.get_name(attributeId, 'H5R_OBJECT', referenceRawData);
     generateSpec(fid, h5info(filename, specLocation));
-    rehash(); %required if we want parseGroup to read the right files.
     H5A.close(attributeId);
     H5F.close(fid);
 catch ME

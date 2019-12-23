@@ -26,11 +26,7 @@ for iAncestor=length(branch):-1:1
         props = class.getProps();
         pregen(nodename) = struct('class', class, 'props', props);
     end
-    try
     Processed(iAncestor) = pregen(nodename).class;
-    catch
-        keyboard;
-    end
 end
 classprops = pregen(name).props;
 names = keys(classprops);
