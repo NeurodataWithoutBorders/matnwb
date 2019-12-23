@@ -16,7 +16,7 @@
          </tr>
       </table>
       <div class="title">types.core.IntracellularElectrode</div>
-      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">IntracellularElectrode</span> One of possibly many. COMMENT: Name should be informative.</pre></div><!--after help -->
+      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">IntracellularElectrode</span> An intracellular electrode and its metadata.</pre></div><!--after help -->
       <!--Class-->
       <div class="sectiontitle">Class Details</div>
       <table class="class-details">
@@ -48,39 +48,37 @@
       <table class="summary-list">
          <tr class="summary-item">
             <td class="name">description</td>
-            <td class="m-help">Recording description, description of electrode (e.g.,  whole-cell, sharp, etc)COMMENT: Free-form text (can be from Methods)&nbsp;</td>
+            <td class="m-help">Description of electrode (e.g.,  whole-cell, sharp, etc.).&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">device</td>
-            <td class="m-help">the device that was used to record from this electrode&nbsp;</td>
+            <td class="m-help">Device that was used to record from this electrode.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">filtering</td>
             <td class="m-help">Electrode specific filtering.&nbsp;</td>
          </tr>
          <tr class="summary-item">
-            <td class="name">help</td>
-            <td class="m-help">Short description of what this type of NWBContainer contains.&nbsp;</td>
-         </tr>
-         <tr class="summary-item">
             <td class="name">initial_access_resistance</td>
-            <td class="m-help">Initial access resistance&nbsp;</td>
+            <td class="m-help">Initial access resistance.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">location</td>
-            <td class="m-help">Area, layer, comments on estimation, stereotaxis coordinates (if in vivo, etc)&nbsp;</td>
+            <td class="m-help">Location of the electrode. Specify the area, layer, comments on estimation of area/layer, stereotaxic coordinates if in vivo,
+               etc. Use standard atlas names for anatomical regions when possible.&nbsp;
+            </td>
          </tr>
          <tr class="summary-item">
             <td class="name">resistance</td>
-            <td class="m-help">Electrode resistance COMMENT: unit: Ohm&nbsp;</td>
+            <td class="m-help">Electrode resistance, in ohms.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">seal</td>
-            <td class="m-help">Information about seal used for recording&nbsp;</td>
+            <td class="m-help">Information about seal used for recording.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">slice</td>
-            <td class="m-help">Information about slice used for recording&nbsp;</td>
+            <td class="m-help">Information about slice used for recording.&nbsp;</td>
          </tr>
       </table>
       <!--Methods-->
@@ -229,14 +227,6 @@
                
             </td>
             <td class="name">validate_filtering</td>
-            <td class="m-help">&nbsp;</td>
-         </tr>
-         <tr class="summary-item">
-            <td class="attributes">
-               &nbsp;
-               
-            </td>
-            <td class="name">validate_help</td>
             <td class="m-help">&nbsp;</td>
          </tr>
          <tr class="summary-item">

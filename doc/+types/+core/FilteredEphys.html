@@ -16,7 +16,7 @@
          </tr>
       </table>
       <div class="title">types.core.FilteredEphys</div>
-      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">FilteredEphys</span> Ephys data from one or more channels that has been subjected to filtering. Examples of filtered data include Theta and Gamma (LFP has its own interface). <span class="helptopic">FilteredEphys</span> modules publish an ElectricalSeries for each filtered channel or set of channels. The name of each ElectricalSeries is arbitrary but should be informative. The source of the filtered data, whether this is from analysis of another time series or as acquired by hardware, should be noted in each's TimeSeries::description field. There is no assumed 1::1 correspondence between filtered ephys signals and electrodes, as a single signal can apply to many nearby electrodes, and one electrode may have different filtered (e.g., theta and/or gamma) signals represented.</pre></div><!--after help -->
+      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">FilteredEphys</span> Electrophysiology data from one or more channels that has been subjected to filtering. Examples of filtered data include Theta and Gamma (LFP has its own interface). <span class="helptopic">FilteredEphys</span> modules publish an ElectricalSeries for each filtered channel or set of channels. The name of each ElectricalSeries is arbitrary but should be informative. The source of the filtered data, whether this is from analysis of another time series or as acquired by hardware, should be noted in each's TimeSeries::description field. There is no assumed 1::1 correspondence between filtered ephys signals and electrodes, as a single signal can apply to many nearby electrodes, and one electrode may have different filtered (e.g., theta and/or gamma) signals represented. Filter properties should be noted in the ElectricalSeries.</pre></div><!--after help -->
       <!--Class-->
       <div class="sectiontitle">Class Details</div>
       <table class="class-details">
@@ -48,11 +48,7 @@
       <table class="summary-list">
          <tr class="summary-item">
             <td class="name">electricalseries</td>
-            <td class="m-help">ElectricalSeries object containing filtered electrophysiology data&nbsp;</td>
-         </tr>
-         <tr class="summary-item">
-            <td class="name">help</td>
-            <td class="m-help">Short description of what this type of NWBContainer contains.&nbsp;</td>
+            <td class="m-help">ElectricalSeries object(s) containing filtered electrophysiology data.&nbsp;</td>
          </tr>
       </table>
       <!--Methods-->
@@ -185,14 +181,6 @@
                
             </td>
             <td class="name">validate_electricalseries</td>
-            <td class="m-help">&nbsp;</td>
-         </tr>
-         <tr class="summary-item">
-            <td class="attributes">
-               &nbsp;
-               
-            </td>
-            <td class="name">validate_help</td>
             <td class="m-help">&nbsp;</td>
          </tr>
       </table>

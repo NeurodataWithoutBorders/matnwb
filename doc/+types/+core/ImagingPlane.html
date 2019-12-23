@@ -16,7 +16,7 @@
          </tr>
       </table>
       <div class="title">types.core.ImagingPlane</div>
-      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">ImagingPlane</span> One of possibly many groups describing an imaging plane. COMMENT: Name is arbitrary but should be meaningful. It is referenced by TwoPhotonSeries and also ImageSegmentation and DfOverF interfaces</pre></div><!--after help -->
+      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">ImagingPlane</span> An imaging plane and its metadata.</pre></div><!--after help -->
       <!--Class-->
       <div class="sectiontitle">Class Details</div>
       <table class="class-details">
@@ -48,53 +48,56 @@
       <table class="summary-list">
          <tr class="summary-item">
             <td class="name">description</td>
-            <td class="m-help">Description of image_plane_X&nbsp;</td>
+            <td class="m-help">Description of the imaging plane.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">device</td>
-            <td class="m-help">the device that was used to record from this electrode&nbsp;</td>
+            <td class="m-help">Link to the Device object that was used to record from this electrode.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">excitation_lambda</td>
-            <td class="m-help">Excitation wavelength in nm&nbsp;</td>
-         </tr>
-         <tr class="summary-item">
-            <td class="name">help</td>
-            <td class="m-help">Short description of what this type of NWBContainer contains.&nbsp;</td>
+            <td class="m-help">Excitation wavelength, in nm.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">imaging_rate</td>
-            <td class="m-help">Rate images are acquired, in Hz.&nbsp;</td>
+            <td class="m-help">Rate that images are acquired, in Hz.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">indicator</td>
-            <td class="m-help">Calcium indicator&nbsp;</td>
+            <td class="m-help">Calcium indicator.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">location</td>
-            <td class="m-help">Location of image plane&nbsp;</td>
+            <td class="m-help">Location of the imaging plane. Specify the area, layer, comments on estimation of area/layer, stereotaxic coordinates if in
+               vivo, etc. Use standard atlas names for anatomical regions when possible.&nbsp;
+            </td>
          </tr>
          <tr class="summary-item">
             <td class="name">manifold</td>
-            <td class="m-help">Physical position of each pixel. COMMENT: 'xyz' represents the position of the pixel relative to the defined coordinate space&nbsp;</td>
+            <td class="m-help">Physical position of each pixel. 'xyz' represents the position of the pixel relative to the defined coordinate space.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">manifold_conversion</td>
-            <td class="m-help">Multiplier to get from stored values to specified unit (e.g., 1e-3 for millimeters)&nbsp;</td>
+            <td class="m-help">Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system
+               units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data
+               to the specified 'unit'. e.g. if the data acquisition system stores values in this object as pixels from x = -500 to 499,
+               y = -500 to 499 that correspond to a 2 m x 2 m range, then the 'conversion' multiplier to get from raw data acquisition pixel
+               units to meters is 2/1000.&nbsp;
+            </td>
          </tr>
          <tr class="summary-item">
             <td class="name">manifold_unit</td>
-            <td class="m-help">Base unit that coordinates are stored in (e.g., Meters)&nbsp;</td>
+            <td class="m-help">Base unit of measurement for working with the data. The default value is 'meters'.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">opticalchannel</td>
-            <td class="m-help">One of possibly many groups storing channel-specific data COMMENT: Name is arbitrary but should be meaningful&nbsp;</td>
+            <td class="m-help">An optical channel used to record from an imaging plane.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">reference_frame</td>
             <td class="m-help">Describes position and reference frame of manifold based on position of first element in manifold. For example, text description
-               of anotomical location or vectors needed to rotate to common anotomical axis (eg, AP/DV/ML). COMMENT: This field is necessary
-               to interpret manifold. If manifold is not present then this field is not required&nbsp;
+               of anatomical location or vectors needed to rotate to common anatomical axis (eg, AP/DV/ML). This field is necessary to interpret
+               manifold. If manifold is not present then this field is not required.&nbsp;
             </td>
          </tr>
       </table>
@@ -244,14 +247,6 @@
                
             </td>
             <td class="name">validate_excitation_lambda</td>
-            <td class="m-help">&nbsp;</td>
-         </tr>
-         <tr class="summary-item">
-            <td class="attributes">
-               &nbsp;
-               
-            </td>
-            <td class="name">validate_help</td>
             <td class="m-help">&nbsp;</td>
          </tr>
          <tr class="summary-item">

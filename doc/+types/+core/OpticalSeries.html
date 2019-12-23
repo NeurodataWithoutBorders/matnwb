@@ -16,7 +16,7 @@
          </tr>
       </table>
       <div class="title">types.core.OpticalSeries</div>
-      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">OpticalSeries</span> Image data that is presented or recorded. A stimulus template movie will be stored only as an image. When the image is presented as stimulus, additional data is required, such as field of view (eg, how much of the visual field the image covers, or how what is the area of the target being imaged). If the <span class="helptopic">OpticalSeries</span> represents acquired imaging data, orientation is also important.</pre></div><!--after help -->
+      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">OpticalSeries</span> Image data that is presented or recorded. A stimulus template movie will be stored only as an image. When the image is presented as stimulus, additional data is required, such as field of view (e.g., how much of the visual field the image covers, or how what is the area of the target being imaged). If the <span class="helptopic">OpticalSeries</span> represents acquired imaging data, orientation is also important.</pre></div><!--after help -->
       <!--Class-->
       <div class="sectiontitle">Class Details</div>
       <table class="class-details">
@@ -54,42 +54,46 @@
          </tr>
          <tr class="summary-item">
             <td class="name">control</td>
-            <td class="m-help">Numerical labels that apply to each element in data[]. COMMENT: Optional field. If present, the control array should have
-               the same number of elements as data[].&nbsp;
+            <td class="m-help">Numerical labels that apply to each time point in data for the purpose of querying and slicing data by these values. If present,
+               the length of this array should be the same size as the first dimension of data.&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">control_description</td>
-            <td class="m-help">Description of each control value. COMMENT: Array length should be as long as the highest number in control minus one, generating
-               an zero-based indexed array for control values.&nbsp;
+            <td class="m-help">Description of each control value. Must be present if control is present. If present, control_description[0] should describe
+               time points where control == 0.&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">data</td>
-            <td class="m-help">Data values. Can also store binary data (eg, image frames) COMMENT: This field may be a link to data stored in an external
-               file, especially in the case of raw data.&nbsp;
+            <td class="m-help">Data values. Data can be in 1-D, 2-D, 3-D, or 4-D. The first dimension should always represent time. This can also be used
+               to store binary data (e.g., image frames). This can also be a link to data stored in an external file.&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">data_conversion</td>
-            <td class="m-help">Scalar to multiply each element in data to convert it to the specified unit&nbsp;</td>
+            <td class="m-help">Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system
+               units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data
+               to the specified 'unit'. e.g. if the data acquisition system stores values in this object as signed 16-bit integers (int16
+               range -32,768 to 32,767) that correspond to a 5V range (-2.5V to 2.5V), and the data acquisition system gain is 8000X, then
+               the 'conversion' multiplier to get from raw data acquisition values to recorded volts is 2.5/32768/8000 = 9.5367e-9.&nbsp;
+            </td>
          </tr>
          <tr class="summary-item">
             <td class="name">data_resolution</td>
-            <td class="m-help">Smallest meaningful difference between values in data, stored in the specified by unit. COMMENT: E.g., the change in value
-               of the least significant bit, or a larger number if signal noise is known to be present. If unknown, use -1.0&nbsp;
+            <td class="m-help">Smallest meaningful difference between values in data, stored in the specified by unit, e.g., the change in value of the least
+               significant bit, or a larger number if signal noise is known to be present. If unknown, use -1.0.&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">data_unit</td>
-            <td class="m-help">The base unit of measure used to store data. This should be in the SI unit. COMMENT: This is the SI unit (when appropriate)
-               of the stored data, such as Volts. If the actual data is stored in millivolts, the field 'conversion' below describes how
-               to convert the data to the specified SI unit.&nbsp;
+            <td class="m-help">Base unit of measurement for working with the data. Actual stored values are not necessarily stored in these units. To access
+               the data in these units, multiply 'data' by 'conversion'.&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">description</td>
-            <td class="m-help">Description of TimeSeries&nbsp;</td>
+            <td class="m-help">Description of the time series.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">dimension</td>
@@ -101,32 +105,32 @@
          </tr>
          <tr class="summary-item">
             <td class="name">external_file</td>
-            <td class="m-help">Path or URL to one or more external file(s). Field only present if format=external. NOTE: this is only relevant if the image
-               is stored in the file system as one or more image file(s). This field should NOT be used if the image is stored in another
-               HDF5 file and that file is HDF5 linked to this file.&nbsp;
+            <td class="m-help">Paths to one or more external file(s). The field is only present if format='external'. This is only relevant if the image
+               series is stored in the file system as one or more image file(s). This field should NOT be used if the image is stored in
+               another NWB file and that file is linked to this file.&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">external_file_starting_frame</td>
-            <td class="m-help">Each entry is the frame number (within the full ImageSeries) of the first frame in the corresponding external_file entry.
-               This serves as an index to what frames each file contains, allowing random access.Zero-based indexing is used.  (The first
-               element will always be zero).&nbsp;
+            <td class="m-help">Each external image may contain one or more consecutive frames of the full ImageSeries. This attribute serves as an index
+               to indicate which frames each file contains, to faciliate random access. The 'starting_frame' attribute, hence, contains a
+               list of frame numbers within the full ImageSeries of the first frame of each file listed in the parent 'external_file' dataset.
+               Zero-based indexing is used (hence, the first element will always be zero). For example, if the 'external_file' dataset has
+               three paths to files and the first file has 5 frames, the second file has 10 frames, and the third file has 20 frames, then
+               this attribute will have values [0, 5, 15]. If there is a single external file that holds all of the frames of the ImageSeries
+               (and so there is a single element in the 'external_file' dataset), then this attribute should have value [0].&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">field_of_view</td>
-            <td class="m-help">Width, height and depth of image, or imaged area (meters).&nbsp;</td>
+            <td class="m-help">Width, height and depth of image, or imaged area, in meters.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">format</td>
-            <td class="m-help">Format of image. If this is 'external' then the field external_file contains the path or URL information to that file. For
-               tiff, png, jpg, etc, the binary representation of the image is stored in data. If the format is raw then the fields bit_per_pixel
-               and dimension are used. For raw images, only a single channel is stored (eg, red).&nbsp;
+            <td class="m-help">Format of image. If this is 'external', then the attribute 'external_file' contains the path information to the image files.
+               If this is 'raw', then the raw (single-channel) binary data is stored in the 'data' dataset. If this attribute is not present,
+               then the default format='raw' case is assumed.&nbsp;
             </td>
-         </tr>
-         <tr class="summary-item">
-            <td class="name">help</td>
-            <td class="m-help">Short description of what this type of NWBContainer contains.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">orientation</td>
@@ -134,23 +138,21 @@
          </tr>
          <tr class="summary-item">
             <td class="name">starting_time</td>
-            <td class="m-help">The timestamp of the first sample. COMMENT: When timestamps are uniformly spaced, the timestamp of the first sample can be
-               specified and all subsequent ones calculated from the sampling rate.&nbsp;
+            <td class="m-help">Timestamp of the first sample in seconds. When timestamps are uniformly spaced, the timestamp of the first sample can be specified
+               and all subsequent ones calculated from the sampling rate attribute.&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">starting_time_rate</td>
-            <td class="m-help">Sampling rate, in Hz COMMENT: Rate information is stored in Hz&nbsp;</td>
+            <td class="m-help">Sampling rate, in Hz.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">starting_time_unit</td>
-            <td class="m-help">Value is 'Seconds'&nbsp;</td>
+            <td class="m-help">Unit of measurement for time, which is fixed to 'seconds'.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">timestamps</td>
-            <td class="m-help">Timestamps for samples stored in data.COMMENT: Timestamps here have all been corrected to the common experiment master-clock.
-               Time is stored as seconds and all timestamps are relative to experiment start time.&nbsp;
-            </td>
+            <td class="m-help">Timestamps for samples stored in data, in seconds, relative to the common experiment master-clock stored in NWBFile.timestamps_reference_time.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">timestamps_interval</td>
@@ -158,7 +160,7 @@
          </tr>
          <tr class="summary-item">
             <td class="name">timestamps_unit</td>
-            <td class="m-help">Value is 'Seconds'&nbsp;</td>
+            <td class="m-help">Unit of measurement for timestamps, which is fixed to 'seconds'.&nbsp;</td>
          </tr>
       </table>
       <!--Methods-->
@@ -395,14 +397,6 @@
                
             </td>
             <td class="name">validate_format</td>
-            <td class="m-help">&nbsp;</td>
-         </tr>
-         <tr class="summary-item">
-            <td class="attributes">
-               &nbsp;
-               
-            </td>
-            <td class="name">validate_help</td>
             <td class="m-help">&nbsp;</td>
          </tr>
          <tr class="summary-item">
