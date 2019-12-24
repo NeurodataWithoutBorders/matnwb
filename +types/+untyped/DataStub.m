@@ -1,5 +1,5 @@
 classdef DataStub
-    properties(SetAccess=private)
+    properties (SetAccess = protected)
         filename;
         path;
         dims;
@@ -232,6 +232,15 @@ classdef DataStub
             H5S.close(src_sid);
             H5D.close(src_did);
             H5F.close(src_fid);
+        end
+    end
+    
+    methods (Access = protected)
+        function tf = is_table(obj)
+            
+        end
+        
+        function tf = has_references(obj)
         end
     end
 end
