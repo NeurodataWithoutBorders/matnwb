@@ -2,41 +2,42 @@ classdef Type < h5.HasId
     %TYPE H5 Type.  Enumeration over predefined data types.
     
     methods (Static)
-        function Type = deriveType(matlabType)
+        function Type = deriveFromMatlab(matlabType)
             % we limit ourselves to the predefined native types and standard datatypes when applicable
             % https://portal.hdfgroup.org/display/HDF5/Predefined+Datatypes
+            % for compound types see h5.compound.CompoundType
             
             switch matlabType
                 case 'types.untyped.ObjectView'
-                    Type = h5.DefaultType.ObjectReference;
+                    Type = h5.PresetType.ObjectReference;
                 case 'types.untyped.RegionView'
-                    Type = h5.DefaultType.DatasetRegionReference;
+                    Type = h5.PresetType.DatasetRegionReference;
                 case {'char', 'cell', 'datetime'}
-                    Type = h5.DefaultType.String;
+                    Type = h5.PresetType.String;
                     Type = h5.Type(H5T.copy(Type.get_id()));
                     H5T.set_size(Type.get_id(), 'H5T_VARIABLE');
                 case 'double'
-                    Type = h5.DefaultType.Double;
+                    Type = h5.PresetType.Double;
                 case 'single'
-                    Type = h5.DefaultType.Single;
+                    Type = h5.PresetType.Single;
                 case 'logical'
-                    Type = h5.DefaultType.Bool;
+                    Type = h5.PresetType.Bool;
                 case 'int8'
-                    Type = h5.DefaultType.I8;
+                    Type = h5.PresetType.I8;
                 case 'uint8'
-                    Type = h5.DefaultType.U8;
+                    Type = h5.PresetType.U8;
                 case 'int16'
-                    Type = h5.DefaultType.I16;
+                    Type = h5.PresetType.I16;
                 case 'uint16'
-                    Type = h5.DefaultType.U16;
+                    Type = h5.PresetType.U16;
                 case 'int32'
-                    Type = h5.DefaultType.I32;
+                    Type = h5.PresetType.I32;
                 case 'uint32'
-                    Type = h5.DefaultType.U32;
+                    Type = h5.PresetType.U32;
                 case 'int64'
-                    Type = h5.DefaultType.I64;
+                    Type = h5.PresetType.I64;
                 case 'uint64'
-                    Type = h5.DefaultType.U64;
+                    Type = h5.PresetType.U64;
                 otherwise
                     error('NWB:H5:Type:InvalidType',...
                         'Type `%s` is not a supported raw type.', matlabType);

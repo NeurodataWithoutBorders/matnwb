@@ -1,28 +1,36 @@
-classdef Dataset < h5.HasId
-    %DATASET HDF5 Dataset
+classdef Dataset < h5.interface.HasId...
+        & h5.interface.IsNamed...
+        & h5.interface.IsHdfData...
+        & h5.interface.HasAttributes
+    %DATASET HDF5 Dataset for regular datatypes
     
     methods (Static)
-        function Dataset = create(Parent, name, Type, Space, varargin)
+        function Dataset = create(Parent, name, data)
             assert(isa(Parent, 'h5.HasId'),...
                 'NWB:H5:Dataset:InvalidArgument', 'Parent must have an ID');
-            assert(isa(Type, 'h5.Type'),...
-                'NWB:H5:Dataset:InvalidArgument', 'Type must be a h5.Type');
-            assert(isa(Space, 'h5.Space'),...
-                'NWB:H5:Dataset:InvalidArgument', 'Space must be a h5.Space');
             
-            Dataset = h5.Dataset(H5D.create(Parent.get_id(), name,...
-                Type.get_id(), Space.get_id(), lcpl_id, dcpl_id, dapl_id));
+            Type = h5.Type.deriveFromMatlab(class(data));
+            Space = h5.Space.deriveFromMatlab(Type, size(data));
+            did = H5D.create(Parent.get_id(), name,...
+                Type.get_id(), Space.get_id(), lcpl_id, dcpl_id, dapl_id);
+            Dataset = h5.Dataset(did, name);
+            Dataset.write(data);
         end
         
         function Dataset = open(Parent, name)
             assert(isa(Parent, 'h5.HasId'),...
                 'NWB:H5:Dataset:InvalidArgument', 'Parent must have an ID');
-            Dataset = h5.Dataset(H5D.open(Parent.get_id(), name));
+            did = H5D.open(Parent.get_id(), name);
+            Dataset = h5.Dataset(did, name);
         end
     end
     
     properties (Access = private)
         id;
+    end
+    
+    properties (SetAccess = private)
+        name;
     end
     
     properties (SetAccess = private, Dependent)
@@ -31,7 +39,8 @@ classdef Dataset < h5.HasId
     end
     
     methods % lifecycle
-        function obj = Dataset(id)
+        function obj = Dataset(name, id)
+            obj.name = name;
             obj.id = id;
         end
         
@@ -50,23 +59,40 @@ classdef Dataset < h5.HasId
         end
     end
     
-    methods
+    methods % HasId
+        function id = get_id(obj)
+            id = obj.id;
+        end
+    end
+    
+    methods % IsNamed
+        function name = get_name(obj)
+            name = obj.name;
+        end
+    end
+    
+    methods % IsHdfData
         function write(obj, data)
+            if isa(obj.type, 'h5.PresetType')
+                data = obj.type.filter(data);
+                
+                if obj.type == h5.PresetType.ObjectReference...
+                        || obj.type == h5.PresetType.DatasetRegionReference
+                    assert(~isa(data, 'types.untyped.ObjectView')...
+                        && ~isa(data, 'types.untyped.RegionView'),...
+                        'NWB:H5:Dataset:PreconversionRequired',...
+                        ['Reference data must be converted by this point.  '...
+                        'Use h5.File.filter_reference to convert the data.']);
+                end
+            end
+            
             PLIST_ID = 'H5P_DEFAULT';
-            Type = obj.type;
-            Space = obj.space;
             H5D.write(obj.id,...
-                Type.get_id(), Space.get_id(), Space.get_id(), PLIST_ID, data);
+                Type.get_id(), obj.space.get_id(), Space.get_id(), PLIST_ID, data);
         end
         
         function data = read(obj)
             data = H5D.read(obj.id);
-        end
-    end
-    
-    methods % h5.HasId
-        function id = get_id(obj)
-            id = obj.id;
         end
     end
 end

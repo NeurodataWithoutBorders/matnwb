@@ -1,4 +1,4 @@
-classdef File < h5.HasId
+classdef File < h5.Group
     %FILE HDF5 file
     
     methods (Static)
@@ -17,11 +17,7 @@ classdef File < h5.HasId
         end
     end
     
-    properties
-        id;
-    end
-    
-    properties (GetAccess = private, Dependent)
+    properties (SetAccess = private, Dependent)
         name;
     end
     
@@ -41,9 +37,27 @@ classdef File < h5.HasId
         end
     end
     
-    methods % h5.HasId
-        function id = get_id(obj)
-            id = obj.id;
+    methods
+        function data = filter_references(obj, ref)
+            % defaults to -1 (H5ML.id) which works for H5R.create when using
+            % Object References
+            refspace = repmat(H5ML.id, size(ref));
+            refpaths = {ref.path};
+            validPaths = find(~cellfun('isempty', refpaths));
+            if isa(ref, 'types.untyped.RegionView')
+                for i=validPaths
+                    did = H5D.open(fid, refpaths{i});
+                    %by default, we use block mode.
+                    refspace(i) = ref(i).get_selection(H5D.get_space(did));
+                    H5D.close(did);
+                end
+            end
+            typesize = H5T.get_size(ref(1).type);
+            data = zeros([typesize size(ref)], 'uint8');
+            for i=validPaths
+                data(:, i) = H5R.create(obj.id, ref(i).path, ref(i).reftype, ...
+                    refspace(i));
+            end
         end
     end
 end
