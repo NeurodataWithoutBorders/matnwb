@@ -34,7 +34,7 @@ Download the current release of MatNWB from https://github.com/NeurodataWithoutB
 
 #### Step 2: Download the NWB Schema
 
-Download the current release of the NWB format schema from https://github.com/NeurodataWithoutBorders/nwb-schema/releases or check out the latest development via ``git clone https://github.com/NeurodataWithoutBorders/nwb-schema.git``
+Download the current release of the NWB format schema from https://github.com/NeurodataWithoutBorders/nwb-schema/releases or check out the latest development via ``git clone --recursive https://github.com/NeurodataWithoutBorders/nwb-schema.git``
 
 #### Step 3: Generate the API
 
