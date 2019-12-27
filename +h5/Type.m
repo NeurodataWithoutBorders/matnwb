@@ -1,4 +1,4 @@
-classdef Type < h5.HasId
+classdef Type < h5.interface.HasId
     %TYPE H5 Type.  Enumeration over predefined data types.
     
     methods (Static)

@@ -4,7 +4,7 @@ classdef CompoundDataset < h5.Dataset
     % structs or a struct of arrays.
     
     methods (Static)
-        function Dataset = create(Parent, name, Data, Manifest)
+        function Dataset = create(Parent, name, Data, Manifest, varargin)
             assert(isa(Parent, 'h5.HasId'),...
                 'NWB:H5:CompoundDataset:InvalidArgument', 'Parent must have an ID');
             assert(isa(Parent, 'h5.compound.Manifest'),...
@@ -13,12 +13,23 @@ classdef CompoundDataset < h5.Dataset
             
             Data = h5.compound.filter(Data);
             
+            if isempty(varargin)
+                Dcpl = h5.DatasetCreationPropertyList();
+            else
+                assert(isa(varargin{1}, 'h5.DatasetCreationPropertyList'),...
+                    'NWB:H5:Dataset:InvalidArgument',...
+                    ['Dataset Creation Property List must be a '...
+                    'h5.DatasetCreationPropertyList']);
+                Dcpl = varargin{1};
+            end
+            
+            PLIST = 'H5P_DEFAULT';
             columnNames = Manifest.columns;
             numRows = length(Data.(columnNames{1}));
             Space = h5.Space.deriveFromMatlab([numRows 1]);
             did = H5D.create(Parent.get_id(), name,...
-                Manifest.to_type().get_id(), Space.get_id(), lcpl_id, dcpl_id, dapl_id);
-            Dataset = h5.CompoundDataset(did, name, Manifest);
+                Manifest.to_type().get_id(), Space.get_id(), PLIST, Dcpl.get_id(), PLIST);
+            Dataset = h5.CompoundDataset(name, did, Manifest);
             Dataset.write(Data);
         end
         
@@ -35,8 +46,8 @@ classdef CompoundDataset < h5.Dataset
     end
     
     methods % lifecycle (override)
-        function obj = CompoundDataset(id, name, Manifest)
-            obj = obj@h5.Dataset(id, name);
+        function obj = CompoundDataset(name, id, Manifest)
+            obj = obj@h5.Dataset(name, id);
             
             assert(isa(Manifest, 'h5.dataset.compound.Manifest'),...
                 'NWB:H5:CompoundDataset:InvalidArgument',...

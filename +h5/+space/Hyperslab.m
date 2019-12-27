@@ -1,23 +1,27 @@
 classdef Hyperslab
-    %HYPERSLAB Summary of this class goes here
-    %   Detailed explanation goes here
+    %HYPERSLAB Representation of a hyperslab selection in HDF5.  Note that these values
+    % are assumed to be HDF5 compliant (zero-indexed row-major).  Use the static methods
+    % to convert from MATLAB indices to Hyperslab indices.
     
-    properties
-        Property1
-    end
-    
-    methods
-        function obj = Hyperslab(inputArg1,inputArg2)
-            %HYPERSLAB Construct an instance of this class
-            %   Detailed explanation goes here
-            obj.Property1 = inputArg1 + inputArg2;
+    methods (Static)
+        function Hyperslabs = from_indices(indices, arraySize)
+            indices = sort(indices(:));
         end
         
-        function outputArg = method1(obj,inputArg)
-            %METHOD1 Summary of this method goes here
-            %   Detailed explanation goes here
-            outputArg = obj.Property1 + inputArg;
+        function Hyperslabs = from_mask(logicalMask)
+            h5.space.Hyperslab.from_indices(find(logicalMask), size(logicalMask));
         end
+        
+        function Hyperslabs = from_h5(h5_format)
+            %FROM_H5 the h5 format consists of a cell array of start and end indices.
+            % we will convert these to an equivalent array of hyperslabs.
+        end
+    end
+    
+    properties
+        start;
+        stride;
+        count;
     end
 end
 

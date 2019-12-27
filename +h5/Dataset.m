@@ -5,14 +5,25 @@ classdef Dataset < h5.interface.HasId...
     %DATASET HDF5 Dataset for regular datatypes
     
     methods (Static)
-        function Dataset = create(Parent, name, data)
+        function Dataset = create(Parent, name, data, varargin)
             assert(isa(Parent, 'h5.HasId'),...
                 'NWB:H5:Dataset:InvalidArgument', 'Parent must have an ID');
             
+            if isempty(varargin)
+                Dcpl = h5.DatasetCreationPropertyList();
+            else
+                assert(isa(varargin{1}, 'h5.DatasetCreationPropertyList'),...
+                    'NWB:H5:Dataset:InvalidArgument',...
+                    ['Dataset Creation Property List must be a '...
+                    'h5.DatasetCreationPropertyList']);
+                Dcpl = varargin{1};
+            end
+            
+            PLIST = 'H5P_DEFAULT';
             Type = h5.Type.deriveFromMatlab(class(data));
             Space = h5.Space.deriveFromMatlab(Type, size(data));
             did = H5D.create(Parent.get_id(), name,...
-                Type.get_id(), Space.get_id(), lcpl_id, dcpl_id, dapl_id);
+                Type.get_id(), Space.get_id(), PLIST, Dcpl.get_id(), PLIST);
             Dataset = h5.Dataset(did, name);
             Dataset.write(data);
         end
@@ -36,6 +47,7 @@ classdef Dataset < h5.interface.HasId...
     properties (SetAccess = private, Dependent)
         space;
         type;
+        isChunked;
     end
     
     methods % lifecycle
@@ -57,6 +69,11 @@ classdef Dataset < h5.interface.HasId...
         function Type = get.type(obj)
             Type = H5.Type(H5D.get_type(obj.id));
         end
+        
+        function tf = get.isChunked(obj)
+            Dcpl = h5.DatasetCreationPropertyList(H5D.get_create_plist(obj.id));
+            layout = H5P.get_layout(create_plist);
+        end
     end
     
     methods % HasId
@@ -76,8 +93,8 @@ classdef Dataset < h5.interface.HasId...
             if isa(obj.type, 'h5.PresetType')
                 data = obj.type.filter(data);
                 
-                if obj.type == h5.PresetType.ObjectReference...
-                        || obj.type == h5.PresetType.DatasetRegionReference
+                if ismember(obj.type,...
+                        [h5.PresetType.ObjectReference, h5.PresetType.DatasetRegionReference])
                     assert(~isa(data, 'types.untyped.ObjectView')...
                         && ~isa(data, 'types.untyped.RegionView'),...
                         'NWB:H5:Dataset:PreconversionRequired',...
@@ -88,7 +105,7 @@ classdef Dataset < h5.interface.HasId...
             
             PLIST_ID = 'H5P_DEFAULT';
             H5D.write(obj.id,...
-                Type.get_id(), obj.space.get_id(), Space.get_id(), PLIST_ID, data);
+                Type.get_id(), obj.space.get_id(), obj.space.get_id(), PLIST_ID, data);
         end
         
         function data = read(obj)

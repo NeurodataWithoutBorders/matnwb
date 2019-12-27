@@ -4,5 +4,11 @@ classdef HasId < handle
     methods (Abstract)
         id = get_id(obj);
     end
+    
+    methods
+        function Identifier = get_type(obj)
+            Identifier = H5I.get_type(obj.get_id())
+        end
+    end
 end
 

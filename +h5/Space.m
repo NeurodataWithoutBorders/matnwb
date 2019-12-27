@@ -35,19 +35,39 @@ classdef Space < h5.interface.HasId
     end
     
     methods
-        function select(obj, hyperslabs)
+        function select(obj, Hyperslabs)
+            %SELECT sets a union of all provided hyperslab selections.
+            % previous selections are unset.
+            
             assert(obj.spaceType == h5.space.SpaceType.Simple,...
                 'NWB:H5:Space:InvalidSpaceType',...
                 'To set hyperslabs, create a Simple Space.');
-            assert(isa(val, 'h5.space.Hyperslab'),...
+            assert(isa(Hyperslabs, 'h5.space.Hyperslab'),...
                 'NWB:H5:Space:InvalidArgument',...
                 'hyperslab must be an array of Hyperslab objects.');
+            
+            H5S.select_none(obj.id); % reset
+            for i = 1:length(Hyperslabs)
+                Slab = Hyperslabs(i);
+                H5S.select_hyperslab(obj.id,...
+                    'H5S_SELECT_OR', Slab.start, Slab.stride, Slab.count, []);
+            end
         end
         
-        function resize(obj, extents)
-            assert(obj.spaceType == h5.space.SpaceType.Simple,...
-                'NWB:H5:Space:InvalidSpaceType',...
-                'To resize extents, create a Simple Space.');
+        function Hyperslabs = get_slabs(obj)
+            assert(h5.space.Constants.HyperSlabSelection == H5S.get_select_type(obj.id),...
+                'NWB:H5:Space:InvalidSelectionMode',...
+                'Selection mode is not in Hyperslab Selection Mode!');
+            
+            nblocks = H5S.get_select_hyper_nblocks(obj.id);
+            blocklist = H5S.get_select_hyper_blocklist(obj.id, 0, nblocks);
+            
+            region = rot90(blocklist, -1); %transpose + fliplr
+            region = mat2cell(region, ones(size(region,1)/2,1)+1);
+            
+            for i = 1:length(region)
+                
+            end
         end
     end
     
