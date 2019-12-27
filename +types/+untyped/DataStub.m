@@ -234,13 +234,4 @@ classdef DataStub
             H5F.close(src_fid);
         end
     end
-    
-    methods (Access = protected)
-        function tf = is_table(obj)
-            
-        end
-        
-        function tf = has_references(obj)
-        end
-    end
 end
