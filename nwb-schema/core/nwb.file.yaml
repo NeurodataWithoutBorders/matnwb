@@ -309,6 +309,7 @@ groups:
         doc: Physical group of electrodes.
         quantity: '*'
       - name: electrodes
+        neurodata_type_def: Electrodes
         neurodata_type_inc: DynamicTable
         doc: A table of all electrodes (i.e. channels) used for recording.
         quantity: '?'
@@ -331,7 +332,7 @@ groups:
           doc: Impedance of the channel.
         - name: location
           neurodata_type_inc: VectorData
-          dtype: text
+          dtype: ascii
           doc: Location of the electrode (channel). Specify the area, layer, comments
             on estimation of area/layer, stereotaxic coordinates if in vivo, etc. Use
             standard atlas names for anatomical regions when possible.
@@ -347,7 +348,7 @@ groups:
           doc: Reference to the ElectrodeGroup this electrode is a part of.
         - name: group_name
           neurodata_type_inc: VectorData
-          dtype: text
+          dtype: ascii
           doc: Name of the ElectrodeGroup this electrode is a part of.
         - name: rel_x
           neurodata_type_inc: VectorData
