@@ -20,7 +20,7 @@ The NWB:N schema is in a state of some evolution.  This package assumes a certai
 
 For those planning on using matnwb alongside pynwb, please keep the following in mind:
  - The ordering of dimensions in MATLAB are reversed compared to numpy (and pynwb).  Thus, a 3-D ```SpikeEventSeries```, which in pynwb would normally be indexed in order ```(num_samples, num_channels, num_events)```, would be indexed in form ```(num_events, num_channels, num_samples)``` in matnwb.
- - matnwb is dependent on the schema, which may not necessary correspond with your PyNWB schema version.  Please consider overwriting the contents within matnwb's **~/schema/core** directory with the generating pynwb's **src/pynwb/data directory** and running generateCore to ensure compatibilty between systems.
+ - MatNWB is dependent on the schema, which may not necessary correspond with your PyNWB schema version.  Please consider overwriting the contents within MatNWB's **~/schema/core** directory with the generating PyNWB's **src/pynwb/data directory** and running generateCore to ensure compatibilty between systems.
  
 The `master` branch in this repository is considered perpetually unstable.  If you desire matnwb's full functionality (full round-trip with nwb data), please consider downloading the more stable releases in the Releases tab.  Keep in mind that the Releases are generally only compatible with older versions of pynwb and may not supported newer data types supported by pynwb (such as data references or compound types).
 
