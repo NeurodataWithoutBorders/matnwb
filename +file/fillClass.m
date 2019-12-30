@@ -55,10 +55,22 @@ else
     depnm = ['types.' strrep(ParentNamespace.name, '-', '_') '.' parentName]; %WRITE
 end
 
+rawClass = namespace.getClass(name);
+switch rawClass('class_type')
+    case 'groups'
+        h5TypeName = 'types.untyped.IsGroup';
+    case 'datasets'
+        h5TypeName = 'types.untyped.IsDataset';
+    otherwise
+        error('NWB:File:FillClass:InvalidClassType',...
+            '`class_type` must be of `groups` or `datasets`');
+end
+
 %% return classfile string
 classDef = [...
-    'classdef ' name ' < ' depnm newline... %header, dependencies
-    '% ' upper(name) ' ' class.doc]; %name, docstr
+    sprintf('classdef %s < %s & %s\n', name, depnm, h5TypeName)... % header, dependencies
+    sprintf('%% %s %s', upper(name), class.doc)]; % name, docstr
+
 propgroups = {...
     @()file.fillProps(classprops, readonly, 'SetAccess=protected')...
     @()file.fillProps(classprops, setdiff([required optional], readonly))...
