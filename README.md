@@ -31,11 +31,19 @@ This package reads and writes NWB:N 2.0 files and does not support older formats
 #### Step 1: Download MatNWB
 [![View NeurodataWithoutBorders/matnwb on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://www.mathworks.com/matlabcentral/fileexchange/67741-neurodatawithoutborders-matnwb)
 
-Download the current release of MatNWB from https://github.com/NeurodataWithoutBorders/matnwb/releases or check out the latest development version via ``git clone https://github.com/NeurodataWithoutBorders/matnwb.git``
+Download the current release of MatNWB from https://github.com/NeurodataWithoutBorders/matnwb/releases or check out the latest development version via 
+
+```bash
+git clone https://github.com/NeurodataWithoutBorders/matnwb.git
+```
 
 #### Step 2: Download the NWB Schema
 
-Download the current release of the NWB format schema from https://github.com/NeurodataWithoutBorders/nwb-schema/releases or check out the latest development via ``git clone --recursive https://github.com/NeurodataWithoutBorders/nwb-schema.git``
+Download the current release of the NWB format schema from https://github.com/NeurodataWithoutBorders/nwb-schema/releases or check out the latest development via 
+
+```bash
+git clone --recursive https://github.com/NeurodataWithoutBorders/nwb-schema.git
+```
 
 #### Step 3: Generate the API
 
