@@ -5,25 +5,41 @@ classdef Dataset < h5.interface.HasId...
     %DATASET HDF5 Dataset for regular datatypes
     
     methods (Static)
-        function Dataset = create(Parent, name, data, varargin)
+        function Dataset = create(Parent, name, varargin)
             assert(isa(Parent, 'h5.HasId'),...
                 'NWB:H5:Dataset:InvalidArgument', 'Parent must have an ID');
             
-            if isempty(varargin)
-                Dcpl = h5.DatasetCreationPropertyList();
+            p = inputParser;
+            p.PartialMatching = false;
+            p.addParameter('data', []);
+            p.addParameter('maxSize', []);
+            p.addParameter('type', h5.PresetType.U8);
+            p.addParameter('dcpl', h5.DatasetCreationPropertyList());
+            p.parse(varargin{:});
+            data = p.Results.data;
+            maxSize = p.Results.maxSize;
+            Type = p.Results.type;
+            Dcpl = p.Results.dcpl;
+            
+            assert(xor(isempty(data), isempty(maxSize)),...
+                'NWB:H5:Dataset:MissingArgument',...
+                ['Create a dataset either using data to write, or a maximum size if '...
+                'you wish to write the data later.']);
+            
+            assert(isa(Dcpl, 'h5.DatasetCreationPropertyList'),...
+                'NWB:H5:Dataset:InvalidArgument',...
+                '`dcpl` must be a valid h5.DatasetCreationPropertyList');
+            
+            if isempty(maxSize)
+                Type = h5.Type.deriveFromMatlab(class(data));
+                Space = h5.Space.deriveFromMatlab(Type, size(data));
             else
-                assert(isa(varargin{1}, 'h5.DatasetCreationPropertyList'),...
-                    'NWB:H5:Dataset:InvalidArgument',...
-                    ['Dataset Creation Property List must be a '...
-                    'h5.DatasetCreationPropertyList']);
-                Dcpl = varargin{1};
+                Space = h5.Space.
             end
             
-            PLIST = 'H5P_DEFAULT';
-            Type = h5.Type.deriveFromMatlab(class(data));
-            Space = h5.Space.deriveFromMatlab(Type, size(data));
+            pid = 'H5P_DEFAULT';
             did = H5D.create(Parent.get_id(), name,...
-                Type.get_id(), Space.get_id(), PLIST, Dcpl.get_id(), PLIST);
+                Type.get_id(), Space.get_id(), pid, Dcpl.get_id(), pid);
             Dataset = h5.Dataset(did, name);
             Dataset.write(data);
         end
@@ -46,6 +62,8 @@ classdef Dataset < h5.interface.HasId...
     
     properties (SetAccess = private, Dependent)
         space;
+        dims;
+        extents;
         type;
         isChunked;
     end
@@ -62,6 +80,18 @@ classdef Dataset < h5.interface.HasId...
     end
     
     methods % set/get
+        function dims = get.dims(obj)
+            Space = obj.space;
+            [~, h5_dims, ~] = H5S.get_simple_extent_dims(Space.get_id());
+            dims = fliplr(h5_dims);
+        end
+        
+        function extents = get.extents(obj)
+            Space = obj.space;
+            [~, ~, h5_maxdims] = H5S.get_simple_extent_dims(Space.get_id());
+            maxSize = fliplr(h5_maxdims);
+        end
+        
         function Space = get.space(obj)
            Space = H5.Space(H5D.get_space(obj.id)); 
         end
@@ -72,7 +102,8 @@ classdef Dataset < h5.interface.HasId...
         
         function tf = get.isChunked(obj)
             Dcpl = h5.DatasetCreationPropertyList(H5D.get_create_plist(obj.id));
-            layout = H5P.get_layout(create_plist);
+            layout = H5P.get_layout(Dcpl.get_id());
+            tf = layout == h5.DatasetCreationProperties.Chunking;
         end
     end
     

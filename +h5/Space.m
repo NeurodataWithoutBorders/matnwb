@@ -54,7 +54,7 @@ classdef Space < h5.interface.HasId
             end
         end
         
-        function Hyperslabs = get_slabs(obj)
+        function Hyperslabs = get_selections(obj)
             assert(h5.space.Constants.HyperSlabSelection == H5S.get_select_type(obj.id),...
                 'NWB:H5:Space:InvalidSelectionMode',...
                 'Selection mode is not in Hyperslab Selection Mode!');
@@ -62,7 +62,7 @@ classdef Space < h5.interface.HasId
             nblocks = H5S.get_select_hyper_nblocks(obj.id);
             blocklist = H5S.get_select_hyper_blocklist(obj.id, 0, nblocks);
             
-            region = rot90(blocklist, -1); %transpose + fliplr
+            region = rot90(blocklist, -1); % transpose + fliplr
             region = mat2cell(region, ones(size(region,1)/2,1)+1);
             
             for i = 1:length(region)
