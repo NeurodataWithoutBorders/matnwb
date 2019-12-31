@@ -37,7 +37,7 @@ classdef DataPipe < handle
             p.addParameter('axis', 1);
             p.addParameter('chunkSize', []);
             p.addParameter('dataType', 'uint8');
-            p.addParameter('compressionLevel', 0);
+            p.addParameter('compressionLevel', -1);
             p.parse(varargin{:});
             
             obj.filename = p.Results.filename;
