@@ -8,3 +8,4 @@ workspace/
 *.asv
 *.swp
 .DS_Store
++tests/env.mat
