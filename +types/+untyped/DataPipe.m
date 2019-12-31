@@ -1,11 +1,15 @@
 classdef DataPipe < handle
     %DATAPIPE Special form of Datastub that allows for appending.
+    % Current limitations: DataPipe currently only supports the types represented
+    % by dataType.  No strings, or references are allowed with DataPipes.
     
     properties
         axis; % axis index in MATLAB format indicating which axis to increment.
         offset; % axis offset of dataset to append.  May be used to overwrite data.
         chunkSize; % ideal size of chunks for incremental data appending.
+        compressionLevel; % DEFLATE level for the dataset. -1 for disabled compression
         dataType; % one of float|double|uint8|int8|int16|uint16|int32|uint32|int64|uint64
+        data; % Writable data 
     end
     
     properties (SetAccess = private)
@@ -13,6 +17,13 @@ classdef DataPipe < handle
         filename;
         path;
         maxSize; % maximum dimension size
+    end
+    
+    properties (Access = private, Constant)
+        SUPPORTED_DATATYPES = {...
+            'float', 'double', 'uint8', 'int8', 'uint16', 'int16', 'uint32',...
+            'int32', 'uint64', 'int64'
+            };
     end
     
     methods % lifecycle
@@ -26,6 +37,7 @@ classdef DataPipe < handle
             p.addParameter('axis', 1);
             p.addParameter('chunkSize', []);
             p.addParameter('dataType', 'uint8');
+            p.addParameter('compressionLevel', 0);
             p.parse(varargin{:});
             
             obj.filename = p.Results.filename;
@@ -34,6 +46,7 @@ classdef DataPipe < handle
             obj.offset = p.Results.offset;
             obj.chunkSize = p.Results.chunkSize;
             obj.dataType = p.Results.dataType;
+            obj.compressionLevel = p.Results.compressionLevel;
         end
     end
     
@@ -108,17 +121,16 @@ classdef DataPipe < handle
         end
         
         function set.dataType(obj, val)
+            import types.untyped.DataPipe;
+            
             assert(ischar(val),...
                 'NWB:Untyped:DataPipe:SetDataType:InvalidType',...
                 '`dataType` must be a string');
-            SUPPORTED_DATATYPES = {...
-                'float', 'double', 'uint8', 'int8', 'uint16', 'int16', 'uint32',...
-                'int32', 'uint64', 'int64'
-                };
-            assert(any(strcmp(val, SUPPORTED_DATATYPES)),...
+            
+            assert(any(strcmp(val, DataPipe.SUPPORTED_DATATYPES)),...
                 'NWB:Untyped:DataPipe:SetDataType:InvalidType',...
                 '`dataType` must be one of the supported datatypes `%s`',...
-                strjoin(SUPPORTED_DATATYPES, '|'));
+                strjoin(DataPipe.SUPPORTED_DATATYPES, '|'));
             
             assert(~obj.isBound,...
                 'NWB:Untyped:DataPipe:SetDataType:SettingLocked',...
@@ -126,6 +138,35 @@ classdef DataPipe < handle
                 'existing NWB file.']);
             
             obj.dataType = val;
+        end
+        
+        function set.data(obj, val)
+            assert(~obj.isBound,...
+                'NWB:Untyped:DataPipe:SetData:SettingLocked',...
+                ['`data` cannot be set if this DataPipe is bound to an existing NWB '...
+                'file']);
+            obj.dataType = class(val);
+            obj.data = val;
+        end
+        
+        function set.compressionLevel(obj, val)
+            assert(~obj.isBound,...
+                'NWB:Untyped:DataPipe:SetCompressionLevel:SettingLocked',...
+                ['`compressionLevel` can only be set if DataPipe has not yet been '...
+                'bound to a NWBFile.']);
+            
+            assert(isscalar(val) && isnumeric(val),...
+                'NWB:Untyped:DataPipe:SetCompressionLevel:InvalidType',...
+                '`compressionLevel` must be a scalar numeric value.');
+            val = ceil(val);
+            if val < -1 || val > 9
+                warning('NWB:Untyped:DataPipe:SetCompressionLevel:OutOfRange',...
+                    ['`compressionLevel` range is [0, 9] or -1 for off.  '...
+                    'Found %d, Disabling.'], val);
+                val = -1;
+            end
+            
+            obj.compressionLevel = val;
         end
     end
     
@@ -147,6 +188,10 @@ classdef DataPipe < handle
         end
         
         function append(obj, data)
+            if isempty(data)
+                return;
+            end
+            
             assert(isa(data, obj.dataType),...
                 'NWB:Untyped:DataPipe:Append:InvalidType',...
                 'Data must match dataType')
@@ -154,11 +199,7 @@ classdef DataPipe < handle
                 'NWB:Untyped:DataPipe:ExportRequired',...
                 ['Appending to a dataset requires exporting and re-importing '...
                     'a valid NWB file.']);
-            
-            if isempty(data)
-                return;
-            end
-            
+                
             default_pid = 'H5P_DEFAULT';
             
             fid = H5F.open(obj.filename, 'H5F_ACC_RDWR', default_pid);
@@ -210,7 +251,6 @@ classdef DataPipe < handle
             end
             
             default_pid = 'H5P_DEFAULT';
-            
             tid = io.getBaseType(obj.dataType);
             
             rank = length(obj.maxSize);
@@ -229,10 +269,14 @@ classdef DataPipe < handle
             end
             H5P.set_chunk(dcpl, h5_chunk_dims);
             
+            if obj.compressionLevel ~= -1
+                H5P.set_deflate(dcpl, obj.compressionLevel);
+            end
+            
             dapl = default_pid;
             
             did = H5D.create(fid, fullpath, tid, sid, lcpl, dcpl, dapl);
-            
+
             H5P.close(dcpl);
             H5S.close(sid);
             if ~ischar(tid)
@@ -240,9 +284,14 @@ classdef DataPipe < handle
             end            
             H5D.close(did);
             
+            data = obj.data;
+            obj.data = cast([], obj.dataType);
+            
             % bind to this file.
             obj.filename = H5F.get_name(fid);
             obj.path = fullpath;
+            
+            obj.append(data);
         end
     end
 end
