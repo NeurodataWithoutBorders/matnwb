@@ -8,11 +8,11 @@ classdef HasSubObjects < h5.interface.HasId
             isSoft = isa(Link, 'types.untyped.SoftLink');
             isExternal = isa(Link, 'types.untyped.ExternalLink');
             
-            PROPLIST = 'H5P_DEFAULT';
+            pid = 'H5P_DEFAULT';
             if isSoft
-                H5L.create_soft(Link.path, obj.get_id(), name, PROPLIST, PROPLIST);
+                H5L.create_soft(Link.path, obj.get_id(), name, pid, pid);
             elseif isExternal
-                H5L.create_external(Link.filename, Link.path, obj.get_id(), name, PROPLIST, PROPLIST);
+                H5L.create_external(Link.filename, Link.path, obj.get_id(), name, pid, pid);
             else
                 error('NWB:H5:Group:InvalidArgument',...
                 'Link must be a types.untyped.SoftLink or types.untyped.ExternalLink');

@@ -1,31 +1,10 @@
 classdef DatasetCreationPropertyList < h5.interface.HasId
-    %DATASETCREATIONPROPERTYLIST Represents a H5P for dataset creation
+    %DATASETCREATIONPROPERTYLIST Represents a H5P list for dataset creation
     
     methods (Static)
-        function Dcpl = create(varargin)
-            if isempty(varargin)
-                Dcpl = h5.DatasetCreationPropertyList('H5P_DEFAULT');
-                return;
-            end
-            
-            [Properties, propNames] = enumeration('h5.DatasetCreationProperties');
-            keywords = varargin(1:2:end);
-            stringKeywordMask = cellfun('isclass', keywords, 'char');
-            filterKeywordMask = cellfun('isclass', keywords,...
-                'h5.DatasetCreationProperties');
-            
-            assert(all(stringKeywordMask | filterKeywordMask)...
-                && isempty(setdiff([keywords{filterKeywordMask}], Properties))...
-                && isempty(setdiff(keywords(stringKeywordMask), propNames)),...
-                'NWB:H5:Dataset:InvalidArgument',...
-                'Property arguments must use valid keywords.');
-            
+        function Dcpl = create()
             Dcpl = h5.DatasetCreationPropertyList(...
                 H5P.create('H5P_DATASET_CREATE'));
-            for i = 1:2:length(varargin)
-                Word = h5.DatasetCreationProperties.(varargin{1});
-                Word.processArguments(Dcpl, varargin{2});
-            end
         end
     end
     
@@ -33,9 +12,9 @@ classdef DatasetCreationPropertyList < h5.interface.HasId
         id;
     end
     
-    properties (SetAccess = private, Dependent)
-        isChunked;
-        isCompressed;
+    properties (Dependent)
+        chunkSize;
+        deflateLevel;
     end
     
     methods % lifecycle
@@ -49,13 +28,34 @@ classdef DatasetCreationPropertyList < h5.interface.HasId
     end
     
     methods % get/set
-        function tf = get.isChunked(obj)
-            H5P.get_layout();
-            layout = H5P.get_layout(create_plist);
-            tf =
+        function set.chunkSize(obj, val)
+            H5P.set_chunk(obj.id, val);
         end
         
-        function tf = get.isCompressed(obj)
+        function size = get.chunkSize(obj)
+            try
+                size = H5P.get_chunk(obj.id);
+            catch
+                size = [];
+            end
+        end
+        
+        function set.deflateLevel(obj, val)
+            H5P.set_deflate(obj.id, val);
+        end
+        
+        function level = get.deflateLevel(obj)
+            numFilters = H5P.get_nfilters(obj.id);
+            for i = 0:numFilters-1
+                [filter, ~, cd_values, ~, ~] =...
+                    H5P.get_filter(obj.id, i);
+                
+                if filter == H5ML.get_constant_value('H5Z_FILTER_DEFLATE')
+                    level = cd_values;
+                    return;
+                end
+            end
+            level = -1;
         end
     end
     

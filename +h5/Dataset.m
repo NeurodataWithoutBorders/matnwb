@@ -10,45 +10,33 @@ classdef Dataset < h5.interface.HasId...
                 'NWB:H5:Dataset:InvalidArgument', 'Parent must have an ID');
             
             p = inputParser;
-            p.PartialMatching = false;
-            p.addParameter('data', []);
-            p.addParameter('maxSize', []);
-            p.addParameter('type', h5.PresetType.U8);
-            p.addParameter('dcpl', h5.DatasetCreationPropertyList());
+            p.addParameter('space', h5.Space.create(h5.space.SpaceType.H5S_NULL));
+            p.addParameter('type', h5.type.H5Types.H5T_STD_U8LE);
+            p.addParameter('dcpl', h5.DatasetCreationPropertyList('H5P_DEFAULT'));
             p.parse(varargin{:});
-            data = p.Results.data;
-            maxSize = p.Results.maxSize;
+            Space = p.Results.space;
             Type = p.Results.type;
             Dcpl = p.Results.dcpl;
             
-            assert(xor(isempty(data), isempty(maxSize)),...
-                'NWB:H5:Dataset:MissingArgument',...
-                ['Create a dataset either using data to write, or a maximum size if '...
-                'you wish to write the data later.']);
-            
+            assert(isa(Space, 'h5.Space'), 'NWB:H5:Dataset:InvalidArgument',...
+                '`space` must be a `h5.Space`');
+            assert(isa(Type, 'h5.Type'), 'NWB:H5:Dataset:InvalidArgument',...
+                '`type` must be a `h5.Type`');
             assert(isa(Dcpl, 'h5.DatasetCreationPropertyList'),...
                 'NWB:H5:Dataset:InvalidArgument',...
                 '`dcpl` must be a valid h5.DatasetCreationPropertyList');
             
-            if isempty(maxSize)
-                Type = h5.Type.deriveFromMatlab(class(data));
-                Space = h5.Space.deriveFromMatlab(Type, size(data));
-            else
-                Space = h5.Space.
-            end
-            
             pid = 'H5P_DEFAULT';
             did = H5D.create(Parent.get_id(), name,...
                 Type.get_id(), Space.get_id(), pid, Dcpl.get_id(), pid);
-            Dataset = h5.Dataset(did, name);
-            Dataset.write(data);
+            Dataset = h5.Dataset(name, did);
         end
         
         function Dataset = open(Parent, name)
             assert(isa(Parent, 'h5.HasId'),...
                 'NWB:H5:Dataset:InvalidArgument', 'Parent must have an ID');
             did = H5D.open(Parent.get_id(), name);
-            Dataset = h5.Dataset(did, name);
+            Dataset = h5.Dataset(name, did);
         end
     end
     
@@ -56,16 +44,21 @@ classdef Dataset < h5.interface.HasId...
         id;
     end
     
+    properties (Access = private, Dependent)
+        space;
+        dcpl;
+    end
+    
     properties (SetAccess = private)
         name;
     end
     
     properties (SetAccess = private, Dependent)
-        space;
         dims;
         extents;
         type;
-        isChunked;
+        chunkSize;
+        deflateLevel;
     end
     
     methods % lifecycle
@@ -80,30 +73,46 @@ classdef Dataset < h5.interface.HasId...
     end
     
     methods % set/get
+        function Space = get.space(obj)
+            Space = h5.Space(H5D.get_space(obj.id));
+        end
+        
+        function Dcpl = get.dcpl(obj)
+            Dcpl = h5.DatasetCreationPropertyList(H5D.get_create_plist(obj.id));
+        end
+        
         function dims = get.dims(obj)
-            Space = obj.space;
-            [~, h5_dims, ~] = H5S.get_simple_extent_dims(Space.get_id());
-            dims = fliplr(h5_dims);
+            dims = obj.space.dims;
         end
         
         function extents = get.extents(obj)
-            Space = obj.space;
-            [~, ~, h5_maxdims] = H5S.get_simple_extent_dims(Space.get_id());
-            maxSize = fliplr(h5_maxdims);
-        end
-        
-        function Space = get.space(obj)
-           Space = H5.Space(H5D.get_space(obj.id)); 
+            extents = obj.space.extents;
         end
         
         function Type = get.type(obj)
             Type = H5.Type(H5D.get_type(obj.id));
         end
         
-        function tf = get.isChunked(obj)
-            Dcpl = h5.DatasetCreationPropertyList(H5D.get_create_plist(obj.id));
-            layout = H5P.get_layout(Dcpl.get_id());
-            tf = layout == h5.DatasetCreationProperties.Chunking;
+        function size = get.chunkSize(obj)
+            size = obj.dcpl.chunkSize;
+        end
+        
+        function level = get.deflateLevel(obj)
+            level = obj.dcpl.deflateLevel;
+        end
+    end
+    
+    methods
+        function SelectSpace = make_selection(obj, Hyperslabs)
+            %MAKE_SELECTION makes a selection on the *copy* of the dataset's space.
+            % used for Region References which require a copied Space.
+            
+            SelectSpace = obj.space.copy();
+            assert(isa(SelectSpace, 'h5.space.SimpleSpace'),...
+                'NWB:H5:Dataset:Select:InvalidSpace',...
+                ['Space for dataset `%s` is not Simple.  Selection is only possible '...
+                'on a simple space.'], obj.name);
+            SelectSpace.select(Hyperslabs);
         end
     end
     

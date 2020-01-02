@@ -7,7 +7,7 @@ classdef HasId < handle
     
     methods
         function Identifier = get_type(obj)
-            Identifier = H5I.get_type(obj.get_id())
+            Identifier = H5I.get_type(obj.get_id());
         end
     end
 end

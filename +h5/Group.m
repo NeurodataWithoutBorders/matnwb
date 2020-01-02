@@ -3,11 +3,10 @@ classdef Group < h5.interface.HasSubObjects & h5.interface.HasAttributes & h5.in
     
     methods (Static)
         function Group = create(Parent, name)
-            PLIST_ID = 'H5P_DEFAULT';
+            pid = 'H5P_DEFAULT';
             
             Group = h5.Group(...
-                H5G.create(Parent.get_id(), name,...
-                PLIST_ID, PLIST_ID, PLIST_ID),...
+                H5G.create(Parent.get_id(), name, pid, pid, pid),...
                 name);
         end
         

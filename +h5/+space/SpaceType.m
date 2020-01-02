@@ -1,15 +1,6 @@
-classdef SpaceType
+classdef SpaceType < h5.interface.IsConstant
     %SPACETYPE Available space type
-    
-    properties
-        string;
-    end
-    
-    methods
-        function obj = SpaceType(string)
-            obj.string = string;
-        end
-    end
+    % These enumeration values coincide with H5S space types.
     
     enumeration
         Scalar('H5S_SCALAR');

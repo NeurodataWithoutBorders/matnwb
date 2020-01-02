@@ -8,10 +8,10 @@ classdef File < h5.interface.HasSubObjects & h5.interface.HasAttributes & h5.int
         end
         
         function File = open(filename, Access)
-            assert(isa(Access, 'h5.FileAccess'),...
+            assert(isa(Access, 'h5.const.FileAccess'),...
                 'NWB:H5:File:InvalidArgument',...
                 'File Access must use the h5.FileAccess enum.');
-            File = h5.File(H5F.open(filename, Access.mode, 'H5P_DEFAULT'));
+            File = h5.File(H5F.open(filename, Access.constant, 'H5P_DEFAULT'));
         end
     end
     
@@ -40,26 +40,20 @@ classdef File < h5.interface.HasSubObjects & h5.interface.HasAttributes & h5.int
     end
     
     methods
-        function data = filter_references(obj, ref)
-            % defaults to -1 (H5ML.id) which works for H5R.create when using
-            % Object References
-            refspace = repmat(H5ML.id, size(ref));
-            refpaths = {ref.path};
-            validPaths = find(~cellfun('isempty', refpaths));
-            if isa(ref, 'types.untyped.RegionView')
-                for i=validPaths
-                    did = H5D.open(fid, refpaths{i});
-                    %by default, we use block mode.
-                    refspace(i) = ref(i).get_selection(H5D.get_space(did));
-                    H5D.close(did);
-                end
+        function refData = get_reference_data(obj, View)
+            assert(isa(View, 'types.untyped.ObjectView')...
+                || isa(View, 'types.untyped.RegionView'),...
+                'NWB:H5:File:FilterRef:InvalidArgument',...
+                '`View` must be an ObjectView or RegionView');
+
+            if isa(View, 'types.untyped.ObjectView')
+                refType = h5.const.ReferenceType.Object.constant;
+                Selection = -1;
+            else
+                refType = h5.const.ReferenceType.DatasetRegion.constant;
+                Selection = h5.Dataset.open(obj, View.path).make_selection(View.region);
             end
-            typesize = H5T.get_size(ref(1).type);
-            data = zeros([typesize size(ref)], 'uint8');
-            for i=validPaths
-                data(:, i) = H5R.create(obj.id, ref(i).path, ref(i).reftype, ...
-                    refspace(i));
-            end
+            refData = H5R.create(obj.id, View.path, refType, Selection.get_id());
         end
     end
     
