@@ -4,14 +4,19 @@ classdef CompoundDataset < h5.Dataset
     % structs or a struct of arrays.
     
     methods (Static)
-        function Dataset = create(Parent, name, Data, Manifest, varargin)
+        function Dataset = create(Parent, name, varargin)
             assert(isa(Parent, 'h5.HasId'),...
                 'NWB:H5:CompoundDataset:InvalidArgument', 'Parent must have an ID');
             assert(isa(Parent, 'h5.compound.Manifest'),...
                 'NWB:H5:CompoundDataset:InvalidArgument',...
                 'a Manifest must be present to create a Compound Dataset');
             
-            Data = h5.compound.filter(Data);
+            p = inputParser;
+            p.addParameter('space', h5.Space.create(h5.space.SpaceType.H5S_NULL));
+            p.addParameter('type', []);
+            p.addParameter('manifest', []);
+            p.addParameter('dcpl', h5.DatasetCreationPropertyList('H5P_DEFAULT'));
+            p.parse(varargin{:});
             
             if isempty(varargin)
                 Dcpl = h5.DatasetCreationPropertyList();
@@ -30,14 +35,17 @@ classdef CompoundDataset < h5.Dataset
             did = H5D.create(Parent.get_id(), name,...
                 Manifest.to_type().get_id(), Space.get_id(), PLIST, Dcpl.get_id(), PLIST);
             Dataset = h5.CompoundDataset(name, did, Manifest);
-            Dataset.write(Data);
         end
         
         function Dataset = open(Parent, name)
             assert(isa(Parent, 'h5.HasId'),...
                 'NWB:H5:Dataset:InvalidArgument', 'Parent must have an ID');
             did = H5D.open(Parent.get_id(), name);
-            Dataset = h5.Dataset(did, name);
+            Type = h5.Type(H5D.get_type(did));
+            assert(Type.get_class() == h5.const.TypeClass.Compound,...
+                'NWB:H5:Dataset:InvalidDataType',...
+                'A Compound Dataset is Required');
+            Dataset = h5.CompoundDataset(did, name);
         end
     end
     

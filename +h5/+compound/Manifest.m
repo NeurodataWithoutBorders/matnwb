@@ -1,6 +1,24 @@
 classdef Manifest
     %MANIFEST a data class for defining the schema for the compound dataset Table.
     
+    methods (Static)
+        function Manifest = from_type(Type)
+            assert(Type.get_class() == h5.const.TypeClass.Compound.constant,...
+                'NWB:H5:Compound:FromType:InvalidType',...
+                'Only a Compound Type can be converted into a Manifest.');
+            
+            Type = h5.Type(H5T.create('H5T_COMPOUND', Manifest.get_total_size()));
+            
+            for i = 1:length(Manifest.columns)
+                offset = Manifest.get_offset(Manifest.columns{i});
+                SubType = Manifest.mapping.(Manifest.columns{i});
+                H5T.insert(Type.get_id(), Manifest.columns{i}, offset, SubType.get_id());
+            end
+            
+            H5T.pack(Type.get_id());
+        end
+    end
+    
     properties
         mapping = struct();
         columns = {}; % cell array of strings indicating field columnsing.
@@ -9,18 +27,19 @@ classdef Manifest
     methods % lifecycle
         function obj = TableManifest(varargin)
             obj.mapping = struct;
-            for i = 1:2:length(varargin)
-                obj.append(varargin{i:i+1});
+            for i = 1:3:length(varargin)
+                obj.append(varargin{i:i+2});
             end
         end
     end
     
     methods
-        function insert(obj, name, DefaultType, afterFieldName)
-            assert(ischar(name), 'NWB:H5:TableManifest:InvalidArgument',...
+        function insert(obj, name, Type, afterFieldName)
+            assert(ischar(name),...
+                'NWB:H5:Manifest:InvalidArgument',...
                 'Manifest name must be a string');
-            assert(isa(DefaultType, 'h5.DefaultType'),...
-                'NWB:H5:TableManifest:InvalidArgument',...
+            assert(isa(Type, 'h5.DefaultType'),...
+                'NWB:H5:Manifest:InvalidArgument',...
                 'Manifest type specifier must be one of h5.DefaultType');
             assert(ischar(afterFieldName)...
                 && (isempty(afterFieldName)...
@@ -32,7 +51,7 @@ classdef Manifest
                 obj.remove(name);
             end
             
-            obj.mapping.(name) = DefaultType;
+            obj.mapping.(name) = Type;
             
             if isempty(afterFieldName)
                 obj.columns{end+1} = name;
@@ -46,7 +65,7 @@ classdef Manifest
             obj.columns(strcmp(name, obj.columns)) = [];
         end
         
-        function append(obj, name, DefaultType)
+        function append(obj, name, Type)
             if isempty(obj.columns)
                 afterName = '';
             else
@@ -75,18 +94,6 @@ classdef Manifest
                 Type = obj.mapping(obj.columns{i});
                 size = size + H5T.get_size(Type.get_id());
             end
-        end
-        
-        function Type = to_type(obj)
-            Type = h5.Type(H5T.create('H5T_COMPOUND', obj.get_total_size()));
-            
-            for i = 1:length(obj.columns)
-                offset = obj.get_offset(obj.columns{i});
-                SubType = obj.mapping.(obj.columns{i});
-                H5T.insert(Type.get_id(), obj.columns{i}, offset, SubType.get_id());
-            end
-            
-            H5T.pack(Type.get_id());
         end
     end
 end
