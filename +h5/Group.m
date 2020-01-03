@@ -1,4 +1,6 @@
-classdef Group < h5.interface.HasSubObjects & h5.interface.HasAttributes & h5.interface.IsNamed
+classdef Group < h5.interface.HasSubObjects...
+        & h5.interface.HasAttributes...
+        & h5.interface.IsObject
     %GROUP HDF5 Group
     
     methods (Static)
@@ -19,7 +21,7 @@ classdef Group < h5.interface.HasSubObjects & h5.interface.HasAttributes & h5.in
         id;
     end
     
-    properties (SetAccess = private, Dependent)
+    properties (SetAccess = private)
         name;
     end
     

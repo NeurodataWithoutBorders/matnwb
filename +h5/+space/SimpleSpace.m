@@ -1,14 +1,24 @@
 classdef SimpleSpace < h5.Space
     %SIMPLESPACE nd-array space
     
+    methods (Static)
+        function SimpleSpace = create()
+            SimpleSpace = h5.space.SimpleSpace(...
+                H5S.create(h5.space.SpaceType.Simple.constant));
+        end
+    end
+    
     properties (SetAccess = private, Dependent)
         dims;
         extents;
     end
     
     methods % lifecycle override
-        function obj = SimpleSpace()
-            obj = obj@h5.Space(H5S.create(h5.space.SpaceType.Simple.get_id()));
+        function obj = SimpleSpace(id)
+            assert(H5S.get_simple_extent_type(id) == h5.space.SpaceType.Simple.constant,...
+                'NWB:H5:SimpleSpace:InvalidArgument',...
+                'Provided id is not a Simple Space');
+            obj = obj@h5.Space(id);
         end
     end
     

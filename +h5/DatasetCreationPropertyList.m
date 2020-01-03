@@ -23,7 +23,7 @@ classdef DatasetCreationPropertyList < h5.interface.HasId
         end
         
         function delete(obj)
-            H5P.delete(obj.id);
+            H5P.close(obj.id);
         end
     end
     

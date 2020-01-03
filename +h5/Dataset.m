@@ -1,7 +1,7 @@
 classdef Dataset < h5.interface.HasId...
-        & h5.interface.IsNamed...
         & h5.interface.IsHdfData...
-        & h5.interface.HasAttributes
+        & h5.interface.HasAttributes...
+        & h5.interface.IsObject
     %DATASET HDF5 Dataset for regular datatypes
     
     methods (Static)
@@ -18,10 +18,16 @@ classdef Dataset < h5.interface.HasId...
             Type = p.Results.type;
             Dcpl = p.Results.dcpl;
             
-            assert(isa(Space, 'h5.Space'), 'NWB:H5:Dataset:InvalidArgument',...
-                '`space` must be a `h5.Space`');
             assert(isa(Type, 'h5.Type'), 'NWB:H5:Dataset:InvalidArgument',...
                 '`type` must be a `h5.Type`');
+            assert(Type.get_class() ~= h5.const.TypeClass.Compound,...
+                'NWB:H5:Dataset:CompoundTypeDatasets
+            if Type.get_class() == h5.const.TypeClass.Compound
+                Dataset = h5.CompoundDataset.create();
+            end
+            
+            assert(isa(Space, 'h5.Space'), 'NWB:H5:Dataset:InvalidArgument',...
+                '`space` must be a `h5.Space`');
             assert(isa(Dcpl, 'h5.DatasetCreationPropertyList'),...
                 'NWB:H5:Dataset:InvalidArgument',...
                 '`dcpl` must be a valid h5.DatasetCreationPropertyList');
@@ -29,7 +35,12 @@ classdef Dataset < h5.interface.HasId...
             pid = 'H5P_DEFAULT';
             did = H5D.create(Parent.get_id(), name,...
                 Type.get_id(), Space.get_id(), pid, Dcpl.get_id(), pid);
-            Dataset = h5.Dataset(name, did);
+            if Type.get_class() == h5.const.TypeClass.Compound
+                Dataset = h5.CompoundDataset(name, did);
+            else
+                Dataset = h5.Dataset(name, did);
+            end
+            
         end
         
         function Dataset = open(Parent, name)
@@ -129,6 +140,10 @@ classdef Dataset < h5.interface.HasId...
     end
     
     methods % IsHdfData
+        function Type = get_type(obj)
+            Type = obj.type;
+        end
+        
         function write(obj, data)
             if isa(obj.type, 'h5.PresetType')
                 data = obj.type.filter(data);
@@ -148,8 +163,18 @@ classdef Dataset < h5.interface.HasId...
                 Type.get_id(), obj.space.get_id(), obj.space.get_id(), PLIST_ID, data);
         end
         
-        function data = read(obj)
-            data = H5D.read(obj.id);
+        function data = read(obj, varargin)
+            p = inputParser;
+            p.addParameter('selection', 'H5S_ALL');
+            p.parse(varargin{:});
+            Selection = p.Results.Selection;
+            if ~ischar(Selection)
+                assert(isa(Selection, 'h5.space.SimpleSpace'),...
+                    'NWB:H5:Dataset:Read:InvalidSpace',...
+                    'Only a Simple space can specify read selections.');
+            end
+            dxpl = 'H5P_DEFAULT';
+            data = H5D.read(obj.id, 'H5ML_DEFAULT', Selection, obj.space, dxpl);
         end
     end
 end
