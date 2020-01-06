@@ -51,8 +51,7 @@ if length(processed) <= 1
     depnm = 'types.untyped.MetaClass'; %WRITE
 else
     parentName = processed(2).type; %WRITE
-    ParentNamespace = namespace.getNamespace(parentName);
-    depnm = ['types.' strrep(ParentNamespace.name, '-', '_') '.' parentName]; %WRITE
+    depnm = namespace.getFullClassName(parentName);
 end
 
 %% return classfile string

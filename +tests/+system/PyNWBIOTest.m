@@ -32,7 +32,19 @@ classdef PyNWBIOTest < tests.system.RoundTripTest
   methods
     function [status, cmdout] = runPyTest(testCase, testName)
       setenv('PYTHONPATH', fileparts(mfilename('fullpath')));
-      cmd = sprintf('"C:/Users/Lawrence Niu/Miniconda3/envs/py3/python" -B -m unittest %s.%s.%s', 'PyNWBIOTest', testCase.className(), testName);
+      
+      envPath = fullfile('+tests', 'env.mat');
+      if 2 == exist(envPath, 'file')
+          Env = load(envPath, '-mat', 'pythonDir');
+          
+          pythonPath = fullfile(Env.pythonDir, 'python');
+      else
+          pythonPath = 'python';
+      end
+      
+      cmd = sprintf('"%s" -B -m unittest %s.%s.%s',...
+          pythonPath,...
+          'PyNWBIOTest', testCase.className(), testName);
       [status, cmdout] = system(cmd);
     end
   end
