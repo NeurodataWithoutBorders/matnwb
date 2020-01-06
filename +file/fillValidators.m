@@ -34,27 +34,37 @@ if isa(prop, 'file.Dataset')
             fillDimensionValidation(prop.dtype, prop.shape)...
             }, newline);
     elseif prop.isConstrainedSet
-        namespace = namespacereg.getNamespace(prop.type);
-        if isempty(namespace)
-            warning(['Namespace could not be found for type `%s`.' ...
+        try
+            fullname = namespacereg.getFullClassName(prop.type);
+        catch ME
+            if ~endsWith(ME.identifier, 'Namespace:NotFound')
+                rethrow(ME);
+            end
+            
+            warning('NWB:Fill:Validators:NamespaceNotFound',...
+                ['Namespace could not be found for type `%s`.' ...
                 '  Skipping Validation for property `%s`.'], prop.type, name);
             return;
         end
-        fullname = ['types.' namespace.name '.' prop.type ];
         fuvstr = strjoin({fuvstr...
             ['constrained = { ''' fullname ''' };']...
             ['types.util.checkSet(''' name ''', struct(), constrained, val);']...
             }, newline);
     else
-        namespace = namespacereg.getNamespace(prop.type);
-        if isempty(namespace)
-            warning(['Namespace could not be found for type `%s`.' ...
+        try
+            fullname = namespacereg.getFullClassName(prop.type);
+        catch ME
+            if ~endsWith(ME.identifier, 'Namespace:NotFound')
+                rethrow(ME);
+            end
+            
+            warning('NWB:Fill:Validators:NamespaceNotFound',...
+                ['Namespace could not be found for type `%s`.' ...
                 '  Skipping Validation for property `%s`.'], prop.type, name);
             return;
         end
-        fullclassname = ['types.' namespace.name '.' prop.type];
         fuvstr = [fuvstr newline ...
-            fillDtypeValidation(name, fullclassname)];
+            fillDtypeValidation(name, fullname)];
     end
 elseif isa(prop, 'file.Group')
     if isempty(prop.type)
@@ -71,8 +81,7 @@ elseif isa(prop, 'file.Group')
             if isempty(ds.type)
                 namedprops.(ds.name) = ds.dtype;
             else
-                ds_nmspc = namespacereg.getNamespace(ds.type).name;
-                type = ['types.' ds_nmspc '.' ds.type];
+                type = namespacereg.getFullClassName(ds.type);
                 if ds.isConstrainedSet
                     constr = [constr {type}];
                 else
@@ -88,8 +97,7 @@ elseif isa(prop, 'file.Group')
         %otherwise, error.  This shouldn't happen.
         for i=1:length(prop.subgroups)
             sg = prop.subgroups(i);
-            sg_namespace = namespacereg.getNamespace(sg.type).name;
-            sgfullname = ['types.' sg_namespace '.' sg.type];
+            sgfullname = namespacereg.getFullClassName(sg.type);
             if isempty(sg.type)
                 error('Weird case with two untyped groups');
             end
@@ -133,21 +141,20 @@ elseif isa(prop, 'file.Group')
             ['types.util.checkSet(''' name ''', namedprops, constrained, val);']...
             }, newline);
     elseif prop.isConstrainedSet
-        namespace = namespacereg.getNamespace(prop.type).name;
+        fullname = namespacereg.getFullClassName(prop.type);
         fuvstr = strjoin({fuvstr...
-            ['constrained = {''types.' namespace '.' prop.type '''};']...
+            sprintf('constrained = {''%s''};', fullname),...
             ['types.util.checkSet(''' name ''', struct(), constrained, val);']...
             }, newline);
     else
-        namespace = namespacereg.getNamespace(prop.type).name;
-        fulltypename = ['types.' namespace '.' prop.type];
+        fulltypename = namespacereg.getFullClassName(prop.type);
         fuvstr = fillDtypeValidation(name, fulltypename);
     end
 elseif isa(prop, 'file.Attribute')
     fuvstr = fillDtypeValidation(name, prop.dtype);
 else %Link
-    namespace = namespacereg.getNamespace(prop.type).name;
-    fuvstr = fillDtypeValidation(name, ['types.' namespace '.' prop.type]);
+    fullname = namespacereg.getFullClassName(prop.type);
+    fuvstr = fillDtypeValidation(name, fullname);
 end
 end
 

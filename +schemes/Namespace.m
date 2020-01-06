@@ -19,7 +19,7 @@ classdef Namespace < handle
                 return;
             end
             
-            obj.name = name;
+            obj.name = strrep(name, '-', '_');
             obj.dependencies = deplist;
             namespaceFiles = keys(source);
             obj.registry = [];
@@ -56,18 +56,32 @@ classdef Namespace < handle
             end
         end
         
+        function fullClassName = getFullClassName(obj, classname)
+            Namespace = obj.getNamespace(classname);
+            
+            assert(~isempty(Namespace),...
+                'NWB:Scheme:Namespace:NotFound',...
+                'Namespace for class `%s` not found.', classname);
+            
+            fullClassName = sprintf('types.%s.%s',...
+                Namespace.name,...
+                classname);
+        end
+        
         %gets namespace containing classname
         function namespace = getNamespace(obj, classname)
-            if isKey(obj.registry, classname)
+            namespace = [];
+            
+            if obj.registry.isKey(classname)
                 namespace = obj;
-            else
-                namespace = [];
-                for i=1:length(obj.dependencies)
-                    nparent = obj.dependencies(i);
-                    namespace = nparent.getNamespace(classname);
-                    if ~isempty(namespace)
-                        return;
-                    end
+                return;
+            end
+            
+            for i=1:length(obj.dependencies)
+                nparent = obj.dependencies(i);
+                namespace = nparent.getNamespace(classname);
+                if ~isempty(namespace)
+                    return;
                 end
             end
         end
