@@ -63,6 +63,42 @@ classdef Type < h5.interface.HasId
         end
     end
     
+    methods
+        function serData = serialize(obj, data)
+            
+            if isa(data, 'types.untyped.RegionView') || isa(data, 'types.untyped.ObjectView')
+                
+            end
+            
+            switch class(data)
+                case {'types.untyped.RegionView' 'types.untyped.ObjectView'}
+                    %will throw errors if refdata DNE.  Caught at NWBData level.
+                    data = io.getRefData(fid, data);
+                case 'logical'
+                    %In HDF5, HBOOL is mapped to INT32LE
+                    data = int32(data);
+                case {'char' 'datetime' 'cell'}
+                    % yes, datetime can come from cell arrays as well.
+                    % note, cell strings fall through
+                    if (iscell(data) && all(cellfun('isclass', data, 'datetime'))) ||...
+                            isdatetime(data)
+                        if ~iscell(data)
+                            data = {data};
+                        end
+                        for i=1:length(data)
+                            if isempty(data{i}.TimeZone)
+                                data{i}.TimeZone = 'local';
+                            end
+                            data{i}.Format = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSSZZZZZ'; % ISO8601
+                            data{i} = char(data{i});
+                        end
+                    elseif ~iscell(data)
+                        data = mat2cell(data, ones(size(data,1),1), size(data,2));
+                    end
+            end
+        end
+    end
+    
     methods % h5.HasId
         function id = get_id(obj)
             id = obj.id;
