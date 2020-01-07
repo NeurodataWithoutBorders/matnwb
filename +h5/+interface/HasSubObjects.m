@@ -51,11 +51,11 @@ classdef HasSubObjects < h5.interface.HasId
             oid = H5O.open(obj.get_id(), name, obj_lapl);
             obj_type = H5I.get_type(oid);
             switch obj_type
-                case h5.const.Identifiers.Dataset.constant
+                case h5.const.IdTypes.Dataset.constant
                     SubObj = h5.Dataset(name, oid);
-                case h5.const.Identifiers.Group.constant
+                case h5.const.IdTypes.Group.constant
                     SubObj = h5.Group(name, oid);
-                case h5.const.Identifiers.Link.constant
+                case h5.const.IdTypes.Link.constant
                     % the H5L api works with (loc_id, name) pairs to identify
                     % links instead of the standard object_id.
                     SubObj = read_link(obj.get_id(), name);

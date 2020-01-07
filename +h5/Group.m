@@ -41,11 +41,5 @@ classdef Group < h5.interface.HasSubObjects...
             id = obj.id;
         end
     end
-
-    methods % IsNamed
-        function name = get_name(obj)
-            name = obj.name;
-        end
-    end
 end
 

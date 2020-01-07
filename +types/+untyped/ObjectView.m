@@ -1,4 +1,4 @@
-classdef ObjectView < handle
+classdef ObjectView < nwb.interface.Reference
     methods (Static)
         function Views = from_raw(Parent, refData)
             assert(isa(Parent, 'h5.interface.HasId'),...
@@ -33,7 +33,9 @@ classdef ObjectView < handle
         function obj = ObjectView(path)
             obj.path = path;
         end
-        
+    end
+    
+    methods % Reference
         function v = refresh(obj, nwb)
             if ~isa(nwb, 'NwbFile')
                 error('Argument `nwb` must be a valid `NwbFile`');
@@ -41,8 +43,22 @@ classdef ObjectView < handle
             v = nwb.resolve(obj.path);
         end
         
-        function refs = export(obj, fid, fullpath, refs)
-            io.writeDataset(fid, fullpath, class(obj), obj);
+        function refData = serialize(obj, File)
+            ERR_MSG_STUB = 'NWB:Untyped:ObjectView:Serialize:';
+            assert(isa(File, 'h5.File'), [ERR_MSG_STUB 'InvalidArgument'],...
+                '`File` must be a h5.File object.');
+            
+            rawDataSize = 8;
+            
+            refDataSize = size(obj);
+            refDataSize(1) = refDataSize(1) * rawDataSize;
+            refData = zeros(refDataSize, 'uint8');
+            
+            for i = 1:length(obj)
+                start_i = ((i - 1) * rawDataSize) + 1;
+                end_i = start_i + rawDataSize - 1;
+                refData(start_i:end_i) = File.get_reference_data(obj(i));
+            end
         end
     end
 end

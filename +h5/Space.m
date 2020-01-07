@@ -31,46 +31,12 @@ classdef Space < h5.interface.HasId
                 return;
             end
             
-            if strcmp(matlabType, 'char')
+            if strcmp('char', matlabType)
                 dataSize(2) = 1;
             end
             
-            
-            
-            % max size is always unlimited
-            unlimited_size = H5ML.get_constant_value('H5S_UNLIMITED');
-            %determine space size
-            if ischar(data)
-                if ~forceArray && size(data,1) == 1
-                    sid = H5S.create('H5S_SCALAR');
-                else
-                    dims = size(data, 1);
-                    if forceChunked
-                        max_dims = repmat(unlimited_size, size(dims));
-                    else
-                        max_dims = [];
-                    end
-                    sid = H5S.create_simple(1, size(data,1), max_dims);
-                end
-            elseif ~forceArray && isscalar(data)
-                sid = H5S.create('H5S_SCALAR');
-            else
-                if isvector(data)
-                    num_dims = 1;
-                    dims = length(data);
-                else
-                    num_dims = ndims(data);
-                    dims = size(data);
-                end
-                
-                dims = fliplr(dims);
-                if forceChunked
-                    max_dims = repmat(unlimited_size, size(dims));
-                else
-                    max_dims = [];
-                end
-                sid = H5S.create_simple(num_dims, dims, max_dims);
-            end
+            Space.extents = dataSize;
+            Space.dims = dataSize;
             
             function SpaceType = derive_space_type(dataSize, matlabType)
                 if any(dataSize == 0)

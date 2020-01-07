@@ -1,4 +1,4 @@
-classdef Anon < handle
+classdef Anon < nwb.interface.Exportable
     %anonymous key-value pair as an alternative to single-sized Sets
     properties
         name; %name of object
@@ -23,14 +23,20 @@ classdef Anon < handle
         end
         
         function set.value(obj, val)
+            assert(isa(val, 'nwb.interface.Exportable'),...
+                'NWB:Untyped:Anon:SetValue:InvalidType',...
+                'Anon values only support Exportable type objects (.');
             obj.value = val;
         end
         
         function tf = isempty(obj)
             tf = isempty(obj.name);
         end
-        
-        function refs = export(obj, fid, fullpath, refs)
+    end
+    
+    methods % Exportable
+        function MissingViews = export(obj, Parent, name)
+            MissingViews = obj.value.export(Parent, obj.name);
             refs = obj.value.export(fid, [fullpath obj.name '/'], refs);
         end
     end

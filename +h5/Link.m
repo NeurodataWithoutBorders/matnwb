@@ -47,20 +47,16 @@ classdef Link < h5.interface.IsObject
         end
     end
     
-    properties (Access = protected)
-        parent;
+    properties (Access = private)
         id;
     end
     
     properties (SetAccess = private)
-        name;
         path;
     end
     
     methods (Access = protected)
-        function obj = Link(Parent, name, id)
-            obj.parent = Parent;
-            obj.name = name;
+        function obj = Link(id)
             obj.id = id;
         end
     end
@@ -74,12 +70,6 @@ classdef Link < h5.interface.IsObject
     methods % HasId
         function id = get_id(obj)
             id = obj.id;
-        end
-    end
-    
-    methods % IsNamed
-        function name = get_name(obj)
-            name = obj.name;
         end
     end
 end
