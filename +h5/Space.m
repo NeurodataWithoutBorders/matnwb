@@ -52,17 +52,17 @@ classdef Space < h5.interface.HasId
         end
         
         function Space = create(SpaceType)
-            assert(isa(SpaceType, 'h5.space.SpaceType'),...
+            assert(isa(SpaceType, 'h5.const.SpaceType'),...
                 'NWB:H5:Space:InvalidArgument',...
-                'Space type should be a type h5.space.SpaceType');
+                'Space type should be a type h5.const.SpaceType');
             
             switch SpaceType
-                case h5.space.SpaceType.Scalar
-                    Space = h5.space.ScalarSpace();
-                case h5.space.SpaceType.Simple
-                    Space = h5.space.SimpleSpace();
-                case h5.space.SpaceType.Null
-                    Space = h5.space.NullSpace();
+                case h5.const.SpaceType.Scalar
+                    Space = h5.space.ScalarSpace.create();
+                case h5.const.SpaceType.Simple
+                    Space = h5.space.SimpleSpace.create();
+                case h5.const.SpaceType.Null
+                    Space = h5.space.NullSpace.create();
             end
         end
     end

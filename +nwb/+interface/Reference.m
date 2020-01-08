@@ -1,4 +1,4 @@
-classdef Reference < matlab.mixin.Heterogeneous & h5.interface.Exportable
+classdef Reference < matlab.mixin.Heterogeneous & nwb.interface.Exportable
     %REFERENCE In-memory object stub representing a reference to an object or a dataset region.
     
     methods (Abstract)

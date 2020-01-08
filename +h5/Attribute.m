@@ -35,10 +35,6 @@ classdef Attribute < h5.interface.HasId...
         name;
     end
     
-    properties (GetAccess = private, Dependent)
-        type;
-    end
-    
     methods % lifecycle
         function obj = Attribute(name, id)
             obj.name = name;
@@ -47,12 +43,6 @@ classdef Attribute < h5.interface.HasId...
         
         function delete(obj)
             H5A.close(obj.id);
-        end
-    end
-    
-    methods % set/get
-        function Type = get.type(obj)
-            Type = h5.Type(H5A.get_type(obj.id));
         end
     end
     
@@ -68,11 +58,19 @@ classdef Attribute < h5.interface.HasId...
         end
     end
     
-    methods % IsHdfData
-        function Type = get_type(obj)
-            Type = obj.type;
+    methods (Access = protected) % HasSpace
+        function id = get_space_id(obj)
+            id = H5A.get_space(obj.id);
         end
-        
+    end
+    
+    methods (Access = protected) % HasType
+        function type_id = get_type_id(obj)
+            type_id = H5A.get_type(obj.id);
+        end
+    end
+    
+    methods % IsHdfData
         function write(obj, data)
             if isa(obj.type, 'h5.PresetType')
                 data = obj.type.filter(data);

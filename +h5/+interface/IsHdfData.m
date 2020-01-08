@@ -1,10 +1,9 @@
-classdef IsHdfData < handle
+classdef IsHdfData < h5.interface.HasSpace & h5.interface.HasType
     %ISFILEDATA This object is associated with readable/writable data.
     
     methods (Abstract)
-        Type = get_type(obj);
         data = read(obj, varargin);
-        write(obj, data);
+        write(obj, data, varargin);
     end
 end
 

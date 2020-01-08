@@ -1,4 +1,4 @@
-classdef DataPipe < handle
+classdef DataPipe < nwb.interface.Exportable
     %DATAPIPE Special form of Datastub that allows for appending.
     % Current limitations: DataPipe currently only supports the types represented
     % by dataType.  No strings, or references are allowed with DataPipes.
@@ -53,20 +53,12 @@ classdef DataPipe < handle
     methods % get/set
         function tf = get.isBound(obj)
             try
-                fid = H5F.open(obj.filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
-                did = H5D.open(fid, obj.path, 'H5P_DEFAULT');
+                File = h5.File.open(obj.filename);
+                h5.Dataset.open(File, obj.path);
                 
                 tf = true;
             catch
                 tf = false;
-            end
-            
-            if 1 == exist('fid', 'var')
-                H5F.close(fid);
-            end
-            
-            if 1 == exist('did', 'var')
-                H5D.close(did);
             end
         end
         
@@ -123,17 +115,19 @@ classdef DataPipe < handle
         function set.dataType(obj, val)
             import types.untyped.DataPipe;
             
+            MSG_ID_CONTEXT = 'NWB:Untyped:DataPipe:SetDataType:';
+            
             assert(ischar(val),...
-                'NWB:Untyped:DataPipe:SetDataType:InvalidType',...
+                [MSG_ID_CONTEXT 'InvalidType'],...
                 '`dataType` must be a string');
             
             assert(any(strcmp(val, DataPipe.SUPPORTED_DATATYPES)),...
-                'NWB:Untyped:DataPipe:SetDataType:InvalidType',...
+                [MSG_ID_CONTEXT 'InvalidType'],...
                 '`dataType` must be one of the supported datatypes `%s`',...
                 strjoin(DataPipe.SUPPORTED_DATATYPES, '|'));
             
             assert(~obj.isBound,...
-                'NWB:Untyped:DataPipe:SetDataType:SettingLocked',...
+                [MSG_ID_CONTEXT 'SettingLocked'],...
                 ['`dataType` cannot be reset if this datapipe is bound to an '...
                 'existing NWB file.']);
             
@@ -150,17 +144,19 @@ classdef DataPipe < handle
         end
         
         function set.compressionLevel(obj, val)
+            MSG_ID_CONTEXT = 'NWB:Untyped:DataPipe:SetCompressionLevel:';
+            
             assert(~obj.isBound,...
-                'NWB:Untyped:DataPipe:SetCompressionLevel:SettingLocked',...
+                [MSG_ID_CONTEXT 'SettingLocked'],...
                 ['`compressionLevel` can only be set if DataPipe has not yet been '...
                 'bound to a NWBFile.']);
-            
             assert(isscalar(val) && isnumeric(val),...
-                'NWB:Untyped:DataPipe:SetCompressionLevel:InvalidType',...
+                [MSG_ID_CONTEXT 'InvalidType'],...
                 '`compressionLevel` must be a scalar numeric value.');
+            
             val = ceil(val);
             if val < -1 || val > 9
-                warning('NWB:Untyped:DataPipe:SetCompressionLevel:OutOfRange',...
+                warning([MSG_ID_CONTEXT 'OutOfRange'],...
                     ['`compressionLevel` range is [0, 9] or -1 for off.  '...
                     'Found %d, Disabling.'], val);
                 val = -1;
@@ -177,14 +173,9 @@ classdef DataPipe < handle
                 ['DataPipe must first be bound to a valid hdf5 filename and path to '...
                 'query its current dimensions.']);
             
-            fid = H5F.open(obj.filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
-            did = H5D.open(fid, obj.path, 'H5P_DEFAULT');
-            sid = H5D.get_space(did);
-            [~, h5_dims, ~] = H5S.get_simple_extent_dims(sid);
-            size = fliplr(h5_dims);
-            H5S.close(sid);
-            H5D.close(did);
-            H5F.close(fid);
+            File = h5.File.open(obj.filename);
+            Dataset = h5.Dataset.open(File, obj.path);
+            size = Dataset.dims;
         end
         
         function append(obj, data)
@@ -192,104 +183,57 @@ classdef DataPipe < handle
                 return;
             end
             
+            MSG_ID_CONTEXT = 'NWB:Untyped:DataPipe:Append:';
             assert(isa(data, obj.dataType),...
-                'NWB:Untyped:DataPipe:Append:InvalidType',...
+                [MSG_ID_CONTEXT 'InvalidType'],...
                 'Data must match dataType')
             assert(obj.isBound,...
-                'NWB:Untyped:DataPipe:ExportRequired',...
+                [MSG_ID_CONTEXT 'ExportRequired'],...
                 ['Appending to a dataset requires exporting and re-importing '...
                     'a valid NWB file.']);
                 
-            default_pid = 'H5P_DEFAULT';
-            
-            fid = H5F.open(obj.filename, 'H5F_ACC_RDWR', default_pid);
-            did = H5D.open(fid, obj.path, default_pid);
+            File = h5.File.open(obj.filename, 'access', h5.const.FileAccess.ReadWrite);
+            Dataset = h5.Dataset.open(File, obj.path);
             
             rank = length(obj.maxSize);
-            stride_coords = ones(1, rank);
-            stride_coords(1:length(size(data))) = size(data);
-            new_extents = obj.maxSize;
-            new_extents(obj.axis) = obj.offset + stride_coords(obj.axis) - 1;
-            h5_extents = fliplr(new_extents);
-            H5D.set_extent(did, h5_extents);
-                   
-            sid = H5D.get_space(did);
-            H5S.select_none(sid);
-
+            shape_coords = ones(1, rank);
+            shape_coords(1:length(size(data))) = size(data);
             offset_coords = ones(1, rank);
             offset_coords(obj.axis) = obj.offset;
             
-            h5_start = fliplr(offset_coords) - 1;
-            h5_stride = [];
-            h5_count = fliplr(stride_coords);
-            h5_block = [];
-            H5S.select_hyperslab(sid,...
-                'H5S_SELECT_OR',...
-                h5_start,...
-                h5_stride,...
-                h5_count,...
-                h5_block);
-            
-            [mem_tid, mem_sid, data] = io.mapData2H5(fid, data, 'forceArray');
-            H5S.set_extent_simple(mem_sid, rank, h5_count, h5_count);
+            SelectSlab = h5.space.Hyperslab('shape', shape_coords, 'offset', offset_coords);
+            Dataset.write(data, 'selection', SelectSlab);
 
-            H5D.write(did, mem_tid, mem_sid, sid, default_pid, data);
-            H5S.close(mem_sid);
-            if ~ischar(mem_tid)
-                H5T.close(mem_tid);
-            end
-            H5S.close(sid);
-            H5D.close(did);
-            H5F.close(fid);
-            
             obj.offset = obj.offset + size(data, obj.axis);
         end
         
-        function refs = export(obj, fid, fullpath, refs)
+        function MissingViews = export(obj, Parent, name)
+            MissingViews = nwb.interface.Reference.empty;
             if obj.isBound
                 return;
             end
             
-            default_pid = 'H5P_DEFAULT';
-            tid = io.getBaseType(obj.dataType);
+            MemType = h5.Type.from_matlab(obj.dataType);
+            MemSpace = h5.Space.from_matlab(size(obj.data));
+            MemSpace.extents = obj.maxSize;
             
-            rank = length(obj.maxSize);
-            h5_dims = zeros(1, rank);
-            h5_maxdims = fliplr(obj.maxSize);
-            h5_maxdims(h5_maxdims == Inf) = H5ML.get_constant_value('H5S_UNLIMITED');
-            sid = H5S.create_simple(rank, h5_dims, h5_maxdims);
-            
-            lcpl = default_pid;
-
-            dcpl = H5P.create('H5P_DATASET_CREATE');
-            if isempty(obj.chunkSize)
-                h5_chunk_dims = h5_maxdims;
-            else
-                h5_chunk_dims = fliplr(obj.chunkSize);
-            end
-            H5P.set_chunk(dcpl, h5_chunk_dims);
-            
+            Dcpl = h5.DatasetCreationPropertyList.create();
+            Dcpl.chunkSize = obj.chunkSize;
             if obj.compressionLevel ~= -1
-                H5P.set_deflate(dcpl, obj.compressionLevel);
+                Dcpl.deflateLevel = obj.compressionLevel;
             end
             
-            dapl = default_pid;
-            
-            did = H5D.create(fid, fullpath, tid, sid, lcpl, dcpl, dapl);
-
-            H5P.close(dcpl);
-            H5S.close(sid);
-            if ~ischar(tid)
-                H5T.close(tid);
-            end            
-            H5D.close(did);
+            Dataset = h5.Dataset.create(Parent, name,...
+                'type', MemType,...
+                'space', MemSpace,...
+                'dcpl', Dcpl);
             
             data = obj.data;
             obj.data = cast([], obj.dataType);
             
             % bind to this file.
-            obj.filename = H5F.get_name(fid);
-            obj.path = fullpath;
+            obj.filename = Parent.get_file().filename;
+            obj.path = Dataset.get_name();
             
             obj.append(data);
         end
