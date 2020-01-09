@@ -7,7 +7,12 @@ classdef HasSpace < h5.interface.HasId
     
     methods
         function Space = get_space(obj)
-            Space = h5.Space(obj.get_space_id());
+            sid = obj.get_space_id();
+            if 0 < H5S.is_simple(sid)
+                Space = h5.space.SimpleSpace(sid);
+            else
+                Space = h5.Space(sid);
+            end
         end
     end
 end

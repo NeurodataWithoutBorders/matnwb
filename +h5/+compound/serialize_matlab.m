@@ -1,4 +1,4 @@
-function Data = filter(Data)
+function Data = serialize_matlab(Data)
 import h5.dataset.CompoundDataset;
 
 if isstruct(Data)

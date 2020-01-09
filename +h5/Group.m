@@ -21,14 +21,9 @@ classdef Group < h5.interface.HasSubObjects...
         id;
     end
     
-    properties (SetAccess = private)
-        name;
-    end
-    
     methods % lifecycle
-        function obj = Group(name, id)
+        function obj = Group(id)
             obj.id = id;
-            obj.name = name;
         end
         
         function delete(obj)

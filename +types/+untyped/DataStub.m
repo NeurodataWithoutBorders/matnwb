@@ -1,33 +1,63 @@
-classdef DataStub
-    properties (SetAccess = protected)
+classdef DataStub < handle
+    properties (SetAccess = private)
         filename;
         path;
-        dims;
     end
     
-    methods
+    methods % lifecycle
         function obj = DataStub(filename, path)
             obj.filename = filename;
             obj.path = path;
-            fid = H5F.open(obj.filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
-            did = H5D.open(fid, obj.path);
-            sid = H5D.get_space(did);
-            [~, h5_dims, ~] = H5S.get_simple_extent_dims(sid);
-            obj.dims = fliplr(h5_dims);
-            H5S.close(sid);
-            H5D.close(did);
-            H5F.close(fid);
+        end
+    end
+    
+    methods
+        function d = get_dims(obj)
+            File = h5.File.open(obj.filename);
+            Dataset = h5.Dataset.open(File, obj.path);
+            d = Dataset.get_space().dims;
         end
         
         function nd = ndims(obj)
-            nd = length(obj.dims);
+            nd = length(obj.get_dims());
         end
         
         function num = numel(obj)
-            num = prod(obj.dims);
+            num = prod(obj.get_dims());
         end
         
         %can be called without arg, with H5ML.id, or (dims, offset, stride)
+        function data = load_h5_style(obj, varargin)
+            %LOAD  Read data from HDF5 dataset.
+            %   DATA = LOAD_H5_STYLE() retrieves all of the data.
+            %
+            %   DATA = LOAD_H5_STYLE(SPACE) Loads subset of data defined by Space
+            %
+            %   DATA = LOAD_H5_STYLE(HYPERSLAB) reads a subset of data given an array
+            %   of HyperSlabs.
+            MSG_ID_CONTEXT = 'NWB:Untyped:DataStub:LoadH5Style:';
+            
+            File = h5.File(obj.filename);
+            Dataset = h5.Dataset.open(File, obj.path);
+            
+            if isempty(varargin)
+                Space = Dataset.get_space();
+                if isa(Space, 'h5.space.SimpleSpace')
+                    Space.select_all();
+                end
+            elseif isa(varargin{1}, 'h5.Space')
+                % continue
+            elseif isa(varargin{1}, 'h5.space.Hyperslab')
+                Space = Dataset.get_space();
+                Space.select(varargin{1});
+            else
+                error([MSG_ID_CONTEXT 'InvalidArgument'],...
+                    'optional argument should either be a `h5.Space` or `h5.space.Hyperslab`');
+            end
+            
+            data = Dataset.read('space', Space);
+        end
+        
         function data = load_h5_style(obj, Selection)
             %LOAD  Read data from HDF5 dataset.
             %   DATA = LOAD_H5_STYLE() retrieves all of the data.
@@ -36,15 +66,6 @@ classdef DataStub
             %
             %   DATA = LOAD_H5_STYLE(HYPERSLAB) reads a subset of data given an array
             %   of HyperSlabs.
-            File = h5.File(obj.filename);
-            Dataset = h5.Dataset.open(File, obj.path);
-            if isa(Selection, 'h5.Space')
-                Space = Selection;
-            elseif isa(Selection, 'h5.space.Hyperslab')
-                Space = Dataset.make_selection(Selection);
-            end
-            data = Dataset.read('selection', Space);
-            
             fid = [];
             did = [];
             if length(varargin) == 1

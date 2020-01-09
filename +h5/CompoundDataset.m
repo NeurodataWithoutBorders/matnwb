@@ -12,7 +12,7 @@ classdef CompoundDataset < h5.Dataset
             assert(Type.get_class() == h5.const.TypeClass.Compound,...
                 'NWB:H5:Dataset:InvalidDataType',...
                 'A Compound Dataset is Required');
-            Dataset = h5.CompoundDataset(did, name);
+            Dataset = h5.CompoundDataset(did);
         end
     end
     
@@ -21,8 +21,8 @@ classdef CompoundDataset < h5.Dataset
     end
     
     methods % lifecycle (override)
-        function obj = CompoundDataset(name, id)
-            obj = obj@h5.Dataset(name, id);
+        function obj = CompoundDataset(id)
+            obj = obj@h5.Dataset(id);
             obj.manifest = h5.compound.Manifest.from_type(obj.get_type());
         end
     end

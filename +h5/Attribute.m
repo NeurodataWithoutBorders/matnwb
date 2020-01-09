@@ -31,13 +31,8 @@ classdef Attribute < h5.interface.HasId...
         id;
     end
     
-    properties (SetAccess = private)
-        name;
-    end
-    
     methods % lifecycle
-        function obj = Attribute(name, id)
-            obj.name = name;
+        function obj = Attribute(id)
             obj.id = id;
         end
         
@@ -49,12 +44,6 @@ classdef Attribute < h5.interface.HasId...
     methods % HasId
         function id = get_id(obj)
             id = obj.id;
-        end
-    end
-    
-    methods % IsNamed
-        function name = get_name(obj)
-            name = obj.name;
         end
     end
     
@@ -71,21 +60,8 @@ classdef Attribute < h5.interface.HasId...
     end
     
     methods % IsHdfData
-        function write(obj, data)
-            if isa(obj.type, 'h5.PresetType')
-                data = obj.type.filter(data);
-                
-                if obj.type == h5.PresetType.ObjectReference...
-                        || obj.type == h5.PresetType.DatasetRegionReference
-                    assert(~isa(data, 'types.untyped.ObjectView')...
-                        && ~isa(data, 'types.untyped.RegionView'),...
-                        'NWB:H5:Dataset:PreconversionRequired',...
-                        ['Reference data must be converted by this point.  '...
-                        'Use h5.File.filter_reference to convert the data.']);
-                end
-            end
-            
-            H5A.write(obj.id, obj.type.get_id(), data);
+        function write(obj, data, varargin)
+            H5A.write(obj.id, obj.type.get_id(), obj.serialize(data));
         end
         
         function data = read(obj, varargin)

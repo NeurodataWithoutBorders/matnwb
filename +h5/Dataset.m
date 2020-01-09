@@ -7,11 +7,11 @@ classdef Dataset < h5.interface.HasId...
     methods (Static)
         function Dataset = create(Parent, name, varargin)
             MSG_ID_CONTEXT = 'NWB:H5:Dataset:Create:';
-            assert(isa(Parent, 'h5.HasId'),...
+            assert(isa(Parent, 'h5.interface.HasId'),...
                 [MSG_ID_CONTEXT 'InvalidArgument'], 'Parent must have an ID');
             
             p = inputParser;
-            p.addParameter('space', h5.Space.create(h5.space.SpaceType.H5S_NULL),...
+            p.addParameter('space', h5.Space.create(h5.const.SpaceType.Null),...
                 @(s)assert(isa(s, 'h5.Space'),...
                 [MSG_ID_CONTEXT 'InvalidKeywordArgument'],...
                 '`space` must be a `h5.Space`'));
@@ -35,15 +35,15 @@ classdef Dataset < h5.interface.HasId...
             if Type.typeClass == h5.const.TypeClass.Compound
                 Dataset = h5.CompoundDataset(name, did);
             else
-                Dataset = h5.Dataset(name, did);
+                Dataset = h5.Dataset(did);
             end
         end
         
         function Dataset = open(Parent, name)
-            assert(isa(Parent, 'h5.HasId'),...
+            assert(isa(Parent, 'h5.interface.HasId'),...
                 'NWB:H5:Dataset:InvalidArgument', 'Parent must have an ID');
             did = H5D.open(Parent.get_id(), name);
-            Dataset = h5.Dataset(name, did);
+            Dataset = h5.Dataset(did);
         end
     end
     
@@ -55,18 +55,13 @@ classdef Dataset < h5.interface.HasId...
         dcpl;
     end
     
-    properties (SetAccess = private)
-        name;
-    end
-    
     properties (SetAccess = private, Dependent)
         chunkSize;
         deflateLevel;
     end
     
     methods % lifecycle
-        function obj = Dataset(name, id)
-            obj.name = name;
+        function obj = Dataset(id)
             obj.id = id;
         end
         
@@ -108,19 +103,15 @@ classdef Dataset < h5.interface.HasId...
     end
     
     methods % IsHdfData
-        function Type = get_type(obj)
-            Type = obj.type;
-        end
-        
         function write(obj, data, varargin)
             MSG_ID_CONTEXT = 'NWB:H5:Dataset:Write:';
             
             p = inputParser;
-            p.addParameter('type', h5.Type.from_matlab(class(data)),...
+            p.addParameter('type', h5.Type.empty,...
                 @(t)assert(isa(t, 'h5.Type'),...
                 [MSG_ID_CONTEXT 'InvalidKeywordArgument'],...
                 '`type` must be a h5.Type'));
-            p.addParameter('space', h5.Space.from_matlab(size(data), class(data)),...
+            p.addParameter('space', h5.Space.empty,...
                 @(s)assert(isa(s, 'h5.Space'),...
                 [MSG_ID_CONTEXT 'InvalidKeywordArgument'],...
                 '`space` must be a h5.Space'));
@@ -134,15 +125,22 @@ classdef Dataset < h5.interface.HasId...
             MemSpace = p.Results.space;
             Selection = p.Results.selection;
             
-            if isa(data, 'nwb.interface.Reference')
-                serialized = data.serialize(obj.get_file());
+            if isempty(MemType)
+                tid = 'H5ML_DEFAULT';
             else
-                serialized = h5.Type.serialize_matlab(data);
+                tid = MemType.get_id();
             end
             
-            DataSpace = obj.get_space();
+            if isempty(MemSpace)
+                memsid = h5.const.Space.AllSpace.constant;
+            else
+                memsid = MemSpace.get_id();
+            end
             
-            if ~isempty(Selection)
+            if isempty(Selection)
+                sid = h5.const.Space.AllSpace.constant;
+            else
+                DataSpace = obj.get_space();
                 for i = 1:length(Selection)
                     Slab = Selection(i);
                     
@@ -154,15 +152,16 @@ classdef Dataset < h5.interface.HasId...
                 end
                 
                 DataSpace.select(Selection);
+                sid = DataSpace.get_id();
             end
             
             pid = 'H5P_DEFAULT';
             H5D.write(obj.id,...
-                MemType.get_id(),...
-                MemSpace.get_id(),...
-                DataSpace.get_id(),...
+                tid,...
+                memsid,...
+                sid,...
                 pid,...
-                serialized);
+                obj.serialize_data(data));
         end
         
         function data = read(obj, varargin)
@@ -172,20 +171,21 @@ classdef Dataset < h5.interface.HasId...
                 'NWB:H5:Dataset:Read:InvalidKeywordArgument',...
                 '`selection` must be a h5.space.Hyperslab.'));
             p.parse(varargin{:});
-            Selection = p.Results.Selection;
+            Selection = p.Results.selection;
             
             DataSpace = obj.get_space();
             if isempty(Selection)
-                ReadSpace = 'H5S_ALL';
+                sid = h5.const.Space.AllSpace.constant;
             else
                 ReadSpace = h5.space.SimpleSpace.from_hyperslabs(Selection);
                 DataSpace.select(Selection);
+                sid = ReadSpace.get_id();
             end
             
             dxpl = 'H5P_DEFAULT';
             data = H5D.read(obj.id,...
                 'H5ML_DEFAULT',...
-                ReadSpace.get_id(),...
+                sid,...
                 DataSpace.get_id(),...
                 dxpl);
         end

@@ -2,6 +2,22 @@ classdef Type < h5.interface.HasId
     %TYPE H5 Type.  Enumeration over predefined data types.
     
     methods (Static)
+        function Type = from_primitive(Primitive)
+            import h5.const.PrimitiveTypes;
+            MSG_ID_CONTEXT = 'NWB:H5:Type:FromPrimitive:';
+            assert(isa(Primitive, 'h5.const.PrimitiveTypes'),...
+                [MSG_ID_CONTEXT 'InvalidArgument'],...
+                'Primitive argument must be a h5.const.PrimitiveTypes');
+            
+            if Primitive == PrimitiveTypes.CString
+                tid = H5T.copy(PrimitiveTypes.CString.constant);
+                H5T.set_size(tid, 'H5T_VARIABLE');
+            else
+                tid = Primitive.constant;
+            end
+            Type = h5.Type(tid);
+        end
+        
         function Type = from_manifest(Manifest)
             Type = h5.Type(H5T.create('H5T_COMPOUND', Manifest.get_total_size()));
             
@@ -14,61 +30,19 @@ classdef Type < h5.interface.HasId
             H5T.pack(Type.get_id());
         end
         
-        function Type = from_matlab(MatlabType)
+        function Type = from_matlab(matlabType)
             import h5.const.PrimitiveTypes;
             % we limit ourselves to the predefined native types and standard datatypes when applicable
             % https://portal.hdfgroup.org/display/HDF5/Predefined+Datatypes
             % for compound types see h5.compound.CompoundType
             
-            switch MatlabType
-                case 'types.untyped.ObjectView'
-                    tid = PrimitiveTypes.ObjectRef;
-                case 'types.untyped.RegionView'
-                    tid = PrimitiveTypes.DatasetRegionRef;
-                case {'char', 'cell', 'datetime'}
-                    tid = H5T.copy(h5.PrimitiveTypes.CString);
-                    H5T.set_size(tid, 'H5T_VARIABLE'); % variable-length type.
-                otherwise
-                    tid = PrimitiveTypes.from_matlab(MatlabType);
+            if any(strcmp(matlabType, {'char', 'datetime'}))
+                Primitive = PrimitiveTypes.CString;
+            else
+                Primitive = PrimitiveTypes.from_matlab(matlabType);
             end
             
-            Type = h5.Type(tid);
-        end
-        
-        function serData = serialize_matlab(data)
-            ERR_MSG_ID_STUB = 'NWB:H5:Type:SerializeMatlab:';
-            
-            if isa(data, 'nwb.interface.Reference')
-                warning([ERR_MSG_ID_STUB, 'SpecialSerializeRequired'],...
-                        ['RegionViews and ObjectViews need to call their own '...
-                        'serialize() functions with a provided h5.File as an argument.']);
-            end
-            
-            switch class(data)
-                case 'logical'
-                    %In HDF5, HBOOL is mapped to INT32LE
-                    serData = int32(data);
-                case 'cell'
-                    assert(iscellstr(data), [ERR_MSG_ID_STUB 'CellStringsOnly'],...
-                            'Cells must be cell strings.  No other types are supported.');
-                    serData = data;
-                case 'datetime'
-                    serData = cell(size(data));
-                    
-                    for i = 1:length(serData)
-                        timestamp = data(i);
-                        if isempty(timestamp.TimeZone)
-                            timestamp.TimeZone = 'local';
-                        end
-                        
-                        timestamp.Format = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSSZZZZZ'; % ISO8601
-                        serData{i} = char(timestamp);
-                    end
-                case {'struct', 'containers.Map', 'table'}
-                    serData = h5.compound.filter(data);
-                otherwise
-                    serData = data;
-            end
+            Type = h5.Type.from_primitive(Primitive);
         end
     end
     
@@ -95,7 +69,9 @@ classdef Type < h5.interface.HasId
     
     methods % set/get
         function TypeClass = get.typeClass(obj)
-            TypeClass = H5T.get_class(obj.id);
+            TypeClass = h5.interface.IsConstant.from_constant(...
+                'h5.const.TypeClass',...
+                H5T.get_class(obj.id));
         end
         
         function size = get.byteSize(obj)

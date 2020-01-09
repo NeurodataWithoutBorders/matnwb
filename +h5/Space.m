@@ -13,13 +13,12 @@ classdef Space < h5.interface.HasId
                 'Type must be from class(data).');
             
             p = inputParser;
-            p.addParameter('spacetype', h5.space.SpaceType.empty);
+            p.addParameter('spacetype', h5.const.SpaceType.empty,...
+                @(s)assert(isa(s, 'h5.const.SpaceType'),...
+                [ERR_MSG_STUB 'InvalidKeywordArgument'],...
+                '`spacetype` must be a h5.const.SpaceType'));
             p.parse(varargin{:});
             SpaceType = p.Results.spacetype;
-            
-            assert(isa(SpaceType, 'h5.space.SpaceType'),...
-                [ERR_MSG_STUB 'InvalidKeywordArgument'],...
-                '`spacetype` must be a h5.space.SpaceType');
             
             if isempty(SpaceType)
                 SpaceType = derive_space_type(dataSize, matlabType);
@@ -40,13 +39,13 @@ classdef Space < h5.interface.HasId
             
             function SpaceType = derive_space_type(dataSize, matlabType)
                 if any(dataSize == 0)
-                    SpaceType = h5.space.SpaceType.Null;
+                    SpaceType = h5.const.SpaceType.Null;
                 elseif all(dataSize == 1) ||...
                         (strcmp('char', matlabType)...
                         && all(dataSize([1, 3:length(dataSize)]) == 1))
-                    SpaceType = h5.space.SpaceType.Scalar;
+                    SpaceType = h5.const.SpaceType.Scalar;
                 else
-                    SpaceType = h5.space.SpaceType.Simple;
+                    SpaceType = h5.const.SpaceType.Simple;
                 end
             end
         end
@@ -56,13 +55,10 @@ classdef Space < h5.interface.HasId
                 'NWB:H5:Space:InvalidArgument',...
                 'Space type should be a type h5.const.SpaceType');
             
-            switch SpaceType
-                case h5.const.SpaceType.Scalar
-                    Space = h5.space.ScalarSpace.create();
-                case h5.const.SpaceType.Simple
-                    Space = h5.space.SimpleSpace.create();
-                case h5.const.SpaceType.Null
-                    Space = h5.space.NullSpace.create();
+            if SpaceType == h5.const.SpaceType.Simple
+                Space = h5.space.SimpleSpace.create();
+            else
+                Space = h5.Space(H5S.create(SpaceType.constant));
             end
         end
     end
@@ -75,13 +71,11 @@ classdef Space < h5.interface.HasId
         id;
     end
     
-    methods (Access = protected) % lifecycle
+    methods % lifecycle
         function obj = Space(id)
             obj.id = id;
         end
-    end
-    
-    methods % lifecycle
+        
         function delete(obj)
             H5S.close(obj.id);
         end
@@ -89,7 +83,9 @@ classdef Space < h5.interface.HasId
     
     methods % get/set
         function SpaceType = get.spaceType(obj)
-            SpaceType = H5S.get_simple_extent_type(obj.id);
+            SpaceType = h5.interface.IsConstant.from_constant(...
+                'h5.const.SpaceType',...
+                H5S.get_simple_extent_type(obj.id));
         end
     end
     
