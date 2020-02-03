@@ -10,27 +10,26 @@ classdef HasAttributes < h5.interface.HasId
             H5A.delete(obj.get_id(), name);
         end
         
-        function Attributes = get_attributes(obj)
+        function Attributes = get_all_attributes(obj)
             IDX_TYPE = 'H5_INDEX_NAME';
             ITER_ORDER = 'H5_ITER_NATIVE';
             IDX_START = 0;
-            [~, ~, attributeNames] = H5A.iterate(...
+            [~, ~, Attributes] = H5A.iterate(...
                 obj.get_id(),...
                 IDX_TYPE,...
                 ITER_ORDER,...
                 IDX_START,...
                 @eachAttribute,...
-                {});
+                h5.Attribute.empty);
             
-            Attributes = h5.Attribute.empty;
-            for i = 1:length(attributeNames)
-                Attributes(end+1) = h5.Attribute.open(obj, name);
-            end
-            
-            function [status, names] = eachAttribute(~, attr_name, names)
-                names{end+1} = attr_name;
+            function [status, Attributes] = eachAttribute(parent_id, name, ~, Attributes)
+                Attributes(end+1) = h5.Attribute(H5A.open(parent_id, name, 'H5P_DEFAULT'));
                 status = 0;
             end
+        end
+        
+        function Attribute = get_attribute(obj, name)
+            Attribute = h5.Attribute.open(obj, name);
         end
     end
 end

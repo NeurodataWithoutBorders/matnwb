@@ -1,6 +1,6 @@
-function [Processed, classprops, inherited] = processClass(name, namespace, pregen)
+function Class = processClass(name, Namespace, CacheMap)
 inherited = {};
-branch = [{namespace.getClass(name)} namespace.getRootBranch(name)];
+branch = [{Namespace.getClass(name)} Namespace.getRootBranch(name)];
 branchNames = cell(size(branch));
 TYPEDEF_KEYS = {'neurodata_type_def', 'data_type_def'};
 for i = 1:length(branch)
@@ -13,7 +13,7 @@ for iAncestor=length(branch):-1:1
     hasTypeDefs = isKey(node, TYPEDEF_KEYS);
     nodename = node(TYPEDEF_KEYS{hasTypeDefs});
     
-    if ~isKey(pregen, nodename)
+    if ~isKey(CacheMap, nodename)
         switch node('class_type')
             case 'groups'
                 class = file.Group(node);
@@ -24,19 +24,19 @@ for iAncestor=length(branch):-1:1
                     'Class type %s is invalid', node('class_type'));
         end
         props = class.getProps();
-        pregen(nodename) = struct('class', class, 'props', props);
+        CacheMap(nodename) = struct('class', class, 'props', props);
     end
     try
-    Processed(iAncestor) = pregen(nodename).class;
+    Processed(iAncestor) = CacheMap(nodename).class;
     catch
         keyboard;
     end
 end
-classprops = pregen(name).props;
+classprops = CacheMap(name).props;
 names = keys(classprops);
 for iAncestor=2:length(Processed)
     pname = Processed(iAncestor).type;
-    parentPropNames = keys(pregen(pname).props);
+    parentPropNames = keys(CacheMap(pname).props);
     inherited = union(inherited, intersect(names, parentPropNames));
 end
 end
