@@ -14,10 +14,11 @@ classdef ObjectView < handle
         end
         
         function v = refresh(obj, nwb)
-            if ~isa(nwb, 'NwbFile')
-                error('Argument `nwb` must be a valid `NwbFile`');
-            end
-            v = nwb.resolve(obj.path);
+            assert(isa(nwb, 'NwbFile'),...
+                'MATNWB:TYPES:UNTYPED:OBJECTVIEW:INVALIDARGUMENT',...
+                'Argument `nwb` must be a valid ''NwbFile'' object.');
+            
+            v = nwb.resolve({obj.path});
         end
         
         function refs = export(obj, fid, fullpath, refs)

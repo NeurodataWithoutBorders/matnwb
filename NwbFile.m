@@ -63,7 +63,16 @@ classdef NwbFile < types.core.NWBFile
         end
         
         function o = resolve(obj, path)
-            o = io.resolvePath(obj, path);
+            if ischar(path)
+                path = {path};
+            end
+            o = cell(size(path));
+            for i = 1:length(path)
+                o{i} = io.resolvePath(obj, path{i});
+            end
+            if isscalar(o)
+                o = o{1};
+            end
         end
     end
     
