@@ -3,43 +3,32 @@ classdef PrimitiveTypes < h5.interface.IsConstant
     % with the expected strings for a preset h5 type.
     
     methods (Static)
-        function H5Type = from_matlab(data)
-            % note that we do need the data in order to determine type properly
-            % this is due to the special case of character arrays and strings in MATLAB
+        function H5Type = from_matlab(MatlabType)
+            assert(isa(MatlabType, 'matlab.PrimitiveTypes'),...
+                'NWB:H5:PrimitiveTypes:InvalidType',...
+                '`PrimitiveType` must be a matlab.PrimitiveTypes');
             
-            ERR_MSG_STUB = 'NWB:H5:PrimitiveTypes:';
-            switch class(data)
-                case 'cell'
-                    assert(iscellstr(data),...
-                        [ERR_MSG_STUB 'GeneralCellNotSupported'],...
-                        ['Cells in MATLAB are expected to be a cell array of'...
-                        'character arrays.  Generic Cell arrays are not supported.']);
+            switch MatlabType
+                case matlab.PrimitiveTypes.char
                     H5Type = h5.PrimitiveTypes.CString;
-                case {'char', 'datetime'}
-                    H5Type = h5.PrimitiveTypes.CString;
-                case 'double'
+                case matlab.PrimitiveTypes.double
                     H5Type = h5.PrimitiveTypes.Double;
-                case 'single'
+                case matlab.PrimitiveTypes.single
                     H5Type = h5.PrimitiveTypes.Single;
-                case {'logical', 'int32'}
+                case {matlab.PrimitiveTypes.logical, matlab.PrimitiveTypes.uint32}
                     H5Type = h5.PrimitiveTypes.I32;
-                case 'int8'
+                case matlab.PrimitiveTypes.int8
                     H5Type = h5.PrimitiveTypes.I8;
-                case 'uint8'
+                case matlab.PrimitiveTypes.uint8
                     H5Type = h5.PrimitiveTypes.U8;
-                case 'int16'
+                case matlab.PrimitiveTypes.int16
                     H5Type = h5.PrimitiveTypes.I16;
-                case 'uint16'
-                    H5Type = h5.PrimitiveTypes.U16;
-                case 'uint32'
-                    H5Type = h5.PrimitiveTypes.U32;
-                case 'int64'
+                case matlab.PrimitiveTypes.int32
+                    H5Type = h5.PrimitiveTypes.I32;
+                case matlab.PrimitiveTypes.int64
                      H5Type = h5.PrimitiveTypes.I64;
-                case 'uint64'
+                case matlab.PrimitiveTypes.uint64
                      H5Type = h5.PrimitiveTypes.U64;
-                otherwise
-                    error([ERR_MSG_STUB 'InvalidType'],...
-                        'Type `%s` is not a supported Matlab Type for H5.', data);
             end
         end
     end

@@ -8,7 +8,7 @@ classdef SimpleSpace < h5.Space
         end
     end
     
-    properties (Dependent)
+    properties (SetAccess = private, Dependent)
         dims;
         extents;
     end
@@ -23,39 +23,13 @@ classdef SimpleSpace < h5.Space
     end
     
     methods % get/set
-        function set.dims(obj, val)
-            ERR_MSG_STUB = 'NWB:H5:SimpleSpace:SetDims:';
-            assert(isnumeric(val) && ~isempty(val),...
-                'NWB:H5:SimpleSpace:SetDims:InvalidArgument',...
-                'property `dims` requires a non-empty numeric array');
-            
-            assert(all(isfinite(val)),...
-                'NWB:H5:SimpleSpace:SetDims:InfiniteDims',...
-                '`dims` cannot have infinite dimensions.  Set Extents instead.');
-            extents = obj.extents;
-            
-            assert(length(extents) >= val,...
-                [ERR_MSG_STUB, 'InvalidRank'
-            H5S.set_extent_simple(obj.id, );
-        end
-        
         function dims = get.dims(obj)
             [~, h5_dims, ~] = H5S.get_simple_extent_dims(obj.get_id());
             dims = fliplr(h5_dims);
         end
         
-        function set.extents(obj, val)
-            assert(isnumeric(val) && ~isempty(val),...
-                'NWB:H5:SimpleSpace:SetExtents:InvalidArgument',...
-                'property `extents` requires a non-empty numeric array');
-            
-            val(isinf(val)) = h5.const.Space.Unlimited;
-            
-            H5S.set_extent_simple(obj.id, length(val));
-        end
-        
         function extents = get.extents(obj)
-            [~, ~, h5_maxdims] = H5S.get_simple_extent_dims(obj.id);
+            [~, ~, h5_maxdims] = H5S.get_simple_extent_dims(obj.get_id());
             extents = fliplr(h5_maxdims);
         end
     end

@@ -64,12 +64,9 @@ classdef Dataset < h5.interface.HasId...
         name;
     end
     
-    properties (Dependent)
-        extents;
-    end
-    
     properties (SetAccess = private, Dependent)
         dims;
+        extents;
         type;
         chunkSize;
         deflateLevel;
@@ -97,14 +94,6 @@ classdef Dataset < h5.interface.HasId...
         
         function dims = get.dims(obj)
             dims = obj.space.dims;
-        end
-
-        function set.extents(obj, val)
-            assert(~isempty(obj.chunkSize),...
-                'NWB:H5:Dataset:SetExtents:CannotResize',...
-                'Resizing a dataset requires Chunking to be enabled.');
-            
-            H5D.set_extent(obj.id, fliplr(val));
         end
         
         function extents = get.extents(obj)
