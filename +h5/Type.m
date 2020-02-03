@@ -42,7 +42,7 @@ classdef Type < h5.interface.HasId
     end
     
     properties (SetAccess = private, Dependent)
-        typeClass;
+        class;
     end
     
     methods % lifecycle
@@ -58,41 +58,43 @@ classdef Type < h5.interface.HasId
     end
     
     methods % set/get
-        function TypeClass = get.typeClass(obj)
+        function TypeClass = get.class(obj)
             TypeClass = H5T.get_class(obj.id);
         end
     end
     
     methods
-        function serData = serialize_matlab(obj, data)
-            ERR_MSG_ID_STUB = 'NWB:H5:Type:Serialize:';
+        function serData = serialize(obj, data)
+            
+            if isa(data, 'types.untyped.RegionView') || isa(data, 'types.untyped.ObjectView')
+                
+            end
+            
             switch class(data)
-                case {'types.untyped.RegionView', 'types.untyped.ObjectView'}
-                    warning([ERR_MSG_ID_STUB, 'SpecialSerializeRequired'],...
-                        ['RegionViews and ObjectViews need to call their own '...
-                        'serialize() functions with a provided h5.File as an argument.']);
-                    serData = data;
+                case {'types.untyped.RegionView' 'types.untyped.ObjectView'}
+                    %will throw errors if refdata DNE.  Caught at NWBData level.
+                    data = io.getRefData(fid, data);
                 case 'logical'
                     %In HDF5, HBOOL is mapped to INT32LE
-                    serData = int32(data);
-                case 'cell'
-                    assert(iscellstr(data), [ERR_MSG_ID_STUB 'CellStringsOnly'],...
-                            'Cells must be cell strings.  No other types are supported.');
-                    serData = data;
-                case 'datetime'
-                    serData = cell(size(data));
-                    
-                    for i = 1:length(serData)
-                        timestamp = data(i);
-                        if isempty(timestamp.TimeZone)
-                            timestamp.TimeZone = 'local';
+                    data = int32(data);
+                case {'char' 'datetime' 'cell'}
+                    % yes, datetime can come from cell arrays as well.
+                    % note, cell strings fall through
+                    if (iscell(data) && all(cellfun('isclass', data, 'datetime'))) ||...
+                            isdatetime(data)
+                        if ~iscell(data)
+                            data = {data};
                         end
-                        
-                        timestamp.Format = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSSZZZZZ'; % ISO8601
-                        serData{i} = char(timestamp);
+                        for i=1:length(data)
+                            if isempty(data{i}.TimeZone)
+                                data{i}.TimeZone = 'local';
+                            end
+                            data{i}.Format = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSSZZZZZ'; % ISO8601
+                            data{i} = char(data{i});
+                        end
+                    elseif ~iscell(data)
+                        data = mat2cell(data, ones(size(data,1),1), size(data,2));
                     end
-                otherwise
-                    serData = data;
             end
         end
     end

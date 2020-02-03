@@ -1,4 +1,4 @@
-classdef RegionView < nwb.interface.Reference
+classdef RegionView < handle
     methods (Static)
         function Views = from_raw(Parent, refData)
             assert(isa(Parent, 'h5.interface.HasId'),...
@@ -55,15 +55,7 @@ classdef RegionView < nwb.interface.Reference
                 'Only a Simple Space can make Selections.');
             Space.select(obj.region);
         end
-
         
-        
-        function path = get.path(obj)
-            path = obj.view.path;
-        end
-    end
-    
-    methods % Reference
         function view = refresh(obj, Nwb)
             %REFRESH follows references and loads data to memory
             %   DATA = REFRESH(NWB) returns the data defined by the RegionView.
@@ -107,22 +99,12 @@ classdef RegionView < nwb.interface.Reference
             end
         end
         
-        function refData = serialize(obj, File)
-            ERR_MSG_STUB = 'NWB:Untyped:RegionView:Serialize:';
-            assert(isa(File, 'h5.File'), [ERR_MSG_STUB 'InvalidArgument'],...
-                '`File` must be a h5.File object.');
-            
-            rawDataSize = 12;
-            
-            refDataSize = size(obj);
-            refDataSize(1) = refDataSize(1) * rawDataSize;
-            refData = zeros(refDataSize, 'uint8');
-            
-            for i = 1:length(obj)
-                start_i = ((i - 1) * rawDataSize) + 1;
-                end_i = start_i + rawDataSize - 1;
-                refData(start_i:end_i) = File.get_reference_data(obj(i));
-            end
+        function refs = export(obj, fid, fullpath, refs)
+            io.writeDataset(fid, fullpath, class(obj), obj);
+        end
+        
+        function path = get.path(obj)
+            path = obj.view.path;
         end
     end
 end

@@ -26,27 +26,17 @@ classdef SimpleSpace < h5.Space
         function set.dims(obj, val)
             ERR_MSG_STUB = 'NWB:H5:SimpleSpace:SetDims:';
             assert(isnumeric(val) && ~isempty(val),...
-                [ERR_MSG_STUB 'InvalidArgument'],...
+                'NWB:H5:SimpleSpace:SetDims:InvalidArgument',...
                 'property `dims` requires a non-empty numeric array');
             
             assert(all(isfinite(val)),...
-                [ERR_MSG_STUB 'InfiniteDims'],...
+                'NWB:H5:SimpleSpace:SetDims:InfiniteDims',...
                 '`dims` cannot have infinite dimensions.  Set Extents instead.');
             extents = obj.extents;
             
-            rank = length(extents);
-            assert(rank >= length(val),...
-                [ERR_MSG_STUB, 'InvalidRank'],...
-                'rank of dims should match rank of extents.');
-            
-            if rank > length(val)
-                newVal = ones(1, rank);
-                newVal(1:length(val)) = val;
-                val = newVal;
-            end
-            h5_dims = fliplr(val);
-            h5_max_dims = fliplr(extents);
-            H5S.set_extent_simple(obj.id, rank, h5_dims, h5_max_dims);
+            assert(length(extents) >= val,...
+                [ERR_MSG_STUB, 'InvalidRank'
+            H5S.set_extent_simple(obj.id, );
         end
         
         function dims = get.dims(obj)
@@ -55,27 +45,13 @@ classdef SimpleSpace < h5.Space
         end
         
         function set.extents(obj, val)
-            ERR_MSG_STUB = 'NWB:H5:SimpleSpace:SetExtents:';
             assert(isnumeric(val) && ~isempty(val),...
-                [ERR_MSG_STUB 'InvalidArgument'],...
+                'NWB:H5:SimpleSpace:SetExtents:InvalidArgument',...
                 'property `extents` requires a non-empty numeric array');
             
             val(isinf(val)) = h5.const.Space.Unlimited;
             
-            rank = length(val);
-            dims = obj.dims;
-            if length(dims) > rank
-                warning([ERR_MSG_STUB 'CoerceRank'],...
-                    'Decreasing dimension rank.  May lose data.');
-                dims = dims(1:rank);
-            elseif length(dims) < rank
-                newDims = ones(1, rank);
-                newDims(1:length(dims)) = dims;
-                dims = newDims;
-            end
-            h5_dims = fliplr(dims);
-            h5_max_dims = fliplr(val);
-            H5S.set_extent_simple(obj.id, rank, h5_dims, h5_max_dims);
+            H5S.set_extent_simple(obj.id, length(val));
         end
         
         function extents = get.extents(obj)

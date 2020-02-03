@@ -1,4 +1,4 @@
-classdef IdTypes < h5.interface.IsConstant
+classdef Identifiers < h5.interface.IsConstant
     %IDENTIFIERS H5I enum
     
     enumeration

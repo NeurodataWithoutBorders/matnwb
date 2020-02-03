@@ -144,6 +144,12 @@ classdef Dataset < h5.interface.HasId...
         end
     end
     
+    methods % IsNamed
+        function name = get_name(obj)
+            name = obj.name;
+        end
+    end
+    
     methods % IsHdfData
         function Type = get_type(obj)
             Type = obj.type;
