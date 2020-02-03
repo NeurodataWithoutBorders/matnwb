@@ -1,5 +1,5 @@
 classdef Attribute < h5.interface.HasId...
-        & h5.interface.IsNamed
+        & h5.interface.IsNamed...
         & h5.interface.IsHdfData
     %ATTRIBUTE HDF5 attribute
     
@@ -27,10 +27,6 @@ classdef Attribute < h5.interface.HasId...
         end
     end
     
-    properties (SetAccess = private, Dependent)
-        name;
-    end
-    
     properties (Access = private)
         id;
     end
@@ -42,12 +38,6 @@ classdef Attribute < h5.interface.HasId...
         
         function delete(obj)
             H5A.close(obj.id);
-        end
-    end
-    
-    methods % set/get
-        function name = get.name(obj)
-            name = obj.get_name();
         end
     end
     
@@ -76,12 +66,6 @@ classdef Attribute < h5.interface.HasId...
         
         function data = read(obj, varargin)
             data = H5A.read(obj.id, 'H5ML_DEFAULT');
-        end
-    end
-    
-    methods % IsNamed
-        function name = get_name(obj)
-            name = H5A.get_name(obj.id);
         end
     end
 end

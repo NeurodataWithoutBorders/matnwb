@@ -8,8 +8,7 @@ if exist(path, 'dir') == 7
 end
 mkdir(path);
 classes = keys(Namespace.registry);
-
-pregenerated = containers.Map; % cached nodes/properties
+pregenerated = containers.Map; %generated nodes and props for faster dependency resolution
 for i=1:length(classes)
     className = classes{i};
     [processed, classprops, inherited] = file.processClass(className, Namespace, pregenerated);

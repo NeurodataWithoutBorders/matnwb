@@ -35,49 +35,25 @@ end
 
 function specLocation = checkEmbeddedSpec(filename)
 specLocation = '';
-%check for .specloc
-File = h5.File.open(filename);
 try
-    Attribute = File.get_attribute('.specloc');
+    %check for .specloc
+    fid = H5F.open(filename);
+    attributeId = H5A.open(fid, '.specloc');
+    referenceRawData = H5A.read(attributeId);
+    specLocation = H5R.get_name(attributeId, 'H5R_OBJECT', referenceRawData);
+    generateSpec(fid, h5info(filename, specLocation));
+    rehash(); %required if we want parseGroup to read the right files.
+    H5A.close(attributeId);
+    H5F.close(fid);
 catch ME
-    if strcmp(ME.identifier, 'MATLAB:imagesci:hdf5lib:libraryError')
+    if ~strcmp(ME.identifier, 'MATLAB:imagesci:hdf5lib:libraryError')
         rethrow(ME);
-    end % otherwise attribute doesn't exist which is fine.
+    end
+    % attribute doesn't exist which is fine.
 end
-specRefData = Attribute.read();
-specView = types.untyped.ObjectView.from_raw(File, specRefData);
-generateSpec(h5.Group.open(specView.path));
-rehash(); %required if we want parseGroup to read the right files.
 end
 
-function generateSpec(Spec)
-% Specifications are ordered thus
-% <namespace>
-% -> <version>
-%    -> <namespace modules>
-
-specObjectNames = Spec.get_descendent_names();
-separatorIndices = strfind(specObjectNames, '/');
-numSeparators = cellfun('length', separatorIndices);
-
-% MxN array where M is the path and N is in form <name>, <version>, <module>
-leafNames = squeeze(split(specObjectNames(numSeparators == 2), '/')); % MxN array
-
-namespaces = unique(leafNames(:,1));
-
-% <name> -> { <version> -> { <module> -> text } }
-Namespaces = containers.Map();
-for i = 1:length(namespaces)
-    name = namespaces{i};
-    versions = leafNames(strcmp(name, leafNames(:,1), 2));
-end
-for i = 1:size(leafNames, 1)
-    moduleName = leafNames{i};
-    Namespaces(leafName
-    Module = h5.Dataset.open(Spec, leafNames{i});
-    Namespace = spec.generate(Module.read(), 
-end
-
+function generateSpec(fid, specinfo)
 specNames = cell(size(specinfo.Groups));
 for i=1:length(specinfo.Groups)
     location = specinfo.Groups(i).Groups(1);
@@ -88,8 +64,8 @@ for i=1:length(specinfo.Groups)
     filenames = {location.Datasets.Name};
     if ~any(strcmp('namespace', filenames))
         warning('Nwb:Namespace:CacheInvalid',...
-            'Couldn''t find a `namespace` in namespace `%s`.  Skipping cache generation.',...
-            namespaceName);
+        'Couldn''t find a `namespace` in namespace `%s`.  Skipping cache generation.',...
+        namespaceName);
         return;
     end
     sourceNames = {location.Datasets.Name};
@@ -100,7 +76,7 @@ for i=1:length(specinfo.Groups)
         if strcmp('namespace', sourceNames{j})
             namespaceText = H5D.read(did);
         else
-            schemaMap(sourceNames{j}) = H5D.read(did);
+            schemaMap(sourceNames{j}) = H5D.read(did);    
         end
         H5D.close(did);
     end
@@ -119,7 +95,7 @@ end
 missingNames(cellfun('isempty', missingNames)) = [];
 assert(isempty(missingNames), 'Nwb:Namespace:DependencyMissing',...
     'Missing generated caches and dependent caches for the following namespaces:\n%s',...
-    misc.cellPrettyPrint(missingNames));
+            misc.cellPrettyPrint(missingNames));
 end
 
 function writeSuccessful = tryWriteSpec(namespaceName)

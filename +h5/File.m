@@ -1,6 +1,6 @@
 classdef File < h5.interface.HasSubObjects...
         & h5.interface.HasAttributes...
-        & h5.interface.IsObject
+        & h5.interface.IsNamed
     %FILE HDF5 file
     
     methods (Static)

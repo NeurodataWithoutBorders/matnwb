@@ -1,9 +1,8 @@
 classdef Namespace < handle
-    properties(SetAccess = private)
-        name; % name of this namespace
-        version; % string version
+    properties(SetAccess=private)
+        name; %name of this namespace
         dependencies; %parent namespaces by [Namespace]
-        modules; % maps module names to class data.
+        registry; %maps name to class
     end
     
     properties (Constant, Access = private)

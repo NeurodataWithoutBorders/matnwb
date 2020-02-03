@@ -85,7 +85,9 @@ classdef HasSubObjects < h5.interface.HasId
                 end
             end
         end
-        
+    end
+    
+    methods (Access = private)
         function subNames = get_descendent_names(obj)
             subNames = {};
             [~, subNames] = H5O.visit(obj.get_id(),...

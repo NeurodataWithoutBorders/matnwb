@@ -1,6 +1,7 @@
-classdef Dataset < h5.interface.IsObject...
+classdef Dataset < h5.interface.HasId...
         & h5.interface.IsHdfData...
-        & h5.interface.HasAttributes
+        & h5.interface.HasAttributes...
+        & h5.interface.IsObject
     %DATASET HDF5 Dataset for regular datatypes
     
     methods (Static)
@@ -46,10 +47,6 @@ classdef Dataset < h5.interface.IsObject...
         end
     end
     
-    properties (SetAccess = private, Dependent)
-        name;
-    end
-    
     properties (Access = private)
         id;
     end
@@ -84,10 +81,6 @@ classdef Dataset < h5.interface.IsObject...
         
         function level = get.deflateLevel(obj)
             level = obj.dcpl.deflateLevel;
-        end
-        
-        function name = get.name(obj)
-            name = obj.get_name();
         end
     end
     
