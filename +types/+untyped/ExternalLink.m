@@ -1,32 +1,22 @@
 classdef ExternalLink < handle
     properties
-        name;
         filename;
         path;
     end
     
     methods
-        function obj = ExternalLink(name, filename, path)
-            obj.name = name;
+        function obj = ExternalLink(filename, path)
             obj.filename = filename;
             obj.path = path;
         end
-    end
-    
-    methods
+        
         function data = deref(obj)
-            % if path is valid hdf5 path, then returns either a Nwb Type or a DataStub
+            % if path is valid hdf5 path, then returns either a Nwb Object, DataStub or a Link.
+            % otherwise, returns the file id of the referenced link.
             assert(ischar(obj.filename), 'expecting filename to be a char array.');
             assert(2 == exist(obj.filename, 'file'), '%s does not exist.', obj.filename);
             
-            Nwb = nwbRead(obj.filename, 'ignorecache');
-            SubObj = io.resolvePath(Nwb, obj.path);
-            
-            if isa(SubObj, 'types.untyped.SoftLink')...
-                    || isa(SubObj, 'types.untyped.ExternalLink')
-                SubObj = resolve_link_chain(SubObj, obj.filename, obj.path);
-            end
-            
+            fid = H5F.open(obj.filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
             info = h5info(obj.filename, obj.path);
             loc = [obj.filename obj.path];
             attr_names = {info.Attributes.Name};
@@ -58,36 +48,6 @@ classdef ExternalLink < handle
                         loc);
             end
             
-            function resolve_link_chain(SubObj, filename, path)
-                LinkTraversalHistory = containers.Map(); % [filename -> {paths}]
-                currentFilename = filename;
-                currentPath = path;
-                while isa(SubObj, 'types.untyped.SoftLink')...
-                        || isa(SubObj, 'types.untyped.ExternalLink')
-                    if LinkTraversalHistory.isKey(currentFilename)
-                        assert(~any(strcmp(currentPath,...
-                            LinkTraversalHistory(currentFilename))),...
-                            'NWB:Untyped:ExternalLink:Deref:InfiniteLoopDetected',...
-                            'Found a loop in Link chain from (`%s`, `%s`) to (`%s`, `%s`)',...
-                            filename, path, currentFilename, currentPath);
-                    else
-                        LinkTraversalHistory(currentFilename) = {};
-                    end
-                    paths = LinkTraversalHistory(currentFilename);
-                    paths{end+1} = currentPath;
-                    LinkTraversalHistory(currentFilename) = paths;
-                    
-                    if isa(SubObj, 'types.untyped.SoftLink')
-                        SubObj = io.resolvePath(SubObj.path);
-                        currentPath = SubObj.path;
-                    else
-                        SubObj = SubObj.deref();
-                        currentFilename = SubObj.filename;
-                        currentPath = SubObj.path;
-                    end
-                end
-            end
-            
             function data = deref_link(fid, path)
                 linfo = H5L.get_info(fid, path, 'H5P_DEFAULT');
                 is_external = linfo.type == H5ML.get_constant_value('H5L_TYPE_EXTERNAL');
@@ -112,12 +72,6 @@ classdef ExternalLink < handle
                 H5L.delete(fid, fullpath, plist);
             end
             H5L.create_external(obj.filename, obj.path, fid, fullpath, plist, plist);
-        end
-    end
-    
-    methods % IsNamed
-        function name = get_name(obj)
-            name = obj.name;
         end
     end
 end

@@ -1,83 +1,76 @@
 classdef RegionView < handle
-    methods (Static)
-        function Views = from_raw(Parent, refData)
-            assert(isa(Parent, 'h5.interface.HasId'),...
-                'NWB:Untyped:RegionView:FromRaw:InvalidArgument',...
-                'Parent must have a retrievable Id');
-            assert(isa(refData, 'uint8'),...
-                'NWB:Untyped:RegionView:FromRaw:InvalidArgument',...
-                'refData must be raw uint8 data');
-            
-            Views = types.untyped.RegionView.empty(size(refData, 2), 0);
-            for i = 1:size(refData, 2)
-                data = refData(:,i);
-                did = H5R.dereference(Parent.get_id(),...
-                    h5.PrimitiveTypes.DatasetRegionRef.constant,...
-                    data);
-                Dataset = h5.Dataset(H5I.get_name(did), did);
-                Space = h5.space.SimpleSpace(...
-                    H5R.get_region(Parent.get_id(),...
-                    h5.PrimitiveTypes.DatasetRegionRef.constant,...
-                    data));
-                Views(i) = types.untyped.RegionView(...
-                    Dataset.get_name(),...
-                    Space.get_selections());
-            end
-        end
-    end
-    
-    properties (SetAccess = private)
+    properties(SetAccess=private)
         path;
         view;
         region;
     end
     
+    properties(Constant,Hidden)
+        type = 'H5T_STD_REF_DSETREG';
+        reftype = 'H5R_DATASET_REGION';
+    end
+    
     methods
-        function obj = RegionView(path, Hyperslabs)
-            %REGIONVIEW A region reference to a dataset in the same nwb file.
-            % obj = REGIONVIEW(path, region)
-            % path = char representing the internal path to the dataset.
-            % Hyperslabs = h5.space.Hyperslabs representing a sum of slab selections
-            assert(ischar(path),...
-                'NWB:Untyped:RegionView:InvalidArgument',...
-                'path must be a character array.');
-            assert(isa(Hyperslabs, 'h5.space.Hyperslab'),...
-                'NWB:Untyped:RegionView:InvalidArgument',...
-                '`Hyperslabs` must be an array of `h5.space.Hyperslab` objects');
-            
+        function obj = RegionView(path, region, datasize)
+        %REGIONVIEW A region reference to a dataset in the same nwb file.
+        % obj = REGIONVIEW(path, region)
+        % path = char representing the internal path to the dataset.
+        % region = cell array whose contents are a 2xn array of bounds where n is
+        %   the subscript size
             obj.view = types.untyped.ObjectView(path);
-            obj.region = Hyperslabs;
+            assert(isreal(region) || ...
+                (iscell(region) && all(cellfun('isreal', region))),...
+                'RegionView only accepts either numeric indices or cell array of bounds');
+            if isreal(region)
+                if nargin > 2
+                    region = misc.idx2h5(region, datasize);
+                else
+                    region = misc.idx2h5(region);
+                end
+            elseif any(cellfun('size', region, 1) ~= 2)
+                assert(all(cellfun('size', region, 2) == 2),...
+                    'RegionView expects exactly 2 rows of index bounds per cell.');
+                for i=1:length(region)
+                    region{i} = region{i} .';
+                end
+            end
+            
+            obj.region = region;
         end
         
-        function Space = make_selection(obj, Space)
-            assert(isa(Space, 'h5.space.SimpleSpace'),...
-                'NWB:Untyped:RegionView:MakeSelection:InvalidArgument',...
-                'Only a Simple Space can make Selections.');
-            Space.select(obj.region);
+        %given an sid, this region will return that sid but with the
+        %correct selection parameters
+        function sid = get_selection(obj, sid)
+            H5S.select_none(sid);
+            for i=1:length(obj.region)
+                reg = obj.region{i};
+                H5S.select_hyperslab(sid, 'H5S_SELECT_OR', reg(1,:),...
+                    [], [], diff(reg, 1, 1)+1);
+            end
         end
         
-        function view = refresh(obj, Nwb)
+        function v = refresh(obj, nwb)
             %REFRESH follows references and loads data to memory
             %   DATA = REFRESH(NWB) returns the data defined by the RegionView.
             %   NWB is the nwb object returned by nwbRead.
             
             if isempty(obj.region)
-                view = [];
+                v = [];
                 return;
             end
             
-            ViewObj = obj.view.refresh(Nwb);
+            vobj = obj.view.refresh(nwb);
             
-            if isa(ViewObj.data, 'types.untyped.DataStub')
-                Space = ViewObj.data.get_space();
-                Space.select(obj.region);
-                view = ViewObj.data.load_h5_style(Space);
+            if isa(vobj.data, 'types.untyped.DataStub')
+                sid = obj.get_selection(vobj.data.get_space());
+                v = vobj.data.load_h5_style(sid);
+                H5S.close(sid);
             else
-                view = ViewObj.data;
+                v = vobj.data;
             end
             
             %convert 0-indexed subscript bounds to 1-indexed linear indices.
-            dsz = size(view);
+            dsz = size(v);
             bsizes = zeros(length(obj.region),1);
             boundLIdx = cell(length(obj.region),1);
             for i=1:length(obj.region)
@@ -92,10 +85,10 @@ classdef RegionView < handle
                 lIdx(idx:bsizes(i)) = (boundLIdx{i}(1):boundLIdx{i}(2)) .'; 
             end
             
-            if istable(view)
-                view = view(lIdx, :); %tables only take 2d indexing
+            if istable(v)
+                v = v(lIdx, :); %tables only take 2d indexing
             else
-                view = view(lIdx);
+                v = v(lIdx);
             end
         end
         

@@ -1,27 +1,29 @@
 classdef SoftLink < handle
     properties
-        name;
         path;
     end
     
+%     properties(Hidden, SetAccess=immutable)
+%         type; %type constraint, used by file generation
+%     end
+    
     methods
-        function obj = SoftLink(name, path)
-            obj.name = name;
+        function obj = SoftLink(path)
             obj.path = path;
         end
         
         function set.path(obj, val)
-            assert(ischar(val),...
-                'NWB:Untyped:SoftLink:SetPath:InvalidArgument',...
-                'Property `path` should be a char array');
+            if ~ischar(val)
+                error('Property `path` should be a char array');
+            end
             obj.path = val;
         end
         
-        function refobj = deref(obj, Nwb)
-            assert(isa(nwb, 'NwbFile'),...
-                'NWB:Untyped:SoftLink:Deref:InvalidArgument',...
-                'Argument `nwb` must be a valid `NwbFile`');
-            refobj = io.resolvePath(Nwb, obj.path);
+        function refobj = deref(obj, nwb)
+            if ~isa(nwb, 'NwbFile')
+                error('Argument `nwb` must be a valid `NwbFile`');
+            end
+            refobj = io.resolvePath(nwb, obj.path);
         end
         
         function refs = export(obj, fid, fullpath, refs)
@@ -39,12 +41,6 @@ classdef SoftLink < handle
                     rethrow(ME);
                 end
             end
-        end
-    end
-    
-    methods % IsNamed
-        function name = get_name(obj)
-            name = obj.name;
         end
     end
 end
