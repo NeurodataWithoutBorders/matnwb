@@ -3,22 +3,19 @@ classdef Manifest
     
     methods (Static)
         function Manifest = from_type(Type)
-            MSG_ID_CONTEXT = 'NWB:H5:Compound:Manifest:FromType:';
-            assert(isa(Type, 'h5.Type'), [MSG_ID_CONTEXT 'InvalidArgument'],...
-                'Type must be a h5.Type');
-            assert(Type.typeClass == h5.const.TypeClass.Compound.constant,...
-                [MSG_ID_CONTEXT 'InvalidTypeClass'],...
-                'A Manifest cannot be a converted from a non-compound Type.');
+            assert(Type.get_class() == h5.const.TypeClass.Compound.constant,...
+                'NWB:H5:Compound:FromType:InvalidType',...
+                'Only a Compound Type can be converted into a Manifest.');
             
-            arguments = cell(H5T.get_nmembers(Type.get_id()) * 2, 1);
+            Type = h5.Type(H5T.create('H5T_COMPOUND', Manifest.get_total_size()));
             
-            for i = 1:2:length(arguments)
-                membno = (i - 1) / 2;
-                arguments{i} = H5T.get_member_name(Type.get_id(), membno);
-                arguments{i + 1} = h5.Type(H5T.get_member_type(Type.get_id(), membno));
+            for i = 1:length(Manifest.columns)
+                offset = Manifest.get_offset(Manifest.columns{i});
+                SubType = Manifest.mapping.(Manifest.columns{i});
+                H5T.insert(Type.get_id(), Manifest.columns{i}, offset, SubType.get_id());
             end
             
-            Manifest = h5.compound.Manifest(arguments{:});
+            H5T.pack(Type.get_id());
         end
     end
     
@@ -28,51 +25,39 @@ classdef Manifest
     end
     
     methods % lifecycle
-        function obj = Manifest(varargin)
-            assert(0 == mod(length(varargin), 2),...
-                'NWB:H5:Compound:Manifest:InvalidNumberOfArguments',...
-                ['Manifest takes in exactly 2 `push` arguments at a time in the '...
-                'form of (`name`, `Type`)']);
-            for i = 1:2:length(varargin)
-                obj.push(varargin{i:i+1});
+        function obj = TableManifest(varargin)
+            obj.mapping = struct;
+            for i = 1:3:length(varargin)
+                obj.append(varargin{i:i+2});
             end
         end
     end
     
     methods
-        function push(obj, name, Type, varargin)
-            MSG_ID_CONTEXT = 'NWB:H5:Compound:Manifest:Push:';
+        function insert(obj, name, Type, afterFieldName)
             assert(ischar(name),...
-                [MSG_ID_CONTEXT 'InvalidArgument'],...
-                'Manifest name must be a character array.');
-            assert(isa(Type, 'h5.Type'),...
-                [MSG_ID_CONTEXT 'InvalidArgument'],...
-                'Manifest type specifier must be one of h5.Type');
+                'NWB:H5:Manifest:InvalidArgument',...
+                'Manifest name must be a string');
+            assert(isa(Type, 'h5.DefaultType'),...
+                'NWB:H5:Manifest:InvalidArgument',...
+                'Manifest type specifier must be one of h5.DefaultType');
+            assert(ischar(afterFieldName)...
+                && (isempty(afterFieldName)...
+                    || any(strcmp(obj.columns, afterFieldName))),...
+                'NWB:H5:TableManifest:InvalidArgument',...
+                'afterFieldName should refer to an existing field name');
             
-            p = inputParser;
-            p.addParameter('after', '');
-            p.parse(varargin{:});
-            afterFieldName = p.Results.after;
-            
-            assert(ischar(afterFieldName), [MSG_ID_CONTEXT 'InvalidKeywordArgument'],...
-                '`after` field name must be a character array');
-            
-            if isempty(afterFieldName)
-                pushIndex = length(obj.columns) + 1;
-            else
-                columnMask = strcmp(afterFieldName, obj.columns);
-                assert(any(columnMask),...
-                    [MSG_ID_CONTEXT 'AfterFieldNameNotFound'],...
-                    '`after` field name does not exist in columns');
-                pushIndex = find(strcmp(afterFieldName, obj.columns), 1);
-            end
-            
-            if any(strcmp(obj.columns, name))
+            if any(strcmp(fieldnames(obj.mapping), name))
                 obj.remove(name);
             end
             
             obj.mapping.(name) = Type;
-            obj.columns{pushIndex} = name;
+            
+            if isempty(afterFieldName)
+                obj.columns{end+1} = name;
+            else
+                obj.columns{find(strcmp(afterFieldName, obj.columns), 1) + 1} = name;
+            end
         end
         
         function remove(obj, name)
@@ -80,12 +65,17 @@ classdef Manifest
             obj.columns(strcmp(name, obj.columns)) = [];
         end
         
-        function size = get_total_size(obj)
+        function append(obj, name, Type)
             if isempty(obj.columns)
-                size = 0;
-                return;
+                afterName = '';
+            else
+                afterName = obj.columns{end};
             end
             
+            obj.insert(name, DefaultType, afterName);
+        end
+        
+        function size = get_total_size(obj)
             lastColumn = obj.columns{end};
             LastColumnType = obj.mapping.(lastColumn);
             size = obj.get_offset(lastColumn) + H5T.get_size(LastColumnType.get_id());
@@ -104,18 +94,6 @@ classdef Manifest
                 Type = obj.mapping(obj.columns{i});
                 size = size + H5T.get_size(Type.get_id());
             end
-        end
-        
-        function Type = to_type(obj)
-            Type = h5.Type(H5T.create('H5T_COMPOUND', obj.get_total_size()));
-            
-            for i = 1:length(obj.columns)
-                offset = obj.get_offset(obj.columns{i});
-                SubType = obj.mapping.(obj.columns{i});
-                H5T.insert(Type.get_id(), obj.columns{i}, offset, SubType.get_id());
-            end
-            
-            H5T.pack(Type.get_id());
         end
     end
 end

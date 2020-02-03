@@ -35,8 +35,9 @@ classdef Anon < nwb.interface.Exportable
     end
     
     methods % Exportable
-        function MissingViews = export(obj, Parent, ~)
+        function MissingViews = export(obj, Parent, name)
             MissingViews = obj.value.export(Parent, obj.name);
+            refs = obj.value.export(fid, [fullpath obj.name '/'], refs);
         end
     end
 end

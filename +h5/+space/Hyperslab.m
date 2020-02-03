@@ -20,7 +20,6 @@ classdef Hyperslab
     
     properties (SetAccess = private)
         bounds;
-        rank;
     end
     
     methods % lifecycle
@@ -60,10 +59,6 @@ classdef Hyperslab
     methods % set/get
         function bounds = get.bounds(obj)
             bounds = (obj.stride + 1) * (obj.shape + obj.offset);
-        end
-        
-        function r = get.rank(obj)
-            r = length(obj.shape);
         end
     end
 end

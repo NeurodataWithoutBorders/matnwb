@@ -15,36 +15,63 @@ classdef Type < h5.interface.HasId
         end
         
         function Type = from_matlab(MatlabType)
-            import h5.const.PrimitiveTypes;
             % we limit ourselves to the predefined native types and standard datatypes when applicable
             % https://portal.hdfgroup.org/display/HDF5/Predefined+Datatypes
             % for compound types see h5.compound.CompoundType
             
             switch MatlabType
                 case 'types.untyped.ObjectView'
-                    tid = PrimitiveTypes.ObjectRef;
+                    tid = h5.PrimitiveTypes.ObjectRef;
                 case 'types.untyped.RegionView'
-                    tid = PrimitiveTypes.DatasetRegionRef;
-                case {'char', 'cell', 'datetime'}
+                    tid = h5.PrimitiveTypes.DatasetRegionRef;
+                case {matlab.PrimitiveTypes.char,...
+                        matlab.PrimitiveTypes.cell,...
+                        matlab.PrimitiveTypes.datetime}
                     tid = H5T.copy(h5.PrimitiveTypes.CString);
                     H5T.set_size(tid, 'H5T_VARIABLE'); % variable-length type.
                 otherwise
-                    tid = PrimitiveTypes.from_matlab(MatlabType);
+                    tid = h5.PrimitiveTypes.from_matlab(MatlabType);
             end
             
             Type = h5.Type(tid);
         end
+    end
+    
+    properties (Access = private)
+        id;
+    end
+    
+    properties (SetAccess = private, Dependent)
+        typeClass;
+    end
+    
+    methods % lifecycle
+        function obj = Type(id)
+            obj.id = id;
+        end
         
-        function serData = serialize_matlab(data)
-            ERR_MSG_ID_STUB = 'NWB:H5:Type:SerializeMatlab:';
-            
-            if isa(data, 'nwb.interface.Reference')
-                warning([ERR_MSG_ID_STUB, 'SpecialSerializeRequired'],...
+        function delete(obj)
+            if isa(obj.id, 'H5ML.id')
+                H5T.close(obj.id);
+            end
+        end
+    end
+    
+    methods % set/get
+        function TypeClass = get.typeClass(obj)
+            TypeClass = H5T.get_class(obj.id);
+        end
+    end
+    
+    methods
+        function serData = serialize_matlab(obj, data)
+            ERR_MSG_ID_STUB = 'NWB:H5:Type:Serialize:';
+            switch class(data)
+                case {'types.untyped.RegionView', 'types.untyped.ObjectView'}
+                    warning([ERR_MSG_ID_STUB, 'SpecialSerializeRequired'],...
                         ['RegionViews and ObjectViews need to call their own '...
                         'serialize() functions with a provided h5.File as an argument.']);
-            end
-            
-            switch class(data)
+                    serData = data;
                 case 'logical'
                     %In HDF5, HBOOL is mapped to INT32LE
                     serData = int32(data);
@@ -64,42 +91,9 @@ classdef Type < h5.interface.HasId
                         timestamp.Format = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSSZZZZZ'; % ISO8601
                         serData{i} = char(timestamp);
                     end
-                case {'struct', 'containers.Map', 'table'}
-                    serData = h5.compound.filter(data);
                 otherwise
                     serData = data;
             end
-        end
-    end
-    
-    properties (Access = private)
-        id;
-    end
-    
-    properties (SetAccess = private, Dependent)
-        typeClass;
-        byteSize;
-    end
-    
-    methods % lifecycle
-        function obj = Type(id)
-            obj.id = id;
-        end
-        
-        function delete(obj)
-            if isa(obj.id, 'H5ML.id')
-                H5T.close(obj.id);
-            end
-        end
-    end
-    
-    methods % set/get
-        function TypeClass = get.typeClass(obj)
-            TypeClass = H5T.get_class(obj.id);
-        end
-        
-        function size = get.byteSize(obj)
-            size = H5T.get_size(obj.id);
         end
     end
     
