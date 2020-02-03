@@ -66,7 +66,6 @@ classdef SimpleSpace < h5.Space
             end
             h5_dims = fliplr(val);
             h5_max_dims = fliplr(extents);
-            h5_max_dims(h5_max_dims == Inf) = h5.const.Space.Unlimited.constant;
             H5S.set_extent_simple(obj.id, rank, h5_dims, h5_max_dims);
         end
         
@@ -102,7 +101,6 @@ classdef SimpleSpace < h5.Space
         function extents = get.extents(obj)
             [~, ~, h5_maxdims] = H5S.get_simple_extent_dims(obj.id);
             extents = fliplr(h5_maxdims);
-            extents(extents == h5.const.Space.Unlimited.constant) = Inf;
         end
     end
     

@@ -34,8 +34,7 @@ classdef DatasetCreationPropertyList < h5.interface.HasId
         
         function size = get.chunkSize(obj)
             try
-                [~, h5_chunk_dims] = H5P.get_chunk(obj.id);
-                size = fliplr(h5_chunk_dims);
+                size = H5P.get_chunk(obj.id);
             catch
                 size = [];
             end
