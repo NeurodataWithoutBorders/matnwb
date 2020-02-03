@@ -2,35 +2,23 @@ classdef Type < h5.interface.HasId
     %TYPE H5 Type.  Enumeration over predefined data types.
     
     methods (Static)
-        function Type = from_manifest(Manifest)
-            Type = h5.Type(H5T.create('H5T_COMPOUND', Manifest.get_total_size()));
-            
-            for i = 1:length(Manifest.columns)
-                offset = Manifest.get_offset(Manifest.columns{i});
-                SubType = Manifest.mapping.(Manifest.columns{i});
-                H5T.insert(Type.get_id(), Manifest.columns{i}, offset, SubType.get_id());
-            end
-            
-            H5T.pack(Type.get_id());
-        end
-        
-        function Type = from_matlab(MatlabType)
+        function Type = from_matlab(matlabType)
+            import h5.type.H5Types;
+            import h5.type.PrimitiveTypes;
             % we limit ourselves to the predefined native types and standard datatypes when applicable
             % https://portal.hdfgroup.org/display/HDF5/Predefined+Datatypes
             % for compound types see h5.compound.CompoundType
             
-            switch MatlabType
+            switch matlabType
                 case 'types.untyped.ObjectView'
-                    tid = h5.PrimitiveTypes.ObjectRef;
+                    tid = H5Types.ObjectRef;
                 case 'types.untyped.RegionView'
-                    tid = h5.PrimitiveTypes.DatasetRegionRef;
-                case {matlab.PrimitiveTypes.char,...
-                        matlab.PrimitiveTypes.cell,...
-                        matlab.PrimitiveTypes.datetime}
-                    tid = H5T.copy(h5.PrimitiveTypes.CString);
+                    tid = H5Types.DatasetRegionRef;
+                case {PrimitiveTypes.char, PrimitiveTypes.cell, PrimitiveTypes.datetime}
+                    tid = H5T.copy(H5Types.CString);
                     H5T.set_size(tid, 'H5T_VARIABLE'); % variable-length type.
                 otherwise
-                    tid = h5.PrimitiveTypes.from_matlab(MatlabType);
+                    tid = H5Types.from_primitive(matlabType);
             end
             
             Type = h5.Type(tid);
@@ -39,10 +27,6 @@ classdef Type < h5.interface.HasId
     
     properties (Access = private)
         id;
-    end
-    
-    properties (SetAccess = private, Dependent)
-        class;
     end
     
     methods % lifecycle
@@ -54,12 +38,6 @@ classdef Type < h5.interface.HasId
             if isa(obj.id, 'H5ML.id')
                 H5T.close(obj.id);
             end
-        end
-    end
-    
-    methods % set/get
-        function TypeClass = get.class(obj)
-            TypeClass = H5T.get_class(obj.id);
         end
     end
     

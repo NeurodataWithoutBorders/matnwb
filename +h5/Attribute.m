@@ -69,10 +69,6 @@ classdef Attribute < h5.interface.HasId...
     end
     
     methods % IsHdfData
-        function Type = get_type(obj)
-            Type = obj.type;
-        end
-        
         function write(obj, data)
             if isa(obj.type, 'h5.PresetType')
                 data = obj.type.filter(data);
@@ -90,7 +86,7 @@ classdef Attribute < h5.interface.HasId...
             H5A.write(obj.id, obj.type.get_id(), data);
         end
         
-        function data = read(obj, varargin)
+        function data = read(obj)
             data = H5A.read(obj.id, 'H5ML_DEFAULT');
         end
     end

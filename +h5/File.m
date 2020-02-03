@@ -7,17 +7,10 @@ classdef File < h5.interface.HasSubObjects & h5.interface.HasAttributes & h5.int
             File = h5.File(H5F.create(filename, 'H5F_ACC_EXCL', PLIST_ID, PLIST_ID));
         end
         
-        function File = open(filename, varargin)
-            p = inputParser;
-            p.addParameter('access', h5.const.FileAccess.ReadOnly);
-            p.parse(varargin{:});
-            Access = p.Results.access;
+        function File = open(filename, Access)
             assert(isa(Access, 'h5.const.FileAccess'),...
                 'NWB:H5:File:InvalidArgument',...
                 'File Access must use the h5.FileAccess enum.');
-            assert(H5F.is_hdf5(filename),...
-                'NWB:H5:File:InvalidFile',...
-                'File must be a valid HDF5 file.')
             File = h5.File(H5F.open(filename, Access.constant, 'H5P_DEFAULT'));
         end
     end
@@ -28,7 +21,6 @@ classdef File < h5.interface.HasSubObjects & h5.interface.HasAttributes & h5.int
     
     properties (SetAccess = private, Dependent)
         filename;
-        isValidH5;
     end
     
     methods % lifecycle

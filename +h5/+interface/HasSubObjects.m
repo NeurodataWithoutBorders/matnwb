@@ -2,8 +2,21 @@ classdef HasSubObjects < h5.interface.HasId
     %HASSUBOBJECTS This class can contain Links, Datasets, and Groups
     
     methods
-        function Link = add_link(obj, varargin)
-            Link = h5.Link.create(obj, varargin{:});
+        function add_link(obj, name, Link)
+            assert(ischar(name), 'NWB:H5:Group:InvalidArgument',...
+                'name must be a string.')
+            isSoft = isa(Link, 'types.untyped.SoftLink');
+            isExternal = isa(Link, 'types.untyped.ExternalLink');
+            
+            pid = 'H5P_DEFAULT';
+            if isSoft
+                H5L.create_soft(Link.path, obj.get_id(), name, pid, pid);
+            elseif isExternal
+                H5L.create_external(Link.filename, Link.path, obj.get_id(), name, pid, pid);
+            else
+                error('NWB:H5:Group:InvalidArgument',...
+                'Link must be a types.untyped.SoftLink or types.untyped.ExternalLink');
+            end
         end
         
         function delete_link(obj, name)
@@ -24,64 +37,8 @@ classdef HasSubObjects < h5.interface.HasId
             h5.Group.create(obj, varargin{:});
         end
         
-        function SubObjects = get_all_subobjects(obj)
-            subNames = {};
-            [~, subNames] = H5O.visit(obj.get_id(),...
-                'H5_INDEX_NAME', 'H5_ITER_NATIVE',...
-                @retrieve_names,...
-                subNames);
+        function SubObjects = get_subobjects(obj)
             
-            SubObjects = h5.interface.IsObject.empty(length(subNames), 0);
-            for i = 1:length(subNames)
-                SubObjects(i) = obj.get_subobject(subNames{i});
-            end
-            
-            function [status, subNames] = retrieve_names(~, name, subNames)
-                status = 0;
-                if strcmp(name, '.')
-                    % skip self
-                    return;
-                end
-                subNames{end+1} = name;
-            end
-        end
-        
-        function SubObj = get_subobject(obj, name)
-            obj_lapl = 'H5P_DEFAULT';
-            oid = H5O.open(obj.get_id(), name, obj_lapl);
-            obj_type = H5I.get_type(oid);
-            switch obj_type
-                case h5.const.Identifiers.Dataset.constant
-                    SubObj = h5.Dataset(name, oid);
-                case h5.const.Identifiers.Group.constant
-                    SubObj = h5.Group(name, oid);
-                case h5.const.Identifiers.Link.constant
-                    % the H5L api works with (loc_id, name) pairs to identify
-                    % links instead of the standard object_id.
-                    SubObj = read_link(obj.get_id(), name);
-                    H5O.close(oid);
-                otherwise
-                    error('NWB:H5:HasSubObjects:GetSubObjects:UnexpectedObject',...
-                        'Got unexpected type %d', obj_type);
-            end
-            
-            function Link = read_link(id, name)
-                link_lapl = 'H5P_DEFAULT';
-                LinkInfo = H5L.get_info(id, name, link_lapl);
-                switch LinkInfo.type
-                    case h5.const.LinkType.Soft.const
-                        path = H5L.get_val(id, name, link_lapl);
-                        Link = types.untyped.SoftLink(path);
-                    case h5.const.LinkType.External.const
-                        % linkValues is a cell array tuple (filename, path).
-                        linkValues = H5L.get_val(id, name, link_lapl);
-                        Link = types.untyped.ExternalLink(linkValues{:});
-                    otherwise
-                        error(...
-                            'NWB:H5:HasSubObjects:GetSubObjects:UnsupportedLinkType',...
-                            'Unsupported Link type found %d', LinkInfo.type);
-                end
-            end
         end
     end
 end

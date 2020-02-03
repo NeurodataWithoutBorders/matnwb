@@ -1,9 +1,8 @@
-classdef IsHdfData < handle
+classdef IsHdfData
     %ISFILEDATA This object is associated with readable/writable data.
     
     methods (Abstract)
-        Type = get_type(obj);
-        data = read(obj, varargin);
+        data = read(obj);
         write(obj, data);
     end
 end
