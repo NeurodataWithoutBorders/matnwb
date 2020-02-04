@@ -127,6 +127,7 @@ groups:
     doc: The metric used, e.g. phase, amplitude, power.
   groups:
   - name: bands
+    neurodata_type_def: FrequencyBands
     neurodata_type_inc: DynamicTable
     doc: Table for describing the bands that this series was generated from. There
       should be one row in this table for each band.
@@ -185,6 +186,14 @@ groups:
     dtype: double
     doc: Spike times for each unit.
     quantity: '?'
+    attributes:
+    - name: resolution
+      dtype: double
+      doc: The smallest possible difference between two spike times. Usually 1 divided by the acquisition sampling rate
+        from which spike times were extracted, but could be larger if the acquisition time series was downsampled or
+        smaller if the acquisition time series was smoothed/interpolated and it is possible for the spike time to be
+        between samples.
+      quantity: '?'
   - name: obs_intervals_index
     neurodata_type_inc: VectorIndex
     doc: Index into the obs_intervals dataset.
@@ -232,6 +241,16 @@ groups:
       - null
     doc: Spike waveform mean for each spike unit.
     quantity: '?'
+    attributes:
+    - name: sampling_rate
+      dtype: float
+      doc: Sampling rate, in hertz.
+      required: false
+    - name: unit
+      dtype: text
+      value: volts
+      doc: Unit of measurement. This value is fixed to 'volts'.
+      required: false
   - name: waveform_sd
     neurodata_type_inc: VectorData
     dtype: float
@@ -249,3 +268,13 @@ groups:
       - null
     doc: Spike waveform standard deviation for each spike unit.
     quantity: '?'
+    attributes:
+    - name: sampling_rate
+      dtype: float
+      doc: Sampling rate, in hertz.
+      required: false
+    - name: unit
+      dtype: text
+      value: volts
+      doc: Unit of measurement. This value is fixed to 'volts'.
+      required: false

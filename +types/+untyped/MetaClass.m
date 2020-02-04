@@ -29,9 +29,9 @@ classdef MetaClass < handle
             end
 
             
-            if isa(obj, 'types.core.NWBContainer')
+            if isa(obj, 'types.untyped.IsGroup')
                 io.writeGroup(fid, fullpath);
-            elseif isa(obj, 'types.core.NWBData') || isa(obj, 'types.core.SpecFile')
+            elseif isa(obj, 'types.untyped.IsDataset')
                 try
                     if isa(obj.data, 'types.untyped.DataStub')
                         refs = obj.data.export(fid, fullpath, refs);
