@@ -1,5 +1,5 @@
 classdef DataStub
-    properties(SetAccess=private)
+    properties (SetAccess = protected)
         filename;
         path;
         dims;
