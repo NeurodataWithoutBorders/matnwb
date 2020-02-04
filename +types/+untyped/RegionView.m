@@ -49,7 +49,7 @@ classdef RegionView < handle
             end
         end
         
-        function view = refresh(obj, nwb)
+        function view = refresh(obj, Nwb)
             %REFRESH follows references and loads data to memory
             %   DATA = REFRESH(NWB) returns the data defined by the RegionView.
             %   NWB is the nwb object returned by nwbRead.
@@ -57,6 +57,10 @@ classdef RegionView < handle
             view = cell(size(obj));
             for i = 1:numel(obj)
                 view{i} = scalar_refresh(obj(i), Nwb);
+            end
+            
+            if isscalar(view)
+                view = view{1};
             end
             
             function v = scalar_refresh(RegionView, Nwb)
@@ -75,26 +79,25 @@ classdef RegionView < handle
                     v = Object.data;
                 end
                 
-                %convert 0-indexed subscript bounds to 1-indexed linear indices.
-                dsz = size(v);
+                % convert 0-indexed subscript bounds to 1-indexed linear indices.
                 bsizes = zeros(length(RegionView.region),1);
                 boundLIdx = cell(length(RegionView.region),1);
                 for iRegions = 1:length(RegionView.region)
-                    reg = num2cell(RegionView.region{iRegions}+1);
-                    boundLIdx{iRegions} =...
-                        [sub2ind(dsz,reg{1,:}); sub2ind(dsz,reg{2,:})];
-                    bsizes(iRegions) = diff(boundLIdx{iRegions},1,1) + 1;
+                    region = RegionView.region{iRegions} + 1;
+                    region = mat2cell(region, 2, ones(1, size(region, 2)));
+                    boundLIdx{iRegions} = sub2ind(size(v), region{end:-1:1});
+                    bsizes(iRegions) = diff(boundLIdx{iRegions}, 1, 1) + 1;
                 end
                 
-                lIdx = zeros(sum(bsizes),1);
+                lIdx = zeros(sum(bsizes), 1);
                 for iReferenced = 1:length(boundLIdx)
-                    idx = sum(bsizes(1:iReferenced-1))+1;
+                    idx = sum(bsizes(1:iReferenced-1)) + 1;
                     lIdx(idx:bsizes(iReferenced)) =...
                         (boundLIdx{iReferenced}(1):boundLIdx{iReferenced}(2)) .';
                 end
                 
                 if istable(v)
-                    v = v(lIdx, :); %tables only take 2d indexing
+                    v = v(lIdx, :); % tables only take 2d indexing
                 else
                     v = v(lIdx);
                 end

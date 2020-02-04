@@ -25,18 +25,18 @@ idx = unique(idx);
 rangeBreaks = find(diff(idx) ~= 1);
 % subscripts in HDF5 are inclusive ranges, so for each rangePart prepend its preceding
 % value
-rangeParts = ones(numel(rangeBreaks)*2 + 1,1); % the first index is 1
+rangeParts = ones(numel(rangeBreaks) * 2 + 1, 1); % the first index is 1
 rangeParts(2:2:end) = rangeBreaks;
-rangeParts(3:2:end) = rangeBreaks+1;
+rangeParts(3:2:end) = rangeBreaks + 1;
 
 if mod(numel(rangeParts), 2) ~= 0
     %case where last rangePart is not paired with the end idx.
     rangeParts(end+1) = length(idx);
 end
 
-%transform linear ranges to subscripts
-%compress matSize dimensions
-%don't touch if preserved
+% transform linear ranges to subscripts
+% compress matSize dimensions
+% don't touch if preserved
 if ~preserve
     if nargin == 1 || all(matSize == 1) || (numel(matSize) == 2 && any(matSize == 1))
         matSize = 1;
@@ -51,7 +51,7 @@ if numel(matSize) > 1
     % ind2sub nargout is dependent on total size, so eval is necessary to dynamically
     % capture all outputs.
     assgn_str = 'ranges(1,:) ranges(2,:)';
-    for i=3:numel(matSize)
+    for i = 3:numel(matSize)
         assgn_str = strcat(assgn_str, [' ranges(' int2str(i) ',:)']);
     end
     
