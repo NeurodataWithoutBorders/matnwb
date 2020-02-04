@@ -1,8 +1,8 @@
 classdef Anon < nwb.interface.Exportable
-    %anonymous key-value pair as an alternative to single-sized Sets
+    %ANON Anonymous key-value pair as an alternative to single-sized Sets
     properties
-        name; %name of object
-        value; %mapping value
+        name; % name of object
+        value; % mapping value
     end
     
     methods

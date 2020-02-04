@@ -28,6 +28,25 @@ classdef SimpleSpace < h5.Space
         end
     end
     
+    methods (Static, Access = private)
+        function subs = collect_ind2sub(data_size, indices)
+            %COLLECT_IND2SUB a variant of IND2SUB that collects the outputs into a
+            % matrix array.
+            data_size = double(data_size);
+            num_dims = length(data_size);
+            
+            subs = zeros(length(indices), num_dims);
+            stride = cumprod(data_size);
+            for i = num_dims:-1:2
+                leftover = rem(indices - 1, stride(i - 1)) + 1;
+                rank_value = (indices - leftover) / stride(i - 1) + 1;
+                subs(:, i) = double(rank_value);
+                indices = leftover;
+            end
+            subs(:, 1) = double(indices);
+        end
+    end
+    
     properties (Dependent)
         dims;
         extents;
@@ -39,6 +58,35 @@ classdef SimpleSpace < h5.Space
                 'NWB:H5:SimpleSpace:InvalidArgument',...
                 'Provided id is not a Simple Space');
             obj = obj@h5.Space(id);
+        end
+    end
+    
+    methods (Access = private)
+        function select_with_slabs(obj, Hyperslabs)
+            for i = 1:length(Hyperslabs)
+                Slab = Hyperslabs(i);
+                h5_start = fliplr(Slab.offset);
+                h5_stride = fliplr(Slab.stride);
+                h5_count = fliplr(Slab.shape);
+                H5S.select_hyperslab(obj.id,...
+                    'H5S_SELECT_OR', h5_start, h5_stride, h5_count, []);
+            end
+        end
+        
+        function select_with_points(obj, points)
+            %SELECT_WITH_POINTS selects this space based on coordinates
+            % These are assumed to be 1-indexed in MATLAB format.
+            % Further conversion to h5 coordinates are made in this
+            % function.
+            % The precise shape should be a NxM array where N is the
+            % number of points you wish to select and M is the number
+            % of dimensions in the space.
+            
+            if isvector(points)
+                points = h5.space.SimpleSpace.collect_ind2sub(obj.dims, points);
+            end
+            h5_coord = rot90(points, -1) - 1; % transpose + fliplr + 0-indexed
+            H5S.select_elements(obj.id, 'H5S_SELECT_APPEND', h5_coord);
         end
     end
     
@@ -119,25 +167,22 @@ classdef SimpleSpace < h5.Space
             H5S.select_none(obj.id);
         end
         
-        function select(obj, Hyperslabs)
+        function select(obj, Selections)
             %SELECT sets a union of all provided hyperslab selections.
             % previous selections are unset.
-            
-            assert(obj.spaceType == h5.space.SpaceType.Simple,...
-                'NWB:H5:Space:InvalidSpaceType',...
-                'To set hyperslabs, create a Simple Space.');
             assert(isa(Hyperslabs, 'h5.space.Hyperslab'),...
                 'NWB:H5:Space:InvalidArgument',...
                 'hyperslab must be an array of Hyperslab objects.');
             
             obj.select_none(); % reset
-            for i = 1:length(Hyperslabs)
-                Slab = Hyperslabs(i);
-                h5_start = fliplr(Slab.offset);
-                h5_stride = fliplr(Slab.stride);
-                h5_count = fliplr(Slab.shape);
-                H5S.select_hyperslab(obj.id,...
-                    'H5S_SELECT_OR', h5_start, h5_stride, h5_count, []);
+            if isa(Selections, 'h5.space.Hyperslab')
+                obj.select_with_slabs(Selections);
+            elseif isnumeric(Selections)
+                obj.select_with_points(Selections);
+            else
+                error('NWB:H5:Space:Simple:Select:InvalidArgument',...
+                    ['Selection should either be a Hyperslab array or '...
+                    'multi-dimensional array representing points in space.']);
             end
         end
         
@@ -168,4 +213,3 @@ classdef SimpleSpace < h5.Space
         end
     end
 end
-

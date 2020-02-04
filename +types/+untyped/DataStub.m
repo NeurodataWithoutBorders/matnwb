@@ -1,4 +1,6 @@
 classdef DataStub < handle
+    %DATASTUB An abstracted `stub` of data which may point to a larger dataset.
+    % The datastub should be a simple dataset type.
     properties (SetAccess = private)
         filename;
         path;
@@ -11,11 +13,17 @@ classdef DataStub < handle
         end
     end
     
-    methods
-        function d = get_dims(obj)
+    methods (Access = private)
+        function Space = get_space(obj)
             File = h5.File.open(obj.filename);
             Dataset = h5.Dataset.open(File, obj.path);
-            d = Dataset.get_space().dims;
+            Space = Dataset.get_space();
+        end
+    end
+    
+    methods
+        function dimensions = get_dims(obj)
+            dimensions = obj.get_space().dims;
         end
         
         function nd = ndims(obj)
@@ -28,7 +36,7 @@ classdef DataStub < handle
         
         %can be called without arg, with H5ML.id, or (dims, offset, stride)
         function data = load_h5_style(obj, varargin)
-            %LOAD  Read data from HDF5 dataset.
+            %LOAD_H5_STYLE  Read data from HDF5 dataset.
             %   DATA = LOAD_H5_STYLE() retrieves all of the data.
             %
             %   DATA = LOAD_H5_STYLE(SPACE) Loads subset of data defined by Space
@@ -46,7 +54,7 @@ classdef DataStub < handle
                     Space.select_all();
                 end
             elseif isa(varargin{1}, 'h5.Space')
-                % continue
+                Space = varargin{1};
             elseif isa(varargin{1}, 'h5.space.Hyperslab')
                 Space = Dataset.get_space();
                 Space.select(varargin{1});
@@ -58,122 +66,53 @@ classdef DataStub < handle
             data = Dataset.read('space', Space);
         end
         
-        function data = load_h5_style(obj, Selection)
-            %LOAD  Read data from HDF5 dataset.
-            %   DATA = LOAD_H5_STYLE() retrieves all of the data.
-            %
-            %   DATA = LOAD_H5_STYLE(SPACE) Loads subset of data defined by Space
-            %
-            %   DATA = LOAD_H5_STYLE(HYPERSLAB) reads a subset of data given an array
-            %   of HyperSlabs.
-            fid = [];
-            did = [];
-            if length(varargin) == 1
-                fid = H5F.open(obj.filename);
-                did = H5D.open(fid, obj.path);
-                
-                sid = varargin{1};
-                numBlocks = H5S.get_select_hyper_nblocks(sid);
-                % in event of multiple hyperslab selections, return as a cell array
-                % format blocklist to cell array of region indices separated by
-                % block
-                bl = mat2cell(H5S.get_select_hyper_blocklist(sid, 0, numBlocks) .',...
-                    repmat(2, 1, numBlocks), obj.ndims());
-                
-                data = cell(numBlocks,1);
-                % go through each hyperslab selection and read data from H5D,
-                % populating cell array of hyperslab selections
-                for i=1:numBlocks
-                    selsz = diff(bl{i})+1;
-                    sizesid = H5S.create_simple(obj.ndims(), selsz, selsz);
-                    H5S.select_hyperslab(sid, 'H5S_SELECT_SET',...
-                        bl{i}(1,:), [], [], selsz);
-                    data{i} = H5D.read(did,...
-                        'H5ML_DEFAULT',...
-                        sizesid,...
-                        sid,...
-                        'H5P_DEFAULT') .';
-                end
-                
-                if numBlocks == 1
-                    data = data{1};
-                end
-            else
-                data = h5read(obj.filename, obj.path, varargin{:});
-                
-                % dataset strings are defaulted to cell arrays regardless of size
-                if iscellstr(data) && isscalar(data)
-                    data = data{1};
-                end
-            end
-            
-            if isstruct(data)
-                if length(varargin) ~= 1
-                    fid = H5F.open(obj.filename);
-                    did = H5D.open(fid, obj.path);
-                end
-                fsid = H5D.get_space(did);
-                data = H5D.read(did, 'H5ML_DEFAULT', fsid, fsid,...
-                    'H5P_DEFAULT');
-                data = io.parseCompound(did, data);
-                H5S.close(fsid);
-            end
-            if ~isempty(fid)
-                H5F.close(fid);
-            end
-            if ~isempty(did)
-                H5D.close(did);
-            end
-        end
-        
         function data = load(obj, varargin)
             %LOAD  Read data from HDF5 dataset with syntax more similar to
             %core MATLAB
             %   DATA = LOAD() retrieves all of the data.
             %
-            %   DATA = LOAD(INDEX)
+            %   DATA = LOAD(INDEX) reads a subset of data based on MATLAB indices.
             %
-            %   DATA = LOAD(START,END) reads a subset of data.
-            %   START and END are 1-based index indicating the beginning
-            %   and end indices of the region to read
-            %
-            %   DATA = LOAD(START,STRIDE,END) reads a strided subset of
-            %   data. STRIDE is the inter-element spacing along each
-            %   data set extent and defaults to one along each extent.
+            %   DATA = LOAD(START, END) reads a subset of data based on its start and
+            %   end indices.
+            % 
+            %   DATA = LOAD(START, STRIDE, END) reads a subset of data based on its
+            %   start indices, stride lengths, and end indices
             
             if isempty(varargin)
                 data = obj.load_h5_style();
-            elseif length(varargin) == 1
-                region = misc.idx2h5(varargin{1}, obj.dims, 'preserve');
-                sid = obj.get_space();
-                H5S.select_none(sid);
-                for i=1:length(region)
-                    reg = region{i};
-                    H5S.select_hyperslab(sid, 'H5S_SELECT_OR', reg(1,:),...
-                        [], [], diff(reg, 1, 1)+1);
-                end
-                data = obj.load_h5_style(sid);
-                H5S.close(sid);
-            else
-                if length(varargin) == 2
-                    START = varargin{1};
-                    END = varargin{2};
-                    STRIDE = ones(size(START));
-                elseif length(varargin) == 3
-                    START = varargin{1};
-                    STRIDE = varargin{2};
-                    END = varargin{3};
-                end
-                
-                for i = 1:length(END)
-                    if strcmp(END(i), 'end')
-                        count(i) = Inf;
-                    else
-                        count(i) = floor((END(i) - START(i)) / STRIDE(i) + 1);
-                    end
-                end
-                data = obj.load_h5_style(START, count, STRIDE);
+                return;
             end
+            
+            switch length(varargin)
+                case 1
+                    Space = obj.get_space();
+                    indices = varargin{1};
+                    Space.select(indices);
+                    Selection = Space;
+                case 2
+                    startInd = varargin{1};
+                    endInd = varargin{2};
+                    shape = endInd - startInd + 1;
+                    Selection = h5.space.Hyperslab(...
+                        shape,...
+                        'offset', startInd);
+                case 3
+                    startInd = varargin{1};
+                    strideLength = varargin{2};
+                    endInd = varargin{3};
+                    shape = endInd - startInd + 1;
+                    Selection = h5.space.Hyperslab(...
+                        shape,...
+                        'offset', startInd,...
+                        'stride', strideLength);
+                otherwise
+                    error('NWB:Untyped:DataStub:InvalidNumArgs',...
+                        ['Unexpected number of arguments.  Expects load(indices), '...
+                        'load(start, end), or load(start, stride, end)']);
+            end
+            
+            obj.load_h5_style(Selection);
         end
 
         function refs = export(obj, fid, fullpath, refs)
