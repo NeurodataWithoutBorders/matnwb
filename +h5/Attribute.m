@@ -1,5 +1,5 @@
 classdef Attribute < h5.interface.HasId...
-        & h5.interface.IsNamed
+        & h5.interface.IsNamed...
         & h5.interface.IsHdfData
     %ATTRIBUTE HDF5 attribute
     
