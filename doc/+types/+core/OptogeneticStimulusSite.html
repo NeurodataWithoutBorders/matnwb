@@ -16,7 +16,7 @@
          </tr>
       </table>
       <div class="title">types.core.OptogeneticStimulusSite</div>
-      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">OptogeneticStimulusSite</span> One of possibly many groups describing an optogenetic stimulation site. COMMENT: Name is arbitrary but should be meaningful. Name is referenced by OptogeneticSeries</pre></div><!--after help -->
+      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">OptogeneticStimulusSite</span> A site of optogenetic stimulation.</pre></div><!--after help -->
       <!--Class-->
       <div class="sectiontitle">Class Details</div>
       <table class="class-details">
@@ -48,23 +48,21 @@
       <table class="summary-list">
          <tr class="summary-item">
             <td class="name">description</td>
-            <td class="m-help">Description of site&nbsp;</td>
+            <td class="m-help">Description of stimulation site.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">device</td>
-            <td class="m-help">Device that generated the stimulus&nbsp;</td>
+            <td class="m-help">Device that generated the stimulus.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">excitation_lambda</td>
-            <td class="m-help">Excitation wavelength in nm&nbsp;</td>
-         </tr>
-         <tr class="summary-item">
-            <td class="name">help</td>
-            <td class="m-help">Short description of what this type of NWBContainer contains.&nbsp;</td>
+            <td class="m-help">Excitation wavelength, in nm.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">location</td>
-            <td class="m-help">Location of stimulation site&nbsp;</td>
+            <td class="m-help">Location of the stimulation site. Specify the area, layer, comments on estimation of area/layer, stereotaxic coordinates if
+               in vivo, etc. Use standard atlas names for anatomical regions when possible.&nbsp;
+            </td>
          </tr>
       </table>
       <!--Methods-->
@@ -213,14 +211,6 @@
                
             </td>
             <td class="name">validate_excitation_lambda</td>
-            <td class="m-help">&nbsp;</td>
-         </tr>
-         <tr class="summary-item">
-            <td class="attributes">
-               &nbsp;
-               
-            </td>
-            <td class="name">validate_help</td>
             <td class="m-help">&nbsp;</td>
          </tr>
          <tr class="summary-item">

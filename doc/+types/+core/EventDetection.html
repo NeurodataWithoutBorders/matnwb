@@ -51,29 +51,25 @@
             <td class="m-help">Description of how events were detected, such as voltage threshold, or dV/dT threshold, as well as relevant values.&nbsp;</td>
          </tr>
          <tr class="summary-item">
-            <td class="name">help</td>
-            <td class="m-help">Short description of what this type of NWBContainer contains.&nbsp;</td>
-         </tr>
-         <tr class="summary-item">
             <td class="name">source_electricalseries</td>
-            <td class="m-help">HDF5 link to ElectricalSeries that this data was calculated from. Metadata about electrodes and their position can be read
-               from that ElectricalSeries so it's not necessary to mandate that information be stored here&nbsp;
+            <td class="m-help">Link to the ElectricalSeries that this data was calculated from. Metadata about electrodes and their position can be read
+               from that ElectricalSeries so it's not necessary to include that information here.&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">source_idx</td>
-            <td class="m-help">Indices (zero-based) into source ElectricalSeries::data array corresponding to time of event. Module description should define
-               what is meant by time of event (e.g., .25msec before action potential peak, zero-crossing time, etc). The index points to
-               each event from the raw data&nbsp;
+            <td class="m-help">Indices (zero-based) into source ElectricalSeries::data array corresponding to time of event. ''description'' should define
+               what is meant by time of event (e.g., .25 ms before action potential peak, zero-crossing time, etc). The index points to each
+               event from the raw data.&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">times</td>
-            <td class="m-help">Timestamps of events, in Seconds&nbsp;</td>
+            <td class="m-help">Timestamps of events, in seconds.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">times_unit</td>
-            <td class="m-help">The string ''Seconds''&nbsp;</td>
+            <td class="m-help">Unit of measurement for event times, which is fixed to 'seconds'.&nbsp;</td>
          </tr>
       </table>
       <!--Methods-->
@@ -213,14 +209,6 @@
                &nbsp;
                
             </td>
-            <td class="name">validate_help</td>
-            <td class="m-help">&nbsp;</td>
-         </tr>
-         <tr class="summary-item">
-            <td class="attributes">
-               &nbsp;
-               
-            </td>
             <td class="name">validate_source_electricalseries</td>
             <td class="m-help">&nbsp;</td>
          </tr>
@@ -238,14 +226,6 @@
                
             </td>
             <td class="name">validate_times</td>
-            <td class="m-help">&nbsp;</td>
-         </tr>
-         <tr class="summary-item">
-            <td class="attributes">
-               &nbsp;
-               
-            </td>
-            <td class="name">validate_times_unit</td>
             <td class="m-help">&nbsp;</td>
          </tr>
       </table>

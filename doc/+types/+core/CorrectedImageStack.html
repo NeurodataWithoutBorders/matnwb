@@ -16,13 +16,13 @@
          </tr>
       </table>
       <div class="title">types.core.CorrectedImageStack</div>
-      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">CorrectedImageStack</span> One of possibly many.  Name should be informative.</pre></div><!--after help -->
+      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">CorrectedImageStack</span> Reuslts from motion correction of an image stack.</pre></div><!--after help -->
       <!--Class-->
       <div class="sectiontitle">Class Details</div>
       <table class="class-details">
          <tr>
             <td class="class-detail-label">Superclasses</td>
-            <td><a href="NWBContainer.html">types.core.NWBContainer</a></td>
+            <td><a href="NWBDataInterface.html">types.core.NWBDataInterface</a></td>
          </tr>
          <tr>
             <td class="class-detail-label">Sealed</td>
@@ -51,12 +51,8 @@
             <td class="m-help">Image stack with frames shifted to the common coordinates.&nbsp;</td>
          </tr>
          <tr class="summary-item">
-            <td class="name">help</td>
-            <td class="m-help">Short description of what this type of NWBContainer contains.&nbsp;</td>
-         </tr>
-         <tr class="summary-item">
             <td class="name">original</td>
-            <td class="m-help">HDF5 Link to image series that is being registered.&nbsp;</td>
+            <td class="m-help">Link to ImageSeries object that is being registered.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">xy_translation</td>
@@ -195,14 +191,6 @@
                
             </td>
             <td class="name">validate_corrected</td>
-            <td class="m-help">&nbsp;</td>
-         </tr>
-         <tr class="summary-item">
-            <td class="attributes">
-               &nbsp;
-               
-            </td>
-            <td class="name">validate_help</td>
             <td class="m-help">&nbsp;</td>
          </tr>
          <tr class="summary-item">
