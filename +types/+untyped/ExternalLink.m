@@ -19,51 +19,33 @@ classdef ExternalLink < handle
             assert(ischar(obj.filename), 'expecting filename to be a char array.');
             assert(2 == exist(obj.filename, 'file'), '%s does not exist.', obj.filename);
             
-            Nwb = nwbRead(obj.filename, 'ignorecache');
-            SubObj = io.resolvePath(Nwb, obj.path);
+            File = h5.File.open(obj.filename);
+            Descendent = File.get_descendent(obj.path);
+            if isa(Descendent, 'h5.Link')
+                Descendent = resolve_link_chain(Descendent, obj.filename, obj.path);
+            end
+            Attributes = Descendent.get_all_attributes();
+            attribute_names = {Attributes.name};
             
-            if isa(SubObj, 'types.untyped.SoftLink')...
-                    || isa(SubObj, 'types.untyped.ExternalLink')
-                SubObj = resolve_link_chain(SubObj, obj.filename, obj.path);
+            if any(strcmp(attribute_names, 'neurodata_type_def')...
+                    | strcmp(attribute_names, 'data_type_def'))
+                Nwb = nwbRead(obj.filename, 'ignorecache');
+                data = io.resolvePath(Nwb, obj.path);
+                return;
             end
             
-            info = h5info(obj.filename, obj.path);
-            loc = [obj.filename obj.path];
-            attr_names = {info.Attributes.Name};
+            assert(isa(Descendent, 'h5.Dataset'),...
+                'NWB:Untyped:ExternalLink:Deref:InvalidPath',...
+                'External Links should point to a valid type or a dataset.');
             
-            is_typed = any(strcmp(attr_names, 'neurodata_type')...
-                | strcmp(attr_names, 'namespace'));
+            data = types.untyped.DataStub(obj.filename, obj.path);
             
-            oid = H5O.open(fid, obj.path, 'H5P_DEFAULT');
-            oinfo = H5O.get_info(oid);
-            
-            H5O.close(oid);
-            H5F.close(fid);
-            switch oinfo.type
-                case H5ML.get_constant_value('H5G_DATASET')
-                    if is_typed
-                        data = io.parseDataset(obj.filename, info, obj.path);
-                    else
-                        data = types.untyped.DataStub(obj.filename, obj.path);
-                    end
-                case H5ML.get_constant_value('H5G_GROUP')
-                    assert(is_typed,...
-                        ['Attempted to dereference an external link to '...
-                        'a non-dataset object %s'], loc);
-                    data = io.parseGroup(obj.filename, info);
-                case H5ML.get_constant_value('H5G_LINK')
-                    data = deref_link(fid, obj.path);
-                otherwise
-                    error('Externally linked %s contains an unsupported type.',...
-                        loc);
-            end
-            
-            function resolve_link_chain(SubObj, filename, path)
+            function Link = resolve_link_chain(Link, filename, path)
                 LinkTraversalHistory = containers.Map(); % [filename -> {paths}]
                 currentFilename = filename;
                 currentPath = path;
-                while isa(SubObj, 'types.untyped.SoftLink')...
-                        || isa(SubObj, 'types.untyped.ExternalLink')
+                while isa(Link, 'h5.link.SoftLink')...
+                        || isa(Link, 'h5.link.ExternalLink')
                     if LinkTraversalHistory.isKey(currentFilename)
                         assert(~any(strcmp(currentPath,...
                             LinkTraversalHistory(currentFilename))),...
@@ -77,31 +59,14 @@ classdef ExternalLink < handle
                     paths{end+1} = currentPath;
                     LinkTraversalHistory(currentFilename) = paths;
                     
-                    if isa(SubObj, 'types.untyped.SoftLink')
-                        SubObj = io.resolvePath(SubObj.path);
-                        currentPath = SubObj.path;
+                    if isa(Link, 'types.untyped.SoftLink')
+                        Link = io.resolvePath(Link.path);
+                        currentPath = Link.path;
                     else
-                        SubObj = SubObj.deref();
-                        currentFilename = SubObj.filename;
-                        currentPath = SubObj.path;
+                        Link = Link.deref();
+                        currentFilename = Link.filename;
+                        currentPath = Link.path;
                     end
-                end
-            end
-            
-            function data = deref_link(fid, path)
-                linfo = H5L.get_info(fid, path, 'H5P_DEFAULT');
-                is_external = linfo.type == H5ML.get_constant_value('H5L_TYPE_EXTERNAL');
-                is_soft = linfo.type == H5ML.get_constant_value('H5L_TYPE_SOFT');
-                assert(is_external || is_soft,...
-                    ['Unsupported link type in %s, with name %s.  '...
-                    'Links must be external or soft.'],...
-                    obj.filename, path);
-                
-                link_val = H5L.get_val(fid, path, 'H5P_DEFAULT');
-                if is_external
-                    data = types.untyped.ExternalLink(link_val{:});
-                else
-                    data = types.untyped.SoftLink(link_val{:});
                 end
             end
         end
