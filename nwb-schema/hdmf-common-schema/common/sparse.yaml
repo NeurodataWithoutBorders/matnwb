@@ -1,5 +1,6 @@
 groups:
-- doc: a compressed sparse row matrix
+- data_type_def: CSRMatrix
+  doc: a compressed sparse row matrix
   attributes:
   - name: shape
     dtype: int
@@ -21,4 +22,3 @@ groups:
     shape:
     - null
     doc: values in the matrix
-  data_type_def: CSRMatrix
