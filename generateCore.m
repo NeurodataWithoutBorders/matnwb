@@ -22,9 +22,10 @@ function generateCore(varargin)
 %   See also GENERATEEXTENSION
 if nargin == 0
     [nwbLocation, ~, ~] = fileparts(mfilename('fullpath'));
-    schemaPath = fullfile(nwbLocation, 'schema');
+    schemaPath = fullfile(nwbLocation, 'nwb-schema');
     corePath = fullfile(schemaPath, 'core', 'nwb.namespace.yaml');
-    commonPath = fullfile(schemaPath, 'common', 'namespace.yaml');
+    commonPath = fullfile(schemaPath, 'hdmf-common-schema', ...
+        'common', 'namespace.yaml');
     
     if 2 == exist(commonPath, 'file')
         generateExtension(commonPath);

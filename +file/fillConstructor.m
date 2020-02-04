@@ -15,7 +15,7 @@ if ~isempty(txt)
 end
 
 fcnbody = strjoin({fcnbody,...
-    ['if strcmp(class(obj), ''types.', namespace.name, '.', name, ''')'],...
+    sprintf('if strcmp(class(obj), ''%s'')', namespace.getFullClassName(name)),...
     '    types.util.checkUnset(obj, unique(varargin(1:2:end)));',...
     'end'}, newline);
 fcstr = strjoin({...
@@ -127,10 +127,13 @@ for i=1:length(names)
         anon(i) = ~prop.isConstrainedSet && isempty(prop.name);
         
         if ~isempty(prop.type)
-            pc_namespace = namespace.getNamespace(prop.type);
             varnames{i} = nm;
-            if ~isempty(pc_namespace)
-                typenames{i} = ['types.' pc_namespace.name '.' prop.type];
+            try
+                typenames{i} = namespace.getFullClassName(prop.type);
+            catch ME
+                if ~strcmp(ME.identifier, 'NWB:Scheme:Namespace:NotFound')
+                    rethrow(ME);
+                end
             end
         end
     elseif isa(prop, 'file.Attribute')
