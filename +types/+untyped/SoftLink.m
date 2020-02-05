@@ -20,10 +20,11 @@ classdef SoftLink < handle
         end
         
         function refobj = deref(obj, nwb)
-            if ~isa(nwb, 'NwbFile')
-                error('Argument `nwb` must be a valid `NwbFile`');
-            end
-            refobj = io.resolvePath(nwb, obj.path);
+            assert(isa(nwb, 'NwbFile'),...
+                'MatNWB:Types:Untyped:SoftLink:Deref:InvalidArgument',...
+                'Argument `nwb` must be a valid `NwbFile`');
+            
+            refobj = nwb.resolve({obj.path});
         end
         
         function refs = export(obj, fid, fullpath, refs)
