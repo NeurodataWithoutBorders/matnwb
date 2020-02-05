@@ -48,7 +48,8 @@ classdef NwbTestInterface < matlab.unittest.TestCase
                 val1 = actual.(prop);
                 val2 = expected.(prop);
                 failmsg = ['Values for property ''' prop ''' are not equal'];
-                if startsWith(class(val1), 'types.core.')
+                if startsWith(class(val1), 'types.')...
+                        && ~startsWith(class(val1), 'types.untyped')
                     verifyContainerEqual(testCase, val1, val2);
                 elseif isa(val1, 'types.untyped.Set')
                     verifySetEqual(testCase, val1, val2, failmsg);

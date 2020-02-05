@@ -18,7 +18,7 @@ if isa(raw, 'file.Group') && strcmp(raw.type, 'NWBFile')
     bodystr = [bodystr {'fullpath = '''';'}];
 end
 
-for i=1:length(propnames)
+for i = 1:length(propnames)
     pnm = propnames{i};
     pathProps = traverseRaw(pnm, raw);
     prop = pathProps{end};
@@ -26,7 +26,7 @@ for i=1:length(propnames)
     
     %Construct elisions
     elisions = cell(length(elideProps),1);
-    for j=1:length(elideProps)
+    for j = 1:length(elideProps)
         elisions{j} = elideProps{j}.name;
     end
     
