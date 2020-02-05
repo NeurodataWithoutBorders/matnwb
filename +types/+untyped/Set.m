@@ -165,19 +165,15 @@ classdef Set < handle & matlab.mixin.CustomDisplay
             end
         end
         
-        function refs = export(obj, fid, fullpath, refs)
-            io.writeGroup(fid, fullpath);
-            k = keys(obj.map);
-            val = values(obj.map, k);
-            for i=1:length(k)
-                v = val{i};
-                nm = k{i};
-                propfp = [fullpath '/' nm];
-                if startsWith(class(v), 'types.')
-                    refs = v.export(fid, propfp, refs);
-                else
-                    refs = io.writeDataset(fid, propfp, v, refs);
-                end
+        function MissingViews = export(obj, Parent, name)
+            MissingViews = nwb.interface.Reference.empty;
+            Group = h5.Group.create(Parent, name);
+            
+            Subobject_Names = obj.map.keys();
+            for i = 1:length(Subobject_Names)
+                object_name = Subobject_Names{i};
+                Object = obj.map(object_name);
+                MissingViews = [MissingViews Object.export(Group, object_name)];
             end
         end
     end

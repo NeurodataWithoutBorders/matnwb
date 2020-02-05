@@ -24,21 +24,13 @@ classdef SoftLink < handle
             refobj = io.resolvePath(Nwb, obj.path);
         end
         
-        function refs = export(obj, fid, fullpath, refs)
-            plist = 'H5P_DEFAULT';
-            try
-                H5L.create_soft(obj.path, fid, fullpath, plist, plist);
-            catch ME
-                if contains(ME.message, 'name already exists')
-                    previousLink = H5L.get_val(fid, fullpath, plist);
-                    if ~strcmp(previousLink{1}, obj.path)
-                        H5L.delete(fid, fullpath, plist);
-                        H5L.create_soft(obj.path, fid, fullpath, plist, plist);
-                    end
-                else
-                    rethrow(ME);
-                end
+        function MissingViews = export(obj, Parent, ~)
+            MissingViews = nwb.interface.Reference.empty;
+            
+            if ~isempty(Parent.get_descendent(obj.name))
+                Parent.delete_link(obj.name);
             end
+            Parent.add_link(obj.name, obj.path);
         end
     end
     
