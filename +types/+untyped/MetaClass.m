@@ -3,18 +3,23 @@ classdef MetaClass < handle
         function obj = MetaClass(varargin)
         end
         
-        function refs = export(obj, fid, fullpath, refs)
-            %find reference properties
+        
+        function MissingViews = export(obj, Parent, name)
+            MissingViews = containers.Map;
+            % find reference properties
             propnames = properties(obj);
             props = cell(size(propnames));
-            for i=1:length(propnames)
+            for i = 1:length(propnames)
                 props{i} = obj.(propnames{i});
             end
-            refProps = cellfun('isclass', props, 'types.untyped.ObjectView') |...
+            ViewProps = cellfun('isclass', props, 'types.untyped.ObjectView') |...
                 cellfun('isclass', props, 'types.untyped.RegionView');
-            props = props(refProps);
-            for i=1:length(props)
+            props = props{ViewProps};
+            for i = 1:length(props)
+                View = props{i};
                 try
+                    View.serialize(Parent.get_file())
+                    refData = Parent.get_file().get_reference_data(props{i});
                     io.getRefData(fid, props{i});
                 catch ME
                     if strcmp(ME.stack(2).name, 'getRefData') && ...
@@ -27,7 +32,6 @@ classdef MetaClass < handle
                     end
                 end
             end
-
             
             if isa(obj, 'types.core.NWBContainer')
                 io.writeGroup(fid, fullpath);

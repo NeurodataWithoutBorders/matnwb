@@ -208,7 +208,7 @@ classdef DataPipe < nwb.interface.Exportable
         end
         
         function MissingViews = export(obj, Parent, name)
-            MissingViews = nwb.interface.Reference.empty;
+            MissingViews = containers.Map.empty;
             if obj.isBound
                 return;
             end

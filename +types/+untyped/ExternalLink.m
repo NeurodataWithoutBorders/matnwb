@@ -71,12 +71,14 @@ classdef ExternalLink < handle
             end
         end
         
-        function refs = export(obj, fid, fullpath, refs)
-            plist = 'H5P_DEFAULT';
-            if H5L.exists(fid, fullpath, plist)
-                H5L.delete(fid, fullpath, plist);
+        function MissingViews = export(obj, Parent, name)
+            MissingViews = containers.Map.empty;
+            
+            Link = Parent.get_descendent(name);
+            if ~isempty(Link)
+                Parent.delete_link(name);
             end
-            H5L.create_external(obj.filename, obj.path, fid, fullpath, plist, plist);
+            Parent.add_link(obj.path, 'filename', obj.filename);
         end
     end
     
