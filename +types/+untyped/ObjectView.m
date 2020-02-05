@@ -36,6 +36,10 @@ classdef ObjectView < nwb.interface.Reference
     end
     
     methods % Reference
+        function path = get_destination(obj)
+            path = obj.path;
+        end
+            
         function v = refresh(obj, nwb)
             if ~isa(nwb, 'NwbFile')
                 error('Argument `nwb` must be a valid `NwbFile`');

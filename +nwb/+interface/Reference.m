@@ -4,6 +4,7 @@ classdef Reference < matlab.mixin.Heterogeneous & nwb.interface.Exportable
     methods (Abstract)
         view = refresh(obj, Nwb); % expects an NwbFile.
         refData = serialize(obj, File); % expects an h5.File
+        path = get_destination(obj);
     end
     
     methods (Sealed) % Exportable

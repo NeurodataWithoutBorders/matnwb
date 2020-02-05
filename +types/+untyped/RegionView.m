@@ -26,8 +26,11 @@ classdef RegionView < nwb.interface.Reference
         end
     end
     
-    properties (SetAccess = private)
+    properties (Dependent, SetAccess = private)
         path;
+    end
+    
+    properties (SetAccess = private)
         view;
         region;
     end
@@ -55,15 +58,17 @@ classdef RegionView < nwb.interface.Reference
                 'Only a Simple Space can make Selections.');
             Space.select(obj.region);
         end
-
-        
         
         function path = get.path(obj)
-            path = obj.view.path;
+            path = obj.get_destination();
         end
     end
     
     methods % Reference
+        function path = get_destination(obj)
+            path = obj.view.path;
+        end
+        
         function view = refresh(obj, Nwb)
             %REFRESH follows references and loads data to memory
             %   DATA = REFRESH(NWB) returns the data defined by the RegionView.
