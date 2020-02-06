@@ -16,7 +16,6 @@ for i = 1:numel(props)
     elseif isa(val2, 'types.untyped.Set')
         tests.util.verifySetEqual(testCase, val1, val2, failmsg);
     elseif isdatetime(val2)
-        testCase.verifyTrue(isdatetime(val2));
         testCase.verifyEqual(char(val1), char(val2), failmsg);
     else
         testCase.verifyEqual(val1, val2, failmsg);
