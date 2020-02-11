@@ -16,13 +16,13 @@
          </tr>
       </table>
       <div class="title">types.core.ImagingRetinotopy</div>
-      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">ImagingRetinotopy</span> Intrinsic signal optical imaging or widefield imaging for measuring retinotopy. Stores orthogonal maps (e.g., altitude/azimuth; radius/theta) of responses to specific stimuli and a combined polarity map from which to identify visual areas.&lt;br /&gt;Note: for data consistency, all images and arrays are stored in the format [row][column] and [row, col], which equates to [y][x]. Field of view and dimension arrays may appear backward (i.e., y before x).</pre></div><!--after help -->
+      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">ImagingRetinotopy</span> Intrinsic signal optical imaging or widefield imaging for measuring retinotopy. Stores orthogonal maps (e.g., altitude/azimuth; radius/theta) of responses to specific stimuli and a combined polarity map from which to identify visual areas. Note: for data consistency, all images and arrays are stored in the format [row][column] and [row, col], which equates to [y][x]. Field of view and dimension arrays may appear backward (i.e., y before x).</pre></div><!--after help -->
       <!--Class-->
       <div class="sectiontitle">Class Details</div>
       <table class="class-details">
          <tr>
             <td class="class-detail-label">Superclasses</td>
-            <td><a href="NWBContainer.html">types.core.NWBContainer</a></td>
+            <td><a href="NWBDataInterface.html">types.core.NWBDataInterface</a></td>
          </tr>
          <tr>
             <td class="class-detail-label">Sealed</td>
@@ -48,7 +48,7 @@
       <table class="summary-list">
          <tr class="summary-item">
             <td class="name">axis_1_phase_map</td>
-            <td class="m-help">Phase response to stimulus on the first measured axis&nbsp;</td>
+            <td class="m-help">Phase response to stimulus on the first measured axis.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">axis_1_phase_map_dimension</td>
@@ -56,11 +56,11 @@
          </tr>
          <tr class="summary-item">
             <td class="name">axis_1_phase_map_field_of_view</td>
-            <td class="m-help">Size of viewing area, in meters&nbsp;</td>
+            <td class="m-help">Size of viewing area, in meters.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">axis_1_phase_map_unit</td>
-            <td class="m-help">Unit that axis data is stored in (e.g., degrees)&nbsp;</td>
+            <td class="m-help">Unit that axis data is stored in (e.g., degrees).&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">axis_1_power_map</td>
@@ -74,15 +74,15 @@
          </tr>
          <tr class="summary-item">
             <td class="name">axis_1_power_map_field_of_view</td>
-            <td class="m-help">Size of viewing area, in meters&nbsp;</td>
+            <td class="m-help">Size of viewing area, in meters.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">axis_1_power_map_unit</td>
-            <td class="m-help">Unit that axis data is stored in (e.g., degrees)&nbsp;</td>
+            <td class="m-help">Unit that axis data is stored in (e.g., degrees).&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">axis_2_phase_map</td>
-            <td class="m-help">Phase response to stimulus on the second measured axis&nbsp;</td>
+            <td class="m-help">Phase response to stimulus on the second measured axis.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">axis_2_phase_map_dimension</td>
@@ -90,11 +90,11 @@
          </tr>
          <tr class="summary-item">
             <td class="name">axis_2_phase_map_field_of_view</td>
-            <td class="m-help">Size of viewing area, in meters&nbsp;</td>
+            <td class="m-help">Size of viewing area, in meters.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">axis_2_phase_map_unit</td>
-            <td class="m-help">Unit that axis data is stored in (e.g., degrees)&nbsp;</td>
+            <td class="m-help">Unit that axis data is stored in (e.g., degrees).&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">axis_2_power_map</td>
@@ -108,25 +108,25 @@
          </tr>
          <tr class="summary-item">
             <td class="name">axis_2_power_map_field_of_view</td>
-            <td class="m-help">Size of viewing area, in meters&nbsp;</td>
+            <td class="m-help">Size of viewing area, in meters.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">axis_2_power_map_unit</td>
-            <td class="m-help">Unit that axis data is stored in (e.g., degrees)&nbsp;</td>
+            <td class="m-help">Unit that axis data is stored in (e.g., degrees).&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">axis_descriptions</td>
             <td class="m-help">Two-element array describing the contents of the two response axis fields. Description should be something like ['altitude',
-               'azimuth'] or '['radius', 'theta']&nbsp;
+               'azimuth'] or '['radius', 'theta'].&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">focal_depth_image</td>
-            <td class="m-help">Gray-scale image taken with same settings/parameters (e.g., focal depth, wavelength) as data collection. Array format: [rows][columns]&nbsp;</td>
+            <td class="m-help">Gray-scale image taken with same settings/parameters (e.g., focal depth, wavelength) as data collection. Array format: [rows][columns].&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">focal_depth_image_bits_per_pixel</td>
-            <td class="m-help">Number of bits used to represent each value. This is necessary to determine maximum (white) pixel value&nbsp;</td>
+            <td class="m-help">Number of bits used to represent each value. This is necessary to determine maximum (white) pixel value.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">focal_depth_image_dimension</td>
@@ -134,23 +134,19 @@
          </tr>
          <tr class="summary-item">
             <td class="name">focal_depth_image_field_of_view</td>
-            <td class="m-help">Size of viewing area, in meters&nbsp;</td>
+            <td class="m-help">Size of viewing area, in meters.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">focal_depth_image_focal_depth</td>
-            <td class="m-help">Focal depth offset, in meters&nbsp;</td>
+            <td class="m-help">Focal depth offset, in meters.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">focal_depth_image_format</td>
-            <td class="m-help">Format of image. Right now only 'raw' supported&nbsp;</td>
-         </tr>
-         <tr class="summary-item">
-            <td class="name">help</td>
-            <td class="m-help">Short description of what this type of NWBContainer contains.&nbsp;</td>
+            <td class="m-help">Format of image. Right now only 'raw' is supported.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">sign_map</td>
-            <td class="m-help">Sine of the angle between the direction of the gradient in axis_1 and axis_2&nbsp;</td>
+            <td class="m-help">Sine of the angle between the direction of the gradient in axis_1 and axis_2.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">sign_map_dimension</td>
@@ -174,11 +170,11 @@
          </tr>
          <tr class="summary-item">
             <td class="name">vasculature_image_field_of_view</td>
-            <td class="m-help">Size of viewing area, in meters&nbsp;</td>
+            <td class="m-help">Size of viewing area, in meters.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">vasculature_image_format</td>
-            <td class="m-help">Format of image. Right now only 'raw' supported&nbsp;</td>
+            <td class="m-help">Format of image. Right now only 'raw' is supported.&nbsp;</td>
          </tr>
       </table>
       <!--Methods-->
@@ -487,14 +483,6 @@
                
             </td>
             <td class="name">validate_focal_depth_image_format</td>
-            <td class="m-help">&nbsp;</td>
-         </tr>
-         <tr class="summary-item">
-            <td class="attributes">
-               &nbsp;
-               
-            </td>
-            <td class="name">validate_help</td>
             <td class="m-help">&nbsp;</td>
          </tr>
          <tr class="summary-item">

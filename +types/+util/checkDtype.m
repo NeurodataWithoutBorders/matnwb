@@ -111,35 +111,19 @@ else
             end
         end
     elseif strcmp(type, 'isodatetime')
-        addpath(fullfile(fileparts(which('NwbFile')), 'external_packages', 'datenum8601'));
-        assert(ischar(val) || iscellstr(val) || isdatetime(val) ||...
-            (iscell(val) && all(cellfun('isclass', val, 'datetime'))), errid, errmsg);
+        assert(ischar(val)...
+            || iscellstr(val)...
+            || isdatetime(val) ...
+            || (iscell(val) && all(cellfun('isclass', val, 'datetime'))),...
+            errid, errmsg);
         if ischar(val) || iscellstr(val)
             if ischar(val)
                 val = {val};
             end
             
             datevals = cell(size(val));
-            % one of:
-            % +-hh:mm
-            % +-hhmm
-            % +-hh
-            % Z
-            tzre_pattern = '(?:[+-]\d{2}(?::?\d{2})?|Z)$';
             for i = 1:length(val)
-                dnum = datenum8601(val{i});
-                
-                tzre_match = regexp(val{i}, tzre_pattern, 'once');
-                if isempty(tzre_match)
-                    tz = 'local';
-                else
-                    tz = val{i}(tzre_match:end);
-                    if strcmp(tz, 'Z')
-                        tz = 'UTC';
-                    end
-                end
-                datevals{i} = ...
-                    datetime(dnum(1), 'TimeZone', tz, 'ConvertFrom', 'datenum');
+                datevals{i} = datetime8601(val{i});
             end
             val = datevals;
         end
@@ -148,7 +132,7 @@ else
             val = {val};
         end
         
-        for i=1:length(val)
+        for i = 1:length(val)
             if isempty(val{i}.TimeZone)
                 val{i}.TimeZone = 'local';
             end
@@ -186,5 +170,75 @@ else
     if ~isempty(truval)
         val = truval;
     end
+end
+end
+
+function date_time = datetime8601(datestr)
+addpath(fullfile(fileparts(which('NwbFile')), 'external_packages', 'datenum8601'));
+[~, ~, format] = datenum8601(datestr);
+format = format{1};
+has_delimiters = format(1) == '*';
+if has_delimiters
+    format = format(2:end);
+end
+
+assert(strncmp(format, 'ymd', 3),...
+    'MatNWB:Types:Util:CheckDType:DateTime:Unsupported8601',...
+    'non-ymd formats not supported.');
+separator = format(4);
+if separator ~= ' '
+    % non-space digits will error when specifying import format
+    separator = ['''' separator ''''];
+end
+
+has_fractional_sec = isstrprop(format(8:end), 'digit');
+if has_fractional_sec
+   seconds_precision = str2double(format(8:end));
+   if seconds_precision > 9
+       warning('MatNWB:Types:Util:CheckDType:DateTime:LossySeconds',...
+           ['Potential loss of time data detected.  MATLAB fractional seconds '...
+           'precision is limited to 1 ns.  Extra precision will be truncated.']);
+   end
+end
+day_segments = {'yyyy', 'MM', 'dd'};
+time_segments = {'HH', 'mm', 'ss'};
+
+if has_delimiters
+    day_delimiter = '-';
+    time_delimiter = ':';
+else
+    day_delimiter = '';
+    time_delimiter = '';
+end
+
+day_format = strjoin(day_segments, day_delimiter);
+time_format = strjoin(time_segments, time_delimiter);
+format = [day_format separator time_format];
+if has_fractional_sec
+    format = sprintf('%s.%s', format, repmat('S', 1, seconds_precision));
+end
+
+[datestr, timezone] = derive_timezone(datestr);
+date_time = datetime(datestr,...
+    'InputFormat', format,...
+    'TimeZone', timezone);
+end
+
+function [datestr, timezone] = derive_timezone(datestr)
+% one of:
+% +-hh:mm
+% +-hhmm
+% +-hh
+% Z
+tzre_pattern = '(?:[+-]\d{2}(?::?\d{2})?|Z)$';
+tzre_match = regexp(datestr, tzre_pattern, 'once');
+if isempty(tzre_match)
+    timezone = 'local';
+else
+    timezone = datestr(tzre_match:end);
+    if strcmp(timezone, 'Z')
+        timezone = 'UTC';
+    end
+    datestr = datestr(1:(tzre_match - 1));
 end
 end

@@ -12,11 +12,11 @@ classdef RegionView < handle
     
     methods
         function obj = RegionView(path, region, datasize)
-        %REGIONVIEW A region reference to a dataset in the same nwb file.
-        % obj = REGIONVIEW(path, region)
-        % path = char representing the internal path to the dataset.
-        % region = cell array whose contents are a 2xn array of bounds where n is
-        %   the subscript size
+            %REGIONVIEW A region reference to a dataset in the same nwb file.
+            % obj = REGIONVIEW(path, region)
+            % path = char representing the internal path to the dataset.
+            % region = cell array whose contents are a 2xn array of bounds where n is
+            %   the subscript size
             obj.view = types.untyped.ObjectView(path);
             assert(isreal(region) || ...
                 (iscell(region) && all(cellfun('isreal', region))),...
@@ -49,46 +49,58 @@ classdef RegionView < handle
             end
         end
         
-        function v = refresh(obj, nwb)
+        function view = refresh(obj, Nwb)
             %REFRESH follows references and loads data to memory
             %   DATA = REFRESH(NWB) returns the data defined by the RegionView.
             %   NWB is the nwb object returned by nwbRead.
             
-            if isempty(obj.region)
-                v = [];
-                return;
+            view = cell(size(obj));
+            for i = 1:numel(obj)
+                view{i} = scalar_refresh(obj(i), Nwb);
             end
             
-            vobj = obj.view.refresh(nwb);
-            
-            if isa(vobj.data, 'types.untyped.DataStub')
-                sid = obj.get_selection(vobj.data.get_space());
-                v = vobj.data.load_h5_style(sid);
-                H5S.close(sid);
-            else
-                v = vobj.data;
+            if isscalar(view)
+                view = view{1};
             end
             
-            %convert 0-indexed subscript bounds to 1-indexed linear indices.
-            dsz = size(v);
-            bsizes = zeros(length(obj.region),1);
-            boundLIdx = cell(length(obj.region),1);
-            for i=1:length(obj.region)
-                reg = num2cell(obj.region{i}+1);
-                boundLIdx{i} = [sub2ind(dsz,reg{1,:});sub2ind(dsz,reg{2,:})];
-                bsizes(i) = diff(boundLIdx{i},1,1) + 1;
-            end
-            
-            lIdx = zeros(sum(bsizes),1);
-            for i=1:length(boundLIdx)
-                idx = sum(bsizes(1:i-1))+1;
-                lIdx(idx:bsizes(i)) = (boundLIdx{i}(1):boundLIdx{i}(2)) .'; 
-            end
-            
-            if istable(v)
-                v = v(lIdx, :); %tables only take 2d indexing
-            else
-                v = v(lIdx);
+            function v = scalar_refresh(RegionView, Nwb)
+                if isempty(RegionView.region)
+                    v = [];
+                    return;
+                end
+                
+                Object = RegionView.view.refresh(Nwb);
+                
+                if isa(Object.data, 'types.untyped.DataStub')
+                    sid = RegionView.get_selection(Object.data.get_space());
+                    v = Object.data.load_h5_style(sid);
+                    H5S.close(sid);
+                else
+                    v = Object.data;
+                end
+                
+                % convert 0-indexed subscript bounds to 1-indexed linear indices.
+                bsizes = zeros(length(RegionView.region),1);
+                boundLIdx = cell(length(RegionView.region),1);
+                for iRegions = 1:length(RegionView.region)
+                    region = RegionView.region{iRegions} + 1;
+                    region = mat2cell(region, 2, ones(1, size(region, 2)));
+                    boundLIdx{iRegions} = sub2ind(size(v), region{end:-1:1});
+                    bsizes(iRegions) = diff(boundLIdx{iRegions}, 1, 1) + 1;
+                end
+                
+                lIdx = zeros(sum(bsizes), 1);
+                for iReferenced = 1:length(boundLIdx)
+                    idx = sum(bsizes(1:iReferenced-1)) + 1;
+                    lIdx(idx:bsizes(iReferenced)) =...
+                        (boundLIdx{iReferenced}(1):boundLIdx{iReferenced}(2)) .';
+                end
+                
+                if istable(v)
+                    v = v(lIdx, :); % tables only take 2d indexing
+                else
+                    v = v(lIdx);
+                end
             end
         end
         

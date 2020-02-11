@@ -29,21 +29,42 @@ if strcmp(datatype.Class, 'H5T_REFERENCE')
 elseif ~strcmp(dataspace.Type, 'simple')
     data = H5D.read(did);
     if iscellstr(data) && 1 == length(data)
-        %pynwb will use variable string lengths which are read in as bulky
-        %cellstr.  We don't like that so convert to char arrays
         data = data{1};
     elseif ischar(data)
         data = data .';
         datadim = size(data);
         if datadim(1) > 1
-            %multidimensional strings should be using cell str
+            %multidimensional strings should become cellstr
             data = strtrim(mat2cell(data, ones(datadim(1), 1), datadim(2)));
         end
     end
 elseif strcmp(dataspace.Type, 'simple') && any(dataspace.Size == 0)
     data = [];
 else
-    data = types.untyped.DataStub(filename, fullpath);
+    sid = H5D.get_space(did);
+    output = H5S.is_simple(sid);
+    assert(output >= 0,...
+        'NWB:IO:ParseDataset:SpaceCheckFailed',...
+        'Error while checking space settings from dataset: %d', output);
+    
+    pid = H5D.get_create_plist(did);
+    if H5P.get_layout(did) == H5ML.get_constant_value('H5D_CHUNKED')
+        [~, h5_dims, h5_maxDims] = H5D.get_simple_extent_dims(sid);
+        dims = fliplr(h5_dims);
+        maxDims = fliplr(h5_maxDims);
+        axis = length(dims);
+        offset = dims(end);
+        
+        data = types.untyped.DataPipe(maxDims,...
+            'filename', filename,...
+            'path', fullpath,...
+            'axis', axis,...
+            'offset', offset);
+    else
+        data = types.untyped.DataStub(filename, fullpath);
+    end
+    H5P.close(pid);
+    H5S.close(sid);
 end
 
 if isempty(typename)

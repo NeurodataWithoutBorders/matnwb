@@ -16,7 +16,7 @@
          </tr>
       </table>
       <div class="title">types.core.FeatureExtraction</div>
-      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">FeatureExtraction</span> Features, such as PC1 and PC2, that are extracted from signals stored in a SpikeEvent TimeSeries or other source.</pre></div><!--after help -->
+      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">FeatureExtraction</span> Features, such as PC1 and PC2, that are extracted from signals stored in a SpikeEventSeries or other source.</pre></div><!--after help -->
       <!--Class-->
       <div class="sectiontitle">Class Details</div>
       <table class="class-details">
@@ -52,15 +52,11 @@
          </tr>
          <tr class="summary-item">
             <td class="name">electrodes</td>
-            <td class="m-help">the electrodes that this series was generated from&nbsp;</td>
+            <td class="m-help">DynamicTableRegion pointer to the electrodes that this time series was generated from.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">features</td>
             <td class="m-help">Multi-dimensional array of features extracted from each event.&nbsp;</td>
-         </tr>
-         <tr class="summary-item">
-            <td class="name">help</td>
-            <td class="m-help">Short description of what this type of NWBContainer contains.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">times</td>
@@ -213,14 +209,6 @@
                
             </td>
             <td class="name">validate_features</td>
-            <td class="m-help">&nbsp;</td>
-         </tr>
-         <tr class="summary-item">
-            <td class="attributes">
-               &nbsp;
-               
-            </td>
-            <td class="name">validate_help</td>
             <td class="m-help">&nbsp;</td>
          </tr>
          <tr class="summary-item">
