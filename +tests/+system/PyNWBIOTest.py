@@ -6,10 +6,11 @@ from dateutil.tz import tzlocal, tzoffset
 import numpy.testing as npt
 import h5py
 
-from pynwb import NWBContainer, get_manager, NWBFile, NWBData, TimeSeries
+from pynwb import get_manager, NWBFile, TimeSeries
 from pynwb.ecephys import ElectricalSeries, Clustering
 from pynwb.ophys import OpticalChannel, TwoPhotonSeries
 from hdmf.backends.hdf5 import HDF5IO
+from hdmf.container import Container, Data
 
 class PyNWBIOTest(unittest.TestCase):
     def setUp(self):
@@ -62,10 +63,10 @@ class PyNWBIOTest(unittest.TestCase):
                 f2 = getattr(container2, nwbfield)
                 if isinstance(f1, (tuple, list, np.ndarray)):
                     if len(f1) > 0:
-                        if isinstance(f1[0], NWBContainer):
+                        if isinstance(f1[0], Container):
                             for sub1, sub2 in zip(f1, f2):
                                 self.assertContainerEqual(sub1, sub2)
-                        elif isinstance(f1[0], NWBData):
+                        elif isinstance(f1[0], Data):
                             for sub1, sub2 in zip(f1, f2):
                                 self.assertDataEqual(sub1, sub2)
                         continue
@@ -78,21 +79,21 @@ class PyNWBIOTest(unittest.TestCase):
                                     self.assertAlmostEqual(v1, v2, places=6)
                         else:
                             self.assertTrue(np.array_equal(f1, f2))
-                elif isinstance(f1, dict) and len(f1) and isinstance(next(iter(f1.values())), NWBContainer):
+                elif isinstance(f1, dict) and len(f1) and isinstance(next(iter(f1.values())), Container):
                     f1_keys = set(f1.keys())
                     f2_keys = set(f2.keys())
                     self.assertSetEqual(f1_keys, f2_keys)
                     for k in f1_keys:
                         with self.subTest(module_name=k):
                             self.assertContainerEqual(f1[k], f2[k])
-                elif isinstance(f1, NWBContainer):
+                elif isinstance(f1, Container) or isinstance(f1, Container):
                     self.assertContainerEqual(f1, f2)
-                elif isinstance(f1, NWBData) or isinstance(f2, NWBData):
-                    if isinstance(f1, NWBData) and isinstance(f2, NWBData):
+                elif isinstance(f1, Data) or isinstance(f2, Data):
+                    if isinstance(f1, Data) and isinstance(f2, Data):
                         self.assertDataEqual(f1, f2)
-                    elif isinstance(f1, NWBData):
+                    elif isinstance(f1, Data):
                         self.assertTrue(np.array_equal(f1.data, f2))
-                    elif isinstance(f2, NWBData):
+                    elif isinstance(f2, Data):
                         self.assertTrue(np.array_equal(f1.data, f2))
                 else:
                     if isinstance(f1, (float, np.float32, np.float16, h5py.Dataset)):
