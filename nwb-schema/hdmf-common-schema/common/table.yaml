@@ -23,6 +23,28 @@ datasets:
     of the DynamicTable by indexing into this VectorData. The first
     vector is at VectorData[0:VectorIndex(0)+1]. The second vector is at
     VectorData[VectorIndex(0)+1:VectorIndex(1)+1], and so on.
+  dims:
+  - - dim0
+  - - dim0
+    - dim1
+  - - dim0
+    - dim1
+    - dim2
+  - - dim0
+    - dim1
+    - dim2
+    - dim3
+  shape:
+  - - null
+  - - null
+    - null
+  - - null
+    - null
+    - null
+  - - null
+    - null
+    - null
+    - null
   attributes:
   - name: description
     dtype: text
@@ -33,6 +55,10 @@ datasets:
   doc: Used with VectorData to encode a ragged array. An array of indices
     into the first dimension of the target VectorData, and forming a map
     between the rows of a DynamicTable and the indices of the VectorData.
+  dims:
+  - num_rows
+  shape:
+  - null
   attributes:
   - name: target
     dtype:
@@ -59,6 +85,10 @@ datasets:
     data duplication. They can also be used to create hierarchical relationships between multiple `DynamicTable`s.
     `DynamicTableRegion` objects may be paired with a `VectorIndex` object to create ragged references, so a single cell
     of a `DynamicTable` can reference many rows of another `DynamicTable`.
+  dims:
+  - num_rows
+  shape:
+  - null
   attributes:
   - name: table
     dtype:
