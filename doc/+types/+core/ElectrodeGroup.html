@@ -2,7 +2,7 @@
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
    
-      <link rel="stylesheet" href="helpwin.css">
+      <link rel="stylesheet" href="../../helpwin.css">
       <title>types.core.ElectrodeGroup - MATLAB File Help</title>
    </head>
    <body>
@@ -22,7 +22,7 @@
       <table class="class-details">
          <tr>
             <td class="class-detail-label">Superclasses</td>
-            <td><a href="NWBContainer.html">types.core.NWBContainer</a></td>
+            <td><a href="NWBContainer.html">types.core.NWBContainer</a>, <a href="matlab:helpwin('types.untyped.GroupClass')">types.untyped.GroupClass</a></td>
          </tr>
          <tr>
             <td class="class-detail-label">Sealed</td>
@@ -56,9 +56,13 @@
          </tr>
          <tr class="summary-item">
             <td class="name">location</td>
-            <td class="m-help">Location of electrode group. Specify the area, layer, comments on estimation of area/layer, stereotaxic coordinates if in
-               vivo, etc. Use standard atlas names for anatomical regions when possible.&nbsp;
+            <td class="m-help">Location of electrode group. Specify the area, layer, comments on estimation of area/layer, etc. Use standard atlas names
+               for anatomical regions when possible.&nbsp;
             </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name">position</td>
+            <td class="m-help">stereotaxic or common framework coordinates&nbsp;</td>
          </tr>
       </table>
       <!--Methods-->
@@ -207,6 +211,14 @@
                
             </td>
             <td class="name">validate_location</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_position</td>
             <td class="m-help">&nbsp;</td>
          </tr>
       </table>

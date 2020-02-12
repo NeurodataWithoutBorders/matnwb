@@ -2,7 +2,7 @@
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
    
-      <link rel="stylesheet" href="helpwin.css">
+      <link rel="stylesheet" href="../../helpwin.css">
       <title>types.core.ImagingRetinotopy - MATLAB File Help</title>
    </head>
    <body>
@@ -16,13 +16,13 @@
          </tr>
       </table>
       <div class="title">types.core.ImagingRetinotopy</div>
-      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">ImagingRetinotopy</span> Intrinsic signal optical imaging or widefield imaging for measuring retinotopy. Stores orthogonal maps (e.g., altitude/azimuth; radius/theta) of responses to specific stimuli and a combined polarity map from which to identify visual areas. Note: for data consistency, all images and arrays are stored in the format [row][column] and [row, col], which equates to [y][x]. Field of view and dimension arrays may appear backward (i.e., y before x).</pre></div><!--after help -->
+      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">ImagingRetinotopy</span> Intrinsic signal optical imaging or widefield imaging for measuring retinotopy. Stores orthogonal maps (e.g., altitude/azimuth; radius/theta) of responses to specific stimuli and a combined polarity map from which to identify visual areas. This group does not store the raw responses imaged during retinotopic mapping or the stimuli presented, but rather the resulting phase and power maps after applying a Fourier transform on the averaged responses. Note: for data consistency, all images and arrays are stored in the format [row][column] and [row, col], which equates to [y][x]. Field of view and dimension arrays may appear backward (i.e., y before x).</pre></div><!--after help -->
       <!--Class-->
       <div class="sectiontitle">Class Details</div>
       <table class="class-details">
          <tr>
             <td class="class-detail-label">Superclasses</td>
-            <td><a href="NWBDataInterface.html">types.core.NWBDataInterface</a></td>
+            <td><a href="NWBDataInterface.html">types.core.NWBDataInterface</a>, <a href="matlab:helpwin('types.untyped.GroupClass')">types.untyped.GroupClass</a></td>
          </tr>
          <tr>
             <td class="class-detail-label">Sealed</td>
@@ -52,7 +52,7 @@
          </tr>
          <tr class="summary-item">
             <td class="name">axis_1_phase_map_dimension</td>
-            <td class="m-help">Number of rows and columns in the image. NOTE: row, column representation is equivalent to height,width.&nbsp;</td>
+            <td class="m-help">Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">axis_1_phase_map_field_of_view</td>
@@ -70,7 +70,7 @@
          </tr>
          <tr class="summary-item">
             <td class="name">axis_1_power_map_dimension</td>
-            <td class="m-help">Number of rows and columns in the image. NOTE: row, column representation is equivalent to height,width.&nbsp;</td>
+            <td class="m-help">Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">axis_1_power_map_field_of_view</td>
@@ -86,7 +86,7 @@
          </tr>
          <tr class="summary-item">
             <td class="name">axis_2_phase_map_dimension</td>
-            <td class="m-help">Number of rows and columns in the image. NOTE: row, column representation is equivalent to height,width.&nbsp;</td>
+            <td class="m-help">Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">axis_2_phase_map_field_of_view</td>
@@ -104,7 +104,7 @@
          </tr>
          <tr class="summary-item">
             <td class="name">axis_2_power_map_dimension</td>
-            <td class="m-help">Number of rows and columns in the image. NOTE: row, column representation is equivalent to height,width.&nbsp;</td>
+            <td class="m-help">Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">axis_2_power_map_field_of_view</td>
@@ -130,7 +130,7 @@
          </tr>
          <tr class="summary-item">
             <td class="name">focal_depth_image_dimension</td>
-            <td class="m-help">Number of rows and columns in the image. NOTE: row, column representation is equivalent to height,width.&nbsp;</td>
+            <td class="m-help">Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">focal_depth_image_field_of_view</td>
@@ -150,7 +150,7 @@
          </tr>
          <tr class="summary-item">
             <td class="name">sign_map_dimension</td>
-            <td class="m-help">Number of rows and columns in the image. NOTE: row, column representation is equivalent to height,width.&nbsp;</td>
+            <td class="m-help">Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">sign_map_field_of_view</td>
@@ -166,7 +166,7 @@
          </tr>
          <tr class="summary-item">
             <td class="name">vasculature_image_dimension</td>
-            <td class="m-help">Number of rows and columns in the image. NOTE: row, column representation is equivalent to height,width.&nbsp;</td>
+            <td class="m-help">Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">vasculature_image_field_of_view</td>

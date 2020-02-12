@@ -3,26 +3,26 @@
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
    
       <link rel="stylesheet" href="../../helpwin.css">
-      <title>types.core.CompassDirection - MATLAB File Help</title>
+      <title>types.hdmf_common.Container - MATLAB File Help</title>
    </head>
    <body>
       <!--Single-page help-->
       <table border="0" cellspacing="0" width="100%">
          <tr class="subheader">
-            <td class="headertitle">types.core.CompassDirection - MATLAB File Help</td>
+            <td class="headertitle">types.hdmf_common.Container - MATLAB File Help</td>
             
             
             
          </tr>
       </table>
-      <div class="title">types.core.CompassDirection</div>
-      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">CompassDirection</span> With a <span class="helptopic">CompassDirection</span> interface, a module publishes a SpatialSeries object representing a floating point value for theta. The SpatialSeries::reference_frame field should indicate what direction corresponds to 0 and which is the direction of rotation (this should be clockwise). The si_unit for the SpatialSeries should be radians or degrees.</pre></div><!--after help -->
+      <div class="title">types.hdmf_common.Container</div>
+      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">Container</span> An abstract data type for a generic container storing collections of data and metadata. Base type for all data and metadata containers.</pre></div><!--after help -->
       <!--Class-->
       <div class="sectiontitle">Class Details</div>
       <table class="class-details">
          <tr>
             <td class="class-detail-label">Superclasses</td>
-            <td><a href="NWBDataInterface.html">types.core.NWBDataInterface</a>, <a href="matlab:helpwin('types.untyped.GroupClass')">types.untyped.GroupClass</a></td>
+            <td>types.untyped.MetaClass, <a href="matlab:helpwin('types.untyped.GroupClass')">types.untyped.GroupClass</a></td>
          </tr>
          <tr>
             <td class="class-detail-label">Sealed</td>
@@ -38,17 +38,8 @@
       </div>
       <table class="summary-list">
          <tr class="summary-item">
-            <td class="name">CompassDirection</td>
-            <td class="m-help">Constructor for CompassDirection&nbsp;</td>
-         </tr>
-      </table>
-      <!--Properties-->
-      <div class="sectiontitle"><a name="properties"></a>Property Summary
-      </div>
-      <table class="summary-list">
-         <tr class="summary-item">
-            <td class="name">spatialseries</td>
-            <td class="m-help">SpatialSeries object containing direction of gaze travel.&nbsp;</td>
+            <td class="name">Container</td>
+            <td class="m-help">Constructor for Container&nbsp;</td>
          </tr>
       </table>
       <!--Methods-->
@@ -174,14 +165,6 @@
             </td>
             <td class="name">notify</td>
             <td class="m-help">Notify listeners of event.&nbsp;</td>
-         </tr>
-         <tr class="summary-item">
-            <td class="attributes">
-               &nbsp;
-               
-            </td>
-            <td class="name">validate_spatialseries</td>
-            <td class="m-help">&nbsp;</td>
          </tr>
       </table>
       <!--Events-->
