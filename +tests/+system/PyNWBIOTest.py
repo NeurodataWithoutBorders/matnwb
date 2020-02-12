@@ -1,4 +1,4 @@
-import unittest2 as unittest
+import unittest
 from datetime import datetime
 import os.path
 import numpy as np
