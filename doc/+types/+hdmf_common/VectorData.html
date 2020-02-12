@@ -3,26 +3,26 @@
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
    
       <link rel="stylesheet" href="../../helpwin.css">
-      <title>types.core.CompassDirection - MATLAB File Help</title>
+      <title>types.hdmf_common.VectorData - MATLAB File Help</title>
    </head>
    <body>
       <!--Single-page help-->
       <table border="0" cellspacing="0" width="100%">
          <tr class="subheader">
-            <td class="headertitle">types.core.CompassDirection - MATLAB File Help</td>
+            <td class="headertitle">types.hdmf_common.VectorData - MATLAB File Help</td>
             
             
             
          </tr>
       </table>
-      <div class="title">types.core.CompassDirection</div>
-      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">CompassDirection</span> With a <span class="helptopic">CompassDirection</span> interface, a module publishes a SpatialSeries object representing a floating point value for theta. The SpatialSeries::reference_frame field should indicate what direction corresponds to 0 and which is the direction of rotation (this should be clockwise). The si_unit for the SpatialSeries should be radians or degrees.</pre></div><!--after help -->
+      <div class="title">types.hdmf_common.VectorData</div>
+      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">VectorData</span> An n-dimensional dataset representing a column of a DynamicTable. If used without an accompanying VectorIndex, first dimension is along the rows of the DynamicTable and each step along the first dimension is a cell of the larger table. <span class="helptopic">VectorData</span> can also be used to represent a ragged array if paired with a VectorIndex. This allows for storing arrays of varying length in a single cell of the DynamicTable by indexing into this <span class="helptopic">VectorData</span>. The first vector is at <span class="helptopic">VectorData</span>[0:VectorIndex(0)+1]. The second vector is at <span class="helptopic">VectorData</span>[VectorIndex(0)+1:VectorIndex(1)+1], and so on.</pre></div><!--after help -->
       <!--Class-->
       <div class="sectiontitle">Class Details</div>
       <table class="class-details">
          <tr>
             <td class="class-detail-label">Superclasses</td>
-            <td><a href="NWBDataInterface.html">types.core.NWBDataInterface</a>, <a href="matlab:helpwin('types.untyped.GroupClass')">types.untyped.GroupClass</a></td>
+            <td><a href="Data.html">types.hdmf_common.Data</a>, <a href="matlab:helpwin('types.untyped.DatasetClass')">types.untyped.DatasetClass</a></td>
          </tr>
          <tr>
             <td class="class-detail-label">Sealed</td>
@@ -38,8 +38,8 @@
       </div>
       <table class="summary-list">
          <tr class="summary-item">
-            <td class="name">CompassDirection</td>
-            <td class="m-help">Constructor for CompassDirection&nbsp;</td>
+            <td class="name">VectorData</td>
+            <td class="m-help">Constructor for VectorData&nbsp;</td>
          </tr>
       </table>
       <!--Properties-->
@@ -47,8 +47,12 @@
       </div>
       <table class="summary-list">
          <tr class="summary-item">
-            <td class="name">spatialseries</td>
-            <td class="m-help">SpatialSeries object containing direction of gaze travel.&nbsp;</td>
+            <td class="name">data</td>
+            <td class="m-help">property of type any&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name">description</td>
+            <td class="m-help">Description of what these vectors represent.&nbsp;</td>
          </tr>
       </table>
       <!--Methods-->
@@ -180,7 +184,15 @@
                &nbsp;
                
             </td>
-            <td class="name">validate_spatialseries</td>
+            <td class="name">validate_data</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_description</td>
             <td class="m-help">&nbsp;</td>
          </tr>
       </table>

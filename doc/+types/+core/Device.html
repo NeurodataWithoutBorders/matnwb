@@ -2,7 +2,7 @@
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
    
-      <link rel="stylesheet" href="helpwin.css">
+      <link rel="stylesheet" href="../../helpwin.css">
       <title>types.core.Device - MATLAB File Help</title>
    </head>
    <body>
@@ -16,13 +16,13 @@
          </tr>
       </table>
       <div class="title">types.core.Device</div>
-      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">Device</span> A data acquisition device, e.g. recording system.</pre></div><!--after help -->
+      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">Device</span> Metadata about a data acquisition device, e.g., recording system, electrode, microscope.</pre></div><!--after help -->
       <!--Class-->
       <div class="sectiontitle">Class Details</div>
       <table class="class-details">
          <tr>
             <td class="class-detail-label">Superclasses</td>
-            <td><a href="NWBContainer.html">types.core.NWBContainer</a></td>
+            <td><a href="NWBContainer.html">types.core.NWBContainer</a>, <a href="matlab:helpwin('types.untyped.GroupClass')">types.untyped.GroupClass</a></td>
          </tr>
          <tr>
             <td class="class-detail-label">Sealed</td>
@@ -40,6 +40,19 @@
          <tr class="summary-item">
             <td class="name">Device</td>
             <td class="m-help">Constructor for Device&nbsp;</td>
+         </tr>
+      </table>
+      <!--Properties-->
+      <div class="sectiontitle"><a name="properties"></a>Property Summary
+      </div>
+      <table class="summary-list">
+         <tr class="summary-item">
+            <td class="name">description</td>
+            <td class="m-help">Description of the device (e.g., model, firmware version, processing software version, etc.) as free-form text.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name">manufacturer</td>
+            <td class="m-help">The name of the manufacturer of the device.&nbsp;</td>
          </tr>
       </table>
       <!--Methods-->
@@ -165,6 +178,22 @@
             </td>
             <td class="name">notify</td>
             <td class="m-help">Notify listeners of event.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_description</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_manufacturer</td>
+            <td class="m-help">&nbsp;</td>
          </tr>
       </table>
       <!--Events-->
