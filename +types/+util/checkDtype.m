@@ -63,6 +63,16 @@ else
         return;
     end
     
+    if isa(val, 'types.untyped.DataPipe')
+        if strcmp(type, 'float64')
+            type = 'double';
+        end
+        assert(strcmp(val.dataType, type),...
+            'NWB:Types:Util:CheckDType:InvalidType',...
+            'DataPipe should be configured with type `%s`', type);
+        return;
+    end
+    
     if isa(val, 'types.untyped.DataStub')
         %grab first element and check
         truval = val;
@@ -85,7 +95,7 @@ else
     if any(strcmpi(type, {'single' 'double' 'logical' 'numeric'})) ||...
             startsWith(type, {'int' 'uint' 'float'})
         if isa(val, 'types.untyped.SoftLink')
-            %derefing through softlink would require writing and/or the root NwbFile object
+            % derefing through softlink would require writing and/or the root NwbFile object
             return;
         end
         

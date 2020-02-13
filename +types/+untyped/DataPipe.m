@@ -21,8 +21,8 @@ classdef DataPipe < handle
     
     properties (Access = private, Constant)
         SUPPORTED_DATATYPES = {...
-            'float', 'double', 'uint8', 'int8', 'uint16', 'int16', 'uint32',...
-            'int32', 'uint64', 'int64'
+            'float', 'double', 'uint8', 'int8', 'uint16', 'int16',...
+            'uint32', 'int32', 'uint64', 'int64'
             };
     end
     
@@ -33,11 +33,12 @@ classdef DataPipe < handle
             p = inputParser;
             p.addParameter('filename', '');
             p.addParameter('path', '');
-            p.addParameter('offset', 1);
+            p.addParameter('offset', 0);
             p.addParameter('axis', 1);
             p.addParameter('chunkSize', []);
             p.addParameter('dataType', 'uint8');
             p.addParameter('compressionLevel', -1);
+            p.addParameter('data', []);
             p.parse(varargin{:});
             
             obj.filename = p.Results.filename;
@@ -47,6 +48,7 @@ classdef DataPipe < handle
             obj.chunkSize = p.Results.chunkSize;
             obj.dataType = p.Results.dataType;
             obj.compressionLevel = p.Results.compressionLevel;
+            obj.data = cast(p.Results.data, obj.dataType);
         end
     end
     
@@ -83,7 +85,7 @@ classdef DataPipe < handle
         end
         
         function set.offset(obj, val)
-            assert(isscalar(val) && isnumeric(val) && val > 0,...
+            assert(isscalar(val) && isnumeric(val) && val >= 0,...
                 'NWB:Untyped:DataPipe:SetOffset:InvalidType',...
                 'Offset should be a nonzero scalar indicating axis offset.');
             val = ceil(val);
@@ -204,22 +206,32 @@ classdef DataPipe < handle
             
             fid = H5F.open(obj.filename, 'H5F_ACC_RDWR', default_pid);
             did = H5D.open(fid, obj.path, default_pid);
+            sid = H5D.get_space(did);
+            [~, h5_dims, ~] = H5S.get_simple_extent_dims(sid);
+            H5S.close(sid);
             
             rank = length(obj.maxSize);
-            stride_coords = ones(1, rank);
-            stride_coords(1:length(size(data))) = size(data);
-            new_extents = obj.maxSize;
-            new_extents(obj.axis) = obj.offset + stride_coords(obj.axis) - 1;
+            stride_coords = size(data);
+            if length(stride_coords) > rank && ~all(stride_coords(rank+1:end) == 1)
+                warning('Nwb:Types:Untyped:DataPipe:InvalidRank',...
+                    ['Expected rank %d not expected for data of size %s.  '...
+                    'Data may be lost on write.'],...
+                    rank, mat2str(size(stride_coords)));
+            end
+            stride_coords = stride_coords(1:rank);
+            new_extents = fliplr(h5_dims);
+            new_extents(obj.axis) = obj.offset;
+            new_extents = new_extents + stride_coords;
             h5_extents = fliplr(new_extents);
-            H5D.set_extent(did, h5_extents);
-                   
+            H5D.set_extent(did, h5_extents);     
+            
             sid = H5D.get_space(did);
             H5S.select_none(sid);
 
-            offset_coords = ones(1, rank);
+            offset_coords = zeros(1, rank);
             offset_coords(obj.axis) = obj.offset;
             
-            h5_start = fliplr(offset_coords) - 1;
+            h5_start = fliplr(offset_coords);
             h5_stride = [];
             h5_count = fliplr(stride_coords);
             h5_block = [];
