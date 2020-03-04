@@ -16,7 +16,7 @@
          </tr>
       </table>
       <div class="title">types.core.ImagingRetinotopy</div>
-      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">ImagingRetinotopy</span> Intrinsic signal optical imaging or widefield imaging for measuring retinotopy. Stores orthogonal maps (e.g., altitude/azimuth; radius/theta) of responses to specific stimuli and a combined polarity map from which to identify visual areas. NOTE: for data consistency, all images and arrays are stored in the format [row][column] and [row, col], which equates to [y][x]. Field of view and dimension arrays may appear backward (i.e., y before x).</pre></div><!--after help -->
+      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">ImagingRetinotopy</span> Intrinsic signal optical imaging or widefield imaging for measuring retinotopy. Stores orthogonal maps (e.g., altitude/azimuth; radius/theta) of responses to specific stimuli and a combined polarity map from which to identify visual areas. This group does not store the raw responses imaged during retinotopic mapping or the stimuli presented, but rather the resulting phase and power maps after applying a Fourier transform on the averaged responses. Note: for data consistency, all images and arrays are stored in the format [row][column] and [row, col], which equates to [y][x]. Field of view and dimension arrays may appear backward (i.e., y before x).</pre></div><!--after help -->
       <!--Class-->
       <div class="sectiontitle">Class Details</div>
       <table class="class-details">
@@ -51,18 +51,68 @@
             <td class="m-help">Phase response to stimulus on the first measured axis.&nbsp;</td>
          </tr>
          <tr class="summary-item">
+            <td class="name">axis_1_phase_map_dimension</td>
+            <td class="m-help">Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name">axis_1_phase_map_field_of_view</td>
+            <td class="m-help">Size of viewing area, in meters.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name">axis_1_phase_map_unit</td>
+            <td class="m-help">Unit that axis data is stored in (e.g., degrees).&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
             <td class="name">axis_1_power_map</td>
             <td class="m-help">Power response on the first measured axis. Response is scaled so 0.0 is no power in the response and 1.0 is maximum relative
                power.&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
+            <td class="name">axis_1_power_map_dimension</td>
+            <td class="m-help">Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name">axis_1_power_map_field_of_view</td>
+            <td class="m-help">Size of viewing area, in meters.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name">axis_1_power_map_unit</td>
+            <td class="m-help">Unit that axis data is stored in (e.g., degrees).&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
             <td class="name">axis_2_phase_map</td>
             <td class="m-help">Phase response to stimulus on the second measured axis.&nbsp;</td>
          </tr>
          <tr class="summary-item">
+            <td class="name">axis_2_phase_map_dimension</td>
+            <td class="m-help">Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name">axis_2_phase_map_field_of_view</td>
+            <td class="m-help">Size of viewing area, in meters.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name">axis_2_phase_map_unit</td>
+            <td class="m-help">Unit that axis data is stored in (e.g., degrees).&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
             <td class="name">axis_2_power_map</td>
-            <td class="m-help">Power response to stimulus on the second measured axis.&nbsp;</td>
+            <td class="m-help">Power response on the second measured axis. Response is scaled so 0.0 is no power in the response and 1.0 is maximum relative
+               power.&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name">axis_2_power_map_dimension</td>
+            <td class="m-help">Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name">axis_2_power_map_field_of_view</td>
+            <td class="m-help">Size of viewing area, in meters.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name">axis_2_power_map_unit</td>
+            <td class="m-help">Unit that axis data is stored in (e.g., degrees).&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">axis_descriptions</td>
@@ -75,12 +125,56 @@
             <td class="m-help">Gray-scale image taken with same settings/parameters (e.g., focal depth, wavelength) as data collection. Array format: [rows][columns].&nbsp;</td>
          </tr>
          <tr class="summary-item">
+            <td class="name">focal_depth_image_bits_per_pixel</td>
+            <td class="m-help">Number of bits used to represent each value. This is necessary to determine maximum (white) pixel value.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name">focal_depth_image_dimension</td>
+            <td class="m-help">Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name">focal_depth_image_field_of_view</td>
+            <td class="m-help">Size of viewing area, in meters.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name">focal_depth_image_focal_depth</td>
+            <td class="m-help">Focal depth offset, in meters.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name">focal_depth_image_format</td>
+            <td class="m-help">Format of image. Right now only 'raw' is supported.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
             <td class="name">sign_map</td>
             <td class="m-help">Sine of the angle between the direction of the gradient in axis_1 and axis_2.&nbsp;</td>
          </tr>
          <tr class="summary-item">
+            <td class="name">sign_map_dimension</td>
+            <td class="m-help">Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name">sign_map_field_of_view</td>
+            <td class="m-help">Size of viewing area, in meters.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
             <td class="name">vasculature_image</td>
             <td class="m-help">Gray-scale anatomical image of cortical surface. Array structure: [rows][columns]&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name">vasculature_image_bits_per_pixel</td>
+            <td class="m-help">Number of bits used to represent each value. This is necessary to determine maximum (white) pixel value&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name">vasculature_image_dimension</td>
+            <td class="m-help">Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name">vasculature_image_field_of_view</td>
+            <td class="m-help">Size of viewing area, in meters.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name">vasculature_image_format</td>
+            <td class="m-help">Format of image. Right now only 'raw' is supported.&nbsp;</td>
          </tr>
       </table>
       <!--Methods-->
@@ -220,7 +314,55 @@
                &nbsp;
                
             </td>
+            <td class="name">validate_axis_1_phase_map_dimension</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_axis_1_phase_map_field_of_view</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_axis_1_phase_map_unit</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
             <td class="name">validate_axis_1_power_map</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_axis_1_power_map_dimension</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_axis_1_power_map_field_of_view</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_axis_1_power_map_unit</td>
             <td class="m-help">&nbsp;</td>
          </tr>
          <tr class="summary-item">
@@ -236,7 +378,55 @@
                &nbsp;
                
             </td>
+            <td class="name">validate_axis_2_phase_map_dimension</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_axis_2_phase_map_field_of_view</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_axis_2_phase_map_unit</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
             <td class="name">validate_axis_2_power_map</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_axis_2_power_map_dimension</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_axis_2_power_map_field_of_view</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_axis_2_power_map_unit</td>
             <td class="m-help">&nbsp;</td>
          </tr>
          <tr class="summary-item">
@@ -260,6 +450,46 @@
                &nbsp;
                
             </td>
+            <td class="name">validate_focal_depth_image_bits_per_pixel</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_focal_depth_image_dimension</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_focal_depth_image_field_of_view</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_focal_depth_image_focal_depth</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_focal_depth_image_format</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
             <td class="name">validate_sign_map</td>
             <td class="m-help">&nbsp;</td>
          </tr>
@@ -268,7 +498,55 @@
                &nbsp;
                
             </td>
+            <td class="name">validate_sign_map_dimension</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_sign_map_field_of_view</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
             <td class="name">validate_vasculature_image</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_vasculature_image_bits_per_pixel</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_vasculature_image_dimension</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_vasculature_image_field_of_view</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_vasculature_image_format</td>
             <td class="m-help">&nbsp;</td>
          </tr>
       </table>
