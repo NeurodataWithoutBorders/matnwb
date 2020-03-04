@@ -213,15 +213,29 @@ classdef DataPipe < handle
             rank = length(obj.maxSize);
             stride_coords = size(data);
             if length(stride_coords) > rank && ~all(stride_coords(rank+1:end) == 1)
-                warning('Nwb:Types:Untyped:DataPipe:InvalidRank',...
+                warning('NWB:Types:Untyped:DataPipe:InvalidRank',...
                     ['Expected rank %d not expected for data of size %s.  '...
                     'Data may be lost on write.'],...
                     rank, mat2str(size(stride_coords)));
             end
+            if length(stride_coords) < rank
+                new_coords = ones(1, rank);
+                new_coords(1:length(stride_coords)) = stride_coords;
+                stride_coords = new_coords;
+            end
             stride_coords = stride_coords(1:rank);
-            new_extents = fliplr(h5_dims);
-            new_extents(obj.axis) = obj.offset;
-            new_extents = new_extents + stride_coords;
+            
+            if any(0 == h5_dims)
+                new_extents = stride_coords;
+            else
+                new_extents = fliplr(h5_dims);
+                non_axis_map = true(1, rank);
+                non_axis_map(obj.axis) = false;
+                assert(all(stride_coords(non_axis_map) == new_extents(non_axis_map)),...
+                'NWB:Types:Untyped:DataPipe:InvalidSize',...
+                'Stride size must match non-axis dimensions.');
+                new_extents(obj.axis) = obj.offset + stride_coords(obj.axis);
+            end
             h5_extents = fliplr(new_extents);
             H5D.set_extent(did, h5_extents);     
             
