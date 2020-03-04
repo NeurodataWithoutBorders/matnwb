@@ -16,8 +16,11 @@ classdef NwbTestInterface < matlab.unittest.TestCase
     methods (TestMethodSetup)
         function setupMethod(testCase)
             testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
-            generateCore(fullfile(testCase.root, ...
-                'nwb-schema', 'core', 'nwb.namespace.yaml'));
+            schemaPath = fullfile(testCase.root, 'nwb-schema');
+            
+            generateCore(...
+                fullfile(schemaPath, 'hdmf-common-schema', 'common', 'namespace.yaml'),...
+                fullfile(schemaPath, 'core', 'nwb.namespace.yaml'));
             testCase.file = NwbFile( ...
                 'session_description', 'a test NWB File', ...
                 'identifier', 'TEST123', ...
@@ -45,7 +48,8 @@ classdef NwbTestInterface < matlab.unittest.TestCase
                 val1 = actual.(prop);
                 val2 = expected.(prop);
                 failmsg = ['Values for property ''' prop ''' are not equal'];
-                if startsWith(class(val1), 'types.core.')
+                if startsWith(class(val1), 'types.')...
+                        && ~startsWith(class(val1), 'types.untyped')
                     verifyContainerEqual(testCase, val1, val2);
                 elseif isa(val1, 'types.untyped.Set')
                     verifySetEqual(testCase, val1, val2, failmsg);

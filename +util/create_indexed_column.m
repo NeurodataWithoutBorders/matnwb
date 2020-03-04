@@ -37,13 +37,13 @@ else
 end
 
 if exist('table', 'var')
-    data_vector = types.core.DynamicTableRegion('table', table, ...
+    data_vector = types.hdmf_common.DynamicTableRegion('table', table, ...
         'description', description, 'data', data);
 else
-    data_vector = types.core.VectorData('data', data, 'description', description);
+    data_vector = types.hdmf_common.VectorData('data', data, 'description', description);
 end
 
 ov = types.untyped.ObjectView(path);
-data_index = types.core.VectorIndex('data', bounds, 'target', ov);
+data_index = types.hdmf_common.VectorIndex('data', bounds, 'target', ov);
 
 

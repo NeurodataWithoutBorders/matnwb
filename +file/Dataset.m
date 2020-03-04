@@ -75,6 +75,10 @@ classdef Dataset < handle
                 end
             end
             
+            if source.isKey('required')
+                obj.required = strcmp(source('required'), 'true');
+            end
+            
             obj.isConstrainedSet = ~isempty(obj.type) && ~obj.scalar;
             
             boundsKey = 'dims';

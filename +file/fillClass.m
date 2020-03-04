@@ -54,9 +54,15 @@ else
     depnm = namespace.getFullClassName(parentName);
 end
 
+if isa(processed, 'file.Group')
+    classTag = 'types.untyped.GroupClass';
+else
+    classTag = 'types.untyped.DatasetClass';
+end
+
 %% return classfile string
 classDef = [...
-    'classdef ' name ' < ' depnm newline... %header, dependencies
+    'classdef ' name ' < ' depnm ' & ' classTag newline... %header, dependencies
     '% ' upper(name) ' ' class.doc]; %name, docstr
 propgroups = {...
     @()file.fillProps(classprops, readonly, 'SetAccess=protected')...
