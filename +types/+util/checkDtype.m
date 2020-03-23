@@ -67,6 +67,9 @@ else
         if strcmp(type, 'float64')
             type = 'double';
         end
+        if strcmp(type, 'numeric')
+            type = val.dataType;
+        end
         assert(strcmp(val.dataType, type),...
             'NWB:Types:Util:CheckDType:InvalidType',...
             'DataPipe should be configured with type `%s`', type);
