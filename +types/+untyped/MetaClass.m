@@ -12,7 +12,8 @@ classdef MetaClass < handle
             end
             
             try
-                if isa(obj.data, 'types.untyped.DataStub')
+                if isa(obj.data, 'types.untyped.DataStub')...
+                        || isa(obj.data, 'types.untyped.DataPipe')
                     refs = obj.data.export(fid, fullpath, refs);
                 elseif istable(obj.data) || isstruct(obj.data) ||...
                         isa(obj.data, 'containers.Map')
