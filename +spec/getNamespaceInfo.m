@@ -6,12 +6,15 @@ assert(isKey(namespaceMap, 'namespaces'), errid, errmsg);
 namespaceMap = namespaceMap('namespaces');
 namespaceMap = namespaceMap{1};
 requiredKeysExist = isKey(namespaceMap, 'name')...
-    && isKey(namespaceMap, 'schema')...
-    && isKey(namespaceMap, 'version');
+    && isKey(namespaceMap, 'schema');
 assert(requiredKeysExist, errid, errmsg);
 
 name = namespaceMap('name');
-version = namespaceMap('version');
+if namespaceMap.isKey('version')
+    version = namespaceMap('version');
+else
+    version = 'unversioned';
+end
 schema = namespaceMap('schema');
 Namespace = struct(...
     'name', misc.str2validName(name),...
