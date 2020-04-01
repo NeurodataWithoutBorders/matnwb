@@ -53,17 +53,7 @@ else
     
     pid = H5D.get_create_plist(did);
     if H5P.get_layout(did) == H5ML.get_constant_value('H5D_CHUNKED')
-        [~, h5_dims, h5_maxDims] = H5D.get_simple_extent_dims(sid);
-        dims = fliplr(h5_dims);
-        maxDims = fliplr(h5_maxDims);
-        axis = length(dims);
-        offset = dims(end);
-        
-        data = types.untyped.DataPipe(maxDims,...
-            'filename', filename,...
-            'path', fullpath,...
-            'axis', axis,...
-            'offset', offset);
+        data = types.untyped.DataPipe.fromFile(filename, fullpath);
     else
         data = types.untyped.DataStub(filename, fullpath);
     end
