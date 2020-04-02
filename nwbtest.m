@@ -61,6 +61,7 @@ try
   
   display(results);
   exitcode = any([results.Failed]);
+  assignin('base', 'results', results);
 catch e
   disp(e.getReport('extended'));
   exitcode = 1;
