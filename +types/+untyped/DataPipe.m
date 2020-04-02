@@ -147,8 +147,8 @@ classdef DataPipe < handle
                 '`chunkSize` must be within `maxSize` bounds');
             assert(~obj.isBound,...
                 'NWB:Untyped:DataPipe:SetChunkSize:SettingLocked',...
-                ['`chunkSize` cannot be reset if this datapipe is bound to an '...
-                'existing NWB file.']);
+                ['`chunkSize` cannot be reset if this datapipe is bound to '...
+                'an existing NWB file.']);
             
             obj.chunkSize = val;
         end
@@ -204,6 +204,76 @@ classdef DataPipe < handle
         end
     end
     
+    methods (Access = private)
+        function fid = getFile(obj)
+            fid = H5F.open(obj.filename, 'H5F_ACC_RDWR', 'H5P_DEFAULT');
+        end
+        
+        function did = getDataset(obj)
+            fid = obj.getFile();
+            did = H5D.open(fid, obj.path, 'H5P_DEFAULT');
+            H5F.close(fid);
+        end
+        
+        function sid = makeSelection(obj, dataSize)
+            did = obj.getDataset();
+            sid = H5D.get_space(did);
+            H5S.select_none(sid);
+            start_indices = zeros(1, length(obj.maxSize));
+            start_indices(obj.axis) = obj.offset;
+            
+            h5_start = fliplr(start_indices);
+            h5_stride = [];
+            h5_count = fliplr(dataSize);
+            h5_block = [];
+            H5S.select_hyperslab(sid,...
+                'H5S_SELECT_OR',...
+                h5_start,...
+                h5_stride,...
+                h5_count,...
+                h5_block);
+            H5D.close(did);
+        end
+        
+        function expandDataset(obj, data_size)
+            did = obj.getDataset();
+            sid = H5D.get_space(did);
+            [~, h5_dims, ~] = H5S.get_simple_extent_dims(sid);
+            new_extents = data_size;
+            if all(0 < h5_dims)
+                current_size = fliplr(h5_dims);
+                new_extents(obj.axis) = new_extents(obj.axis)...
+                    + current_size(obj.axis);
+            end
+            assert(all(obj.maxSize >= new_extents),...
+                'NWB:Types:Untyped:DataPipe:InvalidSize',...
+                'Data size cannot exceed maximum allocated size.');
+            sizes_ind = 1:length(obj.maxSize);
+            non_axes_mask = (sizes_ind ~= obj.axis) & ~isinf(obj.maxSize);
+            assert(all(...
+                obj.maxSize(non_axes_mask) == new_extents(non_axes_mask)),...
+                'NWB:Types:Untyped:DataPipe:InvalidSize',...
+                'Non-axis data size should match maxSize.');
+            H5D.set_extent(did, fliplr(new_extents));
+        end
+        
+        function dcpl = makeDcpl(obj)
+            % dcpl -> Dataset Creation Property List
+            dcpl = H5P.create('H5P_DATASET_CREATE');
+            if isempty(obj.chunkSize)
+                obj.chunkSize =...
+                    types.untyped.datapipe.guessChunkSize(...
+                        obj.dataType,...
+                        obj.maxSize);
+            end
+            H5P.set_chunk(dcpl, fliplr(obj.chunkSize));
+            
+            if obj.compressionLevel ~= -1
+                H5P.set_deflate(dcpl, obj.compressionLevel);
+            end
+        end
+    end
+    
     methods
         function size = get_size(obj)
             assert(obj.isBound,...
@@ -247,47 +317,16 @@ classdef DataPipe < handle
                 data_size = data_size(1:rank);
             end
             
-            default_pid = 'H5P_DEFAULT';
-            fid = H5F.open(obj.filename, 'H5F_ACC_RDWR', default_pid);
-            did = H5D.open(fid, obj.path, default_pid);
-            sid = H5D.get_space(did);
-            [~, h5_dims, ~] = H5S.get_simple_extent_dims(sid);
-            new_extents = data_size;
-            if all(0 < h5_dims)
-                current_size = fliplr(h5_dims);
-                new_extents(obj.axis) = new_extents(obj.axis)...
-                    + current_size(obj.axis);
-            end
-            assert(all(obj.maxSize >= new_extents),...
-                'NWB:Types:Untyped:DataPipe:InvalidSize',...
-                'Data size cannot exceed maximum allocated size.');
-            sizes_ind = 1:length(obj.maxSize);
-            non_axes_mask = (sizes_ind ~= obj.axis) & ~isinf(obj.maxSize);
-            assert(all(...
-                obj.maxSize(non_axes_mask) == new_extents(non_axes_mask)),...
-                'NWB:Types:Untyped:DataPipe:InvalidSize',...
-                'Non-axis data size should match maxSize');
-            H5D.set_extent(did, fliplr(new_extents));
-
-            H5S.select_none(sid);
-            start_indices = zeros(1, rank);
-            start_indices(obj.axis) = obj.offset;
+            obj.expandDataset(data_size);
+            sid = obj.makeSelection(data_size);
             
-            h5_start = fliplr(start_indices);
-            h5_stride = [];
-            h5_count = fliplr(data_size);
-            h5_block = [];
-            H5S.select_hyperslab(sid,...
-                'H5S_SELECT_OR',...
-                h5_start,...
-                h5_stride,...
-                h5_count,...
-                h5_block);
-            
+            fid = obj.getFile();
             [mem_tid, mem_sid, data] = io.mapData2H5(fid, data, 'forceArray');
+            h5_count = fliplr(data_size);
             H5S.set_extent_simple(mem_sid, rank, h5_count, h5_count);
             
-            H5D.write(did, mem_tid, mem_sid, sid, default_pid, data);
+            did = obj.getDataset();
+            H5D.write(did, mem_tid, mem_sid, sid, 'H5P_DEFAULT', data);
             H5S.close(mem_sid);
             if ~ischar(mem_tid)
                 H5T.close(mem_tid);
@@ -304,9 +343,6 @@ classdef DataPipe < handle
                 return;
             end
             
-            default_pid = 'H5P_DEFAULT';
-            tid = io.getBaseType(obj.dataType);
-            
             rank = length(obj.maxSize);
             h5_dims = zeros(1, rank);
             h5_rank = find(obj.maxSize == 1);
@@ -317,22 +353,11 @@ classdef DataPipe < handle
             h5_unlimited = H5ML.get_constant_value('H5S_UNLIMITED');
             h5_maxdims(isinf(h5_maxdims)) = h5_unlimited;
             sid = H5S.create_simple(rank, h5_dims, h5_maxdims);
-            
-            lcpl = default_pid;
-            
-            dcpl = H5P.create('H5P_DATASET_CREATE');
-            if isempty(obj.chunkSize)
-                obj.chunkSize =...
-                    types.untyped.datapipe.guessChunkSize(obj.maxSize);
-            end
-            H5P.set_chunk(dcpl, fliplr(obj.chunkSize));
-            
-            if obj.compressionLevel ~= -1
-                H5P.set_deflate(dcpl, obj.compressionLevel);
-            end
-            
-            dapl = default_pid;
-            
+
+            dcpl = obj.makeDcpl();
+            dapl = 'H5P_DEFAULT';
+            lcpl = 'H5P_DEFAULT';
+            tid = io.getBaseType(obj.dataType);
             did = H5D.create(fid, fullpath, tid, sid, lcpl, dcpl, dapl);
             
             H5P.close(dcpl);
@@ -342,14 +367,16 @@ classdef DataPipe < handle
             end
             H5D.close(did);
             
-            data = obj.data;
+            % since you can't reassign obj.data while filename and path are bound
+            % we set a temporary variable here instead and relinquish the data
+            % from the object.  That way, the memory is cleaned up.
+            queued = obj.data;
             obj.data = cast([], obj.dataType);
             
             % bind to this file.
             obj.filename = H5F.get_name(fid);
             obj.path = fullpath;
-            
-            obj.append(data);
+            obj.append(queued);
         end
     end
 end
