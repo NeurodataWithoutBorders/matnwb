@@ -15,12 +15,12 @@ function testAppend(testCase)
 filename = 'testIterativeWrite.h5';
 name = '/test_data';
 
-maxSize = [10 13 15];
-axis = 3;
-Pipe = types.untyped.DataPipe(maxSize, axis);
-Pipe.chunkSize = [10 13 1];
-Pipe.dataType = 'uint8';
-Pipe.compressionLevel = 5;
+Pipe = types.untyped.DataPipe(...
+    'maxSize', [10 13 15],...
+    'axis', 3,...
+    'chunkSize', [10 13 1],...
+    'dataType', 'uint8',...
+    'compressionLevel', 5);
 
 %% create test file
 fid = H5F.create(filename);
