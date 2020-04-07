@@ -11,7 +11,7 @@ end
 links = containers.Map;
 refs = containers.Map;
 [~, root] = io.pathParts(info.Name);
-[attributeProperties, typename] =...
+[attributeProperties, Type] =...
     io.parseAttributes(filename, info.Attributes, info.Name, Blacklist);
 
 %parse datasets
@@ -52,7 +52,7 @@ for i=1:length(info.Links)
     linkProperties(link.Name) = lnk;
 end
 
-if isempty(typename)
+if isempty(Type.typename)
     parsed = types.untyped.Set(...
         [attributeProperties; datasetProperties; groupProperties; linkProperties]);
     
@@ -64,7 +64,7 @@ if isempty(typename)
 else
     if groupProperties.Count > 0
         %elide group properties
-        elided_gprops = elide(groupProperties, properties(typename));
+        elided_gprops = elide(groupProperties, properties(Type.typename));
         groupProperties = [groupProperties; elided_gprops];
     end
     %construct as kwargs and instantiate object
@@ -75,7 +75,7 @@ else
         parsed = NwbFile(kwargs{:});
         return;
     end
-    parsed = eval([typename '(kwargs{:})']);
+    parsed = eval([Type.typename '(kwargs{:})']);
 end
 end
 

@@ -1,9 +1,8 @@
-function [args, typename] = parseAttributes(filename, attributes, context, Blacklist)
+function [args, type] = parseAttributes(filename, attributes, context, Blacklist)
 %typename is the type of name if it exists.  Empty string otherwise
 %args is a containers.Map of all valid attributes
 args = containers.Map;
-typename = '';
-type = struct('namespace', '', 'name', '');
+type = struct('namespace', '', 'name', '', 'typename', '');
 if isempty(attributes)
     return;
 end
@@ -32,7 +31,7 @@ end
 if hasTypeDef && hasNamespace
     validNamespace = misc.str2validName(type.namespace);
     validName = misc.str2validName(type.name);
-    typename = ['types.' validNamespace '.' validName];
+    type.typename = ['types.' validNamespace '.' validName];
 end
 
 blacklistMask = ismember(names, Blacklist.attributes);
