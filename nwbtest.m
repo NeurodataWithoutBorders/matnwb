@@ -1,4 +1,4 @@
-function exitcode = nwbtest(varargin)
+function results = nwbtest(varargin)
 % NWBTEST Run MatNWB test suite.
 %   
 %   The nwbtest function provides a simple way to run the MatNWB test
@@ -60,11 +60,9 @@ try
   results = runner.run(suite);
   
   display(results);
-  exitcode = any([results.Failed]);
-  assignin('base', 'results', results);
 catch e
   disp(e.getReport('extended'));
-  exitcode = 1;
+  results = [];
 end
 end
 
