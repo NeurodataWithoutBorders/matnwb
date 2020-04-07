@@ -72,7 +72,14 @@ else
         [attributeProperties; datasetProperties; groupProperties; linkProperties]);
     if isempty(root)
         %we are root
-        parsed = NwbFile(kwargs{:});
+        if strcmp(Type.name, 'NWBFile')
+            parsed = NwbFile(kwargs{:});
+        else
+            file.cloneNwbFileClass(Type.name, Type.typename);
+            rehash();
+            parsed = eval([Type.typename '(kwargs{:})']);
+        end
+        
         return;
     end
     parsed = eval([Type.typename '(kwargs{:})']);
