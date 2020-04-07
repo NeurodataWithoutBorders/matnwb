@@ -1,4 +1,4 @@
-function [set, ivarargin] = parseConstrained(obj,pname, type, varargin)
+function [set, ivarargin] = parseConstrained(obj, pname, type, varargin)
 assert(mod(length(varargin),2) == 0, 'Malformed varargin.  Should be even');
 ikeys = false(size(varargin));
 defprops = properties(obj);
