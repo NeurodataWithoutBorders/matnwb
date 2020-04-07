@@ -17,7 +17,7 @@ classdef ElectricalSeriesIOTest < tests.system.PyNWBIOTest
                 'location', 'tetrode location', ...
                 'device', devlink);
             
-            electrodes = file.create_electrode_table();
+            electrodes = util.createElectrodeTable();
             electrodes.id.data = 1:4;
             electrodes.vectordata.get('x').data = ones(4, 1);
             electrodes.vectordata.get('y').data = repmat(2, 4, 1);
@@ -27,6 +27,7 @@ classdef ElectricalSeriesIOTest < tests.system.PyNWBIOTest
             electrodes.vectordata.get('filtering').data = zeros(4, 1);
             electrodes.vectordata.get('group').data = repmat(eglink, 4, 1);
             electrodes.vectordata.get('group_name').data = repmat({egnm}, 4, 1);
+            file.general_extracellular_ephys_electrodes = electrodes;
             
             file.general_extracellular_ephys.set(egnm, eg);
             es = types.core.ElectricalSeries( ...
