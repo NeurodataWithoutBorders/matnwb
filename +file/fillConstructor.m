@@ -203,7 +203,7 @@ end
 % add parameters
 parser = [parser, strcat('addParameter(p, ''', names, ''', ', defaults,');')];
 % parse
-parser = [parser, {'parse(p, varargin{:});'}];
+parser = [parser, {'misc.parseSkipInvalidName(p, varargin);'}];
 % get results
 parser = [parser, strcat('obj.', names, ' = p.Results.', names, ';')];
 parser = strjoin(parser, newline);
