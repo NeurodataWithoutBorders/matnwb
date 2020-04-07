@@ -10,6 +10,8 @@ This package provides two functions `generateCore` and `generateExtension` that 
 
 Once the code generation step is done, NWB objects can be read, constructed and written from Matlab.
 
+PyNWB's cached schemas are also supported, bypassing the need to run `generateCore` or `generateExtension` if present.
+
 ## Sources
 
 MatNWB is available online at https://github.com/NeurodataWithoutBorders/matnwb
@@ -19,10 +21,10 @@ MatNWB is available online at https://github.com/NeurodataWithoutBorders/matnwb
 The NWB:N schema is in a state of some evolution.  This package assumes a certain set of rules are used to define the schema.  As the schema is updated, some of the rules may be changed and these will break this package.
 
 For those planning on using matnwb alongside pynwb, please keep the following in mind:
- - The ordering of dimensions in MATLAB are reversed compared to numpy (and pynwb).  Thus, a 3-D ```SpikeEventSeries```, which in pynwb would normally be indexed in order ```(num_samples, num_channels, num_events)```, would be indexed in form ```(num_events, num_channels, num_samples)``` in matnwb.
+ - The ordering of dimensions in MATLAB are reversed compared to numpy (and pynwb).  Thus, a 3-D ```SpikeEventSeries```, which in pynwb would normally be indexed in order ```(num_samples, num_channels, num_events)```, would be indexed in form ```(num_events, num_channels, num_samples)``` in MatNWB.
  - MatNWB is dependent on the schema, which may not necessary correspond with your PyNWB schema version.  Please consider overwriting the contents within MatNWB's **~/schema/core** directory with the generating PyNWB's **src/pynwb/data directory** and running generateCore to ensure compatibilty between systems.
  
-The `master` branch in this repository is considered perpetually unstable.  If you desire matnwb's full functionality (full round-trip with nwb data), please consider downloading the more stable releases in the Releases tab.  Keep in mind that the Releases are generally only compatible with older versions of pynwb and may not supported newer data types supported by pynwb (such as data references or compound types).
+The `master` branch in this repository is considered perpetually unstable.  If you desire matnwb's full functionality (full round-trip with nwb data), please consider downloading the more stable releases in the Releases tab.  Keep in mind that the Releases are generally only compatible with older versions of pynwb and may not supported newer data types supported by pynwb (such as data references or compound types).  Most releases will coincide with nwb-schema releases and contain compatibility with those features.
 
 This package reads and writes NWB:N 2.0 files and does not support older formats.
 
@@ -93,9 +95,17 @@ For more information regarding the MatNWB API or any of the NWB Core types in Ma
 >Li, Daie, Svoboda, Druckman (2016); Data and simulations related to: Robust neuronal dynamics in premotor cortex during motor planning. Li, Daie, Svoboda, Druckman, Nature. CRCNS.org
 http://dx.doi.org/10.6080/K0RB72JW
 
-## third-party support
+## Third-party Support
 The `+contrib` folder contains tools for converting from other common data formats/specifications to NWB. Currently supported data types are TDT, MWorks, and Blackrock. We are interested in expanding this section to other data specifications and would greatly value your contribution!
 
-## testing
+## Testing
 
 Run the test suite with `nwbtest`.
+
+## FAQ
+
+1. "A class definition must be in an "@" directory."
+
+Make sure that there are no "@" signs **anywhere** in your *full* file path.  This includes even directories that are not part of the matnwb root path and any "@" signs that are not at the beginning of the directory path.
+
+Alternatively, this issue disappears after MATLAB version 2017b.  Installing this version may also resolve these issues.  Note that the updates provided with 2017b should also be installed.
