@@ -17,6 +17,8 @@ for i = 1:numel(props)
         tests.util.verifySetEqual(testCase, val1, val2, failmsg);
     elseif isdatetime(val2)
         testCase.verifyEqual(char(val1), char(val2), failmsg);
+    elseif ischar(val2)
+        testCase.verifyEqual(char(val1), val2, failmsg);
     else
         testCase.verifyEqual(val1, val2, failmsg);
     end

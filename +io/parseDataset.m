@@ -5,7 +5,7 @@ function parsed = parseDataset(filename, info, fullpath, Blacklist)
 name = info.Name;
 
 %check if typed and parse attributes
-[attrargs, typename] = io.parseAttributes(filename, info.Attributes, fullpath, Blacklist);
+[attrargs, Type] = io.parseAttributes(filename, info.Attributes, fullpath, Blacklist);
 
 fid = H5F.open(filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
 did = H5D.open(fid, fullpath);
@@ -31,7 +31,11 @@ elseif ~strcmp(dataspace.Type, 'simple')
     if iscellstr(data) && 1 == length(data)
         data = data{1};
     elseif ischar(data)
-        data = data .';
+        if datetime(version('-date')) < datetime('25-Feb-2020')
+            % MATLAB 2020a fixed string support for HDF5, making reading strings
+            % "consistent"
+            data = data .';
+        end
         datadim = size(data);
         if datadim(1) > 1
             %multidimensional strings should become cellstr
@@ -67,13 +71,13 @@ else
     H5S.close(sid);
 end
 
-if isempty(typename)
+if isempty(Type.typename)
     %untyped group
     parsed(name) = data;
 else
     props('data') = data;
     kwargs = io.map2kwargs(props);
-    parsed = eval([typename '(kwargs{:})']);
+    parsed = eval([Type.typename '(kwargs{:})']);
 end
 H5D.close(did);
 H5F.close(fid);
