@@ -3,7 +3,17 @@ assert(mod(length(varargin),2) == 0, 'Malformed varargin.  Should be even');
 ikeys = false(size(varargin));
 defprops = properties(obj);
 for i=1:2:length(varargin)
-    ikeys(i) = isa(varargin{i+1}, type) && ~any(strcmp(varargin{i}, defprops));
+    if any(strcmp(varargin{i}, defprops))
+        continue;
+    end
+    
+    arg = varargin{i+1};
+    if isa(arg, 'types.untyped.ExternalLink')
+        ikeys(i) = isa(arg.deref(), type);
+        continue;
+    end
+    
+    ikeys(i) = isa(arg, type) || isa(arg, 'types.untyped.SoftLink');
 end
 ivals = circshift(ikeys,1);
 if any(ikeys)
