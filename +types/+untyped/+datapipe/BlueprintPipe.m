@@ -1,5 +1,5 @@
-classdef Blueprint < types.untyped.datapipe.Pipe
-    %BLUEPRINT or "unbound", this DataPipe type is only intended for in-memory
+classdef BlueprintPipe < types.untyped.datapipe.Pipe
+    %BLUEPRINTPIPE or "unbound", this DataPipe type is only intended for in-memory
     % operations.  When exported, it will become an Input Pipe.
     
     properties
@@ -8,11 +8,11 @@ classdef Blueprint < types.untyped.datapipe.Pipe
     end
     
     properties (SetAccess = private)
-        filters = types.untyped.datapipe.Filter.empty;
+        pipeProperties = types.untyped.datapipe.Property.empty;
     end
     
     methods % lifecycle
-        function obj = Blueprint(config)
+        function obj = BlueprintPipe(config)
             errorId = 'NWB:Untyped:DataPipe:InvalidConstructorArgument';
             
             assert(isa(config, 'types.untyped.datapipe.Configuration'),...
@@ -44,15 +44,15 @@ classdef Blueprint < types.untyped.datapipe.Pipe
     end
     
     methods
-        function addFilters(obj, varargin)
+        function addProperties(obj, varargin)
             for i = 1:length(varargin)
-                obj.addFilter(varargin{i});
+                obj.addProperty(varargin{i});
             end
         end
         
-        function tf = hasFilter(name)
-            for i = 1:length(obj.filters)
-                if strcmp(name, obj.filters(i).getName())
+        function tf = hasProperty(name)
+            for i = 1:length(obj.pipeProperties)
+                if strcmp(name, obj.pipeProperties(i).getName())
                     tf = true;
                     return;
                 end
@@ -62,28 +62,23 @@ classdef Blueprint < types.untyped.datapipe.Pipe
     end
     
     methods (Access = private)
-        function addFilter(obj, filter)
-            assert(isa(filter, 'types.untyped.datapipe.Filter'),...
+        function addProperty(obj, prop)
+            assert(isa(prop, 'types.untyped.datapipe.Property'),...
                 'Can only add filters.');
-            hasPrecond = isa(filter,...
-                'types.untyped.datapipe.filter.interfaces.hasPrecondition');
-            if hasPrecond
-                filter.checkPrecondition(obj);
-            end
             
-            for i = 1:length(obj.filters)
-                if strcmp(obj.filters(i).getName(), filter.getName())
-                    obj.filters(i) = filter;
+            for i = 1:length(obj.pipeProperties)
+                if strcmp(obj.pipeProperties(i).getName(), prop.getName())
+                    obj.filters(i) = prop;
                     return;
                 end
             end
-            obj.filters(end+1) = filter;
+            obj.pipeProperties(end+1) = prop;
         end
         
         function dcpl = makeDcpl(obj)
             dcpl = H5P.create('H5P_DATASET_CREATE');
             for i = 1:length(values(obj.filters))
-                obj.filters(i).addTo(dcpl);
+                obj.pipeProperties(i).addTo(dcpl);
             end
         end
     end
