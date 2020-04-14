@@ -80,7 +80,7 @@ else
         val = val.deref();
     elseif isa(val, 'types.untyped.DataPipe')
         truval = val;
-        val = cast([], val.config.dataType);
+        val = cast([], val.dataType);
     else
         truval = [];
     end
