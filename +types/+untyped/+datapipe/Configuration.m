@@ -34,7 +34,6 @@ classdef Configuration < handle
     
     properties (SetAccess = immutable)
         maxSize; % max size on disk
-        chunkSize; % size of adjacent data chunks
     end
     
     properties (Constant)
