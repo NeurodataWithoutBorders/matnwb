@@ -26,7 +26,7 @@ Pipe = types.untyped.DataPipe(...
 fid = H5F.create(filename);
 
 initialData = createData(Pipe.dataType, [10 13 10]);
-Pipe.data = initialData;
+Pipe.internal.data = initialData;
 Pipe.export(fid, name, {}); % bind
 
 H5F.close(fid);
