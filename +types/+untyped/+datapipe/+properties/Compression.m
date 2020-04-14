@@ -1,4 +1,4 @@
-classdef Compression < types.untyped.datapipe.Properties
+classdef Compression < types.untyped.datapipe.Property
     %COMPRESSION Deflate compression filter
     
     properties (Constant)
@@ -25,17 +25,9 @@ classdef Compression < types.untyped.datapipe.Properties
         end
     end
     
-    %% Filter
-    methods
-        function addTo(obj, dcpl)
-            H5P.set_deflate(dcpl, obj.level);
-        end
-        
-        function name = getName(~)
-            name = 'compression';
-        end
-        
-        function tf = isInDcpl(~, dcpl)
+    %% Property
+    methods (Static)
+        function tf = isInDcpl(dcpl)
             import types.untyped.datapipe.properties.Compression;
             tf = false;
             
@@ -47,6 +39,12 @@ classdef Compression < types.untyped.datapipe.Properties
                     return;
                 end
             end
+        end
+    end
+    
+    methods
+        function addTo(obj, dcpl)
+            H5P.set_deflate(dcpl, obj.level);
         end
     end
 end

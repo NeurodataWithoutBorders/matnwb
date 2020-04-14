@@ -8,7 +8,7 @@ classdef BlueprintPipe < types.untyped.datapipe.Pipe
     end
     
     properties (SetAccess = private)
-        pipeProperties = types.untyped.datapipe.Property.empty;
+        pipeProperties = {};
     end
     
     methods % lifecycle
@@ -44,15 +44,15 @@ classdef BlueprintPipe < types.untyped.datapipe.Pipe
     end
     
     methods
-        function addProperties(obj, varargin)
+        function addPipeProperties(obj, varargin)
             for i = 1:length(varargin)
-                obj.addProperty(varargin{i});
+                obj.addPipeProperty(varargin{i});
             end
         end
         
-        function tf = hasProperty(name)
+        function tf = hasPipeProperty(obj, name)
             for i = 1:length(obj.pipeProperties)
-                if strcmp(name, obj.pipeProperties(i).getName())
+                if isa(obj.pipeProperties{i}, name)
                     tf = true;
                     return;
                 end
@@ -62,30 +62,42 @@ classdef BlueprintPipe < types.untyped.datapipe.Pipe
     end
     
     methods (Access = private)
-        function addProperty(obj, prop)
+        function addPipeProperty(obj, prop)
             assert(isa(prop, 'types.untyped.datapipe.Property'),...
                 'Can only add filters.');
             
             for i = 1:length(obj.pipeProperties)
-                if strcmp(obj.pipeProperties(i).getName(), prop.getName())
-                    obj.filters(i) = prop;
+                if isa(prop, class(obj.pipeProperties{i}))
+                    obj.pipeProperties{i} = prop;
                     return;
                 end
             end
-            obj.pipeProperties(end+1) = prop;
+            obj.pipeProperties{end+1} = prop;
         end
         
         function dcpl = makeDcpl(obj)
             dcpl = H5P.create('H5P_DATASET_CREATE');
-            for i = 1:length(values(obj.filters))
-                obj.pipeProperties(i).addTo(dcpl);
+            for i = 1:length(obj.pipeProperties)
+                obj.pipeProperties{i}.addTo(dcpl);
             end
         end
     end
     
-    methods % exportable
-        function export(obj, fid, fullpath, ~) % standard export function
-            import types.untyped.datapipe.Configuration;
+    %% Pipe
+    methods
+        function append(~, ~)
+            error('NWB:Untyped:DataPipe:Blueprint:CannotAppend',...
+                'BlueprintPipes must be exported before ');
+        end
+        
+        function config = getConfig(obj)
+            config = obj.config;
+        end
+        
+        function pipe = write(obj, fid, fullpath) % standard export function
+            import types.untyped.datapipe.Configuration;      
+            import types.untyped.datapipe.properties.Chunking;
+            import types.untyped.datapipe.guessChunkSize;
             errorId = 'NWB:Untyped:DataPipe:Blueprint:CannotExport';
             
             if isempty(obj.config)
@@ -98,9 +110,13 @@ classdef BlueprintPipe < types.untyped.datapipe.Pipe
             
             if ~isempty(obj.data)
                 formatDataSize = strjoin(...
-                    cellfun(@num2str, num2cell(size(obj.data))), ', ');
+                    cellfun(@num2str, num2cell(size(obj.data)),...
+                    'UniformOutput', false),...
+                    ', ');
                 formatMaxSize = strjoin(...
-                    cellfun(@num2str, num2cell(maxSize)), ', ');
+                    cellfun(@num2str, num2cell(maxSize),...
+                    'UniformOutput', false),...
+                    ', ');
                 assert(length(size(obj.data)) == length(maxSize)...
                     && all(size(obj.data) <= maxSize),...
                     errorId, ['Data size must be bound by maxSize.\n'...
@@ -110,8 +126,16 @@ classdef BlueprintPipe < types.untyped.datapipe.Pipe
             
             dataType = config.dataType; %#ok<PROPLC>
             tid = io.getBaseType(dataType);
+            
             sid = allocateSpace(maxSize);
+            
             lcpl = 'H5P_DEFAULT';
+            
+            if ~obj.hasPipeProperty(...
+                    'types.untyped.datapipe.properties.Chunking')
+                obj.addPipeProperty(...
+                    Chunking(guessChunkSize(dataType, maxSize)));
+            end
             dcpl = obj.makeDcpl();
             dapl = 'H5P_DEFAULT';
             did = H5D.create(fid, fullpath, tid, sid, lcpl, dcpl, dapl);
@@ -122,18 +146,12 @@ classdef BlueprintPipe < types.untyped.datapipe.Pipe
             if ~ischar(tid)
                 H5T.close(tid);
             end
-            
-            % since you can't reassign obj.data while filename and path are bound
-            % we set a temporary variable here instead and relinquish the data
-            % from the object.  That way, the memory is cleaned up.
-            queued = obj.data;
-            emptySize = maxSize;
-            emptySize(1) = 0;
-            obj.data = zeros(emptySize, dataType);
-            % bind to this file.
-            obj.filename = H5F.get_name(fid);
-            obj.path = fullpath;
-            obj.append(queued);
+
+            pipe = types.untyped.datapipe.BoundPipe(...
+                H5F.get_name(fid), fullpath, obj.config);
+            if ~isempty(obj.data)
+                pipe.append(cast(obj.data, obj.config.dataType));
+            end
         end
     end
 end

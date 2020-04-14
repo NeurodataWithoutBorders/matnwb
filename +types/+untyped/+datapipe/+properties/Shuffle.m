@@ -1,21 +1,13 @@
-classdef Shuffle < types.untyped.datapipe.Properties
+classdef Shuffle < types.untyped.datapipe.Property
     %SHUFFLE Shuffle Filter
     
     properties (Constant)
         FILTER_NAME = 'H5Z_FILTER_SHUFFLE';
     end
     
-    %% Filter
-    methods
-        function addTo(~, dcpl)
-            H5P.set_shuffle(dcpl);
-        end
-        
-        function name = getName(~)
-            name = 'shuffle';
-        end
-        
-        function tf = isInPropertyList(obj, dcpl)
+    %% Properties
+    methods (Static)
+        function tf = isInDcpl(dcpl)
             import types.untyped.datapipe.properties.Shuffle;
             
             tf = false;
@@ -27,6 +19,12 @@ classdef Shuffle < types.untyped.datapipe.Properties
                     return;
                 end
             end
+        end
+    end
+    
+    methods
+        function addTo(~, dcpl)
+            H5P.set_shuffle(dcpl);
         end
     end
 end

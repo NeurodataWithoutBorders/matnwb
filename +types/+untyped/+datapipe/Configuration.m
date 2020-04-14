@@ -32,8 +32,9 @@ classdef Configuration < handle
         dataType = 'double'; % data type of the incoming data.
     end
     
-    properties (SetAccess = immutable) % max size on disk
-        maxSize;
+    properties (SetAccess = immutable)
+        maxSize; % max size on disk
+        chunkSize; % size of adjacent data chunks
     end
     
     properties (Constant)

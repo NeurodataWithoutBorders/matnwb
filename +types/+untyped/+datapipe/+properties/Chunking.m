@@ -1,4 +1,4 @@
-classdef Chunking < types.untyped.datapipe.Properties
+classdef Chunking < types.untyped.datapipe.Property
     %CHUNKING Dataset chunking
     
     methods (Static)
@@ -30,17 +30,15 @@ classdef Chunking < types.untyped.datapipe.Properties
     end
     
     %% Properties
+    methods (Static)
+        function tf = isInDcpl(dcpl)
+            tf = H5ML.get_constant_value('H5D_CHUNKED') == H5P.get_layout(dcpl);
+        end
+    end
+    
     methods
         function addTo(obj, dcpl)
             H5P.set_chunk(dcpl, fliplr(obj.chunkSize));
-        end
-        
-        function name = getName(~)
-            name = 'chunking';
-        end
-        
-        function tf = isInDcpl(~, dcpl)
-            tf = H5ML.get_constant_value('H5D_CHUNKED') == H5P.get_layout(dcpl);
         end
     end
 end
