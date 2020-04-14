@@ -9,6 +9,13 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
         pipeProperties = {};
     end
     
+    properties (SetAccess = private, Dependent)
+        axis;
+        offset;
+        dataType;
+        maxSize;
+    end
+    
     methods % lifecycle
         function obj = BoundPipe(filename, path, varargin)
             import types.untyped.datapipe.Configuration;
@@ -54,6 +61,24 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
             H5P.close(pid);
             H5D.close(did);
             H5F.close(fid);
+        end
+    end
+    
+    methods % set/get
+        function val = get.axis(obj)
+            val = obj.config.axis;
+        end
+        
+        function val = get.offset(obj)
+            val = obj.config.offset;
+        end
+        
+        function val = get.dataType(obj)
+            val = obj.config.dataType;
+        end
+        
+        function val = get.maxSize(obj)
+            val = obj.config.maxSize;
         end
     end
     
@@ -159,8 +184,34 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
             obj.config.offset = obj.config.offset + data_size(obj.config.axis);
         end
         
-        function config = getConfig(obj)
-            config = obj.config;
+        function property = getPipeProperty(obj, type)
+            property = [];
+            for i = 1:length(obj.pipeProperties)
+                if isa(obj.pipeProperties{i}, type)
+                    property = obj.pipeProperties{i};
+                    return;
+                end
+            end
+        end
+        
+        function setPipeProperty(~, ~)
+            error('NWB:Untyped:DataPipe:BoundPipe:CannotSetPipeProperty',...
+                'Bound pipes cannot override their pipe properties.');
+        end
+        
+        function tf = hasPipeProperty(obj, name)
+            for i = 1:length(obj.pipeProperties)
+                if isa(obj.pipeProperties{i}, name)
+                    tf = true;
+                    return;
+                end
+            end
+            tf = false;
+        end
+        
+        function removePipeProperty(~, ~)
+            error('NWB:Untyped:DataPipe:BoundPipe:CannotSetPipeProperty',...
+                'Bound pipes cannot remove pipe properties.');
         end
         
         function obj = write(obj, ~, ~)

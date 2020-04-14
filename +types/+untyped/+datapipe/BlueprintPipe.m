@@ -4,11 +4,18 @@ classdef BlueprintPipe < types.untyped.datapipe.Pipe
     
     properties
         data = []; % queued data
-        config = types.untyped.datapipe.Configuration.empty;
     end
     
     properties (SetAccess = private)
         pipeProperties = {};
+        config = types.untyped.datapipe.Configuration.empty;
+    end
+    
+    properties (Dependent)
+        axis;
+        offset;
+        dataType;
+        maxSize;
     end
     
     methods % lifecycle
@@ -25,14 +32,6 @@ classdef BlueprintPipe < types.untyped.datapipe.Pipe
     end
     
     methods % set/get
-        function set.config(obj, val)
-            assert(isa(val, 'types.untyped.datapipe.Configuration'),...
-                'NWB:Untyped:DataPipe:Blueprint:InvalidConfiguration',...
-                ['config property must be a '...
-                'types.untyped.datapipe.Configuration object.']);
-            obj.config = val;
-        end
-        
         function set.data(obj, val)
             import types.untyped.datapipe.Configuration;
             assert(any(strcmp(class(val), Configuration.SUPPORTED_DATATYPES)),...
@@ -41,40 +40,45 @@ classdef BlueprintPipe < types.untyped.datapipe.Pipe
                 strjoin(Configuration.SUPPORTED_DATATYPES, '|'));
             obj.data = val;
         end
+        
+        function val = get.axis(obj)
+            val = obj.config.axis;
+        end
+        
+        function set.axis(obj, val)
+            obj.config.axis = val;
+        end
+        
+        function val = get.offset(obj)
+            val = obj.config.offset;
+        end
+        
+        function set.offset(obj, val)
+            obj.config.offset = val;
+        end
+        
+        function val = get.dataType(obj)
+            val = obj.config.dataType;
+        end
+        
+        function set.dataType(obj, val)
+            obj.config.dataType = val;
+        end
+        
+        function val = get.maxSize(obj)
+            val = obj.config.maxSize;
+        end
     end
     
     methods
-        function addPipeProperties(obj, varargin)
+        function setPipeProperties(obj, varargin)
             for i = 1:length(varargin)
-                obj.addPipeProperty(varargin{i});
+                obj.setPipeProperty(varargin{i});
             end
-        end
-        
-        function tf = hasPipeProperty(obj, name)
-            for i = 1:length(obj.pipeProperties)
-                if isa(obj.pipeProperties{i}, name)
-                    tf = true;
-                    return;
-                end
-            end
-            tf = false;
         end
     end
     
     methods (Access = private)
-        function addPipeProperty(obj, prop)
-            assert(isa(prop, 'types.untyped.datapipe.Property'),...
-                'Can only add filters.');
-            
-            for i = 1:length(obj.pipeProperties)
-                if isa(prop, class(obj.pipeProperties{i}))
-                    obj.pipeProperties{i} = prop;
-                    return;
-                end
-            end
-            obj.pipeProperties{end+1} = prop;
-        end
-        
         function dcpl = makeDcpl(obj)
             dcpl = H5P.create('H5P_DATASET_CREATE');
             for i = 1:length(obj.pipeProperties)
@@ -87,14 +91,52 @@ classdef BlueprintPipe < types.untyped.datapipe.Pipe
     methods
         function append(~, ~)
             error('NWB:Untyped:DataPipe:Blueprint:CannotAppend',...
-                'BlueprintPipes must be exported before ');
+                ['Blueprint Datapipes cannot be appended to.  '...
+                'Export the DataPipe to append.']);
         end
         
-        function config = getConfig(obj)
-            config = obj.config;
+         function setPipeProperty(obj, prop)
+            assert(isa(prop, 'types.untyped.datapipe.Property'),...
+                'Can only add filters.');
+            
+            for i = 1:length(obj.pipeProperties)
+                if isa(prop, class(obj.pipeProperties{i}))
+                    obj.pipeProperties{i} = prop;
+                    return;
+                end
+            end
+            obj.pipeProperties{end+1} = prop;
+         end
+        
+        function property = getPipeProperty(obj, type)
+            property = [];
+            for i = 1:length(obj.pipeProperties)
+                if isa(obj.pipeProperties{i}, type)
+                    property = obj.pipeProperties{i};
+                    return;
+                end
+            end
         end
         
-        function pipe = write(obj, fid, fullpath) % standard export function
+        function tf = hasPipeProperty(obj, name)
+            for i = 1:length(obj.pipeProperties)
+                if isa(obj.pipeProperties{i}, name)
+                    tf = true;
+                    return;
+                end
+            end
+            tf = false;
+        end
+        
+        function removePipeProperty(obj, type)
+            found = false(size(obj.pipeProperties));
+            for i = 1:length(obj.pipeProperties)
+                found = isa(obj.pipeProperties{i}, type);
+            end
+            obj.pipeProperties(found) = [];
+        end
+        
+        function pipe = write(obj, fid, fullpath)
             import types.untyped.datapipe.Configuration;      
             import types.untyped.datapipe.properties.Chunking;
             import types.untyped.datapipe.guessChunkSize;
@@ -146,11 +188,12 @@ classdef BlueprintPipe < types.untyped.datapipe.Pipe
             if ~ischar(tid)
                 H5T.close(tid);
             end
-
+            
+            cached = obj.data;
             pipe = types.untyped.datapipe.BoundPipe(...
                 H5F.get_name(fid), fullpath, obj.config);
-            if ~isempty(obj.data)
-                pipe.append(cast(obj.data, obj.config.dataType));
+            if ~isempty(cached)
+                pipe.append(cast(cached, obj.config.dataType));
             end
         end
     end

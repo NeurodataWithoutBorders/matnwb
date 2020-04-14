@@ -4,7 +4,10 @@ classdef Pipe < handle
     methods (Abstract)
         pipe = write(obj, fid, fullpath);
         append(obj, data);
-        config = getConfig(obj);
+        tf = hasPipeProperty(obj, type);
+        property = getPipeProperty(obj, type);
+        setPipeProperty(obj, property);
+        removePipeProperty(obj, type);
     end
 end
 
