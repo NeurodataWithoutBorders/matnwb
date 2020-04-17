@@ -148,8 +148,16 @@ class ImagingPlaneIOTest(PyNWBIOTest):
     def addContainer(self, file):
         dev1 = file.create_device('imaging_device_1', 'dev1 description')
         oc = OpticalChannel('optchan1', 'a fake OpticalChannel', 3.14)
-        ip = file.create_imaging_plane('imgpln1', oc, 'a fake ImagingPlane',
-                                       dev1, 6.28, 2.718, 'GFP', 'somewhere in the brain')
+        ip = file.create_imaging_plane(
+            'imgpln1',
+            oc,
+            description = 'a fake ImagingPlane',
+            device = dev1,
+            excitation_lambda = 6.28,
+            indicator = 'GFP',
+            location = 'somewhere in the brain',
+            imaging_rate = 2.718)
+            
         return ip
 
     def getContainer(self, file):
@@ -160,8 +168,15 @@ class PhotonSeriesIOTest(PyNWBIOTest):
     def addContainer(self, file):
         dev1 = file.create_device('dev1', 'dev1 description')
         oc = OpticalChannel('optchan1', 'a fake OpticalChannel', 3.14)
-        ip = file.create_imaging_plane('imgpln1', oc, 'a fake ImagingPlane',
-                                       dev1, 6.28, 2.718, 'GFP', 'somewhere in the brain')
+        ip = file.create_imaging_plane(
+            'imgpln1',
+            oc,
+            description = 'a fake ImagingPlane',
+            device = dev1,
+            excitation_lambda = 6.28,
+            indicator = 'GFP',
+            location = 'somewhere in the brain',
+            imaging_rate = 2.718)
         data = np.ones((3, 3, 3))
         timestamps = list(range(10))
         fov = [2.0, 2.0, 5.0]
