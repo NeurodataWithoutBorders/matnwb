@@ -1,7 +1,7 @@
 classdef PhotonSeriesIOTest < tests.system.PyNWBIOTest & tests.system.AmendTest
     methods
         function addContainer(testCase, file) %#ok<INUSL>
-            dev = types.core.Device();
+            dev = types.core.Device('description', 'dev1 description');
             
             oc = types.core.OpticalChannel( ...
                 'description', 'a fake OpticalChannel', ...

@@ -1,7 +1,8 @@
 classdef ElectrodeGroupIOTest < tests.system.PyNWBIOTest
     methods
         function addContainer(testCase, file) %#ok<INUSL>
-            dev = types.core.Device();
+            % Device description is for pynwb compatibility
+            dev = types.core.Device('description', 'dev1 description');
             file.general_devices.set('dev1', dev);
             eg = types.core.ElectrodeGroup( ...
                 'description', 'a test ElectrodeGroup', ...
