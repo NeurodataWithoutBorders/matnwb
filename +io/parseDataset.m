@@ -27,9 +27,17 @@ if strcmp(datatype.Class, 'H5T_REFERENCE')
     data = io.parseReference(did, tid, H5D.read(did));
     H5T.close(tid);
 elseif ~strcmp(dataspace.Type, 'simple')
+    tid = H5D.get_type(did);
     data = H5D.read(did);
-    if iscellstr(data) && 1 == length(data)
+    typename = io.getMatlabType(tid);
+    if iscell(data)
         data = data{1};
+    end
+    
+    % logicals don't exist in H5 so we use the h5py standard of a uint8-backed 
+    % enum of 'TRUE' and 'FALSE'
+    if strcmp(typename, 'logical')
+        data = H5T.enum_valueof(tid, data);
     elseif ischar(data)
         if datetime(version('-date')) < datetime('25-Feb-2020')
             % MATLAB 2020a fixed string support for HDF5, making reading strings
@@ -42,6 +50,7 @@ elseif ~strcmp(dataspace.Type, 'simple')
             data = strtrim(mat2cell(data, ones(datadim(1), 1), datadim(2)));
         end
     end
+    H5T.close(tid);
 elseif strcmp(dataspace.Type, 'simple') && any(dataspace.Size == 0)
     data = [];
 else

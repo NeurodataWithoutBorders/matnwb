@@ -9,6 +9,7 @@ ncol = H5T.get_nmembers(tid);
 subtids = cell(1, ncol);
 ref_i = false(1, ncol);
 char_i = false(1, ncol);
+enumType = cell(1, ncol);
 for i = 1:ncol
     subtid = H5T.get_member_type(tid, i-1);
     subtids{i} = subtid;
@@ -19,9 +20,12 @@ for i = 1:ncol
             %if not variable len (which would make it a cell array)
             %then mark for transpose
             char_i(i) = ~H5T.is_variable_str(subtid);
+        case H5ML.get_constant_value('H5T_ENUM')
+            enumType{i} = H5T.copy(subtid);
         otherwise
             %do nothing
     end
+    H5T.close(subtid);
 end
 propnames = fieldnames(data);
 if any(ref_i)
@@ -49,5 +53,40 @@ if any(char_i)
         data.(cpname) = data.(cpname) .';
     end
 end
+
+for i = 1:length(enumType)
+    subtid = enumType{i};
+    if isempty(subtid)
+        continue;
+    end
+    
+    name = propnames{i};
+    columnData = data.(name);
+    for j = 1:numel(columnData)
+        value = H5T.enum_valueof(subtid, columnData{j});
+        if strcmp(subtid, 'logical')
+            columnData{j} = logical()
+        else
+            columnData{j} = cast(H5T.
+        end
+        columnData{j} = columnData{j}
+    end
+    data.(name) = columnData;
+    H5T.close(subtid);
+end
+    
+if any(enumType)
+    % convert enums from name to their root value.
+    enumPropNames = propnames(enumType);
+    for i=1:length(enumPropNames)
+        name = enumPropNames{i};
+        
+        for j=1:numel(data.(name))
+            
+        end
+        data.(name) = H5T.enum_valueof(tid, );
+    end
+end
 data = struct2table(data);
+H5T.close(tid);
 end

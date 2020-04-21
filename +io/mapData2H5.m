@@ -49,8 +49,8 @@ switch class(data)
         %will throw errors if refdata DNE.  Caught at NWBData level.
         data = io.getRefData(fid, data);
     case 'logical'
-        %In HDF5, HBOOL is mapped to INT32LE
-        data = int32(data);
+        %In HDF5, HBOOL is mapped to U8LE ENUM
+        data = uint8(data);
     case {'char' 'datetime' 'cell'}
         % yes, datetime can come from cell arrays as well.
         % note, cell strings fall through

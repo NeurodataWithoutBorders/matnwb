@@ -51,12 +51,9 @@ classdef DataStub
             %   DATA = LOAD_H5_STYLE(START,COUNT,STRIDE) reads a strided subset of
             %   data. STRIDE is the inter-element spacing along each
             %   data set extent and defaults to one along each extent.
-            fid = [];
-            did = [];
+            fid = H5F.open(obj.filename);
+            did = H5D.open(fid, obj.path);
             if length(varargin) == 1
-                fid = H5F.open(obj.filename);
-                did = H5D.open(fid, obj.path);
-                
                 sid = varargin{1};
                 numBlocks = H5S.get_select_hyper_nblocks(sid);
                 % in event of multiple hyperslab selections, return as a cell array
@@ -86,29 +83,30 @@ classdef DataStub
             else
                 data = h5read(obj.filename, obj.path, varargin{:});
                 
-                % dataset strings are defaulted to cell arrays regardless of size
-                if iscellstr(data) && isscalar(data)
+                if iscell(data) && isscalar(data)
                     data = data{1};
                 end
             end
             
             if isstruct(data)
-                if length(varargin) ~= 1
-                    fid = H5F.open(obj.filename);
-                    did = H5D.open(fid, obj.path);
-                end
                 fsid = H5D.get_space(did);
                 data = H5D.read(did, 'H5ML_DEFAULT', fsid, fsid,...
                     'H5P_DEFAULT');
                 data = io.parseCompound(did, data);
                 H5S.close(fsid);
             end
-            if ~isempty(fid)
-                H5F.close(fid);
+            
+            tid = H5D.get_type(did);
+            if strcmp(io.getMatlabType(tid), 'logical')
+                % at this point, data is a huge cell array of strings.
+                for i = 1:numel(data)
+                    data{i} = 
+                end
             end
-            if ~isempty(did)
-                H5D.close(did);
-            end
+            
+            H5T.close(tid);
+            H5D.close(did);
+            H5F.close(fid);
         end
         
         function data = load(obj, varargin)

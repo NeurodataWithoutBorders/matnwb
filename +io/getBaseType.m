@@ -14,7 +14,11 @@ elseif strcmp(type, 'double')
 elseif strcmp(type, 'single')
     id = 'H5T_IEEE_F32LE';
 elseif strcmp(type, 'logical')
-    id = 'H5T_STD_I32LE';
+    parentId = H5T.copy('H5T_STD_U8LE');
+    id = H5T.enum_create(parentId);
+    H5T.enum_insert(id, 'TRUE', 1);
+    H5T.enum_insert(id, 'FALSE', 0);
+    H5T.close(parentId);
 elseif startsWith(type, {'int' 'uint'})
     prefix = 'H5T_STD_';
     pattern = 'int%d';
