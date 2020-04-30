@@ -35,6 +35,8 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
                 current_size = [current_size 1];
                 max_size = [max_size 1];
             end
+            h5_unlimited = H5ML.get_constant_value('H5S_UNLIMITED');
+            max_size(max_size == h5_unlimited) = Inf;
             
             if isempty(varargin)
                 obj.config = Configuration(max_size);

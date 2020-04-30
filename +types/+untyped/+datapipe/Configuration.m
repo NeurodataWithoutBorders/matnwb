@@ -44,7 +44,8 @@ classdef Configuration < handle
     
     methods
         function obj = Configuration(maxSize)
-            assert(isnumeric(maxSize), 'maxSize must be numeric');
+            assert(isnumeric(maxSize) && all(maxSize > 0),...
+                'maxSize must be positive and numeric.');
             obj.maxSize = maxSize;
         end
     end
