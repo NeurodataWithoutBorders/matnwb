@@ -52,11 +52,18 @@ else
         'Error while checking space settings from dataset: %d', output);
     
     pid = H5D.get_create_plist(did);
-    if H5P.get_layout(did) == H5ML.get_constant_value('H5D_CHUNKED')
-        data = types.untyped.DataPipe.fromFile(filename, fullpath);
+    isChunked = H5P.get_layout(pid) == H5ML.get_constant_value('H5D_CHUNKED');
+    
+    tid = H5D.get_type(did);
+    class_id = H5T.get_class(tid);
+    isNumeric = class_id == H5ML.get_constant_value('H5T_INTEGER')...
+        || class_id == H5ML.get_constant_value('H5T_FLOAT');
+    if isChunked && isNumeric
+        data = types.untyped.DataPipe('filename', filename, 'path', fullpath);
     else
         data = types.untyped.DataStub(filename, fullpath);
     end
+    H5T.close(tid);
     H5P.close(pid);
     H5S.close(sid);
 end
