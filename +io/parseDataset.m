@@ -42,15 +42,8 @@ elseif ~strcmp(dataspace.Type, 'simple')
             data = strtrim(mat2cell(data, ones(datadim(1), 1), datadim(2)));
         end
     end
-elseif strcmp(dataspace.Type, 'simple') && any(dataspace.Size == 0)
-    data = [];
 else
     sid = H5D.get_space(did);
-    output = H5S.is_simple(sid);
-    assert(output >= 0,...
-        'NWB:IO:ParseDataset:SpaceCheckFailed',...
-        'Error while checking space settings from dataset: %d', output);
-    
     pid = H5D.get_create_plist(did);
     isChunked = H5P.get_layout(pid) == H5ML.get_constant_value('H5D_CHUNKED');
     
@@ -60,6 +53,8 @@ else
         || class_id == H5ML.get_constant_value('H5T_FLOAT');
     if isChunked && isNumeric
         data = types.untyped.DataPipe('filename', filename, 'path', fullpath);
+    elseif any(dataspace.Size == 0)
+        data = [];
     else
         data = types.untyped.DataStub(filename, fullpath);
     end
