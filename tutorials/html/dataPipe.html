@@ -1,0 +1,458 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Neurodata Without Borders: Neurophysiology (NWB:N), Compression using DataPipe</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2020-05-05"><meta name="DC.source" content="dataPipe.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Neurodata Without Borders: Neurophysiology (NWB:N), Compression using DataPipe</h1><!--introduction--><p>How to utilize HDF5 compression using dataPipe</p><pre>author: Ivan Smalianchuk
+contact: smalianchuk.ivan@gmail.com
+last edited: May 05, 2020</pre><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">Basic Implementation</a></li><li><a href="#4">Arguments</a></li><li><a href="#5">Iterative Writing</a></li><li><a href="#9">Chunking</a></li><li><a href="#12">Examples</a></li><li><a href="#13">Calcium imaging data</a></li><li><a href="#14">Electrophysiology timeseries</a></li></ul></div><p>This tutorial will demonstate how to use DataPipe to compress data for storage in a NWB file.</p><h2 id="2">Basic Implementation</h2><p>To compress experimental data (in this case a three dimensional matrix with the following dimensions [250 250 70]) one must assign it as a DataPipe type:</p><pre class="codeinput">DataToCompress = randi(100,250,250,70);
+maxSize = size(DataToCompress);
+DataPipe=types.untyped.DataPipe(maxSize,<span class="keyword">...</span>
+    <span class="string">'data'</span>, DataToCompress,<span class="keyword">...</span>
+    <span class="string">'axis'</span>, 1);
+</pre><p>To optimize compression, compressionLevel and chunkSize must be considered. compressionLevel ranges from 0 - 9 where 9 is the highest level of compression and 0 is the lowest. chunkSize is less intuitive to adjust; to implement compression, chunk size must be less than data size. The above example uses default chunk size and compression level.</p><h2 id="4">Arguments</h2><p>
+<table border=1>
+<tr><td><em>Data</em></td><td>The data to compress. Must be numerical data. This is a required argument.</td></tr>
+<tr><td><em>axis</em></td><td>Set which axis to increment when appending more data. This is a required argument.</td></tr>
+<tr><td><em>dataType</em></td><td>Sets the type of the experimental data. This must be a numeric data type. Useful to include when using iterative write to append data; as the appended data must be the same data type.</td></tr>
+<tr><td><em>chunkSize</em></td><td>Sets chunk size for the compression. Must be less than maxSize for any compression level >0. More on chunk size below. (link to section)</td></tr>
+<tr><td><em>compressionLevel</em></td><td>Level of compression ranging from 0-9 where 9 is the highest level of compression. Matlab usually uses compression level 3.</td></tr>
+<tr><td><em>maxSize</em></td><td>This sets the size of the compressed matrix. Unless using iterative writing, this should match the size of Data. To append data later, use the maxSize for the full dataset.</td></tr>
+<tr><td><em>offset</em></td><td>Axis offset of dataset to append. May be used to overwrite data.</td></tr></table>
+</p><h2 id="5">Iterative Writing</h2><p>If experimental data is close to, or exceeds the available system memory, performance issues may arise. To combat this effect of large data, dataPipe can utilize iterative writing, where only a portion of the data is first compressed and saved, and then additional portions are appended.</p><p>To demonstrate, we can create a nwb file with a compressed time series data:</p><pre class="codeinput">dataPart1=randi(250,10000,1); <span class="comment">% "load" 1/4 of the entire dataset</span>
+fullDataSize=[40000 1]; <span class="comment">% this is the size of the TOTAL dataset</span>
+
+<span class="comment">% create an nwb structure with required fields</span>
+nwb=NwbFile(<span class="keyword">...</span>
+    <span class="string">'session_start_time'</span>,<span class="string">'2020-01-01 00:00:00'</span>,<span class="keyword">...</span>
+    <span class="string">'identifier'</span>,<span class="string">'ident1'</span>,<span class="keyword">...</span>
+    <span class="string">'session_description'</span>,<span class="string">'DataPipeTutorial'</span>);
+
+ephys_module = types.core.ProcessingModule(<span class="keyword">...</span>
+    <span class="string">'description'</span>, <span class="string">'holds processed ephys data'</span>);
+
+nwb.processing.set(<span class="string">'ephys'</span>, ephys_module);
+
+<span class="comment">% compress the data</span>
+fData_use=types.untyped.DataPipe(fullDataSize,<span class="keyword">...</span>
+    <span class="string">'data'</span>, dataPart1,<span class="keyword">...</span>
+    <span class="string">'axis'</span>, 1);
+
+<span class="comment">%Set the compressed data as a time series</span>
+fdataNWB=types.core.TimeSeries(<span class="keyword">...</span>
+    <span class="string">'data'</span>, fData_use,<span class="keyword">...</span>
+    <span class="string">'data_unit'</span>,<span class="string">'mV'</span>);
+
+ephys_module.nwbdatainterface.set(<span class="string">'data'</span>, fdataNWB);
+nwb.processing.set(<span class="string">'ephys'</span>, ephys_module);
+
+nwbExport(nwb, <span class="string">'DataPipeTutorial_iterate.nwb'</span>);
+</pre><p>To append the rest of the data, simply load the NWB file and use the append method:</p><pre class="codeinput">nwb=nwbRead(<span class="string">'DataPipeTutorial_iterate.nwb'</span>); <span class="comment">%load the nwb file with partial data</span>
+
+<span class="comment">% "load" each of the remaining 1/4ths of the large dataset</span>
+<span class="keyword">for</span> i=2:4 <span class="comment">% iterating through parts of data</span>
+    dataPart_i=randi(250,10000,1); <span class="comment">% faked data chunk as if it was loaded</span>
+    nwb.processing.get(<span class="string">'ephys'</span>).nwbdatainterface.get(<span class="string">'data'</span>).data.append(dataPart_i) <span class="comment">% append the loaded data</span>
+<span class="keyword">end</span>
+</pre><p>The axis property defines the dimension in which additional data will be appended. In the above example, the resulting dataset will be 4000x1. However, if we set axis to 2 (and change fullDataSize appropriately), then the resulting dataset will be 1000x4.</p><h2 id="9">Chunking</h2><p>If chunkSize is not explicitly specified, dataPipe will determine an appropriate chunk size. However, you can optimize the performance of the compression by manually specifying the chunk size using <i>chunkSize</i> argument.</p><p>We can demonstrate the benefit of chunking by exploring the following scenario. The following code utilizes dataPipe&#8217;s default chunk size:</p><pre class="codeinput">fData=randi(250,1000,1000); <span class="comment">% Create fake data</span>
+
+<span class="comment">% create an nwb structure with required fields</span>
+nwb=NwbFile(<span class="keyword">...</span>
+    <span class="string">'session_start_time'</span>,<span class="string">'2020-01-01 00:00:00'</span>,<span class="keyword">...</span>
+    <span class="string">'identifier'</span>,<span class="string">'ident1'</span>,<span class="keyword">...</span>
+    <span class="string">'session_description'</span>,<span class="string">'DataPipeTutorial'</span>);
+
+ephys_module = types.core.ProcessingModule(<span class="keyword">...</span>
+    <span class="string">'description'</span>, <span class="string">'holds processed ephys data'</span>);
+
+nwb.processing.set(<span class="string">'ephys'</span>, ephys_module);
+
+fData_compressed=types.untyped.DataPipe(size(fData),<span class="keyword">...</span>
+    <span class="string">'data'</span>, fData,<span class="keyword">...</span>
+    <span class="string">'axis'</span>, 1);
+
+fdataNWB=types.core.TimeSeries(<span class="keyword">...</span>
+    <span class="string">'data'</span>, fData_compressed,<span class="keyword">...</span>
+    <span class="string">'data_unit'</span>,<span class="string">'mV'</span>);
+
+ephys_module.nwbdatainterface.set(<span class="string">'data'</span>, fdataNWB);
+nwb.processing.set(<span class="string">'ephys'</span>, ephys_module);
+
+nwbExport(nwb, <span class="string">'DefaultChunks.nwb'</span>);
+</pre><p>This results in a file size of 47MB (too large), but the process takes 11 seconds (far too long).Setting the chunk size manually as in the example code below resolves these issues:</p><pre class="codeinput">fData_compressed=types.untyped.DataPipe(size(fData),<span class="keyword">...</span>
+    <span class="string">'data'</span>, fData,<span class="keyword">...</span>
+    <span class="string">'chunkSize'</span>, [1,1000],<span class="keyword">...</span>
+    <span class="string">'axis'</span>, 1);
+</pre><p>This change results in the operation completing in 0.7 seconds and resulting file size of 1.1MB. The chunk size was chosen such that it spans each individual row of the set; however, the performance will increase for any value such that &#8216;size(fData)&#8217; is a multiple of chunk size.</p><h2 id="12">Examples</h2><h2 id="13">Calcium imaging data</h2><p>Following is an example of how to compress and add calcium imaging data to an NWB file:</p><pre class="codeinput">fData=randi(250,250,10000); <span class="comment">% create fake data; for example ROI response series</span>
+n_rois=250;
+
+<span class="comment">%create an nwb structure with required fields</span>
+nwb=NwbFile(<span class="keyword">...</span>
+    <span class="string">'session_start_time'</span>,<span class="string">'2020-01-01 00:00:00'</span>,<span class="keyword">...</span>
+    <span class="string">'identifier'</span>,<span class="string">'ident1'</span>,<span class="keyword">...</span>
+    <span class="string">'session_description'</span>,<span class="string">'DataPipeTutorial'</span>);
+
+<span class="comment">%start and set an ophys module to work with your data</span>
+ophys_module = types.core.ProcessingModule(<span class="keyword">...</span>
+    <span class="string">'description'</span>, <span class="string">'holds processed imaging data'</span>);
+nwb.processing.set(<span class="string">'ophys'</span>, ophys_module);
+
+<span class="comment">%Set appropriate parameters for your RoiResponseSeries data</span>
+fluorescence = types.core.Fluorescence();
+
+object_view = types.untyped.ObjectView( <span class="keyword">...</span>
+    <span class="string">'/processing/ophys/fluorescence/exampleData'</span>);
+
+roi_table_region = types.hdmf_common.DynamicTableRegion( <span class="keyword">...</span>
+    <span class="string">'description'</span>, <span class="string">'all_rois'</span>, <span class="keyword">...</span>
+    <span class="string">'table'</span>,plane_seg_object_view,<span class="keyword">...</span>
+    <span class="string">'data'</span>, [0 n_rois-1]');
+
+<span class="comment">% Compress the data:</span>
+fData_compressed=types.untyped.DataPipe(size(fData),<span class="keyword">...</span>
+    <span class="string">'data'</span>, fData,<span class="keyword">...</span>
+    <span class="string">'dataType'</span>, <span class="string">'uint8'</span>,<span class="keyword">...</span>
+    <span class="string">'compressionLevel'</span>, 3,<span class="keyword">...</span>
+    <span class="string">'chunkSize'</span>, [10 250],<span class="keyword">...</span>
+    <span class="string">'axis'</span>, 1);
+
+<span class="comment">% Assign your fake data</span>
+roi_fData=types.core.RoiResponseSeries(<span class="keyword">...</span>
+    <span class="string">'data'</span>,fData_compressed,<span class="keyword">...</span>
+    <span class="string">'description'</span>,<span class="string">'test'</span>,<span class="keyword">...</span>
+    <span class="string">'data_unit'</span>, <span class="string">'lumens'</span>,<span class="keyword">...</span>
+    <span class="string">'rois'</span>,roi_table_region);
+
+fluorescence.roiresponseseries.set(<span class="string">'exampleData'</span>,roi_fData);   ophys_module.nwbdatainterface.set(<span class="string">'fluorescence'</span>, fluorescence); <span class="comment">%set to the appropriate place in nwb structure</span>
+
+<span class="comment">%assign the whole thing to the nwb structure</span>
+nwb.processing.set(<span class="string">'ophys'</span>, ophys_module);
+
+<span class="comment">%write the file</span>
+nwbExport(nwb, <span class="string">'Compressed.nwb'</span>);
+</pre><h2 id="14">Electrophysiology timeseries</h2><p>Following is an example of how to compress and add calcium imaging data to an NWB file:</p><pre class="codeinput">fData=randi(250,10000,1); <span class="comment">% create fake data;</span>
+
+<span class="comment">%assign data without compression</span>
+nwb=NwbFile(<span class="keyword">...</span>
+    <span class="string">'session_start_time'</span>,<span class="string">'2020-01-01 00:00:00'</span>,<span class="keyword">...</span>
+    <span class="string">'identifier'</span>,<span class="string">'ident1'</span>,<span class="keyword">...</span>
+    <span class="string">'session_description'</span>,<span class="string">'DataPipeTutorial'</span>);
+
+ephys_module = types.core.ProcessingModule(<span class="keyword">...</span>
+    <span class="string">'description'</span>, <span class="string">'holds processed ephys data'</span>);
+
+nwb.processing.set(<span class="string">'ephys'</span>, ephys_module);
+
+<span class="comment">% compress the data</span>
+fData_compressed=types.untyped.DataPipe(size(fData),<span class="keyword">...</span>
+    <span class="string">'data'</span>, fData,<span class="keyword">...</span>
+    <span class="string">'dataType'</span>, <span class="string">'uint8'</span>,<span class="keyword">...</span>
+    <span class="string">'compressionLevel'</span>, 3,<span class="keyword">...</span>
+    <span class="string">'chunkSize'</span>, [100 1],<span class="keyword">...</span>
+    <span class="string">'axis'</span>, 1);
+
+<span class="comment">% Assign the data to appropriate module and write the NWB file</span>
+fdataNWB=types.core.TimeSeries(<span class="keyword">...</span>
+    <span class="string">'data'</span>, fData_compressed,<span class="keyword">...</span>
+    <span class="string">'data_unit'</span>,<span class="string">'mV'</span>);
+
+ephys_module.nwbdatainterface.set(<span class="string">'data'</span>, fdataNWB);
+nwb.processing.set(<span class="string">'ephys'</span>, ephys_module);
+
+<span class="comment">%write the file</span>
+nwbExport(nwb, <span class="string">'Compressed.nwb'</span>);
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Neurodata Without Borders: Neurophysiology (NWB:N), Compression using DataPipe
+% How to utilize HDF5 compression using dataPipe
+%
+%  author: Ivan Smalianchuk
+%  contact: smalianchuk.ivan@gmail.com
+%  last edited: May 05, 2020
+%%
+% This tutorial will demonstate how to use DataPipe to compress data for
+% storage in a NWB file.
+%% Basic Implementation
+% To compress experimental data (in this case a three dimensional matrix
+% with the following dimensions [250 250 70]) one must assign it as a DataPipe type:
+DataToCompress = randi(100,250,250,70);
+maxSize = size(DataToCompress);
+DataPipe=types.untyped.DataPipe(maxSize,...
+    'data', DataToCompress,...
+    'axis', 1);
+
+%%
+% To optimize compression, compressionLevel and chunkSize must be considered.
+% compressionLevel ranges from 0 - 9 where 9 is the highest level of
+% compression and 0 is the lowest. chunkSize is less intuitive to adjust;
+% to implement compression, chunk size must be less than data size. The above
+% example uses default chunk size and compression level.
+%% Arguments
+%
+% <html>
+% <table border=1>
+% <tr><td><em>Data</em></td><td>The data to compress. Must be numerical data. This is a required argument.</td></tr>
+% <tr><td><em>axis</em></td><td>Set which axis to increment when appending more data. This is a required argument.</td></tr>
+% <tr><td><em>dataType</em></td><td>Sets the type of the experimental data. This must be a numeric data type. Useful to include when using iterative write to append data; as the appended data must be the same data type.</td></tr>
+% <tr><td><em>chunkSize</em></td><td>Sets chunk size for the compression. Must be less than maxSize for any compression level >0. More on chunk size below. (link to section)</td></tr>
+% <tr><td><em>compressionLevel</em></td><td>Level of compression ranging from 0-9 where 9 is the highest level of compression. Matlab usually uses compression level 3.</td></tr>
+% <tr><td><em>maxSize</em></td><td>This sets the size of the compressed matrix. Unless using iterative writing, this should match the size of Data. To append data later, use the maxSize for the full dataset.</td></tr>
+% <tr><td><em>offset</em></td><td>Axis offset of dataset to append. May be used to overwrite data.</td></tr></table>
+% </html>
+%% Iterative Writing
+% If experimental data is close to, or exceeds the available system memory,
+% performance issues may arise. To combat this effect of large data,
+% dataPipe can utilize iterative writing, where only a portion of the data
+% is first compressed and saved, and then additional portions are appended.
+%
+% To demonstrate, we can create a nwb file with a compressed time series data:
+%%
+
+dataPart1=randi(250,10000,1); % "load" 1/4 of the entire dataset
+fullDataSize=[40000 1]; % this is the size of the TOTAL dataset
+
+% create an nwb structure with required fields
+nwb=NwbFile(...
+    'session_start_time','2020-01-01 00:00:00',...
+    'identifier','ident1',...
+    'session_description','DataPipeTutorial');
+
+ephys_module = types.core.ProcessingModule(...
+    'description', 'holds processed ephys data');
+
+nwb.processing.set('ephys', ephys_module);
+
+% compress the data
+fData_use=types.untyped.DataPipe(fullDataSize,...
+    'data', dataPart1,...
+    'axis', 1);
+
+%Set the compressed data as a time series
+fdataNWB=types.core.TimeSeries(...
+    'data', fData_use,...
+    'data_unit','mV');
+
+ephys_module.nwbdatainterface.set('data', fdataNWB);
+nwb.processing.set('ephys', ephys_module);
+
+nwbExport(nwb, 'DataPipeTutorial_iterate.nwb');
+%%
+% To append the rest of the data, simply load the NWB file and use the
+% append method:
+
+nwb=nwbRead('DataPipeTutorial_iterate.nwb'); %load the nwb file with partial data
+
+% "load" each of the remaining 1/4ths of the large dataset
+for i=2:4 % iterating through parts of data
+    dataPart_i=randi(250,10000,1); % faked data chunk as if it was loaded
+    nwb.processing.get('ephys').nwbdatainterface.get('data').data.append(dataPart_i) % append the loaded data
+end
+%%
+% The axis property defines the dimension in which additional data will be
+% appended. In the above example, the resulting dataset will be 4000x1.
+% However, if we set axis to 2 (and change fullDataSize appropriately),
+% then the resulting dataset will be 1000x4.
+%
+%% Chunking
+% If chunkSize is not explicitly specified, dataPipe will determine an
+% appropriate chunk size. However, you can optimize the performance of the
+% compression by manually specifying the chunk size using _chunkSize_ argument.
+%
+% We can demonstrate the benefit of chunking by exploring the following
+% scenario. The following code utilizes dataPipe’s default chunk size:
+%
+
+fData=randi(250,1000,1000); % Create fake data
+
+% create an nwb structure with required fields
+nwb=NwbFile(...
+    'session_start_time','2020-01-01 00:00:00',...
+    'identifier','ident1',...
+    'session_description','DataPipeTutorial');
+
+ephys_module = types.core.ProcessingModule(...
+    'description', 'holds processed ephys data');
+
+nwb.processing.set('ephys', ephys_module);
+
+fData_compressed=types.untyped.DataPipe(size(fData),...
+    'data', fData,...
+    'axis', 1);
+
+fdataNWB=types.core.TimeSeries(...
+    'data', fData_compressed,...
+    'data_unit','mV');
+
+ephys_module.nwbdatainterface.set('data', fdataNWB);
+nwb.processing.set('ephys', ephys_module);
+
+nwbExport(nwb, 'DefaultChunks.nwb');
+%%
+% This results in a file size of 47MB (too large), but the process takes
+% 11 seconds (far too long).Setting the chunk size manually as in the
+% example code below resolves these issues:
+
+fData_compressed=types.untyped.DataPipe(size(fData),...
+    'data', fData,...
+    'chunkSize', [1,1000],...
+    'axis', 1);
+%%
+% This change results in the operation completing in 0.7 seconds and
+% resulting file size of 1.1MB. The chunk size was chosen such that it
+% spans each individual row of the set; however, the performance will
+% increase for any value such that ‘size(fData)’ is a multiple of chunk size.
+%
+%% Examples
+%% Calcium imaging data
+% Following is an example of how to compress and add calcium imaging data
+% to an NWB file:
+%
+
+fData=randi(250,250,10000); % create fake data; for example ROI response series
+n_rois=250;
+
+%create an nwb structure with required fields
+nwb=NwbFile(...
+    'session_start_time','2020-01-01 00:00:00',...
+    'identifier','ident1',...
+    'session_description','DataPipeTutorial');
+
+%start and set an ophys module to work with your data
+ophys_module = types.core.ProcessingModule(...
+    'description', 'holds processed imaging data');
+nwb.processing.set('ophys', ophys_module);
+
+%Set appropriate parameters for your RoiResponseSeries data
+fluorescence = types.core.Fluorescence();
+
+object_view = types.untyped.ObjectView( ...
+    '/processing/ophys/fluorescence/exampleData');
+
+roi_table_region = types.hdmf_common.DynamicTableRegion( ...
+    'description', 'all_rois', ...
+    'table',plane_seg_object_view,...
+    'data', [0 n_rois-1]');
+
+% Compress the data:
+fData_compressed=types.untyped.DataPipe(size(fData),...
+    'data', fData,...
+    'dataType', 'uint8',...
+    'compressionLevel', 3,...
+    'chunkSize', [10 250],...
+    'axis', 1);
+
+% Assign your fake data
+roi_fData=types.core.RoiResponseSeries(...
+    'data',fData_compressed,...
+    'description','test',...
+    'data_unit', 'lumens',...
+    'rois',roi_table_region);
+
+fluorescence.roiresponseseries.set('exampleData',roi_fData);   ophys_module.nwbdatainterface.set('fluorescence', fluorescence); %set to the appropriate place in nwb structure
+
+%assign the whole thing to the nwb structure
+nwb.processing.set('ophys', ophys_module);
+
+%write the file
+nwbExport(nwb, 'Compressed.nwb');
+
+%% Electrophysiology timeseries
+% Following is an example of how to compress and add calcium imaging data
+% to an NWB file:
+
+fData=randi(250,10000,1); % create fake data;
+
+%assign data without compression
+nwb=NwbFile(...
+    'session_start_time','2020-01-01 00:00:00',...
+    'identifier','ident1',...
+    'session_description','DataPipeTutorial');
+
+ephys_module = types.core.ProcessingModule(...
+    'description', 'holds processed ephys data');
+
+nwb.processing.set('ephys', ephys_module);
+
+% compress the data
+fData_compressed=types.untyped.DataPipe(size(fData),...
+    'data', fData,...
+    'dataType', 'uint8',...
+    'compressionLevel', 3,...
+    'chunkSize', [100 1],...
+    'axis', 1);
+
+% Assign the data to appropriate module and write the NWB file
+fdataNWB=types.core.TimeSeries(...
+    'data', fData_compressed,...
+    'data_unit','mV');
+
+ephys_module.nwbdatainterface.set('data', fdataNWB);
+nwb.processing.set('ephys', ephys_module);
+
+%write the file
+nwbExport(nwb, 'Compressed.nwb');
+##### SOURCE END #####
+--></body></html>
