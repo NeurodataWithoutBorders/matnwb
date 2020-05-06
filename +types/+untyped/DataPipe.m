@@ -73,9 +73,7 @@ classdef DataPipe < handle
                 return;
             end
             
-            if isempty(p.Results.maxSize)
-                assert(~isempty(p.Results.data), ['If maxSize is not '...
-                    'specified then a non-empty data array must be specified.']);
+            if ~isempty(p.Results.data)
                 maxSize = size(p.Results.data);
                 maxSize(p.Results.axis) = Inf;
             else
