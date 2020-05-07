@@ -32,7 +32,7 @@ This package reads and writes NWB:N 2.0 files and does not support older formats
 
 ### Step 1: Download MatNWB
 
-Download the current release of MatNWB from https://github.com/NeurodataWithoutBorders/matnwb/releases or from the [![View NeurodataWithoutBorders/matnwb on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://www.mathworks.com/matlabcentral/fileexchange/67741-neurodatawithoutborders-matnwb). You can also check out the latest development version via 
+Download the current release of MatNWB from the [MatNWB releases page](https://github.com/NeurodataWithoutBorders/matnwb/releases) or from the [![View NeurodataWithoutBorders/matnwb on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://www.mathworks.com/matlabcentral/fileexchange/67741-neurodatawithoutborders-matnwb). You can also check out the latest development version via 
 
 ```bash
 git clone https://github.com/NeurodataWithoutBorders/matnwb.git
@@ -40,7 +40,7 @@ git clone https://github.com/NeurodataWithoutBorders/matnwb.git
 
 ### Step 2: Generate the API
 
-From the Matlab command line, generate code from the copy of the NWB schema.  The command also takes variable arguments from any extensions.
+From the Matlab command line, generate code from the copy of the NWB schema. The command also takes variable arguments from any extensions.
 
 ```matlab
 generateCore(); % generate core namespace located in the repository.
@@ -68,7 +68,7 @@ nwb=nwbRead('data.nwb');
 
 ### Optional: Download the NWB format schema
 
-Download the current release of the NWB format schema from https://github.com/NeurodataWithoutBorders/nwb-schema/releases or check out the latest development via 
+Download the current release of the NWB format schema from the [nwb-schema releases page](https://github.com/NeurodataWithoutBorders/nwb-schema/releases) or check out the latest development via 
 
 ```bash
 git clone --recursive https://github.com/NeurodataWithoutBorders/nwb-schema.git
