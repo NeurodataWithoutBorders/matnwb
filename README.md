@@ -40,9 +40,11 @@ git clone https://github.com/NeurodataWithoutBorders/matnwb.git
 
 ### Step 2: Generate the API
 
-From the Matlab command line, generate code from the copy of the NWB schema. The command also takes variable arguments from any extensions.
+From the Matlab command line, add MatNWB to the Matlab path and generate the core classes for the NWB schema.
 
 ```matlab
+cd matnwb
+addpath(genpath(pwd));
 generateCore(); % generate core namespace located in the repository.
 ```
 
