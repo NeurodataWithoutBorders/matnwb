@@ -75,7 +75,7 @@ Download the current release of the NWB format schema from the [nwb-schema relea
 ```bash
 git clone --recursive https://github.com/NeurodataWithoutBorders/nwb-schema.git
 ```
-
+Then re-run `generateCore()` to update the API from the updated schema.
 ## API Documentation
 
 For more information regarding the MatNWB API or any of the NWB Core types in MatNWB, visit the [MatNWB API Documentation pages](https://neurodatawithoutborders.github.io/matnwb/doc/index.html).
