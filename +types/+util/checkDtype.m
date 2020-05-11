@@ -63,19 +63,6 @@ else
         return;
     end
     
-    if isa(val, 'types.untyped.DataPipe')
-        if strcmp(type, 'float64')
-            type = 'double';
-        end
-        if strcmp(type, 'numeric')
-            type = val.dataType;
-        end
-        assert(strcmp(val.dataType, type),...
-            'NWB:Types:Util:CheckDType:InvalidType',...
-            'DataPipe should be configured with type `%s`', type);
-        return;
-    end
-    
     if isa(val, 'types.untyped.DataStub')
         %grab first element and check
         truval = val;
@@ -91,6 +78,9 @@ else
             ~strcmp(type, 'types.untyped.ExternalLink')
         truval = val;
         val = val.deref();
+    elseif isa(val, 'types.untyped.DataPipe')
+        truval = val;
+        val = cast([], val.dataType);
     else
         truval = [];
     end

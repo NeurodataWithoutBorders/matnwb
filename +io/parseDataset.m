@@ -42,31 +42,23 @@ elseif ~strcmp(dataspace.Type, 'simple')
             data = strtrim(mat2cell(data, ones(datadim(1), 1), datadim(2)));
         end
     end
-elseif strcmp(dataspace.Type, 'simple') && any(dataspace.Size == 0)
-    data = [];
 else
     sid = H5D.get_space(did);
-    output = H5S.is_simple(sid);
-    assert(output >= 0,...
-        'NWB:IO:ParseDataset:SpaceCheckFailed',...
-        'Error while checking space settings from dataset: %d', output);
-    
     pid = H5D.get_create_plist(did);
-    if H5P.get_layout(did) == H5ML.get_constant_value('H5D_CHUNKED')
-        [~, h5_dims, h5_maxDims] = H5D.get_simple_extent_dims(sid);
-        dims = fliplr(h5_dims);
-        maxDims = fliplr(h5_maxDims);
-        axis = length(dims);
-        offset = dims(end);
-        
-        data = types.untyped.DataPipe(maxDims,...
-            'filename', filename,...
-            'path', fullpath,...
-            'axis', axis,...
-            'offset', offset);
+    isChunked = H5P.get_layout(pid) == H5ML.get_constant_value('H5D_CHUNKED');
+    
+    tid = H5D.get_type(did);
+    class_id = H5T.get_class(tid);
+    isNumeric = class_id == H5ML.get_constant_value('H5T_INTEGER')...
+        || class_id == H5ML.get_constant_value('H5T_FLOAT');
+    if isChunked && isNumeric
+        data = types.untyped.DataPipe('filename', filename, 'path', fullpath);
+    elseif any(dataspace.Size == 0)
+        data = [];
     else
         data = types.untyped.DataStub(filename, fullpath);
     end
+    H5T.close(tid);
     H5P.close(pid);
     H5S.close(sid);
 end
