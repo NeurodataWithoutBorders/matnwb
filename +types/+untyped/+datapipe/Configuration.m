@@ -37,7 +37,7 @@ classdef Configuration < handle
     end
     
     properties (Constant)
-        SUPPORTED_DATATYPES = {'float', 'double', 'uint8', 'int8',...
+        SUPPORTED_DATATYPES = {'single', 'double', 'uint8', 'int8',...
             'uint16', 'int16', 'uint32', 'int32', 'uint64', 'int64'
             };
     end
