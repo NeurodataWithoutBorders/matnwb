@@ -86,6 +86,11 @@ classdef DataPipe < handle
             if isempty(p.Results.data)
                 config.dataType = p.Results.dataType;
             else
+                if ~isempty(p.Results.dataType)
+                    warning('NWB:DataPipe:RedundantDataType',...
+                        ['`datatype` parameter will be ignored in lieu of '...
+                        'provided `data` value type.']);
+                end
                 config.dataType = class(p.Results.data);
             end
             
