@@ -25,7 +25,7 @@ classdef NwbFile < types.core.NWBFile
             if isa(obj.file_create_date, 'types.untyped.DataStub')
                 obj.file_create_date = obj.file_create_date.load();
             end
-
+            
             if isempty(obj.file_create_date)
                 obj.file_create_date = current_time;
             elseif iscell(obj.file_create_date)
@@ -49,7 +49,7 @@ classdef NwbFile < types.core.NWBFile
                 if isFileExistsError
                     output_file_id = H5F.open(filename, 'H5F_ACC_RDWR', 'H5P_DEFAULT');
                 else
-                   rethrow(ME); 
+                    rethrow(ME);
                 end
             end
             
@@ -76,6 +76,16 @@ classdef NwbFile < types.core.NWBFile
             if isscalar(o)
                 o = o{1};
             end
+        end
+        
+        function objectMap = searchFor(obj, typename)
+            % Searches this NwbFile object for a given typename (either with
+            % full namespace or not.
+            % note that the properties are not by HDF5 path, they use the
+            % MATLAB subsref method.
+            % WARNING: The returned paths are resolvable but do not necessarily
+            % indicate a real HDF5 path. Their only usage is to be resolvable.
+            objectMap = searchProperties(containers.Map, obj, '', typename);
         end
     end
     
@@ -118,7 +128,7 @@ classdef NwbFile < types.core.NWBFile
                 specView = types.untyped.ObjectView(specLocation);
                 io.writeAttribute(fid, '/.specloc', specView);
             end
-
+            
             JsonData = schemes.exportJson();
             for iJson = 1:length(JsonData)
                 JsonDatum = JsonData(iJson);
@@ -155,6 +165,44 @@ classdef NwbFile < types.core.NWBFile
                 end
             end
         end
-
+        
     end
+end
+
+function pathToObjectMap = searchProperties(...
+    pathToObjectMap,...
+    obj,...
+    basePath,...
+    typename)
+
+if isa(obj, 'types.untyped.MetaClass')
+    propertyNames = properties(obj);
+    getProperty = @(x, prop) x.(prop);
+elseif isa(obj, 'types.untyped.Set')
+    propertyNames = obj.keys();
+    getProperty = @(x, prop) x.get(prop);
+elseif isa(obj, 'types.untyped.Anon')
+    propertyNames = {obj.name};
+    getProperty = @(x, prop) x.value;
+else
+    error('NWB:NwbFile:InternalError',...
+        'Invalid object type passed %s', class(obj));
+end
+for i = 1:length(propertyNames)
+    propName = propertyNames{i};
+    propValue = getProperty(obj, propName);
+    propClass = class(propValue);
+    fullPath = [basePath '/' propName];
+    if strcmpi(propClass, typename)...
+            || endsWith(lower(propClass), lower(typename))
+        pathToObjectMap(fullPath) = propValue;
+    end
+    
+    if isa(propValue, 'types.untyped.GroupClass')...
+            || isa(propValue, 'types.untyped.Set')...
+            || isa(propValue, 'types.untyped.Anon')
+        % recursible (even if there is a match!)
+        searchProperties(pathToObjectMap, propValue, fullPath, typename);
+    end
+end
 end
