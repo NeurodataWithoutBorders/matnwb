@@ -169,6 +169,23 @@ classdef NwbFile < types.core.NWBFile
     end
 end
 
+function tf = metaHasType(mc, typeSuffix)
+assert(isa(mc, 'meta.class'));
+tf = false;
+if endsWith(mc.Name, typeSuffix, 'IgnoreCase', true)
+    tf = true;
+    return;
+end
+
+for i = 1:length(mc.SuperclassList)
+    sc = mc.SuperclassList(i);
+    if metaHasType(sc, typeSuffix)
+        tf = true;
+        return;
+    end
+end
+end
+
 function pathToObjectMap = searchProperties(...
     pathToObjectMap,...
     obj,...
@@ -191,11 +208,8 @@ end
 for i = 1:length(propertyNames)
     propName = propertyNames{i};
     propValue = getProperty(obj, propName);
-    propClass = class(propValue);
     fullPath = [basePath '/' propName];
-    if isa(propValue, typename)...
-            || strcmpi(propClass, typename)...
-            || endsWith(lower(propClass), lower(typename))
+    if metaHasType(metaclass(propValue), typename)
         pathToObjectMap(fullPath) = propValue;
     end
     
