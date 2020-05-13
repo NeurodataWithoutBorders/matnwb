@@ -193,7 +193,8 @@ for i = 1:length(propertyNames)
     propValue = getProperty(obj, propName);
     propClass = class(propValue);
     fullPath = [basePath '/' propName];
-    if strcmpi(propClass, typename)...
+    if isa(propValue, typename)...
+            || strcmpi(propClass, typename)...
             || endsWith(lower(propClass), lower(typename))
         pathToObjectMap(fullPath) = propValue;
     end
