@@ -88,6 +88,8 @@ For more information regarding the MatNWB API or any of the NWB Core types in Ma
 
 [Intracellular Electrophysiology](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/icephys.html)
 
+[Advanced data write](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dataPipe.html)
+
 ## Examples
 
 [Basic Data Retrieval](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/basicUsage.html)
