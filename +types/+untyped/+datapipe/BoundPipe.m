@@ -19,8 +19,7 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
     methods % lifecycle
         function obj = BoundPipe(filename, path, varargin)
             import types.untyped.datapipe.Configuration;
-            import types.untyped.datapipe.properties.Chunking;
-            import types.untyped.datapipe.properties.Compression;
+            import types.untyped.datapipe.properties.*;
             
             fid = H5F.open(filename);
             did = H5D.open(fid, path);
@@ -58,6 +57,10 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
             
             if Compression.isInDcpl(pid)
                 obj.pipeProperties{end+1} = Compression.fromDcpl(pid);
+            end
+            
+            if Shuffle.isInDcpl(pid)
+                obj.pipeProperties{end+1} = Shuffle();
             end
             
             H5P.close(pid);

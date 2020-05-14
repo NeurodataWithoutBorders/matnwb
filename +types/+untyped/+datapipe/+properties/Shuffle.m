@@ -11,7 +11,7 @@ classdef Shuffle < types.untyped.datapipe.Property
             import types.untyped.datapipe.properties.Shuffle;
             
             tf = false;
-            filterId = H5ML.get_constant_value(dcpl, Shuffle.FILTER_NAME);
+            filterId = H5ML.get_constant_value(Shuffle.FILTER_NAME);
             for i = 0:(H5P.get_nfilters(dcpl) - 1)
                 [id, ~, ~, ~, ~] = H5P.get_filter(dcpl, i);
                 if id == filterId
