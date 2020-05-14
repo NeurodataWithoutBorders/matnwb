@@ -1,10 +1,7 @@
-classdef DataStub < handle
+classdef DataStub
     properties (SetAccess = protected)
         filename;
         path;
-    end
-    
-    properties (Dependent, SetAccess = private)
         dims;
     end
     
@@ -12,6 +9,14 @@ classdef DataStub < handle
         function obj = DataStub(filename, path)
             obj.filename = filename;
             obj.path = path;
+            fid = H5F.open(obj.filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
+            did = H5D.open(fid, obj.path);
+            sid = H5D.get_space(did);
+            [~, h5_dims, ~] = H5S.get_simple_extent_dims(sid);
+            obj.dims = fliplr(h5_dims);
+            H5S.close(sid);
+            H5D.close(did);
+            H5F.close(fid);
         end
         
         function sid = get_space(obj)
@@ -20,13 +25,6 @@ classdef DataStub < handle
             sid = H5D.get_space(did);
             H5D.close(did);
             H5F.close(fid);
-        end
-        
-        function dims = get.dims(obj)
-            sid = obj.get_space();
-            [~, h5_dims, ~] = H5S.get_simple_extent_dims(sid);
-            dims = fliplr(h5_dims);
-            H5S.close(sid);
         end
         
         function nd = ndims(obj)

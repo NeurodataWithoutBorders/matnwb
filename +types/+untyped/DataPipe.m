@@ -22,7 +22,6 @@ classdef DataPipe < handle
             import types.untyped.datapipe.Configuration;
             import types.untyped.datapipe.properties.Chunking;
             import types.untyped.datapipe.properties.Compression;
-            import types.untyped.datapipe.properties.Shuffle;
             import types.untyped.datapipe.guessChunkSize;
             
             p = inputParser;
@@ -37,7 +36,6 @@ classdef DataPipe < handle
             p.addParameter('data', []);
             p.addParameter('filename', '');
             p.addParameter('path', '');
-            p.addParameter('hasShuffle', false);
             p.KeepUnmatched = true;
             p.parse(varargin{:});
             
@@ -103,10 +101,6 @@ classdef DataPipe < handle
                 chunkSize = p.Results.chunkSize;
             end
             obj.internal.setPipeProperties(Chunking(chunkSize));
-            
-            if p.Results.hasShuffle
-                obj.internal.setPipeProperties(Shuffle());
-            end
             
             if ~isempty(p.Results.compressionLevel)
                 obj.internal.setPipeProperties(Compression(...

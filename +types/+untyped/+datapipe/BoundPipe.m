@@ -1,7 +1,10 @@
-classdef BoundPipe < types.untyped.datapipe.Pipe & types.untyped.DataStub
+classdef BoundPipe < types.untyped.datapipe.Pipe
     %BOUND Represents a Bound DataPipe which must point to a valid file.
     
     properties (SetAccess = private)
+        filename; % OS path to the HDF5 file.
+        path; % HDF5 path to the chunked dataset.
+        
         config = types.untyped.datapipe.Configuration.empty;
         pipeProperties = {};
     end
@@ -16,11 +19,13 @@ classdef BoundPipe < types.untyped.datapipe.Pipe & types.untyped.DataStub
     methods % lifecycle
         function obj = BoundPipe(filename, path, varargin)
             import types.untyped.datapipe.Configuration;
-            import types.untyped.datapipe.properties.*;
+            import types.untyped.datapipe.properties.Chunking;
+            import types.untyped.datapipe.properties.Compression;
             
-            obj@types.untyped.DataStub(filename, path)
+            fid = H5F.open(filename);
+            did = H5D.open(fid, path);
             
-            sid = obj.get_space();
+            sid = H5D.get_space(did);
             [numdims, h5_dims, h5_maxdims] = H5S.get_simple_extent_dims(sid);
             H5S.close(sid);
             
@@ -33,8 +38,6 @@ classdef BoundPipe < types.untyped.datapipe.Pipe & types.untyped.DataStub
             h5_unlimited = H5ML.get_constant_value('H5S_UNLIMITED');
             max_size(max_size == h5_unlimited) = Inf;
             
-            did = obj.getDataset();
-            
             if isempty(varargin)
                 obj.config = Configuration(max_size);
                 obj.config.offset = current_size(obj.config.axis);
@@ -44,6 +47,9 @@ classdef BoundPipe < types.untyped.datapipe.Pipe & types.untyped.DataStub
             else
                 obj.config = varargin{1};
             end
+
+            obj.filename = filename;
+            obj.path = path;
             
             pid = H5D.get_create_plist(did);
             assert(Chunking.isInDcpl(pid), ['Cannot access a bound pipe if '...
@@ -54,12 +60,9 @@ classdef BoundPipe < types.untyped.datapipe.Pipe & types.untyped.DataStub
                 obj.pipeProperties{end+1} = Compression.fromDcpl(pid);
             end
             
-            if Shuffle.isInDcpl(pid)
-                obj.pipeProperties{end+1} = Shuffle();
-            end
-            
             H5P.close(pid);
             H5D.close(did);
+            H5F.close(fid);
         end
     end
     
