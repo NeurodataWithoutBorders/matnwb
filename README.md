@@ -2,32 +2,6 @@
 
 A Matlab interface for reading and writing Neurodata Without Borders (NWB) 2.0 files.
 
-## How does it work
-
-NWB files are HDF5 files with data stored according to the Neurodata Without Borders: Neurophysiology (NWB:N) [schema](https://github.com/NeurodataWithoutBorders/nwb-schema/tree/dev/core). The schema is described in a set of yaml documents. These define the various types and their attributes.
-
-This package provides two functions `generateCore` and `generateExtension` that transform the yaml files that describe the schema into Matlab m-files. The generated code defines classes that reflect the types defined in the schema.  Object attributes, relationships, and documentation are automatically generated to reflect the schema where possible.
-
-Once the code generation step is done, NWB objects can be read, constructed and written from Matlab.
-
-PyNWB's cached schemas are also supported, bypassing the need to run `generateCore` or `generateExtension` if present.
-
-## Sources
-
-MatNWB is available online at https://github.com/NeurodataWithoutBorders/matnwb
-
-## Caveats
-
-The NWB:N schema is in a state of some evolution.  This package assumes a certain set of rules are used to define the schema.  As the schema is updated, some of the rules may be changed and these will break this package.
-
-For those planning on using matnwb alongside pynwb, please keep the following in mind:
- - The ordering of dimensions in MATLAB are reversed compared to numpy (and pynwb).  Thus, a 3-D ```SpikeEventSeries```, which in pynwb would normally be indexed in order ```(num_samples, num_channels, num_events)```, would be indexed in form ```(num_events, num_channels, num_samples)``` in MatNWB.
- - MatNWB is dependent on the schema, which may not necessary correspond with your PyNWB schema version.  Please consider overwriting the contents within MatNWB's **~/schema/core** directory with the generating PyNWB's **src/pynwb/data directory** and running generateCore to ensure compatibilty between systems.
- 
-The `master` branch in this repository is considered perpetually unstable.  If you desire matnwb's full functionality (full round-trip with nwb data), please consider downloading the more stable releases in the Releases tab.  Keep in mind that the Releases are generally only compatible with older versions of pynwb and may not supported newer data types supported by pynwb (such as data references or compound types).  Most releases will coincide with nwb-schema releases and contain compatibility with those features.
-
-This package reads and writes NWB:N 2.0 files and does not support older formats.
-
 ## Setup
 
 ### Step 1: Download MatNWB
@@ -76,9 +50,6 @@ Download the current release of the NWB format schema from the [nwb-schema relea
 git clone --recursive https://github.com/NeurodataWithoutBorders/nwb-schema.git
 ```
 Then re-run `generateCore()` to update the API from the updated schema.
-## API Documentation
-
-For more information regarding the MatNWB API or any of the NWB Core types in MatNWB, visit the [MatNWB API Documentation pages](https://neurodatawithoutborders.github.io/matnwb/doc/index.html).
 
 ## Tutorials
 
@@ -89,6 +60,38 @@ For more information regarding the MatNWB API or any of the NWB Core types in Ma
 [Intracellular Electrophysiology](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/icephys.html)
 
 [Advanced data write](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dataPipe.html)
+
+## API Documentation
+
+For more information regarding the MatNWB API or any of the NWB Core types in MatNWB, visit the [MatNWB API Documentation pages](https://neurodatawithoutborders.github.io/matnwb/doc/index.html).
+
+
+## How does it work
+
+NWB files are HDF5 files with data stored according to the Neurodata Without Borders: Neurophysiology (NWB:N) [schema](https://github.com/NeurodataWithoutBorders/nwb-schema/tree/dev/core). The schema is described in a set of yaml documents. These define the various types and their attributes.
+
+This package provides two functions `generateCore` and `generateExtension` that transform the yaml files that describe the schema into Matlab m-files. The generated code defines classes that reflect the types defined in the schema.  Object attributes, relationships, and documentation are automatically generated to reflect the schema where possible.
+
+Once the code generation step is done, NWB objects can be read, constructed and written from Matlab.
+
+PyNWB's cached schemas are also supported, bypassing the need to run `generateCore` or `generateExtension` if present.
+
+## Sources
+
+MatNWB is available online at https://github.com/NeurodataWithoutBorders/matnwb
+
+## Caveats
+
+The NWB:N schema is in a state of some evolution.  This package assumes a certain set of rules are used to define the schema.  As the schema is updated, some of the rules may be changed and these will break this package.
+
+For those planning on using matnwb alongside pynwb, please keep the following in mind:
+ - The ordering of dimensions in MATLAB are reversed compared to numpy (and pynwb).  Thus, a 3-D ```SpikeEventSeries```, which in pynwb would normally be indexed in order ```(num_samples, num_channels, num_events)```, would be indexed in form ```(num_events, num_channels, num_samples)``` in MatNWB.
+ - MatNWB is dependent on the schema, which may not necessary correspond with your PyNWB schema version.  Please consider overwriting the contents within MatNWB's **~/schema/core** directory with the generating PyNWB's **src/pynwb/data directory** and running generateCore to ensure compatibilty between systems.
+ 
+The `master` branch in this repository is considered perpetually unstable.  If you desire matnwb's full functionality (full round-trip with nwb data), please consider downloading the more stable releases in the Releases tab.  Keep in mind that the Releases are generally only compatible with older versions of pynwb and may not supported newer data types supported by pynwb (such as data references or compound types).  Most releases will coincide with nwb-schema releases and contain compatibility with those features.
+
+This package reads and writes NWB:N 2.0 files and does not support older formats.
+
 
 ## Examples
 
