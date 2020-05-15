@@ -78,14 +78,17 @@ classdef NwbFile < types.core.NWBFile
             end
         end
         
-        function objectMap = searchFor(obj, typename)
+        function objectMap = searchFor(obj, typename, varargin)
             % Searches this NwbFile object for a given typename (either with
             % full namespace or not.
-            % note that the properties are not by HDF5 path, they use the
-            % MATLAB subsref method.
             % WARNING: The returned paths are resolvable but do not necessarily
             % indicate a real HDF5 path. Their only usage is to be resolvable.
-            objectMap = searchProperties(containers.Map, obj, '', typename);
+            objectMap = searchProperties(...
+                containers.Map,...
+                obj,...
+                '',...
+                typename,...
+                varargin{:});
         end
     end
     
@@ -172,7 +175,7 @@ end
 function tf = metaHasType(mc, typeSuffix)
 assert(isa(mc, 'meta.class'));
 tf = false;
-if endsWith(mc.Name, typeSuffix, 'IgnoreCase', true)
+if contains(mc.Name, typeSuffix, 'IgnoreCase', true)
     tf = true;
     return;
 end
@@ -190,7 +193,12 @@ function pathToObjectMap = searchProperties(...
     pathToObjectMap,...
     obj,...
     basePath,...
-    typename)
+    typename,...
+    varargin)
+assert(all(iscellstr(varargin)),...
+    'NWB:NwbFile:SearchFor:InvalidVariableArguments',...
+    'Optional keywords for searchFor must be char arrays.');
+shouldSearchSuperClasses = any(strcmpi(varargin, 'includeSubClasses'));
 
 if isa(obj, 'types.untyped.MetaClass')
     propertyNames = properties(obj);
@@ -205,11 +213,17 @@ else
     error('NWB:NwbFile:InternalError',...
         'Invalid object type passed %s', class(obj));
 end
+
+searchTypename = @(obj, typename) contains(class(obj), typename, 'IgnoreCase', true);
+if shouldSearchSuperClasses
+    searchTypename = @(obj, typename) metaHasType(metaclass(obj), typename);
+end
+
 for i = 1:length(propertyNames)
     propName = propertyNames{i};
     propValue = getProperty(obj, propName);
     fullPath = [basePath '/' propName];
-    if metaHasType(metaclass(propValue), typename)
+    if searchTypename(propValue, typename)
         pathToObjectMap(fullPath) = propValue;
     end
     
@@ -217,7 +231,7 @@ for i = 1:length(propertyNames)
             || isa(propValue, 'types.untyped.Set')...
             || isa(propValue, 'types.untyped.Anon')
         % recursible (even if there is a match!)
-        searchProperties(pathToObjectMap, propValue, fullPath, typename);
+        searchProperties(pathToObjectMap, propValue, fullPath, typename, varargin{:});
     end
 end
 end
