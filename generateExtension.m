@@ -28,4 +28,5 @@ fclose(fid);
 
 Namespace = spec.generate(namespaceText, localpath);
 file.writeNamespace(Namespace.name);
+addpath(misc.getClassDir());
 end
