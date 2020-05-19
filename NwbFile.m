@@ -25,7 +25,7 @@ classdef NwbFile < types.core.NWBFile
             if isa(obj.file_create_date, 'types.untyped.DataStub')
                 obj.file_create_date = obj.file_create_date.load();
             end
-
+            
             if isempty(obj.file_create_date)
                 obj.file_create_date = current_time;
             elseif iscell(obj.file_create_date)
@@ -49,7 +49,7 @@ classdef NwbFile < types.core.NWBFile
                 if isFileExistsError
                     output_file_id = H5F.open(filename, 'H5F_ACC_RDWR', 'H5P_DEFAULT');
                 else
-                   rethrow(ME); 
+                    rethrow(ME);
                 end
             end
             
@@ -76,6 +76,19 @@ classdef NwbFile < types.core.NWBFile
             if isscalar(o)
                 o = o{1};
             end
+        end
+        
+        function objectMap = searchFor(obj, typename, varargin)
+            % Searches this NwbFile object for a given typename (either with
+            % full namespace or not.
+            % WARNING: The returned paths are resolvable but do not necessarily
+            % indicate a real HDF5 path. Their only usage is to be resolvable.
+            objectMap = searchProperties(...
+                containers.Map,...
+                obj,...
+                '',...
+                typename,...
+                varargin{:});
         end
     end
     
@@ -118,7 +131,7 @@ classdef NwbFile < types.core.NWBFile
                 specView = types.untyped.ObjectView(specLocation);
                 io.writeAttribute(fid, '/.specloc', specView);
             end
-
+            
             JsonData = schemes.exportJson();
             for iJson = 1:length(JsonData)
                 JsonDatum = JsonData(iJson);
@@ -155,6 +168,70 @@ classdef NwbFile < types.core.NWBFile
                 end
             end
         end
-
+        
     end
+end
+
+function tf = metaHasType(mc, typeSuffix)
+assert(isa(mc, 'meta.class'));
+tf = false;
+if contains(mc.Name, typeSuffix, 'IgnoreCase', true)
+    tf = true;
+    return;
+end
+
+for i = 1:length(mc.SuperclassList)
+    sc = mc.SuperclassList(i);
+    if metaHasType(sc, typeSuffix)
+        tf = true;
+        return;
+    end
+end
+end
+
+function pathToObjectMap = searchProperties(...
+    pathToObjectMap,...
+    obj,...
+    basePath,...
+    typename,...
+    varargin)
+assert(all(iscellstr(varargin)),...
+    'NWB:NwbFile:SearchFor:InvalidVariableArguments',...
+    'Optional keywords for searchFor must be char arrays.');
+shouldSearchSuperClasses = any(strcmpi(varargin, 'includeSubClasses'));
+
+if isa(obj, 'types.untyped.MetaClass')
+    propertyNames = properties(obj);
+    getProperty = @(x, prop) x.(prop);
+elseif isa(obj, 'types.untyped.Set')
+    propertyNames = obj.keys();
+    getProperty = @(x, prop) x.get(prop);
+elseif isa(obj, 'types.untyped.Anon')
+    propertyNames = {obj.name};
+    getProperty = @(x, prop) x.value;
+else
+    error('NWB:NwbFile:InternalError',...
+        'Invalid object type passed %s', class(obj));
+end
+
+searchTypename = @(obj, typename) contains(class(obj), typename, 'IgnoreCase', true);
+if shouldSearchSuperClasses
+    searchTypename = @(obj, typename) metaHasType(metaclass(obj), typename);
+end
+
+for i = 1:length(propertyNames)
+    propName = propertyNames{i};
+    propValue = getProperty(obj, propName);
+    fullPath = [basePath '/' propName];
+    if searchTypename(propValue, typename)
+        pathToObjectMap(fullPath) = propValue;
+    end
+    
+    if isa(propValue, 'types.untyped.GroupClass')...
+            || isa(propValue, 'types.untyped.Set')...
+            || isa(propValue, 'types.untyped.Anon')
+        % recursible (even if there is a match!)
+        searchProperties(pathToObjectMap, propValue, fullPath, typename, varargin{:});
+    end
+end
 end

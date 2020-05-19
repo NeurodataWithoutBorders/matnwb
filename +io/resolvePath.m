@@ -12,6 +12,8 @@ errmsg = 'Could not resolve path `%s`.';
 while ~isempty(tokens)
     if isa(o, 'types.untyped.Set')
         [o, tokens] = resolveSet(o, tokens);
+    elseif isa(o, 'types.untyped.Anon')
+        [o, tokens] = resolveAnon(o, tokens);
     else
         [o, tokens] = resolveObj(o, tokens);
     end
@@ -32,6 +34,17 @@ else
 end
 end
 
+function [o, remainder] = resolveAnon(obj, tokens)
+tok = tokens{1};
+if strcmp(obj.name, tok)
+    o = obj.value;
+    remainder = tokens(2:end);
+else
+    o = [];
+    remainder = tokens;
+end
+end
+
 function [o, remainder] = resolveObj(obj, tokens)
 props = properties(obj);
 toklen = length(tokens);
@@ -41,27 +54,29 @@ for i=1:toklen
 end
 % stable in this case preserves ordering with eagerlist bias
 [eagers, ei, ~] = intersect(eagerlist, props, 'stable');
-if isempty(eagers)
-    % go one level down and check for sets
-    proplen = length(props);
-    issetprops = false(proplen, 1);
-    for i=1:proplen
-        issetprops(i) = isa(obj.(props{i}), 'types.untyped.Set');
-    end
-    setprops = props(issetprops);
-    setpropslen = length(setprops);
-    minlen = length(tokens) + 1;
-    for i=1:setpropslen
-        [new_o, new_tokens] = resolveSet(obj.(setprops{i}), tokens);
-        new_toklen = length(new_tokens);
-        if new_toklen < minlen
-            o = new_o;
-            remainder = new_tokens;
-            minlen = new_toklen;
-        end
-    end
-else
+if ~isempty(eagers)
     o = obj.(eagers{end});
     remainder = tokens(ei(end)+1:end);
+    return;
+end
+
+
+% go one level down and check for sets
+proplen = length(props);
+issetprops = false(proplen, 1);
+for i=1:proplen
+    issetprops(i) = isa(obj.(props{i}), 'types.untyped.Set');
+end
+setprops = props(issetprops);
+setpropslen = length(setprops);
+minlen = length(tokens) + 1;
+for i=1:setpropslen
+    [new_o, new_tokens] = resolveSet(obj.(setprops{i}), tokens);
+    new_toklen = length(new_tokens);
+    if new_toklen < minlen
+        o = new_o;
+        remainder = new_tokens;
+        minlen = new_toklen;
+    end
 end
 end
