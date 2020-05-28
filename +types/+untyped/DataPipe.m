@@ -1,36 +1,47 @@
 classdef DataPipe < handle
-    %DATAPIPE gives advanced write directions to HDF5 for
-    %chunking, compressing, and iteratively writing a dataset.
+    %DATAPIPE gives advanced write directions to HDF5 for a dataset for
+    %chunking, compression, and iterative write.
     %   DATAPIPE directs HDF5 to use chunking and GZIP compression when 
     %   saving the dataset. The chunk size is automatically determined and
     %   the compression level is 3 by default.
     %
-    %	DATAPIPE(..., 'data', DATA) Write DATA in the Dataset.
+    %	DATAPIPE(..., 'data', DATA) Preload DATA in the Dataset. This can
+    %	be omitted if the DATA will be appended later
     %
     %   DATAPIPE(..., 'maxSize', MAXSIZE) Sets the maximum size of the HDF5
-    %   Dataset. Unless using iterative writing, this should match the size
-    %   of Data. To append data later, use the maxSize for the full 
-    %   dataset. You can use Inf for a value of a dimension if you do not
-    %   know its final size.
+    %   Dataset. To append data later, use the MAXSIZE of the full 
+    %   dataset. Inf on any axis will allow the Dataset to grow without
+    %   limit in that dimension. If not provided, MAXSIZE is infered from 
+    %   the DATA. If neither MAXSIZE nor DATA is provided, the assumed
+    %   maximum shape is an infinite vector
     %
     %   DATAPIPE(..., 'axis', AXIS) Set which axis to increment when
-    %   appending more data.
+    %   appending more data. Default is 1.
     %
-    %   DATAPIPE(..., 'dataType', DATATYPE) Sets the type of the data. This
-    %   must be a numeric data type. Useful to include when using iterative
-    %   write to append data as the appended data must be the same data
-    %   type. If data is provided and dataType is not, the dataType is
-    %   inferred from the provided data.
+    %   DATAPIPE(..., 'dataType', DATATYPE) Sets the numerical data type.
+    %   This should be set if DATA is omitted. If DATA is provided and 
+    %   DATATYPE is not, the data type is inferred from the provided DATA.
     %
     %   DATAPIPE(..., 'chunkSize', CHUNKSIZE) Sets chunk size. Must be less
-    %   than maxSize. If not provided, the CHUNKSIZE will be automatically
+    %   than MAXSIZE. If not provided, the CHUNKSIZE will be automatically
     %   determined.
     %
     %   DATAPIPE(..., 'compressionLevel', COMPRESSIONLEVEL) sets a
-    %   GZIP compression level over than the default of 3
+    %   GZIP compression level. Default is 3.
     %
     %   DATAPIPE(..., 'offset', OFFSET) Axis offset of dataset to append.
     %   May be used to overwrite data.
+    %
+    %   DATAPIPE(..., 'hasShuffle', HASSHUFFLE) controls whether bit 
+    %   shuffling is turned on during compression. This is lossless and
+    %   tends to save space without much cost to performance. Default is
+    %   False
+    %
+    %   DATAPIPE('filename', FILENAME, 'path', PATH) load a pre-existing
+    %   HDF5 Dataset directly using the FILENAME of the file and the PATH
+    %   of the dataset within that file. These arguments cannot be used
+    %   with any of the above arguments, which are for setting up a new
+    %   DataPipe.
     
     properties (SetAccess = private)
         internal;
