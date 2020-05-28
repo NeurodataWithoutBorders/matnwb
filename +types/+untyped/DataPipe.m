@@ -24,7 +24,7 @@ classdef DataPipe < handle
             import types.untyped.datapipe.guessChunkSize;
             
             p = inputParser;
-            p.addParameter('maxSize', [Inf, 1]);
+            p.addParameter('maxSize', []);
             p.addParameter('axis', 1, @(x) isnumeric(x) && isscalar(x) && x > 0);
             p.addParameter('offset', 0, @(x) isnumeric(x) && isscalar(x) && x >= 0);
             p.addParameter('chunkSize', []);
@@ -75,8 +75,11 @@ classdef DataPipe < handle
                 end
                 return;
             end
-            
-            if ~isempty(p.Results.data)
+
+            if isempty(p.Results.maxSize)
+                assert(~isempty(p.Results.data),...
+                    'NWB:DataPipe:MissingArguments',...
+                    'Missing required argument `maxSize` or dependent argument `data`')
                 maxSize = size(p.Results.data);
                 maxSize(p.Results.axis) = Inf;
             else
