@@ -1,6 +1,46 @@
 classdef DataPipe < handle
-    %DATAPIPE Summary of this class goes here
-    %   Detailed explanation goes here
+    %DATAPIPE gives advanced write directions to HDF5 for a dataset for
+    %chunking, compression, and iterative write.
+    %   DATAPIPE directs HDF5 to use chunking and GZIP compression when 
+    %   saving the dataset. The chunk size is automatically determined and
+    %   the compression level is 3 by default.
+    %
+    %	DATAPIPE(..., 'data', DATA) Preload DATA in the Dataset. This can
+    %	be omitted if the DATA will be appended later
+    %
+    %   DATAPIPE(..., 'maxSize', MAXSIZE) Sets the maximum size of the HDF5
+    %   Dataset. To append data later, use the MAXSIZE of the full 
+    %   dataset. Inf on any axis will allow the Dataset to grow without
+    %   limit in that dimension. If not provided, MAXSIZE is infered from 
+    %   the DATA. An error is thrown if neither MAXSIZE nor DATA is provided.
+    %
+    %   DATAPIPE(..., 'axis', AXIS) Set which axis to increment when
+    %   appending more data. Default is 1.
+    %
+    %   DATAPIPE(..., 'dataType', DATATYPE) Sets the numerical data type.
+    %   This should be set if DATA is omitted. If DATA is provided and 
+    %   DATATYPE is not, the data type is inferred from the provided DATA.
+    %
+    %   DATAPIPE(..., 'chunkSize', CHUNKSIZE) Sets chunk size. Must be less
+    %   than MAXSIZE. If not provided, the CHUNKSIZE will be automatically
+    %   determined.
+    %
+    %   DATAPIPE(..., 'compressionLevel', COMPRESSIONLEVEL) sets a
+    %   GZIP compression level. Default is 3.
+    %
+    %   DATAPIPE(..., 'offset', OFFSET) Axis offset of dataset to append.
+    %   May be used to overwrite data.
+    %
+    %   DATAPIPE(..., 'hasShuffle', HASSHUFFLE) controls whether bit 
+    %   shuffling is turned on during compression. This is lossless and
+    %   tends to save space without much cost to performance. Default is
+    %   False
+    %
+    %   DATAPIPE('filename', FILENAME, 'path', PATH) load a pre-existing
+    %   HDF5 Dataset directly using the FILENAME of the file and the PATH
+    %   of the dataset within that file. These arguments cannot be used
+    %   with any of the above arguments, which are for setting up a new
+    %   DataPipe.
     
     properties (SetAccess = private)
         internal;
