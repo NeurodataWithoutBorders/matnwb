@@ -1,6 +1,36 @@
 classdef DataPipe < handle
-    %DATAPIPE Summary of this class goes here
-    %   Detailed explanation goes here
+    %DATAPIPE gives advanced write directions to HDF5 for a dataset for
+    %chunking, compression, and iterative write.
+    %   DATAPIPE directs HDF5 to use chunking and GZIP compression when 
+    %   saving the dataset. The chunk size is automatically determined and
+    %   the compression level is 3 by default.
+    %
+    %	DATAPIPE(..., 'data', DATA) Write DATA in the Dataset.
+    %
+    %   DATAPIPE(..., 'maxSize', MAXSIZE) Sets the maximum size of the HDF5
+    %   Dataset. Unless using iterative writing, this should match the size
+    %   of Data. To append data later, use the maxSize for the full 
+    %   dataset. You can use Inf for a value of a dimension if you do not
+    %   know its final size.
+    %
+    %   DATAPIPE(..., 'axis', AXIS) Set which axis to increment when
+    %   appending more data.
+    %
+    %   DATAPIPE(..., 'dataType', DATATYPE) Sets the type of the data. This
+    %   must be a numeric data type. Useful to include when using iterative
+    %   write to append data as the appended data must be the same data
+    %   type. If data is provided and dataType is not, the dataType is
+    %   inferred from the provided data.
+    %
+    %   DATAPIPE(..., 'chunkSize', CHUNKSIZE) Sets chunk size. Must be less
+    %   than maxSize. If not provided, the CHUNKSIZE will be automatically
+    %   determined.
+    %
+    %   DATAPIPE(..., 'compressionLevel', COMPRESSIONLEVEL) sets a
+    %   GZIP compression level over than the default of 3
+    %
+    %   DATAPIPE(..., 'offset', OFFSET) Axis offset of dataset to append.
+    %   May be used to overwrite data.
     
     properties (SetAccess = private)
         internal;
