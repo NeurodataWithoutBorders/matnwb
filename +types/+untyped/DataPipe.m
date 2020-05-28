@@ -12,8 +12,7 @@ classdef DataPipe < handle
     %   Dataset. To append data later, use the MAXSIZE of the full 
     %   dataset. Inf on any axis will allow the Dataset to grow without
     %   limit in that dimension. If not provided, MAXSIZE is infered from 
-    %   the DATA. If neither MAXSIZE nor DATA is provided, the assumed
-    %   maximum shape is an infinite vector
+    %   the DATA. An error is thrown if neither MAXSIZE nor DATA is provided.
     %
     %   DATAPIPE(..., 'axis', AXIS) Set which axis to increment when
     %   appending more data. Default is 1.
