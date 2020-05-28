@@ -1,6 +1,6 @@
 classdef DataPipe < handle
-    %DATAPIPE gives advanced write directions to HDF5 for a dataset for
-    %chunking, compression, and iterative write.
+    %DATAPIPE gives advanced write directions to HDF5 for
+    %chunking, compressing, and iteratively writing a dataset.
     %   DATAPIPE directs HDF5 to use chunking and GZIP compression when 
     %   saving the dataset. The chunk size is automatically determined and
     %   the compression level is 3 by default.
