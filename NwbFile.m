@@ -79,10 +79,10 @@ classdef NwbFile < types.core.NWBFile
         end
         
         function objectMap = searchFor(obj, typename, varargin)
-            % Searches this NwbFile object for a given typename (either with
-            % full namespace or not.
+            % Searches this NwbFile object for a given typename
+            % Including the full namespace is optional.
             % WARNING: The returned paths are resolvable but do not necessarily
-            % indicate a real HDF5 path. Their only usage is to be resolvable.
+            % indicate a real HDF5 path. Their only function is to be resolvable.
             objectMap = searchProperties(...
                 containers.Map,...
                 obj,...
