@@ -9,7 +9,7 @@ end
 
 function out = traverse_node(node, tree_node)
 
-if any(strcmp(superclasses(node), 'types.untyped.GroupClass'))
+if any(strcmp(superclasses(node), 'types.untyped.GroupClass')) || isa(node, 'types.untyped.DataStub')
     pp = properties(node);
     for p = pp'
         if ~isempty(node.(p{1}))
@@ -22,22 +22,24 @@ if any(strcmp(superclasses(node), 'types.untyped.GroupClass'))
                     new_tree_node = uitreenode(tree_node, 'Text', p{1});
                     traverse_node(new_node, new_tree_node)
                 end
-            elseif isa(new_node, 'char')
-                new_tree_node = uitreenode(tree_node, 'Text', [p{1} ': ' new_node]);
-            else
+            elseif isa(new_node, 'types.untyped.DataStub')
                 new_tree_node = uitreenode(tree_node, 'Text', p{1});
+                traverse_node(new_node, new_tree_node)
+            elseif isa(new_node, 'char')
+                uitreenode(tree_node, 'Text', [p{1} ': ' new_node]);
+            elseif isnumeric(new_node)
+                uitreenode(tree_node, 'Text', [p{1} ': ' num2str(new_node)]);
+            else
+                uitreenode(tree_node, 'Text', p{1});
             end
         end
     end
 elseif isa(node, 'types.untyped.Set')
-    for key = node.keys()'
+    for key = node.keys()
         new_tree_node = uitreenode(tree_node, 'Text', key{1});
-        traverse_node(node.get(key), new_tree_node)
+        traverse_node(node.get(key{1}), new_tree_node)
     end
-elseif isa(node, 'char')
-    uitreenode(tree_node, 'Text', node)
-elseif isnumeric(node)
-    uitreenode(tree_node, 'Text', num2str(node))
 end
+
 
 end
