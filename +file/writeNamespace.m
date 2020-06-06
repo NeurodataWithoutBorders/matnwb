@@ -2,7 +2,7 @@ function writeNamespace(namespaceName)
 %check/load dependency namespaces
 Namespace = schemes.loadNamespace(namespaceName);
 
-path = fullfile(misc.getWorkspace(), '+types', ['+' Namespace.name]);
+path = fullfile(misc.getClassDir(), '+types', ['+' Namespace.name]);
 if exist(path, 'dir') == 7
     rmdir(path, 's');
 end

@@ -22,7 +22,7 @@ else % map of schemas with their locations
 end
 
 NamespaceInfo.schema = schema;
-namespacePath = fullfile(misc.getWorkspace(), 'namespaces');
+namespacePath = fullfile(misc.getClassDir(), 'namespaces');
 if 7 ~= exist(namespacePath, 'dir')
     mkdir(namespacePath);
 end
