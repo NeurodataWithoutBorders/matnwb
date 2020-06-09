@@ -11,25 +11,14 @@ classdef MetaClass < handle
                 return;
             end
             
-            try
-                if isa(obj.data, 'types.untyped.DataStub')...
-                        || isa(obj.data, 'types.untyped.DataPipe')
-                    refs = obj.data.export(fid, fullpath, refs);
-                elseif istable(obj.data) || isstruct(obj.data) ||...
-                        isa(obj.data, 'containers.Map')
-                    io.writeCompound(fid, fullpath, obj.data);
-                else
-                    io.writeDataset(fid, fullpath, obj.data, 'forceArray');
-                end
-            catch ME
-                if strcmp(ME.stack(2).name, 'getRefData') && ...
-                        endsWith(ME.stack(1).file, ...
-                        fullfile({'+H5D','+H5R'}, {'open.m', 'create.m'}))
-                    refs(end+1) = {fullpath};
-                    return;
-                else
-                    rethrow(ME);
-                end
+            if isa(obj.data, 'types.untyped.DataStub')...
+                    || isa(obj.data, 'types.untyped.DataPipe')
+                refs = obj.data.export(fid, fullpath, refs);
+            elseif istable(obj.data) || isstruct(obj.data) ||...
+                    isa(obj.data, 'containers.Map')
+                io.writeCompound(fid, fullpath, obj.data);
+            else
+                io.writeDataset(fid, fullpath, obj.data, 'forceArray');
             end
         end
     end
@@ -46,22 +35,22 @@ classdef MetaClass < handle
             refProps = cellfun('isclass', props, 'types.untyped.ObjectView') |...
                 cellfun('isclass', props, 'types.untyped.RegionView');
             props = props(refProps);
-            for i=1:length(props)
-                try
+            try
+                for i = 1:length(props)
                     io.getRefData(fid, props{i});
-                catch ME
-                    if strcmp(ME.stack(2).name, 'getRefData') && ...
-                            endsWith(ME.stack(1).file, ...
-                            fullfile({'+H5D','+H5R'}, {'open.m', 'create.m'}))
-                        refs(end+1) = {fullpath};
-                        return;
-                    else
-                        rethrow(ME);
-                    end
+                end
+                
+                refs = obj.write_base(fid, fullpath, refs);
+            catch ME
+                if strcmp(ME.stack(2).name, 'getRefData') && ...
+                        endsWith(ME.stack(1).file, ...
+                        fullfile({'+H5D','+H5R'}, {'open.m', 'create.m'}))
+                    refs(end+1) = {fullpath};
+                    return;
+                else
+                    rethrow(ME);
                 end
             end
-            
-            refs = obj.write_base(fid, fullpath, refs);
             
             uuid = char(java.util.UUID.randomUUID().toString());
             if isa(obj, 'NwbFile')
