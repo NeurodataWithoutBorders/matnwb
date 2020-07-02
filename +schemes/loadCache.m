@@ -1,6 +1,9 @@
 function Cache = loadCache(varargin)
 %LOADCACHE Loads Raw Namespace Metadata from cached directory
-namespaceDir = 'namespaces';
+
+% Get the actual location of the matnwb directory.
+namespaceDir = misc.getNamespaceDir();
+
 fileList = dir(namespaceDir);
 fileList = fileList(~[fileList.isdir]);
 if nargin > 0

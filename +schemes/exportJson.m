@@ -1,7 +1,11 @@
 function JsonData = exportJson()
 %TOJSON loads and converts loaded namespaces to json strings
 %   returns containers.map of namespace names.
-namespaceDir = fullfile(misc.getWorkspace(), 'namespaces');
+
+% Get the actual location of the matnwb directory.
+namespaceDir = misc.getNamespaceDir();
+
+% namespaceDir = fullfile(misc.getWorkspace(), 'namespaces');
 namespaceList = dir(namespaceDir);
 isFileMask = ~[namespaceList.isdir];
 namespaceFiles = namespaceList(isFileMask);
@@ -9,7 +13,6 @@ namespaceNames = {namespaceFiles.name};
 for iFile = 1:length(namespaceNames)
     [~, namespaceNames{iFile}, ~] = fileparts(namespaceNames{iFile});
 end
-
 
 Caches = schemes.loadCache(namespaceNames{:});
 JsonData = struct(...
