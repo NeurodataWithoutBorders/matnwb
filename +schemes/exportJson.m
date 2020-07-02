@@ -3,13 +3,8 @@ function JsonData = exportJson()
 %   returns containers.map of namespace names.
 
 % Get the actual location of the matnwb directory.
-fnLoc = dbstack('-completenames');
-fnLoc = fnLoc(1).file;
-[fnDir,~,~] = fileparts(fnLoc);
-[fnDir,~,~] = fileparts(fnDir);
+namespaceDir = misc.getNamespaceDir();
 
-% Get full path name to namespaces directory and list of files
-namespaceDir = fullfile(fnDir, 'namespaces');
 % namespaceDir = fullfile(misc.getWorkspace(), 'namespaces');
 namespaceList = dir(namespaceDir);
 isFileMask = ~[namespaceList.isdir];
