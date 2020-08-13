@@ -117,10 +117,11 @@ switch class(raw)
             end
         end
     case 'file.Dataset'
-        attrmatch = strcmp({raw.attributes.name}, propname);
-        if any(attrmatch)
-            path = {raw.attributes(attrmatch)};
+        if isempty(raw.attributes)
+            return;
         end
+        attrmatch = strcmp({raw.attributes.name}, propname);
+        path = {raw.attributes(attrmatch)};
 end
 end
 
