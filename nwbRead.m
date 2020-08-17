@@ -49,7 +49,8 @@ catch ME
     if ~strcmp(ME.identifier, 'MATLAB:imagesci:hdf5lib:libraryError')
         rethrow(ME);
     end
-    % attribute doesn't exist which is fine.
+    warning('MatNWB:NWBRead:NoSpec',...
+        'No embedded specification found. Ensure that your generated schema is the correct version.');
 end
 end
 
