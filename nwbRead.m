@@ -50,7 +50,9 @@ catch ME
         rethrow(ME);
     end
     warning('MatNWB:NWBRead:NoSpec',...
-        'No embedded specification found. Ensure that your generated schema is the correct version.');
+        ['No embedded specification found. Ensure your environment is accurate to what '...
+        'is stored in this NWB file.'...
+        '\nTo disable this warning run: `warning(''off'', ''MatNWB:NWBRead:NoSpec'')`']);
 end
 end
 
