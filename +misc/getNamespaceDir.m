@@ -36,7 +36,6 @@ end
 function dirExists = subfxnDirCheck(namespaceDir,dispWarning)
    if exist(namespaceDir,'dir')==7
         dirExists = 1;
-        fprintf('Found "namespaces" directory at: %s.\n',namespaceDir);
    else
         dirExists = 0;
         if dispWarning==1

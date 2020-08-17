@@ -29,7 +29,6 @@ end
 function dirExists = subfxnDirCheck(namespaceDir,dispWarning)
    if exist(namespaceDir,'dir')==7
         dirExists = 1;
-        fprintf('Found "matnwb" root directory at: %s.\n',namespaceDir);
    else
         dirExists = 0;
         if dispWarning==1
