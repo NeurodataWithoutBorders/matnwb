@@ -91,6 +91,8 @@ classdef DataStub < handle
                 % dataset strings are defaulted to cell arrays regardless of size
                 if iscellstr(data) && isscalar(data)
                     data = data{1};
+                elseif isstring(data)
+                    data = char(data);
                 end
             end
             
