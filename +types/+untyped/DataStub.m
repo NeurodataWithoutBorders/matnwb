@@ -161,7 +161,12 @@ classdef DataStub < handle
                         count(i) = floor((END(i) - START(i)) / STRIDE(i) + 1);
                     end
                 end
-                data = obj.load_h5_style(START, count, STRIDE);
+                if length(START) == 1
+                    data = obj.load_h5_style(double(START), double(count), double(STRIDE));
+                else
+                    data = obj.load_h5_style(START, count, STRIDE);
+                end
+
             end
         end
         
