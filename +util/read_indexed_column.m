@@ -20,5 +20,10 @@ else
 end
 %%
 % Then select the corresponding spike_times_index element
-data = vector_data.data(lower_bound:upper_bound);
+if isa(vector_data.data,'types.untyped.DataStub')
+    data = vector_data.data.load(lower_bound,upper_bound);
+else
+    data = vector_data.data(lower_bound:upper_bound);
+end
+
 
