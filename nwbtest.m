@@ -21,7 +21,7 @@ function results = nwbtest(varargin)
 %   Examples:
 %
 %     % Run all tests in the MatNWB test suite.
-%     nwbtests()
+%     nwbtest()
 %
 %     % Run all unit tests in the MatNWB test suite.
 %     nwbtest('Name', 'tests.unit.*')
