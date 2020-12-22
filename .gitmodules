@@ -1,0 +1,3 @@
+[submodule "nwb-schema/2.2.5"]
+	path = nwb-schema/2.2.5
+	url = https://github.com/NeurodataWithoutBorders/nwb-schema
