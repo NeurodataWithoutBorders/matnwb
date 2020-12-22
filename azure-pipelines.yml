@@ -26,5 +26,5 @@ steps:
 
   - task: RunMATLABCommand@0
     inputs:
-      command: "try, addpath(genpath(pwd)); generateCore(); nwbtest; catch err, disp(err.message); exit(1); end"
+      command: "try, addpath(genpath(pwd)); generateCore(); results = nwbtest; if isempty(results), exit(1); end; catch err, disp(err.message); exit(1); end"
   
