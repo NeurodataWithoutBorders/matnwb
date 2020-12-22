@@ -35,25 +35,42 @@ end
 
 function specLocation = checkEmbeddedSpec(filename)
 specLocation = '';
+fid = H5F.open(filename);
 try
     %check for .specloc
-    fid = H5F.open(filename);
     attributeId = H5A.open(fid, '.specloc');
     referenceRawData = H5A.read(attributeId);
     specLocation = H5R.get_name(attributeId, 'H5R_OBJECT', referenceRawData);
-    generateSpec(fid, h5info(filename, specLocation));
-    rehash(); %required if we want parseGroup to read the right files.
     H5A.close(attributeId);
-    H5F.close(fid);
+    generateSpec(fid, h5info(filename, specLocation));
 catch ME
     if ~strcmp(ME.identifier, 'MATLAB:imagesci:hdf5lib:libraryError')
         rethrow(ME);
     end
-    warning('MatNWB:NWBRead:NoSpec',...
-        ['No embedded specification found. Ensure your environment is accurate to what '...
-        'is stored in this NWB file.'...
-        '\nTo disable this warning run: `warning(''off'', ''MatNWB:NWBRead:NoSpec'')`']);
+    
+    attributeId = H5A.open(fid, 'nwb_version');
+    version = H5A.read(attributeId);
+    H5A.close(attributeId);
+    
+    [nwbLocation, ~, ~] = fileparts(mfilename('fullpath'));
+    schemaPath = fullfile(nwbLocation, 'nwb-schema', version);
+    corePath = fullfile(schemaPath, 'core', 'nwb.namespace.yaml');
+    commonPath = fullfile(schemaPath,...
+        'hdmf-common-schema', ...
+        'common',...
+        'namespace.yaml');
+    assert(2 == exist(corePath, 'file'),...
+        'MATNWB:nwbread:missingSpec',...
+        'Cannot find suitable core namespace for schema version `%s`',...
+        version);
+    
+    if 2 == exist(commonPath, 'file')
+        generateExtension(commonPath);
+    end
+    generateExtension(corePath);
 end
+rehash(); % required if we want parseGroup to read the right files.
+H5F.close(fid);
 end
 
 function generateSpec(fid, specinfo)
