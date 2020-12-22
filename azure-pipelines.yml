@@ -15,5 +15,5 @@ steps:
       release: R2020a
   - task: RunMATLABCommand@0
     inputs:
-      command: nwbtest
+      command: "try, addpath(genpath(pwd)); generateCore(); nwbtest; catch err, fprintf('Matlab error: %%s\n', err.message); exit(1); end"
   
