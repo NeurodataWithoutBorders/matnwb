@@ -15,6 +15,9 @@ steps:
       release: R2020a
 
   - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.8'
+      architecture: 'x64'
 
   - script: |
       python -m pip install --upgrade pip 
