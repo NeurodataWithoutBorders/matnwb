@@ -21,11 +21,14 @@ end
 for i = 1:length(propnames)
     pnm = propnames{i};
     pathProps = traverseRaw(pnm, raw);
+    if isempty(pathProps)
+        keyboard;
+%         bodystr{end+1} = fillDataExport(pnm, 
+    end
     prop = pathProps{end};
     elideProps = pathProps(1:end-1);
-    
-    %Construct elisions
     elisions = cell(length(elideProps),1);
+    %Construct elisions
     for j = 1:length(elideProps)
         elisions{j} = elideProps{j}.name;
     end
@@ -66,7 +69,7 @@ switch class(raw)
         if ~isempty(raw.datasets)
             dsnames = {raw.datasets.name};
             lowerDsTypes = lower({raw.datasets.type});
-            useLower = [raw.datasets.isConstrainedSet];
+            useLower = [raw.datasets.isConstrainedSet] | cellfun('isempty', dsnames);
             dsnames(useLower) = lowerDsTypes(useLower);
         end
         
