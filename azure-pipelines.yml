@@ -1,8 +1,3 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
 - main
 
@@ -11,8 +6,9 @@ pool:
 
 steps:
   - task: InstallMATLAB@0
-    inputs:
-      release: R2020a
+    # default to latest version of Matlab installed
+    #inputs:
+    #  release: R2020a
 
   - task: UsePythonVersion@0
     inputs:
