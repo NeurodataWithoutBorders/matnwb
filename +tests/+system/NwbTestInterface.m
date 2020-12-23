@@ -15,9 +15,7 @@ classdef NwbTestInterface < matlab.unittest.TestCase
     
     methods (TestMethodSetup)
         function setupMethod(testCase)
-            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
-            schemaPath = fullfile(testCase.root, 'nwb-schema');
-            
+            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);            
             generateCore();
             testCase.file = NwbFile( ...
                 'session_description', 'a test NWB File', ...
