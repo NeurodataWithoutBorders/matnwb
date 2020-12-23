@@ -7,6 +7,7 @@ pool:
 steps:
   - checkout: self
     submodules: true
+
   - task: InstallMATLAB@0
     # default to latest version of Matlab installed
     #inputs:
