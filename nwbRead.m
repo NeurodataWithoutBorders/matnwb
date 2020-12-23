@@ -1,19 +1,18 @@
 function nwb = nwbRead(filename, varargin)
 %NWBREAD Reads an NWB file.
-%  nwb = nwbRead(filename) Reads the nwb file at filename and returns an
+%  nwb = NWBREAD(filename) Reads the nwb file at filename and returns an
 %  NWBFile object representing its contents.
 %  nwb = nwbRead(filename, 'ignorecache') Reads the nwb file without generating classes
 %  off of the cached schema if one exists.
+%
+%  nwb = NWBREAD(filename, options)
 %
 %  Requires that core and extension NWB types have been generated
 %  and reside in a 'types' package on the matlab path.
 %
 %  Example:
-%    %Generate Matlab code for the NWB objects from the core schema.
-%    %This only needs to be done once.
-%    generateCore('schema\core\nwb.namespace.yaml');
-%    %Now we can read nwb files!
-%    nwb=nwbRead('data.nwb');
+%    nwb = nwbRead('data.nwb');
+%    nwb = nwbRead('data.nwb', 
 %
 %  See also GENERATECORE, GENERATEEXTENSION, NWBFILE, NWBEXPORT
 ignoreCache = ~isempty(varargin) && ischar(varargin{1}) &&...
@@ -52,22 +51,7 @@ catch ME
     version = H5A.read(attributeId);
     H5A.close(attributeId);
     
-    [nwbLocation, ~, ~] = fileparts(mfilename('fullpath'));
-    schemaPath = fullfile(nwbLocation, 'nwb-schema', version);
-    corePath = fullfile(schemaPath, 'core', 'nwb.namespace.yaml');
-    commonPath = fullfile(schemaPath,...
-        'hdmf-common-schema', ...
-        'common',...
-        'namespace.yaml');
-    assert(2 == exist(corePath, 'file'),...
-        'MATNWB:nwbread:missingSpec',...
-        'Cannot find suitable core namespace for schema version `%s`',...
-        version);
-    
-    if 2 == exist(commonPath, 'file')
-        generateExtension(commonPath);
-    end
-    generateExtension(corePath);
+    generateCore(version);
 end
 rehash(); % required if we want parseGroup to read the right files.
 H5F.close(fid);

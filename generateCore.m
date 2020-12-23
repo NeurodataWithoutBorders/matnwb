@@ -1,11 +1,11 @@
-function generateCore(varargin)
+function generateCore(version)
 % GENERATECORE Generate Matlab classes from NWB core schema files
 %   GENERATECORE()  Generate classes (Matlab m-files) from the
-%   NWB:N core namespace file.
+%   NWB:N core namespace file. By default, generates off of the most recent nwb-schema
+%   release.
 %
-%   GENERATECORE(core_or_extension_paths,...)  Generate classes for the
-%   core namespace as well as one or more extenstions.  Each input filename
-%   should be an NWB namespace file.
+%   GENERATECORE(version)  Generate classes for the
+%   core namespace of that version
 %
 %   A cache of schema data is generated in the 'namespaces' subdirectory in
 %   the current working directory.  This is for allowing cross-referencing
@@ -16,25 +16,30 @@ function generateCore(varargin)
 %
 %   Example:
 %      generateCore();
-%      generateCore('schema/core/nwb.namespace.yaml');
-%      generateCore('schema/my_ext/myext.namespace.yaml');
+%      generateCore('2.2.3');
 %
 %   See also GENERATEEXTENSION
+
 if nargin == 0
-    [nwbLocation, ~, ~] = fileparts(mfilename('fullpath'));
-    schemaPath = fullfile(nwbLocation, 'nwb-schema');
-    corePath = fullfile(schemaPath, 'core', 'nwb.namespace.yaml');
-    commonPath = fullfile(schemaPath, 'hdmf-common-schema', ...
-        'common', 'namespace.yaml');
-    
-    if 2 == exist(commonPath, 'file')
-        generateExtension(commonPath);
-    end
-    
-    generateExtension(corePath);
+    version = '2.2.5';
 else
-    for i=1:length(varargin)
-        generateExtension(varargin{i});
-    end
+    validateattributes(version, {'char'}, {'scalartext'});
 end
+
+[nwbLocation, ~, ~] = fileparts(mfilename('fullpath'));
+schemaPath = fullfile(nwbLocation, 'nwb-schema', version);
+corePath = fullfile(schemaPath, 'core', 'nwb.namespace.yaml');
+commonPath = fullfile(schemaPath,...
+    'hdmf-common-schema', ...
+    'common',...
+    'namespace.yaml');
+assert(2 == exist(corePath, 'file'),...
+    'MATNWB:nwbread:missingSpec',...
+    'Cannot find suitable core namespace for schema version `%s`',...
+    version);
+
+if 2 == exist(commonPath, 'file')
+    generateExtension(commonPath);
+end
+generateExtension(corePath);
 end
