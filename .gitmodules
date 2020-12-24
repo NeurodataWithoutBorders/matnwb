@@ -1,0 +1,18 @@
+[submodule "nwb-schema/2.2.5"]
+	path = nwb-schema/2.2.5
+	url = https://github.com/NeurodataWithoutBorders/nwb-schema
+[submodule "nwb-schema/2.2.4"]
+	path = nwb-schema/2.2.4
+	url = https://github.com/NeurodataWithoutBorders/nwb-schema
+[submodule "nwb-schema/2.2.3"]
+	path = nwb-schema/2.2.3
+	url = https://github.com/NeurodataWithoutBorders/nwb-schema
+[submodule "nwb-schema/2.2.2"]
+	path = nwb-schema/2.2.2
+	url = https://github.com/NeurodataWithoutBorders/nwb-schema
+[submodule "nwb-schema/2.2.1"]
+	path = nwb-schema/2.2.1
+	url = https://github.com/NeurodataWithoutBorders/nwb-schema
+[submodule "nwb-schema/2.2.0"]
+	path = nwb-schema/2.2.0
+	url = https://github.com/NeurodataWithoutBorders/nwb-schema

@@ -1,6 +1,6 @@
-function generateExtension(source)
+function generateExtension(varargin)
 % GENERATEEXTENSION Generate Matlab classes from NWB extension schema file
-%   GENERATECORE(extension_path...)  Generate classes
+%   GENERATEEXTENSION(extension_path...)  Generate classes
 %   (Matlab m-files) from one or more NWB:N schema extension namespace
 %   files.  A registry of already generated core types is used to resolve
 %   dependent types.
@@ -13,19 +13,22 @@ function generateExtension(source)
 %   current working directory.
 %
 %   Example:
-%      generateCore('schema\core\nwb.namespace.yaml');
-%      generateExtension('schema\myext\myextension.namespace.yaml')
+%      generateExtension('schema\myext\myextension.namespace.yaml', 'schema\myext2\myext2.namespace.yaml');
 %
 %   See also GENERATECORE
-validateattributes(source, {'char', 'string'}, {'scalartext'});
-
-[localpath, ~, ~] = fileparts(source);
-assert(2 == exist(source, 'file'),...
-    'MATNWB:FILE', 'Path to file `%s` could not be found.', source);
-fid = fopen(source);
-namespaceText = fread(fid, '*char') .';
-fclose(fid);
-
-Namespace = spec.generate(namespaceText, localpath);
-file.writeNamespace(Namespace.name);
+for i = 1:length(varargin)
+    source = varargin{i};
+    validateattributes(source, {'char', 'string'}, {'scalartext'});
+    
+    [localpath, ~, ~] = fileparts(source);
+    assert(2 == exist(source, 'file'),...
+        'MATNWB:FILE', 'Path to file `%s` could not be found.', source);
+    fid = fopen(source);
+    namespaceText = fread(fid, '*char') .';
+    fclose(fid);
+    
+    Namespace = spec.generate(namespaceText, localpath);
+    file.writeNamespace(Namespace.name);
+    rehash();
+end
 end
