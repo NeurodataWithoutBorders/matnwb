@@ -9,7 +9,7 @@ A Matlab interface for reading and writing Neurodata Without Borders (NWB) 2.0 f
 Download the current release of MatNWB from the [MatNWB releases page](https://github.com/NeurodataWithoutBorders/matnwb/releases) or from the [![View NeurodataWithoutBorders/matnwb on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://www.mathworks.com/matlabcentral/fileexchange/67741-neurodatawithoutborders-matnwb). You can also check out the latest development version via 
 
 ```bash
-git clone https://github.com/NeurodataWithoutBorders/matnwb.git
+git clone --recurse-submodules https://github.com/NeurodataWithoutBorders/matnwb.git
 ```
 
 ### Step 2: Generate the API
@@ -19,37 +19,32 @@ From the Matlab command line, add MatNWB to the Matlab path and generate the cor
 ```matlab
 cd matnwb
 addpath(genpath(pwd));
-generateCore(); % generate core namespace located in the repository.
+generateCore(); % generate the most recent nwb-schema release.
 ```
 
 ### Optional: Generate MatNWB code for extensions
 
-The `generateCore` command also takes variable arguments from any extensions.
+The `generateExtension` command generates extension classes given a file path to the extension's namespace.
 
 ```matlab
-generateCore('schema/core/nwb.namespace.yaml', '.../my_extensions1.namespace.yaml',...);
-```
-
-You can also generate extensions without generating the core classes in this way:
-
-```matlab
-generateExtension('my_extension.namespace.yaml');
+generateExtension('schema/core/nwb.namespace.yaml', '.../my_extensions1.namespace.yaml',...);
 ```
 
 Generated Matlab code will be put a `+types` subdirectory.  This is a Matlab package.  When the `+types` folder is accessible to the Matlab path, the generated code will be used for reading NWBFiles.
 
 ```matlab
-nwb=nwbRead('data.nwb');
+nwb = nwbRead('data.nwb');
 ```
 
-### Optional: Download the NWB format schema
+### Optional: Generate an older core schema
 
-Download the current release of the NWB format schema from the [nwb-schema releases page](https://github.com/NeurodataWithoutBorders/nwb-schema/releases) or check out the latest development via 
+The `generateCore` command can generate older versions of the nwb schema.
 
-```bash
-git clone --recursive https://github.com/NeurodataWithoutBorders/nwb-schema.git
+```matlab
+generateCore('2.2.1'); % generate schema 2.2.1
 ```
-Then re-run `generateCore()` to update the API from the updated schema.
+
+Currently, only schemas 2.2.x are supported (2.1.0 and 2.0.1 are not supported at this time).
 
 ## Tutorials
 
