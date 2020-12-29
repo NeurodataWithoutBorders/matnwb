@@ -5,9 +5,6 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-  - checkout: self
-    submodules: recursive
-
   - task: InstallMATLAB@0
     # default to latest version of Matlab installed
     #inputs:
