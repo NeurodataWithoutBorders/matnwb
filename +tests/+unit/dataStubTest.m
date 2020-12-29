@@ -9,6 +9,7 @@ end
 
 function setup(testCase)
 testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
+generateCore();
 end
 
 function testRegionRead(testCase)

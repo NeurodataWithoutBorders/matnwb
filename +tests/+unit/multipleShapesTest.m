@@ -3,17 +3,16 @@ tests = functiontests(localfunctions);
 end
 
 function setupOnce(testCase)
-schemaPath = fullfile(misc.getMatnwbDir(),...
-    '+tests', '+unit', 'multipleShapesSchema', 'mss.namespace.yaml');
-generateExtension(schemaPath);
+rootPath = fullfile(fileparts(mfilename('fullpath')), '..', '..');
+testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
 end
 
 function setup(testCase)
 testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
-end
-
-function teardownOnce(~)
-% rmdir(fullfile('+types', '+mss'), 's');
+generateCore();
+schemaPath = fullfile(misc.getMatnwbDir(),...
+    '+tests', '+unit', 'multipleShapesSchema', 'mss.namespace.yaml');
+generateExtension(schemaPath);
 end
 
 function testMultipleShapesDataset(testCase)

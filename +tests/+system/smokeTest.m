@@ -5,14 +5,11 @@ end
 function setupOnce(testCase)
 rootPath = fullfile(fileparts(mfilename('fullpath')), '..', '..');
 testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
-generateCore();
-end
-
-function teardownOnce(testCase)
 end
 
 function setup(testCase)
 testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
+generateCore();
 end
 
 %TODO rewrite namespace instantiation check
