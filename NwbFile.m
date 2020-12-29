@@ -42,10 +42,13 @@ classdef NwbFile < types.core.NWBFile
             try
                 output_file_id = H5F.create(filename);
             catch ME % if file exists, open and edit
-                isLibraryError = strcmp(ME.identifier,...
-                    'MATLAB:imagesci:hdf5lib:libraryError');
-                isFileExistsError = isLibraryError &&...
-                    contains(ME.message, '''File exists''');
+                if verLessThan('matlab', '9.9') % < 2020b
+                    isFileExistsError = strcmp(ME.identifier, 'MATLAB:imagesci:hdf5lib:libraryError')...
+                        && contains(ME.message, '''File exists''');
+                else
+                    isFileExistsError = strcmp(ME.identifier, 'MATLAB:imagesci:hdf5io:resourceAlreadyExists');
+                end
+                
                 if isFileExistsError
                     output_file_id = H5F.open(filename, 'H5F_ACC_RDWR', 'H5P_DEFAULT');
                 else

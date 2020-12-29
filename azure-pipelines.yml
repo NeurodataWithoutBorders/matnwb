@@ -5,13 +5,11 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-  - checkout: self
-    submodules: recursive
-
   - task: InstallMATLAB@0
     # default to latest version of Matlab installed
     #inputs:
     #  release: R2020a
+  - checkout: self
 
   - task: UsePythonVersion@0
     inputs:
@@ -25,5 +23,5 @@ steps:
 
   - task: RunMATLABCommand@0
     inputs:
-      command: "try, addpath(genpath(pwd)); generateCore(); results = nwbtest; if isempty(results), exit(1); end; catch err, disp(err.message); exit(1); end"
+      command: "try, addpath(genpath(pwd)); results = nwbtest; if isempty(results), exit(1); end; catch err, disp(err.message); exit(1); end"
   
