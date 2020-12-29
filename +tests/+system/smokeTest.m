@@ -5,14 +5,10 @@ end
 function setupOnce(testCase)
 rootPath = fullfile(fileparts(mfilename('fullpath')), '..', '..');
 testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
-% corePath = fullfile(rootPath, 'schema', 'core', 'nwb.namespace.yaml');
-% testCase.TestData.registry = generateCore(corePath);
+generateCore();
 end
 
 function teardownOnce(testCase)
-% classes = fieldnames(testCase.TestData.registry);
-% files = strcat(fullfile('+types', classes), '.m');
-% delete(files{:});
 end
 
 function setup(testCase)
