@@ -9,7 +9,7 @@ A Matlab interface for reading and writing Neurodata Without Borders (NWB) 2.0 f
 Download the current release of MatNWB from the [MatNWB releases page](https://github.com/NeurodataWithoutBorders/matnwb/releases) or from the [![View NeurodataWithoutBorders/matnwb on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://www.mathworks.com/matlabcentral/fileexchange/67741-neurodatawithoutborders-matnwb). You can also check out the latest development version via 
 
 ```bash
-git clone --recurse-submodules https://github.com/NeurodataWithoutBorders/matnwb.git
+git clone https://github.com/NeurodataWithoutBorders/matnwb.git
 ```
 
 ### Step 2: Generate the API
