@@ -12,7 +12,7 @@ function namespaceDir = getNamespaceDir(varargin)
     % TODO
         %
         
-    localNamespace = fullfile(misc.getWorkspace(), 'namespaces');
+    localNamespace = fullfile(pwd, 'namespaces');
     rootNamespace = fullfile(misc.getMatnwbDir(), 'namespaces');
     if 7 == exist(localNamespace, 'dir')
         namespaceDir = localNamespace;
