@@ -26,7 +26,7 @@ namespacePath = misc.getNamespaceDir();
 if isempty(namespacePath)
     namespacePath = fullfile(pwd, 'namespaces');
     mkdir(namespacePath);
-    fprintf('Created namespace directory.\n');
+    fprintf('Created namespace directory in `%s`\n', namespacePath);
 end
 cachePath = fullfile(namespacePath, [NamespaceInfo.name '.mat']);
 save(cachePath, '-struct', 'NamespaceInfo');
