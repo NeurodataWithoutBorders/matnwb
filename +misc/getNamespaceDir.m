@@ -19,7 +19,6 @@ function namespaceDir = getNamespaceDir(varargin)
     elseif 7 == exist(rootNamespace, 'dir')
         namespaceDir = rootNamespace;
     else
-        warning('Directory "namespaces" not found.');
         namespaceDir = '';
     end
 end

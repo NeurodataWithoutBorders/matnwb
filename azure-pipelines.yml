@@ -23,5 +23,5 @@ steps:
 
   - task: RunMATLABCommand@0
     inputs:
-      command: "try, results = nwbtest; if isempty(results), exit(1); end; catch err, disp(err.message); exit(1); end"
+      command: "try, generateCore(); results = nwbtest; if isempty(results), exit(1); end; catch err, disp(err.message); exit(1); end"
   
