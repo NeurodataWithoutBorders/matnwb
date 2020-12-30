@@ -27,7 +27,7 @@ for iAncestor=length(branch):-1:1
         pregen(nodename) = struct('class', class, 'props', props);
     end
     try
-    Processed(iAncestor) = pregen(nodename).class;
+        Processed(iAncestor) = pregen(nodename).class;
     catch
         keyboard;
     end
