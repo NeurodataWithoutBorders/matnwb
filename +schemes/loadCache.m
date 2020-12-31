@@ -15,7 +15,6 @@ if nargin > 0
 end
 
 if isempty(fileList)
-    fprintf('Could not find namespace in `%s`', namespaceDir);
     Cache = struct([]);
     return;
 end

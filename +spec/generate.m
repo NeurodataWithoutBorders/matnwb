@@ -28,9 +28,5 @@ if isempty(namespacePath)
     mkdir(namespacePath);
 end
 cachePath = fullfile(namespacePath, [NamespaceInfo.name '.mat']);
-fprintf('Saving Namespace `%s`\n', NamespaceInfo.name);
 save(cachePath, '-struct', 'NamespaceInfo');
-CacheFiles = dir(namespacePath);
-CacheFiles = CacheFiles(~[CacheFiles.isdir]);
-fprintf('Current cache files: \n%s\n', strjoin({CacheFiles.name}, newline));
 end
