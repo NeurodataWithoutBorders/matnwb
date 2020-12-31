@@ -38,7 +38,9 @@ assert(2 == exist(corePath, 'file'),...
     'Cannot find suitable core namespace for schema version `%s`',...
     version);
 
+fprintf('Generating extension at `%s`\n', commonPath);
 if 2 == exist(commonPath, 'file')
+    fprintf('--Found\n');
     generateExtension(commonPath);
 end
 generateExtension(corePath);
