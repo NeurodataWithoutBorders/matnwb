@@ -37,8 +37,12 @@ classdef DataStub < handle
             num = prod(obj.dims);
         end
         
-        function sz = size(obj)
+        function sz = size(obj, dim)
             sz = obj.dims;
+            if nargin > 1
+                validateattributes(dim, {'numeric'}, {'scalar', 'positive', '<=', length(sz)});
+                sz = sz(dim);
+            end
         end
         
         function tf = isempty(obj)

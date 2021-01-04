@@ -16,9 +16,7 @@ function addRow(DynamicTable, varargin)
 % 7) Ragged arrays (that is, rows containing more than one sub-row) require
 %    an extra parameter called `tablepath` which 
 
-assert(isa(DynamicTable, 'types.hdmf_common.DynamicTable') && isscalar(DynamicTable),...
-    'MatNWB:DynamicTable:AddRow:InvalidType',...
-    'Must be a `types.hdmf_common.DynamicTable`');
+validateattributes(DynamicTable, {'types.hdmf_common.DynamicTable'}, {'scalar'});
 assert(~isempty(DynamicTable.colnames),...
     'MatNWB:DynamicTable:AddRow:NoColumns',...
     ['The `colnames` property of the Dynamic Table needs to be populated with a cell array '...
@@ -59,7 +57,7 @@ for i = 1:length(rowNames)
     
     % instantiate vector index here because it's dependent on the table
     % fullpath.
-    vecIndName = getIndex(DynamicTable, rn);
+    vecIndName = types.util.dynamictable.getIndex(DynamicTable, rn);
     if isempty(vecIndName) && size(rv, 1) > 1 % that is, this is now a ragged array
         assert(~isempty(tablePath),...
             'MatNWB:DynamicTable:AddRow:MissingTablePath',...
@@ -122,19 +120,6 @@ for i = length(DynamicTable.colnames)
         TypeStruct.dims = size(colVecData.data);
     end
     TypeMap(colnm) = TypeStruct;
-end
-end
-
-function indexName = getIndex(DynamicTable, column)
-indexName = '';
-vecIndKeys = keys(DynamicTable.vectorindex);
-for i = 1:length(vecIndKeys)
-    vik = vecIndKeys{i};
-    VecInd = DynamicTable.vectorindex.get(vik);
-    if endsWith(VecInd.target.path, ['/' column])
-        indexName = vik;
-        return;
-    end
 end
 end
 
