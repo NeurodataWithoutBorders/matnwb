@@ -28,16 +28,21 @@ addParameter(p, 'tablepath', '', @(x)ischar(x)); % required for ragged arrays.
 for i = 1:length(DynamicTable.colnames)
     addParameter(p, DynamicTable.colnames{i}, {}, @(x)~isempty(x)); % that is, these are required.
 end
-parse(p, varargin);
+parse(p, varargin{:});
 
-assert(isempty(p.Unmatched),...
+assert(isempty(fieldnames(p.Unmatched)),...
     'MatNWB:DynamicTable:AddRow:InvalidColumns',...
     'Invalid column name(s) { %s }', strjoin(fieldnames(p.Unmatched), ', '));
-assert(~isa(DynamicTable.id, 'types.untyped.DataStub'),...
+
+if isempty(DynamicTable.id)
+    DynamicTable.id = types.hdmf_common.ElementIdentifiers();
+end
+assert(~isa(DynamicTable.id.data, 'types.untyped.DataStub'),...
     'MatNWB:DynamicTable:AddRow:Uneditable',...
     ['Cannot write to on-file Dynamic Tables without enabling data pipes. '...
     'If this was produced with pynwb, please enable chunking for this table.']);
 rowNames = fieldnames(p.Results);
+rowNames(strcmp(rowNames, 'tablepath')) = [];
 
 % check if types of the table actually exist yet.
 % if table exists, then build a map of name to type and their dimensions.
@@ -46,8 +51,8 @@ for i = 1:length(rowNames)
     rn = rowNames{i};
     rv = p.Results.(rn);
     
-    TypeStruct = TypeMap(rn);
     if isKey(TypeMap, rn)
+        TypeStruct = TypeMap(rn);
         validateattributes(rv, {TypeStruct.type}, {'size', [NaN TypeStruct.dims(2:end)]});
     else
         assert(iscellstr(rv) || ~iscell(rv),...
@@ -59,7 +64,7 @@ for i = 1:length(rowNames)
     % fullpath.
     vecIndName = types.util.dynamictable.getIndex(DynamicTable, rn);
     if isempty(vecIndName) && size(rv, 1) > 1 % that is, this is now a ragged array
-        assert(~isempty(tablePath),...
+        assert(~isempty(p.Results.tablepath),...
             'MatNWB:DynamicTable:AddRow:MissingTablePath',...
             ['addRow cannot create ragged arrays without a full HDF5 path to the Dynamic Table. '...
             'Please either add the full expected HDF5 path under the keyword argument `tablepath` '...
@@ -129,15 +134,6 @@ if nargin < 4
     % indicates an index column. Note we assume that the index name is correct.
     % Validation of this index name must occur upstream.
     index = '';
-end
-
-% increment id.
-if isempty(DynamicTable.id)
-    DynamicTable.id = types.hdmf_common.ElementIdentifiers('data', 0);
-elseif isa(DynamicTable.id.data, 'types.untyped.DataPipe')
-    DynamicTable.id.data.append(DynamicTable.id.data.offset);
-else
-    DynamicTable.id.data = [DynamicTable.id.data; length(DynamicTable.id.data)];
 end
 
 if ~isKey(DynamicTable.vectordata, column)

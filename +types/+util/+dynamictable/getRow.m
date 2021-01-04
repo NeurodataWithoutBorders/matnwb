@@ -4,29 +4,34 @@ function varargout = getRow(DynamicTable, id, varargin)
 % optional keyword argument "ColumnNames" allows for only grabbing certain
 % columns instead of returning all columns.
 % The returned value is a set of output arguments in the order of
-% `colnames` or "ColumnNames" if one exists.
+% `colnames` or "columnnames" keyword argument if one exists.
 
 validateattributes(DynamicTable, {'types.hdmf_common.DynamicTable'}, {'scalar'});
 
-if isa(DynamicTable.id, 'types.untyped.DataStub')
+if isempty(DynamicTable.id)
+    DynamicTable.id = types.hdmf_common.ElementIdentifiers();
+end
+
+if isa(DynamicTable.id.data, 'types.untyped.DataStub')
     stubSize = size(DynamicTable.id);
     maxId = stubSize(1) - 1;
-elseif isa(DynamicTable.id, 'types.untyped.DataPipe')
+elseif isa(DynamicTable.id.data, 'types.untyped.DataPipe')
     maxId = DynamicTable.id.offset - 1;
 else
-    maxId = DynamicTable.id(end);
+    maxId = DynamicTable.id.data(end);
 end
+assert(~isempty(maxId) && maxId >= 0, 'MatNWB:getRow:EmptyTable', 'Dynamic Table is Empty');
 validateattributes(id, {'numeric'}, {'scalar', 'nonnegative', '<=', maxId});
 
 p = inputParser;
-addParameter(p, 'ColumnNames', DynamicTable.colnames, @(x)iscellstr(x));
-parse(p, varargin);
+addParameter(p, 'columnnames', DynamicTable.colnames, @(x)iscellstr(x));
+parse(p, varargin{:});
 
-columnNames = p.Results.ColumnNames;
+columnNames = p.Results.columnnames;
 varargout = cell(1, length(columnNames));
 for i = 1:length(columnNames)
     cn = columnNames{i};
-    indexName = types.util.dynamictable.getIndex(cn);
+    indexName = types.util.dynamictable.getIndex(DynamicTable, cn);
     
     matInd = id + 1;
     VectorData = DynamicTable.vectordata.get(cn);
