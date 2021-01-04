@@ -231,6 +231,14 @@ classdef DataPipe < handle
             data = obj.internal.load(varargin{:});
         end
         
+        function sz = size(obj, varargin)
+            assert(isa(obj.internal, 'types.untyped.datapipe.BoundPipe'),...
+                'NWB:DataPipe:LoadingUnboundPipe',...
+                ['DataPipe must be successfully exported before DataStub '...
+                'features are allowed.']);
+            sz = size(obj.internal, varargin{:});
+        end
+        
         function append(obj, data)
             obj.internal.append(data);
         end

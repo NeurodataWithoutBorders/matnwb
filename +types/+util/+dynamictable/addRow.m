@@ -26,10 +26,9 @@ p.KeepUnmatched = true;
 p.StructExpand = false;
 addParameter(p, 'tablepath', '', @(x)ischar(x)); % required for ragged arrays.
 for i = 1:length(DynamicTable.colnames)
-    addParameter(p, DynamicTable.colnames{i}, {}, @(x)~isempty(x)); % that is, these are required.
+    addParameter(p, DynamicTable.colnames{i}, []); % that is, these are required.
 end
 parse(p, varargin{:});
-
 assert(isempty(fieldnames(p.Unmatched)),...
     'MatNWB:DynamicTable:AddRow:InvalidColumns',...
     'Invalid column name(s) { %s }', strjoin(fieldnames(p.Unmatched), ', '));
@@ -43,6 +42,10 @@ assert(~isa(DynamicTable.id.data, 'types.untyped.DataStub'),...
     'If this was produced with pynwb, please enable chunking for this table.']);
 rowNames = fieldnames(p.Results);
 rowNames(strcmp(rowNames, 'tablepath')) = [];
+missingColumns = setdiff(p.UsingDefaults, {'tablepath'});
+assert(isempty(missingColumns),...
+    'MatNWB:DynamicTable:AddRow:MissingColumns',...
+    'Missing columns { %s }', strjoin(missingColumns, ', '));
 
 % check if types of the table actually exist yet.
 % if table exists, then build a map of name to type and their dimensions.
