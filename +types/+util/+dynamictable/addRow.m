@@ -96,10 +96,15 @@ for i = 1:length(rowNames)
                 oldDataHeight = size(VecData.data, 1);
             end
         end
-        DynamicTable.vectorindex.set(vecIndName,...
-            types.hdmf_common.VectorIndex(...
+        
+        VecIndex = types.hdmf_common.VectorIndex(...
             'target', vecTarget,...
-            'data', [0:(oldDataHeight-1)] .')); %#ok<NBRAK> % populate data with previously non-ragged index range.
+            'data', [0:(oldDataHeight-1)] .'); %#ok<NBRAK> % populate data with previously non-ragged index range.
+        if isprop(vecIndName)
+            DynamicTable.(vecIndName) = VecIndex;
+        else
+            DynamicTable.vectorindex.set(vecIndName, VecIndex);
+        end 
     end
     appendData(DynamicTable, rn, rv, vecIndName);
 end
@@ -173,7 +178,11 @@ if ~isempty(index)
         raggedIndex = size(VecData.data, 1);
     end
     
-    VecInd = DynamicTable.vectorindex.get(index);
+    if isprop(DynamicTable, index)
+        VecInd = DynamicTable.(index);
+    else
+        VecInd = DynamicTable.vectorindex.get(index);
+    end
     if isa(VecInd.data, 'types.untyped.DataPipe')
         VecInd.data.append(raggedIndex);
     else
