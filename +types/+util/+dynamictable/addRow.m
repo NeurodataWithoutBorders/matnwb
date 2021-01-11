@@ -16,9 +16,6 @@ function addRow(DynamicTable, varargin)
 % 7) Ragged arrays (that is, rows containing more than one sub-row) require
 %    an extra parameter called `tablepath` which indicates where in the NWB
 %    file the table is.
-%
-%   TODO: Change column name references for vectordata and vectorindex to
-%   check for sub-class properties as well.
 
 validateattributes(DynamicTable, {'types.hdmf_common.DynamicTable'}, {'scalar'});
 assert(~isempty(DynamicTable.colnames),...
