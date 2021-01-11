@@ -100,7 +100,7 @@ for i = 1:length(rowNames)
         VecIndex = types.hdmf_common.VectorIndex(...
             'target', vecTarget,...
             'data', [0:(oldDataHeight-1)] .'); %#ok<NBRAK> % populate data with previously non-ragged index range.
-        if isprop(vecIndName)
+        if isprop(DynamicTable, vecIndName)
             DynamicTable.(vecIndName) = VecIndex;
         else
             DynamicTable.vectorindex.set(vecIndName, VecIndex);
@@ -121,7 +121,9 @@ end
 
 function TypeMap = constructTypeMap(DynamicTable)
 TypeMap = containers.Map;
-if isempty(DynamicTable.id.data)
+if isempty(DynamicTable.id.data)...
+        || (isa(DynamicTable.id.data, 'types.untyped.DataPipe')...
+            && 0 == DynamicTable.id.data.offset)
     return;
 end
 TypeStruct = struct('type', '', 'dims', [0, 0]);
