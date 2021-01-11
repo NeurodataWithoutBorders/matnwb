@@ -167,9 +167,10 @@ if isprop(DynamicTable, column)
         DynamicTable.(column) = VecData;
     end
     VecData = DynamicTable.(column);
-elseif ~isKey(DynamicTable.vectordata, column)
-    DynamicTable.vectordata.set(column, VecData);
+elseif isKey(DynamicTable.vectordata, column)
+    VecData = DynamicTable.vectordata.get(column);
 else
+    DynamicTable.vectordata.set(column, VecData);
 end
 
 % Update index if necessary.
