@@ -37,6 +37,18 @@ classdef DataStub < handle
             num = prod(obj.dims);
         end
         
+        function sz = size(obj, dim)
+            sz = obj.dims;
+            if nargin > 1
+                validateattributes(dim, {'numeric'}, {'scalar', 'positive', '<=', length(sz)});
+                sz = sz(dim);
+            end
+        end
+        
+        function tf = isempty(obj)
+            tf = numel(obj) == 0;
+        end
+        
         %can be called without arg, with H5ML.id, or (dims, offset, stride)
         function data = load_h5_style(obj, varargin)
             %LOAD  Read data from HDF5 dataset.

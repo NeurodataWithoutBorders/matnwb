@@ -52,6 +52,10 @@ classdef Set < handle & matlab.mixin.CustomDisplay
             end
         end
         
+        function tf = isKey(obj, name)
+            tf = isKey(obj.map, name);
+        end
+        
         %return object's keys
         function k = keys(obj)
             k = keys(obj.map);
