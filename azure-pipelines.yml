@@ -25,6 +25,7 @@ steps:
     inputs:
       testResultsJUnit: test-results/results.xml
       codeCoverageCobertura: code-coverage/coverage.xml
+      selectByFolder: +tests
   - task: PublishTestResults@2
     condition: succeededOrFailed()
     inputs:
