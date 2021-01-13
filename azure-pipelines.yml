@@ -21,20 +21,16 @@ steps:
       pip install pynwb
     displayName: 'Install PyNWB'
 
-  - task: RunMATLABTests@0
+  - task: RunMATLABCommand@0
     inputs:
-      testResultsJUnit: test-results/results.xml
-      codeCoverageCobertura: code-coverage/coverage.xml
-      selectByFolder: +tests
+      command: "results = assertSuccess(nwbtest); assert(~isempty(results), 'No tests ran');"
   - task: PublishTestResults@2
     condition: succeededOrFailed()
     inputs:
-      testResultsFiles: test-results/results.xml
+      testResultsFiles: testResults.xml
   - task: PublishCodeCoverageResults@1
     inputs:
       codeCoverageTool: Cobertura
-      summaryFileLocation: code-coverage/coverage.xml
-  # - task: RunMATLABCommand@0
-  #   inputs:
-  #     command: "try, results = nwbtest; if isempty(results), exit(1); end; catch err, disp(err.message); exit(1); end"
+      summaryFileLocation: coverage.xml
+
   
