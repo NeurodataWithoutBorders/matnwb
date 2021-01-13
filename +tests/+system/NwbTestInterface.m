@@ -50,7 +50,7 @@ classdef NwbTestInterface < matlab.unittest.TestCase
                 elseif isa(val1, 'types.untyped.Set')
                     verifySetEqual(testCase, val1, val2, failmsg);
                 elseif isdatetime(val1)
-                    testCase.verifyEqual(char(val1), char(val2));
+                    testCase.verifyEqual(char(val1), char(val2), failmsg);
                 else
                     if isa(val1, 'types.untyped.DataStub')
                         trueval = val1.load();
@@ -60,6 +60,16 @@ classdef NwbTestInterface < matlab.unittest.TestCase
                     
                     if isvector(val2) && isvector(trueval) && numel(val2) == numel(trueval)
                         trueval = reshape(trueval, size(val2));
+                    end
+                    
+                    if isinteger(trueval) && isinteger(val2)
+                        size1 = class(trueval);
+                        size1 = str2double(size1(4:end));
+                        size2 = class(val2);
+                        size2 = str2double(size2(4:end));
+                        testCase.verifyGreaterThanOrEqual(size2, size1, failmsg);
+                        testCase.verifyEqual(double(trueval), double(val2), failmsg);
+                        continue;
                     end
                     testCase.verifyEqual(trueval, val2, failmsg);
                 end
