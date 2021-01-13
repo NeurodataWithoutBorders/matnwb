@@ -41,27 +41,37 @@ classdef NwbTestInterface < matlab.unittest.TestCase
                 if strcmp(prop, 'file_create_date')
                     continue;
                 end
-                val1 = actual.(prop);
-                val2 = expected.(prop);
+                actualVal = actual.(prop);
+                expectedVal = expected.(prop);
                 failmsg = ['Values for property ''' prop ''' are not equal'];
-                if startsWith(class(val1), 'types.')...
-                        && ~startsWith(class(val1), 'types.untyped')
-                    verifyContainerEqual(testCase, val1, val2);
-                elseif isa(val1, 'types.untyped.Set')
-                    verifySetEqual(testCase, val1, val2, failmsg);
-                elseif isdatetime(val1)
-                    testCase.verifyEqual(char(val1), char(val2));
+                if startsWith(class(actualVal), 'types.')...
+                        && ~startsWith(class(actualVal), 'types.untyped')
+                    verifyContainerEqual(testCase, actualVal, expectedVal);
+                elseif isa(actualVal, 'types.untyped.Set')
+                    verifySetEqual(testCase, actualVal, expectedVal, failmsg);
+                elseif isdatetime(actualVal)
+                    testCase.verifyEqual(char(actualVal), char(expectedVal), failmsg);
                 else
-                    if isa(val1, 'types.untyped.DataStub')
-                        trueval = val1.load();
+                    if isa(actualVal, 'types.untyped.DataStub')
+                        actualTrue = actualVal.load();
                     else
-                        trueval = val1;
+                        actualTrue = actualVal;
                     end
                     
-                    if isvector(val2) && isvector(trueval) && numel(val2) == numel(trueval)
-                        trueval = reshape(trueval, size(val2));
+                    if isvector(expectedVal) && isvector(actualTrue) && numel(expectedVal) == numel(actualTrue)
+                        actualTrue = reshape(actualTrue, size(expectedVal));
                     end
-                    testCase.verifyEqual(trueval, val2, failmsg);
+                    
+                    if isinteger(actualTrue) && isinteger(expectedVal)
+                        actualSize = class(actualTrue);
+                        actualSize = str2double(actualSize(4:end));
+                        expectedSize = class(expectedVal);
+                        expectedSize = str2double(expectedSize(4:end));
+                        testCase.verifyGreaterThanOrEqual(actualSize, expectedSize, failmsg);
+                        testCase.verifyEqual(double(actualTrue), double(expectedVal), failmsg);
+                        continue;
+                    end
+                    testCase.verifyEqual(actualTrue, expectedVal, failmsg);
                 end
             end
         end
