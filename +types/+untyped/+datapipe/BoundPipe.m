@@ -1,9 +1,10 @@
-classdef BoundPipe < types.untyped.datapipe.Pipe & types.untyped.DataStub
+classdef BoundPipe < types.untyped.datapipe.Pipe
     %BOUND Represents a Bound DataPipe which must point to a valid file.
     
     properties (SetAccess = private)
         config = types.untyped.datapipe.Configuration.empty;
         pipeProperties = {};
+        stub = types.untyped.DataStub.empty;
     end
     
     properties (SetAccess = private, Dependent)
@@ -11,6 +12,9 @@ classdef BoundPipe < types.untyped.datapipe.Pipe & types.untyped.DataStub
         offset;
         dataType;
         maxSize;
+        dims;
+        filename;
+        path;
     end
     
     methods % lifecycle
@@ -18,9 +22,9 @@ classdef BoundPipe < types.untyped.datapipe.Pipe & types.untyped.DataStub
             import types.untyped.datapipe.Configuration;
             import types.untyped.datapipe.properties.*;
             
-            obj@types.untyped.DataStub(filename, path);
+            obj.stub = types.untyped.DataStub(filename, path);
             
-            sid = obj.get_space();
+            sid = obj.stub.get_space();
             [numdims, h5_dims, h5_maxdims] = H5S.get_simple_extent_dims(sid);
             H5S.close(sid);
             
@@ -78,6 +82,18 @@ classdef BoundPipe < types.untyped.datapipe.Pipe & types.untyped.DataStub
         
         function val = get.maxSize(obj)
             val = obj.config.maxSize;
+        end
+        
+        function val = get.dims(obj)
+            val = obj.stub.dims;
+        end
+        
+        function val = get.path(obj)
+            val = obj.stub.path;
+        end
+        
+        function val = get.filename(obj)
+            val = obj.stub.filename;
         end
     end
     
