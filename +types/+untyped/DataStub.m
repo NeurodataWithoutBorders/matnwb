@@ -1,4 +1,8 @@
-classdef DataStub < handle
+classdef (Sealed) DataStub < handle
+%% DATASTUB a standin for readable data that has been written on disk.
+% This class is sealed due to special subsref behavior breaking nargout
+% expectations for most properties/methods.
+
     properties (SetAccess = protected)
         filename;
         path;
@@ -31,22 +35,6 @@ classdef DataStub < handle
         
         function nd = ndims(obj)
             nd = length(obj.dims);
-        end
-        
-        function num = numel(obj)
-            num = prod(obj.dims);
-        end
-        
-        function sz = size(obj, dim)
-            sz = obj.dims;
-            if nargin > 1
-                validateattributes(dim, {'numeric'}, {'scalar', 'positive', '<=', length(sz)});
-                sz = sz(dim);
-            end
-        end
-        
-        function tf = isempty(obj)
-            tf = numel(obj) == 0;
         end
         
         %can be called without arg, with H5ML.id, or (dims, offset, stride)
@@ -178,7 +166,7 @@ classdef DataStub < handle
                 else
                     data = obj.load_h5_style(START, count, STRIDE);
                 end
-
+                
             end
         end
         
@@ -253,6 +241,21 @@ classdef DataStub < handle
             H5S.close(src_sid);
             H5D.close(src_did);
             H5F.close(src_fid);
+        end
+        
+        function B = subsref(obj, S)
+            CurrentSubRef = S(1);
+            if ~isscalar(obj) || strcmp(CurrentSubRef.type, '.')
+                B = builtin('subsref', obj, S);
+                return;
+            end
+            
+            data = obj.load(CurrentSubRef.subs{:});
+            if isscalar(S)
+                B = data;
+            else
+                B = subsref(data, S(2:end));
+            end
         end
     end
 end
