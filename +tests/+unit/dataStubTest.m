@@ -39,14 +39,14 @@ stub = nwb2.acquisition.get('data').data;
 
 %%
 % test offset
-testCase.verifyEqual(stub.load([2 2], [4 4]), data(2:4, 2:4));
+testCase.verifyEqual(stub([2 2], [4 4]), data(2:4, 2:4));
 
 % test Inf
-testCase.verifyEqual(stub.load([2 2], [Inf Inf]), data(2:end, 2:end));
+testCase.verifyEqual(stub([2 2], [Inf Inf]), data(2:end, 2:end));
 
 % test limit
-testCase.verifyEqual(stub.load([1 1], [500 3]), data(1:500, 1:3));
+testCase.verifyEqual(stub([1 1], [500 3]), data(1:500, 1:3));
 
 % test stride
-testCase.verifyEqual(stub.load([1 1], [2,2], [1000 4]), data(1:2:1000, 1:2:4));
+testCase.verifyEqual(stub([1 1], [2,2], [1000 4]), data(1:2:1000, 1:2:4));
 end
