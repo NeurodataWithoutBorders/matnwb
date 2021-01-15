@@ -1,4 +1,4 @@
-![Azure DevOps coverage](https://img.shields.io/azure-devops/coverage/NeurodataWithoutBorders/matnwb/4) ![Azure DevOps tests](https://img.shields.io/azure-devops/tests/NeurodataWithoutBorders/matnwb/4)
+[![codecov](https://codecov.io/gh/NeurodataWithoutBorders/matnwb/branch/master/graph/badge.svg?token=apA7F24NsO)](https://codecov.io/gh/NeurodataWithoutBorders/matnwb) ![Azure DevOps tests](https://img.shields.io/azure-devops/tests/NeurodataWithoutBorders/matnwb/4)
 # MatNWB
 
 A Matlab interface for reading and writing Neurodata Without Borders (NWB) 2.0 files.
