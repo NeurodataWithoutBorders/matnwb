@@ -10,6 +10,7 @@ classdef (Sealed) DataStub < handle
     
     properties (Dependent, SetAccess = private)
         dims;
+        ndims;
     end
     
     methods
@@ -33,7 +34,7 @@ classdef (Sealed) DataStub < handle
             H5S.close(sid);
         end
         
-        function nd = ndims(obj)
+        function nd = get.ndims(obj)
             nd = length(obj.dims);
         end
         
@@ -170,6 +171,55 @@ classdef (Sealed) DataStub < handle
             end
         end
         
+        function data = load_mat_style(obj, varargin)
+            % LOAD_MAT_STYLE load data in matlab index format.
+            % LOAD_MAT_STYLE(...) where each argument is an index into the dimension or ':'
+            %   indicating load all of dimension. The dimension ordering is
+            %   MATLAB, not HDF5 for this function.
+            assert(length(varargin) <= obj.ndims, 'MatNWB:DataStub:Load:TooManyDimensions',...
+                'Too many dimensions specified (got %d, expected %d)', length(varargin), obj.ndims);
+            
+            h5_dims = fliplr(obj.dims);
+            h5_rank = length(h5_dims);
+            h5_selection = fliplr(varargin);
+            sid = obj.get_space();
+            start = zeros(1, h5_rank); % Initial offset of block
+            stride = ones(1, h5_rank); % offset of steps between blocks (1 == contiguous)
+            count = ones(1, h5_rank); % number of blocks.
+            block = ones(1, h5_rank); % Size of block separated by strides.
+            h5_size = h5_dims;
+            for i = 1:h5_rank
+                dimRange = h5_selection{i};
+                if ischar(dimRange) % ':' but if it's a char then it's not worth looking at.
+                    continue; % skip this dimension and select on other dimensions.
+                end
+                h5_size(i) = length(dimRange);
+                
+                dimRange = dimRange - 1; % convert to H5 0-indexed.
+                if isscalar(dimRange)
+                    dimStep = 1;
+                else
+                    dimStep = dimRange(2) - dimRange(1);
+                end
+                
+                start(i) = dimRange(1);
+                if 1 == dimStep
+                    block(i) = length(dimRange);
+                else
+                    stride(i) = dimStep;
+                    count(i) = length(dimRange);
+                end
+            end
+            H5S.select_hyperslab(sid, 'H5S_SELECT_SET', start, stride, count, block);
+            data = obj.load_h5_style(sid);
+            if iscell(data)
+                data = cell2mat(reshape(data, fliplr(h5_size)));
+            else
+                data = data .';
+            end
+            H5S.close(sid);
+        end
+        
         function refs = export(obj, fid, fullpath, refs)
             %Check for compound data type refs
             src_fid = H5F.open(obj.filename);
@@ -250,12 +300,32 @@ classdef (Sealed) DataStub < handle
                 return;
             end
             
-            data = obj.load(CurrentSubRef.subs{:});
+            subs = repmat({':'}, 1, obj.ndims);
+            rank = obj.ndims;
+            assert(rank >= length(CurrentSubRef.subs),...
+                'MatNWB:DataStub:InvalidDimIndex',...
+                'Cannot index into %d dimensions when max rank is %d',...
+                length(CurrentSubRef.subs), rank);
+            expectedDims = min(rank, length(CurrentSubRef.subs));
+            [subs{1:expectedDims}] = CurrentSubRef.subs{:};
+            data = obj.load_mat_style(subs{:});
             if isscalar(S)
                 B = data;
             else
                 B = subsref(data, S(2:end));
             end
+        end
+        
+        function ind = end(obj, expressionIndex, numTotalIndices)
+            if ~isscalar(obj)
+                ind = builtin('end', obj, expressionIndex, numTotalIndices);
+                return;
+            end
+            dims = obj.dims;
+            rank = length(dims);
+            assert(rank >= expressionIndex, 'MatNwb:DataStub:InvalidEndIndex',...
+                'Cannot index into index %d when max rank is %d', expressionIndex, rank);
+            ind = dims(expressionIndex);
         end
     end
 end
