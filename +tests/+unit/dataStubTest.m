@@ -49,4 +49,8 @@ testCase.verifyEqual(stub(1:500, 1:3), data(1:500, 1:3));
 
 % test stride
 testCase.verifyEqual(stub(1:2:1000, 1:2:4), data(1:2:1000, 1:2:4));
+
+% test :
+testCase.verifyEqual(stub(:, 1), data(:, 1));
+testCase.verifyEqual(stub(:), data);
 end

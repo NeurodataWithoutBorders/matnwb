@@ -167,7 +167,6 @@ classdef (Sealed) DataStub < handle
                 else
                     data = obj.load_h5_style(START, count, STRIDE);
                 end
-                
             end
         end
         
@@ -186,7 +185,7 @@ classdef (Sealed) DataStub < handle
             start = zeros(1, h5_rank); % Initial offset of block
             stride = ones(1, h5_rank); % offset of steps between blocks (1 == contiguous)
             count = ones(1, h5_rank); % number of blocks.
-            block = ones(1, h5_rank); % Size of block separated by strides.
+            block = h5_dims; % Size of block separated by strides.
             h5_size = h5_dims;
             for i = 1:h5_rank
                 dimRange = h5_selection{i};
@@ -208,6 +207,7 @@ classdef (Sealed) DataStub < handle
                 else
                     stride(i) = dimStep;
                     count(i) = length(dimRange);
+                    block(i) = 1;
                 end
             end
             H5S.select_hyperslab(sid, 'H5S_SELECT_SET', start, stride, count, block);
