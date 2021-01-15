@@ -300,14 +300,23 @@ classdef (Sealed) DataStub < handle
             end
             
             subs = repmat({':'}, 1, obj.ndims);
-            rank = obj.ndims;
-            assert(rank >= length(CurrentSubRef.subs),...
+            dims = obj.dims;
+            rank = length(dims);
+            selectionRank = length(CurrentSubRef.subs);
+            assert(rank >= selectionRank,...
                 'MatNWB:DataStub:InvalidDimIndex',...
                 'Cannot index into %d dimensions when max rank is %d',...
-                length(CurrentSubRef.subs), rank);
-            expectedDims = min(rank, length(CurrentSubRef.subs));
+                selectionRank, rank);
+            expectedDims = min(rank, selectionRank);
             [subs{1:expectedDims}] = CurrentSubRef.subs{:};
             data = obj.load_mat_style(subs{:});
+            if selectionRank < rank
+                expectedShape = [dims(1:(selectionRank-1)) prod(dims(selectionRank:end))];
+                if isscalar(expectedShape)
+                    expectedShape = [expectedShape 1];
+                end
+                data = reshape(data, expectedShape);
+            end
             if isscalar(S)
                 B = data;
             else
