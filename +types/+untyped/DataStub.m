@@ -80,7 +80,7 @@ classdef (Sealed) DataStub < handle
                         'H5ML_DEFAULT',...
                         sizesid,...
                         sid,...
-                        'H5P_DEFAULT') .';
+                        'H5P_DEFAULT');
                 end
                 
                 if numBlocks == 1
@@ -213,9 +213,8 @@ classdef (Sealed) DataStub < handle
             H5S.select_hyperslab(sid, 'H5S_SELECT_SET', start, stride, count, block);
             data = obj.load_h5_style(sid);
             if iscell(data)
-                data = cell2mat(reshape(data, fliplr(h5_size)));
-            else
-                data = data .';
+                sz = fliplr(h5_size);
+                data = cell2mat(reshape(data, sz(1:(end-1))));
             end
             H5S.close(sid);
         end
