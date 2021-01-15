@@ -32,5 +32,9 @@ steps:
     inputs:
       codeCoverageTool: Cobertura
       summaryFileLocation: coverage.xml
+      
+  - script: |
+      bash <(curl -s https://codecov.io/bash)
+    displayName: 'Upload coverage to codecov'
 
   
