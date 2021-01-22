@@ -50,6 +50,12 @@ testCase.verifyEqual(stub(1:2:125, 1:2:4, :, :), data(1:2:125, 1:2:4, :, :));
 % test flatten
 testCase.verifyEqual(stub(1, 1, :), data(1, 1, :));
 
-% test varying selection size
+% test non-dangling `:`
 testCase.verifyEqual(stub(:, 1), data(:, 1));
+
+% test arbitrary indices
+primeInd = primes(125);
+testCase.verifyEqual(stub(primeInd), data(primeInd));
+testCase.verifyEqual(stub(primeInd, 2:4, :), data(primeInd, 2:4, :));
+testCase.verifyEqual(stub(primeInd, :, 1), data(primeInd, :, 1));
 end
