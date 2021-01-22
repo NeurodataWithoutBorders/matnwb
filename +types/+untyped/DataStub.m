@@ -86,6 +86,12 @@ classdef (Sealed) DataStub < handle
                 if all(cellfun('isclass', data, 'cell'))
                     data = data{:};
                 else
+                    secondSize = cellfun('size', data, 2);
+                    uniqueSizes = unique(secondSize, 'stable');
+                    if ~isscalar(uniqueSizes)
+                        splitPoint = sum(secondSize == uniqueSizes(1));
+                        data = reshape(data, splitPoint, 2);
+                    end
                     data = cell2mat(data);
                 end
             else
@@ -341,21 +347,30 @@ classdef (Sealed) DataStub < handle
                 'Cannot index into %d dimensions when max rank is %d',...
                 selectionRank, rank);
             data = obj.load_mat_style(CurrentSubRef.subs{:});
+            expectedSize = dims;
+            for i = 1:length(CurrentSubRef.subs)
+                if ~ischar(CurrentSubRef.subs{i})
+                    expectedSize(i) = length(CurrentSubRef.subs{i});
+                end
+            end
+            
             if ischar(CurrentSubRef.subs{end})
                 % dangling ':' where leftover dimensions are folded into
                 % the last selection.
                 selDimInd = length(CurrentSubRef.subs);
-                selDims = zeros(1, selDimInd);
-                for i = 1:(selDimInd-1)
-                    if ischar(CurrentSubRef.subs{i})
-                        selDims(i) = dims(i);
-                    else
-                        selDims(i) = length(CurrentSubRef.subs{i});
-                    end
-                end
-                selDims(end) = prod(dims(selDimInd:end));
-                data = reshape(data, selDims);
+                expectedSize = [expectedSize(1:(selDimInd-1)) prod(dims(selDimInd:end))];
+            else
+                expectedSize = expectedSize(1:length(CurrentSubRef.subs));
             end
+            
+            if isscalar(expectedSize)
+                expectedSize = [1 expectedSize];
+            end
+            
+            if ~isequal(size(data), expectedSize)
+                data = reshape(data, expectedSize);
+            end
+            
             if isscalar(S)
                 B = data;
             else
