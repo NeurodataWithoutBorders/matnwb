@@ -338,7 +338,6 @@ classdef (Sealed) DataStub < handle
                 return;
             end
             
-            subs = repmat({':'}, 1, obj.ndims);
             dims = obj.dims;
             rank = length(dims);
             selectionRank = length(CurrentSubRef.subs);
@@ -346,15 +345,21 @@ classdef (Sealed) DataStub < handle
                 'MatNWB:DataStub:InvalidDimIndex',...
                 'Cannot index into %d dimensions when max rank is %d',...
                 selectionRank, rank);
-            expectedDims = min(rank, selectionRank);
-            [subs{1:expectedDims}] = CurrentSubRef.subs{:};
-            data = obj.load_mat_style(subs{:});
-            if selectionRank < rank
-                expectedShape = [dims(1:(selectionRank-1)) prod(dims(selectionRank:end))];
-                if isscalar(expectedShape)
-                    expectedShape = [expectedShape 1];
+            data = obj.load_mat_style(CurrentSubRef.subs{:});
+            if ischar(CurrentSubRef.subs{end})
+                % dangling ':' where leftover dimensions are folded into
+                % the last selection.
+                selDimInd = length(CurrentSubRef.subs);
+                selDims = zeros(1, selDimInd);
+                for i = 1:(selDimInd-1)
+                    if ischar(CurrentSubRef.subs{i})
+                        selDims(i) = dims(i);
+                    else
+                        selDims(i) = length(CurrentSubRef.subs{i});
+                    end
                 end
-                data = reshape(data, expectedShape);
+                selDims(end) = prod(dims(selDimInd:end));
+                data = reshape(data, selDims);
             end
             if isscalar(S)
                 B = data;
