@@ -177,46 +177,85 @@ classdef (Sealed) DataStub < handle
             %   MATLAB, not HDF5 for this function.
             assert(length(varargin) <= obj.ndims, 'MatNWB:DataStub:Load:TooManyDimensions',...
                 'Too many dimensions specified (got %d, expected %d)', length(varargin), obj.ndims);
+            dims = obj.dims;
+            rank = length(dims);
+            for i = 1:length(varargin)
+                if ischar(varargin{i})
+                    continue;
+                end
+                validateattributes(varargin{i}, {'numeric'}, {'vector', '<=', dims(i)});
+            end
+            shapes = getShapes(varargin, dims);
             
-            h5_dims = fliplr(obj.dims);
-            h5_rank = length(h5_dims);
-            h5_selection = fliplr(varargin);
             sid = obj.get_space();
-            start = zeros(1, h5_rank); % Initial offset of block
-            stride = ones(1, h5_rank); % offset of steps between blocks (1 == contiguous)
-            count = ones(1, h5_rank); % number of blocks.
-            block = h5_dims; % Size of block separated by strides.
-            h5_size = h5_dims;
-            for i = 1:h5_rank
-                dimRange = h5_selection{i};
-                if ischar(dimRange) % ':' but if it's a char then it's not worth looking at.
-                    continue; % skip this dimension and select on other dimensions.
+            H5S.select_none(sid); % reset selection on file.
+            shapeInd = ones(1, rank);
+            shapeIndEnd = cellfun('length', shapes);
+            while true
+                start = zeros(1, rank);
+                stride = ones(1, rank);
+                count = ones(1, rank);
+                block = ones(1, rank);
+                for i = 1:length(shapes)
+                    Selection = shapes{i}{shapeInd};
+                    [start(i), stride(i), count(i), block(i)] = Selection.getSpaceSpec();
                 end
-                h5_size(i) = length(dimRange);
+                H5S.select_hyperslab(sid, 'H5S_SELECT_OR', start, stride, count, block);
                 
-                dimRange = dimRange - 1; % convert to H5 0-indexed.
-                if isscalar(dimRange)
-                    dimStep = 1;
-                else
-                    dimStep = dimRange(2) - dimRange(1);
+                if isequal(shapeInd, shapeIndEnd)
+                    break;
                 end
                 
-                start(i) = dimRange(1);
-                if 1 == dimStep
-                    block(i) = length(dimRange);
-                else
-                    stride(i) = dimStep;
-                    count(i) = length(dimRange);
-                    block(i) = 1;
+                % bubble up and iterate once.
+                trickleDownInd = length(shapeInd) + 1; % default to coerce empty array if at the end.
+                for i = fliplr(1:length(shapeInd))
+                    if shapeInd(i) < shapeIndEnd(i)
+                        shapeInd(i) = shapeInd(i) + 1;
+                        trickleDownInd = i + 1;
+                        break;
+                    end
+                end
+                % THEN, go back down and RESET all subsequent iterations
+                for j = trickleDownInd:length(shapeInd)
+                    shapeInd(j) = 1;
                 end
             end
-            H5S.select_hyperslab(sid, 'H5S_SELECT_SET', start, stride, count, block);
+            
             data = obj.load_h5_style(sid);
             if iscell(data)
-                sz = fliplr(h5_size);
-                data = cell2mat(reshape(data, sz(1:(end-1))));
+                selDims = dims(1:2);
+                for i = 1:2
+                    if ~ischar(varargin{i})
+                        selDims(i) = length(varargin{i});
+                    end
+                end
+                data = cell2mat(reshape(data, selDims));
             end
             H5S.close(sid);
+            
+            function shapes = getShapes(selections, dims)
+                rank = length(dims);
+                shapes = cell(1, rank); % cell array of cell arrays of shapes
+                wasFullSelectionEncountered = false;
+                for i = 1:rank
+                    if i > length(selections) && ~wasFullSelectionEncountered % select a scalar element.
+                        shapes{i} = {types.untyped.datastub.shape.Point(0)};
+                    elseif (i > length(selections) && wasFullSelectionEncountered)...
+                            || ischar(selections{i})
+                        % select the whole dimension
+                        % dims(i) - 1 because block represents 0-indexed
+                        % inclusive stop. The Block.length == dims(i)
+                        shapes{i} = {types.untyped.datastub.shape.Block('stop', dims(i) - 1)};
+                        wasFullSelectionEncountered = true;
+                    else
+                        % break the selection into range/point pieces
+                        % per dimension.
+                        % also convert to 0-indexed format.
+                        shapes{i} = types.untyped.datastub.findShapes(selections{i} - 1);
+                    end
+                end
+                shapes = fliplr(shapes); % convert to HDF5 dimension ordering.
+            end
         end
         
         function refs = export(obj, fid, fullpath, refs)
