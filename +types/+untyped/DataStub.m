@@ -83,8 +83,10 @@ classdef (Sealed) DataStub < handle
                         'H5P_DEFAULT');
                 end
                 
-                if numBlocks == 1
-                    data = data{1};
+                if all(cellfun('isclass', data, 'cell'))
+                    data = data{:};
+                else
+                    data = cell2mat(data);
                 end
             else
                 data = h5read(obj.filename, obj.path, varargin{:});
@@ -197,7 +199,7 @@ classdef (Sealed) DataStub < handle
                 count = ones(1, rank);
                 block = ones(1, rank);
                 for i = 1:length(shapes)
-                    Selection = shapes{i}{shapeInd};
+                    Selection = shapes{i}{shapeInd(i)};
                     [start(i), stride(i), count(i), block(i)] = Selection.getSpaceSpec();
                 end
                 H5S.select_hyperslab(sid, 'H5S_SELECT_OR', start, stride, count, block);
@@ -222,14 +224,8 @@ classdef (Sealed) DataStub < handle
             end
             
             data = obj.load_h5_style(sid);
-            if iscell(data)
-                selDims = dims(1:2);
-                for i = 1:2
-                    if ~ischar(varargin{i})
-                        selDims(i) = length(varargin{i});
-                    end
-                end
-                data = cell2mat(reshape(data, selDims));
+            if 1 == length(varargin)
+                data = reshape(data, [1 length(data)]);
             end
             H5S.close(sid);
             
