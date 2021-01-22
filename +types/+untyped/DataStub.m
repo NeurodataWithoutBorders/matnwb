@@ -369,6 +369,8 @@ classdef (Sealed) DataStub < handle
         end
         
         function ind = end(obj, expressionIndex, numTotalIndices)
+            % END is overloaded in order to support subsref indexing that
+            % also may use end (i.e. datastub(1:end))
             if ~isscalar(obj)
                 ind = builtin('end', obj, expressionIndex, numTotalIndices);
                 return;
