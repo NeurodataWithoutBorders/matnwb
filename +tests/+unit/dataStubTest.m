@@ -21,7 +21,7 @@ nwb = NwbFile(...
     'identifier', 'mouse004_day4', ...
     'session_start_time', session_start_time);
 
-data = reshape(1:5000, 250, 5, 4);
+data = reshape(1:5000, 125, 5, 4, 2);
 
 timeseries = types.core.TimeSeries(...
     'starting_time', 0.0, ... % seconds
@@ -38,15 +38,18 @@ nwb2 = nwbRead('test_stub_read.nwb');
 stub = nwb2.acquisition.get('data').data;
 
 %%
-% test subset
+% test subset/missing dimensions
 testCase.verifyEqual(stub(2:4, 2:4, 2:4), data(2:4, 2:4, 2:4));
 
 % test Inf
-testCase.verifyEqual(stub(2:end, 2:end, 2:end), data(2:end, 2:end, 2:end));
+testCase.verifyEqual(stub(2:end, 2:end, 2:end, :), data(2:end, 2:end, 2:end, :));
 
 % test stride
-testCase.verifyEqual(stub(1:2:250, 1:2:4, :), data(1:2:250, 1:2:4, :));
+testCase.verifyEqual(stub(1:2:125, 1:2:4, :, :), data(1:2:125, 1:2:4, :, :));
 
 % test flatten
-testCase.verifyEqual(stub(:), reshape(data, 5000, 1));
+testCase.verifyEqual(stub(1, 1, :), data(1, 1, :));
+
+% test varying selection size
+testCase.verifyEqual(stub(:, 1), data(:, 1));
 end
