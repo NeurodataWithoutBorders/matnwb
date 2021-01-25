@@ -185,7 +185,7 @@ classdef (Sealed) DataStub < handle
                 end
                 validateattributes(varargin{i}, {'numeric'}, {'vector', '<=', dims(i)});
             end
-            shapes = getShapes(varargin, dims);
+            shapes = fliplr(getShapes(varargin, dims)); % convert to HDF5 dimension ordering.
             
             sid = obj.get_space();
             H5S.select_none(sid); % reset selection on file.
@@ -216,15 +216,18 @@ classdef (Sealed) DataStub < handle
                     end
                 end
                 % THEN, go back down and RESET all subsequent iterations
-                for j = trickleDownInd:length(shapeInd)
-                    shapeInd(j) = 1;
-                end
+                shapeInd(trickleDownInd:end) = 1;
             end
             
-            data = obj.load_h5_style(sid);
-            if 1 == length(varargin)
-                data = reshape(data, [1 length(data)]);
-            end
+            memSize = getMemSize(varargin, dims);
+            memSid = H5S.create_simple(length(memSize), fliplr(memSize), []);
+            % read data.
+            fid = H5F.open(obj.filename);
+            did = H5D.open(fid, obj.path);
+            data = H5D.read(did, 'H5ML_DEFAULT', memSid, sid, 'H5P_DEFAULT');
+            H5D.close(did);
+            H5F.close(fid);
+            H5S.close(memSid);
             H5S.close(sid);
             
             function shapes = getShapes(selections, dims)
@@ -247,7 +250,27 @@ classdef (Sealed) DataStub < handle
                         shapes{i} = types.untyped.datastub.findShapes(selections{i} - 1);
                     end
                 end
-                shapes = fliplr(shapes); % convert to HDF5 dimension ordering.
+            end
+            
+            function memSize = getMemSize(selections, dims)
+                % replace dims with number of selections
+                indexSelections = find(~cellfun('isclass', selections, 'char'));
+                vararginSizes = cellfun('length', selections);
+                dims(indexSelections) = vararginSizes(indexSelections); 
+                
+                % case where varargin rank is smaller than actual data
+                % space rank.
+                selectionRank = length(selections);
+                fileSpaceRank = length(dims);
+                isOpenEnded = ischar(selections{end});
+                if fileSpaceRank > selectionRank && ~isOpenEnded
+                    % when there are no trailing ':' then the remainder
+                    % dims are scalar. Otherwise, just load the rest of the
+                    % data.
+                    scalarDims = selectionRank + 1;
+                    dims(scalarDims:end) = 1;
+                end
+                memSize = dims;
             end
         end
         
