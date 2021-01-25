@@ -185,14 +185,14 @@ classdef (Sealed) DataStub < handle
                 end
                 validateattributes(varargin{i}, {'numeric'}, {'vector', '<=', dims(i)});
             end
-            shapes = fliplr(getShapes(varargin, dims)); % convert to HDF5 dimension ordering.
+            shapes = getShapes(varargin, dims);
             
             sid = obj.get_space();
             H5S.select_none(sid); % reset selection on file.
             shapeInd = ones(1, rank);
             shapeIndEnd = cellfun('length', shapes);
             while true
-                start = zeros(1, rank);
+                start = ones(1, rank);
                 stride = ones(1, rank);
                 count = ones(1, rank);
                 block = ones(1, rank);
@@ -200,23 +200,17 @@ classdef (Sealed) DataStub < handle
                     Selection = shapes{i}{shapeInd(i)};
                     [start(i), stride(i), count(i), block(i)] = Selection.getSpaceSpec();
                 end
-                H5S.select_hyperslab(sid, 'H5S_SELECT_OR', start, stride, count, block);
+                % convert start offset to 0-indexed and HDF5 dimension
+                % order.
+                H5S.select_hyperslab(sid, 'H5S_SELECT_OR',...
+                    fliplr(start) - 1, fliplr(stride), fliplr(count), fliplr(block));
                 
-                if isequal(shapeInd, shapeIndEnd)
+                iterateInd = find(shapeInd < shapeIndEnd, 1);
+                if isempty(iterateInd)
                     break;
                 end
-                
-                % bubble up and iterate once.
-                trickleDownInd = length(shapeInd) + 1; % default to coerce empty array if at the end.
-                for i = fliplr(1:length(shapeInd))
-                    if shapeInd(i) < shapeIndEnd(i)
-                        shapeInd(i) = shapeInd(i) + 1;
-                        trickleDownInd = i + 1;
-                        break;
-                    end
-                end
-                % THEN, go back down and RESET all subsequent iterations
-                shapeInd(trickleDownInd:end) = 1;
+                shapeInd(iterateInd) = shapeInd(iterateInd) + 1;
+                shapeInd(1:(iterateInd-1)) = 1;
             end
             
             memSize = getMemSize(varargin, dims);
@@ -236,18 +230,17 @@ classdef (Sealed) DataStub < handle
                 isDanglingGroup = ischar(selections{end});
                 for i = 1:rank
                     if i > length(selections) && ~isDanglingGroup % select a scalar element.
-                        shapes{i} = {types.untyped.datastub.shape.Point(0)};
+                        shapes{i} = {types.untyped.datastub.shape.Point(1)};
                     elseif (i > length(selections) && isDanglingGroup)...
                             || ischar(selections{i})
                         % select the whole dimension
                         % dims(i) - 1 because block represents 0-indexed
                         % inclusive stop. The Block.length == dims(i)
-                        shapes{i} = {types.untyped.datastub.shape.Block('stop', dims(i) - 1)};
+                        shapes{i} = {types.untyped.datastub.shape.Block('stop', dims(i))};
                     else
                         % break the selection into range/point pieces
                         % per dimension.
-                        % also convert to 0-indexed format.
-                        shapes{i} = types.untyped.datastub.findShapes(selections{i} - 1);
+                        shapes{i} = types.untyped.datastub.findShapes(selections{i});
                     end
                 end
             end

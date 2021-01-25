@@ -2,7 +2,7 @@ classdef Point < types.untyped.datastub.Shape
     %POINT index points of a selection
     
     properties
-        index = 0;
+        index = 1;
     end
     
     methods

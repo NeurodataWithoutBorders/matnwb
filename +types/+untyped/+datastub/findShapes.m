@@ -35,8 +35,8 @@ import types.untyped.datastub.shape.Block;
 if iscolumn(indices)
     indices = indices .';
 end
-stop = 0;
-start = 0;
+stop = 1;
+start = 1;
 step = 0;
 count = 0;
 for i = 1:length(indices)

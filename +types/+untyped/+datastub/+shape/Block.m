@@ -2,9 +2,9 @@ classdef Block < types.untyped.datastub.Shape
     %BLOCK Shape indicating a non-scalar hyperslab selection
     
     properties
-        start = 0;
+        start = 1;
         step = 1;
-        stop = 0; % note, inclusive zero-indexed by default
+        stop = 1;
     end
     
     properties(SetAccess=private, Dependent)
@@ -15,7 +15,7 @@ classdef Block < types.untyped.datastub.Shape
     methods
         function obj = Block(varargin)
             p = inputParser;
-            addParameter(p, 'start', 0, @(x)isscalar(x) && isnumeric(x) && x >= 0);
+            addParameter(p, 'start', 1, @(x)isscalar(x) && isnumeric(x) && x >= 0);
             addParameter(p, 'step', 1, @(x)isscalar(x) && isnumeric(x) && x >= 0);
             addParameter(p, 'stop', 1, @(x)isscalar(x) && isnumeric(x) && x >= 0);
             parse(p, varargin{:});
