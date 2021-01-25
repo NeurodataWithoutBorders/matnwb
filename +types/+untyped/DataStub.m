@@ -80,19 +80,11 @@ classdef (Sealed) DataStub < handle
                         'H5ML_DEFAULT',...
                         sizesid,...
                         sid,...
-                        'H5P_DEFAULT');
+                        'H5P_DEFAULT') .';
                 end
                 
-                if all(cellfun('isclass', data, 'cell'))
-                    data = data{:};
-                else
-                    secondSize = cellfun('size', data, 2);
-                    uniqueSizes = unique(secondSize, 'stable');
-                    if ~isscalar(uniqueSizes)
-                        splitPoint = sum(secondSize == uniqueSizes(1));
-                        data = reshape(data, splitPoint, 2);
-                    end
-                    data = cell2mat(data);
+                if numBlocks == 1
+                    data = data{1};
                 end
             else
                 data = h5read(obj.filename, obj.path, varargin{:});
