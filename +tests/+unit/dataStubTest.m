@@ -39,19 +39,19 @@ stub = nwb2.acquisition.get('data').data;
 
 %%
 % test subset/missing dimensions
-% testCase.verifyEqual(stub(2:4, 2:4, 2:4), data(2:4, 2:4, 2:4));
+testCase.verifyEqual(stub(2:4, 2:4, 2:4), data(2:4, 2:4, 2:4));
 
 % test Inf
-% testCase.verifyEqual(stub(2:end, 2:end, 2:end, :), data(2:end, 2:end, 2:end, :));
+testCase.verifyEqual(stub(2:end, 2:end, 2:end, :), data(2:end, 2:end, 2:end, :));
 
 % test stride
-% testCase.verifyEqual(stub(1:2:25, 1:2:4, :, :), data(1:2:125, 1:2:4, :, :));
+testCase.verifyEqual(stub(1:2:25, 1:2:4, :, :), data(1:2:25, 1:2:4, :, :));
 
 % test flatten
-% testCase.verifyEqual(stub(1, 1, :), data(1, 1, :));
+testCase.verifyEqual(stub(1, 1, :), data(1, 1, :));
 
 % test non-dangling `:`
-% testCase.verifyEqual(stub(:, 1), data(:, 1));
+testCase.verifyEqual(stub(:, 1), data(:, 1));
 
 % test arbitrary indices
 primeInd = primes(25);
