@@ -1,8 +1,10 @@
-function varargout = getRow(DynamicTable, id, varargin)
+function varargout = getRow(DynamicTable, ind, varargin)
 %GETROW get row for dynamictable
 % Index is a scalar 0-based index of the expected row.
 % optional keyword argument "columns" allows for only grabbing certain
-% columns instead of returning all columns.
+%   columns instead of returning all columns.
+% optional keyword `id` allows for row filtering by user-defined `id`
+%   instead of row index.
 % The returned value is a set of output arguments in the order of
 % `colnames` or "columns" keyword argument if one exists.
 
@@ -12,67 +14,70 @@ if isempty(DynamicTable.id)
     DynamicTable.id = types.hdmf_common.ElementIdentifiers();
 end
 
-if isa(DynamicTable.id.data, 'types.untyped.DataStub')...
-        || isa(DynamicTable.id.data, 'types.untyped.DataPipe')
-    stubSize = size(DynamicTable.id.data);
-    maxId = stubSize(1) - 1;
-else
-    maxId = DynamicTable.id.data(end);
-end
 assert(~isempty(maxId) && maxId >= 0, 'MatNWB:getRow:EmptyTable', 'Dynamic Table is Empty');
-validateattributes(id, {'numeric'}, {'scalar', 'nonnegative', '<=', maxId});
+validateattributes(ind, {'numeric'}, {'scalar', 'positive'});
 
 p = inputParser;
 addParameter(p, 'columns', DynamicTable.colnames, @(x)iscellstr(x));
+addParameter(p, 'useId', false, @(x)islogical(x));
 parse(p, varargin{:});
+
+if p.Results.useId
+    ind = getIndById(DynamicTable, ind);
+end
 
 columns = p.Results.columns;
 varargout = cell(1, length(columns));
 for i = 1:length(columns)
     cn = columns{i};
     indexName = types.util.dynamictable.getIndex(DynamicTable, cn);
+    if ~isempty(indexName)
+        ind = getIndexInd(DynamicTable, indexName, ind);
+    end
     
-    matInd = id + 1;
     VectorData = DynamicTable.vectordata.get(cn);
-    if isempty(indexName)
-        offset = matInd;
-        nextIndex = offset + 1;
-    else
-        [offset, nextIndex] = getIndexRange(DynamicTable, indexName, matInd);
-    end
-    
-    if isinf(nextIndex)
-        nextIndex = size(VectorData.data, 1) + 1;
-    end
-    
-    dataRange = offset:(nextIndex - 1);
     if isa(VectorData.data, 'types.untyped.DataStub')...
             || isa(VectorData.data, 'types.untyped.DataPipe')
-        varargout{i} = VectorData.data.load(dataRange);
+        varargout{i} = VectorData.data.load(ind);
     else
-        varargout{i} = VectorData.data(dataRange);
+        varargout{i} = VectorData.data(ind);
     end
 end
 end
 
-function [offset, nextIndex] = getIndexRange(DynamicTable, indexName, matInd)
+function ind = getIndexInd(DynamicTable, indexName, matInd)
 VectorIndex = DynamicTable.vectorindex.get(indexName);
+ind = [];
+matInd = unique(matInd);
 if isa(VectorIndex.data, 'types.untyped.DataStub')...
         || isa(VectorIndex.data, 'types.untyped.DataPipe')
     totalHeight = size(VectorIndex.data);
     totalHeight = totalHeight(1);
-    offset = VectorIndex.data.load(matInd) + 1;
-    if matInd == totalHeight
-        nextIndex = Inf;
-    else
-        nextIndex = VectorIndex.data.load(matInd + 1);
-    end
+    startInd = VectorIndex.data.load(matInd) + 1;
+    indexStopInd = matInd + 1;
+    indexStopInd(indexStopInd > totalHeight) = [];
+    stopInd = VectorIndex.data.load(indexStopInd);
 else
-    offset = VectorIndex.data(matInd) + 1;
-    if matInd == length(VectorIndex.data)
-        nextIndex = Inf;
-    else
-        nextIndex = VectorIndex.data(matInd + 1);
-    end
+    startInd = VectorIndex.data(matInd) + 1;
+    indexStopInd = matInd + 1;
+    indexStopInd(indexStopInd > length(VectorIndex.data)) = [];
+    stopInd = VectorIndex.data(indexStopInd);
 end
+
+if length(stopInd) < length(startInd)
+    stopInd(end+1) = Inf;
+end
+for i = 1:length(startInd)
+    ind = [ind startInd(i):stopInd(i)];
+end
+end
+
+function ind = getIndById(DynamicTable, id)
+if isa(DynamicTable.id.data, 'types.untyped.DataStub')...
+        || isa(DynamicTable.id.data, 'types.untyped.DataPipe')
+    ids = DynamicTable.id.data.load();
+else
+    ids = DynamicTable.id.data;
+end
+ind = id == ids;
 end
