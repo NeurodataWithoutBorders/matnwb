@@ -19,6 +19,10 @@ if islogical(idx)
     idx = find(idx);
 end
 
+if iscolumn(idx)
+    idx = idx .';
+end
+
 %transform indices to cell array containing linear index bounds
 idx = unique(idx);
 % find ranges in sorted indices.
@@ -59,6 +63,6 @@ if numel(matSize) > 1
 else
     ranges = idx(rangeParts);
 end
-ranges = rot90(ranges, -1) - 1; %transpose; fliplr; convert to 0-indexed values
+ranges = rot90(ranges, -1) - 1;
 h5idx = mat2cell(ranges, repmat(2, size(ranges,1)/2, 1), size(ranges,2));
 end
