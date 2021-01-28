@@ -1,7 +1,7 @@
 classdef AmendTest < tests.system.NwbTestInterface
     methods (Test)
         function testAmend(testCase)
-            filename = ['MatNWB.' testCase.className() '.testRoundTrip.nwb'];
+            filename = ['MatNWB.' testCase.className() '.testAmend.nwb'];
             nwbExport(testCase.file, filename);
             testCase.appendContainer(testCase.file);
             nwbExport(testCase.file, filename);
