@@ -26,10 +26,10 @@ p = inputParser();
 p.KeepUnmatched = true;
 p.StructExpand = false;
 addParameter(p, 'tablepath', '', @(x)ischar(x)); % required for ragged arrays.
+addParameter(p, 'id', []); % `id` override but doesn't actually show up in `colnames`
 for i = 1:length(DynamicTable.colnames)
-    addParameter(p, DynamicTable.colnames{i}, []); % that is, these are required.
+    addParameter(p, DynamicTable.colnames{i}, []);
 end
-addParameter(p, 'id', []);
 parse(p, varargin{:});
 assert(isempty(fieldnames(p.Unmatched)),...
     'MatNWB:DynamicTable:AddRow:InvalidColumns',...
@@ -43,7 +43,10 @@ assert(~isa(DynamicTable.id.data, 'types.untyped.DataStub'),...
     ['Cannot write to on-file Dynamic Tables without enabling data pipes. '...
     'If this was produced with pynwb, please enable chunking for this table.']);
 rowNames = fieldnames(p.Results);
-rowNames(strcmp(rowNames, 'tablepath')) = [];
+
+% not using setDiff because we want to retain set order.
+rowNames(strcmp(rowNames, 'tablepath') | strcmp(rowNames, 'id')) = []; 
+
 missingColumns = setdiff(p.UsingDefaults, {'tablepath', 'id'});
 assert(isempty(missingColumns),...
     'MatNWB:DynamicTable:AddRow:MissingColumns',...
@@ -98,9 +101,12 @@ for i = 1:length(rowNames)
             end
         end
         
+        % we presume that if data already existed in the vectordata, then
+        % it was never a ragged array and thus its elements corresponded
+        % directly to each row index.
         VecIndex = types.hdmf_common.VectorIndex(...
             'target', vecTarget,...
-            'data', [0:(oldDataHeight-1)] .'); %#ok<NBRAK> % populate data with previously non-ragged index range.
+            'data', [0:(oldDataHeight-1)] .'); %#ok<NBRAK>
         if isprop(DynamicTable, vecIndName)
             DynamicTable.(vecIndName) = VecIndex;
         else
@@ -180,7 +186,6 @@ else
     DynamicTable.vectordata.set(column, VecData);
 end
 
-% Update index if necessary.
 if ~isempty(index)
     if isa(VecData.data, 'types.untyped.DataPipe')
         raggedIndex = VecData.data.offset;
@@ -200,7 +205,6 @@ if ~isempty(index)
     end
 end
 
-% instantiate data
 if isa(VecData.data, 'types.untyped.DataPipe')
     VecData.data.append(data);
 else
