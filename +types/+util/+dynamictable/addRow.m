@@ -1,6 +1,6 @@
 function addRow(DynamicTable, varargin)
 %ADDROW Given a dynamic table and a set of keyword arguments for the row,
-% add a row to the dynamic table if possible.
+% add a single row to the dynamic table if possible.
 % This function asserts the following:
 % 1) DynamicTable is a valid dynamic table and has the correct
 %    properties.
@@ -26,8 +26,9 @@ p = inputParser();
 p.KeepUnmatched = true;
 p.StructExpand = false;
 addParameter(p, 'tablepath', '', @(x)ischar(x)); % required for ragged arrays.
+addParameter(p, 'id', []); % `id` override but doesn't actually show up in `colnames`
 for i = 1:length(DynamicTable.colnames)
-    addParameter(p, DynamicTable.colnames{i}, []); % that is, these are required.
+    addParameter(p, DynamicTable.colnames{i}, []);
 end
 parse(p, varargin{:});
 assert(isempty(fieldnames(p.Unmatched)),...
@@ -42,14 +43,20 @@ assert(~isa(DynamicTable.id.data, 'types.untyped.DataStub'),...
     ['Cannot write to on-file Dynamic Tables without enabling data pipes. '...
     'If this was produced with pynwb, please enable chunking for this table.']);
 rowNames = fieldnames(p.Results);
-rowNames(strcmp(rowNames, 'tablepath')) = [];
-missingColumns = setdiff(p.UsingDefaults, {'tablepath'});
+
+% not using setDiff because we want to retain set order.
+rowNames(strcmp(rowNames, 'tablepath') | strcmp(rowNames, 'id')) = []; 
+
+missingColumns = setdiff(p.UsingDefaults, {'tablepath', 'id'});
 assert(isempty(missingColumns),...
     'MatNWB:DynamicTable:AddRow:MissingColumns',...
     'Missing columns { %s }', strjoin(missingColumns, ', '));
 
-% check if types of the table actually exist yet.
-% if table exists, then build a map of name to type and their dimensions.
+specifiesId = ~any(strcmp(p.UsingDefaults, 'id'));
+if specifiesId
+    validateattributes(p.Results.id, {'numeric'}, {'scalar'});
+end
+
 TypeMap = constructTypeMap(DynamicTable);
 for i = 1:length(rowNames)
     rn = rowNames{i};
@@ -67,13 +74,13 @@ for i = 1:length(rowNames)
     % instantiate vector index here because it's dependent on the table
     % fullpath.
     vecIndName = types.util.dynamictable.getIndex(DynamicTable, rn);
-    if isempty(vecIndName) && size(rv, 1) > 1 % that is, this is now a ragged array
+    if isempty(vecIndName) && size(rv, 1) > 1
         assert(~isempty(p.Results.tablepath),...
             'MatNWB:DynamicTable:AddRow:MissingTablePath',...
             ['addRow cannot create ragged arrays without a full HDF5 path to the Dynamic Table. '...
             'Please either add the full expected HDF5 path under the keyword argument `tablepath` '...
             'or call addRow with row data only.']);
-        vecIndName = [rn '_index']; % just append '_index' by default
+        vecIndName = [rn '_index']; % arbitrary convention of appending '_index' to data column names
         if endsWith(p.Results.tablepath, '/')
             tablePath = p.Results.tablepath;
         else
@@ -94,9 +101,12 @@ for i = 1:length(rowNames)
             end
         end
         
+        % we presume that if data already existed in the vectordata, then
+        % it was never a ragged array and thus its elements corresponded
+        % directly to each row index.
         VecIndex = types.hdmf_common.VectorIndex(...
             'target', vecTarget,...
-            'data', [0:(oldDataHeight-1)] .'); %#ok<NBRAK> % populate data with previously non-ragged index range.
+            'data', [0:(oldDataHeight-1)] .'); %#ok<NBRAK>
         if isprop(DynamicTable, vecIndName)
             DynamicTable.(vecIndName) = VecIndex;
         else
@@ -106,13 +116,19 @@ for i = 1:length(rowNames)
     appendData(DynamicTable, rn, rv, vecIndName);
 end
 
-% push to id
-if isa(DynamicTable.id.data, 'types.untyped.DataPipe')
+if specifiesId
+    newId = p.Results.id;
+elseif isa(DynamicTable.id.data, 'types.untyped.DataPipe')
+    newId = DynamicTable.id.data.offset;
     DynamicTable.id.data.append(DynamicTable.id.data.offset);
-elseif isempty(DynamicTable.id.data)
-    DynamicTable.id.data = 0;
 else
-    DynamicTable.id.data = [DynamicTable.id.data; length(DynamicTable.id.data)];
+    newId = length(DynamicTable.id.data);
+end
+
+if isa(DynamicTable.id.data, 'types.untyped.DataPipe')
+    DynamicTable.id.data.append(newId);
+else
+    DynamicTable.id.data = [DynamicTable.id.data; newId];
 end
 end
 
@@ -170,7 +186,6 @@ else
     DynamicTable.vectordata.set(column, VecData);
 end
 
-% Update index if necessary.
 if ~isempty(index)
     if isa(VecData.data, 'types.untyped.DataPipe')
         raggedIndex = VecData.data.offset;
@@ -190,7 +205,6 @@ if ~isempty(index)
     end
 end
 
-% instantiate data
 if isa(VecData.data, 'types.untyped.DataPipe')
     VecData.data.append(data);
 else
