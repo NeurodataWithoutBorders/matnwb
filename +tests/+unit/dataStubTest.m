@@ -21,7 +21,7 @@ nwb = NwbFile(...
     'identifier', 'mouse004_day4', ...
     'session_start_time', session_start_time);
 
-data = reshape(1:5000, 1000, 5);
+data = reshape(1:5000, 25, 5, 4, 2, 5);
 
 timeseries = types.core.TimeSeries(...
     'starting_time', 0.0, ... % seconds
@@ -38,15 +38,26 @@ nwb2 = nwbRead('test_stub_read.nwb');
 stub = nwb2.acquisition.get('data').data;
 
 %%
-% test offset
-testCase.verifyEqual(stub.load([2 2], [4 4]), data(2:4, 2:4));
+% test subset/missing dimensions
+testCase.verifyEqual(stub(2:4, 2:4, 2:4), data(2:4, 2:4, 2:4));
 
 % test Inf
-testCase.verifyEqual(stub.load([2 2], [Inf Inf]), data(2:end, 2:end));
-
-% test limit
-testCase.verifyEqual(stub.load([1 1], [500 3]), data(1:500, 1:3));
+testCase.verifyEqual(stub(2:end, 2:end, 2:end, :), data(2:end, 2:end, 2:end, :));
 
 % test stride
-testCase.verifyEqual(stub.load([1 1], [2,2], [1000 4]), data(1:2:1000, 1:2:4));
+testCase.verifyEqual(stub(1:2:25, 1:2:4, :, :), data(1:2:25, 1:2:4, :, :));
+
+% test flatten
+testCase.verifyEqual(stub(1, 1, :), data(1, 1, :));
+
+% test non-dangling `:`
+testCase.verifyEqual(stub(:, 1), data(:, 1));
+
+% test arbitrary indices
+primeInd = primes(25);
+testCase.verifyEqual(stub(primeInd), data(primeInd));
+testCase.verifyEqual(stub(primeInd, 2:4, :), data(primeInd, 2:4, :));
+testCase.verifyEqual(stub(primeInd, :, 1), data(primeInd, :, 1));
+testCase.verifyEqual(stub(primeInd, [1 2 5]), data(primeInd, [1 2 5]));
+testCase.verifyEqual(stub([1 25], [1 5], [1 4], [1 2], [1 5]), data([1 25], [1 5], [1 4], [1 2], [1 5]));
 end

@@ -70,13 +70,23 @@ classdef RegionView < handle
                 end
                 
                 Object = RegionView.view.refresh(Nwb);
+                v = Object.data;
                 
-                if isa(Object.data, 'types.untyped.DataStub')
-                    sid = RegionView.get_selection(Object.data.get_space());
-                    v = Object.data.load_h5_style(sid);
+                if isa(v, 'types.untyped.DataStub')
+                    sid = RegionView.get_selection(v.get_space());
+                    v = v.load_h5_style(sid);
                     H5S.close(sid);
-                else
-                    v = Object.data;
+                    return;
+                end
+                
+                if isa(Object.data, 'types.untyped.DataPipe')
+                    if isa(v.internal, 'types.untyped.datapipe.BoundPipe')
+                        sid = RegionView.get_selection(v.internal.stub.get_space());
+                        v = v.internal.stub.load_h5_style(sid);
+                        H5S.close(sid);
+                        return;
+                    end
+                    v = v.internal.data;
                 end
                 
                 % convert 0-indexed subscript bounds to 1-indexed linear indices.

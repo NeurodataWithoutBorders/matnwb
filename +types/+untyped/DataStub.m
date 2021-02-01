@@ -1,4 +1,8 @@
-classdef DataStub < handle
+classdef (Sealed) DataStub < handle
+%% DATASTUB a standin for readable data that has been written on disk.
+% This class is sealed due to special subsref behavior breaking nargout
+% expectations for most properties/methods.
+
     properties (SetAccess = protected)
         filename;
         path;
@@ -6,6 +10,7 @@ classdef DataStub < handle
     
     properties (Dependent, SetAccess = private)
         dims;
+        ndims;
     end
     
     methods
@@ -29,24 +34,8 @@ classdef DataStub < handle
             H5S.close(sid);
         end
         
-        function nd = ndims(obj)
+        function nd = get.ndims(obj)
             nd = length(obj.dims);
-        end
-        
-        function num = numel(obj)
-            num = prod(obj.dims);
-        end
-        
-        function sz = size(obj, dim)
-            sz = obj.dims;
-            if nargin > 1
-                validateattributes(dim, {'numeric'}, {'scalar', 'positive', '<=', length(sz)});
-                sz = sz(dim);
-            end
-        end
-        
-        function tf = isempty(obj)
-            tf = numel(obj) == 0;
         end
         
         %can be called without arg, with H5ML.id, or (dims, offset, stride)
@@ -178,7 +167,103 @@ classdef DataStub < handle
                 else
                     data = obj.load_h5_style(START, count, STRIDE);
                 end
-
+            end
+        end
+        
+        function data = load_mat_style(obj, varargin)
+            % LOAD_MAT_STYLE load data in matlab index format.
+            % LOAD_MAT_STYLE(...) where each argument is an index into the dimension or ':'
+            %   indicating load all of dimension. The dimension ordering is
+            %   MATLAB, not HDF5 for this function.
+            assert(length(varargin) <= obj.ndims, 'MatNWB:DataStub:Load:TooManyDimensions',...
+                'Too many dimensions specified (got %d, expected %d)', length(varargin), obj.ndims);
+            dims = obj.dims;
+            rank = length(dims);
+            for i = 1:length(varargin)
+                if ischar(varargin{i})
+                    continue;
+                end
+                validateattributes(varargin{i}, {'numeric'}, {'vector', '<=', dims(i)});
+            end
+            shapes = getShapes(varargin, dims);
+            
+            sid = obj.get_space();
+            H5S.select_none(sid); % reset selection on file.
+            shapeInd = ones(1, rank);
+            shapeIndEnd = cellfun('length', shapes);
+            while true
+                start = ones(1, rank);
+                stride = ones(1, rank);
+                count = ones(1, rank);
+                block = ones(1, rank);
+                for i = 1:length(shapes)
+                    Selection = shapes{i}{shapeInd(i)};
+                    [start(i), stride(i), count(i), block(i)] = Selection.getSpaceSpec();
+                end
+                % convert start offset to 0-indexed and HDF5 dimension
+                % order.
+                H5S.select_hyperslab(sid, 'H5S_SELECT_OR',...
+                    fliplr(start) - 1, fliplr(stride), fliplr(count), fliplr(block));
+                
+                iterateInd = find(shapeInd < shapeIndEnd, 1);
+                if isempty(iterateInd)
+                    break;
+                end
+                shapeInd(iterateInd) = shapeInd(iterateInd) + 1;
+                shapeInd(1:(iterateInd-1)) = 1;
+            end
+            
+            memSize = getMemSize(varargin, dims);
+            memSid = H5S.create_simple(length(memSize), fliplr(memSize), []);
+            % read data.
+            fid = H5F.open(obj.filename);
+            did = H5D.open(fid, obj.path);
+            data = H5D.read(did, 'H5ML_DEFAULT', memSid, sid, 'H5P_DEFAULT');
+            H5D.close(did);
+            H5F.close(fid);
+            H5S.close(memSid);
+            H5S.close(sid);
+            
+            function shapes = getShapes(selections, dims)
+                rank = length(dims);
+                shapes = cell(1, rank); % cell array of cell arrays of shapes
+                isDanglingGroup = ischar(selections{end});
+                for i = 1:rank
+                    if i > length(selections) && ~isDanglingGroup % select a scalar element.
+                        shapes{i} = {types.untyped.datastub.shape.Point(1)};
+                    elseif (i > length(selections) && isDanglingGroup)...
+                            || ischar(selections{i})
+                        % select the whole dimension
+                        % dims(i) - 1 because block represents 0-indexed
+                        % inclusive stop. The Block.length == dims(i)
+                        shapes{i} = {types.untyped.datastub.shape.Block('stop', dims(i))};
+                    else
+                        % break the selection into range/point pieces
+                        % per dimension.
+                        shapes{i} = types.untyped.datastub.findShapes(selections{i});
+                    end
+                end
+            end
+            
+            function memSize = getMemSize(selections, dims)
+                % replace dims with number of selections
+                indexSelections = find(~cellfun('isclass', selections, 'char'));
+                vararginSizes = cellfun('length', selections);
+                dims(indexSelections) = vararginSizes(indexSelections); 
+                
+                % case where varargin rank is smaller than actual data
+                % space rank.
+                selectionRank = length(selections);
+                fileSpaceRank = length(dims);
+                isOpenEnded = ischar(selections{end});
+                if fileSpaceRank > selectionRank && ~isOpenEnded
+                    % when there are no trailing ':' then the remainder
+                    % dims are scalar. Otherwise, just load the rest of the
+                    % data.
+                    scalarDims = selectionRank + 1;
+                    dims(scalarDims:end) = 1;
+                end
+                memSize = dims;
             end
         end
         
@@ -253,6 +338,66 @@ classdef DataStub < handle
             H5S.close(src_sid);
             H5D.close(src_did);
             H5F.close(src_fid);
+        end
+        
+        function B = subsref(obj, S)
+            CurrentSubRef = S(1);
+            if ~isscalar(obj) || strcmp(CurrentSubRef.type, '.')
+                B = builtin('subsref', obj, S);
+                return;
+            end
+            
+            dims = obj.dims;
+            rank = length(dims);
+            selectionRank = length(CurrentSubRef.subs);
+            assert(rank >= selectionRank,...
+                'MatNWB:DataStub:InvalidDimIndex',...
+                'Cannot index into %d dimensions when max rank is %d',...
+                selectionRank, rank);
+            data = obj.load_mat_style(CurrentSubRef.subs{:});
+            expectedSize = dims;
+            for i = 1:length(CurrentSubRef.subs)
+                if ~ischar(CurrentSubRef.subs{i})
+                    expectedSize(i) = length(CurrentSubRef.subs{i});
+                end
+            end
+            
+            if ischar(CurrentSubRef.subs{end})
+                % dangling ':' where leftover dimensions are folded into
+                % the last selection.
+                selDimInd = length(CurrentSubRef.subs);
+                expectedSize = [expectedSize(1:(selDimInd-1)) prod(dims(selDimInd:end))];
+            else
+                expectedSize = expectedSize(1:length(CurrentSubRef.subs));
+            end
+            
+            if isscalar(expectedSize)
+                expectedSize = [1 expectedSize];
+            end
+            
+            if ~isequal(size(data), expectedSize)
+                data = reshape(data, expectedSize);
+            end
+            
+            if isscalar(S)
+                B = data;
+            else
+                B = subsref(data, S(2:end));
+            end
+        end
+        
+        function ind = end(obj, expressionIndex, numTotalIndices)
+            % END is overloaded in order to support subsref indexing that
+            % also may use end (i.e. datastub(1:end))
+            if ~isscalar(obj)
+                ind = builtin('end', obj, expressionIndex, numTotalIndices);
+                return;
+            end
+            dims = obj.dims;
+            rank = length(dims);
+            assert(rank >= expressionIndex, 'MatNwb:DataStub:InvalidEndIndex',...
+                'Cannot index into index %d when max rank is %d', expressionIndex, rank);
+            ind = dims(expressionIndex);
         end
     end
 end
