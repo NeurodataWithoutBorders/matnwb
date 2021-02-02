@@ -63,8 +63,7 @@ for i = 1:length(rowNames)
     rv = p.Results.(rn);
     
     if isKey(TypeMap, rn)
-        TypeStruct = TypeMap(rn);
-        validateattributes(rv, {TypeStruct.type}, {'size', [NaN TypeStruct.dims(2:end)]});
+        rv = validateType(TypeMap(rn), rv);
     else
         assert(iscellstr(rv) || ~iscell(rv),...
             'MatNWB:DynamicTable:AddRow:InvalidCellArray',...
@@ -132,6 +131,19 @@ else
 end
 end
 
+function rv = validateType(TypeStruct, rv)
+if strcmp(TypeStruct.type, 'cellstr')
+    assert(iscellstr(rv) || (ischar(rv) && 1 == size(rv, 1)),...
+        'MatNWB:DynamicTable:AddRow:InvalidType',...
+        'Type of value must be a cell array of character vectors or a scalar character');
+    if ischar(rv)
+        rv = {rv};
+    end
+else
+    validateattributes(rv, {TypeStruct.type}, {'size', [NaN TypeStruct.dims(2:end)]});
+end
+end
+
 function TypeMap = constructTypeMap(DynamicTable)
 TypeMap = containers.Map;
 if isempty(DynamicTable.id.data)...
@@ -152,13 +164,19 @@ for i = length(DynamicTable.colnames)
     else
         colval = colVecData.data(1);
     end
-    TypeStruct.type = class(colval);
+    
+    if iscellstr(colval)
+        TypeStruct.type = 'cellstr';
+    else
+        TypeStruct.type = class(colval);
+    end
     
     if isa(colVecData.data, 'types.untyped.DataPipe')
         TypeStruct.dims = colVecData.data.internal.maxSize;
     else
         TypeStruct.dims = size(colVecData.data);
     end
+    
     TypeMap(colnm) = TypeStruct;
 end
 end
@@ -208,6 +226,9 @@ end
 if isa(VecData.data, 'types.untyped.DataPipe')
     VecData.data.append(data);
 else
+    if ischar(data)
+        data = {data};
+    end
     VecData.data = [VecData.data; data];
 end
 end
