@@ -61,7 +61,11 @@ classdef MetaClass < handle
                 end
             end
             
+            refLen = length(refs);
             refs = obj.write_base(fid, fullpath, refs);
+            if refLen ~= length(refs)
+                return;
+            end
             
             uuid = char(java.util.UUID.randomUUID().toString());
             if isa(obj, 'NwbFile')
