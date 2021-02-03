@@ -75,23 +75,17 @@ else
 end
 ind = [];
 matInd = unique(matInd);
+matStartInd = matInd - 1;
+startInd = ones(size(matInd));
 if isa(VectorIndex.data, 'types.untyped.DataStub')...
         || isa(VectorIndex.data, 'types.untyped.DataPipe')
-    totalHeight = VectorIndex.data.dims;
-    startInd = VectorIndex.data.load(matInd) + 1;
-    indexStopInd = matInd + 1;
-    indexStopInd(indexStopInd > totalHeight) = [];
-    stopInd = VectorIndex.data.load(indexStopInd);
+    stopInd = VectorIndex.data.load(matInd);
+    startInd(matStartInd > 0) = VectorIndex.data.load(matStartInd(matStartInd > 0));
 else
-    startInd = VectorIndex.data(matInd) + 1;
-    indexStopInd = matInd + 1;
-    indexStopInd(indexStopInd > length(VectorIndex.data)) = [];
-    stopInd = VectorIndex.data(indexStopInd);
+    stopInd = VectorIndex.data(matInd);
+    startInd(matStartInd > 0) = VectorIndex.data(matStartInd(matStartInd > 0));
 end
 
-if length(stopInd) < length(startInd)
-    stopInd(end+1) = Inf;
-end
 ind = [startInd stopInd];
 end
 

@@ -205,21 +205,31 @@ else
 end
 
 if ~isempty(index)
-    if isa(VecData.data, 'types.untyped.DataPipe')
-        raggedIndex = VecData.data.offset;
-    else
-        raggedIndex = size(VecData.data, 1);
-    end
-    
     if isprop(DynamicTable, index)
         VecInd = DynamicTable.(index);
     else
         VecInd = DynamicTable.vectorindex.get(index);
     end
+    
     if isa(VecInd.data, 'types.untyped.DataPipe')
-        VecInd.data.append(raggedIndex);
+        if 0 == VecInd.data.dims
+            raggedOffset = 0;
+        else
+            raggedOffset = VecInd.data.load(VecInd.data.dims);
+        end
     else
-        VecInd.data = [VecInd.data; raggedIndex];
+        if isempty(VecInd.data)
+            raggedOffset = 0;
+        else
+            raggedOffset = VecInd.data(end);
+        end
+    end
+    
+    raggedValue = raggedOffset + size(data, 1);
+    if isa(VecInd.data, 'types.untyped.DataPipe')
+        VecInd.data.append(raggedValue);
+    else
+        VecInd.data = [VecInd.data; raggedValue];
     end
 end
 
