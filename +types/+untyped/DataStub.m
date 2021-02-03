@@ -134,16 +134,12 @@ classdef (Sealed) DataStub < handle
             if isempty(varargin)
                 data = obj.load_h5_style();
             elseif length(varargin) == 1
-                region = misc.idx2h5(varargin{1}, obj.dims, 'preserve');
-                sid = obj.get_space();
-                H5S.select_none(sid);
-                for i=1:length(region)
-                    reg = region{i};
-                    H5S.select_hyperslab(sid, 'H5S_SELECT_OR', reg(1,:),...
-                        [], [], diff(reg, 1, 1)+1);
-                end
-                data = obj.load_h5_style(sid);
-                H5S.close(sid);
+                % note: you cannot leverage subsref here because when
+                % load() is called, it's calling the builtin version of
+                % subsref, which apparantly poisons all calls in load() to
+                % use builtin subsref. We use the internal load_mat_style
+                % to workaround this.
+                data = obj.load_mat_style(varargin{1});
             else
                 if length(varargin) == 2
                     START = varargin{1};

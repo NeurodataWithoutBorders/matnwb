@@ -9,7 +9,7 @@ import types.untyped.datastub.shape.Block;
 import types.untyped.datastub.shape.Point;
 validateattributes(indices, {'numeric'}, {'nonnegative', 'finite'});
 if isempty(indices)
-    shapes = {Block('count', 0)};
+    shapes = {Block('stop', 0)};
     return;
 end
 assert(isvector(indices),...
