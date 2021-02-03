@@ -330,40 +330,6 @@ for i=1:length(ephus_trials)
 end
 
 %%
-% Trial IDs, wherever they are used, are placed in a relevent |control| property in the
-% data object and will indicate what data is associated with what trial as
-% defined in |trials|'s |id| column.
-
-nwb.units = types.core.Units('colnames',...
-    {'spike_times', 'trials', 'waveforms'},...
-    'description', 'Analysed Spike Events');
-esHash = data.eventSeriesHash;
-ids = regexp(esHash.keyNames, '^unit(\d+)$', 'once', 'tokens');
-ids = str2double([ids{:}]);
-nwb.units.id = types.hdmf_common.ElementIdentifiers('data', ids);
-nwb.units.spike_times_index = types.hdmf_common.VectorIndex(...
-    'target', types.untyped.ObjectView('/units/spike_times'));
-nwb.units.spike_times = types.hdmf_common.VectorData(...
-    'description', 'timestamps of spikes');
-%%
-% Ephus spike data is separated into units which directly maps to the NWB property
-% of the same name.  Each such unit contains a group of analysed waveforms and spike
-% times, all linked to a different subset of trials IDs.
-unitTrials = types.hdmf_common.VectorData(...
-    'description', 'A large group of trial IDs for each unit',...
-    'data', []);
-
-trials_idx = types.hdmf_common.VectorIndex(...
-    'data', [],...
-    'target', types.untyped.ObjectView('/units/trials'));
-
-wav_idx = types.hdmf_common.VectorData('data',types.untyped.ObjectView.empty,...
-    'description', 'waveform references');
-%%
-% The waveforms are placed in the |analysis| Set and are paired with their unit name
-% ('unitx' where 'x' is some unit ID).
-
-%%
 % The |timeseries| property of the |TimeIntervals| object is an example of a
 % *compound data type*.  These types are essentially tables of data in HDF5 and can
 % be represented by a MATLAB table, an array of structs, or a struct of arrays.
@@ -411,6 +377,28 @@ for i=1:length(data.trialPropertiesHash.keyNames)
 end
 nwb.intervals_trials = trials_epoch;
 
+%%
+% Ephus spike data is separated into units which directly maps to the NWB property
+% of the same name.  Each such unit contains a group of analysed waveforms and spike
+% times, all linked to a different subset of trials IDs.
+
+%%
+% The waveforms are placed in the |analysis| Set and are paired with their unit name
+% ('unitx' where 'x' is some unit ID).
+
+%%
+% Trial IDs, wherever they are used, are placed in a relevent |control| property in the
+% data object and will indicate what data is associated with what trial as
+% defined in |trials|'s |id| column.
+
+nwb.units = types.core.Units('colnames',...
+    {'spike_times', 'trials', 'waveforms'},...
+    'description', 'Analysed Spike Events');
+esHash = data.eventSeriesHash;
+ids = regexp(esHash.keyNames, '^unit(\d+)$', 'once', 'tokens');
+ids = str2double([ids{:}]);
+nwb.units.spike_times = types.hdmf_common.VectorData(...
+    'description', 'timestamps of spikes');
 
 for i=1:length(ids)
     esData = esHash.value{i};
@@ -421,13 +409,6 @@ for i=1:length(ids)
     eventTimes = esData.eventTimes(good_trials_mask);
     waveforms = esData.waveforms(good_trials_mask,:);
     channel = esData.channel(good_trials_mask);
-    
-    unitTrials.data = [unitTrials.data; eventTrials];
-    trials_idx.data(end+1) = length(unitTrials.data);
-    
-    % add spike times index and data.  note that these are also VectorIndex and VectorData pairs.
-    nwb.units.spike_times.data = [nwb.units.spike_times.data;eventTimes];
-    nwb.units.spike_times_index.data(end+1) = length(nwb.units.spike_times.data);
     
     % add waveform data to "unitx" and associate with "waveform" column as ObjectView.
     ses = types.core.SpikeEventSeries(...
@@ -447,7 +428,9 @@ for i=1:length(ids)
         ses.comments = ['cellType: ' esData.cellType{1}];
     end
     nwb.analysis.set(ses_name, ses);
-    wav_idx.data(end+1) = ses_ref;
+    nwb.units.addRow(...
+        'id', ids(i), 'trials', eventTrials,'spike_times', eventTimes, 'waveforms', ses_ref,...
+        'tablepath', '/units');
     
     %add this timeseries into the trials table as well.
     [s_trials, ~, trials_to_data] = unique(eventTrials);
@@ -460,9 +443,6 @@ for i=1:length(ids)
         trial_timeseries{trial}(end+1, :) = {ses_ref int64(t_start) int64(t_count)};
     end
 end
-nwb.units.vectorindex.set('trials_index', trials_idx);
-nwb.units.vectordata.set('trials', unitTrials);
-nwb.units.vectordata.set('waveforms', wav_idx);
 %%
 % To better understand how |spike_times_index| and |spike_times| map to each other, refer to
 % <https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ecephys.html#13 this
