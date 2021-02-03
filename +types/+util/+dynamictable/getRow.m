@@ -1,4 +1,4 @@
-function varargout = getRow(DynamicTable, ind, varargin)
+function row = getRow(DynamicTable, ind, varargin)
 %GETROW get row for dynamictable
 % Index is a scalar 0-based index of the expected row.
 % optional keyword argument "columns" allows for only grabbing certain
@@ -16,9 +16,11 @@ addParameter(p, 'columns', DynamicTable.colnames, @(x)iscellstr(x));
 addParameter(p, 'useId', false, @(x)islogical(x));
 parse(p, varargin{:});
 
+columns = p.Results.columns;
+row = cell(1, length(columns));
+
 if isempty(DynamicTable.id)
     DynamicTable.id = types.hdmf_common.ElementIdentifiers();
-    varargout = cell(1, length(p.Results.columns));
     return;
 end
 
@@ -26,8 +28,6 @@ if p.Results.useId
     ind = getIndById(DynamicTable, ind);
 end
 
-columns = p.Results.columns;
-varargout = cell(1, length(columns));
 for i = 1:length(columns)
     cn = columns{i};
     indexName = types.util.dynamictable.getIndex(DynamicTable, cn);
@@ -45,7 +45,7 @@ for i = 1:length(columns)
         colInd = [];
         if isa(VectorData.data, 'types.untyped.DataStub')...
                 || isa(VectorData.data, 'types.untyped.DataPipe')
-            totalHeight = size(VectorData.data);
+            totalHeight = VectorData.data.dims;
         else
             totalHeight = length(VectorData.data);
         end
@@ -60,9 +60,9 @@ for i = 1:length(columns)
     
     if isa(VectorData.data, 'types.untyped.DataStub')...
             || isa(VectorData.data, 'types.untyped.DataPipe')
-        varargout{i} = VectorData.data.load(colInd) .';
+        row{i} = VectorData.data.load(colInd);
     else
-        varargout{i} = VectorData.data(colInd);
+        row{i} = VectorData.data(colInd);
     end
 end
 end
@@ -77,8 +77,7 @@ ind = [];
 matInd = unique(matInd);
 if isa(VectorIndex.data, 'types.untyped.DataStub')...
         || isa(VectorIndex.data, 'types.untyped.DataPipe')
-    totalHeight = size(VectorIndex.data);
-    totalHeight = totalHeight(1);
+    totalHeight = VectorIndex.data.dims;
     startInd = VectorIndex.data.load(matInd) + 1;
     indexStopInd = matInd + 1;
     indexStopInd(indexStopInd > totalHeight) = [];
