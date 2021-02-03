@@ -9,7 +9,7 @@ function row = getRow(DynamicTable, ind, varargin)
 % `colnames` or "columns" keyword argument if one exists.
 
 validateattributes(DynamicTable, {'types.hdmf_common.DynamicTable'}, {'scalar'});
-validateattributes(ind, {'numeric'}, {'scalar', 'positive'});
+validateattributes(ind, {'numeric'}, {'positive'});
 
 p = inputParser;
 addParameter(p, 'columns', DynamicTable.colnames, @(x)iscellstr(x));
@@ -96,5 +96,5 @@ if isa(DynamicTable.id.data, 'types.untyped.DataStub')...
 else
     ids = DynamicTable.id.data;
 end
-ind = find(id == ids);
+ind = find(ismember(ids, id));
 end
