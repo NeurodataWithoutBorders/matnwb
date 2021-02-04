@@ -15,7 +15,7 @@ end
 assert(isvector(indices),...
     'MatNwb:DataStub:FindShapes:InvalidShape',...
     'Indices cannot be matrices.');
-indices = sort(indices);
+indices = unique(indices);
 shapes = {};
 while ~isempty(indices)
     BlockSelection = findOptimalBlock(indices);
@@ -37,7 +37,7 @@ if iscolumn(indices)
 end
 stop = 1;
 start = 1;
-step = 0;
+step = 1;
 count = 0;
 for i = 1:length(indices)
     tempStart = indices(i);

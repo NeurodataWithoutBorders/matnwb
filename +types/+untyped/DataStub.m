@@ -176,10 +176,11 @@ classdef (Sealed) DataStub < handle
             dims = obj.dims;
             rank = length(dims);
             for i = 1:length(varargin)
-                if ischar(varargin{i})
+                ind = varargin{i};
+                if ischar(ind) || isempty(ind)
                     continue;
                 end
-                validateattributes(varargin{i}, {'numeric'}, {'vector', '<=', dims(i)});
+                validateattributes(ind, {'numeric'}, {'vector', '<=', dims(i)});
             end
             shapes = getShapes(varargin, dims);
             
@@ -208,8 +209,17 @@ classdef (Sealed) DataStub < handle
                 shapeInd(iterateInd) = shapeInd(iterateInd) + 1;
                 shapeInd(1:(iterateInd-1)) = 1;
             end
-            
-            memSize = getMemSize(varargin, dims);
+            memSize = zeros(1, rank);
+            for i = 1:rank
+                for j = 1:length(shapes{i})
+                    Selection = shapes{i}{j};
+                    if isa(Selection, 'types.untyped.datastub.shape.Point')
+                        memSize(i) = memSize(i) + 1;
+                    else
+                        memSize(i) = memSize(i) + Selection.length;
+                    end
+                end
+            end
             memSid = H5S.create_simple(length(memSize), fliplr(memSize), []);
             % read data.
             fid = H5F.open(obj.filename);
@@ -219,6 +229,76 @@ classdef (Sealed) DataStub < handle
             H5F.close(fid);
             H5S.close(memSid);
             H5S.close(sid);
+            
+            expectedSize = dims;
+            for i = 1:length(varargin)
+                if ~ischar(varargin{i})
+                    expectedSize(i) = length(varargin{i});
+                end
+            end
+            
+            if ischar(varargin{end})
+                % dangling ':' where leftover dimensions are folded into
+                % the last selection.
+                selDimInd = length(varargin);
+                expectedSize = [expectedSize(1:(selDimInd-1)) prod(dims(selDimInd:end))];
+            else
+                expectedSize = expectedSize(1:length(varargin));
+            end
+            
+            if isscalar(expectedSize)
+                expectedSize = [1 expectedSize];
+            end
+            
+            selections = varargin;
+            openSelInd = find(cellfun('isclass', selections, 'char'));
+            for i = 1:length(openSelInd)
+                selections{i} = 1:dims(i);
+            end
+            data = reorderLoadedData(data, selections);
+            data = reshape(data, expectedSize);
+            
+            function reordered = reorderLoadedData(data, selections)
+                % dataset loading does not account for duplicate or unordered
+                % indices so we have to re-order everything here.
+                % we presume data is the indexed values of a unique(ind)
+                if isempty(data)
+                    reordered = data;
+                    return;
+                end
+                
+                indKey = cell(size(selections));
+                isSelectionNormal = false(size(selections)); % that is, without duplicates or out of order.
+                for i = 1:length(indKey)
+                    indKey{i} = unique(selections{i});
+                    isSelectionNormal = isequal(indKey{i}, selections{i});
+                end
+                if all(isSelectionNormal)
+                    reordered = data;
+                    return;
+                end
+                indKeyIndMax = cellfun('length', indKey);
+                if isscalar(indKeyIndMax)
+                    reordered = repmat(data(1), indKeyIndMax, 1);
+                else
+                    reordered = repmat(data(1), indKeyIndMax);
+                end
+                indKeyInd = ones(size(selections));
+                while true
+                    selInd = cell(size(selections));
+                    for i = 1:length(selections)
+                        selInd{i} = selections{i} == indKey{i}(indKeyInd(i));
+                    end
+                    indKeyIndArgs = num2cell(indKeyInd);
+                    reordered(selInd{:}) = data(indKeyIndArgs{:});
+                    indKeyIndNextInd = find(indKeyIndMax ~= indKeyInd, 1, 'last');
+                    if isempty(indKeyIndNextInd)
+                        break;
+                    end
+                    indKeyInd(indKeyIndNextInd) = indKeyInd(indKeyIndNextInd) + 1;
+                    indKeyInd((indKeyIndNextInd+1):end) = 1;
+                end
+            end
             
             function shapes = getShapes(selections, dims)
                 rank = length(dims);
@@ -239,27 +319,6 @@ classdef (Sealed) DataStub < handle
                         shapes{i} = types.untyped.datastub.findShapes(selections{i});
                     end
                 end
-            end
-            
-            function memSize = getMemSize(selections, dims)
-                % replace dims with number of selections
-                indexSelections = find(~cellfun('isclass', selections, 'char'));
-                vararginSizes = cellfun('length', selections);
-                dims(indexSelections) = vararginSizes(indexSelections); 
-                
-                % case where varargin rank is smaller than actual data
-                % space rank.
-                selectionRank = length(selections);
-                fileSpaceRank = length(dims);
-                isOpenEnded = ischar(selections{end});
-                if fileSpaceRank > selectionRank && ~isOpenEnded
-                    % when there are no trailing ':' then the remainder
-                    % dims are scalar. Otherwise, just load the rest of the
-                    % data.
-                    scalarDims = selectionRank + 1;
-                    dims(scalarDims:end) = 1;
-                end
-                memSize = dims;
             end
         end
         
@@ -351,30 +410,6 @@ classdef (Sealed) DataStub < handle
                 'Cannot index into %d dimensions when max rank is %d',...
                 selectionRank, rank);
             data = obj.load_mat_style(CurrentSubRef.subs{:});
-            expectedSize = dims;
-            for i = 1:length(CurrentSubRef.subs)
-                if ~ischar(CurrentSubRef.subs{i})
-                    expectedSize(i) = length(CurrentSubRef.subs{i});
-                end
-            end
-            
-            if ischar(CurrentSubRef.subs{end})
-                % dangling ':' where leftover dimensions are folded into
-                % the last selection.
-                selDimInd = length(CurrentSubRef.subs);
-                expectedSize = [expectedSize(1:(selDimInd-1)) prod(dims(selDimInd:end))];
-            else
-                expectedSize = expectedSize(1:length(CurrentSubRef.subs));
-            end
-            
-            if isscalar(expectedSize)
-                expectedSize = [1 expectedSize];
-            end
-            
-            if ~isequal(size(data), expectedSize)
-                data = reshape(data, expectedSize);
-            end
-            
             if isscalar(S)
                 B = data;
             else
