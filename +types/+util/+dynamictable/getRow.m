@@ -41,21 +41,12 @@ for i = 1:length(columns)
     if isempty(indexName)
         colInd = ind;
     else
-        indRanges = getIndexInd(DynamicTable, indexName, ind);
-        colInd = [];
-        if isa(VectorData.data, 'types.untyped.DataStub')...
-                || isa(VectorData.data, 'types.untyped.DataPipe')
-            totalHeight = VectorData.data.dims;
-        else
-            totalHeight = length(VectorData.data);
+        indMap = getIndexInd(DynamicTable, indexName, ind);
+        colInd = cell(size(ind));
+        for j = 1:length(ind)
+            colInd{j} = indMap(ind(j));
         end
-        for j = 1:size(indRanges, 1)
-            rangePair = indRanges(j, :);
-            if isinf(rangePair(2))
-                rangePair(2) = totalHeight;
-            end
-            colInd = [colInd rangePair(1):rangePair(2)]; 
-        end
+        colInd = cell2mat(colInd);
     end
     
     if isa(VectorData.data, 'types.untyped.DataStub')...
@@ -67,13 +58,13 @@ for i = 1:length(columns)
 end
 end
 
-function ind = getIndexInd(DynamicTable, indexName, matInd)
+function indMap = getIndexInd(DynamicTable, indexName, matInd)
 if isprop(DynamicTable, indexName)
     VectorIndex = DynamicTable.(indexName);
 else
     VectorIndex = DynamicTable.vectorindex.get(indexName);
 end
-ind = [];
+
 matInd = unique(matInd);
 matStartInd = matInd - 1;
 startInd = ones(size(matInd));
@@ -85,8 +76,10 @@ else
     stopInd = VectorIndex.data(matInd);
     startInd(matStartInd > 0) = VectorIndex.data(matStartInd(matStartInd > 0));
 end
-
-ind = [startInd stopInd];
+indMap = containers.Map('KeyType', 'uint64', 'ValueType', 'any');
+for i = 1:length(startInd)
+    indMap(matInd(i)) = startInd(i):stopInd(i);
+end
 end
 
 function ind = getIndById(DynamicTable, id)
@@ -96,5 +89,7 @@ if isa(DynamicTable.id.data, 'types.untyped.DataStub')...
 else
     ids = DynamicTable.id.data;
 end
-ind = find(ismember(ids, id));
+[idMatch, ind] = ismember(id, ids);
+assert(all(idMatch), 'MatNWB:DynamicTable:GetRow:InvalidId',...
+    'Invalid ids found. If you wish to use row indices directly, remove the `useId` flag.');
 end
