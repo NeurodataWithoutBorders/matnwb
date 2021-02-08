@@ -47,19 +47,20 @@ for i = 1:length(indices)
     end
     for j = 1:(length(indices)-i)
         tempStep = indices(i+j) - indices(i);
-        for k = fliplr(i:length(indices))
+        for k = length(indices):-1:i
             tempStop = indices(k);
             idealRange = tempStart:tempStep:tempStop;
-            tempRange = intersect(indices, idealRange, 'stable');
-            if length(tempRange) <= count 
+            rangeMatches = ismembc(idealRange, indices);
+            numMatches = sum(rangeMatches);
+            if numMatches <= count 
                 % number of intersected items is shorter than what we have.
                 break;
             end
-            if isequal(tempRange, idealRange)
+            if all(rangeMatches)
                 start = tempStart;
                 step = tempStep;
                 stop = tempStop;
-                count = length(tempRange);
+                count = numMatches;
                 break;
             end
         end
