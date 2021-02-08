@@ -51,7 +51,7 @@ for i = 1:length(columns)
     
     if isa(VectorData.data, 'types.untyped.DataStub')...
             || isa(VectorData.data, 'types.untyped.DataPipe')
-        row{i} = VectorData.data.load(colInd);
+        row{i} = VectorData.data.load(colInd) .';
     else
         row{i} = VectorData.data(colInd);
     end
