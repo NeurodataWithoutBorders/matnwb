@@ -60,4 +60,10 @@ testCase.verifyEqual(stub(primeInd, 2:4, :), data(primeInd, 2:4, :));
 testCase.verifyEqual(stub(primeInd, :, 1), data(primeInd, :, 1));
 testCase.verifyEqual(stub(primeInd, [1 2 5]), data(primeInd, [1 2 5]));
 testCase.verifyEqual(stub([1 25], [1 5], [1 4], [1 2], [1 5]), data([1 25], [1 5], [1 4], [1 2], [1 5]));
+
+% test duplicate indices
+testCase.verifyEqual(stub([1 1 1 1]), data([1 1 1 1]));
+
+% test out of order indices
+testCase.verifyEqual(stub([5 4 3 2 2]), data([5 4 3 2 2]));
 end

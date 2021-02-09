@@ -9,7 +9,7 @@ function row = getRow(DynamicTable, ind, varargin)
 % `colnames` or "columns" keyword argument if one exists.
 
 validateattributes(DynamicTable, {'types.hdmf_common.DynamicTable'}, {'scalar'});
-validateattributes(ind, {'numeric'}, {'scalar', 'positive'});
+validateattributes(ind, {'numeric'}, {'positive'});
 
 p = inputParser;
 addParameter(p, 'columns', DynamicTable.colnames, @(x)iscellstr(x));
@@ -41,58 +41,45 @@ for i = 1:length(columns)
     if isempty(indexName)
         colInd = ind;
     else
-        indRanges = getIndexInd(DynamicTable, indexName, ind);
-        colInd = [];
-        if isa(VectorData.data, 'types.untyped.DataStub')...
-                || isa(VectorData.data, 'types.untyped.DataPipe')
-            totalHeight = VectorData.data.dims;
-        else
-            totalHeight = length(VectorData.data);
+        indMap = getIndexInd(DynamicTable, indexName, ind);
+        colInd = cell(size(ind));
+        for j = 1:length(ind)
+            colInd{j} = indMap(ind(j));
         end
-        for j = 1:size(indRanges, 1)
-            rangePair = indRanges(j, :);
-            if isinf(rangePair(2))
-                rangePair(2) = totalHeight;
-            end
-            colInd = [colInd rangePair(1):rangePair(2)]; 
-        end
+        colInd = cell2mat(colInd);
     end
     
     if isa(VectorData.data, 'types.untyped.DataStub')...
             || isa(VectorData.data, 'types.untyped.DataPipe')
-        row{i} = VectorData.data.load(colInd);
+        row{i} = VectorData.data.load(colInd) .';
     else
         row{i} = VectorData.data(colInd);
     end
 end
 end
 
-function ind = getIndexInd(DynamicTable, indexName, matInd)
+function indMap = getIndexInd(DynamicTable, indexName, matInd)
 if isprop(DynamicTable, indexName)
     VectorIndex = DynamicTable.(indexName);
 else
     VectorIndex = DynamicTable.vectorindex.get(indexName);
 end
-ind = [];
+
 matInd = unique(matInd);
+matStartInd = matInd - 1;
+startInd = ones(size(matInd));
 if isa(VectorIndex.data, 'types.untyped.DataStub')...
         || isa(VectorIndex.data, 'types.untyped.DataPipe')
-    totalHeight = VectorIndex.data.dims;
-    startInd = VectorIndex.data.load(matInd) + 1;
-    indexStopInd = matInd + 1;
-    indexStopInd(indexStopInd > totalHeight) = [];
-    stopInd = VectorIndex.data.load(indexStopInd);
+    stopInd = VectorIndex.data.load(matInd);
+    startInd(matStartInd > 0) = VectorIndex.data.load(matStartInd(matStartInd > 0));
 else
-    startInd = VectorIndex.data(matInd) + 1;
-    indexStopInd = matInd + 1;
-    indexStopInd(indexStopInd > length(VectorIndex.data)) = [];
-    stopInd = VectorIndex.data(indexStopInd);
+    stopInd = VectorIndex.data(matInd);
+    startInd(matStartInd > 0) = VectorIndex.data(matStartInd(matStartInd > 0));
 end
-
-if length(stopInd) < length(startInd)
-    stopInd(end+1) = Inf;
+indMap = containers.Map('KeyType', 'uint64', 'ValueType', 'any');
+for i = 1:length(startInd)
+    indMap(matInd(i)) = startInd(i):stopInd(i);
 end
-ind = [startInd stopInd];
 end
 
 function ind = getIndById(DynamicTable, id)
@@ -102,5 +89,7 @@ if isa(DynamicTable.id.data, 'types.untyped.DataStub')...
 else
     ids = DynamicTable.id.data;
 end
-ind = find(id == ids);
+[idMatch, ind] = ismember(id, ids);
+assert(all(idMatch), 'MatNWB:DynamicTable:GetRow:InvalidId',...
+    'Invalid ids found. If you wish to use row indices directly, remove the `useId` flag.');
 end
