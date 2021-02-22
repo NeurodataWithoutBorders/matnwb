@@ -17,8 +17,8 @@ if ~exist('downsample_factor','var') || isempty(downsample_factor)
     downsample_factor = 1;
 end
 
-if ~exist('electrode','var')
-    electrode = [];
+if ~exist('electrodes','var')
+    electrodes = [];
 end
 
 fs = timeseries.starting_time_rate;
@@ -26,16 +26,16 @@ inds_len = diff(window) * fs / downsample_factor;
 
 dims = timeseries.data.dims;
 
-if isempty(electrode)
+if isempty(electrodes)
     D = NaN(length(times), dims(1), int16(inds_len));
     for i = 1:length(times)
         D(i,:,:) = util.loadTimeSeriesData(timeseries, window + times(i), ...
             downsample_factor, electrodes);
     end
 else
-    D = NaN(length(times), inds_len);
+    D = NaN(length(times), length(electrodes), inds_len);
     for i = 1:length(times)
-        D(i,:) = util.loadTimeSeriesData(timeseries, window + times(i), ...
-            downsample_factor, electrodes);
+        D(i,:,:) = reshape(util.loadTimeSeriesData(timeseries, window + times(i), ...
+            downsample_factor, electrodes)', [1 length(electrodes) inds_len]);
     end
 end

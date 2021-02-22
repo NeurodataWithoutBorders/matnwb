@@ -21,15 +21,15 @@ if ~exist('downsample_factor','var') || isempty(downsample_factor)
     downsample_factor = 1;
 end
 
-if ~exist('electrode', 'var')
-    electrode = [];
+if ~exist('electrodes', 'var')
+    electrodes = [];
 end
 
 if length(electrodes) > 1
-    fs = timesries.starting_time_rate;
+    fs = timeseries.starting_time_rate;
     data = NaN(diff(interval) * fs, length(electrodes));
     for i = 1:length(electrodes)
-        data(:,i) = loadTimeSeriesData(timeseries, interval, ...
+        data(:,i) = util.loadTimeSeriesData(timeseries, interval, ...
             downsample_factor, electrodes(i));
     end
 else
@@ -73,8 +73,8 @@ else
     count = dims;
     count(end) = round((end_ind - start_ind) / downsample_factor);
     
-    if ~isempty(electrode)
-        start(end-1) = electrode;
+    if ~isempty(electrodes)
+        start(end-1) = electrodes;
         count(end-1) = 1;
     end
     
