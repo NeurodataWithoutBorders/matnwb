@@ -48,6 +48,7 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
             ActualTable = ActualFile.intervals_trials;
             ExpectedTable = testCase.file.intervals_trials;
             testCase.verifyEqual(ExpectedTable.getRow(5), ActualTable.getRow(5));
+            testCase.verifyEqual(ExpectedTable.getRow([5 6]), ActualTable.getRow([5 6]));
             testCase.verifyEqual(ExpectedTable.getRow(97, 'useId', true),...
                 ActualTable.getRow(97, 'useId', true));
         end
