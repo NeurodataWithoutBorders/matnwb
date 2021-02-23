@@ -1,4 +1,4 @@
-function row = getRow(DynamicTable, ind, varargin)
+function subTable = getRow(DynamicTable, ind, varargin)
 %GETROW get row for dynamictable
 % Index is a scalar 0-based index of the expected row.
 % optional keyword argument "columns" allows for only grabbing certain
@@ -56,6 +56,7 @@ for i = 1:length(columns)
         row{i} = VectorData.data(colInd);
     end
 end
+subTable = table(row{:}, 'VariableNames', columns);
 end
 
 function indMap = getIndexInd(DynamicTable, indexName, matInd)
