@@ -29,12 +29,12 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
         
         function appendContainer(testCase, file)
             container = testCase.getContainer(file);
-            container.data = rand(500, 1); % new random values.
+            container.data = rand(1000, 1); % new random values.
             file.intervals_trials.colnames{end+1} = 'newcolumn';
             file.intervals_trials.vectordata.set('newcolumn',...
                 types.hdmf_common.VectorData(...
                 'description', 'newly added column',...
-                'data', 100:-1:1));
+                'data', 200:-1:1));
         end
     end
     
