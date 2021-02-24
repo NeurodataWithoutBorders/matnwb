@@ -11,13 +11,13 @@ vecIndName = [colName '_index']; % arbitrary convention of appending '_index' to
 if ~endsWith(tablepath, '/')
     tablepath = [tablepath '/'];
 end
-vecTarget = types.untyped.ObjectView([tablepath rn]);
+vecTarget = types.untyped.ObjectView([tablepath colName]);
 oldDataHeight = 0;
-if isKey(DynamicTable.vectordata, rn) || isprop(DynamicTable, rn)
-    if isprop(DynamicTable, rn)
-        VecData = DynamicTable.(rn);
+if isKey(DynamicTable.vectordata, colName) || isprop(DynamicTable, colName)
+    if isprop(DynamicTable, colName)
+        VecData = DynamicTable.(colName);
     else
-        VecData = DynamicTable.vectordata.get(rn);
+        VecData = DynamicTable.vectordata.get(colName);
     end
     if isa(VecData.data, 'types.untyped.DataPipe')
         oldDataHeight = VecData.data.offset;

@@ -9,6 +9,8 @@ for i = 1:length(DynamicTable.colnames)
     addParameter(p, DynamicTable.colnames{i}, []);
 end
 
+parse(p, varargin{:});
+
 assert(isempty(fieldnames(p.Unmatched)),...
     'MatNWB:DynamicTable:AddRow:InvalidColumns',...
     'Invalid column name(s) { %s }', strjoin(fieldnames(p.Unmatched), ', '));

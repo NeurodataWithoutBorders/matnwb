@@ -6,23 +6,21 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
                 'description', 'test dynamic table column',...
                 'colnames', colnames);
             
+            id = primes(2000) .';
             for i = 1:100
                 start_time = i;
                 stop_time = i + 1;
                 rand_data = rand(5,1);
-                id = primes(i);
-                if isempty(id)
-                    id = 0;
-                else
-                    id = id(end);
-                end
                 file.intervals_trials.addRow(...
                     'start_time', start_time,...
                     'stop_time', stop_time,...
                     'randomvalues', rand_data,...
-                    'id', id,...
+                    'id', id(i),...
                     'tablepath', '/intervals/trials');
             end
+            t = table(id(101:200), (101:200) .', (102:201) .', mat2cell(rand(500,1), repmat(5, 100, 1)),...
+                'VariableNames', {'id', 'start_time', 'stop_time', 'randomvalues'});
+            file.intervals_trials.addRow(t);
         end
         
         function c = getContainer(~, file)
@@ -49,8 +47,8 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
             ExpectedTable = testCase.file.intervals_trials;
             testCase.verifyEqual(ExpectedTable.getRow(5), ActualTable.getRow(5));
             testCase.verifyEqual(ExpectedTable.getRow([5 6]), ActualTable.getRow([5 6]));
-            testCase.verifyEqual(ExpectedTable.getRow(97, 'useId', true),...
-                ActualTable.getRow(97, 'useId', true));
+            testCase.verifyEqual(ExpectedTable.getRow([1153, 1217], 'useId', true),...
+                ActualTable.getRow([1153, 1217], 'useId', true));
         end
     end
 end

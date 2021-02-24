@@ -5,13 +5,13 @@ addParameter(p, 'id', [], @(x)isnumeric(x)); % optional as `id` column is suppor
 addParameter(p, 'tablepath', '', @(x)ischar(x)); % required for ragged arrays.
 parse(p, varargin{:});
 
-rowNames = subTable.VariableNames;
+rowNames = subTable.Properties.VariableNames;
 missingColumns = setdiff(DynamicTable.colnames, rowNames);
 assert(isempty(missingColumns),...
     'MatNWB:DynamicTable:AddRow:MissingColumns',...
     'Missing columns { %s }', strjoin(missingColumns, ', '));
 
-isIdInTable = any(strcmp(subTable.VariableNames, 'id'));
+isIdInTable = any(strcmp(rowNames, 'id'));
 isIdKeywordArg = ~any(strcmp(p.UsingDefaults, 'id'));
 if isIdInTable
     idData = subTable.id;
@@ -37,7 +37,7 @@ for i = 1:length(rowNames)
     rv = subTable.(rn);
     
     if isKey(TypeMap, rn)
-        rv = validateType(TypeMap(rn), rv);
+        validateType(TypeMap(rn), rv);
     end
     
     % instantiate vector index here because it's dependent on the table
