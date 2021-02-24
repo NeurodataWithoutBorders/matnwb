@@ -1,6 +1,7 @@
 function addTableRow(DynamicTable, subTable, varargin)
 p = inputParser();
 p.StructExpand = false;
+addParameter(p, 'id', [], @(x)isnumeric(x)); % optional as `id` column is supported for tables.
 addParameter(p, 'tablepath', '', @(x)ischar(x)); % required for ragged arrays.
 parse(p, varargin{:});
 
@@ -10,9 +11,24 @@ assert(isempty(missingColumns),...
     'MatNWB:DynamicTable:AddRow:MissingColumns',...
     'Missing columns { %s }', strjoin(missingColumns, ', '));
 
-specifiesId = ~any(strcmp(subTable.VariableNames, 'id'));
-if specifiesId
-    validateattributes(subTable.id, {'numeric'}, {'vector'});
+isIdInTable = any(strcmp(subTable.VariableNames, 'id'));
+isIdKeywordArg = ~any(strcmp(p.UsingDefaults, 'id'));
+if isIdInTable
+    idData = subTable.id;
+    if isIdKeywordArg
+        warning('MatNWB:DynamicTable:AddRow:DuplicateId',...
+            'subtable already has an `id` column. Will ignore keyword argument.');
+    end
+elseif isIdKeywordArg
+    assert(length(p.Results.id) == height(subTable),...
+        'MatNWB:DynamicTable:AddRow:InvalidIdSize',...
+        ['Optional keyword argument `id` must match the height of the subtable to append. '...
+        'Hint: you can also include `id` as a column in the subtable.']);
+    idData = p.Results.id;
+end
+
+if isIdInTable || isIdKeywordArg
+    validateattributes(idData, {'numeric'}, {'vector'});
 end
 
 TypeMap = types.util.dynamictable.getTypeMap(DynamicTable);
@@ -38,23 +54,24 @@ for i = 1:length(rowNames)
     end
 end
 
-if specifiesId
+if isIdInTable
     return;
 end
 
-if isa(DynamicTable.id.data, 'types.untyped.DataPipe')
-    newStartId = DynamicTable.id.data.offset;
-    DynamicTable.id.data.append(DynamicTable.id.data.offset);
+if isIdKeywordArg
+    idRange = p.Results.id;
 else
-    newStartId = length(DynamicTable.id.data);
+    if isa(DynamicTable.id.data, 'types.untyped.DataPipe')
+        newStartId = DynamicTable.id.data.offset;
+        DynamicTable.id.data.append(DynamicTable.id.data.offset);
+    else
+        newStartId = length(DynamicTable.id.data);
+    end
+    
+    idRange = (newStartId:(newStartId+height(t))) .';
 end
 
-idRange = (newStartId:(newStartId+height(t))) .';
-if isa(DynamicTable.id.data, 'types.untyped.DataPipe')
-    DynamicTable.id.data.append(idRange);
-else
-    DynamicTable.id.data = [DynamicTable.id.data; idRange];
-end
+types.util.dynamictable.addRawData(DynamicTable, 'id', idRange);
 end
 
 function validateType(TypeStruct, rv)
