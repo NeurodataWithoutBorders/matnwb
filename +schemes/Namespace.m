@@ -1,5 +1,5 @@
 classdef Namespace < handle
-    properties(SetAccess=private)
+    properties (SetAccess=private)
         name; %name of this namespace
         dependencies; %parent namespaces by [Namespace]
         registry; %maps name to class
@@ -64,7 +64,7 @@ classdef Namespace < handle
                 'Namespace for class `%s` not found.', classname);
             
             fullClassName = sprintf('types.%s.%s',...
-                Namespace.name,...
+                misc.str2validName(Namespace.name),...
                 classname);
         end
         
