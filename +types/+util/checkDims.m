@@ -1,4 +1,8 @@
 function checkDims(valsize, validSizes)
+%% CHECKDIMS
+% CHECKDIMS(valsize, validSizes) given value size and a cell array of valid
+% sizes, validates that the value size matches at least one of them.
+
 if any(valsize == 0)
     return; %ignore empty arrays
 end
