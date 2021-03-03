@@ -1,4 +1,4 @@
-function row = getRow(DynamicTable, ind, varargin)
+function subTable = getRow(DynamicTable, ind, varargin)
 %GETROW get row for dynamictable
 % Index is a scalar 0-based index of the expected row.
 % optional keyword argument "columns" allows for only grabbing certain
@@ -9,7 +9,7 @@ function row = getRow(DynamicTable, ind, varargin)
 % `colnames` or "columns" keyword argument if one exists.
 
 validateattributes(DynamicTable, {'types.hdmf_common.DynamicTable'}, {'scalar'});
-validateattributes(ind, {'numeric'}, {'positive'});
+validateattributes(ind, {'numeric'}, {'positive', 'vector'});
 
 p = inputParser;
 addParameter(p, 'columns', DynamicTable.colnames, @(x)iscellstr(x));
@@ -42,7 +42,7 @@ for i = 1:length(columns)
         colInd = ind;
     else
         indMap = getIndexInd(DynamicTable, indexName, ind);
-        colInd = cell(size(ind));
+        colInd = cell(1, length(ind)); % cell row because cell2mat must retain vector shape.
         for j = 1:length(ind)
             colInd{j} = indMap(ind(j));
         end
@@ -55,7 +55,12 @@ for i = 1:length(columns)
     else
         row{i} = VectorData.data(colInd);
     end
+    
+    if ~isempty(indexName)
+        row{i} = mat2cell(row{i}, cellfun('length', values(indMap)), 1);
+    end
 end
+subTable = table(row{:}, 'VariableNames', columns);
 end
 
 function indMap = getIndexInd(DynamicTable, indexName, matInd)
