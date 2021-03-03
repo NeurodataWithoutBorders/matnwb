@@ -34,8 +34,7 @@ classdef Attribute < handle
             obj.doc = source('doc');
             requiredKey = 'required';
             if isKey(source, requiredKey)
-                requiredFlag = source(requiredKey);
-                obj.required = ~strcmp(requiredFlag, 'false');
+                obj.required = source(requiredKey);
             end
             
             valueKey = 'value';
@@ -57,13 +56,31 @@ classdef Attribute < handle
                 shape = source(shapeKey);
                 obj.dimnames = source(boundsKey);
                 obj.shape = file.formatShape(shape);
-                if ischar(obj.shape)
-                    obj.scalar = ~strcmp(obj.shape, 'Inf');
-                elseif iscellstr(obj.shape)
-                    obj.scalar = ~any(strcmp(obj.shape, 'Inf'));
+                if iscell(obj.shape)
+                    if ~isempty(obj.shape) && iscell(obj.shape{1})
+                        obj.scalar = true(size(obj.shape));
+                        for i = 1:length(obj.shape)
+                            for j = 1:length(obj.shape{i})
+                                if isinf(obj.shape{i}{j})
+                                    obj.scalar(i) = false;
+                                    break;
+                                end
+                            end
+                        end
+                    else
+                        obj.scalar = true;
+                        for i = 1:length(obj.shape)
+                            if isinf(obj.shape{i})
+                                obj.scalar = false;
+                                break;
+                            end
+                        end
+                    end
+                else
+                    obj.scalar = isinf(obj.shape);
                 end
             else
-                obj.shape = '1';
+                obj.shape = 1;
                 obj.dimnames = {obj.name};
             end
             

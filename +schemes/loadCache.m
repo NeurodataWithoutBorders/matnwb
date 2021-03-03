@@ -9,8 +9,7 @@ fileList = fileList(~[fileList.isdir]);
 if nargin > 0
     assert(iscellstr(varargin), 'Input arguments must be a list of namespace names.');
     names = {fileList.name};
-    fileNames = strrep(strcat(varargin, '.mat'), '-', '_');
-    whitelistIdx = ismember(names, fileNames);
+    whitelistIdx = ismember(names, strcat(varargin, '.mat'));
     fileList = fileList(whitelistIdx);
 end
 

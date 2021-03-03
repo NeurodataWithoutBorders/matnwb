@@ -19,10 +19,11 @@ JsonData = struct(...
 for iCache = 1:length(Caches)
     Cache = Caches(iCache);
     stripNamespaceFileExt(Cache.namespace);
-    JsonMap = containers.Map({'namespace'}, {jsonencode(Cache.namespace)});
+    JsonMap = containers.Map({'namespace'}, {jsonencode(Cache.namespace, 'ConvertInfAndNaN', true)});
     for iScheme = 1:length(Cache.filenames)
         filename = Cache.filenames{iScheme};
-        JsonMap(filename) = jsonencode(Cache.schema(filename));
+        jsonencode(Cache.schema(filename));
+        JsonMap(filename) = jsonencode(Cache.schema(filename), 'ConvertInfAndNaN', true);
     end
     
     JsonData(iCache).version = Cache.version;

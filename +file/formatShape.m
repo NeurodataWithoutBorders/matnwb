@@ -8,17 +8,12 @@ if isempty(shape)
 end
 
 sz = shape;
-if iscellstr(sz)
-    sz = strrep(sz, 'null', 'Inf');
-    emptySz = cellfun('isempty', sz);
-    sz(emptySz) = {'Inf'};
-    sz = sz(end:-1:1); %reverse dimensions
-    sz = misc.cellPrettyPrint(sz);
-else
-    for i=1:length(sz)
-        sz{i} = strrep(sz{i}, 'null', 'Inf');
-        sz{i} = sz{i}(end:-1:1); %reverse dimensions
-        sz{i} = misc.cellPrettyPrint(sz{i});
+for i = 1:length(sz)
+    if iscell(sz{i})
+        sz{i} = file.formatShape(sz{i});
+    elseif isnan(sz{i}) || isempty(sz{i})
+        sz{i} = Inf;
     end
 end
+sz = sz(end:-1:1); % reverse dimensions
 end
