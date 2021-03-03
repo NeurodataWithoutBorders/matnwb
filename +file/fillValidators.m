@@ -164,11 +164,24 @@ if strcmp(type, 'any') || strcmp(type, 'char')
     return;
 end
 
-shape = strcat('[', shape, ']');
-if iscellstr(shape)
-    shape = strjoin(shape, ', ');
+if iscell(shape)
+    if ~isempty(shape) && iscell(shape{1})
+        for i = 1:length(shape)
+            for j = 1:length(shape{i})
+                shape{i}{j} = num2str(shape{i}{j});
+            end
+            shape{i} = ['[' strjoin(shape{i}, ',') ']'];
+        end
+        shapeStr = ['{' strjoin(shape, ', ') '}'];
+    else
+        for i = 1:length(shape)
+            shape{i} = num2str(shape{i});
+        end
+        shapeStr = ['{[' strjoin(shape, ',') ']}'];
+    end
+else
+    shapeStr = ['{[' num2str(shape) ']}'];
 end
-shape = strcat('{', shape, '}');
 
 fdvstr = strjoin({...
     'if isa(val, ''types.untyped.DataStub'')' ...
@@ -176,7 +189,7 @@ fdvstr = strjoin({...
     'else' ...
     '    valsz = size(val);'...
     'end' ...
-    ['validshapes = ' shape ';']...
+    ['validshapes = ' shapeStr ';']...
     'types.util.checkDims(valsz, validshapes);'}, newline);
 end
 

@@ -8,6 +8,14 @@ if isa(JavaObj, 'java.util.LinkedHashMap')
     MatlabObj = hashMap2ContainersMap(JavaObj);
 elseif isa(JavaObj, 'java.util.ArrayList')
     MatlabObj = array2Cell(JavaObj);
+elseif any(strcmp(JavaObj, {'null', 'NaN'}))
+    MatlabObj = NaN; % this translates to null in jsonencode
+elseif strcmp(JavaObj, 'true')
+    MatlabObj = true;
+elseif strcmp(JavaObj, 'false')
+    MatlabObj = false;
+elseif ~isnan(str2double(JavaObj))
+    MatlabObj = str2double(JavaObj);
 else
     MatlabObj = JavaObj;
 end
