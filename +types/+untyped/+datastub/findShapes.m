@@ -39,31 +39,24 @@ stop = 1;
 start = 1;
 step = 1;
 count = 0;
-for i = 1:length(indices)
-    tempStart = indices(i);
-    if length(indices) - i <= count
-        % number of elements cannot possibly be larger than what we have.
+for stepInd = 2:length(indices)
+    tempStep = indices(stepInd) - indices(1);
+    idealRange = indices(1):tempStep:indices(end);
+    if length(idealRange) <= count
         break;
     end
-    for j = 1:(length(indices)-i)
-        tempStep = indices(i+j) - indices(i);
-        for k = length(indices):-1:i
-            tempStop = indices(k);
-            idealRange = tempStart:tempStep:tempStop;
-            rangeMatches = ismembc(idealRange, indices);
-            numMatches = sum(rangeMatches);
-            if numMatches <= count 
-                % number of intersected items is shorter than what we have.
-                break;
-            end
-            if all(rangeMatches)
-                start = tempStart;
-                step = tempStep;
-                stop = tempStop;
-                count = numMatches;
-                break;
-            end
-        end
+    rangeMatches = ismembc(idealRange, indices);
+    startInd = find(rangeMatches, 1);
+    stopInd = find(rangeMatches, 1, 'last');
+    if ~all(rangeMatches(startInd:stopInd))
+        stopInd = find(~rangeMatches(startInd:stopInd), 1) - 1;
+    end
+    subCount = sum(rangeMatches(startInd:stopInd));
+    if subCount > count
+        start = indices(startInd);
+        stop = indices(stopInd);
+        step = tempStep;
+        count = subCount;
     end
 end
 optimalBlock = Block('start', start, 'step', step, 'stop', stop);
