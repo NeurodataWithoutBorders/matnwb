@@ -48,13 +48,18 @@ for stepInd = 2:length(indices)
     rangeMatches = ismembc(idealRange, indices);
     startInd = find(rangeMatches, 1);
     stopInd = find(rangeMatches, 1, 'last');
-    if ~all(rangeMatches(startInd:stopInd))
-        stopInd = find(~rangeMatches(startInd:stopInd), 1) - 1;
+    splitPoints = find(~rangeMatches(startInd:stopInd)) + startInd - 1;
+    if ~isempty(splitPoints)
+        subStarts = [startInd (splitPoints + 1)];
+        subStops = [(splitPoints - 1) stopInd];
+        [~, largestSegInd] = max(subStops - subStarts + 1, [], 'linear');
+        startInd = subStarts(largestSegInd);
+        stopInd = subStops(largestSegInd);
     end
     subCount = sum(rangeMatches(startInd:stopInd));
     if subCount > count
-        start = indices(startInd);
-        stop = indices(stopInd);
+        start = idealRange(startInd);
+        stop = idealRange(stopInd);
         step = tempStep;
         count = subCount;
     end
