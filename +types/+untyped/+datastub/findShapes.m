@@ -39,31 +39,29 @@ stop = 1;
 start = 1;
 step = 1;
 count = 0;
-for i = 1:length(indices)
-    tempStart = indices(i);
-    if length(indices) - i <= count
-        % number of elements cannot possibly be larger than what we have.
+for stepInd = 2:length(indices)
+    tempStep = indices(stepInd) - indices(1);
+    idealRange = indices(1):tempStep:indices(end);
+    if length(idealRange) <= count
         break;
     end
-    for j = 1:(length(indices)-i)
-        tempStep = indices(i+j) - indices(i);
-        for k = length(indices):-1:i
-            tempStop = indices(k);
-            idealRange = tempStart:tempStep:tempStop;
-            rangeMatches = ismembc(idealRange, indices);
-            numMatches = sum(rangeMatches);
-            if numMatches <= count 
-                % number of intersected items is shorter than what we have.
-                break;
-            end
-            if all(rangeMatches)
-                start = tempStart;
-                step = tempStep;
-                stop = tempStop;
-                count = numMatches;
-                break;
-            end
-        end
+    rangeMatches = ismembc(idealRange, indices);
+    startInd = find(rangeMatches, 1);
+    stopInd = find(rangeMatches, 1, 'last');
+    splitPoints = find(~rangeMatches(startInd:stopInd)) + startInd - 1;
+    if ~isempty(splitPoints)
+        subStarts = [startInd (splitPoints + 1)];
+        subStops = [(splitPoints - 1) stopInd];
+        [~, largestSegInd] = max(subStops - subStarts + 1, [], 'linear');
+        startInd = subStarts(largestSegInd);
+        stopInd = subStops(largestSegInd);
+    end
+    subCount = sum(rangeMatches(startInd:stopInd));
+    if subCount > count
+        start = idealRange(startInd);
+        stop = idealRange(stopInd);
+        step = tempStep;
+        count = subCount;
     end
 end
 optimalBlock = Block('start', start, 'step', step, 'stop', stop);
