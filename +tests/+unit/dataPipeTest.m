@@ -41,16 +41,9 @@ for i = 1:totalLength
 end
 
 %% verify data
-fid = H5F.open(filename);
-did = H5D.open(fid, name);
-
-readData = H5D.read(did);
-
+readData = Pipe.load();
 testCase.verifyEqual(readData(:,:,1:10), initialData);
 testCase.verifyEqual(readData(:,:,11:end), appendData);
-
-H5D.close(did);
-H5F.close(fid);
 end
 
 function data = createData(dataType, size)

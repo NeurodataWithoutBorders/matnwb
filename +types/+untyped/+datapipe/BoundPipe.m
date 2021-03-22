@@ -232,5 +232,9 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
         function obj = write(obj, ~, ~)
             return;
         end
+        
+        function data = load(obj, varargin)
+            data = obj.stub.load(varargin{:});
+        end
     end
 end
