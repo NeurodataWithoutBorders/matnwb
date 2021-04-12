@@ -14,7 +14,7 @@ classdef DataPipe < handle
     %   limit in that dimension. If not provided, MAXSIZE is infered from 
     %   the DATA. An error is thrown if neither MAXSIZE nor DATA is provided.
     %
-    %   DATAPIPE(..., 'axis', AXIS) Set which axis to increment when
+    %   DATAPIPE(..., 'axis', AXIS) Set which dimension axis to increment when
     %   appending more data. Default is 1.
     %
     %   DATAPIPE(..., 'dataType', DATATYPE) Sets the numerical data type.
