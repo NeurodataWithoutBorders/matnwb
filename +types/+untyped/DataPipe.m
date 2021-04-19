@@ -232,11 +232,14 @@ classdef DataPipe < handle
         end
         
         function sz = size(obj, varargin)
-            assert(isa(obj.internal, 'types.untyped.datapipe.BoundPipe'),...
-                'NWB:DataPipe:LoadingUnboundPipe',...
-                ['DataPipe must be successfully exported before DataStub '...
-                'features are allowed.']);
-            sz = size(obj.internal, varargin{:});
+            if isa(obj.internal, 'types.untyped.datapipe.BoundPipe')
+                sz = size(obj.internal, varargin{:});
+            elseif isa(obj.internal, 'types.untyped.datapipe.BlueprintPipe')
+                sz = obj.internal.maxSize;
+            else
+                error('MatNWB:DataPipe:UnhandledPipe', ['Internal Datapipe of type `%s` does not '...
+                    'have a handled size() method.'], class(obj.internal));
+            end
         end
         
         function append(obj, data)
