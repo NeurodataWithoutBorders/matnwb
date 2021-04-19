@@ -235,7 +235,7 @@ classdef DataPipe < handle
             if isa(obj.internal, 'types.untyped.datapipe.BoundPipe')
                 sz = size(obj.internal, varargin{:});
             elseif isa(obj.internal, 'types.untyped.datapipe.BlueprintPipe')
-                sz = size(obj.internal.data, varargin{:});
+                sz = obj.internal.maxSize;
             else
                 error('MatNWB:DataPipe:UnhandledPipe', ['Internal Datapipe of type `%s` does not '...
                     'have a handled size() method.'], class(obj.internal));
