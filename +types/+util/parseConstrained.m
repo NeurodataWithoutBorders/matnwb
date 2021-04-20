@@ -3,11 +3,16 @@ assert(mod(length(varargin),2) == 0, 'Malformed varargin.  Should be even');
 ikeys = false(size(varargin));
 defprops = properties(obj);
 for i=1:2:length(varargin)
+    arg = varargin{i+1};
     if any(strcmp(varargin{i}, defprops))
+        if isa(arg, type)
+            warning('MatNWB:ParseConstrained:AmbiguousKeywordArgument',...
+                ['Found keyword argument for Constrained property `%s` with constrained type `%s`. '...
+                'Please provide the argument as a name that does not match property `%s`'], pname, type);
+        end
         continue;
     end
     
-    arg = varargin{i+1};
     if isa(arg, 'types.untyped.ExternalLink')
         ikeys(i) = isa(arg.deref(), type);
         continue;
