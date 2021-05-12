@@ -10,15 +10,22 @@ assert(any(strcmp(DynamicTable.colnames, column)),...
     'MatNWB:GetIndex:InvalidColumn',...
     'Column name not found `%s`', column);
 
-vecIndKeys = keys(DynamicTable.vectorindex);
-for i = 1:length(vecIndKeys)
-    vik = vecIndKeys{i};
-    if isVecIndColumn(DynamicTable.vectorindex.get(vik), column)
-        indexName = vik;
+vecKeys = keys(DynamicTable.vectordata);
+for i = 1:length(vecKeys)
+    vk = vecKeys{i};
+    vecData = DynamicTable.vectordata.get(vk);
+    if ~isa(vecData, 'types.hdmf_common.VectorIndex')
+        continue;
+    end
+    if isVecIndColumn(DynamicTable.vectordata.get(vk), column)
+        indexName = vk;
         return;
     end
 end
 
+% check if dynamic table object has extended properties which point to
+% vector indices. These are specifically defined by the schema to be
+% properties.
 DynamicTableProps = properties(DynamicTable);
 isPropVecInd = false(size(DynamicTableProps));
 for i = 1:length(DynamicTableProps)
@@ -27,10 +34,10 @@ end
 
 DynamicTableProps = DynamicTableProps(isPropVecInd);
 for i = 1:length(DynamicTableProps)
-    vik = DynamicTableProps{i};
-    VecInd = DynamicTable.(vik);
+    vk = DynamicTableProps{i};
+    VecInd = DynamicTable.(vk);
     if isVecIndColumn(VecInd, column)
-        indexName = vik;
+        indexName = vk;
         return;
     end
 end

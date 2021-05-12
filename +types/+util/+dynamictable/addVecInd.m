@@ -35,6 +35,6 @@ VecIndex = types.hdmf_common.VectorIndex(...
 if isprop(DynamicTable, vecIndName)
     DynamicTable.(vecIndName) = VecIndex;
 else
-    DynamicTable.vectorindex.set(vecIndName, VecIndex);
+    DynamicTable.vectordata.set(vecIndName, VecIndex);
 end
 end

@@ -27,7 +27,7 @@ if ~isempty(index)
     if isprop(DynamicTable, index)
         VecInd = DynamicTable.(index);
     else
-        VecInd = DynamicTable.vectorindex.get(index);
+        VecInd = DynamicTable.vectordata.get(index);
     end
     
     if isa(VecInd.data, 'types.untyped.DataPipe')

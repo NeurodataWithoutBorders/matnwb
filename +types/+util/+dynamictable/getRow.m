@@ -67,7 +67,7 @@ function indMap = getIndexInd(DynamicTable, indexName, matInd)
 if isprop(DynamicTable, indexName)
     VectorIndex = DynamicTable.(indexName);
 else
-    VectorIndex = DynamicTable.vectorindex.get(indexName);
+    VectorIndex = DynamicTable.vectordata.get(indexName);
 end
 
 matInd = unique(matInd);
