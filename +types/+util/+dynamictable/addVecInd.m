@@ -34,7 +34,8 @@ end
 % directly to each row index.
 VecIndex = types.hdmf_common.VectorIndex(...
     'target', vecTarget,...
-    'data', [0:(oldDataHeight-1)] .'); %#ok<NBRAK>
+    'data', [0:(oldDataHeight-1)] .',...
+    'description', sprintf('Index into column %s', colName)); %#ok<NBRAK>
 if isprop(DynamicTable, vecIndName)
     DynamicTable.(vecIndName) = VecIndex;
 else
