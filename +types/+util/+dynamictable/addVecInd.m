@@ -19,10 +19,13 @@ if isKey(DynamicTable.vectordata, colName) || isprop(DynamicTable, colName)
     else
         VecData = DynamicTable.vectordata.get(colName);
     end
-    if isa(VecData.data, 'types.untyped.DataPipe')
-        oldDataHeight = VecData.data.offset;
-    else
-        oldDataHeight = size(VecData.data, 1);
+    
+    if ~isempty(VecData)
+        if isa(VecData.data, 'types.untyped.DataPipe')
+            oldDataHeight = VecData.data.offset;
+        else
+            oldDataHeight = size(VecData.data, 1);
+        end
     end
 end
 
