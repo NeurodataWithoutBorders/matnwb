@@ -21,7 +21,7 @@ function generateCore(version)
 %   See also GENERATEEXTENSION
 
 if nargin == 0
-    version = '2.2.5';
+    version = '2.3.0';
 else
     validateattributes(version, {'char'}, {'scalartext'});
 end
