@@ -30,18 +30,11 @@ if ~isempty(index)
         VecInd = DynamicTable.vectordata.get(index);
     end
     
-    if isa(VecInd.data, 'types.untyped.DataPipe')
-        if 0 == VecInd.data.dims
-            raggedOffset = 0;
-        else
-            raggedOffset = VecInd.data.load(VecInd.data.dims);
-        end
-    else
-        if isempty(VecInd.data)
-            raggedOffset = 0;
-        else
-            raggedOffset = VecInd.data(end);
-        end
+    raggedOffset = 0;
+    if isa(VecInd.data, 'types.untyped.DataPipe') && 0 < VecInd.data.dims
+        raggedOffset = VecInd.data.load(VecInd.data.dims);
+    elseif ~isempty(VecInd.data)
+        raggedOffset = VecInd.data(end);
     end
     
     raggedValue = raggedOffset + size(data, 1);
