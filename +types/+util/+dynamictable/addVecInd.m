@@ -38,6 +38,8 @@ VecIndex = types.hdmf_common.VectorIndex(...
     'description', sprintf('Index into column %s', colName)); %#ok<NBRAK>
 if isprop(DynamicTable, vecIndName)
     DynamicTable.(vecIndName) = VecIndex;
+elseif isprop(DynamicTable, 'vectorindex')
+    DynamicTable.vectorindex.set(vecIndName, VecIndex);
 else
     DynamicTable.vectordata.set(vecIndName, VecIndex);
 end

@@ -26,6 +26,8 @@ end
 if ~isempty(index)
     if isprop(DynamicTable, index)
         VecInd = DynamicTable.(index);
+    elseif isprop(DynamicTable, 'vectorindex') % Schema < 2.3.0
+        VecInd = DynamicTable.vectorindex.get(index);
     else
         VecInd = DynamicTable.vectordata.get(index);
     end

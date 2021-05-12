@@ -10,14 +10,25 @@ assert(any(strcmp(DynamicTable.colnames, column)),...
     'MatNWB:GetIndex:InvalidColumn',...
     'Column name not found `%s`', column);
 
-vecKeys = keys(DynamicTable.vectordata);
+% after Schema version 2.3.0, VectorIndex objects subclass VectorData which
+% meant that vectorindex and vectordata sets could be combined.
+isLegacyDynamicTable = isprop(DynamicTable, 'vectorindex');
+if isLegacyDynamicTable
+    vecKeys = keys(DynamicTable.vectorindex);
+else
+    vecKeys = keys(DynamicTable.vectordata);
+end
 for i = 1:length(vecKeys)
     vk = vecKeys{i};
-    vecData = DynamicTable.vectordata.get(vk);
+    if isLegacyDynamicTable
+        vecData = DynamicTable.vectorindex.get(vk);
+    else
+        vecData = DynamicTable.vectordata.get(vk);
+    end
     if ~isa(vecData, 'types.hdmf_common.VectorIndex')
         continue;
     end
-    if isVecIndColumn(DynamicTable.vectordata.get(vk), column)
+    if isVecIndColumn(vecData, column)
         indexName = vk;
         return;
     end

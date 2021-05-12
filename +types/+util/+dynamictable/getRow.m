@@ -66,6 +66,8 @@ end
 function indMap = getIndexInd(DynamicTable, indexName, matInd)
 if isprop(DynamicTable, indexName)
     VectorIndex = DynamicTable.(indexName);
+elseif isprop(DynamicTable, 'vectorindex') % Schema version < 2.3.0
+    VectorIndex = DynamicTable.vectorindex.get(indexName);
 else
     VectorIndex = DynamicTable.vectordata.get(indexName);
 end
