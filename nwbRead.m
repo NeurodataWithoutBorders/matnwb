@@ -22,17 +22,20 @@ Blacklist = struct(...
     'groups', {{}});
 validateattributes(filename, {'char', 'string'}, {'scalartext', 'nonempty'});
 
-if ~ignoreCache
-    specLocation = checkEmbeddedSpec(filename);
-    if ~isempty(specLocation)
-        Blacklist.groups{end+1} = specLocation;
-    end
+specLocation = getEmbeddedSpec(filename);
+if ~isempty(specLocation)
+    Blacklist.groups{end+1} = specLocation;
+end
+
+if ~ignoreCache && ~isempty(specLocation)
+    generateSpec(filename, h5info(filename, specLocation));
+    rehash(); % required if we want parseGroup to read the right files.
 end
 
 nwb = io.parseGroup(filename, h5info(filename), Blacklist);
 end
 
-function specLocation = checkEmbeddedSpec(filename)
+function specLocation = getEmbeddedSpec(filename)
 specLocation = '';
 fid = H5F.open(filename);
 try
@@ -41,24 +44,18 @@ try
     referenceRawData = H5A.read(attributeId);
     specLocation = H5R.get_name(attributeId, 'H5R_OBJECT', referenceRawData);
     H5A.close(attributeId);
-    generateSpec(fid, h5info(filename, specLocation));
 catch ME
     if ~strcmp(ME.identifier, 'MATLAB:imagesci:hdf5lib:libraryError')
         rethrow(ME);
-    end
-    
-    attributeId = H5A.open(fid, 'nwb_version');
-    version = H5A.read(attributeId);
-    H5A.close(attributeId);
-    
-    generateCore(version);
+    end % don't error if the attribute doesn't exist.
 end
-rehash(); % required if we want parseGroup to read the right files.
+
 H5F.close(fid);
 end
 
-function generateSpec(fid, specinfo)
+function generateSpec(filename, specinfo)
 specNames = cell(size(specinfo.Groups));
+fid = H5F.open(filename);
 for i=1:length(specinfo.Groups)
     location = specinfo.Groups(i).Groups(1);
     
@@ -88,6 +85,8 @@ for i=1:length(specinfo.Groups)
     Namespace = spec.generate(namespaceText, schemaMap);
     specNames{i} = Namespace.name;
 end
+H5F.close(fid);
+fid = [];
 
 missingNames = cell(size(specNames));
 for i = 1:length(specNames)
