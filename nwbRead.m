@@ -27,9 +27,14 @@ if ~isempty(specLocation)
     Blacklist.groups{end+1} = specLocation;
 end
 
-if ~ignoreCache && ~isempty(specLocation)
-    generateSpec(filename, h5info(filename, specLocation));
-    rehash(); % required if we want parseGroup to read the right files.
+if ~ignoreCache
+    if isempty(specLocation)
+        warning('NWB:Read:MissingSpecLocation',...
+            'Could not find cached spec in file. Using previously generated classes.');
+    else
+        generateSpec(filename, h5info(filename, specLocation));
+        rehash();
+    end
 end
 
 nwb = io.parseGroup(filename, h5info(filename), Blacklist);
@@ -96,7 +101,7 @@ for i = 1:length(specNames)
     end
 end
 missingNames(cellfun('isempty', missingNames)) = [];
-assert(isempty(missingNames), 'Nwb:Namespace:DependencyMissing',...
+assert(isempty(missingNames), 'NWB:Namespace:DependencyMissing',...
     'Missing generated caches and dependent caches for the following namespaces:\n%s',...
             misc.cellPrettyPrint(missingNames));
 end
@@ -106,7 +111,7 @@ try
     file.writeNamespace(namespaceName);
     writeSuccessful = true;
 catch ME
-    if ~strcmp(ME.identifier, 'Nwb:Namespace:CacheMissing')
+    if ~strcmp(ME.identifier, 'NWB:Namespace:CacheMissing')
         rethrow(ME);
     end
     writeSuccessful = false;
