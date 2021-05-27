@@ -104,9 +104,10 @@ for i = 1:length(specNames)
     name = specNames{i};
     try
         file.writeNamespace(namespaceName);
-        missingNames{i} = name;
     catch ME
-        if ~strcmp(ME.identifier, 'NWB:Namespace:CacheMissing')
+        if strcmp(ME.identifier, 'NWB:Namespace:CacheMissing')
+            missingNames{i} = name;
+        else
             rethrow(ME);
         end
     end
