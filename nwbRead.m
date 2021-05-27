@@ -29,12 +29,17 @@ end
 
 if ~ignoreCache
     if isempty(specLocation)
-        warning('NWB:Read:MissingSpecLocation',...
-            'Could not find cached spec in file. Using previously generated classes.');
+        try
+            generateCore(util.getSchemaVersion(filename));
+        catch ME
+            if ~strcmp(ME.identifier, 'NWB:GenerateCore:MissingCoreSchema')
+                rethrow(ME);
+            end
+        end
     else
         generateSpec(filename, h5info(filename, specLocation));
-        rehash();
     end
+    rehash();
 end
 
 nwb = io.parseGroup(filename, h5info(filename), Blacklist);
