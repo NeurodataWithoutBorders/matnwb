@@ -13,12 +13,12 @@ else
             types.util.checkDtype([pname '.' name], allowedType, val);
             return;
         catch ME
-            if ~strcmp(ME.identifier, 'MATNWB:INVALIDTYPE')
+            if ~any(strcmp(ME.identifier, {'NWB:CheckDType:InvalidType', 'NWB:CheckDType:InvalidShape'}))
                 rethrow(ME);
             end
         end
     end
-    error('MATNWB:INVALIDCONSTR',...
+    error('NWB:CheckConstraint:InvalidType',...
         'Property `%s.%s` should be one of type(s) {%s}.',...
         pname, name, misc.cellPrettyPrint(constrained));
 end

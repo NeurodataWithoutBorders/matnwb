@@ -91,13 +91,13 @@ classdef Set < handle & matlab.mixin.CustomDisplay
         
         %overloads horzcat(A1,A2,...,An)
         function C = horzcat(varargin)
-            error('MATNWB:SET:UNSUPPORTED',...
+            error('NWB:Set:Unsupported',...
                 'types.untyped.Set does not support concatenation');
         end
         
         %overloads vertcat(A1, A2,...,An)
         function C = vertcat(varargin)
-            error('MATNWB:SET:UNSUPPORTED',...
+            error('NWB:Set:Unsupported',...
                 'types.untyped.Set does not support concatenation.');
         end
          

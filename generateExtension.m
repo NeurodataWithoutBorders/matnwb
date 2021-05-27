@@ -22,7 +22,7 @@ for i = 1:length(varargin)
     
     [localpath, ~, ~] = fileparts(source);
     assert(2 == exist(source, 'file'),...
-        'MATNWB:FILE', 'Path to file `%s` could not be found.', source);
+        'NWB:GenerateExtension:FileNotFound', 'Path to file `%s` could not be found.', source);
     fid = fopen(source);
     namespaceText = fread(fid, '*char') .';
     fclose(fid);

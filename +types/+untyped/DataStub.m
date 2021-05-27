@@ -171,7 +171,7 @@ classdef (Sealed) DataStub < handle
             % LOAD_MAT_STYLE(...) where each argument is an index into the dimension or ':'
             %   indicating load all of dimension. The dimension ordering is
             %   MATLAB, not HDF5 for this function.
-            assert(length(varargin) <= obj.ndims, 'MatNWB:DataStub:Load:TooManyDimensions',...
+            assert(length(varargin) <= obj.ndims, 'NWB:DataStub:Load:TooManyDimensions',...
                 'Too many dimensions specified (got %d, expected %d)', length(varargin), obj.ndims);
             dims = obj.dims;
             rank = length(dims);
@@ -406,7 +406,7 @@ classdef (Sealed) DataStub < handle
             rank = length(dims);
             selectionRank = length(CurrentSubRef.subs);
             assert(rank >= selectionRank,...
-                'MatNWB:DataStub:InvalidDimIndex',...
+                'NWB:DataStub:InvalidDimIndex',...
                 'Cannot index into %d dimensions when max rank is %d',...
                 selectionRank, rank);
             data = obj.load_mat_style(CurrentSubRef.subs{:});
@@ -426,7 +426,7 @@ classdef (Sealed) DataStub < handle
             end
             dims = obj.dims;
             rank = length(dims);
-            assert(rank >= expressionIndex, 'MatNwb:DataStub:InvalidEndIndex',...
+            assert(rank >= expressionIndex, 'NWB:DataStub:InvalidEndIndex',...
                 'Cannot index into index %d when max rank is %d', expressionIndex, rank);
             ind = dims(expressionIndex);
         end

@@ -95,6 +95,6 @@ else
     ids = DynamicTable.id.data;
 end
 [idMatch, ind] = ismember(id, ids);
-assert(all(idMatch), 'MatNWB:DynamicTable:GetRow:InvalidId',...
+assert(all(idMatch), 'NWB:DynamicTable:GetRow:InvalidId',...
     'Invalid ids found. If you wish to use row indices directly, remove the `useId` flag.');
 end
