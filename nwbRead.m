@@ -101,24 +101,17 @@ fid = [];
 missingNames = cell(size(specNames));
 for i = 1:length(specNames)
     name = specNames{i};
-    if ~tryWriteSpec(name)
+    try
+        file.writeNamespace(namespaceName);
         missingNames{i} = name;
+    catch ME
+        if ~strcmp(ME.identifier, 'NWB:Namespace:CacheMissing')
+            rethrow(ME);
+        end
     end
 end
 missingNames(cellfun('isempty', missingNames)) = [];
 assert(isempty(missingNames), 'NWB:Namespace:DependencyMissing',...
     'Missing generated caches and dependent caches for the following namespaces:\n%s',...
             misc.cellPrettyPrint(missingNames));
-end
-
-function writeSuccessful = tryWriteSpec(namespaceName)
-try
-    file.writeNamespace(namespaceName);
-    writeSuccessful = true;
-catch ME
-    if ~strcmp(ME.identifier, 'NWB:Namespace:CacheMissing')
-        rethrow(ME);
-    end
-    writeSuccessful = false;
-end
 end
