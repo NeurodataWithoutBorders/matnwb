@@ -34,16 +34,16 @@ if ~isempty(index)
     
     raggedOffset = 0;
     if isa(VecInd.data, 'types.untyped.DataPipe') && 0 < VecInd.data.dims
-        raggedOffset = VecInd.data.load(VecInd.data.dims);
+        raggedOffset = double(VecInd.data.load(VecInd.data.dims));
     elseif ~isempty(VecInd.data)
-        raggedOffset = VecInd.data(end);
+        raggedOffset = double(VecInd.data(end));
     end
     
     raggedValue = raggedOffset + size(data, 1);
     if isa(VecInd.data, 'types.untyped.DataPipe')
         VecInd.data.append(raggedValue);
     else
-        VecInd.data = [VecInd.data; raggedValue];
+        VecInd.data = [double(VecInd.data); raggedValue];
     end
 end
 
