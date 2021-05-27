@@ -28,6 +28,7 @@ for i = 1:length(varargin)
     fclose(fid);
     
     Namespace = spec.generate(namespaceText, localpath);
+    spec.saveCache(Namespace);
     file.writeNamespace(Namespace.name);
     rehash();
 end

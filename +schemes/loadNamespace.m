@@ -3,7 +3,7 @@ function Namespace = loadNamespace(name)
 % name is the pregenerated namespace name
 % Namespaces a schemes.Namespace object with dependency graph
 
-Cache = schemes.loadCache(name);
+Cache = spec.loadCache(name);
 assert(~isempty(Cache), 'NWB:Namespace:CacheMissing',...
     ['No cache found for namespace `%s`.  '...
     'Please generate any missing dependencies before generating this namespace.'], name);

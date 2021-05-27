@@ -93,6 +93,7 @@ for i=1:length(specinfo.Groups)
     end
     
     Namespace = spec.generate(namespaceText, schemaMap);
+    spec.saveCache(Namespace);
     specNames{i} = Namespace.name;
 end
 H5F.close(fid);
