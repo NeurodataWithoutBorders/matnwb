@@ -103,7 +103,7 @@ missingNames = cell(size(specNames));
 for i = 1:length(specNames)
     name = specNames{i};
     try
-        file.writeNamespace(namespaceName);
+        file.writeNamespace(name);
     catch ME
         if strcmp(ME.identifier, 'NWB:Namespace:CacheMissing')
             missingNames{i} = name;
