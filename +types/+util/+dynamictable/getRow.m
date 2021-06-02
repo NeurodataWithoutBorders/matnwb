@@ -75,16 +75,18 @@ else
 end
 
 matInd = unique(matInd);
-matStartInd = matInd - 1;
-startInd = ones(size(matInd));
+indexStartInd = matInd - 1;
+startInd = zeros(size(matInd));
+validIndexMask = indexStartInd > 0;
 if isa(VectorIndex.data, 'types.untyped.DataStub')...
         || isa(VectorIndex.data, 'types.untyped.DataPipe')
     stopInd = VectorIndex.data.load(matInd);
-    startInd(matStartInd > 0) = VectorIndex.data.load(matStartInd(matStartInd > 0));
+    startInd(validIndexMask) = VectorIndex.data.load(indexStartInd(validIndexMask));
 else
     stopInd = VectorIndex.data(matInd);
-    startInd(matStartInd > 0) = VectorIndex.data(matStartInd(matStartInd > 0));
+    startInd(validIndexMask) = VectorIndex.data(indexStartInd(validIndexMask));
 end
+startInd = startInd + 1; % Convert from 0-based indexing to 1-based indexing.
 indMap = containers.Map('KeyType', 'uint64', 'ValueType', 'any');
 for i = 1:length(startInd)
     indMap(matInd(i)) = startInd(i):stopInd(i);
