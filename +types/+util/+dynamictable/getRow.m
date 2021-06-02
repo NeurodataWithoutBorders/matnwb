@@ -47,6 +47,7 @@ for i = 1:length(columns)
         for j = 1:length(ind)
             colInd{j} = indMap(ind(j));
         end
+        lengthPerRow = cellfun('length', colInd); % used below to segment the data.
         colInd = cell2mat(colInd);
     end
     
@@ -58,8 +59,8 @@ for i = 1:length(columns)
     end
     
     if ~isempty(indexName)
-        row{i} = mat2cell(row{i}, cellfun('length', values(indMap)), 1);
-    end
+        row{i} = mat2cell(row{i}, lengthPerRow, 1);
+    end % if is indexed, segment data into rows using cells.
 end
 subTable = table(row{:}, 'VariableNames', columns);
 end
