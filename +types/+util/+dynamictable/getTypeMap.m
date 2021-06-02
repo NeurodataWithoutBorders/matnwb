@@ -8,7 +8,7 @@ if isempty(DynamicTable.id.data)...
     return;
 end
 TypeStruct = struct('type', '', 'dims', [0, 0]);
-for i = length(DynamicTable.colnames)
+for i = 1:length(DynamicTable.colnames)
     colnm = DynamicTable.colnames{i};
     if isprop(DynamicTable, colnm)
         colVecData = DynamicTable.(colnm);

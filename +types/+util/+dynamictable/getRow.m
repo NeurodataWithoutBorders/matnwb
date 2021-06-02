@@ -66,8 +66,10 @@ end
 function indMap = getIndexInd(DynamicTable, indexName, matInd)
 if isprop(DynamicTable, indexName)
     VectorIndex = DynamicTable.(indexName);
-else
+elseif isprop(DynamicTable, 'vectorindex') % Schema version < 2.3.0
     VectorIndex = DynamicTable.vectorindex.get(indexName);
+else
+    VectorIndex = DynamicTable.vectordata.get(indexName);
 end
 
 matInd = unique(matInd);
@@ -95,6 +97,6 @@ else
     ids = DynamicTable.id.data;
 end
 [idMatch, ind] = ismember(id, ids);
-assert(all(idMatch), 'MatNWB:DynamicTable:GetRow:InvalidId',...
+assert(all(idMatch), 'NWB:DynamicTable:GetRow:InvalidId',...
     'Invalid ids found. If you wish to use row indices directly, remove the `useId` flag.');
 end

@@ -9,7 +9,7 @@
 % 
 %  author: Lawrence Niu
 %  contact: lawrence@vidriotech.com
-%  last updated: Feb 2, 2021
+%  last updated: May 27, 2021
 
 %% Script Configuration
 % The following details configuration parameters specific to the publishing script,
@@ -268,7 +268,7 @@ data = loaded.obj;
 % wherein each cell is one trial. We must populate this way because trials
 % may not be in trial order.
 % Trial timeseries will be a compound type under intervals/trials.
-trial_timeseries = cell(length(data.trialIds)); 
+trial_timeseries = cell(size(data.trialIds)); 
 
 %%
 % NWB comes with default support for trial-based data.  These must be *TimeIntervals* that
@@ -355,8 +355,9 @@ trials_epoch = types.core.TimeIntervals(...
         {'start_time'; 'stop_time'; 'acquisition'; 'timeseries'}],...
     'description', 'trial data and properties', ...
     'id', types.hdmf_common.ElementIdentifiers('data', data.trialIds),...
-    'timeseries', types.hdmf_common.VectorData('description', 'An index into a TimeSeries object.'),...
+    'timeseries', types.hdmf_common.VectorData('description', 'Index into timeseries Data'),...
     'timeseries_index', types.hdmf_common.VectorIndex(...
+    'description', 'Index into Timeseries VectorData',...
     'target', types.untyped.ObjectView('/intervals/trials/timeseries')));
 
 for i=1:length(data.trialTypeStr)
@@ -507,12 +508,17 @@ trials_idx.stop_time = types.hdmf_common.VectorData(...
 
 %first, we'll format and store |trial_timeseries| into |intervals_trials|.
 % note that |timeseries_index| data is 0-indexed.
-ts_len = cellfun('length', trial_timeseries);
-nwb.intervals_trials.timeseries_index.data = cumsum(ts_len);
+ts_len = cellfun('size', trial_timeseries, 1);
+is_len_nonzero = ts_len > 0;
+ts_len_nonzero = ts_len(is_len_nonzero);
+nwb.intervals_trials.timeseries_index.data = cumsum(ts_len_nonzero);
 % intervals/trials/timeseries is a compound type so we use cell2table to
 % convert this 2-d cell array into a compatible table.
-nwb.intervals_trials.timeseries.data = cell2table(vertcat(trial_timeseries{ts_len > 0}),...
+nwb.intervals_trials.timeseries.data = cell2table(vertcat(trial_timeseries{is_len_nonzero}),...
     'VariableNames', {'timeseries', 'idx_start', 'count'});
 
 outDest = fullfile(outloc, [identifier '.nwb']);
+if 2 == exist(outDest, 'file')
+    delete(outDest);
+end
 nwbExport(nwb, outDest);

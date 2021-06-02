@@ -27,9 +27,19 @@ if ~isempty(specLocation)
     Blacklist.groups{end+1} = specLocation;
 end
 
-if ~ignoreCache && ~isempty(specLocation)
-    generateSpec(filename, h5info(filename, specLocation));
-    rehash(); % required if we want parseGroup to read the right files.
+if ~ignoreCache
+    if isempty(specLocation)
+        try
+            generateCore(util.getSchemaVersion(filename));
+        catch ME
+            if ~strcmp(ME.identifier, 'NWB:GenerateCore:MissingCoreSchema')
+                rethrow(ME);
+            end
+        end
+    else
+        generateSpec(filename, h5info(filename, specLocation));
+    end
+    rehash();
 end
 
 nwb = io.parseGroup(filename, h5info(filename), Blacklist);
@@ -83,6 +93,7 @@ for i=1:length(specinfo.Groups)
     end
     
     Namespace = spec.generate(namespaceText, schemaMap);
+    spec.saveCache(Namespace);
     specNames{i} = Namespace.name;
 end
 H5F.close(fid);
@@ -91,24 +102,18 @@ fid = [];
 missingNames = cell(size(specNames));
 for i = 1:length(specNames)
     name = specNames{i};
-    if ~tryWriteSpec(name)
-        missingNames{i} = name;
+    try
+        file.writeNamespace(name);
+    catch ME
+        if strcmp(ME.identifier, 'NWB:Namespace:CacheMissing')
+            missingNames{i} = name;
+        else
+            rethrow(ME);
+        end
     end
 end
 missingNames(cellfun('isempty', missingNames)) = [];
-assert(isempty(missingNames), 'Nwb:Namespace:DependencyMissing',...
+assert(isempty(missingNames), 'NWB:Namespace:DependencyMissing',...
     'Missing generated caches and dependent caches for the following namespaces:\n%s',...
             misc.cellPrettyPrint(missingNames));
-end
-
-function writeSuccessful = tryWriteSpec(namespaceName)
-try
-    file.writeNamespace(namespaceName);
-    writeSuccessful = true;
-catch ME
-    if ~strcmp(ME.identifier, 'Nwb:Namespace:CacheMissing')
-        rethrow(ME);
-    end
-    writeSuccessful = false;
-end
 end

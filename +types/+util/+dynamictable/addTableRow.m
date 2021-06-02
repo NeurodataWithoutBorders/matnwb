@@ -8,7 +8,7 @@ parse(p, varargin{:});
 rowNames = subTable.Properties.VariableNames;
 missingColumns = setdiff(DynamicTable.colnames, rowNames);
 assert(isempty(missingColumns),...
-    'MatNWB:DynamicTable:AddRow:MissingColumns',...
+    'NWB:DynamicTable:AddRow:MissingColumns',...
     'Missing columns { %s }', strjoin(missingColumns, ', '));
 
 isIdInTable = any(strcmp(rowNames, 'id'));
@@ -16,12 +16,12 @@ isIdKeywordArg = ~any(strcmp(p.UsingDefaults, 'id'));
 if isIdInTable
     idData = subTable.id;
     if isIdKeywordArg
-        warning('MatNWB:DynamicTable:AddRow:DuplicateId',...
+        warning('NWB:DynamicTable:AddRow:DuplicateId',...
             'subtable already has an `id` column. Will ignore keyword argument.');
     end
 elseif isIdKeywordArg
     assert(length(p.Results.id) == height(subTable),...
-        'MatNWB:DynamicTable:AddRow:InvalidIdSize',...
+        'NWB:DynamicTable:AddRow:InvalidIdSize',...
         ['Optional keyword argument `id` must match the height of the subtable to append. '...
         'Hint: you can also include `id` as a column in the subtable.']);
     idData = p.Results.id;
@@ -34,23 +34,25 @@ end
 TypeMap = types.util.dynamictable.getTypeMap(DynamicTable);
 for i = 1:length(rowNames)
     rn = rowNames{i};
-    rv = subTable.(rn);
+    rowColumn = subTable.(rn);
     
     if isKey(TypeMap, rn)
-        validateType(TypeMap(rn), rv);
+        validateType(TypeMap(rn), rowColumn);
     end
     
     % instantiate vector index here because it's dependent on the table
     % fullpath.
     vecIndName = types.util.dynamictable.getIndex(DynamicTable, rn);
-    if isempty(vecIndName) && ~iscellstr(rv) && iscell(rv)
+    if isempty(vecIndName) && (~isempty(p.Results.tablepath) || (~iscellstr(rowColumn) && iscell(rowColumn)))
         vecIndName = types.util.dynamictable.addVecInd(DynamicTable, rn, p.Results.tablepath);
     end
-    if ~iscell(rv) || iscellstr(rv)
-        rv = {rv};
-    end
-    for i = 1:length(rv)
-        types.util.dynamictable.addRawData(DynamicTable, rn, rv{i}, vecIndName);
+    for j = 1:length(rowColumn)
+        if iscell(rowColumn)
+            rv = rowColumn{j};
+        else
+            rv = rowColumn(j);
+        end
+        types.util.dynamictable.addRawData(DynamicTable, rn, rv, vecIndName);
     end
 end
 
@@ -77,7 +79,7 @@ end
 function validateType(TypeStruct, rv)
 if strcmp(TypeStruct.type, 'cellstr')
     assert(iscellstr(rv) || (ischar(rv) && 1 == size(rv, 1)),...
-        'MatNWB:DynamicTable:AddRow:InvalidType',...
+        'NWB:DynamicTable:AddRow:InvalidType',...
         'Type of value must be a cell array of character vectors or a scalar character');
 else
     if ~iscell(rv)

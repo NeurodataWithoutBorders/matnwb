@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>NWB File Conversion Tutorial</title><meta name="generator" content="MATLAB 9.9"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2021-02-08"><meta name="DC.source" content="convertTrials.m"><style type="text/css">
+      --><title>NWB File Conversion Tutorial</title><meta name="generator" content="MATLAB 9.10"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2021-05-27"><meta name="DC.source" content="convertTrials.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -69,7 +69,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
   </style></head><body><div class="content"><h1>NWB File Conversion Tutorial</h1><!--introduction--><p>How to convert trial-based experimental data to the Neurodata Without Borders file format using MatNWB. This example uses the <a href="https://crcns.org/data-sets/motor-cortex/alm-3">CRCNS ALM-3</a> data set.  Information on how to download the data can be found on the <a href="https://crcns.org/data-sets/motor-cortex/download">CRCNS Download Page</a>.  One should first familiarize themselves with the file format, which can be found on the <a href="https://crcns.org/data-sets/motor-cortex/alm-3/about-alm-3">ALM-3 About Page</a> under the Documentation files.</p><pre>author: Lawrence Niu
 contact: lawrence@vidriotech.com
-last updated: Feb 2, 2021</pre><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Script Configuration</a></li><li><a href="#4">General Information</a></li><li><a href="#7">The ALM-3 File Structure</a></li><li><a href="#8">Metadata</a></li><li><a href="#15">Analysis Data Structure</a></li><li><a href="#16">Hashes</a></li><li><a href="#26">Raw Acquisition Data</a></li><li><a href="#27">Export</a></li></ul></div><h2 id="1">Script Configuration</h2><p>The following details configuration parameters specific to the publishing script, and can be skipped when implementing your own conversion. The parameters can be changed to fit any of the available sessions.</p><pre class="codeinput">animal = <span class="string">'ANM255201'</span>;
+last updated: May 27, 2021</pre><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Script Configuration</a></li><li><a href="#4">General Information</a></li><li><a href="#7">The ALM-3 File Structure</a></li><li><a href="#8">Metadata</a></li><li><a href="#15">Analysis Data Structure</a></li><li><a href="#16">Hashes</a></li><li><a href="#26">Raw Acquisition Data</a></li><li><a href="#27">Export</a></li></ul></div><h2 id="1">Script Configuration</h2><p>The following details configuration parameters specific to the publishing script, and can be skipped when implementing your own conversion. The parameters can be changed to fit any of the available sessions.</p><pre class="codeinput">animal = <span class="string">'ANM255201'</span>;
 session = <span class="string">'20141124'</span>;
 
 identifier = [animal <span class="string">'_'</span> session];
@@ -243,7 +243,7 @@ data = loaded.obj;
 <span class="comment">% wherein each cell is one trial. We must populate this way because trials</span>
 <span class="comment">% may not be in trial order.</span>
 <span class="comment">% Trial timeseries will be a compound type under intervals/trials.</span>
-trial_timeseries = cell(length(data.trialIds));
+trial_timeseries = cell(size(data.trialIds));
 </pre><pre class="codeoutput">Processing Data Structure `data\data_structure_files\data_structure_ANM255201_20141124.mat`
 </pre><p>NWB comes with default support for trial-based data.  These must be <b>TimeIntervals</b> that are placed in the <tt>intervals</tt> property.  Note that <tt>trials</tt> is a special keyword that is required for PyNWB compatibility.</p><pre class="codeinput">ephus = data.timeSeriesArrayHash.value{1};
 ephusUnit = data.timeUnitNames{data.timeUnitIds(ephus.timeUnit)};
@@ -305,8 +305,9 @@ ots_ref = types.untyped.ObjectView(<span class="string">'/stimulus/presentation/
         {<span class="string">'start_time'</span>; <span class="string">'stop_time'</span>; <span class="string">'acquisition'</span>; <span class="string">'timeseries'</span>}],<span class="keyword">...</span>
     <span class="string">'description'</span>, <span class="string">'trial data and properties'</span>, <span class="keyword">...</span>
     <span class="string">'id'</span>, types.hdmf_common.ElementIdentifiers(<span class="string">'data'</span>, data.trialIds),<span class="keyword">...</span>
-    <span class="string">'timeseries'</span>, types.hdmf_common.VectorData(<span class="string">'description'</span>, <span class="string">'An index into a TimeSeries object.'</span>),<span class="keyword">...</span>
+    <span class="string">'timeseries'</span>, types.hdmf_common.VectorData(<span class="string">'description'</span>, <span class="string">'Index into timeseries Data'</span>),<span class="keyword">...</span>
     <span class="string">'timeseries_index'</span>, types.hdmf_common.VectorIndex(<span class="keyword">...</span>
+    <span class="string">'description'</span>, <span class="string">'Index into Timeseries VectorData'</span>,<span class="keyword">...</span>
     <span class="string">'target'</span>, types.untyped.ObjectView(<span class="string">'/intervals/trials/timeseries'</span>)));
 
 <span class="keyword">for</span> i=1:length(data.trialTypeStr)
@@ -430,16 +431,21 @@ trials_idx.stop_time = types.hdmf_common.VectorData(<span class="keyword">...</s
 </pre><pre class="codeoutput">Processing Raw Acquisition Data from `data\RawVoltageTraces\ANM255201_20141124.tar` (will take a while)
 </pre><h2 id="27">Export</h2><pre class="codeinput"><span class="comment">%first, we'll format and store |trial_timeseries| into |intervals_trials|.</span>
 <span class="comment">% note that |timeseries_index| data is 0-indexed.</span>
-ts_len = cellfun(<span class="string">'length'</span>, trial_timeseries);
-nwb.intervals_trials.timeseries_index.data = cumsum(ts_len);
+ts_len = cellfun(<span class="string">'size'</span>, trial_timeseries, 1);
+is_len_nonzero = ts_len &gt; 0;
+ts_len_nonzero = ts_len(is_len_nonzero);
+nwb.intervals_trials.timeseries_index.data = cumsum(ts_len_nonzero);
 <span class="comment">% intervals/trials/timeseries is a compound type so we use cell2table to</span>
 <span class="comment">% convert this 2-d cell array into a compatible table.</span>
-nwb.intervals_trials.timeseries.data = cell2table(vertcat(trial_timeseries{ts_len &gt; 0}),<span class="keyword">...</span>
+nwb.intervals_trials.timeseries.data = cell2table(vertcat(trial_timeseries{is_len_nonzero}),<span class="keyword">...</span>
     <span class="string">'VariableNames'</span>, {<span class="string">'timeseries'</span>, <span class="string">'idx_start'</span>, <span class="string">'count'</span>});
 
 outDest = fullfile(outloc, [identifier <span class="string">'.nwb'</span>]);
+<span class="keyword">if</span> 2 == exist(outDest, <span class="string">'file'</span>)
+    delete(outDest);
+<span class="keyword">end</span>
 nwbExport(nwb, outDest);
-</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2020b</a><br></p></div><!--
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2021a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% NWB File Conversion Tutorial
 % How to convert trial-based experimental data to the Neurodata Without Borders file format using MatNWB.
@@ -452,7 +458,7 @@ nwbExport(nwb, outDest);
 % 
 %  author: Lawrence Niu
 %  contact: lawrence@vidriotech.com
-%  last updated: Feb 2, 2021
+%  last updated: May 27, 2021
 
 %% Script Configuration
 % The following details configuration parameters specific to the publishing script,
@@ -711,7 +717,7 @@ data = loaded.obj;
 % wherein each cell is one trial. We must populate this way because trials
 % may not be in trial order.
 % Trial timeseries will be a compound type under intervals/trials.
-trial_timeseries = cell(length(data.trialIds)); 
+trial_timeseries = cell(size(data.trialIds)); 
 
 %%
 % NWB comes with default support for trial-based data.  These must be *TimeIntervals* that
@@ -798,8 +804,9 @@ trials_epoch = types.core.TimeIntervals(...
         {'start_time'; 'stop_time'; 'acquisition'; 'timeseries'}],...
     'description', 'trial data and properties', ...
     'id', types.hdmf_common.ElementIdentifiers('data', data.trialIds),...
-    'timeseries', types.hdmf_common.VectorData('description', 'An index into a TimeSeries object.'),...
+    'timeseries', types.hdmf_common.VectorData('description', 'Index into timeseries Data'),...
     'timeseries_index', types.hdmf_common.VectorIndex(...
+    'description', 'Index into Timeseries VectorData',...
     'target', types.untyped.ObjectView('/intervals/trials/timeseries')));
 
 for i=1:length(data.trialTypeStr)
@@ -950,14 +957,19 @@ trials_idx.stop_time = types.hdmf_common.VectorData(...
 
 %first, we'll format and store |trial_timeseries| into |intervals_trials|.
 % note that |timeseries_index| data is 0-indexed.
-ts_len = cellfun('length', trial_timeseries);
-nwb.intervals_trials.timeseries_index.data = cumsum(ts_len);
+ts_len = cellfun('size', trial_timeseries, 1);
+is_len_nonzero = ts_len > 0;
+ts_len_nonzero = ts_len(is_len_nonzero);
+nwb.intervals_trials.timeseries_index.data = cumsum(ts_len_nonzero);
 % intervals/trials/timeseries is a compound type so we use cell2table to
 % convert this 2-d cell array into a compatible table.
-nwb.intervals_trials.timeseries.data = cell2table(vertcat(trial_timeseries{ts_len > 0}),...
+nwb.intervals_trials.timeseries.data = cell2table(vertcat(trial_timeseries{is_len_nonzero}),...
     'VariableNames', {'timeseries', 'idx_start', 'count'});
 
 outDest = fullfile(outloc, [identifier '.nwb']);
+if 2 == exist(outDest, 'file')
+    delete(outDest);
+end
 nwbExport(nwb, outDest);
 ##### SOURCE END #####
 --></body></html>

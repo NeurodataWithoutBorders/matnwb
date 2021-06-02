@@ -1,0 +1,82 @@
+groups:
+- datasets:
+  - dtype: float
+    name: start_time
+    doc: Start time of epoch, in seconds
+    neurodata_type_inc: VectorData
+    attributes:
+    - name: description
+      doc: value is 'start time of the epoch, in seconds'
+      dtype: text
+      value: start time of the epoch, in seconds
+  - dtype: float
+    name: stop_time
+    doc: Stop time of epoch, in seconds
+    neurodata_type_inc: VectorData
+    attributes:
+    - name: description
+      doc: value is 'stop time of the epoch, in seconds'
+      dtype: text
+      value: stop time of the epoch, in seconds
+  - dtype: text
+    name: tags
+    doc: User-defined tags that identify events. Tags are to help identify or categorize
+      events.
+    quantity: "?"
+    neurodata_type_inc: VectorData
+    attributes:
+    - name: description
+      doc: value is 'user-defined tags'
+      dtype: text
+      value: user-defined tags
+  - name: tags_index
+    doc: Index for tags
+    quantity: "?"
+    neurodata_type_inc: VectorIndex
+  - dtype:
+    - doc: 'Start index into the TimeSeries data[] field. COMMENT: This can be used
+        to calculate location in TimeSeries timestamp[] field'
+      name: idx_start
+      dtype: int32
+    - doc: Number of data samples available in this time series, during this epoch.
+      name: count
+      dtype: int32
+    - doc: the TimeSeries that this index applies to
+      name: timeseries
+      dtype:
+        target_type: TimeSeries
+        reftype: object
+    name: timeseries
+    doc: An index into a TimeSeries object
+    quantity: "?"
+    neurodata_type_inc: VectorData
+    attributes:
+    - name: help
+      doc: Value is 'Data on how an epoch applies to a time series'
+      dtype: text
+      value: Data on how an epoch applies to a time series
+  - name: timeseries_index
+    doc: Index for timeseries
+    quantity: "?"
+    neurodata_type_inc: VectorIndex
+  doc: A container for aggregating epoch data and the TimeSeries that each epoch applies
+    to
+  neurodata_type_inc: DynamicTable
+  neurodata_type_def: TimeIntervals
+  attributes:
+  - name: help
+    doc: Value is 'A general epoch object'
+    dtype: text
+    value: A general epoch object
+  - name: colnames
+    doc: The names of the columns in this table. This should be used to specifying
+      an order to the columns
+    dtype: ascii
+    shape:
+    - null
+    dims:
+    - num_columns
+  - name: description
+    doc: Description of what is in this dynamic table
+    dtype: text
+

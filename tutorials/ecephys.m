@@ -174,8 +174,8 @@ nwb.intervals_trials = trials;
 % On the other hand, if the column is a custom name, it must be added by setting 
 % |DynamicTable.vectordata.set('name', VectorData)| (e.g. |'quality'|)
 % below. You can see what the default column names for |units| are by
-% typing |nwb.units|. |colnames|, |description|, |id|, |vectordata|, 
-% |vectorindex| and |help| are all |DynamicTable| properties, but the
+% typing |nwb.units|. |colnames|, |description|, |id|, |vectordata| 
+% and |help| are all |DynamicTable| properties, but the
 % others are default columns.
 %
 % 2) Each row of a column is an array of varying length, you must add two objects, a

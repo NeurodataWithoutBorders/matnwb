@@ -1,0 +1,82 @@
+groups:
+- datasets:
+  - shape:
+    - null
+    dims:
+    - num_times
+    dtype: numeric
+    name: data
+    doc: Applied power for optogenetic stimulus.
+    attributes:
+    - name: unit
+      doc: 'The base unit of measure used to store data. This should be in the SI
+        unit. COMMENT: This is the SI unit (when appropriate) of the stored data,
+        such as Volts. If the actual data is stored in millivolts, the field ''conversion''
+        below describes how to convert the data to the specified SI unit.'
+      required: false
+      dtype: text
+      default_value: watt
+    - name: conversion
+      doc: Scalar to multiply each element in data to convert it to the specified
+        unit
+      required: false
+      dtype: float32
+      default_value: 1
+    - name: resolution
+      doc: 'Smallest meaningful difference between values in data, stored in the specified
+        by unit. COMMENT: E.g., the change in value of the least significant bit,
+        or a larger number if signal noise is known to be present. If unknown, use
+        -1.0'
+      required: false
+      dtype: float32
+      default_value: 0
+  links:
+  - name: site
+    doc: link to OptogeneticStimulusSite group that describes the site to which this
+      stimulus was applied
+    target_type: OptogeneticStimulusSite
+  doc: Optogenetic stimulus.  The data[] field is in unit of watts.
+  neurodata_type_inc: TimeSeries
+  neurodata_type_def: OptogeneticSeries
+  attributes:
+  - name: help
+    doc: Value is 'Optogenetic stimulus'
+    dtype: text
+    value: Optogenetic stimulus
+  - name: comments
+    doc: Human-readable comments about the TimeSeries. This second descriptive field
+      can be used to store additional information, or descriptive information if the
+      primary description field is populated with a computer-readable string.
+    required: false
+    dtype: text
+    default_value: no comments
+  - name: description
+    doc: Description of TimeSeries
+    required: false
+    dtype: text
+    default_value: no description
+- datasets:
+  - dtype: text
+    name: description
+    doc: Description of site
+  - dtype: float
+    name: excitation_lambda
+    doc: Excitation wavelength in nm
+  - dtype: text
+    name: location
+    doc: Location of stimulation site
+  links:
+  - name: device
+    doc: Device that generated the stimulus
+    target_type: Device
+  doc: 'One of possibly many groups describing an optogenetic stimulation site. COMMENT:
+    Name is arbitrary but should be meaningful. Name is referenced by OptogeneticSeries'
+  quantity: "*"
+  neurodata_type_inc: NWBContainer
+  neurodata_type_def: OptogeneticStimulusSite
+  attributes:
+  - name: help
+    doc: Value is 'Metadata about an optogenetic stimulus site'
+    dtype: text
+    value: Metadata about an optogenetic stimulus site
+
