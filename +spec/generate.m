@@ -20,13 +20,5 @@ if ischar(schemaSource)
 else % map of schemas with their locations
     schema = spec.getSourceInfo(schemaSource);
 end
-
 NamespaceInfo.schema = schema;
-namespacePath = misc.getNamespaceDir();
-if isempty(namespacePath)
-    namespacePath = fullfile(pwd, 'namespaces');
-    mkdir(namespacePath);
-end
-cachePath = fullfile(namespacePath, [NamespaceInfo.name '.mat']);
-save(cachePath, '-struct', 'NamespaceInfo');
 end

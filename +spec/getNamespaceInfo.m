@@ -1,5 +1,5 @@
 function Namespace = getNamespaceInfo(namespaceMap)
-errid = 'MATNWB:INVALIDFILE';
+errid = 'NWB:Spec:InvalidFile';
 errmsg = 'Could not read namespace file.  Invalid format.';
 
 assert(isKey(namespaceMap, 'namespaces'), errid, errmsg);

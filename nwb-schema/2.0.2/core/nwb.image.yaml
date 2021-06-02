@@ -1,0 +1,308 @@
+datasets:
+- shape:
+  - null
+  - null
+  dims:
+  - y
+  - x
+  doc: Grayscale image
+  neurodata_type_inc: Image
+  neurodata_type_def: GrayscaleImage
+  attributes:
+  - name: help
+    doc: base image (use GrayscaleImage, RGBImage, RGBAImage, etc.)
+    dtype: text
+  - name: resolution
+    doc: pixels / cm
+    required: false
+    dtype: float
+  - name: description
+    doc: description of image
+    required: false
+    dtype: text
+- shape:
+  - null
+  - null
+  - 3
+  dims:
+  - y
+  - x
+  - R,G,B
+  doc: Color image
+  neurodata_type_inc: Image
+  neurodata_type_def: RGBImage
+  attributes:
+  - name: help
+    doc: base image (use GrayscaleImage, RGBImage, RGBAImage, etc.)
+    dtype: text
+  - name: resolution
+    doc: pixels / cm
+    required: false
+    dtype: float
+  - name: description
+    doc: description of image
+    required: false
+    dtype: text
+- shape:
+  - null
+  - null
+  - 4
+  dims:
+  - y
+  - x
+  - R,G,B,A
+  doc: Color image with transparency
+  neurodata_type_inc: Image
+  neurodata_type_def: RGBAImage
+  attributes:
+  - name: help
+    doc: base image (use GrayscaleImage, RGBImage, RGBAImage, etc.)
+    dtype: text
+  - name: resolution
+    doc: pixels / cm
+    required: false
+    dtype: float
+  - name: description
+    doc: description of image
+    required: false
+    dtype: text
+groups:
+- datasets:
+  - shape:
+    - - null
+      - null
+      - null
+    - - null
+      - null
+      - null
+      - null
+    dims:
+    - - frame
+      - y
+      - x
+    - - frame
+      - z
+      - y
+      - x
+    dtype: numeric
+    name: data
+    doc: Either binary data containing image or empty.
+    quantity: "?"
+    attributes:
+    - name: conversion
+      doc: Scalar to multiply each element in data to convert it to the specified
+        unit
+      required: false
+      dtype: float32
+      default_value: 1
+    - name: resolution
+      doc: 'Smallest meaningful difference between values in data, stored in the specified
+        by unit. COMMENT: E.g., the change in value of the least significant bit,
+        or a larger number if signal noise is known to be present. If unknown, use
+        -1.0'
+      required: false
+      dtype: float32
+      default_value: 0
+    - name: unit
+      doc: 'The base unit of measure used to store data. This should be in the SI
+        unit. COMMENT: This is the SI unit (when appropriate) of the stored data,
+        such as Volts. If the actual data is stored in millivolts, the field ''conversion''
+        below describes how to convert the data to the specified SI unit.'
+      dtype: text
+  - shape:
+    - null
+    dims:
+    - rank
+    dtype: int32
+    name: dimension
+    doc: Number of pixels on x, y, (and z) axes.
+    quantity: "?"
+  - shape:
+    - null
+    dims:
+    - num_files
+    dtype: text
+    name: external_file
+    doc: 'Path or URL to one or more external file(s). Field only present if format=external.
+      NOTE: this is only relevant if the image is stored in the file system as one
+      or more image file(s). This field should NOT be used if the image is stored
+      in another HDF5 file and that file is HDF5 linked to this file.'
+    quantity: "?"
+    attributes:
+    - name: starting_frame
+      doc: Each entry is the frame number (within the full ImageSeries) of the first
+        frame in the corresponding external_file entry. This serves as an index to
+        what frames each file contains, allowing random access.Zero-based indexing
+        is used.  (The first element will always be zero).
+      dtype: int
+      shape:
+      - null
+      dims:
+      - num_files
+  - dtype: text
+    name: format
+    doc: Format of image. If this is 'external' then the field external_file contains
+      the path or URL information to that file. For tiff, png, jpg, etc, the binary
+      representation of the image is stored in data. If the format is raw then the
+      fields bit_per_pixel and dimension are used. For raw images, only a single channel
+      is stored (eg, red).
+    quantity: "?"
+  doc: 'General image data that is common between acquisition and stimulus time series.
+    Sometimes the image data is stored in the HDF5 file in a raw format while other
+    times it will be stored as an external image file in the host file system. The
+    data field will either be binary data or empty. TimeSeries::data array structure:
+    [frame] [y][x] or [frame][z][y][x].'
+  neurodata_type_inc: TimeSeries
+  neurodata_type_def: ImageSeries
+  attributes:
+  - name: help
+    doc: Value is 'Storage object for time-series 2-D image data'
+    dtype: text
+    value: Storage object for time-series 2-D image data
+  - name: comments
+    doc: Human-readable comments about the TimeSeries. This second descriptive field
+      can be used to store additional information, or descriptive information if the
+      primary description field is populated with a computer-readable string.
+    required: false
+    dtype: text
+    default_value: no comments
+  - name: description
+    doc: Description of TimeSeries
+    required: false
+    dtype: text
+    default_value: no description
+- links:
+  - name: masked_imageseries
+    doc: Link to ImageSeries that mask is applied to.
+    target_type: ImageSeries
+  doc: An alpha mask that is applied to a presented visual stimulus. The data[] array
+    contains an array of mask values that are applied to the displayed image. Mask
+    values are stored as RGBA. Mask can vary with time. The timestamps array indicates
+    the starting time of a mask, and that mask pattern continues until it's explicitly
+    changed.
+  neurodata_type_inc: ImageSeries
+  neurodata_type_def: ImageMaskSeries
+  attributes:
+  - name: help
+    doc: Value is 'An alpha mask that is applied to a presented visual stimulus'
+    dtype: text
+    value: An alpha mask that is applied to a presented visual stimulus
+  - name: comments
+    doc: Human-readable comments about the TimeSeries. This second descriptive field
+      can be used to store additional information, or descriptive information if the
+      primary description field is populated with a computer-readable string.
+    required: false
+    dtype: text
+    default_value: no comments
+  - name: description
+    doc: Description of TimeSeries
+    required: false
+    dtype: text
+    default_value: no description
+- datasets:
+  - dtype: float32
+    name: distance
+    doc: Distance from camera/monitor to target/eye.
+    quantity: "?"
+  - shape:
+    - - 2
+    - - 3
+    dims:
+    - - width|height
+    - - width|height|depth
+    dtype: float32
+    name: field_of_view
+    doc: Width, height and depth of image, or imaged area (meters).
+    quantity: "?"
+  - dtype: text
+    name: orientation
+    doc: Description of image relative to some reference frame (e.g., which way is
+      up). Must also specify frame of reference.
+    quantity: "?"
+  doc: Image data that is presented or recorded. A stimulus template movie will be
+    stored only as an image. When the image is presented as stimulus, additional data
+    is required, such as field of view (eg, how much of the visual field the image
+    covers, or how what is the area of the target being imaged). If the OpticalSeries
+    represents acquired imaging data, orientation is also important.
+  neurodata_type_inc: ImageSeries
+  neurodata_type_def: OpticalSeries
+  attributes:
+  - name: help
+    doc: Value is 'Time-series image stack for optical recording or stimulus'
+    dtype: text
+    value: Time-series image stack for optical recording or stimulus
+  - name: comments
+    doc: Human-readable comments about the TimeSeries. This second descriptive field
+      can be used to store additional information, or descriptive information if the
+      primary description field is populated with a computer-readable string.
+    required: false
+    dtype: text
+    default_value: no comments
+  - name: description
+    doc: Description of TimeSeries
+    required: false
+    dtype: text
+    default_value: no description
+- datasets:
+  - shape:
+    - null
+    dims:
+    - num_times
+    dtype: int
+    name: data
+    doc: Index of the frame in the referenced ImageSeries.
+    attributes:
+    - name: conversion
+      doc: Scalar to multiply each element in data to convert it to the specified
+        unit
+      required: false
+      dtype: float32
+      default_value: 1
+    - name: resolution
+      doc: 'Smallest meaningful difference between values in data, stored in the specified
+        by unit. COMMENT: E.g., the change in value of the least significant bit,
+        or a larger number if signal noise is known to be present. If unknown, use
+        -1.0'
+      required: false
+      dtype: float32
+      default_value: 0
+    - name: unit
+      doc: 'The base unit of measure used to store data. This should be in the SI
+        unit. COMMENT: This is the SI unit (when appropriate) of the stored data,
+        such as Volts. If the actual data is stored in millivolts, the field ''conversion''
+        below describes how to convert the data to the specified SI unit.'
+      dtype: text
+  links:
+  - name: indexed_timeseries
+    doc: HDF5 link to TimeSeries containing images that are indexed.
+    target_type: ImageSeries
+  doc: Stores indices to image frames stored in an ImageSeries. The purpose of the
+    ImageIndexSeries is to allow a static image stack to be stored somewhere, and
+    the images in the stack to be referenced out-of-order. This can be for the display
+    of individual images, or of movie segments (as a movie is simply a series of images).
+    The data field stores the index of the frame in the referenced ImageSeries, and
+    the timestamps array indicates when that image was displayed.
+  neurodata_type_inc: TimeSeries
+  neurodata_type_def: IndexSeries
+  attributes:
+  - name: help
+    doc: Value is 'A sequence that is generated from an existing image stack. Frames
+      can be presented in an arbitrary order. The data[] field stores frame number
+      in reference stack'
+    dtype: text
+    value: A sequence that is generated from an existing image stack. Frames can be
+      presented in an arbitrary order. The data[] field stores frame number in reference
+      stack
+  - name: comments
+    doc: Human-readable comments about the TimeSeries. This second descriptive field
+      can be used to store additional information, or descriptive information if the
+      primary description field is populated with a computer-readable string.
+    required: false
+    dtype: text
+    default_value: no comments
+  - name: description
+    doc: Description of TimeSeries
+    required: false
+    dtype: text
+    default_value: no description
+

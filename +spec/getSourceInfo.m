@@ -11,7 +11,7 @@ for i=1:length(classNames)
     try
         processed(name) = spec.schema2matlab(schema.read(schemaText));
     catch ME
-        error('MATNWB:INVALIDFILE',...
+        error('NWB:Spec:InvalidFile',...
             'Data for namespace source `%s` is invalid', name);
     end
 end
