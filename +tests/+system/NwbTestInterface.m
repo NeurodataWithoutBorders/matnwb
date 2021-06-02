@@ -1,5 +1,5 @@
 classdef NwbTestInterface < matlab.unittest.TestCase
-   properties
+    properties
         %     registry
         file
         root;
@@ -15,7 +15,7 @@ classdef NwbTestInterface < matlab.unittest.TestCase
     
     methods (TestMethodSetup)
         function setupMethod(testCase)
-            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);            
+            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
             generateCore();
             testCase.file = NwbFile( ...
                 'session_description', 'a test NWB File', ...
@@ -84,7 +84,7 @@ classdef NwbTestInterface < matlab.unittest.TestCase
             for i=1:numel(ak)
                 key = ak{i};
                 verifyContainerEqual(testCase, actual.get(key), ...
-                    expected.get(key)); 
+                    expected.get(key));
             end
         end
         
