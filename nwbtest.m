@@ -55,7 +55,7 @@ try
     coverageFile = fullfile(ws, 'coverage.xml');
     [installDir, ~, ~] = fileparts(mfilename('fullpath'));
     
-    ignoreFolders = fullfile(installDir, {'tutorials', '+contrib', '+util'});
+    ignoreFolders = fullfile(installDir, {'tutorials', '+contrib', '+util', 'external_packages'});
     ignoreFiles = {[mfilename '.m'], fullfile(installDir, '+misc', 'generateDocs')};
     mfilePaths = getMfilePaths(installDir, ignoreFiles, ignoreFolders);
     if ~verLessThan('matlab', '9.3') && ~isempty(mfilePaths)
