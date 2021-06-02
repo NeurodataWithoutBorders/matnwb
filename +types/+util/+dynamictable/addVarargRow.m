@@ -48,7 +48,7 @@ for i = 1:length(rowNames)
     % instantiate vector index here because it's dependent on the table
     % fullpath.
     vecIndName = types.util.dynamictable.getIndex(DynamicTable, rn);
-    if isempty(vecIndName) && size(rv, 1) > 1
+    if isempty(vecIndName) && (~isempty(p.Results.tablepath) || size(rv, 1) > 1)
         vecIndName = types.util.dynamictable.addVecInd(DynamicTable, rn, p.Results.tablepath);
     end
     types.util.dynamictable.addRawData(DynamicTable, rn, rv, vecIndName);
@@ -72,7 +72,7 @@ end
 
 function validateType(TypeStruct, rv)
 if strcmp(TypeStruct.type, 'cellstr')
-    assert(iscellstr(rv) || (ischar(rv) && 1 == size(rv, 1)),...
+    assert(iscellstr(rv) || (ischar(rv) && (isempty(rv) || 1 == size(rv, 1))),...
         'NWB:DynamicTable:AddRow:InvalidType',...
         'Type of value must be a cell array of character vectors or a scalar character');
 else

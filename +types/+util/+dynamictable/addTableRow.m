@@ -34,23 +34,25 @@ end
 TypeMap = types.util.dynamictable.getTypeMap(DynamicTable);
 for i = 1:length(rowNames)
     rn = rowNames{i};
-    rv = subTable.(rn);
+    rowColumn = subTable.(rn);
     
     if isKey(TypeMap, rn)
-        validateType(TypeMap(rn), rv);
+        validateType(TypeMap(rn), rowColumn);
     end
     
     % instantiate vector index here because it's dependent on the table
     % fullpath.
     vecIndName = types.util.dynamictable.getIndex(DynamicTable, rn);
-    if isempty(vecIndName) && ~iscellstr(rv) && iscell(rv)
+    if isempty(vecIndName) && (~isempty(p.Results.tablepath) || (~iscellstr(rowColumn) && iscell(rowColumn)))
         vecIndName = types.util.dynamictable.addVecInd(DynamicTable, rn, p.Results.tablepath);
     end
-    if ~iscell(rv) || iscellstr(rv)
-        rv = {rv};
-    end
-    for i = 1:length(rv)
-        types.util.dynamictable.addRawData(DynamicTable, rn, rv{i}, vecIndName);
+    for j = 1:length(rowColumn)
+        if iscell(rowColumn)
+            rv = rowColumn{j};
+        else
+            rv = rowColumn(j);
+        end
+        types.util.dynamictable.addRawData(DynamicTable, rn, rv, vecIndName);
     end
 end
 
