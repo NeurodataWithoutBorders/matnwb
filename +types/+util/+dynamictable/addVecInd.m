@@ -19,10 +19,13 @@ if isKey(DynamicTable.vectordata, colName) || isprop(DynamicTable, colName)
     else
         VecData = DynamicTable.vectordata.get(colName);
     end
-    if isa(VecData.data, 'types.untyped.DataPipe')
-        oldDataHeight = VecData.data.offset;
-    else
-        oldDataHeight = size(VecData.data, 1);
+    
+    if ~isempty(VecData)
+        if isa(VecData.data, 'types.untyped.DataPipe')
+            oldDataHeight = VecData.data.offset;
+        else
+            oldDataHeight = size(VecData.data, 1);
+        end
     end
 end
 
@@ -31,10 +34,13 @@ end
 % directly to each row index.
 VecIndex = types.hdmf_common.VectorIndex(...
     'target', vecTarget,...
-    'data', [0:(oldDataHeight-1)] .'); %#ok<NBRAK>
+    'data', [0:(oldDataHeight-1)] .',...
+    'description', sprintf('Index into column %s', colName)); %#ok<NBRAK>
 if isprop(DynamicTable, vecIndName)
     DynamicTable.(vecIndName) = VecIndex;
-else
+elseif isprop(DynamicTable, 'vectorindex')
     DynamicTable.vectorindex.set(vecIndName, VecIndex);
+else
+    DynamicTable.vectordata.set(vecIndName, VecIndex);
 end
 end

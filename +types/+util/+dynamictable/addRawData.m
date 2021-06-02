@@ -26,29 +26,24 @@ end
 if ~isempty(index)
     if isprop(DynamicTable, index)
         VecInd = DynamicTable.(index);
-    else
+    elseif isprop(DynamicTable, 'vectorindex') % Schema < 2.3.0
         VecInd = DynamicTable.vectorindex.get(index);
+    else
+        VecInd = DynamicTable.vectordata.get(index);
     end
     
-    if isa(VecInd.data, 'types.untyped.DataPipe')
-        if 0 == VecInd.data.dims
-            raggedOffset = 0;
-        else
-            raggedOffset = VecInd.data.load(VecInd.data.dims);
-        end
-    else
-        if isempty(VecInd.data)
-            raggedOffset = 0;
-        else
-            raggedOffset = VecInd.data(end);
-        end
+    raggedOffset = 0;
+    if isa(VecInd.data, 'types.untyped.DataPipe') && 0 < VecInd.data.dims
+        raggedOffset = double(VecInd.data.load(VecInd.data.dims));
+    elseif ~isempty(VecInd.data)
+        raggedOffset = double(VecInd.data(end));
     end
     
     raggedValue = raggedOffset + size(data, 1);
     if isa(VecInd.data, 'types.untyped.DataPipe')
         VecInd.data.append(raggedValue);
     else
-        VecInd.data = [VecInd.data; raggedValue];
+        VecInd.data = [double(VecInd.data); raggedValue];
     end
 end
 
