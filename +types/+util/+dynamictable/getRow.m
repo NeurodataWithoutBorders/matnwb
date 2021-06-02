@@ -8,7 +8,8 @@ function subTable = getRow(DynamicTable, ind, varargin)
 % The returned value is a set of output arguments in the order of
 % `colnames` or "columns" keyword argument if one exists.
 
-validateattributes(DynamicTable, {'types.hdmf_common.DynamicTable'}, {'scalar'});
+validateattributes(DynamicTable,...
+    {'types.core.DynamicTable', 'types.hdmf_common.DynamicTable'}, {'scalar'});
 validateattributes(ind, {'numeric'}, {'positive', 'vector'});
 
 p = inputParser;

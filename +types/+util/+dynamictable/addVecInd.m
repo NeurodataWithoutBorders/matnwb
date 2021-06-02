@@ -32,10 +32,20 @@ end
 % we presume that if data already existed in the vectordata, then
 % it was never a ragged array and thus its elements corresponded
 % directly to each row index.
-VecIndex = types.hdmf_common.VectorIndex(...
+if 8 == exist('types.hdmf_common.VectorIndex', 'class')
+    VecIndex = types.hdmf_common.VectorIndex(...
     'target', vecTarget,...
-    'data', [0:(oldDataHeight-1)] .',...
-    'description', sprintf('Index into column %s', colName)); %#ok<NBRAK>
+    'data', (0:(oldDataHeight-1)) .');
+else
+    VecIndex = types.core.VectorIndex(...
+    'target', vecTarget,...
+    'data', (0:(oldDataHeight-1)) .');
+end
+
+if isprop(VecIndex, 'description')
+    VecIndex.description = sprintf('Index into column %s', colName);
+end
+
 if isprop(DynamicTable, vecIndName)
     DynamicTable.(vecIndName) = VecIndex;
 elseif isprop(DynamicTable, 'vectorindex')

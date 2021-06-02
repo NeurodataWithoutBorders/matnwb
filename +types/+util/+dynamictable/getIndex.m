@@ -1,6 +1,8 @@
 function indexName = getIndex(DynamicTable, column)
 %GETINDEX Given a dynamic table and its column name, get its VectorIndex column name
-validateattributes(DynamicTable, {'types.hdmf_common.DynamicTable'}, {'scalar'});
+validateattributes(DynamicTable,...
+    {'types.core.DynamicTable', 'types.hdmf_common.DynamicTable'},...
+    {'scalar'});
 validateattributes(column, {'char'}, {'scalartext'});
 indexName = '';
 if strcmp(column, 'id')
@@ -25,7 +27,8 @@ for i = 1:length(vecKeys)
     else
         vecData = DynamicTable.vectordata.get(vk);
     end
-    if ~isa(vecData, 'types.hdmf_common.VectorIndex')
+    if ~isa(vecData, 'types.hdmf_common.VectorIndex')...
+            && ~isa(vecData, 'types.core.VectorIndex')
         continue;
     end
     if isVecIndColumn(vecData, column)
