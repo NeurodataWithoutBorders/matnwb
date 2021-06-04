@@ -29,34 +29,54 @@ classdef ExternalLink < handle
                 fid = H5F.open(Link.filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
                 info = h5info(Link.filename, Link.path);
                 loc = [Link.filename Link.path];
-                attr_names = {info.Attributes.Name};
                 
-                is_typed = any(strcmp(attr_names, 'neurodata_type')...
-                    | strcmp(attr_names, 'namespace'));
-                
-                oid = H5O.open(fid, Link.path, 'H5P_DEFAULT');
-                oinfo = H5O.get_info(oid);
-                
-                H5O.close(oid);
-                H5F.close(fid);
-                switch oinfo.type
-                    case H5ML.get_constant_value('H5G_DATASET')
-                        if is_typed
-                            data = io.parseDataset(Link.filename, info, Link.path);
-                        else
-                            data = types.untyped.DataStub(Link.filename, Link.path);
-                        end
-                    case H5ML.get_constant_value('H5G_GROUP')
-                        assert(is_typed,...
-                            ['Attempted to dereference an external link to '...
-                            'a non-dataset object %s'], loc);
-                        data = io.parseGroup(Link.filename, info);
-                    case H5ML.get_constant_value('H5G_LINK')
-                        data = deref_link(fid, Link);
-                    otherwise
-                        error('Externally linked %s contains an unsupported type.',...
-                            loc);
+                if isfield(info, 'Attributes')
+                    attr_names = {info.Attributes.Name};
+                    is_typed = any(strcmp(attr_names, 'neurodata_type')...
+                        | strcmp(attr_names, 'namespace'));
+                else
+                    is_typed = false;
                 end
+                
+                is_dataset = all(isfield(info, {...
+                    'FillValue',...
+                    'ChunkSize',...
+                    'Dataspace',...
+                    'Datatype',...
+                    'Filters',...
+                    'Attributes'}));
+                is_group = all(isfield(info, {...
+                    'Groups',...
+                    'Datasets',...
+                    'Datatypes',...
+                    'Links',...
+                    'Attributes'}));
+                is_link = all(isfield(info, {...
+                    'Type',...
+                    'Value'
+                    }));
+                assert(is_dataset || is_group || is_link,...
+                    'NWB:ExternalLink:UnknownHdfType',...
+                    'Unsupported HDF externally linked type (not a group, dataset, or link!');
+                assert(1 == sum([is_dataset is_group is_link]),...
+                    'NWB:ExternalLink:AmbiguousHdfType',...
+                    'Externally linked HDF type is ambiguous! (cannot discern between group, dataset, or link!)');
+                
+                if is_dataset
+                    if is_typed
+                        data = io.parseDataset(Link.filename, info, Link.path);
+                    else
+                        data = types.untyped.DataStub(Link.filename, Link.path);
+                    end
+                elseif is_group
+                    assert(is_typed,...
+                        ['Attempted to dereference an external link to '...
+                        'a non-dataset object %s'], loc);
+                    data = io.parseGroup(Link.filename, info);
+                else % link
+                    data = deref_link(fid, Link);
+                end
+                H5F.close(fid);
             end
             
             function data = deref_link(fid, Link)
