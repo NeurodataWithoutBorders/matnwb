@@ -1,0 +1,9 @@
+groups:
+- neurodata_type_def: AnonGroup
+  neurodata_type_inc: NWBDataInterface
+  groups:
+  - neurodata_type_inc: AnonGroup
+    quantity: '?'
+  datasets:
+  - neurodata_type_def: AnonData
+    quantity: '?'
