@@ -1,0 +1,7 @@
+namespaces:
+- full_name: Region Reference Schema Test
+  name: rrs
+  schema:
+  - namespace: core
+  - source: rrs.regref.yaml
+  version: 1.0.0

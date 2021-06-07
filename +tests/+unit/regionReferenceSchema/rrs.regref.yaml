@@ -1,0 +1,19 @@
+groups:
+- neurodata_type_def: RefContainer
+  neurodata_type_inc: NWBDataInterface
+  datasets:
+  - name: data
+    dtype: any
+- neurodata_type_def: ContainerReference
+  neurodata_type_inc: NWBDataInterface
+  attributes:
+  - name: attribute_regref
+    doc: "region reference attribute"
+    dtype:
+      target_type: RefContainer
+      reftype: region
+  datasets:
+  - name: data_regref
+    dtype:
+      target_type: RefContainer
+      reftype: region
