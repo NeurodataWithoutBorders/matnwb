@@ -6,6 +6,9 @@ function shapes = segmentSelection(selections, dims)
 validateattributes(dims, {'numeric'}, {'vector', 'nonnegative'});
 validateattributes(selections, {'cell'}, {'vector', 'nonempty'});
 for i = 1:length(selections)
+    if ischar(selections{i})
+        continue; % if ':' or some other char, the entire dimension is selected.
+    end
     validateattributes(selections{i}, {'numeric'}, {'nonnegative', '<=', dims(i)});
 end
 
