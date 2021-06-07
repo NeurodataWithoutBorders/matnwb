@@ -174,7 +174,6 @@ classdef (Sealed) DataStub < handle
             assert(length(varargin) <= obj.ndims, 'NWB:DataStub:Load:TooManyDimensions',...
                 'Too many dimensions specified (got %d, expected %d)', length(varargin), obj.ndims);
             dims = obj.dims;
-            rank = length(dims);
             for i = 1:length(varargin)
                 ind = varargin{i};
                 if ischar(ind) || isempty(ind)
@@ -182,53 +181,19 @@ classdef (Sealed) DataStub < handle
                 end
                 validateattributes(ind, {'numeric'}, {'vector', '<=', dims(i)});
             end
-            shapes = getShapes(varargin, dims);
+            shapes = io.space.segmentSelection(varargin, dims);
             
             sid = obj.get_space();
-            H5S.select_none(sid); % reset selection on file.
-            shapeInd = ones(1, rank);
-            shapeIndEnd = cellfun('length', shapes);
-            while true
-                start = ones(1, rank);
-                stride = ones(1, rank);
-                count = ones(1, rank);
-                block = ones(1, rank);
-                for i = 1:length(shapes)
-                    Selection = shapes{i}{shapeInd(i)};
-                    [start(i), stride(i), count(i), block(i)] = Selection.getSpaceSpec();
-                end
-                % convert start offset to 0-indexed and HDF5 dimension
-                % order.
-                H5S.select_hyperslab(sid, 'H5S_SELECT_OR',...
-                    fliplr(start) - 1, fliplr(stride), fliplr(count), fliplr(block));
-                
-                iterateInd = find(shapeInd < shapeIndEnd, 1);
-                if isempty(iterateInd)
-                    break;
-                end
-                shapeInd(iterateInd) = shapeInd(iterateInd) + 1;
-                shapeInd(1:(iterateInd-1)) = 1;
-            end
-            memSize = zeros(1, rank);
-            for i = 1:rank
-                for j = 1:length(shapes{i})
-                    Selection = shapes{i}{j};
-                    if isa(Selection, 'types.untyped.datastub.shape.Point')
-                        memSize(i) = memSize(i) + 1;
-                    else
-                        memSize(i) = memSize(i) + Selection.length;
-                    end
-                end
-            end
-            memSid = H5S.create_simple(length(memSize), fliplr(memSize), []);
+            [readSid, memSid] = io.space.getReadSpace(shapes, sid);
+            H5S.close(sid);
+            
             % read data.
             fid = H5F.open(obj.filename);
             did = H5D.open(fid, obj.path);
-            data = H5D.read(did, 'H5ML_DEFAULT', memSid, sid, 'H5P_DEFAULT');
+            data = H5D.read(did, 'H5ML_DEFAULT', memSid, readSid, 'H5P_DEFAULT');
             H5D.close(did);
             H5F.close(fid);
             H5S.close(memSid);
-            H5S.close(sid);
             
             expectedSize = dims;
             for i = 1:length(varargin)
@@ -297,27 +262,6 @@ classdef (Sealed) DataStub < handle
                     end
                     indKeyInd(indKeyIndNextInd) = indKeyInd(indKeyIndNextInd) + 1;
                     indKeyInd((indKeyIndNextInd+1):end) = 1;
-                end
-            end
-            
-            function shapes = getShapes(selections, dims)
-                rank = length(dims);
-                shapes = cell(1, rank); % cell array of cell arrays of shapes
-                isDanglingGroup = ischar(selections{end});
-                for i = 1:rank
-                    if i > length(selections) && ~isDanglingGroup % select a scalar element.
-                        shapes{i} = {types.untyped.datastub.shape.Point(1)};
-                    elseif (i > length(selections) && isDanglingGroup)...
-                            || ischar(selections{i})
-                        % select the whole dimension
-                        % dims(i) - 1 because block represents 0-indexed
-                        % inclusive stop. The Block.length == dims(i)
-                        shapes{i} = {types.untyped.datastub.shape.Block('stop', dims(i))};
-                    else
-                        % break the selection into range/point pieces
-                        % per dimension.
-                        shapes{i} = types.untyped.datastub.findShapes(selections{i});
-                    end
                 end
             end
         end
