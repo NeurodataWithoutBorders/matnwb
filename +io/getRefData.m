@@ -9,8 +9,8 @@ if isa(ref, 'types.untyped.RegionView')
         did = H5D.open(fid, refpaths{i});
         sid = H5D.get_space(did);
         %by default, we use block mode.
-        regionShapes = ref.region;
-        for j = 1:length(ref.region)
+        regionShapes = ref(i).region;
+        for j = 1:length(regionShapes)
             regionShapes{j} = io.space.findShapes(regionShapes{j});
         end
         refspace(i) = io.space.getReadSpace(regionShapes, sid);

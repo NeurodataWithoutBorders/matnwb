@@ -36,7 +36,7 @@ if any(ref_i)
             r = refdata(:,k);
             reflist{k} = io.parseReference(did, reftids{j}, r);
         end
-        data.(rpname) = reflist;
+        data.(rpname) = [reflist{:}] .';
     end
 end
 
