@@ -39,7 +39,11 @@ stub = nwb2.acquisition.get('data').data;
 
 %%
 % test subset/missing dimensions
-testCase.verifyEqual(stub(2:4, 2:4, 2:4), data(2:4, 2:4, 2:4));
+stubData = stub(2:4, 2:4, 2:4);
+testCase.verifyEqual(stubData, data(2:4, 2:4, 2:4));
+% test legacy load style
+testCase.verifyEqual(stubData, stub.load([2, 2, 2], [1, 1, 1], [4, 4, 4]));
+testCase.verifyEqual(stubData, stub.load([2, 2, 2], [4, 4, 4]));
 
 % test Inf
 testCase.verifyEqual(stub(2:end, 2:end, 2:end, :), data(2:end, 2:end, 2:end, :));
