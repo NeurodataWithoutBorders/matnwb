@@ -23,10 +23,10 @@ end
 
 function testNullShapeDataset(testCase)
 nsd = types.mss.NullShapeDataset;
-randiMax = intmax('int8');
+randiMax = intmax('int8') - 1;
 for i=1:100
     %test validation
-    nsd.data = rand(randi(randiMax), 3);
+    nsd.data = rand(randi(randiMax) + 1, 3);
 end
 roundabout(testCase, nsd);
 end
