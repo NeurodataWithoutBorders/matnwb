@@ -43,9 +43,10 @@ for i=1:length(validSizes)
     validSizesStrings{i} = ['[' sizeFormatStr(validSizes{i}) ']'];
 end
 validSizesf = ['{' strjoin(validSizesStrings, ' ') '}'];
-msg = sprintf(['Values size ' valsizef ' is invalid.  Must be one of ' validSizesf],...
-    valsize, validSizes{:});
-error(msg);
+valsize = num2cell(valsize);
+error('NWB:CheckDims:InvalidDimensions',...
+    ['Values size ' valsizef ' is invalid.  Must be one of ' validSizesf],...
+    valsize{:}, validSizes{:});
 end
 
 function s = sizeFormatStr(sz)

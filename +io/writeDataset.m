@@ -1,5 +1,6 @@
 function writeDataset(fid, fullpath, data, varargin)
 assert(isempty(varargin) || iscellstr(varargin),...
+    'NWB:WriteDataset:InvalidStringFormat',...
     'options should be character arrays.');
 [tid, sid, data] = io.mapData2H5(fid, data, varargin{:});
 [~, dims, ~] = H5S.get_simple_extent_dims(sid);

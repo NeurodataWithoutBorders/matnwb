@@ -16,7 +16,6 @@ if iscell(dtype)
     end
 elseif isempty(dtype) || any(strcmp({'None', 'any'}, dtype))
     dt = 'any';
-elseif iscell(dtype)
 elseif isa(dtype, 'containers.Map')
     dt = dtype;
 elseif any(strcmpi({'ascii', 'str', 'text', 'utf8'}, dtype))
