@@ -1,0 +1,24 @@
+groups:
+- neurodata_type_def: CompoundRefData
+  neurodata_type_inc: NWBContainer
+  datasets:
+  - name: data
+    dtype:
+    - name: a
+      dtype: float64
+      doc: 'A'
+    - name: b
+      dtype: float64
+      doc: 'B'
+    - name: objref
+      doc: 'ObjectView in Compound datatype'
+      dtype:
+        target_type: RefContainer
+        reftype: object
+    - name: regref
+      doc: 'RegionView in Compound Datatype'
+      dtype:
+        target_type: RefContainer
+        reftype: region
+    shape:
+    - null
