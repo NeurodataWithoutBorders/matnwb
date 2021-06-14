@@ -1,4 +1,4 @@
-classdef Block < types.untyped.datastub.Shape
+classdef Block < io.space.Shape
     %BLOCK Shape indicating a non-scalar hyperslab selection
     
     properties

@@ -153,6 +153,14 @@ elseif isa(prop, 'file.Dataset') %untyped dataset
     if strcmp(name, 'file_create_date')
         options = [options {'''forceChunking'''}];
     end
+    
+    % untyped compound
+    if isstruct(prop.dtype)
+        writerStr = 'io.writeCompound';
+    else
+        writerStr = 'io.writeDataset';
+    end
+    
     % just to guarantee optional arguments are correct syntax
     nameProp = sprintf('obj.%s', name);
     nameArgs = [{nameProp} options];
@@ -161,8 +169,7 @@ elseif isa(prop, 'file.Dataset') %untyped dataset
         ['if startsWith(class(obj.' name '), ''types.untyped.'')']...
         ['    refs = obj.' name '.export(fid, ' fullpath ', refs);']...
         ['elseif ~isempty(obj.' name ')']...
-        ['    ' sprintf('io.writeDataset(fid, %1$s, %2$s);',...
-            fullpath, nameArgs)]...
+        [sprintf('    %s(fid, %s, %s);', writerStr, fullpath, nameArgs)]...
         'end'...
         }, newline);
 else

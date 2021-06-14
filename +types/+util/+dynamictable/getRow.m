@@ -8,7 +8,8 @@ function subTable = getRow(DynamicTable, ind, varargin)
 % The returned value is a set of output arguments in the order of
 % `colnames` or "columns" keyword argument if one exists.
 
-validateattributes(DynamicTable, {'types.hdmf_common.DynamicTable'}, {'scalar'});
+validateattributes(DynamicTable,...
+    {'types.core.DynamicTable', 'types.hdmf_common.DynamicTable'}, {'scalar'});
 validateattributes(ind, {'numeric'}, {'positive', 'vector'});
 
 p = inputParser;
@@ -46,6 +47,7 @@ for i = 1:length(columns)
         for j = 1:length(ind)
             colInd{j} = indMap(ind(j));
         end
+        lengthPerRow = cellfun('length', colInd); % used below to segment the data.
         colInd = cell2mat(colInd);
     end
     
@@ -57,8 +59,8 @@ for i = 1:length(columns)
     end
     
     if ~isempty(indexName)
-        row{i} = mat2cell(row{i}, cellfun('length', values(indMap)), 1);
-    end
+        row{i} = mat2cell(row{i}, lengthPerRow, 1);
+    end % if is indexed, segment data into rows using cells.
 end
 subTable = table(row{:}, 'VariableNames', columns);
 end
@@ -73,16 +75,18 @@ else
 end
 
 matInd = unique(matInd);
-matStartInd = matInd - 1;
-startInd = ones(size(matInd));
+indexStartInd = matInd - 1;
+startInd = zeros(size(matInd));
+validIndexMask = indexStartInd > 0;
 if isa(VectorIndex.data, 'types.untyped.DataStub')...
         || isa(VectorIndex.data, 'types.untyped.DataPipe')
     stopInd = VectorIndex.data.load(matInd);
-    startInd(matStartInd > 0) = VectorIndex.data.load(matStartInd(matStartInd > 0));
+    startInd(validIndexMask) = VectorIndex.data.load(indexStartInd(validIndexMask));
 else
     stopInd = VectorIndex.data(matInd);
-    startInd(matStartInd > 0) = VectorIndex.data(matStartInd(matStartInd > 0));
+    startInd(validIndexMask) = VectorIndex.data(indexStartInd(validIndexMask));
 end
+startInd = startInd + 1; % Convert from 0-based indexing to 1-based indexing.
 indMap = containers.Map('KeyType', 'uint64', 'ValueType', 'any');
 for i = 1:length(startInd)
     indMap(matInd(i)) = startInd(i):stopInd(i);

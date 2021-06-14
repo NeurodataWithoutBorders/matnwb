@@ -1,0 +1,7 @@
+namespaces:
+- full_name: Compound schemas
+  name: cs
+  schema:
+  - namespace: rrs
+  - source: cs.compoundtypes.yaml
+  version: 1.0.0

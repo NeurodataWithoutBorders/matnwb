@@ -26,7 +26,9 @@ function addRow(DynamicTable, varargin)
 %    an extra parameter called `tablepath` which indicates where in the NWB
 %    file the table is.
 
-validateattributes(DynamicTable, {'types.hdmf_common.DynamicTable'}, {'scalar'});
+validateattributes(DynamicTable,...
+    {'types.core.DynamicTable', 'types.hdmf_common.DynamicTable'},...
+    {'scalar'});
 assert(~isempty(DynamicTable.colnames),...
     'NWB:DynamicTable:AddRow:NoColumns',...
     ['The `colnames` property of the Dynamic Table needs to be populated with a cell array '...
@@ -34,7 +36,11 @@ assert(~isempty(DynamicTable.colnames),...
 assert(nargin > 1, 'NWB:DynamicTable:AddRow:NoData', 'Not enough arguments');
 
 if isempty(DynamicTable.id)
-    DynamicTable.id = types.hdmf_common.ElementIdentifiers();
+    if 8 == exist('types.hdmf_common.ElementIdentifiers', 'class')
+        DynamicTable.id = types.hdmf_common.ElementIdentifiers();
+    else % legacy Element Identifiers
+        DynamicTable.id = types.core.ElementIdentifiers();
+    end
 end
 
 assert(~isa(DynamicTable.id.data, 'types.untyped.DataStub'),...

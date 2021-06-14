@@ -1,4 +1,4 @@
-classdef Point < types.untyped.datastub.Shape
+classdef Point < io.space.Shape
     %POINT index points of a selection
     
     properties
@@ -12,13 +12,21 @@ classdef Point < types.untyped.datastub.Shape
         end
     end
     
-    %% datastub.Shape
+    %% io.space.Shape
     methods
         function [start, stride, count, block] = getSpaceSpec(obj)
             start = obj.index;
             stride = 1;
             count = 1;
             block = 1;
+        end
+        
+        function varargout = getMatlabIndex(obj)
+            if 0 == nargout
+                return;
+            end
+            
+            varargout{1} = obj.index;
         end
     end
 end

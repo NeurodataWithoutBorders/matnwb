@@ -7,8 +7,14 @@ validPaths = find(~cellfun('isempty', refpaths));
 if isa(ref, 'types.untyped.RegionView')
     for i=validPaths
         did = H5D.open(fid, refpaths{i});
+        sid = H5D.get_space(did);
         %by default, we use block mode.
-        refspace(i) = ref(i).get_selection(H5D.get_space(did));
+        regionShapes = ref.region;
+        for j = 1:length(ref.region)
+            regionShapes{j} = io.space.findShapes(regionShapes{j});
+        end
+        refspace(i) = io.space.getReadSpace(regionShapes, sid);
+        H5S.close(sid);
         H5D.close(did);
     end
 end
@@ -17,5 +23,8 @@ ref_data = zeros([typesize size(ref)], 'uint8');
 for i=validPaths
     ref_data(:, i) = H5R.create(fid, ref(i).path, ref(i).reftype, ...
         refspace(i));
+    if H5I.is_valid(refspace(i))
+        H5S.close(refspace(i));
+    end
 end
 end

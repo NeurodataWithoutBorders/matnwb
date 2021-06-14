@@ -43,8 +43,6 @@ classdef (Sealed) DataStub < handle
             %LOAD  Read data from HDF5 dataset.
             %   DATA = LOAD_H5_STYLE() retrieves all of the data.
             %
-            %   DATA = LOAD_H5_STYLE(SPACE) Load data specified by HDF5 SPACE
-            %
             %   DATA = LOAD_H5_STYLE(START,COUNT) reads a subset of data. START is
             %   the one-based index of the first element to be read.
             %   COUNT defines how many elements to read along each dimension.  If a
@@ -54,65 +52,28 @@ classdef (Sealed) DataStub < handle
             %   DATA = LOAD_H5_STYLE(START,COUNT,STRIDE) reads a strided subset of
             %   data. STRIDE is the inter-element spacing along each
             %   data set extent and defaults to one along each extent.
-            fid = [];
-            did = [];
-            if length(varargin) == 1
-                fid = H5F.open(obj.filename);
-                did = H5D.open(fid, obj.path);
-                
-                sid = varargin{1};
-                numBlocks = H5S.get_select_hyper_nblocks(sid);
-                % in event of multiple hyperslab selections, return as a cell array
-                % format blocklist to cell array of region indices separated by
-                % block
-                bl = mat2cell(H5S.get_select_hyper_blocklist(sid, 0, numBlocks) .',...
-                    repmat(2, 1, numBlocks), obj.ndims());
-                
-                data = cell(numBlocks,1);
-                % go through each hyperslab selection and read data from H5D,
-                % populating cell array of hyperslab selections
-                for i=1:numBlocks
-                    selsz = diff(bl{i})+1;
-                    sizesid = H5S.create_simple(obj.ndims(), selsz, selsz);
-                    H5S.select_hyperslab(sid, 'H5S_SELECT_SET',...
-                        bl{i}(1,:), [], [], selsz);
-                    data{i} = H5D.read(did,...
-                        'H5ML_DEFAULT',...
-                        sizesid,...
-                        sid,...
-                        'H5P_DEFAULT') .';
-                end
-                
-                if numBlocks == 1
-                    data = data{1};
-                end
-            else
-                data = h5read(obj.filename, obj.path, varargin{:});
-                
-                % dataset strings are defaulted to cell arrays regardless of size
-                if iscellstr(data) && isscalar(data)
-                    data = data{1};
-                elseif isstring(data)
-                    data = char(data);
-                end
+            assert(length(varargin) ~= 1, 'NWB:DataStub:InvalidNumArguments',...
+                'calling load_h5_style with a single space id is no longer supported.');
+            
+            data = h5read(obj.filename, obj.path, varargin{:});
+            
+            % dataset strings are defaulted to cell arrays regardless of size
+            if iscellstr(data) && isscalar(data)
+                data = data{1};
+            elseif isstring(data)
+                data = char(data);
             end
             
             if isstruct(data)
-                if length(varargin) ~= 1
-                    fid = H5F.open(obj.filename);
-                    did = H5D.open(fid, obj.path);
-                end
+                fid = H5F.open(obj.filename);
+                did = H5D.open(fid, obj.path);
                 fsid = H5D.get_space(did);
                 data = H5D.read(did, 'H5ML_DEFAULT', fsid, fsid,...
                     'H5P_DEFAULT');
                 data = io.parseCompound(did, data);
                 H5S.close(fsid);
-            end
-            if ~isempty(fid)
-                H5F.close(fid);
-            end
-            if ~isempty(did)
                 H5D.close(did);
+                H5F.close(fid);
             end
         end
         
@@ -150,19 +111,16 @@ classdef (Sealed) DataStub < handle
                     STRIDE = varargin{2};
                     END = varargin{3};
                 end
-                
-                for i = 1:length(END)
-                    if strcmp(END(i), 'end')
-                        count(i) = Inf;
-                    else
-                        count(i) = floor((END(i) - START(i)) / STRIDE(i) + 1);
-                    end
+                validateattributes(END, {'numeric'}, {'vector', 'positive'});
+                validateattributes(START, {'numeric'}, {'vector', 'positive', 'numel', length(END)});
+                validateattributes(STRIDE, {'numeric'}, {'vector', 'positive', 'numel', length(END)});
+                assert(all(START <= END), 'NWB:DataStub:Load:InvalidStartIndex',...
+                    'Start indices must be less than or equal to end indices.');
+                selection = cell(size(END));
+                for i = 1:length(selection)
+                    selection{i} = START(i):STRIDE(i):END(i);
                 end
-                if length(START) == 1
-                    data = obj.load_h5_style(double(START), double(count), double(STRIDE));
-                else
-                    data = obj.load_h5_style(START, count, STRIDE);
-                end
+                data = obj.load_mat_style(selection{:});
             end
         end
         
@@ -174,7 +132,6 @@ classdef (Sealed) DataStub < handle
             assert(length(varargin) <= obj.ndims, 'NWB:DataStub:Load:TooManyDimensions',...
                 'Too many dimensions specified (got %d, expected %d)', length(varargin), obj.ndims);
             dims = obj.dims;
-            rank = length(dims);
             for i = 1:length(varargin)
                 ind = varargin{i};
                 if ischar(ind) || isempty(ind)
@@ -182,53 +139,19 @@ classdef (Sealed) DataStub < handle
                 end
                 validateattributes(ind, {'numeric'}, {'vector', '<=', dims(i)});
             end
-            shapes = getShapes(varargin, dims);
+            shapes = io.space.segmentSelection(varargin, dims);
             
             sid = obj.get_space();
-            H5S.select_none(sid); % reset selection on file.
-            shapeInd = ones(1, rank);
-            shapeIndEnd = cellfun('length', shapes);
-            while true
-                start = ones(1, rank);
-                stride = ones(1, rank);
-                count = ones(1, rank);
-                block = ones(1, rank);
-                for i = 1:length(shapes)
-                    Selection = shapes{i}{shapeInd(i)};
-                    [start(i), stride(i), count(i), block(i)] = Selection.getSpaceSpec();
-                end
-                % convert start offset to 0-indexed and HDF5 dimension
-                % order.
-                H5S.select_hyperslab(sid, 'H5S_SELECT_OR',...
-                    fliplr(start) - 1, fliplr(stride), fliplr(count), fliplr(block));
-                
-                iterateInd = find(shapeInd < shapeIndEnd, 1);
-                if isempty(iterateInd)
-                    break;
-                end
-                shapeInd(iterateInd) = shapeInd(iterateInd) + 1;
-                shapeInd(1:(iterateInd-1)) = 1;
-            end
-            memSize = zeros(1, rank);
-            for i = 1:rank
-                for j = 1:length(shapes{i})
-                    Selection = shapes{i}{j};
-                    if isa(Selection, 'types.untyped.datastub.shape.Point')
-                        memSize(i) = memSize(i) + 1;
-                    else
-                        memSize(i) = memSize(i) + Selection.length;
-                    end
-                end
-            end
-            memSid = H5S.create_simple(length(memSize), fliplr(memSize), []);
+            [readSid, memSid] = io.space.getReadSpace(shapes, sid);
+            H5S.close(sid);
+            
             % read data.
             fid = H5F.open(obj.filename);
             did = H5D.open(fid, obj.path);
-            data = H5D.read(did, 'H5ML_DEFAULT', memSid, sid, 'H5P_DEFAULT');
+            data = H5D.read(did, 'H5ML_DEFAULT', memSid, readSid, 'H5P_DEFAULT');
             H5D.close(did);
             H5F.close(fid);
             H5S.close(memSid);
-            H5S.close(sid);
             
             expectedSize = dims;
             for i = 1:length(varargin)
@@ -297,27 +220,6 @@ classdef (Sealed) DataStub < handle
                     end
                     indKeyInd(indKeyIndNextInd) = indKeyInd(indKeyIndNextInd) + 1;
                     indKeyInd((indKeyIndNextInd+1):end) = 1;
-                end
-            end
-            
-            function shapes = getShapes(selections, dims)
-                rank = length(dims);
-                shapes = cell(1, rank); % cell array of cell arrays of shapes
-                isDanglingGroup = ischar(selections{end});
-                for i = 1:rank
-                    if i > length(selections) && ~isDanglingGroup % select a scalar element.
-                        shapes{i} = {types.untyped.datastub.shape.Point(1)};
-                    elseif (i > length(selections) && isDanglingGroup)...
-                            || ischar(selections{i})
-                        % select the whole dimension
-                        % dims(i) - 1 because block represents 0-indexed
-                        % inclusive stop. The Block.length == dims(i)
-                        shapes{i} = {types.untyped.datastub.shape.Block('stop', dims(i))};
-                    else
-                        % break the selection into range/point pieces
-                        % per dimension.
-                        shapes{i} = types.untyped.datastub.findShapes(selections{i});
-                    end
                 end
             end
         end

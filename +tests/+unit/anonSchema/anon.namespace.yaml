@@ -1,0 +1,6 @@
+namespaces:
+- full_name: Anon Type Test Schema
+  name: anon
+  schema:
+  - namespace: core
+  - source: anon.anonymous.yaml

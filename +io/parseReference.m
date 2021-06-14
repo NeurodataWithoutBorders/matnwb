@@ -28,19 +28,34 @@ end
 
 %% H5R_DATASET_REGION
 if isempty(target)
-    refobj = types.untyped.RegionView(target,{});
+    refobj = types.untyped.RegionView(target);
     return;
 end
-region = {};
 sid = H5R.get_region(did, reftype, data);
-sel_type = H5S.get_select_type(sid);
-if sel_type == H5ML.get_constant_value('H5S_SEL_HYPERSLABS')
-    nblocks = H5S.get_select_hyper_nblocks(sid);
-    blocklist = H5S.get_select_hyper_blocklist(sid, 0, nblocks);
-    
-    region = rot90(blocklist, -1); %transpose + fliplr
-    region = mat2cell(region, ones(size(region,1)/2,1)+1);
+
+if H5ML.get_constant_value('H5S_SEL_HYPERSLABS') ~= H5S.get_select_type(sid)
+    warning('NWB:ParseReference:UnsupportedSelectionType',...
+        ['MatNWB does not support space selections other than hyperslab mode. '...
+        'Ignoring other selections.']);
 end
+
+blocklist = flipud(H5S.get_select_hyper_blocklist(sid, 0, H5S.get_select_hyper_nblocks(sid)));
+% Returns an (m x 2n) array, where m is the number of dimensions (or rank) of the dataspace.
+% The 2n rows of Result contain the list of blocks. The first row contains the start
+% coordinates of the first block, followed by the next row which contains the opposite
+% corner coordinates, followed by the next row which contains the start coordinates of the
+% second block,etc.
+selections = cell(size(blocklist, 1), 1);
+for i = 1:length(selections)
+    prevSel = selections{i};
+    blockDim = mat2cell(blocklist(i,:), 1, ones(1, (size(blocklist, 2) / 2)) + 1);
+    for j = 1:length(blockDim)
+        block = blockDim{j};
+        blockDim{j} = (block(1):block(2))+1;
+    end
+    selections{i} = [prevSel cell2mat(blockDim)];
+end
+
 H5S.close(sid);
-refobj = types.untyped.RegionView(target, region);
+refobj = types.untyped.RegionView(target, selections{:});
 end

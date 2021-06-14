@@ -42,6 +42,6 @@ elseif startsWith(type, {'int' 'uint'})
     
     id = [prefix suffix];
 else
-    error('Type `%s` is not a support raw type', type);
+    error('Type `%s` is not a supported raw type', type);
 end
 end

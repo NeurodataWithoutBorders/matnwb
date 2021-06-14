@@ -5,8 +5,8 @@ function shapes = findShapes(indices)
 % A Block selection, for instance, indicates that the (step, stride, count)
 % method used by H5S should be used while Point selection indicates that
 % only one part of this dimension should be iterated over at a time.
-import types.untyped.datastub.shape.Block;
-import types.untyped.datastub.shape.Point;
+import io.space.shape.Block;
+import io.space.shape.Point;
 validateattributes(indices, {'numeric'}, {'nonnegative', 'finite'});
 if isempty(indices)
     shapes = {Block('stop', 0)};
@@ -31,7 +31,7 @@ end
 end
 
 function optimalBlock = findOptimalBlock(indices)
-import types.untyped.datastub.shape.Block;
+import io.space.shape.Block;
 if iscolumn(indices)
     indices = indices .';
 end

@@ -11,42 +11,23 @@ classdef RegionView < handle
     end
     
     methods
-        function obj = RegionView(path, region, datasize)
+        function obj = RegionView(path, varargin)
             %REGIONVIEW A region reference to a dataset in the same nwb file.
             % obj = REGIONVIEW(path, region)
             % path = char representing the internal path to the dataset.
-            % region = cell array whose contents are a 2xn array of bounds where n is
-            %   the subscript size
+            % region = A cell array of indices
             obj.view = types.untyped.ObjectView(path);
-            assert(isreal(region) || ...
-                (iscell(region) && all(cellfun('isreal', region))),...
-                'RegionView only accepts either numeric indices or cell array of bounds');
-            if isreal(region)
-                if nargin > 2
-                    region = misc.idx2h5(region, datasize);
-                else
-                    region = misc.idx2h5(region);
-                end
-            elseif any(cellfun('size', region, 1) ~= 2)
-                assert(all(cellfun('size', region, 2) == 2),...
-                    'RegionView expects exactly 2 rows of index bounds per cell.');
-                for i=1:length(region)
-                    region{i} = region{i} .';
-                end
-            end
             
-            obj.region = region;
-        end
-        
-        %given an sid, this region will return that sid but with the
-        %correct selection parameters
-        function sid = get_selection(obj, sid)
-            H5S.select_none(sid);
-            for i=1:length(obj.region)
-                reg = obj.region{i};
-                H5S.select_hyperslab(sid, 'H5S_SELECT_OR', reg(1,:),...
-                    [], [], diff(reg, 1, 1)+1);
+            for i = 1:length(varargin)
+                dimSel = varargin{i};
+                validateattributes(dimSel, {'numeric'}, {'positive', 'vector'});
+                assert(length(dimSel) == length(unique(dimSel)),...
+                    'NWB:RegionView:DuplicateIndex',...
+                    ['Due to how HDF5 handles selections, duplicate indices are not ',...
+                    'supported for RegionView. Ensure indices are unique across any given '...
+                    'dimension.']);
             end
+            obj.region = varargin;
         end
         
         function view = refresh(obj, Nwb)
@@ -69,53 +50,22 @@ classdef RegionView < handle
                     return;
                 end
                 
-                Object = RegionView.view.refresh(Nwb);
-                v = Object.data;
+                data = RegionView.view.refresh(Nwb);
                 
-                if isa(v, 'types.untyped.DataStub')
-                    sid = RegionView.get_selection(v.get_space());
-                    v = v.load_h5_style(sid);
-                    H5S.close(sid);
-                    return;
-                end
-                
-                if isa(Object.data, 'types.untyped.DataPipe')
-                    if isa(v.internal, 'types.untyped.datapipe.BoundPipe')
-                        sid = RegionView.get_selection(v.internal.stub.get_space());
-                        v = v.internal.stub.load_h5_style(sid);
-                        H5S.close(sid);
-                        return;
+                if isa(data, 'types.untyped.DataPipe')
+                    if isa(data.internal, 'types.untyped.datapipe.BoundPipe')
+                        data = data.internal.stub;
+                    else
+                        data = data.internal.data;
                     end
-                    v = v.internal.data;
                 end
                 
-                % convert 0-indexed subscript bounds to 1-indexed linear indices.
-                bsizes = zeros(length(RegionView.region),1);
-                boundLIdx = cell(length(RegionView.region),1);
-                for iRegions = 1:length(RegionView.region)
-                    region = RegionView.region{iRegions} + 1;
-                    region = mat2cell(region, 2, ones(1, size(region, 2)));
-                    boundLIdx{iRegions} = sub2ind(size(v), region{end:-1:1});
-                    bsizes(iRegions) = diff(boundLIdx{iRegions}, 1, 1) + 1;
-                end
-                
-                lIdx = zeros(sum(bsizes), 1);
-                for iReferenced = 1:length(boundLIdx)
-                    idx = sum(bsizes(1:iReferenced-1)) + 1;
-                    lIdx(idx:bsizes(iReferenced)) =...
-                        (boundLIdx{iReferenced}(1):boundLIdx{iReferenced}(2)) .';
-                end
-                
-                if istable(v)
-                    v = v(lIdx, :); % tables only take 2d indexing
-                else
-                    v = v(lIdx);
-                end
+                v = data(RegionView.region{:});
             end
         end
         
         function refs = export(obj, fid, fullpath, refs)
-            io.writeDataset(fid, fullpath, class(obj), obj);
+            io.writeDataset(fid, fullpath, obj);
         end
         
         function path = get.path(obj)

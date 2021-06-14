@@ -33,6 +33,9 @@ function results = nwbtest(varargin)
 import matlab.unittest.TestSuite;
 import matlab.unittest.TestRunner;
 import matlab.unittest.plugins.XMLPlugin;
+
+import matlab.unittest.plugins.CodeCoveragePlugin;
+import matlab.unittest.plugins.codecoverage.CoberturaFormat;
 try
     parser = inputParser;
     parser.KeepUnmatched = true;
@@ -51,8 +54,14 @@ try
     
     coverageFile = fullfile(ws, 'coverage.xml');
     [installDir, ~, ~] = fileparts(mfilename('fullpath'));
-    mfilePaths = getMfilePaths(installDir, {[mfilename '.m']}, {fullfile(installDir, '+tests')});
-    addCoberturaCoverageIfPossible(runner, mfilePaths, coverageFile);
+    
+    ignoreFolders = fullfile(installDir, {'tutorials', '+contrib', '+util', 'external_packages'});
+    ignoreFiles = {[mfilename '.m'], fullfile(installDir, '+misc', 'generateDocs')};
+    mfilePaths = getMfilePaths(installDir, ignoreFiles, ignoreFolders);
+    if ~verLessThan('matlab', '9.3') && ~isempty(mfilePaths)
+        runner.addPlugin(CodeCoveragePlugin.forFile(mfilePaths,...
+            'Producing', CoberturaFormat(coverageFile)));
+    end % add cobertura coverage
     
     results = runner.run(suite);
     
@@ -61,18 +70,6 @@ catch e
     disp(e.getReport('extended'));
     results = [];
 end
-end
-
-function addCoberturaCoverageIfPossible(runner, files, coverageFile)
-import matlab.unittest.plugins.CodeCoveragePlugin;
-import matlab.unittest.plugins.codecoverage.CoberturaFormat;
-
-if verLessThan('matlab', '9.3') || isempty(files)
-    return;
-end
-
-runner.addPlugin(CodeCoveragePlugin.forFile(files, ...
-    'Producing', CoberturaFormat(coverageFile)));
 end
 
 function pv = struct2pvcell(s)
