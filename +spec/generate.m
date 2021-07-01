@@ -7,7 +7,13 @@ Schema = spec.loadSchemaObject();
 namespace = spec.schema2matlab(Schema.read(namespaceText));
 NamespaceInfo = spec.getNamespaceInfo(namespace);
 NamespaceInfo.namespace = namespace;
-if ischar(schemaSource)
+
+validateattributes(schemaSource, {'containers.Map', 'char', 'string'}, {});
+
+if isa(schemaSource, 'containers.Map')
+    % this is a map of schemas provided by an cached specification.
+    schema = spec.getSourceInfo(schemaSource);
+else
     schema = containers.Map;
     for i=1:length(NamespaceInfo.filenames)
         filenameStub = NamespaceInfo.filenames{i};
@@ -17,8 +23,7 @@ if ischar(schemaSource)
         fclose(fid);
     end
     schema = spec.getSourceInfo(schema);
-else % map of schemas with their locations
-    schema = spec.getSourceInfo(schemaSource);
 end
+
 NamespaceInfo.schema = schema;
 end
