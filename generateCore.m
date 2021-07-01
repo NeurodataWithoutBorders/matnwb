@@ -23,7 +23,7 @@ function generateCore(version)
 if nargin == 0
     version = '2.3.0';
 else
-    validateattributes(version, {'char'}, {'scalartext'});
+    validateattributes(version, {'char', 'string'}, {'scalartext'});
 end
 
 matNwbLocation = misc.getMatnwbDir();
