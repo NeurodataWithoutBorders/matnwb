@@ -123,22 +123,27 @@ else
             || isdatetime(val) ...
             || (iscell(val) && all(cellfun('isclass', val, 'datetime'))),...
             errid, errmsg);
+        if ischar(val) || iscellstr(val)
+            if ischar(val)
+                val = {val};
+            end
+            
+            datevals = cell(size(val));
+            for i = 1:length(val)
+                datevals{i} = datetime8601(val{i});
+            end
+            val = datevals;
+        end
         
-        if ischar(val)
-            val = mat2cell(val, size(val, 1));
-        elseif isdatetime(val)
-            val = num2cell(val);
+        if isdatetime(val)
+            val = {val};
         end
         
         for i = 1:length(val)
-            if isdatetime(val{i})
-                if isempty(val{i}.TimeZone)
-                    val{i}.TimeZone = 'local';
-                end
-                val{i}.Format = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSSZZZZZ';
-            else
-                val{i} = datetime8601(val{i});
+            if isempty(val{i}.TimeZone)
+                val{i}.TimeZone = 'local';
             end
+            val{i}.Format = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSSZZZZZ';
         end
         
         if isscalar(val)
@@ -147,6 +152,7 @@ else
     elseif strcmp(type, 'char')
         assert(ischar(val) || iscellstr(val), errid, errmsg);
     else %class, ref, or link
+        
         noncell = false;
         if ~iscell(val)
             val = {val};
