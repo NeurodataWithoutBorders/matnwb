@@ -28,10 +28,8 @@ classdef NwbFile < types.core.NWBFile
             
             if isempty(obj.file_create_date)
                 obj.file_create_date = current_time;
-            elseif iscell(obj.file_create_date)
-                obj.file_create_date(end+1) = {current_time};
             else
-                obj.file_create_date = {obj.file_create_date current_time};
+                obj.file_create_date(end+1) = current_time;
             end
             
             %equate reference time to session_start_time if empty
