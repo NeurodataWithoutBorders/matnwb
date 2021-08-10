@@ -10,7 +10,9 @@ for i = 1:length(shapes)
     end
 end
 validateattributes(sid, {'H5ML.id'}, {'scalar', 'nonempty'});
-assert(boolean(H5I.is_valid(sid)), 'NWB:Space:GetReadSpace:InvalidId', 'Provided Space ID is invalid.');
+assert(logical(H5I.is_valid(sid)),...
+    'NWB:Space:GetReadSpace:InvalidId',...
+    'Provided Space ID is invalid.');
 
 newSid = H5S.copy(sid); % do not change the original space ID
 H5S.select_none(newSid); % reset selection on file.
