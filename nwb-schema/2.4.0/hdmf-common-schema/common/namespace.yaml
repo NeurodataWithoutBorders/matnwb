@@ -1,0 +1,49 @@
+# hdmf-schema-language=2.0.2
+namespaces:
+- name: hdmf-common
+  doc: Common data structures provided by HDMF
+  author:
+  - Andrew Tritt
+  - Oliver Ruebel
+  - Ryan Ly
+  - Ben Dichter
+  contact:
+  - ajtritt@lbl.gov
+  - oruebel@lbl.gov
+  - rly@lbl.gov
+  - bdichter@lbl.gov
+  full_name: HDMF Common
+  schema:
+  - doc: base data types
+    source: base.yaml
+    title: Base data types
+  - doc: data types for a column-based table
+    source: table.yaml
+    title: Table data types
+  - doc: data types for different types of sparse matrices
+    source: sparse.yaml
+    title: Sparse data types
+  version: 1.5.0
+
+- name: hdmf-experimental
+  doc: Experimental data structures provided by HDMF. These are not guaranteed to be available in the future
+  author:
+  - Andrew Tritt
+  - Oliver Ruebel
+  - Ryan Ly
+  - Ben Dichter
+  contact:
+  - ajtritt@lbl.gov
+  - oruebel@lbl.gov
+  - rly@lbl.gov
+  - bdichter@lbl.gov
+  full_name: HDMF Experimental
+  schema:
+  - namespace: hdmf-common
+  - doc: Experimental data types
+    source: experimental.yaml
+    title: Experimental data types
+  - doc: data types for storing references to web accessible resources
+    source: resources.yaml
+    title: Resource reference data types
+  version: 0.1.0
