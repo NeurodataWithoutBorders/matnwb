@@ -31,7 +31,7 @@ for i = 1:length(vecKeys)
             && ~isa(vecData, 'types.core.VectorIndex')
         continue;
     end
-    if isVecIndColumn(vecData, column)
+    if isVecIndColumn(DynamicTable, vecData, column)
         indexName = vk;
         return;
     end
@@ -50,14 +50,20 @@ DynamicTableProps = DynamicTableProps(isPropVecInd);
 for i = 1:length(DynamicTableProps)
     vk = DynamicTableProps{i};
     VecInd = DynamicTable.(vk);
-    if isVecIndColumn(VecInd, column)
+    if isVecIndColumn(DynamicTable, VecInd, column)
         indexName = vk;
         return;
     end
 end
 end
 
-function tf = isVecIndColumn(VectorIndex, column)
-tf = endsWith(VectorIndex.target.path, ['/' column]);
+function tf = isVecIndColumn(DynamicTable, VectorIndex, column)
+if VectorIndex.target.has_path()
+    tf = endsWith(VectorIndex.target.path, ['/' column]);
+elseif isprop(DynamicTable, column)
+    tf = VectorIndex.target == DynamicTable.(column);
+else
+    tf = VectorIndex.target == DynamicTable.vectordata.get(column);
+end
 end
 

@@ -1,17 +1,13 @@
-function vecIndName = addVecInd(DynamicTable, colName, tablepath)
+function vecIndName = addVecInd(DynamicTable, colName)
 %ADDVECIND Add VectorIndex object to DynamicTable
 validateattributes(colName, {'char'}, {'scalartext'});
-validateattributes(tablepath, {'char'}, {'scalartext'});
-assert(~isempty(tablepath),...
-    'NWB:DynamicTable:AddRow:MissingTablePath',...
-    ['addRow cannot create ragged arrays without a full HDF5 path to the Dynamic Table. '...
-    'Please either add the full expected HDF5 path under the keyword argument `tablepath` '...
-    'or call addRow with row data only.']);
 vecIndName = [colName '_index']; % arbitrary convention of appending '_index' to data column names
-if ~endsWith(tablepath, '/')
-    tablepath = [tablepath '/'];
+
+if isprop(DynamicTable, colName)
+    vecTarget = types.untyped.ObjectView(DynamicTable.(colName));
+else
+    vecTarget = types.untyped.ObjectView(DynamicTable.vectordata.get(colName));
 end
-vecTarget = types.untyped.ObjectView([tablepath colName]);
 oldDataHeight = 0;
 if isKey(DynamicTable.vectordata, colName) || isprop(DynamicTable, colName)
     if isprop(DynamicTable, colName)
