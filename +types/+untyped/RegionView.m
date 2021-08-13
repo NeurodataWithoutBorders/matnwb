@@ -1,31 +1,32 @@
 classdef RegionView < handle
-    properties(SetAccess=private)
+    properties (SetAccess = private)
         path;
+        target;
         view;
         region;
     end
     
-    properties(Constant,Hidden)
+    properties (Constant, Hidden)
         type = 'H5T_STD_REF_DSETREG';
         reftype = 'H5R_DATASET_REGION';
     end
     
     methods
-        function obj = RegionView(path, varargin)
+        function obj = RegionView(target, varargin)
             %REGIONVIEW A region reference to a dataset in the same nwb file.
             % obj = REGIONVIEW(path, region)
             % path = char representing the internal path to the dataset.
             % region = A cell array of indices
-            obj.view = types.untyped.ObjectView(path);
+            % obj = REGIONVIEW(target, __)
+            % target = a generated NWB object.
+            
+            if isa(target, 'types.untyped.MetaClass')
+                validateattributes(target, {'types.untyped.DatasetClass'}, {'scalar'});
+            end
+            obj.view = types.untyped.ObjectView(target);
             
             for i = 1:length(varargin)
-                dimSel = varargin{i};
-                validateattributes(dimSel, {'numeric'}, {'positive', 'vector'});
-                assert(length(dimSel) == length(unique(dimSel)),...
-                    'NWB:RegionView:DuplicateIndex',...
-                    ['Due to how HDF5 handles selections, duplicate indices are not ',...
-                    'supported for RegionView. Ensure indices are unique across any given '...
-                    'dimension.']);
+                validateattributes(varargin{i}, {'numeric'}, {'positive', 'vector'});
             end
             obj.region = varargin;
         end
@@ -58,6 +59,8 @@ classdef RegionView < handle
                     else
                         data = data.internal.data;
                     end
+                elseif isa(data, 'types.untyped.DatasetClass')
+                    data = data.data;
                 end
                 
                 v = data(RegionView.region{:});
@@ -70,6 +73,10 @@ classdef RegionView < handle
         
         function path = get.path(obj)
             path = obj.view.path;
+        end
+        
+        function object = get.target(obj)
+            object = obj.view.target;
         end
     end
 end
