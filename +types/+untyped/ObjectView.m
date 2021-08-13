@@ -1,7 +1,10 @@
 classdef ObjectView < handle
+    properties (SetAccess = private, Hidden)
+        target = [];
+    end
+    
     properties (SetAccess = private)
         path = '';
-        target = [];
     end
     
     properties (Constant, Hidden)
@@ -20,6 +23,7 @@ classdef ObjectView < handle
             % target = A generated NWB object.
             
             if ischar(target) || isstring(target)
+                validateattributes(target, {'char', 'string'}, {'scalartext'});
                 obj.path = target;
             else
                 validateattributes(target, {'types.untyped.MetaClass'}, {'scalar'});
@@ -54,6 +58,14 @@ classdef ObjectView < handle
                 end
             else
                 path = obj.path;
+            end
+        end
+        
+        function tf = has_path(obj)
+            try
+                tf = ~isempty(obj.path);
+            catch
+                tf = false;
             end
         end
     end
