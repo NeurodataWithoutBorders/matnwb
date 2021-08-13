@@ -1,9 +1,12 @@
+datasets:
+- neurodata_type_def: RefData
+  neurodata_type_inc: NWBData
 groups:
 - neurodata_type_def: RefContainer
   neurodata_type_inc: NWBDataInterface
   datasets:
   - name: data
-    dtype: any
+    neurodata_type_inc: RefData
 - neurodata_type_def: ContainerReference
   neurodata_type_inc: NWBDataInterface
   attributes:

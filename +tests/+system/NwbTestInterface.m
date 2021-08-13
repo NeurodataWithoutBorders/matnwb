@@ -51,6 +51,9 @@ classdef NwbTestInterface < matlab.unittest.TestCase
                     verifySetEqual(testCase, actualVal, expectedVal, failmsg);
                 elseif isdatetime(actualVal)
                     testCase.verifyEqual(char(actualVal), char(expectedVal), failmsg);
+                elseif isa(actualVal, 'types.untyped.ObjectView')...
+                        || isa(actualVal, 'types.untyped.RegionView')
+                    testCase.verifyEqual(actualVal.path, expectedVal.path, failmsg);
                 else
                     if isa(actualVal, 'types.untyped.DataStub')
                         actualTrue = actualVal.load();
