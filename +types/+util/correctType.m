@@ -6,12 +6,7 @@ function val = correctType(val, type)
 %check different types and correct
 
 if startsWith(type, 'float')
-% Compatibility with PyNWB
-%     if strcmp(type, 'float32')
-%         val = single(val);
-%     else
-        val = double(val);
-%     end
+    val = double(val);
 elseif startsWith(type, 'int') || startsWith(type, 'uint')
     if strcmp(type, 'int')
         val = int64(val);

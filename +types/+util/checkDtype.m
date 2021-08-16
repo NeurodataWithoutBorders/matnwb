@@ -229,9 +229,7 @@ end
 
 oldDateStr = datestr;
 [datestr, timezone] = derive_timezone(datestr);
-if endsWith(datestr, 'Z')
-    fprintf('derive_timezone: %s -> %s\n', oldDateStr, datestr);
-end
+fprintf('derive_timezone: %s -> %s\n', oldDateStr, datestr);
 date_time = datetime(datestr,...
     'InputFormat', format,...
     'TimeZone', timezone);
