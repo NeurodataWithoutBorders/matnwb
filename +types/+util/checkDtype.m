@@ -239,8 +239,14 @@ function [datestr, timezone] = derive_timezone(datestr)
 % +-hhmm
 % +-hh
 % Z
+
 tzre_pattern = '(?:[+-]\d{2}(?::?\d{2})?|Z)$';
 tzre_match = regexp(datestr, tzre_pattern, 'once');
+
+if endsWith(datestr, 'Z')
+    error('Test: `%s`, `%s`, `%d`', datestr, tzre_pattern, tzre_match);
+end
+
 if isempty(tzre_match)
     timezone = 'local';
 else
