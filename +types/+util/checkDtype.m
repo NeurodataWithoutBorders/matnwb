@@ -130,7 +130,7 @@ else
             
             datevals = cell(size(val));
             for i = 1:length(val)
-                datevals{i} = datetime8601(val{i});
+                datevals{i} = datetime8601(strtrim(val{i}));
             end
             val = datevals;
         end
