@@ -14,9 +14,9 @@ if startsWith(type, 'float')
 %     end
 elseif startsWith(type, 'int') || startsWith(type, 'uint')
     if strcmp(type, 'int')
-        val = int64(val);
+        val = int32(val);
     elseif strcmp(type, 'uint')
-        val = uint64(val);
+        val = uint32(val);
     else
         val = feval(fitIntType(val, type), val);
     end
