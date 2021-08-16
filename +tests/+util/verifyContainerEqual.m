@@ -1,8 +1,16 @@
-function verifyContainerEqual(testCase, actual, expected)
+function verifyContainerEqual(testCase, actual, expected, ignoreList)
+if nargin < 4
+    ignoreList = {};
+end
+assert(iscellstr(ignoreList),...
+    'MatNWB:Test:InvalidIgnoreList',...
+    ['Ignore List must be a cell array of character arrays indicating props that should be '...
+    'ignored.']);
 testCase.verifyEqual(class(actual), class(expected));
-props = properties(actual);
+props = setdiff(properties(actual), ignoreList);
 for i = 1:numel(props)
     prop = props{i};
+    
     actualVal = actual.(prop);
     expectedVal = expected.(prop);
     failmsg = ['Values for property ''' prop ''' are not equal'];
@@ -32,8 +40,10 @@ for i = 1:numel(props)
         % while getting close enough to exact date representation.
         actualVal = types.util.checkDtype(prop, 'isodatetime', actualVal);
         if ~iscell(expectedVal)
-            actualVal = {actualVal};
             expectedVal = {expectedVal};
+        end
+        if ~iscell(actualVal)
+            actualVal = {actualVal};
         end
         for iDates = 1:length(expectedVal)
            testCase.verifyEqual(...
