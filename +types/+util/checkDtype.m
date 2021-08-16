@@ -227,7 +227,11 @@ if has_fractional_sec
     format = sprintf('%s.%s', format, repmat('S', 1, seconds_precision));
 end
 
+oldDateStr = datestr;
 [datestr, timezone] = derive_timezone(datestr);
+if endsWith(datestr, 'Z')
+    fprintf('derive_timezone: %s -> %s\n', oldDateStr, datestr);
+end
 date_time = datetime(datestr,...
     'InputFormat', format,...
     'TimeZone', timezone);
@@ -249,7 +253,6 @@ else
     timezone = datestr(tzre_match:end);
     if strcmp(timezone, 'Z')
         timezone = 'UTC';
-        error('new date_str: %s', datestr(1:(tzre_match - 1)));
     end
     datestr = datestr(1:(tzre_match - 1));
 end
