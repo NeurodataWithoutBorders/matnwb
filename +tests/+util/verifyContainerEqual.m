@@ -25,19 +25,23 @@ for i = 1:numel(props)
     elseif isa(expectedVal, 'types.untyped.Anon')
         testCase.verifyEqual(actualVal.name, expectedVal.name, failmsg);
         tests.util.verifyContainerEqual(testCase, actualVal.value, expectedVal.value);
-    elseif isdatetime(expectedVal)
+    elseif isdatetime(expectedVal)...
+            || (iscell(expectedVal) && all(cellfun('isclass', expectedVal, 'datetime')))
         % ubuntu MATLAB doesn't appear to propery compare datetimes whereas
         % Windows MATLAB does. This is a workaround to get tests to work
         % while getting close enough to exact date representation.
-        testCase.verifyEqual(char(actualVal), char(expectedVal), failmsg);
-    else
-        if strcmp(prop, 'file_create_date')
-            % file_create_date is a very special property in NWBFile which can
-            % be many array formats and either a datetime or not.
-            % as such, we rely on the superpower of checkDtype to coerce
-            % the type for us.
-            actualVal = types.util.checkDtype('file_create_date', 'isodatetime', actualVal);
+        actualVal = types.util.checkDtype(prop, 'isodatetime', actualVal);
+        if ~iscell(expectedVal)
+            actualVal = {actualVal};
+            expectedVal = {expectedVal};
         end
+        for iDates = 1:length(expectedVal)
+           testCase.verifyEqual(...
+               convertTo(actualVal{iDates}, 'ntp'),...
+               convertTo(expectedVal{iDates}, 'ntp'),...
+               failmsg); 
+        end
+    else
         testCase.verifyEqual(actualVal, expectedVal, failmsg);
     end
 end
