@@ -15,8 +15,6 @@ for i = 1:numel(props)
         tests.util.verifyContainerEqual(testCase, actualVal, expectedVal);
     elseif isa(expectedVal, 'types.untyped.Set')
         tests.util.verifySetEqual(testCase, actualVal, expectedVal, failmsg);
-    elseif isdatetime(expectedVal)
-        testCase.verifyEqual(char(actualVal), char(expectedVal), failmsg);
     elseif ischar(expectedVal)
         testCase.verifyEqual(char(actualVal), expectedVal, failmsg);
     elseif isa(expectedVal, 'types.untyped.ObjectView')
