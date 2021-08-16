@@ -125,7 +125,7 @@ else
             errid, errmsg);
         if ischar(val) || iscellstr(val)
             if ischar(val)
-                val = {val};
+                val = mat2cell(val, ones(1, size(val,1)));
             end
             
             datevals = cell(size(val));
@@ -148,6 +148,8 @@ else
         
         if isscalar(val)
             val = val{1};
+        elseif isrow(val)
+            val = val .';
         end
     elseif strcmp(type, 'char')
         assert(ischar(val) || iscellstr(val), errid, errmsg);
