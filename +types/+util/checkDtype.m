@@ -243,16 +243,13 @@ function [datestr, timezone] = derive_timezone(datestr)
 tzre_pattern = '(?:[+-]\d{2}(?::?\d{2})?|Z)$';
 tzre_match = regexp(datestr, tzre_pattern, 'once');
 
-if endsWith(datestr, 'Z')
-    error('Test: `%s`, `%s`, `%d`', datestr, tzre_pattern, tzre_match);
-end
-
 if isempty(tzre_match)
     timezone = 'local';
 else
     timezone = datestr(tzre_match:end);
     if strcmp(timezone, 'Z')
         timezone = 'UTC';
+        error('new date_str: %s', datestr(1:(tzre_match - 1)));
     end
     datestr = datestr(1:(tzre_match - 1));
 end
