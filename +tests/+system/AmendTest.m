@@ -9,7 +9,7 @@ classdef AmendTest < tests.system.NwbTestInterface
             writeContainer = testCase.getContainer(testCase.file);
             readFile = nwbRead(filename);
             readContainer = testCase.getContainer(readFile);
-            testCase.verifyContainerEqual(readContainer, writeContainer);
+            tests.util.verifyContainerEqual(testCase, readContainer, writeContainer);
         end
     end
     

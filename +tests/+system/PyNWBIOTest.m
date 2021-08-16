@@ -25,7 +25,7 @@ classdef PyNWBIOTest < tests.system.RoundTripTest
       pyfile = nwbRead(filename);
       pycontainer = testCase.getContainer(pyfile);
       matcontainer = testCase.getContainer(testCase.file);
-      testCase.verifyContainerEqual(pycontainer, matcontainer);
+      tests.util.verifyContainerEqual(testCase, pycontainer, matcontainer);
     end
   end
   
