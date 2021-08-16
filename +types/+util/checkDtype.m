@@ -227,9 +227,7 @@ if has_fractional_sec
     format = sprintf('%s.%s', format, repmat('S', 1, seconds_precision));
 end
 
-oldDateStr = datestr;
 [datestr, timezone] = derive_timezone(datestr);
-fprintf('derive_timezone: %s -> %s\n', oldDateStr, datestr);
 date_time = datetime(datestr,...
     'InputFormat', format,...
     'TimeZone', timezone);
