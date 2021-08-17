@@ -230,7 +230,9 @@ end
 [datestr, timezone] = derive_timezone(datestr);
 date_time = datetime(datestr,...
     'InputFormat', format,...
-    'TimeZone', timezone);
+    'TimeZone', timezone,...
+    'Format', 'yyyy-MM-dd''T''HH:mm:ss.SSSSSSZZZZZ');
+fprintf('%s -> %s\n', datestr, char(datetime));
 end
 
 function [datestr, timezone] = derive_timezone(datestr)
