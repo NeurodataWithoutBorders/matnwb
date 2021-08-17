@@ -1,7 +1,7 @@
 function data = read_indexed_column(vector_index, vector_data, row)
 %READ_INDEXED_COLUMN returns the data for a specific row of an indexed vector
 %
-%   DATA = READ_INDEXED_COLUMN(VECTOR_INDEX, ROW) takes a VectorIndex from a
+%   DATA = READ_INDEXED_COLUMN(VECTOR_INDEX, VECTRO_DATA, ROW) takes a VectorIndex from a
 %   DynamicTable and a ROW number and outputs the DATA for that row (1-indexed).
 
 try
@@ -18,12 +18,8 @@ else
         lower_bound = vector_index.data(row - 1) + 1;
     end
 end
-%%
-% Then select the corresponding spike_times_index element
-if isa(vector_data.data,'types.untyped.DataStub')
-    data = vector_data.data.load(lower_bound,upper_bound);
-else
-    data = vector_data.data(lower_bound:upper_bound);
+
+data = vector_data.data(lower_bound:upper_bound);
 end
 
 

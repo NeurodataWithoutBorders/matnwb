@@ -30,6 +30,6 @@ for col = T
     if ~strcmp(col.Properties.VariableNames{1},'id')
         nwbtable.vectordata.set(col.Properties.VariableNames{1}, ...
             types.hdmf_common.VectorData('data', col.Variables',...
-            'description','my description'));
+            'description', 'my description'));
     end
 end
