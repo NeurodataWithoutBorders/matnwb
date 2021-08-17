@@ -48,10 +48,10 @@ for i = 1:numel(props)
         for iDates = 1:length(expectedVal)
             % ignore microseconds as linux datetime has some strange error
             % even when datetime doesn't change in Windows.
-            testCase.verifyEqual(...
-                convertTo(actualVal{iDates}, 'ntfs') / 1000,...
-                convertTo(expectedVal{iDates}, 'ntfs') / 1000,...
-                failmsg);
+            actualNtfs = convertTo(actualVal{iDates}, 'ntfs');
+            expectedNtfs = convertTo(expectedVal{iDates}, 'ntfs');
+            testCase.verifyGreaterThanOrEqual(actualNtfs, expectedNtfs - 10, failmsg);
+            testCase.verifyLessThanOrEqual(actualNtfs, expectedNtfs + 10, failmsg);
         end
     elseif startsWith(class(expectedVal), 'int') || startsWith(class(expectedVal), 'uint')
         actualTypeSize = regexp(class(actualVal), 'int(\d+)', 'once', 'tokens');
