@@ -182,7 +182,7 @@ else
 end
 end
 
-function date_time = datetime8601(datestr)
+function dt = datetime8601(datestr)
 addpath(fullfile(fileparts(which('NwbFile')), 'external_packages', 'datenum8601'));
 [~, ~, format] = datenum8601(datestr);
 format = format{1};
@@ -228,11 +228,11 @@ if has_fractional_sec
 end
 
 [datestr, timezone] = derive_timezone(datestr);
-date_time = datetime(datestr,...
+dt = datetime(datestr,...
     'InputFormat', format,...
     'TimeZone', timezone);
-date_time.Format = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSSZZZZZ';
-fprintf('%s -> %s\n', datestr, char(datetime));
+dt.Format = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSSZZZZZ';
+fprintf('%s -> %s\n', datestr, char(dt));
 end
 
 function [datestr, timezone] = derive_timezone(datestr)
