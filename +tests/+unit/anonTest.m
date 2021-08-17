@@ -23,7 +23,7 @@ nwbExpected = NwbFile(...
     'session_description', 'anonymous class schema testing',...
     'session_start_time', datetime());
 nwbExpected.acquisition.set('ag', ag);
-nwbExpected.export('testanon.nwb');
+nwbExport(nwbExpected, 'testanon.nwb');
 
 tests.util.verifyContainerEqual(testCase, nwbRead('testanon.nwb'), nwbExpected);
 end
