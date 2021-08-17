@@ -2,7 +2,6 @@ function addVarargRow(DynamicTable, varargin)
 p = inputParser();
 p.KeepUnmatched = true;
 p.StructExpand = false;
-addParameter(p, 'tablepath', '', @(x)ischar(x)); % required for ragged arrays.
 addParameter(p, 'id', []); % `id` override but doesn't actually show up in `colnames`
 
 for i = 1:length(DynamicTable.colnames)
@@ -18,9 +17,9 @@ assert(isempty(fieldnames(p.Unmatched)),...
 rowNames = fieldnames(p.Results);
 
 % not using setDiff because we want to retain set order.
-rowNames(strcmp(rowNames, 'tablepath') | strcmp(rowNames, 'id')) = []; 
+rowNames(strcmp(rowNames, 'id')) = []; 
 
-missingColumns = setdiff(p.UsingDefaults, {'tablepath', 'id'});
+missingColumns = setdiff(p.UsingDefaults, {'id'});
 assert(isempty(missingColumns),...
     'NWB:DynamicTable:AddRow:MissingColumns',...
     'Missing columns { %s }', strjoin(missingColumns, ', '));
@@ -45,13 +44,7 @@ for i = 1:length(rowNames)
         rv = {rv};
     end
     
-    % instantiate vector index here because it's dependent on the table
-    % fullpath.
-    vecIndName = types.util.dynamictable.getIndex(DynamicTable, rn);
-    if isempty(vecIndName) && (~isempty(p.Results.tablepath) || size(rv, 1) > 1)
-        vecIndName = types.util.dynamictable.addVecInd(DynamicTable, rn, p.Results.tablepath);
-    end
-    types.util.dynamictable.addRawData(DynamicTable, rn, rv, vecIndName);
+    types.util.dynamictable.addRawData(DynamicTable, rn, rv);
 end
 
 if specifiesId

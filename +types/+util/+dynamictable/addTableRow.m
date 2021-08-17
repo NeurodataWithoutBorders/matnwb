@@ -2,7 +2,6 @@ function addTableRow(DynamicTable, subTable, varargin)
 p = inputParser();
 p.StructExpand = false;
 addParameter(p, 'id', [], @(x)isnumeric(x)); % optional as `id` column is supported for tables.
-addParameter(p, 'tablepath', '', @(x)ischar(x)); % required for ragged arrays.
 parse(p, varargin{:});
 
 rowNames = subTable.Properties.VariableNames;
@@ -40,19 +39,13 @@ for i = 1:length(rowNames)
         validateType(TypeMap(rn), rowColumn);
     end
     
-    % instantiate vector index here because it's dependent on the table
-    % fullpath.
-    vecIndName = types.util.dynamictable.getIndex(DynamicTable, rn);
-    if isempty(vecIndName) && (~isempty(p.Results.tablepath) || (~iscellstr(rowColumn) && iscell(rowColumn)))
-        vecIndName = types.util.dynamictable.addVecInd(DynamicTable, rn, p.Results.tablepath);
-    end
     for j = 1:length(rowColumn)
         if iscell(rowColumn)
             rv = rowColumn{j};
         else
             rv = rowColumn(j);
         end
-        types.util.dynamictable.addRawData(DynamicTable, rn, rv, vecIndName);
+        types.util.dynamictable.addRawData(DynamicTable, rn, rv);
     end
 end
 

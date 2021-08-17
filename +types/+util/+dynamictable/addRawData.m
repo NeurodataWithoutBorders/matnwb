@@ -1,12 +1,7 @@
-function addRawData(DynamicTable, column, data, index)
+function addRawData(DynamicTable, column, data)
 %ADDRAWDATA Internal method for adding data to DynamicTable given column
 % name, data and an optional index.
 validateattributes(column, {'char'}, {'scalartext'});
-if nargin < 4
-    % indicates an index column. Note we assume that the index name is correct.
-    % Validation of this index name must occur upstream.
-    index = '';
-end
 
 % Don't set the data until after indices are updated.
 if 8 == exist('types.hdmf_common.VectorData', 'class')
@@ -29,7 +24,12 @@ else
     DynamicTable.vectordata.set(column, VecData);
 end
 
-if ~isempty(index)
+index = types.util.dynamictable.getIndex(DynamicTable, column);
+if size(data, 1) > 1 || ~isempty(index)
+    if isempty(index)
+        index = types.util.dynamictable.addVecInd(DynamicTable, column);
+    end
+    
     if isprop(DynamicTable, index)
         VecInd = DynamicTable.(index);
     elseif isprop(DynamicTable, 'vectorindex') % Schema < 2.3.0

@@ -1,28 +1,72 @@
 classdef ObjectView < handle
-    properties(SetAccess=private)
-        path;
+    properties (SetAccess = private, Hidden)
+        target = [];
     end
     
-    properties(Constant, Hidden)
+    properties (SetAccess = private)
+        path = '';
+    end
+    
+    properties (Constant, Hidden)
         type = 'H5T_STD_REF_OBJ';
         reftype = 'H5R_OBJECT';
     end
     
     methods
-        function obj = ObjectView(path)
-            obj.path = path;
+        function obj = ObjectView(target)
+            %OBJECTVIEW a "view" or reference to an object meant to be
+            %saved in a different location in the NWB file.
+            % obj = ObjectView(path)
+            % path = A character or string indicating the full HDF5 path
+            % to the target object.
+            % obj = ObjectView(target)
+            % target = A generated NWB object.
+            
+            if ischar(target) || isstring(target)
+                validateattributes(target, {'char', 'string'}, {'scalartext'});
+                obj.path = target;
+            else
+                validateattributes(target, {'types.untyped.MetaClass'}, {'scalar'});
+                obj.target = target;
+            end
         end
         
         function v = refresh(obj, nwb)
-            assert(isa(nwb, 'NwbFile'),...
-                'NWB:ObjectView:InvalidArgument',...
-                'Argument `nwb` must be a valid ''NwbFile'' object.');
+            validateattributes(nwb, {'NwbFile'}, {'scalar'});
             
-            v = nwb.resolve({obj.path});
+            if isempty(obj.path)
+                v = obj.target;
+            else
+                v = nwb.resolve({obj.path});
+            end
         end
         
         function refs = export(obj, fid, fullpath, refs)
-            io.writeDataset(fid, fullpath, class(obj), obj);
+            io.writeDataset(fid, fullpath, obj);
+        end
+        
+        function path = get.path(obj)
+            if isempty(obj.path)
+                if isempty(obj.target)
+                    path = '';
+                elseif isempty(obj.target.metaClass_fullPath)
+                    error('MatNWB:ObjectView:MissingPath',...
+                        ['Target fullpath has not been set yet. '...
+                        'Is the referenced object assigned in the NWB File?']);
+                else
+                    path = obj.target.metaClass_fullPath;
+                end
+            else
+                path = obj.path;
+            end
+        end
+        
+        function tf = has_path(obj)
+            try
+                tf = ~isempty(obj.path);
+            catch
+                tf = false;
+            end
         end
     end
 end

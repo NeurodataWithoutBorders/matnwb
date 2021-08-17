@@ -125,12 +125,12 @@ else
             errid, errmsg);
         if ischar(val) || iscellstr(val)
             if ischar(val)
-                val = {val};
+                val = mat2cell(val, ones(1, size(val,1)));
             end
             
             datevals = cell(size(val));
             for i = 1:length(val)
-                datevals{i} = datetime8601(val{i});
+                datevals{i} = datetime8601(strtrim(val{i}));
             end
             val = datevals;
         end
@@ -148,6 +148,8 @@ else
         
         if isscalar(val)
             val = val{1};
+        elseif isrow(val)
+            val = val .';
         end
     elseif strcmp(type, 'char')
         assert(ischar(val) || iscellstr(val), errid, errmsg);
@@ -180,7 +182,7 @@ else
 end
 end
 
-function date_time = datetime8601(datestr)
+function dt = datetime8601(datestr)
 addpath(fullfile(fileparts(which('NwbFile')), 'external_packages', 'datenum8601'));
 [~, ~, format] = datenum8601(datestr);
 format = format{1};
@@ -226,7 +228,7 @@ if has_fractional_sec
 end
 
 [datestr, timezone] = derive_timezone(datestr);
-date_time = datetime(datestr,...
+dt = datetime(datestr,...
     'InputFormat', format,...
     'TimeZone', timezone);
 end
@@ -237,8 +239,10 @@ function [datestr, timezone] = derive_timezone(datestr)
 % +-hhmm
 % +-hh
 % Z
+
 tzre_pattern = '(?:[+-]\d{2}(?::?\d{2})?|Z)$';
 tzre_match = regexp(datestr, tzre_pattern, 'once');
+
 if isempty(tzre_match)
     timezone = 'local';
 else

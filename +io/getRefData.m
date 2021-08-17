@@ -6,7 +6,12 @@ refpaths = {ref.path};
 validPaths = find(~cellfun('isempty', refpaths));
 if isa(ref, 'types.untyped.RegionView')
     for i=validPaths
-        did = H5D.open(fid, refpaths{i});
+        try
+            did = H5D.open(fid, refpaths{i});
+        catch ME
+            error('MatNWB:getRefData:InvalidPath',...
+                'Reference path `%s` was invalid', refpaths{i});
+        end
         sid = H5D.get_space(did);
         %by default, we use block mode.
         regionShapes = ref(i).region;
@@ -21,8 +26,12 @@ end
 typesize = H5T.get_size(ref(1).type);
 ref_data = zeros([typesize size(ref)], 'uint8');
 for i=validPaths
-    ref_data(:, i) = H5R.create(fid, ref(i).path, ref(i).reftype, ...
-        refspace(i));
+    try
+        ref_data(:, i) = H5R.create(fid, ref(i).path, ref(i).reftype, refspace(i));
+    catch ME
+        error('MatNWB:getRefData:InvalidPath',...
+            'Reference path `%s` was invalid', ref(i).path);
+    end
     if H5I.is_valid(refspace(i))
         H5S.close(refspace(i));
     end

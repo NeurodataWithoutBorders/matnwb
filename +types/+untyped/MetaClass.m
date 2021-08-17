@@ -1,4 +1,8 @@
 classdef MetaClass < handle
+    properties (Hidden, SetAccess = private)
+        metaClass_fullPath;
+    end
+    
     methods
         function obj = MetaClass(varargin)
         end
@@ -22,20 +26,24 @@ classdef MetaClass < handle
                     io.writeDataset(fid, fullpath, obj.data, 'forceArray');
                 end
             catch ME
-                if strcmp(ME.stack(2).name, 'getRefData') && ...
-                        endsWith(ME.stack(1).file, ...
-                        fullfile({'+H5D','+H5R'}, {'open.m', 'create.m'}))
-                    refs(end+1) = {fullpath};
-                    return;
-                else
-                    rethrow(ME);
-                end
+                refs = obj.capture_ref_errors(ME, fullpath, refs);
+            end
+        end
+        
+        function refs = capture_ref_errors(~, ME, fullpath, refs)
+            if any(strcmp(ME.identifier, {...
+                    'MatNWB:getRefData:InvalidPath',...
+                    'MatNWB:ObjectView:MissingPath'}))
+                refs(end+1) = {fullpath};
+            else
+                rethrow(ME);
             end
         end
     end
     
-    methods   
+    methods
         function refs = export(obj, fid, fullpath, refs)
+            obj.metaClass_fullPath = fullpath;
             %find reference properties
             propnames = properties(obj);
             props = cell(size(propnames));
@@ -50,14 +58,7 @@ classdef MetaClass < handle
                 try
                     io.getRefData(fid, props{i});
                 catch ME
-                    if strcmp(ME.stack(2).name, 'getRefData') && ...
-                            endsWith(ME.stack(1).file, ...
-                            fullfile({'+H5D','+H5R'}, {'open.m', 'create.m'}))
-                        refs(end+1) = {fullpath};
-                        return;
-                    else
-                        rethrow(ME);
-                    end
+                    refs = obj.capture_ref_errors(ME, fullpath, refs);
                 end
             end
             

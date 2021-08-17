@@ -8,7 +8,7 @@ function addRow(DynamicTable, varargin)
 %  ADDROW(DT,col1,val1,col2,val2,...,coln,valn) append a single row
 %  to the DynamicTable
 %
-%  ADDROW(DT,___,Name,Value) specify either 'id' or 'tablepath'
+%  ADDROW(DT,___,Name,Value) optional 'id'
 %
 % This function asserts the following:
 % 1) DynamicTable is a valid dynamic table and has the correct
@@ -22,9 +22,6 @@ function addRow(DynamicTable, varargin)
 % 5) The type of the data cannot be a cell array of numeric values if using
 %    keyword arguments. For table appending mode, this is how ragged arrays
 %    are represented.
-% 6) Ragged arrays (that is, rows containing more than one sub-row) require
-%    an extra parameter called `tablepath` which indicates where in the NWB
-%    file the table is.
 
 validateattributes(DynamicTable,...
     {'types.core.DynamicTable', 'types.hdmf_common.DynamicTable'},...
