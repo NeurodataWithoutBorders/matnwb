@@ -18,7 +18,7 @@ for i = 1:numel(props)
     if isa(actualVal, 'types.untyped.DataStub')
         actualVal = actualVal.load();
     end
-
+    
     if startsWith(class(expectedVal), 'types.') && ~startsWith(class(expectedVal), 'types.untyped')
         tests.util.verifyContainerEqual(testCase, actualVal, expectedVal);
     elseif isa(expectedVal, 'types.untyped.Set')
@@ -46,10 +46,12 @@ for i = 1:numel(props)
             actualVal = {actualVal};
         end
         for iDates = 1:length(expectedVal)
-           testCase.verifyEqual(...
-               char(actualVal{iDates}),...
-               char(expectedVal{iDates}),...
-               failmsg); 
+            % ignore microseconds as linux datetime has some strange error
+            % even when datetime doesn't change in Windows.
+            testCase.verifyEqual(...
+                convertTo(actualVal{iDates}, 'ntfs') / 100,...
+                convertTo(expectedVal{iDates}, 'ntfs') / 100,...
+                failmsg);
         end
     elseif startsWith(class(expectedVal), 'int') || startsWith(class(expectedVal), 'uint')
         actualTypeSize = regexp(class(actualVal), 'int(\d+)', 'once', 'tokens');
