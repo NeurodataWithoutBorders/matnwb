@@ -231,8 +231,6 @@ end
 dt = datetime(datestr,...
     'InputFormat', format,...
     'TimeZone', timezone);
-dt.Format = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSSZZZZZ';
-fprintf('%s -> %s\n', datestr, char(dt));
 end
 
 function [datestr, timezone] = derive_timezone(datestr)

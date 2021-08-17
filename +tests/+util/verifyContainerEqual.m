@@ -35,7 +35,7 @@ for i = 1:numel(props)
         tests.util.verifyContainerEqual(testCase, actualVal.value, expectedVal.value);
     elseif isdatetime(expectedVal)...
             || (iscell(expectedVal) && all(cellfun('isclass', expectedVal, 'datetime')))
-        % ubuntu MATLAB doesn't appear to propery compare datetimes whereas
+        % linux MATLAB doesn't appear to propery compare datetimes whereas
         % Windows MATLAB does. This is a workaround to get tests to work
         % while getting close enough to exact date representation.
         actualVal = types.util.checkDtype(prop, 'isodatetime', actualVal);
@@ -47,8 +47,8 @@ for i = 1:numel(props)
         end
         for iDates = 1:length(expectedVal)
            testCase.verifyEqual(...
-               convertTo(actualVal{iDates}, 'ntfs'),...
-               convertTo(expectedVal{iDates}, 'ntfs'),...
+               char(actualVal{iDates}),...
+               char(expectedVal{iDates}),...
                failmsg); 
         end
     elseif startsWith(class(expectedVal), 'int') || startsWith(class(expectedVal), 'uint')
