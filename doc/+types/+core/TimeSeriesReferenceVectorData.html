@@ -3,26 +3,26 @@
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
    
       <link rel="stylesheet" href="../../helpwin.css">
-      <title>types.core.Fluorescence - MATLAB File Help</title>
+      <title>types.core.TimeSeriesReferenceVectorData - MATLAB File Help</title>
    </head>
    <body>
       <!--Single-page help-->
       <table border="0" cellspacing="0" width="100%">
          <tr class="subheader">
-            <td class="headertitle">types.core.Fluorescence - MATLAB File Help</td>
+            <td class="headertitle">types.core.TimeSeriesReferenceVectorData - MATLAB File Help</td>
             
             
             
          </tr>
       </table>
-      <div class="title">types.core.Fluorescence</div>
-      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">Fluorescence</span> <span class="helptopic">Fluorescence</span> information about a region of interest (ROI). Storage hierarchy of fluorescence should be the same as for segmentation (ie, same names for ROIs and for image planes).</pre></div><!--after help -->
+      <div class="title">types.core.TimeSeriesReferenceVectorData</div>
+      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">TimeSeriesReferenceVectorData</span> Column storing references to a TimeSeries (rows). For each TimeSeries this VectorData column stores the start_index and count to indicate the range in time to be selected as well as an object reference to the TimeSeries.</pre></div><!--after help -->
       <!--Class-->
       <div class="sectiontitle">Class Details</div>
       <table class="class-details">
          <tr>
             <td class="class-detail-label">Superclasses</td>
-            <td><a href="NWBDataInterface.html">types.core.NWBDataInterface</a>, <a href="matlab:helpwin('types.untyped.GroupClass')">types.untyped.GroupClass</a></td>
+            <td><a href="VectorData.html">types.hdmf_common.VectorData</a>, <a href="matlab:helpwin('types.untyped.DatasetClass')">types.untyped.DatasetClass</a></td>
          </tr>
          <tr>
             <td class="class-detail-label">Sealed</td>
@@ -38,8 +38,8 @@
       </div>
       <table class="summary-list">
          <tr class="summary-item">
-            <td class="name">Fluorescence</td>
-            <td class="m-help">Constructor for Fluorescence&nbsp;</td>
+            <td class="name">TimeSeriesReferenceVectorData</td>
+            <td class="m-help">Constructor for TimeSeriesReferenceVectorData&nbsp;</td>
          </tr>
       </table>
       <!--Properties-->
@@ -47,8 +47,12 @@
       </div>
       <table class="summary-list">
          <tr class="summary-item">
-            <td class="name">roiresponseseries</td>
-            <td class="m-help">RoiResponseSeries object(s) containing fluorescence data for a ROI.&nbsp;</td>
+            <td class="name">data</td>
+            <td class="m-help">property of type any&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name">description</td>
+            <td class="m-help">Description of what these vectors represent.&nbsp;</td>
          </tr>
       </table>
       <!--Methods-->
@@ -180,7 +184,15 @@
                &nbsp;
                
             </td>
-            <td class="name">validate_roiresponseseries</td>
+            <td class="name">validate_data</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_description</td>
             <td class="m-help">&nbsp;</td>
          </tr>
       </table>
