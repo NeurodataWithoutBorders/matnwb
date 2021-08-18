@@ -48,7 +48,7 @@
       <table class="summary-list">
          <tr class="summary-item">
             <td class="name">NwbFile</td>
-            <td class="m-help">&nbsp;</td>
+            <td class="m-help">Root object representing data read from an NWB file.&nbsp;</td>
          </tr>
       </table>
       <!--Properties-->
@@ -57,321 +57,234 @@
       <table class="summary-list">
          <tr class="summary-item">
             <td class="name">acquisition</td>
-            <td class="m-help">Acquired, raw data.
-               Help for NwbFile/acquisition is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">Acquired, raw data.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">analysis</td>
-            <td class="m-help">Custom analysis results.
-               Help for NwbFile/analysis is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">Custom analysis results.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">file_create_date</td>
             <td class="m-help">A record of the date the file was created and of subsequent modifications. The date is stored in UTC with local timezone offset
                as ISO 8601 extended formatted strings: 2018-09-28T14:43:54.123+02:00. Dates stored in UTC end in "Z" with no timezone offset.
                Date accuracy is up to milliseconds. The file can be created after the experiment was run, so this may differ from the experiment
-               start time. Each modification to the nwb file adds a new entry to the array.
-               Help for NwbFile/file_create_date is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
+               start time. Each modification to the nwb file adds a new entry to the array.&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">general</td>
-            <td class="m-help">Place-holder than can be extended so that lab-specific meta-data can be placed in /general.
-               Help for NwbFile/general is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">Place-holder than can be extended so that lab-specific meta-data can be placed in /general.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">general_data_collection</td>
-            <td class="m-help">Notes about data collection and analysis.
-               Help for NwbFile/general_data_collection is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">Notes about data collection and analysis.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">general_devices</td>
-            <td class="m-help">Data acquisition devices.
-               Help for NwbFile/general_devices is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">Data acquisition devices.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">general_experiment_description</td>
-            <td class="m-help">General description of the experiment.
-               Help for NwbFile/general_experiment_description is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">General description of the experiment.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">general_experimenter</td>
-            <td class="m-help">Name of person(s) who performed the experiment. Can also specify roles of different people involved.
-               Help for NwbFile/general_experimenter is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">Name of person(s) who performed the experiment. Can also specify roles of different people involved.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">general_extracellular_ephys</td>
-            <td class="m-help">Physical group of electrodes.
-               Help for NwbFile/general_extracellular_ephys is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">Physical group of electrodes.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">general_extracellular_ephys_electrodes</td>
-            <td class="m-help">A table of all electrodes (i.e. channels) used for recording.
-               Help for NwbFile/general_extracellular_ephys_electrodes is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">A table of all electrodes (i.e. channels) used for recording.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">general_institution</td>
-            <td class="m-help">Institution(s) where experiment was performed.
-               Help for NwbFile/general_institution is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">Institution(s) where experiment was performed.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">general_intracellular_ephys</td>
-            <td class="m-help">An intracellular electrode.
-               Help for NwbFile/general_intracellular_ephys is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">An intracellular electrode.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name">general_intracellular_ephys_experimental_conditions</td>
+            <td class="m-help">A table for grouping different intracellular recording repetitions together that belong to the same experimental experimental_conditions.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">general_intracellular_ephys_filtering</td>
-            <td class="m-help">Description of filtering used. Includes filtering type and parameters, frequency fall-off, etc. If this changes between TimeSeries,
-               filter description should be stored as a text attribute for each TimeSeries.
-               Help for NwbFile/general_intracellular_ephys_filtering is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
+            <td class="m-help">[DEPRECATED] Use IntracellularElectrode.filtering instead. Description of filtering used. Includes filtering type and parameters,
+               frequency fall-off, etc. If this changes between TimeSeries, filter description should be stored as a text attribute for each
+               TimeSeries.&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name">general_intracellular_ephys_intracellular_recordings</td>
+            <td class="m-help">A table to group together a stimulus and response from a single electrode and a single simultaneous recording. Each row in
+               the table represents a single recording consisting typically of a stimulus and a corresponding response. In some cases, however,
+               only a stimulus or a response are recorded as as part of an experiment. In this case both, the stimulus and response will
+               point to the same TimeSeries while the idx_start and count of the invalid column will be set to -1, thus, indicating that
+               no values have been recorded for the stimulus or response, respectively. Note, a recording MUST contain at least a stimulus
+               or a response. Typically the stimulus and response are PatchClampSeries. However, the use of AD/DA channels that are not associated
+               to an electrode is also common in intracellular electrophysiology, in which case other TimeSeries may be used.&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name">general_intracellular_ephys_repetitions</td>
+            <td class="m-help">A table for grouping different sequential intracellular recordings together. With each SequentialRecording typically representing
+               a particular type of stimulus, the RepetitionsTable table is typically used to group sets of stimuli applied in sequence.&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name">general_intracellular_ephys_sequential_recordings</td>
+            <td class="m-help">A table for grouping different sequential recordings from the SimultaneousRecordingsTable table together. This is typically
+               used to group together sequential recordings where the a sequence of stimuli of the same type with varying parameters have
+               been presented in a sequence.&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name">general_intracellular_ephys_simultaneous_recordings</td>
+            <td class="m-help">A table for grouping different intracellular recordings from the IntracellularRecordingsTable table together that were recorded
+               simultaneously from different electrodes&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">general_intracellular_ephys_sweep_table</td>
-            <td class="m-help">The table which groups different PatchClampSeries together.
-               Help for NwbFile/general_intracellular_ephys_sweep_table is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
+            <td class="m-help">[DEPRECATED] Table used to group different PatchClampSeries. SweepTable is being replaced by IntracellularRecordingsTable
+               and SimultaneousRecordingsTable tabels. Additional SequentialRecordingsTable, RepetitionsTable and ExperimentalConditions
+               tables provide enhanced support for experiment metadata.&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">general_keywords</td>
-            <td class="m-help">Terms to search over.
-               Help for NwbFile/general_keywords is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">Terms to search over.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">general_lab</td>
-            <td class="m-help">Laboratory where experiment was performed.
-               Help for NwbFile/general_lab is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">Laboratory where experiment was performed.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">general_notes</td>
-            <td class="m-help">Notes about the experiment.
-               Help for NwbFile/general_notes is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">Notes about the experiment.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">general_optogenetics</td>
-            <td class="m-help">An optogenetic stimulation site.
-               Help for NwbFile/general_optogenetics is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">An optogenetic stimulation site.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">general_optophysiology</td>
-            <td class="m-help">An imaging plane.
-               Help for NwbFile/general_optophysiology is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">An imaging plane.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">general_pharmacology</td>
             <td class="m-help">Description of drugs used, including how and when they were administered. Anesthesia(s), painkiller(s), etc., plus dosage,
-               concentration, etc.
-               Help for NwbFile/general_pharmacology is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
+               concentration, etc.&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">general_protocol</td>
-            <td class="m-help">Experimental protocol, if applicable. e.g., include IACUC protocol number.
-               Help for NwbFile/general_protocol is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">Experimental protocol, if applicable. e.g., include IACUC protocol number.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">general_related_publications</td>
-            <td class="m-help">Publication information. PMID, DOI, URL, etc.
-               Help for NwbFile/general_related_publications is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">Publication information. PMID, DOI, URL, etc.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">general_session_id</td>
-            <td class="m-help">Lab-specific ID for the session.
-               Help for NwbFile/general_session_id is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">Lab-specific ID for the session.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">general_slices</td>
-            <td class="m-help">Description of slices, including information about preparation thickness, orientation, temperature, and bath solution.
-               Help for NwbFile/general_slices is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">Description of slices, including information about preparation thickness, orientation, temperature, and bath solution.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">general_source_script</td>
-            <td class="m-help">Script file or link to public source code used to create this NWB file.
-               Help for NwbFile/general_source_script is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">Script file or link to public source code used to create this NWB file.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">general_source_script_file_name</td>
-            <td class="m-help">Name of script file.
-               Help for NwbFile/general_source_script_file_name is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">Name of script file.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">general_stimulus</td>
-            <td class="m-help">Notes about stimuli, such as how and where they were presented.
-               Help for NwbFile/general_stimulus is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">Notes about stimuli, such as how and where they were presented.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">general_subject</td>
-            <td class="m-help">Information about the animal or person from which the data was measured.
-               Help for NwbFile/general_subject is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">Information about the animal or person from which the data was measured.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">general_surgery</td>
-            <td class="m-help">Narrative description about surgery/surgeries, including date(s) and who performed surgery.
-               Help for NwbFile/general_surgery is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">Narrative description about surgery/surgeries, including date(s) and who performed surgery.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">general_virus</td>
-            <td class="m-help">Information about virus(es) used in experiments, including virus ID, source, date made, injection location, volume, etc.
-               Help for NwbFile/general_virus is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">Information about virus(es) used in experiments, including virus ID, source, date made, injection location, volume, etc.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">identifier</td>
             <td class="m-help">A unique text identifier for the file. For example, concatenated lab name, file creation date/time and experimentalist, or
-               a hash of these and/or other values. The goal is that the string should be unique to all other files.
-               Help for NwbFile/identifier is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
+               a hash of these and/or other values. The goal is that the string should be unique to all other files.&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">intervals</td>
-            <td class="m-help">Optional additional table(s) for describing other experimental time intervals.
-               Help for NwbFile/intervals is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">Optional additional table(s) for describing other experimental time intervals.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">intervals_epochs</td>
-            <td class="m-help">Divisions in time marking experimental stages or sub-divisions of a single recording session.
-               Help for NwbFile/intervals_epochs is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">Divisions in time marking experimental stages or sub-divisions of a single recording session.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">intervals_invalid_times</td>
-            <td class="m-help">Time intervals that should be removed from analysis.
-               Help for NwbFile/intervals_invalid_times is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">Time intervals that should be removed from analysis.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">intervals_trials</td>
-            <td class="m-help">Repeated experimental events that have a logical grouping.
-               Help for NwbFile/intervals_trials is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">Repeated experimental events that have a logical grouping.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">nwb_version</td>
             <td class="m-help">File version string. Use semantic versioning, e.g. 1.2.1. This will be the name of the format with trailing major, minor and
-               patch numbers.
-               Help for NwbFile/nwb_version is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
+               patch numbers.&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">processing</td>
-            <td class="m-help">Intermediate analysis of acquired data.
-               Help for NwbFile/processing is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">Intermediate analysis of acquired data.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">scratch</td>
-            <td class="m-help">Any one-off datasets
-               Help for NwbFile/scratch is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">Any one-off datasets&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">session_description</td>
-            <td class="m-help">A description of the experimental session and data in the file.
-               Help for NwbFile/session_description is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">A description of the experimental session and data in the file.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">session_start_time</td>
             <td class="m-help">Date and time of the experiment/session start. The date is stored in UTC with local timezone offset as ISO 8601 extended formatted
-               string: 2018-09-28T14:43:54.123+02:00. Dates stored in UTC end in "Z" with no timezone offset. Date accuracy is up to milliseconds.
-               Help for NwbFile/session_start_time is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
+               string: 2018-09-28T14:43:54.123+02:00. Dates stored in UTC end in "Z" with no timezone offset. Date accuracy is up to milliseconds.&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">stimulus_presentation</td>
-            <td class="m-help">TimeSeries objects containing data of presented stimuli.
-               Help for NwbFile/stimulus_presentation is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">TimeSeries objects containing data of presented stimuli.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">stimulus_templates</td>
-            <td class="m-help">TimeSeries objects containing template data of presented stimuli.
-               Help for NwbFile/stimulus_templates is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">TimeSeries objects containing template data of presented stimuli.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">timestamps_reference_time</td>
             <td class="m-help">Date and time corresponding to time zero of all timestamps. The date is stored in UTC with local timezone offset as ISO 8601
                extended formatted string: 2018-09-28T14:43:54.123+02:00. Dates stored in UTC end in "Z" with no timezone offset. Date accuracy
-               is up to milliseconds. All times stored in the file use this time as reference (i.e., time zero).
-               Help for NwbFile/timestamps_reference_time is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
+               is up to milliseconds. All times stored in the file use this time as reference (i.e., time zero).&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">units</td>
-            <td class="m-help">Data about sorted spike units.
-               Help for NwbFile/units is inherited from superclass TYPES.CORE.NWBFILE
-               &nbsp;
-            </td>
+            <td class="m-help">Data about sorted spike units.&nbsp;</td>
          </tr>
       </table>
       <!--Methods-->
@@ -384,10 +297,7 @@
                
             </td>
             <td class="name">addlistener</td>
-            <td class="m-help">Add listener for event.
-               Help for NwbFile/addlistener is inherited from superclass HANDLE
-               &nbsp;
-            </td>
+            <td class="m-help">Add listener for event.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="attributes">
@@ -395,10 +305,7 @@
                
             </td>
             <td class="name">delete</td>
-            <td class="m-help">Delete a handle object.
-               Help for NwbFile/delete is inherited from superclass HANDLE
-               &nbsp;
-            </td>
+            <td class="m-help">Delete a handle object.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="attributes">
@@ -406,10 +313,7 @@
                
             </td>
             <td class="name">eq</td>
-            <td class="m-help">== (EQ)   Test handle equality.
-               Help for NwbFile/eq is inherited from superclass HANDLE
-               &nbsp;
-            </td>
+            <td class="m-help">== (EQ)   Test handle equality.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="attributes">
@@ -425,10 +329,7 @@
                
             </td>
             <td class="name">findobj</td>
-            <td class="m-help">Find objects matching specified conditions.
-               Help for NwbFile/findobj is inherited from superclass HANDLE
-               &nbsp;
-            </td>
+            <td class="m-help">Find objects matching specified conditions.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="attributes">
@@ -436,10 +337,7 @@
                
             </td>
             <td class="name">findprop</td>
-            <td class="m-help">Find property of MATLAB handle object.
-               Help for NwbFile/findprop is inherited from superclass HANDLE
-               &nbsp;
-            </td>
+            <td class="m-help">Find property of MATLAB handle object.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="attributes">
@@ -447,10 +345,7 @@
                
             </td>
             <td class="name">ge</td>
-            <td class="m-help">>= (GE)   Greater than or equal relation for handles.
-               Help for NwbFile/ge is inherited from superclass HANDLE
-               &nbsp;
-            </td>
+            <td class="m-help">>= (GE)   Greater than or equal relation for handles.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="attributes">
@@ -458,10 +353,7 @@
                
             </td>
             <td class="name">gt</td>
-            <td class="m-help">> (GT)   Greater than relation for handles.
-               Help for NwbFile/gt is inherited from superclass HANDLE
-               &nbsp;
-            </td>
+            <td class="m-help">> (GT)   Greater than relation for handles.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="attributes">Sealed 
@@ -469,10 +361,7 @@
                
             </td>
             <td class="name">isvalid</td>
-            <td class="m-help">Test handle validity.
-               Help for NwbFile/isvalid is inherited from superclass HANDLE
-               &nbsp;
-            </td>
+            <td class="m-help">Test handle validity.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="attributes">
@@ -480,10 +369,7 @@
                
             </td>
             <td class="name">le</td>
-            <td class="m-help"><= (LE)   Less than or equal relation for handles.
-               Help for NwbFile/le is inherited from superclass HANDLE
-               &nbsp;
-            </td>
+            <td class="m-help"><= (LE)   Less than or equal relation for handles.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="attributes">
@@ -491,10 +377,7 @@
                
             </td>
             <td class="name">listener</td>
-            <td class="m-help">Add listener for event without binding the listener to the source object.
-               Help for NwbFile/listener is inherited from superclass HANDLE
-               &nbsp;
-            </td>
+            <td class="m-help">Add listener for event without binding the listener to the source object.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="attributes">
@@ -510,10 +393,7 @@
                
             </td>
             <td class="name">lt</td>
-            <td class="m-help">< (LT)   Less than relation for handles.
-               Help for NwbFile/lt is inherited from superclass HANDLE
-               &nbsp;
-            </td>
+            <td class="m-help">< (LT)   Less than relation for handles.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="attributes">
@@ -521,10 +401,7 @@
                
             </td>
             <td class="name">ne</td>
-            <td class="m-help">~= (NE)   Not equal relation for handles.
-               Help for NwbFile/ne is inherited from superclass HANDLE
-               &nbsp;
-            </td>
+            <td class="m-help">~= (NE)   Not equal relation for handles.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="attributes">
@@ -532,10 +409,7 @@
                
             </td>
             <td class="name">notify</td>
-            <td class="m-help">Notify listeners of event.
-               Help for NwbFile/notify is inherited from superclass HANDLE
-               &nbsp;
-            </td>
+            <td class="m-help">Notify listeners of event.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="attributes">
@@ -654,7 +528,47 @@
                &nbsp;
                
             </td>
+            <td class="name">validate_general_intracellular_ephys_experimental_conditions</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
             <td class="name">validate_general_intracellular_ephys_filtering</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_general_intracellular_ephys_intracellular_recordings</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_general_intracellular_ephys_repetitions</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_general_intracellular_ephys_sequential_recordings</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_general_intracellular_ephys_simultaneous_recordings</td>
             <td class="m-help">&nbsp;</td>
          </tr>
          <tr class="summary-item">
