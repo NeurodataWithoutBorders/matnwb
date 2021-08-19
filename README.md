@@ -31,7 +31,8 @@ The `generateExtension` command generates extension classes given a file path to
 generateExtension('schema/core/nwb.namespace.yaml', '.../my_extensions1.namespace.yaml',...);
 ```
 
-Generated Matlab code will be put a `+types` subdirectory.  This is a Matlab package.  When the `+types` folder is accessible to the Matlab path, the generated code will be used for reading NWBFiles.
+Generated Matlab code will be put a `+types` subdirectory.
+This is a Matlab package.  When the `+types` folder is accessible to the Matlab path, the generated code will be used for reading NWBFiles.
 
 ```matlab
 nwb = nwbRead('data.nwb');
@@ -42,12 +43,14 @@ nwb = nwbRead('data.nwb');
 The `generateCore` command can generate older versions of the nwb schema.
 
 ```matlab
-generateCore('2.2.1'); % generate schema 2.2.1
+generateCore();
 ```
 
-Currently, only schemas 2.2.x are supported (2.1.0 and 2.0.1 are not supported at this time).
+Currently, only schemas >= 2.2.0 are supported (2.1.0 and 2.0.1 are not supported at this time).
 
 ## Tutorials
+
+[Intro to MatNWB](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/intro.html)
 
 [Extracellular Electrophysiology](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ecephys.html) | [YouTube walkthrough](https://www.youtube.com/watch?v=W8t4_quIl1k&ab_channel=NeurodataWithoutBorders)
 
