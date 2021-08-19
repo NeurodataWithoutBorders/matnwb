@@ -31,7 +31,7 @@ The `generateExtension` command generates extension classes given a file path to
 generateExtension('schema/core/nwb.namespace.yaml', '.../my_extensions1.namespace.yaml',...);
 ```
 
-Generated Matlab code will be put a `+types` subdirectory.
+Generated Matlab code will be put into a `+types` subdirectory.
 This is a Matlab package.  When the `+types` folder is accessible to the Matlab path, the generated code will be used for reading NWBFiles.
 
 ```matlab
