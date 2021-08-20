@@ -31,7 +31,17 @@ end
 
 for i = 1:length(columns)
     cn = columns{i};
-    indexName = types.util.dynamictable.getIndex(DynamicTable, cn);
+    
+    indexNames = {};
+    columnName = cn;
+    while true
+        indexName = types.util.dynamictable.getIndex(DynamicTable, columnName);
+        if isempty(indexName)
+            break;
+        end
+        indexNames{end+1} = indexName;
+        columnName = indexName;
+    end
 
     if isprop(DynamicTable, cn)
         VectorData = DynamicTable.(cn);
@@ -39,15 +49,15 @@ for i = 1:length(columns)
         VectorData = DynamicTable.vectordata.get(cn);
     end
     
-    if isempty(indexName)
-        colInd = ind;
-    else
-        indMap = getIndexInd(DynamicTable, indexName, ind);
+    colInd = ind;
+    selectionLengths = cell(size(indexNames));
+    for iNames = length(indexNames):-1:1
+        indMap = getIndexInd(DynamicTable, indexNames{iNames}, colInd);
         colInd = cell(1, length(ind)); % cell row because cell2mat must retain vector shape.
         for j = 1:length(ind)
             colInd{j} = indMap(ind(j));
         end
-        lengthPerRow = cellfun('length', colInd); % used below to segment the data.
+        selectionLengths{iNames} = cellfun('length', colInd);
         colInd = cell2mat(colInd);
     end
     
@@ -58,9 +68,9 @@ for i = 1:length(columns)
         row{i} = VectorData.data(colInd);
     end
     
-    if ~isempty(indexName)
-        row{i} = mat2cell(row{i}, lengthPerRow, 1);
-    end % if is indexed, segment data into rows using cells.
+    for iLengths = 1:length(selectionLengths)
+        row{i} = mat2cell(row{i}, selectionLengths{iLengths});
+    end
 end
 subTable = table(row{:}, 'VariableNames', columns);
 end
