@@ -24,41 +24,75 @@ else
     DynamicTable.vectordata.set(column, VecData);
 end
 
-index = types.util.dynamictable.getIndex(DynamicTable, column);
-if size(data, 1) > 1 || ~isempty(index)
+
+% grab all available indices for column.
+indexChain = {column};
+while true
+    index = types.util.dynamictable.getIndex(DynamicTable, indexChain{end});
     if isempty(index)
-        index = types.util.dynamictable.addVecInd(DynamicTable, column);
+        break;
     end
-    
-    if isprop(DynamicTable, index)
-        VecInd = DynamicTable.(index);
-    elseif isprop(DynamicTable, 'vectorindex') % Schema < 2.3.0
-        VecInd = DynamicTable.vectorindex.get(index);
-    else
-        VecInd = DynamicTable.vectordata.get(index);
-    end
-    
-    raggedOffset = 0;
-    if isa(VecInd.data, 'types.untyped.DataPipe') && 0 < VecInd.data.dims
-        raggedOffset = double(VecInd.data.load(VecInd.data.dims));
-    elseif ~isempty(VecInd.data)
-        raggedOffset = double(VecInd.data(end));
-    end
-    
-    raggedValue = raggedOffset + size(data, 1);
-    if isa(VecInd.data, 'types.untyped.DataPipe')
-        VecInd.data.append(raggedValue);
-    else
-        VecInd.data = [double(VecInd.data); raggedValue];
-    end
+    indexChain{end+1} = index;
 end
 
-if isa(VecData.data, 'types.untyped.DataPipe')
-    VecData.data.append(data);
+% find true nesting depth of column data.
+depth = getNestedDataDepth(data);
+
+for iVec = (length(indexChain)+1):depth
+    indexChain{end+1} = types.util.dynamictable.addVecInd(DynamicTable, indexChain{end});
+end
+
+for iVec = (depth+1):length(indexChain)
+    data = {data}; % wrap until the correct number of vector indices are satisfied.
+end
+
+nestedAdd(DynamicTable, indexChain, data);
+end
+
+function depth = getNestedDataDepth(data)
+depth = 1;
+subData = data;
+while iscell(subData) && ~iscellstr(subData)
+    depth = depth + 1;
+    subData = subData{1};
+end
+if size(subData, 1) > 1
+    depth = depth + 1;
+end
+end
+
+function numEntries = nestedAdd(DynamicTable, indChain, data)
+name = indChain{end};
+numEntries = size(data, 1);
+
+if isprop(DynamicTable, name)
+    Vector = DynamicTable.(name);
+elseif isprop(DynamicTable, 'vectorindex') && DynamicTable.vectorindex.isKey(name)
+    Vector = DynamicTable.vectorindex.get(name);
 else
-    if ischar(data)
+    Vector = DynamicTable.vectordata.get(name);
+end
+
+if isa(Vector, 'types.hdmf_common.VectorIndex') || isa(Vector, 'types.core.VectorIndex')
+    if ~iscell(data) || iscellstr(data)
         data = {data};
+        numEntries = 1;
     end
-    VecData.data = [VecData.data; data];
+    
+    elems = zeros(numEntries, 1);
+    for iEntry = 1:numEntries
+        elems(iEntry) = nestedAdd(DynamicTable, indChain(1:(end-1)), data{iEntry});
+    end
+    data = elems;
+end
+
+if ischar(data)
+    data = mat2cell(data, ones(numEntries, 1));
+end
+
+if isa(Vector.data, 'types.untyped.DataPipe')
+    Vector.data.append(data);
+else
+    Vector.data = [Vector.data; data];
 end
 end

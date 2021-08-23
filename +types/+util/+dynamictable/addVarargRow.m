@@ -37,11 +37,9 @@ for i = 1:length(rowNames)
     if isKey(TypeMap, rn)
         validateType(TypeMap(rn), rv);    
     end
-    assert(iscellstr(rv) || ~iscell(rv),...
-            'NWB:DynamicTable:AddRow:InvalidCellArray',...
-            'Cell arrays that are not cell strings are not allowed.');
+    
     if ischar(rv)
-        rv = {rv};
+        rv = mat2cell(rv, ones(size(rv, 1), 1));
     end
     
     types.util.dynamictable.addRawData(DynamicTable, rn, rv);
@@ -68,6 +66,10 @@ if strcmp(TypeStruct.type, 'cellstr')
     assert(iscellstr(rv) || (ischar(rv) && (isempty(rv) || 1 == size(rv, 1))),...
         'NWB:DynamicTable:AddRow:InvalidType',...
         'Type of value must be a cell array of character vectors or a scalar character');
+elseif iscell(rv)
+    for iVal = 1:length(rv)
+        validateType(TypeStruct, rv{iVal});
+    end
 else
     validateattributes(rv, {TypeStruct.type}, {'size', [NaN TypeStruct.dims(2:end)]});
 end
