@@ -1,7 +1,12 @@
 function addRawData(DynamicTable, column, data)
 %ADDRAWDATA Internal method for adding data to DynamicTable given column
-% name, data and an optional index.
+% name and data. Indices are determined based on data format and available
+% indices.
 validateattributes(column, {'char'}, {'scalartext'});
+
+if size(data, 1) > 1
+    data = {data};
+end
 
 % Don't set the data until after indices are updated.
 if 8 == exist('types.hdmf_common.VectorData', 'class')
@@ -24,7 +29,6 @@ else
     DynamicTable.vectordata.set(column, VecData);
 end
 
-
 % grab all available indices for column.
 indexChain = {column};
 while true
@@ -39,7 +43,7 @@ end
 depth = getNestedDataDepth(data);
 
 for iVec = (length(indexChain)+1):depth
-    indexChain{end+1} = types.util.dynamictable.addVecInd(DynamicTable, indexChain{end});
+    indexChain{iVec} = types.util.dynamictable.addVecInd(DynamicTable, indexChain{end});
 end
 
 for iVec = (depth+1):length(indexChain)
@@ -56,9 +60,6 @@ while iscell(subData) && ~iscellstr(subData)
     depth = depth + 1;
     subData = subData{1};
 end
-if size(subData, 1) > 1
-    depth = depth + 1;
-end
 end
 
 function numEntries = nestedAdd(DynamicTable, indChain, data)
@@ -74,20 +75,29 @@ else
 end
 
 if isa(Vector, 'types.hdmf_common.VectorIndex') || isa(Vector, 'types.core.VectorIndex')
-    if ~iscell(data) || iscellstr(data)
-        data = {data};
-        numEntries = 1;
-    end
-    
     elems = zeros(numEntries, 1);
     for iEntry = 1:numEntries
         elems(iEntry) = nestedAdd(DynamicTable, indChain(1:(end-1)), data{iEntry});
     end
-    data = elems;
+    
+    raggedOffset = 0;
+    if isa(Vector.data, 'types.untyped.DataPipe')
+        if isa(Vector.data.internal, 'types.untyped.datapipe.BlueprintPipe')...
+                && ~isempty(Vector.data.internal.data)
+            raggedOffset = double(Vector.data.internal.data(end));
+        elseif isa(Vector.data.internal, 'types.untyped.datapipe.BoundPipe')...
+                && ~any(Vector.data.internal.stub.dims == 0)
+            raggedOffset = double(Vector.data.internal.stub(end));
+        end
+    elseif ~isempty(Vector.data)
+        raggedOffset = double(Vector.data(end));
+    end
+    
+    data = raggedOffset + cumsum(elems);
 end
 
 if ischar(data)
-    data = mat2cell(data, ones(numEntries, 1));
+    data = mat2cell(data, ones(size(data, 1), 1));
 end
 
 if isa(Vector.data, 'types.untyped.DataPipe')

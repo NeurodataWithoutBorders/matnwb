@@ -38,10 +38,6 @@ for i = 1:length(rowNames)
         validateType(TypeMap(rn), rv);    
     end
     
-    if ischar(rv)
-        rv = mat2cell(rv, ones(size(rv, 1), 1));
-    end
-    
     types.util.dynamictable.addRawData(DynamicTable, rn, rv);
 end
 
