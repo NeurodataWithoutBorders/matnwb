@@ -5,12 +5,9 @@ validateattributes(DynamicTable,...
     {'scalar'});
 validateattributes(column, {'char'}, {'scalartext'});
 indexName = '';
-if strcmp(column, 'id')
+if strcmp(column, 'id') || ~any(strcmp(DynamicTable.colnames, column))
     return;
 end
-assert(any(strcmp(DynamicTable.colnames, column)),...
-    'NWB:GetIndex:InvalidColumn',...
-    'Column name not found `%s`', column);
 
 % after Schema version 2.3.0, VectorIndex objects subclass VectorData which
 % meant that vectorindex and vectordata sets could be combined.
