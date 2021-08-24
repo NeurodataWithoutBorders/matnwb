@@ -169,8 +169,14 @@ classdef (Sealed) DataStub < handle
                 expectedSize = expectedSize(1:length(varargin));
             end
             
-            if isscalar(expectedSize)
-                expectedSize = [1 expectedSize];
+            if isscalar(varargin)
+                % very special case where shape of the scalar indices determine the
+                % shape of the output data for some reason.
+                if isrow(varargin{1})
+                    expectedSize = [1 expectedSize];
+                else
+                    expectedSize = [expectedSize 1];
+                end
             end
             
             selections = varargin;
