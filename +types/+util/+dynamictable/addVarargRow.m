@@ -53,7 +53,7 @@ end
 if isa(DynamicTable.id.data, 'types.untyped.DataPipe')
     DynamicTable.id.data.append(newId);
 else
-    DynamicTable.id.data = [DynamicTable.id.data; newId];
+    DynamicTable.id.data = [double(DynamicTable.id.data); newId];
 end
 end
 

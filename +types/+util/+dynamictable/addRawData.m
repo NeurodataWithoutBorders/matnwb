@@ -84,25 +84,33 @@ if isa(Vector, 'types.hdmf_common.VectorIndex') || isa(Vector, 'types.core.Vecto
     if isa(Vector.data, 'types.untyped.DataPipe')
         if isa(Vector.data.internal, 'types.untyped.datapipe.BlueprintPipe')...
                 && ~isempty(Vector.data.internal.data)
-            raggedOffset = double(Vector.data.internal.data(end));
+            raggedOffset = Vector.data.internal.data(end);
         elseif isa(Vector.data.internal, 'types.untyped.datapipe.BoundPipe')...
                 && ~any(Vector.data.internal.stub.dims == 0)
-            raggedOffset = double(Vector.data.internal.stub(end));
+            raggedOffset = Vector.data.internal.stub(end);
         end
     elseif ~isempty(Vector.data)
-        raggedOffset = double(Vector.data(end));
+        raggedOffset = Vector.data(end);
     end
     
-    data = raggedOffset + cumsum(elems);
-end
-
-if ischar(data)
-    data = mat2cell(data, ones(size(data, 1), 1));
-end
-
-if isa(Vector.data, 'types.untyped.DataPipe')
-    Vector.data.append(data);
+    data = double(raggedOffset) + cumsum(elems);
+    if isa(Vector.data, 'types.untyped.DataPipe')
+        Vector.data.append(data);
+    else
+        % cast to double so the correct type shrinkwrap doesn't force-clamp
+        % values.
+        Vector.data = [double(Vector.data); data];
+    end
 else
-    Vector.data = [Vector.data; data];
+    
+    if ischar(data)
+        data = mat2cell(data, ones(size(data, 1), 1));
+    end
+    
+    if isa(Vector.data, 'types.untyped.DataPipe')
+        Vector.data.append(data);
+    else
+        Vector.data = [Vector.data; data];
+    end
 end
 end

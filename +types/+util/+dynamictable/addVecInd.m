@@ -4,37 +4,28 @@ validateattributes(colName, {'char'}, {'scalartext'});
 vecIndName = [colName '_index']; % arbitrary convention of appending '_index' to data column names
 
 if isprop(DynamicTable, colName)
-    vecTarget = types.untyped.ObjectView(DynamicTable.(colName));
+    VecData = DynamicTable.(colName);
 else
-    vecTarget = types.untyped.ObjectView(DynamicTable.vectordata.get(colName));
+    VecData = DynamicTable.vectordata.get(colName);
 end
-oldDataHeight = 0;
-if isKey(DynamicTable.vectordata, colName) || isprop(DynamicTable, colName)
-    if isprop(DynamicTable, colName)
-        VecData = DynamicTable.(colName);
-    else
-        VecData = DynamicTable.vectordata.get(colName);
-    end
-    
-    if ~isempty(VecData)
-        if isa(VecData.data, 'types.untyped.DataPipe')
-            oldDataHeight = VecData.data.offset;
-        else
-            oldDataHeight = size(VecData.data, 1);
-        end
-    end
+
+if isa(VecData.data, 'types.untyped.DataPipe')
+    oldDataHeight = VecData.data.offset;
+else
+    oldDataHeight = size(VecData.data, 1);
 end
 
 % we presume that if data already existed in the vectordata, then
 % it was never a ragged array and thus its elements corresponded
 % directly to each row index.
+vecView = types.untyped.ObjectView(VecData);
 if 8 == exist('types.hdmf_common.VectorIndex', 'class')
     VecIndex = types.hdmf_common.VectorIndex(...
-    'target', vecTarget,...
+    'target', vecView,...
     'data', (0:(oldDataHeight-1)) .');
 else
     VecIndex = types.core.VectorIndex(...
-    'target', vecTarget,...
+    'target', vecView,...
     'data', (0:(oldDataHeight-1)) .');
 end
 
