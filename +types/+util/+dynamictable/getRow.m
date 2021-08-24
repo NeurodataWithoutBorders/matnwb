@@ -32,74 +32,59 @@ end
 for i = 1:length(columns)
     cn = columns{i};
     
-    indexNames = {};
-    columnName = cn;
+    indexNames = {cn};
     while true
-        indexName = types.util.dynamictable.getIndex(DynamicTable, columnName);
-        if isempty(indexName)
+        name = types.util.dynamictable.getIndex(DynamicTable, indexNames{end});
+        if isempty(name)
             break;
         end
-        indexNames{end+1} = indexName;
-        columnName = indexName;
-    end
-
-    if isprop(DynamicTable, cn)
-        VectorData = DynamicTable.(cn);
-    else
-        VectorData = DynamicTable.vectordata.get(cn);
+        indexNames{end+1} = name;
     end
     
-    colInd = ind;
-    selectionLengths = cell(size(indexNames));
-    for iNames = length(indexNames):-1:1
-        indMap = getIndexInd(DynamicTable, indexNames{iNames}, colInd);
-        colInd = cell(1, length(ind)); % cell row because cell2mat must retain vector shape.
-        for j = 1:length(ind)
-            colInd{j} = indMap(ind(j));
-        end
-        selectionLengths{iNames} = cellfun('length', colInd);
-        colInd = cell2mat(colInd);
-    end
-    
-    if isa(VectorData.data, 'types.untyped.DataStub')...
-            || isa(VectorData.data, 'types.untyped.DataPipe')
-        row{i} = VectorData.data.load(colInd) .';
-    else
-        row{i} = VectorData.data(colInd);
-    end
-    
-    for iLengths = 1:length(selectionLengths)
-        row{i} = mat2cell(row{i}, selectionLengths{iLengths});
-    end
+    row{i} = select(DynamicTable, indexNames, ind);
 end
 subTable = table(row{:}, 'VariableNames', columns);
 end
 
-function indMap = getIndexInd(DynamicTable, indexName, matInd)
-if isprop(DynamicTable, indexName)
-    VectorIndex = DynamicTable.(indexName);
-elseif isprop(DynamicTable, 'vectorindex') % Schema version < 2.3.0
-    VectorIndex = DynamicTable.vectorindex.get(indexName);
+function selected = select(DynamicTable, colIndStack, matInd)
+% recursive function which consumes the colIndStack and produces a nested
+% cell array.
+column = colIndStack{end};
+if isprop(DynamicTable, column)
+    Vector = DynamicTable.(column);
+elseif isprop(DynamicTable, 'vectorindex') && DynamicTable.vectorindex.isKey(column) % Schema version < 2.3.0
+    Vector = DynamicTable.vectorindex.get(column);
 else
-    VectorIndex = DynamicTable.vectordata.get(indexName);
+    Vector = DynamicTable.vectordata.get(column);
 end
 
-matInd = unique(matInd);
-indexStartInd = matInd - 1;
-startInd = zeros(size(matInd));
-validIndexMask = indexStartInd > 0;
-if isa(VectorIndex.data, 'types.untyped.DataStub')...
-        || isa(VectorIndex.data, 'types.untyped.DataPipe')
-    stopInd = VectorIndex.data.load(matInd);
-    startInd(validIndexMask) = VectorIndex.data.load(indexStartInd(validIndexMask));
+if isa(Vector, 'types.hdmf_common.VectorIndex') || isa(Vector, 'types.core.VectorIndex')
+    indKeys = unique(matInd);
+    indexStartInd = indKeys - 1; % get previous index.
+    startInd = zeros(size(matInd), 'uint64'); % 0-index case.
+    validIndexMask = indexStartInd > 0;
+    if isa(Vector.data, 'types.untyped.DataStub') || isa(Vector.data, 'types.untyped.DataPipe')
+        stopInd = uint64(Vector.data.load(indKeys));
+        startInd(validIndexMask) = Vector.data.load(indexStartInd(validIndexMask));
+    else
+        stopInd = uint64(Vector.data(indKeys));
+        startInd(validIndexMask) = Vector.data(indexStartInd(validIndexMask));
+    end
+    startInd = startInd + 1; % 0-based to 1-based inclusive range.
+    selected = cell(length(matInd), 1);
+    for iSelection = 1:length(matInd)
+        keyInd = indKeys == matInd(iSelection);
+        selected{iSelection} = select(...
+            DynamicTable,...
+            colIndStack(1:(end-1)),...
+            startInd(keyInd):stopInd(keyInd));
+    end
 else
-    stopInd = VectorIndex.data(matInd);
-    startInd(validIndexMask) = VectorIndex.data(indexStartInd(validIndexMask));
-end
-startInd = startInd + 1; % Convert from 0-based indexing to 1-based indexing.
-indMap = containers.Map('KeyType', 'uint64', 'ValueType', 'any');
-for i = 1:length(startInd)
-    indMap(matInd(i)) = startInd(i):stopInd(i);
+    if isa(Vector.data, 'types.untyped.DataPipe')
+        selected = Vector.data.load(matInd);
+    else
+        selected = Vector.data(matInd);
+    end
 end
 end
 
