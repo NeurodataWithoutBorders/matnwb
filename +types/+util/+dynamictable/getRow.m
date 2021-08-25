@@ -80,10 +80,20 @@ if isa(Vector, 'types.hdmf_common.VectorIndex') || isa(Vector, 'types.core.Vecto
             startInd(keyInd):stopInd(keyInd));
     end
 else
-    if isa(Vector.data, 'types.untyped.DataPipe')
-        selected = Vector.data.load(matInd);
+    if isa(Vector.data, 'types.untyped.DataPipe') || isa(Vector.data, 'types.untyped.DataStub')
+        rank = length(Vector.data.dims);
     else
-        selected = Vector.data(matInd);
+        rank = length(size(matInd));
+    end
+    
+    selectInd = cell(1, rank);
+    selectInd{1} = matInd;
+    selectInd(2:end) = {':'};
+    
+    if isa(Vector.data, 'types.untyped.DataPipe')
+        selected = Vector.data.load(selectInd{:});
+    else
+        selected = Vector.data(selectInd{:});
     end
 end
 end
