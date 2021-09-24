@@ -48,40 +48,19 @@ classdef Attribute < handle
             else
                 obj.value = [];
                 obj.readonly = false;
+            end            
+
+            if isKey(source, 'dims')
+                obj.dimnames = source('dims');
+            else
+                obj.dimnames = {obj.name};
             end
             
-            boundsKey = 'dims';
-            shapeKey = 'shape';
-            if isKey(source, shapeKey) && isKey(source, boundsKey)
-                shape = source(shapeKey);
-                obj.dimnames = source(boundsKey);
-                obj.shape = file.formatShape(shape);
-                if iscell(obj.shape)
-                    if ~isempty(obj.shape) && iscell(obj.shape{1})
-                        obj.scalar = true(size(obj.shape));
-                        for i = 1:length(obj.shape)
-                            for j = 1:length(obj.shape{i})
-                                if isinf(obj.shape{i}{j})
-                                    obj.scalar(i) = false;
-                                    break;
-                                end
-                            end
-                        end
-                    else
-                        obj.scalar = true;
-                        for i = 1:length(obj.shape)
-                            if isinf(obj.shape{i})
-                                obj.scalar = false;
-                                break;
-                            end
-                        end
-                    end
-                else
-                    obj.scalar = isinf(obj.shape);
-                end
+            if isKey(source, 'shape')
+                obj.shape = file.formatShape(source('shape'));
+                obj.scalar = file.isShapeScalar(obj.shape);
             else
                 obj.shape = 1;
-                obj.dimnames = {obj.name};
             end
             
             obj.dtype = file.mapType(source('dtype'));
