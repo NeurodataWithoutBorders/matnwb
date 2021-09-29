@@ -145,14 +145,14 @@ elseif isa(prop, 'file.Link') || isa(prop, 'file.Group') ||...
     fde = ['refs = obj.' name '.export(fid, ' fullpath ', refs);'];
 elseif isa(prop, 'file.Dataset') %untyped dataset
     options = {};
-    if ~prop.scalar
-        options = [options {'''forceArray'''}];
-    end
     
     % special case due to unique behavior of file_create_date
     if strcmp(name, 'file_create_date')
-        options = [options {'''forceChunking'''}];
+        options = [options {'''forceChunking''', '''forceArray'''}];
+    elseif ~prop.scalar
+        options = [options {'''forceArray'''}];
     end
+        
     
     % untyped compound
     if isstruct(prop.dtype)
