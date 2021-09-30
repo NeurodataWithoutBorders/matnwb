@@ -131,15 +131,8 @@ classdef (Sealed) DataStub < handle
             %   MATLAB, not HDF5 for this function.
             assert(length(varargin) <= obj.ndims, 'NWB:DataStub:Load:TooManyDimensions',...
                 'Too many dimensions specified (got %d, expected %d)', length(varargin), obj.ndims);
-            dims = obj.dims;
-            for i = 1:length(varargin)
-                ind = varargin{i};
-                if ischar(ind) || isempty(ind)
-                    continue;
-                end
-                validateattributes(ind, {'numeric'}, {'vector', '<=', dims(i)});
-            end
-            shapes = io.space.segmentSelection(varargin, dims);
+            dims = obj.dims; %#ok<PROPLC>
+            shapes = io.space.segmentSelection(varargin, dims); %#ok<PROPLC>
             
             sid = obj.get_space();
             [readSid, memSid] = io.space.getReadSpace(shapes, sid);
@@ -153,7 +146,7 @@ classdef (Sealed) DataStub < handle
             H5F.close(fid);
             H5S.close(memSid);
             
-            expectedSize = dims;
+            expectedSize = dims; %#ok<PROPLC>
             for i = 1:length(varargin)
                 if ~ischar(varargin{i})
                     expectedSize(i) = length(varargin{i});
@@ -164,7 +157,7 @@ classdef (Sealed) DataStub < handle
                 % dangling ':' where leftover dimensions are folded into
                 % the last selection.
                 selDimInd = length(varargin);
-                expectedSize = [expectedSize(1:(selDimInd-1)) prod(dims(selDimInd:end))];
+                expectedSize = [expectedSize(1:(selDimInd-1)) prod(dims(selDimInd:end))]; %#ok<PROPLC>
             else
                 expectedSize = expectedSize(1:length(varargin));
             end
@@ -176,7 +169,7 @@ classdef (Sealed) DataStub < handle
             selections = varargin;
             openSelInd = find(cellfun('isclass', selections, 'char'));
             for i = 1:length(openSelInd)
-                selections{i} = 1:dims(i);
+                selections{i} = 1:dims(i); %#ok<PROPLC>
             end
             data = reorderLoadedData(data, selections);
             data = reshape(data, expectedSize);
