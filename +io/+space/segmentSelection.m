@@ -1,18 +1,26 @@
 function shapes = segmentSelection(selections, dims)
 %SEGMENTSELECTION Given a cell array of 1-indexed indices along with a vector of
 %bounds, returns a cell array of io.space.Shape objects indicating the
-%selectsion are optimally segmented. This is for optimally selecting a
+%selections which are optimally segmented. This is for optimally selecting a
 %dataset given a set of MATLAB indices.
 validateattributes(dims, {'numeric'}, {'vector', 'nonnegative'});
 validateattributes(selections, {'cell'}, {'vector', 'nonempty'});
+
+rank = length(dims);
+if isscalar(selections) && ~ischar(selections{1}) && 1 < rank
+    % single-rank selection mode.
+    newSelections = cell(1, rank);
+    [newSelections{:}] = ind2sub(dims, selections{1});
+    selections = newSelections;
+end
+
 for i = 1:length(selections)
     if ischar(selections{i})
         continue; % if ':' or some other char, the entire dimension is selected.
     end
-    validateattributes(selections{i}, {'numeric'}, {'nonnegative', '<=', dims(i)});
+    validateattributes(selections{i}, {'numeric'}, {'positive', '<=', dims(i)});
 end
 
-rank = length(dims);
 shapes = cell(1, rank); % cell array of cell arrays of shapes
 isDanglingGroup = ischar(selections{end});
 for i = 1:rank
@@ -21,8 +29,7 @@ for i = 1:rank
     elseif (i > length(selections) && isDanglingGroup)...
             || ischar(selections{i})
         % select the whole dimension
-        % dims(i) - 1 because block represents 0-indexed
-        % inclusive stop. The Block.length == dims(i)
+        % The Block.length == dims(i)
         shapes{i} = {io.space.shape.Block('stop', dims(i))};
     else
         % break the selection into range/point pieces
