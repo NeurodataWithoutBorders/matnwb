@@ -9,7 +9,8 @@ end
 
 function setup(testCase)
 testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
-generateCore();
+generateCore('savedir', '.');
+rehash();
 end
 
 %TODO rewrite namespace instantiation check
@@ -37,7 +38,7 @@ file = NwbFile('identifier', 'st', 'session_description', 'smokeTest', ...
     'timestamps_reference_time', datetime);
 
 nwbExport(file, 'epoch.nwb');
-readFile = nwbRead('epoch.nwb');
+readFile = nwbRead('epoch.nwb', 'ignorecache');
 % testCase.verifyEqual(testCase, readFile, file, ...
 %     'Could not write and then read a simple file');
 tests.util.verifyContainerEqual(testCase, readFile, file);

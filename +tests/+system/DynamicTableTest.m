@@ -44,7 +44,7 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
         function getRowTest(testCase)
             filename = ['MatNWB.' testCase.className() '.testGetRow.nwb'];
             nwbExport(testCase.file, filename);
-            ActualFile = nwbRead(filename);
+            ActualFile = nwbRead(filename, 'ignorecache');
             ActualTable = ActualFile.intervals_trials;
             ExpectedTable = testCase.file.intervals_trials;
             testCase.verifyEqual(ExpectedTable.getRow(5), ActualTable.getRow(5));
