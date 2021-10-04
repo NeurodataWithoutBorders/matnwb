@@ -16,20 +16,39 @@ function generateExtension(varargin)
 %      generateExtension('schema\myext\myextension.namespace.yaml', 'schema\myext2\myext2.namespace.yaml');
 %
 %   See also GENERATECORE
-for i = 1:length(varargin)
-    source = varargin{i};
-    validateattributes(source, {'char', 'string'}, {'scalartext'});
-    
+
+assert(iscellstr(varargin),...
+    'NWB:GenerateExtension:InvalidArguments',...
+    'Must be a cell array of strings.'); %#ok<ISCLSTR>
+
+p = inputParser;
+addParameter(p,...
+    'savedir', '',...
+    @(x)validateattributes(x, {'char', 'string'}, {'scalartext'}));
+parse(p, varargin{:});
+saveDir = p.Results.savedir;
+
+if isempty(saveDir)
+    sourceList = varargin;
+else
+    paramInd = strcmp(varargin, saveDir);
+    paramInd(2:end) = paramInd(2:end) | paramInd(1:(end-1));
+    sourceList = varargin(~paramInd);
+end
+
+for i = 1:length(sourceList)
+    source = sourceList{i};
     [localpath, ~, ~] = fileparts(source);
     assert(2 == exist(source, 'file'),...
-        'NWB:GenerateExtension:FileNotFound', 'Path to file `%s` could not be found.', source);
+        'NWB:GenerateExtension:FileNotFound',...
+    'Path to file `%s` could not be found.', source);
     fid = fopen(source);
     namespaceText = fread(fid, '*char') .';
     fclose(fid);
     
     Namespace = spec.generate(namespaceText, localpath);
     spec.saveCache(Namespace);
-    file.writeNamespace(Namespace.name);
+    file.writeNamespace(Namespace.name, 'savedir', saveDir);
     rehash();
 end
 end

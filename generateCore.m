@@ -1,4 +1,4 @@
-function generateCore(version)
+function generateCore(version, varargin)
 % GENERATECORE Generate Matlab classes from NWB core schema files
 %   GENERATECORE()  Generate classes (Matlab m-files) from the
 %   NWB:N core namespace file. By default, generates off of the most recent nwb-schema
@@ -26,8 +26,7 @@ else
     validateattributes(version, {'char'}, {'scalartext'});
 end
 
-matNwbLocation = misc.getMatnwbDir();
-schemaPath = fullfile(matNwbLocation, 'nwb-schema', version);
+schemaPath = fullfile(misc.getMatnwbDir(), 'nwb-schema', version);
 corePath = fullfile(schemaPath, 'core', 'nwb.namespace.yaml');
 commonPath = fullfile(schemaPath,...
     'hdmf-common-schema', ...
@@ -40,5 +39,5 @@ assert(2 == exist(corePath, 'file'),...
 if 2 == exist(commonPath, 'file')
     generateExtension(commonPath);
 end
-generateExtension(corePath);
+generateExtension(corePath, varargin{:});
 end

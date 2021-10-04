@@ -15,8 +15,14 @@ function nwb = nwbRead(filename, varargin)
 %    nwb = nwbRead('data.nwb', 
 %
 %  See also GENERATECORE, GENERATEEXTENSION, NWBFILE, NWBEXPORT
-ignoreCache = ~isempty(varargin) && ischar(varargin{1}) &&...
-    strcmp('ignorecache', varargin{1});
+p = inputParser;
+addParameter(p, 'ignorecache', false, @(b)islogical(b));
+addParameter(p, 'savedir', '',...
+    @(s)validateattributes(s, {'char', 'string'}, {'scalartext'}));
+parse(p, varargin{:});
+ignoreCache = p.Results.ignorecache;
+saveDir = p.Results.savedir;
+
 Blacklist = struct(...
     'attributes', {{'.specloc', 'object_id'}},...
     'groups', {{}});
@@ -30,14 +36,14 @@ end
 if ~ignoreCache
     if isempty(specLocation)
         try
-            generateCore(util.getSchemaVersion(filename));
+            generateCore(util.getSchemaVersion(filename), 'savedir', saveDir);
         catch ME
             if ~strcmp(ME.identifier, 'NWB:GenerateCore:MissingCoreSchema')
                 rethrow(ME);
             end
         end
     else
-        generateSpec(filename, h5info(filename, specLocation));
+        generateSpec(filename, h5info(filename, specLocation), 'savedir', saveDir);
     end
     rehash();
 end
@@ -63,7 +69,7 @@ end
 H5F.close(fid);
 end
 
-function generateSpec(filename, specinfo)
+function generateSpec(filename, specinfo, varargin)
 specNames = cell(size(specinfo.Groups));
 fid = H5F.open(filename);
 for i=1:length(specinfo.Groups)
@@ -93,7 +99,7 @@ for i=1:length(specinfo.Groups)
     end
     
     Namespace = spec.generate(namespaceText, schemaMap);
-    spec.saveCache(Namespace);
+    spec.saveCache(Namespace, varargin{:});
     specNames{i} = Namespace.name;
 end
 H5F.close(fid);
