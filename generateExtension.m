@@ -21,19 +21,17 @@ assert(iscellstr(varargin),...
     'NWB:GenerateExtension:InvalidArguments',...
     'Must be a cell array of strings.'); %#ok<ISCLSTR>
 
-p = inputParser;
-addParameter(p,...
-    'savedir', '',...
-    @(x)validateattributes(x, {'char', 'string'}, {'scalartext'}));
-parse(p, varargin{:});
-saveDir = p.Results.savedir;
-
-if isempty(saveDir)
-    sourceList = varargin;
+saveDirMask = strcmp(varargin, 'savedir');
+if any(saveDirMask)
+    assert(~saveDirMask(end),...
+        'NWB:GenerateExtenion:InvalidParameter',...
+        'savedir must be paired with the desired save directory.');
+    saveDir = varargin{find(saveDirMask, 1, 'last') + 1};
+    saveDirParametersMask = saveDirMask | circshift(saveDirMask, 1);
+    sourceList = varargin(~saveDirParametersMask);
 else
-    paramInd = strcmp(varargin, saveDir);
-    paramInd(2:end) = paramInd(2:end) | paramInd(1:(end-1));
-    sourceList = varargin(~paramInd);
+    saveDir = '';
+    sourceList = varargin;
 end
 
 for i = 1:length(sourceList)
@@ -48,7 +46,7 @@ for i = 1:length(sourceList)
     
     Namespace = spec.generate(namespaceText, localpath);
     spec.saveCache(Namespace);
-    file.writeNamespace(Namespace.name, 'savedir', saveDir);
+    file.writeNamespace(Namespace.name, saveDir);
     rehash();
 end
 end

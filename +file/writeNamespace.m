@@ -3,13 +3,14 @@ function writeNamespace(namespaceName, saveDir)
 Namespace = schemes.loadNamespace(namespaceName);
 
 if isempty(saveDir)
-    saveDir = fullfile(misc.getMatnwbDir(), '+types', ['+' misc.str2validName(Namespace.Name)]);
+    saveDir = misc.getMatnwbDir();
 end
 
-if exist(saveDir, 'dir') == 7
-    rmdir(saveDir, 's');
+saveDir = fullfile(saveDir, '+types', ['+' misc.str2validName(Namespace.name)]);
+
+if 7 ~= exist(saveDir, 'dir')
+    mkdir(saveDir);
 end
-mkdir(saveDir);
 
 classes = keys(Namespace.registry);
 pregenerated = containers.Map; %generated nodes and props for faster dependency resolution
