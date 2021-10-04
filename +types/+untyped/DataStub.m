@@ -132,10 +132,28 @@ classdef (Sealed) DataStub < handle
             assert(length(varargin) <= obj.ndims, 'NWB:DataStub:Load:TooManyDimensions',...
                 'Too many dimensions specified (got %d, expected %d)', length(varargin), obj.ndims);
             dims = obj.dims; %#ok<PROPLC>
-            shapes = io.space.segmentSelection(varargin, dims); %#ok<PROPLC>
-            
             sid = obj.get_space();
-            [readSid, memSid] = io.space.getReadSpace(shapes, sid);
+            
+            if isscalar(varargin) && ~ischar(varargin{1})
+                orderedSelection = unique(varargin{1});
+                
+                if iscolumn(orderedSelection)
+                    selectionDims = length(orderedSelection);
+                    orderedSelection = orderedSelection .';
+                else
+                    selectionDims = fliplr(size(orderedSelection));
+                end
+                
+                points = cell(length(dims), 1); %#ok<PROPLC>
+                [points{:}] = ind2sub(dims, orderedSelection); %#ok<PROPLC>
+                readSid = H5S.copy(sid);
+                H5S.select_none(readSid);
+                H5S.select_elements(readSid, 'H5S_SELECT_SET', cell2mat(flipud(points)) - 1);
+                memSid = H5S.create_simple(length(selectionDims), selectionDims, selectionDims);
+            else
+                shapes = io.space.segmentSelection(varargin, dims); %#ok<PROPLC>
+                [readSid, memSid] = io.space.getReadSpace(shapes, sid);
+            end
             H5S.close(sid);
             
             % read data.

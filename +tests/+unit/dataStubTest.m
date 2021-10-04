@@ -64,6 +64,9 @@ testCase.verifyEqual(stub(primeInd, 2:4, :), data(primeInd, 2:4, :));
 testCase.verifyEqual(stub(primeInd, :, 1), data(primeInd, :, 1));
 testCase.verifyEqual(stub(primeInd, [1 2 5]), data(primeInd, [1 2 5]));
 testCase.verifyEqual(stub([1 25], [1 5], [1 4], [1 2], [1 5]), data([1 25], [1 5], [1 4], [1 2], [1 5]));
+overflowPrimeInd = primes(31);
+testCase.verifyEqual(stub(overflowPrimeInd), stub(ind2sub(stub.dims, overflowPrimeInd)));
+testCase.verifyEqual(stub(overflowPrimeInd), data(overflowPrimeInd));
 
 % test duplicate indices
 testCase.verifyEqual(stub([1 1 1 1]), data([1 1 1 1]));
