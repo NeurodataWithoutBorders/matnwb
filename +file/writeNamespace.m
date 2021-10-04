@@ -2,7 +2,7 @@ function writeNamespace(namespaceName, saveDir)
 %check/load dependency namespaces
 Namespace = schemes.loadNamespace(namespaceName);
 
-if isempty(saveDir)
+if nargin < 2 || isempty(saveDir)
     saveDir = misc.getMatnwbDir();
 end
 
