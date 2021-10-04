@@ -12,16 +12,24 @@ function nwb = nwbRead(filename, varargin)
 %
 %  Example:
 %    nwb = nwbRead('data.nwb');
-%    nwb = nwbRead('data.nwb', 
+%    nwb = nwbRead('data.nwb', 'ignorecache');
+%    nwb = nwbRead('data.nwb', 'savedir', '.');
 %
 %  See also GENERATECORE, GENERATEEXTENSION, NWBFILE, NWBEXPORT
-p = inputParser;
-addParameter(p, 'ignorecache', false, @(b)islogical(b));
-addParameter(p, 'savedir', '',...
-    @(s)validateattributes(s, {'char', 'string'}, {'scalartext'}));
-parse(p, varargin{:});
-ignoreCache = p.Results.ignorecache;
-saveDir = p.Results.savedir;
+
+assert(iscellstr(varargin), 'NWB:NWBRead:InvalidParameters',...
+    'Optional parameters must all be character arrays.'); %#ok<ISCLSTR>
+
+ignoreCache = any(strcmpi(varargin, 'ignorecache'));
+
+saveDirMask = strcmpi(varargin, 'savedir');
+assert(~saveDirMask(end), 'NWB:NWBRead:InvalidSaveDir',...
+    '`savedir` is a key value pair requiring a directory string as a value.');
+if any(saveDirMask)
+    saveDir = find(saveDirMask, 1, 'latest') + 1;
+else
+    saveDir = '';
+end
 
 Blacklist = struct(...
     'attributes', {{'.specloc', 'object_id'}},...
