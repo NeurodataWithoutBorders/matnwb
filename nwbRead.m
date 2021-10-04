@@ -26,7 +26,7 @@ saveDirMask = strcmpi(varargin, 'savedir');
 assert(~saveDirMask(end), 'NWB:NWBRead:InvalidSaveDir',...
     '`savedir` is a key value pair requiring a directory string as a value.');
 if any(saveDirMask)
-    saveDir = find(saveDirMask, 1, 'last') + 1;
+    saveDir = varargin{find(saveDirMask, 1, 'last') + 1};
 else
     saveDir = '';
 end
