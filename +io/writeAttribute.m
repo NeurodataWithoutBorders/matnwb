@@ -12,7 +12,8 @@ catch ME
     %when a dataset is copied over, it also copies all attributes with it.
     %So we have to open the Attribute for overwriting instead.
     % this may also happen if the attribute is a reference
-    if contains(ME.message, 'H5A_create    attribute already exists')
+    if contains(ME.message, 'H5A__create    attribute already exists')...
+        || contains(ME.message, 'H5A_create    attribute already exists')
         H5A.delete(oid, name);
         id = H5A.create(oid, name, tid, sid, 'H5P_DEFAULT');
     else
