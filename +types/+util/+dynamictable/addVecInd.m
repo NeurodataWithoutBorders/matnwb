@@ -22,11 +22,11 @@ vecView = types.untyped.ObjectView(VecData);
 if 8 == exist('types.hdmf_common.VectorIndex', 'class')
     VecIndex = types.hdmf_common.VectorIndex(...
     'target', vecView,...
-    'data', (0:(oldDataHeight-1)) .');
+    'data', (1:oldDataHeight) .');
 else
     VecIndex = types.core.VectorIndex(...
     'target', vecView,...
-    'data', (0:(oldDataHeight-1)) .');
+    'data', (1:oldDataHeight) .');
 end
 
 if isprop(VecIndex, 'description')

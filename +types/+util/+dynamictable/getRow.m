@@ -59,25 +59,29 @@ else
 end
 
 if isa(Vector, 'types.hdmf_common.VectorIndex') || isa(Vector, 'types.core.VectorIndex')
-    indKeys = unique(matInd);
-    indexStartInd = indKeys - 1; % get previous index.
-    startInd = zeros(size(matInd), 'uint64'); % 0-index case.
-    validIndexMask = indexStartInd > 0;
     if isa(Vector.data, 'types.untyped.DataStub') || isa(Vector.data, 'types.untyped.DataPipe')
-        stopInd = uint64(Vector.data.load(indKeys));
-        startInd(validIndexMask) = Vector.data.load(indexStartInd(validIndexMask));
+        stopInds = uint64(Vector.data.load(matInd));
     else
-        stopInd = uint64(Vector.data(indKeys));
-        startInd(validIndexMask) = Vector.data(indexStartInd(validIndexMask));
+        stopInds = uint64(Vector.data(matInd));
     end
-    startInd = startInd + 1; % 0-based to 1-based inclusive range.
+
+    startIndInd = matInd - 1;
+    zeroMask = startIndInd == 0;
+    startInds = zeros(size(startIndInd));
+    if isa(Vector.data, 'types.untyped.DataStub') || isa(Vector.data, 'types.untyped.DataPipe')
+        startInds(~zeroMask) = Vector.data.load(startIndInd(~zeroMask));
+    else
+        startInds(~zeroMask) = Vector.data(startIndInd(~zeroMask));
+    end
+    startInds = startInds + 1;
+    
     selected = cell(length(matInd), 1);
-    for iSelection = 1:length(matInd)
-        keyInd = indKeys == matInd(iSelection);
-        selected{iSelection} = select(...
-            DynamicTable,...
+    for iRange = 1:length(matInd)
+        startInd = startInds(iRange);
+        stopInd = stopInds(iRange);
+        selected{iRange} = select(DynamicTable,...
             colIndStack(1:(end-1)),...
-            startInd(keyInd):stopInd(keyInd));
+            startInd:stopInd);
     end
 else
     if isa(Vector.data, 'types.untyped.DataPipe') || isa(Vector.data, 'types.untyped.DataStub')
