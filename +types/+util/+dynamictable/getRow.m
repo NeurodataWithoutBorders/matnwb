@@ -31,7 +31,7 @@ end
 
 for i = 1:length(columns)
     cn = columns{i};
-    
+
     indexNames = {cn};
     while true
         name = types.util.dynamictable.getIndex(DynamicTable, indexNames{end});
@@ -40,7 +40,7 @@ for i = 1:length(columns)
         end
         indexNames{end+1} = name;
     end
-    
+
     row{i} = select(DynamicTable, indexNames, ind);
 end
 subTable = table(row{:}, 'VariableNames', columns);
@@ -58,7 +58,26 @@ else
     Vector = DynamicTable.vectordata.get(column);
 end
 
-if isa(Vector, 'types.hdmf_common.VectorIndex') || isa(Vector, 'types.core.VectorIndex')
+if isscalar(colIndStack)
+    if isa(Vector.data, 'types.untyped.DataPipe') || isa(Vector.data, 'types.untyped.DataStub')
+        rank = length(Vector.data.dims);
+    else
+        rank = length(size(matInd));
+    end
+
+    selectInd = cell(1, rank);
+    selectInd{1} = matInd;
+    selectInd(2:end) = {':'};
+
+    if isa(Vector.data, 'types.untyped.DataPipe')
+        selected = Vector.data.load(selectInd{:});
+    else
+        selected = Vector.data(selectInd{:});
+    end
+else
+    assert(isa(Vector, 'types.hdmf_common.VectorIndex') || isa(Vector, 'types.core.VectorIndex'),...
+        'NWB:DynamicTable:GetRow:InternalError',...
+        'Internal VectorIndex Stack is not using VectorIndex objects!');
     if isa(Vector.data, 'types.untyped.DataStub') || isa(Vector.data, 'types.untyped.DataPipe')
         stopInds = uint64(Vector.data.load(matInd));
     else
@@ -74,7 +93,7 @@ if isa(Vector, 'types.hdmf_common.VectorIndex') || isa(Vector, 'types.core.Vecto
         startInds(~zeroMask) = Vector.data(startIndInd(~zeroMask));
     end
     startInds = startInds + 1;
-    
+
     selected = cell(length(matInd), 1);
     for iRange = 1:length(matInd)
         startInd = startInds(iRange);
@@ -82,22 +101,6 @@ if isa(Vector, 'types.hdmf_common.VectorIndex') || isa(Vector, 'types.core.Vecto
         selected{iRange} = select(DynamicTable,...
             colIndStack(1:(end-1)),...
             startInd:stopInd);
-    end
-else
-    if isa(Vector.data, 'types.untyped.DataPipe') || isa(Vector.data, 'types.untyped.DataStub')
-        rank = length(Vector.data.dims);
-    else
-        rank = length(size(matInd));
-    end
-    
-    selectInd = cell(1, rank);
-    selectInd{1} = matInd;
-    selectInd(2:end) = {':'};
-    
-    if isa(Vector.data, 'types.untyped.DataPipe')
-        selected = Vector.data.load(selectInd{:});
-    else
-        selected = Vector.data(selectInd{:});
     end
 end
 end
