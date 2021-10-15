@@ -51,8 +51,3 @@ else
     types.util.dynamictable.addVarargRow(DynamicTable, varargin{:});
 end
 end
-
-
-
-
-
