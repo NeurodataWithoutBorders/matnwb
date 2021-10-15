@@ -63,7 +63,7 @@ if VectorIndex.target.has_path()
 elseif isprop(DynamicTable, column)
     tf = VectorIndex.target == DynamicTable.(column);
 else
-    tf = VectorIndex.target == DynamicTable.vectordata.get(column);
+    tf = VectorIndex.target.target == DynamicTable.vectordata.get(column);
 end
 end
 
