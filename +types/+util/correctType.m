@@ -5,41 +5,71 @@ function val = correctType(val, type)
 
 %check different types and correct
 
-if startsWith(type, 'float')
-    val = double(val);
-elseif startsWith(type, 'int') || startsWith(type, 'uint')
-    if strcmp(type, 'int')
-        val = int64(val);
-    elseif strcmp(type, 'uint')
-        val = uint64(val);
-    else
-        val = feval(fitIntType(val, type), val);
-    end
-elseif strcmp(type, 'numeric') && ~isnumeric(val)
-    val = double(val);
-elseif strcmp(type, 'bool')
+if any(strcmp(type, {'logical', 'bool'}))
+    assert(islogical(val) || isnumeric(val),...
+        'NWB:CorrectType:NonLogical',...
+        'Value of type `%s` could not be coerced into a logical value.', class(val));
     val = logical(val);
-end
+    return;
 end
 
-function fittingIntType = fitIntType(val, minType)
-intSizeScale = [8 16 32 64];
-typeMatch = regexp(minType, '(u?int)(\d+)', 'once', 'tokens');
+assert(isnumeric(val), 'NWB:CorrectType:NonNumericType',...
+    'Expected type to be numeric. Got `%s`', class(val));
+if strcmp(type, 'numeric')
+    return;
+end
+
+if any(strcmp(type, {'single', 'float32', 'double', 'float64'}))
+    val = double(val);
+    return;
+end
+
+assert(isempty(val) || isinteger(val) || all(0 == abs(val - fix(val))),...
+    'NWB:CorrectType:FloatingPointTruncation',...
+    'Converting to `%s` would have dropped floating point values.',...
+    type);
+
+maxVal = max(val, [], 'all');
+minVal = min(val, [], 'all');
+
+if ~isinteger(val)
+    if startsWith(type, 'uint')
+        assert(0 <= minVal && maxVal <= double(intmax('uint64')),...
+            'NWB:CorrectType:FloatingPointOutOfRange',...
+            'Real value too large to fit into uint64');
+        val = uint64(val);
+    else
+        assert(minVal >= double(intmin('int64'))...
+            && maxVal <= double(intmax('int64')),...
+            'NWB:CorrectType:FloatingPointOutOfRange',...
+            'Real value too large to fit into int64');
+        val = int64(val);
+    end
+end
+
+if strcmp(type, 'uint')
+    type = 'uint8';
+elseif strcmp(type, 'int')
+    type = 'int8';
+end
+
+typeMatch = regexp(type, '(u?int)(\d+)', 'once', 'tokens');
 prefix = typeMatch{1};
 minSize = str2double(typeMatch{2});
 
-minVal = min(val(:));
-maxVal = max(val(:));
-minSizeMask = intSizeScale == minSize;
-assert(any(minSizeMask), 'NWB:CorrectType:InvalidIntSize',...
-    'Minimum integer size `%s` not supported.', minType);
-for i = find(minSizeMask, 1):length(intSizeScale)
-    fittingIntType = sprintf('%s%d', prefix, intSizeScale(i));
-    if all(intmin(fittingIntType) <= minVal) && all(intmax(fittingIntType) >= maxVal)
-        return;
+assert(startsWith(class(val), prefix),...
+    'NWB:CorrectType:IntegerSignage',...
+    'Value must be of signage `%s`', prefix);
+
+classMatch = regexp(class(val), 'u?int(\d+)', 'once', 'tokens');
+classSize = str2double(classMatch{1});
+
+intSizeScale = [8 16 32 64];
+for iSize = find(minSize == intSizeScale, 1):find(classSize == intSizeScale, 1)
+    sizeType = sprintf('%s%d', prefix, intSizeScale(iSize));
+    if minVal >= double(intmin(sizeType)) && maxVal <= double(intmax(sizeType))
+        val = cast(val, sizeType);
+        break;
     end
 end
-
-error('NWB:CorrectType:UnfittableInt', 'Could not fit integer into range %d-%d',...
-    minVal, maxVal);
 end

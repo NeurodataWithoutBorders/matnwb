@@ -1,7 +1,12 @@
 function addRawData(DynamicTable, column, data)
 %ADDRAWDATA Internal method for adding data to DynamicTable given column
-% name, data and an optional index.
+% name and data. Indices are determined based on data format and available
+% indices.
 validateattributes(column, {'char'}, {'scalartext'});
+
+if size(data, 1) > 1
+    data = {data};
+end
 
 % Don't set the data until after indices are updated.
 if 8 == exist('types.hdmf_common.VectorData', 'class')
@@ -24,41 +29,88 @@ else
     DynamicTable.vectordata.set(column, VecData);
 end
 
-index = types.util.dynamictable.getIndex(DynamicTable, column);
-if size(data, 1) > 1 || ~isempty(index)
+% grab all available indices for column.
+indexChain = {column};
+while true
+    index = types.util.dynamictable.getIndex(DynamicTable, indexChain{end});
     if isempty(index)
-        index = types.util.dynamictable.addVecInd(DynamicTable, column);
+        break;
     end
-    
-    if isprop(DynamicTable, index)
-        VecInd = DynamicTable.(index);
-    elseif isprop(DynamicTable, 'vectorindex') % Schema < 2.3.0
-        VecInd = DynamicTable.vectorindex.get(index);
-    else
-        VecInd = DynamicTable.vectordata.get(index);
+    indexChain{end+1} = index;
+end
+
+% find true nesting depth of column data.
+depth = getNestedDataDepth(data);
+
+for iVec = (length(indexChain)+1):depth
+    indexChain{iVec} = types.util.dynamictable.addVecInd(DynamicTable, indexChain{end});
+end
+
+for iVec = (depth+1):length(indexChain)
+    data = {data}; % wrap until the correct number of vector indices are satisfied.
+end
+
+nestedAdd(DynamicTable, indexChain, data);
+end
+
+function depth = getNestedDataDepth(data)
+depth = 1;
+subData = data;
+while iscell(subData) && ~iscellstr(subData)
+    depth = depth + 1;
+    subData = subData{1};
+end
+end
+
+function numEntries = nestedAdd(DynamicTable, indChain, data)
+name = indChain{end};
+numEntries = size(data, 1);
+
+if isprop(DynamicTable, name)
+    Vector = DynamicTable.(name);
+elseif isprop(DynamicTable, 'vectorindex') && DynamicTable.vectorindex.isKey(name)
+    Vector = DynamicTable.vectorindex.get(name);
+else
+    Vector = DynamicTable.vectordata.get(name);
+end
+
+if isa(Vector, 'types.hdmf_common.VectorIndex') || isa(Vector, 'types.core.VectorIndex')
+    elems = zeros(numEntries, 1);
+    for iEntry = 1:numEntries
+        elems(iEntry) = nestedAdd(DynamicTable, indChain(1:(end-1)), data{iEntry});
     end
     
     raggedOffset = 0;
-    if isa(VecInd.data, 'types.untyped.DataPipe') && 0 < VecInd.data.dims
-        raggedOffset = double(VecInd.data.load(VecInd.data.dims));
-    elseif ~isempty(VecInd.data)
-        raggedOffset = double(VecInd.data(end));
+    if isa(Vector.data, 'types.untyped.DataPipe')
+        if isa(Vector.data.internal, 'types.untyped.datapipe.BlueprintPipe')...
+                && ~isempty(Vector.data.internal.data)
+            raggedOffset = Vector.data.internal.data(end);
+        elseif isa(Vector.data.internal, 'types.untyped.datapipe.BoundPipe')...
+                && ~any(Vector.data.internal.stub.dims == 0)
+            raggedOffset = Vector.data.internal.stub(end);
+        end
+    elseif ~isempty(Vector.data)
+        raggedOffset = Vector.data(end);
     end
     
-    raggedValue = raggedOffset + size(data, 1);
-    if isa(VecInd.data, 'types.untyped.DataPipe')
-        VecInd.data.append(raggedValue);
+    data = double(raggedOffset) + cumsum(elems);
+    if isa(Vector.data, 'types.untyped.DataPipe')
+        Vector.data.append(data);
     else
-        VecInd.data = [double(VecInd.data); raggedValue];
+        % cast to double so the correct type shrinkwrap doesn't force-clamp
+        % values.
+        Vector.data = [double(Vector.data); data];
     end
-end
-
-if isa(VecData.data, 'types.untyped.DataPipe')
-    VecData.data.append(data);
 else
+    
     if ischar(data)
-        data = {data};
+        data = mat2cell(data, ones(size(data, 1), 1));
     end
-    VecData.data = [VecData.data; data];
+    
+    if isa(Vector.data, 'types.untyped.DataPipe')
+        Vector.data.append(data);
+    else
+        Vector.data = [Vector.data; data];
+    end
 end
 end

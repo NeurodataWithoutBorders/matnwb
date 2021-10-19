@@ -180,8 +180,22 @@ classdef (Sealed) DataStub < handle
                 expectedSize = expectedSize(1:length(varargin));
             end
             
-            if isscalar(expectedSize)
-                expectedSize = [1 expectedSize];
+            if isscalar(varargin) && isscalar(expectedSize)
+                % very special case where shape of the scalar indices determine the
+                % shape of the output data for some reason.
+                if 1 < sum(1 < dims) % is multi-dimensional data
+                    if isrow(varargin{1})
+                        expectedSize = [1 expectedSize];
+                    else
+                        expectedSize = [expectedSize 1];
+                    end
+                else
+                    if dims(1) == 1 % probably a row
+                        expectedSize = [1 expectedSize];
+                    else % column
+                        expectedSize = [expectedSize 1];
+                    end
+                end
             end
             
             selections = varargin;

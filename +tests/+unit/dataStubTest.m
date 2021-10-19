@@ -60,6 +60,8 @@ testCase.verifyEqual(stub(:, 1), data(:, 1));
 % test arbitrary indices
 primeInd = primes(25);
 testCase.verifyEqual(stub(primeInd), data(primeInd));
+% multidim scalar indices outputs data according to selection orientation.
+testCase.verifyEqual(stub(primeInd .'), data(primeInd .'));
 testCase.verifyEqual(stub(primeInd, 2:4, :), data(primeInd, 2:4, :));
 testCase.verifyEqual(stub(primeInd, :, 1), data(primeInd, :, 1));
 testCase.verifyEqual(stub(primeInd, [1 2 5]), data(primeInd, [1 2 5]));

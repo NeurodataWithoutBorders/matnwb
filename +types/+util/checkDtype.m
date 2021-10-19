@@ -108,14 +108,7 @@ else
                     name, type, class(val));
             end
         else
-            %all numeric types
-            try
-                val = types.util.correctType(val, type);
-            catch ME
-                error('NWB:CheckDType:CastError',...
-                    'Could not cast type `%s` to `%s` for property `%s`',...
-                    class(val), type, name);
-            end
+            val = types.util.correctType(val, type);
         end
     elseif strcmp(type, 'isodatetime')
         assert(ischar(val)...
