@@ -39,8 +39,8 @@ if ~isinteger(val)
             'Real value too large to fit into uint64');
         val = uint64(val);
     else
-        assert(minVal >= double(intmin('int64'))...
-            && maxVal <= double(intmax('int64')),...
+        assert(all(minVal >= double(intmin('int64')))...
+            && all(maxVal <= double(intmax('int64'))),...
             'NWB:CorrectType:FloatingPointOutOfRange',...
             'Real value too large to fit into int64');
         val = int64(val);
@@ -67,7 +67,7 @@ classSize = str2double(classMatch{1});
 intSizeScale = [8 16 32 64];
 for iSize = find(minSize == intSizeScale, 1):find(classSize == intSizeScale, 1)
     sizeType = sprintf('%s%d', prefix, intSizeScale(iSize));
-    if minVal >= double(intmin(sizeType)) && maxVal <= double(intmax(sizeType))
+    if all(minVal >= double(intmin(sizeType))) && all(maxVal <= double(intmax(sizeType)))
         val = cast(val, sizeType);
         break;
     end
