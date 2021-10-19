@@ -23,7 +23,7 @@ bounds = NaN(length(data), 1);
 for i = 1:length(data)
     bounds(i) = length(data{i});
 end
-bounds = int64(cumsum(bounds));
+bounds = uint64(cumsum(bounds));
 
 data = cell2mat(data)';
 
