@@ -59,7 +59,7 @@ else
 end
 
 if isscalar(colIndStack)
-    if isa(Vector.data, 'types.untyped.DataPipe') || isa(Vector.data, 'types.untyped.DataStub')
+    if isa(Vector.data, 'types.untyped.DataStub')
         rank = length(Vector.data.dims);
     else
         rank = length(size(matInd));
@@ -70,7 +70,7 @@ if isscalar(colIndStack)
     selectInd(2:end) = {':'};
 
     if isa(Vector.data, 'types.untyped.DataPipe')
-        selected = Vector.data.load(selectInd{:});
+        selected = Vector.data.load(matInd);
     else
         selected = Vector.data(selectInd{:});
     end
