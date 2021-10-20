@@ -23,6 +23,7 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
                 repmat({'TRUE'}, 100, 1),...
                 'VariableNames', {'id', 'start_time', 'stop_time', 'randomvalues', 'stringdata'}));
         end
+        
         function addExpandableContainer(~, file, start_array, stop_array, random_array, id_array)
             %create VectorData objects with DataPipe objects
             start_time_exp = types.hdmf_common.VectorData(...
@@ -61,14 +62,13 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
                 'stop_time', stop_time_exp,...
                 'randomvalues', random_exp,...
                 'id', ids_exp...
-            );
-            
+            );    
         end
         
         function c = getContainer(~, file)
             c = file.intervals_trials.vectordata.get('randomvalues');
         end
-        
+
         function appendContainer(testCase, file)
             container = testCase.getContainer(file);
             container.data = rand(1300, 2); % new random values.
@@ -120,6 +120,7 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
             testCase.verifyEqual(ExpectedTable.getRow([1153, 1217], 'useId', true),...
                 ActualTable.getRow([1153, 1217], 'useId', true));
         end
+        
         function ExpandableTableTest(testCase)
             %define data matrices
             nrows = 200;
@@ -171,7 +172,6 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
                 'columns', {'randomvalues'});
             testCase.verifyEqual(expectedData, actualData);
         end
-
     end
 end
 
