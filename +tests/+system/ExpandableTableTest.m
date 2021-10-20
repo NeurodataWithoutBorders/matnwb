@@ -54,30 +54,23 @@ classdef ExpandableTableTest < tests.system.NwbTestInterface
         function c = getContainer(~, file)
             c = file.intervals_trials.vectordata.get('randomvalues');
         end
-        function file = getDummyFile(~)
-                      %create data arrays
-            nrows = 100;
-            id = primes(2000) .';
-            id = id(1:nrows);
-            start_time_array = 1:nrows;
-            stop_time_array = start_time_array+1;
-            rng(1);%to be able replicate random values
-            random_val_array = rand(nrows,1);
-            
+        function file = getDummyFile(~,start_array,stop_array,random_array,id_array)
+ 
+
             %create VectorData objects with DataPipe objects
             start_time_exp = types.hdmf_common.VectorData(...
                 'description','start times',...
-                'data', start_time_array' ...
+                'data', start_array' ...
                 );
             stop_time_exp = types.hdmf_common.VectorData(...
                 'description','stop times',...
-                'data', stop_time_array' ...
+                'data', stop_array' ...
             );
             random_exp = types.hdmf_common.VectorData(...
                 'description','random data column',...
-                'data', random_val_array ...
+                'data', random_array ...
             );
-            ids_exp = types.hdmf_common.ElementIdentifiers('data', id...
+            ids_exp = types.hdmf_common.ElementIdentifiers('data', id_array...
                 );
             
             %create dummy file
@@ -109,18 +102,50 @@ classdef ExpandableTableTest < tests.system.NwbTestInterface
             readContainer = testCase.getContainer(readFile);
             tests.util.verifyContainerEqual(testCase, readContainer, writeContainer);
         end
-        function getRowsTest(testCase)
-            filename = ['MatNWB.' testCase.className() '.getRowsTest.nwb'];
+
+        function getRowsExpandableTest(testCase)
+            %create arrays for non-expandable table
+            nrows = 200;
+            id = primes(2000) .';
+            id = id(1:nrows);
+            start_time_array = 1:nrows;
+            stop_time_array = start_time_array+1;
+            rng(1);%to be able replicate random values
+            random_val_array = rand(nrows,1);
+            dummyFile = testCase.getDummyFile(start_time_array,stop_time_array,random_val_array,id);
+
+            %export and read-in expandable table
+            filename = ['MatNWB.' testCase.className() '.getRowsExpandableTest.nwb'];
             nwbExport(testCase.file, filename);
             readFile = nwbRead(filename);
-            readTable = readFile.intervals_trials;
-            readData = readTable.getRow(55, 'columns', {'randomvalues'});
-            dummyFile = testCase.getDummyFile();
-            expectedTable = dummyFile.intervals_trials;
-            expectedData = expectedTable.getRow(55, 'columns', {'randomvalues'});
-            testCase.verifyEqual(expectedData, readData);
-        end
-        function getRowsExpandableTest(testCase)
+            %add rows to expandable table and export
+            for i = 101:200
+                readFile.intervals_trials.addRow(...
+                    'start_time',start_time_array(i),...
+                    'stop_time',stop_time_array(i),...
+                    'randomvalues',random_val_array(i),...
+                    'id',id(i)...
+                    )   
+            end
+            nwbExport(readFile, filename)
+            %read in expanded table
+            readFile = nwbRead(filename);
+            %test getRow for original portion of table
+            expectedData = dummyFile.intervals_trials.getRow(55,...
+                'columns', {'randomvalues'});
+            actualData = readFile.intervals_trials.getRow(55,...
+                'columns', {'randomvalues'});
+            %compare
+            testCase.verifyEqual(expectedData, actualData);
+            
+            %test getRow for appended portion of table
+            expectedData = dummyFile.intervals_trials.getRow(155,...
+                'columns', {'randomvalues'});
+            actualData = readFile.intervals_trials.getRow(155,...
+                'columns', {'randomvalues'});
+            %compare
+            testCase.verifyEqual(expectedData, actualData);
+   
         end
     end
 end
