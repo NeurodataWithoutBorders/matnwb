@@ -137,11 +137,11 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
             testCase.addExpandableContainer(testCase.file, ...
                 start_time_array(1:100), stop_time_array(1:100), ...
                 random_val_array(1:100), id(1:100));
-            %export and read-in expandable table
+            % export and read-in expandable table
             filename = ['MatNWB.' testCase.className() '.ExpandableTableTest.nwb'];
             nwbExport(testCase.file, filename);
             readFile = nwbRead(filename);
-            %add rows to expandable table and export
+            % add rows to expandable table and export
             for i = 101:200
                 readFile.intervals_trials.addRow( ...
                     'start_time', start_time_array(i), ...
