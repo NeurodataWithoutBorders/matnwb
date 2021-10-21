@@ -5,19 +5,20 @@ function addVarargColumn(DynamicTable, varargin)
 
 newColNames = DynamicTable.validate_colnames({varargin{1:2:end}});
 
-[nRows, nCols] = size(DynamicTable.colnames);
-nRows = max([nRows, 1]);
 
 for i = 1:length(newColNames)
     new_cn = newColNames{i};
     new_cv = newVectorData.get(new_cn);
-    %check height before adding column
-    if ~isempty(DynamicTable.colnames)
-        table_height = height(DynamicTable.vectordata.get(DynamicTable.colnames{1}).data);
-        assert(height(new_cv.data) == table_height,...
-            'NWB:DynamicTable:AddColumn:MissingRows',...
-            'New column length must match length of existing columns ') 
+%     %check height before adding column
+%     if ~isempty(DynamicTable.colnames) !!! would have to make sure that
+%     chosen column is not a ragged column..
+%         table_height = height(DynamicTable.vectordata.get(DynamicTable.colnames{1}).data);
+%         assert(height(new_cv.data) == table_height,...
+%             'NWB:DynamicTable:AddColumn:MissingRows',...
+%             'New column length must match length of existing columns ') 
+%     end
+    if ~isa(new_cv, 'types.hdmf_common.VectorIndex')
+        DynamicTable.colnames{end+1} = new_cn;
     end
-    DynamicTable.colnames{nRows, nCols+i} = new_cn;
     DynamicTable.vectordata.set(new_cn, new_cv);   
 end
