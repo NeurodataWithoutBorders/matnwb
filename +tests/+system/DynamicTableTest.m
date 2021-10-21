@@ -24,7 +24,7 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
                 'VariableNames', {'id', 'start_time', 'stop_time', 'randomvalues', 'stringdata'}));
         end
         
-        function addExpandableContainer(~, file, start_array, stop_array, random_array, id_array)
+        function addExpandableDynamicTable(~, file, start_array, stop_array, random_array, id_array)
             % create VectorData objects with DataPipe objects
             start_time_exp = types.hdmf_common.VectorData( ...
                 'description', 'start times', ...
@@ -134,7 +134,7 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
             rng(1);  % to be able replicate random values
             random_val_array = rand(nrows, 1);
             % create expandable table with first half of arrays
-            testCase.addExpandableContainer(testCase.file, ...
+            testCase.addExpandableDynamicTable(testCase.file, ...
                 start_time_array(1:100), stop_time_array(1:100), ...
                 random_val_array(1:100), id(1:100));
             % export and read-in expandable table
