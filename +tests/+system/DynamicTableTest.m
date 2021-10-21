@@ -154,7 +154,7 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
             %read in expanded table
             readFile = nwbRead(filename);
             %test getRow
-            actualData = readFile.intervals_trials.getRow(1:200,...
+            actualData = readFile.intervals_trials.getRow(1:200, ...
                 'columns', {'randomvalues'});
             testCase.verifyEqual(random_val_array, actualData.randomvalues);
         end
