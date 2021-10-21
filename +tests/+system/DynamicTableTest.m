@@ -130,7 +130,7 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
             nrows = 200;
             id = 0:nrows-1;%different from row poistion
             start_time_array = 1:nrows;
-            stop_time_array = start_time_array+1;
+            stop_time_array = start_time_array + 1;
             rng(1);%to be able replicate random values
             random_val_array = rand(nrows, 1);
             %create expandable table with first half of arrays
