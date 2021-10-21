@@ -126,14 +126,14 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
         end
         
         function ExpandableTableTest(testCase)
-            %define data matrices
+            % define data matrices
             nrows = 200;
-            id = 0:nrows-1;%different from row poistion
+            id = 0:nrows-1;  % different from row poistion
             start_time_array = 1:nrows;
             stop_time_array = start_time_array + 1;
-            rng(1);%to be able replicate random values
+            rng(1);  % to be able replicate random values
             random_val_array = rand(nrows, 1);
-            %create expandable table with first half of arrays
+            % create expandable table with first half of arrays
             testCase.addExpandableContainer(testCase.file, ...
                 start_time_array(1:100), stop_time_array(1:100), ...
                 random_val_array(1:100), id(1:100));
