@@ -19,4 +19,8 @@ assert(~isa(DynamicTable.id.data, 'types.untyped.DataStub'),...
     ['Cannot write to on-file Dynamic Tables without enabling data pipes. '...
     'If this was produced with pynwb, please enable chunking for this table.']);
 
-types.util.dynamictable.addVarargColumn(DynamicTable, varargin{:});
+if istable(varargin{1})
+    types.util.dynamictable.addTableColumn(DynamicTable, varargin{:});
+else
+    types.util.dynamictable.addVarargColumn(DynamicTable, varargin{:});
+end
