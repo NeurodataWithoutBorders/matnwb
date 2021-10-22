@@ -1,4 +1,4 @@
-function pTable = nwb2table(DynamicTable)
+function pTable = nwb2table(DynamicTable, index)
 %NWB2TABLE converts from a NWB DynamicTable to a MATLAB table 
 
 %make sure input is dynamic table
@@ -6,17 +6,26 @@ validateattributes(DynamicTable,...
     {'types.core.DynamicTable', 'types.hdmf_common.DynamicTable'},...
     {'scalar'});
 
-% get column names
-colNames = keys(DynamicTable.vectordata);
-
+if nargin < 2
+    index = true;
+end
 % initialize table with id
 pTable = table( ...
             DynamicTable.id.data, ...
             'VariableNames', {'id'} ...
             );
-for i = 1:length(colNames)
-    cn = colNames{i};
-    cv = DynamicTable.vectordata.get(cn).data;
+for i = 1:length(DynamicTable.colnames)
+    cn = DynamicTable.colnames{i};
+    if ~index && isa(DynamicTable.vectordata.get(cn),'types.hdmf_common.DynamicTableRegion')
+        row_idxs = DynamicTable.vectordata.get(cn).data;
+        ref_table = DynamicTable.vectordata.get(cn).table.target;
+        cv = cell(length(row_idxs),1);
+        for r = 1:length(row_idxs)
+            cv{r,1} = ref_table.getRow(row_idxs(r)+1);
+        end
+    else
+        cv = DynamicTable.vectordata.get(cn).data;
+    end
     index_name = types.util.dynamictable.getIndex(DynamicTable,cn);
     if ~isempty(index_name)
         index = DynamicTable.vectordata.get(index_name);
