@@ -4,11 +4,11 @@ function addVarargColumn(DynamicTable, varargin)
 [newVectorData, ~] = types.util.parseConstrained(DynamicTable,'vectordata', 'types.hdmf_common.VectorData', varargin{:});
 
 newColNames = DynamicTable.validate_colnames({varargin{1:2:end}});
-% get current table height
+% get current table height - assume id length reflects table height
 if ~isempty(DynamicTable.colnames)
-    columnHeight = getColumnsHeight(DynamicTable);
-    tableHeight = columnHeight(1);
+    tableHeight = length(DynamicTable.id.data);
 end
+
 
 for i = 1:length(newColNames)
     new_cn = newColNames{i};
@@ -24,37 +24,8 @@ for i = 1:length(newColNames)
     end
     DynamicTable.vectordata.set(new_cn, new_cv);   
 end
-end
-
-%scratch
-tmpTable = types.hdmf_common.DynamicTable();
-tmpTable.vectordata = newVectorData;
-ind_name = types.util.dynamictable.getIndex(tmpTable,new_cn);
-ind = newVectorData.get(ind_name);
 
 
-
-function lens = getColumnsHeight(DynamicTable)   
-    columns = keys(DynamicTable.vectordata);
-    c = 1;
-    while c <= length(columns)
-        if ~isempty(types.util.dynamictable.getIndex(DynamicTable,columns{c}))
-            columns(c) = [];
-        else
-            c = c+1;
-        end
-    end
-    lens = zeros(length(columns),1);
-    lens_equal = zeros(length(columns),1);
-    for c = 1:length(columns)
-        lens(c)=length(DynamicTable.vectordata.get(columns{c}).data);
-        lens_equal(c) = lens(1)==lens(c);
-    end
-    assert(all(lens_equal), ...
-        'NWB:DynamicTable', ...
-        'All existing columns must be the same length.' ...
-        );
-end
 
 
 
