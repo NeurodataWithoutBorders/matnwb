@@ -34,7 +34,7 @@ assert(nargin > 1, 'NWB:DynamicTable:AddRow:NoData', 'Not enough arguments');
 
 
 if 8 == exist('types.hdmf_common.ElementIdentifiers', 'class')
-    util.check_DynamicTable_shape(DynamicTable)
+    util.check.DynamicTableShape(DynamicTable)
 else % legacy Element Identifiers
     if isempty(DynamicTable.id)
         DynamicTable.id = types.core.ElementIdentifiers();

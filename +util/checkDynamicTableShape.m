@@ -1,5 +1,5 @@
-function checkDynamicTableProps(DynamicTable)
-% Check the properties the given DynamicTable Object
+function checkDynamicTableShape(DynamicTable)
+% Check the shape the given DynamicTable Object
 % Specifically, the function ensures two things.
 % 1) Length of all columns in the dynamic table are the same.
 % 2) All rows have a corresponding id. If none, exist it creates them.
