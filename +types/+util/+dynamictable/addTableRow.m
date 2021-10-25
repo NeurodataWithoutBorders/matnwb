@@ -63,7 +63,7 @@ else
         newStartId = length(DynamicTable.id.data);
     end
     
-    idRange = (newStartId:(newStartId+height(t))) .';
+    idRange = (newStartId:(newStartId+height(subTable)-1)) .';
 end
 
 types.util.dynamictable.addRawData(DynamicTable, 'id', idRange);
