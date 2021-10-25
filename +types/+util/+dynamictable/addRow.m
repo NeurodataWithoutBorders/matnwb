@@ -32,10 +32,11 @@ assert(~isempty(DynamicTable.colnames),...
     'of column names before being able to add row data.']);
 assert(nargin > 1, 'NWB:DynamicTable:AddRow:NoData', 'Not enough arguments');
 
-if isempty(DynamicTable.id)
-    if 8 == exist('types.hdmf_common.ElementIdentifiers', 'class')
-        DynamicTable.id = types.hdmf_common.ElementIdentifiers();
-    else % legacy Element Identifiers
+
+if 8 == exist('types.hdmf_common.ElementIdentifiers', 'class')
+    util.check_DynamicTable_shape(DynamicTable)
+else % legacy Element Identifiers
+    if isempty(DynamicTable.id)
         DynamicTable.id = types.core.ElementIdentifiers();
     end
 end
