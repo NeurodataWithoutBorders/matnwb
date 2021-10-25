@@ -1,5 +1,15 @@
 function pTable = nwb2table(DynamicTable, index)
 %NWB2TABLE converts from a NWB DynamicTable to a MATLAB table 
+%     Args:
+%         DynamicTable: a DynamicTable object
+%         index: Boolean indicating whether to return row indices of
+%         DynamicTableRegion column. If False, will return nested table
+%         with rows of reference table.
+%  
+%     Returns:
+%         pTable: MATLAB table object
+%  
+
 
 %make sure input is dynamic table
 validateattributes(DynamicTable,...
@@ -10,8 +20,14 @@ if nargin < 2
     index = true;
 end
 % initialize table with id
+if isa(DynamicTable.id.data, 'types.untyped.DataStub')...
+        || isa(DynamicTable.id.data, 'types.untyped.DataPipe')
+    ids = DynamicTable.id.data.load();
+else
+    ids = DynamicTable.id.data;
+end
 pTable = table( ...
-            DynamicTable.id.data, ...
+            ids, ...
             'VariableNames', {'id'} ...
             );
 for i = 1:length(DynamicTable.colnames)
@@ -41,4 +57,5 @@ for i = 1:length(DynamicTable.colnames)
     else
         pTable.(cn) = cv;
     end
+end
 end
