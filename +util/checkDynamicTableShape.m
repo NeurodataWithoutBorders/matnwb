@@ -8,14 +8,18 @@ function checkDynamicTableShape(DynamicTable)
 lastStraigthCol = 0;
 lens = zeros(length(DynamicTable.colnames),1);
 for c = 1:length(DynamicTable.colnames)
-    colName = DynamicTable.colnames{c};
+    cn = DynamicTable.colnames{c};
     % ignore columns that have an index (i.e. ragged), length will be unmatched
-    if isempty(types.util.dynamictable.getIndex(DynamicTable, colName))
-        if isprop(DynamicTable, colName)
-            lens(c) = length(DynamicTable.(colName));
+    if isempty(types.util.dynamictable.getIndex(DynamicTable, cn))
+        if isprop(DynamicTable, cn)
+            cv = DynamicTable.(cn);
+            if ~isempty(cv)
+                lens(c) = length(cv.data);
+            end
         else
             if ~isempty(keys(DynamicTable.vectordata))
-                lens(c) = length(DynamicTable.vectordata.get(colName).data);
+                cv = DynamicTable.vectordata.get(cn);
+                lens(c) = length(cv.data);
             end
         end
         if lastStraigthCol > 0
@@ -31,7 +35,7 @@ end
 if ~isempty(lens)
     if isempty(DynamicTable.id)
         DynamicTable.id = types.hdmf_common.ElementIdentifiers( ...
-            'data', ((1:lens(1))-1)' ...
+            'data', int64((1:lens(1))-1)' ...
             );
     else
         assert(lens(1) == length(DynamicTable.id.data), ...
