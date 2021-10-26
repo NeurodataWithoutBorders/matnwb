@@ -1,8 +1,10 @@
-function checkDynamicTableShape(DynamicTable)
-% Check the shape the given DynamicTable Object
-% Specifically, the function ensures two things.
-% 1) Length of all columns in the dynamic table are the same.
-% 2) All rows have a corresponding id. If none, exist it creates them.
+function checkDynamicConfig(DynamicTable)
+%  Check the configuration of the given DynamicTable Object
+%  Specifically, the function ensures two things.
+%  1) Length of all columns in the dynamic table are the same.
+%  2) All rows have a corresponding id. If none, exist it creates them.
+%  If the DynamicTable is configured properly, the function will run through
+%  without error
 
 % keep track of last non-ragged column index; to prevent looping over array twice
 columns = DynamicTable.colnames;
@@ -21,7 +23,11 @@ while c <= length(columns)
             end
         else
             if ~isempty(keys(DynamicTable.vectordata))
-                cv = DynamicTable.vectordata.get(cn);
+                try
+                    cv = DynamicTable.vectordata.get(cn);
+                catch % catch legacy table instance
+                    cv = DynamicTable.vectorindex.get(cn);
+                end
                 lens(c) = length(cv.data);
             end
         end
@@ -45,7 +51,7 @@ if ~isempty(lens)
     if isempty(DynamicTable.id)
         DynamicTable.id = types.hdmf_common.ElementIdentifiers( ...
             'data', int64((1:lens(lastStraigthCol))-1)' ...
-            );
+        );
     else
         assert(lens(lastStraigthCol) == length(DynamicTable.id.data), ...
             'NWB:DynamicTable', ...
