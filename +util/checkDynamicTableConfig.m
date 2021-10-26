@@ -1,10 +1,12 @@
 function checkDynamicTableConfig(DynamicTable)
-%  Check the configuration of the given DynamicTable Object
-%  Specifically, the function ensures two things.
-%  1) Length of all columns in the dynamic table are the same.
-%  2) All rows have a corresponding id. If none, exist it creates them.
-%  If the DynamicTable is configured properly, the function will run through
-%  without error
+% checkDynamicTableConfig  Check the configuration of the given DynamicTable object
+%
+%   checkDynamicTableConfig(DynamicTable)
+%   runs without error if the DynamicTable is configured correctly
+%
+%  A properly configured DynamicTable should meet the following criteria:
+%  1) The length of all columns in the dynamic table is the same.
+%  2) All rows have a corresponding id. If none exist, this function creates them.
 
 % keep track of last non-ragged column index; to prevent looping over array twice
 columns = DynamicTable.colnames;
