@@ -1,4 +1,4 @@
-function checkDynamicConfig(DynamicTable)
+function checkDynamicTableConfig(DynamicTable)
 %  Check the configuration of the given DynamicTable Object
 %  Specifically, the function ensures two things.
 %  1) Length of all columns in the dynamic table are the same.
