@@ -1,5 +1,5 @@
 function checkDynamicTableConfig(DynamicTable)
-% checkDynamicTableConfig  Check the configuration of the given DynamicTable object
+% checkDynamicTableConfig Checks the configuration of the given DynamicTable object
 %
 %   checkDynamicTableConfig(DynamicTable)
 %   runs without error if the DynamicTable is configured correctly
