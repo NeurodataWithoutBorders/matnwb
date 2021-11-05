@@ -166,6 +166,57 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
                 'columns', {'randomvalues'});
             testCase.verifyEqual(random_val_array, actualData.randomvalues);
         end
+        function nwb2tableTest(testCase)
+            % test utility nwb2table function. 
+            % 1. For a generic table, the nwb2table output should be very
+            % similar to getRow output (except for presence of id column)
+            %
+            % retrieve rows from dynamic table
+            ExpectedSubTable = testCase.file.intervals_trials.getRow(1:200);
+            % convert DynamicTable to MATLAB table
+            TrialsTable = util.nwb2table(testCase.file.intervals_trials);
+            TrialsTable.id = []; %remove id column
+            % retrieve rows from MATLAB table
+            ActualSubTable = TrialsTable(1:200,:);
+            % compare
+            testCase.verifyEqual(ExpectedSubTable,ActualSubTable)
+            % 2. For a table with a DynamicTable regions, the nwb2table output 
+            % with false index argument should return the rows of the
+            % target DynamicTable.
+            %
+            % create table with DynamicTableRegion
+            DTRCol = types.hdmf_common.DynamicTableRegion( ...
+                'description', 'references rows of another table', ...
+                'data', randi([0 199],100,1), ...  # 0-indexed
+                'table',types.untyped.ObjectView(testCase.file.intervals_trials) ...  %
+            );
+            DataCol = types.hdmf_common.VectorData( ...
+                'description', 'data column', ...
+                'data', (1:100)' ...
+            );
+            DTRTable = types.hdmf_common.DynamicTable( ...
+                'description', 'test table with DynamicTableRegion', ...
+                'colnames', {'dtr_col','data_col'}, ...
+                'dtr_col', DTRCol, ...
+                'data_col',DataCol, ...
+                'id', types.hdmf_common.ElementIdentifiers( ...
+                    'data', (0:99)' ...
+                ) ...
+            );
+            % convert DynamicTable to MATLAB table
+            TrialsTableNoIndex = util.nwb2table(DTRTable, false);% include actual rows
+            TrialsTableIndex = util.nwb2table(DTRTable, true);% include only index of rows
+            % verify that the row included in DynamicTable and the
+            % actual row indicated by the DynamicTableRegion are the same
+            for i = 1:100
+                testCase.verifyEqual( ...
+                    testCase.file.intervals_trials.getRow( ...
+                        TrialsTableIndex.dtr_col(i)+1 ... % must add 1 because DynamicTableRegion uses 0-indexing
+                     ), ...
+                     TrialsTableNoIndex.dtr_col{i} ...
+                );
+            end
+        end
     end
 end
 
