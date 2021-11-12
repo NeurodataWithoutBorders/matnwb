@@ -108,8 +108,8 @@ else
                     name, type, class(val));
             end
         else
-            if isa(val,'double')
-                % correct type if array is double
+            if ~any(strcmpi(class(val), {'int8' 'int16' 'int32' 'int64'}))
+                % correct type if integer byte size not specified
                 val = types.util.correctType(val, type);
             end
         end
