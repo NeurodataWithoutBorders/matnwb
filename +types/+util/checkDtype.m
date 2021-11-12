@@ -108,7 +108,10 @@ else
                     name, type, class(val));
             end
         else
-            val = types.util.correctType(val, type);
+            if isa(val,'double')
+                % correct type if array is double
+                val = types.util.correctType(val, type);
+            end
         end
     elseif strcmp(type, 'isodatetime')
         assert(ischar(val)...
