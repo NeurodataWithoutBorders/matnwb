@@ -108,10 +108,7 @@ else
                     name, type, class(val));
             end
         else
-            if ~any(strcmpi(class(val), {'int8' 'int16' 'int32' 'int64'}))
-                % correct type if integer byte size not specified
-                val = types.util.correctType(val, type);
-            end
+            val = types.util.correctType(val, type);
         end
     elseif strcmp(type, 'isodatetime')
         assert(ischar(val)...
