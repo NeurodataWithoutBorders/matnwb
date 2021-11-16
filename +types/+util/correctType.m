@@ -19,7 +19,7 @@ if strcmp(type, 'numeric')
     return;
 end
 
-if any(strcmp(type, {'single', 'float32', 'double', 'float64'}))
+if any(strcmp(type, {'float', 'single', 'float32', 'double', 'float64'}))
     val = double(val);
     return;
 end
