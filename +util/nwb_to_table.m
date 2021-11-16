@@ -1,10 +1,10 @@
-function matlabTable = nwb2table(DynamicTable, index)
+function matlabTable = nwb_to_table(DynamicTable, index)
 %NWB2TABLE converts from a NWB DynamicTable to a MATLAB table 
 %
-%   MATLABTABLE = NWB2TABLE(T) converts object T of class types.core.DynamicTable
+%   MATLABTABLE = NWB_TO_TABLE(T) converts object T of class types.core.DynamicTable
 %   into a MATLAB Tale
 %   
-%   MATLABTABLE = NWB2TABLE(T, INDEX) If INDEX is FALSE, includes rows referenced by a
+%   MATLABTABLE = NWB_TO_TABLE(T, INDEX) If INDEX is FALSE, includes rows referenced by a
 %   DynamicTableRegion as nested subtables
 %
 % EXAMPLE 
