@@ -4,7 +4,7 @@ function matlabTable = nwb2table(DynamicTable, index)
 %   MATLABTABLE = NWB2TABLE(T) converts object T of class types.core.DynamicTable
 %   into a MATLAB Tale
 %   
-%   MATLABTABLE = NWB2TABLE(T, FALSE) includes rows referenced by a
+%   MATLABTABLE = NWB2TABLE(T, INDEX) If INDEX is FALSE, includes rows referenced by a
 %   DynamicTableRegion as nested subtables
 %
 % EXAMPLE 
