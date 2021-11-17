@@ -1,4 +1,4 @@
-classdef DataPipe < handle
+classdef (Sealed) DataPipe < handle
     %DATAPIPE gives advanced write directions to HDF5 for a dataset for
     %chunking, compression, and iterative write.
     %   DATAPIPE directs HDF5 to use chunking and GZIP compression when 
@@ -241,13 +241,38 @@ classdef DataPipe < handle
                     'have a handled size() method.'], class(obj.internal));
             end
         end
-        
+
         function append(obj, data)
             obj.internal.append(data);
         end
-        
+
         function refs = export(obj, fid, fullpath, refs)
             obj.internal = obj.internal.write(fid, fullpath);
+        end
+
+        %% Subsref
+        function B = subsref(obj, S)
+            CurrentSubRef = S(1);
+            if ~isscalar(obj) || strcmp(CurrentSubRef.type, '.')
+                B = builtin('subsref', obj, S);
+                return;
+            end
+
+
+            if isa(obj.internal, 'types.untyped.datapipe.BoundPipe')
+                data = obj.internal.stub(CurrentSubRef.subs{:});
+            elseif isa(obj.internal, 'types.untyped.datapipe.BlueprintPipe')
+                data = obj.internal.data(CurrentSubRef.subs{:});
+            else
+                error('NWB:DataPipe:InvalidState', ...
+                    'datapipe `internal` property is not a bound or a blueprint pipe.');
+            end
+            
+            if isscalar(S)
+                B = data;
+            else
+                B = subsref(data, S(2:end));
+            end
         end
     end
 end
