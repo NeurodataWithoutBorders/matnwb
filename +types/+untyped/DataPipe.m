@@ -230,6 +230,15 @@ classdef (Sealed) DataPipe < handle
             data = obj.internal.load(varargin{:});
         end
 
+        function append(obj, data)
+            obj.internal.append(data);
+        end
+
+        function refs = export(obj, fid, fullpath, refs)
+            obj.internal = obj.internal.write(fid, fullpath);
+        end
+
+        %% Display
         function sz = size(obj, varargin)
             if isa(obj.internal, 'types.untyped.datapipe.BoundPipe')
                 sz = size(obj.internal, varargin{:});
@@ -241,22 +250,13 @@ classdef (Sealed) DataPipe < handle
             end
         end
 
-        function append(obj, data)
-            obj.internal.append(data);
-        end
-
-        function refs = export(obj, fid, fullpath, refs)
-            obj.internal = obj.internal.write(fid, fullpath);
-        end
-
         %% Subsref
         function B = subsref(obj, S)
             CurrentSubRef = S(1);
-            if ~isscalar(obj) || strcmp(CurrentSubRef.type, '.')
+            if strcmp(CurrentSubRef.type, '.')
                 B = builtin('subsref', obj, S);
                 return;
             end
-
 
             if isa(obj.internal, 'types.untyped.datapipe.BoundPipe')
                 data = obj.internal.stub(CurrentSubRef.subs{:});
