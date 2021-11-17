@@ -1,7 +1,7 @@
 classdef (Sealed) DataPipe < handle
     %DATAPIPE gives advanced write directions to HDF5 for a dataset for
     %chunking, compression, and iterative write.
-    %   DATAPIPE directs HDF5 to use chunking and GZIP compression when 
+    %   DATAPIPE directs HDF5 to use chunking and GZIP compression when
     %   saving the dataset. The chunk size is automatically determined and
     %   the compression level is 3 by default.
     %
@@ -9,16 +9,16 @@ classdef (Sealed) DataPipe < handle
     %	be omitted if the DATA will be appended later
     %
     %   DATAPIPE(..., 'maxSize', MAXSIZE) Sets the maximum size of the HDF5
-    %   Dataset. To append data later, use the MAXSIZE of the full 
+    %   Dataset. To append data later, use the MAXSIZE of the full
     %   dataset. Inf on any axis will allow the Dataset to grow without
-    %   limit in that dimension. If not provided, MAXSIZE is infered from 
+    %   limit in that dimension. If not provided, MAXSIZE is infered from
     %   the DATA. An error is thrown if neither MAXSIZE nor DATA is provided.
     %
     %   DATAPIPE(..., 'axis', AXIS) Set which dimension axis to increment when
     %   appending more data. Default is 1.
     %
     %   DATAPIPE(..., 'dataType', DATATYPE) Sets the numerical data type.
-    %   This should be set if DATA is omitted. If DATA is provided and 
+    %   This should be set if DATA is omitted. If DATA is provided and
     %   DATATYPE is not, the data type is inferred from the provided DATA.
     %
     %   DATAPIPE(..., 'chunkSize', CHUNKSIZE) Sets chunk size. Must be less
@@ -31,7 +31,7 @@ classdef (Sealed) DataPipe < handle
     %   DATAPIPE(..., 'offset', OFFSET) Axis offset of dataset to append.
     %   May be used to overwrite data.
     %
-    %   DATAPIPE(..., 'hasShuffle', HASSHUFFLE) controls whether bit 
+    %   DATAPIPE(..., 'hasShuffle', HASSHUFFLE) controls whether bit
     %   shuffling is turned on during compression. This is lossless and
     %   tends to save space without much cost to performance. Default is
     %   False
@@ -41,11 +41,11 @@ classdef (Sealed) DataPipe < handle
     %   of the dataset within that file. These arguments cannot be used
     %   with any of the above arguments, which are for setting up a new
     %   DataPipe.
-    
+
     properties (SetAccess = private)
         internal;
     end
-    
+
     properties (Dependent)
         axis;
         offset;
@@ -54,15 +54,16 @@ classdef (Sealed) DataPipe < handle
         compressionLevel;
         hasShuffle;
     end
-    
-    methods % lifecycle
+
+    methods
+        %% Lifecycle
         function obj = DataPipe(varargin)
             import types.untyped.datapipe.BoundPipe;
             import types.untyped.datapipe.BlueprintPipe;
             import types.untyped.datapipe.Configuration;
             import types.untyped.datapipe.properties.*;
             import types.untyped.datapipe.guessChunkSize;
-            
+
             p = inputParser;
             p.addParameter('maxSize', []);
             p.addParameter('axis', 1, @(x) isnumeric(x) && isscalar(x) && x > 0);
@@ -78,7 +79,7 @@ classdef (Sealed) DataPipe < handle
             p.addParameter('hasShuffle', false);
             p.KeepUnmatched = true;
             p.parse(varargin{:});
-            
+
             hasFilename = ~isempty(p.Results.filename);
             hasPath = ~isempty(p.Results.path);
             assert(~xor(hasFilename, hasPath),...
@@ -95,7 +96,7 @@ classdef (Sealed) DataPipe < handle
                     'dataType',...
                     'data',...
                     };
-                
+
                 extraProperties = intersect(...
                     dependentProperties,...
                     fieldnames(p.Unmatched)...
@@ -128,7 +129,7 @@ classdef (Sealed) DataPipe < handle
             config = Configuration(maxSize);
             config.axis = p.Results.axis;
             config.offset = p.Results.offset;
-            
+
             if isempty(p.Results.data)
                 config.dataType = p.Results.dataType;
             else
@@ -139,7 +140,7 @@ classdef (Sealed) DataPipe < handle
                 end
                 config.dataType = class(p.Results.data);
             end
-            
+
             obj.internal = BlueprintPipe(config);
             if isempty(p.Results.chunkSize)
                 chunkSize = guessChunkSize(config.dataType, config.maxSize);
@@ -147,70 +148,69 @@ classdef (Sealed) DataPipe < handle
                 chunkSize = p.Results.chunkSize;
             end
             obj.internal.setPipeProperties(Chunking(chunkSize));
-            
+
             if ~isempty(p.Results.compressionLevel)
                 obj.internal.setPipeProperties(Compression(...
                     p.Results.compressionLevel));
             end
-            
+
             if p.Results.hasShuffle
                 obj.internal.setPipeProperties(Shuffle());
             end
-            
+
             obj.internal.data = p.Results.data;
         end
-    end
-    
-    methods % set/get
+
+        %% SET/GET
         function val = get.axis(obj)
             val = obj.internal.axis;
         end
-        
+
         function set.axis(obj, val)
             obj.internal.axis = val;
         end
-        
+
         function val = get.offset(obj)
             val = obj.internal.offset;
         end
-        
+
         function set.offset(obj, val)
             obj.internal.offset = val;
         end
-        
+
         function val = get.dataType(obj)
             val = obj.internal.dataType;
         end
-        
+
         function set.dataType(obj, val)
             obj.internal.dataType = val;
         end
-        
+
         function val = get.chunkSize(obj)
             val = obj.internal.getPipeProperty(...
                 'types.untyped.datapipe.properties.Chunking').chunkSize;
         end
-        
+
         function set.chunkSize(obj, val)
             import types.untyped.datapipe.properties.Chunking;
             obj.internal.setPipeProperty(Chunking(val));
         end
-        
+
         function val = get.compressionLevel(obj)
             val = obj.internal.getPipeProperty(...
                 'types.untyped.datapipe.properties.Compression').level;
         end
-        
+
         function set.compressionLevel(obj, val)
             import types.untyped.datapipe.properties.Compression;
             obj.internal.setPipeProperty(Compression(val));
         end
-        
+
         function tf = get.hasShuffle(obj)
             tf = obj.internal.hasPipeProperty(...
                 'types.untyped.datapipe.properties.Shuffle');
         end
-        
+
         function set.hasShuffle(obj, tf)
             import types.untyped.datapipe.properties.Shuffle;
             if tf
@@ -220,9 +220,8 @@ classdef (Sealed) DataPipe < handle
                     'types.untyped.datapipe.properties.Shuffle');
             end
         end
-    end
-    
-    methods
+
+        %% API
         function data = load(obj, varargin)
             assert(isa(obj.internal, 'types.untyped.datapipe.BoundPipe'),...
                 'NWB:DataPipe:LoadingUnboundPipe',...
@@ -230,7 +229,7 @@ classdef (Sealed) DataPipe < handle
                 'features are allowed.']);
             data = obj.internal.load(varargin{:});
         end
-        
+
         function sz = size(obj, varargin)
             if isa(obj.internal, 'types.untyped.datapipe.BoundPipe')
                 sz = size(obj.internal, varargin{:});
