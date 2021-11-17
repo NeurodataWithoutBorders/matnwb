@@ -47,7 +47,7 @@ for i=1:length(attributes)
         H5T.close(tid);
         H5A.close(aid);
         H5F.close(fid);
-    elseif isscalar(attr.Value) && iscellstr(attr.Value)
+    elseif isscalar(attr.Value) && ~iscell(attr.Value)
         args(attr.Name) = attr.Value{1};
     else
         args(attr.Name) = attr.Value;
