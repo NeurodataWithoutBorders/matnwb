@@ -230,7 +230,7 @@ classdef (Sealed) DataPipe < handle
             data = obj.internal.load(varargin{:});
         end
 
-        function append(obj, data)
+        function data = append(obj, data)
             obj.internal.append(data);
         end
 
