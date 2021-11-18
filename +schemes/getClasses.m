@@ -15,7 +15,7 @@ if isKey(scheme, 'groups')
     groups = scheme('groups');
     for iGroup = 1:length(groups)
         groupMap = groups{iGroup};
-        if isempty(groupMap)
+        if isempty(groupMap) || ~isa(groupMap, 'containers.Map')
             continue;
         end
         if isKey(groupMap, 'groups') || isKey(groupMap, 'datasets')
@@ -31,7 +31,7 @@ classMap = containers.Map;
 shouldSkipWhitelist = isempty(whitelist);
 for iObj = 1:length(list)
     dataObject = list{iObj};
-    if isempty(dataObject)
+    if isempty(dataObject) || ~isa(dataObject, 'containers.Map')
         continue;
     end
     hasTypeDef = isKey(dataObject, allowedTypeDefNames);
