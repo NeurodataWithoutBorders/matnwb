@@ -19,6 +19,7 @@ JsonData = struct(...
 for iCache = 1:length(Caches)
     Cache = Caches(iCache);
     keepRelevantNamespace(Cache);
+    removeEmptySchemaComponents(Cache)
     stripNamespaceFileExt(Cache.namespace);
     JsonMap = containers.Map({'namespace'}, {jsonencode(Cache.namespace, 'ConvertInfAndNaN', true)});
     for iScheme = 1:length(Cache.filenames)
@@ -31,6 +32,24 @@ for iCache = 1:length(Caches)
     JsonData(iCache).json = JsonMap;
 end
 end
+function removeEmptySchemaComponents(Cache)
+    Schema = Cache.schema;
+    SchemaKeys = keys(Schema);
+    for iScheme = 1:length(SchemaKeys)
+        Scheme = Schema(SchemaKeys{iScheme});
+        SchemeKeys = keys(Scheme);
+        for iSub = 1:length(SchemeKeys)
+            SubScheme = Scheme(SchemeKeys{iSub});
+            if isempty(SubScheme{1})
+                remove(Scheme,SchemeKeys{iSub});
+            end
+        end
+        Schema(SchemaKeys{iScheme}) = Scheme;
+    end
+    Cache.schema = Schema;
+end
+
+
 function keepRelevantNamespace(Cache)
     Namespaces = Cache.namespace('namespaces');
     ns = 1;
