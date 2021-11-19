@@ -19,7 +19,8 @@ JsonData = struct(...
 for iCache = 1:length(Caches)
     Cache = Caches(iCache);
     keepRelevantNamespace(Cache);
-    removeEmptySchemaComponents(Cache)
+    removeEmptySchemaComponents(Cache);
+    removeNeuroData_Types(Cache)
     stripNamespaceFileExt(Cache.namespace);
     JsonMap = containers.Map({'namespace'}, {jsonencode(Cache.namespace, 'ConvertInfAndNaN', true)});
     for iScheme = 1:length(Cache.filenames)
@@ -32,6 +33,16 @@ for iCache = 1:length(Caches)
     JsonData(iCache).json = JsonMap;
 end
 end
+function removeNeuroData_Types(Cache)
+    namespaces = Cache.namespace('namespaces');
+    nsSchema = namespaces{1}('schema');
+    if any(strcmpi(keys(nsSchema{1}),'neurodata_types'))
+        remove(nsSchema{1},'neurodata_types');
+    end
+    namespaces{1}('schema') = nsSchema;
+    Cache.namespace('namespaces') = namespaces;
+end
+
 function removeEmptySchemaComponents(Cache)
     Schema = Cache.schema;
     SchemaKeys = keys(Schema);
