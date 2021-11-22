@@ -5,6 +5,8 @@ function val = correctType(val, type)
 
 %check different types and correct
 
+class_val = class(val); %store initial class
+
 if any(strcmp(type, {'logical', 'bool'}))
     assert(islogical(val) || isnumeric(val),...
         'NWB:CorrectType:NonLogical',...
@@ -19,7 +21,7 @@ if strcmp(type, 'numeric')
     return;
 end
 
-if any(strcmp(type, {'single', 'float32', 'double', 'float64'}))
+if any(strcmp(type, {'float', 'single', 'float32', 'double', 'float64'}))
     val = double(val);
     return;
 end
@@ -63,13 +65,15 @@ assert(startsWith(class(val), prefix),...
 
 classMatch = regexp(class(val), 'u?int(\d+)', 'once', 'tokens');
 classSize = str2double(classMatch{1});
-
-intSizeScale = [8 16 32 64];
-for iSize = find(minSize == intSizeScale, 1):find(classSize == intSizeScale, 1)
-    sizeType = sprintf('%s%d', prefix, intSizeScale(iSize));
-    if all(minVal >= double(intmin(sizeType))) && all(maxVal <= double(intmax(sizeType)))
-        val = cast(val, sizeType);
-        break;
+if ~any(strcmpi(class_val, {'int8' 'int16' 'int32' 'int64'}))
+    % correct type if integer byte size not specified
+    intSizeScale = [8 16 32 64];
+    for iSize = find(minSize == intSizeScale, 1):find(classSize == intSizeScale, 1)
+        sizeType = sprintf('%s%d', prefix, intSizeScale(iSize));
+        if all(minVal >= double(intmin(sizeType))) && all(maxVal <= double(intmax(sizeType)))
+            val = cast(val, sizeType);
+            break;
+        end
     end
 end
 end

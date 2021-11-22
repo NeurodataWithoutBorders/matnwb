@@ -66,10 +66,10 @@ end
 function generateSpec(filename, specinfo)
 specNames = cell(size(specinfo.Groups));
 fid = H5F.open(filename);
-for i=1:length(specinfo.Groups)
-    location = specinfo.Groups(i).Groups(1);
+for iGroup = 1:length(specinfo.Groups)
+    location = specinfo.Groups(iGroup).Groups(1);
     
-    namespaceName = split(specinfo.Groups(i).Name, '/');
+    namespaceName = split(specinfo.Groups(iGroup).Name, '/');
     namespaceName = namespaceName{end};
     
     filenames = {location.Datasets.Name};
@@ -82,31 +82,34 @@ for i=1:length(specinfo.Groups)
     sourceNames = {location.Datasets.Name};
     fileLocation = strcat(location.Name, '/', sourceNames);
     schemaMap = containers.Map;
-    for j=1:length(fileLocation)
-        did = H5D.open(fid, fileLocation{j});
-        if strcmp('namespace', sourceNames{j})
+    for iFileLocation = 1:length(fileLocation)
+        did = H5D.open(fid, fileLocation{iFileLocation});
+        if strcmp('namespace', sourceNames{iFileLocation})
             namespaceText = H5D.read(did);
         else
-            schemaMap(sourceNames{j}) = H5D.read(did);    
+            schemaMap(sourceNames{iFileLocation}) = H5D.read(did);    
         end
         H5D.close(did);
     end
     
-    Namespace = spec.generate(namespaceText, schemaMap);
+    Namespaces = spec.generate(namespaceText, schemaMap);
+    % Handle embedded namespaces.
+    Namespace = Namespaces(strcmp({Namespaces.name}, namespaceName));
+    
     spec.saveCache(Namespace);
-    specNames{i} = Namespace.name;
+    specNames{iGroup} = Namespace.name;
 end
 H5F.close(fid);
 fid = [];
 
 missingNames = cell(size(specNames));
-for i = 1:length(specNames)
-    name = specNames{i};
+for iName = 1:length(specNames)
+    name = specNames{iName};
     try
         file.writeNamespace(name);
     catch ME
         if strcmp(ME.identifier, 'NWB:Namespace:CacheMissing')
-            missingNames{i} = name;
+            missingNames{iName} = name;
         else
             rethrow(ME);
         end

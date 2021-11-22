@@ -23,7 +23,7 @@ if ischar(data)
         end
         sid = H5S.create_simple(1, size(data,1), max_dims);
     end
-elseif ~forceArray && isscalar(data)
+elseif ~forceArray && ~iscell(data) && isscalar(data)
     sid = H5S.create('H5S_SCALAR');
 else
     if isvector(data)
