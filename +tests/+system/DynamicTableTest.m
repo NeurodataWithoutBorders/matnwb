@@ -101,6 +101,23 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
                ) ...
            );
         end
+        function appendRaggedContainer(~, file)
+            % define ragged array column
+            rag_col = types.hdmf_common.VectorData( ...
+                'description', 'new ragged column', ...
+                                'data', (1000:-1:1) .' ...
+            );
+            rag_col_index = types.hdmf_common.VectorIndex( ...
+                'description', 'new ragged column index',...
+                'target',types.untyped.ObjectView(rag_col), ...
+                'data', sort(randperm(1000,200)) .' ...
+            );
+            % append ragged column
+            file.intervals_trials.addColumn( ...
+                'newraggedcolumn',rag_col, ...
+                'newraggedcolumn_index',rag_col_index ...
+            )
+        end
     end
     
     methods (Test)
@@ -128,6 +145,20 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
 
             actualData = Table.getRow(5, 'columns', {'randomvalues'});
             testCase.verifyEqual(dataIndices, actualData.randomvalues{1});
+            
+            % test with appended ragged columns
+            testCase.appendRaggedContainer(testCase.file)
+            Table = testCase.file.intervals_trials;
+            % get expected ragged data
+            BaseVectorData = Table.vectordata.get('newraggedcolumn');
+            VectorDataInd = Table.vectordata.get('newraggedcolumn_index');
+            endInd = VectorDataInd.data(100);
+            startInd = VectorDataInd.data(99) + 1;
+            expectedData = BaseVectorData.data(startInd:endInd);
+            % get actual ragged data
+            actualData = Table.getRow(100);
+            % compare
+            testCase.verifyEqual(expectedData,actualData.newraggedcolumn{1})
         end
 
         function getRowRoundtripTest(testCase)
