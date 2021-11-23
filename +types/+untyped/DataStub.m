@@ -184,7 +184,7 @@ classdef (Sealed) DataStub < handle
                 % very special case where shape of the scalar indices determine the
                 % shape of the output data for some reason.
                 if 1 < sum(1 < dims) % is multi-dimensional data
-                    if isrow(varargin{1})
+                    if ~ischar(varargin{1}) && isrow(varargin{1})
                         expectedSize = [1 expectedSize];
                     else
                         expectedSize = [expectedSize 1];

@@ -13,8 +13,11 @@ end
 if isKey(scheme, 'groups')
     Classes = [Classes; searchForClasses('groups', scheme('groups'), varargin)];
     groups = scheme('groups');
-    for iGroup=1:length(groups)
+    for iGroup = 1:length(groups)
         groupMap = groups{iGroup};
+        if isempty(groupMap) || ~isa(groupMap, 'containers.Map')
+            continue;
+        end
         if isKey(groupMap, 'groups') || isKey(groupMap, 'datasets')
             Classes = [Classes; schemes.getClasses(groupMap, varargin{:})];
         end
@@ -26,8 +29,11 @@ function classMap = searchForClasses(type, list, whitelist)
 allowedTypeDefNames = {'neurodata_type_def', 'data_type_def'};
 classMap = containers.Map;
 shouldSkipWhitelist = isempty(whitelist);
-for iObj=1:length(list)
+for iObj = 1:length(list)
     dataObject = list{iObj};
+    if isempty(dataObject) || ~isa(dataObject, 'containers.Map')
+        continue;
+    end
     hasTypeDef = isKey(dataObject, allowedTypeDefNames);
     if any(hasTypeDef)
         typeDef = dataObject(allowedTypeDefNames{hasTypeDef});
