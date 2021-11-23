@@ -102,16 +102,18 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
            );
         end
         function appendRaggedContainer(~, file)
-            % define ragged array column
-            rag_col = types.hdmf_common.VectorData( ...
-                'description', 'new ragged column', ...
-                                'data', (1000:-1:1) .' ...
-            );
-            rag_col_index = types.hdmf_common.VectorIndex( ...
-                'description', 'new ragged column index',...
-                'target',types.untyped.ObjectView(rag_col), ...
-                'data', sort(randperm(1000,200)) .' ...
-            );
+            % create synthetic data
+            data = (1000:-1:1);
+            break_ind = [sort(randperm(999,199)) 1000];
+            dataArray = cell(1,length(break_ind));
+            startInd = 1;
+             for i = 1:length(break_ind)
+                 endInd = break_ind(i);
+                 dataArray{i} = data(startInd:endInd);
+                 startInd = endInd+1;
+             end
+             % get corresponding VectorData and VectorIndex
+            [rag_col, rag_col_index] = util.create_indexed_column(dataArray);
             % append ragged column
             file.intervals_trials.addColumn( ...
                 'newraggedcolumn',rag_col, ...
@@ -149,9 +151,12 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
             % test with appended ragged columns
             testCase.appendRaggedContainer(testCase.file)
             Table = testCase.file.intervals_trials;
-            % get expected ragged data
+            % retrieve ragged column and index
             BaseVectorData = Table.vectordata.get('newraggedcolumn');
             VectorDataInd = Table.vectordata.get('newraggedcolumn_index');
+            % verify end of ragged column index equal length of data vector
+            testCase.verifyEqual(length(BaseVectorData.data),double(VectorDataInd.data(end)))
+            % get expected ragged data
             endInd = VectorDataInd.data(100);
             startInd = VectorDataInd.data(99) + 1;
             expectedData = BaseVectorData.data(startInd:endInd);
