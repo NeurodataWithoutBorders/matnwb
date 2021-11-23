@@ -1,7 +1,8 @@
-function checkDynamicTableConfig(DynamicTable)
-% checkDynamicTableConfig Checks the configuration of the given DynamicTable object
+function checkConfig(DynamicTable)
+% CHECKCONFIG Given a DynamicTable object, this functions checks for proper
+% DynamicTable configuration
 %
-%   checkDynamicTableConfig(DynamicTable)
+%   checkConfig(DYNAMICTABLE)
 %   runs without error if the DynamicTable is configured correctly
 %
 %  A properly configured DynamicTable should meet the following criteria:
