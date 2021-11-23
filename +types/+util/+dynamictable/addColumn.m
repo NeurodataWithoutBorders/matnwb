@@ -3,7 +3,7 @@ function addColumn(DynamicTable, varargin)
 % more columns, add one or more columns to the dynamic table by providing
 % either keywords or a MATLAB table
 %
-%  ADDCOLUMN(DT,table) append the columns of the MATLAB table to the 
+%  ADDCOLUMN(DT,TABLE) append the columns of the MATLAB Table TABLE to the 
 %  DynamicTable
 %
 %  ADDCOLUMN(DT,col_name1,col_vector1,...,col_namen,col_vectorn)
