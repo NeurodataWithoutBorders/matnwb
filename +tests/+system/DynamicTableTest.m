@@ -210,7 +210,7 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
             testCase.verifyEqual(random_val_array, actualData.randomvalues);
         end
         function DynamicTableCheckTest(testCase)
-            % Verify that the checkDynamicTableConfig utility function
+            % Verify that the checkConfig utility function
             % throws error when adding rows to an invalid table
             %
             % 1. Adding rows to a table with unmatched column length
