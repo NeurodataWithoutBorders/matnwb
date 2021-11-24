@@ -40,7 +40,7 @@ while c <= length(columns)
                 catch % catch legacy table instance
                     cv = DynamicTable.vectorindex.get(cn);
                 end
-                lens(c) = length(cv.data);
+                lens(c) = length(cv.data(:));
             end
         end
         if lastStraigthCol > 0
@@ -65,7 +65,7 @@ if ~isempty(lens)
             'data', int64((1:lens(lastStraigthCol))-1)' ...
         );
     else
-        assert(lens(lastStraigthCol) == length(DynamicTable.id.data), ...
+        assert(lens(lastStraigthCol) == length(DynamicTable.id.data(:)), ...
             'NWB:DynamicTable', ...
             'Must provide same number of ids as length of columns.' ...
         );
