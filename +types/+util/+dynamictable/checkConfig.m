@@ -31,7 +31,7 @@ while c <= length(columns)
         if isprop(DynamicTable, cn)
             cv = DynamicTable.(cn);
             if ~isempty(cv)
-                lens(c) = length(cv.data);
+                lens(c) = length(cv.data(:));
             end
         else
             if ~isempty(keys(DynamicTable.vectordata))

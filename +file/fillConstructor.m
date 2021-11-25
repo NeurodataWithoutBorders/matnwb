@@ -217,19 +217,18 @@ parser = [parser, strcat('obj.', names, ' = p.Results.', names, ';')];
 parser = strjoin(parser, newline);
 bodystr(end+1:end+length(parser)+1) = [newline parser];
 end
-function  txt = fillCheck(name,parentname)
-    txt = [];
+function  checkTxt = fillCheck(name,parentname)
+    checkTxt = [];
     if strcmp(name,'DynamicTable')
         checkTxt = strjoin({...
             '[ignoreList,~,~] = intersect(obj.colnames,properties(obj));', ...
             'types.util.dynamictable.checkConfig(obj,ignoreList);', ...
         }, newline);
-        txt = checkTxt;
-    elseif strcmp(parentname,'types.hdmf_common.DynamicTable')
+    elseif strcmp(parentname,'types.hdmf_common.DynamicTable') || ...
+            strcmp(parentname,'types.core.DynamicTable')
         checkTxt = strjoin({...
             'types.util.dynamictable.checkConfig(obj);', ...
         }, newline);
-        txt = checkTxt;
     end
     
 end
