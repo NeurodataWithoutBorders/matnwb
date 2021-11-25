@@ -60,7 +60,7 @@ while c <= length(columns)
 end
 
 if ~isempty(lens)
-    if isempty(DynamicTable.id)
+    if isempty(DynamicTable.id) || isempty(DynamicTable.id.data(:))
         if 8 == exist('types.hdmf_common.ElementIdentifiers', 'class')
             DynamicTable.id = types.hdmf_common.ElementIdentifiers( ...
                 'data', int64((1:lens(lastStraigthCol))-1)' ...
