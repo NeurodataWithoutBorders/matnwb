@@ -61,9 +61,16 @@ end
 
 if ~isempty(lens)
     if isempty(DynamicTable.id)
-        DynamicTable.id = types.hdmf_common.ElementIdentifiers( ...
+        if 8 == exist('types.hdmf_common.ElementIdentifiers', 'class')
+            DynamicTable.id = types.hdmf_common.ElementIdentifiers( ...
+                'data', int64((1:lens(lastStraigthCol))-1)' ...
+            );
+        else % legacy Element Identifiers
+            DynamicTable.id = types.core.ElementIdentifiers( ...
             'data', int64((1:lens(lastStraigthCol))-1)' ...
         );
+        end
+    
     else
         assert(lens(lastStraigthCol) == length(DynamicTable.id.data(:)), ...
             'NWB:DynamicTable', ...
@@ -71,5 +78,9 @@ if ~isempty(lens)
         );
     end
 else
-    DynamicTable.id = types.hdmf_common.ElementIdentifiers();
+    if 8 == exist('types.hdmf_common.ElementIdentifiers', 'class')
+        DynamicTable.id = types.hdmf_common.ElementIdentifiers();
+    else % legacy Element Identifiers
+        DynamicTable.id = types.core.ElementIdentifiers();
+    end
 end
