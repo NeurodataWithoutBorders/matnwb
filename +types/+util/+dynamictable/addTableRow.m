@@ -66,7 +66,7 @@ else
     idRange = (newStartId:(newStartId+height(subTable)-1)) .';
 end
 
-DynamicTable.id.data = [double(DynamicTable.id.data); idRange];
+types.util.dynamictable.addRawData(DynamicTable, 'id', idRange);
 end
 
 function validateType(TypeStruct, rv)
