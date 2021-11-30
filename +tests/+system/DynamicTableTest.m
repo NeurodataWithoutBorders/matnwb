@@ -167,20 +167,20 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
             testCase.verifyEqual(random_val_array, actualData.randomvalues);
         end
         function toTableTest(testCase)
-            % test DynamicTable to_table method. 
-            % 1. For a generic table, the to_table output should be very
+            % test DynamicTable toTable method. 
+            % 1. For a generic table, the toTable output should be very
             % similar to getRow output (except for presence of id column)
             %
             % retrieve rows from dynamic table
             ExpectedSubTable = testCase.file.intervals_trials.getRow(1:200);
             % convert DynamicTable to MATLAB table
-            TrialsTable = testCase.file.intervals_trials.to_table();
+            TrialsTable = testCase.file.intervals_trials.toTable();
             TrialsTable.id = []; %remove id column
             % retrieve rows from MATLAB table
             ActualSubTable = TrialsTable(1:200,:);
             % compare
             testCase.verifyEqual(ExpectedSubTable,ActualSubTable)
-            % 2. For a table with a DynamicTable regions, the to_table output 
+            % 2. For a table with a DynamicTable regions, the toTable output 
             % with false index argument should return the rows of the
             % target DynamicTable.
             %
@@ -204,8 +204,8 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
                 ) ...
             );
             % convert DynamicTable to MATLAB table
-            TrialsTableNoIndex = DTRTable.to_table(false);% include actual rows
-            TrialsTableIndex = DTRTable.to_table(true);% include only index of rows
+            TrialsTableNoIndex = DTRTable.toTable(false);% include actual rows
+            TrialsTableIndex = DTRTable.toTable(true);% include only index of rows
             % verify that the row included in DynamicTable and the
             % actual row indicated by the DynamicTableRegion are the same
             for i = 1:100
