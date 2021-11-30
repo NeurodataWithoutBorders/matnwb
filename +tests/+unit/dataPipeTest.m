@@ -9,7 +9,24 @@ end
 
 function setup(testCase)
 testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
-generateCore();
+end
+
+function testIndex(testCase)
+filename = 'testIndexing.h5';
+name = '/test_data';
+
+data = rand(100, 100, 100);
+Pipe = types.untyped.DataPipe('data', data);
+
+testCase.verifyEqual(Pipe(:), data(:));
+testCase.verifyEqual(Pipe(:,:,1), data(:,:,1));
+
+fid = H5F.create(filename);
+Pipe.export(fid, name, {}); % bind the pipe.
+H5F.close(fid);
+
+testCase.verifyEqual(Pipe(:), data(:));
+testCase.verifyEqual(Pipe(:,:,1), data(:,:,1));
 end
 
 function testAppend(testCase)

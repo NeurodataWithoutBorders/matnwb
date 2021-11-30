@@ -16,8 +16,8 @@ function generateExtension(varargin)
 %      generateExtension('schema\myext\myextension.namespace.yaml', 'schema\myext2\myext2.namespace.yaml');
 %
 %   See also GENERATECORE
-for i = 1:length(varargin)
-    source = varargin{i};
+for iNamespaceFiles = 1:length(varargin)
+    source = varargin{iNamespaceFiles};
     validateattributes(source, {'char', 'string'}, {'scalartext'});
     
     [localpath, ~, ~] = fileparts(source);
@@ -27,9 +27,13 @@ for i = 1:length(varargin)
     namespaceText = fread(fid, '*char') .';
     fclose(fid);
     
-    Namespace = spec.generate(namespaceText, localpath);
-    spec.saveCache(Namespace);
-    file.writeNamespace(Namespace.name);
-    rehash();
+    Namespaces = spec.generate(namespaceText, localpath);
+
+    for iNamespace = 1:length(Namespaces)
+        Namespace = Namespaces(iNamespace);
+        spec.saveCache(Namespace);
+        file.writeNamespace(Namespace.name);
+        rehash();
+    end
 end
 end
