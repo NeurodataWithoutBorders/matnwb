@@ -97,7 +97,7 @@ methodBody = strjoin({constructorBody...
     '%% EXPORT' exporterFcns}, newline);
 
 if strcmp(name, 'DynamicTable')
-    methodBody = strjoin({methodBody, '%% ROW METHODS', file.fillDynamicTableMethods()}, newline);
+    methodBody = strjoin({methodBody, '%% TABLE METHODS', file.fillDynamicTableMethods()}, newline);
 end
 
 fullMethodBody = strjoin({'methods' ...
