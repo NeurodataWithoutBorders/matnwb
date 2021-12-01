@@ -15,6 +15,12 @@ schemaPath = fullfile(misc.getMatnwbDir(),...
 generateExtension(schemaPath);
 end
 
+function teardown(testCase)
+rootDir = misc.getMatnwbDir();
+delete(fullfile(rootDir, 'namespaces', 'rrs.mat'));
+rmdir(fullfile(rootDir, '+types', '+rrs'), 's');
+end
+
 function testRegionViewIo(testCase)
 nwb = NwbFile(...
     'identifier', 'REGIONREF',...

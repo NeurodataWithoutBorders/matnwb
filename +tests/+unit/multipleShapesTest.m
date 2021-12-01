@@ -15,6 +15,12 @@ schemaPath = fullfile(misc.getMatnwbDir(),...
 generateExtension(schemaPath);
 end
 
+function teardown(testCase)
+rootDir = misc.getMatnwbDir();
+delete(fullfile(rootDir, 'namespaces', 'mss.mat'));
+rmdir(fullfile(rootDir, '+types', '+mss'), 's');
+end
+
 function testMultipleShapesDataset(testCase)
 msd = types.mss.MultiShapeDataset('data', rand(3, 1));
 msd.data = rand(1, 5, 7);

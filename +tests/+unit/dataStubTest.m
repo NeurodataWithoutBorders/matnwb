@@ -5,11 +5,12 @@ end
 function setupOnce(testCase)
 rootPath = fullfile(fileparts(mfilename('fullpath')), '..', '..');
 testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
+generateCore();
+rehash()
 end
 
 function setup(testCase)
 testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
-generateCore();
 end
 
 function testRegionRead(testCase)
@@ -78,7 +79,8 @@ testCase.verifyEqual(stub([5 4 3 2 2]), data([5 4 3 2 2]));
 end
 
 function testObjectCopy(testCase)
-unitTestLocation = fullfile(misc.getMatnwbDir(), '+tests', '+unit');
+rootDir = misc.getMatnwbDir();
+unitTestLocation = fullfile(rootDir, '+tests', '+unit');
 generateExtension(fullfile(unitTestLocation, 'regionReferenceSchema', 'rrs.namespace.yaml'));
 generateExtension(fullfile(unitTestLocation, 'compoundSchema', 'cs.namespace.yaml'));
 rehash();
@@ -102,4 +104,9 @@ nwbExport(nwb, 'original.nwb');
 nwbNew = nwbRead('original.nwb');
 tests.util.verifyContainerEqual(testCase, nwbNew, nwb);
 nwbExport(nwbNew, 'new.nwb');
+
+delete(fullfile(rootDir, 'namespaces', 'rrs.mat'));
+delete(fullfile(rootDir, 'namespaces', 'cs.mat'));
+rmdir(fullfile(rootDir, '+types', '+rrs'), 's');
+rmdir(fullfile(rootDir, '+types', '+cs'), 's');
 end
