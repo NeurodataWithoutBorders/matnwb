@@ -19,7 +19,6 @@ end
 function teardown(testCase)
 rootDir = misc.getMatnwbDir();
 delete(fullfile(rootDir, 'namespaces', 'anon.mat'));
-rmdir(fullfile(rootDir, '+types', '+anon'), 's');
 end
 
 function testAnonDataset(testCase)

@@ -5,8 +5,6 @@ end
 function setupOnce(testCase)
 rootPath = fullfile(fileparts(mfilename('fullpath')), '..', '..');
 testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
-generateCore();
-rehash()
 end
 
 function setup(testCase)
@@ -109,6 +107,4 @@ nwbExport(nwbNew, 'new.nwb');
 
 delete(fullfile(rootDir, 'namespaces', 'rrs.mat'));
 delete(fullfile(rootDir, 'namespaces', 'cs.mat'));
-rmdir(fullfile(rootDir, '+types', '+rrs'), 's');
-rmdir(fullfile(rootDir, '+types', '+cs'), 's');
 end
