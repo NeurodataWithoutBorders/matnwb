@@ -12,11 +12,25 @@ function nwb = nwbRead(filename, varargin)
 %
 %  Example:
 %    nwb = nwbRead('data.nwb');
-%    nwb = nwbRead('data.nwb', 
+%    nwb = nwbRead('data.nwb', 'ignorecache');
+%    nwb = nwbRead('data.nwb', 'savedir', '.');
 %
 %  See also GENERATECORE, GENERATEEXTENSION, NWBFILE, NWBEXPORT
-ignoreCache = ~isempty(varargin) && ischar(varargin{1}) &&...
-    strcmp('ignorecache', varargin{1});
+
+assert(iscellstr(varargin), 'NWB:NWBRead:InvalidParameters',...
+    'Optional parameters must all be character arrays.'); %#ok<ISCLSTR>
+
+ignoreCache = any(strcmpi(varargin, 'ignorecache'));
+
+saveDirMask = strcmpi(varargin, 'savedir');
+assert(~saveDirMask(end), 'NWB:NWBRead:InvalidSaveDir',...
+    '`savedir` is a key value pair requiring a directory string as a value.');
+if any(saveDirMask)
+    saveDir = varargin{find(saveDirMask, 1, 'last') + 1};
+else
+    saveDir = '';
+end
+
 Blacklist = struct(...
     'attributes', {{'.specloc', 'object_id'}},...
     'groups', {{}});
@@ -30,14 +44,14 @@ end
 if ~ignoreCache
     if isempty(specLocation)
         try
-            generateCore(util.getSchemaVersion(filename));
+            generateCore(util.getSchemaVersion(filename), 'savedir', saveDir);
         catch ME
             if ~strcmp(ME.identifier, 'NWB:GenerateCore:MissingCoreSchema')
                 rethrow(ME);
             end
         end
     else
-        generateSpec(filename, h5info(filename, specLocation));
+        generateSpec(filename, h5info(filename, specLocation), 'savedir', saveDir);
     end
     rehash();
 end
@@ -63,7 +77,7 @@ end
 H5F.close(fid);
 end
 
-function generateSpec(filename, specinfo)
+function generateSpec(filename, specinfo, varargin)
 specNames = cell(size(specinfo.Groups));
 fid = H5F.open(filename);
 for iGroup = 1:length(specinfo.Groups)
