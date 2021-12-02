@@ -22,7 +22,7 @@ classdef PyNWBIOTest < tests.system.RoundTripTest
                 testCase.assertFail(cmdout);
             end
             filename = ['PyNWB.' testCase.className() '.testOutToMatNWB.nwb'];
-            pyfile = nwbRead(filename);
+            pyfile = nwbRead(filename, 'savedir', '.');
             pycontainer = testCase.getContainer(pyfile);
             matcontainer = testCase.getContainer(testCase.file);
             nwbExport(testCase.file, 'temp.nwb'); % hack to fill out ObjectView container paths.

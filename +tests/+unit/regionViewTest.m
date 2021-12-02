@@ -9,10 +9,11 @@ end
 
 function setup(testCase)
 testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
-generateCore();
+generateCore('savedir', '.');
 schemaPath = fullfile(misc.getMatnwbDir(),...
     '+tests', '+unit', 'regionReferenceSchema', 'rrs.namespace.yaml');
-generateExtension(schemaPath);
+generateExtension(schemaPath, 'savedir', '.');
+rehash();
 end
 
 function testRegionViewIo(testCase)
@@ -45,7 +46,7 @@ for i = 1:100
         'data_regref', rcDataRef));
 end
 nwb.export('test.nwb');
-nwbActual = nwbRead('test.nwb');
+nwbActual = nwbRead('test.nwb', 'ignorecache');
 tests.util.verifyContainerEqual(testCase, nwbActual, nwb);
 
 for i = 1:100

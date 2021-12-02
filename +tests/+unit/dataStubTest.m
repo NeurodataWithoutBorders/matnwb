@@ -9,7 +9,8 @@ end
 
 function setup(testCase)
 testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
-generateCore();
+generateCore('savedir', '.');
+rehash();
 end
 
 function testRegionRead(testCase)
@@ -33,7 +34,7 @@ nwb.acquisition.set('data', timeseries);
 %%
 
 nwbExport(nwb, 'test_stub_read.nwb');
-nwb2 = nwbRead('test_stub_read.nwb');
+nwb2 = nwbRead('test_stub_read.nwb', 'ignorecache');
 
 stub = nwb2.acquisition.get('data').data;
 
@@ -79,8 +80,8 @@ end
 
 function testObjectCopy(testCase)
 unitTestLocation = fullfile(misc.getMatnwbDir(), '+tests', '+unit');
-generateExtension(fullfile(unitTestLocation, 'regionReferenceSchema', 'rrs.namespace.yaml'));
-generateExtension(fullfile(unitTestLocation, 'compoundSchema', 'cs.namespace.yaml'));
+generateExtension(fullfile(unitTestLocation, 'regionReferenceSchema', 'rrs.namespace.yaml'), 'savedir', '.');
+generateExtension(fullfile(unitTestLocation, 'compoundSchema', 'cs.namespace.yaml'), 'savedir', '.');
 rehash();
 nwb = NwbFile(...
     'identifier', 'DATASTUB',...
@@ -99,7 +100,7 @@ rcRef = types.cs.CompoundRefData('data', table(...
 nwb.acquisition.set('rc', rc);
 nwb.analysis.set('rcRef', rcRef);
 nwbExport(nwb, 'original.nwb');
-nwbNew = nwbRead('original.nwb');
+nwbNew = nwbRead('original.nwb', 'ignorecache');
 tests.util.verifyContainerEqual(testCase, nwbNew, nwb);
 nwbExport(nwbNew, 'new.nwb');
 end

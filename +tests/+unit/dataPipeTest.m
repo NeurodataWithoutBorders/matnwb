@@ -9,6 +9,8 @@ end
 
 function setup(testCase)
 testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
+generateCore('savedir', '.');
+rehash();
 end
 
 function testIndex(testCase)

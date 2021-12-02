@@ -9,10 +9,11 @@ end
 
 function setup(testCase)
 testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
-generateCore();
+generateCore('savedir', '.');
 schemaPath = fullfile(misc.getMatnwbDir(),...
     '+tests', '+unit', 'multipleShapesSchema', 'mss.namespace.yaml');
-generateExtension(schemaPath);
+generateExtension(schemaPath, 'savedir', '.');
+rehash();
 end
 
 function testMultipleShapesDataset(testCase)
@@ -59,5 +60,5 @@ wrapper = types.mss.MultiShapeWrapper('shaped_data', dataset);
 nwb.acquisition.set('wrapper', wrapper);
 filename = 'multipleShapesTest.nwb';
 nwbExport(nwb, filename);
-tests.util.verifyContainerEqual(testCase, nwbRead(filename), nwb);
+tests.util.verifyContainerEqual(testCase, nwbRead(filename, 'ignorecache'), nwb);
 end

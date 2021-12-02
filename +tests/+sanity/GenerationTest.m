@@ -13,7 +13,7 @@ classdef GenerationTest < matlab.unittest.TestCase
     methods (TestMethodSetup)
         function setupMethod(testCase, schemaVersion)
             testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
-            generateCore(schemaVersion);
+            generateCore(schemaVersion, 'savedir', '.');
             rehash();
         end
     end
@@ -24,7 +24,7 @@ classdef GenerationTest < matlab.unittest.TestCase
                 'session_description', 'test nwbfile',...
                 'session_start_time', datetime());
             nwbExport(expected, 'empty.nwb');
-            tests.util.verifyContainerEqual(testCase, nwbRead('empty.nwb'), expected);
+            tests.util.verifyContainerEqual(testCase, nwbRead('empty.nwb', 'ignorecache'), expected);
         end
         
         function dynamicTableMethodsTest(testCase)
