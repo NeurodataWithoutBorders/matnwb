@@ -16,11 +16,6 @@ generateExtension(schemaPath, 'savedir', '.');
 rehash();
 end
 
-function teardown(testCase)
-rootDir = misc.getMatnwbDir();
-delete(fullfile(rootDir, 'namespaces', 'mss.mat'));
-end
-
 function testMultipleShapesDataset(testCase)
 msd = types.mss.MultiShapeDataset('data', rand(3, 1));
 msd.data = rand(1, 5, 7);

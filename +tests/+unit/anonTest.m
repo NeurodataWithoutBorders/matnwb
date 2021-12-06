@@ -16,11 +16,6 @@ generateExtension(schemaPath, 'savedir', '.');
 rehash();
 end
 
-function teardown(testCase)
-rootDir = misc.getMatnwbDir();
-delete(fullfile(rootDir, 'namespaces', 'anon.mat'));
-end
-
 function testAnonDataset(testCase)
 ag = types.anon.AnonGroup('ad', types.anon.AnonData());
 nwbExpected = NwbFile(...

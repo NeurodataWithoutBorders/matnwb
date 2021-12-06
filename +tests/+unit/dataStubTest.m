@@ -104,7 +104,4 @@ nwbExport(nwb, 'original.nwb');
 nwbNew = nwbRead('original.nwb', 'ignorecache');
 tests.util.verifyContainerEqual(testCase, nwbNew, nwb);
 nwbExport(nwbNew, 'new.nwb');
-
-delete(fullfile(rootDir, 'namespaces', 'rrs.mat'));
-delete(fullfile(rootDir, 'namespaces', 'cs.mat'));
 end

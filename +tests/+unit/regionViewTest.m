@@ -16,11 +16,6 @@ generateExtension(schemaPath, 'savedir', '.');
 rehash();
 end
 
-function teardown(testCase)
-rootDir = misc.getMatnwbDir();
-delete(fullfile(rootDir, 'namespaces', 'rrs.mat'));
-end
-
 function testRegionViewIo(testCase)
 nwb = NwbFile(...
     'identifier', 'REGIONREF',...

@@ -1,12 +1,5 @@
-function saveCache(NamespaceInfo, varargin)
+function saveCache(NamespaceInfo, saveDir)
 %SAVECACHE saves namespace info as .mat in `namespaces` directory
-
-p = inputParser;
-addParameter(p, 'savedir', misc.getMatnwbDir(),...
-    @(s)validateattributes(s, {'char', 'string'}, {'scalartext'}));
-parse(p, varargin{:});
-
-saveDir = p.Results.savedir;
 
 namespacePath = fullfile(saveDir, 'namespaces');
 if 7 ~= exist(namespacePath, 'dir')
