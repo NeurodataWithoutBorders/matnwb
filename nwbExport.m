@@ -32,7 +32,6 @@ for i=1:length(nwb)
     else
         filename = filenames;
     end
-    
-    nwb(i).export(filename);
+    export(nwb(i), filename);
 end
 end
