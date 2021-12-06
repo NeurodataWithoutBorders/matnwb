@@ -15,7 +15,7 @@ else
 end
 
 % Get the actual location of the matnwb directory.
-namespaceDir = misc.getNamespaceDir();
+namespaceDir = fullfile(saveDir, 'namespaces');
 
 fileList = dir(namespaceDir);
 fileList = fileList(~[fileList.isdir]);
