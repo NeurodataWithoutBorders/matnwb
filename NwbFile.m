@@ -41,15 +41,16 @@ classdef NwbFile < types.core.NWBFile
             
             try
                 output_file_id = H5F.create(filename);
+                isEditingFile = false;
             catch ME % if file exists, open and edit
                 if verLessThan('matlab', '9.9') % < 2020b
-                    isFileExistsError = strcmp(ME.identifier, 'MATLAB:imagesci:hdf5lib:libraryError')...
+                    isEditingFile = strcmp(ME.identifier, 'MATLAB:imagesci:hdf5lib:libraryError')...
                         && contains(ME.message, '''File exists''');
                 else
-                    isFileExistsError = strcmp(ME.identifier, 'MATLAB:imagesci:hdf5io:resourceAlreadyExists');
+                    isEditingFile = strcmp(ME.identifier, 'MATLAB:imagesci:hdf5io:resourceAlreadyExists');
                 end
                 
-                if isFileExistsError
+                if isEditingFile
                     output_file_id = H5F.open(filename, 'H5F_ACC_RDWR', 'H5P_DEFAULT');
                 else
                     rethrow(ME);
@@ -64,6 +65,9 @@ classdef NwbFile < types.core.NWBFile
             catch ME
                 obj.file_create_date(end) = [];
                 H5F.close(output_file_id);
+                if ~isEditingFile
+                    delete(filename);
+                end
                 rethrow(ME);
             end
         end
