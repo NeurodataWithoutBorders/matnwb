@@ -24,7 +24,9 @@ classdef GenerationTest < matlab.unittest.TestCase
                 'session_description', 'test nwbfile',...
                 'session_start_time', datetime());
             nwbExport(expected, 'empty.nwb');
-            tests.util.verifyContainerEqual(testCase, nwbRead('empty.nwb', 'ignorecache'), expected);
+            tests.util.verifyContainerEqual(testCase, ...
+                nwbRead('empty.nwb', 'ignorecache'), ...
+                expected);
         end
         
         function dynamicTableMethodsTest(testCase)

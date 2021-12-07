@@ -78,6 +78,16 @@ H5F.close(fid);
 end
 
 function generateSpec(filename, specinfo, varargin)
+saveDirMask = strcmp(varargin, 'savedir');
+if any(saveDirMask)
+    assert(~saveDirMask(end),...
+        'NWB:Read:InvalidParameter',...
+        'savedir must be paired with the desired save directory.');
+    saveDir = varargin{find(saveDirMask, 1, 'last') + 1};
+else
+    saveDir = misc.getMatnwbDir();
+end
+
 specNames = cell(size(specinfo.Groups));
 fid = H5F.open(filename);
 for iGroup = 1:length(specinfo.Groups)
@@ -110,17 +120,16 @@ for iGroup = 1:length(specinfo.Groups)
     % Handle embedded namespaces.
     Namespace = Namespaces(strcmp({Namespaces.name}, namespaceName));
     
-    spec.saveCache(Namespace);
+    spec.saveCache(Namespace, saveDir);
     specNames{iGroup} = Namespace.name;
 end
 H5F.close(fid);
-fid = [];
 
 missingNames = cell(size(specNames));
 for iName = 1:length(specNames)
     name = specNames{iName};
     try
-        file.writeNamespace(name);
+        file.writeNamespace(name, saveDir);
     catch ME
         if strcmp(ME.identifier, 'NWB:Namespace:CacheMissing')
             missingNames{iName} = name;
