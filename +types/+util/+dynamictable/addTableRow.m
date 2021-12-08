@@ -42,6 +42,13 @@ for i = 1:length(rowNames)
     for j = 1:length(rowColumn)
         if iscell(rowColumn)
             rv = rowColumn{j};
+        elseif ndims(rowColumn)>1
+            % retrieving multi-dimensional row without collapsing dims
+            rank = ndims(rowColumn);
+            selectInd = cell(1, rank);
+            selectInd{1} = j;
+            selectInd(2:end) = {':'};
+            rv = rowColumn(selectInd{:});
         else
             rv = rowColumn(j);
         end

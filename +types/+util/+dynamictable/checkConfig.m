@@ -40,12 +40,14 @@ while c <= length(columns)
                 catch % catch legacy table instance
                     cv = DynamicTable.vectorindex.get(cn);
                 end
-                if isa(cv.data,'types.untyped.DataStub') || isa(cv.data,'types.untyped.DataPipe')
-                    data = cv.data(:);
+                if isa(cv.data,'types.untyped.DataStub')
+                    lengths(c) = cv.data.dims(1);
+                elseif isa(cv.data,'types.untyped.DataPipe')
+                    lengths(c) = size(cv.data(:),1);
                 else
-                    data = cv.data;
+                    lengths(c) = size(cv.data,1);% interested in number of rows
                 end
-                lengths(c) = size(data,1);% interested in number of rows
+                
             end
         end
         if lastStraightCol > 0
