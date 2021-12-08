@@ -43,7 +43,10 @@ while c <= length(columns)
                 if isa(cv.data,'types.untyped.DataStub')
                     lengths(c) = cv.data.dims(1);
                 elseif isa(cv.data,'types.untyped.DataPipe')
-                    lengths(c) = size(cv.data(:),1);
+                    rank = ndims(cv.data);
+                    selectInd = cell(1, rank);
+                    selectInd(1:end) = {':'};
+                    lengths(c) = size(cv.data(selectInd{:}),1);
                 else
                     lengths(c) = size(cv.data,1);% interested in number of rows
                 end
