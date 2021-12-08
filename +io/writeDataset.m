@@ -2,6 +2,14 @@ function writeDataset(fid, fullpath, data, varargin)
 assert(isempty(varargin) || iscellstr(varargin),...
     'NWB:WriteDataset:InvalidStringFormat',...
     'options should be character arrays.');
+%pre-emptively switch dimensions of dataset before writing
+if isa(data,'double')
+    dims = ndims(data);
+    dim_order = 1:dims;
+    dim_order(1) = dims;
+    dim_order(end) = 1;
+    data = permute(data,dim_order);
+end
 [tid, sid, data] = io.mapData2H5(fid, data, varargin{:});
 [~, dims, ~] = H5S.get_simple_extent_dims(sid);
 try
