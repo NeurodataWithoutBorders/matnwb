@@ -275,7 +275,7 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
             % export and read-in expandable table
             filename = ['MatNWB.' testCase.className() '.ExpandableTableTest.nwb'];
             nwbExport(testCase.file, filename);
-            readFile = nwbRead(filename);
+            readFile = nwbRead(filename, 'ignorecache');
             % add rows to expandable table and export
             for i = 101:200
                 readFile.intervals_trials.addRow( ...
@@ -288,7 +288,7 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
             end
             nwbExport(readFile, filename)
             % read in expanded table
-            readFile = nwbRead(filename);
+            readFile = nwbRead(filename, 'ignorecache');
             % test getRow
             actualData = readFile.intervals_trials.getRow(1:200, ...
                 'columns', {'randomvalues'});

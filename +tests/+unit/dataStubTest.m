@@ -79,7 +79,8 @@ testCase.verifyEqual(stub([5 4 3 2 2]), data([5 4 3 2 2]));
 end
 
 function testObjectCopy(testCase)
-unitTestLocation = fullfile(misc.getMatnwbDir(), '+tests', '+unit');
+rootDir = misc.getMatnwbDir();
+unitTestLocation = fullfile(rootDir, '+tests', '+unit');
 generateExtension(fullfile(unitTestLocation, 'regionReferenceSchema', 'rrs.namespace.yaml'), 'savedir', '.');
 generateExtension(fullfile(unitTestLocation, 'compoundSchema', 'cs.namespace.yaml'), 'savedir', '.');
 rehash();
