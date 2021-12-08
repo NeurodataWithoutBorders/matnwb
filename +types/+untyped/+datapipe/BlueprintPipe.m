@@ -202,11 +202,11 @@ end
 function sid = allocateSpace(maxSize)
 rank = length(maxSize);
 h5_dims = zeros(1, rank);
-h5_rank = find(maxSize == 1);
+h5_rank = find(maxSize ~= Inf);
 if isempty(h5_rank)
     h5_rank = rank;
 end
-h5_maxdims = fliplr(maxSize(1:h5_rank));
+h5_maxdims = maxSize(1:h5_rank);
 h5_unlimited = H5ML.get_constant_value('H5S_UNLIMITED');
 h5_maxdims(isinf(h5_maxdims)) = h5_unlimited;
 sid = H5S.create_simple(rank, h5_dims, h5_maxdims);

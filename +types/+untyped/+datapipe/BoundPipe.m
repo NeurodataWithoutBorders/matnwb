@@ -28,8 +28,8 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
             [numdims, h5_dims, h5_maxdims] = H5S.get_simple_extent_dims(sid);
             H5S.close(sid);
             
-            current_size = fliplr(h5_dims);
-            max_size = fliplr(h5_maxdims);
+            current_size = h5_dims;
+            max_size = h5_maxdims;
             if 1 == numdims
                 current_size = [current_size 1];
                 max_size = [max_size 1];
@@ -121,9 +121,9 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
             start_indices = zeros(1, length(obj.config.maxSize));
             start_indices(obj.config.axis) = obj.config.offset;
             
-            h5_start = fliplr(start_indices);
+            h5_start = start_indices;
             h5_stride = [];
-            h5_count = fliplr(dataSize);
+            h5_count = dataSize;
             h5_block = [];
             H5S.select_hyperslab(sid,...
                 'H5S_SELECT_OR',...
@@ -141,7 +141,7 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
             [~, h5_dims, ~] = H5S.get_simple_extent_dims(sid);
             new_extents = data_size;
             if all(0 < h5_dims)
-                current_size = fliplr(h5_dims);
+                current_size = h5_dims;
                 new_extents(obj.config.axis) = new_extents(obj.config.axis)...
                     + current_size(obj.config.axis);
             end
@@ -155,7 +155,7 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
                 obj.config.maxSize(non_axes_mask) == new_extents(non_axes_mask)),...
                 errorId,...
                 'Non-axis data size should match maxSize.');
-            H5D.set_extent(did, fliplr(new_extents));
+            H5D.set_extent(did, new_extents);
         end
     end
     
@@ -183,7 +183,7 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
             
             fid = obj.getFile('H5F_ACC_RDWR');
             [mem_tid, mem_sid, data] = io.mapData2H5(fid, data, 'forceArray');
-            h5_count = fliplr(data_size);
+            h5_count = data_size;
             H5S.set_extent_simple(mem_sid, rank, h5_count, h5_count);
             
             did = obj.getDataset('H5F_ACC_RDWR');
