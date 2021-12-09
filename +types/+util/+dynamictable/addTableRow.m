@@ -43,7 +43,12 @@ for i = 1:length(rowNames)
         if iscell(rowColumn)
             rv = rowColumn{j};
         else
-            rv = rowColumn(j);
+            % retrieving multi-dimensional row without collapsing dims
+            rank = ndims(rowColumn);
+            selectInd = cell(1, rank);
+            selectInd{1} = j;
+            selectInd(2:end) = {':'};
+            rv = rowColumn(selectInd{:});
         end
         types.util.dynamictable.addRawData(DynamicTable, rn, rv);
     end

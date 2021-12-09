@@ -62,7 +62,7 @@ if isscalar(colIndStack)
     if isa(Vector.data, 'types.untyped.DataStub')
         rank = length(Vector.data.dims);
     else
-        rank = length(size(matInd));
+        rank = ndims(Vector.data);
     end
 
     selectInd = cell(1, rank);
