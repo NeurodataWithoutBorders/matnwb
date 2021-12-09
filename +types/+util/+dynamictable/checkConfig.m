@@ -22,7 +22,7 @@ columns = setdiff(DynamicTable.colnames,ignoreList);
 % keep track of last non-ragged column index; to prevent looping over array twice
 c = 1;
 lastStraightCol = 0;
-lens = zeros(length(columns),1);
+lengths = zeros(length(columns),1);
 while c <= length(columns)
     cn = columns{c};
     % ignore columns that have an index (i.e. ragged), length will be unmatched
@@ -31,7 +31,7 @@ while c <= length(columns)
         if isprop(DynamicTable, cn)
             cv = DynamicTable.(cn);
             if ~isempty(cv)
-                lens(c) = length(cv.data(:));
+                lengths(c) = length(cv.data(:));
             end
         else
             if ~isempty(keys(DynamicTable.vectordata))
@@ -40,11 +40,21 @@ while c <= length(columns)
                 catch % catch legacy table instance
                     cv = DynamicTable.vectorindex.get(cn);
                 end
-                lens(c) = length(cv.data(:));
+                if isa(cv.data,'types.untyped.DataStub')
+                    lengths(c) = cv.data.dims(1);
+                elseif isa(cv.data,'types.untyped.DataPipe')
+                    rank = ndims(cv.data);
+                    selectInd = cell(1, rank);
+                    selectInd(1:end) = {':'};
+                    lengths(c) = size(cv.data(selectInd{:}),1);
+                else
+                    lengths(c) = size(cv.data,1);% interested in number of rows
+                end
+                
             end
         end
         if lastStraightCol > 0
-            assert(lens(c)==lens(lastStraightCol), ...
+            assert(lengths(c)==lengths(lastStraightCol), ...
                 'NWB:DynamicTable', ...
                 'All columns must be the same length.' ...
                 );
@@ -59,20 +69,20 @@ while c <= length(columns)
     c = c+1;
 end
 
-if ~isempty(lens)
+if ~isempty(lengths)
     if isempty(DynamicTable.id) || isempty(DynamicTable.id.data(:))
         if 8 == exist('types.hdmf_common.ElementIdentifiers', 'class')
             DynamicTable.id = types.hdmf_common.ElementIdentifiers( ...
-                'data', int64((1:lens(lastStraightCol))-1)' ...
+                'data', int64((1:lengths(lastStraightCol))-1)' ...
             );
         else % legacy Element Identifiers
             DynamicTable.id = types.core.ElementIdentifiers( ...
-            'data', int64((1:lens(lastStraightCol))-1)' ...
+            'data', int64((1:lengths(lastStraightCol))-1)' ...
         );
         end
     
     else
-        assert(lens(lastStraightCol) == length(DynamicTable.id.data(:)), ...
+        assert(lengths(lastStraightCol) == length(DynamicTable.id.data(:)), ...
             'NWB:DynamicTable', ...
             'Must provide same number of ids as length of columns.' ...
         );

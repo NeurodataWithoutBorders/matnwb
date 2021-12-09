@@ -29,7 +29,7 @@ if any(saveDirMask)
     saveDirParametersMask = saveDirMask | circshift(saveDirMask, 1);
     sourceList = varargin(~saveDirParametersMask);
 else
-    saveDir = '';
+    saveDir = misc.getMatnwbDir();
     sourceList = varargin;
 end
 
@@ -48,7 +48,7 @@ for iNamespaceFiles = 1:length(sourceList)
 
     for iNamespace = 1:length(Namespaces)
         Namespace = Namespaces(iNamespace);
-        spec.saveCache(Namespace);
+        spec.saveCache(Namespace, saveDir);
         file.writeNamespace(Namespace.name, saveDir);
         rehash();
     end
