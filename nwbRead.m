@@ -28,7 +28,7 @@ assert(isempty(saveDirMask) || ~saveDirMask(end), 'NWB:NWBRead:InvalidSaveDir',.
 if any(saveDirMask)
     saveDir = varargin{find(saveDirMask, 1, 'last') + 1};
 else
-    saveDir = '';
+    saveDir = misc.getMatnwbDir();
 end
 
 Blacklist = struct(...
