@@ -41,14 +41,14 @@ while c <= length(columns)
                     cv = DynamicTable.vectorindex.get(cn);
                 end
                 if isa(cv.data,'types.untyped.DataStub')
-                    lengths(c) = cv.data.dims(1);
+                    lengths(c) = cv.data.dims(end);
                 elseif isa(cv.data,'types.untyped.DataPipe')
                     rank = ndims(cv.data);
                     selectInd = cell(1, rank);
                     selectInd(1:end) = {':'};
                     lengths(c) = size(cv.data(selectInd{:}),1);
                 else
-                    lengths(c) = size(cv.data,1);% interested in number of rows
+                    lengths(c) = size(cv.data,ndims(cv.data));% interested in last dimension
                 end
                 
             end
@@ -73,11 +73,11 @@ if ~isempty(lengths)
     if isempty(DynamicTable.id) || isempty(DynamicTable.id.data(:))
         if 8 == exist('types.hdmf_common.ElementIdentifiers', 'class')
             DynamicTable.id = types.hdmf_common.ElementIdentifiers( ...
-                'data', int64((1:lengths(lastStraightCol))-1)' ...
+                'data', int64((1:lengths(lastStraightCol))-1) ...
             );
         else % legacy Element Identifiers
             DynamicTable.id = types.core.ElementIdentifiers( ...
-            'data', int64((1:lengths(lastStraightCol))-1)' ...
+            'data', int64((1:lengths(lastStraightCol))-1) ...
         );
         end
     
