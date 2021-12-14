@@ -17,6 +17,11 @@ if nargin<2
 else
     ignoreList = varargin{1};
 end
+% remove null characters from column names
+DynamicTable.colnames = cellfun(...
+    @removeNulls, DynamicTable.colnames, ...
+    'UniformOutput',false ...
+);
 % do not check specified columns - useful for classes that build on DynamicTable class 
 columns = setdiff(DynamicTable.colnames,ignoreList);
 % keep track of last non-ragged column index; to prevent looping over array twice
@@ -93,4 +98,9 @@ else
     else % legacy Element Identifiers
         DynamicTable.id = types.core.ElementIdentifiers();
     end
+end
+end
+function in = removeNulls(in)
+null_idxs = find(double(in)==0);
+in(null_idxs) = [];
 end
