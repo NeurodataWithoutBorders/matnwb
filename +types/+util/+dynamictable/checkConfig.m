@@ -18,10 +18,16 @@ else
     ignoreList = varargin{1};
 end
 % remove null characters from column names
-DynamicTable.colnames = cellfun(...
-    @removeNulls, DynamicTable.colnames, ...
-    'UniformOutput',false ...
-);
+if ~isempty(DynamicTable.colnames)
+    if iscell(DynamicTable.colnames)
+        DynamicTable.colnames = cellfun(...
+            @removeNulls, DynamicTable.colnames, ...
+            'UniformOutput',false ...
+        );
+    else
+        DynamicTable.colnames = removeNulls(DynamicTable.colnames);
+    end
+end
 % do not check specified columns - useful for classes that build on DynamicTable class 
 columns = setdiff(DynamicTable.colnames,ignoreList);
 % keep track of last non-ragged column index; to prevent looping over array twice
