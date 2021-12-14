@@ -66,8 +66,9 @@ if isscalar(colIndStack)
     end
 
     selectInd = cell(1, rank);
-    selectInd{1} = matInd;
-    selectInd(2:end) = {':'};
+    selectInd(1:end-1) = {':'};
+    selectInd{end} = matInd;
+    
 
     if isa(Vector.data, 'types.untyped.DataPipe')
         selected = Vector.data.load(matInd);
