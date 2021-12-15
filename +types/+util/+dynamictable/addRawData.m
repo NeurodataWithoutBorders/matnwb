@@ -26,7 +26,8 @@ else
     DynamicTable.vectordata.set(column, VecData);
 end
 
-if size(data, ndims(VecData.data)) > 1 && ...
+if iscell(data) && ...
+        size(data, ndims(VecData.data)) > 1 && ...
         ~isequal(size(data),size(VecData.data))
     data = {data};
 end
