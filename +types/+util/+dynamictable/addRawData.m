@@ -4,9 +4,6 @@ function addRawData(DynamicTable, column, data)
 % indices.
 validateattributes(column, {'char'}, {'scalartext'});
 
-if size(data, 1) > 1
-    data = {data};
-end
 
 % Don't set the data until after indices are updated.
 if 8 == exist('types.hdmf_common.VectorData', 'class')
@@ -27,6 +24,10 @@ elseif isKey(DynamicTable.vectordata, column)
     VecData = DynamicTable.vectordata.get(column);
 else
     DynamicTable.vectordata.set(column, VecData);
+end
+
+if size(data, ndims(VecData.data)) > 1
+    data = {data};
 end
 
 % grab all available indices for column.
@@ -64,8 +65,6 @@ end
 
 function numEntries = nestedAdd(DynamicTable, indChain, data)
 name = indChain{end};
-numEntries = size(data, ndims(data));
-
 if isprop(DynamicTable, name)
     Vector = DynamicTable.(name);
 elseif isprop(DynamicTable, 'vectorindex') && DynamicTable.vectorindex.isKey(name)
@@ -73,6 +72,8 @@ elseif isprop(DynamicTable, 'vectorindex') && DynamicTable.vectorindex.isKey(nam
 else
     Vector = DynamicTable.vectordata.get(name);
 end
+
+numEntries = size(data, ndims(Vector.data));
 
 if isa(Vector, 'types.hdmf_common.VectorIndex') || isa(Vector, 'types.core.VectorIndex')
     elems = zeros(numEntries, 1);

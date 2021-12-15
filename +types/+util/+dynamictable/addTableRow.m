@@ -46,8 +46,8 @@ for i = 1:length(rowNames)
             % retrieving multi-dimensional row without collapsing dims
             rank = ndims(rowColumn);
             selectInd = cell(1, rank);
-            selectInd{1} = j;
-            selectInd(2:end) = {':'};
+            selectInd{end} = j;
+            selectInd(1:end-1) = {':'};
             rv = rowColumn(selectInd{:});
         end
         types.util.dynamictable.addRawData(DynamicTable, rn, rv);
