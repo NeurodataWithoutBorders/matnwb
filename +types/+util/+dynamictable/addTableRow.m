@@ -68,7 +68,7 @@ else
         newStartId = length(DynamicTable.id.data);
     end
     
-    idRange = (newStartId:(newStartId+height(subTable)-1)) .';
+    idRange = (newStartId:(newStartId+height(subTable)-1));
 end
 
 types.util.dynamictable.addRawData(DynamicTable, 'id', idRange);
@@ -84,7 +84,7 @@ else
         rv = {rv};
     end
     for i = 1:length(rv)
-        validateattributes(rv{i}, {TypeStruct.type}, {'size', [NaN TypeStruct.dims(2:end)]});
+        validateattributes(rv{i}, {TypeStruct.type}, {'size', [TypeStruct.dims(1:end-1) NaN]});
     end
 end
 end
