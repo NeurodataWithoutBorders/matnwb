@@ -107,6 +107,5 @@ else
 end
 end
 function in = removeNulls(in)
-null_idxs = find(double(in)==0);
-in(null_idxs) = [];
+in(double(in) == 0) = [];
 end
