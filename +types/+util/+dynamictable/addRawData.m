@@ -90,7 +90,7 @@ end
 numEntries = size(data, maxDim);
 
 if isa(Vector, 'types.hdmf_common.VectorIndex') || isa(Vector, 'types.core.VectorIndex')
-    elems = zeros(numEntries, 1);
+    elems = zeros(1, numEntries);
     for iEntry = 1:numEntries
         elems(iEntry) = nestedAdd(DynamicTable, indChain(1:(end-1)), data{iEntry});
     end
