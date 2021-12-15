@@ -41,7 +41,7 @@ for i = 1:length(columns)
         indexNames{end+1} = name;
     end
 
-    row{i} = select(DynamicTable, indexNames, ind);
+    row{i} = util.swapDims(select(DynamicTable, indexNames, ind));
 end
 subTable = table(row{:}, 'VariableNames', columns);
 end
