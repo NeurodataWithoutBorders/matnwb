@@ -12,7 +12,7 @@ end
 if isa(VecData.data, 'types.untyped.DataPipe')
     oldDataHeight = VecData.data.offset;
 else
-    oldDataHeight = size(VecData.data, 1);
+    oldDataHeight = size(VecData.data, ndims(VecData.data));
 end
 
 % we presume that if data already existed in the vectordata, then

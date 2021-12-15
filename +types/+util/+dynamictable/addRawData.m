@@ -26,8 +26,7 @@ else
     DynamicTable.vectordata.set(column, VecData);
 end
 
-if ~isempty(VecData.data) && ...
-        size(data, ndims(VecData.data)) > 1 && ...
+if size(data, ndims(VecData.data)) > 1 && ...
         ~isequal(size(data),size(VecData.data))
     data = {data};
 end
@@ -65,7 +64,10 @@ while iscell(subData) && ~iscellstr(subData)
 end
 end
 
-function numEntries = nestedAdd(DynamicTable, indChain, data)
+function numEntries = nestedAdd(DynamicTable, indChain, data, fromIndex)
+if nargin<4
+    fromIndex = 0;
+end
 name = indChain{end};
 if isprop(DynamicTable, name)
     Vector = DynamicTable.(name);
@@ -82,7 +84,12 @@ if isempty(Vector.data) || ...
         % one-dimensional column
         maxDim = ndims(data);
     else
-        maxDim = ndims(data)+1;
+        if fromIndex
+            % catch nested ragged array case
+            maxDim = ndims(data);
+        else
+            maxDim = ndims(data)+1;
+        end
     end
 else
     maxDim = ndims(Vector.data);
@@ -92,7 +99,7 @@ numEntries = size(data, maxDim);
 if isa(Vector, 'types.hdmf_common.VectorIndex') || isa(Vector, 'types.core.VectorIndex')
     elems = zeros(1, numEntries);
     for iEntry = 1:numEntries
-        elems(iEntry) = nestedAdd(DynamicTable, indChain(1:(end-1)), data{iEntry});
+        elems(iEntry) = nestedAdd(DynamicTable, indChain(1:(end-1)), data{iEntry}, 1);
     end
     
     raggedOffset = 0;
