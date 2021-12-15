@@ -26,7 +26,9 @@ else
     DynamicTable.vectordata.set(column, VecData);
 end
 
-if size(data, ndims(VecData.data)) > 1
+if ~isempty(VecData.data) && ...
+        size(data, ndims(VecData.data)) > 1 && ...
+        ~isequal(size(data),size(VecData.data))
     data = {data};
 end
 
@@ -72,8 +74,20 @@ elseif isprop(DynamicTable, 'vectorindex') && DynamicTable.vectorindex.isKey(nam
 else
     Vector = DynamicTable.vectordata.get(name);
 end
-
-numEntries = size(data, ndims(Vector.data));
+% figure out how many entries to be added
+if isempty(Vector.data) || ...
+    isequal(size(data),size(Vector.data))
+    % catches when table has one entry or less
+    if size(data,1) == 1
+        % one-dimensional column
+        maxDim = ndims(data);
+    else
+        maxDim = ndims(data)+1;
+    end
+else
+    maxDim = ndims(Vector.data);
+end
+numEntries = size(data, maxDim);
 
 if isa(Vector, 'types.hdmf_common.VectorIndex') || isa(Vector, 'types.core.VectorIndex')
     elems = zeros(numEntries, 1);
@@ -100,7 +114,7 @@ if isa(Vector, 'types.hdmf_common.VectorIndex') || isa(Vector, 'types.core.Vecto
     else
         % cast to double so the correct type shrinkwrap doesn't force-clamp
         % values.
-        Vector.data = cat(ndims(Vector.data), double(Vector.data), data);
+        Vector.data = cat(maxDim, double(Vector.data), data);
     end
 else
     
@@ -111,7 +125,7 @@ else
     if isa(Vector.data, 'types.untyped.DataPipe')
         Vector.data.append(data);
     else
-        Vector.data = cat(ndims(Vector.data), Vector.data, data);
+        Vector.data = cat(maxDim, Vector.data, data);
     end
 end
 end
