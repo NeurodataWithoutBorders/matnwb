@@ -53,7 +53,7 @@ end
 if isa(DynamicTable.id.data, 'types.untyped.DataPipe')
     DynamicTable.id.data.append(newId);
 else
-    DynamicTable.id.data = [double(DynamicTable.id.data); newId];
+    DynamicTable.id.data = [double(DynamicTable.id.data) newId];
 end
 end
 
@@ -67,6 +67,6 @@ elseif iscell(rv)
         validateType(TypeStruct, rv{iVal});
     end
 else
-    validateattributes(rv, {TypeStruct.type}, {'size', [NaN TypeStruct.dims(2:end)]});
+    validateattributes(rv, {TypeStruct.type}, {'size', [TypeStruct.dims(1:end-1) NaN]});
 end
 end

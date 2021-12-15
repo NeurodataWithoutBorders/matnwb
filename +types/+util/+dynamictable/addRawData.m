@@ -64,7 +64,7 @@ end
 
 function numEntries = nestedAdd(DynamicTable, indChain, data)
 name = indChain{end};
-numEntries = size(data, 1);
+numEntries = size(data, ndims(data));
 
 if isprop(DynamicTable, name)
     Vector = DynamicTable.(name);
@@ -99,7 +99,7 @@ if isa(Vector, 'types.hdmf_common.VectorIndex') || isa(Vector, 'types.core.Vecto
     else
         % cast to double so the correct type shrinkwrap doesn't force-clamp
         % values.
-        Vector.data = [double(Vector.data); data];
+        Vector.data = cat(ndims(Vector.data), double(Vector.data), data);
     end
 else
     
@@ -110,7 +110,7 @@ else
     if isa(Vector.data, 'types.untyped.DataPipe')
         Vector.data.append(data);
     else
-        Vector.data = [Vector.data; data];
+        Vector.data = cat(ndims(Vector.data), Vector.data, data);
     end
 end
 end
