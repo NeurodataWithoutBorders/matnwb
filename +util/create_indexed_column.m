@@ -19,13 +19,13 @@ if ~exist('description', 'var') || isempty(description)
     description = 'no description';
 end
 
-bounds = NaN(length(data), 1);
+bounds = NaN(1, length(data));
 for i = 1:length(data)
     bounds(i) = length(data{i});
 end
 bounds = uint64(cumsum(bounds));
 
-data = cell2mat(data)';
+data = cell2mat(data);
 
 if exist('table', 'var')
     data_vector = types.hdmf_common.DynamicTableRegion( ...

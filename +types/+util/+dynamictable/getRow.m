@@ -42,6 +42,13 @@ for i = 1:length(columns)
     end
 
     row{i} = util.swapDims(select(DynamicTable, indexNames, ind));
+    if length(ind)==1
+        % cell-wrap single multidimensional matrices to prevent invalid
+        % MATLAB tables
+        if ~iscell(row{i}) && length(row{i}) > 1
+            row{i} = {row{i}};
+        end
+    end
 end
 subTable = table(row{:}, 'VariableNames', columns);
 end

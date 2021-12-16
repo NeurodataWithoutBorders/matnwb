@@ -158,7 +158,7 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
         function appendRaggedContainer(~, file)
             % create synthetic data
             data = (1000:-1:1);
-            break_ind = [sort(randperm(999,199)) 1000];
+            break_ind = [sort(randperm(999,99)) 1000];
             dataArray = cell(1,length(break_ind));
             startInd = 1;
              for i = 1:length(break_ind)
@@ -188,7 +188,7 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
             startInd = VectorDataIndInd.data(4) + 1;
 
             Indices = startInd:endInd;
-            dataIndices = cell(length(Indices),1);
+            dataIndices = cell(1,length(Indices));
             for iRaggedInd = 1:length(Indices)
                 endInd = VectorDataInd.data(Indices(iRaggedInd));
                 if 1 == Indices(iRaggedInd)
@@ -196,7 +196,7 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
                 else
                     startInd = VectorDataInd.data(Indices(iRaggedInd) - 1) + 1;
                 end
-                dataIndices{iRaggedInd} = BaseVectorData.data((startInd:endInd) .', :);
+                dataIndices{iRaggedInd} = BaseVectorData.data(:, (startInd:endInd));
             end
 
             actualData = Table.getRow(5, 'columns', {'randomvalues'});
