@@ -2,6 +2,10 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
     methods
         function addContainer(~, file)
             colnames = {'start_time', 'stop_time', 'randomvalues', 'random_multi', 'stringdata'};
+            %add trailing nulls to columnames
+            for c =1:length(colnames)
+                colnames{c} = char([double(colnames{c}) zeros(1,randi(10))]);
+            end
             file.intervals_trials = types.core.TimeIntervals(...
                 'description', 'test dynamic table column',...
                 'colnames', colnames);
