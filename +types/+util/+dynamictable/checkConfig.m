@@ -43,10 +43,10 @@ while c <= length(columns)
                 if isa(cv.data,'types.untyped.DataStub')
                     lengths(c) = cv.data.dims(end);
                 elseif isa(cv.data,'types.untyped.DataPipe')
-                    rank = ndims(cv.data);
+                    rank = ndims(cv.data.internal.data);
                     selectInd = cell(1, rank);
                     selectInd(1:end) = {':'};
-                    lengths(c) = size(cv.data(selectInd{:}),1);
+                    lengths(c) = size(cv.data(selectInd{:}),rank);
                 else
                     lengths(c) = size(cv.data,ndims(cv.data));% interested in last dimension
                 end
