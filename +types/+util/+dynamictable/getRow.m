@@ -71,7 +71,6 @@ if isscalar(colIndStack)
     else
         rank = ndims(Vector.data);
     end
-
     selectInd = cell(1, rank);
     selectInd(1:end-1) = {':'};
     selectInd{end} = matInd;
@@ -81,6 +80,11 @@ if isscalar(colIndStack)
         selected = Vector.data.load(matInd);
     else
         selected = Vector.data(selectInd{:});
+    end
+    if rank == 1
+        % enter here if single dimensional column from DataStub
+        % row vector to column vector for consistency
+        selected = selected';
     end
 else
     assert(isa(Vector, 'types.hdmf_common.VectorIndex') || isa(Vector, 'types.core.VectorIndex'),...

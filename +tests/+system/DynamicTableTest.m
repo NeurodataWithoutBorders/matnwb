@@ -220,18 +220,18 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
             testCase.verifyEqual(expectedData,actualData.newraggedcolumn{1})
         end
 
-%         function getRowRoundtripTest(testCase)
-%             filename = ['MatNWB.' testCase.className() '.testGetRow.nwb'];
-%             nwbExport(testCase.file, filename);
-%             ActualFile = nwbRead(filename, 'ignorecache');
-%             ActualTable = ActualFile.intervals_trials;
-%             ExpectedTable = testCase.file.intervals_trials;
-% 
-%             testCase.verifyEqual(ExpectedTable.getRow(5), ActualTable.getRow(5));
-%             testCase.verifyEqual(ExpectedTable.getRow([5 6]), ActualTable.getRow([5 6]));
-%             testCase.verifyEqual(ExpectedTable.getRow([1153, 1217], 'useId', true),...
-%                 ActualTable.getRow([1153, 1217], 'useId', true));
-%         end
+        function getRowRoundtripTest(testCase)
+            filename = ['MatNWB.' testCase.className() '.testGetRow.nwb'];
+            nwbExport(testCase.file, filename);
+            ActualFile = nwbRead(filename, 'ignorecache');
+            ActualTable = ActualFile.intervals_trials;
+            ExpectedTable = testCase.file.intervals_trials;
+
+            testCase.verifyEqual(ExpectedTable.getRow(5), ActualTable.getRow(5));
+            testCase.verifyEqual(ExpectedTable.getRow([5 6]), ActualTable.getRow([5 6]));
+            testCase.verifyEqual(ExpectedTable.getRow([157, 163], 'useId', true),...
+                ActualTable.getRow([157, 163], 'useId', true));
+        end
 %         
 %         function ExpandableTableTest(testCase)
 %             % define data matrices
