@@ -3,7 +3,7 @@ szref = size(data);
 %first dimension is always the raw buffer size
 szref = szref(2:end);
 if isscalar(szref)
-    szref = [szref 1];
+    szref = [1 szref];%expect uni-dimensional as column vector
 end
 numref = prod(szref);
 if H5T.equal(tid, 'H5T_STD_REF_OBJ')
