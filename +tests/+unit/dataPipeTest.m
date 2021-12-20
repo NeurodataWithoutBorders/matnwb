@@ -18,7 +18,10 @@ filename = 'testIndexing.h5';
 name = '/test_data';
 
 data = rand(100, 100, 100);
-Pipe = types.untyped.DataPipe('data', data);
+Pipe = types.untyped.DataPipe( ...
+    'data', data, ...
+    'axis', 3 ...
+);
 
 testCase.verifyEqual(Pipe(:), data(:));
 testCase.verifyEqual(Pipe(:,:,1), data(:,:,1));
