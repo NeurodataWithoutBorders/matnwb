@@ -88,15 +88,15 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
                 'colnames', colnames, ...
                 'start_time',  types.hdmf_common.VectorData( ...
                     'description', 'start time column', ...
-                    'data', (1:200)' ...
+                    'data', (1:200) ...
                     ), ...
                 'stop_time',  types.hdmf_common.VectorData( ...
                     'description', 'stop time column', ...
-                    'data', (2:101)' ...
+                    'data', (2:101) ...
                     ), ...
                  'randomvalues',  types.hdmf_common.VectorData( ...
                     'description', 'randomvalues column', ...
-                    'data', mat2cell(rand(250,2), repmat(5, 50, 1)) ...
+                    'data', mat2cell(rand(2, 250),[2], repmat(5, 1, 50)) ...
                     ) ...
                 );
         end
@@ -106,20 +106,20 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
             file.intervals_trials = types.core.TimeIntervals(...
                 'description', 'test dynamic table column',...
                 'id',  types.hdmf_common.ElementIdentifiers( ...
-                    'data', (0:48)' ...
+                    'data', (0:48) ...
                     ), ...
                 'colnames', colnames, ...
                 'start_time',  types.hdmf_common.VectorData( ...
                     'description', 'start time column', ...
-                    'data', (1:50)' ...
+                    'data', (1:50) ...
                     ), ...
                 'stop_time',  types.hdmf_common.VectorData( ...
                     'description', 'stop time column', ...
-                    'data', (2:51)' ...
+                    'data', (2:51) ...
                     ), ...
                  'randomvalues',  types.hdmf_common.VectorData( ...
                     'description', 'randomvalues column', ...
-                    'data', mat2cell(rand(250,2), repmat(5, 50, 1)) ...
+                    'data', mat2cell(rand(2, 250),[2], repmat(5, 1, 50)) ...
                     ) ...
                 );
         end
@@ -131,15 +131,15 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
                 'colnames', colnames, ...
                 'start_time',  types.hdmf_common.VectorData( ...
                     'description', 'start time column', ...
-                    'data', (1:50)' ...
+                    'data', (1:50) ...
                     ), ...
                 'stop_time',  types.hdmf_common.VectorData( ...
                     'description', 'stop time column', ...
-                    'data', (2:51)' ...
+                    'data', (2:51) ...
                     ), ...
                  'randomvalues',  types.hdmf_common.VectorData( ...
                     'description', 'randomvalues column', ...
-                    'data', mat2cell(rand(250,2), repmat(5, 50, 1)) ...
+                    'data', mat2cell(rand(2, 250),[2], repmat(5, 1, 50)) ...
                     ) ...
                 );
         end
@@ -181,61 +181,61 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
     end
     
     methods (Test)
-%         function getRowTest(testCase)
-%             Table = testCase.file.intervals_trials;
-% 
-%             BaseVectorData = Table.vectordata.get('randomvalues');
-%             VectorDataInd = Table.vectordata.get('randomvalues_index');
-%             VectorDataIndInd = Table.vectordata.get('randomvalues_index_index');
-% 
-%             endInd = VectorDataIndInd.data(5);
-%             startInd = VectorDataIndInd.data(4) + 1;
-% 
-%             Indices = startInd:endInd;
-%             dataIndices = cell(1,length(Indices));
-%             for iRaggedInd = 1:length(Indices)
-%                 endInd = VectorDataInd.data(Indices(iRaggedInd));
-%                 if 1 == Indices(iRaggedInd)
-%                     startInd = 1;
-%                 else
-%                     startInd = VectorDataInd.data(Indices(iRaggedInd) - 1) + 1;
-%                 end
-%                 dataIndices{iRaggedInd} = BaseVectorData.data(:, (startInd:endInd));
-%             end
-% 
-%             actualData = Table.getRow(5, 'columns', {'randomvalues'});
-%             testCase.verifyEqual(dataIndices, actualData.randomvalues{1});
-%             
-%             % test with appended ragged columns
-%             testCase.appendRaggedContainer(testCase.file)
-%             Table = testCase.file.intervals_trials;
-%             % retrieve ragged column and index
-%             BaseVectorData = Table.vectordata.get('newraggedcolumn');
-%             VectorDataInd = Table.vectordata.get('newraggedcolumn_index');
-%             % verify end of ragged column index equal length of data vector
-%             testCase.verifyEqual(length(BaseVectorData.data),double(VectorDataInd.data(end)))
-%             % get expected ragged data
-%             endInd = VectorDataInd.data(100);
-%             startInd = VectorDataInd.data(99) + 1;
-%             expectedData = BaseVectorData.data(startInd:endInd);
-%             % get actual ragged data
-%             actualData = Table.getRow(100);
-%             % compare
-%             testCase.verifyEqual(expectedData,actualData.newraggedcolumn{1})
-%         end
-% 
-%         function getRowRoundtripTest(testCase)
-%             filename = ['MatNWB.' testCase.className() '.testGetRow.nwb'];
-%             nwbExport(testCase.file, filename);
-%             ActualFile = nwbRead(filename, 'ignorecache');
-%             ActualTable = ActualFile.intervals_trials;
-%             ExpectedTable = testCase.file.intervals_trials;
-% 
-%             testCase.verifyEqual(ExpectedTable.getRow(5), ActualTable.getRow(5));
-%             testCase.verifyEqual(ExpectedTable.getRow([5 6]), ActualTable.getRow([5 6]));
-%             testCase.verifyEqual(ExpectedTable.getRow([157, 163], 'useId', true),...
-%                 ActualTable.getRow([157, 163], 'useId', true));
-%         end
+        function getRowTest(testCase)
+            Table = testCase.file.intervals_trials;
+
+            BaseVectorData = Table.vectordata.get('randomvalues');
+            VectorDataInd = Table.vectordata.get('randomvalues_index');
+            VectorDataIndInd = Table.vectordata.get('randomvalues_index_index');
+
+            endInd = VectorDataIndInd.data(5);
+            startInd = VectorDataIndInd.data(4) + 1;
+
+            Indices = startInd:endInd;
+            dataIndices = cell(1,length(Indices));
+            for iRaggedInd = 1:length(Indices)
+                endInd = VectorDataInd.data(Indices(iRaggedInd));
+                if 1 == Indices(iRaggedInd)
+                    startInd = 1;
+                else
+                    startInd = VectorDataInd.data(Indices(iRaggedInd) - 1) + 1;
+                end
+                dataIndices{iRaggedInd} = BaseVectorData.data(:, (startInd:endInd));
+            end
+
+            actualData = Table.getRow(5, 'columns', {'randomvalues'});
+            testCase.verifyEqual(dataIndices, actualData.randomvalues{1});
+            
+            % test with appended ragged columns
+            testCase.appendRaggedContainer(testCase.file)
+            Table = testCase.file.intervals_trials;
+            % retrieve ragged column and index
+            BaseVectorData = Table.vectordata.get('newraggedcolumn');
+            VectorDataInd = Table.vectordata.get('newraggedcolumn_index');
+            % verify end of ragged column index equal length of data vector
+            testCase.verifyEqual(length(BaseVectorData.data),double(VectorDataInd.data(end)))
+            % get expected ragged data
+            endInd = VectorDataInd.data(100);
+            startInd = VectorDataInd.data(99) + 1;
+            expectedData = BaseVectorData.data(startInd:endInd);
+            % get actual ragged data
+            actualData = Table.getRow(100);
+            % compare
+            testCase.verifyEqual(expectedData,actualData.newraggedcolumn{1})
+        end
+
+        function getRowRoundtripTest(testCase)
+            filename = ['MatNWB.' testCase.className() '.testGetRow.nwb'];
+            nwbExport(testCase.file, filename);
+            ActualFile = nwbRead(filename, 'ignorecache');
+            ActualTable = ActualFile.intervals_trials;
+            ExpectedTable = testCase.file.intervals_trials;
+
+            testCase.verifyEqual(ExpectedTable.getRow(5), ActualTable.getRow(5));
+            testCase.verifyEqual(ExpectedTable.getRow([5 6]), ActualTable.getRow([5 6]));
+            testCase.verifyEqual(ExpectedTable.getRow([157, 163], 'useId', true),...
+                ActualTable.getRow([157, 163], 'useId', true));
+        end
 %         
         function ExpandableTableTest(testCase)
             % define data matrices
@@ -271,86 +271,88 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
             % test getRow
             actualData = readFile.intervals_trials.getRow(1:200, ...
                 'columns', {'randomvalues'});
-            testCase.verifyEqual(random_val_array, actualData.randomvalues');
+            % swap dims from table to match dimensions
+            testCase.verifyEqual(random_val_array, ...
+                util.swapDims(actualData.randomvalues));
         end
-% 
-%         function toTableTest(testCase)
-%             % test DynamicTable toTable method. 
-%             % 1. For a generic table, the toTable output should be very
-%             % similar to getRow output (except for presence of id column)
-%             %
-%             % retrieve rows from dynamic table
-%             ExpectedSubTable = testCase.file.intervals_trials.getRow(1:200);
-%             % convert DynamicTable to MATLAB table
-%             TrialsTable = testCase.file.intervals_trials.toTable();
-%             TrialsTable.id = []; %remove id column
-%             % retrieve rows from MATLAB table
-%             ActualSubTable = TrialsTable(1:200,:);
-%             % compare
-%             testCase.verifyEqual(ExpectedSubTable,ActualSubTable)
-%             % 2. For a table with a DynamicTable regions, the toTable output 
-%             % with false index argument should return the rows of the
-%             % target DynamicTable.
-%             %
-%             % create table with DynamicTableRegion
-%             DTRCol = types.hdmf_common.DynamicTableRegion( ...
-%                 'description', 'references rows of another table', ...
-%                 'data', randi([0 199],100,1), ...  # 0-indexed
-%                 'table',types.untyped.ObjectView(testCase.file.intervals_trials) ...  %
-%             );
-%             DataCol = types.hdmf_common.VectorData( ...
-%                 'description', 'data column', ...
-%                 'data', (1:100)' ...
-%             );
-%             DTRTable = types.hdmf_common.DynamicTable( ...
-%                 'description', 'test table with DynamicTableRegion', ...
-%                 'colnames', {'dtr_col','data_col'}, ...
-%                 'dtr_col', DTRCol, ...
-%                 'data_col',DataCol, ...
-%                 'id', types.hdmf_common.ElementIdentifiers( ...
-%                     'data', (0:99)' ...
-%                 ) ...
-%             );
-%             % convert DynamicTable to MATLAB table
-%             TrialsTableNoIndex = DTRTable.toTable(false);% include actual rows
-%             TrialsTableIndex = DTRTable.toTable(true);% include only index of rows
-%             % verify that the row included in DynamicTable and the
-%             % actual row indicated by the DynamicTableRegion are the same
-%             for i = 1:100
-%                 testCase.verifyEqual( ...
-%                     testCase.file.intervals_trials.getRow( ...
-%                         TrialsTableIndex.dtr_col(i)+1 ... % must add 1 because DynamicTableRegion uses 0-indexing
-%                      ), ...
-%                      TrialsTableNoIndex.dtr_col{i} ...
-%                 );
-%             end
-%         end
-% 
-%         function DynamicTableCheckTest(testCase)
-%             % Verify that the checkConfig utility function
-%             % throws error when defining an invalid table
-%             %
-%             % 1. Defining a table with columns of unmatched length
-%             testCase.verifyError( ...
-%                 @() testCase.addContainerUnevenColumns(testCase.file), ...
-%                 "NWB:DynamicTable" ...
-%             )
-% 
-%             % 2. Defining a table with length of id's does not match
-%             % the number of columns
-%             testCase.verifyError( ...
-%                 @() testCase.addContainerUnmatchedIDs(testCase.file), ...
-%                 "NWB:DynamicTable" ...
-%             )
-%              %3. Defining a table with unspecified IDs
-%              testCase.addContainerUndefinedIDs(testCase.file)
-%              Table = testCase.file.intervals_trials;
-%              % verify created IDs of same length as columns
-%              expectedLength = length(Table.start_time.data);
-%              actualLength = length(Table.id.data);
-%              testCase.verifyEqual(expectedLength, actualLength)
-%             
-%         end
+
+        function toTableTest(testCase)
+            % test DynamicTable toTable method. 
+            % 1. For a generic table, the toTable output should be very
+            % similar to getRow output (except for presence of id column)
+            %
+            % retrieve rows from dynamic table
+            ExpectedSubTable = testCase.file.intervals_trials.getRow(1:100);
+            % convert DynamicTable to MATLAB table
+            TrialsTable = testCase.file.intervals_trials.toTable();
+            TrialsTable.id = []; %remove id column
+            % retrieve rows from MATLAB table
+            ActualSubTable = TrialsTable(1:100,:);
+            % compare
+            testCase.verifyEqual(ExpectedSubTable,ActualSubTable)
+            % 2. For a table with a DynamicTable regions, the toTable output 
+            % with false index argument should return the rows of the
+            % target DynamicTable.
+            %
+            % create table with DynamicTableRegion
+            DTRCol = types.hdmf_common.DynamicTableRegion( ...
+                'description', 'references rows of another table', ...
+                'data', randi([0 99],1,100), ...  # 0-indexed
+                'table',types.untyped.ObjectView(testCase.file.intervals_trials) ...  %
+            );
+            DataCol = types.hdmf_common.VectorData( ...
+                'description', 'data column', ...
+                'data', (1:100) ...
+            );
+            DTRTable = types.hdmf_common.DynamicTable( ...
+                'description', 'test table with DynamicTableRegion', ...
+                'colnames', {'dtr_col','data_col'}, ...
+                'dtr_col', DTRCol, ...
+                'data_col',DataCol, ...
+                'id', types.hdmf_common.ElementIdentifiers( ...
+                    'data', (0:99) ...
+                ) ...
+            );
+            % convert DynamicTable to MATLAB table
+            TrialsTableNoIndex = DTRTable.toTable(false);% include actual rows
+            TrialsTableIndex = DTRTable.toTable(true);% include only index of rows
+            % verify that the row included in DynamicTable and the
+            % actual row indicated by the DynamicTableRegion are the same
+            for i = 1:100
+                testCase.verifyEqual( ...
+                    testCase.file.intervals_trials.getRow( ...
+                        TrialsTableIndex.dtr_col(i)+1 ... % must add 1 because DynamicTableRegion uses 0-indexing
+                     ), ...
+                     TrialsTableNoIndex.dtr_col{i} ...
+                );
+            end
+        end
+
+        function DynamicTableCheckTest(testCase)
+            % Verify that the checkConfig utility function
+            % throws error when defining an invalid table
+            %
+            % 1. Defining a table with columns of unmatched length
+            testCase.verifyError( ...
+                @() testCase.addContainerUnevenColumns(testCase.file), ...
+                "NWB:DynamicTable" ...
+            )
+
+            % 2. Defining a table with length of id's does not match
+            % the number of columns
+            testCase.verifyError( ...
+                @() testCase.addContainerUnmatchedIDs(testCase.file), ...
+                "NWB:DynamicTable" ...
+            )
+             %3. Defining a table with unspecified IDs
+             testCase.addContainerUndefinedIDs(testCase.file)
+             Table = testCase.file.intervals_trials;
+             % verify created IDs of same length as columns
+             expectedLength = length(Table.start_time.data);
+             actualLength = length(Table.id.data);
+             testCase.verifyEqual(expectedLength, actualLength)
+            
+        end
 
     end
 end
