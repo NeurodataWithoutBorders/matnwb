@@ -49,7 +49,9 @@ classdef GenerationTest < matlab.unittest.TestCase
             t = table(id(101:200), (101:200) .', (102:201) .',...
                 mat2cell(rand(500,1), repmat(5, 100, 1)), repmat({'TRUE'}, 100, 1),...
                 'VariableNames', {'id', 'start_time', 'stop_time', 'randomvalues', 'stringdata'});
-            TimeIntervals.addRow(t);
+            % verify error is thrown when addRow input is MATLAB table
+            testCase.verifyError(@() TimeIntervals.addRow(t), ...
+                "NWB:DynamicTable");
             
             retrievalIndex = round(1 + 199 .* rand(10, 1));
             indexedRow = TimeIntervals.getRow(retrievalIndex);
