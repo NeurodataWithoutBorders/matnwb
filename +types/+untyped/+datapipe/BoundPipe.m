@@ -41,6 +41,7 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
             
             if isempty(varargin)
                 obj.config = Configuration(max_size);
+                obj.config.axis = find(max_size==Inf);
                 obj.config.offset = current_size(obj.config.axis);
                 tid = H5D.get_type(did);
                 obj.config.dataType = io.getMatType(tid);
