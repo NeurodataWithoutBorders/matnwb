@@ -190,11 +190,12 @@ classdef (Sealed) DataStub < handle
                         expectedSize = [expectedSize 1];
                     end
                 else
-                    if dims(1) == 1 % probably a row
-                        expectedSize = [1 expectedSize];
-                    else % column
-                        expectedSize = [expectedSize 1];
-                    end
+                    expectedSize = [1 expectedSize];
+%                     if dims(2) == 1 % probably a row vector
+%                         expectedSize = [expectedSize 1];
+%                     else % column vector
+%                         expectedSize = [1 expectedSize];
+%                     end
                 end
             end
             
@@ -326,6 +327,10 @@ classdef (Sealed) DataStub < handle
             CurrentSubRef = S(1);
             if ~isscalar(obj) || strcmp(CurrentSubRef.type, '.')
                 B = builtin('subsref', obj, S);
+                % unidimensional columns to column vectors, for consistency
+                if obj.ndims ==1
+                    B = B'; 
+                end
                 return;
             end
             
