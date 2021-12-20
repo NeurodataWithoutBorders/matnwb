@@ -271,7 +271,7 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
             % test getRow
             actualData = readFile.intervals_trials.getRow(1:200, ...
                 'columns', {'randomvalues'});
-            testCase.verifyEqual(random_val_array, actualData.randomvalues);
+            testCase.verifyEqual(random_val_array, actualData.randomvalues');
         end
 % 
 %         function toTableTest(testCase)

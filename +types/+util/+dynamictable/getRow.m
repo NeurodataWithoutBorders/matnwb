@@ -68,19 +68,16 @@ end
 if isscalar(colIndStack)
     if isa(Vector.data, 'types.untyped.DataStub')
         rank = length(Vector.data.dims);
+    elseif isa(Vector.data,'types.untyped.DataPipe')
+        rank = length(Vector.data.internal.maxSize);
     else
         rank = ndims(Vector.data);
     end
     selectInd = cell(1, rank);
     selectInd(1:end-1) = {':'};
     selectInd{end} = matInd;
-    
+    selected = Vector.data(selectInd{:});
 
-    if isa(Vector.data, 'types.untyped.DataPipe')
-        selected = Vector.data.load(matInd);
-    else
-        selected = Vector.data(selectInd{:});
-    end
     if rank == 1
         % enter here if single dimensional column from DataStub
         % row vector to column vector for consistency

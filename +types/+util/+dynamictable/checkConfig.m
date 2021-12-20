@@ -54,7 +54,7 @@ while c <= length(columns)
                 if isa(cv.data,'types.untyped.DataStub')
                     lengths(c) = cv.data.dims(end);
                 elseif isa(cv.data,'types.untyped.DataPipe')
-                    rank = ndims(cv.data.internal.maxSize);
+                    rank = length(cv.data.internal.maxSize);
                     selectInd = cell(1, rank);
                     selectInd(1:end) = {':'};
                     lengths(c) = size(cv.data(selectInd{:}),rank);
