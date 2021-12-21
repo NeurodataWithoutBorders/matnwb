@@ -19,12 +19,15 @@ for i = 1:length(newColNames)
     if ~isempty(DynamicTable.colnames)
         indexName = getIndexInSet(newVectorData,new_cn);
         if isempty(indexName)
-            newColHeight = size(new_cv.data,ndims(new_cv.data));
+            if ismatrix(new_cv.data) && size(new_cv.data,2) == 1
+                % catch row vector
+                newColHeight = height(new_cv.data);
+            else
+                newColHeight = size(new_cv.data,ndims(new_cv.data));
+            end
         else 
-            newColHeight = size( ...
-                newVectorData.(indexName).data, ...
-                ndims(newVectorData.(indexName).data) ...
-            );
+            newColHeight = height( ...
+                newVectorData.(indexName).data);
         end
         assert(newColHeight == tableHeight,...
             'NWB:DynamicTable:AddColumn:MissingRows',...

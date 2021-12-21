@@ -28,14 +28,13 @@ end
 
 % catching addition of ragged rows 
 if ismatrix(VecData.data)
-    if size(VecData.data,1)==1 && ...
-            size(data, 1) > 1
-        %catch row vector
+    if size(data, 1) > 1 && size(data,2)==1
+        %catch ragged row 
         data = {data};
     end
 elseif size(data, ndims(VecData.data)) > 1 && ...
         ~isequal(size(data),size(VecData.data))
-    %catch multidimensional case
+    %catch multidimensional ragged case
     data = {data};
 end
 
@@ -132,9 +131,14 @@ if isa(Vector, 'types.hdmf_common.VectorIndex') || isa(Vector, 'types.core.Vecto
     if isa(Vector.data, 'types.untyped.DataPipe')
         Vector.data.append(data);
     else
-        % cast to double so the correct type shrinkwrap doesn't force-clamp
-        % values.
-        Vector.data = cat(maxDim, double(Vector.data), data);
+        if isempty(Vector.data) && maxDim ==1
+            % have to use vcat when Vector.data is empty
+            Vector.data = [double(Vector.data); data];
+        else
+            % cast to double so the correct type shrinkwrap doesn't force-clamp
+            % values.
+            Vector.data = cat(maxDim, double(Vector.data), data);
+        end
     end
 else
     

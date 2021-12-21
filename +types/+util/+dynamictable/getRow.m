@@ -42,7 +42,9 @@ for i = 1:length(columns)
     end
 
     row{i} = select(DynamicTable, indexNames, ind);
-    if ~ismatrix(row{i}) && size(row{i},2)>1
+    if size(row{i},2)>1
+        % swap dimensions of non-row vectors. otherwise will result in
+        % invalid MATLAB table with uneven column height
         row{i} = util.swapDims(row{i});
     end
     if length(ind)==1
