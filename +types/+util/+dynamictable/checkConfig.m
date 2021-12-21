@@ -52,16 +52,22 @@ while c <= length(columns)
                     cv = DynamicTable.vectorindex.get(cn);
                 end
                 if isa(cv.data,'types.untyped.DataStub')
-                    lengths(c) = cv.data.dims(end);
+                    colHeight = cv.data.dims(end);
                 elseif isa(cv.data,'types.untyped.DataPipe')
                     rank = length(cv.data.internal.maxSize);
                     selectInd = cell(1, rank);
                     selectInd(1:end) = {':'};
-                    lengths(c) = size(cv.data(selectInd{:}),rank);
+                    colHeight = size(cv.data(selectInd{:}),rank);
                 else
-                    lengths(c) = size(cv.data,ndims(cv.data));% interested in last dimension
+                    if ismatrix(cv.data) && ...
+                        size(cv.data,2) == 1
+                        %catch row vector
+                        colHeight = length(cv.data);
+                    else
+                        colHeight = size(cv.data,ndims(cv.data));% interested in last dimension
+                    end
                 end
-                
+                lengths(c) = colHeight;
             end
         end
         if lastStraightCol > 0 && any(lengths>0)

@@ -41,7 +41,10 @@ for i = 1:length(columns)
         indexNames{end+1} = name;
     end
 
-    row{i} = util.swapDims(select(DynamicTable, indexNames, ind));
+    row{i} = select(DynamicTable, indexNames, ind);
+    if ~ismatrix(row{i}) && size(row{i},2)>1
+        row{i} = util.swapDims(row{i});
+    end
     if length(ind)==1
         % cell-wrap single multidimensional matrices to prevent invalid
         % MATLAB tables
@@ -67,22 +70,27 @@ end
 
 if isscalar(colIndStack)
     if isa(Vector.data, 'types.untyped.DataStub')
-        rank = length(Vector.data.dims);
+        if length(Vector.data.dims) == 2 && Vector.data.dims(2) ==1
+            %catch row vector
+            rank = 1;
+        else
+            rank = length(Vector.data.dims);
+        end
     elseif isa(Vector.data,'types.untyped.DataPipe')
         rank = length(Vector.data.internal.maxSize);
     else
-        rank = ndims(Vector.data);
+        if ismatrix(Vector.data) && size(Vector.data,2)==1
+            %catch row vector
+            rank = 1;
+        else
+            rank = ndims(Vector.data);
+        end
     end
     selectInd = cell(1, rank);
     selectInd(1:end-1) = {':'};
     selectInd{end} = matInd;
     selected = Vector.data(selectInd{:});
 
-    if rank == 1
-        % enter here if single dimensional column from DataStub
-        % row vector to column vector for consistency
-        selected = selected';
-    end
 else
     assert(isa(Vector, 'types.hdmf_common.VectorIndex') || isa(Vector, 'types.core.VectorIndex'),...
         'NWB:DynamicTable:GetRow:InternalError',...

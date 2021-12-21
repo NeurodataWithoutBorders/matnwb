@@ -67,6 +67,12 @@ elseif iscell(rv)
         validateType(TypeStruct, rv{iVal});
     end
 else
-    validateattributes(rv, {TypeStruct.type}, {'size', [TypeStruct.dims(1:end-1) NaN]});
+    if length(TypeStruct.dims)==2 && ...
+            TypeStruct.dims(2)==1
+        %catch row vector
+        validateattributes(rv, {TypeStruct.type}, {'size', [NaN TypeStruct.dims(2:end)]});
+    else
+        validateattributes(rv, {TypeStruct.type}, {'size', [TypeStruct.dims(1:end-1) NaN]});
+    end
 end
 end

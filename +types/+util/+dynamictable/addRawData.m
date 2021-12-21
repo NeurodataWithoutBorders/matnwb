@@ -26,11 +26,20 @@ else
     DynamicTable.vectordata.set(column, VecData);
 end
 
-if iscell(data) && ...
-        size(data, ndims(VecData.data)) > 1 && ...
+% catching addition of ragged rows 
+if ismatrix(VecData.data)
+    if size(VecData.data,1)==1 && ...
+            size(data, 1) > 1
+        %catch row vector
+        data = {data};
+    end
+elseif size(data, ndims(VecData.data)) > 1 && ...
         ~isequal(size(data),size(VecData.data))
+    %catch multidimensional case
     data = {data};
 end
+
+
 
 % grab all available indices for column.
 indexChain = {column};
@@ -81,9 +90,9 @@ end
 if isempty(Vector.data) || ...
     isequal(size(data),size(Vector.data))
     % catches when table has one entry or less
-    if size(data,1) == 1
+    if ismatrix(data) && size(data,2) == 1
         % one-dimensional column
-        maxDim = ndims(data);
+        maxDim = 1;
     else
         if fromIndex
             % catch nested ragged array case
@@ -92,13 +101,16 @@ if isempty(Vector.data) || ...
             maxDim = ndims(data)+1;
         end
     end
+elseif ismatrix(Vector.data) && size(Vector.data,2) == 1
+    % single dimension column
+    maxDim = 1;
 else
     maxDim = ndims(Vector.data);
 end
 numEntries = size(data, maxDim);
 
 if isa(Vector, 'types.hdmf_common.VectorIndex') || isa(Vector, 'types.core.VectorIndex')
-    elems = zeros(1, numEntries);
+    elems = zeros(numEntries,1);
     for iEntry = 1:numEntries
         elems(iEntry) = nestedAdd(DynamicTable, indChain(1:(end-1)), data{iEntry}, 1);
     end
