@@ -28,25 +28,25 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
             start_time_exp = types.hdmf_common.VectorData( ...
                 'description', 'start times', ...
                 'data', types.untyped.DataPipe( ...
-                    'data', start_array, ...
-                    'maxSize', [1, Inf], ...
-                    'axis', 2 ...
+                    'data', start_array', ...
+                    'maxSize', [Inf, 1], ...
+                    'axis', 1 ...
                 ) ...
             );
             stop_time_exp = types.hdmf_common.VectorData( ...
                 'description', 'stop times', ...
                 'data', types.untyped.DataPipe( ...
-                    'data', stop_array, ...
-                    'maxSize', [1, Inf], ...
-                    'axis', 2 ...
+                    'data', stop_array', ...
+                    'maxSize', [Inf, 1], ...
+                    'axis', 1 ...
                 ) ...
             );
             random_exp = types.hdmf_common.VectorData( ...
                 'description', 'random data column', ...
                 'data', types.untyped.DataPipe( ...
                     'data', random_array, ...
-                    'maxSize', [1, Inf], ...
-                    'axis', 2 ...
+                    'maxSize', [Inf, 1], ...
+                    'axis', 1 ...
                 )...
             );
             random_multi_exp = types.hdmf_common.VectorData( ...
@@ -59,9 +59,9 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
             );
             ids_exp = types.hdmf_common.ElementIdentifiers( ...
                 'data', types.untyped.DataPipe( ...
-                    'data', id_array, ... 
-                    'maxSize', [1, Inf], ...
-                    'axis', 2 ...
+                    'data', id_array', ... 
+                    'maxSize', [Inf, 1], ...
+                    'axis', 1 ...
                     ) ...
             );
             % create expandable table
@@ -181,62 +181,62 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
     end
     
     methods (Test)
-%         function getRowTest(testCase)
-%             Table = testCase.file.intervals_trials;
-% 
-%             BaseVectorData = Table.vectordata.get('randomvalues');
-%             VectorDataInd = Table.vectordata.get('randomvalues_index');
-%             VectorDataIndInd = Table.vectordata.get('randomvalues_index_index');
-% 
-%             endInd = VectorDataIndInd.data(5);
-%             startInd = VectorDataIndInd.data(4) + 1;
-% 
-%             Indices = startInd:endInd;
-%             dataIndices = cell(1,length(Indices));
-%             for iRaggedInd = 1:length(Indices)
-%                 endInd = VectorDataInd.data(Indices(iRaggedInd));
-%                 if 1 == Indices(iRaggedInd)
-%                     startInd = 1;
-%                 else
-%                     startInd = VectorDataInd.data(Indices(iRaggedInd) - 1) + 1;
-%                 end
-%                 dataIndices{iRaggedInd} = BaseVectorData.data(:, (startInd:endInd));
-%             end
-% 
-%             actualData = Table.getRow(5, 'columns', {'randomvalues'});
-%             testCase.verifyEqual(dataIndices, actualData.randomvalues{1});
-%             
-%             % test with appended ragged columns
-%             testCase.appendRaggedContainer(testCase.file)
-%             Table = testCase.file.intervals_trials;
-%             % retrieve ragged column and index
-%             BaseVectorData = Table.vectordata.get('newraggedcolumn');
-%             VectorDataInd = Table.vectordata.get('newraggedcolumn_index');
-%             % verify end of ragged column index equal length of data vector
-%             testCase.verifyEqual(length(BaseVectorData.data),double(VectorDataInd.data(end)))
-%             % get expected ragged data
-%             endInd = VectorDataInd.data(100);
-%             startInd = VectorDataInd.data(99) + 1;
-%             expectedData = BaseVectorData.data(startInd:endInd);
-%             % get actual ragged data
-%             actualData = Table.getRow(100);
-%             % compare
-%             testCase.verifyEqual(expectedData,actualData.newraggedcolumn{1})
-%         end
-% 
-%         function getRowRoundtripTest(testCase)
-%             filename = ['MatNWB.' testCase.className() '.testGetRow.nwb'];
-%             nwbExport(testCase.file, filename);
-%             ActualFile = nwbRead(filename, 'ignorecache');
-%             ActualTable = ActualFile.intervals_trials;
-%             ExpectedTable = testCase.file.intervals_trials;
-% 
-%             testCase.verifyEqual(ExpectedTable.getRow(5), ActualTable.getRow(5));
-%             testCase.verifyEqual(ExpectedTable.getRow([5 6]), ActualTable.getRow([5 6]));
-%             testCase.verifyEqual(ExpectedTable.getRow([157, 163], 'useId', true),...
-%                 ActualTable.getRow([157, 163], 'useId', true));
-%         end
-% %         
+        function getRowTest(testCase)
+            Table = testCase.file.intervals_trials;
+
+            BaseVectorData = Table.vectordata.get('randomvalues');
+            VectorDataInd = Table.vectordata.get('randomvalues_index');
+            VectorDataIndInd = Table.vectordata.get('randomvalues_index_index');
+
+            endInd = VectorDataIndInd.data(5);
+            startInd = VectorDataIndInd.data(4) + 1;
+
+            Indices = startInd:endInd;
+            dataIndices = cell(1, length(Indices));
+            for iRaggedInd = 1:length(Indices)
+                endInd = VectorDataInd.data(Indices(iRaggedInd));
+                if 1 == Indices(iRaggedInd)
+                    startInd = 1;
+                else
+                    startInd = VectorDataInd.data(Indices(iRaggedInd) - 1) + 1;
+                end
+                dataIndices{iRaggedInd} = BaseVectorData.data(:, (startInd:endInd));
+            end
+
+            actualData = Table.getRow(5, 'columns', {'randomvalues'});
+            testCase.verifyEqual(dataIndices, actualData.randomvalues{1});
+            
+            % test with appended ragged columns
+            testCase.appendRaggedContainer(testCase.file)
+            Table = testCase.file.intervals_trials;
+            % retrieve ragged column and index
+            BaseVectorData = Table.vectordata.get('newraggedcolumn');
+            VectorDataInd = Table.vectordata.get('newraggedcolumn_index');
+            % verify end of ragged column index equal length of data vector
+            testCase.verifyEqual(length(BaseVectorData.data),double(VectorDataInd.data(end)))
+            % get expected ragged data
+            endInd = VectorDataInd.data(100);
+            startInd = VectorDataInd.data(99) + 1;
+            expectedData = BaseVectorData.data(startInd:endInd);
+            % get actual ragged data
+            actualData = Table.getRow(100);
+            % compare
+            testCase.verifyEqual(expectedData,actualData.newraggedcolumn{1})
+        end
+ 
+        function getRowRoundtripTest(testCase)
+            filename = ['MatNWB.' testCase.className() '.testGetRow.nwb'];
+            nwbExport(testCase.file, filename);
+            ActualFile = nwbRead(filename, 'ignorecache');
+            ActualTable = ActualFile.intervals_trials;
+            ExpectedTable = testCase.file.intervals_trials;
+
+            testCase.verifyEqual(ExpectedTable.getRow(5), ActualTable.getRow(5));
+            testCase.verifyEqual(ExpectedTable.getRow([5 6]), ActualTable.getRow([5 6]));
+            testCase.verifyEqual(ExpectedTable.getRow([157, 163], 'useId', true),...
+                ActualTable.getRow([157, 163], 'useId', true));
+        end
+%         
 %         function ExpandableTableTest(testCase)
 %             % define data matrices
 %             nrows = 200;
