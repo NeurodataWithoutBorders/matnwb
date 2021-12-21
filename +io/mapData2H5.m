@@ -53,12 +53,9 @@ switch class(data)
         data = int32(data);
     case 'char'
         data = mat2cell(data, size(data, 1));
-    case {'cell', 'datetime'}
-        if isdatetime(data)
-            data = num2cell(data);
-        end
-        
-        for i = 1:length(data)
-            data{i} = char(unicode2native(char(data{i})));
+    case 'datetime'
+        data = num2cell(data);
+        for iDate = 1:length(data)
+            data{iDate} = char(data{iDate});
         end
 end
