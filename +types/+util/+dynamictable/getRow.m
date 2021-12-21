@@ -71,15 +71,20 @@ else
 end
 
 if isscalar(colIndStack)
-    if isa(Vector.data, 'types.untyped.DataStub')
-        if length(Vector.data.dims) == 2 && Vector.data.dims(2) ==1
-            %catch row vector
+    if isa(Vector.data, 'types.untyped.DataStub') || ...
+            isa(Vector.data,'types.untyped.DataPipe')
+        if isa(Vector.data, 'types.untyped.DataStub')
+            refProp = Vector.data.dims;
+        else
+            refProp = Vector.data.internal.maxSize;
+        end
+        if length(refProp) == 2 && ...
+                refProp(2) ==1
+            % catch row vector
             rank = 1;
         else
-            rank = length(Vector.data.dims);
+            rank = length(refProp);
         end
-    elseif isa(Vector.data,'types.untyped.DataPipe')
-        rank = length(Vector.data.internal.maxSize);
     else
         if ismatrix(Vector.data) && size(Vector.data,2)==1
             %catch row vector

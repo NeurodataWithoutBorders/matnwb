@@ -54,7 +54,14 @@ while c <= length(columns)
                 if isa(cv.data,'types.untyped.DataStub')
                     colHeight = cv.data.dims(end);
                 elseif isa(cv.data,'types.untyped.DataPipe')
-                    rank = length(cv.data.internal.maxSize);
+                    if ismatrix(cv.data.internal.maxSize) && ...
+                            cv.data.internal.maxSize(2) == 1
+                        % catch row vector
+                        rank = 1;
+                    else
+                        rank = length(cv.data.internal.maxSize);
+                    end
+                    
                     selectInd = cell(1, rank);
                     selectInd(1:end) = {':'};
                     colHeight = size(cv.data(selectInd{:}),rank);

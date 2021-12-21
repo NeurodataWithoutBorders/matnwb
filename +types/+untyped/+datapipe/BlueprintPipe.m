@@ -203,6 +203,10 @@ function sid = allocateSpace(maxSize)
 rank = length(maxSize);
 h5_dims = zeros(1, rank);
 h5_rank = find(maxSize == Inf);
+if h5_rank == 1 && maxSize(2) == 1
+    % catch row vector
+    h5_rank = 2;
+end
 if isempty(h5_rank)
     h5_rank = rank;
 end
