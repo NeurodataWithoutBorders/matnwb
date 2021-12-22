@@ -35,47 +35,51 @@ c = 1;
 lastStraightCol = 0;
 lengths = zeros(length(columns),1);
 while c <= length(columns)
+    found_cv = 0; %reset flag
     cn = columns{c};
     % ignore columns that have an index (i.e. ragged), length will be unmatched
     indexName = types.util.dynamictable.getIndex(DynamicTable, cn);
     if isempty(indexName)
+        % retrieve data vector
         if isprop(DynamicTable, cn)
             cv = DynamicTable.(cn);
-            if ~isempty(cv)
-                lengths(c) = length(cv.data(:));
-            end
+            found_cv = 1;
         else
             if ~isempty(keys(DynamicTable.vectordata))
                 try
                     cv = DynamicTable.vectordata.get(cn);
+                    found_cv = 1;
                 catch % catch legacy table instance
                     cv = DynamicTable.vectorindex.get(cn);
+                    found_cv = 1;
                 end
-                if isa(cv.data,'types.untyped.DataStub')
-                    colHeight = cv.data.dims(end);
-                elseif isa(cv.data,'types.untyped.DataPipe')
-                    if ismatrix(cv.data.internal.maxSize) && ...
-                            cv.data.internal.maxSize(2) == 1
-                        % catch row vector
-                        rank = 1;
-                    else
-                        rank = length(cv.data.internal.maxSize);
-                    end
-                    
-                    selectInd = cell(1, rank);
-                    selectInd(1:end) = {':'};
-                    colHeight = size(cv.data(selectInd{:}),rank);
-                else
-                    if ismatrix(cv.data) && ...
-                        size(cv.data,2) == 1
-                        %catch row vector
-                        colHeight = length(cv.data);
-                    else
-                        colHeight = size(cv.data,ndims(cv.data));% interested in last dimension
-                    end
-                end
-                lengths(c) = colHeight;
             end
+        end
+        if found_cv && ~isempty(cv)
+            % figure out vector height
+            if isa(cv.data,'types.untyped.DataStub')
+                colHeight = cv.data.dims(end);
+            elseif isa(cv.data,'types.untyped.DataPipe')
+                if ismatrix(cv.data.internal.maxSize) && ...
+                        cv.data.internal.maxSize(2) == 1
+                    % catch row vector
+                    rank = 1;
+                else
+                    rank = length(cv.data.internal.maxSize);
+                end
+
+                selectInd = cell(1, rank);
+                selectInd(1:end) = {':'};
+                colHeight = size(cv.data(selectInd{:}),rank);
+            else
+                if iscolumn(cv.data)
+                    %catch row vector
+                    colHeight = length(cv.data);
+                else
+                    colHeight = size(cv.data,ndims(cv.data));% interested in last dimension
+                end
+            end
+            lengths(c) = colHeight;
         end
         if lastStraightCol > 0 && any(lengths>0)
             if min(lengths(lengths>0)) > 1
