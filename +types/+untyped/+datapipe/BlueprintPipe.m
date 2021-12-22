@@ -203,13 +203,13 @@ function sid = allocateSpace(maxSize)
 rank = length(maxSize);
 h5_dims = zeros(1, rank);
 h5_rank = find(maxSize == Inf);
-if h5_rank == 1 && maxSize(2) == 1
+if isempty(h5_rank)
+    h5_rank = rank;
+elseif h5_rank == 1 && maxSize(2) == 1
     % catch row vector
     h5_rank = 2;
 end
-if isempty(h5_rank)
-    h5_rank = rank;
-end
+
 h5_maxdims = fliplr(maxSize(1:h5_rank));
 h5_unlimited = H5ML.get_constant_value('H5S_UNLIMITED');
 h5_maxdims(isinf(h5_maxdims)) = h5_unlimited;
