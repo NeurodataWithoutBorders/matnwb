@@ -12,7 +12,12 @@ end
 if isa(VecData.data, 'types.untyped.DataPipe')
     oldDataHeight = VecData.data.offset;
 else
-    oldDataHeight = size(VecData.data, ndims(VecData.data));
+    if iscolumn(VecData.data)
+        %catch row vector
+        oldDataHeight = length(VecData.data);
+    else
+        oldDataHeight = size(VecData.data, ndims(VecData.data));
+    end
 end
 
 % we presume that if data already existed in the vectordata, then
@@ -22,11 +27,11 @@ vecView = types.untyped.ObjectView(VecData);
 if 8 == exist('types.hdmf_common.VectorIndex', 'class')
     VecIndex = types.hdmf_common.VectorIndex(...
     'target', vecView,...
-    'data', (1:oldDataHeight));
+    'data', (1:oldDataHeight).');
 else
     VecIndex = types.core.VectorIndex(...
     'target', vecView,...
-    'data', (1:oldDataHeight));
+    'data', (1:oldDataHeight).');
 end
 
 if isprop(VecIndex, 'description')
