@@ -189,7 +189,7 @@ classdef (Sealed) DataStub < handle
                     else
                         expectedSize = [expectedSize 1];
                     end
-                else                
+                else
                     if dims(1) == 1 % probably a row
                         expectedSize = [1 expectedSize];
                     else % column

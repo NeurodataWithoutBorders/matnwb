@@ -19,7 +19,6 @@ if ~exist('description', 'var') || isempty(description)
     description = 'no description';
 end
 
-
 bounds = NaN(length(data), 1);
 for i = 1:length(data)
     bounds(i) = length(data{i});

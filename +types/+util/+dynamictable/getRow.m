@@ -86,7 +86,7 @@ if isscalar(colIndStack)
             rank = length(refProp);
         end
     else
-        if ismatrix(Vector.data) && size(Vector.data,2)==1
+        if iscolumn(Vector.data)
             %catch row vector
             rank = 1;
         else

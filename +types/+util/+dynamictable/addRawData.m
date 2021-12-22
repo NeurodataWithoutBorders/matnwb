@@ -32,10 +32,6 @@ if ismatrix(VecData.data)
         %catch ragged row 
         data = {data};
     end
-elseif size(data, ndims(VecData.data)) > 1 && ...
-        ~isequal(size(data),size(VecData.data))
-    %catch multidimensional ragged case
-    data = {data};
 end
 
 
@@ -89,7 +85,7 @@ end
 if isempty(Vector.data) || ...
     isequal(size(data),size(Vector.data))
     % catches when table has one entry or less
-    if ismatrix(data) && size(data,2) == 1
+    if iscolumn(data)
         % one-dimensional column
         maxDim = 1;
     else
@@ -100,7 +96,7 @@ if isempty(Vector.data) || ...
             maxDim = ndims(data)+1;
         end
     end
-elseif ismatrix(Vector.data) && size(Vector.data,2) == 1
+elseif iscolumn(Vector.data)
     % single dimension column
     maxDim = 1;
 else
