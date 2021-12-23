@@ -118,7 +118,7 @@ else
     end
     startInds = startInds + 1;
 
-    selected = cell(1, length(matInd));
+    selected = cell(length(matInd), 1);
     for iRange = 1:length(matInd)
         startInd = startInds(iRange);
         stopInd = stopInds(iRange);

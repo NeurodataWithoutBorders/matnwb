@@ -203,7 +203,7 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
             startInd = VectorDataIndInd.data(4) + 1;
 
             Indices = startInd:endInd;
-            dataIndices = cell(1, length(Indices));
+            dataIndices = cell(length(Indices), 1);
             for iRaggedInd = 1:length(Indices)
                 endInd = VectorDataInd.data(Indices(iRaggedInd));
                 if 1 == Indices(iRaggedInd)
