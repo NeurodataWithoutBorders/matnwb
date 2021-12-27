@@ -35,40 +35,59 @@ c = 1;
 lastStraightCol = 0;
 lengths = zeros(length(columns),1);
 while c <= length(columns)
+    found_cv = 0; %reset flag
     cn = columns{c};
     % ignore columns that have an index (i.e. ragged), length will be unmatched
     indexName = types.util.dynamictable.getIndex(DynamicTable, cn);
     if isempty(indexName)
+        % retrieve data vector
         if isprop(DynamicTable, cn)
             cv = DynamicTable.(cn);
-            if ~isempty(cv)
-                lengths(c) = length(cv.data(:));
-            end
+            found_cv = 1;
         else
             if ~isempty(keys(DynamicTable.vectordata))
                 try
                     cv = DynamicTable.vectordata.get(cn);
+                    found_cv = 1;
                 catch % catch legacy table instance
                     cv = DynamicTable.vectorindex.get(cn);
+                    found_cv = 1;
                 end
-                if isa(cv.data,'types.untyped.DataStub')
-                    lengths(c) = cv.data.dims(1);
-                elseif isa(cv.data,'types.untyped.DataPipe')
-                    rank = ndims(cv.data);
-                    selectInd = cell(1, rank);
-                    selectInd(1:end) = {':'};
-                    lengths(c) = size(cv.data(selectInd{:}),1);
-                else
-                    lengths(c) = size(cv.data,1);% interested in number of rows
-                end
-                
             end
         end
-        if lastStraightCol > 0
-            assert(lengths(c)==lengths(lastStraightCol), ...
-                'NWB:DynamicTable', ...
-                'All columns must be the same length.' ...
-                );
+        if found_cv && ~isempty(cv)
+            % figure out vector height
+            if isa(cv.data,'types.untyped.DataStub')
+                colHeight = cv.data.dims(end);
+            elseif isa(cv.data,'types.untyped.DataPipe')
+                if ismatrix(cv.data.internal.maxSize) && ...
+                        cv.data.internal.maxSize(2) == 1
+                    % catch row vector
+                    rank = 1;
+                else
+                    rank = length(cv.data.internal.maxSize);
+                end
+
+                selectInd = cell(1, rank);
+                selectInd(1:end) = {':'};
+                colHeight = size(cv.data(selectInd{:}),rank);
+            else
+                if iscolumn(cv.data)
+                    %catch row vector
+                    colHeight = length(cv.data);
+                else
+                    colHeight = size(cv.data,ndims(cv.data));% interested in last dimension
+                end
+            end
+            lengths(c) = colHeight;
+        end
+        if lastStraightCol > 0 && any(lengths>0)
+            if min(lengths(lengths>0)) > 1
+                assert(lengths(c)==lengths(lastStraightCol), ...
+                    'NWB:DynamicTable', ...
+                    'All columns must be the same length.' ...
+                    );
+            end
         end
         lastStraightCol = c;
     else
@@ -84,19 +103,34 @@ if ~isempty(lengths)
     if isempty(DynamicTable.id) || isempty(DynamicTable.id.data(:))
         if 8 == exist('types.hdmf_common.ElementIdentifiers', 'class')
             DynamicTable.id = types.hdmf_common.ElementIdentifiers( ...
-                'data', int64((1:lengths(lastStraightCol))-1)' ...
+                'data', int64((1:min(lengths(lengths>0)))-1)' ...
             );
         else % legacy Element Identifiers
             DynamicTable.id = types.core.ElementIdentifiers( ...
-            'data', int64((1:lengths(lastStraightCol))-1)' ...
+            'data', int64((1:min(lengths(lengths>0)))-1)' ...
         );
         end
     
     else
-        assert(lengths(lastStraightCol) == length(DynamicTable.id.data(:)), ...
-            'NWB:DynamicTable', ...
-            'Must provide same number of ids as length of columns.' ...
-        );
+        if lastStraightCol > 0 && any(lengths>0)
+            if min(lengths(lengths>0)) > 1 && ...
+                    length(lengths)>1
+                % skip if we can infer that there's only a single entry in
+                % table. In that case, multidimensional columns can be
+                % ambiguous
+                assert(lengths(lastStraightCol) == length(DynamicTable.id.data(:)), ...
+                    'NWB:DynamicTable', ...
+                    'Must provide same number of ids as length of columns.' ...
+                );
+            elseif length(lengths)==1 && ...
+                    length(DynamicTable.id.data(:)) ~= lengths(lastStraightCol)
+                % skip if single column and id height matches column height
+                assert(length(DynamicTable.id.data(:))==1, ... % single-entry case
+                    'NWB:DynamicTable', ...
+                    'Must provide same number of ids as length of columns.' ...
+                );
+            end
+        end
     end
 else
     if 8 == exist('types.hdmf_common.ElementIdentifiers', 'class')
