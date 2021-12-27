@@ -43,9 +43,9 @@ for i = 1:length(columns)
 
     row{i} = select(DynamicTable, indexNames, ind);
     if size(row{i},2)>1
-        % swap dimensions of non-row vectors. otherwise will result in
+        % flip dimensions of non-row vectors. otherwise will result in
         % invalid MATLAB table with uneven column height
-        row{i} = util.swapDims(row{i});
+        row{i} = permute(row{i},fliplr(1:ndims(row{i})));
     end
     if length(ind)==1
         % cell-wrap single multidimensional matrices to prevent invalid
