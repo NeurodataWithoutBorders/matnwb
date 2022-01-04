@@ -149,7 +149,7 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
 
         function appendContainer(testCase, file)
             container = testCase.getContainer(file);
-            container.data = rand(1300, 2); % new random values.
+            container.data = rand(size(container.data)); % new random values.
             file.intervals_trials.vectordata.get('stringdata').data = repmat({'FALSE'}, 200, 1);
             %test adding new column with argument
             file.intervals_trials.addColumn( ...
