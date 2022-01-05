@@ -1,4 +1,4 @@
-function ST = loadEventAlignedSpikeTimes(nwb,unit_id,varargin)
+function ST = loadEventAlignedSpikeTimes(nwb,unit_id,event_times,varargin)
 %LOADEVENTALIGNEDSPIKETIMES loads event-aligned spike times data for a
 % single unit
 %   ST = LOADEVENTALIGNEDTIMESERIESDATA(NWB, UNIT_ID) are the
@@ -35,14 +35,6 @@ spike_times = nwb.units.getRow( ...
     unit_id, ...
     'columns', {'spike_times'} ...
 ).spike_times{1}; % need to unpack from returned MATLAB table
-% Get list of reference event timestamps
-if strcmp(align_to, 'start_time')
-    ref_event_times = nwb.intervals_trials.start_time.data.load;
-elseif strcmp(align_to, 'stop_time')
-    ref_event_times = nwb.intervals_trials.stop_time.data.load;
-else
-    ref_event_times = nwb.intervals_trials.vectordata.get(align_to).data.load;
-end
 % Get spike times within window around indicated event
 ST = cell(length(ref_event_times),1);
 for i = 1:length(ref_event_times)
