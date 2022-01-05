@@ -169,8 +169,8 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
         end
         function appendRaggedContainer(~, file)
             % create synthetic data
-            data = (1000:-1:1);
-            break_ind = [sort(randperm(999,199)) 1000];
+            data = (100:-1:1);
+            break_ind = [sort(randperm(99,19)) 100];
             dataArray = cell(1,length(break_ind));
             startInd = 1;
              for i = 1:length(break_ind)
@@ -288,7 +288,7 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
             % similar to getRow output (except for presence of id column)
             %
             % retrieve rows from dynamic table
-            ExpectedSubTable = testCase.file.intervals_trials.getRow(1:200);
+            ExpectedSubTable = testCase.file.intervals_trials.getRow(1:20);
             % convert DynamicTable to MATLAB table
             TrialsTable = testCase.file.intervals_trials.toTable();
             TrialsTable.id = []; %remove id column
