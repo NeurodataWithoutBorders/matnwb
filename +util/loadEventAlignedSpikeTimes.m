@@ -11,9 +11,8 @@ function ST = loadEventAlignedSpikeTimes(nwb,unit_id,varargin)
 %   'after_time' - specifies the time, in seconds, after the event for
 %   the inclusion of spike times. Defaults to 1.
 %   'align_to' - specified the column containing event timestamps to which
-%   to align spike times
+%   to align spike times. Default is 'start_time'.
 
-% Define default values
 % Define anonymous functions to check input
 validNWB = @(x) isa(x,'types.core.NWBFile');
 validUnit = @(x) isscalar(x);
@@ -27,14 +26,14 @@ addOptional(p, 'before_time', 1., validTime);
 addOptional(p, 'after_time', 1., validTime);
 addOptional(p, 'align_to', 'start_time');
 % Parse and unpack key-value pairs
-parse(p,nwb,unit_id,varargin{:});
+parse(p, nwb, unit_id,varargin{:});
 before_time = p.Results.before_time; 
 after_time = p.Results.after_time; 
 align_to = p.Results.align_to;
 % Fetch spike times for indicated unit
 spike_times = nwb.units.getRow( ...
     unit_id, ...
-    'columns',{'spike_times'} ...
+    'columns', {'spike_times'} ...
 ).spike_times{1}; % need to unpack from returned MATLAB table
 % Get list of reference event timestamps
 if strcmp(align_to, 'start_time')
