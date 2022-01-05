@@ -14,9 +14,6 @@ function ST = loadEventAlignedSpikeTimes(nwb,unit_id,varargin)
 %   aligns data to the column named ALIGN_TO. Default is 'start_time'.
 
 % Define default values
-defaultBefore = 1;
-defaultAfter = 1;
-defaultAlign = 'start_time';
 % Define anonymous functions to check input
 validNWB = @(x) isa(x,'types.core.NWBFile');
 validUnit = @(x) isscalar(x);
@@ -24,11 +21,11 @@ validTime = @(x) isnumeric(x) && (x>=0);
 validAlign = @(x) ischar(x);
 % Define parser with arguments
 p = inputParser;
-addRequired(p,'nwb',validNWB);
-addRequired(p,'unit_id',validUnit);
-addOptional(p,'before_time',defaultBefore, validTime);
-addOptional(p,'after_time',defaultAfter, validTime);
-addOptional(p,'align_to',defaultAlign,validAlign);
+addRequired(p, 'nwb', validNWB);
+addRequired(p, 'unit_id', validUnit);
+addOptional(p, 'before_time', 1., validTime);
+addOptional(p, 'after_time', 1., validTime);
+addOptional(p, 'align_to', 'start_time');
 % Parse and unpack key-value pairs
 parse(p,nwb,unit_id,varargin{:});
 before_time = p.Results.before_time; 
