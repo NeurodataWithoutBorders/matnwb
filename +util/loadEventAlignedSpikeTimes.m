@@ -5,13 +5,13 @@ function ST = loadEventAlignedSpikeTimes(nwb,unit_id,varargin)
 %   event-aligned spike times for all events for the indicated unit.
 %   ST is cell array with length corresponding to the number of
 %   events.
-%
-%   ST = LOADEVENTALIGNEDTIMESERIESDATA(NWB, UNIT_ID, BEFORE_TIME, AFTER_TIME)
-%   specifies the time, in seconds, before and after the event for
-%   inclusion of spike times. Both default to 1.
-%
-%   ST = LOADEVENTALIGNEDTIMESERIESDATA(NWB, UNIT_ID, BEFORE_TIME, AFTER_TIME, ALIGN_TO)
-%   aligns data to the column named ALIGN_TO. Default is 'start_time'.
+%   OPTIONAL KEYWORD ARGUMENTS
+%   'before_time' - specifies the time, in seconds, before the event for
+%   the inclusion of spike times. Defaults to 1.
+%   'after_time' - specifies the time, in seconds, after the event for
+%   the inclusion of spike times. Defaults to 1.
+%   'align_to' - specified the column containing event timestamps to which
+%   to align spike times
 
 % Define default values
 % Define anonymous functions to check input
@@ -32,9 +32,10 @@ before_time = p.Results.before_time;
 after_time = p.Results.after_time; 
 align_to = p.Results.align_to;
 % Fetch spike times for indicated unit
-spike_times = util.read_indexed_column(nwb.units.spike_times_index, ...
-                                       nwb.units.spike_times, ...
-                                       unit_id);
+spike_times = nwb.units.getRow( ...
+    unit_id, ...
+    'columns',{'spike_times'} ...
+).spike_times{1}; % need to unpack from returned MATLAB table
 % Get list of reference event timestamps
 if strcmp(align_to, 'start_time')
     ref_event_times = nwb.intervals_trials.start_time.data.load;
