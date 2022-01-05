@@ -10,35 +10,33 @@ function ST = loadEventAlignedSpikeTimes(nwb,unit_id,event_times,varargin)
 %   the inclusion of spike times. Defaults to 1.
 %   'after_time' - specifies the time, in seconds, after the event for
 %   the inclusion of spike times. Defaults to 1.
-%   'align_to' - specified the column containing event timestamps to which
-%   to align spike times. Default is 'start_time'.
 
 % Define anonymous functions to check input
 validNWB = @(x) isa(x,'types.core.NWBFile');
 validUnit = @(x) isscalar(x);
-validTime = @(x) isnumeric(x) && (x>=0);
-validAlign = @(x) ischar(x);
+validTime = @(x) isnumeric(x) && all(x>=0);
+
 % Define parser with arguments
 p = inputParser;
 addRequired(p, 'nwb', validNWB);
 addRequired(p, 'unit_id', validUnit);
+addRequired(p, 'event_times', validTime);
 addOptional(p, 'before_time', 1., validTime);
 addOptional(p, 'after_time', 1., validTime);
-addOptional(p, 'align_to', 'start_time');
 % Parse and unpack key-value pairs
-parse(p, nwb, unit_id,varargin{:});
+parse(p, nwb, unit_id, event_times, varargin{:});
 before_time = p.Results.before_time; 
 after_time = p.Results.after_time; 
-align_to = p.Results.align_to;
+
 % Fetch spike times for indicated unit
 spike_times = nwb.units.getRow( ...
     unit_id, ...
     'columns', {'spike_times'} ...
 ).spike_times{1}; % need to unpack from returned MATLAB table
 % Get spike times within window around indicated event
-ST = cell(length(ref_event_times),1);
-for i = 1:length(ref_event_times)
-    ref_time = ref_event_times(i);
+ST = cell(length(event_times),1);
+for i = 1:length(event_times)
+    ref_time = event_times(i);
     ST{i} = spike_times(...
                        spike_times >= ref_time - before_time & ...
                        spike_times <= ref_time + after_time) - ...
