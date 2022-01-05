@@ -1,4 +1,22 @@
 function ST = loadTrialAlignedSpikeTimes(nwb,unit_id,varargin)
+%LOADTRIALALIGNEDSPIKETIMES loads event-aligned spike times data for a
+% single unit
+%   ST = LOADEVENTALIGNEDTIMESERIESDATA(NWB, UNIT_ID, EVENT_TIMES) returns
+%   the trial-aligned spike times for all events of a given type for UNIT_ID
+%   in the NWB.units table. ST is a cell array with length corresponding to
+%   the number of events.
+%   OPTIONAL KEYWORD ARGUMENTS
+%   'before_time' - specifies the time, in seconds, before the event for
+%   the inclusion of spike times. Defaults to 1.
+%   'after_time' - specifies the time, in seconds, after the event for
+%   the inclusion of spike times. Defaults to 1.
+%   'align_to' - specified the column containing event timestamps to which
+%   to align spike times. Default is 'start_time'.
+%   %'conditions' - containers.Map object where the keys are the column names and
+%   the values are the tests. A function can be entered for the value here, and
+%   Only columns where the function evaluates as true will be used. If a
+%   non-funcion is entered, an equality test is used. Default is an empty
+%   container.Map object.
 % Define anonymous functions to check input
 validNWB = @(x) isa(x,'types.core.NWBFile');
 validUnit = @(x) isscalar(x);
@@ -46,9 +64,8 @@ for i = 1:length(keys)
         trials_to_take = (col.data.load == val) & trials_to_take;
     end
 end
-
 ref_event_times = ref_event_times(trials_to_take);
-% call event utility function
+% Call event-aligned spike times utility function
 ST = util.loadEventAlignedSpikeTimes(nwb, unit_id, ref_event_times, ...
     'before_time', p.Results.before_time, ...
     'after_time', p.Results.after_time ...
