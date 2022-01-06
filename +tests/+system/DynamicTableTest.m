@@ -7,8 +7,8 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
                 colnames{c} = char([double(colnames{c}) zeros(1,randi(10))]);
             end
             % until addRow works with multidimensional matrices, define array in one go
-            nrows = 200;
-            ids = primes(2000)';
+            nrows = 20;
+            ids = primes(100)';
             start_col = types.hdmf_common.VectorData( ...
                 'description', 'start_times column', ...
                 'data', (1:nrows)' ...
