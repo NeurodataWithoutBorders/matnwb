@@ -1,15 +1,11 @@
 function writeNamespace(namespaceName, saveDir)
 %check/load dependency namespaces
-Namespace = schemes.loadNamespace(namespaceName);
+Namespace = schemes.loadNamespace(namespaceName, saveDir);
 
-if nargin < 2 || isempty(saveDir)
-    saveDir = misc.getMatnwbDir();
-end
+classFileDir = fullfile(saveDir, '+types', ['+' misc.str2validName(Namespace.name)]);
 
-saveDir = fullfile(saveDir, '+types', ['+' misc.str2validName(Namespace.name)]);
-
-if 7 ~= exist(saveDir, 'dir')
-    mkdir(saveDir);
+if 7 ~= exist(classFileDir, 'dir')
+    mkdir(classFileDir);
 end
 
 classes = keys(Namespace.registry);
@@ -22,7 +18,7 @@ for i=1:length(classes)
         continue;
     end
     
-    fid = fopen(fullfile(saveDir, [className '.m']), 'W');
+    fid = fopen(fullfile(classFileDir, [className '.m']), 'W');
     try
         fwrite(fid, file.fillClass(className, Namespace, processed, ...
             classprops, inherited), 'char');

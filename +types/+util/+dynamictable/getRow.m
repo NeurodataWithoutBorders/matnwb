@@ -62,7 +62,7 @@ if isscalar(colIndStack)
     if isa(Vector.data, 'types.untyped.DataStub')
         rank = length(Vector.data.dims);
     else
-        rank = length(size(matInd));
+        rank = ndims(Vector.data);
     end
 
     selectInd = cell(1, rank);
@@ -87,10 +87,12 @@ else
     startIndInd = matInd - 1;
     zeroMask = startIndInd == 0;
     startInds = zeros(size(startIndInd));
-    if isa(Vector.data, 'types.untyped.DataStub') || isa(Vector.data, 'types.untyped.DataPipe')
-        startInds(~zeroMask) = Vector.data.load(startIndInd(~zeroMask));
-    else
-        startInds(~zeroMask) = Vector.data(startIndInd(~zeroMask));
+    if ~isempty(startIndInd(~zeroMask))
+        if isa(Vector.data, 'types.untyped.DataStub') || isa(Vector.data, 'types.untyped.DataPipe')
+            startInds(~zeroMask) = Vector.data.load(startIndInd(~zeroMask));
+        else
+            startInds(~zeroMask) = Vector.data(startIndInd(~zeroMask));
+        end
     end
     startInds = startInds + 1;
 
