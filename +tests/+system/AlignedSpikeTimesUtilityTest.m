@@ -59,8 +59,8 @@ classdef AlignedSpikeTimesUtilityTest < matlab.unittest.TestCase
                 for ev = 1:num_events
                     % randomly select a firing rate for each event
                     fr = randi(100);
-                    % generate random spike times for event
-                    st_ev = (sort(randperm(window_length*sampling_rate,fr*window_length)-1)/sampling_rate)';
+                    % generate random spike times for event, open interval to avoid double-counting 
+                    st_ev = (sort(randperm((window_length*sampling_rate)-1,fr*window_length))/sampling_rate)';
                     % store spike times for test unit
                     if unit == select_unit
                         psth_test{ev} = st_ev-before_time; % relative to event
