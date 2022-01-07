@@ -85,8 +85,7 @@ NWB files use the HDF5 format to store data. Due to differences in how MATLAB an
 
 [without DataPipes](TODO)
 
-|    Shape     |     Shape    |
-|  in MatNWB   |    in HDF5   |
+| Shape <br /> in MatNWB| Shape<br />in HDF5|
 | ------------ | ------------ |
 |    (N, 1)    |     (N,)     |
 |    (1, N)    |     (N,)     |
@@ -94,8 +93,7 @@ NWB files use the HDF5 format to store data. Due to differences in how MATLAB an
 
 [with DataPipes](TODO)
 
-|    Shape     |     Shape    |
-|  in MatNWB   |    in HDF5   |
+| Shape <br /> in MatNWB| Shap e<br /> in HDF5|
 | ------------ | ------------ |
 |    (N, 1)    |    (1, N)    |
 |    (N, 1)    |     (N,)     | ** 'maxSize' value must be 1D 
