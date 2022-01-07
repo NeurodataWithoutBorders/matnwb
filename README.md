@@ -83,13 +83,15 @@ MatNWB is available online at https://github.com/NeurodataWithoutBorders/matnwb
 
 NWB files use the HDF5 format to store data. Due to differences in how MATLAB and HDF5 represent data, the dimensions of datasets are flipped when writing to/from file in MatNWB. This behavior differs depending on whether ```VectorData``` use ```DataPipe``` objects to contain the data. It's important to keep in mind the mappings below to make sure is written to and read from file as expected.
 
-[without DataPipes](TODO)
+[without DataPipes](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dimensionMapNoDataPipes.html)
 
 | Shape <br /> in MatNWB| Shape<br />in HDF5|
 | :----------: | :----------: |
 |    (N, 1)    |     (N,)     |
 |    (1, N)    |     (N,)     |
 | (P, M, O, N) | (N, O, M, P) |
+
+**Note:** MATLAB does not support 1D datasets. HDF5 datasets of size (N,) are loaded into MATLAB as datasets of size (N,1). To avoid changes in dimensions when writing to/from file use column vectors for 1D datasets. 
 
 [with DataPipes](TODO)
 
@@ -100,7 +102,7 @@ NWB files use the HDF5 format to store data. Due to differences in how MATLAB an
 |    (1, N)    |    (N, 1)    |
 | (P, M, O, N) | (N, O, M, P) |
 
-## Warnings
+## Caveats
 
 The NWB:N schema is in a state of some evolution.  This package assumes a certain set of rules are used to define the schema.  As the schema is updated, some of the rules may be changed and these will break this package.
 
