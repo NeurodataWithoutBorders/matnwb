@@ -85,15 +85,26 @@ NWB files use the HDF5 format to store data. Due to differences in how MATLAB an
 
 [without DataPipes](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dimensionMapNoDataPipes.html)
 
+**Writing to File**
+
 | Shape <br /> in MatNWB| Shape<br />in HDF5|
 | :----------: | :----------: |
 |    (N, 1)    |     (N,)     |
 |    (1, N)    |     (N,)     |
 | (P, M, O, N) | (N, O, M, P) |
 
-**Note:** MATLAB does not support 1D datasets. HDF5 datasets of size (N,) are loaded into MATLAB as datasets of size (N,1). To avoid changes in dimensions when writing to/from file use column vectors for 1D datasets. 
+**Reading from File**
+
+| Shape <br /> in HDF5| Shape<br />in MatNWB|
+| :----------: | :----------: |
+|     (N,)     |     (N,1)    |
+| (N, O, M, P) | (P, M, O, N) |
+
+**NOTE:** MATLAB does not support 1D datasets. HDF5 datasets of size (N,) are loaded into MATLAB as datasets of size (N,1). To avoid changes in dimensions when writing to/from file use column vectors for 1D datasets. 
 
 [with DataPipes](TODO)
+
+**Writing to File**
 
 | Shape <br /> in MatNWB| Shape <br /> in HDF5|
 | :----------: | :----------: |
@@ -101,6 +112,16 @@ NWB files use the HDF5 format to store data. Due to differences in how MATLAB an
 |    (N, 1)    |     (N,)     | ** 'maxSize' value must be 1D 
 |    (1, N)    |    (N, 1)    |
 | (P, M, O, N) | (N, O, M, P) |
+
+**Reading from File**
+
+| Shape <br /> in HDF5| Shape<br />in MatNWB|
+| :----------: | :----------: |
+|    (N, 1)    |    (1, N)    |
+|    (1, N)    |    (N, 1)    |
+|     (N,)     |    (N, 1)    |
+| (N, O, M, P) | (P, M, O, N) |
+
 
 ## Caveats
 
