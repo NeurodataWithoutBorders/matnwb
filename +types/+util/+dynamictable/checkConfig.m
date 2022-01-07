@@ -95,6 +95,7 @@ while c <= length(columns)
         end
     end
     c = c+1;
+end
 if ~isempty(lengths)
     if isempty(DynamicTable.id) || isempty(DynamicTable.id.data(:))
         if 8 == exist('types.hdmf_common.ElementIdentifiers', 'class')
@@ -134,9 +135,6 @@ else
         DynamicTable.id = types.core.ElementIdentifiers();
     end
 end
-end
-
-
 end
 function in = removeNulls(in)
 in(double(in) == 0) = [];
