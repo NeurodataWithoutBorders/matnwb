@@ -102,7 +102,7 @@ NWB files use the HDF5 format to store data. There are two main differences betw
 
 **NOTE:** MATLAB does not support 1D datasets. HDF5 datasets of size (N,) are loaded into MATLAB as datasets of size (N,1). To avoid changes in dimensions when writing to/from file use column vectors for 1D datasets. 
 
-[with DataPipes](TODO)
+[with DataPipes](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dimensionMapWithDataPipes.html)
 
 **Writing to File**
 
