@@ -42,6 +42,18 @@ for i = 1:length(columns)
     end
 
     row{i} = select(DynamicTable, indexNames, ind);
+    if size(row{i},2)>1
+        % shift dimensions of non-row vectors. otherwise will result in
+        % invalid MATLAB table with uneven column height
+        row{i} = permute(row{i},circshift(1:ndims(row{i}),1));
+    end
+    if length(ind)==1
+        % cell-wrap single multidimensional matrices to prevent invalid
+        % MATLAB tables
+        if ~iscell(row{i}) && length(row{i}) > 1
+            row{i} = {row{i}};
+        end
+    end
 end
 subTable = table(row{:}, 'VariableNames', columns);
 end
@@ -59,21 +71,33 @@ else
 end
 
 if isscalar(colIndStack)
-    if isa(Vector.data, 'types.untyped.DataStub')
-        rank = length(Vector.data.dims);
+    if isa(Vector.data, 'types.untyped.DataStub') || ...
+            isa(Vector.data,'types.untyped.DataPipe')
+        if isa(Vector.data, 'types.untyped.DataStub')
+            refProp = Vector.data.dims;
+        else
+            refProp = Vector.data.internal.maxSize;
+        end
+        if length(refProp) == 2 && ...
+                refProp(2) ==1
+            % catch row vector
+            rank = 1;
+        else
+            rank = length(refProp);
+        end
     else
-        rank = ndims(Vector.data);
+        if iscolumn(Vector.data)
+            %catch row vector
+            rank = 1;
+        else
+            rank = ndims(Vector.data);
+        end
     end
-
     selectInd = cell(1, rank);
-    selectInd{1} = matInd;
-    selectInd(2:end) = {':'};
+    selectInd(1:end-1) = {':'};
+    selectInd{end} = matInd;
+    selected = Vector.data(selectInd{:});
 
-    if isa(Vector.data, 'types.untyped.DataPipe')
-        selected = Vector.data.load(matInd);
-    else
-        selected = Vector.data(selectInd{:});
-    end
 else
     assert(isa(Vector, 'types.hdmf_common.VectorIndex') || isa(Vector, 'types.core.VectorIndex'),...
         'NWB:DynamicTable:GetRow:InternalError',...
