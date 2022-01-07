@@ -81,7 +81,7 @@ MatNWB is available online at https://github.com/NeurodataWithoutBorders/matnwb
 
 ## Data Dimensions
 
-NWB files use the HDF5 format to store data. Due to differences in how MATLAB and HDF5 represent data, the dimensions of datasets are flipped when writing to/from file in MatNWB. This behavior differs depending on whether ```VectorData``` use ```DataPipe``` objects to contain the data. It's important to keep in mind the mappings below to make sure is written to and read from file as expected.
+NWB files use the HDF5 format to store data. There are two main differences between the way MATLAB and HDF5 represents dimensions. The first is that HDF5 is C-ordered, which means it stores data is a rows-first pattern, and the MATLAB is F-ordered, storing data in the reverse pattern, with the last dimension of the array stored consecutively. The result is that the data in HDF5 is effectively the transpose of the array in MATLAB. The second difference is that HDF5 can store 1-D arrays, but in MATLAB the lowest dimensionality of an array is 2-D. Due to differences in how MATLAB and HDF5 represent data, the dimensions of datasets are flipped when writing to/from file in MatNWB. This behavior differs depending on whether ```VectorData``` use ```DataPipe``` objects to contain the data. It's important to keep in mind the mappings below to make sure is written to and read from file as expected.
 
 [without DataPipes](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dimensionMapNoDataPipes.html)
 
