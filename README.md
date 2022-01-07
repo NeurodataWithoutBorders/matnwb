@@ -79,12 +79,34 @@ PyNWB's cached schemas are also supported, bypassing the need to run `generateCo
 
 MatNWB is available online at https://github.com/NeurodataWithoutBorders/matnwb
 
-## Caveats
+## Data Dimensions
+
+NWB files use the HDF5 format to store data. Due to differences in how MATLAB and HDF5 represent data, the dimensions of datasets are flipped when writing to/from file in MatNWB. This behavior differs depending on whether ```VectorData``` use ```DataPipe``` objects to contain the data. It's important to keep in mind the mappings below to make sure is written to and read from file as expected.
+
+[without DataPipes](TODO)
+
+|    Shape     |     Shape    |
+|  in MatNWB   |    in HDF5   |
+| ------------ | ------------ |
+|    (N, 1)    |     (N,)     |
+|    (1, N)    |     (N,)     |
+| (P, M, O, N) | (N, O, M, P) |
+
+[with DataPipes](TODO)
+
+|    Shape     |     Shape    |
+|  in MatNWB   |    in HDF5   |
+| ------------ | ------------ |
+|    (N, 1)    |    (1, N)    |
+|    (N, 1)    |     (N,)     | ** 'maxSize' value must be 1D 
+|    (1, N)    |    (N, 1)    |
+| (P, M, O, N) | (N, O, M, P) |
+
+## Warnings
 
 The NWB:N schema is in a state of some evolution.  This package assumes a certain set of rules are used to define the schema.  As the schema is updated, some of the rules may be changed and these will break this package.
 
 For those planning on using matnwb alongside pynwb, please keep the following in mind:
- - The ordering of dimensions in MATLAB are reversed compared to numpy (and pynwb).  Thus, a 3-D ```SpikeEventSeries```, which in pynwb would normally be indexed in order ```(num_samples, num_channels, num_events)```, would be indexed in form ```(num_events, num_channels, num_samples)``` in MatNWB.
  - MatNWB is dependent on the schema, which may not necessary correspond with your PyNWB schema version.  Please consider overwriting the contents within MatNWB's **~/schema/core** directory with the generating PyNWB's **src/pynwb/data directory** and running generateCore to ensure compatibilty between systems.
  
 The `master` branch in this repository is considered perpetually unstable.  If you desire matnwb's full functionality (full round-trip with nwb data), please consider downloading the more stable releases in the Releases tab.  Keep in mind that the Releases are generally only compatible with older versions of pynwb and may not supported newer data types supported by pynwb (such as data references or compound types).  Most releases will coincide with nwb-schema releases and contain compatibility with those features.
