@@ -70,7 +70,7 @@ else
     if isscalar(TypeStruct.dims)
         attributes = {'vector'};
     else
-        attributes = {'ndims', TypeStruct.dims};
+        attributes = {'ndims', length(TypeStruct.dims)};
     end
     validateattributes(rv, {TypeStruct.type}, attributes);
 end
