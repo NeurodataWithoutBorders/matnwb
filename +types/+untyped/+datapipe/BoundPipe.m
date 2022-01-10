@@ -25,15 +25,11 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
             obj.stub = types.untyped.DataStub(filename, path);
             
             sid = obj.stub.get_space();
-            [numdims, h5_dims, h5_maxdims] = H5S.get_simple_extent_dims(sid);
+            [~, h5_dims, h5_maxdims] = H5S.get_simple_extent_dims(sid);
             H5S.close(sid);
             
             current_size = fliplr(h5_dims);
             max_size = fliplr(h5_maxdims);
-            if 1 == numdims
-                current_size = [current_size 1];
-                max_size = [max_size 1];
-            end
             h5_unlimited = H5ML.get_constant_value('H5S_UNLIMITED');
             max_size(max_size == h5_unlimited) = Inf;
             
