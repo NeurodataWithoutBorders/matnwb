@@ -164,7 +164,10 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
         function append(obj, data)
             rank = length(obj.config.maxSize);
             data_size = size(data);
-            if length(data_size) < rank
+            
+            if 1 == rank
+                data_size = max(data_size);
+            elseif length(data_size) < rank
                 new_coords = ones(1, rank);
                 new_coords(1:length(data_size)) = data_size;
                 data_size = new_coords;
