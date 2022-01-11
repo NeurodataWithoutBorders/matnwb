@@ -37,6 +37,21 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
             
             if isempty(varargin)
                 obj.config = Configuration(max_size);
+                axis = find(current_size < max_size);
+                if ~isscalar(axis)
+                    formattedAxes = sprintf('[%s]', ...
+                        strjoin(cellfun(@num2str, num2cell(axis)), ', '));
+                    formattedMaxSize = sprintf('[%s]', ...
+                        strjoin(cellfun(@num2str, num2cell(max_size)), ', '));
+                    warning('MatNWB:Untyped:DataPipe:BoundPipe:InvalidPipeShape', ...
+                        ['Multiple possible axes for data pipe detected.' newline ...
+                        '  Dimensions %s are all strictly smaller in size than the maximum size of %s.' newline ...
+                        '  All non-appendable dimensions should fill out the maximum size of their dimension.' newline ...
+                        '  Continuing with axis %s'], formattedAxes, formattedMaxSize, axis(1));
+                    axis = axis(1);
+                end
+
+                obj.config.axis = axis;
                 obj.config.offset = current_size(obj.config.axis);
                 tid = H5D.get_type(did);
                 obj.config.dataType = io.getMatType(tid);
