@@ -89,16 +89,16 @@ NWB files use the HDF5 format to store data. There are two main differences betw
 
 | Shape <br /> in MatNWB| Shape<br />in HDF5|
 | :----------: | :----------: |
-|    (N, 1)    |     (N,)     |
-|    (1, N)    |     (N,)     |
-| (P, O, M, N) | (N, M, O, P) |
+|    (M, 1)    |     (M,)     |
+|    (1, M)    |     (M,)     |
+| (P, O, N, M) | (M, N, O, P) |
 
 **Reading from File**
 
 | Shape <br /> in HDF5| Shape<br />in MatNWB|
 | :----------: | :----------: |
 |     (N,)     |     (N,1)    |
-| (N, M, O, P) | (P, O, M, N) |
+| (M, N, O, P) | (P, O, N, M) |
 
 **NOTE:** MATLAB does not support 1D datasets. HDF5 datasets of size (N,) are loaded into MATLAB as datasets of size (N,1). To avoid changes in dimensions when writing to/from file use column vectors for 1D datasets. 
 
@@ -108,9 +108,9 @@ NWB files use the HDF5 format to store data. There are two main differences betw
 
 | Shape <br /> in MatNWB| Shape <br /> in HDF5|
 | :----------: | :----------: |
-|    (N, 1)    |    (1, N)    | 
-|    (1, N)    |(N, 1)/(N,)** |
-| (P, M, O, N) | (N, O, M, P) |
+|    (M, 1)    |    (1, M)    | 
+|    (1, M)    |(M, 1)/(M,)** |
+| (P, O, N, M) | (M, N, O, P) |
 
 ** Use scalar as input to 'maxSize' argument to write dataset of shape (N,)
 
@@ -118,10 +118,10 @@ NWB files use the HDF5 format to store data. There are two main differences betw
 
 | Shape <br /> in HDF5| Shape<br />in MatNWB|
 | :----------: | :----------: |
-|    (N, 1)    |    (1, N)    |
-|    (1, N)    |    (N, 1)    |
-|     (N,)     |    (N, 1)    |
-| (N, O, M, P) | (P, M, O, N) |
+|    (M, 1)    |    (1, M)    |
+|    (1, M)    |    (M, 1)    |
+|     (M,)     |    (M, 1)    |
+| (M, N, O, P) | (P, O, N, M) |
 
 
 ## Caveats
