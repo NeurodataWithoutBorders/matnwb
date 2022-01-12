@@ -108,10 +108,11 @@ NWB files use the HDF5 format to store data. There are two main differences betw
 
 | Shape <br /> in MatNWB| Shape <br /> in HDF5|
 | :----------: | :----------: |
-|    (N, 1)    |    (1, N)    |
-|    (N, 1)    |     (N,)     | ** 'maxSize' value must be 1D 
-|    (1, N)    |    (N, 1)    |
+|    (N, 1)    |    (1, N)    | 
+|    (1, N)    | (N, 1)/(N,)<sup>*</sup> |
 | (P, M, O, N) | (N, O, M, P) |
+
+* Use scalar as input to 'maxSize' argument to write dataset of shape (N,)
 
 **Reading from File**
 
