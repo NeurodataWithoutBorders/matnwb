@@ -66,10 +66,12 @@ for i = 1:totalLength
 end
 
 %% verify data
+Pipe = types.untyped.DataPipe('filename', filename, 'path', '/test_data');
 readData = Pipe.load();
 testCase.verifyEqual(readData(:,:,1:10), initialData);
 testCase.verifyEqual(readData(:,:,11:end), appendData);
 
+OneDimensionPipe = types.untyped.DataPipe('filename', filename, 'path', '/test_one_dim_data');
 readData = OneDimensionPipe.load();
 testCase.verifyTrue(isvector(readData));
 testCase.verifyEqual(length(readData), 6);
