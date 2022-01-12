@@ -67,6 +67,11 @@ elseif iscell(rv)
         validateType(TypeStruct, rv{iVal});
     end
 else
-    validateattributes(rv, {TypeStruct.type}, {'size', [NaN TypeStruct.dims(2:end)]});
+    if isscalar(TypeStruct.dims)
+        attributes = {'vector'};
+    else
+        attributes = {'ndims', length(TypeStruct.dims)};
+    end
+    validateattributes(rv, {TypeStruct.type}, attributes);
 end
 end
