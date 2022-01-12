@@ -60,7 +60,10 @@ while c <= length(columns)
             if isa(cv.data,'types.untyped.DataStub')
                 colHeight = cv.data.dims(end);
             elseif isa(cv.data,'types.untyped.DataPipe')
-                if ismatrix(cv.data.internal.maxSize) && ...
+                if length(cv.data.internal.maxSize) == 1
+                    % catch 1D column
+                    rank = 1;
+                elseif ismatrix(cv.data.internal.maxSize) && ...
                         cv.data.internal.maxSize(2) == 1
                     % catch column vector
                     rank = 1;
