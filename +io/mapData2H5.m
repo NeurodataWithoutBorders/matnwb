@@ -59,6 +59,6 @@ switch class(data)
         end
         
         for i = 1:length(data)
-            data{i} = char(unicode2native(char(data{i})));
+            data{i} = char(data{i});
         end
 end

@@ -9,6 +9,7 @@ elseif any(strcmp(type, {'char' 'cell' 'datetime'}))
     %modify id to set the proper size
     id = H5T.copy('H5T_C_S1');
     H5T.set_size(id, 'H5T_VARIABLE');
+    H5T.set_cset(id, H5ML.get_constant_value('H5T_CSET_UTF8'))
 elseif strcmp(type, 'double')
     id = 'H5T_IEEE_F64LE';
 elseif strcmp(type, 'single')
