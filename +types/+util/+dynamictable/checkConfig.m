@@ -135,7 +135,7 @@ if ~isempty(lengths)
 else
     if 8 == exist('types.hdmf_common.ElementIdentifiers', 'class')
         DynamicTable.id = types.hdmf_common.ElementIdentifiers();
-    else% legacy Element Identifiers
+    else % legacy Element Identifiers
         DynamicTable.id = types.core.ElementIdentifiers();
     end
 end
