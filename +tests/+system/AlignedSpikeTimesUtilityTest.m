@@ -77,7 +77,7 @@ classdef AlignedSpikeTimesUtilityTest < matlab.unittest.TestCase
             filename = 'MatNWB.psthTest.nwb';
             nwbExport(file, filename);
             % Read in file
-            read_file = nwbRead(filename);
+            read_file = nwbRead(filename, 'ignorecache');
             % Get spike times array for file
             psth_read = util.loadTrialAlignedSpikeTimes(read_file, select_unit, ...
                 'before_time', before_time, ...
