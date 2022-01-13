@@ -103,12 +103,12 @@ while c <= length(columns)
 end
 if ~isempty(lengths)
     if isempty(DynamicTable.id) || isempty(DynamicTable.id.data(:))
-        if 8 == exist('types.hdmf_common.ElementIdentifiers', 'class')
-            DynamicTable.id = types.hdmf_common.ElementIdentifiers( ...
+        if 8 == exist('types.core.ElementIdentifiers', 'class')% legacy Element Identifiers
+             DynamicTable.id = types.core.ElementIdentifiers( ...
                 'data', int64((1:min(lengths(lengths>0)))-1)' ...
             );
-        else % legacy Element Identifiers
-            DynamicTable.id = types.core.ElementIdentifiers( ...
+        else 
+            DynamicTable.id = types.hdmf_common.ElementIdentifiers( ...
                 'data', int64((1:min(lengths(lengths>0)))-1)' ...
             );
         end
@@ -133,10 +133,10 @@ if ~isempty(lengths)
         end
     end
 else
-    if 8 == exist('types.hdmf_common.ElementIdentifiers', 'class')
-        DynamicTable.id = types.hdmf_common.ElementIdentifiers();
-    else % legacy Element Identifiers
+    if 8 == exist('types.core.ElementIdentifiers', 'class')% legacy Element Identifiers
         DynamicTable.id = types.core.ElementIdentifiers();
+    else 
+        DynamicTable.id = types.hdmf_common.ElementIdentifiers();
     end
 end
 end
