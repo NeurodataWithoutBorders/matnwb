@@ -67,6 +67,6 @@ elseif iscell(rv)
         validateType(TypeStruct, rv{iVal});
     end
 else
-    validateattributes(rv, {TypeStruct.type}, {'size', [NaN TypeStruct.dims(2:end)]});
+    validateattributes(rv, {TypeStruct.type}, {'2d'});
 end
 end
