@@ -5,7 +5,7 @@ classdef Namespace < handle
         registry; %maps name to class
     end
     
-    properties (Constant, Access = private)
+    properties (Constant)
         TYPEDEF_KEYS = {'neurodata_type_def', 'data_type_def'};
         PARENT_KEYS = {'neurodata_type_inc', 'data_type_inc'};
     end

@@ -20,7 +20,7 @@ fcnbody = strjoin({fcnbody,...
     'end'}, newline);
 
 % insert check for DynamicTable class and child classes
-txt = fillCheck(name,parentname);
+txt = fillCheck(name, namespace);
 if ~isempty(txt)
     fcnbody = [fcnbody newline txt];
 end
@@ -106,8 +106,8 @@ else
         else
             overridemap(nm) =...
                 sprintf('types.util.correctType(%d, ''%s'')',...
-                    props(nm).value,...
-                    props(nm).dtype);
+                props(nm).value,...
+                props(nm).dtype);
         end
     end
     kwargs = io.map2kwargs(overridemap);
@@ -129,11 +129,11 @@ varnames = repmat({''}, size(names));
 for i=1:length(names)
     nm = names{i};
     prop = props(nm);
-    
+
     if isa(prop, 'file.Group') || isa(prop, 'file.Dataset')
         dynamicConstrained(i) = prop.isConstrainedSet && strcmpi(nm, prop.type);
         anon(i) = ~prop.isConstrainedSet && isempty(prop.name);
-        
+
         if ~isempty(prop.type)
             varnames{i} = nm;
             try
@@ -202,7 +202,7 @@ for i=1:length(names)
     prop = props(names{i});
     if (isa(prop, 'file.Group') &&...
             (prop.hasAnonData || prop.hasAnonGroups || prop.isConstrainedSet)) ||...
-       (isa(prop, 'file.Dataset') && prop.isConstrainedSet)
+            (isa(prop, 'file.Dataset') && prop.isConstrainedSet)
         defaults{i} = 'types.untyped.Set()';
     else
         defaults{i} = '[]';
@@ -217,18 +217,28 @@ parser = [parser, strcat('obj.', names, ' = p.Results.', names, ';')];
 parser = strjoin(parser, newline);
 bodystr(end+1:end+length(parser)+1) = [newline parser];
 end
-function  checkTxt = fillCheck(name,parentname)
-    checkTxt = [];
-    if strcmp(name,'DynamicTable')
-        checkTxt = strjoin({...
-            'types.util.dynamictable.checkConfig(obj,properties(obj));', ...
-        }, newline);
-    elseif strcmp(parentname,'types.hdmf_common.DynamicTable') || ...
-            strcmp(parentname,'types.core.DynamicTable')
-        checkTxt = strjoin({...
-            'types.util.dynamictable.checkConfig(obj);', ...
-        }, newline);
-    end
-    
+
+function checkTxt = fillCheck(name, namespace)
+checkTxt = [];
+
+% find if a dynamic table ancestry exists
+ancestry = namespace.getRootBranch(name);
+isDynamicTableDescendent = false;
+for iAncestor = 1:length(ancestry)
+    ParentRaw = ancestry{iAncestor};
+    % this is always true, we just use the proper index as typedefs may vary.
+    typeDefInd = isKey(ParentRaw, namespace.TYPEDEF_KEYS);
+    isDynamicTableDescendent = isDynamicTableDescendent ...
+        || strcmp('DynamicTable', ParentRaw(namespace.TYPEDEF_KEYS{typeDefInd}));
 end
 
+if ~isDynamicTableDescendent
+    return;
+end
+
+checkTxt = strjoin({ ...
+    sprintf('if strcmp(class(obj), ''%s'')', namespace.getFullClassName(name)), ...
+    '    types.util.dynamictable.checkConfig(obj);', ...
+    'end'
+    }, newline);
+end
