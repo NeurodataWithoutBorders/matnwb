@@ -33,7 +33,6 @@ end
 
 function testAppend(testCase)
 filename = 'testIterativeWrite.h5';
-name = '/test_data';
 
 Pipe = types.untyped.DataPipe(...
     'maxSize', [10 13 15],...
@@ -42,12 +41,15 @@ Pipe = types.untyped.DataPipe(...
     'dataType', 'uint8',...
     'compressionLevel', 5);
 
+OneDimensionPipe = types.untyped.DataPipe('maxSize', Inf, 'data', [7, 8, 9]);
+
 %% create test file
 fid = H5F.create(filename);
 
 initialData = createData(Pipe.dataType, [10 13 10]);
 Pipe.internal.data = initialData;
-Pipe.export(fid, name, {}); % bind
+Pipe.export(fid, '/test_data', {}); % bind
+OneDimensionPipe.export(fid, '/test_one_dim_data', {});
 
 H5F.close(fid);
 
@@ -59,10 +61,21 @@ for i = 1:totalLength
     Pipe.append(appendData(:,:,i));
 end
 
+for i = 1:totalLength
+    OneDimensionPipe.append(rand());
+end
+
 %% verify data
+Pipe = types.untyped.DataPipe('filename', filename, 'path', '/test_data');
 readData = Pipe.load();
 testCase.verifyEqual(readData(:,:,1:10), initialData);
 testCase.verifyEqual(readData(:,:,11:end), appendData);
+
+OneDimensionPipe = types.untyped.DataPipe('filename', filename, 'path', '/test_one_dim_data');
+readData = OneDimensionPipe.load();
+testCase.verifyTrue(isvector(readData));
+testCase.verifyEqual(length(readData), 6);
+testCase.verifyEqual(readData(1:3), [7, 8, 9] .');
 end
 
 function data = createData(dataType, size)
