@@ -25,15 +25,11 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
             obj.stub = types.untyped.DataStub(filename, path);
             
             sid = obj.stub.get_space();
-            [numdims, h5_dims, h5_maxdims] = H5S.get_simple_extent_dims(sid);
+            [~, h5_dims, h5_maxdims] = H5S.get_simple_extent_dims(sid);
             H5S.close(sid);
             
             current_size = fliplr(h5_dims);
             max_size = fliplr(h5_maxdims);
-            if 1 == numdims
-                current_size = [current_size 1];
-                max_size = [max_size 1];
-            end
             h5_unlimited = H5ML.get_constant_value('H5S_UNLIMITED');
             max_size(max_size == h5_unlimited) = Inf;
             
@@ -41,6 +37,21 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
             
             if isempty(varargin)
                 obj.config = Configuration(max_size);
+                axis = find(current_size < max_size);
+                if ~isscalar(axis)
+                    formattedAxes = sprintf('[%s]', ...
+                        strjoin(cellfun(@num2str, num2cell(axis)), ', '));
+                    formattedMaxSize = sprintf('[%s]', ...
+                        strjoin(cellfun(@num2str, num2cell(max_size)), ', '));
+                    warning('MatNWB:Untyped:DataPipe:BoundPipe:InvalidPipeShape', ...
+                        ['Multiple possible axes for data pipe detected.' newline ...
+                        '  Dimensions %s are all strictly smaller in size than the maximum size of %s.' newline ...
+                        '  All non-appendable dimensions should fill out the maximum size of their dimension.' newline ...
+                        '  Continuing with axis %s'], formattedAxes, formattedMaxSize, axis(1));
+                    axis = axis(1);
+                end
+
+                obj.config.axis = axis;
                 obj.config.offset = current_size(obj.config.axis);
                 tid = H5D.get_type(did);
                 obj.config.dataType = io.getMatType(tid);
@@ -164,7 +175,10 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
         function append(obj, data)
             rank = length(obj.config.maxSize);
             data_size = size(data);
-            if length(data_size) < rank
+            
+            if 1 == rank
+                data_size = max(data_size);
+            elseif length(data_size) < rank
                 new_coords = ones(1, rank);
                 new_coords(1:length(data_size)) = data_size;
                 data_size = new_coords;
