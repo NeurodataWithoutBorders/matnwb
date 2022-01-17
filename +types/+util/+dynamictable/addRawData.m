@@ -131,7 +131,7 @@ end
 function numRows = add2MemData(VectorData, data)
 %ADD2MEMDATA add to in-memory data.
 
-if isempty(VectorData.data)
+if isempty(VectorData.data) || isscalar(VectorData.data)
     appendBasis = data;
 else
     appendBasis = VectorData.data;
