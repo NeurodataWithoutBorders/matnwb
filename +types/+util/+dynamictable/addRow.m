@@ -32,19 +32,12 @@ assert(~isempty(DynamicTable.colnames),...
     'of column names before being able to add row data.']);
 assert(nargin > 1, 'NWB:DynamicTable:AddRow:NoData', 'Not enough arguments');
 
-
-if 8 == exist('types.hdmf_common.ElementIdentifiers', 'class')
-    types.util.dynamictable.checkConfig(DynamicTable)
-else % legacy Element Identifiers
-    if isempty(DynamicTable.id)
-        DynamicTable.id = types.core.ElementIdentifiers();
-    end
-end
-
 assert(~isa(DynamicTable.id.data, 'types.untyped.DataStub'),...
     'NWB:DynamicTable:AddRow:Uneditable',...
     ['Cannot write to on-file Dynamic Tables without enabling data pipes. '...
     'If this was produced with pynwb, please enable chunking for this table.']);
+
+types.util.dynamictable.checkConfig(DynamicTable);
 
 if istable(varargin{1})
     types.util.dynamictable.addTableRow(DynamicTable, varargin{:}); 
