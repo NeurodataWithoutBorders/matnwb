@@ -96,23 +96,15 @@ else
 end
 
 if isa(Vector, 'types.hdmf_common.VectorIndex') || isa(Vector, 'types.core.VectorIndex')
-    isDataWrapped = iscell(data) && ~iscellstr(data);
-    if isDataWrapped
-        numSubElem = length(data);
-    else
-        numSubElem = 1;
-    end
-
-    subElemLengths = zeros(numSubElem, 1);
-    if isDataWrapped
-        for iEntry = 1:numSubElem
-            subElemLengths(iEntry) = nestedAdd(DynamicTable, indChain(2:end), data{iEntry});
+    if iscell(data) && ~iscellstr(data)
+        numRows = length(data);
+        for iEntry = 1:numRows
+            nestedAdd(DynamicTable, indChain(2:end), data{iEntry});
         end
     else
-        subElemLengths = nestedAdd(DynamicTable, indChain(2:end), data);
+        numRows = nestedAdd(DynamicTable, indChain(2:end), data);
     end
 
-    numRows = cumsum(subElemLengths); % return
     add2Index(Vector, numRows);
 else
     if ischar(data)
