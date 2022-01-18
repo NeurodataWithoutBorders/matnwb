@@ -75,8 +75,10 @@ if isprop(DynamicTable, column)
     Vector = DynamicTable.(column);
 elseif isprop(DynamicTable, 'vectorindex') && isKey(DynamicTable.vectorindex, column)
     Vector = DynamicTable.vectorindex.get(column);
-else
+elseif isKey(DynamicTable.vectordata, column)
     Vector = DynamicTable.vectordata.get(column);
+else
+    Vector = [];
 end
 end
 
