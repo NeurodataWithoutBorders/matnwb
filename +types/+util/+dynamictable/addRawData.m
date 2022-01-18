@@ -77,7 +77,7 @@ while iscell(subData) && ~iscellstr(subData)
     subData = subData{1};
 end
 if (ismatrix(subData) && 1 < size(subData, 2)) ...
-    || (isvector(subData) && 1 > length(subData))
+    || (isvector(subData) && 1 < length(subData))
     % special case where the final data is in fact multiple rows to begin
     % with.
     depth = depth + 1;
