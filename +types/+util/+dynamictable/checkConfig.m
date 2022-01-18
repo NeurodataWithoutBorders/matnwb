@@ -90,7 +90,7 @@ while true
     end
     assert(~any(strcmp(columnHistory, indexName)), ...
         'MatNWB:DynamicTable:CheckConfig:InfiniteReferenceLoop', ...
-        'An infinite Index loop is detected. Cannot addRow to table.');
+        'Invalid Table shape detected: There is an infinite loop in your VectorIndex objects.');
     columnHistory{end+1} = indexName;
     highestName = indexName;
 end
