@@ -131,6 +131,9 @@ end % determine the basis for finding the concatenation dimension.
 
 if isscalar(appendBasis) || ~isvector(appendBasis) % is scalar or matrix but not vector.
     catDim = 2;
+    assert(2 >= ndims(appendBasis), 'MatNWB:DynamicTable:AddRow:InvalidShape', ...
+        ['addRow does not support matrices with more than 2 dimensions. ' ...
+        'For multi-dimensional matrices, use a DataPipe instead.']);
     numRows = size(data, 2);
 else % vector data
     catDim = find(size(appendBasis) > 1);
