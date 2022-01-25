@@ -3,15 +3,19 @@ function addRawData(DynamicTable, column, data)
 % name and data. Indices are determined based on data format and available
 % indices.
 validateattributes(column, {'char'}, {'scalartext'});
-checkNestedShape(data);
-
-% find true nesting depth of column data.
-depth = getNestedDataDepth(data);
 
 if (isprop(DynamicTable, column) && isempty(DynamicTable.(column))) ...
     || (~isprop(DynamicTable, column) && ~isKey(DynamicTable.vectordata, column))
     % No vecdata found anywhere. Initialize.
     initVecData(DynamicTable, column);
+end
+
+if isprop(DynamicTable, column)
+    Vector = DynamicTable.(column);
+elseif isprop(DynamicTable, 'vectorindex') && DynamicTable.vectorindex.isKey(column)
+    Vector = DynamicTable.vectorindex.get(column);
+else
+    Vector = DynamicTable.vectordata.get(column);
 end
 
 % grab all available indices for column.
@@ -23,6 +27,14 @@ while true
     end
     indexChain{end+1} = index;
 end
+
+if ~isa(Vector.data, 'types.untyped.DataPipe')
+    % validate shape for appending in memory.
+    checkNestedShape(data);
+end
+
+% find true nesting depth of column data.
+depth = getNestedDataDepth(data);
 
 % add indices until it matches depth.
 for iVec = (length(indexChain)+1):depth

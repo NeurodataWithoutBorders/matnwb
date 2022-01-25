@@ -66,6 +66,6 @@ elseif iscell(rv)
         validateType(TypeStruct, rv{iVal});
     end
 else
-    validateattributes(rv, {TypeStruct.type}, {'2d'});
+    validateattributes(rv, {TypeStruct.type}, {});
 end
 end
