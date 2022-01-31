@@ -34,7 +34,11 @@ if ~isa(Vector.data, 'types.untyped.DataPipe')
 end
 
 % find true nesting depth of column data.
-depth = getNestedDataDepth(data);
+if isa(Vector.data, 'types.untyped.DataPipe')
+    depth = getNestedDataDepth(data, 'dataPipeDimension', Vector.data.axis);
+else
+    depth = getNestedDataDepth(data);
+end
 
 % add indices until it matches depth.
 for iVec = (length(indexChain)+1):depth
@@ -81,17 +85,27 @@ else
 end
 end
 
-function depth = getNestedDataDepth(data)
+function depth = getNestedDataDepth(data, varargin)
+p = inputParser;
+p.addParameter('dataPipeDimension', [], @(x)isnumeric(x) && (isempty(x) || isscalar(x)));
+p.parse(varargin{:});
+
 depth = 1;
 subData = data;
 while iscell(subData) && ~iscellstr(subData)
     depth = depth + 1;
     subData = subData{1};
 end
-if (ismatrix(subData) && 1 < size(subData, 2)) ...
-    || (isvector(subData) && 1 < length(subData))
-    % special case where the final data is in fact multiple rows to begin
-    % with.
+
+% special case where the final data is in fact multiple rows to begin
+% with.
+if isempty(p.Results.dataPipeDimension)
+    isMultirow = (ismatrix(subData) && 1 < size(subData, 2)) ...
+            || (isvector(subData) && 1 < length(subData));
+else
+    isMultirow = 1 < size(subData, p.Results.dataPipeDimension);
+end
+if isMultirow
     depth = depth + 1;
 end
 end
