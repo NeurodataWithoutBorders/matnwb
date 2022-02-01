@@ -11,8 +11,12 @@ end
 
 if isa(VecData.data, 'types.untyped.DataPipe')
     oldDataHeight = VecData.data.offset;
+elseif isa(VecData.data, 'types.untyped.DataStub')
+    oldDataHeight = VecData.data.dims(end);
+elseif isvector(VecData.data)
+    oldDataHeight = length(VecData.data);
 else
-    oldDataHeight = size(VecData.data, 1);
+    oldDataHeight = size(VecData.data, ndims(VecData.data));
 end
 
 % we presume that if data already existed in the vectordata, then
@@ -20,13 +24,9 @@ end
 % directly to each row index.
 vecView = types.untyped.ObjectView(VecData);
 if 8 == exist('types.hdmf_common.VectorIndex', 'class')
-    VecIndex = types.hdmf_common.VectorIndex(...
-    'target', vecView,...
-    'data', (1:oldDataHeight) .');
+    VecIndex = types.hdmf_common.VectorIndex('target', vecView, 'data', (1:oldDataHeight) .');
 else
-    VecIndex = types.core.VectorIndex(...
-    'target', vecView,...
-    'data', (1:oldDataHeight) .');
+    VecIndex = types.core.VectorIndex('target', vecView, 'data', (1:oldDataHeight) .');
 end
 
 if isprop(VecIndex, 'description')
