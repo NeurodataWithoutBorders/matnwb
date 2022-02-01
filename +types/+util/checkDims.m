@@ -1,54 +1,56 @@
-function checkDims(valsize, validSizes)
+function checkDims(valueSize, validSizes)
 %% CHECKDIMS
 % CHECKDIMS(valsize, validSizes) given value size and a cell array of valid
 % sizes, validates that the value size matches at least one of them.
 
-if any(valsize == 0)
+if any(valueSize == 0)
     return; %ignore empty arrays
 end
 
-isVector = sum(valsize > 1) == 1 && all(valsize(3:end) == 1);
-vszmaxlen = max(cellfun('length', validSizes));
-adjsz = valsize;
-if vszmaxlen > length(adjsz)
-    adjsz(end+1:vszmaxlen) = 1;
-else
-    vszmaxlen = length(adjsz);
-end
+for iValidSize = 1:length(validSizes)
+    expectedSize = validSizes{iValidSize};
+    expectedRank = length(expectedSize);
 
-if isVector
-    if isscalar(adjsz)
-        flipsz = [1 adjsz];
+    if 1 == expectedRank
+        % since MATLAB doesn't actually support single ranks,
+        % we must check the ambiguous case where the vector might be
+        % vertical or horizontal.
+        isSizeMatch = getIsSizeMatch([expectedSize 1], valueSize) ...
+            || getIsSizeMatch([1 expectedSize], valueSize);
     else
-        flipsz = [adjsz(2:-1:1) adjsz(3:end)];
+        isSizeMatch = getIsSizeMatch(expectedSize, valueSize);
     end
-end
 
-for i=1:length(validSizes)
-    expected = validSizes{i};
-    expected(end+1:vszmaxlen) = 1;
-    i_expectSig = ~isinf(expected);
-    expected = expected(i_expectSig);
-    if all(expected == adjsz(i_expectSig)) ||...
-            (isVector && all(expected == flipsz(i_expectSig)))
+    if isSizeMatch
         return;
     end
 end
 
-valsizef = ['[' sizeFormatStr(valsize) ']'];
+%% Validation Failed
+
+valueSizeFormat = ['[' printFormattedSize(valueSize) ']'];
 
 %format into cell array of strings of form `[Inf]` then join
-validSizesStrings = cell(size(validSizes));
-for i=1:length(validSizes)
-    validSizesStrings{i} = ['[' sizeFormatStr(validSizes{i}) ']'];
-end
-validSizesf = ['{' strjoin(validSizesStrings, ' ') '}'];
-valsize = num2cell(valsize);
-error('NWB:CheckDims:InvalidDimensions',...
-    ['Values size ' valsizef ' is invalid.  Must be one of ' validSizesf],...
-    valsize{:}, validSizes{:});
+validSizeFormattedList = cell(size(validSizes));
+for iValidSize = 1:length(validSizes)
+    validSize = validSizes{iValidSize};
+    validSizeFormat = ['    - Rank %d with dimensions of size: [' printFormattedSize(validSize)  ']'];
+    validSize = num2cell(validSize);
+    validSizeFormattedList{iValidSize} = sprintf(validSizeFormat, length(validSize), validSize{:});
 end
 
-function s = sizeFormatStr(sz)
+valueSize = num2cell(valueSize);
+error('NWB:CheckDims:InvalidDimensions',...
+    strrep(sprintf( ...
+    ['Value of size ' valueSizeFormat ' is invalid.  Must be one of:\n%s'],...
+    valueSize{:}, strjoin(validSizeFormattedList, newline)), 'Inf', 'Any'));
+end
+
+function tf = getIsSizeMatch(expectedSize, actualSize)
+openSizeMask = isinf(expectedSize);
+tf = length(expectedSize) == length(actualSize) && all(openSizeMask | expectedSize == actualSize);
+end
+
+function s = printFormattedSize(sz)
 s = strjoin(repmat({'%d'}, size(sz)), ' ');
 end
