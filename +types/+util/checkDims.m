@@ -14,8 +14,7 @@ for iValidSize = 1:length(validSizes)
     if 1 == expectedRank
         % since MATLAB doesn't actually support single ranks,
         % we must check the ambiguous case where the vector might be
-        % vertical or horizontal. This orientation doesn't actually matter
-        % at the HDF5 level.
+        % vertical or horizontal.
         isSizeMatch = getIsSizeMatch([expectedSize 1], valueSize) ...
             || getIsSizeMatch([1 expectedSize], valueSize);
     else
