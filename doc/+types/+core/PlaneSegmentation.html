@@ -48,59 +48,67 @@
       <table class="summary-list">
          <tr class="summary-item">
             <td class="name">colnames</td>
-            <td class="m-help">The names of the columns in this table. This should be used to specify an order to the columns.&nbsp;</td>
+            <td class="m-help">OPTIONAL (char) The names of the columns in this table. This should be used to specify an order to the columns.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">description</td>
-            <td class="m-help">Description of what is in this dynamic table.&nbsp;</td>
+            <td class="m-help">OPTIONAL (char) Description of what is in this dynamic table.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">id</td>
-            <td class="m-help">Array of unique identifiers for the rows of this dynamic table.&nbsp;</td>
+            <td class="m-help">OPTIONAL (ElementIdentifiers) Array of unique identifiers for the rows of this dynamic table.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">image_mask</td>
-            <td class="m-help">ROI masks for each ROI. Each image mask is the size of the original imaging plane (or volume) and members of the ROI are finite
-               non-zero.&nbsp;
+            <td class="m-help">OPTIONAL (VectorData) ROI masks for each ROI. Each image mask is the size of the original imaging plane (or volume) and members
+               of the ROI are finite non-zero.&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">imaging_plane</td>
-            <td class="m-help">Link to ImagingPlane object from which this data was generated.&nbsp;</td>
+            <td class="m-help">OPTIONAL (ImagingPlane) &nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">pixel_mask</td>
-            <td class="m-help">Pixel masks for each ROI: a list of indices and weights for the ROI. Pixel masks are concatenated and parsing of this dataset
-               is maintained by the PlaneSegmentation&nbsp;
+            <td class="m-help">OPTIONAL (VectorData) Pixel masks for each ROI: a list of indices and weights for the ROI. Pixel masks are concatenated and
+               parsing of this dataset is maintained by the PlaneSegmentation&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">pixel_mask_index</td>
-            <td class="m-help">Index into pixel_mask.&nbsp;</td>
+            <td class="m-help">OPTIONAL (VectorIndex) Index into pixel_mask.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">reference_images</td>
-            <td class="m-help">One or more image stacks that the masks apply to (can be one-element stack).&nbsp;</td>
+            <td class="m-help">OPTIONAL (ImageSeries) One or more image stacks that the masks apply to (can be one-element stack).&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">vectordata</td>
-            <td class="m-help">Vector columns, including index columns, of this dynamic table.&nbsp;</td>
+            <td class="m-help">OPTIONAL (VectorData) Vector columns, including index columns, of this dynamic table.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">voxel_mask</td>
-            <td class="m-help">Voxel masks for each ROI: a list of indices and weights for the ROI. Voxel masks are concatenated and parsing of this dataset
-               is maintained by the PlaneSegmentation&nbsp;
+            <td class="m-help">OPTIONAL (VectorData) Voxel masks for each ROI: a list of indices and weights for the ROI. Voxel masks are concatenated and
+               parsing of this dataset is maintained by the PlaneSegmentation&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">voxel_mask_index</td>
-            <td class="m-help">Index into voxel_mask.&nbsp;</td>
+            <td class="m-help">OPTIONAL (VectorIndex) Index into voxel_mask.&nbsp;</td>
          </tr>
       </table>
       <!--Methods-->
       <div class="sectiontitle"><a name="methods"></a>Method Summary
       </div>
       <table class="summary-list">
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">addColumn</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
          <tr class="summary-item">
             <td class="attributes">
                &nbsp;
@@ -244,6 +252,14 @@
             </td>
             <td class="name">notify</td>
             <td class="m-help">Notify listeners of event.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">toTable</td>
+            <td class="m-help">&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="attributes">

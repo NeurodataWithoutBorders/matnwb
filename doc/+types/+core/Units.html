@@ -48,69 +48,69 @@
       <table class="summary-list">
          <tr class="summary-item">
             <td class="name">colnames</td>
-            <td class="m-help">The names of the columns in this table. This should be used to specify an order to the columns.&nbsp;</td>
+            <td class="m-help">OPTIONAL (char) The names of the columns in this table. This should be used to specify an order to the columns.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">description</td>
-            <td class="m-help">Description of what is in this dynamic table.&nbsp;</td>
+            <td class="m-help">OPTIONAL (char) Description of what is in this dynamic table.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">electrode_group</td>
-            <td class="m-help">Electrode group that each spike unit came from.&nbsp;</td>
+            <td class="m-help">OPTIONAL (VectorData) Electrode group that each spike unit came from.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">electrodes</td>
-            <td class="m-help">Electrode that each spike unit came from, specified using a DynamicTableRegion.&nbsp;</td>
+            <td class="m-help">OPTIONAL (DynamicTableRegion) Electrode that each spike unit came from, specified using a DynamicTableRegion.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">electrodes_index</td>
-            <td class="m-help">Index into electrodes.&nbsp;</td>
+            <td class="m-help">OPTIONAL (VectorIndex) Index into electrodes.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">id</td>
-            <td class="m-help">Array of unique identifiers for the rows of this dynamic table.&nbsp;</td>
+            <td class="m-help">OPTIONAL (ElementIdentifiers) Array of unique identifiers for the rows of this dynamic table.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">obs_intervals</td>
-            <td class="m-help">Observation intervals for each unit.&nbsp;</td>
+            <td class="m-help">OPTIONAL (VectorData) Observation intervals for each unit.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">obs_intervals_index</td>
-            <td class="m-help">Index into the obs_intervals dataset.&nbsp;</td>
+            <td class="m-help">OPTIONAL (VectorIndex) Index into the obs_intervals dataset.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">spike_times</td>
-            <td class="m-help">Spike times for each unit.&nbsp;</td>
+            <td class="m-help">OPTIONAL (VectorData) Spike times for each unit.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">spike_times_index</td>
-            <td class="m-help">Index into the spike_times dataset.&nbsp;</td>
+            <td class="m-help">OPTIONAL (VectorIndex) Index into the spike_times dataset.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">vectordata</td>
-            <td class="m-help">Vector columns, including index columns, of this dynamic table.&nbsp;</td>
+            <td class="m-help">OPTIONAL (VectorData) Vector columns, including index columns, of this dynamic table.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">waveform_mean</td>
-            <td class="m-help">Spike waveform mean for each spike unit.&nbsp;</td>
+            <td class="m-help">OPTIONAL (VectorData) Spike waveform mean for each spike unit.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">waveform_sd</td>
-            <td class="m-help">Spike waveform standard deviation for each spike unit.&nbsp;</td>
+            <td class="m-help">OPTIONAL (VectorData) Spike waveform standard deviation for each spike unit.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">waveforms</td>
-            <td class="m-help">Individual waveforms for each spike on each electrode. This is a doubly indexed column. The 'waveforms_index' column indexes
-               which waveforms in this column belong to the same spike event for a given unit, where each waveform was recorded from a different
-               electrode. The 'waveforms_index_index' column indexes the 'waveforms_index' column to indicate which spike events belong to
-               a given unit. For example, if the 'waveforms_index_index' column has values [2, 5, 6], then the first 2 elements of the 'waveforms_index'
-               column correspond to the 2 spike events of the first unit, the next 3 elements of the 'waveforms_index' column correspond
-               to the 3 spike events of the second unit, and the next 1 element of the 'waveforms_index' column corresponds to the 1 spike
-               event of the third unit. If the 'waveforms_index' column has values [3, 6, 8, 10, 12, 13], then the first 3 elements of the
-               'waveforms' column contain the 3 spike waveforms that were recorded from 3 different electrodes for the first spike time of
-               the first unit. See https://nwb-schema.readthedocs.io/en/stable/format_description.html#doubly-ragged-arrays for a graphical
-               representation of this example. When there is only one electrode for each unit (i.e., each spike time is associated with a
-               single waveform), then the 'waveforms_index' column will have values 1, 2, ..., N, where N is the number of spike events.
+            <td class="m-help">OPTIONAL (VectorData) Individual waveforms for each spike on each electrode. This is a doubly indexed column. The 'waveforms_index'
+               column indexes which waveforms in this column belong to the same spike event for a given unit, where each waveform was recorded
+               from a different electrode. The 'waveforms_index_index' column indexes the 'waveforms_index' column to indicate which spike
+               events belong to a given unit. For example, if the 'waveforms_index_index' column has values [2, 5, 6], then the first 2 elements
+               of the 'waveforms_index' column correspond to the 2 spike events of the first unit, the next 3 elements of the 'waveforms_index'
+               column correspond to the 3 spike events of the second unit, and the next 1 element of the 'waveforms_index' column corresponds
+               to the 1 spike event of the third unit. If the 'waveforms_index' column has values [3, 6, 8, 10, 12, 13], then the first 3
+               elements of the 'waveforms' column contain the 3 spike waveforms that were recorded from 3 different electrodes for the first
+               spike time of the first unit. See https://nwb-schema.readthedocs.io/en/stable/format_description.html#doubly-ragged-arrays
+               for a graphical representation of this example. When there is only one electrode for each unit (i.e., each spike time is associated
+               with a single waveform), then the 'waveforms_index' column will have values 1, 2, ..., N, where N is the number of spike events.
                The number of electrodes for each spike event should be the same within a given unit. The 'electrodes' column should be used
                to indicate which electrodes are associated with each unit, and the order of the waveforms within a given unit x spike event
                should be in the same order as the electrodes referenced in the 'electrodes' column of this table. The number of samples for
@@ -119,17 +119,27 @@
          </tr>
          <tr class="summary-item">
             <td class="name">waveforms_index</td>
-            <td class="m-help">Index into the waveforms dataset. One value for every spike event. See 'waveforms' for more detail.&nbsp;</td>
+            <td class="m-help">OPTIONAL (VectorIndex) Index into the waveforms dataset. One value for every spike event. See 'waveforms' for more detail.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">waveforms_index_index</td>
-            <td class="m-help">Index into the waveforms_index dataset. One value for every unit (row in the table). See 'waveforms' for more detail.&nbsp;</td>
+            <td class="m-help">OPTIONAL (VectorIndex) Index into the waveforms_index dataset. One value for every unit (row in the table). See 'waveforms'
+               for more detail.&nbsp;
+            </td>
          </tr>
       </table>
       <!--Methods-->
       <div class="sectiontitle"><a name="methods"></a>Method Summary
       </div>
       <table class="summary-list">
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">addColumn</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
          <tr class="summary-item">
             <td class="attributes">
                &nbsp;
@@ -273,6 +283,14 @@
             </td>
             <td class="name">notify</td>
             <td class="m-help">Notify listeners of event.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">toTable</td>
+            <td class="m-help">&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="attributes">

@@ -1,13 +1,6 @@
 function fcstr = fillConstructor(name, parentname, defaults, propnames, props, namespace)
 caps = upper(name);
-fcnbody = strjoin({['% ' caps ' Constructor for ' name] ...
-    ['%     obj = ' caps '(parentname1,parentvalue1,..,parentvalueN,parentargN,name1,value1,...,nameN,valueN)'] ...
-    }, newline);
-
-txt = fillParamDocs(propnames, props);
-if ~isempty(txt)
-    fcnbody = [fcnbody newline txt];
-end
+fcnbody = ['% ' caps ' Constructor for ' name];
 
 txt = fillBody(parentname, defaults, propnames, props, namespace);
 if ~isempty(txt)
@@ -30,68 +23,6 @@ fcstr = strjoin({...
     file.addSpaces(fcnbody, 4)...
     'end'}, newline);
 
-end
-
-function fdfp = fillDocFromProp(prop, propnm)
-if ischar(prop)
-    fdfp = prop;
-elseif isstruct(prop)
-    fnm = fieldnames(prop);
-    subp = '';
-    for i=1:length(fnm)
-        nm = fnm{i};
-        subpropl = file.addSpaces(fillDocFromProp(prop.(nm), nm), 4);
-        subp = [subp newline subpropl];
-    end
-    fdfp = ['table/struct of vectors/struct array/containers.Map of vectors with values:' newline subp];
-elseif isa(prop, 'file.Attribute')
-    fdfp = prop.dtype;
-    if isa(fdfp, 'containers.Map')
-        switch fdfp('reftype')
-            case 'region'
-                reftypenm = 'region';
-            case 'object'
-                reftypenm = 'object';
-            otherwise
-                error('Invalid reftype found whilst filling Constructor prop docs.');
-        end
-        fdfp = ['ref to ' fdfp('target_type') ' ' reftypenm];
-    end
-elseif isa(prop, 'containers.Map')
-    switch prop('reftype')
-        case 'region'
-            reftypenm = 'region';
-        case 'object'
-            reftypenm = 'object';
-        otherwise
-            error('Invalid reftype found whilst filling Constructor prop docs.');
-    end
-    fdfp = ['ref to ' prop('target_type') ' ' reftypenm];
-elseif isa(prop, 'file.Dataset') && isempty(prop.type)
-    fdfp = fillDocFromProp(prop.dtype);
-elseif isempty(prop.type)
-    fdfp = 'types.untyped.Set';
-else
-    fdfp = prop.type;
-end
-if nargin >= 2
-    fdfp = ['% ' propnm ' = ' fdfp];
-end
-end
-
-function fcstr = fillParamDocs(names, props)
-fcstr = '';
-if isempty(names)
-    return;
-end
-
-fcstrlist = cell(length(names), 1);
-for i=1:length(names)
-    nm = names{i};
-    prop = props(nm);
-    fcstrlist{i} = fillDocFromProp(prop, nm);
-end
-fcstr = strjoin(fcstrlist, newline);
 end
 
 function bodystr = fillBody(pname, defaults, names, props, namespace)
