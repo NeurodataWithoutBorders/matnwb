@@ -1,13 +1,23 @@
 function s = fillProps(props, names, varargin)
+validateattributes(props, {'containers.Map'}, {}, mfilename, 'props', 1);
+validateattributes(names, {'cell'}, {'vector'}, mfilename, 'names', 2);
 p = inputParser;
 p.addParameter('PropertyAttributes', '', ...
-    @(x)validateattributes(x, {'char'}, {'scalartext'}, 'fillProps', 'Attribute'));
+    @(x)validateattributes(x, {'char'}, {'scalartext'}, mfilename, 'Attribute'));
+p.addParameter('IsRequired', false, ...
+    @(x)validateattributes(x, {'logical'}, {'scalar'}, mfilename, 'IsRequired'));
 p.parse(varargin{:});
+
+if p.Results.IsRequired
+    requiredStr = 'REQUIRED';
+else
+    requiredStr = 'OPTIONAL';
+end
 
 proplines = cell(size(names));
 for i=1:length(names)
     pnm = names{i};
-    proplines{i} = [pnm '; % ' getPropStr(props(pnm))];
+    proplines{i} = [pnm '; % ' requiredStr ' ' getPropStr(props(pnm))];
 end
 
 if isempty(p.Results.PropertyAttributes)
