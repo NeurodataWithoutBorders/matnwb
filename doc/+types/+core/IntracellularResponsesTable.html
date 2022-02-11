@@ -48,29 +48,37 @@
       <table class="summary-list">
          <tr class="summary-item">
             <td class="name">colnames</td>
-            <td class="m-help">The names of the columns in this table. This should be used to specify an order to the columns.&nbsp;</td>
+            <td class="m-help">OPTIONAL (char) The names of the columns in this table. This should be used to specify an order to the columns.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">description</td>
-            <td class="m-help">Description of what is in this dynamic table.&nbsp;</td>
+            <td class="m-help">OPTIONAL (char) Description of what is in this dynamic table.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">id</td>
-            <td class="m-help">Array of unique identifiers for the rows of this dynamic table.&nbsp;</td>
+            <td class="m-help">OPTIONAL (ElementIdentifiers) Array of unique identifiers for the rows of this dynamic table.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">response</td>
-            <td class="m-help">Column storing the reference to the recorded response for the recording (rows)&nbsp;</td>
+            <td class="m-help">OPTIONAL (TimeSeriesReferenceVectorData) Column storing the reference to the recorded response for the recording (rows)&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">vectordata</td>
-            <td class="m-help">Vector columns, including index columns, of this dynamic table.&nbsp;</td>
+            <td class="m-help">OPTIONAL (VectorData) Vector columns, including index columns, of this dynamic table.&nbsp;</td>
          </tr>
       </table>
       <!--Methods-->
       <div class="sectiontitle"><a name="methods"></a>Method Summary
       </div>
       <table class="summary-list">
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">addColumn</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
          <tr class="summary-item">
             <td class="attributes">
                &nbsp;
@@ -214,6 +222,14 @@
             </td>
             <td class="name">notify</td>
             <td class="m-help">Notify listeners of event.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">toTable</td>
+            <td class="m-help">&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="attributes">
