@@ -48,7 +48,7 @@
       <table class="summary-list">
          <tr class="summary-item">
             <td class="name">bands</td>
-            <td class="m-help">OPTIONAL (DynamicTable) Table for describing the bands that this series was generated from. There should be one row in this
+            <td class="m-help">REQUIRED (DynamicTable) Table for describing the bands that this series was generated from. There should be one row in this
                table for each band.&nbsp;
             </td>
          </tr>
@@ -72,7 +72,7 @@
          </tr>
          <tr class="summary-item">
             <td class="name">data</td>
-            <td class="m-help">OPTIONAL ((any) ) Data values. Data can be in 1-D, 2-D, 3-D, or 4-D. The first dimension should always represent time. This
+            <td class="m-help">REQUIRED ((any) ) Data values. Data can be in 1-D, 2-D, 3-D, or 4-D. The first dimension should always represent time. This
                can also be used to store binary data (e.g., image frames). This can also be a link to data stored in an external file.&nbsp;
             </td>
          </tr>
@@ -103,7 +103,7 @@
          </tr>
          <tr class="summary-item">
             <td class="name">data_unit</td>
-            <td class="m-help">OPTIONAL (char) Base unit of measurement for working with the data. Actual stored values are not necessarily stored in these
+            <td class="m-help">REQUIRED (char) Base unit of measurement for working with the data. Actual stored values are not necessarily stored in these
                units. To access the data in these units, multiply 'data' by 'conversion'.&nbsp;
             </td>
          </tr>
@@ -113,7 +113,7 @@
          </tr>
          <tr class="summary-item">
             <td class="name">metric</td>
-            <td class="m-help">OPTIONAL ((char) ) The metric used, e.g. phase, amplitude, power.&nbsp;</td>
+            <td class="m-help">REQUIRED ((char) ) The metric used, e.g. phase, amplitude, power.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">source_channels</td>
@@ -131,7 +131,7 @@
          </tr>
          <tr class="summary-item">
             <td class="name">starting_time_rate</td>
-            <td class="m-help">OPTIONAL (float32) Sampling rate, in Hz.&nbsp;</td>
+            <td class="m-help">REQUIRED (float32) Sampling rate, in Hz.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">starting_time_unit</td>

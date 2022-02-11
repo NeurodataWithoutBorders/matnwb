@@ -66,7 +66,7 @@
          </tr>
          <tr class="summary-item">
             <td class="name">data</td>
-            <td class="m-help">OPTIONAL ((any) ) Data values. Data can be in 1-D, 2-D, 3-D, or 4-D. The first dimension should always represent time. This
+            <td class="m-help">REQUIRED ((any) ) Data values. Data can be in 1-D, 2-D, 3-D, or 4-D. The first dimension should always represent time. This
                can also be used to store binary data (e.g., image frames). This can also be a link to data stored in an external file.&nbsp;
             </td>
          </tr>
@@ -97,7 +97,7 @@
          </tr>
          <tr class="summary-item">
             <td class="name">data_unit</td>
-            <td class="m-help">OPTIONAL (char) Base unit of measurement for working with the data. Actual stored values are not necessarily stored in these
+            <td class="m-help">REQUIRED (char) Base unit of measurement for working with the data. Actual stored values are not necessarily stored in these
                units. To access the data in these units, multiply 'data' by 'conversion'.&nbsp;
             </td>
          </tr>
@@ -122,7 +122,7 @@
          </tr>
          <tr class="summary-item">
             <td class="name">external_file_starting_frame</td>
-            <td class="m-help">OPTIONAL (int32) Each external image may contain one or more consecutive frames of the full ImageSeries. This attribute serves
+            <td class="m-help">REQUIRED (int32) Each external image may contain one or more consecutive frames of the full ImageSeries. This attribute serves
                as an index to indicate which frames each file contains, to faciliate random access. The 'starting_frame' attribute, hence,
                contains a list of frame numbers within the full ImageSeries of the first frame of each file listed in the parent 'external_file'
                dataset. Zero-based indexing is used (hence, the first element will always be zero). For example, if the 'external_file' dataset
@@ -146,7 +146,7 @@
          </tr>
          <tr class="summary-item">
             <td class="name">starting_time_rate</td>
-            <td class="m-help">OPTIONAL (float32) Sampling rate, in Hz.&nbsp;</td>
+            <td class="m-help">REQUIRED (float32) Sampling rate, in Hz.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">starting_time_unit</td>

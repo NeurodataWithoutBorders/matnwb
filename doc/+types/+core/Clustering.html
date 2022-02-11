@@ -48,19 +48,19 @@
       <table class="summary-list">
          <tr class="summary-item">
             <td class="name">description</td>
-            <td class="m-help">OPTIONAL ((char) ) Description of clusters or clustering, (e.g. cluster 0 is noise, clusters curated using Klusters, etc)&nbsp;</td>
+            <td class="m-help">REQUIRED ((char) ) Description of clusters or clustering, (e.g. cluster 0 is noise, clusters curated using Klusters, etc)&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">num</td>
-            <td class="m-help">OPTIONAL ((int32) ) Cluster number of each event&nbsp;</td>
+            <td class="m-help">REQUIRED ((int32) ) Cluster number of each event&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">peak_over_rms</td>
-            <td class="m-help">OPTIONAL ((float32) ) Maximum ratio of waveform peak to RMS on any channel in the cluster (provides a basic clustering metric).&nbsp;</td>
+            <td class="m-help">REQUIRED ((float32) ) Maximum ratio of waveform peak to RMS on any channel in the cluster (provides a basic clustering metric).&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">times</td>
-            <td class="m-help">OPTIONAL ((float64) ) Times of clustered events, in seconds. This may be a link to times field in associated FeatureExtraction
+            <td class="m-help">REQUIRED ((float64) ) Times of clustered events, in seconds. This may be a link to times field in associated FeatureExtraction
                module.&nbsp;
             </td>
          </tr>

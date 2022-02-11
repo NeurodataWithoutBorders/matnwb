@@ -48,24 +48,24 @@
       <table class="summary-list">
          <tr class="summary-item">
             <td class="name">detection_method</td>
-            <td class="m-help">OPTIONAL ((char) ) Description of how events were detected, such as voltage threshold, or dV/dT threshold, as well as relevant
+            <td class="m-help">REQUIRED ((char) ) Description of how events were detected, such as voltage threshold, or dV/dT threshold, as well as relevant
                values.&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">source_electricalseries</td>
-            <td class="m-help">OPTIONAL (ElectricalSeries) &nbsp;</td>
+            <td class="m-help">REQUIRED (ElectricalSeries) &nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">source_idx</td>
-            <td class="m-help">OPTIONAL ((int32) ) Indices (zero-based) into source ElectricalSeries::data array corresponding to time of event. ''description''
+            <td class="m-help">REQUIRED ((int32) ) Indices (zero-based) into source ElectricalSeries::data array corresponding to time of event. ''description''
                should define what is meant by time of event (e.g., .25 ms before action potential peak, zero-crossing time, etc). The index
                points to each event from the raw data.&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">times</td>
-            <td class="m-help">OPTIONAL ((float64) ) Timestamps of events, in seconds.&nbsp;</td>
+            <td class="m-help">REQUIRED ((float64) ) Timestamps of events, in seconds.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">times_unit</td>

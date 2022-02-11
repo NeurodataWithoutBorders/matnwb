@@ -65,7 +65,7 @@
          </tr>
          <tr class="summary-item">
             <td class="name">file_create_date</td>
-            <td class="m-help">OPTIONAL ((isodatetime) ) A record of the date the file was created and of subsequent modifications. The date is stored in
+            <td class="m-help">REQUIRED ((isodatetime) ) A record of the date the file was created and of subsequent modifications. The date is stored in
                UTC with local timezone offset as ISO 8601 extended formatted strings: 2018-09-28T14:43:54.123+02:00. Dates stored in UTC
                end in "Z" with no timezone offset. Date accuracy is up to milliseconds. The file can be created after the experiment was
                run, so this may differ from the experiment start time. Each modification to the nwb file adds a new entry to the array.&nbsp;
@@ -209,7 +209,7 @@
          </tr>
          <tr class="summary-item">
             <td class="name">general_source_script_file_name</td>
-            <td class="m-help">OPTIONAL (char) Name of script file.&nbsp;</td>
+            <td class="m-help">REQUIRED (char) Name of script file.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">general_stimulus</td>
@@ -231,7 +231,7 @@
          </tr>
          <tr class="summary-item">
             <td class="name">identifier</td>
-            <td class="m-help">OPTIONAL ((char) ) A unique text identifier for the file. For example, concatenated lab name, file creation date/time and
+            <td class="m-help">REQUIRED ((char) ) A unique text identifier for the file. For example, concatenated lab name, file creation date/time and
                experimentalist, or a hash of these and/or other values. The goal is that the string should be unique to all other files.&nbsp;
             </td>
          </tr>
@@ -267,11 +267,11 @@
          </tr>
          <tr class="summary-item">
             <td class="name">session_description</td>
-            <td class="m-help">OPTIONAL ((char) ) A description of the experimental session and data in the file.&nbsp;</td>
+            <td class="m-help">REQUIRED ((char) ) A description of the experimental session and data in the file.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">session_start_time</td>
-            <td class="m-help">OPTIONAL ((isodatetime) ) Date and time of the experiment/session start. The date is stored in UTC with local timezone offset
+            <td class="m-help">REQUIRED ((isodatetime) ) Date and time of the experiment/session start. The date is stored in UTC with local timezone offset
                as ISO 8601 extended formatted string: 2018-09-28T14:43:54.123+02:00. Dates stored in UTC end in "Z" with no timezone offset.
                Date accuracy is up to milliseconds.&nbsp;
             </td>
@@ -286,7 +286,7 @@
          </tr>
          <tr class="summary-item">
             <td class="name">timestamps_reference_time</td>
-            <td class="m-help">OPTIONAL ((isodatetime) ) Date and time corresponding to time zero of all timestamps. The date is stored in UTC with local
+            <td class="m-help">REQUIRED ((isodatetime) ) Date and time corresponding to time zero of all timestamps. The date is stored in UTC with local
                timezone offset as ISO 8601 extended formatted string: 2018-09-28T14:43:54.123+02:00. Dates stored in UTC end in "Z" with
                no timezone offset. Date accuracy is up to milliseconds. All times stored in the file use this time as reference (i.e., time
                zero).&nbsp;
