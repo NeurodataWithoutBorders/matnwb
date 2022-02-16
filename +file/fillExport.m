@@ -182,6 +182,10 @@ else
         fullpath, name, forceArrayFlag);
 end
 
+if prop.required
+    return;
+end
+
 emptycheck = ['if ~isempty(obj.' name ')'];
 
 if isa(prop, 'file.Attribute') && ~isempty(prop.dependent)
@@ -196,18 +200,5 @@ if isa(prop, 'file.Attribute') && ~isempty(prop.dependent)
     emptycheck = [emptycheck ' && ~isempty(obj.' depPropname ')'];
 end
 
-fde = [emptycheck newline file.addSpaces(fde, 4)];
-
-if prop.required
-    errmsg = ['    error(''Property `' name '` is required in `%s`.'', fullpath);'];
-    if isa(prop, 'file.Attribute') && ~isempty(prop.dependent)
-        errmsg = ['elseif ~isempty(obj.' depPropname ')' newline errmsg];
-    else
-        errmsg = ['else' newline errmsg];
-    end
-    fde = [fde newline errmsg];
-end
-
-fde = [fde newline 'end'];
-
+fde = [emptycheck newline file.addSpaces(fde, 4) newline 'end'];
 end
