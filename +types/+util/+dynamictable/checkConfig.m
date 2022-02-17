@@ -19,6 +19,13 @@ else
     ignoreList = varargin{1};
 end
 
+if isempty(DynamicTable.colnames)
+    assert(isempty(getDetectedColumnNames(DynamicTable)), ...
+    'MatNWB:DynamicTable:CheckConfig:ColumnNamesMismatch', ...
+    'All Vector Data/Index columns must have their name ordered in the `colnames` property.');
+    return;
+end
+
 % remove null characters from column names
 DynamicTable.colnames = cleanColumnNames(DynamicTable.colnames);
 
@@ -54,6 +61,41 @@ assert(tableHeight == getVectorHeight(DynamicTable.id), ...
     'MatNWB:DynamicTable:CheckConfig:InvalidId', ...
     'Special column `id` of DynamicTable needs to match the detected height of %d. Found %d IDs.', ...
     tableHeight, length(DynamicTable.id.data));
+end
+
+function names = getDetectedColumnNames(DynamicTable)
+% scan the entire dynamic table for columns that may or may not be
+% registered.
+
+names = {};
+tableProps = properties(DynamicTable);
+for iProp = 1:length(tableProps)
+    propName = tableProps{iProp};
+    propValue = DynamicTable.(propName);
+    if ~isempty(propValue) ...
+            && (isa(propValue, 'types.core.VectorData') || isa(propValue, 'types.hdmf_common.VectorData'))
+        names{end+1} = propName;
+    end
+end
+
+vectorNames = DynamicTable.vectordata.keys();
+for iVector = 1:length(vectorNames)
+    vectorName = vectorNames{iVector};
+    Vector = DynamicTable.vectordata.get(vectorName);
+    if isa(Vector, 'types.hdmf_common.VectorData') || isa(Vector, 'types.core.VectorData')
+        if isa(Vector.data, 'types.untyped.DataStub')
+            isDataEmpty = any(Vector.data.dims == 0);
+        elseif isa(Vector.data, 'types.untyped.DataPipe')
+            isDataEmpty = any(size(Vector.data) == 0);
+        else
+            isDataEmpty = isempty(Vector.data);
+        end
+        if ~isDataEmpty
+            names{end+1} = vectorName;
+        end
+    end
+end
+
 end
 
 function vecHeight = getVectorHeight(VectorData)
