@@ -9,14 +9,10 @@ end
 
 for iValidSize = 1:length(validSizes)
     expectedSize = validSizes{iValidSize};
-    expectedRank = length(expectedSize);
 
-    if 1 == expectedRank
-        % since MATLAB doesn't actually support single ranks,
-        % we must check the ambiguous case where the vector might be
-        % vertical or horizontal.
-        isSizeMatch = getIsSizeMatch([expectedSize 1], valueSize) ...
-            || getIsSizeMatch([1 expectedSize], valueSize);
+    if 1 == length(expectedSize)
+        isSizeMatch = getIsSizeMatch([1 expectedSize], valueSize)...
+            || getIsSizeMatch([expectedSize 1], valueSize);
     else
         isSizeMatch = getIsSizeMatch(expectedSize, valueSize);
     end
@@ -48,7 +44,11 @@ end
 
 function tf = getIsSizeMatch(expectedSize, actualSize)
 openSizeMask = isinf(expectedSize);
-tf = length(expectedSize) == length(actualSize) && all(openSizeMask | expectedSize == actualSize);
+if length(actualSize) < length(expectedSize)
+    actualSize = [actualSize ones(1, length(expectedSize) - length(actualSize))];
+end
+
+tf = length(expectedSize) <= length(actualSize) && all(openSizeMask | expectedSize == actualSize);
 end
 
 function s = printFormattedSize(sz)
