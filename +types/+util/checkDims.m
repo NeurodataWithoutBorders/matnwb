@@ -44,8 +44,8 @@ end
 
 function tf = getIsSizeMatch(expectedSize, actualSize)
 openSizeMask = isinf(expectedSize);
-if length(actualSize < expectedSize)
-    actualSize = [actualSize repmat(1, 1, length(expectedSize) - length(actualSize))];
+if length(actualSize) < length(expectedSize)
+    actualSize = [actualSize ones(1, length(expectedSize) - length(actualSize))];
 end
 
 tf = length(expectedSize) < length(actualSize) && all(openSizeMask | expectedSize == actualSize);
