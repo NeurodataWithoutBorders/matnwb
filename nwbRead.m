@@ -125,6 +125,11 @@ for iGroup = 1:length(specinfo.Groups)
         namespaceName = strrep(namespaceName, '_', '-');
         Namespace = Namespaces(strcmp({Namespaces.name}, namespaceName));
     end
+
+    assert(~isempty(Namespace), ...
+        'NWB:Namespace:NameNotFound', ...
+        'Namespace %s not found in schema. Perhaps an extension should be generated?', ...
+        namespaceName);
     
     spec.saveCache(Namespace, saveDir);
     specNames{iGroup} = Namespace.name;
