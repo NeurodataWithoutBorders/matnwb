@@ -182,14 +182,10 @@ else
         fullpath, name, forceArrayFlag);
 end
 
-if prop.required
-    return;
-end
-
-emptycheck = ['if ~isempty(obj.' name ')'];
+propertyChecks = {};
 
 if isa(prop, 'file.Attribute') && ~isempty(prop.dependent)
-    %if attribute is dependent, check before writing
+        %if attribute is dependent, check before writing
     if isempty(elisions) || strcmp(elisions, prop.dependent)
         depPropname = prop.dependent;
     else
@@ -197,8 +193,14 @@ if isa(prop, 'file.Attribute') && ~isempty(prop.dependent)
         flattened = strrep(elisions(1:flattened(end)), '/', '_');
         depPropname = [flattened prop.dependent];
     end
-    emptycheck = [emptycheck ' && ~isempty(obj.' depPropname ')'];
+    propertyChecks{end+1} = ['~isempty(obj.' depPropname ')'];
 end
 
-fde = [emptycheck newline file.addSpaces(fde, 4) newline 'end'];
+if ~prop.required
+    propertyChecks{end+1} = ['~isempty(obj.' name ')'];
+end
+
+if ~isempty(propertyChecks)
+    fde = ['if ' strjoin(propertyChecks, ' && ') newline file.addSpaces(fde, 4) newline 'end'];
+end
 end
