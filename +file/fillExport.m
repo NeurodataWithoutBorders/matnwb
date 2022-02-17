@@ -185,7 +185,7 @@ end
 propertyChecks = {};
 
 if isa(prop, 'file.Attribute') && ~isempty(prop.dependent)
-        %if attribute is dependent, check before writing
+    %if attribute is dependent, check before writing
     if isempty(elisions) || strcmp(elisions, prop.dependent)
         depPropname = prop.dependent;
     else
