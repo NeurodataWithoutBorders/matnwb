@@ -48,7 +48,7 @@ if length(actualSize) < length(expectedSize)
     actualSize = [actualSize ones(1, length(expectedSize) - length(actualSize))];
 end
 
-tf = length(expectedSize) < length(actualSize) && all(openSizeMask | expectedSize == actualSize);
+tf = length(expectedSize) <= length(actualSize) && all(openSizeMask | expectedSize == actualSize);
 end
 
 function s = printFormattedSize(sz)
