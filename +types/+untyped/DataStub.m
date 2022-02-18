@@ -11,6 +11,7 @@ classdef (Sealed) DataStub < handle
     properties (Dependent, SetAccess = private)
         dims;
         ndims;
+        type;
     end
     
     methods
@@ -36,6 +37,15 @@ classdef (Sealed) DataStub < handle
         
         function nd = get.ndims(obj)
             nd = length(obj.dims);
+        end
+
+        function matType = get.type(obj)
+            fid = H5F.open(obj.filename);
+            did = H5D.open(fid, obj.path);
+            tid = H5D.get_type(did);
+            matType = io.getMatType(tid);
+            H5D.close(did);
+            H5F.close(fid);
         end
         
         %can be called without arg, with H5ML.id, or (dims, offset, stride)
