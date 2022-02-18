@@ -38,7 +38,11 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
             if isempty(varargin)
                 obj.config = Configuration(max_size);
                 axis = find(current_size < max_size);
-                if ~isscalar(axis)
+                if isempty(axis)
+                    % the data is completely filled. Just assume it was the
+                    % last dimension anyway.
+                    axis = length(max_size);
+                elseif ~isscalar(axis)
                     formattedAxes = sprintf('[%s]', ...
                         strjoin(cellfun(@num2str, num2cell(axis)), ', '));
                     formattedMaxSize = sprintf('[%s]', ...
