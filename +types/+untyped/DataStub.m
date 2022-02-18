@@ -11,7 +11,7 @@ classdef (Sealed) DataStub < handle
     properties (Dependent, SetAccess = private)
         dims;
         ndims;
-        type;
+        dataType;
     end
     
     methods
@@ -39,7 +39,7 @@ classdef (Sealed) DataStub < handle
             nd = length(obj.dims);
         end
 
-        function matType = get.type(obj)
+        function matType = get.dataType(obj)
             fid = H5F.open(obj.filename);
             did = H5D.open(fid, obj.path);
             tid = H5D.get_type(did);
