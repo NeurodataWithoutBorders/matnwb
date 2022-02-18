@@ -21,6 +21,12 @@ elseif H5T.equal(tid, 'H5T_STD_U64LE')
     type = 'uint64';
 elseif H5T.equal(tid, 'H5T_STD_I64LE')
     type = 'int64';
+elseif H5T.equal(tid, 'H5T_C_S1')
+    type = 'char';
+elseif H5T.equal(tid, 'H5T_STD_REF_OBJ')
+    type = 'types.untyped.ObjectView';
+elseif H5T.equal(tid, 'H5T_STD_REF_DSETREG')
+    type = 'types.untyped.RegionView';
 else
     error('NWB:IO:GetMatlabType:UnknownTypeID',...
         'This type id cannot be analyzed.  Perhaps it''s not numeric?');
