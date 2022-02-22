@@ -210,11 +210,7 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
         end
 
         function clear(obj)
-            DynamicProperties = obj.internal_dynamicPropertiesMap.values();
-            for iProp = 1:length(DynamicProperties)
-                delete(DynamicProperties{iProp});
-            end
-            remove(obj.internal_dynamicPropertiesMap, keys(obj.internal_dynamicPropertiesMap));
+            obj.remove(keys(obj.internal_dynamicPropertiesMap));
         end
 
         %% Export
