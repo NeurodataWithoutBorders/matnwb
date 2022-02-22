@@ -146,6 +146,7 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
             if obj.isH5Name(name)
                 name = obj.mapH5Name2PropertyName(name);
             end
+            value = obj.(name);
 
             delete(obj.internal_dynamicPropertiesMap(name));
             remove(obj.internal_dynamicPropertiesMap, name);
