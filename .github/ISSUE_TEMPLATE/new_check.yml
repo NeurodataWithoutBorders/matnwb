@@ -1,0 +1,58 @@
+name: New Check
+description: Suggest an idea for a new check to be applied to NWBFiles and their contents.
+title: "[Add Check]: "
+labels: ["new check"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Thank you for your suggestion!
+
+        We welcome any ideas about how to make the **NWBInspector** better for the community.
+
+        Please keep in mind that new checks may not get implemented immediately.
+  - type: textarea
+    id: summary
+    attributes:
+      label: What would you like to see added to the NWBInspector?
+      description: |
+        What are you trying to achieve with the **NWBInspector**?
+
+        Do any current checks come close to examining this behavior?
+
+        Is this logic already a part of the [NWB Best Practices](https://www.nwb.org/best-practices/), or should we consider adding it there as well?
+    validations:
+      required: true
+  - type: textarea
+    id: check-logic
+    attributes:
+      label: Pseudocode or other logic of the check
+      description: |
+        If you have an idea for how this Best Practice issue might be detected, what would the general approach be to apply this check to the contents of an NWBFile?
+
+        This section will be automatically formatted into code, so no need for backticks.
+      render: shell
+  - type: dropdown
+    id: interest
+    attributes:
+      label: Do you have any interest in helping implement the check function?
+      description: |
+        We appreciate any help you can offer!
+
+        For information on how to contribute, please refer to our [contributing guidelines]() (TODO).
+      options:
+        - Yes.
+        - Yes, but I would need guidance.
+        - No.
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/NeurodataWithoutBorders/nwbinspector/blob/dev/.github/CODE_OF_CONDUCT.rst)
+      options:
+        - label: I agree to follow this project's [Code of Conduct](https://github.com/NeurodataWithoutBorders/nwbinspector/blob/dev/.github/CODE_OF_CONDUCT.rst)
+          required: true
+        - label: Have you ensured this check was not already [requested](https://github.com/neurodatawithoutborders/nwbinspector/issues)?
+          required: true
