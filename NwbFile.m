@@ -211,7 +211,7 @@ if isa(obj, 'types.untyped.MetaClass')
     getProperty = @(x, prop) x.(prop);
 elseif isa(obj, 'types.untyped.Set')
     propertyNames = obj.keys();
-    getProperty = @(x, prop)x(prop);
+    getProperty = @(x, prop)x.(prop);
 elseif isa(obj, 'types.untyped.Anon')
     propertyNames = {obj.name};
     getProperty = @(x, prop) x.value;
