@@ -47,22 +47,12 @@ body:
     validations:
       required: true
   - type: dropdown
-    id: executable
+    id: matlab_version
     attributes:
-      label: Python Executable
+      label: Matlab Version
       options:
-        - Conda
-        - Python
-    validations:
-      required: true
-  - type: dropdown
-    id: python_version
-    attributes:
-      label: Python Version
-      options:
-        - 3.7
-        - 3.8
-        - 3.9
+        - 2022a
+        - ?
     validations:
       required: true
   - type: textarea
