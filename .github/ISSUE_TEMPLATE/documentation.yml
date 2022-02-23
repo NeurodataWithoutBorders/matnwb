@@ -8,7 +8,7 @@ body:
       value: |
         ## Thank you for your suggestion!
 
-        We welcome any ideas about how to make the **NWBInspector** better for the community.
+        We welcome any ideas about how to make **MatNWB** better for the community.
 
         Please keep in mind that new or improved documentation may not get implemented immediately.
   - type: textarea
