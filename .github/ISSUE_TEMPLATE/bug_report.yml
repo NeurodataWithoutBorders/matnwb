@@ -21,9 +21,9 @@ body:
     attributes:
       label: Steps to Reproduce
       description: |
-        Please copy and paste the code you were trying to run that caused the error.
+        Please copy and paste a standalone code snippet (i.e., no external data) that completely reproduces the error.
 
-        This section will be automatically formatted into code, so no need for backticks.
+        The team will use this to recreate the exact conditions that caused the error, which is helpful for debugging. This section will be automatically formatted into code, so no need for backticks.
       render: matlab
     validations:
       required: true
