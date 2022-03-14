@@ -32,7 +32,7 @@ body:
     attributes:
       label: Error Message
       description: |
-        Please copy and paste the message produced by the error.
+        Please copy and paste the entire error message.
 
         This section will be automatically formatted into code, so no need for backticks.
       render: matlab
