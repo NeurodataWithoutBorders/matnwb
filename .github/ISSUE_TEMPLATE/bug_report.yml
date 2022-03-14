@@ -23,7 +23,7 @@ body:
       description: |
         Please copy and paste the code you were trying to run that caused the error.
 
-        Feel free to include as little or as much as you think is relevant. This section will be automatically formatted into code, so no need for backticks.
+        This section will be automatically formatted into code, so no need for backticks.
       render: matlab
     validations:
       required: true
