@@ -43,7 +43,7 @@ body:
       description: |
         We appreciate any help you can offer!
 
-        For information on how to contribute, please refer to our [contributing guidelines]().
+        For information on how to contribute, please contact the package maintainers.
       options:
         - Yes.
         - Yes, but I would need guidance.
