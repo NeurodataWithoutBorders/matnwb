@@ -31,6 +31,12 @@ validateattributes(DynamicTable,...
 if nargin < 2
     index = true;
 end
+
+if isempty(DynamicTable.id)
+    matlabTable = table({}, 'VariableNames', [{'id'} DynamicTable.colnames]);
+    return;
+end
+
 % initialize table with id column
 if isa(DynamicTable.id.data, 'types.untyped.DataStub')...
         || isa(DynamicTable.id.data, 'types.untyped.DataPipe')
@@ -41,11 +47,12 @@ end
 matlabTable = table( ...
     ids, ...
     'VariableNames', {'id'} ...
-);      
+);
+
 % deal with DynamicTableRegion columns when index is false
 columns = DynamicTable.colnames;
 i = 1;
-while i <length(columns)
+while i < length(columns)
     cn = DynamicTable.colnames{i};
     if isprop(DynamicTable, cn)
         cv = DynamicTable.(cn);
