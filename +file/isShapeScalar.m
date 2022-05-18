@@ -9,7 +9,7 @@ end
 
 isScalar = true(size(shape));
 for iOption = 1:length(shape)
-    isScalar(iOption) = any(1 ~= shape{iOption});
+    isScalar(iOption) = all(1 == shape{iOption});
 end
 end
 
