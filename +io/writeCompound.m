@@ -1,4 +1,4 @@
-function writeCompound(fid, fullpath, data)
+function writeCompound(fid, fullpath, data, varargin)
 %convert to a struct
 if istable(data)
     data = table2struct(data);
