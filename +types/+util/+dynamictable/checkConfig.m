@@ -107,6 +107,13 @@ elseif isa(VectorData.data, 'types.untyped.DataStub')
     vecHeight = VectorData.data.dims(end);
 elseif isscalar(VectorData.data) || ~isvector(VectorData.data)
     vecHeight = size(VectorData.data, ndims(VectorData.data));
+elseif isscalar(VectorData.data) && isstruct(VectorData.data)
+    dataFieldNames = fieldnames(VectorData.data);
+    if isempty(dataFieldNames)
+        vecHeight = 0;
+    else
+        vecHeight = getVectorHeight(VectorData.data.(dataFieldNames{1}));
+    end
 else
     vecHeight = size(VectorData.data, find(1 < size(VectorData.data)));
 end
