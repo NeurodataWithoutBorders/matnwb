@@ -54,6 +54,21 @@ for i = 1:length(columns)
             row{i} = {row{i}};
         end
     end
+    if isscalar(row{i}) && isstruct(row{i})
+        % convert compound data type scalar struct into an array of
+        % structs.
+        structNames = fieldnames(row{i});
+        scalarStruct = row{i};
+        rowStruct = row{i}; % same as scalarStruct to maintain the field names.
+        for iRow = 1:length(ind)
+            for iField = 1:length(structNames)
+                fieldName = structNames{iField};
+                fieldData = scalarStruct.(fieldName);
+                rowStruct(iRow).(fieldName) = fieldData(iRow);
+            end
+        end
+        row{i} = rowStruct .';
+    end
 end
 subTable = table(row{:}, 'VariableNames', columns);
 end
@@ -96,8 +111,17 @@ if isscalar(colIndStack)
     selectInd = cell(1, rank);
     selectInd(1:end-1) = {':'};
     selectInd{end} = matInd;
-    selected = Vector.data(selectInd{:});
-
+    if isstruct(Vector.data) && isscalar(Vector.data)
+        selected = struct();
+        selectedFields = fieldnames(Vector.data);
+        for i = 1:length(selectedFields)
+            fieldName = selectedFields{i};
+            columnData = Vector.data.(fieldName);
+            selected.(fieldName) = columnData(selectInd{:});
+        end
+    else
+        selected = Vector.data(selectInd{:});
+    end
 else
     assert(isa(Vector, 'types.hdmf_common.VectorIndex') || isa(Vector, 'types.core.VectorIndex'),...
         'NWB:DynamicTable:GetRow:InternalError',...
