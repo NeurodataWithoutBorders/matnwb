@@ -6,14 +6,21 @@ classdef DynamicFilter < types.untyped.datapipe.Property
         dynamicFilter;
     end
 
+    properties
+        parameters(1,1) struct;
+    end
+
     methods
-        function obj = DynamicFilter(filter)
-            validateattributes( ...
-                filter, ...
+        function obj = DynamicFilter(filter, parameters)
+            validateattributes(filter, ...
                 {'types.untyped.datapipe.dynamic.Filter'}, ...
                 {'scalar'}, ...
                 'DynamicFilter', 'filter');
             obj.dynamicFilter = filter;
+
+            if (1 < nargin)
+                obj.parameters = parameters;
+            end
         end
 
         function tf = isInDcpl(dcpl)
@@ -28,16 +35,12 @@ classdef DynamicFilter < types.untyped.datapipe.Property
             end
         end
 
-        function addTo(obj, dcpl, parameters)
-            if nargin < 3
-                parameters = [];
-            end
-
+        function addTo(obj, dcpl)
             H5P.set_filter( ...
                 dcpl, ...
                 uint32(obj.dynamicFilter), ...
                 'H5Z_FLAG_MANDATORY', ...
-                parameters);
+                obj.parameters);
         end
     end
 end
