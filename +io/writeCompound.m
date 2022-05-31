@@ -80,8 +80,33 @@ for i=1:length(refNames)
     data.(refNames{i}) = io.getRefData(fid, data.(refNames{i}));
 end
 
+try
 sid = H5S.create_simple(1, numrows, []);
 did = H5D.create(fid, fullpath, tid, sid, 'H5P_DEFAULT');
+catch ME
+    if contains(ME.message, 'name already exists')
+        did = H5D.open(fid, fullpath);
+        create_plist = H5D.get_create_plist(did);
+        edit_sid = H5D.get_space(did);
+        [~, edit_dims, ~] = H5S.get_simple_extent_dims(edit_sid);
+        layout = H5P.get_layout(create_plist);
+        is_chunked = layout == H5ML.get_constant_value('H5D_CHUNKED');
+        is_same_dims = all(edit_dims == numrows);
+
+        if ~is_same_dims
+            if is_chunked
+                H5D.set_extent(did, dims);
+            else
+                            warning('Attempted to change size of continuous compound `%s`.  Skipping.',...
+                fullpath);
+            end
+        end
+        H5P.close(create_plist);
+        H5S.close(edit_sid);
+    else
+        rethrow(ME);
+    end
+end
 H5D.write(did, tid, sid, sid, 'H5P_DEFAULT', data);
 H5D.close(did);
 H5S.close(sid);
