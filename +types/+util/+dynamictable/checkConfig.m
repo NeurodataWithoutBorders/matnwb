@@ -99,24 +99,31 @@ end
 end
 
 function vecHeight = getVectorHeight(VectorData)
-if isempty(VectorData) || isempty(VectorData.data)
+if isempty(VectorData)
     vecHeight = 0;
-elseif isa(VectorData.data, 'types.untyped.DataPipe')
-    vecHeight = VectorData.data.offset;
-elseif isa(VectorData.data, 'types.untyped.DataStub')
-    vecHeight = VectorData.data.dims(end);
-elseif isscalar(VectorData.data) || ~isvector(VectorData.data)
-    vecHeight = size(VectorData.data, ndims(VectorData.data));
-elseif isscalar(VectorData.data) && isstruct(VectorData.data)
-    dataFieldNames = fieldnames(VectorData.data);
-    if isempty(dataFieldNames)
-        vecHeight = 0;
-    else
-        vecHeight = getVectorHeight(VectorData.data.(dataFieldNames{1}));
-    end
 else
-    vecHeight = size(VectorData.data, find(1 < size(VectorData.data)));
+    vecHeight = getDataHeight(VectorData.data);
 end
+    function vecHeight = getDataHeight(data)
+        if isempty(data)
+            vecHeight = 0;
+        elseif isa(data, 'types.untyped.DataPipe')
+            vecHeight = data.offset;
+        elseif isa(data, 'types.untyped.DataStub')
+            vecHeight = data.dims(end);
+        elseif isscalar(data) && isstruct(data) % compound type
+            dataFieldNames = fieldnames(data);
+            if isempty(dataFieldNames)
+                vecHeight = 0;
+            else
+                vecHeight = getDataHeight(data.(dataFieldNames{1}));
+            end
+        elseif isscalar(data) || ~isvector(data)
+            vecHeight = size(data, ndims(data));
+        else
+            vecHeight = size(data, find(1 < size(data)));
+        end
+    end
 end
 
 function Vector = getVector(DynamicTable, column)
