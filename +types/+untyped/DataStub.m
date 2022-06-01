@@ -213,9 +213,22 @@ classdef (Sealed) DataStub < handle
             for i = 1:length(openSelInd)
                 selections{i} = 1:dims(i); %#ok<PROPLC>
             end
-            data = reorderLoadedData(data, selections);
-            data = reshape(data, expectedSize);
-            
+
+            if isstruct(data)
+                % for compound datatypes, reshape for all data in the
+                % struct.
+                dataFields = fieldnames(data);
+                for iField = 1:length(dataFields)
+                    fieldName = dataFields{iField};
+                    data.(fieldName) = reorderLoadedData( ...
+                        data.(fieldName), selections);
+                    data.(fieldName) = reshape(data.(fieldName), expectedSize);
+                end
+            else
+                data = reorderLoadedData(data, selections);
+                data = reshape(data, expectedSize);
+            end
+
             function reordered = reorderLoadedData(data, selections)
                 % dataset loading does not account for duplicate or unordered
                 % indices so we have to re-order everything here.
