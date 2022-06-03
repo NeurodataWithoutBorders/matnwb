@@ -20,8 +20,11 @@ steps:
       python -m pip install --upgrade pip 
       pip install pynwb
       pip install hdf5plugin
-      export HDF5_PLUGIN_PATH=$(python -c "import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)")
+      echo "##vso[task.setvariable variable=HDF5_PLUGIN_PATH]$(python -c \"import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)\")"
     displayName: 'Install PyNWB'
+
+  - bash: |
+      echo "$(HDF_PLUGIN_PATH)"
 
   - task: RunMATLABCommand@0
     inputs:
