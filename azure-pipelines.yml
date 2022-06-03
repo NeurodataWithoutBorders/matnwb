@@ -24,7 +24,7 @@ steps:
     displayName: 'Install PyNWB'
 
   - bash: |
-      echo "$(HDF_PLUGIN_PATH)"
+      echo "$(HDF5_PLUGIN_PATH)"
 
   - task: RunMATLABCommand@0
     inputs:
