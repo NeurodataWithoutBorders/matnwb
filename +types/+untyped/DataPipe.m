@@ -44,6 +44,7 @@ classdef (Sealed) DataPipe < handle
 
     properties (SetAccess = private)
         internal;
+        externalFilters;
     end
 
     properties (Dependent)
@@ -77,6 +78,8 @@ classdef (Sealed) DataPipe < handle
             p.addParameter('filename', '');
             p.addParameter('path', '');
             p.addParameter('hasShuffle', false);
+            p.addParameter('externalFilters', DynamicFilter.empty(), ...
+                @(x) isa(x, 'types.untyped.datapipe.properties.DynamicFilter'));
             p.KeepUnmatched = true;
             p.parse(varargin{:});
 
@@ -159,6 +162,11 @@ classdef (Sealed) DataPipe < handle
             end
 
             obj.internal.data = p.Results.data;
+
+            if ~isempty(p.Results.externalFilters)
+                filterCell = num2cell(p.Results.externalFilters);
+                obj.internal.setPipeProperties(filterCell{:});
+            end
         end
 
         %% SET/GET

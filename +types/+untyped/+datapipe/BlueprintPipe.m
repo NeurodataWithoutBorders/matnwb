@@ -95,7 +95,7 @@ classdef BlueprintPipe < types.untyped.datapipe.Pipe
                 'Export the DataPipe to append.']);
         end
         
-         function setPipeProperty(obj, prop)
+        function setPipeProperty(obj, prop)
             assert(isa(prop, 'types.untyped.datapipe.Property'),...
                 'Can only add filters.');
             
