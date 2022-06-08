@@ -30,8 +30,10 @@ if ischar(data)
     end
 elseif ~forceArray && ~iscell(data) && isscalar(data)
     sid = H5S.create('H5S_SCALAR');
+elseif ~forceChunked && isempty(data)
+    sid = H5S.create('H5S_NULL');
 else
-    if isvector(data)
+    if isvector(data) || isempty(data)
         num_dims = 1;
         dims = length(data);
     else
