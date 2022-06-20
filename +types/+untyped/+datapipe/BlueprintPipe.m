@@ -98,9 +98,22 @@ classdef BlueprintPipe < types.untyped.datapipe.Pipe
         function setPipeProperty(obj, prop)
             assert(isa(prop, 'types.untyped.datapipe.Property'),...
                 'Can only add filters.');
+
+            isDynamicFilter = isa(prop, ...
+                'types.untyped.datapipe.properties.DynamicFilter');
             
+            % dedup pipe properties if it already exists with special case
+            % behavior for dynamic filters.
             for i = 1:length(obj.pipeProperties)
-                if isa(prop, class(obj.pipeProperties{i}))
+                pipeProp = obj.pipeProperties{i};
+
+                isSameClass = isa(prop, class(pipeProp));
+
+                if isSameClass
+                    if isDynamicFilter && prop.dynamicFilter ~= pipeProp.dynamicFilter
+                        continue;
+                    end
+
                     obj.pipeProperties{i} = prop;
                     return;
                 end
