@@ -152,7 +152,7 @@ classdef (Sealed) DataPipe < handle
             end
             obj.internal.setPipeProperties(Chunking(chunkSize));
 
-            if ~isempty(p.Results.compressionLevel)
+            if -1 < p.Results.compressionLevel
                 obj.internal.setPipeProperties(Compression(...
                     p.Results.compressionLevel));
             end
