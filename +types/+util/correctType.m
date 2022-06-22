@@ -31,8 +31,8 @@ assert(isempty(val) || isinteger(val) || all(0 == abs(val - fix(val))),...
     'Converting to `%s` would have dropped floating point values.',...
     type);
 
-maxVal = max(val, [], 'all');
-minVal = min(val, [], 'all');
+maxVal = max(val(:));
+minVal = min(val(:));
 
 if ~isinteger(val)
     if startsWith(type, 'uint')

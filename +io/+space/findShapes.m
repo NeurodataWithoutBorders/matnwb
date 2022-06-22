@@ -52,7 +52,8 @@ for stepInd = 2:length(indices)
     if ~isempty(splitPoints)
         subStarts = [startInd (splitPoints + 1)];
         subStops = [(splitPoints - 1) stopInd];
-        [~, largestSegInd] = max(subStops - subStarts + 1, [], 'linear');
+        segment = subStops - subStarts + 1;
+        [~, largestSegInd] = max(segment(:));
         startInd = subStarts(largestSegInd);
         stopInd = subStops(largestSegInd);
     end
