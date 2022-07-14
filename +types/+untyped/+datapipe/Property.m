@@ -1,4 +1,4 @@
-classdef Property < handle
+classdef Property < handle & matlab.mixin.Heterogeneous
     %PROPERTY used in datapipe creation
     
     methods (Static, Abstract)
