@@ -82,9 +82,9 @@ function testExternalFilters(testCase)
 import types.untyped.datapipe.dynamic.Filter;
 import types.untyped.datapipe.properties.DynamicFilter;
 
-error(getenv('HDF5_PLUGIN_PATH'));
+error('HDF5_PLUGIN_PATH = %s', getenv('HDF5_PLUGIN_PATH'));
 
-% testCase.assumeTrue(logical(H5Z.filter_avail(uint32(Filter.BZIP2))));
+testCase.assumeTrue(logical(H5Z.filter_avail(uint32(Filter.BZIP2))));
 
 filename = 'testBzipWrite.h5';
 
