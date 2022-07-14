@@ -44,7 +44,7 @@ classdef (Sealed) DataPipe < handle
 
     properties (SetAccess = private)
         internal;
-        externalFilters;
+        filters;
     end
 
     properties (Dependent)
@@ -70,6 +70,9 @@ classdef (Sealed) DataPipe < handle
             p.addParameter('axis', 1, @(x) isnumeric(x) && isscalar(x) && x > 0);
             p.addParameter('offset', 0, @(x) isnumeric(x) && isscalar(x) && x >= 0);
             p.addParameter('chunkSize', []);
+            % note that compression level is defaulted to ON
+            % This is primarily for legacy support as we move into other
+            % filters.
             p.addParameter('compressionLevel', 3, @(x) isnumeric(x)...
                 && isscalar(x)...
                 && x >= -1);
@@ -78,8 +81,8 @@ classdef (Sealed) DataPipe < handle
             p.addParameter('filename', '');
             p.addParameter('path', '');
             p.addParameter('hasShuffle', false);
-            p.addParameter('externalFilters', DynamicFilter.empty(), ...
-                @(x) isa(x, 'types.untyped.datapipe.properties.DynamicFilter'));
+            p.addParameter('extraFilters', DynamicFilter.empty(), ...
+                @(x) isa(x, 'types.untyped.datapipe.Property'));
             p.KeepUnmatched = true;
             p.parse(varargin{:});
 
@@ -152,21 +155,31 @@ classdef (Sealed) DataPipe < handle
             end
             obj.internal.setPipeProperties(Chunking(chunkSize));
 
-            if -1 < p.Results.compressionLevel
-                obj.internal.setPipeProperties(Compression(...
-                    p.Results.compressionLevel));
-            end
+            hasFilters = ~isempty(p.Results.extraFilters);
+            hasCompressionLevel = -1 < p.Results.compressionLevel;
+            assert(xor(hasFilters, hasCompressionLevel || p.Results.hasShuffle), ...
+                'NWB:DataPipe:InvalidArguments', ...
+                ['External Filters will override default GZip compression. ' ...
+                'If you wish to use default compression, then set it as ' ...
+                'part of the extraFilters array. Otherwise, set ' ...
+                'compressionLevel to -1 (disabling it) and do not set ' ...
+                'hasShuffle.']);
 
-            if p.Results.hasShuffle
-                obj.internal.setPipeProperties(Shuffle());
+            if hasFilters
+                filterCell = num2cell(p.Results.extraFilters);
+                obj.internal.setPipeProperties(filterCell{:});
+            else
+                if -1 < p.Results.compressionLevel
+                    obj.internal.setPipeProperties(Compression(...
+                        p.Results.compressionLevel));
+                end
+
+                if p.Results.hasShuffle
+                    obj.internal.setPipeProperties(Shuffle());
+                end
             end
 
             obj.internal.data = p.Results.data;
-
-            if ~isempty(p.Results.externalFilters)
-                filterCell = num2cell(p.Results.externalFilters);
-                obj.internal.setPipeProperties(filterCell{:});
-            end
         end
 
         %% SET/GET
