@@ -220,13 +220,24 @@ classdef (Sealed) DataPipe < handle
         end
 
         function val = get.compressionLevel(obj)
-            val = obj.internal.getPipeProperty(...
-                'types.untyped.datapipe.properties.Compression').level;
+            compressionClass = 'types.untyped.datapipe.properties.Compression';
+            val = -1;
+            if obj.internal.hasPipeProperty(compressionClass)
+                val = obj.internal.getPipeProperty(compressionClass).level;
+            end
         end
 
         function set.compressionLevel(obj, val)
             import types.untyped.datapipe.properties.Compression;
-            obj.internal.setPipeProperty(Compression(val));
+            validateattributes(val, {'numeric'}, {'scalar'}, 1);
+            assert(-1 <= val, 'NWB:SetCompressionLevel:InvalidValue', ...
+                'Compression Level cannot be less than -1.');
+            compressionClass = 'types.untyped.datapipe.properties.Compression';
+            if -1 == val
+                obj.internal.removePipeProperty(compressionClass);
+            else
+                obj.internal.setPipeProperty(Compression(val));
+            end
         end
 
         function tf = get.hasShuffle(obj)
