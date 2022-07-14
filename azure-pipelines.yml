@@ -7,8 +7,8 @@ pool:
 steps:
   - task: InstallMATLAB@0
     # default to latest version of Matlab installed
-    #inputs:
-    #  release: R2020a
+    inputs:
+      release: R2017a
   - checkout: self
 
   - task: UsePythonVersion@0
