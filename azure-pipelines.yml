@@ -3,36 +3,38 @@ trigger:
 
 pool:
   vmImage: 'ubuntu-latest'
-
+    
 steps:
   - task: InstallMATLAB@0
     # default to latest version of Matlab installed
     #inputs:
-    #  release: R2020a
+    #  release: R2017a
   - checkout: self
 
   - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.8'
+    inputs:       
+      versionSpec: '3.8'    
       architecture: 'x64'
 
-  - script: |
+  - bash: |
       python -m pip install --upgrade pip 
       pip install pynwb
       pip install hdf5plugin
-      echo "##vso[task.setvariable variable=HDF5_PLUGIN_PATH]$(python -c "import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)")"
+      export 
+      echo "##vso[task.setvariable variable=plugin_path]$(python -c "import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)")"
     displayName: 'Install PyNWB'
-
-  - bash: |
-      echo "$(HDF5_PLUGIN_PATH)"
 
   - task: RunMATLABCommand@0
     inputs:
       command: "results = assertSuccess(nwbtest); assert(~isempty(results), 'No tests ran');"
+    env:
+      HDF_PLUGIN_PATH: $(plugin_path)
+
   - task: PublishTestResults@2
     condition: succeededOrFailed()
     inputs:
       testResultsFiles: testResults.xml
+
   - task: PublishCodeCoverageResults@1
     inputs:
       codeCoverageTool: Cobertura
