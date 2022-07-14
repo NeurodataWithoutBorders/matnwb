@@ -81,10 +81,11 @@ end
 function testExternalFilters(testCase)
 import types.untyped.datapipe.dynamic.Filter;
 import types.untyped.datapipe.properties.DynamicFilter;
+import types.untyped.datapipe.properties.Shuffle;
 
 testCase.assumeTrue(logical(H5Z.filter_avail(uint32(Filter.LZ4))));
 
-filename = 'testBzipWrite.h5';
+filename = 'testExternalWrite.h5';
 
 Pipe = types.untyped.DataPipe(...
     'maxSize', [10 13 15],...
@@ -92,7 +93,7 @@ Pipe = types.untyped.DataPipe(...
     'chunkSize', [10 13 1],...
     'dataType', 'uint8',...
     'compressionLevel', -1,...
-    'externalFilters', DynamicFilter(Filter.LZ4));
+    'extraFilters', [Shuffle() DynamicFilter(Filter.LZ4)]);
 
 OneDimensionPipe = types.untyped.DataPipe('maxSize', Inf, 'data', [7, 8, 9]);
 
