@@ -80,7 +80,8 @@ classdef (Sealed) DataPipe < handle
             p.addParameter('data', []);
             p.addParameter('filename', '');
             p.addParameter('path', '');
-            p.addParameter('hasShuffle', false);
+            p.addParameter('hasShuffle', false, ...
+                @(b) isscalar(b) && (islogical(b) || isnumeric(b)));
             p.addParameter('extraFilters', DynamicFilter.empty(), ...
                 @(x) isa(x, 'types.untyped.datapipe.Property'));
             p.KeepUnmatched = true;
@@ -157,7 +158,8 @@ classdef (Sealed) DataPipe < handle
 
             hasFilters = ~isempty(p.Results.extraFilters);
             hasCompressionLevel = -1 < p.Results.compressionLevel;
-            assert(xor(hasFilters, hasCompressionLevel || p.Results.hasShuffle), ...
+            hasShuffle = logical(p.Results.hasShuffle);
+            assert(~(hasFilters && (hasCompressionLevel || hasShuffle)), ...
                 'NWB:DataPipe:InvalidArguments', ...
                 ['External Filters will override default GZip compression. ' ...
                 'If you wish to use default compression, then set it as ' ...
@@ -169,12 +171,12 @@ classdef (Sealed) DataPipe < handle
                 filterCell = num2cell(p.Results.extraFilters);
                 obj.internal.setPipeProperties(filterCell{:});
             else
-                if -1 < p.Results.compressionLevel
+                if hasCompressionLevel
                     obj.internal.setPipeProperties(Compression(...
                         p.Results.compressionLevel));
                 end
 
-                if p.Results.hasShuffle
+                if hasShuffle
                     obj.internal.setPipeProperties(Shuffle());
                 end
             end
