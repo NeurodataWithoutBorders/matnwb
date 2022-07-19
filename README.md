@@ -63,6 +63,8 @@ Currently, only schemas >= 2.2.0 are supported (2.1.0 and 2.0.1 are not supporte
 
 [Dynamic tables](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dynamic_tables.html)
 
+[Images](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/images.html)
+
 [Advanced data write](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dataPipe.html)  | [YouTube walkthrough](https://www.youtube.com/watch?v=PIE_F4iVv98&ab_channel=NeurodataWithoutBorders)
 
 [Advanced data read: Dynamically Loaded Filters](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dynamically_loaded_filters.html)
