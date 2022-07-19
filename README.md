@@ -59,6 +59,8 @@ Currently, only schemas >= 2.2.0 are supported (2.1.0 and 2.0.1 are not supporte
 
 [Intracellular Electrophysiology](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/icephys.html)
 
+[Behavior](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/behavior.html)
+
 [Dynamic tables](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dynamic_tables.html)
 
 [Advanced data write](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dataPipe.html)  | [YouTube walkthrough](https://www.youtube.com/watch?v=PIE_F4iVv98&ab_channel=NeurodataWithoutBorders)
