@@ -44,6 +44,7 @@ classdef (Sealed) DataPipe < handle
 
     properties (SetAccess = private)
         internal;
+        filters;
     end
 
     properties (Dependent)
@@ -69,6 +70,9 @@ classdef (Sealed) DataPipe < handle
             p.addParameter('axis', 1, @(x) isnumeric(x) && isscalar(x) && x > 0);
             p.addParameter('offset', 0, @(x) isnumeric(x) && isscalar(x) && x >= 0);
             p.addParameter('chunkSize', []);
+            % note that compression level is defaulted to ON
+            % This is primarily for legacy support as we move into other
+            % filters.
             p.addParameter('compressionLevel', 3, @(x) isnumeric(x)...
                 && isscalar(x)...
                 && x >= -1);
@@ -76,7 +80,10 @@ classdef (Sealed) DataPipe < handle
             p.addParameter('data', []);
             p.addParameter('filename', '');
             p.addParameter('path', '');
-            p.addParameter('hasShuffle', false);
+            p.addParameter('hasShuffle', false, ...
+                @(b) isscalar(b) && (islogical(b) || isnumeric(b)));
+            p.addParameter('filters', DynamicFilter.empty(), ...
+                @(x) isa(x, 'types.untyped.datapipe.Property'));
             p.KeepUnmatched = true;
             p.parse(varargin{:});
 
@@ -149,13 +156,31 @@ classdef (Sealed) DataPipe < handle
             end
             obj.internal.setPipeProperties(Chunking(chunkSize));
 
-            if ~isempty(p.Results.compressionLevel)
-                obj.internal.setPipeProperties(Compression(...
-                    p.Results.compressionLevel));
+            hasFilters = ~isempty(p.Results.filters);
+            usingHasCompressionLevel = ~any(strcmp(p.UsingDefaults, 'compressionLevel'));
+            usingHasShuffle = ~any(strcmp(p.UsingDefaults, 'hasShuffle'));
+            if hasFilters && (usingHasCompressionLevel || usingHasShuffle)
+                warning(['`filters` keyword argument detected. This will ' ...
+                    'override `compressionLevel` and `hasShuffle` keyword ' ...
+                    'arguments. If you wish to use either `compressionLevel` ' ...
+                    'or `hasShuffle`, please add their respective filter ' ...
+                    'properties `types.untyped.datapipe.properties.Compression` ' ...
+                    'and `types.untyped.datapipe.properties.Shuffle` to the ' ...
+                    '`filters` properties array.']);
             end
 
-            if p.Results.hasShuffle
-                obj.internal.setPipeProperties(Shuffle());
+            if hasFilters
+                filterCell = num2cell(p.Results.filters);
+                obj.internal.setPipeProperties(filterCell{:});
+            else
+                if -1 < p.Results.compressionLevel
+                    obj.internal.setPipeProperties(Compression(...
+                        p.Results.compressionLevel));
+                end
+
+                if logical(p.Results.hasShuffle)
+                    obj.internal.setPipeProperties(Shuffle());
+                end
             end
 
             obj.internal.data = p.Results.data;
@@ -197,13 +222,24 @@ classdef (Sealed) DataPipe < handle
         end
 
         function val = get.compressionLevel(obj)
-            val = obj.internal.getPipeProperty(...
-                'types.untyped.datapipe.properties.Compression').level;
+            compressionClass = 'types.untyped.datapipe.properties.Compression';
+            val = -1;
+            if obj.internal.hasPipeProperty(compressionClass)
+                val = obj.internal.getPipeProperty(compressionClass).level;
+            end
         end
 
         function set.compressionLevel(obj, val)
             import types.untyped.datapipe.properties.Compression;
-            obj.internal.setPipeProperty(Compression(val));
+            validateattributes(val, {'numeric'}, {'scalar'}, 1);
+            assert(-1 <= val, 'NWB:SetCompressionLevel:InvalidValue', ...
+                'Compression Level cannot be less than -1.');
+            compressionClass = 'types.untyped.datapipe.properties.Compression';
+            if -1 == val
+                obj.internal.removePipeProperty(compressionClass);
+            else
+                obj.internal.setPipeProperty(Compression(val));
+            end
         end
 
         function tf = get.hasShuffle(obj)

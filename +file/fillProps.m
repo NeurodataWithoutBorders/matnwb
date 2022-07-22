@@ -11,7 +11,7 @@ p.parse(varargin{:});
 if p.Results.IsRequired
     requiredStr = 'REQUIRED';
 else
-    requiredStr = 'OPTIONAL';
+    requiredStr = '';
 end
 
 proplines = cell(size(names));
@@ -80,12 +80,10 @@ else
 end
 
 if isa(prop, 'file.Dataset') || isa(prop, 'file.Attribute') || isa(prop, 'file.Group')
-    docStr = prop.doc;
+    propStr = sprintf('(%s) %s', typeStr, prop.doc);
 else
-    docStr = '';
+    propStr = typeStr;
 end
-
-propStr = sprintf('(%s) %s', typeStr, docStr);
 
 if nargin >= 2
     propStr = [propName ' = ' propStr];
