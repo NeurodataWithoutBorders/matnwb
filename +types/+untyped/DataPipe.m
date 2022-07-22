@@ -157,9 +157,9 @@ classdef (Sealed) DataPipe < handle
             obj.internal.setPipeProperties(Chunking(chunkSize));
 
             hasFilters = ~isempty(p.Results.filters);
-            hasCompressionLevel = -1 < p.Results.compressionLevel;
-            hasShuffle = logical(p.Results.hasShuffle);
-            if hasFilters && (hasCompressionLevel || hasShuffle)
+            usingHasCompressionLevel = ~any(strcmp(p.UsingDefaults, 'compressionLevel'));
+            usingHasShuffle = ~any(strcmp(p.UsingDefaults, 'hasShuffle'));
+            if hasFilters && (usingHasCompressionLevel || usingHasShuffle)
                 warning(['`filters` keyword argument detected. This will ' ...
                     'override `compressionLevel` and `hasShuffle` keyword ' ...
                     'arguments. If you wish to use either `compressionLevel` ' ...
@@ -173,12 +173,12 @@ classdef (Sealed) DataPipe < handle
                 filterCell = num2cell(p.Results.filters);
                 obj.internal.setPipeProperties(filterCell{:});
             else
-                if hasCompressionLevel
+                if -1 < p.Results.compressionLevel
                     obj.internal.setPipeProperties(Compression(...
                         p.Results.compressionLevel));
                 end
 
-                if hasShuffle
+                if logical(p.Results.hasShuffle)
                     obj.internal.setPipeProperties(Shuffle());
                 end
             end
