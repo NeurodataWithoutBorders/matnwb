@@ -69,6 +69,8 @@ Currently, only schemas >= 2.2.0 are supported (2.1.0 and 2.0.1 are not supporte
 
 [Advanced data read: Dynamically Loaded Filters](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dynamically_loaded_filters.html)
 
+[Advanced data write: Dynamically Loaded Filters](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dynamically_loaded_filter_writes.html)
+
 ## API Documentation
 
 For more information regarding the MatNWB API or any of the NWB Core types in MatNWB, visit the [MatNWB API Documentation pages](https://neurodatawithoutborders.github.io/matnwb/doc/index.html).
