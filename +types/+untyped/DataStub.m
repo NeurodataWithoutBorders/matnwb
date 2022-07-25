@@ -3,6 +3,11 @@ classdef (Sealed) DataStub < handle
 % This class is sealed due to special subsref behavior breaking nargout
 % expectations for most properties/methods.
 
+    properties (Access = private)
+        fileId;
+        datasetId;
+    end
+
     properties (SetAccess = protected)
         filename;
         path;
@@ -17,15 +22,20 @@ classdef (Sealed) DataStub < handle
     methods
         function obj = DataStub(filename, path)
             obj.filename = filename;
+            obj.fileId = H5F.open(obj.filename);
             obj.path = path;
+            obj.datasetId = H5D.open(obj.fileId, obj.path);
+        end
+
+        function delete(obj)
+            H5D.close(obj.datasetId);
+            H5F.close(obj.fileId);
         end
         
         function sid = get_space(obj)
-            fid = H5F.open(obj.filename);
-            did = H5D.open(fid, obj.path);
+            did = H5D.open(obj.fileId, obj.path);
             sid = H5D.get_space(did);
             H5D.close(did);
-            H5F.close(fid);
         end
         
         function dims = get.dims(obj)
@@ -40,12 +50,10 @@ classdef (Sealed) DataStub < handle
         end
 
         function matType = get.dataType(obj)
-            fid = H5F.open(obj.filename);
-            did = H5D.open(fid, obj.path);
+            did = H5D.open(obj.fileId, obj.path);
             tid = H5D.get_type(did);
             matType = io.getMatType(tid);
             H5D.close(did);
-            H5F.close(fid);
         end
         
         %can be called without arg, with H5ML.id, or (dims, offset, stride)
@@ -75,15 +83,11 @@ classdef (Sealed) DataStub < handle
             end
             
             if isstruct(data)
-                fid = H5F.open(obj.filename);
-                did = H5D.open(fid, obj.path);
-                fsid = H5D.get_space(did);
-                data = H5D.read(did, 'H5ML_DEFAULT', fsid, fsid,...
+                fsid = H5D.get_space(obj.datasetId);
+                data = H5D.read(obj.datasetId, 'H5ML_DEFAULT', fsid, fsid,...
                     'H5P_DEFAULT');
-                data = io.parseCompound(did, data);
+                data = io.parseCompound(obj.datasetId, data);
                 H5S.close(fsid);
-                H5D.close(did);
-                H5F.close(fid);
             end
         end
         
@@ -167,11 +171,7 @@ classdef (Sealed) DataStub < handle
             H5S.close(sid);
             
             % read data.
-            fid = H5F.open(obj.filename);
-            did = H5D.open(fid, obj.path);
-            data = H5D.read(did, 'H5ML_DEFAULT', memSid, readSid, 'H5P_DEFAULT');
-            H5D.close(did);
-            H5F.close(fid);
+            data = H5D.read(obj.datasetId, 'H5ML_DEFAULT', memSid, readSid, 'H5P_DEFAULT');
             H5S.close(memSid);
             
             expectedSize = dims; %#ok<PROPLC>
@@ -274,17 +274,15 @@ classdef (Sealed) DataStub < handle
         
         function refs = export(obj, fid, fullpath, refs)
             %Check for compound data type refs
-            src_fid = H5F.open(obj.filename);
             % if filenames are the same, then do nothing
-            src_filename = H5F.get_name(src_fid);
+            src_filename = H5F.get_name(obj.fileId);
             dest_filename = H5F.get_name(fid);
             if strcmp(src_filename, dest_filename)
                 return;
             end
             
-            src_did = H5D.open(src_fid, obj.path);
-            src_tid = H5D.get_type(src_did);
-            src_sid = H5D.get_space(src_did);
+            src_tid = H5D.get_type(obj.datasetId);
+            src_sid = H5D.get_space(obj.datasetId);
             ref_i = false;
             char_i = false;
             member_name = {};
@@ -316,11 +314,11 @@ classdef (Sealed) DataStub < handle
                 %Due to this HDF5 library's inability to delete/update
                 %dataset data, this is unfortunately required.
                 ref_tid = ref_tid(~cellfun('isempty', ref_tid));
-                data = H5D.read(src_did);
+                data = H5D.read(obj.datasetId);
                 
                 refNames = member_name(ref_i);
                 for i=1:length(refNames)
-                    data.(refNames{i}) = io.parseReference(src_did, ref_tid{i}, ...
+                    data.(refNames{i}) = io.parseReference(obj.datasetId, ref_tid{i}, ...
                         data.(refNames{i}));
                 end
                 
@@ -335,14 +333,12 @@ classdef (Sealed) DataStub < handle
                 %copy data over and return destination
                 ocpl = H5P.create('H5P_OBJECT_COPY');
                 lcpl = H5P.create('H5P_LINK_CREATE');
-                H5O.copy(src_fid, obj.path, fid, fullpath, ocpl, lcpl);
+                H5O.copy(obj.fileId, obj.path, fid, fullpath, ocpl, lcpl);
                 H5P.close(ocpl);
                 H5P.close(lcpl);
             end
             H5T.close(src_tid);
             H5S.close(src_sid);
-            H5D.close(src_did);
-            H5F.close(src_fid);
         end
         
         function B = subsref(obj, S)
