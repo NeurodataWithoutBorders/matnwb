@@ -33,9 +33,7 @@ classdef (Sealed) DataStub < handle
         end
         
         function sid = get_space(obj)
-            did = H5D.open(obj.fileId, obj.path);
-            sid = H5D.get_space(did);
-            H5D.close(did);
+            sid = H5D.get_space(obj.datasetId);
         end
         
         function dims = get.dims(obj)
@@ -50,10 +48,8 @@ classdef (Sealed) DataStub < handle
         end
 
         function matType = get.dataType(obj)
-            did = H5D.open(obj.fileId, obj.path);
-            tid = H5D.get_type(did);
+            tid = H5D.get_type(obj.datasetId);
             matType = io.getMatType(tid);
-            H5D.close(did);
         end
         
         %can be called without arg, with H5ML.id, or (dims, offset, stride)
