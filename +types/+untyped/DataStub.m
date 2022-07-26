@@ -9,22 +9,60 @@ classdef (Sealed) DataStub < handle
     end
 
     properties (SetAccess = protected)
-        filename;
         path;
     end
     
     properties (Dependent, SetAccess = private)
+        filename;
         dims;
         ndims;
         dataType;
     end
     
     methods
-        function obj = DataStub(filename, path)
-            obj.filename = filename;
-            obj.fileId = H5F.open(obj.filename);
-            obj.path = path;
-            obj.datasetId = H5D.open(obj.fileId, obj.path);
+        function obj = DataStub(varargin)
+            p = inputParser;
+            p.addParameter('filename', '', @(f)validateattributes(f, {'char'}, {'scalartext'}));
+            p.addParameter('path', '', @(f)validateattributes(f, {'char'}, {'scalartext'}));
+            p.addParameter('fileId', []);
+            p.addParameter('datasetId', []);
+            p.parse(varargin{:});
+
+            isFileIdSet = ~any(strcmp(p.UsingDefaults, 'fileId'));
+            isFileNameSet = ~any(strcmp(p.UsingDefaults, 'filename'));
+            if isFileIdSet
+                obj.fileId = p.Results.fileId;
+            end
+
+            if isFileNameSet
+                if isFileIdSet
+                    warning('MatNwb:DataStub:IgnoredOptionalArgument', ...
+                        'File ID was already set. Ignoring File name.');
+                else
+                    obj.fileId = H5F.open(obj.filename);
+                end
+            end
+
+            assert(xor(isFileNameSet, isFileIdSet), ...
+                'MatNwb:DataStub:MissingRequiredArgument', ...
+                'Creating a DataStub requires either a file name or a file id.');
+
+            isDatasetIdSet = ~any(strcmp(p.UsingDefaults, 'datasetId'));
+            isPathSet = ~any(strcmp(p.UsingDefaults, 'path'));
+            if isDatasetIdSet
+                obj.datasetId = p.Results.datasetId;
+                obj.path = H5I.get_name(obj.datasetId);
+            end
+
+            if isPathSet
+                if isDatasetIdSet
+                    warning('MatNwb:DataStub:IgnoredOptionalArguments', ...
+                        ['The Dataset ID has already been set. The `path` ' ...
+                        'argument will be overwritten.']);
+                else
+                    obj.path = p.Results.path;
+                end
+            end
         end
 
         function delete(obj)
@@ -41,6 +79,10 @@ classdef (Sealed) DataStub < handle
             [~, h5_dims, ~] = H5S.get_simple_extent_dims(sid);
             dims = fliplr(h5_dims);
             H5S.close(sid);
+        end
+
+        function fnm = get.filename(obj)
+            fnm = H5F.get_name(obj.fileId);
         end
         
         function nd = get.ndims(obj)
