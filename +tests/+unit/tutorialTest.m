@@ -19,8 +19,7 @@ end
 function testTutorials(testCase)
 skippedTutorials = {...
     'basicUsage.mlx', ...
-    'convertTrials.m', ...
-    'dynamically_loaded_filters.mlx'};
+    'convertTrials.m'};
 for i = 1:length(testCase.TestData.listing)
     listing = testCase.TestData.listing(i);
     if listing.isdir || any(strcmp(skippedTutorials, listing.name))
