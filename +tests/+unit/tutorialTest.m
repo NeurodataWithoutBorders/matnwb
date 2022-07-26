@@ -25,6 +25,7 @@ for i = 1:length(testCase.TestData.listing)
     if listing.isdir || any(strcmp(skippedTutorials, listing.name))
         continue;
     end
+    fprintf('Running %s\n', listing.name);
     run(listing.name);
 end
 end
