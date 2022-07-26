@@ -6,7 +6,7 @@ function setupOnce(testCase)
 rootPath = fullfile(fileparts(mfilename('fullpath')), '..', '..');
 testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
 tutorialPath = fullfile(rootPath, 'tutorials');
-testCase.TestData.path = tutorialPath;
+addpath(tutorialPath);
 testCase.TestData.listing = dir(tutorialPath);
 end
 
@@ -25,6 +25,6 @@ for i = 1:length(testCase.TestData.listing)
     if listing.isdir || any(strcmp(skippedTutorials, listing.name))
         continue;
     end
-    run(fullfile(listing.folder, listing.name));
+    run(listing.name);
 end
 end
