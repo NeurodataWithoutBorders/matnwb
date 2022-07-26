@@ -19,13 +19,13 @@ end
 function testTutorials(testCase)
 skippedTutorials = {...
     'basicUsage.mlx', ...
-    'convertTrials.m'};
+    'convertTrials.m', ...
+    'formatStruct.m'};
 for i = 1:length(testCase.TestData.listing)
     listing = testCase.TestData.listing(i);
     if listing.isdir || any(strcmp(skippedTutorials, listing.name))
         continue;
     end
-    fprintf('Running %s\n', listing.name);
     run(listing.name);
 end
 end
