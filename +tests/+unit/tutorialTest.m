@@ -10,6 +10,12 @@ testCase.TestData.path = tutorialPath;
 testCase.TestData.listing = dir(tutorialPath);
 end
 
+function setup(testCase)
+testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
+generateCore('savedir', '.');
+rehash();
+end
+
 function testTutorials(testCase)
 skippedTutorials = {...
     'basicUsage.mlx', ...
