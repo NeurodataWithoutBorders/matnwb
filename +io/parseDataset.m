@@ -22,7 +22,6 @@ end
 
 % loading h5t references are required
 % unfortunately also a bottleneck
-isIdCached = false;
 if strcmp(datatype.Class, 'H5T_REFERENCE')
     tid = H5D.get_type(did);
     data = io.parseReference(did, tid, H5D.read(did));
@@ -57,8 +56,9 @@ else
     elseif any(dataspace.Size == 0)
         data = [];
     else
-        isIdCached = true;
-        data = types.untyped.DataStub('fileId', fid, 'datasetId', did);
+        dataStubFileId = H5F.reopen(fid);
+        data = types.untyped.DataStub('fileId', dataStubFileId, ...
+            'datasetId', H5D.open(dataStubFileId, fullpath));
     end
     H5T.close(tid);
     H5P.close(pid);
@@ -73,8 +73,7 @@ else
     kwargs = io.map2kwargs(props);
     parsed = eval([Type.typename '(kwargs{:})']);
 end
-if ~isIdCached
-    H5D.close(did);
-    H5F.close(fid);
-end
+
+H5D.close(did);
+H5F.close(fid);
 end
