@@ -39,7 +39,7 @@ classdef (Sealed) DataStub < handle
                     warning('MatNwb:DataStub:IgnoredOptionalArgument', ...
                         'File ID was already set. Ignoring File name.');
                 else
-                    obj.fileId = H5F.open(obj.filename);
+                    obj.fileId = H5F.open(p.Results.filename);
                 end
             end
 
@@ -61,13 +61,18 @@ classdef (Sealed) DataStub < handle
                         'argument will be overwritten.']);
                 else
                     obj.path = p.Results.path;
+                    obj.datasetId = H5D.open(obj.fileId, obj.path);
                 end
             end
         end
 
         function delete(obj)
-            H5D.close(obj.datasetId);
-            H5F.close(obj.fileId);
+            if ~isempty(obj.datasetId)
+                H5D.close(obj.datasetId);
+            end
+            if ~isempty(obj.fileId)
+                H5F.close(obj.fileId);
+            end
         end
         
         function sid = get_space(obj)
