@@ -22,8 +22,10 @@ classdef (Sealed) DataStub < handle
     methods
         function obj = DataStub(varargin)
             p = inputParser;
-            p.addParameter('filename', '', @(f)validateattributes(f, {'char'}, {'scalartext'}));
-            p.addParameter('path', '', @(f)validateattributes(f, {'char'}, {'scalartext'}));
+            p.addParameter('filename', '', ...
+                @(f)validateattributes(f, {'string', 'char'}, {'scalartext'}));
+            p.addParameter('path', '', ...
+                @(f)validateattributes(f, {'string', 'char'}, {'scalartext'}));
             p.addParameter('fileId', []);
             p.addParameter('datasetId', []);
             p.parse(varargin{:});
