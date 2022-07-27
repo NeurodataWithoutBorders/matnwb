@@ -22,7 +22,7 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
             import types.untyped.datapipe.Configuration;
             import types.untyped.datapipe.properties.*;
             
-            obj.stub = types.untyped.DataStub(filename, path);
+            obj.stub = types.untyped.DataStub('filename', filename, 'path', path);
             
             sid = obj.stub.get_space();
             [~, h5_dims, h5_maxdims] = H5S.get_simple_extent_dims(sid);
