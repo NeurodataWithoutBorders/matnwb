@@ -156,6 +156,8 @@ This package reads and writes NWB:N 2.0 files and does not support older formats
 >Li, Daie, Svoboda, Druckman (2016); Data and simulations related to: Robust neuronal dynamics in premotor cortex during motor planning. Li, Daie, Svoboda, Druckman, Nature. CRCNS.org
 http://dx.doi.org/10.6080/K0RB72JW
 
+Analysis examples will be added in the [dandi-example-live-scripts repo](https://github.com/NeurodataWithoutBorders/dandi-example-live-scripts)
+
 ## Third-party Support
 The `+contrib` folder contains tools for converting from other common data formats/specifications to NWB. Currently supported data types are TDT, MWorks, and Blackrock. We are interested in expanding this section to other data specifications and would greatly value your contribution!
 
