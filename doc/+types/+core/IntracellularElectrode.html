@@ -3,13 +3,13 @@
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
    
       <link rel="stylesheet" href="../../helpwin.css">
-      <title>types.core.IntracellularElectrode - MATLAB File Help</title>
+      <title>MATLAB File Help: types.core.IntracellularElectrode</title>
    </head>
    <body>
       <!--Single-page help-->
       <table border="0" cellspacing="0" width="100%">
          <tr class="subheader">
-            <td class="headertitle">types.core.IntracellularElectrode - MATLAB File Help</td>
+            <td class="headertitle">MATLAB File Help: types.core.IntracellularElectrode</td>
             
             
             
@@ -47,38 +47,42 @@
       </div>
       <table class="summary-list">
          <tr class="summary-item">
+            <td class="name">cell_id</td>
+            <td class="m-help">(char) unique ID of the cell&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
             <td class="name">description</td>
-            <td class="m-help">REQUIRED ((char) ) Description of electrode (e.g.,  whole-cell, sharp, etc.).&nbsp;</td>
+            <td class="m-help">REQUIRED (char) Description of electrode (e.g.,  whole-cell, sharp, etc.).&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">device</td>
-            <td class="m-help">REQUIRED (Device) &nbsp;</td>
+            <td class="m-help">REQUIRED Device&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">filtering</td>
-            <td class="m-help">OPTIONAL ((char) ) Electrode specific filtering.&nbsp;</td>
+            <td class="m-help">(char) Electrode specific filtering.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">initial_access_resistance</td>
-            <td class="m-help">OPTIONAL ((char) ) Initial access resistance.&nbsp;</td>
+            <td class="m-help">(char) Initial access resistance.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">location</td>
-            <td class="m-help">OPTIONAL ((char) ) Location of the electrode. Specify the area, layer, comments on estimation of area/layer, stereotaxic coordinates
-               if in vivo, etc. Use standard atlas names for anatomical regions when possible.&nbsp;
+            <td class="m-help">(char) Location of the electrode. Specify the area, layer, comments on estimation of area/layer, stereotaxic coordinates if
+               in vivo, etc. Use standard atlas names for anatomical regions when possible.&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">resistance</td>
-            <td class="m-help">OPTIONAL ((char) ) Electrode resistance, in ohms.&nbsp;</td>
+            <td class="m-help">(char) Electrode resistance, in ohms.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">seal</td>
-            <td class="m-help">OPTIONAL ((char) ) Information about seal used for recording.&nbsp;</td>
+            <td class="m-help">(char) Information about seal used for recording.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">slice</td>
-            <td class="m-help">OPTIONAL ((char) ) Information about slice used for recording.&nbsp;</td>
+            <td class="m-help">(char) Information about slice used for recording.&nbsp;</td>
          </tr>
       </table>
       <!--Methods-->
@@ -170,14 +174,6 @@
                &nbsp;
                
             </td>
-            <td class="name">listener</td>
-            <td class="m-help">Add listener for event without binding the listener to the source object.&nbsp;</td>
-         </tr>
-         <tr class="summary-item">
-            <td class="attributes">
-               &nbsp;
-               
-            </td>
             <td class="name">loadAll</td>
             <td class="m-help">&nbsp;</td>
          </tr>
@@ -204,6 +200,14 @@
             </td>
             <td class="name">notify</td>
             <td class="m-help">Notify listeners of event.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_cell_id</td>
+            <td class="m-help">&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="attributes">
