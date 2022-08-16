@@ -1,4 +1,4 @@
-function typeSize = getMatSize(type)
+function typeSize = getMatTypeSize(type)
 %GETMATSIZE Summary of this function goes here
 %   Detailed explanation goes here
 switch (type)
