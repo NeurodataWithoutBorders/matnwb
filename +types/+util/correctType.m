@@ -15,7 +15,6 @@ integralTypes = {'long', 'int64', 'int', 'int32', 'short', 'int16', 'int8', ...
     'uint64', 'uint32', 'uint16', 'uint8', 'numeric'};
 logicalTypes = 'bool';
 
-isValStringType = 
 switch type
     case [unicodeTypes asciiTypes]
         assert(isstring(val) || ischar(val) || iscellstr(val), ...
