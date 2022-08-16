@@ -7,7 +7,7 @@ invalidConversionErrorId = 'MatNWB:TypeCorrection:InvalidConversion';
 invalidConversionErrorMessage = sprintf( ...
     'Value of type `%s` cannot be converted to type `%s`.', class(val), type);
 
-unicodeTypes = {'text', 'utf', 'utf8', 'utf-8'};
+unicodeTypes = {'text', 'utf', 'utf8', 'utf-8', 'char'};
 asciiTypes = {'ascii', 'bytes'};
 dateTypes = {'isodatetime', 'datetime'};
 floatingPointTypes = {'float', 'float32', 'double', 'float64'};
