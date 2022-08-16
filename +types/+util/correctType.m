@@ -7,35 +7,33 @@ invalidConversionErrorId = 'MatNWB:TypeCorrection:InvalidConversion';
 invalidConversionErrorMessage = sprintf( ...
     'Value of type `%s` cannot be converted to type `%s`.', class(val), type);
 
-unicodeTypes = {'text', 'utf', 'utf8', 'utf-8', 'char'};
-asciiTypes = {'ascii', 'bytes'};
-dateTypes = {'isodatetime', 'datetime'};
-floatingPointTypes = {'float', 'float32', 'double', 'float64'};
-integralTypes = {'long', 'int64', 'int', 'int32', 'short', 'int16', 'int8', ...
-    'uint64', 'uint32', 'uint16', 'uint8', 'numeric'};
-logicalTypes = 'bool';
-
 switch type
-    case [unicodeTypes asciiTypes]
+    case 'char'
         assert(isstring(val) || ischar(val) || iscellstr(val), ...
             invalidConversionErrorId, ...
             invalidConversionErrorMessage);
-    case dateTypes
+    case 'datetime'
+        isHeterogeneousCell = iscell(val) ...
+            && all(...
+            cellfun('isclass', val, 'char') ...
+            | cellfun('isclass', val, 'string')...
+            | cellfun('isclass', val, 'datetime'));
         assert(ischar(val)...
-            || iscellstr(val)...
             || isdatetime(val) ...
-            || isstring(val), ...
+            || isstring(val) ...
+            || isHeterogeneousCell, ...
             invalidConversionErrorId, invalidConversionErrorMessage);
 
         % convert strings to datetimes
-        if ischar(val) || iscellstr(val) || isstring(val)
+        if ischar(val) || isstring(val) || iscell(val)
             val = str2dates(val);
         end
 
         % coerce time zone and specific output format.
         val.TimeZone = 'local';
         val.Format = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSSZZZZZ';
-    case [floatingPointTypes integralTypes]
+    case {'single', 'double', 'int64', 'int32', 'int16', 'int8', 'uint64', ...
+            'uint32', 'uint16', 'uint8'}
         assert(ischar(val) ...
             || iscellstr(val) ...
             || isstring(val) ...
@@ -60,8 +58,8 @@ switch type
             warning(dataLossWarnId, dataLossWarnMessageFormat, ...
                 class(val), type);
         end
-        val = cast(val, nwb2MatlabNumericType(type));
-    case logicalTypes
+        val = cast(val, type);
+    case 'logical'
         val = logical(val);
     otherwise % type may refer to an object or even a link
         assert(isa(val, type), ...
@@ -74,53 +72,29 @@ function tf = getIsNumericDowncastingNeeded(val, type)
 validateattributes(val, {'numeric'}, {});
 validateattributes(type, {'char'}, {'scalartext'});
 
-type = nwb2MatlabNumericType(type);
 isTypeFloat = any(strcmp(type, {'single', 'double'}));
-typeSize = io.getMatTypeSize(nwb2MatlabNumericType(type));
-valTypeSize = io.getMatTypeSize(class(val));
 
-isTypeUnsigned = any(strcmp(type, ...
-    {'uint8', 'uint16', 'uint32', 'uint64'}));
-
-tf = (~isfloat(val) && isTypeFloat)...
-    || (isTypeUnsigned && typeSize < valTypeSize)...
-    || (~isTypeUnsigned && typeSize <= valTypeSize);
+if isTypeFloat
+    flatVal = val(:);
+    isOutOfRange = any(flatVal > realmax(type))...
+        || any(flatVal < -realmax(type))...
+        || (any(flatVal(flatVal < 0) > -realmin(type)))...
+        || any(flatVal(flatVal > 0) < realmin(type));
+else
+    isOutOfRange = any(val(:) > intmax(type))...
+        || any(val(:) < intmin(type));
 end
 
-function matTypeStr = nwb2MatlabNumericType(type)
-%nwb2MatNumericType given NWB spec language numeric type, converts to its
-%equivalent in MATLAB format.
-switch type
-    case {'float', 'float32'}
-        matTypeStr = 'single';
-    case {'double', 'float64'}
-        matTypeStr = 'double';
-    case {'long', 'int64'}
-        matTypeStr = 'int64';
-    case {'int', 'int32'}
-        matTypeStr = 'int32';
-    case {'short', 'int16'}
-        matTypeStr = 'int16';
-    case {'int8'}
-        matTypeStr = 'int8';
-    case {'uint64'}
-        matTypeStr = 'uint64';
-    case {'uint32'}
-        matTypeStr = 'uint32';
-    case {'uint16'}
-        matTypeStr = 'uint16';
-    case {'uint8'}
-        matTypeStr = 'uint8';
-    otherwise
-        error('MatNWB:NumericTypeMapping:InvalidMapping', ...
-            'Encountered unknown nwb specification type `%s`.', type);
-end
+isRoundDropping = any(round(val(:)) ~= val(:));
+
+tf = (isfloat(val) && ~isTypeFloat && isRoundDropping)...
+    || isOutOfRange;
 end
 
 function dt = str2dates(strings)
-%STR2DATES converts a string array, character matrix, or cell array of
-%   character vectors to a formatted date vector. Assumes type is one of
-%   the above.
+%STR2DATES converts a string array, character matrix, or cell array of 
+% convertible types to a formatted date vector. Assumes type is one of the 
+% above.
 
 if ischar(strings)
     % split character matrix by row.
@@ -131,7 +105,11 @@ end
 
 datevals = cell(size(strings));
 for i = 1:length(strings)
-    datevals{i} = datetime8601(strtrim(strings{i}));
+    if isdatetime(strings{i})
+        datevals{i} = strings{i};
+    else
+        datevals{i} = datetime8601(strtrim(strings{i}));
+    end
 end
 dt = [datevals{:}];
 end
