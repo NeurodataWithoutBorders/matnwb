@@ -1,6 +1,4 @@
 classdef DynamicFilter < types.untyped.datapipe.Property
-    %DYNAMIC Summary of this class goes here
-    %   Detailed explanation goes here
 
     properties (SetAccess = private)
         dynamicFilter;

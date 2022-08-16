@@ -3,20 +3,20 @@
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
    
       <link rel="stylesheet" href="../../helpwin.css">
-      <title>types.core.Images - MATLAB File Help</title>
+      <title>MATLAB File Help: types.core.Images</title>
    </head>
    <body>
       <!--Single-page help-->
       <table border="0" cellspacing="0" width="100%">
          <tr class="subheader">
-            <td class="headertitle">types.core.Images - MATLAB File Help</td>
+            <td class="headertitle">MATLAB File Help: types.core.Images</td>
             
             
             
          </tr>
       </table>
       <div class="title">types.core.Images</div>
-      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">Images</span> A collection of images.</pre></div><!--after help -->
+      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">Images</span> A collection of images with an optional way to specify the order of the images using the "order_of_images" dataset. An order must be specified if the images are referenced by index, e.g., from an IndexSeries.</pre></div><!--after help -->
       <!--Class-->
       <div class="sectiontitle">Class Details</div>
       <table class="class-details">
@@ -53,6 +53,12 @@
          <tr class="summary-item">
             <td class="name">image</td>
             <td class="m-help">REQUIRED (Image) Images stored in this collection.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name">order_of_images</td>
+            <td class="m-help">(ImageReferences) Ordered dataset of references to Image objects stored in the parent group. Each Image object in the Images
+               group should be stored once and only once, so the dataset should have the same length as the number of images.&nbsp;
+            </td>
          </tr>
       </table>
       <!--Methods-->
@@ -144,14 +150,6 @@
                &nbsp;
                
             </td>
-            <td class="name">listener</td>
-            <td class="m-help">Add listener for event without binding the listener to the source object.&nbsp;</td>
-         </tr>
-         <tr class="summary-item">
-            <td class="attributes">
-               &nbsp;
-               
-            </td>
             <td class="name">loadAll</td>
             <td class="m-help">&nbsp;</td>
          </tr>
@@ -193,6 +191,14 @@
                
             </td>
             <td class="name">validate_image</td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">validate_order_of_images</td>
             <td class="m-help">&nbsp;</td>
          </tr>
       </table>

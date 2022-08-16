@@ -3,13 +3,13 @@
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
    
       <link rel="stylesheet" href="../../helpwin.css">
-      <title>types.core.EventDetection - MATLAB File Help</title>
+      <title>MATLAB File Help: types.core.EventDetection</title>
    </head>
    <body>
       <!--Single-page help-->
       <table border="0" cellspacing="0" width="100%">
          <tr class="subheader">
-            <td class="headertitle">types.core.EventDetection - MATLAB File Help</td>
+            <td class="headertitle">MATLAB File Help: types.core.EventDetection</td>
             
             
             
@@ -48,28 +48,28 @@
       <table class="summary-list">
          <tr class="summary-item">
             <td class="name">detection_method</td>
-            <td class="m-help">REQUIRED ((char) ) Description of how events were detected, such as voltage threshold, or dV/dT threshold, as well as relevant
+            <td class="m-help">REQUIRED (char) Description of how events were detected, such as voltage threshold, or dV/dT threshold, as well as relevant
                values.&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">source_electricalseries</td>
-            <td class="m-help">REQUIRED (ElectricalSeries) &nbsp;</td>
+            <td class="m-help">REQUIRED ElectricalSeries&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">source_idx</td>
-            <td class="m-help">REQUIRED ((int32) ) Indices (zero-based) into source ElectricalSeries::data array corresponding to time of event. ''description''
+            <td class="m-help">REQUIRED (int32) Indices (zero-based) into source ElectricalSeries::data array corresponding to time of event. ''description''
                should define what is meant by time of event (e.g., .25 ms before action potential peak, zero-crossing time, etc). The index
                points to each event from the raw data.&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">times</td>
-            <td class="m-help">REQUIRED ((float64) ) Timestamps of events, in seconds.&nbsp;</td>
+            <td class="m-help">REQUIRED (float64) Timestamps of events, in seconds.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">times_unit</td>
-            <td class="m-help">OPTIONAL (char) Unit of measurement for event times, which is fixed to 'seconds'.&nbsp;</td>
+            <td class="m-help">(char) Unit of measurement for event times, which is fixed to 'seconds'.&nbsp;</td>
          </tr>
       </table>
       <!--Methods-->
@@ -155,14 +155,6 @@
             </td>
             <td class="name">le</td>
             <td class="m-help"><= (LE)   Less than or equal relation for handles.&nbsp;</td>
-         </tr>
-         <tr class="summary-item">
-            <td class="attributes">
-               &nbsp;
-               
-            </td>
-            <td class="name">listener</td>
-            <td class="m-help">Add listener for event without binding the listener to the source object.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="attributes">
