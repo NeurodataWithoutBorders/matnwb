@@ -54,11 +54,34 @@ switch type
         if strcmp(type, 'numeric')
             return;
         end
-        if getIsNumericDowncastingNeeded(val, type)
+
+        isTypeFloat = any(strcmp(type, {'single', 'double'}));
+        if isfloat(val) && ~isTypeFloat && any(round(val(:)) ~= val(:))
+            % check if dropping the float drops data.
             warning(dataLossWarnId, dataLossWarnMessageFormat, ...
                 class(val), type);
         end
-        val = cast(val, type);
+
+        if isTypeFloat
+            flatVal = val(:);
+            isOutOfBounds = any(flatVal > realmax(type))...
+                || any(flatVal < -realmax(type))...
+                || any(flatVal(flatVal < 0) > -realmin(type))...
+                || any(flatVal(flatVal > 0) < realmin(type));
+        else
+            isOutOfBounds = any(val(:) > intmax(type))...
+                || any(val(:) < intmin(type));
+        end
+
+        if ~isOutOfBounds
+            val = cast(val, type);
+        elseif xor(isfloat(val), isTypeFloat)
+            if isTypeFloat
+                val = double(val);
+            else
+                val = cast(val, getNearestIntegralType(val, type));
+            end
+        end
     case 'logical'
         val = logical(val);
     otherwise % type may refer to an object or even a link
@@ -68,27 +91,32 @@ switch type
 end
 end
 
-function tf = getIsNumericDowncastingNeeded(val, type)
-validateattributes(val, {'numeric'}, {});
-validateattributes(type, {'char'}, {'scalartext'});
-
-isTypeFloat = any(strcmp(type, {'single', 'double'}));
-
-if isTypeFloat
-    flatVal = val(:);
-    isOutOfRange = any(flatVal > realmax(type))...
-        || any(flatVal < -realmax(type))...
-        || (any(flatVal(flatVal < 0) > -realmin(type)))...
-        || any(flatVal(flatVal > 0) < realmin(type));
+function integralType = getNearestIntegralType(val, type)
+assert(startsWith(type, 'uint') || startsWith(type, 'int'), ...
+    'type should be an integral type here (uintx, intx, etc.).');
+assert(all(val(:) >= 0) || ~startsWith(type, 'u'), ...
+    'MatNWB:TypeCorrection:CannotConvertSignage', ...
+    ['Provided value contains negative values and would be ' ...
+    'lost on conversion to type `%s`'], type);
+typeMatches = regexp(type, 'u?int(?<typeBitSize>\d+)', 'names', 'once');
+typeBitSize = str2double(typeMatches.typeBitSize);
+bitSizes = [8, 16, 32, 64];
+bitSizeStart = find(bitSizes == typeBitSize, 1);
+if startsWith(type, 'u')
+    matchTypePrefix = 'uint';
 else
-    isOutOfRange = any(val(:) > intmax(type))...
-        || any(val(:) < intmin(type));
+    matchTypePrefix = 'int';
 end
-
-isRoundDropping = any(round(val(:)) ~= val(:));
-
-tf = (isfloat(val) && ~isTypeFloat && isRoundDropping)...
-    || isOutOfRange;
+for iBitSize=bitSizeStart:length(bitSizes)
+    bitSize = bitSizes(iBitSize);
+    matchType = sprintf('%s%d', matchTypePrefix, bitSize);
+    if all(val(:) <= intmax(matchType)) && all(val(:) >= intmin(matchType))
+        integralType = matchType;
+        return;
+    end
+end
+error('MatNWB:TypeCorrection:CannotConvertType', ...
+    'Failed to find nearest integer type to satisfy value of type `%s`.', class(val));
 end
 
 function dt = str2dates(strings)
