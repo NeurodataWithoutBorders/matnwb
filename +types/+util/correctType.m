@@ -76,7 +76,7 @@ validateattributes(type, {'char'}, {'scalartext'});
 
 type = nwb2MatlabNumericType(type);
 isTypeFloat = any(strcmp(type, {'single', 'double'}));
-typeSize = io.getMatTypesSize(nwb2matNumerictype(type));
+typeSize = io.getMatTypeSize(nwb2MatlabNumericType(type));
 valTypeSize = io.getMatTypeSize(class(val));
 
 isTypeUnsigned = any(strcmp(type, ...
