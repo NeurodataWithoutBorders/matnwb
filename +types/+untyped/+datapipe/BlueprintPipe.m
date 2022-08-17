@@ -76,6 +76,10 @@ classdef BlueprintPipe < types.untyped.datapipe.Pipe
                 obj.setPipeProperty(varargin{i});
             end
         end
+
+        function data = load(obj, varargin)
+            data = obj.data(varargin{:});
+        end
     end
     
     methods (Access = private)
@@ -89,10 +93,9 @@ classdef BlueprintPipe < types.untyped.datapipe.Pipe
     
     %% Pipe
     methods
-        function append(~, ~)
-            error('NWB:Untyped:DataPipe:Blueprint:CannotAppend',...
-                ['Blueprint Datapipes cannot be appended to.  '...
-                'Export the DataPipe to append.']);
+        function append(obj, data)
+            validateattributes(data, {obj.dataType}, {});
+            obj.data = cat(obj.axis, obj.data, data);
         end
         
         function setPipeProperty(obj, prop)

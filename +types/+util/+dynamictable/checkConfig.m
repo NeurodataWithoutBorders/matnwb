@@ -108,7 +108,11 @@ end
         if isempty(data)
             vecHeight = 0;
         elseif isa(data, 'types.untyped.DataPipe')
-            vecHeight = data.offset;
+            if data.isBound
+                vecHeight = data.offset;
+            else
+                vecHeight = size(data.internal.data, data.axis);
+            end
         elseif isa(data, 'types.untyped.DataStub')
             vecHeight = data.dims(end);
         elseif isscalar(data) && isstruct(data) % compound type (struct)

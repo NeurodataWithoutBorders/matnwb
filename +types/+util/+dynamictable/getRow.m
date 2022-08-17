@@ -109,9 +109,14 @@ if isscalar(colIndStack)
             rank = ndims(Vector.data);
         end
     end
-    selectInd = cell(1, rank);
-    selectInd(1:end-1) = {':'};
-    selectInd{end} = matInd;
+    
+    selectInd = repmat({':'}, 1, rank);
+    if isa(Vector.data, 'types.untyped.DataPipe')
+        selectInd{Vector.data.axis} = matInd;
+    else
+        selectInd{end} = matInd;
+    end
+    
     if (isstruct(Vector.data) && isscalar(Vector.data)) || istable(Vector.data)
         if istable(Vector.data)
             selected = table();
@@ -120,6 +125,7 @@ if isscalar(colIndStack)
             selected = struct();
             fields = fieldnames(Vector.data);
         end
+        
         for i = 1:length(fields)
             fieldName = fields{i};
             columnData = Vector.data.(fieldName);

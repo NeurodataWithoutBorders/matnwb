@@ -149,7 +149,7 @@ else
 
     if isa(Vector.data, 'types.untyped.DataPipe')
         Vector.data.append(data);
-        numRows = size(data, Vector.data.axis);
+        numRows = size(Vector.data, Vector.data.axis);
     else
         numRows = add2MemData(Vector, data);
     end

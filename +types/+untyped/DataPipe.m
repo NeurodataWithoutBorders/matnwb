@@ -47,6 +47,10 @@ classdef (Sealed) DataPipe < handle
         filters;
     end
 
+    properties (Dependent, SetAccess = private)
+        isBound;
+    end
+
     properties (Dependent)
         axis;
         offset;
@@ -187,6 +191,10 @@ classdef (Sealed) DataPipe < handle
         end
 
         %% SET/GET
+        function tf = get.isBound(obj)
+            tf = isa(obj.internal, 'types.untyped.datapipe.BoundPipe');
+        end
+
         function val = get.axis(obj)
             val = obj.internal.axis;
         end
@@ -259,10 +267,6 @@ classdef (Sealed) DataPipe < handle
 
         %% API
         function data = load(obj, varargin)
-            assert(isa(obj.internal, 'types.untyped.datapipe.BoundPipe'),...
-                'NWB:DataPipe:LoadingUnboundPipe',...
-                ['DataPipe must be successfully exported before DataStub '...
-                'features are allowed.']);
             data = obj.internal.load(varargin{:});
         end
 
