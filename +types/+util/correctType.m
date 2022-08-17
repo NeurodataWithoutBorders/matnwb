@@ -39,48 +39,20 @@ switch type
             || isstring(val) ...
             || isnumeric(val));
 
-        dataLossWarnId = 'MatNWB:TypeCorrection:DataLoss';
-        dataLossWarnMessageFormat = ['Converting value of type `%s` to type ' ...
-            '`%s` will require dropping data.'];
-        
         if ischar(val) || iscellstr(val) || isstring(val)
             val = str2double(val);
         end
-        if ~isreal(val)
-            warning(dataLossWarnId, dataLossWarnMessageFormat, ...
+
+        % find nearest type and convert if necessary.
+        nearestType = findNearestType(val, type);
+        if ~strcmp(nearestType, class(val))
+            castedValue = cast(val, nearestType);
+            assert(all(castedValue == val), ...
+                'MatNWB:TypeCorrection:PrecisionLossDetected', ...
+                ['Could not convert data value of type `%s` to type `%s`. ' ...
+                'Precision loss detected.'], ...
                 class(val), type);
-            val = real(val);
-        end
-        if strcmp(type, 'numeric') || strcmp(class(val), type)
-            return;
-        end
-
-        isTypeFloat = any(strcmp(type, {'single', 'double'}));
-        if isfloat(val) && ~isTypeFloat && any(round(val(:)) ~= val(:))
-            % check if dropping the float drops data.
-            warning(dataLossWarnId, dataLossWarnMessageFormat, ...
-                class(val), type);
-        end
-
-        if isTypeFloat
-            flatVal = val(:);
-            isOutOfBounds = any(flatVal > realmax(type))...
-                || any(flatVal < -realmax(type))...
-                || any(flatVal(flatVal < 0) > -realmin(type))...
-                || any(flatVal(flatVal > 0) < realmin(type));
-        else
-            isOutOfBounds = any(val(:) > intmax(type))...
-                || any(val(:) < intmin(type));
-        end
-
-        if ~isOutOfBounds
-            val = cast(val, type);
-        elseif xor(isfloat(val), isTypeFloat)
-            if isTypeFloat
-                val = double(val);
-            else
-                val = cast(val, getNearestIntegralType(val, type));
-            end
+            val = castedValue;
         end
     case 'logical'
         val = logical(val);
@@ -91,37 +63,65 @@ switch type
 end
 end
 
-function integralType = getNearestIntegralType(val, type)
-assert(startsWith(type, 'uint') || startsWith(type, 'int'), ...
-    'type should be an integral type here (uintx, intx, etc.).');
-assert(all(val(:) >= 0) || ~startsWith(type, 'u'), ...
-    'MatNWB:TypeCorrection:CannotConvertSignage', ...
-    ['Provided value contains negative values and would be ' ...
-    'lost on conversion to type `%s`'], type);
-typeMatches = regexp(type, 'u?int(?<typeBitSize>\d+)', 'names', 'once');
-typeBitSize = str2double(typeMatches.typeBitSize);
-bitSizes = [8, 16, 32, 64];
-bitSizeStart = find(bitSizes == typeBitSize, 1);
-if startsWith(type, 'u')
-    matchTypePrefix = 'uint';
-else
-    matchTypePrefix = 'int';
+function nearestType = findNearestType(val, type)
+%FINDNEARESTTYPE given a value of some type. Find the nearest equivalent
+%type whose size matches that of the preferred type but can still hold the
+%stored value.
+
+dataLossWarnId = 'MatNWB:TypeCorrection:DataLoss';
+dataLossWarnMessageFormat = ['Converting value of type `%s` to type ' ...
+    '`%s` may drop data precision.'];
+
+if ~isreal(val)
+    warning(dataLossWarnId, dataLossWarnMessageFormat, ...
+        class(val), type);
+    val = real(val);
 end
-for iBitSize=bitSizeStart:length(bitSizes)
-    bitSize = bitSizes(iBitSize);
-    matchType = sprintf('%s%d', matchTypePrefix, bitSize);
-    if all(val(:) <= intmax(matchType)) && all(val(:) >= intmin(matchType))
-        integralType = matchType;
-        return;
+
+if strcmp(type, 'numeric') || strcmp(class(val), type)
+    nearestType = class(val);
+    return;
+end
+
+isTypeFloat = any(strcmp(type, {'single', 'double'}));
+isTypeUnsigned = ~isTypeFloat && startsWith(type, 'u');
+isValueTypeUnsigned = ~isfloat(val) && startsWith(class(val), 'u');
+
+valueTypeBitSize = 8 * io.getMatTypeSize(class(val));
+preferredTypeBitSize = 8 * io.getMatTypeSize(type);
+idealTypeBitSize = max(valueTypeBitSize, preferredTypeBitSize);
+
+% In certain classes of conversion, simply scaling upwards in size resolves
+% what would otherwise be an error in conversion. For instance: conversion
+% from an "int32" type should be stored in a "double" because a "single"
+% cannot contain all "int32" values (due to the mantissa). A similar case
+% exists when converting from unsigned types to signed types ("uint32" ->
+% "int32" should actually return "int64" as it ideal type).
+if valueTypeBitSize == idealTypeBitSize ...
+    && ((isValueTypeUnsigned && ~isTypeUnsigned) ...
+        || (~isfloat(val) && isTypeFloat))
+    idealTypeBitSize = min(64, 2 * idealTypeBitSize);
+end
+
+if isTypeFloat
+    if 64 == idealTypeBitSize
+        nearestType = 'double';
+    else
+        nearestType = 'single';
     end
+else
+    if isTypeUnsigned
+        typePrefix = 'uint';
+    else
+        typePrefix = 'int';
+    end
+    nearestType = sprintf('%s%d', typePrefix, idealTypeBitSize);
 end
-error('MatNWB:TypeCorrection:CannotConvertType', ...
-    'Failed to find nearest integer type to satisfy value of type `%s`.', class(val));
 end
 
 function dt = str2dates(strings)
-%STR2DATES converts a string array, character matrix, or cell array of 
-% convertible types to a formatted date vector. Assumes type is one of the 
+%STR2DATES converts a string array, character matrix, or cell array of
+% convertible types to a formatted date vector. Assumes type is one of the
 % above.
 
 if ischar(strings)
