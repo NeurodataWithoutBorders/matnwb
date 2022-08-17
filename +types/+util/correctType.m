@@ -51,7 +51,7 @@ switch type
                 class(val), type);
             val = real(val);
         end
-        if strcmp(type, 'numeric')
+        if strcmp(type, 'numeric') || strcmp(class(val), type)
             return;
         end
 
