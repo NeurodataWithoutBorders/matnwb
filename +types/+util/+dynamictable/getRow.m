@@ -42,21 +42,21 @@ for i = 1:length(columns)
     end
 
     row{i} = select(DynamicTable, indexNames, ind);
-    if ~istable(row{i}) && 1 < size(row{i}, 2)
-        % shift dimensions of non-row vectors. otherwise will result in
-        % invalid MATLAB table with uneven column height
-        row{i} = permute(row{i},circshift(1:ndims(row{i}),1));
+
+    % transpose row vectors
+    if ~istable(row{i}) && isrow(row{i})
+        row{i} = row{i} .';
     end
-    if length(ind)==1
-        % cell-wrap single multidimensional matrices to prevent invalid
-        % MATLAB tables
-        if ~iscell(row{i}) && ~istable(row{i}) && length(row{i}) > 1
-            row{i} = {row{i}};
-        end
+
+    % cell-wrap single multidimensional matrices to prevent invalid
+    % MATLAB tables
+    if isscalar(ind) && ~iscell(row{i}) && ~istable(row{i}) && ~isscalar(row{i})
+        row{i} = row(i);
     end
+
+    % convert compound data type scalar struct into an array of
+    % structs.
     if isscalar(row{i}) && isstruct(row{i})
-        % convert compound data type scalar struct into an array of
-        % structs.
         structNames = fieldnames(row{i});
         scalarStruct = row{i};
         rowStruct = row{i}; % same as scalarStruct to maintain the field names.
@@ -133,6 +133,13 @@ if isscalar(colIndStack)
         end
     else
         selected = Vector.data(selectInd{:});
+    end
+
+    % shift dimensions of non-row vectors. otherwise will result in
+    % invalid MATLAB table with uneven column height
+    if isa(Vector.data, 'types.untyped.DataPipe')
+        selected = permute(selected, ...
+            circshift(1:ndims(selected), -(Vector.data.axis-1)));
     end
 else
     assert(isa(Vector, 'types.hdmf_common.VectorIndex') || isa(Vector, 'types.core.VectorIndex'),...
