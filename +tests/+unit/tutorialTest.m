@@ -8,12 +8,17 @@ testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
 tutorialPath = fullfile(rootPath, 'tutorials');
 addpath(tutorialPath);
 testCase.TestData.listing = dir(tutorialPath);
+echo('off');
 end
 
 function setup(testCase)
 testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
 generateCore('savedir', '.');
 rehash();
+end
+
+function teardownOnce(testCase)
+echo('on');
 end
 
 function testTutorials(testCase)
