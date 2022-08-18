@@ -56,8 +56,7 @@ classdef Dataset < handle
             
             dataTypeKey = 'dtype';
             if isKey(source, dataTypeKey)
-                dataType = source(dataTypeKey);
-                obj.dtype = file.mapType(dataType);
+                obj.dtype = file.mapType(source(dataTypeKey));
             end
             
             if isKey(source, 'quantity')

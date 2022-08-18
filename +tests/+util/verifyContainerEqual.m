@@ -38,7 +38,7 @@ for i = 1:numel(props)
         % linux MATLAB doesn't appear to propery compare datetimes whereas
         % Windows MATLAB does. This is a workaround to get tests to work
         % while getting close enough to exact date representation.
-        actualVal = types.util.checkDtype(prop, 'isodatetime', actualVal);
+        actualVal = types.util.checkDtype(prop, 'datetime', actualVal);
         if ~iscell(expectedVal)
             expectedVal = {expectedVal};
         end

@@ -9,6 +9,7 @@ if isempty(WHITELIST)
         };
 end
 
+%% compound type processing
 if isstruct(type)
     names = fieldnames(type);
     assert(isstruct(val) || istable(val) || isa(val, 'containers.Map'), ...
@@ -41,7 +42,7 @@ if isstruct(type)
         pnm = names{i};
         subnm = [name '.' pnm];
         typenm = type.(pnm);
-        
+
         if (isstruct(val) && isscalar(val)) || istable(val)
             val.(pnm) = types.util.checkDtype(subnm,typenm,val.(pnm));
         elseif isstruct(val)
@@ -59,190 +60,56 @@ if isstruct(type)
             val(names{i}) = types.util.checkDtype(subnm,typenm,val(names{i}));
         end
     end
-else
-    errid = 'NWB:CheckDType:InvalidType';
-    errmsg = ['Property `' name '` must be a ' type '.'];
-    if isempty(val)
-        return;
-    end
-    
-    if isa(val, 'types.untyped.DataStub')
-        %grab first element and check
-        truval = val;
-        if any(val.dims == 0)
-            val = [];
-        else
-            val = val.load(1);
-        end
-    elseif isa(val, 'types.untyped.Anon')
-        truval = val;
-        val = val.value;
-    elseif isa(val, 'types.untyped.ExternalLink') &&...
-            ~strcmp(type, 'types.untyped.ExternalLink')
-        truval = val;
-        val = val.deref();
-    elseif isa(val, 'types.untyped.DataPipe')
-        truval = val;
-        val = cast([], val.dataType);
+    return;
+end
+
+
+%% primitives
+if isempty(val) ... % MATLAB's "null" operator. Even if it's numeric, you can replace it with any class.
+        || isa(val, 'types.untyped.SoftLink') % Softlinks cannot be validated at this level.
+    return;
+end
+
+% retrieve sample of val
+if isa(val, 'types.untyped.DataStub')
+    %grab first element and check
+    valueWrapper = val;
+    if any(val.dims == 0)
+        val = [];
     else
-        truval = [];
+        val = val.load(1);
     end
-    
-    if any(strcmpi(type, {'single' 'double' 'logical' 'numeric'})) ||...
-            startsWith(type, {'int' 'uint' 'float'})
-        if isa(val, 'types.untyped.SoftLink')
-            % derefing through softlink would require writing and/or the root NwbFile object
-            return;
-        end
-        
-        if isa(truval, 'types.untyped.ExternalLink')
-            assert(any(strcmp('data', properties(val))), errid, errmsg);
-            val = val.data;
-            if isa(val, 'types.untyped.DataStub')
-                val = val.load(1);
-            end
-            
-            if ~isa(val, type)
-                warning(errid,...
-                    'Externally Linked Numeric Property `%s` is not of type `%s` (actual type is `%s`).',...
-                    name, type, class(val));
-            end
-        else
-            val = types.util.correctType(val, type);
-        end
-    elseif strcmp(type, 'isodatetime')
-        assert(ischar(val)...
-            || iscellstr(val)...
-            || isdatetime(val) ...
-            || (iscell(val) && all(cellfun('isclass', val, 'datetime'))),...
-            errid, errmsg);
-        if ischar(val) || iscellstr(val)
-            if ischar(val)
-                val = mat2cell(val, ones(1, size(val,1)));
-            end
-            
-            datevals = cell(size(val));
-            for i = 1:length(val)
-                datevals{i} = datetime8601(strtrim(val{i}));
-            end
-            val = datevals;
-        end
-        
-        if isdatetime(val)
-            val = {val};
-        end
-        
-        for i = 1:length(val)
-            if isempty(val{i}.TimeZone)
-                val{i}.TimeZone = 'local';
-            end
-            val{i}.Format = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSSZZZZZ';
-        end
-        
-        if isscalar(val)
-            val = val{1};
-        elseif isrow(val)
-            val = val .';
-        end
-    elseif strcmp(type, 'char')
-        assert(ischar(val) || iscellstr(val), errid, errmsg);
-    else %class, ref, or link
-        
-        noncell = false;
-        if ~iscell(val)
-            val = {val};
-            noncell = true;
-        end
-        for i=1:length(val)
-            subval = val{i};
-            if isempty(subval)
-                continue;
-            end
-            
-            if ~isa(subval, type) && ~any(strcmp(class(subval), WHITELIST))
-                error(errid, errmsg);
-            end
-        end
-        if noncell
-            val = val{1};
-        end
-    end
-    
-    %reset to datastub/anon
-    if ~isempty(truval)
-        val = truval;
-    end
-end
-end
-
-function dt = datetime8601(datestr)
-addpath(fullfile(fileparts(which('NwbFile')), 'external_packages', 'datenum8601'));
-[~, ~, format] = datenum8601(datestr);
-format = format{1};
-has_delimiters = format(1) == '*';
-if has_delimiters
-    format = format(2:end);
-end
-
-assert(strncmp(format, 'ymd', 3),...
-    'NWB:CheckDType:DateTime:Unsupported8601',...
-    'non-ymd formats not supported.');
-separator = format(4);
-if separator ~= ' '
-    % non-space digits will error when specifying import format
-    separator = ['''' separator ''''];
-end
-
-has_fractional_sec = isstrprop(format(8:end), 'digit');
-if has_fractional_sec
-   seconds_precision = str2double(format(8:end));
-   if seconds_precision > 9
-       warning('MatNWB:CheckDType:DateTime:LossySeconds',...
-           ['Potential loss of time data detected.  MATLAB fractional seconds '...
-           'precision is limited to 1 ns.  Extra precision will be truncated.']);
-   end
-end
-day_segments = {'yyyy', 'MM', 'dd'};
-time_segments = {'HH', 'mm', 'ss'};
-
-if has_delimiters
-    day_delimiter = '-';
-    time_delimiter = ':';
+elseif isa(val, 'types.untyped.Anon')
+    valueWrapper = val;
+    val = val.value;
+elseif isa(val, 'types.untyped.ExternalLink') &&...
+        ~strcmp(type, 'types.untyped.ExternalLink')
+    valueWrapper = val;
+    val = val.deref();
+elseif isa(val, 'types.untyped.DataPipe')
+    valueWrapper = val;
+    val = cast([], val.dataType);
 else
-    day_delimiter = '';
-    time_delimiter = '';
+    valueWrapper = [];
 end
 
-day_format = strjoin(day_segments, day_delimiter);
-time_format = strjoin(time_segments, time_delimiter);
-format = [day_format separator time_format];
-if has_fractional_sec
-    format = sprintf('%s.%s', format, repmat('S', 1, seconds_precision));
-end
-
-[datestr, timezone] = derive_timezone(datestr);
-dt = datetime(datestr,...
-    'InputFormat', format,...
-    'TimeZone', timezone);
-end
-
-function [datestr, timezone] = derive_timezone(datestr)
-% one of:
-% +-hh:mm
-% +-hhmm
-% +-hh
-% Z
-
-tzre_pattern = '(?:[+-]\d{2}(?::?\d{2})?|Z)$';
-tzre_match = regexp(datestr, tzre_pattern, 'once');
-
-if isempty(tzre_match)
-    timezone = 'local';
+correctedValue = types.util.correctType(val, type);
+% this specific conversion is fine as HDF5 doesn't have a representative
+% datetime type. Thus we suppress the warning for this case.
+isDatetimeConversion = isa(correctedValue, 'datetime')...
+    && (ischar(val) || isstring(val) || iscellstr(val));
+if ~isempty(valueWrapper) ...
+        && ~strcmp(class(correctedValue), class(val)) ...
+        && ~isDatetimeConversion
+    warning('MatNWB:CheckDataType:NeedsManualConversion',...
+            'Property `%s` is not of type `%s` and should be corrected by the user.', ...
+            name, class(correctedValue));
 else
-    timezone = datestr(tzre_match:end);
-    if strcmp(timezone, 'Z')
-        timezone = 'UTC';
-    end
-    datestr = datestr(1:(tzre_match - 1));
+    val = correctedValue;
+end
+
+% re-wrap value
+if ~isempty(valueWrapper)
+    val = valueWrapper;
 end
 end
