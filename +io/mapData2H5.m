@@ -6,6 +6,11 @@ function [tid, sid, data] = mapData2H5(fid, data, varargin)
 forceArray = any(strcmp('forceArray', varargin));
 forceChunked = any(strcmp('forceChunking', varargin));
 
+if iscell(data)
+    assert(iscellstr(data), 'NWB:MapData:NonCellStr', ['Cell arrays must be ' ...
+        'cell arrays of character vectors. Cell arrays of other types are ' ...
+        'not supported.']);
+end
 tid = io.getBaseType(class(data));
 
 % max size is always unlimited
