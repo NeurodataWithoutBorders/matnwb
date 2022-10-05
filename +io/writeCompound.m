@@ -64,6 +64,11 @@ H5T.pack(tid);
 ref_i = strcmp(classes, 'types.untyped.ObjectView') |...
     strcmp(classes, 'types.untyped.RegionView');
 
+% convert logical values
+for field = names(strcmp(classes, 'logical'))
+    data.(field{:}) = strcmp('TRUE', data.(field{:}));
+end
+
 %transpose numeric column arrays to row arrays
 % reference and str arrays are handled below
 transposeNames = names(~ref_i);

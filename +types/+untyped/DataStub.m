@@ -66,14 +66,7 @@ classdef (Sealed) DataStub < handle
                 'calling load_h5_style with a single space id is no longer supported.');
             
             data = h5read(obj.filename, obj.path, varargin{:});
-            
-            % dataset strings are defaulted to cell arrays regardless of size
-            if iscellstr(data) && isscalar(data)
-                data = data{1};
-            elseif isstring(data)
-                data = char(data);
-            end
-            
+                        
             if isstruct(data)
                 fid = H5F.open(obj.filename);
                 did = H5D.open(fid, obj.path);
@@ -84,6 +77,20 @@ classdef (Sealed) DataStub < handle
                 H5S.close(fsid);
                 H5D.close(did);
                 H5F.close(fid);
+            else
+                switch obj.dataType
+                    case 'char'
+                        % dataset strings are defaulted to cell arrays regardless of size
+                        if iscellstr(data) && isscalar(data)
+                            data = data{1};
+                        elseif isstring(data)
+                            data = char(data);
+                        end
+                    case 'logical'
+                        % data assumed to be cell array of enum string
+                        % values.
+                        data = strcmp('TRUE', data);
+                end
             end
         end
         
@@ -227,6 +234,11 @@ classdef (Sealed) DataStub < handle
             else
                 data = reorderLoadedData(data, selections);
                 data = reshape(data, expectedSize);
+            end
+
+            % convert int8 values to logical.
+            if strcmp(obj.dataType, 'logical')
+                data = logical(data);
             end
 
             function reordered = reorderLoadedData(data, selections)

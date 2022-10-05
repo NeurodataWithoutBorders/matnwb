@@ -54,8 +54,8 @@ switch class(data)
         %will throw errors if refdata DNE.  Caught at NWBData level.
         data = io.getRefData(fid, data);
     case 'logical'
-        %In HDF5, HBOOL is mapped to INT32LE
-        data = int32(data);
+        % encode as int8 values.
+        data = int8(data);
     case 'char'
         data = mat2cell(data, size(data, 1));
     case {'cell', 'datetime'}

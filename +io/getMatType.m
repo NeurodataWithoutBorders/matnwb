@@ -27,6 +27,8 @@ elseif H5T.equal(tid, 'H5T_STD_REF_OBJ')
     type = 'types.untyped.ObjectView';
 elseif H5T.equal(tid, 'H5T_STD_REF_DSETREG')
     type = 'types.untyped.RegionView';
+elseif io.isBool(tid)
+    type = 'logical';
 else
     if isa(tid, 'H5ML.id')
         identifier = tid.identifier;
