@@ -65,8 +65,9 @@ ref_i = strcmp(classes, 'types.untyped.ObjectView') |...
     strcmp(classes, 'types.untyped.RegionView');
 
 % convert logical values
-for field = names(strcmp(classes, 'logical'))
-    data.(field{:}) = strcmp('TRUE', data.(field{:}));
+boolNames = names(strcmp(classes, 'logical'));
+for iField = 1:length(boolNames)
+    data.(boolNames{iField}) = strcmp('TRUE', data.(boolNames{iField}));
 end
 
 %transpose numeric column arrays to row arrays
