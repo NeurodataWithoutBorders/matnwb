@@ -5,14 +5,14 @@ if istable(data)
 elseif isa(data, 'containers.Map')
     names = keys(data);
     vals = values(data, names);
-    
+
     s = struct();
     for i=1:length(names)
         s.(misc.str2validName(names{i})) = vals{i};
     end
     data = s;
 end
-    
+
 %convert to scalar struct
 names = fieldnames(data);
 if isempty(names)
@@ -42,7 +42,7 @@ for i=1:length(names)
         data.(names{i}) = [val{:}];
         val = val{1};
     end
-    
+
     classes{i} = class(val);
     tids{i} = io.getBaseType(classes{i});
     sizes(i) = H5T.get_size(tids{i});
@@ -87,8 +87,8 @@ for i=1:length(refNames)
 end
 
 try
-sid = H5S.create_simple(1, numrows, []);
-did = H5D.create(fid, fullpath, tid, sid, 'H5P_DEFAULT');
+    sid = H5S.create_simple(1, numrows, []);
+    did = H5D.create(fid, fullpath, tid, sid, 'H5P_DEFAULT');
 catch ME
     if contains(ME.message, 'name already exists')
         did = H5D.open(fid, fullpath);
@@ -103,8 +103,8 @@ catch ME
             if is_chunked
                 H5D.set_extent(did, dims);
             else
-                            warning('Attempted to change size of continuous compound `%s`.  Skipping.',...
-                fullpath);
+                warning('Attempted to change size of continuous compound `%s`.  Skipping.',...
+                    fullpath);
             end
         end
         H5P.close(create_plist);

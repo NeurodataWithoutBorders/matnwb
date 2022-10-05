@@ -129,8 +129,10 @@ classdef (Sealed) DataStub < handle
                     END = varargin{3};
                 end
                 validateattributes(END, {'numeric'}, {'vector', 'positive'});
-                validateattributes(START, {'numeric'}, {'vector', 'positive', 'numel', length(END)});
-                validateattributes(STRIDE, {'numeric'}, {'vector', 'positive', 'numel', length(END)});
+                validateattributes(START, {'numeric'}, ...
+                    {'vector', 'positive', 'numel', length(END)});
+                validateattributes(STRIDE, {'numeric'}, ...
+                    {'vector', 'positive', 'numel', length(END)});
                 assert(all(START <= END), 'NWB:DataStub:Load:InvalidStartIndex',...
                     'Start indices must be less than or equal to end indices.');
                 selection = cell(size(END));
@@ -165,8 +167,10 @@ classdef (Sealed) DataStub < handle
                 [points{:}] = ind2sub(dims, orderedSelection); %#ok<PROPLC>
                 readSid = H5S.copy(sid);
                 H5S.select_none(readSid);
-                H5S.select_elements(readSid, 'H5S_SELECT_SET', cell2mat(flipud(points)) - 1);
-                memSid = H5S.create_simple(length(selectionDims), selectionDims, selectionDims);
+                H5S.select_elements(readSid, 'H5S_SELECT_SET', ...
+                    cell2mat(flipud(points)) - 1);
+                memSid = H5S.create_simple(length(selectionDims), ...
+                    selectionDims, selectionDims);
             else
                 shapes = io.space.segmentSelection(varargin, dims); %#ok<PROPLC>
                 [readSid, memSid] = io.space.getReadSpace(shapes, sid);
@@ -192,7 +196,8 @@ classdef (Sealed) DataStub < handle
                 % dangling ':' where leftover dimensions are folded into
                 % the last selection.
                 selDimInd = length(varargin);
-                expectedSize = [expectedSize(1:(selDimInd-1)) prod(dims(selDimInd:end))]; %#ok<PROPLC>
+                expectedSize = [expectedSize(1:(selDimInd-1)),...
+                    prod(dims(selDimInd:end))]; %#ok<PROPLC>
             else
                 expectedSize = expectedSize(1:length(varargin));
             end
