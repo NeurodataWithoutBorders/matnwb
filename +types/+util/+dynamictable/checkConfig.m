@@ -111,13 +111,15 @@ end
             vecHeight = data.offset;
         elseif isa(data, 'types.untyped.DataStub')
             vecHeight = data.dims(end);
-        elseif isscalar(data) && isstruct(data) % compound type
+        elseif isscalar(data) && isstruct(data) % compound type (struct)
             dataFieldNames = fieldnames(data);
             if isempty(dataFieldNames)
                 vecHeight = 0;
             else
                 vecHeight = getDataHeight(data.(dataFieldNames{1}));
             end
+        elseif istable(data) % compound type (table)
+            vecHeight = height(data);
         elseif isscalar(data) || ~isvector(data)
             vecHeight = size(data, ndims(data));
         else

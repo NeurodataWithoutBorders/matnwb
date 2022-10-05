@@ -231,14 +231,15 @@ classdef (Sealed) DataStub < handle
                         data.(fieldName), selections);
                     data.(fieldName) = reshape(data.(fieldName), expectedSize);
                 end
+                data = struct2table(data);
             else
                 data = reorderLoadedData(data, selections);
                 data = reshape(data, expectedSize);
-            end
 
-            % convert int8 values to logical.
-            if strcmp(obj.dataType, 'logical')
-                data = logical(data);
+                % convert int8 values to logical.
+                if strcmp(obj.dataType, 'logical')
+                    data = logical(data);
+                end
             end
 
             function reordered = reorderLoadedData(data, selections)
