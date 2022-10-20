@@ -40,7 +40,9 @@ assert(~isa(DynamicTable.id.data, 'types.untyped.DataStub'),...
 types.util.dynamictable.checkConfig(DynamicTable);
 
 if istable(varargin{1})
-    types.util.dynamictable.addTableRow(DynamicTable, varargin{:}); 
+    error("NWB:DynamicTable", ...
+    ['Using MATLAB tables as input to the addRow DynamicTable method has '...
+    'been deprecated. Please, use key-value pairs instead']);
 else
     types.util.dynamictable.addVarargRow(DynamicTable, varargin{:});
 end

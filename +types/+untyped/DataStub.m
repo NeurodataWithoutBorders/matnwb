@@ -66,14 +66,7 @@ classdef (Sealed) DataStub < handle
                 'calling load_h5_style with a single space id is no longer supported.');
             
             data = h5read(obj.filename, obj.path, varargin{:});
-            
-            % dataset strings are defaulted to cell arrays regardless of size
-            if iscellstr(data) && isscalar(data)
-                data = data{1};
-            elseif isstring(data)
-                data = char(data);
-            end
-            
+                        
             if isstruct(data)
                 fid = H5F.open(obj.filename);
                 did = H5D.open(fid, obj.path);
@@ -84,6 +77,20 @@ classdef (Sealed) DataStub < handle
                 H5S.close(fsid);
                 H5D.close(did);
                 H5F.close(fid);
+            else
+                switch obj.dataType
+                    case 'char'
+                        % dataset strings are defaulted to cell arrays regardless of size
+                        if iscellstr(data) && isscalar(data)
+                            data = data{1};
+                        elseif isstring(data)
+                            data = char(data);
+                        end
+                    case 'logical'
+                        % data assumed to be cell array of enum string
+                        % values.
+                        data = strcmp('TRUE', data);
+                end
             end
         end
         
@@ -122,8 +129,10 @@ classdef (Sealed) DataStub < handle
                     END = varargin{3};
                 end
                 validateattributes(END, {'numeric'}, {'vector', 'positive'});
-                validateattributes(START, {'numeric'}, {'vector', 'positive', 'numel', length(END)});
-                validateattributes(STRIDE, {'numeric'}, {'vector', 'positive', 'numel', length(END)});
+                validateattributes(START, {'numeric'}, ...
+                    {'vector', 'positive', 'numel', length(END)});
+                validateattributes(STRIDE, {'numeric'}, ...
+                    {'vector', 'positive', 'numel', length(END)});
                 assert(all(START <= END), 'NWB:DataStub:Load:InvalidStartIndex',...
                     'Start indices must be less than or equal to end indices.');
                 selection = cell(size(END));
@@ -158,8 +167,10 @@ classdef (Sealed) DataStub < handle
                 [points{:}] = ind2sub(dims, orderedSelection); %#ok<PROPLC>
                 readSid = H5S.copy(sid);
                 H5S.select_none(readSid);
-                H5S.select_elements(readSid, 'H5S_SELECT_SET', cell2mat(flipud(points)) - 1);
-                memSid = H5S.create_simple(length(selectionDims), selectionDims, selectionDims);
+                H5S.select_elements(readSid, 'H5S_SELECT_SET', ...
+                    cell2mat(flipud(points)) - 1);
+                memSid = H5S.create_simple(length(selectionDims), ...
+                    selectionDims, selectionDims);
             else
                 shapes = io.space.segmentSelection(varargin, dims); %#ok<PROPLC>
                 [readSid, memSid] = io.space.getReadSpace(shapes, sid);
@@ -185,7 +196,8 @@ classdef (Sealed) DataStub < handle
                 % dangling ':' where leftover dimensions are folded into
                 % the last selection.
                 selDimInd = length(varargin);
-                expectedSize = [expectedSize(1:(selDimInd-1)) prod(dims(selDimInd:end))]; %#ok<PROPLC>
+                expectedSize = [expectedSize(1:(selDimInd-1)),...
+                    prod(dims(selDimInd:end))]; %#ok<PROPLC>
             else
                 expectedSize = expectedSize(1:length(varargin));
             end
@@ -224,9 +236,15 @@ classdef (Sealed) DataStub < handle
                         data.(fieldName), selections);
                     data.(fieldName) = reshape(data.(fieldName), expectedSize);
                 end
+                data = struct2table(data);
             else
                 data = reorderLoadedData(data, selections);
                 data = reshape(data, expectedSize);
+
+                % convert int8 values to logical.
+                if strcmp(obj.dataType, 'logical')
+                    data = logical(data);
+                end
             end
 
             function reordered = reorderLoadedData(data, selections)

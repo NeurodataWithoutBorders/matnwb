@@ -42,7 +42,7 @@ for i = 1:length(columns)
     end
 
     row{i} = select(DynamicTable, indexNames, ind);
-    if size(row{i},2)>1
+    if ~istable(row{i}) && 1 < size(row{i}, 2)
         % shift dimensions of non-row vectors. otherwise will result in
         % invalid MATLAB table with uneven column height
         row{i} = permute(row{i},circshift(1:ndims(row{i}),1));
@@ -50,7 +50,7 @@ for i = 1:length(columns)
     if length(ind)==1
         % cell-wrap single multidimensional matrices to prevent invalid
         % MATLAB tables
-        if ~iscell(row{i}) && length(row{i}) > 1
+        if ~iscell(row{i}) && ~istable(row{i}) && length(row{i}) > 1
             row{i} = {row{i}};
         end
     end
@@ -93,8 +93,7 @@ if isscalar(colIndStack)
         else
             refProp = Vector.data.internal.maxSize;
         end
-        if length(refProp) == 2 && ...
-                refProp(2) ==1
+        if length(refProp) == 2 && refProp(2) == 1
             % catch row vector
             rank = 1;
         else
@@ -104,6 +103,8 @@ if isscalar(colIndStack)
         if iscolumn(Vector.data)
             %catch row vector
             rank = 1;
+        elseif istable(Vector.data)
+            rank = 1;
         else
             rank = ndims(Vector.data);
         end
@@ -111,11 +112,16 @@ if isscalar(colIndStack)
     selectInd = cell(1, rank);
     selectInd(1:end-1) = {':'};
     selectInd{end} = matInd;
-    if isstruct(Vector.data) && isscalar(Vector.data)
-        selected = struct();
-        selectedFields = fieldnames(Vector.data);
-        for i = 1:length(selectedFields)
-            fieldName = selectedFields{i};
+    if (isstruct(Vector.data) && isscalar(Vector.data)) || istable(Vector.data)
+        if istable(Vector.data)
+            selected = table();
+            fields = Vector.data.Properties.VariableNames;
+        else
+            selected = struct();
+            fields = fieldnames(Vector.data);
+        end
+        for i = 1:length(fields)
+            fieldName = fields{i};
             columnData = Vector.data.(fieldName);
             selected.(fieldName) = columnData(selectInd{:});
         end

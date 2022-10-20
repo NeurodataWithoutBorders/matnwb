@@ -1,0 +1,12 @@
+groups:
+- neurodata_type_def: BoolContainer
+  neurodata_type_inc: NWBDataInterface
+  datasets:
+    - name: data
+      dtype: bool
+      shape:
+      - null
+  attributes:
+    - name: attribute
+      dtype: bool
+      doc: bool as attribute
