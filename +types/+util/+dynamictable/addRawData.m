@@ -165,7 +165,10 @@ else
     appendBasis = VectorData.data;
 end % determine the basis for finding the concatenation dimension.
 
-if isscalar(appendBasis) || ~isvector(appendBasis) % is scalar or matrix but not vector.
+if istable(appendBasis)
+    catDim = 1;
+    numRows = height(data);
+elseif isscalar(appendBasis) || ~isvector(appendBasis) % is scalar or matrix but not vector.
     catDim = 2;
     assert(2 >= ndims(appendBasis), 'MatNWB:DynamicTable:AddRow:InvalidShape', ...
         ['addRow does not support adding to matrices with more than 2 dimensions. ' ...

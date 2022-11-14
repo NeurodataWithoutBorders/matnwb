@@ -15,8 +15,11 @@ for i = 1:length(DynamicTable.colnames)
     else
         colVecData = DynamicTable.vectordata.get(colnm);
     end
+
     if isa(colVecData.data, 'types.untyped.DataPipe')
         colval = colVecData.data.load(1);
+    elseif istable(colVecData.data)
+        colval = colVecData.data;
     else
         colval = colVecData.data(1);
     end
