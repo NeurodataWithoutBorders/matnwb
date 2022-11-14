@@ -95,7 +95,20 @@ classdef BlueprintPipe < types.untyped.datapipe.Pipe
     methods
         function append(obj, data)
             validateattributes(data, {obj.dataType}, {});
-            obj.data = cat(obj.axis, obj.data, data);
+            if ~isscalar(obj.data) && isvector(obj.data)
+                % don't trust obj.axis if obj.data is a vector. Both are
+                % coerced to vertical arrays when bound to file.
+                % thus, to ensure consistency, we pretend that the
+                % concatenation is correct.
+                if isrow(obj.data)
+                    concatenationDimension = 2;
+                else
+                    concatenationDimension = 1;
+                end
+            else
+                concatenationDimension = obj.axis;
+            end
+            obj.data = cat(concatenationDimension, obj.data, data);
         end
         
         function setPipeProperty(obj, prop)
