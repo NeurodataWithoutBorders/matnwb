@@ -315,18 +315,3 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
         end
     end
 end
-
-function zipped = zipArrays(A,B)
-zipped = zeros((length(A)+length(B)),1);
-countA = 1;
-countB = 1;
-for i = 1:length(A)+length(B)
-    if mod(i,2)
-        zipped(i) = A(countA);
-        countA = countA+1;
-    else
-        zipped(i) = B(countB);
-        countB = countB+1;
-    end
-end
-end
