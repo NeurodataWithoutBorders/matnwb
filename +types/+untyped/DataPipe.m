@@ -281,9 +281,9 @@ classdef (Sealed) DataPipe < handle
         %% Display
         function sz = size(obj, varargin)
             if isa(obj.internal, 'types.untyped.datapipe.BoundPipe')
-                sz = obj.internal.dims;
+                sz = obj.internal.dims(varargin{:});
             elseif isa(obj.internal, 'types.untyped.datapipe.BlueprintPipe')
-                sz = size(obj.internal.data);
+                sz = size(obj.internal.data, varargin{:});
             else
                 error('NWB:DataPipe:UnhandledPipe', ['Internal Datapipe of type `%s` does not '...
                     'have a handled size() method.'], class(obj.internal));
