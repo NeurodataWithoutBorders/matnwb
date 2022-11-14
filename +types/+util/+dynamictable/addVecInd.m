@@ -5,6 +5,8 @@ vecIndName = [colName '_index']; % arbitrary convention of appending '_index' to
 
 if isprop(DynamicTable, colName)
     VecData = DynamicTable.(colName);
+elseif isprop(DynamicTable, 'vectorindex') && isKey(DynamicTable.vectorindex.map, colName)
+    VecData = DynamicTable.vectorindex.get(colName);
 else
     VecData = DynamicTable.vectordata.get(colName);
 end
