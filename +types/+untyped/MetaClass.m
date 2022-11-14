@@ -32,8 +32,8 @@ classdef MetaClass < handle
         
         function refs = capture_ref_errors(~, ME, fullpath, refs)
             if any(strcmp(ME.identifier, {...
-                    'MatNWB:getRefData:InvalidPath',...
-                    'MatNWB:ObjectView:MissingPath'}))
+                    'NWB:getRefData:InvalidPath',...
+                    'NWB:ObjectView:MissingPath'}))
                 refs(end+1) = {fullpath};
             else
                 rethrow(ME);

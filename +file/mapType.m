@@ -26,7 +26,7 @@ if isa(dtype, 'containers.Map')
     return;
 end
 
-assert(ischar(dtype), 'MatNWB:MapType:InvalidDtype', ...
+assert(ischar(dtype), 'NWB:MapType:InvalidDtype', ...
     'schema attribute `dtype` returned in unsupported type `%s`', class(dtype));
 
 switch dtype

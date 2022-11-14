@@ -3,7 +3,7 @@ function val = correctType(val, type)
 %   Will error if type is simply incompatible
 %   Will throw if casting to primitive type "type" is impossible
 
-invalidConversionErrorId = 'MatNWB:TypeCorrection:InvalidConversion';
+invalidConversionErrorId = 'NWB:TypeCorrection:InvalidConversion';
 invalidConversionErrorMessage = sprintf( ...
     'Value of type `%s` cannot be converted to type `%s`.', class(val), type);
 
@@ -48,7 +48,7 @@ switch type
         if ~strcmp(nearestType, class(val))
             castedValue = cast(val, nearestType);
             assert(all(castedValue == val), ...
-                'MatNWB:TypeCorrection:PrecisionLossDetected', ...
+                'NWB:TypeCorrection:PrecisionLossDetected', ...
                 ['Could not convert data value of type `%s` to type `%s`. ' ...
                 'Precision loss detected.'], ...
                 class(val), type);
@@ -68,7 +68,7 @@ function nearestType = findNearestType(val, type)
 %type whose size matches that of the preferred type but can still hold the
 %stored value.
 
-dataLossWarnId = 'MatNWB:TypeCorrection:DataLoss';
+dataLossWarnId = 'NWB:TypeCorrection:DataLoss';
 dataLossWarnMessageFormat = ['Converting value of type `%s` to type ' ...
     '`%s` may drop data precision.'];
 
@@ -164,7 +164,7 @@ has_fractional_sec = isstrprop(format(8:end), 'digit');
 if has_fractional_sec
     seconds_precision = str2double(format(8:end));
     if seconds_precision > 9
-        warning('MatNWB:CheckDType:DateTime:LossySeconds',...
+        warning('NWB:CheckDType:DateTime:LossySeconds',...
             ['Potential loss of time data detected.  MATLAB fractional seconds '...
             'precision is limited to 1 ns.  Extra precision will be truncated.']);
     end

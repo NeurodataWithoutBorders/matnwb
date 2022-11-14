@@ -55,7 +55,7 @@ nestedAdd(DynamicTable, flip(indexChain), data);
 end
 
 function checkNestedShape(data)
-errorId = 'MatNWB:DynamicTable:AddRow:InvalidShape';
+errorId = 'NWB:DynamicTable:AddRow:InvalidShape';
 if iscell(data) && ~iscellstr(data)
     assert(isvector(data), errorId, ...
         'Wrapped cell array data must be a vector for use with ragged arrays.');
@@ -170,7 +170,7 @@ if istable(appendBasis)
     numRows = height(data);
 elseif isscalar(appendBasis) || ~isvector(appendBasis) % is scalar or matrix but not vector.
     catDim = 2;
-    assert(2 >= ndims(appendBasis), 'MatNWB:DynamicTable:AddRow:InvalidShape', ...
+    assert(2 >= ndims(appendBasis), 'NWB:DynamicTable:AddRow:InvalidShape', ...
         ['addRow does not support adding to matrices with more than 2 dimensions. ' ...
         'For multi-dimensional matrices, use a DataPipe instead.']);
     numRows = size(data, 2);
