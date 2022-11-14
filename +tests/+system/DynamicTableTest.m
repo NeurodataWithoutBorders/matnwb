@@ -200,7 +200,7 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
 
             % even if struct is passed in. It is still read back as a
             % table. So we cheat a bit here since this is expected a2a.
-            CompoundStructVector = ExpectedTable.vectordata.get('compound_data_struct');
+            CompoundStructVector = ExpectedTable.vectordata.get('compound_struct');
             ExpectedCompoundStruct = CompoundStructVector.data;
             CompoundStructVector.data = struct2table(ExpectedCompoundStruct);
 
