@@ -1,4 +1,4 @@
-classdef Group < handle
+classdef Group
     properties
         doc;
         name;

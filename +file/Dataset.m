@@ -1,4 +1,4 @@
-classdef Dataset < handle
+classdef Dataset
     properties
         name;
         doc;

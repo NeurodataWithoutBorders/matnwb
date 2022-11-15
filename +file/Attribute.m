@@ -1,4 +1,4 @@
-classdef Attribute < handle
+classdef Attribute
     properties
         name; %attribute key
         doc; %doc string

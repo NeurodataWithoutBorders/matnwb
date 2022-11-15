@@ -1,5 +1,5 @@
-classdef Link < handle
-    properties(SetAccess=private)
+classdef Link
+    properties (SetAccess = private)
         doc;
         name;
         required;
