@@ -83,7 +83,7 @@ This package provides two functions `generateCore` and `generateExtension` that 
 
 Once the code generation step is done, NWB objects can be read, constructed and written from Matlab.
 
-PyNWB's cached schemas are also supported, bypassing the need to run `generateCore` or `generateExtension` if present.
+PyNWB's cached schemas are also supported: any file written in PyNWB, including those with extensions, will be readable in MATLAB without needing to generate the core API (`generateCore`) or extensions (`generateExtension`), as long as the schemas are cached (which is default).
 
 ## Sources
 
