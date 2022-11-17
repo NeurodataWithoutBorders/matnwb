@@ -1,8 +1,8 @@
-function fcstr = fillConstructor(name, parentname, defaults, propnames, props, namespace)
+function fcstr = fillConstructor(name, parentname, defaults, props, namespace)
     caps = upper(name);
     fcnbody = ['% ' caps ' Constructor for ' name];
 
-    txt = fillBody(parentname, defaults, propnames, props, namespace);
+    txt = fillBody(parentname, defaults, props, namespace);
     if ~isempty(txt)
         fcnbody = [fcnbody newline txt];
     end
@@ -25,7 +25,7 @@ function fcstr = fillConstructor(name, parentname, defaults, propnames, props, n
 
 end
 
-function bodystr = fillBody(pname, defaults, names, props, namespace)
+function bodystr = fillBody(pname, defaults, props, namespace)
     if isempty(defaults)
         bodystr = '';
     else
@@ -48,6 +48,7 @@ function bodystr = fillBody(pname, defaults, names, props, namespace)
     end
     bodystr = [bodystr 'obj = obj@' pname '(varargin{:});'];
 
+    names = keys(props);
     if isempty(names)
         return;
     end
