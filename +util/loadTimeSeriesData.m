@@ -27,7 +27,11 @@ end
 
 if length(electrodes) > 1
     fs = timeseries.starting_time_rate;
-    data = NaN(diff(interval) * fs, length(electrodes));
+    if isfinite(interval(2)):
+        data = NaN(ceil(diff(interval) * fs), length(electrodes));
+    else:
+        error('must specify time interval');
+    end
     for i = 1:length(electrodes)
         data(:,i) = util.loadTimeSeriesData(timeseries, interval, ...
             downsample_factor, electrodes(i));
