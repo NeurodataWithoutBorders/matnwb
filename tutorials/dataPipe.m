@@ -137,7 +137,7 @@ nwbExport(nwb, 'DataPipeTutorial_iterate.nwb');
 % To append the rest of the data, simply load the NWB file and use the
 % append method:
 
-nwb = nwbRead('DataPipeTutorial_iterate.nwb'); %load the nwb file with partial data
+nwb = nwbRead('DataPipeTutorial_iterate.nwb', 'ignorecache'); %load the nwb file with partial data
 
 % "load" each of the remaining 1/4ths of the large dataset
 for i = 2:4 % iterating through parts of data

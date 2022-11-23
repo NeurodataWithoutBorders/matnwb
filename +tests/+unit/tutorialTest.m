@@ -26,6 +26,11 @@ for i = 1:length(testCase.TestData.listing)
     if listing.isdir || any(strcmp(skippedTutorials, listing.name))
         continue;
     end
-    run(listing.name);
+    try
+        run(listing.name);
+    catch ME
+        error('NWB:Test:Tutorial', ...
+            'Error while running test `%s`. Full error message:\n\n%s', listing.name, getReport(ME));
+    end
 end
 end
