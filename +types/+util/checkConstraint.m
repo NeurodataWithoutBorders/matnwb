@@ -13,7 +13,11 @@ else
             types.util.checkDtype([pname '.' name], allowedType, val);
             return;
         catch ME
-            if ~any(strcmp(ME.identifier, {'NWB:CheckDType:InvalidType', 'NWB:CheckDType:InvalidShape'}))
+            expectedErrorTypes = {...
+                'NWB:CheckDType:InvalidType', ...
+                'NWB:CheckDType:InvalidShape', ...
+                'NWB:TypeCorrection:InvalidConversion'};
+            if ~any(strcmp(ME.identifier, expectedErrorTypes))
                 rethrow(ME);
             end
         end

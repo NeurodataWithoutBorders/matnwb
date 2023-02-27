@@ -71,15 +71,30 @@ function propStr = getPropStr(prop, propName)
                 error('Invalid reftype found whilst filling Constructor prop docs.');
         end
         typeStr = sprintf('%s Reference to %s', refTypeName, prop('target_type'));
-    elseif isa(prop, 'file.Dataset') && isempty(prop.type)
-        typeStr = getPropStr(prop.dtype);
-    elseif isempty(prop.type)
-        typeStr = 'types.untyped.Set';
+    elseif isa(prop, 'file.interface.HasProps')
+        typeStrCell = cell(size(prop));
+        for iProp = 1:length(typeStrCell)
+            anonProp = prop(iProp);
+            if isa(anonProp, 'file.Dataset') && isempty(anonProp.type)
+                typeStrCell{iProp} = getPropStr(anonProp.dtype);
+            elseif isempty(anonProp.type)
+                typeStrCell{iProp} = 'types.untyped.Set';
+            else
+                typeStrCell{iProp} = anonProp.type;
+            end
+        end
+        typeStr = strjoin(typeStrCell, '|');
     else
         typeStr = prop.type;
     end
 
-    if isa(prop, 'file.Dataset') || isa(prop, 'file.Attribute') || isa(prop, 'file.Group')
+    if isa(prop, 'file.interface.HasProps')
+        propStrCell = cell(size(prop));
+        for iProp = 1:length(prop)
+            propStrCell{iProp} = prop(iProp).doc;
+        end
+        propStr = sprintf('(%s) %s', typeStr, strjoin(propStrCell, ' | '));
+    elseif isa(prop, 'file.Attribute')
         propStr = sprintf('(%s) %s', typeStr, prop.doc);
     else
         propStr = typeStr;

@@ -1,4 +1,4 @@
-classdef Group
+classdef Group < file.interface.HasProps
     properties
         doc;
         name;
@@ -139,6 +139,7 @@ classdef Group
                 isempty(obj.attributes);
         end
         
+        %% HasProps
         function PropertyMap = getProps(obj)
             PropertyMap = containers.Map;
             %typed + constrained
@@ -219,7 +220,6 @@ classdef Group
 
                 DescendantMap = SubGroup.getProps();
                 descendantNames = keys(DescendantMap);
-                iAreConstrained = false(size(descendantNames));
                 for iSubGroup = 1:length(descendantNames)
                     descendantName = descendantNames{iSubGroup};
                     Descendant = DescendantMap(descendantName);
@@ -229,24 +229,18 @@ classdef Group
                         isa(Descendant, 'file.Group')...
                         || isa(Descendant, 'file.Dataset');
                     isConstrained = isPossiblyConstrained...
-                        && strcmpi(descendantName, Descendant.type)...
-                        && Descendant.isConstrainedSet;
-
-                    iAreConstrained(iSubGroup) = isConstrained;
-                    if ~isConstrained
+                        && all(strcmpi(descendantName, {Descendant.type}))...
+                        && all(Descendant.isConstrainedSet);
+                    if isConstrained
+                        if isKey(PropertyMap, groupName)
+                            SetType = PropertyMap(groupName);
+                        else
+                            SetType = [];
+                        end
+                        PropertyMap(groupName) = [SetType, Descendant];
+                    else
                         PropertyMap([groupName, '_', descendantName]) = Descendant;
                     end
-                end
-                numConstrained = sum(iAreConstrained);
-                if 1 < numConstrained
-                    iFoundConstrained = find(iAreConstrained);
-                    for iiConstrained = 1:length(iFoundConstrained)
-                        iConstrained = iFoundConstrained(iiConstrained);
-                        descendantName = descendantNames{iConstrained};
-                        PropertyMap([groupName, '_', descendantName]) = DescendantMap(descendantName);
-                    end
-                elseif 1 == numConstrained
-                    PropertyMap(groupName) = DescendantMap(descendantNames{iAreConstrained});
                 end
             end
         end

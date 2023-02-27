@@ -8,7 +8,7 @@ for i = 1:length(branch)
     branchNames{i} = branch{i}(TYPEDEF_KEYS{hasTypeDefs});
 end
 
-for iAncestor=length(branch):-1:1
+for iAncestor = 1:length(branch)
     node = branch{iAncestor};
     hasTypeDefs = isKey(node, TYPEDEF_KEYS);
     nodename = node(TYPEDEF_KEYS{hasTypeDefs});
