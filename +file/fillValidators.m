@@ -4,13 +4,13 @@ for i=1:length(propnames)
     nm = propnames{i};
     prop = props(nm);
     
-    %if readonly and value exists then ignore
+    % if readonly and value exists then ignore
     if isa(prop, 'file.Attribute') && prop.readonly && ~isempty(prop.value)
         continue;
     end
     if startsWith(class(prop), 'file.')
         validationBody = fillUnitValidation(nm, prop, namespacereg);
-    else %primitive type
+    else % primitive type
         validationBody = fillDtypeValidation(nm, prop);
     end
     hdrstr = ['function val = validate_' nm '(obj, val)'];
