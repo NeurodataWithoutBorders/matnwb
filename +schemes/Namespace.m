@@ -90,14 +90,23 @@ classdef Namespace < handle
         %the returned value is a cell array of containers.Maps [parent -> root]
         function branch = getRootBranch(obj, classname)
             cursor = obj.getClass(classname);
+            typeNames = {};
             branch = {};
-            hasTypeDef = isKey(cursor, obj.TYPEDEF_KEYS);
-            parent = obj.getParent(cursor(obj.TYPEDEF_KEYS{hasTypeDef}));
+            iHasTypeDef = isKey(cursor, obj.TYPEDEF_KEYS);
+            typeName = cursor(obj.TYPEDEF_KEYS{iHasTypeDef});
+            parent = obj.getParent(typeName);
             while ~isempty(parent)
-                branch = [branch {parent}];
+                branch{end+1} = parent;
+                typeNames{end+1} = typeName;
+                assert(length(unique(typeNames)) == length(typeNames), ...
+                    'NWB:Namespace:GetRootBranch:InfiniteLoopDetected', ...
+                    ['Failed to find root branch. A lower-level definition override might be causing ' ...
+                    'an infinite loop with parent name detection. If you are an extension developer, ' ...
+                    'this is usually due to overwriting a "core" type name.']);
                 cursor = parent;
-                hasTypeDef = isKey(cursor, obj.TYPEDEF_KEYS);
-                parent = obj.getParent(cursor(obj.TYPEDEF_KEYS{hasTypeDef}));
+                iHasTypeDef = isKey(cursor, obj.TYPEDEF_KEYS);
+                typeName = cursor(obj.TYPEDEF_KEYS{iHasTypeDef});
+                parent = obj.getParent(typeName);
             end
         end
     end

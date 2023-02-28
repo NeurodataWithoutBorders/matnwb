@@ -62,22 +62,40 @@ function bodystr = fillBody(pname, defaults, props, namespace)
         nm = names{i};
         prop = props(nm);
 
-        if isa(prop, 'file.Group') || isa(prop, 'file.Dataset')
-            dynamicConstrained(i) = prop.isConstrainedSet && strcmpi(nm, prop.type);
-            anon(i) = ~prop.isConstrainedSet && isempty(prop.name);
+        if isa(prop, 'file.Attribute')
+            isattr(i) = true;
+            continue;
+        end
 
-            if ~isempty(prop.type)
+        if isa(prop, 'file.interface.HasProps')
+            isDynamicConstrained = false(size(prop));
+            isAnon = false(size(prop));
+            hasType = false(size(prop));
+            typeNames = cell(size(prop));
+            for iProp = 1:length(prop)
+                p = prop(iProp);
+                isDynamicConstrained(iProp) = p.isConstrainedSet && strcmpi(nm, p.type);
+                isAnon(iProp) = ~p.isConstrainedSet && isempty(p.name);
+                hasType(iProp) = ~isempty(p.type);
+                typeNames{iProp} = p.type;
+            end
+            dynamicConstrained(i) = all(isDynamicConstrained);
+            anon(i) = all(isAnon);
+
+            if all(hasType)
                 varnames{i} = nm;
+                typeNameCell = cell(size(prop));
                 try
-                    typenames{i} = namespace.getFullClassName(prop.type);
+                    for iProp = 1:length(prop)
+                        typeNameCell{iProp} = namespace.getFullClassName(prop(iProp).type);
+                    end
                 catch ME
                     if ~strcmp(ME.identifier, 'NWB:Scheme:Namespace:NotFound')
                         rethrow(ME);
                     end
                 end
+                typenames{i} = misc.cellPrettyPrint(typeNameCell);
             end
-        elseif isa(prop, 'file.Attribute')
-            isattr(i) = true;
         end
     end
 
@@ -132,9 +150,14 @@ function bodystr = fillBody(pname, defaults, props, namespace)
     defaults = cell(size(names));
     for i=1:length(names)
         prop = props(names{i});
-        if (isa(prop, 'file.Group') &&...
-                (prop.hasAnonData || prop.hasAnonGroups || prop.isConstrainedSet)) ||...
-                (isa(prop, 'file.Dataset') && prop.isConstrainedSet)
+        isPluralSet = isa(prop, 'file.interface.HasProps') && ~isscalar(prop);
+        isGroupSet = ~isPluralSet ...
+        && isa(prop, 'file.Group') ...
+        && (prop.hasAnonData || prop.hasAnonGroups || prop.isConstrainedSet);
+        isDataSet = ~isPluralSet ...
+            && isa(prop, 'file.Dataset')...
+            && prop.isConstrainedSet;
+        if isPluralSet || isGroupSet || isDataSet
             defaults{i} = 'types.untyped.Set()';
         else
             defaults{i} = '[]';

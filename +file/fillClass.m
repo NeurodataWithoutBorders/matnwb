@@ -15,8 +15,18 @@ dependent = {};
 for i=1:length(allprops)
     pnm = allprops{i};
     prop = classprops(pnm);
+
+    isRequired = ischar(prop) || isa(prop, 'containers.Map') || isstruct(prop);
+    iIsPropertyRequired = false;
+    if isa(prop, 'file.interface.HasProps')
+        iIsPropertyRequired = false(size(prop));
+        for iProp = 1:length(prop)
+            p = prop(iProp);
+            iIsPropertyRequired(iProp) = p.required;
+        end
+    end
     
-    if ischar(prop) || isa(prop, 'containers.Map') || isstruct(prop) || prop.required
+    if isRequired || all(iIsPropertyRequired)
         required = [required {pnm}];
     else
         optional = [optional {pnm}];

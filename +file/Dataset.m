@@ -1,4 +1,4 @@
-classdef Dataset
+classdef Dataset < file.interface.HasProps
     properties
         name;
         doc;
@@ -108,6 +108,7 @@ classdef Dataset
             obj.linkable = ~isempty(obj.name) && hasNoAttributes;
         end
         
+        %% HasProps
         function props = getProps(obj)
             props = containers.Map;
             
