@@ -1,12 +1,14 @@
 function checkConstraint(pname, name, namedprops, constrained, val)
-if isempty(val)
-    return;
-end
+    if isempty(val)
+        return;
+    end
 
-names = fieldnames(namedprops);
-if any(strcmp(name, names))
-    types.util.checkDtype([pname '.' name], namedprops.(name), val);
-else
+    names = fieldnames(namedprops);
+    if any(strcmp(name, names))
+        types.util.checkDtype([pname '.' name], namedprops.(name), val);
+        return;
+    end
+    
     for i=1:length(constrained)
         allowedType = constrained{i};
         try
@@ -25,5 +27,4 @@ else
     error('NWB:CheckConstraint:InvalidType',...
         'Property `%s.%s` should be one of type(s) {%s}.',...
         pname, name, misc.cellPrettyPrint(constrained));
-end
 end
