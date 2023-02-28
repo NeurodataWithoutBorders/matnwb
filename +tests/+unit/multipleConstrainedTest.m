@@ -17,8 +17,6 @@ function setup(testCase)
 end
 
 function testRoundabout(testCase)
-    dir(fullfile(misc.getMatnwbDir(), '+types'));
-
     MultiSet = types.mcs.MultiSetContainer();
     MultiSet.something.set('A', types.mcs.ArbitraryTypeA());
     MultiSet.something.set('B', types.mcs.ArbitraryTypeB());
