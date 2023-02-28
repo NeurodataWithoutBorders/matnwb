@@ -31,11 +31,12 @@ function unitValidationStr = fillUnitValidation(name, prop, namespaceReg)
         for iProp = 1:length(prop)
             p = prop(iProp);
             assert(p.isConstrainedSet && ~isempty(p.type), 'Non-constrained anonymous set?');
-            constrained{iProp} = namespaceReg.getFullClassName(p.type);
+            constrained{iProp} = ['''', namespaceReg.getFullClassName(p.type), ''''];
         end
+        
         unitValidationStr = strjoin({...
             unitValidationStr, ...
-            ['constrained = [', strtrim(evalc('disp(constrained)')), '];'], ...
+            ['constrained = {', strjoin(constrained, ', '), '};'], ...
             ['types.util.checkSet(''', name, ''', struct(), constrained, val);'], ...
             }, newline);
     elseif isa(prop, 'file.Dataset')
@@ -76,7 +77,7 @@ function unitValidationStr = fillGroupValidation(name, prop, namespaceReg)
             else
                 type = namespaceReg.getFullClassName(dataset.type);
                 if dataset.isConstrainedSet
-                    constraints = [constraints {type}];
+                    constraints{end+1} = type;
                 else
                     namedprops.(dataset.name) = type;
                 end
@@ -94,7 +95,7 @@ function unitValidationStr = fillGroupValidation(name, prop, namespaceReg)
             assert(~isempty(subGroup.type), 'Weird case with two untyped groups');
 
             if isempty(subGroup.name)
-                constraints = [constraints {subGroupFullName}];
+                constraints{end+1} = subGroupFullName;
             else
                 namedprops.(subGroup.name) = subGroupFullName;
             end
@@ -126,9 +127,13 @@ function unitValidationStr = fillGroupValidation(name, prop, namespaceReg)
             ['namedprops.' nm ' = ''' namedprops.(nm) ''';']}, newline);
     end
 
+    for iConstraint = 1:length(constraints)
+        constraints{iConstraint} = ['''', constraints{iConstraint}, ''''];
+    end
+
     unitValidationStr = strjoin({...
         unitValidationStr, ...
-        ['constrained = ', strtrim(evalc('disp(constraints)')), ';'], ...
+        ['constrained = {', strjoin(constraints, ','), '};'], ...
         ['types.util.checkSet(''', name, ''', namedprops, constrained, val);'], ...
         }, newline);
 end
