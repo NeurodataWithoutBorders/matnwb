@@ -1,0 +1,6 @@
+namespaces:
+- full_name: Combining multiple anonymous constrained set tests
+  name: mcs
+  schema:
+  - namespace: core
+  - source: mcs.manyset.yaml

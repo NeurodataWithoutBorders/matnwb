@@ -1,0 +1,24 @@
+groups:
+- neurodata_type_def: ArbitraryTypeA
+  neurodata_type_inc: NWBDataInterface
+- neurodata_type_def: ArbitraryTypeB
+  neurodata_type_inc: NWBDataInterface
+- neurodata_type_def: MultiSetContainer
+  neurodata_type_inc: NWBDataInterface
+  groups:
+  - name: something
+    groups:
+    - neurodata_type_inc: ArbitraryTypeA
+      doc: Group Type A
+      quantity: '*'
+    - neurodata_type_inc: ArbitraryTypeB
+      doc: Group Type B
+      quantity: '*'
+    datasets:
+    - neurodata_type_inc: DatasetType
+      doc: Dataset Type
+      quantity: '*'
+datasets:
+- neurodata_type_def: DatasetType
+  neurodata_type_inc: NWBData
+  doc: one-off dataset type
