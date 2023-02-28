@@ -19,10 +19,7 @@ function checkConstraint(pname, name, namedprops, constrained, val)
                 'NWB:CheckDType:InvalidType', ...
                 'NWB:CheckDType:InvalidShape', ...
                 'NWB:TypeCorrection:InvalidConversion'};
-            if any(strcmp(ME.identifier, expectedErrorTypes))
-                fprintf('Checking data type `%s` for object of class `%s`.\n  Threw with error: %s\n', ...
-                    allowedType, class(val), ME.message);
-            else
+            if ~any(strcmp(ME.identifier, expectedErrorTypes))
                 rethrow(ME);
             end
         end
