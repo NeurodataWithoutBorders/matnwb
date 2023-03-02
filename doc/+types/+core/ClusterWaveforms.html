@@ -3,13 +3,13 @@
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
    
       <link rel="stylesheet" href="../../helpwin.css">
-      <title>MATLAB File Help: types.core.ClusterWaveforms</title>
+      <title>types.core.ClusterWaveforms - MATLAB File Help</title>
    </head>
    <body>
       <!--Single-page help-->
       <table border="0" cellspacing="0" width="100%">
          <tr class="subheader">
-            <td class="headertitle">MATLAB File Help: types.core.ClusterWaveforms</td>
+            <td class="headertitle">types.core.ClusterWaveforms - MATLAB File Help</td>
             
             
             
@@ -48,7 +48,7 @@
       <table class="summary-list">
          <tr class="summary-item">
             <td class="name">clustering_interface</td>
-            <td class="m-help">REQUIRED Clustering&nbsp;</td>
+            <td class="m-help">Clustering&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">waveform_filtering</td>
@@ -56,14 +56,14 @@
          </tr>
          <tr class="summary-item">
             <td class="name">waveform_mean</td>
-            <td class="m-help">REQUIRED (float32) The mean waveform for each cluster, using the same indices for each wave as cluster numbers in the associated
+            <td class="m-help">REQUIRED (single) The mean waveform for each cluster, using the same indices for each wave as cluster numbers in the associated
                Clustering module (i.e, cluster 3 is in array slot [3]). Waveforms corresponding to gaps in cluster sequence should be empty
                (e.g., zero- filled)&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">waveform_sd</td>
-            <td class="m-help">REQUIRED (float32) Stdev of waveforms for each cluster, using the same indices as in mean&nbsp;</td>
+            <td class="m-help">REQUIRED (single) Stdev of waveforms for each cluster, using the same indices as in mean&nbsp;</td>
          </tr>
       </table>
       <!--Methods-->
@@ -149,6 +149,14 @@
             </td>
             <td class="name">le</td>
             <td class="m-help"><= (LE)   Less than or equal relation for handles.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">listener</td>
+            <td class="m-help">Add listener for event without binding the listener to the source object.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="attributes">

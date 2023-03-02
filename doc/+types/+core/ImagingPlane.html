@@ -3,13 +3,13 @@
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
    
       <link rel="stylesheet" href="../../helpwin.css">
-      <title>MATLAB File Help: types.core.ImagingPlane</title>
+      <title>types.core.ImagingPlane - MATLAB File Help</title>
    </head>
    <body>
       <!--Single-page help-->
       <table border="0" cellspacing="0" width="100%">
          <tr class="subheader">
-            <td class="headertitle">MATLAB File Help: types.core.ImagingPlane</td>
+            <td class="headertitle">types.core.ImagingPlane - MATLAB File Help</td>
             
             
             
@@ -52,25 +52,25 @@
          </tr>
          <tr class="summary-item">
             <td class="name">device</td>
-            <td class="m-help">REQUIRED Device&nbsp;</td>
+            <td class="m-help">Device&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">excitation_lambda</td>
-            <td class="m-help">REQUIRED (float32) Excitation wavelength, in nm.&nbsp;</td>
+            <td class="m-help">REQUIRED (single) Excitation wavelength, in nm.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">grid_spacing</td>
-            <td class="m-help">(float32) Space between pixels in (x, y) or voxels in (x, y, z) directions, in the specified unit. Assumes imaging plane is
+            <td class="m-help">(single) Space between pixels in (x, y) or voxels in (x, y, z) directions, in the specified unit. Assumes imaging plane is
                a regular grid. See also reference_frame to interpret the grid.&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">grid_spacing_unit</td>
-            <td class="m-help">REQUIRED (char) Measurement units for grid_spacing. The default value is 'meters'.&nbsp;</td>
+            <td class="m-help">(char) Measurement units for grid_spacing. The default value is 'meters'.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">imaging_rate</td>
-            <td class="m-help">(float32) Rate that images are acquired, in Hz. If the corresponding TimeSeries is present, the rate should be stored there
+            <td class="m-help">(single) Rate that images are acquired, in Hz. If the corresponding TimeSeries is present, the rate should be stored there
                instead.&nbsp;
             </td>
          </tr>
@@ -86,13 +86,13 @@
          </tr>
          <tr class="summary-item">
             <td class="name">manifold</td>
-            <td class="m-help">(float32) DEPRECATED Physical position of each pixel. 'xyz' represents the position of the pixel relative to the defined coordinate
+            <td class="m-help">(single) DEPRECATED Physical position of each pixel. 'xyz' represents the position of the pixel relative to the defined coordinate
                space. Deprecated in favor of origin_coords and grid_spacing.&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">manifold_conversion</td>
-            <td class="m-help">(float32) Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition
+            <td class="m-help">(single) Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition
                system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the
                data to the specified 'unit'. e.g. if the data acquisition system stores values in this object as pixels from x = -500 to
                499, y = -500 to 499 that correspond to a 2 m x 2 m range, then the 'conversion' multiplier to get from raw data acquisition
@@ -109,13 +109,13 @@
          </tr>
          <tr class="summary-item">
             <td class="name">origin_coords</td>
-            <td class="m-help">(float32) Physical location of the first element of the imaging plane (0, 0) for 2-D data or (0, 0, 0) for 3-D data. See also
+            <td class="m-help">(single) Physical location of the first element of the imaging plane (0, 0) for 2-D data or (0, 0, 0) for 3-D data. See also
                reference_frame for what the physical location is relative to (e.g., bregma).&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
             <td class="name">origin_coords_unit</td>
-            <td class="m-help">REQUIRED (char) Measurement units for origin_coords. The default value is 'meters'.&nbsp;</td>
+            <td class="m-help">(char) Measurement units for origin_coords. The default value is 'meters'.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">reference_frame</td>
@@ -215,6 +215,14 @@
             </td>
             <td class="name">le</td>
             <td class="m-help"><= (LE)   Less than or equal relation for handles.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">listener</td>
+            <td class="m-help">Add listener for event without binding the listener to the source object.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="attributes">

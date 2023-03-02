@@ -3,20 +3,20 @@
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
    
       <link rel="stylesheet" href="../../helpwin.css">
-      <title>MATLAB File Help: types.core.NWBFile</title>
+      <title>types.core.NWBFile - MATLAB File Help</title>
    </head>
    <body>
       <!--Single-page help-->
       <table border="0" cellspacing="0" width="100%">
          <tr class="subheader">
-            <td class="headertitle">MATLAB File Help: types.core.NWBFile</td>
+            <td class="headertitle">types.core.NWBFile - MATLAB File Help</td>
             
             
             
          </tr>
       </table>
       <div class="title">types.core.NWBFile</div>
-      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">NWBFile</span> An NWB:N file storing cellular-based neurophysiology data from a single experimental session.</pre></div><!--after help -->
+      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">NWBFile</span> An NWB file storing cellular-based neurophysiology data from a single experimental session.</pre></div><!--after help -->
       <!--Class-->
       <div class="sectiontitle">Class Details</div>
       <table class="class-details">
@@ -48,18 +48,18 @@
       <table class="summary-list">
          <tr class="summary-item">
             <td class="name">acquisition</td>
-            <td class="m-help">(NWBDataInterface) Acquired, raw data.&nbsp;</td>
+            <td class="m-help">(DynamicTable|NWBDataInterface) Tabular data that is relevent to acquisition | Acquired, raw data.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">analysis</td>
-            <td class="m-help">(NWBContainer) Custom analysis results.&nbsp;</td>
+            <td class="m-help">(DynamicTable|NWBContainer) Tabular data that is relevent to data stored in analysis | Custom analysis results.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">file_create_date</td>
-            <td class="m-help">REQUIRED (isodatetime) A record of the date the file was created and of subsequent modifications. The date is stored in UTC
-               with local timezone offset as ISO 8601 extended formatted strings: 2018-09-28T14:43:54.123+02:00. Dates stored in UTC end
-               in "Z" with no timezone offset. Date accuracy is up to milliseconds. The file can be created after the experiment was run,
-               so this may differ from the experiment start time. Each modification to the nwb file adds a new entry to the array.&nbsp;
+            <td class="m-help">REQUIRED (datetime) A record of the date the file was created and of subsequent modifications. The date is stored in UTC with
+               local timezone offset as ISO 8601 extended formatted strings: 2018-09-28T14:43:54.123+02:00. Dates stored in UTC end in "Z"
+               with no timezone offset. Date accuracy is up to milliseconds. The file can be created after the experiment was run, so this
+               may differ from the experiment start time. Each modification to the nwb file adds a new entry to the array.&nbsp;
             </td>
          </tr>
          <tr class="summary-item">
@@ -198,7 +198,7 @@
          </tr>
          <tr class="summary-item">
             <td class="name">general_source_script_file_name</td>
-            <td class="m-help">REQUIRED (char) Name of script file.&nbsp;</td>
+            <td class="m-help">(char) Name of script file.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">general_stimulus</td>
@@ -252,7 +252,7 @@
          </tr>
          <tr class="summary-item">
             <td class="name">scratch</td>
-            <td class="m-help">(ScratchData) Any one-off datasets&nbsp;</td>
+            <td class="m-help">(DynamicTable|NWBContainer|ScratchData) Any one-off tables | Any one-off containers | Any one-off datasets&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="name">session_description</td>
@@ -260,8 +260,8 @@
          </tr>
          <tr class="summary-item">
             <td class="name">session_start_time</td>
-            <td class="m-help">REQUIRED (isodatetime) Date and time of the experiment/session start. The date is stored in UTC with local timezone offset
-               as ISO 8601 extended formatted string: 2018-09-28T14:43:54.123+02:00. Dates stored in UTC end in "Z" with no timezone offset.
+            <td class="m-help">REQUIRED (datetime) Date and time of the experiment/session start. The date is stored in UTC with local timezone offset as
+               ISO 8601 extended formatted string: 2018-09-28T14:43:54.123+02:00. Dates stored in UTC end in "Z" with no timezone offset.
                Date accuracy is up to milliseconds.&nbsp;
             </td>
          </tr>
@@ -271,11 +271,13 @@
          </tr>
          <tr class="summary-item">
             <td class="name">stimulus_templates</td>
-            <td class="m-help">(TimeSeries) TimeSeries objects containing template data of presented stimuli.&nbsp;</td>
+            <td class="m-help">(Images|TimeSeries) Images objects containing images of presented stimuli. | TimeSeries objects containing template data of
+               presented stimuli.&nbsp;
+            </td>
          </tr>
          <tr class="summary-item">
             <td class="name">timestamps_reference_time</td>
-            <td class="m-help">REQUIRED (isodatetime) Date and time corresponding to time zero of all timestamps. The date is stored in UTC with local timezone
+            <td class="m-help">REQUIRED (datetime) Date and time corresponding to time zero of all timestamps. The date is stored in UTC with local timezone
                offset as ISO 8601 extended formatted string: 2018-09-28T14:43:54.123+02:00. Dates stored in UTC end in "Z" with no timezone
                offset. Date accuracy is up to milliseconds. All times stored in the file use this time as reference (i.e., time zero).&nbsp;
             </td>
@@ -368,6 +370,14 @@
             </td>
             <td class="name">le</td>
             <td class="m-help"><= (LE)   Less than or equal relation for handles.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name">listener</td>
+            <td class="m-help">Add listener for event without binding the listener to the source object.&nbsp;</td>
          </tr>
          <tr class="summary-item">
             <td class="attributes">
