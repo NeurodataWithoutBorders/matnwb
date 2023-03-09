@@ -61,6 +61,8 @@ Currently, only schemas >= 2.2.0 are supported (2.1.0 and 2.0.1 are not supporte
 
 [Behavior](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/behavior.html)
 
+[Optogenetics](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ogen.html)
+
 [Dynamic tables](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dynamic_tables.html)
 
 [Images](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/images.html)
