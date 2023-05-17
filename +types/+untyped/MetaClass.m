@@ -26,11 +26,11 @@ classdef MetaClass < handle
                     io.writeDataset(fid, fullpath, obj.data, 'forceArray');
                 end
             catch ME
-                refs = obj.capture_ref_errors(ME, fullpath, refs);
+                refs = obj.captureReferenceErrors(ME, fullpath, refs);
             end
         end
         
-        function refs = capture_ref_errors(~, ME, fullpath, refs)
+        function refs = captureReferenceErrors(~, ME, fullpath, refs)
             if any(strcmp(ME.identifier, {...
                     'NWB:getRefData:InvalidPath',...
                     'NWB:ObjectView:MissingPath'}))
@@ -58,7 +58,7 @@ classdef MetaClass < handle
                 try
                     io.getRefData(fid, props{i});
                 catch ME
-                    refs = obj.capture_ref_errors(ME, fullpath, refs);
+                    refs = obj.captureReferenceErrors(ME, fullpath, refs);
                 end
             end
             
