@@ -23,7 +23,11 @@ for iAncestor = 1:length(branch)
                 error('NWB:FileGen:InvalidClassType',...
                     'Class type %s is invalid', node('class_type'));
         end
+        if strcmp(nodename, 'VectorData') && strcmp(namespace.name, 'hdmf_common')
+            class = patchVectorData(class);
+        end
         props = class.getProps();
+
         pregen(nodename) = struct('class', class, 'props', props);
     end
     try
@@ -39,4 +43,19 @@ for iAncestor=2:length(Processed)
     parentPropNames = keys(pregen(pname).props);
     inherited = union(inherited, intersect(names, parentPropNames));
 end
+end
+
+function class = patchVectorData(class)
+    % adds an optional "units" attribute added by the Units table.
+    % derived from schema 2.6.0
+    source = containers.Map();
+    source('name') = 'unit';
+    source('doc') = ['NOTE: this is a special value for compatibility with the Units table and is ' ...
+        'only written to file when detected to be in that specific HDF5 Group. ' ...
+        'The value must be ''volts'''];
+    source('dtype') = 'text';
+    source('value') = 'volts';
+    source('required') = false;
+    
+    class.attributes(end+1) = file.Attribute(source);
 end
