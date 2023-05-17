@@ -349,8 +349,8 @@ classdef (Sealed) DataStub < handle
                 end
                 
                 io.writeCompound(fid, fullpath, data);
-            else
-                %copy data over and return destination
+            elseif ~H5L.exists(fid, fullpath)
+                % copy data over and return destination.
                 ocpl = H5P.create('H5P_OBJECT_COPY');
                 lcpl = H5P.create('H5P_LINK_CREATE');
                 H5O.copy(src_fid, obj.path, fid, fullpath, ocpl, lcpl);

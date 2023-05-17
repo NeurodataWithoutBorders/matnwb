@@ -14,11 +14,6 @@ classdef MetaClass < handle
                 io.writeGroup(fid, fullpath);
                 return;
             end
-
-            if H5L.exists(fid, fullpath, 'H5P_DEFAULT')
-                % skip if already written.
-                return;
-            end
             
             try
                 if isa(obj.data, 'types.untyped.DataStub')...
