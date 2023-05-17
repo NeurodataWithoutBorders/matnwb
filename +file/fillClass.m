@@ -60,8 +60,9 @@ function template = fillClass(name, namespace, processed, classprops, inherited)
     end
     nonInherited = setdiff(allProperties, inherited);
     readonly = intersect(readonly, nonInherited);
-    required = setdiff(intersect(required, nonInherited), readonly);
-    optional = setdiff(intersect(optional, nonInherited), readonly);
+    exclusivePropertyGroups = union(readonly, hidden);
+    required = setdiff(intersect(required, nonInherited), exclusivePropertyGroups);
+    optional = setdiff(intersect(optional, nonInherited), exclusivePropertyGroups);
 
     %% CLASSDEF
     if length(processed) <= 1
