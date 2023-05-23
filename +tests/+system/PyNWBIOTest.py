@@ -9,6 +9,7 @@ import h5py
 from pynwb import get_manager, NWBFile, TimeSeries
 from pynwb.ecephys import ElectricalSeries, Clustering
 from pynwb.ophys import OpticalChannel, TwoPhotonSeries
+from pynwb.misc import Units
 from hdmf.backends.hdf5 import HDF5IO
 from hdmf.container import Container, Data
 
@@ -198,5 +199,14 @@ class NWBFileIOTest(PyNWBIOTest):
         mod.add_container(Clustering("A fake Clustering interface", [0, 1, 2, 0, 1, 2],
                                      [100., 101., 102.], list(range(10, 61, 10))))
 
+    def getContainer(self, file):
+        return file
+
+
+class UnitTimesIOTest(PyNWBIOTest):
+    def addContainer(self, file):
+        self.file.units = Units('units', waveform_rate=1., resolution=3.)
+        self.file.units.add_unit(waveform_mean=[5], waveform_sd=[7], waveforms=np.full((1, 1), 9),
+                                 spike_times=[11])
     def getContainer(self, file):
         return file
