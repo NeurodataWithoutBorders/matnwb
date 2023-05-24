@@ -58,7 +58,11 @@ class PyNWBIOTest(unittest.TestCase):
         type1 = type(container1)
         type2 = type(container2)
         self.assertEqual(type1, type2)
-        for nwbfield in container1.__nwbfields__:
+        try:
+            container_fields = container1.__nwbfields__
+        except AttributeError:
+            container_fields = container1.__fields__
+        for nwbfield in container_fields:
             with self.subTest(nwbfield=nwbfield, container_type=type1.__name__):
                 f1 = getattr(container1, nwbfield)
                 f2 = getattr(container2, nwbfield)
