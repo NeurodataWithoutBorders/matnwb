@@ -213,4 +213,4 @@ class UnitTimesIOTest(PyNWBIOTest):
         self.file.units.add_unit(waveform_mean=[5], waveform_sd=[7], waveforms=np.full((1, 1), 9),
                                  spike_times=[11])
     def getContainer(self, file):
-        return file
+        return file.units
