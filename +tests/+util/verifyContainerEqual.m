@@ -53,18 +53,10 @@ for i = 1:numel(props)
             testCase.verifyGreaterThanOrEqual(actualNtfs, expectedNtfs - 10, failmsg);
             testCase.verifyLessThanOrEqual(actualNtfs, expectedNtfs + 10, failmsg);
         end
-    elseif startsWith(class(expectedVal), 'int') || startsWith(class(expectedVal), 'uint')
-        actualTypeSize = regexp(class(actualVal), 'int(\d+)', 'once', 'tokens');
-        expectedTypeSize = regexp(class(expectedVal), 'int(\d+)', 'once', 'tokens');
-        testCase.verifyGreaterThanOrEqual(...
-            str2double(actualTypeSize{1}),...
-            str2double(expectedTypeSize{1}));
-        
-        if startsWith(class(expectedVal), 'int')
-            testCase.verifyEqual(int64(actualVal), int64(expectedVal), failmsg);
-        else
-            testCase.verifyEqual(uint64(actualVal), uint64(expectedVal), failmsg);
-        end
+    elseif startsWith(class(expectedVal), 'int')
+        testCase.verifyEqual(int64(actualVal), int64(expectedVal), failmsg);
+    elseif startsWith(class(expectedVal), 'uint')
+        testCase.verifyEqual(uint64(actualVal), uint64(expectedVal), failmsg);
     else
         testCase.verifyEqual(actualVal, expectedVal, failmsg);
     end

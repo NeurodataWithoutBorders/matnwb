@@ -1,6 +1,12 @@
 function s = fillProps(props, names, varargin)
-    validateattributes(props, {'containers.Map'}, {}, mfilename, 'props', 1);
-    validateattributes(names, {'cell'}, {'vector'}, mfilename, 'names', 2);
+    % Fills the property list in the classdef
+    assert(isa(props, 'containers.Map'));
+    assert(iscellstr(names) || isstring(names));
+    s = '';
+    if isempty(names)
+        return;
+    end
+
     p = inputParser;
     p.addParameter('PropertyAttributes', '', ...
         @(x)validateattributes(x, {'char'}, {'scalartext'}, mfilename, 'Attribute'));
@@ -26,14 +32,10 @@ function s = fillProps(props, names, varargin)
         options = ['(' p.Results.PropertyAttributes ')'];
     end
 
-    if isempty(proplines)
-        s = '';
-    else
-        s = strjoin({...
-            ['properties' options]...
-            file.addSpaces(strjoin(proplines, newline), 4)...
-            'end'}, newline);
-    end
+    s = strjoin({...
+        ['properties' options]...
+        file.addSpaces(strjoin(proplines, newline), 4)...
+        'end'}, newline);
 end
 
 function propStr = getPropStr(prop, propName)

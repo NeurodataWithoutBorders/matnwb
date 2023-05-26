@@ -9,6 +9,7 @@ import h5py
 from pynwb import get_manager, NWBFile, TimeSeries
 from pynwb.ecephys import ElectricalSeries, Clustering
 from pynwb.ophys import OpticalChannel, TwoPhotonSeries
+from pynwb.misc import Units
 from hdmf.backends.hdf5 import HDF5IO
 from hdmf.container import Container, Data
 
@@ -57,7 +58,11 @@ class PyNWBIOTest(unittest.TestCase):
         type1 = type(container1)
         type2 = type(container2)
         self.assertEqual(type1, type2)
-        for nwbfield in container1.__nwbfields__:
+        try:
+            container_fields = container1.__nwbfields__
+        except AttributeError:
+            container_fields = container1.__fields__
+        for nwbfield in container_fields:
             with self.subTest(nwbfield=nwbfield, container_type=type1.__name__):
                 f1 = getattr(container1, nwbfield)
                 f2 = getattr(container2, nwbfield)
@@ -200,3 +205,12 @@ class NWBFileIOTest(PyNWBIOTest):
 
     def getContainer(self, file):
         return file
+
+
+class UnitTimesIOTest(PyNWBIOTest):
+    def addContainer(self, file):
+        self.file.units = Units('units', waveform_rate=1., resolution=3.)
+        self.file.units.add_unit(waveform_mean=[5], waveform_sd=[7], waveforms=np.full((1, 1), 9),
+                                 spike_times=[11])
+    def getContainer(self, file):
+        return file.units
