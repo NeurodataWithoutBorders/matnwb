@@ -31,9 +31,7 @@ function parsed = parseDataset(filename, info, fullpath, Blacklist)
 
         switch datatype.Class
             case 'H5T_STRING'
-                versionNumber = getMatlabVersionNumber();
-                assert(~isnan(versionNumber));
-                if versionNumber < 9.8
+                if verLessThan('MATLAB', '9.8')
                     % MATLAB 2020a fixed string support for HDF5, making
                     % reading strings "consistent" with regular use.
                     data = data .';
@@ -84,9 +82,4 @@ function parsed = parseDataset(filename, info, fullpath, Blacklist)
     end
     H5D.close(did);
     H5F.close(fid);
-end
-
-function versionNumber = getMatlabVersionNumber()
-    VersionInfo = ver('MATLAB');
-    versionNumber = str2double(VersionInfo.Version);
 end
