@@ -152,6 +152,23 @@ classdef (Sealed) DataStub < handle
                 'Too many dimensions specified (got %d, expected %d)', length(varargin), obj.ndims);
             dims = obj.dims; %#ok<PROPLC>
             sid = obj.get_space();
+
+            for iDimension = 1:min(obj.ndims, length(varargin))
+                selection = varargin{iDimension};
+                if ischar(selection)
+                    continue;
+                end
+                dimensionSize = dims(iDimension); %#ok<PROPLC>
+                assert(all(selection > 0 & isinteger(selection)) ...
+                    , 'NWB:DataStub:Load:InvalidSelection' ...
+                    , 'DataStub indices for dimension %u must be positive integers' ...
+                    , iDimension);
+                assert(all(dimensionSize >= selection) ...
+                    , 'NWB:DataStub:Load:InvalidSelection' ...
+                    , ['DataStub indices for dimension %u must be less than or equal to ' ...
+                    'dimension size %u'] ...
+                    , iDimension, dimensionSize);
+            end
             
             if isscalar(varargin) && ~ischar(varargin{1})
                 orderedSelection = unique(varargin{1});
