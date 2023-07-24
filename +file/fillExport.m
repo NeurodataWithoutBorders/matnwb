@@ -231,7 +231,10 @@ function fde = fillDataExport(name, prop, elisions)
             flattened = strrep(elisions(1:flattened(end)), '/', '_');
             depPropname = [flattened prop.dependent];
         end
-        propertyChecks{end+1} = ['~isempty(obj.' depPropname ')'];
+        propertyReference = sprintf('obj.%s', depPropname);
+        propertyChecks{end+1} = sprintf(['~isempty(%1$s) ' ...
+        '&& ~isa(%1$s, ''types.untyped.SoftLink'') ' ...
+        '&& ~isa(%1$s, ''types.untyped.ExternalLink'')'], propertyReference);
     end
 
     if ~prop.required
