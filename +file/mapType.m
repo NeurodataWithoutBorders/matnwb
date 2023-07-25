@@ -43,7 +43,7 @@ switch dtype
     case 'long'
         dt = 'int64';
     case 'int'
-        dt = 'int32';
+        dt = 'int8';
     case 'short'
         dt = 'int16';
     otherwise
