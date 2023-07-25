@@ -29,8 +29,9 @@ if nargin == 0 || strcmp(varargin{1}, 'savedir')
     version = latestVersion;
 else
     version = varargin{1};
+    validateattributes(version, {'char', 'string'}, {'scalartext'}, 'generateCore', 'version', 1);
+    version = char(version);
     varargin = varargin(2:end);
-    validateattributes(version, {'char'}, {'scalartext'});
 end
 
 if strcmp(version, 'latest')

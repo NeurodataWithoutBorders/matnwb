@@ -16,9 +16,15 @@ function generateExtension(varargin)
 %      generateExtension('schema\myext\myextension.namespace.yaml', 'schema\myext2\myext2.namespace.yaml');
 %
 %   See also GENERATECORE
-assert(iscellstr(varargin),...
-    'NWB:GenerateExtension:InvalidArguments',...
-    'Must be a cell array of strings.'); %#ok<ISCLSTR>
+
+for iOption = 1:length(varargin)
+    option = varargin{iOption};
+    validateattributes(option, {'char', 'string'}, {'scalartext'} ...
+        , 'generateExtension', 'extension name', iOption);
+    if isstring(option)
+        varargin{iOption} = char(option);
+    end
+end
 
 saveDirMask = strcmp(varargin, 'savedir');
 if any(saveDirMask)

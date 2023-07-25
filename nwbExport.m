@@ -14,25 +14,31 @@ function nwbExport(nwb, filenames)
 %    nwbExport(nwb, 'empty.nwb');
 %
 %  See also GENERATECORE, GENERATEEXTENSION, NWBFILE, NWBREAD
-validateattributes(nwb, {'NwbFile'}, {'nonempty'});
-validateattributes(filenames, {'cell', 'string', 'char'}, {'nonempty'});
+validateattributes(nwb, {'NwbFile'}, {'nonempty'}, 'nwbExport', 'nwb', 1);
+validateattributes(filenames, {'cell', 'string', 'char'}, {'nonempty'}, 'nwbExport', 'filenames', 2);
+if isstring(filenames)
+    filenames = convertStringsToChars(filenames);
+end
 if iscell(filenames)
-    assert(iscellstr(filenames), 'filename cell array must consist of strings');
+    for iName = 1:length(filenames)
+        name = filenames{iName};
+        validateattributes(name, {'string', 'char'}, {'scalartext', 'nonempty'} ...
+            , 'nwbExport', 'filenames', 2);
+        filenames{iName} = char(name);
+    end
 end
 if ~isscalar(nwb)
     assert(~ischar(filenames) && length(filenames) == length(nwb), ...
         'NwbFile and filename array dimensions must match.');
 end
 
-for i=1:length(nwb)
+for iFiles = 1:length(nwb)
     if iscellstr(filenames)
-        filename = filenames{i};
-    elseif isstring(filenames)
-        filename = filenames(i);
+        filename = filenames{iFiles};
     else
         filename = filenames;
     end
     
-    nwb(i).export(filename);
+    nwb(iFiles).export(filename);
 end
 end

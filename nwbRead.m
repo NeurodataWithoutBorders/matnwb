@@ -17,8 +17,15 @@ function nwb = nwbRead(filename, varargin)
 %
 %  See also GENERATECORE, GENERATEEXTENSION, NWBFILE, NWBEXPORT
 
-assert(iscellstr(varargin), 'NWB:NWBRead:InvalidParameters',...
-    'Optional parameters must all be character arrays.'); %#ok<ISCLSTR>
+for iOption = 1:length(varargin)
+    option = varargin{iOption};
+    if isstring(option)
+        option = char(option);
+    end
+    assert(ischar(option), 'NWB:Read:InvalidParameter' ...
+        , 'Invalid optional parameter in argument position %u', 1 + iOption);
+    varargin{iOption} = option;
+end
 
 ignoreCache = any(strcmpi(varargin, 'ignorecache'));
 
@@ -34,8 +41,10 @@ end
 Blacklist = struct(...
     'attributes', {{'.specloc', 'object_id'}},...
     'groups', {{}});
-validateattributes(filename, {'char', 'string'}, {'scalartext', 'nonempty'});
+validateattributes(filename, {'char', 'string'}, {'scalartext', 'nonempty'} ...
+    , 'nwbRead', 'filename', 1);
 
+filename = char(filename);
 specLocation = getEmbeddedSpec(filename);
 if ~isempty(specLocation)
     Blacklist.groups{end+1} = specLocation;
