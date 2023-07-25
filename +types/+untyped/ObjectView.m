@@ -23,10 +23,12 @@ classdef ObjectView < handle
             % target = A generated NWB object.
             
             if ischar(target) || isstring(target)
-                validateattributes(target, {'char', 'string'}, {'scalartext'});
-                obj.path = target;
+                validateattributes(target, {'char', 'string'}, {'scalartext'} ...
+                    , 'types.untyped.ObjectView', 'target string', 1);
+                obj.path = char(target);
             else
-                validateattributes(target, {'types.untyped.MetaClass'}, {'scalar'});
+                validateattributes(target, {'types.untyped.MetaClass'}, {'scalar'} ...
+                    , 'types.untyped.ObjectView', 'target object', 1);
                 obj.target = target;
             end
         end

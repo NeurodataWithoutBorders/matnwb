@@ -16,8 +16,12 @@ classdef (Sealed) DataStub < handle
     
     methods
         function obj = DataStub(filename, path)
-            obj.filename = filename;
-            obj.path = path;
+            validateattributes(filename, {'char', 'string'}, {'scalartext'} ...
+                , 'types.untyped.DataStub', 'filename', 1);
+            validateattributes(path, {'char', 'string'}, {'scalartext'} ...
+                , 'types.untyped.DataStub', 'path', 2);
+            obj.filename = char(filename);
+            obj.path = char(path);
         end
         
         function sid = get_space(obj)

@@ -18,16 +18,19 @@ classdef SoftLink < handle
             % target = pre-generated NWB object.
             
             if ischar(target) || isstring(target)
-                validateattributes(target, {'char', 'string'}, {'scalartext'});
-                obj.path = target;
+                validateattributes(target, {'char', 'string'}, {'scalartext'} ...
+                    , 'types.untyped.SoftLink', 'target string', 1);
+                obj.path = char(target);
             else
-                validateattributes(target, {'types.untyped.MetaClass'}, {'scalar'});
+                validateattributes(target, {'types.untyped.MetaClass'}, {'scalar'} ...
+                    , 'types.untyped.SoftLink', 'target object', 2);
                 obj.target = target;
             end
         end
         
         function set.path(obj, val)
-            validateattributes(val, {'char', 'string'}, {'scalartext'});
+            validateattributes(val, {'char', 'string'}, {'scalartext'} ...
+                , '(types.untyped.SoftLink).path', 'path', 2);
             obj.path = val;
         end
         

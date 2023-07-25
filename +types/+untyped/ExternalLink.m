@@ -6,8 +6,12 @@ classdef ExternalLink < handle
     
     methods
         function obj = ExternalLink(filename, path)
-            obj.filename = filename;
-            obj.path = path;
+            validateattributes(filename, {'char', 'string'}, {'scalartext'} ...
+                , 'types.untyped.ExternalLink', 'filename', 1);
+            validateattributes(path, {'char', 'string'}, {'scalartext'} ...
+                , 'types.untyped.ExternalLink', 'path', 2);
+            obj.filename = char(filename);
+            obj.path = char(path);
         end
         
         function data = deref(obj)
