@@ -33,6 +33,11 @@ for i=1:length(nwb)
         filename = filenames;
     end
     
-    nwb(i).export(filename);
+    try
+        nwb(i).export(filename);
+    catch ME
+        delete(filename);
+        rethrow(ME);
+    end
 end
 end
