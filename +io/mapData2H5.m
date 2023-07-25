@@ -31,7 +31,7 @@ if ischar(data)
 elseif ~forceArray && ~iscell(data) && isscalar(data)
     sid = H5S.create('H5S_SCALAR');
 elseif ~forceChunked && isempty(data)
-    sid = H5S.create('H5S_NULL');
+    sid = H5S.create_simple(1, 0, 0);
 else
     if isvector(data) || isempty(data)
         num_dims = 1;
