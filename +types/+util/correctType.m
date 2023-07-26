@@ -18,27 +18,32 @@ function val = correctType(val, type)
                 errorMessage ...
             );
         case 'datetime'
-            isHeterogeneousCell = iscell(val) ...
-                && all(...
-                cellfun('isclass', val, 'char') ...
-                | cellfun('isclass', val, 'string')...
-                | cellfun('isclass', val, 'datetime'));
+            isCellString = iscellstr(val) || (iscell(val) && all(cellfun('isclass', val, 'string')));
+            isCellDatetime = iscell(val) && all(cellfun('isclass', val, 'datetime'));
+            isHeterogeneousCell = isCellString || isCellDatetime;
             assert(ischar(val) || isdatetime(val) || isstring(val) || isHeterogeneousCell, ...
                 errorId, sprintf(errorTemplate, 'value is not a timestamp or datetime object'));
             
             % convert strings to datetimes
-            if ischar(val) || isstring(val) || iscell(val)
+            if ischar(val) || isstring(val) || isCellString
                 val = io.timestamp2datetime(val);
                 return;
             end
+            if isdatetime(val)
+                val = num2cell(val);
+            end
             
             % set format depending on default values.
-            if 0 == val.Hour && 0 == val.Minute && 0 == val.Second
-                val.Format = 'yyyy-MM-dd';
-            elseif isempty(val.TimeZone)
-                val.Format = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSS';
-            else
-                val.Format = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSSZZZZZ';
+            for iDatetime = 1:length(val)
+                dateTime = val{iDatetime};
+                if 0 == dateTime.Hour && 0 == dateTime.Minute && 0 == dateTime.Second
+                    dateTime.Format = 'yyyy-MM-dd';
+                elseif isempty(dateTime.TimeZone)
+                    dateTime.Format = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSS';
+                else
+                    dateTime.Format = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSSZZZZZ';
+                end
+                val{iDatetime} = dateTime;
             end
         case {'single', 'double', 'int64', 'int32', 'int16', 'int8', 'uint64', ...
                 'uint32', 'uint16', 'uint8'}
