@@ -45,10 +45,12 @@ function Datetime = charStamp2Datetime(timestamp)
     if isempty(hmsStart)
         return;
     end
-    hmsStamp = extractAfter(timestamp, 'T');
-    timeZoneStart = find(hmsStamp == 'Z' | hmsStamp == '+' | hmsStamp == '-', 1);
-    if ~isempty(timeZoneStart)
-        hmsStamp = extractBefore(hmsStamp, timeZoneStart);
+    afterDateStamp = extractAfter(timestamp, 'T'); % needs to do this so we don't have wrong '-' checks.
+    timeZoneStart = find(afterDateStamp == 'Z' | afterDateStamp == '+' | afterDateStamp == '-', 1);
+    if isempty(timeZoneStart)
+        hmsStamp = afterDateStamp;
+    else
+        hmsStamp = extractBefore(afterDateStamp, timeZoneStart);
     end
     errorMessage = sprintf(errorTemplate ...
         , 'H:m:s should be in the form HH:mm:ss.ssssss or HHmmss.ssssss');
@@ -79,7 +81,7 @@ function Datetime = charStamp2Datetime(timestamp)
     if isempty(timeZoneStart)
         return;
     end
-    timeZoneStamp = hmsStamp(timeZoneStart:end);
+    timeZoneStamp = afterDateStamp(timeZoneStart:end);
     try
         Datetime.TimeZone = timeZoneStamp;
     catch ME
