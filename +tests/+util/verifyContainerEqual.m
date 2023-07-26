@@ -11,54 +11,56 @@ props = setdiff(properties(actual), ignoreList);
 for i = 1:numel(props)
     prop = props{i};
     
-    actualVal = actual.(prop);
-    expectedVal = expected.(prop);
-    failmsg = ['Values for property ''' prop ''' are not equal'];
+    actualValue = actual.(prop);
+    expectedValue = expected.(prop);
+    failureMessage = ['Values for property ''' prop ''' are not equal'];
     
-    if isa(actualVal, 'types.untyped.DataStub')
-        actualVal = actualVal.load();
+    if isa(actualValue, 'types.untyped.DataStub')
+        actualValue = actualValue.load();
     end
     
-    if startsWith(class(expectedVal), 'types.') && ~startsWith(class(expectedVal), 'types.untyped')
-        tests.util.verifyContainerEqual(testCase, actualVal, expectedVal);
-    elseif isa(expectedVal, 'types.untyped.Set')
-        tests.util.verifySetEqual(testCase, actualVal, expectedVal, failmsg);
-    elseif ischar(expectedVal)
-        testCase.verifyEqual(char(actualVal), expectedVal, failmsg);
-    elseif isa(expectedVal, 'types.untyped.ObjectView') || isa(expectedVal, 'types.untyped.SoftLink')
-        testCase.verifyEqual(actualVal.path, expectedVal.path, failmsg);
-    elseif isa(expectedVal, 'types.untyped.RegionView')
-        testCase.verifyEqual(actualVal.path, expectedVal.path, failmsg);
-        testCase.verifyEqual(actualVal.region, expectedVal.region, failmsg);
-    elseif isa(expectedVal, 'types.untyped.Anon')
-        testCase.verifyEqual(actualVal.name, expectedVal.name, failmsg);
-        tests.util.verifyContainerEqual(testCase, actualVal.value, expectedVal.value);
-    elseif isdatetime(expectedVal)...
-            || (iscell(expectedVal) && all(cellfun('isclass', expectedVal, 'datetime')))
+    if startsWith(class(expectedValue), 'types.') && ~startsWith(class(expectedValue), 'types.untyped')
+        tests.util.verifyContainerEqual(testCase, actualValue, expectedValue);
+    elseif isa(expectedValue, 'types.untyped.Set')
+        tests.util.verifySetEqual(testCase, actualValue, expectedValue, failureMessage);
+    elseif ischar(expectedValue)
+        testCase.verifyEqual(char(actualValue), expectedValue, failureMessage);
+    elseif isa(expectedValue, 'types.untyped.ObjectView') || isa(expectedValue, 'types.untyped.SoftLink')
+        testCase.verifyEqual(actualValue.path, expectedValue.path, failureMessage);
+    elseif isa(expectedValue, 'types.untyped.RegionView')
+        testCase.verifyEqual(actualValue.path, expectedValue.path, failureMessage);
+        testCase.verifyEqual(actualValue.region, expectedValue.region, failureMessage);
+    elseif isa(expectedValue, 'types.untyped.Anon')
+        testCase.verifyEqual(actualValue.name, expectedValue.name, failureMessage);
+        tests.util.verifyContainerEqual(testCase, actualValue.value, expectedValue.value);
+    elseif isdatetime(expectedValue)...
+            || (iscell(expectedValue) && all(cellfun('isclass', expectedValue, 'datetime')))
         % linux MATLAB doesn't appear to propery compare datetimes whereas
         % Windows MATLAB does. This is a workaround to get tests to work
         % while getting close enough to exact date representation.
-        actualVal = types.util.checkDtype(prop, 'datetime', actualVal);
-        if ~iscell(expectedVal)
-            expectedVal = {expectedVal};
+        actualValue = types.util.checkDtype(prop, 'datetime', actualValue);
+        if ~iscell(expectedValue)
+            expectedValue = {expectedValue};
         end
-        if ~iscell(actualVal)
-            actualVal = {actualVal};
+        if ~iscell(actualValue)
+            actualValue = {actualValue};
         end
-        for iDates = 1:length(expectedVal)
+        for iDates = 1:length(expectedValue)
             % ignore microseconds as linux datetime has some strange error
             % even when datetime doesn't change in Windows.
-            actualNtfs = convertTo(actualVal{iDates}, 'ntfs');
-            expectedNtfs = convertTo(expectedVal{iDates}, 'ntfs');
-            testCase.verifyGreaterThanOrEqual(actualNtfs, expectedNtfs - 10, failmsg);
-            testCase.verifyLessThanOrEqual(actualNtfs, expectedNtfs + 10, failmsg);
+            ActualDate = actualValue{iDates};
+            ExpectedDate = expectedValue{iDates};
+            ExpectedUpperBound = ExpectedDate + milliseconds(1);
+            ExpectedLowerBound = ExpectedDate - milliseconds(1);
+            testCase.verifyTrue(isbetween(ActualDate, ExpectedLowerBound, ExpectedUpperBound) ...
+                , failureMessage);
         end
-    elseif startsWith(class(expectedVal), 'int')
-        testCase.verifyEqual(int64(actualVal), int64(expectedVal), failmsg);
-    elseif startsWith(class(expectedVal), 'uint')
-        testCase.verifyEqual(uint64(actualVal), uint64(expectedVal), failmsg);
+    elseif startsWith(class(expectedValue), 'int')
+        testCase.verifyEqual(int64(actualValue), int64(expectedValue), failureMessage);
+    elseif startsWith(class(expectedValue), 'uint')
+        testCase.verifyEqual(uint64(actualValue), uint64(expectedValue), failureMessage);
     else
-        testCase.verifyEqual(actualVal, expectedVal, failmsg);
+        testCase.verifyEqual(actualValue, expectedValue, failureMessage);
     end
 end
 end
