@@ -90,7 +90,7 @@ function Datetime = charStamp2Datetime(timestamp)
         addCause(ME, Cause);
        	throwAsCaller(ME);
     end
-    datetimeFormat = [datetimeFormat, 'ZZZZZZ'];
+    datetimeFormat = [datetimeFormat, 'ZZZZZ'];
     Datetime.Format = datetimeFormat;
 end
 
