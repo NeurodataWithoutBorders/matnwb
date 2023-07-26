@@ -3,7 +3,7 @@ function val = correctType(val, type)
     %   Will error if type is simply incompatible
     %   Will throw if casting to primitive type "type" is impossible
     
-    errorId = 'NWB:InvalidConversion';
+    errorId = 'NWB:TypeCorrection:InvalidConversion';
     errorTemplate = sprintf( ...
         'Value of type `%s` cannot be converted to type `%s`:\n  %%s', class(val), type ...
     );
