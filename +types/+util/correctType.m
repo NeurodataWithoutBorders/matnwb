@@ -35,15 +35,7 @@ function val = correctType(val, type)
             
             % set format depending on default values.
             for iDatetime = 1:length(val)
-                dateTime = val{iDatetime};
-                if 0 == dateTime.Hour && 0 == dateTime.Minute && 0 == dateTime.Second
-                    dateTime.Format = 'yyyy-MM-dd';
-                elseif isempty(dateTime.TimeZone)
-                    dateTime.Format = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSS';
-                else
-                    dateTime.Format = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSSZZZZZ';
-                end
-                val{iDatetime} = dateTime;
+                val{iDatetime} = formatDatetime(val{iDatetime});
             end
         case {'single', 'double', 'int64', 'int32', 'int16', 'int8', 'uint64', ...
                 'uint32', 'uint16', 'uint8'}
@@ -77,6 +69,17 @@ function val = correctType(val, type)
                 , sprintf('value is not instance of type %s. Got type %s instead', type, class(val)));
             assert(isa(val, type), errorId, errorMessage);
     end
+end
+
+function Datetime = formatDatetime(Datetime)
+    if 0 == Datetime.Hour && 0 == Datetime.Minute && 0 == Datetime.Second
+        formatString = 'yyyy-MM-dd';
+    elseif isempty(Datetime.TimeZone)
+        formatString = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSS';
+    else
+        formatString = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSSZZZZZ';
+    end
+    Datetime.Format = formatString;
 end
 
 function nearestType = findNearestType(val, type)

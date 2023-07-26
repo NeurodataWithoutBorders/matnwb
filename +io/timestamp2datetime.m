@@ -3,16 +3,25 @@ function Datetimes = timestamp2datetime(timestamps)
     
     timestamps = timestamp2cellstr(timestamps);
     for iTimestamp = 1:length(timestamps)
-        Datetimes(iTimestamp) = charStamp2Datetime(timestamps{iTimestamp});
+        timestampString = timestamps{iTimestamp};
+        try
+            Datetime = datetime(timestampString);
+        catch ME
+            if strcmp(ME.identifier, 'MATLAB:datetime:UnrecognizedDateStringSuggestLocale')
+                Datetime = detectDatetime(timestampString);
+            else
+                rethrow(ME);
+            end
+        end
+        Datetimes(iTimestamp) = Datetime;
     end
 end
 
-function Datetime = charStamp2Datetime(timestamp)
+function Datetime = detectDatetime(timestamp)
     errorId = 'NWB:InvalidTimestamp';
     errorTemplate = sprintf('Timestamp `%s` is not a valid ISO8601 subset for NWB:\n  %%s', timestamp);
     Datetime = datetime(0, 0, 0, 0, 0, 0, 0);
     %% YMoD
-    datetimeFormat = 'yyyy-MM-dd';
     hmsStart = find(timestamp == 'T', 1);
     if isempty(hmsStart)
         ymdStamp = timestamp;
@@ -39,7 +48,6 @@ function Datetime = charStamp2Datetime(timestamp)
     Datetime.Month = str2double(YmdToken.Month);
     Datetime.Day = str2double(YmdToken.Day);
     assert(~isnat(Datetime), errorId, sprintf(errorTemplate, 'non-numeric YMD values detected'));
-    Datetime.Format = datetimeFormat;
     
     %% HMiS TZ
     if isempty(hmsStart)
@@ -74,8 +82,6 @@ function Datetime = charStamp2Datetime(timestamp)
     Datetime.Minute = str2double(HmsToken.Minute);
     Datetime.Second = str2double(HmsToken.Second);
     assert(~isnat(Datetime), errorId, sprintf(errorTemplate, 'non-numeric H:m:s values detected'));
-    datetimeFormat = [datetimeFormat, '''T''HH:mm:ss.SSSSSS'];
-    Datetime.Format = datetimeFormat;
 
     %% TimeZone
     if isempty(timeZoneStart)
@@ -90,8 +96,6 @@ function Datetime = charStamp2Datetime(timestamp)
         addCause(ME, Cause);
        	throwAsCaller(ME);
     end
-    datetimeFormat = [datetimeFormat, 'ZZZZZ'];
-    Datetime.Format = datetimeFormat;
 end
 
 function cells = timestamp2cellstr(timestamps)
