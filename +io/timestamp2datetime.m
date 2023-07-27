@@ -7,7 +7,11 @@ function Datetimes = timestamp2datetime(timestamps)
         try
             Datetime = datetime(timestampString);
         catch ME
-            if strcmp(ME.identifier, 'MATLAB:datetime:UnrecognizedDateStringSuggestLocale')
+            unrecognizedStringId = { ...
+                'MATLAB:datetime:UnrecognizedDateStringSuggestLocale' ...
+                , 'MATLAB:datetime:UnrecognizedDateStringsSuggestLocale' ...
+                }; % missing plural strings lmao
+            if any(strcmp(ME.identifier, unrecognizedStringId))
                 Datetime = detectDatetime(timestampString);
             else
                 rethrow(ME);
