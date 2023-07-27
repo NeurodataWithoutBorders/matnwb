@@ -5,9 +5,12 @@ function data = load_mat_style(obj, varargin)
     %   MATLAB, not HDF5 for this function.
     assert(length(varargin) <= obj.ndims, 'NWB:DataStub:Load:TooManyDimensions',...
         'Too many dimensions specified (got %d, expected %d)', length(varargin), obj.ndims);
-    dimensions = obj.dims;
+
+    %% Select from Space
+    dataDimensions = obj.dims;
     spaceId = obj.get_space();
     userSelection = varargin;
+    
     if isscalar(userSelection) && ~ischar(userSelection{1})
         % linear index into the fast dimension.
         orderedSelection = unique(userSelection{1});
@@ -19,8 +22,8 @@ function data = load_mat_style(obj, varargin)
             selectionDimensions = fliplr(size(orderedSelection));
         end
 
-        points = cell(length(dimensions), 1);
-        [points{:}] = ind2sub(dimensions, orderedSelection);
+        points = cell(length(dataDimensions), 1);
+        [points{:}] = ind2sub(dataDimensions, orderedSelection);
         readSpaceId = H5S.copy(spaceId);
         H5S.select_none(readSpaceId);
         H5S.select_elements(readSpaceId, 'H5S_SELECT_SET', ...
@@ -29,27 +32,28 @@ function data = load_mat_style(obj, varargin)
             selectionDimensions, selectionDimensions);
     else
         % multidimensional index selection
-        shapes = io.space.segmentSelection(userSelection, dimensions);
+        shapes = io.space.segmentSelection(userSelection, dataDimensions);
         [readSpaceId, memorySpaceId] = io.space.getReadSpace(shapes, spaceId);
     end
     H5S.close(spaceId);
 
-    % read data.
+    %% Read Data
     fileId = H5F.open(obj.filename);
     datasetId = H5D.open(fileId, obj.path);
     data = H5D.read(datasetId, 'H5ML_DEFAULT', memorySpaceId, readSpaceId, 'H5P_DEFAULT');
     H5D.close(datasetId);
     H5F.close(fileId);
     H5S.close(memorySpaceId);
-
-    expectedSize = getExpectedSize();
-    userSelection = varargin;
+    
+    %% Reshape Data
+    expectedSize = getExpectedSize(dataDimensions, userSelection);
     openSelectionIndices = find(cellfun('isclass', userSelection, 'char'));
-    for iIndex = 1:length(openSelectionIndices)
+    for iDimension = 1:length(openSelectionIndices)
         % for open selection ':', select the entire range of that dimension.
-        userSelection{iIndex} = 1:dimensions(iIndex);
+        userSelection{iDimension} = 1:dataDimensions(iDimension);
     end
 
+    
     if isstruct(data)
         % for compound datatypes, reshape for all data in the
         % struct.
@@ -67,46 +71,44 @@ function data = load_mat_style(obj, varargin)
             data = logical(data);
         end
     end
+end
 
-    function expectedSize = getExpectedSize(dimensions, userSelection)
-        expectedSize = dimensions;
-        for i = 1:length(varargin)
-            if ~ischar(varargin{i})
-                expectedSize(i) = length(varargin{i});
-            end
+function expectedSize = getExpectedSize(dataDimensions, userSelection)
+    expectedSize = dataDimensions;
+    for i = 1:length(userSelection)
+        if ~ischar(userSelection{i})
+            expectedSize(i) = length(userSelection{i});
         end
+    end
 
-        if ischar(varargin{end})
-            % dangling ':' where leftover dimensions are folded into
-            % the last selection.
-            selectedDimensionIndex = length(varargin);
-            expectedSize = [expectedSize(1:(selectedDimensionIndex-1)),...
-                prod(dimensions(selectedDimensionIndex:end))];
-        else
-            expectedSize = expectedSize(1:length(varargin));
-        end
+    if ischar(userSelection{end})
+        % dangling ':' where leftover dimensions are folded into
+        % the last selection.
+        selectedDimensionIndex = length(userSelection);
+        expectedSize = [expectedSize(1:(selectedDimensionIndex-1)),...
+            prod(dataDimensions(selectedDimensionIndex:end))];
+    else
+        expectedSize = expectedSize(1:length(userSelection));
+    end
 
-        if isscalar(varargin) && isscalar(expectedSize)
-            % very special case where shape of the scalar indices determine the
-            % shape of the output data for some reason.
-            if 1 < sum(1 < dimensions) % is multi-dimensional data
-                if ~ischar(varargin{1}) && isrow(varargin{1})
-                    expectedSize = [1 expectedSize];
-                else
-                    expectedSize = [expectedSize 1];
-                end
+    if isscalar(userSelection) && isscalar(expectedSize)
+        % very special case where shape of the scalar indices determine the
+        % shape of the output data for some reason.
+        if 1 < sum(1 < dataDimensions) % is multi-dimensional data
+            if ~ischar(userSelection{1}) && isrow(userSelection{1})
+                expectedSize = [1 expectedSize];
             else
-                if dimensions(1) == 1 % probably a row
-                    expectedSize = [1 expectedSize];
-                else % column
-                    expectedSize = [expectedSize 1];
-                end
+                expectedSize = [expectedSize 1];
+            end
+        else
+            if dataDimensions(1) == 1 % probably a row
+                expectedSize = [1 expectedSize];
+            else % column
+                expectedSize = [expectedSize 1];
             end
         end
     end
 end
-
-
 
 function reordered = reorderLoadedData(data, selections)
     % dataset loading does not account for duplicate or unordered
