@@ -26,7 +26,7 @@ function val = correctType(val, type)
             
             % convert strings to datetimes
             if ischar(val) || isstring(val) || isCellString
-                val = io.timestamp2datetime(val);
+                val = formatDatetime(io.timestamp2datetime(val));
                 return;
             end
             if isdatetime(val)
@@ -35,6 +35,8 @@ function val = correctType(val, type)
             
             % set format depending on default values.
             for iDatetime = 1:length(val)
+                % note, must be a for loop since datetimes with/without timezones cannot be
+                % concatenated.
                 val{iDatetime} = formatDatetime(val{iDatetime});
             end
         case {'single', 'double', 'int64', 'int32', 'int16', 'int8', 'uint64', ...
@@ -72,14 +74,14 @@ function val = correctType(val, type)
 end
 
 function Datetime = formatDatetime(Datetime)
-    if 0 == Datetime.Hour && 0 == Datetime.Minute && 0 == Datetime.Second
+    if all(0 == [Datetime.Hour] & 0 == [Datetime.Minute] & 0 == [Datetime.Second])
         formatString = 'yyyy-MM-dd';
-    elseif isempty(Datetime.TimeZone)
+    elseif all(cellfun('isempty', {Datetime.TimeZone}))
         formatString = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSS';
     else
         formatString = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSSZZZZZ';
     end
-    Datetime.Format = formatString;
+    [Datetime.Format] = formatString;
 end
 
 function nearestType = findNearestType(val, type)
