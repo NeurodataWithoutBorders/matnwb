@@ -1,5 +1,5 @@
 import unittest
-from datetime import datetime
+from datetime import datetime, timedelta
 import os.path
 import numpy as np
 from dateutil.tz import tzlocal, tzoffset
@@ -64,47 +64,48 @@ class PyNWBIOTest(unittest.TestCase):
             container_fields = container1.__fields__
         for nwbfield in container_fields:
             with self.subTest(nwbfield=nwbfield, container_type=type1.__name__):
-                f1 = getattr(container1, nwbfield)
-                f2 = getattr(container2, nwbfield)
-                if isinstance(f1, (tuple, list, np.ndarray)):
-                    if len(f1) > 0:
-                        if isinstance(f1[0], Container):
-                            for sub1, sub2 in zip(f1, f2):
+                field1 = getattr(container1, nwbfield)
+                field2 = getattr(container2, nwbfield)
+                if isinstance(field1, (tuple, list, np.ndarray)):
+                    if len(field1) > 0:
+                        if isinstance(field1[0], Container):
+                            for sub1, sub2 in zip(field1, field2):
                                 self.assertContainerEqual(sub1, sub2)
-                        elif isinstance(f1[0], Data):
-                            for sub1, sub2 in zip(f1, f2):
+                        elif isinstance(field1[0], Data):
+                            for sub1, sub2 in zip(field1, field2):
                                 self.assertDataEqual(sub1, sub2)
                         continue
                     else:
-                        self.assertEqual(len(f1), len(f2))
-                        if len(f1) == 0:
+                        self.assertEqual(len(field1), len(field2))
+                        if len(field1) == 0:
                             continue
-                        if isinstance(f1[0], float):
-                                for v1, v2 in zip(f1, f2):
+                        if isinstance(field1[0], float):
+                                for v1, v2 in zip(field1, field2):
                                     self.assertAlmostEqual(v1, v2, places=6)
                         else:
-                            self.assertTrue(np.array_equal(f1, f2))
-                elif isinstance(f1, dict) and len(f1) and isinstance(next(iter(f1.values())), Container):
-                    f1_keys = set(f1.keys())
-                    f2_keys = set(f2.keys())
-                    self.assertSetEqual(f1_keys, f2_keys)
-                    for k in f1_keys:
+                            self.assertTrue(np.array_equal(field1, field2))
+                elif isinstance(field1, dict) and len(field1) and isinstance(next(iter(field1.values())), Container):
+                    field1_keys = set(field1.keys())
+                    field2_keys = set(field2.keys())
+                    self.assertSetEqual(field1_keys, field2_keys)
+                    for k in field1_keys:
                         with self.subTest(module_name=k):
-                            self.assertContainerEqual(f1[k], f2[k])
-                elif isinstance(f1, Container) or isinstance(f1, Container):
-                    self.assertContainerEqual(f1, f2)
-                elif isinstance(f1, Data) or isinstance(f2, Data):
-                    if isinstance(f1, Data) and isinstance(f2, Data):
-                        self.assertDataEqual(f1, f2)
-                    elif isinstance(f1, Data):
-                        self.assertTrue(np.array_equal(f1.data, f2))
-                    elif isinstance(f2, Data):
-                        self.assertTrue(np.array_equal(f1.data, f2))
+                            self.assertContainerEqual(field1[k], field2[k])
+                elif isinstance(field1, Container) or isinstance(field1, Container):
+                    self.assertContainerEqual(field1, field2)
+                elif isinstance(field1, Data) and isinstance(field2, Data):
+                    self.assertDataEqual(field1, field2)
+                elif isinstance(field1, Data) or isinstance(field2, Data):
+                    self.assertTrue(np.array_equal(field1.data, field2))
+                elif isinstance(field1, (float, np.float32, np.float16, h5py.Dataset)):
+                    npt.assert_almost_equal(field1, field2)
+                elif isinstance(field1, datetime):
+                    self.assertTrue(isinstance(field2, datetime))
+                    field1_upper = field1 + timedelta(milliseconds = 1)
+                    field1_lower = field1 - timedelta(milliseconds = 1)
+                    self.assertTrue(field2 >= field1_lower and field2 <= field1_upper)
                 else:
-                    if isinstance(f1, (float, np.float32, np.float16, h5py.Dataset)):
-                        npt.assert_almost_equal(f1, f2)
-                    else:
-                        self.assertEqual(f1, f2)
+                    self.assertEqual(field1, field2)
 
     def assertDataEqual(self, data1, data2):
         self.assertEqual(type(data1), type(data2))
