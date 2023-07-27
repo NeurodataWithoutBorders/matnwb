@@ -40,10 +40,10 @@ for i = 1:numel(props)
         % while getting close enough to exact date representation.
         actualValue = types.util.checkDtype(prop, 'datetime', actualValue);
         if ~iscell(expectedValue)
-            expectedValue = {expectedValue};
+            expectedValue = num2cell(expectedValue);
         end
         if ~iscell(actualValue)
-            actualValue = {actualValue};
+            actualValue = num2cell(actualValue);
         end
         for iDates = 1:length(expectedValue)
             % ignore microseconds as linux datetime has some strange error
