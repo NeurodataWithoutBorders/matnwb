@@ -14,13 +14,11 @@ rehash();
 end
 
 function testRegionRead(testCase)
-date = datetime(2018, 3, 1, 12, 0, 0);
-session_start_time = datetime(date,'Format','yyyy-MM-dd''T''HH:mm:SSZZ',...
-    'TimeZone','local');
+
 nwb = NwbFile(...
     'session_description', 'a test NWB File', ...
     'identifier', 'mouse004_day4', ...
-    'session_start_time', session_start_time);
+    'session_start_time', datetime(2018, 3, 1, 12, 0, 0, 'TimeZone', 'local'));
 
 data = reshape(1:5000, 25, 5, 4, 2, 5);
 

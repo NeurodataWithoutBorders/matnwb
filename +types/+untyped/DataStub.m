@@ -88,7 +88,7 @@ classdef (Sealed) DataStub < handle
                         if iscellstr(data) && isscalar(data)
                             data = data{1};
                         elseif isstring(data)
-                            data = char(data);
+                            data = convertStringsToChars(data);
                         end
                     case 'logical'
                         % data assumed to be cell array of enum string
