@@ -8,8 +8,8 @@ function verifyContainerEqual(testCase, actual, expected, ignoreList)
         'ignored.']);
     testCase.verifyEqual(class(actual), class(expected));
     props = setdiff(properties(actual), ignoreList);
-    for i = 1:numel(props)
-        prop = props{i};
+    for iProperty = 1:numel(props)
+        prop = props{iProperty};
 
         actualValue = actual.(prop);
         expectedValue = expected.(prop);
@@ -59,6 +59,18 @@ function verifyContainerEqual(testCase, actual, expected, ignoreList)
             testCase.verifyEqual(int64(actualValue), int64(expectedValue), failureMessage);
         elseif startsWith(class(expectedValue), 'uint')
             testCase.verifyEqual(uint64(actualValue), uint64(expectedValue), failureMessage);
+        elseif isstruct(expectedValue) || istable(expectedValue)
+            if istable(expectedValue)
+                fieldNames = expectedValue.Properties.VariableNames;
+            else
+                fieldNames = fieldnames(expectedValue);
+            end
+            fieldNames = convertStringsToChars(fieldNames);
+            testCase.verifyTrue(isstruct(actualValue) || istable(actualValue), failureMessage);
+            for iField = 1:length(fieldNames)
+                name = fieldNames{iField};
+                testCase.verifyEqual(actualValue.(name), expectedValue.(name), failureMessage);
+            end
         else
             testCase.verifyEqual(actualValue, expectedValue, failureMessage);
         end
