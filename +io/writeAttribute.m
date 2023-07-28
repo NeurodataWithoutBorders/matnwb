@@ -22,7 +22,9 @@ catch ME
         rethrow(ME);
     end
 end
-H5A.write(id, tid, data);
+if ~isempty(data)
+    H5A.write(id, tid, data);
+end
 H5A.close(id);
 H5S.close(sid);
 H5O.close(oid);
