@@ -41,6 +41,9 @@ function data = load_mat_style(obj, varargin)
     fileId = H5F.open(obj.filename);
     datasetId = H5D.open(fileId, obj.path);
     data = H5D.read(datasetId, 'H5ML_DEFAULT', memorySpaceId, readSpaceId, 'H5P_DEFAULT');
+
+    %% Retype Data
+    data = hdf2mat(datasetId, data);
     H5D.close(datasetId);
     H5F.close(fileId);
     H5S.close(memorySpaceId);
@@ -52,7 +55,6 @@ function data = load_mat_style(obj, varargin)
         % for open selection ':', select the entire range of that dimension.
         userSelection{iDimension} = 1:dataDimensions(iDimension);
     end
-
     
     if isstruct(data)
         % for compound datatypes, reshape for all data in the
@@ -65,12 +67,24 @@ function data = load_mat_style(obj, varargin)
         data = struct2table(data);
     else
         data = reshape(reorderLoadedData(data, userSelection), expectedSize);
-
-        % convert int8 values to logical.
-        if strcmp(obj.dataType, 'logical')
-            data = logical(data);
-        end
     end
+end
+
+function data = hdf2mat(datasetId, data)
+    typeId = H5D.get_type(datasetId);
+    matlabType = io.getMatType(typeId);
+    switch matlabType
+        case 'logical'
+            data = logical(data);
+        case {'types.untyped.ObjectView', 'types.untyped.RegionView'}
+            data = io.parseReference(datasetId, typeId, data);
+        case 'table'
+            data = io.parseCompound(datasetId, data);
+        otherwise
+            % no-op
+    end
+
+    H5T.close(typeId);
 end
 
 function expectedSize = getExpectedSize(dataDimensions, userSelection)
