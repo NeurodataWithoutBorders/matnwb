@@ -1,32 +1,32 @@
-function fcstr = fillConstructor(name, parentname, defaults, props, namespace)
+function functionString = fillConstructor(name, parentname, defaults, props, namespace)
     caps = upper(name);
-    fcnbody = ['% ' caps ' Constructor for ' name];
+    functionBody = ['% ' caps ' Constructor for ' name];
 
-    txt = fillBody(parentname, defaults, props, namespace);
-    if ~isempty(txt)
-        fcnbody = [fcnbody newline txt];
+    bodyString = fillBody(parentname, defaults, props, namespace);
+    if ~isempty(bodyString)
+        functionBody = [functionBody newline() bodyString];
     end
 
-    fcnbody = strjoin({fcnbody, ...
+    functionBody = strjoin({functionBody, ...
         sprintf('if strcmp(class(obj), ''%s'')', namespace.getFullClassName(name)), ...
         '    cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));', ...
         '    types.util.checkUnset(obj, unique(cellStringArguments));', ...
         'end'}, newline());
 
     % insert check for DynamicTable class and child classes
-    txt = fillCheck(name, namespace);
-    if ~isempty(txt)
-        fcnbody = [fcnbody newline txt];
+    bodyString = fillCheck(name, namespace);
+    if ~isempty(bodyString)
+        functionBody = [functionBody newline() bodyString];
     end
 
-    fcstr = strjoin({...
+    functionString = strjoin({...
         ['function obj = ' name '(varargin)']...
-        file.addSpaces(fcnbody, 4)...
-        'end'}, newline);
+        file.addSpaces(functionBody, 4)...
+        'end'}, newline());
 
 end
 
-function bodystr = fillBody(pname, defaults, props, namespace)
+function bodystr = fillBody(parentName, defaults, props, namespace)
     if isempty(defaults)
         bodystr = '';
     else
@@ -47,7 +47,7 @@ function bodystr = fillBody(pname, defaults, props, namespace)
         kwargs(1:2:end) = strcat('''', kwargs(1:2:end), '''');
         bodystr = ['varargin = [{' misc.cellPrettyPrint(kwargs) '} varargin];' newline];
     end
-    bodystr = [bodystr 'obj = obj@' pname '(varargin{:});'];
+    bodystr = [bodystr 'obj = obj@' parentName '(varargin{:});'];
 
     names = keys(props);
     if isempty(names)
@@ -55,16 +55,16 @@ function bodystr = fillBody(pname, defaults, props, namespace)
     end
     % if there's a root object that is a constrained set, let it be hoistable from dynamic arguments
     dynamicConstrained = false(size(names));
-    anon = false(size(names));
-    isattr = false(size(names));
+    isAnonymousType = false(size(names));
+    isAttribute = false(size(names));
     typenames = repmat({''}, size(names));
     varnames = repmat({''}, size(names));
-    for i=1:length(names)
+    for i = 1:length(names)
         nm = names{i};
         prop = props(nm);
 
         if isa(prop, 'file.Attribute')
-            isattr(i) = true;
+            isAttribute(i) = true;
             continue;
         end
 
@@ -81,7 +81,7 @@ function bodystr = fillBody(pname, defaults, props, namespace)
                 typeNames{iProp} = p.type;
             end
             dynamicConstrained(i) = all(isDynamicConstrained);
-            anon(i) = all(isAnon);
+            isAnonymousType(i) = all(isAnon);
 
             if all(hasType)
                 varnames{i} = nm;
@@ -101,12 +101,12 @@ function bodystr = fillBody(pname, defaults, props, namespace)
     end
 
     %warn for missing namespaces/property types
-    warnmsg = ['`' pname '`''s constructor is unable to check for type `%1$s` ' ...
+    warnmsg = ['`' parentName '`''s constructor is unable to check for type `%1$s` ' ...
         'because its namespace or type specifier could not be found.  Try generating ' ...
         'the namespace or class definition for type `%1$s` or fix its schema.'];
 
     invalid = cellfun('isempty', typenames);
-    invalidWarn = invalid & (dynamicConstrained | anon) & ~isattr;
+    invalidWarn = invalid & (dynamicConstrained | isAnonymousType) & ~isAttribute;
     invalidVars = varnames(invalidWarn);
     for i=1:length(invalidVars)
         warning(warnmsg, invalidVars{i});
@@ -131,8 +131,8 @@ function bodystr = fillBody(pname, defaults, props, namespace)
     %if anonymous values exist, then check for nonstandard parameters and add
     %as Anon
 
-    anonTypes = typenames(anon & ~invalid);
-    anonVars = varnames(anon & ~invalid);
+    anonTypes = typenames(isAnonymousType & ~invalid);
+    anonVars = varnames(isAnonymousType & ~invalid);
     methodCalls = strcat('[obj.', anonVars, ',ivarargin] = ',...
         ' types.util.parseAnon(''', anonTypes, ''', varargin{:});');
     fullBody = cell(length(methodCalls) * 2,1);
@@ -147,7 +147,7 @@ function bodystr = fillBody(pname, defaults, props, namespace)
         'p.PartialMatching = false;',...
         'p.StructExpand = false;'};
 
-    names = names(~dynamicConstrained & ~anon);
+    names = names(~dynamicConstrained & ~isAnonymousType);
     defaults = cell(size(names));
     for i=1:length(names)
         prop = props(names{i});
