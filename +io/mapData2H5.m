@@ -62,7 +62,11 @@ switch class(data)
         % encode as int8 values.
         data = int8(data);
     case 'char'
-        data = mat2cell(data, size(data, 1));
+        if isempty(data)
+            data = {};
+        else
+            data = mat2cell(data, size(data, 1));
+        end
     case {'cell', 'datetime'}
         if isdatetime(data)
             data = num2cell(data);

@@ -166,7 +166,7 @@ function path = traverseRaw(propertyName, RawClass)
     end
 end
 
-function fde = fillDataExport(name, prop, elisions)
+function dataExportString = fillDataExport(name, prop, elisions)
     if isempty(elisions)
         fullpath = ['[fullpath ''/' prop.name ''']'];
         elisionpath = 'fullpath';
@@ -177,11 +177,11 @@ function fde = fillDataExport(name, prop, elisions)
 
     if (isa(prop, 'file.Group') || isa(prop, 'file.Dataset')) && prop.isConstrainedSet
         % is a sub-object (with an export function)
-        fde = ['refs = obj.' name '.export(fid, ' elisionpath ', refs);'];
+        dataExportString = ['refs = obj.' name '.export(fid, ' elisionpath ', refs);'];
     elseif isa(prop, 'file.Link') || isa(prop, 'file.Group') ||...
             (isa(prop, 'file.Dataset') && ~isempty(prop.type))
         % obj, loc_id, path, refs
-        fde = ['refs = obj.' name '.export(fid, ' fullpath ', refs);'];
+        dataExportString = ['refs = obj.' name '.export(fid, ' fullpath ', refs);'];
     elseif isa(prop, 'file.Dataset') %untyped dataset
         options = {};
 
@@ -203,7 +203,7 @@ function fde = fillDataExport(name, prop, elisions)
         nameProp = sprintf('obj.%s', name);
         nameArgs = [{nameProp} options];
         nameArgs = strjoin(nameArgs, ', ');
-        fde = strjoin({...
+        dataExportString = strjoin({...
             ['if startsWith(class(obj.' name '), ''types.untyped.'')']...
             ['    refs = obj.' name '.export(fid, ' fullpath ', refs);']...
             ['elseif ~isempty(obj.' name ')']...
@@ -216,7 +216,7 @@ function fde = fillDataExport(name, prop, elisions)
         else
             forceArrayFlag = ', ''forceArray''';
         end
-        fde = sprintf('io.writeAttribute(fid, %1$s, obj.%2$s%3$s);',...
+        dataExportString = sprintf('io.writeAttribute(fid, %1$s, obj.%2$s%3$s);',...
             fullpath, name, forceArrayFlag);
     end
 
@@ -242,6 +242,8 @@ function fde = fillDataExport(name, prop, elisions)
     end
 
     if ~isempty(propertyChecks)
-        fde = ['if ' strjoin(propertyChecks, ' && ') newline file.addSpaces(fde, 4) newline 'end'];
+        dataExportString = sprintf('if %s\n%s\nend' ...
+            , strjoin(propertyChecks, ' && '), file.addSpaces(dataExportString, 4) ...
+            );
     end
 end
