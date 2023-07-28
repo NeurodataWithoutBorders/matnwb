@@ -15,7 +15,8 @@ classdef NwbFile < types.core.NWBFile
         function obj = NwbFile(varargin)
             obj = obj@types.core.NWBFile(varargin{:});
             if strcmp(class(obj), 'NwbFile')
-                types.util.checkUnset(obj, unique(varargin(1:2:end)));
+                cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
+                types.util.checkUnset(obj, unique(cellStringArguments));
             end
         end
 
