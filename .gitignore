@@ -1,6 +1,7 @@
 +types/
 !+types/+untyped/
 !+types/+util/
+!+types/+untyped/@DataStub
 testResults.xml
 coverage.xml
 .ropeproject
