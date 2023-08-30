@@ -113,27 +113,14 @@ if isempty(value)
     return;
 end
 
-% retrieve sample of val
-if isa(value, 'types.untyped.DataStub')
-    %grab first element and check
+% retrieve comparable value
+valueWrapper = [];
+if isa(value, 'types.untyped.DataStub') ...
+    || isa(value, 'types.untyped.DataPipe') ...
+    || isa(value, 'typest.untyped.Anon') ...
+    || (isa(value, 'types.untyped.ExternalLink') && ~strcmp(typeDescriptor, 'types.untyped.ExternalLink'))
     valueWrapper = value;
-    if any(value.dims == 0)
-        value = [];
-    else
-        value = value.load(1);
-    end
-elseif isa(value, 'types.untyped.Anon')
-    valueWrapper = value;
-    value = value.value;
-elseif isa(value, 'types.untyped.ExternalLink') &&...
-        ~strcmp(typeDescriptor, 'types.untyped.ExternalLink')
-    valueWrapper = value;
-    value = value.deref();
-elseif isa(value, 'types.untyped.DataPipe')
-    valueWrapper = value;
-    value = cast([], value.dataType);
-else
-    valueWrapper = [];
+    value = unwrapValue(value);
 end
 
 correctedValue = types.util.correctType(value, typeDescriptor);
@@ -155,4 +142,34 @@ end
 if ~isempty(valueWrapper)
     value = valueWrapper;
 end
+end
+
+function unwrapped = unwrapValue(wrapped, history)
+    if nargin < 2
+        history = {};
+    end
+    for iHistory = 1:length(history)
+        assert(wrapped ~= history{iHistory}, ...
+            'NWB:CheckDataType:InfiniteLoop' ...
+            , ['Infinite loop of a previously defined wrapped value detected. ' ...
+            'Please ensure infinite loops do not occur with reference types like Links.']);
+    end
+    if isa(wrapped, 'types.untyped.DataStub')
+        %grab first element and check
+        if any(wrapped.dims == 0)
+            unwrapped = [];
+        else
+            unwrapped = wrapped.load(1);
+        end
+    elseif isa(wrapped, 'types.untyped.DataPipe')
+        unwrapped = cast([], wrapped.dataType);
+    elseif isa(wrapped, 'typest.untyped.Anon')
+        history{end+1} = wrapped;
+        unwrapped = unwrapValue(wrapped.value, history);
+    elseif isa(wrapped, 'types.untyped.ExternalLink')
+        history{end+1} = wrapped;
+        unwrapped = unwrapValue(wrapped.deref(), history);
+    else
+        unwrapped = wrapped;
+    end
 end
