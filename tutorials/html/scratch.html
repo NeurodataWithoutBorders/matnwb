@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge,IE=9,chrome=1"><meta name="generator" content="MATLAB 2023a"><title>Miscellaneous Data in NWB</title><style type="text/css">.rtcContent { padding: 30px; } .S0 { margin: 3px 10px 5px 4px; padding: 0px; line-height: 28.8px; min-height: 0px; white-space: pre-wrap; color: rgb(192, 76, 11); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 24px; font-weight: 400; text-align: left;  }
+.S1 { margin: 2px 10px 9px 4px; padding: 0px; line-height: 21px; min-height: 0px; white-space: pre-wrap; color: rgb(33, 33, 33); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 14px; font-weight: 400; text-align: left;  }
+.S2 { margin-bottom: 20px; padding-bottom: 4px;  }
+.S3 { margin: 0px; padding: 10px 0px 10px 5px; line-height: 21px; min-height: 0px; white-space: pre-wrap; color: rgb(33, 33, 33); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 14px; font-weight: 700; text-align: start;  }
+.S4 { margin: -1px 0px 0px; padding: 10px 0px 10px 7px; line-height: 21px; min-height: 0px; white-space: pre-wrap; color: rgb(33, 33, 33); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 14px; font-weight: 400; text-align: start;  }
+.S5 { margin: 20px 10px 5px 4px; padding: 0px; line-height: 20px; min-height: 0px; white-space: pre-wrap; color: rgb(33, 33, 33); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 20px; font-weight: 700; text-align: left;  }
+.CodeBlock { background-color: #F5F5F5; margin: 10px 0 10px 0; }
+.S6 { border-left: 0.994318px solid rgb(217, 217, 217); border-right: 0.994318px solid rgb(217, 217, 217); border-top: 0.994318px solid rgb(217, 217, 217); border-bottom: 0px none rgb(33, 33, 33); border-radius: 4px 4px 0px 0px; padding: 6px 45px 0px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }
+.S7 { border-left: 0.994318px solid rgb(217, 217, 217); border-right: 0.994318px solid rgb(217, 217, 217); border-top: 0px none rgb(33, 33, 33); border-bottom: 0px none rgb(33, 33, 33); border-radius: 0px; padding: 0px 45px 0px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }
+.S8 { border-left: 0.994318px solid rgb(217, 217, 217); border-right: 0.994318px solid rgb(217, 217, 217); border-top: 0px none rgb(33, 33, 33); border-bottom: 0.994318px solid rgb(217, 217, 217); border-radius: 0px 0px 4px 4px; padding: 0px 45px 4px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }
+.S9 { margin: 3px 10px 5px 4px; padding: 0px; line-height: 20px; min-height: 0px; white-space: pre-wrap; color: rgb(33, 33, 33); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 20px; font-weight: 700; text-align: left;  }
+.S10 { margin: 10px 10px 9px 4px; padding: 0px; line-height: 21px; min-height: 0px; white-space: pre-wrap; color: rgb(33, 33, 33); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 14px; font-weight: 400; text-align: left;  }
+.S11 { border-left: 0.994318px solid rgb(217, 217, 217); border-right: 0.994318px solid rgb(217, 217, 217); border-top: 0px none rgb(33, 33, 33); border-bottom: 0.994318px solid rgb(217, 217, 217); border-radius: 0px; padding: 0px 45px 4px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }
+.S12 { color: rgb(33, 33, 33); padding: 10px 0px 6px 17px; background: rgb(255, 255, 255) none repeat scroll 0% 0% / auto padding-box border-box; font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px; overflow-x: hidden; line-height: 17.234px;  }
+/* Styling that is common to warnings and errors is in diagnosticOutput.css */.embeddedOutputsErrorElement {    min-height: 18px;    max-height: 550px;}
+.embeddedOutputsErrorElement .diagnosticMessage-errorType {    overflow: auto;}
+.embeddedOutputsErrorElement.inlineElement {}
+.embeddedOutputsErrorElement.rightPaneElement {}
+/* Styling that is common to warnings and errors is in diagnosticOutput.css */.embeddedOutputsWarningElement {    min-height: 18px;    max-height: 550px;}
+.embeddedOutputsWarningElement .diagnosticMessage-warningType {    overflow: auto;}
+.embeddedOutputsWarningElement.inlineElement {}
+.embeddedOutputsWarningElement.rightPaneElement {}
+/* Copyright 2015-2022 The MathWorks, Inc. *//* In this file, styles are not scoped to rtcContainer since they could be in the Dojo Tooltip */.diagnosticMessage-wrapper {    font-family: Menlo, Monaco, Consolas, "Courier New", monospace;    font-size: 12px;}
+.diagnosticMessage-wrapper.diagnosticMessage-warningType {    color: var(--mw-color-matlabWarning);}
+.diagnosticMessage-wrapper.diagnosticMessage-warningType a {    color: var(--mw-color-matlabWarning);    text-decoration: underline;}
+.rtcThemeDefaultOverride .diagnosticMessage-wrapper.diagnosticMessage-warningType,.rtcThemeDefaultOverride .diagnosticMessage-wrapper.diagnosticMessage-warningType a {    color: var(--mw-color-matlabWarning) !important;}
+.diagnosticMessage-wrapper.diagnosticMessage-errorType {    color: var(--mw-color-matlabErrors);}
+.diagnosticMessage-wrapper.diagnosticMessage-errorType a {    color: var(--mw-color-matlabErrors);    text-decoration: underline;}
+.rtcThemeDefaultOverride .diagnosticMessage-wrapper.diagnosticMessage-errorType,.rtcThemeDefaultOverride .diagnosticMessage-wrapper.diagnosticMessage-errorType a {    color: var(--mw-color-matlabErrors) !important;}
+.diagnosticMessage-wrapper .diagnosticMessage-messagePart,.diagnosticMessage-wrapper .diagnosticMessage-causePart {    white-space: pre-wrap;}
+.diagnosticMessage-wrapper .diagnosticMessage-stackPart {    white-space: pre;}
+.embeddedOutputsTextElement,.embeddedOutputsVariableStringElement {    white-space: pre;    word-wrap:  initial;    min-height: 18px;    max-height: 550px;}
+.embeddedOutputsTextElement .textElement,.embeddedOutputsVariableStringElement .textElement {    overflow: auto;}
+.textElement,.rtcDataTipElement .textElement {    padding-top: 2px;}
+.embeddedOutputsTextElement.inlineElement,.embeddedOutputsVariableStringElement.inlineElement {}
+.inlineElement .textElement {}
+.embeddedOutputsTextElement.rightPaneElement,.embeddedOutputsVariableStringElement.rightPaneElement {    min-height: 16px;}
+.rightPaneElement .textElement {    padding-top: 2px;    padding-left: 9px;}
+.S13 { border-left: 0.994318px solid rgb(217, 217, 217); border-right: 0.994318px solid rgb(217, 217, 217); border-top: 0.994318px solid rgb(217, 217, 217); border-bottom: 0px none rgb(33, 33, 33); border-radius: 0px; padding: 6px 45px 0px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }
+.S14 { margin: 15px 10px 5px 4px; padding: 0px; line-height: 18px; min-height: 0px; white-space: pre-wrap; color: rgb(33, 33, 33); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 17px; font-weight: 700; text-align: left;  }</style></head><body><div class = rtcContent><h1  class = 'S0' id = 'T_792A91EB' ><span>Miscellaneous Data in NWB</span></h1><div  class = 'S1'><span>This tutorial will focus on the basics of working with a </span><a href = "https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/NWBFile.html"><span style=' font-family: monospace;'>NWBFile</span></a><span> for storing extraneous or non-standardizable data. For example, you may want to store results from intermediate or one-off analyses of some unknown utility. Two solutions provided by NWB for these results are </span><span style=' font-weight: bold;'>external linkage</span><span>, a feature allowing linkage to another NWB file, and writable </span><span style=' font-weight: bold;'>scratch space</span><span>, a dedicated internal place in a NWB file where miscellaneous non-standard data may be written.</span></div><div  class = 'S2'><div  class = 'S3'><span style=' font-weight: bold;'>Table of Contents</span></div><div  class = 'S4'><a href = "#H_6D5A695F"><span>Setup
+</span></a><a href = "#H_A1D51367"><span>Linking to a NWB File
+</span></a><a href = "#H_75DA9135"><span>Scratch Space
+</span></a><span>    </span><a href = "#H_D5CA58B0"><span>Warning Regarding the Usage of Scratch Space
+</span></a><span>    </span><a href = "#H_53522132"><span>Writing Data to Scratch Space</span></a></div></div><h2  class = 'S5' id = 'H_6D5A695F' ><span>Setup</span></h2><div  class = 'S1'><span>Let us first set up an environment with some "acquired data".</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span >RawFile = NwbFile(</span><span style="color: rgb(14, 0, 255);">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >    </span><span style="color: rgb(167, 9, 245);">'session_description'</span><span >, </span><span style="color: rgb(167, 9, 245);">'demonstrate NWBFile scratch' </span><span style="color: rgb(14, 0, 255);">...</span><span style="color: rgb(0, 128, 19);"> % required</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >    , </span><span style="color: rgb(167, 9, 245);">'identifier'</span><span >, </span><span style="color: rgb(167, 9, 245);">'NWB456' </span><span style="color: rgb(14, 0, 255);">...</span><span style="color: rgb(0, 128, 19);">  % required</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >    , </span><span style="color: rgb(167, 9, 245);">'session_start_time'</span><span >, datetime(2019, 4, 3, 11, 0, 0, </span><span style="color: rgb(167, 9, 245);">'TimeZone'</span><span >, </span><span style="color: rgb(167, 9, 245);">'local'</span><span >) </span><span style="color: rgb(14, 0, 255);">...</span><span style="color: rgb(0, 128, 19);"> % required</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >    , </span><span style="color: rgb(167, 9, 245);">'file_create_date'</span><span >, datetime(2019, 4, 15, 12, 0, 0, </span><span style="color: rgb(167, 9, 245);">'TimeZone'</span><span >, </span><span style="color: rgb(167, 9, 245);">'local'</span><span >) </span><span style="color: rgb(14, 0, 255);">...</span><span style="color: rgb(0, 128, 19);"> % optional</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >    );</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span style="color: rgb(0, 128, 19);">% simulate some data</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >timestamps = 0:100:1024;</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >data = sin(0.333 .* timestamps) </span><span style="color: rgb(14, 0, 255);">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >    + cos(0.1 .* timestamps) </span><span style="color: rgb(14, 0, 255);">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >    + randn(1, length(timestamps));</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >RawTs = types.core.TimeSeries(</span><span style="color: rgb(14, 0, 255);">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >    </span><span style="color: rgb(167, 9, 245);">'data'</span><span >, data </span><span style="color: rgb(14, 0, 255);">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >    , </span><span style="color: rgb(167, 9, 245);">'data_unit'</span><span >, </span><span style="color: rgb(167, 9, 245);">'m' </span><span style="color: rgb(14, 0, 255);">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >    , </span><span style="color: rgb(167, 9, 245);">'timestamps'</span><span >, timestamps </span><span style="color: rgb(14, 0, 255);">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >    );</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >RawFile.acquisition.set(</span><span style="color: rgb(167, 9, 245);">'raw_timeseries'</span><span >, RawTs);</span></span></div></div><div class="inlineWrapper"><div  class = 'S8'><span style="white-space: pre"><span >nwbExport(RawFile, </span><span style="color: rgb(167, 9, 245);">'raw_data.nwb'</span><span >);</span></span></div></div></div><h2  class = 'S9' id = 'H_A1D51367' ><span>Linking to a NWB File</span></h2><div  class = 'S1'><span>We would now like to add a </span><a href = "https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/ProcessingModule.html"><span style=' font-weight: bold;'>ProcessingModule</span></a><span> to our file but we would like to do so without modifying the original file as it would take too long to write back to. We can use the utility </span><span style=' font-family: monospace;'>types.untyped.ExternalLink</span><span> object to refer to NWB objects outside of another file instead. This is how we create </span><span style=' font-weight: bold;'>external links</span><span> in MatNWB.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span >ProcessingFile = NwbFile(); </span><span style="color: rgb(0, 128, 19);">% make a new file</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span style="color: rgb(0, 128, 19);">% we should first manually copy certain required properties of the NWB file.</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span style="color: rgb(0, 128, 19);">% note: in normal cases, you should NOT use the `ignorecache` option for nwbRead. The option is used</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span style="color: rgb(0, 128, 19);">% here for CI automation.</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >RawFile = nwbRead(</span><span style="color: rgb(167, 9, 245);">'raw_data.nwb'</span><span >, </span><span style="color: rgb(167, 9, 245);">'ignorecache'</span><span >); </span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >ProcessingFile.session_description = RawFile.session_description;</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >ProcessingFile.identifier = RawFile.identifier;</span></span></div></div><div class="inlineWrapper"><div  class = 'S8'><span style="white-space: pre"><span >ProcessingFile.session_start_time = RawFile.session_start_time.load();</span></span></div></div></div><div  class = 'S10' id = 'H_6C140EC9' ><span>We are now ready to add our </span><a href = "https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/ProcessingModule.html"><span style=' font-weight: bold;'>ProcessingModule</span></a><span style=' font-weight: bold;'> </span><span>to our new file:</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span >RawTs = RawFile.acquisition.get(</span><span style="color: rgb(167, 9, 245);">'raw_timeseries'</span><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span style="color: rgb(0, 128, 19);">% note: no linking is done with this data. In MatNWB, all external links must be explicit.</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >correlatedData = xcorr(RawTs .data.load(), ones(128, 1));</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span style="color: rgb(0, 128, 19);">% You can use HDFView to verify HDF5 pathing used in External Links if you are unsure</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span style="color: rgb(0, 128, 19);">% In most cases, MatNWB properties map directly to HDF5 paths.</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >timestampsH5Path = </span><span style="color: rgb(167, 9, 245);">'/acquisition/raw_timeseries/timestamps'</span><span >;</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >TimestampsLink = types.untyped.ExternalLink(</span><span style="color: rgb(167, 9, 245);">'./raw_data.nwb'</span><span >, timestampsH5Path);</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >FilteredTs = types.core.TimeSeries( </span><span style="color: rgb(14, 0, 255);">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >    </span><span style="color: rgb(167, 9, 245);">'data'</span><span >, correlatedData </span><span style="color: rgb(14, 0, 255);">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >    , </span><span style="color: rgb(167, 9, 245);">'data_unit'</span><span >, </span><span style="color: rgb(167, 9, 245);">'m' </span><span style="color: rgb(14, 0, 255);">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >    , </span><span style="color: rgb(167, 9, 245);">'timestamps'</span><span >, TimestampsLink </span><span style="color: rgb(14, 0, 255);">...</span></span></div></div><div class="inlineWrapper outputs"><div  class = 'S11'><span style="white-space: pre"><span >    )</span></span></div><div  class = 'S12'><div class="inlineElement eoOutputWrapper embeddedOutputsVariableStringElement" uid="3BA5C503" prevent-scroll="true" data-testid="output_0" style="width: 1617.03px; white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;"><div class="textElement eoOutputContent" data-previous-available-width="1587" data-previous-scroll-height="286" data-hashorizontaloverflow="false" style="max-height: 297px; white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;"><div style="white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;"><span class="variableNameElement" style="white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;">FilteredTs = </span></div><div style="white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;">  TimeSeries with properties:
+
+     starting_time_unit: 'seconds'
+    timestamps_interval: 1
+        timestamps_unit: 'seconds'
+                   data: [255×1 double]
+               comments: 'no comments'
+                control: []
+    control_description: ''
+        data_continuity: ''
+        data_conversion: 1
+            data_offset: 0
+        data_resolution: -1
+              data_unit: 'm'
+            description: 'no description'
+          starting_time: []
+     starting_time_rate: []
+             timestamps: [1×1 types.untyped.ExternalLink]
+</div></div></div></div></div><div class="inlineWrapper"><div  class = 'S13'><span style="white-space: pre"><span >ProcModule = types.core.ProcessingModule( </span><span style="color: rgb(14, 0, 255);">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >    </span><span style="color: rgb(167, 9, 245);">'description'</span><span >, </span><span style="color: rgb(167, 9, 245);">'a module to store filtering results' </span><span style="color: rgb(14, 0, 255);">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >    , </span><span style="color: rgb(167, 9, 245);">'filtered_timeseries'</span><span >, FilteredTs </span><span style="color: rgb(14, 0, 255);">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >    );</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >ProcessingFile.processing.set(</span><span style="color: rgb(167, 9, 245);">'filtering_module'</span><span >, ProcModule);</span></span></div></div><div class="inlineWrapper"><div  class = 'S8'><span style="white-space: pre"><span >nwbExport(ProcessingFile, </span><span style="color: rgb(167, 9, 245);">'./processed_data.nwb'</span><span >);</span></span></div></div></div><div  class = 'S10' id = 'H_362C018D' ><span>This new file </span><span style=' font-family: monospace;'>processed_data.nwb </span><span>now contains our processed data with an </span><span style=' font-weight: bold;'>external link</span><span> to our </span><span style=' font-family: monospace;'>raw_data.nwb</span><span> file.</span></div><h2  class = 'S9' id = 'H_75DA9135' ><span>Scratch Space</span></h2><div  class = 'S1'><span>Sometimes you want to store results from one-off analyses that are both too small to be worth making an extension for, yet too unstructured to fit properly into a NWB:N Standard type. In these cases, you may wish to utilise the provided scratch space in NWB:N.</span></div><h3  class = 'S14' id = 'H_D5CA58B0' ><span>Warning Regarding the Usage of Scratch Space</span></h3><div  class = 'S1'><span style=' font-weight: bold;'>Scratch data written into the scratch space should not be intended for reuse or sharing. Standard NWB:N types, along with any extensions, should always be used for any data intended to be shared. Published data should not include scratch data and any reuse should not require scratch data for data processing.</span></div><h3  class = 'S14' id = 'H_53522132' ><span>Writing Data to Scratch Space</span></h3><div  class = 'S1'><span>Let us first copy what we need from the processed data file.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span >ScratchFile = NwbFile();</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >ProcessingFile = nwbRead(</span><span style="color: rgb(167, 9, 245);">'./processed_data.nwb'</span><span >, </span><span style="color: rgb(167, 9, 245);">'ignorecache'</span><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span style="color: rgb(0, 128, 19);">% again, copy the required metadata from the processed file.</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >RawFile = nwbRead(</span><span style="color: rgb(167, 9, 245);">'raw_data.nwb'</span><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >ScratchFile.session_description = ProcessingFile.session_description;</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >ScratchFile.identifier = ProcessingFile.identifier;</span></span></div></div><div class="inlineWrapper"><div  class = 'S8'><span style="white-space: pre"><span >ScratchFile.session_start_time = ProcessingFile.session_start_time;</span></span></div></div></div><div  class = 'S10'><span>We can now do an analysis lacking specification but that we still wish to store results for.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span style="color: rgb(0, 128, 19);">% ProcessingModule stores its timeseries inside of the "nwbdatainterface" property which is a Set of</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span style="color: rgb(0, 128, 19);">% NWBDataInterface objects. This is not directly mapped to the NWB file but is used to distinguish</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span style="color: rgb(0, 128, 19);">% it and DynamicTable objects which it stores under the "dynamictable" property.</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >FilteredTs = ProcessingFile.processing.get(</span><span style="color: rgb(167, 9, 245);">'filtering_module'</span><span >).nwbdatainterface.get(</span><span style="color: rgb(167, 9, 245);">'filtered_timeseries'</span><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span style="color: rgb(0, 128, 19);">% note: MatNWB does not currently support complex numbers. If you wish to store the data, consider</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span style="color: rgb(0, 128, 19);">% storing each number as a struct which will write the data to HDF5 using compound types.</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >dataFft = real(fft(FilteredTs.data.load()));</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >ScratchData = types.core.ScratchData(</span><span style="color: rgb(167, 9, 245);">'data'</span><span >, dataFft </span><span style="color: rgb(14, 0, 255);">...</span></span></div></div><div class="inlineWrapper outputs"><div  class = 'S11'><span style="white-space: pre"><span >    , </span><span style="color: rgb(167, 9, 245);">'notes'</span><span >, </span><span style="color: rgb(167, 9, 245);">'discrete Fourier transform from filtered data'</span><span >)</span></span></div><div  class = 'S12'><div class="inlineElement eoOutputWrapper embeddedOutputsVariableStringElement" uid="E5A83C46" prevent-scroll="true" data-testid="output_1" style="width: 1617.03px; white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;"><div class="textElement eoOutputContent" data-previous-available-width="1587" data-previous-scroll-height="79" data-hashorizontaloverflow="false" style="max-height: 261px; white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;"><div style="white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;"><span class="variableNameElement" style="white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;">ScratchData = </span></div><div style="white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;">  ScratchData with properties:
+
+    notes: 'discrete Fourier transform from filtered data'
+     data: [255×1 double]
+</div></div></div></div></div><div class="inlineWrapper"><div  class = 'S13'><span style="white-space: pre"><span >ScratchFile.scratch.set(</span><span style="color: rgb(167, 9, 245);">'dft_filtered'</span><span >, ScratchData);</span></span></div></div><div class="inlineWrapper"><div  class = 'S8'><span style="white-space: pre"><span >nwbExport(ScratchFile, </span><span style="color: rgb(167, 9, 245);">'scratch_analysis.nwb'</span><span >);</span></span></div></div></div>
+<br>
+<!-- 
+##### SOURCE BEGIN #####
+%% Miscellaneous Data in NWB
+% This tutorial will focus on the basics of working with a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/NWBFile.html 
+% |NWBFile|> for storing extraneous or non-standardizable data. For example, you 
+% may want to store results from intermediate or one-off analyses of some unknown 
+% utility. Two solutions provided by NWB for these results are *external linkage*, 
+% a feature allowing linkage to another NWB file, and writable *scratch space*, 
+% a dedicated internal place in a NWB file where miscellaneous non-standard data 
+% may be written.
+%% Setup
+% Let us first set up an environment with some "acquired data".
+
+RawFile = NwbFile(...
+    'session_description', 'demonstrate NWBFile scratch' ... % required
+    , 'identifier', 'NWB456' ...  % required
+    , 'session_start_time', datetime(2019, 4, 3, 11, 0, 0, 'TimeZone', 'local') ... % required
+    , 'file_create_date', datetime(2019, 4, 15, 12, 0, 0, 'TimeZone', 'local') ... % optional
+    );
+% simulate some data
+timestamps = 0:100:1024;
+data = sin(0.333 .* timestamps) ...
+    + cos(0.1 .* timestamps) ...
+    + randn(1, length(timestamps));
+RawTs = types.core.TimeSeries(...
+    'data', data ...
+    , 'data_unit', 'm' ...
+    , 'timestamps', timestamps ...
+    );
+RawFile.acquisition.set('raw_timeseries', RawTs);
+nwbExport(RawFile, 'raw_data.nwb');
+%% Linking to a NWB File
+% We would now like to add a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/ProcessingModule.html 
+% *ProcessingModule*> to our file but we would like to do so without modifying 
+% the original file as it would take too long to write back to. We can use the 
+% utility |types.untyped.ExternalLink| object to refer to NWB objects outside 
+% of another file instead. This is how we create *external links* in MatNWB.
+
+ProcessingFile = NwbFile(); % make a new file
+% we should first manually copy certain required properties of the NWB file.
+
+% note: in normal cases, you should NOT use the `ignorecache` option for nwbRead. The option is used
+% here for CI automation.
+RawFile = nwbRead('raw_data.nwb', 'ignorecache'); 
+ProcessingFile.session_description = RawFile.session_description;
+ProcessingFile.identifier = RawFile.identifier;
+ProcessingFile.session_start_time = RawFile.session_start_time.load();
+%% 
+% We are now ready to add our <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/ProcessingModule.html 
+% *ProcessingModule*> to our new file:
+
+RawTs = RawFile.acquisition.get('raw_timeseries');
+% note: no linking is done with this data. In MatNWB, all external links must be explicit.
+correlatedData = xcorr(RawTs .data.load(), ones(128, 1));
+% You can use HDFView to verify HDF5 pathing used in External Links if you are unsure
+% In most cases, MatNWB properties map directly to HDF5 paths.
+timestampsH5Path = '/acquisition/raw_timeseries/timestamps';
+TimestampsLink = types.untyped.ExternalLink('./raw_data.nwb', timestampsH5Path);
+FilteredTs = types.core.TimeSeries( ...
+    'data', correlatedData ...
+    , 'data_unit', 'm' ...
+    , 'timestamps', TimestampsLink ...
+    )
+ProcModule = types.core.ProcessingModule( ...
+    'description', 'a module to store filtering results' ...
+    , 'filtered_timeseries', FilteredTs ...
+    );
+ProcessingFile.processing.set('filtering_module', ProcModule);
+nwbExport(ProcessingFile, './processed_data.nwb');
+%% 
+% This new file |processed_data.nwb| now contains our processed data with an 
+% *external link* to our |raw_data.nwb| file.
+%% Scratch Space
+% Sometimes you want to store results from one-off analyses that are both too 
+% small to be worth making an extension for, yet too unstructured to fit properly 
+% into a NWB:N Standard type. In these cases, you may wish to utilise the provided 
+% scratch space in NWB:N.
+% Warning Regarding the Usage of Scratch Space
+% *Scratch data written into the scratch space should not be intended for reuse 
+% or sharing. Standard NWB:N types, along with any extensions, should always be 
+% used for any data intended to be shared. Published data should not include scratch 
+% data and any reuse should not require scratch data for data processing.*
+% Writing Data to Scratch Space
+% Let us first copy what we need from the processed data file.
+
+ScratchFile = NwbFile();
+ProcessingFile = nwbRead('./processed_data.nwb', 'ignorecache');
+% again, copy the required metadata from the processed file.
+RawFile = nwbRead('raw_data.nwb');
+ScratchFile.session_description = ProcessingFile.session_description;
+ScratchFile.identifier = ProcessingFile.identifier;
+ScratchFile.session_start_time = ProcessingFile.session_start_time;
+%% 
+% We can now do an analysis lacking specification but that we still wish to 
+% store results for.
+
+% ProcessingModule stores its timeseries inside of the "nwbdatainterface" property which is a Set of
+% NWBDataInterface objects. This is not directly mapped to the NWB file but is used to distinguish
+% it and DynamicTable objects which it stores under the "dynamictable" property.
+FilteredTs = ProcessingFile.processing.get('filtering_module').nwbdatainterface.get('filtered_timeseries');
+% note: MatNWB does not currently support complex numbers. If you wish to store the data, consider
+% storing each number as a struct which will write the data to HDF5 using compound types.
+dataFft = real(fft(FilteredTs.data.load()));
+ScratchData = types.core.ScratchData('data', dataFft ...
+    , 'notes', 'discrete Fourier transform from filtered data')
+ScratchFile.scratch.set('dft_filtered', ScratchData);
+nwbExport(ScratchFile, 'scratch_analysis.nwb');
+##### SOURCE END #####
+-->
+</div></body></html>
