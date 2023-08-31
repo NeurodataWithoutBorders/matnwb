@@ -117,7 +117,7 @@ end
 valueWrapper = [];
 if isa(value, 'types.untyped.DataStub') ...
     || isa(value, 'types.untyped.DataPipe') ...
-    || isa(value, 'typest.untyped.Anon') ...
+    || isa(value, 'types.untyped.Anon') ...
     || (isa(value, 'types.untyped.ExternalLink') && ~strcmp(typeDescriptor, 'types.untyped.ExternalLink'))
     valueWrapper = value;
     value = unwrapValue(value);
@@ -163,7 +163,7 @@ function unwrapped = unwrapValue(wrapped, history)
         end
     elseif isa(wrapped, 'types.untyped.DataPipe')
         unwrapped = cast([], wrapped.dataType);
-    elseif isa(wrapped, 'typest.untyped.Anon')
+    elseif isa(wrapped, 'types.untyped.Anon')
         history{end+1} = wrapped;
         unwrapped = unwrapValue(wrapped.value, history);
     elseif isa(wrapped, 'types.untyped.ExternalLink')
