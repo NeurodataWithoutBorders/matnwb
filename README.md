@@ -146,7 +146,7 @@ NWB files use the HDF5 format to store data. There are two main differences betw
 
 ## Caveats
 
-The NWB schema is in a state of some evolution. This package assumes a certain set of rules are used to define the schema. As the schema is updated, some of the rules may be changed and these will break this package.
+The NWB schema has regular updates and is open to addition of new types along with modification of previously defined types. As such, certain type presumptions made by MatNWB may be invalidated in the future from a NWB schema. Furthermore, new types may require implementations that will be missing in MatNWB until patched in.
 
 For those planning on using matnwb alongside pynwb, please keep the following in mind:
  - MatNWB is dependent on the schema, which may not necessary correspond with your PyNWB schema version.  Please consider overwriting the contents within MatNWB's **~/schema/core** directory with the generating PyNWB's **src/pynwb/data directory** and running generateCore to ensure compatibilty between systems.
