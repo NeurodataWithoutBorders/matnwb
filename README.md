@@ -62,6 +62,8 @@ Supported schema versions are provided in the MatNWB installation directory unde
 
 [Intro to MatNWB](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/intro.html)
 
+[Basic File Reading](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/read_demo.html) | a demo showcase for basic visualization from a DANDI dataset.
+
 [Extracellular Electrophysiology](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ecephys.html) | [YouTube walkthrough](https://www.youtube.com/watch?v=W8t4_quIl1k&ab_channel=NeurodataWithoutBorders)
 
 [Calcium Imaging](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ophys.html) | [YouTube walkthrough](https://www.youtube.com/watch?v=OBidHdocnTc&ab_channel=NeurodataWithoutBorders)
@@ -154,8 +156,6 @@ The `master` branch in this repository is considered perpetually unstable. If yo
 This package reads and writes NWB 2.0 files and does not support older formats.
 
 ## Examples
-
-[Basic File Reading](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/read_demo.html) | a demo showcase for basic visualization from a DANDI dataset.
 
 [Basic Data Retrieval](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/basicUsage.html)
 | showcases how one would read and process converted NWB file data to display a raster diagram.
