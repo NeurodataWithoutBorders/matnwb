@@ -144,14 +144,14 @@ NWB files use the HDF5 format to store data. There are two main differences betw
 
 ## Caveats
 
-The NWB:N schema is in a state of some evolution. This package assumes a certain set of rules are used to define the schema. As the schema is updated, some of the rules may be changed and these will break this package.
+The NWB schema is in a state of some evolution. This package assumes a certain set of rules are used to define the schema. As the schema is updated, some of the rules may be changed and these will break this package.
 
 For those planning on using matnwb alongside pynwb, please keep the following in mind:
  - MatNWB is dependent on the schema, which may not necessary correspond with your PyNWB schema version.  Please consider overwriting the contents within MatNWB's **~/schema/core** directory with the generating PyNWB's **src/pynwb/data directory** and running generateCore to ensure compatibilty between systems.
  
 The `master` branch in this repository is considered perpetually unstable. If you desire Matnwb's full functionality (full round-trip with nwb data), please consider downloading the more stable releases in the Releases tab. Most releases will coincide with nwb-schema releases and guarantee compatibility of new features introduced with the schema release along with backwards compatibility with all previous nwb-schema releases.
 
-This package reads and writes NWB:N 2.0 files and does not support older formats.
+This package reads and writes NWB 2.0 files and does not support older formats.
 
 ## Examples
 
