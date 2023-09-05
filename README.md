@@ -155,6 +155,8 @@ This package reads and writes NWB:N 2.0 files and does not support older formats
 
 ## Examples
 
+[Basic File Reading](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/read_demo.html) | a demo showcase for basic visualization from a DANDI dataset.
+
 [Basic Data Retrieval](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/basicUsage.html)
 | showcases how one would read and process converted NWB file data to display a raster diagram.
 
