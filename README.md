@@ -73,7 +73,7 @@ Currently, only schemas >= 2.2.0 are supported (2.1.0 and 2.0.1 are not supporte
 
 [Remote read](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/remote_read.html)
 
-[Analysis](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/scratch.html)
+[Scratch Space](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/scratch.html)
 
 ## API Documentation
 
