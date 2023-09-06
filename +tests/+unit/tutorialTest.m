@@ -18,9 +18,10 @@ end
 
 function testTutorials(testCase)
 skippedTutorials = {...
-    'basicUsage.mlx', ...
-    'convertTrials.m', ...
-    'formatStruct.m'};
+    'basicUsage.mlx', ...  % depends on external data
+    'convertTrials.m', ... % depends on basicUsage output
+    'formatStruct.m', ...  % Actually a utility script, not a tutorial
+    'read_demo.mlx'};      % depends on external data
 for i = 1:length(testCase.TestData.listing)
     listing = testCase.TestData.listing(i);
     if listing.isdir || any(strcmp(skippedTutorials, listing.name))

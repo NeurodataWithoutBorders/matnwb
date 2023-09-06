@@ -14,44 +14,55 @@ Download the current release of MatNWB from the [MatNWB releases page](https://g
 git clone https://github.com/NeurodataWithoutBorders/matnwb.git
 ```
 
-### Step 2: Generate the API
+### Step 2a: Reading from a NWB File
 
-From the Matlab command line, add MatNWB to the Matlab path and generate the core classes for the NWB schema.
+If you wish to read from a NWB file, you can do so using the `nwbRead` command:
 
 ```matlab
-cd matnwb
-addpath(genpath(pwd));
+File = nwbRead('/path/to/file.nwb');
+```
+
+The returned NwbFile object provides an in-memory view of the underlying NWB data. For more information, see the [NWB Overview Documentation](https://nwb-overview.readthedocs.io/en/latest/file_read/file_read.html#reading-with-matnwb)
+
+### Step 2b: Writing a NWB File
+
+Writing a NWB file requires first generating the class files that you will need (or an environment from a previous `nwbRead`).
+From the MATLAB command line, add MatNWB to the path and generate the core classes for the most recent NWB schema. The generated classes are normally placed in the `+types` subdirectory in the MatNWB installation directory. As MATLAB [packages](https://www.mathworks.com/help/matlab/matlab_oop/scoping-classes-with-packages.html), these generated classes comprise the building blocks you will need to write your NWB file.
+
+```matlab
+addpath('path/to/matnwb');
 generateCore(); % generate the most recent nwb-schema release.
 ```
 
-### Optional: Generate MatNWB code for extensions
+Once you have configured your NWB File, you may write the `NwbFile` object to disk using the `nwbExport` function.
 
-The `generateExtension` command generates extension classes given a file path to the extension's namespace.
+```matlab
+nwbExport(NwbFile, 'path/to/file.nwb');
+```
+
+### Extensions: Generate MatNWB Classes for Extensions
+
+The `generateExtension` command generates extension classes given a file path to the extension's namespace. This can be useful if you need to work with NWB Extension Schemas outside of Core.
 
 ```matlab
 generateExtension('schema/core/nwb.namespace.yaml', '.../my_extensions1.namespace.yaml',...);
 ```
 
-Generated Matlab code will be put into a `+types` subdirectory.
-This is a Matlab package.  When the `+types` folder is accessible to the Matlab path, the generated code will be used for reading NWBFiles.
-
-```matlab
-nwb = nwbRead('data.nwb');
-```
-
-### Optional: Generate an older core schema
+### Advanced: Generating Legacy MatNWB Classes
 
 The `generateCore` command can generate older versions of the nwb schema.
 
 ```matlab
-generateCore();
+generateCore('2.1.0'); % generates classes for NWB schema version 2.1.0
 ```
 
-Currently, only schemas >= 2.2.0 are supported (2.1.0 and 2.0.1 are not supported at this time).
+Supported schema versions are provided in the MatNWB installation directory under `nwb-schema`.
 
 ## Tutorials
 
 [Intro to MatNWB](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/intro.html)
+
+[Basic File Reading](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/read_demo.html) | a demo showcase for basic visualization from a DANDI dataset.
 
 [Extracellular Electrophysiology](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ecephys.html) | [YouTube walkthrough](https://www.youtube.com/watch?v=W8t4_quIl1k&ab_channel=NeurodataWithoutBorders)
 
@@ -80,15 +91,11 @@ Currently, only schemas >= 2.2.0 are supported (2.1.0 and 2.0.1 are not supporte
 For more information regarding the MatNWB API or any of the NWB Core types in MatNWB, visit the [MatNWB API Documentation pages](https://neurodatawithoutborders.github.io/matnwb/doc/index.html).
 
 
-## How does it work
+## Under the Hood
 
-NWB files are HDF5 files with data stored according to the Neurodata Without Borders: Neurophysiology (NWB:N) [schema](https://github.com/NeurodataWithoutBorders/nwb-schema/tree/dev/core). The schema is described in a set of yaml documents. These define the various types and their attributes.
+NWB files are HDF5 files with data stored according to the Neurodata Without Borders (NWB) [schema](https://github.com/NeurodataWithoutBorders/nwb-schema/tree/dev/core). The schema is described in a set of YAML documents  which defines the various types and their attributes.
 
-This package provides two functions `generateCore` and `generateExtension` that transform the yaml files that describe the schema into Matlab m-files. The generated code defines classes that reflect the types defined in the schema.  Object attributes, relationships, and documentation are automatically generated to reflect the schema where possible.
-
-Once the code generation step is done, NWB objects can be read, constructed and written from Matlab.
-
-PyNWB's cached schemas are also supported: any file written in PyNWB, including those with extensions, will be readable in MATLAB without needing to generate the core API (`generateCore`) or extensions (`generateExtension`), as long as the schemas are cached (which is default).
+Certain functions, like `generateCore` and `nwbRead`, automatically read these specifications and converts them to a MATLAB class file. These classes generally map directly to attributes and constraints of the types defined in the schema.
 
 ## Sources
 
@@ -141,15 +148,14 @@ NWB files use the HDF5 format to store data. There are two main differences betw
 
 ## Caveats
 
-The NWB:N schema is in a state of some evolution.  This package assumes a certain set of rules are used to define the schema.  As the schema is updated, some of the rules may be changed and these will break this package.
+The NWB schema has regular updates and is open to addition of new types along with modification of previously defined types. As such, certain type presumptions made by MatNWB may be invalidated in the future from a NWB schema. Furthermore, new types may require implementations that will be missing in MatNWB until patched in.
 
 For those planning on using matnwb alongside pynwb, please keep the following in mind:
  - MatNWB is dependent on the schema, which may not necessary correspond with your PyNWB schema version.  Please consider overwriting the contents within MatNWB's **~/schema/core** directory with the generating PyNWB's **src/pynwb/data directory** and running generateCore to ensure compatibilty between systems.
  
-The `master` branch in this repository is considered perpetually unstable.  If you desire matnwb's full functionality (full round-trip with nwb data), please consider downloading the more stable releases in the Releases tab.  Keep in mind that the Releases are generally only compatible with older versions of pynwb and may not supported newer data types supported by pynwb (such as data references or compound types).  Most releases will coincide with nwb-schema releases and contain compatibility with those features.
+The `master` branch in this repository is considered perpetually unstable. If you desire Matnwb's full functionality (full round-trip with nwb data), please consider downloading the more stable releases in the Releases tab. Most releases will coincide with nwb-schema releases and guarantee compatibility of new features introduced with the schema release along with backwards compatibility with all previous nwb-schema releases.
 
-This package reads and writes NWB:N 2.0 files and does not support older formats.
-
+This package reads and writes NWB 2.0 files and does not support older formats.
 
 ## Examples
 
@@ -177,3 +183,8 @@ Run the test suite with `nwbtest`.
 Make sure that there are no "@" signs **anywhere** in your *full* file path.  This includes even directories that are not part of the matnwb root path and any "@" signs that are not at the beginning of the directory path.
 
 Alternatively, this issue disappears after MATLAB version 2017b.  Installing this version may also resolve these issues.  Note that the updates provided with 2017b should also be installed.
+
+
+2. I Have Issues Reading From a NWB File!
+
+Some simple methods to troubleshoot failed NWB file reads can be found in the [NWB Overview Documentation](https://nwb-overview.readthedocs.io/en/latest/file_read/matnwb/troubleshooting.html).
