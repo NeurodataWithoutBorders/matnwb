@@ -110,12 +110,16 @@ function depth = getNestedDataDepth(data, varargin)
     % special case where the final data is in fact multiple rows to begin
     % with.
     if isempty(p.Results.dataPipeDimension)
-        isMultirow = (ismatrix(subData) && 1 < size(subData, 2)) ...
-            || (isvector(subData) && 1 < length(subData));
+        if ischar(subData)
+            isMultiRow = 1 < size(subData, 1);
+        else
+            isMultiRow = (ismatrix(subData) && 1 < size(subData, 2)) ...
+                || (isvector(subData) && 1 < length(subData));
+        end
     else
-        isMultirow = 1 < size(subData, p.Results.dataPipeDimension);
+        isMultiRow = 1 < size(subData, p.Results.dataPipeDimension);
     end
-    if isMultirow
+    if isMultiRow
         depth = depth + 1;
     end
 end
