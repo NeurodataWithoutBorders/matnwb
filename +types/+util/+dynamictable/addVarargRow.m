@@ -4,8 +4,8 @@ function addVarargRow(DynamicTable, varargin)
     p.StructExpand = false;
     addParameter(p, 'id', []); % `id` override but doesn't actually show up in `colnames`
 
-    for i = 1:length(DynamicTable.colnames)
-        addParameter(p, DynamicTable.colnames{i}, []);
+    for iColumn = 1:length(DynamicTable.colnames)
+        addParameter(p, DynamicTable.colnames{iColumn}, []);
     end
 
     parse(p, varargin{:});
@@ -30,8 +30,8 @@ function addVarargRow(DynamicTable, varargin)
     end
 
     TypeMap = types.util.dynamictable.getTypeMap(DynamicTable);
-    for i = 1:length(rowNames)
-        rn = rowNames{i};
+    for iRow = 1:length(rowNames)
+        rn = rowNames{iRow};
         rv = p.Results.(rn);
 
         if isKey(TypeMap, rn)
