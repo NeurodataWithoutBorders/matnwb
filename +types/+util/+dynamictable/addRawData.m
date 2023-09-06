@@ -50,6 +50,10 @@ function addRawData(DynamicTable, column, data)
         data = {data}; % wrap until the correct number of vector indices are satisfied.
     end
 
+    if ischar(data)
+        data = {data};
+    end
+
     % Now in index->data order.
     nestedAdd(DynamicTable, flip(indexChain), data);
 end
