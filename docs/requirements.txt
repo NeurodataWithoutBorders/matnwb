@@ -1,2 +1,2 @@
 sphinxcontrib-matlabdomain
-sphinx_rtd_theme
+sphinx-rtd-theme
