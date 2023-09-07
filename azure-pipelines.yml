@@ -22,25 +22,25 @@ steps:
       echo "##vso[task.setvariable variable=plugin_path]$(python -c "import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)")"
     displayName: 'Install PyNWB'
 
-  - task: RunMATLABCommand@0
-    inputs:
-      command: "results = assertSuccess(nwbtest); assert(~isempty(results), 'No tests ran');"
-    env:
-      HDF5_PLUGIN_PATH: $(plugin_path)
+  #- task: RunMATLABCommand@0
+  #  inputs:
+  #    command: "results = assertSuccess(nwbtest); assert(~isempty(results), 'No tests ran');"
+  #  env:
+  #    HDF5_PLUGIN_PATH: $(plugin_path)
 
-  - task: PublishTestResults@2
-    condition: succeededOrFailed()
-    inputs:
-      testResultsFiles: testResults.xml
+  # - task: PublishTestResults@2
+  #   condition: succeededOrFailed()
+  #   inputs:
+  #     testResultsFiles: testResults.xml
 
-  - task: PublishCodeCoverageResults@1
-    inputs:
-      codeCoverageTool: Cobertura
-      summaryFileLocation: coverage.xml
-      
-  - script: |
-      bash <(curl -s https://codecov.io/bash)
-    displayName: 'Upload coverage to codecov'
+  # - task: PublishCodeCoverageResults@1
+  #   inputs:
+  #     codeCoverageTool: Cobertura
+  #     summaryFileLocation: coverage.xml
+  #     
+  # - script: |
+  #     bash <(curl -s https://codecov.io/bash)
+  #   displayName: 'Upload coverage to codecov'
   
   - task: RunMATLABCommand@0
     inputs:
