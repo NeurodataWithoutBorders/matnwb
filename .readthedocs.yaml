@@ -8,6 +8,8 @@ version: 2
 # Set the OS, Python version and other tools you might need
 build:
   os: ubuntu-22.04
+  tools:
+    python: '3.10'
 
 # Build documentation in the "docs/" directory with Sphinx
 sphinx:
@@ -15,9 +17,7 @@ sphinx:
    fail_on_warning: true
 
 # Optionally build your docs in additional formats such as PDF and ePub
-# formats:
-#    - pdf
-#    - epub
+formats: all
 
 # Optional but recommended, declare the Python requirements required
 # to build your documentation
