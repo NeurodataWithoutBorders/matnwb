@@ -62,10 +62,11 @@ function checkConfig(DynamicTable, varargin)
         return;
     end
 
-    assert(tableHeight == getVectorHeight(DynamicTable.id), ...
+    numIds = getVectorHeight(DynamicTable.id);
+    assert(tableHeight == numIds, ...
         'NWB:DynamicTable:CheckConfig:InvalidId', ...
         'Special column `id` of DynamicTable needs to match the detected height of %d. Found %d IDs.', ...
-        tableHeight, length(DynamicTable.id.data));
+        tableHeight, numIds);
 end
 
 function names = getDetectedColumnNames(DynamicTable)
