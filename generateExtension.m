@@ -1,61 +1,74 @@
 function generateExtension(varargin)
     % GENERATEEXTENSION Generate Matlab classes from NWB extension schema file
-    %   GENERATEEXTENSION(extension_path...)  Generate classes
+    %   GENERATEEXTENSION(ext1, ext2, ..., extn)  Generate classes
     %   (Matlab m-files) from one or more NWB:N schema extension namespace
-    %   files.  A registry of already generated core types is used to resolve
-    %   dependent types.
+    %   files.
+    %
+    %   GENERATEEXTENSION(__, 'savedir', location) Generates classes in a custom directory specified
+    %   by file location.
+    %
+    %   GENERATEEXTENSION(__, 'savedirtemp') Generates classes in the default MATLAB temp directory.
+    %   This option will override any previously defined 'savedir' location.
     %
     %   A cache of schema data is generated in the 'namespaces' subdirectory in
-    %   the current working directory.  This is for allowing cross-referencing
-    %   classes between multiple namespaces.
+    %   the installation directory (unless otherwise specified).
     %
-    %   Output files are generated placed in a '+types' subdirectory in the
-    %   current working directory.
+    %   By default, output files are generated placed in a '+types' subdirectory in the 
+    %   installation directory.
     %
     %   Example:
     %      generateExtension('schema\myext\myextension.namespace.yaml', 'schema\myext2\myext2.namespace.yaml');
     %
     %   See also GENERATECORE
-    
-    for iOption = 1:length(varargin)
-        option = varargin{iOption};
-        validateattributes(option, {'char', 'string'}, {'scalartext'} ...
-            , 'generateExtension', 'extension name', iOption);
-        if isstring(option)
-            varargin{iOption} = char(option);
+
+    invalidArgumentErrorCode = 'NWB:GenerateExtension:InvalidArguments';
+
+    iOptionLocation = find(strcmp(varargin, 'savedir') | strcmp(varargin, 'savedirtemp'), 1);
+    if isempty(iOptionLocation)
+        iOptionLocation = length(varargin) + 1;
+    end
+
+    assert(0 < min(iOptionLocation, length(varargin)), invalidArgumentErrorCode ...
+        , 'generateExtension requires at least one extension to generate from.');
+
+    options = varargin(iOptionLocation:end);
+    extensions = varargin(1:(iOptionLocation-1));
+
+    hasSaveDirTemp = any(strcmpi(varargin, 'savedirtemp'));
+    if hasSaveDirTemp
+        saveDir = fullfile(tempdir, 'MatNWB');
+    else
+        iSaveDir = find(strcmpi(options, 'savedir'));
+        if isempty(iSaveDir)
+            saveDir = misc.getMatnwbDir();
+        elseif iSaveDir(end) < length(options)
+            saveDir = options{iSaveDir(end) + 1};
+            assert(0 ~= isfile(saveDir) ...
+                , invalidArgumentErrorCode ...
+                , 'provided save directory "%s" must be a valid directory path.');
+        else
+            error(invalidArgumentErrorCode ...
+                , 'incomplete or erroneous savedir argument order.');
         end
     end
-    
-    saveDirMask = strcmp(varargin, 'savedir');
-    if any(saveDirMask)
-        assert(~saveDirMask(end),...
-            'NWB:GenerateExtenion:InvalidParameter',...
-            'savedir must be paired with the desired save directory.');
-        saveDir = varargin{find(saveDirMask, 1, 'last') + 1};
-        saveDirParametersMask = saveDirMask | circshift(saveDirMask, 1);
-        sourceList = varargin(~saveDirParametersMask);
-    else
-        saveDir = misc.getMatnwbDir();
-        sourceList = varargin;
-    end
-    
-    for iNamespaceFiles = 1:length(sourceList)
-        source = sourceList{iNamespaceFiles};
-        validateattributes(source, {'char', 'string'}, {'scalartext'});
-        
-        [localpath, ~, ~] = fileparts(source);
-        assert(2 == exist(source, 'file'),...
-            'NWB:GenerateExtension:FileNotFound', 'Path to file `%s` could not be found.', source);
+
+    assert(all(cellfun('isclass', extensions, 'char') | cellfun('isclass', extensions, 'string')) ...
+        , invalidArgumentErrorCode ...
+        , 'extensions must be character arrays or strings.');
+
+    for iExtension = 1:length(extensions)
+        source = string(extensions{iExtension});
+        assert(1 == isfile(source) ...
+            , invalidArgumentErrorCode ...
+            , 'extension file "%s" not found.', source);
         fid = fopen(source);
         namespaceText = fread(fid, '*char') .';
         fclose(fid);
-        
-        Namespaces = spec.generate(namespaceText, localpath);
-        
-        for iNamespace = 1:length(Namespaces)
-            Namespace = Namespaces(iNamespace);
-            spec.saveCache(Namespace, saveDir);
-            file.writeNamespace(Namespace.name, saveDir);
+        Namespaces = spec.generate(namespaceText, fileparts(source));
+        for iNamespace = 1:length(NameSpaces)
+            N = Namespaces(iNamespace);
+            spec.saveCache(N, saveDir);
+            file.writeNamespace(N.name, saveDir);
             rehash();
         end
     end
