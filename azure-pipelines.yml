@@ -49,5 +49,5 @@ steps:
   
   - bash: |
       pip install -r docs/requirements.txt
-      ./docs/make.bat
+      sphinx-build docs/source docs/build
     displayName: 'Generating API Documentation'
