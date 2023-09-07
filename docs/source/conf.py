@@ -15,7 +15,7 @@ release = '2.6.0.2'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = ['sphinxcontrib.matlab', 'sphinx.ext.autodoc']
-matlab_src_dir = ".."
+matlab_src_dir = "../.."
 
 templates_path = ['_templates']
 exclude_patterns = []
@@ -27,7 +27,7 @@ exclude_patterns = []
 primary_domain = "mat"
 
 html_theme = "sphinx_rtd_theme"
-html_logo = "../logo_matnwb.svg"
+html_logo = "../../logo/logo_matnwb.svg"
 html_static_path = ['_static']
 
 matlab_auto_link = "all"

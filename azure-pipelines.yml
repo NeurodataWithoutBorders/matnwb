@@ -18,8 +18,7 @@ steps:
 
   - bash: |
       python -m pip install --upgrade pip 
-      pip install pynwb
-      pip install hdf5plugin
+      pip install -r +tests/requirements.txt
       echo "##vso[task.setvariable variable=plugin_path]$(python -c "import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)")"
     displayName: 'Install PyNWB'
 
@@ -42,5 +41,13 @@ steps:
   - script: |
       bash <(curl -s https://codecov.io/bash)
     displayName: 'Upload coverage to codecov'
-
   
+  - task: RunMATLABCommand@0
+    inputs:
+      command: "generateCore();"
+    displayName: 'Generating Core Namespace'
+  
+  - bash: |
+      pip install -r docs/requirements.txt
+      ./docs/make.bat
+    displayName: 'Generating API Documentation'
