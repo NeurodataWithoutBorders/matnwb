@@ -15,10 +15,10 @@ release = '2.6.0.2'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = ['sphinxcontrib.matlab', 'sphinx.ext.autodoc']
-matlab_src_dir = "../.."
 
 templates_path = ['_templates']
 exclude_patterns = []
+matlab_src_dir = "."
 
 
 # -- Options for HTML output -------------------------------------------------

@@ -49,5 +49,9 @@ steps:
   
   - bash: |
       pip install -r docs/requirements.txt
-      sphinx-build docs/source docs/build
+      mkdir build
+      sphinx-build -v docs build
     displayName: 'Generating API Documentation'
+  
+  - publish: build
+    artifact: api-pages

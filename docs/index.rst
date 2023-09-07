@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 Welcome to MatNWB's API documentation!
-==================================
+======================================
 
 .. toctree::
    :maxdepth: 2
@@ -20,4 +20,3 @@ Indices and tables
 
 * :ref:`genindex`
 * `MATLAB Module Index <mat-modindex.html>`_
-* :ref:`search`
