@@ -65,7 +65,7 @@ function generateExtension(varargin)
         namespaceText = fread(fid, '*char') .';
         fclose(fid);
         Namespaces = spec.generate(namespaceText, fileparts(source));
-        for iNamespace = 1:length(NameSpaces)
+        for iNamespace = 1:length(Namespaces)
             N = Namespaces(iNamespace);
             spec.saveCache(N, saveDir);
             file.writeNamespace(N.name, saveDir);
