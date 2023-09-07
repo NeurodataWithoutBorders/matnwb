@@ -36,7 +36,7 @@ function generateExtension(varargin)
 
     hasSaveDirTemp = any(strcmpi(varargin, 'savedirtemp'));
     if hasSaveDirTemp
-        saveDir = fullfile(tempdir, 'MatNWB');
+        saveDir = fullfile(tempdir(), 'MatNWB');
     else
         iSaveDir = find(strcmpi(options, 'savedir'));
         if isempty(iSaveDir)
@@ -72,4 +72,5 @@ function generateExtension(varargin)
             rehash();
         end
     end
+    addpath(saveDir);
 end
