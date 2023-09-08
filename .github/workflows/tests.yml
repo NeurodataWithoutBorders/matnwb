@@ -31,7 +31,7 @@ jobs:
       - name: run tests
         uses: matlab-actions/run-command@v1
         with:
-          command: results = assertSuccess(nwbtest); assert(!isempty(results), 'No tests ran');
+          command: results = assertSuccess(nwbtest); assert(~isempty(results), 'No tests ran');
       - name: upload JUnit results
         uses: actions/upload-artifact@v3
         with:
