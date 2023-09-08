@@ -62,6 +62,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [run_tests]
     steps:
+      - name: check out repository
+        uses: actions/checkout@v4
       - name: retrieve code coverage files
         uses: actions/download-artifact@v3
         with:
