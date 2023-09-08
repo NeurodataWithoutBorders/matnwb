@@ -49,13 +49,14 @@ jobs:
     if: ${{ always() }}
     needs: [run_tests]
     steps:
-      - name: publish results
-        uses: dorny/test-reporter@v1
+      - name: retrieve result files
+        uses: actions/download-artifact@v3
         with:
-          name: 'nwbtest results'
-          path: '*.xml'
-          reporter: 'java-junit'
-          artifact: test-results
+          name: test-results
+      - name: publish results
+        uses: mikepenz/action-junit-report@v4
+        with:
+          report_paths: 'testResults.xml'
   publish_coverage:
     name: Publish Cobertura Test Coverage
     runs-on: ubuntu-latest
