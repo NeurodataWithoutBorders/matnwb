@@ -1,48 +1,48 @@
 function addVarargRow(DynamicTable, varargin)
-    p = inputParser();
-    p.KeepUnmatched = true;
-    p.StructExpand = false;
-    addParameter(p, 'id', []); % `id` override but doesn't actually show up in `colnames`
+    Parser = inputParser();
+    Parser.KeepUnmatched = true;
+    Parser.StructExpand = false;
+    addParameter(Parser, 'id', []); % `id` override but doesn't actually show up in `colnames`
 
     for iColumn = 1:length(DynamicTable.colnames)
-        addParameter(p, DynamicTable.colnames{iColumn}, []);
+        addParameter(Parser, DynamicTable.colnames{iColumn}, []);
     end
 
-    parse(p, varargin{:});
+    parse(Parser, varargin{:});
 
-    assert(isempty(fieldnames(p.Unmatched)),...
-        'NWB:DynamicTable:AddRow:InvalidColumns',...
-        'Invalid column name(s) { %s }', strjoin(fieldnames(p.Unmatched), ', '));
+    assert(isempty(fieldnames(Parser.Unmatched))...
+        , 'NWB:DynamicTable:AddRow:InvalidColumns'...
+        , 'Invalid column name(s) { %s }', strjoin(fieldnames(Parser.Unmatched), ', '));
 
-    rowNames = fieldnames(p.Results);
+    rowNames = fieldnames(Parser.Results);
 
     % not using setDiff because we want to retain set order.
     rowNames(strcmp(rowNames, 'id')) = [];
 
-    missingColumns = setdiff(p.UsingDefaults, {'id'});
+    missingColumns = setdiff(Parser.UsingDefaults, {'id'});
     assert(isempty(missingColumns),...
         'NWB:DynamicTable:AddRow:MissingColumns',...
         'Missing columns { %s }', strjoin(missingColumns, ', '));
 
-    specifiesId = ~any(strcmp(p.UsingDefaults, 'id'));
+    specifiesId = ~any(strcmp(Parser.UsingDefaults, 'id'));
     if specifiesId
-        validateattributes(p.Results.id, {'numeric'}, {'scalar'});
+        validateattributes(Parser.Results.id, {'numeric'}, {'scalar'});
     end
 
     TypeMap = types.util.dynamictable.getTypeMap(DynamicTable);
     for iRow = 1:length(rowNames)
-        rn = rowNames{iRow};
-        rv = p.Results.(rn);
+        rowName = rowNames{iRow};
+        rowValue = Parser.Results.(rowName);
 
-        if isKey(TypeMap, rn)
-            validateType(TypeMap(rn), rv);
+        if isKey(TypeMap, rowName)
+            validateType(TypeMap(rowName), rowValue);
         end
 
-        types.util.dynamictable.addRawData(DynamicTable, rn, rv);
+        types.util.dynamictable.addRawData(DynamicTable, rowName, rowValue);
     end
 
     if specifiesId
-        newId = p.Results.id;
+        newId = Parser.Results.id;
     elseif isa(DynamicTable.id.data, 'types.untyped.DataPipe')
         newId = DynamicTable.id.data.offset;
     else
@@ -56,16 +56,18 @@ function addVarargRow(DynamicTable, varargin)
     end
 end
 
-function validateType(TypeStruct, rv)
+function validateType(TypeStruct, rowValue)
     if strcmp(TypeStruct.type, 'cellstr')
-        assert(iscellstr(rv) || (ischar(rv) && (isempty(rv) || 1 == size(rv, 1))),...
+        assert(isstring(rowValue) ...
+            || iscellstr(rowValue) ...
+            || (ischar(rowValue) && (isempty(rowValue) || 1 == size(rowValue, 1))),...
             'NWB:DynamicTable:AddRow:InvalidType',...
             'Type of value must be a cell array of character vectors or a scalar character');
-    elseif iscell(rv)
-        for iVal = 1:length(rv)
-            validateType(TypeStruct, rv{iVal});
+    elseif iscell(rowValue)
+        for iVal = 1:length(rowValue)
+            validateType(TypeStruct, rowValue{iVal});
         end
     else
-        validateattributes(rv, {TypeStruct.type}, {});
+        validateattributes(rowValue, {TypeStruct.type}, {});
     end
 end
