@@ -134,12 +134,9 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
                 startInd = endInd+1;
             end
             % get corresponding VectorData and VectorIndex
-            [rag_col, rag_col_index] = util.create_indexed_column(dataArray);
+            [Column, Index] = util.create_indexed_column(dataArray);
             % append ragged column
-            file.intervals_trials.addColumn( ...
-                'newraggedcolumn',rag_col, ...
-                'newraggedcolumn_index',rag_col_index ...
-                )
+            file.intervals_trials.addColumn('newraggedcolumn', Column, Index);
         end
     end
 
