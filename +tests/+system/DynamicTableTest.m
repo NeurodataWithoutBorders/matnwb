@@ -119,7 +119,8 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
             Table = table( ...
                 (1:2:40)', (1:4:80)' ...
                 , 'VariableNames', {'newcolumn2', 'newcolumn3'});
-            testCase.verifyError(@()File.intervals_trials.addColumn(Table), "NWB:DynamicTable");
+            testCase.verifyError(@()File.intervals_trials.addColumn(Table) ...
+                , 'NWB:DynamicTable:AddColumn:InvalidArgument');
         end
 
         function appendRaggedContainer(~, file)
