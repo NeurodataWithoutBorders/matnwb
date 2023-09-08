@@ -66,16 +66,9 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: test-coverage
-      - name: summarize code coverage
-        uses: irongut/CodeCoverageSummary@v1.3.0
+      - name: publish on Codecov
+        uses: codecov/codecov-action@v3
         with:
-          filename: coverage.xml
-          badge: true
-          format: markdown
-          output: both
-      - name: publish code coverage
-        uses: marocchino/sticky-pull-request-comment@v2
-        if: github.event_name == 'pull_request'
-        with:
-          recreate: true
-          path: code-coverage-results.md
+          files: coverage.xml
+          name: codecov-matnwb
+          verbose: true
