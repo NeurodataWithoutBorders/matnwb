@@ -29,22 +29,20 @@ jobs:
         with:
           release: R2020a
       - name: run tests
-        uses: matlab-actions/run-tests@v1
+        uses: matlab-actions/run-command@v1
         with:
-          select-by-folder: ./+tests
-          test-results-junit: test-results/results.xml
-          code-coverage-cobertura: code-coverage/coverage.xml
+          command: results = assertSuccess(nwbtest); assert(!isempty(results), 'No tests ran');
       - name: upload JUnit results
         uses: actions/upload-artifact@v3
         with:
           name: test-results
-          path: test-results/**/*.xml
+          path: testResults.xml
           retention-days: 1
       - name: upload coverage results
         uses: actions/upload-artifact@v3
         with:
           name: test-coverage
-          path: code-coverage/coverage.xml
+          path: ./coverage.xml
   publish_junit:
     name: Publish JUnit Test Results
     runs-on: ubuntu-latest
@@ -58,7 +56,7 @@ jobs:
       - name: publish results
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          files: ./**/*.xml
+          files: testResults.xml
   publish_coverage:
     name: Publish Cobertura Test Coverage
     runs-on: ubuntu-latest
