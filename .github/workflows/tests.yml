@@ -24,6 +24,7 @@ jobs:
           python -m pip install -U pip
           pip install -r +tests/requirements.txt
           echo "HDF5_PLUGIN_PATH = $(python -c "import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)")" >> "$GITHUB_ENV"
+          echo $HDF5_PLUGIN_PATH
       - name: install MATLAB
         uses: matlab-actions/setup-matlab@v1
         with:
