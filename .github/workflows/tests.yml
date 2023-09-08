@@ -23,7 +23,7 @@ jobs:
         run: |
           python -m pip install -U pip
           pip install -r +tests/requirements.txt
-          echo "HDF5_PLUGIN_PATH = python -c \"import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)\"" >> "$GITHUB_ENV"
+          echo "HDF5_PLUGIN_PATH = $(python -c \"import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)\")" >> "$GITHUB_ENV"
       - name: install MATLAB
         uses: matlab-actions/setup-matlab@v1
         with:
@@ -31,14 +31,14 @@ jobs:
       - name: run tests
         uses: matlab-actions/run-tests@v1
         with:
-          select-by-folder: +tests
+          select-by-folder: ./+tests
           test-results-junit: test-results/results.xml
           code-coverage-cobertura: code-coverage/coverage.xml
       - name: upload JUnit results
         uses: actions/upload-artifact@v3
         with:
           name: test-results
-          path: test_results/**/*.xml
+          path: test-results/**/*.xml
           retention-days: 1
       - name: upload coverage results
         uses: actions/upload-artifact@v3
