@@ -1,13 +1,12 @@
 function addColumn(DynamicTable, varargin)
-    % ADDCOLUMN Given a dynamic table and a set of keyword arguments for one or
-    % more columns, add one or more columns to the dynamic table by providing
-    % either keywords or a MATLAB table
+    % ADDCOLUMN Given a dynamic table and a keyword argument, add a column to the dynamic table.
     %
-    %  ADDCOLUMN(DT,TABLE) append the columns of the MATLAB Table TABLE to the
-    %  DynamicTable
+    %  ADDCOLUMN(DT,NM,VD)
+    %  append specified column name NM and non-ragged VectorData VD to DynamicTable DT
     %
-    %  ADDCOLUMN(DT,col_name1,col_vector1,...,col_namen,col_vectorn)
-    %  append specified column names and VectorData to table
+    %  ADDCOLUMN(DT,NM, VD, VI) append specified column by col_name NM represented
+    %  by multiple VectorIndex references VI ordered in such a way where VI(n) references V(n-1) and
+    %  VI(1) references VectorData VD.
     %
     % This function asserts the following:
     % 1) DynamicTable is a valid dynamic table and has the correct
@@ -35,9 +34,10 @@ function addColumn(DynamicTable, varargin)
         'Cannot write to on-file Dynamic Tables without enabling data pipes. '...
         'If this was produced with pynwb, please enable chunking for this table.']);
 
-    if istable(varargin{1})
-        types.util.dynamictable.addTableColumn(DynamicTable, varargin{:});
-    else
-        types.util.dynamictable.addVarargColumn(DynamicTable, varargin{:});
-    end
+    assert(~istable(varargin{1}) ...
+        , 'NWB:DynamicTable:AddColumn:InvalidArgument' ...
+        , [ ...
+        'Using MATLAB tables as input to the addColumn DynamicTable method has been deprecated. ' ...
+        'Please, use key-value pairs instead.']);
+    types.util.dynamictable.addVarargColumn(DynamicTable, varargin{:});
 end
