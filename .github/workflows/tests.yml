@@ -1,0 +1,83 @@
+name: Run and publish MATLAB tests with coverage
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+jobs:
+  run_tests:
+    name: Run MATLAB tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: check out repository
+        uses: actions/checkout@v4
+      - name: install python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: configure python env
+        run: |
+          python -m pip install -U pip
+          pip install -r +tests/requirements.txt
+          echo "HDF5_PLUGIN_PATH = python -c \"import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)\"" >> "$GITHUB_ENV"
+      - name: install MATLAB
+        uses: matlab-actions/setup-matlab@v1
+        with:
+          release: R2020a
+      - name: run tests
+        uses: matlab-actions/run-tests@v1
+        with:
+          select-by-folder: +tests
+          test-results-junit: test-results/results.xml
+          code-coverage-cobertura: code-coverage/coverage.xml
+      - name: upload JUnit results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: test_results/**/*.xml
+          retention-days: 1
+      - name: upload coverage results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-coverage
+          path: code-coverage/coverage.xml
+  publish_junit:
+    name: Publish JUnit Test Results
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs: [run_tests]
+    steps:
+      - name: retrieve results
+        uses: actions/download-artifact@v3
+        with:
+          name: test-results
+      - name: publish results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: ./**/*.xml
+  publish_coverage:
+    name: Publish Cobertura Test Coverage
+    runs-on: ubuntu-latest
+    needs: [run_tests]
+    steps:
+      - name: retrieve code coverage files
+        uses: actions/download-artifact@v3
+        with:
+          name: test-coverage
+      - name: summarize code coverage
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: coverage.xml
+          badge: true
+          format: markdown
+          output: both
+      - name: publish code coverage
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: github.event_name == 'pull_request'
+        with:
+          recreate: true
+          path: code-coverage-results.md
