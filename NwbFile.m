@@ -22,17 +22,20 @@ classdef NwbFile < types.core.NWBFile
 
         function export(obj, filename)
             %add to file create date
-            current_time = datetime('now', 'TimeZone', 'local');
+            
             if isa(obj.file_create_date, 'types.untyped.DataStub')
                 obj.file_create_date = obj.file_create_date.load();
             end
 
+            current_time = {datetime('now', 'TimeZone', 'local')};
             if isempty(obj.file_create_date)
                 obj.file_create_date = current_time;
             elseif iscell(obj.file_create_date)
-                obj.file_create_date(end+1) = {current_time};
+                obj.file_create_date(end+1) = current_time;
             else
-                obj.file_create_date = {obj.file_create_date current_time};
+                % obj.file_create_date could be a datetime array
+                obj.file_create_date = num2cell(obj.file_create_date);
+                obj.file_create_date(end+1) = current_time;
             end
 
             %equate reference time to session_start_time if empty
