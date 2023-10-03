@@ -23,7 +23,7 @@ function s = fillProps(props, names, varargin)
     proplines = cell(size(names));
     for i=1:length(names)
         pnm = names{i};
-        propStr = strjoin(strsplit(getPropStr(props(pnm)), newline), '    % ');
+        propStr = strjoin(strsplit(getPropStr(props(pnm)), newline), [newline '% ']);
         proplines{i} = [pnm '; % ' requiredStr ' ' propStr];
     end
     
