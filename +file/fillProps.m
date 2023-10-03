@@ -6,32 +6,33 @@ function s = fillProps(props, names, varargin)
     if isempty(names)
         return;
     end
-
+    
     p = inputParser;
     p.addParameter('PropertyAttributes', '', ...
         @(x)validateattributes(x, {'char'}, {'scalartext'}, mfilename, 'Attribute'));
     p.addParameter('IsRequired', false, ...
         @(x)validateattributes(x, {'logical'}, {'scalar'}, mfilename, 'IsRequired'));
     p.parse(varargin{:});
-
+    
     if p.Results.IsRequired
         requiredStr = 'REQUIRED';
     else
         requiredStr = '';
     end
-
+    
     proplines = cell(size(names));
     for i=1:length(names)
         pnm = names{i};
-        proplines{i} = [pnm '; % ' requiredStr ' ' getPropStr(props(pnm))];
+        propStr = strjoin(strsplit(getPropStr(props(pnm)), newline), '    % ');
+        proplines{i} = [pnm '; % ' requiredStr ' ' propStr];
     end
-
+    
     if isempty(p.Results.PropertyAttributes)
         options = '';
     else
         options = ['(' p.Results.PropertyAttributes ')'];
     end
-
+    
     s = strjoin({...
         ['properties' options]...
         file.addSpaces(strjoin(proplines, newline), 4)...
@@ -89,7 +90,7 @@ function propStr = getPropStr(prop, propName)
     else
         typeStr = prop.type;
     end
-
+    
     if isa(prop, 'file.interface.HasProps')
         propStrCell = cell(size(prop));
         for iProp = 1:length(prop)
@@ -101,7 +102,7 @@ function propStr = getPropStr(prop, propName)
     else
         propStr = typeStr;
     end
-
+    
     if nargin >= 2
         propStr = [propName ' = ' propStr];
     end
