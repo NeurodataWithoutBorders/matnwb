@@ -3,6 +3,9 @@ function Namespaces = generate(namespaceText, schemaSource)
 % optionally, include schema mapping as second argument OR path of specs
 % schemaSource is either a path to a directory where the source is
 % OR a containers.Map of filenames
+namespaceText = convertStringsToChars(namespaceText);
+schemaSource = convertStringsToChars(schemaSource);
+
 Schema = spec.loadSchemaObject();
 namespace = spec.schema2matlab(Schema.read(namespaceText));
 Namespaces = spec.getNamespaceInfo(namespace);
