@@ -44,8 +44,8 @@ classdef Configuration < handle
     
     methods
         function obj = Configuration(maxSize)
-            assert(isnumeric(maxSize) && all(maxSize > 0),...
-                'maxSize must be positive and numeric.');
+            validateattributes(maxSize, {'numeric'}, {'vector', 'nonempty', 'nonnegative'} ...
+                , 'DataPipe Configuration constructor', 'maxSize', 1);
             obj.maxSize = maxSize;
         end
     end
@@ -53,9 +53,7 @@ classdef Configuration < handle
     methods
         function set.axis(obj, val)
             errorId = 'NWB:Untyped:DataPipe:Configuration:InvalidAxis';
-            assert(isnumeric(val) && isscalar(val),...
-                errorId,...
-                'Axis must be a numeric scalar.');
+            assert(isnumeric(val) && isscalar(val), errorId, 'Axis must be a numeric scalar.');
             rank = length(obj.maxSize);
             assert(val > 0 && val <= rank, errorId,...
                 'Axis must be within maxSize rank [1, %d]', rank);
@@ -64,11 +62,9 @@ classdef Configuration < handle
         
         function set.offset(obj, val)
             errorId = 'NWB:Untyped:DataPipe:Configuration:InvalidOffset';
-            assert(isnumeric(val) && isscalar(val),...
-                errorId,...
-                'Offset must be a numeric scalar.');
+            assert(isnumeric(val) && isscalar(val), errorId, 'Offset must be a numeric scalar.');
             sizeBound = obj.maxSize(obj.axis);
-            assert(val >= 0 && val <= obj.maxSize(obj.axis),...
+            assert(val >= 0 && val <= sizeBound,...
                 errorId,...
                 'Offset must be within maxSize bounds [0, %d)', sizeBound);
             obj.offset = val;
