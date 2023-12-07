@@ -108,11 +108,20 @@ classdef Set < handle & matlab.mixin.CustomDisplay
         end
         
         function validateAll(obj)
-            mapkeys = keys(obj.map);
+            mapkeys = keys(obj.Map);
+            keyFailed = false(size(mapkeys));
             for i=1:length(mapkeys)
                 mk = mapkeys{i};
-                obj.fcn(mk, obj.map(mk));
+                try
+                    obj.ValidationFcn(mk, obj.Map(mk));
+                catch ME
+                    warning('NWB:Set:FailedValidation' ...
+                        , 'Failed to validate Constrained Set key `%s` with message:\n%s' ...
+                        , mk, ME.message);
+                    keyFailed(i) = true;
+                end
             end
+            remove(obj.Map, mapkeys(keyFailed));
         end
         
         function obj = set(obj, name, val)
@@ -127,23 +136,20 @@ classdef Set < handle & matlab.mixin.CustomDisplay
             
             assert(length(name) == length(val),...
                 'number of property names should match number of vals on set.');
-            if ~isempty(obj.fcn)
-                for i=1:length(name)
-                    if cellExtract
-                        elem = val{i};
-                    else
-                        elem = val(i);
-                    end
-                    obj.fcn(name{i}, elem);
-                end
-            end
             for i=1:length(name)
                 if cellExtract
                     elem = val{i};
                 else
                     elem = val(i);
                 end
-                obj.map(name{i}) = elem;
+                try
+                    obj.ValidationFcn(name{i}, elem);
+                    obj.Map(name{i}) = elem;
+                catch ME
+                    warning('NWB:Set:FailedValidation' ...
+                        , 'Failed to add key `%s` to Constrained Set with message:\n  %s' ...
+                        , name{i}, ME.message);
+                end
             end
         end
         
