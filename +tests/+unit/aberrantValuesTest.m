@@ -27,7 +27,7 @@ function testExtraAttribute(TestCase)
     fid = H5F.open(TestCase.TestData.Filename, 'H5F_ACC_RDWR', 'H5P_DEFAULT');
     io.writeAttribute(fid, '/acquisition/timeseries/__expected_extra_attrib', 'extra_data');
     H5F.close(fid);
-    nwbRead(TestCase.TestData.Filename);
+    nwbRead(TestCase.TestData.Filename, 'ignorecache');
     [~,warnId] = lastwarn();
     TestCase.verifyEqual(warnId, 'NWB:CheckUnset:InvalidProperties');
 end
@@ -43,7 +43,7 @@ function testInvalidConstraint(TestCase)
     refs = wrongData.export(fid, '/acquisition/fakedata', {});
     TestCase.assertEmpty(refs);
     H5F.close(fid);
-    nwbRead(TestCase.TestData.Filename);
+    nwbRead(TestCase.TestData.Filename, 'ignorecache');
     [~,warnId] = lastwarn();
     TestCase.verifyEqual(warnId, 'NWB:Set:FailedValidation');
 end
