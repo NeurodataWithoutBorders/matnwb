@@ -43,7 +43,16 @@ function testInvalidConstraint(TestCase)
     refs = wrongData.export(fid, '/acquisition/fakedata', {});
     TestCase.assertEmpty(refs);
     H5F.close(fid);
-    nwbRead(TestCase.TestData.Filename, 'ignorecache');
+    file = nwbRead(TestCase.TestData.Filename, 'ignorecache');
     [~,warnId] = lastwarn();
     TestCase.verifyEqual(warnId, 'NWB:Set:FailedValidation');
+    
+    warning('off', 'NWB:Debug:ErrorStub');
+    warning('NWB:Debug:ErrorStub', ''); % ensures `lastwarn` returns this id if called
+    warning('on', 'NWB:Debug:ErrorStub');
+    
+    file.acquisition.set('wrong', wrongData);
+    [~,warnId] = lastwarn();
+    TestCase.verifyEqual(warnId, 'NWB:Set:FailedValidation');
+    TestCase.verifyTrue(~file.acquisition.isKey('wrong'));
 end
