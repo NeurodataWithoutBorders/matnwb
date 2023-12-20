@@ -57,7 +57,7 @@ function results = nwbtest(varargin)
         [installDir, ~, ~] = fileparts(mfilename('fullpath'));
         
         ignoreFolders = {'tutorials', '+contrib', '+util', 'external_packages', '+tests'};
-        ignorePaths = {fullfile('+misc', 'generateDocs.m'), [mfilename '.m']};
+        ignorePaths = {fullfile('+misc', 'generateDocs.m'), [mfilename '.m'], 'nwbClearGenerated.m'};
         mfilePaths = getMfilePaths(installDir, ignoreFolders, ignorePaths);
         if ~verLessThan('matlab', '9.3') && ~isempty(mfilePaths)
             runner.addPlugin(CodeCoveragePlugin.forFile(mfilePaths,...
