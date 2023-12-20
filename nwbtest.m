@@ -44,6 +44,7 @@ function results = nwbtest(varargin)
         
         ws = pwd;
         
+        nwbClearGenerated(); % clear default files if any.
         pvcell = struct2pvcell(parser.Unmatched);
         suite = TestSuite.fromPackage('tests', 'IncludingSubpackages', true, pvcell{:});
         
@@ -63,7 +64,6 @@ function results = nwbtest(varargin)
                 'Producing', CoberturaFormat(coverageFile)));
         end % add cobertura coverage
         
-        nwbClearGenerated(); % clear default files if any.
         results = runner.run(suite);
         
         display(results);
