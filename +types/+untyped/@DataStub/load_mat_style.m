@@ -10,6 +10,29 @@ function data = load_mat_style(obj, varargin)
     dataDimensions = obj.dims;
     spaceId = obj.get_space();
     userSelection = varargin;
+
+    selectionErrorId = 'NWB:DataStub:Load:InvalidSelection';
+    for iDimension = 1:min(obj.ndims, length(userSelection))
+        selection = userSelection{iDimension};
+        if ischar(selection)
+            continue;
+        end
+        assert(all(isreal(selection) & isfinite(selection) & selection > 0 & selection == floor(selection)) ...
+            , selectionErrorId ...
+            , 'DataStub indices for dimension %u must be positive integer values' ...
+            , iDimension);
+
+        if iDimension == length(userSelection)
+            dimensionSize = prod(dataDimensions(iDimension:end));
+        else
+            dimensionSize = dataDimensions(iDimension);
+        end
+        assert(all(dimensionSize >= selection) ...
+            , selectionErrorId ...
+            , ['DataStub indices for dimension %u must be less than or equal to ' ...
+            'dimension size %u'] ...
+            , iDimension, dimensionSize);
+    end
     
     if isscalar(userSelection) && ~ischar(userSelection{1})
         % linear index into the fast dimension.

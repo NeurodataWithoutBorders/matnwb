@@ -1,7 +1,7 @@
 classdef Set < handle & matlab.mixin.CustomDisplay
     properties(SetAccess=protected)
-        map; %containers.Map
-        fcn; %validation function
+        Map; % containers.Map
+        ValidationFcn = @(key, value)[];
     end
     
     methods
@@ -10,7 +10,7 @@ classdef Set < handle & matlab.mixin.CustomDisplay
             % obj = SET(field1,value1,...,fieldN,valueN) returns a set from key value pairs
             % obj = SET(src) can be a struct or map
             % obj = SET(__,fcn) adds a validation function from a handle
-            obj.map = containers.Map;
+            obj.Map = containers.Map;
             
             if nargin == 0
                 return;
@@ -18,13 +18,13 @@ classdef Set < handle & matlab.mixin.CustomDisplay
             
             switch class(varargin{1})
                 case 'function_handle'
-                    obj.fcn = varargin{1};
+                    obj.ValidationFcn = varargin{1};
                 case {'struct', 'containers.Map'}
                     src = varargin{1};
                     if isstruct(src)
                         srcFields = fieldnames(src);
                         for i=1:length(srcFields)
-                            obj.map(srcFields{i}) = src.(srcFields{i});
+                            obj.Map(srcFields{i}) = src.(srcFields{i});
                         end
                     else
                         srcKeys = keys(src);
@@ -34,13 +34,13 @@ classdef Set < handle & matlab.mixin.CustomDisplay
                     if nargin > 1
                         assert(isa(varargin{2}, 'function_handle'),...
                             '`fcn` Expected a function_handle type');
-                        obj.fcn = varargin{2};
+                        obj.ValidationFcn = varargin{2};
                     end
                 case 'char'
                     if mod(length(varargin), 2) == 1
                         assert(isa(varargin{end}, 'function_handle'),...
                             '`fcn` Expected a function_handle type');
-                        obj.fcn = varargin{end};
+                        obj.ValidationFcn = varargin{end};
                         varargin(end) = [];
                     end
                     assert(mod(length(varargin), 2) == 0,...
@@ -48,27 +48,27 @@ classdef Set < handle & matlab.mixin.CustomDisplay
                         'Number of Keys do not match number of values']);
                     assert(iscellstr(varargin(1:2:end)),...
                         'KeyWord Argument Error: Keys must be char');
-                    obj.map = containers.Map(varargin(1:2:end), varargin(2:2:end));
+                    obj.Map = containers.Map(varargin(1:2:end), varargin(2:2:end));
             end
         end
         
         function tf = isKey(obj, name)
-            tf = isKey(obj.map, name);
+            tf = isKey(obj.Map, name);
         end
         
         %return object's keys
         function k = keys(obj)
-            k = keys(obj.map);
+            k = keys(obj.Map);
         end
         
         %return values of backed map
         function v = values(obj)
-            v = values(obj.map);
+            v = values(obj.Map);
         end
         
         %return number of entries
         function cnt = Count(obj)
-            cnt = obj.map.Count;
+            cnt = obj.Map.Count;
         end
         
         %overloads size(obj)
@@ -100,20 +100,28 @@ classdef Set < handle & matlab.mixin.CustomDisplay
             error('NWB:Set:Unsupported',...
                 'types.untyped.Set does not support concatenation.');
         end
-         
+        
         function setValidationFcn(obj, fcn)
-            if (~isnumeric(fcn) || ~isempty(fcn)) && ~isa(fcn, 'function_handle')
-                error('Validation must be a function handle of form @(name, val) or empty array.');
-            end
-            obj.fcn = fcn;
+            assert(isa(fcn, 'function_handle'), ...
+                'Validation must be a function handle of form @(name, val) or empty array.');
+            obj.ValidationFcn = fcn;
         end
         
         function validateAll(obj)
-            mapkeys = keys(obj.map);
+            mapkeys = keys(obj.Map);
+            keyFailed = false(size(mapkeys));
             for i=1:length(mapkeys)
                 mk = mapkeys{i};
-                obj.fcn(mk, obj.map(mk));
+                try
+                    obj.ValidationFcn(mk, obj.Map(mk));
+                catch ME
+                    warning('NWB:Set:FailedValidation' ...
+                        , 'Failed to validate Constrained Set key `%s` with message:\n%s' ...
+                        , mk, ME.message);
+                    keyFailed(i) = true;
+                end
             end
+            remove(obj.Map, mapkeys(keyFailed));
         end
         
         function obj = set(obj, name, val)
@@ -128,32 +136,29 @@ classdef Set < handle & matlab.mixin.CustomDisplay
             
             assert(length(name) == length(val),...
                 'number of property names should match number of vals on set.');
-            if ~isempty(obj.fcn)
-                for i=1:length(name)
-                    if cellExtract
-                        elem = val{i};
-                    else
-                        elem = val(i);
-                    end
-                    obj.fcn(name{i}, elem);
-                end
-            end
             for i=1:length(name)
                 if cellExtract
                     elem = val{i};
                 else
                     elem = val(i);
                 end
-                obj.map(name{i}) = elem;
+                try
+                    obj.ValidationFcn(name{i}, elem);
+                    obj.Map(name{i}) = elem;
+                catch ME
+                    warning('NWB:Set:FailedValidation' ...
+                        , 'Failed to add key `%s` to Constrained Set with message:\n  %s' ...
+                        , name{i}, ME.message);
+                end
             end
         end
         
         function obj = remove(obj, name)
-            remove(obj.map, name);
+            remove(obj.Map, name);
         end
         
         function obj = clear(obj)
-            obj.map = containers.Map;
+            obj.Map = containers.Map;
         end
         
         function o = get(obj, name)
@@ -162,7 +167,7 @@ classdef Set < handle & matlab.mixin.CustomDisplay
             end
             o = cell(length(name),1);
             for i=1:length(name)
-                o{i} = obj.map(name{i});
+                o{i} = obj.Map(name{i});
             end
             if isscalar(o)
                 o = o{1};
@@ -171,16 +176,16 @@ classdef Set < handle & matlab.mixin.CustomDisplay
         
         function refs = export(obj, fid, fullpath, refs)
             io.writeGroup(fid, fullpath);
-            k = keys(obj.map);
-            val = values(obj.map, k);
+            k = keys(obj.Map);
+            val = values(obj.Map, k);
             for i=1:length(k)
                 v = val{i};
                 nm = k{i};
-                propfp = [fullpath '/' nm];
+                propFullPath = [fullpath '/' nm];
                 if startsWith(class(v), 'types.')
-                    refs = v.export(fid, propfp, refs);
+                    refs = v.export(fid, propFullPath, refs);
                 else
-                    refs = io.writeDataset(fid, propfp, v, refs);
+                    refs = io.writeDataset(fid, propFullPath, v, refs);
                 end
             end
         end
@@ -208,8 +213,8 @@ classdef Set < handle & matlab.mixin.CustomDisplay
             body = cell(size(mkeys));
             for i=1:length(mkeys)
                 mk = mkeys{i};
-                mkspace = repmat(' ', 1, max_mklen - mklen(i));
-                body{i} = [mkspace mk ': [' class(obj.map(mk)) ']'];
+                spacing = repmat(' ', 1, max_mklen - mklen(i));
+                body{i} = [spacing mk ': [' class(obj.Map(mk)) ']'];
             end
             body = file.addSpaces(strjoin(body, newline), 4);
             disp([hdr newline body newline footer]);

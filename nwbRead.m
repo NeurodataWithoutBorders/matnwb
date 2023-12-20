@@ -46,14 +46,25 @@ function nwb = nwbRead(filename, varargin)
     
     filename = char(filename);
     specLocation = getEmbeddedSpec(filename);
+    schemaVersion = util.getSchemaVersion(filename);
     if ~isempty(specLocation)
         Blacklist.groups{end+1} = specLocation;
+    end
+
+    % validate supported schema version
+    Schemas = dir(fullfile(misc.getMatnwbDir(), 'nwb-schema'));
+    supportedSchemas = setdiff({Schemas.name}, {'.', '..'});
+    if ~any(strcmp(schemaVersion, supportedSchemas))
+        warning('NWB:Read:UnsupportedSchema' ...
+            , ['NWB schema version %s is not support by this version of MatNWB. ' ...
+            'This file is not guaranteed to be supported.'] ...
+            , schemaVersion);
     end
     
     if ~ignoreCache
         if isempty(specLocation)
             try
-                generateCore(util.getSchemaVersion(filename), 'savedir', saveDir);
+                generateCore(schemaVersion, 'savedir', saveDir);
             catch ME
                 if ~strcmp(ME.identifier, 'NWB:GenerateCore:MissingCoreSchema')
                     rethrow(ME);
