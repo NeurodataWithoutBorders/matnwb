@@ -63,6 +63,7 @@ function results = nwbtest(varargin)
                 'Producing', CoberturaFormat(coverageFile)));
         end % add cobertura coverage
         
+        nwbClearGenerated(); % clear default files if any.
         results = runner.run(suite);
         
         display(results);
