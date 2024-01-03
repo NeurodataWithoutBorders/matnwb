@@ -26,12 +26,11 @@ The returned NwbFile object provides an in-memory view of the underlying NWB dat
 
 ### Step 2b: Writing a NWB File
 
-Writing a NWB file requires first generating the class files that you will need (or an environment from a previous `nwbRead`).
-From the MATLAB command line, add MatNWB to the path and generate the core classes for the most recent NWB schema. The generated classes are normally placed in the `+types` subdirectory in the MatNWB installation directory. As MATLAB [packages](https://www.mathworks.com/help/matlab/matlab_oop/scoping-classes-with-packages.html), these generated classes comprise the building blocks you will need to write your NWB file.
+
+From the MATLAB command line, add MatNWB to the path. The generated classes are normally placed in the `+types` subdirectory in the MatNWB installation directory. As MATLAB [packages](https://www.mathworks.com/help/matlab/matlab_oop/scoping-classes-with-packages.html), these generated classes comprise the building blocks you will need to write your NWB file.
 
 ```matlab
 addpath('path/to/matnwb');
-generateCore(); % generate the most recent nwb-schema release.
 ```
 
 Once you have configured your NWB File, you may write the `NwbFile` object to disk using the `nwbExport` function.
