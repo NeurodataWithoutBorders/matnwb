@@ -66,12 +66,13 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
             end
             
             pid = H5D.get_create_plist(did);
-            if (~Chunking.isInDcpl(pid))
+            if Chunking.isInDcpl(pid)
+                obj.pipeProperties{end+1} = Chunking.fromDcpl(pid);
+            else
                 warning('NWB:BoundPipe:NotChunked' ...
                     , ['Bound pipe is not chunked. Only read access is allowed.\n ' ...
                     'Attempting to append to this pipe may cause errors.']);
             end
-            obj.pipeProperties{end+1} = Chunking.fromDcpl(pid);
             
             if Compression.isInDcpl(pid)
                 obj.pipeProperties{end+1} = Compression.fromDcpl(pid);
