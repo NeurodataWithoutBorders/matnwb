@@ -236,7 +236,7 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
         end
         
         function setPipeProperty(~, ~)
-            error('NWB:Untyped:DataPipe:BoundPipe:CannotSetPipeProperty',...
+            error('NWB:BoundPipe:CannotSetPipeProperty',...
                 'Bound pipes cannot override their pipe properties.');
         end
         
@@ -251,7 +251,7 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
         end
         
         function removePipeProperty(~, ~)
-            error('NWB:Untyped:DataPipe:BoundPipe:CannotSetPipeProperty',...
+            error('NWB:BoundPipe:CannotSetPipeProperty',...
                 'Bound pipes cannot remove pipe properties.');
         end
         
