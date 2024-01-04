@@ -233,6 +233,24 @@ function testBoundPipe(testCase)
         testCase.verifyEqual(ME.identifier, 'NWB:BoundPipe:InvalidDataShape');
     end
     
+    delete(filename);
+    
+    %% not chunked behavior
+    fid = H5F.create(filename);
+    did = H5D.create( ...
+        fid, dsName ...
+        , io.getBaseType(class(data)) ...
+        , H5S.create_simple(rank, fliplr(size(data)), fliplr(size(data))) ...
+        , 'H5P_DEFAULT', 'H5P_DEFAULT', 'H5P_DEFAULT');
+    H5D.write(did, 'H5ML_DEFAULT', 'H5S_ALL', 'H5S_ALL', 'H5P_DEFAULT', data);
+    H5D.close(did);
+    H5F.close(fid);
+    warning(debugId, '');
+    nochunk = DataPipe('filename', filename, 'path', dsName);
+    [~,lastId] = lastwarn();
+    testCase.verifyEqual(lastId, 'NWB:BoundPipe:NotChunked');
+    nochunk.load(); % test still loadable.
+    
     %% cleanup
     warning('on', debugId);
 end
