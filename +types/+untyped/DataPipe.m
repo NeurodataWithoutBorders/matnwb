@@ -103,9 +103,9 @@ classdef (Sealed) DataPipe < handle
                 meta = metaclass(obj.internal);
                 proplist = meta.PropertyList;
                 propnames = {proplist.Name};
-                dependents = propnames([proplist.Dependent]);
+                dependents = setdiff(propnames([proplist.Dependent]), {'filename', 'path'});
                 
-                extras = intersect(dependents, p.UsingDefaults);
+                extras = setdiff(intersect(p.Parameters, dependents), p.UsingDefaults);
                 if ~isempty(extras)
                     formatted = cell(size(dependents));
                     for i = 1:length(dependents)
