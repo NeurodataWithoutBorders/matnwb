@@ -13,6 +13,49 @@ function setup(testCase)
     rehash();
 end
 
+function testInitChecks(testCase)
+    import types.untyped.datapipe;
+    
+    warnDebugId = 'NWB:DataPipeTest:Debug';
+    warning('off', warnDebugId);
+    warning(warnDebugId, '');
+    
+    %% extra data type
+    data = rand(100, 1);
+    types.untyped.DataPipe('data', data, 'dataType', 'double');
+    [~,lastId] = lastwarn();
+    testCase.verifyTrue(strcmp(lastId, 'NWB:DataPipe:RedundantDataType'));
+    
+    warning(warnDebugId, '');
+    
+    %% compressionLevel and hasShuffle ignored if filters is provided
+    pipe = types.untyped.DataPipe('data', data ...
+        , 'compressionLevel', 3 ...
+        , 'hasShuffle', false ...
+        , 'filters', [properties.Compression(3)]);
+    [~,lastId] = lastwarn();
+    testCase.verifyTrue(strcmp(lastId, 'NWB:DataPipe:FilterOverride'));
+    
+    warning(warnDebugId, '');
+    
+    %% extraneous properties from file
+    filename = 'testInit.h5';
+    datasetName = '/test_data';
+    fid = H5F.create(filename);
+    pipe.export(fid, datasetName, {});
+    H5F.close(fid);
+    
+    pipe = types.untyped.DataPipe( ...
+        'filename', filename ...
+        , 'path', datasetName ...
+        , 'dataType', 'double');
+    [~,lastId] = lastwarn();
+    testCase.verifyTrue(strcmp(lastId, 'NWB:DataPipe:UnusedArguments'));
+    
+    % cleanup
+    warning('on', warnDebugId);
+end
+
 function testIndex(testCase)
     filename = 'testIndexing.h5';
     name = '/test_data';
