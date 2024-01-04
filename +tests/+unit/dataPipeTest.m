@@ -14,7 +14,7 @@ function setup(testCase)
 end
 
 function testInitChecks(testCase)
-    import types.untyped.datapipe;
+    import types.untyped.datapipe.*;
     
     warnDebugId = 'NWB:DataPipeTest:Debug';
     warning('off', warnDebugId);
@@ -45,10 +45,7 @@ function testInitChecks(testCase)
     pipe.export(fid, datasetName, {});
     H5F.close(fid);
     
-    pipe = types.untyped.DataPipe( ...
-        'filename', filename ...
-        , 'path', datasetName ...
-        , 'dataType', 'double');
+    types.untyped.DataPipe('filename', filename, 'path', datasetName, 'dataType', 'double');
     [~,lastId] = lastwarn();
     testCase.verifyTrue(strcmp(lastId, 'NWB:DataPipe:UnusedArguments'));
     
