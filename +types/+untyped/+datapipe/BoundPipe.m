@@ -47,14 +47,15 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
                         strjoin(arrayfun(@num2str, axis, 'UniformOutput', false), ', '));
                     formattedMaxSize = sprintf('[%s]', ...
                         strjoin(arrayfun(@num2str, max_size, 'UniformOutput', false), ', '));
-                    warning('NWB:Untyped:DataPipe:BoundPipe:InvalidPipeShape', ...
-                        ['Multiple possible axes for data pipe detected.' newline ...
-                        '  Dimensions %s are all strictly smaller in size than the maximum size of %s.' newline ...
-                        '  All non-appendable dimensions should fill out the maximum size of their dimension.' newline ...
-                        '  Continuing with axis %d'], formattedAxes, formattedMaxSize, axis(1));
+                    warning('NWB:BoundPipe:InvalidPipeShape' ...
+                        , [ ...
+                        'Multiple data dimensions %s are smaller than the dataset''s ' ...
+                        'maximum dimensions (%s). Attempting to append to this ' ...
+                        'dataset will most likely produce errors.'] ...
+                        , formattedAxes, formattedMaxSize);
                     axis = axis(1);
                 end
-
+                
                 obj.config.axis = axis;
                 obj.config.offset = current_size(obj.config.axis);
                 tid = H5D.get_type(did);
@@ -65,9 +66,13 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
             end
             
             pid = H5D.get_create_plist(did);
-            assert(Chunking.isInDcpl(pid), ['Cannot access a bound pipe if '...
-                'the dataset is not chunked.']);
-            obj.pipeProperties{end+1} = Chunking.fromDcpl(pid);
+            if Chunking.isInDcpl(pid)
+                obj.pipeProperties{end+1} = Chunking.fromDcpl(pid);
+            else
+                warning('NWB:BoundPipe:NotChunked' ...
+                    , ['Bound pipe is not chunked. Only read access is allowed.\n ' ...
+                    'Attempting to append to this pipe may cause errors.']);
+            end
             
             if Compression.isInDcpl(pid)
                 obj.pipeProperties{end+1} = Compression.fromDcpl(pid);
@@ -150,7 +155,7 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
         end
         
         function expandDataset(obj, data_size)
-            errorId = 'NWB:Types:Untyped:DataPipe:BoundPipe:InvalidSize';
+            errorId = 'NWB:BoundPipe:InvalidSize';
             did = obj.getDataset('H5F_ACC_RDWR');
             sid = H5D.get_space(did);
             [~, h5_dims, ~] = H5S.get_simple_extent_dims(sid);
@@ -164,8 +169,7 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
                 errorId,...
                 'Data size cannot exceed maximum allocated size.');
             sizes_ind = 1:length(obj.config.maxSize);
-            non_axes_mask = sizes_ind ~= obj.config.axis...
-                & ~isinf(obj.config.maxSize);
+            non_axes_mask = sizes_ind ~= obj.config.axis & ~isinf(obj.config.maxSize);
             assert(all(...
                 obj.config.maxSize(non_axes_mask) == new_extents(non_axes_mask)),...
                 errorId,...
@@ -179,22 +183,27 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
         function append(obj, data)
             rank = length(obj.config.maxSize);
             data_size = size(data);
+            data_rank = length(data_size);
             
-            if 1 == rank
+            if 1 == rank && 2 == data_rank
+                assert(isvector(data) ...
+                    , 'NWB:BoundPipe:InvalidDataShape' ...
+                    , ['data is a non-vector matrix but the pipe is one-dimensional. ' ...
+                    'Attempting to append will drop data!']);
+                data_rank = 1;
                 data_size = max(data_size);
-            elseif length(data_size) < rank
+            elseif data_rank < rank
                 new_coords = ones(1, rank);
-                new_coords(1:length(data_size)) = data_size;
+                new_coords(1:data_rank) = data_size;
                 data_size = new_coords;
-            elseif length(data_size) > rank
-                if ~all(data_size(rank+1:end) == 1)
-                    warning('NWB:Types:Untyped:DataPipe:InvalidRank',...
-                        ['Expected rank %d not expected for data of size %s.  '...
-                        'Data may be lost on write.'],...
-                        rank, mat2str(size(data_size)));
-                end
-                data_size = data_size(1:rank);
+                data_rank = rank;
             end
+            
+            assert(data_rank <= rank ...
+                , 'NWB:BoundPipe:InvalidDataShape' ...
+                , ['Pipe rank (%d) < provided data rank (%d). ' ...
+                'Attempting to append will drop data!'] ...
+                , rank, data_rank);
             
             obj.expandDataset(data_size);
             sid = obj.makeSelection(data_size);
@@ -228,7 +237,7 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
         end
         
         function setPipeProperty(~, ~)
-            error('NWB:Untyped:DataPipe:BoundPipe:CannotSetPipeProperty',...
+            error('NWB:BoundPipe:CannotSetPipeProperty',...
                 'Bound pipes cannot override their pipe properties.');
         end
         
@@ -243,7 +252,7 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
         end
         
         function removePipeProperty(~, ~)
-            error('NWB:Untyped:DataPipe:BoundPipe:CannotSetPipeProperty',...
+            error('NWB:BoundPipe:CannotSetPipeProperty',...
                 'Bound pipes cannot remove pipe properties.');
         end
         
