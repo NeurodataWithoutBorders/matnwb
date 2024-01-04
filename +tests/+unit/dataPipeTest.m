@@ -179,6 +179,64 @@ function testExternalFilters(testCase)
     testCase.verifyEqual(readData(1:3), [7, 8, 9] .');
 end
 
+function testBoundPipe(testCase)
+    import types.untyped.*;
+    filename = 'bound.h5';
+    dsName = '/test_data';
+    debugId = 'NWB:DataPipe:Debug';
+    warning('off', debugId);
+    
+    %% full pipe case
+    fullpipe = DataPipe('data', rand(100, 1));
+    
+    fid = H5F.create(filename);
+    fullpipe.export(fid, dsName, {});
+    H5F.close(fid);
+    DataPipe('filename', filename, 'path', dsName);
+    delete(filename);
+    
+    %% multi-axis case
+    data = rand(100, 1);
+    maxSize = [200, 2];
+    multipipe = DataPipe('data', data, 'maxSize', maxSize);
+    fid = H5F.create(filename);
+    try
+        % this should be impossible normally.
+        multipipe.export(fid, dsName, {});
+    catch ME
+        testCase.verifyEqual(ME.identifier, 'NWB:BoundPipe:InvalidSize');
+    end
+    H5F.close(fid);
+    delete(filename);
+    
+    fid = H5F.create(filename);
+    rank = length(maxSize);
+    dcpl = H5P.create('H5P_DATASET_CREATE');
+    H5P.set_chunk(dcpl, datapipe.guessChunkSize(class(data), maxSize));
+    did = H5D.create( ...
+        fid, dsName ...
+        , io.getBaseType(class(data)) ...
+        , H5S.create_simple(rank, fliplr(size(data)), fliplr(maxSize)) ...
+        , 'H5P_DEFAULT', dcpl, 'H5P_DEFAULT');
+    H5D.write(did, 'H5ML_DEFAULT', 'H5S_ALL', 'H5S_ALL', 'H5P_DEFAULT', data);
+    H5D.close(did);
+    H5F.close(fid);
+    
+    warning(debugId, '');
+    multipipe = DataPipe('filename', filename, 'path', dsName);
+    [~,lastId] = lastwarn();
+    testCase.verifyEqual(lastId, 'NWB:BoundPipe:InvalidPipeShape');
+    
+    try
+        multipipe.append(rand(10, 2, 10));
+    catch ME
+        testCase.verifyEqual(ME.identifier, 'NWB:BoundPipe:InvalidDataShape');
+    end
+    
+    %% cleanup
+    warning('on', debugId);
+end
+
 function data = createData(dataType, size)
     data = randi(intmax(dataType), size, dataType);
 end
