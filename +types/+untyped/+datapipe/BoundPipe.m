@@ -182,21 +182,18 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
         function append(obj, data)
             rank = length(obj.config.maxSize);
             data_size = size(data);
+            data_rank = length(data_size);
             
+            assert(data_rank <= rank ...
+                , 'NWB:BoundPipe:InvalidDataShape' ...
+                , 'Pipe rank (%d) < provided data rank (%d). Attempting to append will drop data!' ...
+                , rank, data_rank);
             if 1 == rank
                 data_size = max(data_size);
-            elseif length(data_size) < rank
+            elseif data_rank < rank
                 new_coords = ones(1, rank);
-                new_coords(1:length(data_size)) = data_size;
+                new_coords(1:data_rank) = data_size;
                 data_size = new_coords;
-            elseif length(data_size) > rank
-                if ~all(data_size(rank+1:end) == 1)
-                    warning('NWB:Types:Untyped:DataPipe:InvalidRank',...
-                        ['Expected rank %d not expected for data of size %s.  '...
-                        'Data may be lost on write.'],...
-                        rank, mat2str(size(data_size)));
-                end
-                data_size = data_size(1:rank);
             end
             
             obj.expandDataset(data_size);
