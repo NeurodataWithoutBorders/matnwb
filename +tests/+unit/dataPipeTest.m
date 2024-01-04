@@ -24,7 +24,7 @@ function testInit(testCase)
     data = rand(100, 1);
     types.untyped.DataPipe('data', data, 'dataType', 'double');
     [~,lastId] = lastwarn();
-    testCase.verifyTrue(strcmp(lastId, 'NWB:DataPipe:RedundantDataType'));
+    testCase.verifyEqual(lastId, 'NWB:DataPipe:RedundantDataType');
     
     warning(warnDebugId, '');
     
@@ -34,7 +34,7 @@ function testInit(testCase)
         , 'hasShuffle', true ...
         , 'filters', [properties.Compression(4)]);
     [~,lastId] = lastwarn();
-    testCase.verifyTrue(strcmp(lastId, 'NWB:DataPipe:FilterOverride'));
+    testCase.verifyEqual(lastId, 'NWB:DataPipe:FilterOverride');
     testCase.verifyEqual(pipe.compressionLevel, 4);
     testCase.verifyTrue(~pipe.hasShuffle);
     pipe.compressionLevel = 2;
@@ -51,12 +51,9 @@ function testInit(testCase)
     pipe.export(fid, datasetName, {});
     H5F.close(fid);
     
-    pipe = types.untyped.DataPipe( ...
-        'filename', filename ...
-        , 'path', datasetName ...
-        , 'dataType', 'double');
+    pipe = types.untyped.DataPipe('filename', filename, 'path', datasetName, 'dataType', 'double');
     [~,lastId] = lastwarn();
-    testCase.verifyTrue(strcmp(lastId, 'NWB:DataPipe:UnusedArguments'));
+    testCase.verifyEqual(lastId, 'NWB:DataPipe:UnusedArguments');
     testCase.verifyEqual(pipe.compressionLevel, 2);
     testCase.verifyTrue(pipe.hasShuffle);
     
