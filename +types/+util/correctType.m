@@ -74,9 +74,7 @@ function val = correctType(val, type)
 end
 
 function Datetime = formatDatetime(Datetime)
-    if all(0 == [Datetime.Hour] & 0 == [Datetime.Minute] & 0 == [Datetime.Second])
-        formatString = 'yyyy-MM-dd';
-    elseif all(cellfun('isempty', {Datetime.TimeZone}))
+    if all(cellfun('isempty', {Datetime.TimeZone}))
         formatString = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSS';
     else
         formatString = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSSZZZZZ';
