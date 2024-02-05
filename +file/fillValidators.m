@@ -1,4 +1,4 @@
-function validationStr = fillValidators(propnames, props, namespacereg)
+function validationStr = fillValidators(propnames, props, namespacereg, className)
     validationStr = '';
     for i=1:length(propnames)
         nm = propnames{i};
@@ -6,13 +6,16 @@ function validationStr = fillValidators(propnames, props, namespacereg)
 
         % if readonly and value exists then ignore
         if isa(prop, 'file.Attribute') && prop.readonly && ~isempty(prop.value)
-            continue;
+            % Todo: Should only do this if the property is inherited.
+            validationBody = fillReadOnlyValidator(nm, prop.value, className);            
+        else
+            if startsWith(class(prop), 'file.')
+                validationBody = fillUnitValidation(nm, prop, namespacereg);
+            else % primitive type
+                validationBody = fillDtypeValidation(nm, prop);
+            end
         end
-        if startsWith(class(prop), 'file.')
-            validationBody = fillUnitValidation(nm, prop, namespacereg);
-        else % primitive type
-            validationBody = fillDtypeValidation(nm, prop);
-        end
+
         headerStr = ['function val = validate_' nm '(obj, val)'];
         if isempty(validationBody)
             funcstionStr = [headerStr newline 'end'];
@@ -274,9 +277,41 @@ function fdvstr = fillDtypeValidation(name, type)
             fdvstr = '';
             return;
         else
-            ts = strrep(type, '-', '_');
+            try
+                ts = strrep(type, '-', '_');
+            catch
+                disp('a')
+            end
         end
         fdvstr = [fdvstr ...
             'val = types.util.checkDtype(''' name ''', ''' ts ''', val);'];
     end
+end
+
+function fdvstr = fillReadOnlyValidator(name, value, className)
+
+    classNameSplit = strsplit(className, '.');
+    shortName = classNameSplit{end};
+
+    errorStr = sprintf( 'error(''Unable to set the ''''%s'''' property of class ''''<a href="matlab:doc %s">%s</a>'''' because it is read-only.'')', name, className, shortName);  
+
+    if ischar(value)
+        condition = strjoin({ ...
+            sprintf('if isequal(val, ''%s'')', value), ...
+            sprintf('    val = ''%s'';', value ), ...
+                    'else' }, newline);
+    elseif isnumeric(value)
+        condition = strjoin({ ...
+            sprintf('if isequal(val, %d)', value), ...
+            sprintf('    val = %d;', value ), ...
+                    'else' }, newline);
+    else
+        error('unhandled')
+    end
+
+
+    fdvstr = strjoin({...
+            condition, ...
+            sprintf('    %s', errorStr), ...
+            'end' }, newline );
 end
