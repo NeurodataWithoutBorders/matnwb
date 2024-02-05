@@ -277,11 +277,7 @@ function fdvstr = fillDtypeValidation(name, type)
             fdvstr = '';
             return;
         else
-            try
-                ts = strrep(type, '-', '_');
-            catch
-                disp('a')
-            end
+            ts = strrep(type, '-', '_');
         end
         fdvstr = [fdvstr ...
             'val = types.util.checkDtype(''' name ''', ''' ts ''', val);'];
