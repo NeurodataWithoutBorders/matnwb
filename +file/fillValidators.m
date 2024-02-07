@@ -1,13 +1,19 @@
-function validationStr = fillValidators(propnames, props, namespacereg, className)
+function validationStr = fillValidators(propnames, props, namespacereg, className, inherited)
     validationStr = '';
     for i=1:length(propnames)
         nm = propnames{i};
         prop = props(nm);
 
-        % if readonly and value exists then ignore
+
         if isa(prop, 'file.Attribute') && prop.readonly && ~isempty(prop.value)
-            % Todo: Should only do this if the property is inherited.
-            validationBody = fillReadOnlyValidator(nm, prop.value, className);            
+            % Need to add a validator for inherited and readonly properties. In 
+            % the superclass these properties might not be read only and due to
+            % inheritance its not possible to change property attributes
+            if any(strcmp(nm, inherited))
+                validationBody = fillReadOnlyValidator(nm, prop.value, className);
+            else
+                continue
+            end
         else
             if startsWith(class(prop), 'file.')
                 validationBody = fillUnitValidation(nm, prop, namespacereg);
@@ -296,16 +302,18 @@ function fdvstr = fillReadOnlyValidator(name, value, className)
             sprintf('if isequal(val, ''%s'')', value), ...
             sprintf('    val = ''%s'';', value ), ...
                     'else' }, newline);
-    elseif isnumeric(value)
+    elseif isnumeric(value) || islogical(value)
         condition = strjoin({ ...
             sprintf('if isequal(val, %d)', value), ...
             sprintf('    val = %d;', value ), ...
                     'else' }, newline);
     else
-        error('unhandled')
+        % Note: According to the documentation for Attribute specification keys
+        % (https://schema-language.readthedocs.io/en/latest/description.html#sec-attributes-spec),
+        % the above cases should be sufficient.
+        error('Unhandled case')
     end
-
-
+    
     fdvstr = strjoin({...
             condition, ...
             sprintf('    %s', errorStr), ...
