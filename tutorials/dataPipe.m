@@ -145,7 +145,7 @@ nwb = nwbRead('DataPipeTutorial_iterate.nwb', 'ignorecache'); %load the nwb file
 
 % "load" each of the remaining 1/4ths of the large dataset
 for i = 2:4 % iterating through parts of data
-    dataPart_i=randi(250, 1, 1000); % faked data chunk as if it was loaded
+    dataPart_i=randi(250, 1, 10000); % faked data chunk as if it was loaded
     nwb.acquisition.get('time_series').data.append(dataPart_i); % append the loaded data
 end
 %%

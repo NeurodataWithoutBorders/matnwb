@@ -132,7 +132,7 @@ nwbExport(nwb, <span class="string">'DataPipeTutorial_iterate.nwb'</span>);
 
 <span class="comment">% "load" each of the remaining 1/4ths of the large dataset</span>
 <span class="keyword">for</span> i = 2:4 <span class="comment">% iterating through parts of data</span>
-    dataPart_i=randi(250, 1, 1000); <span class="comment">% faked data chunk as if it was loaded</span>
+    dataPart_i=randi(250, 1, 10000); <span class="comment">% faked data chunk as if it was loaded</span>
     nwb.acquisition.get(<span class="string">'time_series'</span>).data.append(dataPart_i); <span class="comment">% append the loaded data</span>
 <span class="keyword">end</span>
 </pre><p>The axis property defines the dimension in which additional data will be appended. In the above example, the resulting dataset will be 4000x1. However, if we set axis to 2 (and change fullDataSize appropriately), then the resulting dataset will be 1000x4.</p><h2 id="13">Timeseries example</h2><p>Following is an example of how to compress and add a timeseries to an NWB file:</p><pre class="codeinput">fData=randi(250, 1, 10000); <span class="comment">% create fake data;</span>
@@ -316,7 +316,7 @@ nwb = nwbRead('DataPipeTutorial_iterate.nwb', 'ignorecache'); %load the nwb file
 
 % "load" each of the remaining 1/4ths of the large dataset
 for i = 2:4 % iterating through parts of data
-    dataPart_i=randi(250, 1, 1000); % faked data chunk as if it was loaded
+    dataPart_i=randi(250, 1, 10000); % faked data chunk as if it was loaded
     nwb.acquisition.get('time_series').data.append(dataPart_i); % append the loaded data
 end
 %%
