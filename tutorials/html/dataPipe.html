@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Neurodata Without Borders (NWB) advanced write using DataPipe</title><meta name="generator" content="MATLAB 9.11"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-01-04"><meta name="DC.source" content="dataPipe.m"><style type="text/css">
+      --><title>Neurodata Without Borders (NWB) advanced write using DataPipe</title><meta name="generator" content="MATLAB 9.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2024-06-12"><meta name="DC.source" content="dataPipe.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -80,7 +80,7 @@ DataPipe = types.untyped.DataPipe(<span class="string">'data'</span>, DataToComp
 <tr><td><em>chunkSize</em></td><td>Sets chunk size for the compression. Must be less than maxSize.</td></tr>
 <tr><td><em>compressionLevel</em></td><td>Level of compression ranging from 0-9 where 9 is the highest level of compression. The default is level 3.</td></tr>
 <tr><td><em>offset</em></td><td>Axis offset of dataset to append. May be used to overwrite data.</td></tr></table>
-</p><h2 id="6">Chunking</h2><p>HDF5 Datasets can be either stored in continuous or chunked mode. Continuous means that all of the data is written to one continuous block on the hard drive, and chunked means that the dataset is automatically split into chunks that are distributed across the hard drive. The user does not need to know the mode used- HDF5 handles the gathering of chunks automatically. However, it is worth understanding these chunks because they can have a big impact on space used and read and write speed. When using compression, the dataset MUST be chunked. HDF5 is not able to apply compression to continuous datasets.</p><p>If chunkSize is not explicitly specified, dataPipe will determine an appropriate chunk size. However, you can optimize the performance of the compression by manually specifying the chunk size using <i>chunkSize</i> argument.</p><p>We can demonstrate the benefit of chunking by exploring the following scenario. The following code utilizes DataPipe&#146;s default chunk size:</p><pre class="codeinput">fData=randi(250, 1000, 1000); <span class="comment">% Create fake data</span>
+</p><h2 id="6">Chunking</h2><p>HDF5 Datasets can be either stored in continuous or chunked mode. Continuous means that all of the data is written to one continuous block on the hard drive, and chunked means that the dataset is automatically split into chunks that are distributed across the hard drive. The user does not need to know the mode used- HDF5 handles the gathering of chunks automatically. However, it is worth understanding these chunks because they can have a big impact on space used and read and write speed. When using compression, the dataset MUST be chunked. HDF5 is not able to apply compression to continuous datasets.</p><p>If chunkSize is not explicitly specified, dataPipe will determine an appropriate chunk size. However, you can optimize the performance of the compression by manually specifying the chunk size using <i>chunkSize</i> argument.</p><p>We can demonstrate the benefit of chunking by exploring the following scenario. The following code utilizes DataPipe&#146;s default chunk size:</p><pre class="codeinput">fData = randi(250, 100, 1000); <span class="comment">% Create fake data</span>
 
 <span class="comment">% create an nwb structure with required fields</span>
 nwb = NwbFile( <span class="keyword">...</span>
@@ -92,7 +92,9 @@ fData_compressed = types.untyped.DataPipe(<span class="string">'data'</span>, fD
 
 fdataNWB=types.core.TimeSeries( <span class="keyword">...</span>
     <span class="string">'data'</span>, fData_compressed, <span class="keyword">...</span>
-    <span class="string">'data_unit'</span>, <span class="string">'mV'</span>);
+    <span class="string">'data_unit'</span>, <span class="string">'mV'</span>, <span class="keyword">...</span>
+    <span class="string">'starting_time'</span>, 0.0, <span class="keyword">...</span>
+    <span class="string">'starting_time_rate'</span>, 30.0);
 
 nwb.acquisition.set(<span class="string">'data'</span>, fdataNWB);
 
@@ -101,8 +103,8 @@ nwbExport(nwb, <span class="string">'DefaultChunks.nwb'</span>);
     <span class="string">'data'</span>, fData, <span class="keyword">...</span>
     <span class="string">'chunkSize'</span>, [1, 1000], <span class="keyword">...</span>
     <span class="string">'axis'</span>, 1);
-</pre><p>This change results in the operation completing in 0.7 seconds and resulting file size of 1.1MB. The chunk size was chosen such that it spans each individual row of the matrix.</p><p>Use the combination of arugments that fit your need. When dealing with large datasets, you may want to use iterative write to ensure that you stay within the bounds of your system memory and use chunking and compression to optimize storage, read and write of the data.</p><h2 id="9">Iterative Writing</h2><p>If experimental data is close to, or exceeds the available system memory, performance issues may arise. To combat this effect of large data, <tt>DataPipe</tt> can utilize iterative writing, where only a portion of the data is first compressed and saved, and then additional portions are appended.</p><p>To demonstrate, we can create a nwb file with a compressed time series data:</p><pre class="codeinput">dataPart1 = randi(250, 10000, 1); <span class="comment">% "load" 1/4 of the entire dataset</span>
-fullDataSize = [40000 1]; <span class="comment">% this is the size of the TOTAL dataset</span>
+</pre><p>This change results in the operation completing in 0.7 seconds and resulting file size of 1.1MB. The chunk size was chosen such that it spans each individual row of the matrix.</p><p>Use the combination of arugments that fit your need. When dealing with large datasets, you may want to use iterative write to ensure that you stay within the bounds of your system memory and use chunking and compression to optimize storage, read and write of the data.</p><h2 id="9">Iterative Writing</h2><p>If experimental data is close to, or exceeds the available system memory, performance issues may arise. To combat this effect of large data, <tt>DataPipe</tt> can utilize iterative writing, where only a portion of the data is first compressed and saved, and then additional portions are appended.</p><p>To demonstrate, we can create a nwb file with a compressed time series data:</p><pre class="codeinput">dataPart1 = randi(250, 1, 1000); <span class="comment">% "load" 1/4 of the entire dataset</span>
+fullDataSize = [1 40000]; <span class="comment">% this is the size of the TOTAL dataset</span>
 
 <span class="comment">% create an nwb structure with required fields</span>
 nwb=NwbFile( <span class="keyword">...</span>
@@ -114,24 +116,26 @@ nwb=NwbFile( <span class="keyword">...</span>
 fData_use = types.untyped.DataPipe( <span class="keyword">...</span>
     <span class="string">'data'</span>, dataPart1, <span class="keyword">...</span>
     <span class="string">'maxSize'</span>, fullDataSize, <span class="keyword">...</span>
-    <span class="string">'axis'</span>, 1);
+    <span class="string">'axis'</span>, 2);
 
 <span class="comment">%Set the compressed data as a time series</span>
 fdataNWB = types.core.TimeSeries( <span class="keyword">...</span>
     <span class="string">'data'</span>, fData_use, <span class="keyword">...</span>
-    <span class="string">'data_unit'</span>, <span class="string">'mV'</span>);
+    <span class="string">'data_unit'</span>, <span class="string">'mV'</span>, <span class="keyword">...</span>
+    <span class="string">'starting_time'</span>, 0.0, <span class="keyword">...</span>
+    <span class="string">'starting_time_rate'</span>, 30.0);
 
 nwb.acquisition.set(<span class="string">'time_series'</span>, fdataNWB);
 
 nwbExport(nwb, <span class="string">'DataPipeTutorial_iterate.nwb'</span>);
-</pre><p>To append the rest of the data, simply load the NWB file and use the append method:</p><pre class="codeinput">nwb = nwbRead(<span class="string">'DataPipeTutorial_iterate.nwb'</span>); <span class="comment">%load the nwb file with partial data</span>
+</pre><p>To append the rest of the data, simply load the NWB file and use the append method:</p><pre class="codeinput">nwb = nwbRead(<span class="string">'DataPipeTutorial_iterate.nwb'</span>, <span class="string">'ignorecache'</span>); <span class="comment">%load the nwb file with partial data</span>
 
 <span class="comment">% "load" each of the remaining 1/4ths of the large dataset</span>
 <span class="keyword">for</span> i = 2:4 <span class="comment">% iterating through parts of data</span>
-    dataPart_i=randi(250, 10000, 1); <span class="comment">% faked data chunk as if it was loaded</span>
+    dataPart_i=randi(250, 1, 1000); <span class="comment">% faked data chunk as if it was loaded</span>
     nwb.acquisition.get(<span class="string">'time_series'</span>).data.append(dataPart_i); <span class="comment">% append the loaded data</span>
 <span class="keyword">end</span>
-</pre><p>The axis property defines the dimension in which additional data will be appended. In the above example, the resulting dataset will be 4000x1. However, if we set axis to 2 (and change fullDataSize appropriately), then the resulting dataset will be 1000x4.</p><h2 id="13">Timeseries example</h2><p>Following is an example of how to compress and add a timeseries to an NWB file:</p><pre class="codeinput">fData=randi(250, 10000, 1); <span class="comment">% create fake data;</span>
+</pre><p>The axis property defines the dimension in which additional data will be appended. In the above example, the resulting dataset will be 4000x1. However, if we set axis to 2 (and change fullDataSize appropriately), then the resulting dataset will be 1000x4.</p><h2 id="13">Timeseries example</h2><p>Following is an example of how to compress and add a timeseries to an NWB file:</p><pre class="codeinput">fData=randi(250, 1, 10000); <span class="comment">% create fake data;</span>
 
 <span class="comment">%assign data without compression</span>
 nwb=NwbFile(<span class="keyword">...</span>
@@ -154,14 +158,16 @@ fData_compressed=types.untyped.DataPipe( <span class="keyword">...</span>
 <span class="comment">% Assign the data to appropriate module and write the NWB file</span>
 fdataNWB=types.core.TimeSeries( <span class="keyword">...</span>
     <span class="string">'data'</span>, fData_compressed, <span class="keyword">...</span>
-    <span class="string">'data_unit'</span>, <span class="string">'mV'</span>);
+    <span class="string">'data_unit'</span>, <span class="string">'mV'</span>, <span class="keyword">...</span>
+    <span class="string">'starting_time'</span>, 0.0, <span class="keyword">...</span>
+    <span class="string">'starting_time_rate'</span>, 30.0);
 
 ephys_module.nwbdatainterface.set(<span class="string">'data'</span>, fdataNWB);
 nwb.processing.set(<span class="string">'ephys'</span>, ephys_module);
 
-<span class="comment">%write the file</span>
+<span class="comment">% write the file</span>
 nwbExport(nwb, <span class="string">'Compressed.nwb'</span>);
-</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2021b</a><br></p></div><!--
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2023a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% Neurodata Without Borders (NWB) advanced write using DataPipe
 % How to utilize HDF5 compression using dataPipe
@@ -230,7 +236,7 @@ DataPipe = types.untyped.DataPipe('data', DataToCompress);
 % scenario. The following code utilizes DataPipes default chunk size:
 %
 
-fData=randi(250, 1000, 1000); % Create fake data
+fData = randi(250, 100, 1000); % Create fake data
 
 % create an nwb structure with required fields
 nwb = NwbFile( ...
@@ -242,7 +248,9 @@ fData_compressed = types.untyped.DataPipe('data', fData);
 
 fdataNWB=types.core.TimeSeries( ...
     'data', fData_compressed, ...
-    'data_unit', 'mV');
+    'data_unit', 'mV', ...
+    'starting_time', 0.0, ...
+    'starting_time_rate', 30.0);
 
 nwb.acquisition.set('data', fdataNWB);
 
@@ -275,8 +283,8 @@ fData_compressed = types.untyped.DataPipe( ...
 % To demonstrate, we can create a nwb file with a compressed time series data:
 %%
 
-dataPart1 = randi(250, 10000, 1); % "load" 1/4 of the entire dataset
-fullDataSize = [40000 1]; % this is the size of the TOTAL dataset
+dataPart1 = randi(250, 1, 1000); % "load" 1/4 of the entire dataset
+fullDataSize = [1 40000]; % this is the size of the TOTAL dataset
 
 % create an nwb structure with required fields
 nwb=NwbFile( ...
@@ -288,12 +296,14 @@ nwb=NwbFile( ...
 fData_use = types.untyped.DataPipe( ...
     'data', dataPart1, ...
     'maxSize', fullDataSize, ...
-    'axis', 1);
+    'axis', 2);
 
 %Set the compressed data as a time series
 fdataNWB = types.core.TimeSeries( ...
     'data', fData_use, ...
-    'data_unit', 'mV');
+    'data_unit', 'mV', ...
+    'starting_time', 0.0, ...
+    'starting_time_rate', 30.0);
 
 nwb.acquisition.set('time_series', fdataNWB);
 
@@ -302,11 +312,11 @@ nwbExport(nwb, 'DataPipeTutorial_iterate.nwb');
 % To append the rest of the data, simply load the NWB file and use the
 % append method:
 
-nwb = nwbRead('DataPipeTutorial_iterate.nwb'); %load the nwb file with partial data
+nwb = nwbRead('DataPipeTutorial_iterate.nwb', 'ignorecache'); %load the nwb file with partial data
 
 % "load" each of the remaining 1/4ths of the large dataset
 for i = 2:4 % iterating through parts of data
-    dataPart_i=randi(250, 10000, 1); % faked data chunk as if it was loaded
+    dataPart_i=randi(250, 1, 1000); % faked data chunk as if it was loaded
     nwb.acquisition.get('time_series').data.append(dataPart_i); % append the loaded data
 end
 %%
@@ -320,7 +330,7 @@ end
 % Following is an example of how to compress and add a timeseries
 % to an NWB file:
 
-fData=randi(250, 10000, 1); % create fake data;
+fData=randi(250, 1, 10000); % create fake data;
 
 %assign data without compression
 nwb=NwbFile(...
@@ -343,12 +353,14 @@ fData_compressed=types.untyped.DataPipe( ...
 % Assign the data to appropriate module and write the NWB file
 fdataNWB=types.core.TimeSeries( ...
     'data', fData_compressed, ...
-    'data_unit', 'mV');
+    'data_unit', 'mV', ...
+    'starting_time', 0.0, ...
+    'starting_time_rate', 30.0);
 
 ephys_module.nwbdatainterface.set('data', fdataNWB);
 nwb.processing.set('ephys', ephys_module);
 
-%write the file
+% write the file
 nwbExport(nwb, 'Compressed.nwb');
 ##### SOURCE END #####
 --></body></html>
