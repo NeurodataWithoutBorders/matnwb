@@ -65,7 +65,7 @@ DataPipe = types.untyped.DataPipe('data', DataToCompress);
 % scenario. The following code utilizes DataPipe’s default chunk size:
 %
 
-fData=randi(250, 1000, 1000); % Create fake data
+fData = randi(250, 100, 1000); % Create fake data
 
 % create an nwb structure with required fields
 nwb = NwbFile( ...
@@ -77,7 +77,9 @@ fData_compressed = types.untyped.DataPipe('data', fData);
 
 fdataNWB=types.core.TimeSeries( ...
     'data', fData_compressed, ...
-    'data_unit', 'mV');
+    'data_unit', 'mV', ...
+    'starting_time', 0.0, ...
+    'starting_time_rate', 30.0);
 
 nwb.acquisition.set('data', fdataNWB);
 
@@ -110,8 +112,8 @@ fData_compressed = types.untyped.DataPipe( ...
 % To demonstrate, we can create a nwb file with a compressed time series data:
 %%
 
-dataPart1 = randi(250, 10000, 1); % "load" 1/4 of the entire dataset
-fullDataSize = [40000 1]; % this is the size of the TOTAL dataset
+dataPart1 = randi(250, 1, 1000); % "load" 1/4 of the entire dataset
+fullDataSize = [1 40000]; % this is the size of the TOTAL dataset
 
 % create an nwb structure with required fields
 nwb=NwbFile( ...
@@ -123,12 +125,14 @@ nwb=NwbFile( ...
 fData_use = types.untyped.DataPipe( ...
     'data', dataPart1, ...
     'maxSize', fullDataSize, ...
-    'axis', 1);
+    'axis', 2);
 
 %Set the compressed data as a time series
 fdataNWB = types.core.TimeSeries( ...
     'data', fData_use, ...
-    'data_unit', 'mV');
+    'data_unit', 'mV', ...
+    'starting_time', 0.0, ...
+    'starting_time_rate', 30.0);
 
 nwb.acquisition.set('time_series', fdataNWB);
 
@@ -141,7 +145,7 @@ nwb = nwbRead('DataPipeTutorial_iterate.nwb', 'ignorecache'); %load the nwb file
 
 % "load" each of the remaining 1/4ths of the large dataset
 for i = 2:4 % iterating through parts of data
-    dataPart_i=randi(250, 10000, 1); % faked data chunk as if it was loaded
+    dataPart_i=randi(250, 1, 10000); % faked data chunk as if it was loaded
     nwb.acquisition.get('time_series').data.append(dataPart_i); % append the loaded data
 end
 %%
@@ -155,7 +159,7 @@ end
 % Following is an example of how to compress and add a timeseries
 % to an NWB file:
 
-fData=randi(250, 10000, 1); % create fake data;
+fData=randi(250, 1, 10000); % create fake data;
 
 %assign data without compression
 nwb=NwbFile(...
@@ -178,7 +182,9 @@ fData_compressed=types.untyped.DataPipe( ...
 % Assign the data to appropriate module and write the NWB file
 fdataNWB=types.core.TimeSeries( ...
     'data', fData_compressed, ...
-    'data_unit', 'mV');
+    'data_unit', 'mV', ...
+    'starting_time', 0.0, ...
+    'starting_time_rate', 30.0);
 
 ephys_module.nwbdatainterface.set('data', fdataNWB);
 nwb.processing.set('ephys', ephys_module);
