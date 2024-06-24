@@ -1,5 +1,5 @@
 classdef CorrectedImageStack < types.core.NWBDataInterface & types.untyped.GroupClass
-% CORRECTEDIMAGESTACK Reuslts from motion correction of an image stack.
+% CORRECTEDIMAGESTACK Results from motion correction of an image stack.
 
 
 % REQUIRED PROPERTIES

@@ -31,6 +31,13 @@ methods
     function val = validate_data(obj, val)
     
     end
+    function val = validate_data_unit(obj, val)
+        if isequal(val, 'volts')
+            val = 'volts';
+        else
+            error('Unable to set the ''data_unit'' property of class ''<a href="matlab:doc types.core.VoltageClampStimulusSeries">VoltageClampStimulusSeries</a>'' because it is read-only.')
+        end
+    end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)
         refs = export@types.core.PatchClampSeries(obj, fid, fullpath, refs);
