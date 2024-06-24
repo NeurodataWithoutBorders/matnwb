@@ -86,6 +86,13 @@ methods
         validshapes = {[1]};
         types.util.checkDims(valsz, validshapes);
     end
+    function val = validate_stimulus_description(obj, val)
+        if isequal(val, 'N/A')
+            val = 'N/A';
+        else
+            error('Unable to set the ''stimulus_description'' property of class ''<a href="matlab:doc types.core.IZeroClampSeries">IZeroClampSeries</a>'' because it is read-only.')
+        end
+    end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)
         refs = export@types.core.CurrentClampSeries(obj, fid, fullpath, refs);
