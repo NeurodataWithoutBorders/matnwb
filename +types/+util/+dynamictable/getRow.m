@@ -10,7 +10,7 @@ function subTable = getRow(DynamicTable, ind, varargin)
 
 validateattributes(DynamicTable,...
     {'types.core.DynamicTable', 'types.hdmf_common.DynamicTable'}, {'scalar'});
-validateattributes(ind, {'numeric'}, {'positive', 'vector'});
+validateattributes(ind, {'numeric'}, {'vector'});
 
 p = inputParser;
 addParameter(p, 'columns', DynamicTable.colnames, @(x)iscellstr(x));
@@ -27,6 +27,8 @@ end
 
 if p.Results.useId
     ind = getIndById(DynamicTable, ind);
+else
+    validateattributes(ind, {'numeric'}, {'positive', 'vector'});
 end
 
 for i = 1:length(columns)
