@@ -27,6 +27,8 @@ end
 
 if p.Results.useId
     ind = getIndById(DynamicTable, ind);
+else
+    validateattributes(ind, {'numeric'}, {'positive', 'vector'});
 end
 
 for i = 1:length(columns)

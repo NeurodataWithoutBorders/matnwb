@@ -148,6 +148,20 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
     end
 
     methods (Test)
+        function getNegativeIdTest(testCase)
+            vector = types.hdmf_common.VectorData('description', 'data column', 'data', (1:10) .');
+            ids = types.hdmf_common.ElementIdentifiers('data', ((-9):0) .');
+            testtable = types.hdmf_common.DynamicTable( ...
+                'description', 'test table with DynamicTableRegion', ...
+                'colnames', {'vec'}, ...
+                'vec', vector, ...
+                'id', ids ...
+                );
+            for i = 1:length(vector.data)
+                testCase.verifyEqual(testtable.getRow(i), testtable.getRow(ids.data(i), 'useId', true));
+            end
+        end
+
         function getRowTest(testCase)
             Table = testCase.file.intervals_trials;
 
