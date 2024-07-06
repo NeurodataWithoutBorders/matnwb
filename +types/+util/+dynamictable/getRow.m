@@ -45,9 +45,15 @@ for i = 1:length(columns)
 
     row{i} = select(DynamicTable, indexNames, ind);
 
-    % transpose row vectors
-    if ~istable(row{i}) && isrow(row{i})
-        row{i} = row{i} .';
+    if ~istable(row{i})
+        % transpose row vectors
+        if isrow(row{i})
+            row{i} = row{i} .';
+        % or permute arrays to place last dimension first
+        elseif ~ismatrix(row{i}) % i.e nd array where n >= 3
+            rank = ndims(row{i});
+            row{i} = permute( row{i}, [rank, 1:rank-1]);
+        end
     end
 
     % cell-wrap single multidimensional matrices to prevent invalid
