@@ -51,8 +51,32 @@ for i = 1:length(columns)
             row{i} = row{i} .';
         % or permute arrays to place last dimension first
         elseif ~ismatrix(row{i}) % i.e nd array where n >= 3
-            rank = ndims(row{i});
-            row{i} = permute( row{i}, [rank, 1:rank-1]);
+            array_size = size(row{i});
+            num_rows = numel(ind);
+
+            is_row_dim = array_size == num_rows;
+            if sum(is_row_dim) == 1
+                if ~(is_row_dim(1) || is_row_dim(end))
+                    throw( InvalidVectorDataShapeError(cn) )
+                end
+            elseif sum(is_row_dim) > 1
+                if is_row_dim(1) && is_row_dim(end)
+                    % Last dimension takes precedence
+                    is_row_dim(1:end-1) = false;
+                    warning(...
+                        ['The length of the first and last dimensions of ', ...
+                         'VectorData for column "%s" match the number of ', ...
+                         'rows in the dynamic table. Data is rearranged based on ', ...
+                         'the last dimension, assuming it corresponds with the table rows.'], cn) 
+                elseif is_row_dim(1)
+                    is_row_dim(2:end) = false;
+                elseif is_row_dim(end)
+                    is_row_dim(1:end-1) = false;
+                else
+                    throw( InvalidVectorDataShapeError(cn) )
+                end
+            end
+            row{i} = permute( row{i}, [find(is_row_dim), find(~is_row_dim)]);
         end
     end
 
@@ -192,4 +216,10 @@ end
 [idMatch, ind] = ismember(id, ids);
 assert(all(idMatch), 'NWB:DynamicTable:GetRow:InvalidId',...
     'Invalid ids found. If you wish to use row indices directly, remove the `useId` flag.');
+end
+
+function ME = InvalidVectorDataShapeError(column_name)
+    ME = MException('NWB:DynamicTable:InvalidVectorDataShape', ...
+            sprintf( ['Array data for column "%s" has a shape which do ', ...
+                      'not match the number of rows in the dynamic table.'], column_name ));
 end
