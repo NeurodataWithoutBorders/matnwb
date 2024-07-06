@@ -1,5 +1,6 @@
 ![MatNWB Logo](logo/logo_matnwb_small.png)
 
+[![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/basicUsage.mlx)
 [![codecov](https://codecov.io/gh/NeurodataWithoutBorders/matnwb/branch/master/graph/badge.svg?token=apA7F24NsO)](https://codecov.io/gh/NeurodataWithoutBorders/matnwb) ![Azure DevOps tests](https://img.shields.io/azure-devops/tests/NeurodataWithoutBorders/matnwb/4)
 
 MatNWB is a  Matlab interface for reading and writing Neurodata Without Borders (NWB) 2.x files.
