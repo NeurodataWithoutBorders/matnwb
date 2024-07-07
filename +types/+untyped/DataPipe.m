@@ -193,6 +193,10 @@ classdef (Sealed) DataPipe < handle
             val = obj.internal.axis;
         end
         
+        function val = get.dims(obj)
+            val = obj.internal.maxSize;
+        end
+        
         function set.axis(obj, val)
             obj.internal.axis = val;
         end
