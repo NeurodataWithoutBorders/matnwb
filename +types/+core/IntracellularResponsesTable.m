@@ -37,6 +37,13 @@ methods
     end
     %% VALIDATORS
     
+    function val = validate_description(obj, val)
+        if isequal(val, 'Table for storing intracellular response related metadata.')
+            val = 'Table for storing intracellular response related metadata.';
+        else
+            error('Unable to set the ''description'' property of class ''<a href="matlab:doc types.core.IntracellularResponsesTable">IntracellularResponsesTable</a>'' because it is read-only.')
+        end
+    end
     function val = validate_response(obj, val)
         val = types.util.checkDtype('response', 'types.core.TimeSeriesReferenceVectorData', val);
     end

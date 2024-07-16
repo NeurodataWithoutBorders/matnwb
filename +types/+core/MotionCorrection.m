@@ -4,7 +4,7 @@ classdef MotionCorrection < types.core.NWBDataInterface & types.untyped.GroupCla
 
 % REQUIRED PROPERTIES
 properties
-    correctedimagestack; % REQUIRED (CorrectedImageStack) Reuslts from motion correction of an image stack.
+    correctedimagestack; % REQUIRED (CorrectedImageStack) Results from motion correction of an image stack.
 end
 
 methods
