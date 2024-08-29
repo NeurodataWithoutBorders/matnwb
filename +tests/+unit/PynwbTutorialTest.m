@@ -1,9 +1,9 @@
 classdef PynwbTutorialTest <  matlab.unittest.TestCase
 % PynwbTutorialTest - Unit test for testing the pynwb tutorials.
 %
-%   This test will test most tutorial files (while skipping tutorials with 
-%   dependencies) If the tutorial creates an nwb file, the test will also try 
-%   to open this with pynwb.
+%   This test will test most pynwb tutorial files (while skipping tutorials with 
+%   dependencies) If the tutorial creates nwb file(s), the test will also try 
+%   to open these with matnwb.
 %
 %   See also tests.util.getPythonPath 
 
