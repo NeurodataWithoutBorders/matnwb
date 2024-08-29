@@ -10,7 +10,6 @@ classdef TutorialTest <  matlab.unittest.TestCase
 %       - pynwb must be installed in the python environment returned by
 %         pyenv()
 
-
     properties
         MatNwbDirectory
     end
@@ -29,7 +28,6 @@ classdef TutorialTest <  matlab.unittest.TestCase
             'read_demo.mlx'};      % depends on external data
     end
 
-
     methods (TestClassSetup)
         function setupClass(testCase)
             % Get the root path of the matnwb repository
@@ -41,10 +39,14 @@ classdef TutorialTest <  matlab.unittest.TestCase
             % Use a fixture to add the folder to the search path
             testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
             testCase.applyFixture(matlab.unittest.fixtures.PathFixture(tutorialsFolder));
-            
 
-            %testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
-            %generateCore('savedir', '.');
+            nwbClearGenerated()
+        end
+    end
+
+    methods (TestClassTeardown)
+        function tearDownClass(testCase) %#ok<MANU>
+            %generateCore()
         end
     end
 
@@ -56,10 +58,8 @@ classdef TutorialTest <  matlab.unittest.TestCase
     end
     
     methods (Test)
-    
         function testTutorial(testCase, tutorialFile) %#ok<INUSD>
             evalc( 'run(tutorialFile)' ); % Run tutorial and suppress output
-
             testCase.testReadTutorialNwbFileWithPynwb()
         end
     end
@@ -71,7 +71,6 @@ classdef TutorialTest <  matlab.unittest.TestCase
             nwbListing = dir('*.nwb');
             
             for i = 1:numel(nwbListing)
-            
                 try
                     io = py.pynwb.NWBHDF5IO(nwbListing(i).name);
                     nwbObject = io.read();
@@ -84,7 +83,6 @@ classdef TutorialTest <  matlab.unittest.TestCase
             end
         end
     end
-    
 end
 
 function tutorialNames = listTutorialFiles()
@@ -92,7 +90,7 @@ function tutorialNames = listTutorialFiles()
     rootPath = getMatNwbRootDirectory();
     L = dir(fullfile(rootPath, 'tutorials'));
     L( [L.isdir] ) = []; % Ignore folders
-    tutorialNames = setdiff({L.name}, tests.unit.TutorialTestt.SkippedTutorials);
+    tutorialNames = setdiff({L.name}, tests.unit.TutorialTest.SkippedTutorials);
 end
 
 function folderPath = getMatNwbRootDirectory()
