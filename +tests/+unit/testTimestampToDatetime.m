@@ -6,6 +6,10 @@ classdef testTimestampToDatetime < matlab.unittest.TestCase
         Expected = datetime(["2023-05-05", "2024-06-06"], "InputFormat", "uuuu-MM-dd")
     end
 
+    properties
+        NWBDefaultStringFormat = "uuuu-MM-dd'T'HH:mm:ss.SSSSSSZZZZZ";
+    end
+
     methods (Test)
         function testNonDatestamp(testCase)
             testCase.verifyError(@() io.timestamp2datetime("Hello World"), ...
@@ -72,6 +76,29 @@ classdef testTimestampToDatetime < matlab.unittest.TestCase
             expected = datetime("2023-07-23T15:00:00", "InputFormat", "uuuu-MM-dd'T'HH:mm:ss");
             actual = io.timestamp2datetime(timestamp);
             testCase.verifyEqual(actual, expected);
+        end
+    
+        function testCurrentYear(testCase)
+            currentYear = year(datetime("now", 'TimeZone', 'local')); % Specify the year
+            startDate = datetime(currentYear, 1, 1, 'TimeZone', 'local'); % Start date: January 1st
+            endDate = datetime(currentYear, 12, 31, 'TimeZone', 'local'); % End date: December 31st
+            
+            % Generate all dates for the year
+            allDates = startDate:caldays(1):endDate;
+            allDates.Format = testCase.NWBDefaultStringFormat;
+
+            numFailed = 0;
+
+            for i = 1:numel(allDates)
+                actual = io.timestamp2datetime( string(allDates(i)) );
+                expected = allDates(i);
+
+                if ~isequal(actual, expected)
+                    numFailed = numFailed + 1;
+                end
+            end
+
+            testCase.verifyEqual(numFailed, 0)
         end
     end
 end
