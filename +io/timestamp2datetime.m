@@ -2,8 +2,7 @@ function datetimeArray = timestamp2datetime(timestamps)
     %TIMESTAMP2DATETIME converts string timestamps to MATLAB datetime object(s)
     
     timestamps = timestamp2cellstr(timestamps);
-    datetimeArray = datetime.empty;
-    
+
     for iTimestamp = 1:length(timestamps)
         timestampString = timestamps{iTimestamp};
         try
@@ -19,7 +18,7 @@ function datetimeArray = timestamp2datetime(timestamps)
                 rethrow(ME);
             end
         end
-        datetimeArray(iTimestamp) = Datetime;
+        datetimeArray(iTimestamp) = Datetime; %#ok<AGROW>
     end
 end
 
