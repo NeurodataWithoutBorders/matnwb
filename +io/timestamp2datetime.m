@@ -1,7 +1,9 @@
-function Datetimes = timestamp2datetime(timestamps)
-    %TIMESTAMP2DATETIME converts string timestamps to MATLAB datetime object
+function datetimeArray = timestamp2datetime(timestamps)
+    %TIMESTAMP2DATETIME converts string timestamps to MATLAB datetime object(s)
     
     timestamps = timestamp2cellstr(timestamps);
+    datetimeArray = datetime.empty;
+    
     for iTimestamp = 1:length(timestamps)
         timestampString = timestamps{iTimestamp};
         try
@@ -17,15 +19,15 @@ function Datetimes = timestamp2datetime(timestamps)
                 rethrow(ME);
             end
         end
-        Datetimes(iTimestamp) = Datetime;
+        datetimeArray(iTimestamp) = Datetime;
     end
 end
 
 function Datetime = detectDatetime(timestamp)
     errorId = 'NWB:InvalidTimestamp';
     errorTemplate = sprintf('Timestamp `%s` is not a valid ISO8601 subset for NWB:\n  %%s', timestamp);
-    Datetime = datetime(0, 0, 0, 0, 0, 0, 0);
-    %% YMoD
+
+    %% Parse year, month and date (YMoD)
     hmsStart = find(timestamp == 'T', 1);
     if isempty(hmsStart)
         ymdStamp = timestamp;
@@ -35,22 +37,18 @@ function Datetime = detectDatetime(timestamp)
     errorMessage = sprintf(errorTemplate, 'YMD should be in the form YYYY-mm-dd or YYYYmmdd');
     if contains(ymdStamp, '-')
         assert(length(ymdStamp) == 10, errorId, errorMessage);
-        YmdToken = struct(...
-            'Year', ymdStamp(1:4) ...
-            , 'Month', ymdStamp(6:7) ...
-            , 'Day', ymdStamp(9:10) ...
-        );
+        yearNum = str2double( ymdStamp(1:4) );
+        monthNum = str2double( ymdStamp(6:7) );
+        dayNum = str2double( ymdStamp(9:10) );
     else
         assert(length(ymdStamp) == 8, errorId, errorMessage);
-        YmdToken = struct(...
-            'Year', ymdStamp(1:4) ...
-            , 'Month', ymdStamp(5:6) ...
-            , 'Day', ymdStamp(7:8) ...
-        );
+        yearNum = str2double( ymdStamp(1:4) );
+        monthNum = str2double( ymdStamp(5:6) );
+        dayNum = str2double( ymdStamp(7:8) );
     end
-    Datetime.Day = str2double(YmdToken.Day);
-    Datetime.Month = str2double(YmdToken.Month);
-    Datetime.Year = str2double(YmdToken.Year);
+
+    Datetime = datetime(yearNum, monthNum, dayNum, 0, 0, 0, 0);
+
     assert(~isnat(Datetime), errorId, sprintf(errorTemplate, 'non-numeric YMD values detected'));
     
     %% HMiS TZ
