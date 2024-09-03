@@ -1,6 +1,6 @@
 classdef GenerationTest < matlab.unittest.TestCase
     properties (MethodSetupParameter)
-        schemaVersion = setdiff({dir('nwb-schema').name}, {'.', '..'});
+        schemaVersion = listSchemaVersions()
     end
     
     methods (TestClassSetup)
@@ -13,6 +13,7 @@ classdef GenerationTest < matlab.unittest.TestCase
     methods (TestMethodSetup)
         function setupMethod(testCase, schemaVersion)
             testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
+            nwbClearGenerated()
             generateCore(schemaVersion, 'savedir', '.');
             rehash();
         end
@@ -62,3 +63,7 @@ classdef GenerationTest < matlab.unittest.TestCase
     end
 end
 
+function schemaVersions = listSchemaVersions()
+    nwbSchemaDir = fullfile(misc.getMatnwbDir, 'nwb-schema');
+    schemaVersions = setdiff({dir(nwbSchemaDir).name}, {'.', '..'});
+end
