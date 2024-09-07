@@ -31,7 +31,7 @@ classdef PynwbTutorialTest <  matlab.unittest.TestCase
         SkippedFiles = {'family_nwb_file_0.nwb'} % requires family driver from h5py
         
         % PythonDependencies - Package dependencies for running pynwb tutorials
-        PythonDependencies = {'hdmf-zarr', 'dataframe-image'}
+        PythonDependencies = {'hdmf-zarr', 'dataframe-image', 'matplotlib'}
     end
 
     properties (Access = private)
