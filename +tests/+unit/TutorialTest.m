@@ -42,6 +42,10 @@ classdef TutorialTest <  matlab.unittest.TestCase
             % Use a fixture to add the folder to the search path
             testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
             testCase.applyFixture(matlab.unittest.fixtures.PathFixture(tutorialsFolder));
+            
+            % Make sure pynwb is installed in MATLAB's Python Environment
+            args = py.list({py.sys.executable, "-m", "pip", "install", "pynwb"});
+            py.subprocess.check_call(args);
 
             nwbClearGenerated()
         end
