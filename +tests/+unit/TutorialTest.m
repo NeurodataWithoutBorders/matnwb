@@ -43,22 +43,21 @@ classdef TutorialTest <  matlab.unittest.TestCase
             testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
             testCase.applyFixture(matlab.unittest.fixtures.PathFixture(tutorialsFolder));
             
-            % Make sure pynwb is installed in MATLAB's Python Environment
-            args = py.list({py.sys.executable, "-m", "pip", "install", "pynwb"});
-            py.subprocess.check_call(args);
+            % Note: The following seems to not be working on the azure pipeline
+            % Keep for reference
 
-            pynwbPath = getenv('PYNWB_PATH');
-            fprintf(newline) % Debug
-            fprintf('Displaying env variable PYNWB_PATH: %s\n', pynwbPath)
-            fprintf(newline)
+            % % % Make sure pynwb is installed in MATLAB's Python Environment
+            % % args = py.list({py.sys.executable, "-m", "pip", "install", "pynwb"});
+            % % py.subprocess.check_call(args);
+            % % 
+            % % % Add pynwb to MATLAB's python environment path
+            % % pynwbPath = getenv('PYNWB_PATH');
+            % % if count(py.sys.path, pynwbPath) == 0
+            % %     insert(py.sys.path,int32(0),pynwbPath);
+            % % end
 
-            pyenv() % Debug
-
-            if count(py.sys.path, pynwbPath) == 0
-                insert(py.sys.path,int32(0),pynwbPath);
-            else
-                disp("pynwb was on py.sys.path") % Debug
-            end
+            % % Alternative: Use python script for reading file with pynwb
+            setenv('PYTHONPATH', fileparts(mfilename('fullpath')));
 
             nwbClearGenerated()
         end
@@ -97,10 +96,29 @@ classdef TutorialTest <  matlab.unittest.TestCase
                 end
 
                 try
-                    io = py.pynwb.NWBHDF5IO(nwbListing(i).name);
-                    nwbObject = io.read();
-                    testCase.verifyNotEmpty(nwbObject, 'The NWB file should not be empty.');
-                    io.close()
+                    try
+                        io = py.pynwb.NWBHDF5IO(nwbListing(i).name);
+                        nwbObject = io.read();
+                        testCase.verifyNotEmpty(nwbObject, 'The NWB file should not be empty.');
+                        io.close()
+                    
+                    catch ME
+                        if strcmp(ME.identifier, 'MATLAB:undefinedVarOrClass') && ...
+                                contains(ME.message, 'py.pynwb.NWBHDF5IO')
+
+                            pythonExecutable = tests.util.getPythonPath();
+                            cmd = sprintf('"%s" -B -m read_nwbfile_with_pynwb %s',...
+                                            pythonExecutable, nwbFilename);
+                            
+                            status = system(cmd);
+                            if status ~= 0
+                                error('Failed to read NWB file "%s" using pynwb', nwbFilename)
+                            end
+                        else
+                            rethrow(ME)
+                        end
+                    end
+
                 catch ME
                     error(ME.message)
                     %testCase.verifyFail(sprintf('Failed to read file %s with error: %s', nwbListing(i).name, ME.message));
