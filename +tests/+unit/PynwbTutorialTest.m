@@ -31,7 +31,7 @@ classdef PynwbTutorialTest <  matlab.unittest.TestCase
         SkippedFiles = {'family_nwb_file_0.nwb'} % requires family driver from h5py
         
         % PythonDependencies - Package dependencies for running pynwb tutorials
-        PythonDependencies = {'hdmf-zarr', 'dataframe-image', 'matplotlib'}
+        PythonDependencies = {'hdmf-zarr', 'dataframe-image', 'matplotlib', 'dandi'}
     end
 
     properties (Access = private)
@@ -65,6 +65,9 @@ classdef PynwbTutorialTest <  matlab.unittest.TestCase
             L = dir('temp_venv/lib/python*/site-*'); % Find the site-packages folder
             pythonPath = fullfile(L.folder, L.name);
             setenv('PYTHONPATH', pythonPath)
+
+            % Debug (Todo: remove)
+            ver % Display matlab version 
         end
     end
 
