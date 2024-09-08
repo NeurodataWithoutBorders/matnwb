@@ -21,6 +21,7 @@ steps:
       pip install pynwb
       pip install hdf5plugin
       echo "##vso[task.setvariable variable=plugin_path]$(python -c "import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)")"
+      echo "##vso[task.setvariable variable=pynwb_path]$(python -c "import pynwb; print(pynwb.__path__[0])")"
     displayName: 'Install PyNWB'
 
   - task: RunMATLABCommand@0
@@ -28,6 +29,7 @@ steps:
       command: "results = assertSuccess(nwbtest); assert(~isempty(results), 'No tests ran');"
     env:
       HDF5_PLUGIN_PATH: $(plugin_path)
+      PYNWB_PATH: $(pynwb_path)
 
   - task: PublishTestResults@2
     condition: succeededOrFailed()

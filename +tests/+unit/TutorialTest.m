@@ -47,6 +47,19 @@ classdef TutorialTest <  matlab.unittest.TestCase
             args = py.list({py.sys.executable, "-m", "pip", "install", "pynwb"});
             py.subprocess.check_call(args);
 
+            pynwbPath = getenv('PYNWB_PATH');
+            fprintf(newline) % Debug
+            fprintf('Displaying env variable PYNWB_PATH: %s\n', pynwbPath)
+            fprintf(newline)
+
+            pyenv() % Debug
+
+            if count(py.sys.path, pynwbPath) == 0
+                insert(py.sys.path,int32(0),pynwbPath);
+            else
+                disp("pynwb was on py.sys.path") % Debug
+            end
+
             nwbClearGenerated()
         end
     end
