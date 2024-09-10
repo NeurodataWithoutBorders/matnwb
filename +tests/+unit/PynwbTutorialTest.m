@@ -24,13 +24,14 @@ classdef PynwbTutorialTest <  matlab.unittest.TestCase
             'streaming.py', ...             % Requires that HDF5 library is installed with the ROS3 driver enabled which is not a given
             'object_id.py', ...             % Does not export nwb file
             'plot_configurator.py', ...     % Does not export nwb file
-            'brain_observatory.py'};        % Requires allen sdk
-        
+            'brain_observatory.py', ...     % Requires allen sdk
+            'extensions.py'};               % Discrepency between tutorial and schema: https://github.com/NeurodataWithoutBorders/pynwb/issues/1952
+
         % SkippedFiles - Name of exported nwb files to skip reading with matnwb
         SkippedFiles = {'family_nwb_file_0.nwb'} % requires family driver from h5py
         
         % PythonDependencies - Package dependencies for running pynwb tutorials
-        PythonDependencies = {'hdmf-zarr', 'dataframe-image'}
+        PythonDependencies = {'hdmf-zarr', 'dataframe-image', 'matplotlib', 'dandi'}
     end
 
     properties (Access = private)
