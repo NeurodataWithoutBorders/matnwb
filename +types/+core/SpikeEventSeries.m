@@ -52,6 +52,13 @@ methods
         validshapes = {[Inf,Inf,Inf], [Inf,Inf]};
         types.util.checkDims(valsz, validshapes);
     end
+    function val = validate_data_unit(obj, val)
+        if isequal(val, 'volts')
+            val = 'volts';
+        else
+            error('Unable to set the ''data_unit'' property of class ''<a href="matlab:doc types.core.SpikeEventSeries">SpikeEventSeries</a>'' because it is read-only.')
+        end
+    end
     function val = validate_timestamps(obj, val)
         val = types.util.checkDtype('timestamps', 'double', val);
         if isa(val, 'types.untyped.DataStub')
@@ -69,6 +76,20 @@ methods
         end
         validshapes = {[Inf]};
         types.util.checkDims(valsz, validshapes);
+    end
+    function val = validate_timestamps_interval(obj, val)
+        if isequal(val, 1)
+            val = 1;
+        else
+            error('Unable to set the ''timestamps_interval'' property of class ''<a href="matlab:doc types.core.SpikeEventSeries">SpikeEventSeries</a>'' because it is read-only.')
+        end
+    end
+    function val = validate_timestamps_unit(obj, val)
+        if isequal(val, 'seconds')
+            val = 'seconds';
+        else
+            error('Unable to set the ''timestamps_unit'' property of class ''<a href="matlab:doc types.core.SpikeEventSeries">SpikeEventSeries</a>'' because it is read-only.')
+        end
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)
