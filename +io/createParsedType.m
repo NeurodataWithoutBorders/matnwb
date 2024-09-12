@@ -50,7 +50,7 @@ function typeInstance = createParsedType(typePath, typeName, varargin)
             
             warning(warningID, '%s\n%s\n\n%s', updatedMessage, disclaimer, suggestion)
         else
-            warning(warningID, warningMessage)
+            % Pass, warning has already been displayed
         end
     else
         lastwarn(lastWarningMessage, lastWarningID); % Reset last warning
