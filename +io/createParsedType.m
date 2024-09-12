@@ -1,25 +1,36 @@
 function typeInstance = createParsedType(typePath, typeName, varargin)
-% createParsedType - Create a neurodata type from specified type name
+% createParsedType - Create a neurodata type from a specified type name
 %   
-%   This function is used when parsing datasets or groups to create a 
-%   neurodata type instance given a type name and a cell array of name value 
-%   pairs for that type.
+%   This function generates a neurodata type instance from a given type name 
+%   and a corresponding cell array of name-value pairs. It is typically used 
+%   when parsing datasets or groups.
 %
-%   The function captures warnings with the ID 
-%   "NWB:CheckUnset:InvalidProperties" and enhances the warning message by 
-%   including specific details about the dataset or group in the NWB file where 
-%   the issue occurred.
+%   Warnings with the ID "NWB:CheckUnset:InvalidProperties" are captured, and 
+%   the warning message is enhanced with specific details about the dataset or 
+%   group in the NWB file where the issue occurred.
+%
+%   Inputs:
+%       typePath - (char) Path to the dataset or group in the NWB file where the 
+%                  neurodata type is parsed from.
+%       typeName - (char) Name of the neurodata type to be created.
+%       varargin - (cell) Cell array of name-value pairs representing the 
+%                  properties of the neurodata type.
+%
+%   Outputs:
+%       typeInstance - The generated neurodata type instance.
+
 
     warnState = warning('off', 'NWB:CheckUnset:InvalidProperties');
-    cleanupObj = onCleanup(@(s) warning(warnState)); % Make sure warning state is reset
+    cleanupObj = onCleanup(@(s) warning(warnState)); % Make sure warning state is reset later
 
     [lastWarningMessage, lastWarningID] = lastwarn('', ''); % Clear last warning
 
     typeInstance = feval(typeName, varargin{:}); % Create the type.
 
     [warningMessage, warningID] = lastwarn();
-    if ~isempty(warningMessage)
 
+    % Handle any warnings if they occured.
+    if ~isempty(warningMessage)
         if strcmp( warningID, 'NWB:CheckUnset:InvalidProperties' )
             
             clear cleanupObj % Reset last warning state
@@ -30,7 +41,7 @@ function typeInstance = createParsedType(typePath, typeName, varargin)
 
             updatedMessage = sprintf('%s at file location "%s"\n', warningMessage, typePath);
             
-            disclaimer = 'The properties in question were dropped while reading the file.';
+            disclaimer = 'NB: The properties in question were dropped while reading the file.';
 
             suggestion = [...
                 'Consider checking the schema version of the file with '...
