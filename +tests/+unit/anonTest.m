@@ -27,3 +27,9 @@ nwbExport(nwbExpected, 'testanon.nwb');
 
 tests.util.verifyContainerEqual(testCase, nwbRead('testanon.nwb', 'ignorecache'), nwbExpected);
 end
+
+function testAnonTypeWithNameValueInput(testCase)
+    anon = types.untyped.Anon('a', 1);
+    testCase.verifyEqual(anon.name, 'a')
+    testCase.verifyEqual(anon.value, 1)
+end
