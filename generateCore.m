@@ -23,7 +23,7 @@ function generateCore(varargin)
     %
     %   See also GENERATEEXTENSION
     
-    latestVersion = '2.6.0';
+    latestVersion = '2.7.0';
     
     if nargin == 0 || strcmp(varargin{1}, 'savedir')
         version = latestVersion;

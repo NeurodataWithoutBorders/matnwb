@@ -51,8 +51,15 @@ methods
         else
             valsz = size(val);
         end
-        validshapes = {[Inf]};
+        validshapes = {[Inf,Inf], [Inf]};
         types.util.checkDims(valsz, validshapes);
+    end
+    function val = validate_data_unit(obj, val)
+        if isequal(val, 'watts')
+            val = 'watts';
+        else
+            error('Unable to set the ''data_unit'' property of class ''<a href="matlab:doc types.core.OptogeneticSeries">OptogeneticSeries</a>'' because it is read-only.')
+        end
     end
     function val = validate_site(obj, val)
         val = types.util.checkDtype('site', 'types.core.OptogeneticStimulusSite', val);
