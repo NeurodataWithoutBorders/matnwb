@@ -275,6 +275,34 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
                     );
             end
         end
+        
+        function toTableNdArrayTest(testCase)
+        % toTableNdArrayTest Test to table for a plane segmentation table
+
+            % Generate fake image_mask data
+            imaging_shape = [100, 100];
+            x = imaging_shape(1);
+            y = imaging_shape(2);
+            
+            n_rois = 20;
+            image_mask = zeros(y, x, n_rois);
+            for i = 1:n_rois
+                start = randi(90,2,1);
+                image_mask(start(1):start(1)+10, start(2):start(2)+10, 1) = 1;
+            end
+            
+            % add data to NWB structures
+            plane_segmentation = types.core.PlaneSegmentation( ...
+                'colnames', {'image_mask'}, ...
+                'description', 'output from segmenting my favorite imaging plane', ...
+                'id', types.hdmf_common.ElementIdentifiers('data', int64(0:19)'), ...
+                'image_mask', types.hdmf_common.VectorData('data', image_mask, 'description', 'image masks') ...
+            );
+
+            T = plane_segmentation.toTable();
+            testCase.verifyClass(T, 'table');
+            testCase.verifySize(T, [n_rois, 2]); % 2 columns, id and image_mask
+        end
 
         function DynamicTableCheckTest(testCase)
             % Verify that the checkConfig utility function

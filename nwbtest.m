@@ -40,13 +40,19 @@ function results = nwbtest(varargin)
         parser = inputParser;
         parser.KeepUnmatched = true;
         parser.addParameter('Verbosity', 1);
+        parser.addParameter('Selector', [])
         parser.parse(varargin{:});
         
         ws = pwd;
         
-        nwbClearGenerated(); % clear default files if any.
+        nwbClearGenerated(); % Clear default files if any.
+        cleaner = onCleanup(@generateCore); % Regenerate core when finished
+
         pvcell = struct2pvcell(parser.Unmatched);
         suite = TestSuite.fromPackage('tests', 'IncludingSubpackages', true, pvcell{:});
+        if ~isempty(parser.Results.Selector)
+            suite = suite.selectIf(parser.Results.Selector);
+        end
         
         runner = TestRunner.withTextOutput('Verbosity', parser.Results.Verbosity);
         

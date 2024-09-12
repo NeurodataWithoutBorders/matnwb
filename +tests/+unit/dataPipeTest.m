@@ -255,6 +255,11 @@ function testBoundPipe(testCase)
     warning('on', debugId);
 end
 
+function testConfigurationFromData(testCase)
+    conf = types.untyped.datapipe.Configuration.fromData(zeros(10,10), 1);
+    testCase.verifyClass(conf, 'types.untyped.datapipe.Configuration')
+end
+
 function data = createData(dataType, size)
     data = randi(intmax(dataType), size, dataType);
 end
