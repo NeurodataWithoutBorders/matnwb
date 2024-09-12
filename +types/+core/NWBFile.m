@@ -16,8 +16,8 @@ properties
 end
 % OPTIONAL PROPERTIES
 properties
-    acquisition; %  (DynamicTable|NWBDataInterface) Tabular data that is relevent to acquisition | Acquired, raw data.
-    analysis; %  (DynamicTable|NWBContainer) Tabular data that is relevent to data stored in analysis | Custom analysis results.
+    acquisition; %  (DynamicTable|NWBDataInterface) Tabular data that is relevant to acquisition | Acquired, raw data.
+    analysis; %  (DynamicTable|NWBContainer) Tabular data that is relevant to data stored in analysis | Custom analysis results.
     general; %  (LabMetaData) Place-holder than can be extended so that lab-specific meta-data can be placed in /general.
     general_data_collection; %  (char) Notes about data collection and analysis.
     general_devices; %  (Device) Data acquisition devices.
@@ -33,7 +33,7 @@ properties
     general_intracellular_ephys_repetitions; %  (RepetitionsTable) A table for grouping different sequential intracellular recordings together. With each SequentialRecording typically representing a particular type of stimulus, the RepetitionsTable table is typically used to group sets of stimuli applied in sequence.
     general_intracellular_ephys_sequential_recordings; %  (SequentialRecordingsTable) A table for grouping different sequential recordings from the SimultaneousRecordingsTable table together. This is typically used to group together sequential recordings where the a sequence of stimuli of the same type with varying parameters have been presented in a sequence.
     general_intracellular_ephys_simultaneous_recordings; %  (SimultaneousRecordingsTable) A table for grouping different intracellular recordings from the IntracellularRecordingsTable table together that were recorded simultaneously from different electrodes
-    general_intracellular_ephys_sweep_table; %  (SweepTable) [DEPRECATED] Table used to group different PatchClampSeries. SweepTable is being replaced by IntracellularRecordingsTable and SimultaneousRecordingsTable tabels. Additional SequentialRecordingsTable, RepetitionsTable and ExperimentalConditions tables provide enhanced support for experiment metadata.
+    general_intracellular_ephys_sweep_table; %  (SweepTable) [DEPRECATED] Table used to group different PatchClampSeries. SweepTable is being replaced by IntracellularRecordingsTable and SimultaneousRecordingsTable tables. Additional SequentialRecordingsTable, RepetitionsTable and ExperimentalConditions tables provide enhanced support for experiment metadata.
     general_keywords; %  (char) Terms to search over.
     general_lab; %  (char) Laboratory where experiment was performed.
     general_notes; %  (char) Notes about the experiment.
@@ -56,7 +56,7 @@ properties
     intervals_trials; %  (TimeIntervals) Repeated experimental events that have a logical grouping.
     processing; %  (ProcessingModule) Intermediate analysis of acquired data.
     scratch; %  (DynamicTable|NWBContainer|ScratchData) Any one-off tables | Any one-off containers | Any one-off datasets
-    stimulus_presentation; %  (TimeSeries) TimeSeries objects containing data of presented stimuli.
+    stimulus_presentation; %  (DynamicTable|NWBDataInterface|TimeSeries) DynamicTable objects containing data of presented stimuli. | Generic NWB data interfaces, usually from an extension, containing data of presented stimuli. | TimeSeries objects containing data of presented stimuli.
     stimulus_templates; %  (Images|TimeSeries) Images objects containing images of presented stimuli. | TimeSeries objects containing template data of presented stimuli.
     units; %  (Units) Data about sorted spike units.
 end
@@ -64,7 +64,7 @@ end
 methods
     function obj = NWBFile(varargin)
         % NWBFILE Constructor for NWBFile
-        varargin = [{'nwb_version' '2.6.0'} varargin];
+        varargin = [{'nwb_version' '2.7.0'} varargin];
         obj = obj@types.core.NWBContainer(varargin{:});
         
         
@@ -805,9 +805,8 @@ methods
         types.util.checkDims(valsz, validshapes);
     end
     function val = validate_stimulus_presentation(obj, val)
-        namedprops = struct();
-        constrained = {'types.core.TimeSeries'};
-        types.util.checkSet('stimulus_presentation', namedprops, constrained, val);
+        constrained = {'types.hdmf_common.DynamicTable', 'types.core.NWBDataInterface', 'types.core.TimeSeries'};
+        types.util.checkSet('stimulus_presentation', struct(), constrained, val);
     end
     function val = validate_stimulus_templates(obj, val)
         constrained = {'types.core.Images', 'types.core.TimeSeries'};

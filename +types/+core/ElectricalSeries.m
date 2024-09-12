@@ -93,6 +93,13 @@ methods
         validshapes = {[Inf,Inf,Inf], [Inf,Inf], [Inf]};
         types.util.checkDims(valsz, validshapes);
     end
+    function val = validate_data_unit(obj, val)
+        if isequal(val, 'volts')
+            val = 'volts';
+        else
+            error('Unable to set the ''data_unit'' property of class ''<a href="matlab:doc types.core.ElectricalSeries">ElectricalSeries</a>'' because it is read-only.')
+        end
+    end
     function val = validate_electrodes(obj, val)
         val = types.util.checkDtype('electrodes', 'types.hdmf_common.DynamicTableRegion', val);
     end
