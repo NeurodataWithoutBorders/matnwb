@@ -13,7 +13,6 @@ classdef GenerationTest < matlab.unittest.TestCase
     methods (TestMethodSetup)
         function setupMethod(testCase, schemaVersion)
             testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
-            nwbClearGenerated()
             generateCore(schemaVersion, 'savedir', '.');
             rehash();
         end
