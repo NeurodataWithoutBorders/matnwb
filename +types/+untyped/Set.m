@@ -83,7 +83,7 @@ classdef Set < handle & matlab.mixin.CustomDisplay
                 if nargout == 1
                     varargout{1} = [obj.Count, 1];
                 else
-                    [varargout{:}] = ones(nargout,1);
+                    varargout = num2cell( ones(1, nargout) );
                     varargout{1} = obj.Count;
                 end
             end
