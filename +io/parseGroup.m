@@ -77,12 +77,13 @@ else
         else
             file.cloneNwbFileClass(Type.name, Type.typename);
             rehash();
-            parsed = eval([Type.typename '(kwargs{:})']);
+            parsed = io.createParsedType(info.Name, Type.typename, kwargs{:});
+
         end
         
         return;
     end
-    parsed = eval([Type.typename '(kwargs{:})']);
+    parsed = io.createParsedType(info.Name, Type.typename, kwargs{:});
 end
 end
 
