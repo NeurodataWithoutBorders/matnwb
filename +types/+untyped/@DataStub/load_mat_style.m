@@ -34,7 +34,14 @@ function data = load_mat_style(obj, varargin)
             , iDimension, dimensionSize);
     end
     
-    if isscalar(userSelection) && ~ischar(userSelection{1})
+    if isscalar(userSelection) && isempty(userSelection{1})
+        % If userselection (indices) is empty, get the first element of this 
+        % DataStub and try to return an empty representation of that type.
+        data = obj.load_mat_style(1);
+        data = getEmptyRepresentation(data);
+        return
+
+    elseif isscalar(userSelection) && ~ischar(userSelection{1})
         % linear index into the fast dimension.
         orderedSelection = unique(userSelection{1});
 
@@ -186,5 +193,20 @@ function reordered = reorderLoadedData(data, selections)
         end
         indexKeyIndex(indexKeyIndexNextIndex) = indexKeyIndex(indexKeyIndexNextIndex) + 1;
         indexKeyIndex((indexKeyIndexNextIndex+1):end) = 1;
+    end
+end
+
+
+function emptyInstance = getEmptyRepresentation(nonEmptyInstance)
+    try
+        emptyInstance = nonEmptyInstance;
+        emptyInstance(:) = [];
+    catch ME
+        switch ME.identifier
+            case 'MATLAB:table:LinearSubscript'
+                emptyInstance(:, :) = [];
+            otherwise
+                error('Not implemented for value of type: "%s"', class(nonEmptyInstance))
+        end
     end
 end
