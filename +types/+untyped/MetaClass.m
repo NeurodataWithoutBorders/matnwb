@@ -1,8 +1,12 @@
-classdef MetaClass < handle
+classdef MetaClass < handle & matlab.mixin.CustomDisplay
     properties (Hidden, SetAccess = private)
         metaClass_fullPath;
     end
-    
+
+    properties (Constant, Transient, Access = protected)
+        REQUIRED containers.Map = containers.Map
+    end
+
     methods
         function obj = MetaClass(varargin)
         end
@@ -43,6 +47,7 @@ classdef MetaClass < handle
     
     methods
         function refs = export(obj, fid, fullpath, refs)
+            obj.throwErrorIfMissingRequiredProps(fullpath)
             obj.metaClass_fullPath = fullpath;
             %find reference properties
             propnames = properties(obj);
@@ -93,6 +98,73 @@ classdef MetaClass < handle
                 if isa(prop, 'types.untyped.DataStub')
                     obj.(propnames{i}) = prop.load();
                 end
+            end
+        end
+    end
+
+
+    methods (Access = protected) % Override matlab.mixin.CustomDisplay
+        function str = getFooter(obj)
+            obj.displayWarningIfMissingProps();
+            str = '';
+        end
+    end
+
+    methods (Access = public)
+        
+        function missingRequiredProps = checkRequiredProps(obj)
+            missingRequiredProps = {};
+            requiredProps = obj.getRequiredProperties();
+
+            for i = 1:numel(requiredProps)
+                thisPropName = requiredProps{i};
+                if isempty(obj.(thisPropName))
+                    missingRequiredProps{end+1} = thisPropName; %#ok<AGROW>
+                end
+            end
+        end
+
+        function displayWarningIfMissingProps(obj)
+            missingRequiredProps = obj.checkRequiredProps();
+            if ~isempty( missingRequiredProps )
+                warnState = warning('backtrace', 'off');
+                cleanerObj = onCleanup(@(s) warning(warnState));
+
+                propertyListStr = compose('    %s', string(missingRequiredProps));
+                propertyListStr = strjoin(propertyListStr, newline);
+                warning('NWB:RequiredPropertyMissing', ...
+                    'The following required properties are missing:\n%s', propertyListStr)
+            end
+        end
+
+        function throwErrorIfMissingRequiredProps(obj, fullpath)
+            missingRequiredProps = obj.checkRequiredProps();
+            if ~isempty( missingRequiredProps )
+                warnState = warning('backtrace', 'off');
+                cleanerObj = onCleanup(@(s) warning(warnState));
+
+                propertyListStr = compose('    %s', string(missingRequiredProps));
+                propertyListStr = strjoin(propertyListStr, newline);
+                error('NWB:RequiredPropertyMissing', ...
+                    'The following required properties are missing for instance for type "%s" at file location "%s":\n%s', class(obj), fullpath, propertyListStr)
+            end
+        end
+    end
+
+    methods (Access = private)
+        function requiredProps = getRequiredProperties(obj)
+
+            % Introspectively retreive required properties and add to
+            % persistent map.
+
+            if isKey(obj.REQUIRED, class(obj) )
+                requiredProps = obj.REQUIRED( class(obj) );
+            else
+                mc = metaclass(obj);
+                propertyDescription = {mc.PropertyList.Description};
+                isRequired = startsWith(propertyDescription, 'REQUIRED');
+                requiredProps = {mc.PropertyList(isRequired).Name};
+                obj.REQUIRED( class(obj) ) = requiredProps;
             end
         end
     end
