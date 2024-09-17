@@ -28,8 +28,15 @@ nwbtable = types.hdmf_common.DynamicTable( ...
 
 for col = T
     if ~strcmp(col.Properties.VariableNames{1},'id')
+
+        if ~isempty(col.Properties.VariableDescriptions{1})
+            description = col.Properties.VariableDescriptions{1};
+        else
+            description = 'no description provided';
+        end
+
         nwbtable.vectordata.set(col.Properties.VariableNames{1}, ...
             types.hdmf_common.VectorData('data', col.Variables',...
-            'description', 'my description'));
+            'description', description));
     end
 end
