@@ -78,7 +78,7 @@ function parsed = parseDataset(filename, info, fullpath, Blacklist)
     else
         props('data') = data;
         kwargs = io.map2kwargs(props);
-        parsed = eval([Type.typename '(kwargs{:})']);
+        parsed = io.createParsedType(fullpath, Type.typename, kwargs{:});
     end
     H5D.close(did);
     H5F.close(fid);
