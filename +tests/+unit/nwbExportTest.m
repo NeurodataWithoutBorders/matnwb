@@ -2,6 +2,7 @@ classdef nwbExportTest < matlab.unittest.TestCase
 
     properties
         NwbObject
+        OutputFolder = "out"
     end
 
     methods (TestClassSetup)
@@ -11,25 +12,34 @@ classdef nwbExportTest < matlab.unittest.TestCase
 
             % Use a fixture to add the folder to the search path
             testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
+
+            % Use a fixture to create a temporary working directory
+            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
+            generateCore('savedir', '.');
         end
     end
 
     methods (TestMethodSetup)
         function setupMethod(testCase)
-            % Use a fixture to create a temporary working directory
-            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
             testCase.NwbObject = testCase.initNwbFile();
+
+            if isfolder( testCase.OutputFolder )
+                rmdir(testCase.OutputFolder, "s")
+            end
+            mkdir(testCase.OutputFolder)
         end
     end
 
     methods (Test)
         function testExportDependentAttributeWithMissingParentA(testCase)
             testCase.NwbObject.general_source_script_file_name = 'my_test_script.m';
-            testCase.verifyWarning(@(f, fn) nwbExport(testCase.NwbObject, 'test_part1.nwb'), 'NWB:DependentAttributeNotExported')
+            nwbFilePath = fullfile(testCase.OutputFolder, 'test_part1.nwb');
+            testCase.verifyWarning(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), 'NWB:DependentAttributeNotExported')
             
             % Add value for dataset which attribute depends on and export again
             testCase.NwbObject.general_source_script = 'my test';
-            testCase.verifyWarningFree(@(f, fn) nwbExport(testCase.NwbObject, 'test_part2.nwb'))
+            nwbFilePath = fullfile(testCase.OutputFolder, 'test_part2.nwb');
+            testCase.verifyWarningFree(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath))
         end
 
         function testExportDependentAttributeWithMissingParentB(testCase)
@@ -41,11 +51,13 @@ classdef nwbExportTest < matlab.unittest.TestCase
             );
 
             testCase.NwbObject.acquisition.set('time_series', time_series);
-            testCase.verifyWarning(@(f, fn) nwbExport(testCase.NwbObject, 'test_part1.nwb'), 'NWB:DependentAttributeNotExported')
+            nwbFilePath = fullfile(testCase.OutputFolder, 'test_part1.nwb');
+            testCase.verifyWarning(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), 'NWB:DependentAttributeNotExported')
 
             % Add value for dataset which attribute depends on and export again
             time_series.starting_time = 1;
-            testCase.verifyWarningFree(@(f, fn) nwbExport(testCase.NwbObject, 'test_part2.nwb'))
+            nwbFilePath = fullfile(testCase.OutputFolder, 'test_part2.nwb');
+            testCase.verifyWarningFree(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath))
         end
     end
 
