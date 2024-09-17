@@ -18,7 +18,7 @@ end
 if ismember('id', T.Properties.VariableNames)
     id = T.id;
 else
-    id = 0:height(T)-1;
+    id = transpose( 0:height(T)-1 ); % Must be column vector
 end
 
 nwbtable = types.hdmf_common.DynamicTable( ...
