@@ -380,6 +380,8 @@ methods
         end
         if ~isempty(obj.data) && ~isa(obj.data, 'types.untyped.SoftLink') && ~isa(obj.data, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/data/unit'], obj.data_unit);
+        elseif isempty(obj.data) && ~isempty(obj.data_unit)
+            obj.warnIfPropertyAttributeNotExported('data_unit', 'data', fullpath)
         end
         if ~isempty(obj.description)
             io.writeAttribute(fid, [fullpath '/description'], obj.description);
@@ -393,6 +395,8 @@ methods
         end
         if ~isempty(obj.starting_time) && ~isa(obj.starting_time, 'types.untyped.SoftLink') && ~isa(obj.starting_time, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/starting_time/rate'], obj.starting_time_rate);
+        elseif isempty(obj.starting_time) && ~isempty(obj.starting_time_rate)
+            obj.warnIfPropertyAttributeNotExported('starting_time_rate', 'starting_time', fullpath)
         end
         if ~isempty(obj.starting_time) && ~isa(obj.starting_time, 'types.untyped.SoftLink') && ~isa(obj.starting_time, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/starting_time/unit'], obj.starting_time_unit);
