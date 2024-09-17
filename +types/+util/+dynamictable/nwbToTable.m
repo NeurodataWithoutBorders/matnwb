@@ -51,6 +51,7 @@ matlabTable = table( ...
 
 % deal with DynamicTableRegion columns when index is false
 [columns, remainingColumns] = deal(DynamicTable.colnames);
+columnDescriptions = repmat({''}, 1, length(columns));
 
 for i = 1:length(columns)
     cn = columns{i};
@@ -61,6 +62,7 @@ for i = 1:length(columns)
     else
         cv = DynamicTable.vectordata.get(cn);
     end
+    columnDescriptions{i} = cv.description;
     if ~index && ...
             (isa(cv,'types.hdmf_common.DynamicTableRegion') ||...
             isa(cv,'types.core.DynamicTableRegion'))
@@ -85,3 +87,6 @@ matlabTable = [matlabTable DynamicTable.getRow( ...
 
 % Update the columns order to be the same as the original 
 matlabTable = matlabTable(:, [{'id'}, columns]);
+
+% Add variable descriptions
+matlabTable.Properties.VariableDescriptions = [{''}, columnDescriptions];
