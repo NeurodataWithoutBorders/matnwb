@@ -102,16 +102,14 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
         end
     end
 
-
     methods (Access = protected) % Override matlab.mixin.CustomDisplay
         function str = getFooter(obj)
-            obj.displayWarningIfMissingProps();
+            obj.displayWarningIfMissingRequiredProps();
             str = '';
         end
     end
 
     methods (Access = public)
-        
         function missingRequiredProps = checkRequiredProps(obj)
             missingRequiredProps = {};
             requiredProps = obj.getRequiredProperties();
@@ -124,14 +122,13 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
             end
         end
 
-        function displayWarningIfMissingProps(obj)
+        function displayWarningIfMissingRequiredProps(obj)
             missingRequiredProps = obj.checkRequiredProps();
             if ~isempty( missingRequiredProps )
                 warnState = warning('backtrace', 'off');
                 cleanerObj = onCleanup(@(s) warning(warnState));
 
-                propertyListStr = compose('    %s', string(missingRequiredProps));
-                propertyListStr = strjoin(propertyListStr, newline);
+                propertyListStr = obj.prettyPrintPropertyList(missingRequiredProps);
                 warning('NWB:RequiredPropertyMissing', ...
                     'The following required properties are missing:\n%s', propertyListStr)
             end
@@ -140,11 +137,7 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
         function throwErrorIfMissingRequiredProps(obj, fullpath)
             missingRequiredProps = obj.checkRequiredProps();
             if ~isempty( missingRequiredProps )
-                warnState = warning('backtrace', 'off');
-                cleanerObj = onCleanup(@(s) warning(warnState));
-
-                propertyListStr = compose('    %s', string(missingRequiredProps));
-                propertyListStr = strjoin(propertyListStr, newline);
+                propertyListStr = obj.prettyPrintPropertyList(missingRequiredProps);
                 error('NWB:RequiredPropertyMissing', ...
                     'The following required properties are missing for instance for type "%s" at file location "%s":\n%s', class(obj), fullpath, propertyListStr)
             end
@@ -166,6 +159,13 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
                 requiredProps = {mc.PropertyList(isRequired).Name};
                 obj.REQUIRED( class(obj) ) = requiredProps;
             end
+        end
+    end
+
+    methods (Static, Access = private)
+        function propertyListStr = prettyPrintPropertyList(propertyNames)
+            propertyListStr = compose('    %s', string(propertyNames));
+            propertyListStr = strjoin(propertyListStr, newline);
         end
     end
 end
