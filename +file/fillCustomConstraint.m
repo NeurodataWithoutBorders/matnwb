@@ -7,6 +7,8 @@ function customConstraintStr = fillCustomConstraint(nwbType)
     switch nwbType
 
         case "TimeSeries"
+            % Add method to validate constraint that either timestamps or 
+            % starting_time must be present
             customConstraintStr = sprintf( [...
                 'function checkCustomConstraint(obj)\n', ...
                 '    assert(~isempty(obj.timestamps) || ~isempty(obj.starting_time), ...\n', ...
@@ -19,6 +21,10 @@ function customConstraintStr = fillCustomConstraint(nwbType)
 
 
         case "ImageSeries"
+            % If external_file is set, it does not make sense to fill out the
+            % data property. However, data is a required property, so this 
+            % method will add a nan-array to the data property so that it passes 
+            % the requirement check on file export.
             customConstraintStr = sprintf( [...
                 'function checkCustomConstraint(obj)\n', ...
                 '    if ~isempty(obj.external_file) && isempty(obj.data), ...\n', ...

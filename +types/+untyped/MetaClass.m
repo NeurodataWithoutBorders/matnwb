@@ -47,6 +47,9 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
     
     methods
         function refs = export(obj, fid, fullpath, refs)
+            % throwErrorIfCustomConstraintUnfulfilled is intentionally placed 
+            % before throwErrorIfMissingRequiredProps. 
+            % See file.fillCustomConstraint
             obj.throwErrorIfCustomConstraintUnfulfilled(fullpath)
             obj.throwErrorIfMissingRequiredProps(fullpath)
             obj.metaClass_fullPath = fullpath;
