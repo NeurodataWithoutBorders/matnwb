@@ -47,6 +47,7 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
     
     methods
         function refs = export(obj, fid, fullpath, refs)
+            obj.throwErrorIfCustomConstraintUnfulfilled(fullpath)
             obj.throwErrorIfMissingRequiredProps(fullpath)
             obj.metaClass_fullPath = fullpath;
             %find reference properties
@@ -109,7 +110,7 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
         end
     end
 
-    methods (Access = public)
+    methods (Access = protected)
         function missingRequiredProps = checkRequiredProps(obj)
             missingRequiredProps = {};
             requiredProps = obj.getRequiredProperties();
@@ -141,6 +142,22 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
                 error('NWB:RequiredPropertyMissing', ...
                     'The following required properties are missing for instance for type "%s" at file location "%s":\n%s', class(obj), fullpath, propertyListStr)
             end
+        end
+
+        function throwErrorIfCustomConstraintUnfulfilled(obj, fullpath)
+            try
+                obj.checkCustomConstraint()
+            catch ME
+                error('NWB:CustomConstraintUnfulfilled', ...
+                    'The following error was caught when exporting type "%s" at file location "%s":\n%s', class(obj), fullpath, ME.message)
+            end
+        end
+    end
+
+    methods
+        function checkCustomConstraint(obj) %#ok<MANU>
+            % This method is meant to be overridden by subclasses that have 
+            % custom constraints that can not be inferred from the nwb schema.
         end
     end
 
