@@ -27,7 +27,7 @@ jobs:
       - name: install MATLAB
         uses: matlab-actions/setup-matlab@v1
         with:
-          release: R2022a # this is necessary to test dynamic filters
+          release: R2024a # this is necessary to test dynamic filters
       - name: run tests
         uses: matlab-actions/run-command@v1
         with:
