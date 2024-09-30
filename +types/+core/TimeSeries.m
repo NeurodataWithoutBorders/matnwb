@@ -415,6 +415,15 @@ methods
             io.writeAttribute(fid, [fullpath '/timestamps/unit'], obj.timestamps_unit);
         end
     end
+    %% CUSTOM CONSTRAINTS
+    function checkCustomConstraint(obj)
+        assert(~isempty(obj.timestamps) || ~isempty(obj.starting_time), ...
+            "'timestamps' or 'starting_time' must be specified")
+        if ~isempty(obj.starting_time)
+            assert(~isempty(obj.starting_time_rate), ...
+                "'starting_time_rate' must be specified when 'starting_time' is specified")
+        end
+    end
 end
 
 end

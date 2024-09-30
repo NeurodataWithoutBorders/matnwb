@@ -129,6 +129,11 @@ function template = fillClass(name, namespace, processed, classprops, inherited)
         '%% VALIDATORS' validatorFcns...
         '%% EXPORT' exporterFcns}, newline);
 
+    customConstraintStr = file.fillCustomConstraint(name);
+    if ~isempty(customConstraintStr)
+        methodBody = strjoin({methodBody, '%% CUSTOM CONSTRAINTS', customConstraintStr}, newline);
+    end
+
     if strcmp(name, 'DynamicTable')
         methodBody = strjoin({methodBody, '%% TABLE METHODS', file.fillDynamicTableMethods()}, newline);
     end
