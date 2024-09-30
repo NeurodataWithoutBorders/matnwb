@@ -175,6 +175,8 @@ methods
         end
         if ~isempty(obj.external_file) && ~isa(obj.external_file, 'types.untyped.SoftLink') && ~isa(obj.external_file, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/external_file/starting_frame'], obj.external_file_starting_frame, 'forceArray');
+        elseif isempty(obj.external_file) && ~isempty(obj.external_file_starting_frame)
+            obj.warnIfPropertyAttributeNotExported('external_file_starting_frame', 'external_file', fullpath)
         end
         if ~isempty(obj.format)
             if startsWith(class(obj.format), 'types.untyped.')

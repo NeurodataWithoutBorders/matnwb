@@ -104,6 +104,17 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
                 end
             end
         end
+
+        function warnIfPropertyAttributeNotExported(obj, propName, depPropName, fullpath)
+            warnState = warning('backtrace', 'off');
+            cleanupObj = onCleanup(@(s) warning(warnState));
+            warningId = 'NWB:DependentAttributeNotExported';
+            warningMessage = sprintf( [ ...
+                'The property "%s" of type "%s" was not exported to file ', ...
+                'location "%s" because it depends on the property "%s" ', ...
+                'which is unset.' ], propName, class(obj), fullpath, depPropName);
+            warning(warningId, warningMessage) %#ok<SPWRN>
+        end
     end
 
     methods (Access = protected) % Override matlab.mixin.CustomDisplay
