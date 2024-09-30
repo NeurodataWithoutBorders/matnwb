@@ -388,6 +388,8 @@ methods
         end
         if ~isempty(obj.grid_spacing) && ~isa(obj.grid_spacing, 'types.untyped.SoftLink') && ~isa(obj.grid_spacing, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/grid_spacing/unit'], obj.grid_spacing_unit);
+        elseif isempty(obj.grid_spacing) && ~isempty(obj.grid_spacing_unit)
+            obj.warnIfPropertyAttributeNotExported('grid_spacing_unit', 'grid_spacing', fullpath)
         end
         if ~isempty(obj.imaging_rate)
             if startsWith(class(obj.imaging_rate), 'types.untyped.')
@@ -429,6 +431,8 @@ methods
         end
         if ~isempty(obj.origin_coords) && ~isa(obj.origin_coords, 'types.untyped.SoftLink') && ~isa(obj.origin_coords, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/origin_coords/unit'], obj.origin_coords_unit);
+        elseif isempty(obj.origin_coords) && ~isempty(obj.origin_coords_unit)
+            obj.warnIfPropertyAttributeNotExported('origin_coords_unit', 'origin_coords', fullpath)
         end
         if ~isempty(obj.reference_frame)
             if startsWith(class(obj.reference_frame), 'types.untyped.')
