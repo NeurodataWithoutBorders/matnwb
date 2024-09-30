@@ -1,7 +1,7 @@
 function generateCore(varargin)
     % GENERATECORE Generate Matlab classes from NWB core schema files
     %   GENERATECORE()  Generate classes (Matlab m-files) from the
-    %   NWB:N core namespace file. By default, generates off of the most recent nwb-schema
+    %   NWB core namespace file. By default, generates off of the most recent nwb-schema
     %   release.
     %
     %   GENERATECORE(version)  Generate classes for the
@@ -23,7 +23,7 @@ function generateCore(varargin)
     %
     %   See also GENERATEEXTENSION
     
-    latestVersion = '2.6.0';
+    latestVersion = '2.7.0';
     
     if nargin == 0 || strcmp(varargin{1}, 'savedir')
         version = latestVersion;

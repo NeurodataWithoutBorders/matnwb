@@ -1,7 +1,7 @@
 function generateExtension(varargin)
     % GENERATEEXTENSION Generate Matlab classes from NWB extension schema file
     %   GENERATEEXTENSION(extension_path...)  Generate classes
-    %   (Matlab m-files) from one or more NWB:N schema extension namespace
+    %   (Matlab m-files) from one or more NWB schema extension namespace
     %   files.  A registry of already generated core types is used to resolve
     %   dependent types.
     %
