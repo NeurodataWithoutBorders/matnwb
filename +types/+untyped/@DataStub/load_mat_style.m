@@ -46,6 +46,17 @@ function data = load_mat_style(obj, varargin)
         end
 
         points = cell(length(dataDimensions), 1);
+
+        if isscalar(dataDimensions) && ~isMATLABReleaseOlderThan('R2024b')
+            % Starting from MATLAB R2024, the input argument for the size 
+            % of an array must be a vector of positive integers with two or 
+            % more elements. This fix replicates the behavior of older 
+            % MATLAB versions, which automatically assumed that the size 
+            % referred to the number of rows. For scalar dimensions 
+            % (i.e., row or column vectors), this should be acceptable.
+            dataDimensions = [dataDimensions, 1];
+        end
+
         [points{:}] = ind2sub(dataDimensions, orderedSelection);
         readSpaceId = H5S.copy(spaceId);
         H5S.select_none(readSpaceId);

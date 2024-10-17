@@ -21,6 +21,7 @@ classdef PynwbTutorialTest <  matlab.unittest.TestCase
     properties (Constant)
         % SkippedTutorials - Tutorials from pynwb to skip
         SkippedTutorials = {...
+            'plot_read_basics.py', ...      % Downloads file from dandi archive, does not export nwb file
             'streaming.py', ...             % Requires that HDF5 library is installed with the ROS3 driver enabled which is not a given
             'object_id.py', ...             % Does not export nwb file
             'plot_configurator.py', ...     % Does not export nwb file
@@ -31,7 +32,7 @@ classdef PynwbTutorialTest <  matlab.unittest.TestCase
         SkippedFiles = {'family_nwb_file_0.nwb'} % requires family driver from h5py
         
         % PythonDependencies - Package dependencies for running pynwb tutorials
-        PythonDependencies = {'hdmf-zarr', 'dataframe-image', 'matplotlib', 'dandi'}
+        PythonDependencies = {'hdmf-zarr', 'dataframe-image', 'matplotlib'}
     end
 
     properties (Access = private)
@@ -101,7 +102,7 @@ classdef PynwbTutorialTest <  matlab.unittest.TestCase
 
             pythonPath = tests.util.getPythonPath();
             
-            cmd = sprintf('"%s" %s', pythonPath, tutorialFile );
+            cmd = sprintf('%s %s', pythonPath, tutorialFile);
             [status, cmdout] = system(cmd);
 
             if status == 1
