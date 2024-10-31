@@ -349,7 +349,7 @@ end
 % Though TimeIntervals is a subclass of the DynamicTable type, we opt for
 % populating the Dynamic Table data by column instead of using `addRow`
 % here because of how the data is formatted. DynamicTable is flexible
-% enough to accomodate both styles of data conversion.
+% enough to accommodate both styles of data conversion.
 trials_epoch = types.core.TimeIntervals(...
     'colnames', {'start_time'}, ...
     'description', 'trial data and properties', ...
@@ -393,7 +393,7 @@ nwb.intervals_trials = trials_epoch;
 % ('unitx' where 'x' is some unit ID).
 
 %%
-% Trial IDs, wherever they are used, are placed in a relevent |control| property in the
+% Trial IDs, wherever they are used, are placed in a relevant |control| property in the
 % data object and will indicate what data is associated with what trial as
 % defined in |trials|'s |id| column.
 

@@ -35,7 +35,7 @@ function verifyContainerEqual(testCase, actual, expected, ignoreList)
             tests.util.verifyContainerEqual(testCase, actualValue.value, expectedValue.value);
         elseif isdatetime(expectedValue)...
                 || (iscell(expectedValue) && all(cellfun('isclass', expectedValue, 'datetime')))
-            % linux MATLAB doesn't appear to propery compare datetimes whereas
+            % linux MATLAB doesn't appear to properly compare datetimes whereas
             % Windows MATLAB does. This is a workaround to get tests to work
             % while getting close enough to exact date representation.
             actualValue = types.util.checkDtype(prop, 'datetime', actualValue);
