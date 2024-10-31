@@ -1010,6 +1010,8 @@ methods
         end
         if ~isempty(obj.general_source_script) && ~isa(obj.general_source_script, 'types.untyped.SoftLink') && ~isa(obj.general_source_script, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/general/source_script/file_name'], obj.general_source_script_file_name);
+        elseif isempty(obj.general_source_script) && ~isempty(obj.general_source_script_file_name)
+            obj.warnIfPropertyAttributeNotExported('general_source_script_file_name', 'general_source_script', fullpath)
         end
         io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_stimulus)
