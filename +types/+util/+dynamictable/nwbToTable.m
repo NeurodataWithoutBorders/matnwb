@@ -73,7 +73,7 @@ for i = 1:length(columns)
             cv{r,1} = ref_table.getRow(row_idxs(r)+1);
         end
         matlabTable.(cn) = cv;
-        remainingColumns(i) = [];
+        remainingColumns = setdiff(remainingColumns, cn, 'stable');
     else
         % pass
     end
