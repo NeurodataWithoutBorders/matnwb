@@ -253,7 +253,7 @@ if ismember(3, TYPE) && ~strcmp(SORTNAME, 'TankSort')
     % the selected block.  Each file starts with a 1024 byte boolean channel
     % map indicating which channel's sort codes have been saved in the file.
     % Following this map, is a sort code field that maps 1:1 with the event
-    % ID for a given block.  The event ID is essentially the Nth occurance of
+    % ID for a given block.  The event ID is essentially the Nth occurrence of
     % an event on the entire TSQ file.
     
     % look for the exact one

@@ -19,7 +19,7 @@ DataToCompress = randi(100, 250, 250, 70);
 DataPipe = types.untyped.DataPipe('data', DataToCompress);
 
 %%
-% This is the most basic way to acheive compression, and all of the
+% This is the most basic way to achieve compression, and all of the
 % optimization decisions are automatically determined by MatNWB.
 %% Background
 % HDF5 has built-in ability to compress and decompress individual datasets.
@@ -98,7 +98,7 @@ fData_compressed = types.untyped.DataPipe( ...
 % resulting file size of 1.1MB. The chunk size was chosen such that it
 % spans each individual row of the matrix.
 %
-% Use the combination of arugments that fit your need. 
+% Use the combination of arguments that fit your need. 
 % When dealing with large datasets, you may want to use iterative write to
 % ensure that you stay within the bounds of your system memory and use
 % chunking and compression to optimize storage, read and write of the data.

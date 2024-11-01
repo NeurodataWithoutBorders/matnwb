@@ -2,7 +2,7 @@ function matlabTable = nwbToTable(DynamicTable, index)
 %NWBTOTABLE converts from a NWB DynamicTable to a MATLAB table 
 %
 %   MATLABTABLE = NWBTOTABLE(T) converts object T of class types.core.DynamicTable
-%   into a MATLAB Tale
+%   into a MATLAB Table
 %   
 %   MATLABTABLE = NWBTOTABLE(T, INDEX) If INDEX is FALSE, includes rows referenced by a
 %   DynamicTableRegion as nested subtables
@@ -50,10 +50,11 @@ matlabTable = table( ...
 );
 
 % deal with DynamicTableRegion columns when index is false
-columns = DynamicTable.colnames;
-i = 1;
-while i < length(columns)
-    cn = DynamicTable.colnames{i};
+[columns, remainingColumns] = deal(DynamicTable.colnames);
+columnDescriptions = repmat({''}, 1, length(columns));
+
+for i = 1:length(columns)
+    cn = columns{i};
     if isprop(DynamicTable, cn)
         cv = DynamicTable.(cn);
     elseif isprop(DynamicTable, 'vectorindex') && DynamicTable.vectorindex.isKey(cn) % Schema version < 2.3.0
@@ -61,6 +62,7 @@ while i < length(columns)
     else
         cv = DynamicTable.vectordata.get(cn);
     end
+    columnDescriptions{i} = cv.description;
     if ~index && ...
             (isa(cv,'types.hdmf_common.DynamicTableRegion') ||...
             isa(cv,'types.core.DynamicTableRegion'))
@@ -71,15 +73,20 @@ while i < length(columns)
             cv{r,1} = ref_table.getRow(row_idxs(r)+1);
         end
         matlabTable.(cn) = cv;
-        columns(i) = [];
+        remainingColumns = setdiff(remainingColumns, cn, 'stable');
     else
-        i = i+1;
+        % pass
     end
 end
 % append remaining columns to table
 % making the assumption that length of ids reflects table height
 matlabTable = [matlabTable DynamicTable.getRow( ...
     1:length(ids), ...
-    'columns', columns ...
+    'columns', remainingColumns ...
 )];
 
+% Update the columns order to be the same as the original 
+matlabTable = matlabTable(:, [{'id'}, columns]);
+
+% Add variable descriptions
+matlabTable.Properties.VariableDescriptions = [{''}, columnDescriptions];
