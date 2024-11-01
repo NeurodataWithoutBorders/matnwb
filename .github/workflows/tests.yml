@@ -17,7 +17,7 @@ jobs:
       - name: check out repository
         uses: actions/checkout@v4
       - name: install python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
       - name: configure python env
@@ -26,21 +26,21 @@ jobs:
           pip install -r +tests/requirements.txt
           echo "HDF5_PLUGIN_PATH=$(python -c "import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)")" >> "$GITHUB_ENV"
       - name: install MATLAB
-        uses: matlab-actions/setup-matlab@v1
+        uses: matlab-actions/setup-matlab@v2
         with:
           release: R2024a # this is necessary to test dynamic filters
       - name: run tests
-        uses: matlab-actions/run-command@v1
+        uses: matlab-actions/run-command@v2
         with:
           command: results = assertSuccess(nwbtest); assert(~isempty(results), 'No tests ran');
       - name: upload JUnit results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: testResults.xml
           retention-days: 1
       - name: upload coverage results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-coverage
           path: ./coverage.xml
@@ -51,7 +51,7 @@ jobs:
     needs: [run_tests]
     steps:
       - name: retrieve result files
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: test-results
       - name: publish results
@@ -66,11 +66,11 @@ jobs:
       - name: check out repository
         uses: actions/checkout@v4
       - name: retrieve code coverage files
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: test-coverage
       - name: publish on Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
