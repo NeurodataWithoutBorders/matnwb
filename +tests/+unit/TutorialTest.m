@@ -25,7 +25,8 @@ classdef TutorialTest <  matlab.unittest.TestCase
             'basicUsage.mlx', ...  % depends on external data
             'convertTrials.m', ... % depends on basicUsage output
             'formatStruct.m', ...  % Actually a utility script, not a tutorial
-            'read_demo.mlx'};      % depends on external data
+            'read_demo.mlx', ...   % depends on external data
+            'remote_read.mlx'};    % Uses nwbRead on s3 url, potentially very slow
         
         % SkippedFiles - Name of exported nwb files to skip reading with pynwb
         SkippedFiles = {'testFileWithDataPipes.nwb'} % does not produce a valid nwb file
@@ -78,7 +79,7 @@ classdef TutorialTest <  matlab.unittest.TestCase
     
     methods (Test)
         function testTutorial(testCase, tutorialFile) %#ok<INUSD>
-            run(tutorialFile)
+            C = evalc( 'run(tutorialFile)' ); %#ok<NASGU>
             testCase.testReadTutorialNwbFileWithPynwb()
         end
     end
