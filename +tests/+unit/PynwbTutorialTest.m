@@ -26,7 +26,7 @@ classdef PynwbTutorialTest <  matlab.unittest.TestCase
             'object_id.py', ...             % Does not export nwb file
             'plot_configurator.py', ...     % Does not export nwb file
             'brain_observatory.py', ...     % Requires allen sdk
-            'extensions.py'};               % Discrepency between tutorial and schema: https://github.com/NeurodataWithoutBorders/pynwb/issues/1952
+            'extensions.py'};               % Discrepancy between tutorial and schema: https://github.com/NeurodataWithoutBorders/pynwb/issues/1952
 
         % SkippedFiles - Name of exported nwb files to skip reading with matnwb
         SkippedFiles = {'family_nwb_file_0.nwb'} % requires family driver from h5py
@@ -209,7 +209,7 @@ end
 
 function pynwbFolder = downloadPynwb()
     githubUrl = 'https://github.com/NeurodataWithoutBorders/pynwb/archive/refs/heads/master.zip';
-    pynwbFolder = downloadZippedGithubRepo(githubUrl, '.'); % Download in current direcory
+    pynwbFolder = downloadZippedGithubRepo(githubUrl, '.'); % Download in current directory
 end
 
 function repoFolder = downloadZippedGithubRepo(githubUrl, targetFolder)
