@@ -233,7 +233,10 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
             ExpectedSubTable = testCase.file.intervals_trials.getRow(1:20);
             % convert DynamicTable to MATLAB table
             TrialsTable = testCase.file.intervals_trials.toTable();
-            TrialsTable.id = []; %remove id column
+            % Remove id column and variable descriptions as they are not
+            % present in the ExpectedSubTable retrieved from getRow method
+            TrialsTable.id = [];
+            TrialsTable.Properties.VariableDescriptions = {};
             % retrieve rows from MATLAB table
             ActualSubTable = TrialsTable(1:20,:);
             % compare
