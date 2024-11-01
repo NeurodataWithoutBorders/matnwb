@@ -1,7 +1,7 @@
 function valid = str2validName(propname, prefix)
 % STR2VALIDNAME
 % Converts the property name into a valid matlab property name.
-% propname: the offending propery name
+% propname: the offending property name
 % prefix: optional prefix to use instead of the ambiguous "dyn"
 if ~iscell(propname) && isvarname(propname)
     valid = propname;

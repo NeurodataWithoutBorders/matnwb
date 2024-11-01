@@ -118,7 +118,7 @@ classdef (Sealed) DataStub < handle
             elseif length(varargin) == 1
                 % note: you cannot leverage subsref here because when
                 % load() is called, it's calling the builtin version of
-                % subsref, which apparantly poisons all calls in load() to
+                % subsref, which apparently poisons all calls in load() to
                 % use builtin subsref. We use the internal load_mat_style
                 % to workaround this.
                 data = obj.load_mat_style(varargin{1});
