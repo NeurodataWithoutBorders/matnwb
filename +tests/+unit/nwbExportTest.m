@@ -69,7 +69,6 @@ classdef nwbExportTest < matlab.unittest.TestCase
                 'description', 'a test series', ...
                 'data_unit', 'n/a' ...
             );
-            tesCase.verifyFail('') % Temp: provoke error
             testCase.NwbObject.acquisition.set('time_series', time_series);
             nwbFilePath = fullfile(testCase.OutputFolder, 'test_part1.nwb');
             testCase.verifyError(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), 'NWB:CustomConstraintUnfulfilled')
