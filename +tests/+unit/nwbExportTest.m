@@ -49,7 +49,8 @@ classdef nwbExportTest < matlab.unittest.TestCase
              nwbFilePath = fullfile(testCase.OutputFolder, 'testfile.nwb');
              testCase.verifyError(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), ...
                  'NWB:CustomConstraintUnfulfilled')
-
+        end
+        
         function testExportDependentAttributeWithMissingParentA(testCase)
             testCase.NwbObject.general_source_script_file_name = 'my_test_script.m';
             nwbFilePath = fullfile(testCase.OutputFolder, 'test_part1.nwb');

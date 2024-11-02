@@ -139,6 +139,19 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
 
         function displayWarningIfMissingRequiredProps(obj)
             missingRequiredProps = obj.checkRequiredProps();
+
+            % Exception: 'file_create_date' is automatically added by the 
+            % matnwb API on export,  so no need to warn if it is missing.
+            if isa(obj, 'types.core.NWBFile')
+                missingRequiredProps = setdiff(missingRequiredProps, 'file_create_date', 'stable');
+            end
+            
+            % Exception: 'id' of DynamicTable is automatically assigned if not 
+            % specified, so no need to warn if it is missing.
+            if isa(obj, 'types.hdmf_common.DynamicTable')
+                missingRequiredProps = setdiff(missingRequiredProps, 'id', 'stable');
+            end
+
             if ~isempty( missingRequiredProps )
                 warnState = warning('backtrace', 'off');
                 cleanerObj = onCleanup(@(s) warning(warnState));
