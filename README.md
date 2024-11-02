@@ -1,7 +1,9 @@
 ![MatNWB Logo](logo/logo_matnwb_small.png)
 
 [![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/basicUsage.mlx)
-[![codecov](https://codecov.io/gh/NeurodataWithoutBorders/matnwb/branch/master/graph/badge.svg?token=apA7F24NsO)](https://codecov.io/gh/NeurodataWithoutBorders/matnwb) ![Azure DevOps tests](https://img.shields.io/azure-devops/tests/NeurodataWithoutBorders/matnwb/4)
+[![codecov](https://codecov.io/gh/NeurodataWithoutBorders/matnwb/branch/master/graph/badge.svg?token=apA7F24NsO)](https://codecov.io/gh/NeurodataWithoutBorders/matnwb)
+[![Run tests](https://github.com/NeurodataWithoutBorders/matnwb/actions/workflows/run_tests.yml/badge.svg)](https://github.com/NeurodataWithoutBorders/matnwb/actions/workflows/run_tests.yml?query=event%3Apush+branch%3Amaster)
+[![Codespell](https://github.com/NeurodataWithoutBorders/matnwb/actions/workflows/run_codespell.yml/badge.svg?branch=master)](https://github.com/NeurodataWithoutBorders/matnwb/actions/workflows/run_codespell.yml?query=event%3Apush+branch%3Amaster)
 
 MatNWB is a  Matlab interface for reading and writing Neurodata Without Borders (NWB) 2.x files.
 
