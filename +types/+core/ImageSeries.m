@@ -186,6 +186,12 @@ methods
             end
         end
     end
+    %% CUSTOM CONSTRAINTS
+    function checkCustomConstraint(obj)
+        if ~isempty(obj.external_file) && isempty(obj.data), ...
+            obj.data = nan(1,1,2);
+        end
+    end
 end
 
 end

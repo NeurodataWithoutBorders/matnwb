@@ -1,8 +1,12 @@
-classdef MetaClass < handle
+classdef MetaClass < handle & matlab.mixin.CustomDisplay
     properties (Hidden, SetAccess = private)
         metaClass_fullPath;
     end
-    
+
+    properties (Constant, Transient, Access = protected)
+        REQUIRED containers.Map = containers.Map
+    end
+
     methods
         function obj = MetaClass(varargin)
         end
@@ -43,6 +47,11 @@ classdef MetaClass < handle
     
     methods
         function refs = export(obj, fid, fullpath, refs)
+            % throwErrorIfCustomConstraintUnfulfilled is intentionally placed 
+            % before throwErrorIfMissingRequiredProps. 
+            % See file.fillCustomConstraint
+            obj.throwErrorIfCustomConstraintUnfulfilled(fullpath)
+            obj.throwErrorIfMissingRequiredProps(fullpath)
             obj.metaClass_fullPath = fullpath;
             %find reference properties
             propnames = properties(obj);
@@ -105,6 +114,102 @@ classdef MetaClass < handle
                 'location "%s" because it depends on the property "%s" ', ...
                 'which is unset.' ], propName, class(obj), fullpath, depPropName);
             warning(warningId, warningMessage) %#ok<SPWRN>
+        end
+    end
+
+    methods (Access = protected) % Override matlab.mixin.CustomDisplay
+        function str = getFooter(obj)
+            obj.displayWarningIfMissingRequiredProps();
+            str = '';
+        end
+    end
+
+    methods (Access = protected)
+        function missingRequiredProps = checkRequiredProps(obj)
+            missingRequiredProps = {};
+            requiredProps = obj.getRequiredProperties();
+
+            for i = 1:numel(requiredProps)
+                thisPropName = requiredProps{i};
+                if isempty(obj.(thisPropName))
+                    missingRequiredProps{end+1} = thisPropName; %#ok<AGROW>
+                end
+            end
+        end
+
+        function displayWarningIfMissingRequiredProps(obj)
+            missingRequiredProps = obj.checkRequiredProps();
+
+            % Exception: 'file_create_date' is automatically added by the 
+            % matnwb API on export,  so no need to warn if it is missing.
+            if isa(obj, 'types.core.NWBFile')
+                missingRequiredProps = setdiff(missingRequiredProps, 'file_create_date', 'stable');
+            end
+            
+            % Exception: 'id' of DynamicTable is automatically assigned if not 
+            % specified, so no need to warn if it is missing.
+            if isa(obj, 'types.hdmf_common.DynamicTable')
+                missingRequiredProps = setdiff(missingRequiredProps, 'id', 'stable');
+            end
+
+            if ~isempty( missingRequiredProps )
+                warnState = warning('backtrace', 'off');
+                cleanerObj = onCleanup(@(s) warning(warnState));
+
+                propertyListStr = obj.prettyPrintPropertyList(missingRequiredProps);
+                warning('NWB:RequiredPropertyMissing', ...
+                    'The following required properties are missing for instance for type "%s":\n%s', class(obj), propertyListStr)
+            end
+        end
+
+        function throwErrorIfMissingRequiredProps(obj, fullpath)
+            missingRequiredProps = obj.checkRequiredProps();
+            if ~isempty( missingRequiredProps )
+                propertyListStr = obj.prettyPrintPropertyList(missingRequiredProps);
+                error('NWB:RequiredPropertyMissing', ...
+                    'The following required properties are missing for instance for type "%s" at file location "%s":\n%s', class(obj), fullpath, propertyListStr)
+            end
+        end
+
+        function throwErrorIfCustomConstraintUnfulfilled(obj, fullpath)
+            try
+                obj.checkCustomConstraint()
+            catch ME
+                error('NWB:CustomConstraintUnfulfilled', ...
+                    'The following error was caught when exporting type "%s" at file location "%s":\n%s', class(obj), fullpath, ME.message)
+            end
+        end
+    end
+
+    methods
+        function checkCustomConstraint(obj) %#ok<MANU>
+            % This method is meant to be overridden by subclasses that have 
+            % custom constraints that can not be inferred from the nwb schema.
+        end
+    end
+
+    methods (Access = private)
+        function requiredProps = getRequiredProperties(obj)
+
+            % Introspectively retrieve required properties and add to
+            % persistent map.
+
+            if isKey(obj.REQUIRED, class(obj) )
+                requiredProps = obj.REQUIRED( class(obj) );
+            else
+                mc = metaclass(obj);
+                propertyDescription = {mc.PropertyList.Description};
+                isRequired = startsWith(propertyDescription, 'REQUIRED');
+                requiredProps = {mc.PropertyList(isRequired).Name};
+                obj.REQUIRED( class(obj) ) = requiredProps;
+            end
+        end
+    end
+
+    methods (Static, Access = private)
+        function propertyListStr = prettyPrintPropertyList(propertyNames)
+            propertyListStr = compose('    %s', string(propertyNames));
+            propertyListStr = strjoin(propertyListStr, newline);
         end
     end
 end
