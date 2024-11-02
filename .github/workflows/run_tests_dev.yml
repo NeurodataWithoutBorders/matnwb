@@ -5,13 +5,18 @@ name: Run tests (development)
 # other than master) and for Pull Requests targeting the master branch.
 # This workflow is separate from run_tests_main.yaml to ensure that the badges 
 # in README.md reflect only the tests and checks performed on the master branch.
+# For the time being, as tests take a significant amount of time, this workflow 
+# only runs for PRs
 on:
   pull_request:
     branches:
       - master
-  push:
-    branches-ignore:
-      - master
+    paths-ignore:
+      - '*md'
+      - .github/*
+  #push:
+  #  branches-ignore:
+  #    - master
 
 jobs:
   run_tests:
