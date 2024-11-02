@@ -48,18 +48,14 @@ function data = load_mat_style(obj, varargin)
         points = cell(length(dataDimensions), 1);
 
         if isscalar(dataDimensions)
-            if isMATLABReleaseOlderThanR2024b()
-                % Pass. Scalar size input to ind2sub was supported until R2024b.
-            else
-                % Starting in MATLAB R2024b, the input argument for the size 
-                % of an array in ind2sub must be a vector of positive integers 
-                % with two or more elements. This fix replicates the behavior of 
-                % older MATLAB versions, where it was assumed that the a scalar
-                % size referred to the row dimension. For scalar dimensions 
-                % (i.e., row or column vectors), we can still assume this
-                % to be true in matnwb.
-                dataDimensions = [dataDimensions, 1];
-            end
+            % Starting in MATLAB R2024b, the input argument for the size 
+            % of an array in ind2sub must be a vector of positive integers 
+            % with two or more elements. This fix replicates the behavior of 
+            % older MATLAB versions, where it was assumed that the a scalar
+            % size referred to the row dimension. For scalar dimensions 
+            % (i.e., row or column vectors), we can still assume this
+            % to be true in matnwb.
+            dataDimensions = [dataDimensions, 1];
         end
 
         [points{:}] = ind2sub(dataDimensions, orderedSelection);
@@ -202,13 +198,5 @@ function reordered = reorderLoadedData(data, selections)
         end
         indexKeyIndex(indexKeyIndexNextIndex) = indexKeyIndex(indexKeyIndexNextIndex) + 1;
         indexKeyIndex((indexKeyIndexNextIndex+1):end) = 1;
-    end
-end
-
-function tf = isMATLABReleaseOlderThanR2024b()
-    if exist('isMATLABReleaseOlderThan', 'file') == 2
-        tf = isMATLABReleaseOlderThan('R2024b');
-    else
-        tf = true; % isMATLABReleaseOlderThan was introduced in R2020b
     end
 end
