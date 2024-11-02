@@ -1,4 +1,9 @@
 function validateCodecovSettings()
+% validateCodecovSettings Validate a codecov settings file.
+%
+%   Note: This is a utility function developer's can use to check the
+%   codecov settings file in .github/.codecov.yaml
+
     sysCommand = sprintf("curl -X POST --data-binary @%s https://codecov.io/validate", ...
         fullfile(misc.getMatnwbDir, '.github', '.codecov.yaml'));
     
