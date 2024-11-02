@@ -1,15 +1,39 @@
-![MatNWB Logo](logo/logo_matnwb_small.png)
+<h1 align="center">
+  <br>
+  <a href="logo/logo_matnwb_small.png"><img src="logo/logo_matnwb_small.png" alt="MatNWB Logo" width="300"></a>
+</h1>
 
-[![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/basicUsage.mlx)
-[![codecov](https://codecov.io/gh/NeurodataWithoutBorders/matnwb/branch/master/graph/badge.svg?token=apA7F24NsO)](https://codecov.io/gh/NeurodataWithoutBorders/matnwb)
-[![Run tests](https://github.com/NeurodataWithoutBorders/matnwb/actions/workflows/run_tests.yml/badge.svg)](https://github.com/NeurodataWithoutBorders/matnwb/actions/workflows/run_tests.yml?query=event%3Apush+branch%3Amaster)
-[![Codespell](https://github.com/NeurodataWithoutBorders/matnwb/actions/workflows/run_codespell.yml/badge.svg?branch=master)](https://github.com/NeurodataWithoutBorders/matnwb/actions/workflows/run_codespell.yml?query=event%3Apush+branch%3Amaster)
+<h4 align="center">MatNWB is a  Matlab interface for reading and writing Neurodata Without Borders (NWB) 2.x files..</h4>
 
-MatNWB is a  Matlab interface for reading and writing Neurodata Without Borders (NWB) 2.x files.
+<p align="center">
+  <a href="https://github.com/NeurodataWithoutBorders/matnwb/releases/latest">
+    <img src="https://img.shields.io/github/v/release/NeurodataWithoutBorders/matnwb?label=version" alt="Version">
+  </a>
+  <a href="https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/basicUsage.mlx">
+    <img src="https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg" alt="MATLAB Online">
+  </a>
+  <a href="https://codecov.io/gh/NeurodataWithoutBorders/matnwb">
+    <img src="https://codecov.io/gh/NeurodataWithoutBorders/matnwb/branch/master/graph/badge.svg?token=apA7F24NsO" alt="Codecov">
+  </a>
+   <a href="https://github.com/NeurodataWithoutBorders/matnwb/actions/workflows/run_tests.yml?query=event%3Apush+branch%3Amaster">
+   <img src="https://github.com/NeurodataWithoutBorders/matnwb/actions/workflows/run_tests.yml/badge.svg?branch=master" alt="Run tests">
+  </a>
+   <a href="https://github.com/NeurodataWithoutBorders/matnwb/actions/workflows/run_codespell.yml?query=event%3Apush+branch%3Amaster">
+   <img src="https://github.com/NeurodataWithoutBorders/matnwb/actions/workflows/run_codespell.yml/badge.svg?branch=master" alt="Codespell">
+  </a>
+</p>
 
-## Setup
+<p align="center">
+  <a href="#installation">Installation</a> •
+  <a href="#getting-started">Getting Started</a> •
+  <a href="#tutorials">Tutorials</a> •
+  <a href="#use-cases">Use Cases</a> •
+  <a href="#contributing">Contributing</a> •
+  <a href="#citing-nwb">Citing NWB</a>
+</p>
 
-### Step 1: Download MatNWB
+
+## Installation
 
 Download the current release of MatNWB from the [MatNWB releases page](https://github.com/NeurodataWithoutBorders/matnwb/releases) or from the [![View NeurodataWithoutBorders/matnwb on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://www.mathworks.com/matlabcentral/fileexchange/67741-neurodatawithoutborders-matnwb). You can also check out the latest development version via 
 
@@ -17,7 +41,9 @@ Download the current release of MatNWB from the [MatNWB releases page](https://g
 git clone https://github.com/NeurodataWithoutBorders/matnwb.git
 ```
 
-### Step 2a: Reading from a NWB File
+## Getting Started
+
+### Step 1: Reading from a NWB File
 
 If you wish to read from a NWB file, you can do so using the `nwbRead` command:
 
@@ -27,8 +53,7 @@ File = nwbRead('/path/to/file.nwb');
 
 The returned NwbFile object provides an in-memory view of the underlying NWB data. For more information, see the [NWB Overview Documentation](https://nwb-overview.readthedocs.io/en/latest/file_read/file_read.html#reading-with-matnwb)
 
-### Step 2b: Writing a NWB File
-
+### Step 2: Writing a NWB File
 
 From the MATLAB command line, add MatNWB to the path. The generated classes are normally placed in the `+types` subdirectory in the MatNWB installation directory. As MATLAB [packages](https://www.mathworks.com/help/matlab/matlab_oop/scoping-classes-with-packages.html), these generated classes comprise the building blocks you will need to write your NWB file.
 
@@ -103,9 +128,6 @@ NWB files are HDF5 files with data stored according to the Neurodata Without Bor
 
 Certain functions, like `generateCore` and `nwbRead`, automatically read these specifications and converts them to a MATLAB class file. These classes generally map directly to attributes and constraints of the types defined in the schema.
 
-## Sources
-
-MatNWB is available online at https://github.com/NeurodataWithoutBorders/matnwb
 
 ## Data Dimensions
 
@@ -163,7 +185,7 @@ The `master` branch in this repository is considered perpetually unstable. If yo
 
 This package reads and writes NWB 2.0 files and does not support older formats.
 
-## Examples
+## Use Cases
 
 [Basic Data Retrieval](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/basicUsage.html)
 | showcases how one would read and process converted NWB file data to display a raster diagram.
@@ -194,3 +216,12 @@ Alternatively, this issue disappears after MATLAB version 2017b.  Installing thi
 2. I Have Issues Reading From a NWB File!
 
 Some simple methods to troubleshoot failed NWB file reads can be found in the [NWB Overview Documentation](https://nwb-overview.readthedocs.io/en/latest/file_read/matnwb/troubleshooting.html).
+
+## Contributing
+For details on how to contribute to MatNWB, please stay tuned.
+
+## Citing NWB
+
+* **Manuscript:** Oliver Rübel, Andrew Tritt, Ryan Ly, Benjamin K Dichter, Satrajit Ghosh, Lawrence Niu, Pamela Baker, Ivan Soltesz, Lydia Ng, Karel Svoboda, Loren Frank, Kristofer E Bouchard. (2022). The Neurodata Without Borders ecosystem for neurophysiological data science. eLife, 11:e78362. doi: https://doi.org/10.7554/eLife.78362
+* **RRID:** (PyNWB, RRID:SCR_017452)
+
