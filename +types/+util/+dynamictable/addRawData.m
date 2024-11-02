@@ -1,25 +1,25 @@
-function addRawData(DynamicTable, columnName, data)
+function addRawData(DynamicTable, column, data)
     %ADDRAWDATA Internal method for adding data to DynamicTable given column
     % name and data. Indices are determined based on data format and available
     % indices.
-    validateattributes(columnName, {'char'}, {'scalartext'});
+    validateattributes(column, {'char'}, {'scalartext'});
 
-    if (isprop(DynamicTable, columnName) && isempty(DynamicTable.(columnName))) ...
-            || (~isprop(DynamicTable, columnName) && ~isKey(DynamicTable.vectordata, columnName))
+    if (isprop(DynamicTable, column) && isempty(DynamicTable.(column))) ...
+            || (~isprop(DynamicTable, column) && ~isKey(DynamicTable.vectordata, column))
         % No vecdata found anywhere. Initialize.
-        initVecData(DynamicTable, columnName, class(data));
+        initVecData(DynamicTable, column, class(data));
     end
 
-    if isprop(DynamicTable, columnName)
-        Vector = DynamicTable.(columnName);
-    elseif isprop(DynamicTable, 'vectorindex') && DynamicTable.vectorindex.isKey(columnName)
-        Vector = DynamicTable.vectorindex.get(columnName);
+    if isprop(DynamicTable, column)
+        Vector = DynamicTable.(column);
+    elseif isprop(DynamicTable, 'vectorindex') && DynamicTable.vectorindex.isKey(column)
+        Vector = DynamicTable.vectorindex.get(column);
     else
-        Vector = DynamicTable.vectordata.get(columnName);
+        Vector = DynamicTable.vectordata.get(column);
     end
 
     % grab all available indices for column.
-    indexChain = {columnName};
+    indexChain = {column};
     while true
         index = types.util.dynamictable.getIndex(DynamicTable, indexChain{end});
         if isempty(index)
@@ -35,11 +35,10 @@ function addRawData(DynamicTable, columnName, data)
 
     % find true nesting depth of column data.
     if isa(Vector.data, 'types.untyped.DataPipe')
-        depthRequestOptions = {'dataPipeDimension', Vector.data.axis};
+        depth = getNestedDataDepth(data, 'dataPipeDimension', Vector.data.axis);
     else
-        depthRequestOptions = {};
+        depth = getNestedDataDepth(data);
     end
-    depth = types.util.dynamictable.getDataDepth(data, depthRequestOptions{:});
 
     % add indices until it matches depth.
     for iVec = (length(indexChain)+1):depth
@@ -97,6 +96,35 @@ function initVecData(DynamicTable, column, dataType)
         DynamicTable.(column) = VecData;
     else
         DynamicTable.vectordata.set(column, VecData);
+    end
+end
+
+function depth = getNestedDataDepth(data, varargin)
+    p = inputParser;
+    p.addParameter('dataPipeDimension', [], @(x)isnumeric(x) && (isempty(x) || isscalar(x)));
+    p.parse(varargin{:});
+
+    depth = 1;
+    subData = data;
+    while iscell(subData) && ~iscellstr(subData)
+        depth = depth + 1;
+        subData = subData{1};
+    end
+
+    % special case where the final data is in fact multiple rows to begin
+    % with.
+    if isempty(p.Results.dataPipeDimension)
+        if ischar(subData)
+            isMultiRow = 1 < size(subData, 1);
+        else
+            isMultiRow = (ismatrix(subData) && 1 < size(subData, 2)) ...
+                || (isvector(subData) && 1 < length(subData));
+        end
+    else
+        isMultiRow = 1 < size(subData, p.Results.dataPipeDimension);
+    end
+    if isMultiRow
+        depth = depth + 1;
     end
 end
 
