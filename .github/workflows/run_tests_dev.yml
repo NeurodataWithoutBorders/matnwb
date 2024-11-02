@@ -1,12 +1,16 @@
 # Run and publish MATLAB tests with coverage
-name: Run tests
+name: Run tests (development)
 
+# Configure the workflow to run for any development branch (i.e., any branch 
+# other than master) and for Pull Requests targeting the master branch.
+# This workflow is separate from run_tests_main.yaml to ensure that the badges 
+# in README.md reflect only the tests and checks performed on the master branch.
 on:
   pull_request:
     branches:
       - master
   push:
-    branches:
+    branches-ignore:
       - master
 
 jobs:
