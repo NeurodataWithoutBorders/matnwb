@@ -4,7 +4,7 @@ function ST = loadEventAlignedSpikeTimes(nwb,unit_id,event_times,varargin)
 %   ST = LOADEVENTALIGNEDTIMESERIESDATA(NWB, UNIT_ID, EVENT_TIMES) returns
 %   a cell array containing the spike times relative to the timestamps contained
 %   in the EVENT_TIMES array. Optional arguments control the size of the 
-%   temporal widnow within which spike times are included.
+%   temporal window within which spike times are included.
 %   OPTIONAL KEYWORD ARGUMENTS
 %   'before_time' - specifies the time, in seconds, before the event for
 %   the inclusion of spike times. Defaults to 1.

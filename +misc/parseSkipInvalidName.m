@@ -1,5 +1,5 @@
 function parseSkipInvalidName(parser, keywordArguments)
-%PARSESKIPINVALIDNAME as parse() but without constraing on valid property names.
+%PARSESKIPINVALIDNAME as parse() but without constraining on valid property names.
 
 validArgFlags = false(size(keywordArguments));
 for i = 1:2:length(keywordArguments)

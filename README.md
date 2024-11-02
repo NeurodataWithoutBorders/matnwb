@@ -1,7 +1,9 @@
 ![MatNWB Logo](logo/logo_matnwb_small.png)
 
 [![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/basicUsage.mlx)
-[![codecov](https://codecov.io/gh/NeurodataWithoutBorders/matnwb/branch/master/graph/badge.svg?token=apA7F24NsO)](https://codecov.io/gh/NeurodataWithoutBorders/matnwb) ![Azure DevOps tests](https://img.shields.io/azure-devops/tests/NeurodataWithoutBorders/matnwb/4)
+[![codecov](https://codecov.io/gh/NeurodataWithoutBorders/matnwb/branch/master/graph/badge.svg?token=apA7F24NsO)](https://codecov.io/gh/NeurodataWithoutBorders/matnwb)
+[![Run tests](https://github.com/NeurodataWithoutBorders/matnwb/actions/workflows/run_tests.yml/badge.svg)](https://github.com/NeurodataWithoutBorders/matnwb/actions/workflows/run_tests.yml?query=event%3Apush+branch%3Amaster)
+[![Codespell](https://github.com/NeurodataWithoutBorders/matnwb/actions/workflows/run_codespell.yml/badge.svg?branch=master)](https://github.com/NeurodataWithoutBorders/matnwb/actions/workflows/run_codespell.yml?query=event%3Apush+branch%3Amaster)
 
 MatNWB is a  Matlab interface for reading and writing Neurodata Without Borders (NWB) 2.x files.
 
@@ -155,7 +157,7 @@ NWB files use the HDF5 format to store data. There are two main differences betw
 The NWB schema has regular updates and is open to addition of new types along with modification of previously defined types. As such, certain type presumptions made by MatNWB may be invalidated in the future from a NWB schema. Furthermore, new types may require implementations that will be missing in MatNWB until patched in.
 
 For those planning on using matnwb alongside pynwb, please keep the following in mind:
- - MatNWB is dependent on the schema, which may not necessary correspond with your PyNWB schema version.  Please consider overwriting the contents within MatNWB's **~/schema/core** directory with the generating PyNWB's **src/pynwb/data directory** and running generateCore to ensure compatibilty between systems.
+ - MatNWB is dependent on the schema, which may not necessary correspond with your PyNWB schema version.  Please consider overwriting the contents within MatNWB's **~/schema/core** directory with the generating PyNWB's **src/pynwb/data directory** and running generateCore to ensure compatibility between systems.
  
 The `master` branch in this repository is considered perpetually unstable. If you desire Matnwb's full functionality (full round-trip with nwb data), please consider downloading the more stable releases in the Releases tab. Most releases will coincide with nwb-schema releases and guarantee compatibility of new features introduced with the schema release along with backwards compatibility with all previous nwb-schema releases.
 

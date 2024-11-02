@@ -27,9 +27,9 @@ end
 
 if length(electrodes) > 1
     fs = timeseries.starting_time_rate;
-    if isfinite(interval(2)):
+    if isfinite(interval(2))
         data = NaN(ceil(diff(interval) * fs), length(electrodes));
-    else:
+    else
         error('must specify time interval');
     end
     for i = 1:length(electrodes)
