@@ -43,4 +43,4 @@ jobs:
         uses: codespell-project/actions-codespell@v2
         with:
           skip: "${{ env.SKIP }}"
-          ignore-words-list: "${{ env.IGNORE_WORDS_LIST }}"
+          ignore_words_list: "${{ env.IGNORE_WORDS_LIST }}"
