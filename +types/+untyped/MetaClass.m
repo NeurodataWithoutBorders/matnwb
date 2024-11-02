@@ -191,7 +191,7 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
     methods (Access = private)
         function requiredProps = getRequiredProperties(obj)
 
-            % Introspectively retreive required properties and add to
+            % Introspectively retrieve required properties and add to
             % persistent map.
 
             if isKey(obj.REQUIRED, class(obj) )
