@@ -1,3 +1,3 @@
 [codespell]
 skip = *.html,*logo_matnwb.svg,*fastsearch.m,*.yaml,*testResults.xml
-ignore-words-list = whos
+ignore-words-list = DNE,nd,whos
