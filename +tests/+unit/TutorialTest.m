@@ -14,6 +14,10 @@ classdef TutorialTest <  matlab.unittest.TestCase
         MatNwbDirectory
     end
 
+    properties (Constant)
+        NwbInspectorSeverityLevel = 1
+    end
+
     properties (TestParameter)
         % TutorialFile - A cell array where each cell is the name of a
         % tutorial file. testTutorial will run on each file individually
@@ -79,7 +83,7 @@ classdef TutorialTest <  matlab.unittest.TestCase
             C = evalc( 'run(tutorialFile)' ); %#ok<NASGU>
             
             testCase.readTutorialNwbFileWithPynwb()
-            %testCase.inspectTutorialFileWithNwbInspector()
+            testCase.inspectTutorialFileWithNwbInspector()
         end
     end
 
@@ -132,7 +136,7 @@ classdef TutorialTest <  matlab.unittest.TestCase
                 T = struct2table(results); disp(T)
 
                 for j = 1:numel(results)
-                    testCase.verifyLessThanOrEqual(results(j).importance, 0, ...
+                    testCase.verifyLessThan(results(j).importance, testCase.NwbInspectorSeverityLevel, ...
                         sprintf('Message: %s\nLocation: %s\n File: %s\n', ...
                         string(results(j).message), results(j).location, results(j).filepath))
                 end
