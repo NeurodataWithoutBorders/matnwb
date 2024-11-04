@@ -101,6 +101,20 @@ classdef NwbFile < types.core.NWBFile
                 typename,...
                 varargin{:});
         end
+
+        function nwbTypeNames = listNwbTypes(obj)
+        % listNwbTypes - List all unique NWB types in file
+            objectMap = searchProperties(containers.Map, obj, '', '');
+
+            objects = objectMap.values();
+            objectClassNames = cellfun(@(c) string(class(c)), objects);
+            objectClassNames = unique(objectClassNames);
+
+            keep = startsWith(objectClassNames, "types.");
+            ignore = startsWith(objectClassNames, "types.untyped");
+
+            nwbTypeNames = objectClassNames(keep & ~ignore);
+        end
     end
 
     %% PRIVATE
@@ -131,7 +145,7 @@ classdef NwbFile < types.core.NWBFile
             end
         end
 
-        function embedSpecifications(~, fid)
+        function embedSpecifications(obj, fid)
             try
                 attrId = H5A.open(fid, '/.specloc');
                 specLocation = H5R.get_name(fid, 'H5R_OBJECT', H5A.read(attrId));
@@ -144,6 +158,15 @@ classdef NwbFile < types.core.NWBFile
             end
 
             JsonData = schemes.exportJson();
+
+            % Only embed namespaces for types that are included in the file
+            includedNwbTypes = obj.listNwbTypes();
+            namespaceNames = getNamespacesOfTypes(includedNwbTypes);
+
+            allMatlabNamespaceNames = strrep({JsonData.name}, '-', '_');
+            [~, keepIdx] = intersect(allMatlabNamespaceNames, namespaceNames, 'stable');
+            JsonData = JsonData(keepIdx);
+
             for iJson = 1:length(JsonData)
                 JsonDatum = JsonData(iJson);
                 schemaNamespaceLocation = strjoin({specLocation, JsonDatum.name}, '/');
@@ -244,4 +267,19 @@ function pathToObjectMap = searchProperties(...
             searchProperties(pathToObjectMap, propValue, fullPath, typename, varargin{:});
         end
     end
+end
+
+function namespaceNames = getNamespacesOfTypes(nwbTypeNames)
+% getNamespacesOfTypes - Get namespace names for a list of nwb types
+    arguments
+        nwbTypeNames (1,:) string
+    end
+
+    namespaceNames = repmat("", size(nwbTypeNames));
+    pattern = '[types.]+\.(\w+)\.';
+
+    for i = 1:numel(nwbTypeNames)
+        namespaceNames(i) = regexp(nwbTypeNames(i), pattern, 'tokens', 'once');
+    end
+    namespaceNames = unique(namespaceNames);
 end
