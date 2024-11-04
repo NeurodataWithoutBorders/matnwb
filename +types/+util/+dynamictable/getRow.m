@@ -114,7 +114,17 @@ if isprop(DynamicTable, column)
 elseif isprop(DynamicTable, 'vectorindex') && DynamicTable.vectorindex.isKey(column) % Schema version < 2.3.0
     Vector = DynamicTable.vectorindex.get(column);
 else
-    Vector = DynamicTable.vectordata.get(column);
+    try
+        Vector = DynamicTable.vectordata.get(column);
+    catch ME
+        if any(strcmp(DynamicTable.colnames, column))
+            error('NWB:DynamicTable:VectorDataMissing', ...
+                'There is no vector data for the column named "%s"', column)
+        else % Todo: Can this happen?
+            error('NWB:DynamicTable:UnrecognizedVectorName', ...
+                'Unrecognized table variable name "%s"', column)
+        end
+    end
 end
 
 if isscalar(colIndStack)
