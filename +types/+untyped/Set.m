@@ -71,6 +71,11 @@ classdef Set < handle & matlab.mixin.CustomDisplay
             cnt = obj.Map.Count;
         end
         
+        % overloads isemty
+        function tf = isempty(obj)
+            tf = obj.Count == 0;
+        end
+
         %overloads size(obj)
         function varargout = size(obj, dim)
             if nargin > 1
@@ -80,7 +85,7 @@ classdef Set < handle & matlab.mixin.CustomDisplay
                     varargout{1} = obj.Count;
                 end
             else
-                if nargout == 1
+                if nargout == 0 || nargout == 1
                     varargout{1} = [obj.Count, 1];
                 else
                     varargout = num2cell( ones(1, nargout) );
