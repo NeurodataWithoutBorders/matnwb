@@ -5,7 +5,7 @@
 
 <h4 align="center">MatNWB is a  Matlab interface for reading and writing Neurodata Without Borders (NWB) 2.x files..</h4>
 
-<p align="center">
+<h4 align="center">
   <a href="https://github.com/NeurodataWithoutBorders/matnwb/releases/latest">
     <img src="https://img.shields.io/github/v/release/NeurodataWithoutBorders/matnwb?label=version" alt="Version">
   </a>
@@ -21,7 +21,7 @@
    <a href="https://github.com/NeurodataWithoutBorders/matnwb/actions/workflows/run_codespell.yml?query=event%3Apush+branch%3Amaster">
    <img src="https://github.com/NeurodataWithoutBorders/matnwb/actions/workflows/run_codespell.yml/badge.svg?branch=master" alt="Codespell">
   </a>
-</p>
+</h4>
 
 <p align="center">
   <a href="#installation">Installation</a> •
