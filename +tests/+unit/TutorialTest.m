@@ -34,6 +34,9 @@ classdef TutorialTest <  matlab.unittest.TestCase
         
         % SkippedFiles - Name of exported nwb files to skip reading with pynwb
         SkippedFiles = {'testFileWithDataPipes.nwb'} % does not produce a valid nwb file
+
+        % PythonDependencies - Package dependencies for running pynwb tutorials
+        PythonDependencies = {'nwbinspector'}
     end
 
     methods (TestClassSetup)
@@ -60,6 +63,13 @@ classdef TutorialTest <  matlab.unittest.TestCase
             % % if count(py.sys.path, pynwbPath) == 0
             % %     insert(py.sys.path,int32(0),pynwbPath);
             % % end
+
+
+
+            pythonEnv = pyenv();
+            disp(pythonEnv.Executable)
+
+            fprintf('PYTHONPATH: %s\n', getenv('PYTHONPATH') )
 
             % % Alternative: Use python script for reading file with pynwb
             setenv('PYTHONPATH', fileparts(mfilename('fullpath')));
