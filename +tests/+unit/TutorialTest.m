@@ -64,12 +64,11 @@ classdef TutorialTest <  matlab.unittest.TestCase
             % %     insert(py.sys.path,int32(0),pynwbPath);
             % % end
 
-            installNWBInspector()
-
-            fprintf('PYTHONPATH: %s\n', getenv('PYTHONPATH') )
+            %installNWBInspector()
 
             % % Alternative: Use python script for reading file with pynwb
-            setenv('PYTHONPATH', fileparts(mfilename('fullpath')));
+            pythonPath = getenv('PYTHONPATH');
+            setenv('PYTHONPATH', [fileparts(mfilename('fullpath')), ':', pythonPath]);
 
             nwbClearGenerated()
             testCase.addTeardown(@generateCore)
