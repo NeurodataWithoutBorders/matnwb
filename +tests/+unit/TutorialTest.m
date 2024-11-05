@@ -64,10 +64,7 @@ classdef TutorialTest <  matlab.unittest.TestCase
             % %     insert(py.sys.path,int32(0),pynwbPath);
             % % end
 
-
-
-            pythonEnv = pyenv();
-            disp(pythonEnv.Executable)
+            installNWBInspector()
 
             fprintf('PYTHONPATH: %s\n', getenv('PYTHONPATH') )
 
@@ -225,4 +222,25 @@ end
 
 function folderPath = getMatNwbRootDirectory()
     folderPath = fileparts(fileparts(fileparts(mfilename('fullpath'))));
+end
+
+function installNWBInspector()
+    pythonInfo = pyenv;
+    pythonExecutable = pythonInfo.Executable;
+    systemCommand = sprintf("%s -m pip install %s", pythonExecutable, 'nwbinspector');
+    [status, ~]  = system(systemCommand);
+    systemCommand = sprintf("%s -m pip show nwbinspector | grep ^Location: | awk '{print $2}'", pythonExecutable);
+    [~, nwbInspectorPath]  = system(systemCommand);
+    checkAndUpdatePythonPath(nwbInspectorPath, 'nwbinspector')
+end
+
+function checkAndUpdatePythonPath(installLocation, packageName)
+    pyPath = py.sys.path();
+    pyPath = string(pyPath);
+    pyPath(pyPath=="") = [];
+
+    if ~any( contains(pyPath, installLocation) )
+        fprintf("Adding %s location to pythonpath\n", packageName)
+        py.sys.path().append(installLocation) 
+    end
 end
