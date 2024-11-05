@@ -29,6 +29,7 @@ jobs:
           python -m pip install -U pip
           pip install -r +tests/requirements.txt
           echo "HDF5_PLUGIN_PATH=$(python -c "import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)")" >> "$GITHUB_ENV"
+          echo "NWBINSPECTOR_PATH=$( python -m pip show nwbinspector | grep ^Location: | awk '{print $2}' )" >> "$GITHUB_ENV"
       - name: Install MATLAB
         uses: matlab-actions/setup-matlab@v2
         with:
