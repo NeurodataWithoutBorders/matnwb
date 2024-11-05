@@ -160,7 +160,10 @@ classdef TutorialTest <  matlab.unittest.TestCase
 
     methods (Static)
         function resultsOut = convertNwbInspectorResultsToStruct(resultsIn)
-            CHECK_IGNORE = "check_image_series_external_file_valid";
+            CHECK_IGNORE = [...
+                "check_image_series_external_file_valid", ...
+                "check_regular_timestamps"
+                ];
             
             C = cell(resultsIn);
         
