@@ -123,11 +123,13 @@ classdef Dataset < file.interface.HasProps
             % error unless it defines the object.
             
             if isempty(obj.type)
-                error('You shouldn''t be calling getProps on an untyped dataset');
+                error('NWB:Dataset:UnsupportedOperation', ...
+                      'The method `getProps` cannot be called on an untyped dataset.');
             end
             
             if obj.isConstrainedSet && ~obj.definesType
-                error('You shouldn''t be calling getProps on a constrained dataset');
+                error('NWB:Dataset:UnsupportedOperation', ...
+                      'The method `getProps` should not be called on a constrained dataset.');
             end
             
             if ~isempty(obj.dtype)

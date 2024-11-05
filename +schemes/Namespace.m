@@ -41,7 +41,7 @@ classdef Namespace < handle
         function parent = getParent(obj, classname)
             class = obj.getClass(classname);
             if isempty(class)
-                error('Could not find class %s', classname);
+                error('NWB:Namespace:ClassNotFound', 'Could not find class %s', classname);
             end
             
             parent = [];
@@ -49,10 +49,10 @@ classdef Namespace < handle
             if any(hasParentKey)
                 parentName = class(obj.PARENT_KEYS{hasParentKey});
                 parent = obj.getClass(parentName);
-                assert(~isempty(parent),...
-                    'Parent %s for class %s doesn''t exist!  Missing Dependency?',...
-                    parentName,...
-                    classname);
+                assert(~isempty(parent), ...
+                    'NWB:Namespace:ParentNotFound', ...
+                    'Parent %s for class %s doesn''t exist!  Missing Dependency?', ...
+                    parentName, classname);
             end
         end
         

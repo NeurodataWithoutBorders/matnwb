@@ -146,7 +146,8 @@ classdef Group < file.interface.HasProps
             %should never happen
             
             if obj.isConstrainedSet && ~obj.definesType
-                error('getProps shouldn''t be called on a constrained set.');
+                error('NWB:Group:UnsupportedOperation', ...
+                      'The method `getProps` should not be called on a constrained dataset.');
             end
             
             %datasets

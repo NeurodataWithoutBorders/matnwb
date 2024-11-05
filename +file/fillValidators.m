@@ -311,7 +311,8 @@ function fdvstr = fillReadOnlyValidator(name, value, className)
         % Note: According to the documentation for Attribute specification keys
         % (https://schema-language.readthedocs.io/en/latest/description.html#sec-attributes-spec),
         % the above cases should be sufficient.
-        error('Unhandled case')
+        error('NWB:ClassGenerator:ReadOnlyValidatorNotImplemented', ...
+            'Read-only validator is not implemented for values of type "%s"', class(value))
     end
     
     fdvstr = strjoin({...
