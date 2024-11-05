@@ -228,8 +228,8 @@ function installNWBInspector()
     systemCommand = sprintf("%s -m pip install %s", pythonExecutable, 'nwbinspector');
     [status, ~]  = system(systemCommand);
     systemCommand = sprintf("%s -m pip show nwbinspector | grep ^Location: | awk '{print $2}'", pythonExecutable);
-    [~, nwbInspectorPath]  = system(strtrim(systemCommand));
-    checkAndUpdatePythonPath(nwbInspectorPath, 'nwbinspector')
+    [~, nwbInspectorPath]  = system(systemCommand);
+    checkAndUpdatePythonPath(strtrim(nwbInspectorPath), 'nwbinspector')
 end
 
 function checkAndUpdatePythonPath(installLocation, packageName)
