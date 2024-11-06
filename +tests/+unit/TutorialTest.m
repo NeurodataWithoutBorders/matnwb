@@ -78,9 +78,8 @@ classdef TutorialTest <  matlab.unittest.TestCase
             % % Alternative: Use python script for reading file with pynwb
             tests.util.addFolderToPythonPath( fileparts(mfilename('fullpath')) )
 
-            % This is also not working on github runner:
-            % installNWBInspector()
-            
+            % Todo: More explicitly check if this is run on a github runner
+            % or not?
             try
                 py.nwbinspector.is_module_installed('nwbinspector')
             catch
@@ -117,12 +116,12 @@ classdef TutorialTest <  matlab.unittest.TestCase
             nwbFileNameList = testCase.listNwbFiles();
             for nwbFilename = nwbFileNameList
                 try
-                    try
+                    if testCase.NWBInspectorMode == "python"
                         io = py.pynwb.NWBHDF5IO(nwbFilename);
                         nwbObject = io.read();
                         testCase.verifyNotEmpty(nwbObject, 'The NWB file should not be empty.');
                         io.close()
-                    catch ME
+                    elseif testCase.NWBInspectorMode == "CLI"
                         if strcmp(ME.identifier, 'MATLAB:undefinedVarOrClass') && ...
                                 contains(ME.message, 'py.pynwb.NWBHDF5IO')
 
@@ -151,7 +150,7 @@ classdef TutorialTest <  matlab.unittest.TestCase
                 if testCase.NWBInspectorMode == "python"
                     results = py.list(py.nwbinspector.inspect_nwbfile(nwbfile_path=nwbFilename));
                     results = testCase.convertNwbInspectorResultsToStruct(results);
-                elseif  testCase.NWBInspectorMode == "CLI"
+                elseif testCase.NWBInspectorMode == "CLI"
                     [~, m] = system(sprintf('nwbinspector %s --levels importance', nwbFilename));
                     results = testCase.parseInspectorTextOutput(m);
                 end
@@ -295,41 +294,4 @@ end
 
 function folderPath = getMatNwbRootDirectory()
     folderPath = fileparts(fileparts(fileparts(mfilename('fullpath'))));
-end
-
-function installNWBInspector()
-    pythonInfo = pyenv;
-    pythonExecutable = pythonInfo.Executable;
-    systemCommand = sprintf("%s -m pip install %s", pythonExecutable, 'nwbinspector');
-    [status, ~]  = system(systemCommand);
-    systemCommand = sprintf("%s -m pip show nwbinspector | grep ^Location: | awk '{print $2}'", pythonExecutable);
-    [~, nwbInspectorPath]  = system(systemCommand);
-    checkAndUpdatePythonPath(strtrim(nwbInspectorPath), 'nwbinspector')
-end
-
-function checkAndUpdatePythonPath(installLocation, packageName)
-    pyPath = py.sys.path();
-    pyPath = string(pyPath);
-    pyPath(pyPath=="") = [];
-
-    if ~any( contains(pyPath, installLocation) )
-        fprintf("Adding %s location to pythonpath\n", packageName)
-        py.sys.path().append(installLocation) 
-    end
-end
-
-function listPythonModules()
-    generator = py.pkgutil.iter_modules();
-    methodNext = py.getattr(generator, '__next__');
-    finished = false;
-    moduleNames = string.empty;
-    while ~finished
-        try
-            module = methodNext();
-            moduleNames(end+1) = string(module.name);
-        catch;
-            finished = true;
-        end
-    end
-    moduleNames'
 end
