@@ -1,5 +1,5 @@
 classdef ResetGeneratedTypesFixture < matlab.unittest.fixtures.Fixture
-    % ResetGeneratedTypesFixture - Fixture for reseting generated NWB classes.
+    % ResetGeneratedTypesFixture - Fixture for resetting generated NWB classes.
     %
     %   ResetGeneratedTypesFixture clears all the generated types from the 
     %   matnwb folder. When the fixture is set up, NWB types class files are 
