@@ -141,7 +141,7 @@ classdef TutorialTest <  matlab.unittest.TestCase
                     results = testCase.parseInspectorTextOutput(m);
                 end
                 
-                if isempty(cell(results))
+                if isempty(results)
                     return
                 end
 
@@ -225,9 +225,12 @@ classdef TutorialTest <  matlab.unittest.TestCase
                     resultsOut(count).importance = importanceLevels( extractAfter(splitLine{2}, 'Importance.') );
                     resultsOut(count).filepath = string(strtrim( splitLine{3} ));
                     resultsOut(count).check_name = string(strtrim(splitLine{4} ));
-                    
-                    locationInfo = strsplit(splitLine{end}, 'at location');
-                    resultsOut(count).location = string(strtrim(eval(locationInfo{2})));
+                    try
+                        locationInfo = strsplit(splitLine{end}, 'at location');
+                        resultsOut(count).location = string(strtrim(eval(locationInfo{2})));
+                    catch 
+                        resultsOut(count).location = 'N/A';
+                    end
                     resultsOut(count).message = string(strtrim(lines{i+1}));
                 end
             end
