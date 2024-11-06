@@ -5,6 +5,8 @@ These scripts are **read-only** and are not intended for direct editing or
 interaction. They serve solely to enable tracking of live script changes 
 through diffs in source control.
 
+### For Developers
+
 To update the exports after modifying a live script, run the 
 `matnwb.exportModifiedTutorials` function located in 
 `<matnwb_root>/tools/documentation/`. 
