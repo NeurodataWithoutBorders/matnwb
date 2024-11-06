@@ -122,20 +122,20 @@ classdef TutorialTest <  matlab.unittest.TestCase
                         testCase.verifyNotEmpty(nwbObject, 'The NWB file should not be empty.');
                         io.close()
                     elseif testCase.NWBInspectorMode == "CLI"
-                        if strcmp(ME.identifier, 'MATLAB:undefinedVarOrClass') && ...
-                                contains(ME.message, 'py.pynwb.NWBHDF5IO')
+                        % if strcmp(ME.identifier, 'MATLAB:undefinedVarOrClass') && ...
+                        %         contains(ME.message, 'py.pynwb.NWBHDF5IO')
 
-                            pythonExecutable = tests.util.getPythonPath();
-                            cmd = sprintf('"%s" -B -m read_nwbfile_with_pynwb %s',...
-                                            pythonExecutable, nwbFilename);
-                            status = system(cmd);
+                        pythonExecutable = tests.util.getPythonPath();
+                        cmd = sprintf('"%s" -B -m read_nwbfile_with_pynwb %s',...
+                                        pythonExecutable, nwbFilename);
+                        status = system(cmd);
 
-                            if status ~= 0
-                                error('Failed to read NWB file "%s" using pynwb', nwbFilename)
-                            end
-                        else
-                            rethrow(ME)
+                        if status ~= 0
+                            error('Failed to read NWB file "%s" using pynwb', nwbFilename)
                         end
+                        % else
+                        %     rethrow(ME)
+                        % end
                     end
                 catch ME
                     error(ME.message)
