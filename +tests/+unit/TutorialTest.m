@@ -72,6 +72,22 @@ classdef TutorialTest <  matlab.unittest.TestCase
 
             disp(pyenv)
 
+            generator = py.pkgutil.iter_modules();
+
+            py.dir(generator)
+            methodNext = py.getattr(generator, '__next__');
+            finished = false;
+            moduleNames = string.empty;
+            while ~finished
+                try
+                    module = methodNext();
+                    moduleNames(end+1) = string(module.name);
+                catch;
+                    finished = true;
+                end
+            end
+            moduleNames'
+
             py.nwbinspector.inspect_nwbfile('test.nwb')
 
             nwbClearGenerated()
