@@ -70,6 +70,10 @@ classdef TutorialTest <  matlab.unittest.TestCase
 
             installNWBInspector()
 
+            disp(pyenv)
+
+            py.nwbinspector.inspect_nwbfile('test.nwb')
+
             nwbClearGenerated()
             testCase.addTeardown(@generateCore)
         end
