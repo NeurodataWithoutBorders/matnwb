@@ -10,7 +10,4 @@ function addFolderToPythonPath(folderPath)
         end
     end
     setenv('PYTHONPATH', updatedPythonPath);
-    disp('updated python path:')
-    disp(updatedPythonPath)
 end
-

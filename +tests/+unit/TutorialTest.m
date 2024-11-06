@@ -51,8 +51,12 @@ classdef TutorialTest <  matlab.unittest.TestCase
 
     methods (TestClassSetup)
         function setupClass(testCase)
+            
+            import tests.fixtures.ResetGeneratedTypesFixture
+
             % Get the root path of the matnwb repository
-            rootPath = getMatNwbRootDirectory();
+            rootPath = tests.util.getProjectDirectory();
+
             tutorialsFolder = fullfile(rootPath, 'tutorials');
             
             testCase.MatNwbDirectory = rootPath;
@@ -81,13 +85,12 @@ classdef TutorialTest <  matlab.unittest.TestCase
             % Todo: More explicitly check if this is run on a github runner
             % or not?
             try
-                py.nwbinspector.is_module_installed('nwbinspector')
+                py.nwbinspector.is_module_installed('nwbinspector');
             catch
                 testCase.NWBInspectorMode = "CLI";
             end
 
-            nwbClearGenerated()
-            testCase.addTeardown(@generateCore)
+            testCase.applyFixture( ResetGeneratedTypesFixture );
         end
     end
 
@@ -282,7 +285,7 @@ end
 
 function tutorialNames = listTutorialFiles()
 % listTutorialFiles - List names of all tutorial files (exclude skipped files)
-    rootPath = getMatNwbRootDirectory();
+    rootPath = tests.util.getProjectDirectory();
     L = cat(1, ...
         dir(fullfile(rootPath, 'tutorials', '*.mlx')), ...
         dir(fullfile(rootPath, 'tutorials', '*.m')) ...
@@ -290,8 +293,4 @@ function tutorialNames = listTutorialFiles()
 
     L( [L.isdir] ) = []; % Ignore folders
     tutorialNames = setdiff({L.name}, tests.unit.TutorialTest.SkippedTutorials);
-end
-
-function folderPath = getMatNwbRootDirectory()
-    folderPath = fileparts(fileparts(fileparts(mfilename('fullpath'))));
 end
