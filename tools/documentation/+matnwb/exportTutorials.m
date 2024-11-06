@@ -8,6 +8,8 @@ function exportTutorials(options)
         options.Expression (1,1) string = "*" % Filter by expression
         options.FileNames (1,:) string = string.empty % Filter by file names
         options.FilePaths (1,:) string = string.empty % Export specified files
+        options.IgnoreFiles (1,:) string = string.empty %["remote_read"] <- takes a long time to run
+        options.RunLivescript (1,1) logical = true
     end
     
     [exportFormat, targetFolderNames] = deal(options.ExportFormat);
@@ -55,8 +57,10 @@ function exportTutorials(options)
 
     for i = 1:numel(filePaths)
         sourcePath = char( fullfile(filePaths(i)) );
-        matlab.internal.liveeditor.executeAndSave(sourcePath);
-
+        if options.RunLivescript
+            matlab.internal.liveeditor.executeAndSave(sourcePath);
+        end
+        
         for j = 1:numel(exportFormat)
             targetPath = fullfile(targetFolderPaths(j), fileNames(i) + exportFormat(j));
             export(sourcePath, strrep(targetPath, '.mlx', exportFormat(j)));
