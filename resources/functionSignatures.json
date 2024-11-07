@@ -1,0 +1,49 @@
+{
+  "generateCore":
+  {
+    "inputs":
+    [
+      {
+        "name":"version",
+        "kind":"ordered",
+        "type":"choices={'2.0.2','2.1.0','2.2.0','2.2.1','2.2.2','2.2.3','2.2.4','2.2.5','2.3.0','2.4.0','2.5.0','2.6.0','2.7.0'}"
+      },
+      {
+        "name":"savedir",
+        "kind":"namevalue",
+        "type":"folder",
+        "purpose": "Output folder for generated classes"
+      }
+    ]
+  },
+  "generateExtension":
+  {
+    "inputs":
+    [
+      {
+        "name":"namespaceFilePath",
+        "kind":"required",
+        "type":"file=*.yaml,*.yml"
+      }
+    ]
+  },
+  "nwbRead":
+  {
+    "inputs":
+    [
+      {"name":"NWB File", "kind":"required", "type":"file=*.nwb,*.h5"}
+    ],
+    "outputs":
+    [
+      {"name":"NwbFile Object", "type":"nwbfile"}
+    ]
+  },
+  "nwbExport":
+  {
+    "inputs":
+    [
+      {"name":"NwbFile Object", "kind":"required", "type":"NwbFile"},
+      {"name":"path to output file", "kind":"required", "type":"file=*.nwb"}
+    ]
+  }
+}
