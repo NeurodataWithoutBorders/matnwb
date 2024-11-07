@@ -61,7 +61,9 @@ classdef NWBFileIOTest < tests.system.PyNWBIOTest
 
             testCase.deleteAttributeFromFile(fileName, '/', '.specloc')
 
-            nwbRead(fileName);
+            % When specloc is missing, the specifications are not added to
+            % the blacklist, so it will get passed as an input to NwbFile.
+            testCase.verifyError(@(fn) nwbRead(fileName), 'MATLAB:TooManyInputs');
         end
 
         function readFileWithUnsupportedVersion(testCase)
@@ -74,7 +76,26 @@ classdef NWBFileIOTest < tests.system.PyNWBIOTest
             io.writeAttribute(file_id, '/nwb_version', '1.0.0')
             H5F.close(file_id);
 
-            nwbRead(fileName);
+            testCase.verifyWarning(@(fn) nwbRead(fileName), 'NWB:Read:UnsupportedSchema')
+        end
+
+        function readFileWithUnsupportedVersionAndNoSpecloc(testCase)
+            import matlab.unittest.fixtures.SuppressedWarningsFixture
+            testCase.applyFixture(SuppressedWarningsFixture('NWB:Read:UnsupportedSchema'))
+
+            fileName = ['MatNWB.' testCase.className() '.testReadFileWithUnsupportedVersionAndNoSpecloc.nwb'];
+            nwbExport(testCase.file, fileName)
+            
+            testCase.deleteAttributeFromFile(fileName, '/', '.specloc')
+            testCase.deleteAttributeFromFile(fileName, '/', 'nwb_version')
+            
+            file_id = H5F.open(fileName, 'H5F_ACC_RDWR', 'H5P_DEFAULT');
+            io.writeAttribute(file_id, '/nwb_version', '1.0.0')
+            H5F.close(file_id);
+
+            % When specloc is missing, the specifications are not added to
+            % the blacklist, so it will get passed as an input to NwbFile.
+            testCase.verifyError(@(fn) nwbRead(fileName), 'MATLAB:TooManyInputs');
         end
     end
 

@@ -9,15 +9,13 @@ Namespaces = spec.getNamespaceInfo(namespace);
 
 for iInfo = 1:length(Namespaces)
     Namespaces(iInfo).namespace = namespace;
-    if ischar(schemaSource)
+    if ischar(schemaSource) || isstring(schemaSource)
         schema = containers.Map;
         Namespace = Namespaces(iInfo);
         for iFilenames = 1:length(Namespace.filenames)
             filenameStub = Namespace.filenames{iFilenames};
             filename = [filenameStub '.yaml'];
-            fid = fopen(fullfile(schemaSource, filename));
-            schema(filenameStub) = fread(fid, '*char') .';
-            fclose(fid);
+            schema(filenameStub) = fileread(fullfile(schemaSource, filename));
         end
         schema = spec.getSourceInfo(schema);
     else % map of schemas with their locations

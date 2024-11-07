@@ -4,7 +4,7 @@ Namespace = schemes.loadNamespace(namespaceName, saveDir);
 
 classFileDir = fullfile(saveDir, '+types', ['+' misc.str2validName(Namespace.name)]);
 
-if 7 ~= exist(classFileDir, 'dir')
+if ~isfolder(classFileDir)
     mkdir(classFileDir);
 end
 

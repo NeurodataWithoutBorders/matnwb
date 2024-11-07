@@ -1,4 +1,4 @@
-function generateCore(varargin)
+function generateCore(version, options)
     % GENERATECORE Generate Matlab classes from NWB core schema files
     %   GENERATECORE()  Generate classes (Matlab m-files) from the
     %   NWB core namespace file. By default, generates off of the most recent nwb-schema
@@ -22,34 +22,31 @@ function generateCore(varargin)
     %      generateCore('2.2.3');
     %
     %   See also GENERATEEXTENSION
-    
-    latestVersion = '2.7.0';
-    
-    if nargin == 0 || strcmp(varargin{1}, 'savedir')
-        version = latestVersion;
-    else
-        version = varargin{1};
-        validateattributes(version, {'char', 'string'}, {'scalartext'}, 'generateCore', 'version', 1);
-        version = char(version);
-        varargin = varargin(2:end);
+
+    arguments
+        version (1,1) string {matnwb.common.mustBeValidSchemaVersion} = "latest"
+        options.savedir (1,1) string = missing
     end
-    
-    if strcmp(version, 'latest')
-        version = latestVersion;
+
+    if version == "latest"
+        version = matnwb.common.findLatestSchemaVersion();
     end
-    
-    schemaPath = fullfile(misc.getMatnwbDir(), 'nwb-schema', version);
-    corePath = fullfile(schemaPath, 'core', 'nwb.namespace.yaml');
-    commonPath = fullfile(schemaPath,...
-        'hdmf-common-schema', ...
-        'common',...
-        'namespace.yaml');
-    assert(2 == exist(corePath, 'file'),...
-        'NWB:GenerateCore:MissingCoreSchema',...
-        'Cannot find suitable core namespace for schema version `%s`',...
+
+    schemaPath = fullfile(misc.getMatnwbDir(), "nwb-schema", version);
+    corePath = fullfile(schemaPath, "core", "nwb.namespace.yaml");
+    commonPath = fullfile(schemaPath, ...
+        "hdmf-common-schema", ...
+        "common", ...
+        "namespace.yaml");
+    assert(isfile(corePath), ...
+        'NWB:GenerateCore:MissingCoreSchema', ...
+        'Cannot find suitable core namespace for schema version `%s`', ...
         version);
-    if 2 == exist(commonPath, 'file')
-        generateExtension(commonPath, varargin{:});
+
+    namespaceFiles = corePath;
+    if isfile(commonPath)
+        % Important: generate common before core if common is available
+        namespaceFiles = [commonPath, namespaceFiles];
     end
-    generateExtension(corePath, varargin{:});
+    generateExtension(namespaceFiles{:}, 'savedir', options.savedir);
 end
