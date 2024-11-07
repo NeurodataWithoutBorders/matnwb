@@ -25,7 +25,7 @@ function generateCore(version, options)
 
     arguments
         version (1,1) string {matnwb.common.mustBeValidSchemaVersion} = "latest"
-        options.savedir (1,1) string = missing
+        options.savedir (1,1) string = misc.getMatnwbDir()
     end
 
     if version == "latest"

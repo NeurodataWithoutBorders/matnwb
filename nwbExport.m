@@ -21,10 +21,9 @@ function nwbExport(nwbFileObjects, filePaths, mode)
         mode (1,1) string {mustBeMember(mode, ["edit", "overwrite"])} = "edit"
     end
 
-    if length(nwbFileObjects) ~= length(filePaths)
-        error('NWB:Export:FilepathLengthMismatch', ...
-            'Lists of NWB objects to export and list of file paths must be the same length.')
-    end
+    assert(length(nwbFileObjects) == length(filePaths), ...
+        'NWB:Export:FilepathLengthMismatch', ...
+        'Lists of NWB objects to export and list of file paths must be the same length.')
 
     for iFiles = 1:length(nwbFileObjects)
         filePath = char(filePaths(iFiles));
