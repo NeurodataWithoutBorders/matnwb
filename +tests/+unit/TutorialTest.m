@@ -155,14 +155,14 @@ classdef TutorialTest <  matlab.unittest.TestCase
                     results = testCase.convertNwbInspectorResultsToStruct(results);
                 elseif testCase.NWBInspectorMode == "CLI"
                     [~, m] = system(sprintf('nwbinspector %s --levels importance', nwbFilename));
-                    results = testCase.parseInspectorTextOutput(m);
+                    results = testCase.parseNWBInspectorTextOutput(m);
                 end
                 
                 if isempty(results)
                     return
                 end
 
-                results = testCase.filterResults(results);
+                results = testCase.filterNWBInspectorResults(results);
                 % T = struct2table(results); disp(T)
 
                 for j = 1:numel(results)
@@ -210,7 +210,7 @@ classdef TutorialTest <  matlab.unittest.TestCase
             end
         end
     
-        function resultsOut = parseInspectorTextOutput(systemCommandOutput)
+        function resultsOut = parseNWBInspectorTextOutput(systemCommandOutput)
             resultsOut = tests.unit.TutorialTest.getEmptyNwbInspectorResultStruct();
             
             importanceLevels = containers.Map(...
@@ -262,7 +262,7 @@ classdef TutorialTest <  matlab.unittest.TestCase
                 'ignore', {});
         end
     
-        function resultsOut = filterResults(resultsIn)
+        function resultsOut = filterNWBInspectorResults(resultsIn)
             CHECK_IGNORE = [...
                 "check_image_series_external_file_valid", ...
                 "check_regular_timestamps"
