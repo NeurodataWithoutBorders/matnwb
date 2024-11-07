@@ -1,5 +1,5 @@
 classdef TypeConversionTest < matlab.unittest.TestCase
-    % TypeConversionTest Unit test for io.getMatType function.
+% TypeConversionTest - Unit test for io.getMatType and io.getBaseType functions.
     
     properties (TestParameter)
         matlabType = {...
