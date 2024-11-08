@@ -113,9 +113,8 @@ function cells = timestamp2cellstr(timestamps)
     elseif ischar(timestamps)
         cells = {timestamps};
     else
-        errorId = "NWB:timestamp2datetime:MustBeCharCellArrayOrString";
-        errorMsg = ['timestamps must be a string, character array, ', ...
-                    'or cell array of strings/character arrays.'];
-        error(errorId, errorMsg);
+        error('NWB:timestamp2datetime:MustBeCharCellArrayOrString', ...
+              [ 'Timestamps must be a string, character array, ', ...
+              'or cell array of strings/character arrays.' ]);
     end
 end

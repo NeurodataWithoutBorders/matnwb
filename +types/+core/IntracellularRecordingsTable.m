@@ -53,7 +53,7 @@ methods
         if isequal(val, 'A table to group together a stimulus and response from a single electrode and a single simultaneous recording and for storing metadata about the intracellular recording.')
             val = 'A table to group together a stimulus and response from a single electrode and a single simultaneous recording and for storing metadata about the intracellular recording.';
         else
-            error('Unable to set the ''description'' property of class ''<a href="matlab:doc types.core.IntracellularRecordingsTable">IntracellularRecordingsTable</a>'' because it is read-only.')
+            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''description'' property of class ''<a href="matlab:doc types.core.IntracellularRecordingsTable">IntracellularRecordingsTable</a>'' because it is read-only.')
         end
     end
     function val = validate_electrodes(obj, val)

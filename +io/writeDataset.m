@@ -26,7 +26,8 @@ function writeDataset(fid, fullpath, data, varargin)
             if ~is_same_dims && is_chunked
                 H5D.set_extent(did, dims);
             elseif ~is_same_dims
-                warning('Attempted to change size of continuous dataset `%s`.  Skipping.',...
+                warning('NWB:WriteDataset:ContinuousDatasetResize', ...
+                    'Attempted to change size of continuous dataset `%s`.  Skipping.',...
                     fullpath);
                 H5S.close(sid);
                 H5D.close(did);
