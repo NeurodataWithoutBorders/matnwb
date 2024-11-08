@@ -56,7 +56,6 @@ classdef TutorialTest <  matlab.unittest.TestCase
 
             % Get the root path of the matnwb repository
             rootPath = tests.util.getProjectDirectory();
-
             tutorialsFolder = fullfile(rootPath, 'tutorials');
             
             testCase.MatNwbDirectory = rootPath;
@@ -65,26 +64,10 @@ classdef TutorialTest <  matlab.unittest.TestCase
             testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
             testCase.applyFixture(matlab.unittest.fixtures.PathFixture(tutorialsFolder));
             
-            % Note: The following seems to not be working on the azure
-            % pipeline / github runner.
-            % Keep for reference
-
-            % % % Make sure pynwb is installed in MATLAB's Python Environment
-            % % args = py.list({py.sys.executable, "-m", "pip", "install", "pynwb"});
-            % % py.subprocess.check_call(args);
-            % % 
-            % % % Add pynwb to MATLAB's python environment path
-            % % pynwbPath = getenv('PYNWB_PATH');
-            % % if count(py.sys.path, pynwbPath) == 0
-            % %     insert(py.sys.path,int32(0),pynwbPath);
-            % % end
-
-            % % Alternative: Use python script for reading file with pynwb
-            tests.util.addFolderToPythonPath( fileparts(mfilename('fullpath')) )
-
-            % Todo: More explicitly check if this is run on a github runner
-            % or not?
-            try
+            % Check if it is possible to call py.nwbinspector.* functions.
+            % When running these tests on Github Actions, calling 
+            % py.nwbinspector does not work, whereas the CLI can be used instead.
+            try 
                 py.nwbinspector.is_module_installed('nwbinspector');
             catch
                 testCase.NWBInspectorMode = "CLI";
@@ -119,27 +102,10 @@ classdef TutorialTest <  matlab.unittest.TestCase
             nwbFileNameList = testCase.listNwbFiles();
             for nwbFilename = nwbFileNameList
                 try
-                    if testCase.NWBInspectorMode == "python"
-                        io = py.pynwb.NWBHDF5IO(nwbFilename);
-                        nwbObject = io.read();
-                        testCase.verifyNotEmpty(nwbObject, 'The NWB file should not be empty.');
-                        io.close()
-                    elseif testCase.NWBInspectorMode == "CLI"
-                        % if strcmp(ME.identifier, 'MATLAB:undefinedVarOrClass') && ...
-                        %         contains(ME.message, 'py.pynwb.NWBHDF5IO')
-
-                        pythonExecutable = tests.util.getPythonPath();
-                        cmd = sprintf('"%s" -B -m read_nwbfile_with_pynwb %s',...
-                                        pythonExecutable, nwbFilename);
-                        status = system(cmd);
-
-                        if status ~= 0
-                            error('Failed to read NWB file "%s" using pynwb', nwbFilename)
-                        end
-                        % else
-                        %     rethrow(ME)
-                        % end
-                    end
+                    io = py.pynwb.NWBHDF5IO(nwbFilename);
+                    nwbObject = io.read();
+                    testCase.verifyNotEmpty(nwbObject, 'The NWB file should not be empty.');
+                    io.close()
                 catch ME
                     error(ME.message)
                 end

@@ -11,9 +11,6 @@ classdef ResetGeneratedTypesFixture < matlab.unittest.fixtures.Fixture
         function setup(fixture)
             fixture.addTeardown( @generateCore )
             nwbClearGenerated()
-
-            % Todo: Should get all generated namespaces and regenerate all
-            % when tearing down.
         end
     end
 end

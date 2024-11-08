@@ -37,7 +37,11 @@ jobs:
       - name: Run tests
         uses: matlab-actions/run-command@v2
         with:
-          command: results = assertSuccess(nwbtest); assert(~isempty(results), 'No tests ran');
+          command: |
+            # Using pynwb requires pyenv "ExecutionMode" set to "OutOfProcess"
+            pyenv("ExecutionMode", "OutOfProcess");
+            results = assertSuccess(nwbtest); 
+            assert(~isempty(results), 'No tests ran');
       - name: Upload JUnit results
         if: always()
         uses: actions/upload-artifact@v4
