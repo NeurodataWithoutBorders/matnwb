@@ -32,7 +32,8 @@ classdef TypeConversionTest < matlab.unittest.TestCase
         end
                 
         function testRoundTripStruct(testCase)
-            testCase.verifyError(@(type)io.getBaseType('struct'), '');
+            testCase.verifyError(@(type)io.getBaseType('struct'), ...
+                'NWB:IO:UnsupportedBaseType');
         end
         
         function testDoubleType(testCase)

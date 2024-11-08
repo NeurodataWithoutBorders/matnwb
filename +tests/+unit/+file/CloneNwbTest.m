@@ -10,6 +10,8 @@ classdef CloneNwbTest < matlab.unittest.TestCase
 
             % Use a fixture to create a temporary working directory
             testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
+
+            generateCore('savedir', '.')
         end
     end
 
