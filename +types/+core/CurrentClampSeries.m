@@ -109,7 +109,7 @@ methods
         if isequal(val, 'volts')
             val = 'volts';
         else
-            error('Unable to set the ''data_unit'' property of class ''<a href="matlab:doc types.core.CurrentClampSeries">CurrentClampSeries</a>'' because it is read-only.')
+            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''data_unit'' property of class ''<a href="matlab:doc types.core.CurrentClampSeries">CurrentClampSeries</a>'' because it is read-only.')
         end
     end
     %% EXPORT

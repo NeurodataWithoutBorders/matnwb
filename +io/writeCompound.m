@@ -1,4 +1,32 @@
 function writeCompound(fid, fullpath, data, varargin)
+% writeCompound - Write structured data to an HDF5 compound dataset.
+% 
+%   io.writeCompound(fid, fullpath, data, varargin) converts data (in table, 
+%   struct, or containers.Map format) into a scalar struct, optimizes it for 
+%   HDF5 storage, and writes it to an HDF5 compound dataset specified by fid 
+%   and fullpath.
+%
+%   Inputs:
+%     fid       - File identifier for an open HDF5 file.
+%     fullpath  - Full path within the HDF5 file where data will be stored.
+%     data      - Data to write, provided as a table, struct, or containers.Map.
+%     varargin  - Additional optional arguments.
+%
+%   Functionality:
+%     - Converts input data into a scalar struct, rearranging fields and types as needed.
+%     - Detects data types, sizes, and handles compound HDF5 type creation.
+%     - Optimizes data for HDF5 by transposing column vectors and converting logicals.
+%     - Manages references to external data objects, regions, or untyped views.
+%     - Attempts to extend or overwrite existing datasets if a compound dataset at 
+%       the specified path already exists.
+%
+%   Notes:
+%     - If `fullpath` already exists in the HDF5 file, the function tries to adjust 
+%       dimensions if the dataset is chunked, and issues a warning if resizing is not allowed.
+%
+%   Example:
+%     io.writeCompound(fid, '/group/dataset', data);
+
     %convert to a struct
     if istable(data)
         data = table2struct(data);
@@ -103,7 +131,8 @@ function writeCompound(fid, fullpath, data, varargin)
                 if is_chunked
                     H5D.set_extent(did, dims);
                 else
-                    warning('Attempted to change size of continuous compound `%s`.  Skipping.',...
+                    warning('NWB:WriteCompund:ContinuousCompoundResize', ...
+                        'Attempted to change size of continuous compound `%s`.  Skipping.', ...
                         fullpath);
                 end
             end

@@ -8,7 +8,6 @@ end
 
 %process slash tokens
 o = nwb;
-errmsg = 'Could not resolve path `%s`.';
 while ~isempty(tokens)
     if isa(o, 'types.untyped.Set')
         [o, tokens] = resolveSet(o, tokens);
@@ -18,7 +17,7 @@ while ~isempty(tokens)
         [o, tokens] = resolveObj(o, tokens);
     end
     if isempty(o)
-        error(errmsg, path);
+        error('NWB:IO:UnresolvedPath', 'Could not resolve path `%s`.', path);
     end
 end
 end
