@@ -14,14 +14,14 @@ for i=1:length(classes)
     className = classes{i};
     [processed, classprops, inherited] = file.processClass(className, Namespace, pregenerated);
     
-    if isempty(processed)
-        continue;
+    if ~isempty(processed)
+        fid = fopen(fullfile(classFileDir, [className '.m']), 'W');
+        % Create cleanup object to close to file in case the write operation fails.
+        fileCleanupObj = onCleanup(@(id) fclose(fid));
+        fwrite(fid, file.fillClass(className, Namespace, processed, ...
+            classprops, inherited), 'char');
+    else
+        % pass
     end
-    
-    fid = fopen(fullfile(classFileDir, [className '.m']), 'W');
-    % Create cleanup object to close to file in case the write operation fails.
-    fileCleanupObj = onCleanup(@(id) fclose(fid));
-    fwrite(fid, file.fillClass(className, Namespace, processed, ...
-        classprops, inherited), 'char');
 end
 end
