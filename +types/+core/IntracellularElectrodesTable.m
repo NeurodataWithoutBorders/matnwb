@@ -41,7 +41,7 @@ methods
         if isequal(val, 'Table for storing intracellular electrode related metadata.')
             val = 'Table for storing intracellular electrode related metadata.';
         else
-            error('Unable to set the ''description'' property of class ''<a href="matlab:doc types.core.IntracellularElectrodesTable">IntracellularElectrodesTable</a>'' because it is read-only.')
+            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''description'' property of class ''<a href="matlab:doc types.core.IntracellularElectrodesTable">IntracellularElectrodesTable</a>'' because it is read-only.')
         end
     end
     function val = validate_electrode(obj, val)

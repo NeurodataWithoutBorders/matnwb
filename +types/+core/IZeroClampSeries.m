@@ -90,7 +90,7 @@ methods
         if isequal(val, 'N/A')
             val = 'N/A';
         else
-            error('Unable to set the ''stimulus_description'' property of class ''<a href="matlab:doc types.core.IZeroClampSeries">IZeroClampSeries</a>'' because it is read-only.')
+            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''stimulus_description'' property of class ''<a href="matlab:doc types.core.IZeroClampSeries">IZeroClampSeries</a>'' because it is read-only.')
         end
     end
     %% EXPORT

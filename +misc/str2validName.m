@@ -3,6 +3,7 @@ function valid = str2validName(propname, prefix)
 % Converts the property name into a valid matlab property name.
 % propname: the offending property name
 % prefix: optional prefix to use instead of the ambiguous "dyn"
+
 if ~iscell(propname) && isvarname(propname)
     valid = propname;
     return;
@@ -12,7 +13,8 @@ if nargin < 2 || isempty(prefix)
     prefix = 'dyn_';
 else
     if ~isvarname(prefix)
-        warning('Prefix contains invalid variable characters.  Reverting to "dyn"');
+        warning('NWB:CreateValidPropertyName:InvalidPrefix', ...
+            'Prefix contains invalid variable characters. Reverting to "dyn"');
         prefix = 'dyn_';
     end
 end
