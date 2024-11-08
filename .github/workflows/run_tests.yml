@@ -38,7 +38,6 @@ jobs:
         uses: matlab-actions/run-command@v2
         with:
           command: |
-            # Using pynwb requires pyenv "ExecutionMode" set to "OutOfProcess"
             pyenv("ExecutionMode", "OutOfProcess");
             results = assertSuccess(nwbtest); 
             assert(~isempty(results), 'No tests ran');
