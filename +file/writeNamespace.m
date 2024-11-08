@@ -19,13 +19,9 @@ for i=1:length(classes)
     end
     
     fid = fopen(fullfile(classFileDir, [className '.m']), 'W');
-    try
-        fwrite(fid, file.fillClass(className, Namespace, processed, ...
-            classprops, inherited), 'char');
-    catch ME
-        fclose(fid);
-        rethrow(ME)
-    end
-    fclose(fid);
+    % Create cleanup object to close to file in case the write operation fails.
+    fileCleanupObj = onCleanup(@(id) fclose(fid));
+    fwrite(fid, file.fillClass(className, Namespace, processed, ...
+        classprops, inherited), 'char');
 end
 end
