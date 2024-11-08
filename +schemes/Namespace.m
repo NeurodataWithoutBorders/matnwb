@@ -1,8 +1,8 @@
 classdef Namespace < handle
     properties (SetAccess=private)
-        name; %name of this namespace
-        dependencies; %parent namespaces by [Namespace]
-        registry; %maps name to class
+        name = ''           % name of this namespace
+        dependencies = []   % parent namespaces by [Namespace]
+        registry = []       % maps name to class
     end
     
     properties (Constant)
@@ -13,10 +13,7 @@ classdef Namespace < handle
     methods
         function obj = Namespace(name, deplist, source)
             if nargin == 0
-                obj.name = '';
-                obj.dependencies = [];
-                obj.registry = [];
-                return;
+                return
             end
             
             obj.name = strrep(name, '-', '_');
@@ -40,9 +37,12 @@ classdef Namespace < handle
 
         function parent = getParent(obj, classname)
             class = obj.getClass(classname);
-            if isempty(class)
-                error('NWB:Namespace:ClassNotFound', 'Could not find class %s', classname);
-            end
+            
+            assert( ...
+                ~isempty(class), ...
+                'NWB:Namespace:ClassNotFound', ...
+                'Could not find class %s', classname ...
+                );
             
             parent = [];
             hasParentKey = isKey(class, obj.PARENT_KEYS);
