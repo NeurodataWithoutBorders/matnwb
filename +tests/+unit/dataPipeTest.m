@@ -260,6 +260,43 @@ function testConfigurationFromData(testCase)
     testCase.verifyClass(conf, 'types.untyped.datapipe.Configuration')
 end
 
+function testPropertySetGet(testCase)
+    data = rand(100, 1);
+    pipe = types.untyped.DataPipe('data', data);
+    
+    pipe.axis = 1;
+    testCase.verifyEqual(pipe.axis, 1)
+
+    pipe.offset = 4;
+    testCase.verifyEqual(pipe.offset, 4)
+
+    pipe.dataType = 'double';
+    testCase.verifyEqual(pipe.dataType, 'double')
+
+    pipe.chunkSize = 10;
+    testCase.verifyEqual(pipe.chunkSize, 10)
+
+    pipe.compressionLevel = -1;
+    % Todo: make verification
+
+    pipe.hasShuffle = false;
+    testCase.verifyFalse(pipe.hasShuffle)
+
+    pipe.hasShuffle = true;
+    testCase.verifyTrue(pipe.hasShuffle)
+end
+
+function testSubsrefWithNonScalarSubs(testCase)
+    data = rand(100, 1);
+    pipe = types.untyped.DataPipe('data', data);
+    
+    % This syntax should not be supported. Not clear what a valid
+    % non-scalar subsref would be...
+    subData = pipe{1:10}(1:5); 
+    testCase.verifyEqual(subData, data(1:5))
+end
+
 function data = createData(dataType, size)
     data = randi(intmax(dataType), size, dataType);
 end
+

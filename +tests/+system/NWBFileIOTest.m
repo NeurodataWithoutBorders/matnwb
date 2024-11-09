@@ -40,6 +40,13 @@ classdef NWBFileIOTest < tests.system.PyNWBIOTest
             nwbExport([fileA, fileB], {fileNameA, fileNameB});
         end
 
+        function testLoadAll(testCase)
+            fileName = ['MatNWB.' testCase.className() '.testLoadAll.nwb'];
+            nwbExport(testCase.file, fileName)
+            nwb = nwbRead(fileName, "ignorecache");            
+            nwb.loadAll()
+        end
+
         function readWithStringArg(testCase)
             fileName = ['MatNWB.' testCase.className() '.testReadWithStringArg.nwb'];
             fileName = string(fileName);

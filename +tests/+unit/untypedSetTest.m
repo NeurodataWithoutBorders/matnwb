@@ -37,7 +37,7 @@ function testDisplayEmptyObject(testCase)
 end
 
 function testDisplayScalarObject(testCase)
-    scalarSet = types.untyped.Set('a',1)
+    scalarSet = types.untyped.Set('a',1);
     disp(scalarSet)
 end
 
@@ -65,4 +65,10 @@ function testVerticalConcatenation(testCase)
     untypedSetB = types.untyped.Set( struct('c',3, 'd', 3) );
 
     testCase.verifyError(@() [untypedSetA; untypedSetB], 'NWB:Set:Unsupported') 
+end
+
+function testSetCharValue(testCase)
+    untypedSet = types.untyped.Set( struct('a', 'a', 'b', 'b') );
+    untypedSet.set('c', 'c')
+    testCase.verifyEqual(untypedSet.get('c'), 'c')
 end
