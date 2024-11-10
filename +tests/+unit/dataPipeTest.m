@@ -15,16 +15,22 @@ end
 
 function testInit(testCase)
     import types.untyped.datapipe.*;
-    
+    import matlab.unittest.fixtures.SuppressedWarningsFixture
+    %testCase.applyFixture(SuppressedWarningsFixture('NWB:DataPipeTest:Debug'))
+
     warnDebugId = 'NWB:DataPipeTest:Debug';
     warning('off', warnDebugId);
     warning(warnDebugId, '');
     
     %% extra data type
     data = rand(100, 1);
-    types.untyped.DataPipe('data', data, 'dataType', 'double');
-    [~,lastId] = lastwarn();
-    testCase.verifyEqual(lastId, 'NWB:DataPipe:RedundantDataType');
+    % types.untyped.DataPipe('data', data, 'dataType', 'double');
+    % [~,lastId] = lastwarn();
+    % testCase.verifyEqual(lastId, 'NWB:DataPipe:RedundantDataType');
+
+    testCase.verifyWarning(...
+        @(varargin) types.untyped.DataPipe('data', data, 'dataType', 'double'), ...
+        'NWB:DataPipe:RedundantDataType')
     
     warning(warnDebugId, '');
     
@@ -51,9 +57,14 @@ function testInit(testCase)
     pipe.export(fid, datasetName, {});
     H5F.close(fid);
     
+    testCase.verifyWarning(...
+        @(varargin) types.untyped.DataPipe('filename', filename, 'path', datasetName, 'dataType', 'double'), ...
+        'NWB:DataPipe:UnusedArguments')
+
+    testCase.applyFixture(SuppressedWarningsFixture('NWB:DataPipe:UnusedArguments'))
     pipe = types.untyped.DataPipe('filename', filename, 'path', datasetName, 'dataType', 'double');
-    [~,lastId] = lastwarn();
-    testCase.verifyEqual(lastId, 'NWB:DataPipe:UnusedArguments');
+    % [~,lastId] = lastwarn();
+    % testCase.verifyEqual(lastId, 'NWB:DataPipe:UnusedArguments');
     testCase.verifyEqual(pipe.compressionLevel, 2);
     testCase.verifyTrue(pipe.hasShuffle);
     
@@ -131,6 +142,9 @@ function testExternalFilters(testCase)
     import types.untyped.datapipe.properties.DynamicFilter;
     import types.untyped.datapipe.properties.Shuffle;
     
+    % TODO: Why is Filter.LZ4 not part of the exported Pipe, i.e when the
+    % Pipe.internal goes from Blueprint to Bound
+
     testCase.assumeTrue(logical(H5Z.filter_avail(uint32(Filter.LZ4))));
     
     filename = 'testExternalWrite.h5';
@@ -153,7 +167,7 @@ function testExternalFilters(testCase)
     OneDimensionPipe.export(fid, '/test_one_dim_data', {});
     
     H5F.close(fid);
-    
+
     %% append data
     totalLength = 3;
     appendData = zeros([10 13 totalLength], Pipe.dataType);
@@ -286,6 +300,28 @@ function testPropertySetGet(testCase)
     testCase.verifyTrue(pipe.hasShuffle)
 end
 
+function testAppendVectorToBlueprintPipe(testCase)
+    % Column vector:
+    data = rand(10, 1);
+    pipe = types.untyped.DataPipe('data', data);
+
+    pipe.append([1;2]);
+    newData = pipe.load();
+    testCase.verifyEqual(newData, cat(1, data, [1;2]))
+
+    testCase.verifyError(@(X) pipe.append([1,2]), 'MATLAB:catenate:dimensionMismatch')
+
+    % Row vector:
+    data = rand(1, 10);
+    pipe = types.untyped.DataPipe('data', data);
+
+    pipe.append([1,2]);
+    newData = pipe.load();
+    testCase.verifyEqual(newData, cat(2, data, [1,2]))
+
+    testCase.verifyError(@(X) pipe.append([1;2]), 'MATLAB:catenate:dimensionMismatch')
+end
+
 function testSubsrefWithNonScalarSubs(testCase)
     data = rand(100, 1);
     pipe = types.untyped.DataPipe('data', data);
@@ -294,6 +330,54 @@ function testSubsrefWithNonScalarSubs(testCase)
     % non-scalar subsref would be...
     subData = pipe{1:10}(1:5); 
     testCase.verifyEqual(subData, data(1:5))
+end
+
+function testOverrideBoundPipeProperties(testCase)
+    import matlab.unittest.fixtures.SuppressedWarningsFixture
+    testCase.applyFixture(SuppressedWarningsFixture('NWB:DataPipe:UnusedArguments'))
+    
+    data = rand(10, 1);
+    pipe = types.untyped.DataPipe('data', data);
+    
+    filename = 'testInit.h5';
+    datasetName = '/test_data';
+    fid = H5F.create(filename);
+    pipe.export(fid, datasetName, {});
+    H5F.close(fid);
+        
+    loadedPipe = types.untyped.DataPipe('filename', filename, 'path', datasetName, 'dataType', 'double');
+    
+    % Using verifyError did not work for the following statements, i.e this:
+    % testCase.verifyError(@(x) eval('loadedPipe.chunkSize = 2'), 'NWB:BoundPipe:CannotSetPipeProperty') %#ok<EVLCS>
+    % fails with the following error: Attempt to add "loadedPipe" to a static workspace.
+    try
+        loadedPipe.chunkSize = 2;
+    catch ME
+        testCase.verifyEqual(ME.identifier,  'NWB:BoundPipe:CannotSetPipeProperty')
+    end
+    
+    try
+        loadedPipe.hasShuffle = false;
+    catch ME
+        testCase.verifyEqual(ME.identifier,  'NWB:BoundPipe:CannotSetPipeProperty')
+    end
+
+end
+
+function testDynamicFilterIsInDatasetCreationPropertyList(testCase)
+    import types.untyped.datapipe.dynamic.Filter;
+    import types.untyped.datapipe.properties.DynamicFilter;
+
+    dcpl = H5P.create('H5P_DATASET_CREATE');
+    dynamicFilter = DynamicFilter(Filter.LZ4);
+
+    tf = dynamicFilter.isInDcpl(dcpl);
+    testCase.verifyFalse(tf)
+
+    % Add filter
+    dynamicFilter.addTo(dcpl)
+    tf = dynamicFilter.isInDcpl(dcpl);
+    testCase.verifyTrue(tf)
 end
 
 function data = createData(dataType, size)
