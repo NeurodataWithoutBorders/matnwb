@@ -1,29 +1,146 @@
-function functionString = fillConstructor(name, parentname, defaults, props, namespace)
+function functionString = fillConstructor(name, parentname, defaults, props, inherited, namespace)
     caps = upper(name);
-    functionBody = ['% ' caps ' Constructor for ' name];
+    functionBody = string(['% ' caps ' Constructor for ' name, newline]);
 
-    bodyString = fillBody(parentname, defaults, props, namespace);
-    if ~isempty(bodyString)
-        functionBody = [functionBody newline() bodyString];
+    if strcmp(name, 'TimeSeries')
+        %keyboard
     end
 
-    functionBody = strjoin({functionBody, ...
-        sprintf('if strcmp(class(obj), ''%s'')', namespace.getFullClassName(name)), ...
-        '    cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));', ...
-        '    types.util.checkUnset(obj, unique(cellStringArguments));', ...
-        'end'}, newline());
+    ignoreList = [...
+        "types.hdmf_common.Container", ...
+        "types.core.NWBContainer", ...
+        "types.untyped.MetaClass", ...
+        "types.core.NWBDataInterface" ...
+        ];
+
+    if ismember(string(parentname), ignoreList)
+        parentname = '';
+    end
+        
+    fullClassName = sprintf('types.%s.%s', namespace.name, name);
+
+    if ~ismember(string(fullClassName), ignoreList)
+        [argumentStr, argNames] = fillArgumentsBlock(name, parentname, defaults, props, inherited, namespace);
+        bodyString = fillBodyNew(parentname, defaults, props, namespace);
+    else
+        argumentStr = string.empty;
+        bodyString = string.empty;
+        argNames = string.empty;
+    end
+    
+    %bodyString = fillBody(parentname, defaults, props, namespace);
+    if ~isempty(argumentStr)
+        functionBody = strjoin([functionBody, string(argumentStr)], newline);
+    end
+    if ~isempty(bodyString)
+        functionBody = strjoin([functionBody, string(bodyString)], newline);
+    end
+
+    % functionBody = strjoin({functionBody, ...
+    %     sprintf('if strcmp(class(obj), ''%s'')', namespace.getFullClassName(name)), ...
+    %     '    cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));', ...
+    %     '    types.util.checkUnset(obj, unique(cellStringArguments));', ...
+    %     'end'}, newline());
 
     % insert check for DynamicTable class and child classes
-    bodyString = fillCheck(name, namespace);
+    bodyString = string( fillCheck(name, namespace) );
     if ~isempty(bodyString)
-        functionBody = [functionBody newline() bodyString];
+        functionBody = strjoin([functionBody, bodyString], newline);
     end
 
     functionString = strjoin({...
-        ['function obj = ' name '(varargin)']...
-        file.addSpaces(functionBody, 4)...
+        [sprintf('function obj = %s(%s)', name, strjoin(argNames, ', '))] ...
+        file.addSpaces(char(functionBody), 4)...
         'end'}, newline());
+end
 
+function [argumentBlockStr, inputArguments] = fillArgumentsBlock(name, parentName, defaults, props, inherited, namespace)
+
+    inputArguments = string.empty;
+    argumentBlockStr = "arguments";
+    fullClassName = sprintf('types.%s.%s', namespace.name, name);
+
+    superclassDefaults = intersect(defaults, inherited, 'stable');
+    classDefaults = string(setdiff(defaults, inherited, 'stable'));
+    classProps = string(setdiff(props.keys, inherited, 'stable'));
+
+    if ~isempty(parentName)
+        if ~isempty(superclassDefaults)
+            for i = 1:numel(superclassDefaults)
+                name = superclassDefaults{i};
+                propMeta = props(name);
+                value = propMeta.value;
+                
+                argumentBlockStr = [...
+                    argumentBlockStr, ...
+                    sprintf("    superPropValues.%s = ""%s""", name, value)]; %#ok<AGROW>
+            end
+        end
+        
+        argumentBlockStr = [ ...
+            argumentBlockStr, ...
+            sprintf("    superPropValues.?%s", parentName) ...
+            ];
+        inputArguments = [inputArguments, "superPropValues"];
+
+        if ~isempty(classProps)
+            for i = 1:numel(classProps)
+                if ismember(classProps{i}, classDefaults)
+                    propMeta = props(classProps{i});
+                    value = propMeta.value;
+                    argumentDef = sprintf("    propValues.%s = ""%s""", classProps{i}, value);
+                else
+                    argumentDef = sprintf("    propValues.%s", classProps{i});
+                end
+        
+                argumentBlockStr = [ ...
+                    argumentBlockStr, ...
+                    argumentDef ...
+                    ]; %#ok<AGROW>
+            end
+            inputArguments = [inputArguments, "propValues"];
+        end
+    else
+        if ~isempty(classProps)
+            if ~isempty(classDefaults)
+                for i = 1:numel(classDefaults)
+                    name = classDefaults{i};
+                    propMeta = props(name);
+                    value = propMeta.value;
+                    
+                    argumentBlockStr = [...
+                        argumentBlockStr, ...
+                        sprintf("    propValues.%s = ""%s""", name, value)]; %#ok<AGROW>
+                end
+            end
+            argumentBlockStr = [ ...
+                argumentBlockStr, ...
+                sprintf("    propValues.?%s", fullClassName) ...
+                ];
+            inputArguments = [inputArguments, "propValues"];
+        end
+    end
+    argumentBlockStr = [ ...
+            argumentBlockStr, ...
+            "end"];
+
+    argumentBlockStr = char(strjoin(argumentBlockStr, newline));
+end
+
+function bodyStr = fillBodyNew(parentName, defaults, props, namespace)
+    bodyStr = "";
+    if ~isempty(parentName)
+        bodyStr = strjoin([...
+            bodyStr, ...
+            "nvPairs = namedargs2cell(superPropValues);", ...
+            sprintf("obj = obj@%s(nvPairs{:});", parentName)...
+            ""], newline);
+    end
+    
+    bodyStr = strjoin([...
+        bodyStr, ...
+        "obj.set(propValues)" ...
+        ], newline);
 end
 
 function bodystr = fillBody(parentName, defaults, props, namespace)

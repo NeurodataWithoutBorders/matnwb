@@ -1,4 +1,4 @@
-classdef MetaClass < handle & matlab.mixin.CustomDisplay
+classdef MetaClass < handle & matlab.mixin.CustomDisplay & matlab.mixin.SetGet
     properties (Hidden, SetAccess = private)
         metaClass_fullPath;
     end
