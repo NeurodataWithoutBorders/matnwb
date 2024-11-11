@@ -80,5 +80,48 @@ classdef FunctionTests < matlab.unittest.TestCase
             );
             testCase.verifyClass(stimuli, 'types.core.IntracellularStimuliTable')
         end
-    end 
+    
+        function testParseConstrainedAppendMode(testCase)
+
+            columnA = types.hdmf_common.VectorData( ...
+                'description', 'first column', ...
+                'data', rand(10,1) ...
+            );
+            
+            % 1D column
+            idCol = types.hdmf_common.ElementIdentifiers('data', int64(0:9)');
+            
+            % Create table
+            dynamicTable = types.hdmf_common.DynamicTable(...
+                            'description', 'test dynamic table column',...
+                            'colnames', {'colA'}, ...
+                            'colA', columnA, ...
+                            'id', idCol ...     
+            );
+            
+            columnB = types.hdmf_common.VectorData( ...
+                            'description', 'second column', ...
+                            'data', rand(10,1) ...
+            );
+            
+                    
+            [vectordata, ~] = types.util.parseConstrained(dynamicTable, ...
+                'vectordata', 'types.hdmf_common.VectorData', ...
+                'colB', columnB );
+
+            testCase.verifyEqual(vectordata.keys, {'colA', 'colB'})
+            testCase.verifyEqual(vectordata.get('colA').data, columnA.data)
+            testCase.verifyEqual(vectordata.get('colB').data, columnB.data)
+        end
+    
+        function testCorrectType(testCase)
+            testCase.verifyEqual(types.util.correctType('5', 'double'), 5)
+            testCase.verifyEqual(types.util.correctType(uint8(5), 'int32'), int32(5))
+            testCase.verifyEqual(types.util.correctType(uint32(5), 'int32'), int64(5))
+
+            testCase.verifyWarning(...
+                @(varargin) types.util.correctType('5i', 'double'), ...
+                'NWB:TypeCorrection:DataLoss')
+        end
+    end
 end
