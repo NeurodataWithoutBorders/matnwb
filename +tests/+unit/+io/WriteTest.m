@@ -59,11 +59,11 @@ classdef WriteTest < matlab.unittest.TestCase
             fsid = H5D.get_space(did);
             loadedData = H5D.read(did, 'H5ML_DEFAULT', fsid, fsid,...
                 'H5P_DEFAULT');
-            data = io.parseCompound(did, loadedData);
+            parsedData = io.parseCompound(did, loadedData);
             H5S.close(fsid);
             H5D.close(did);
 
-            parsedData = table2struct( struct2table(loadedData) )';
+            parsedData = table2struct( struct2table(parsedData) )';
             testCase.verifyEqual(data, parsedData);
         end
     end 
