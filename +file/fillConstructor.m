@@ -19,22 +19,20 @@ function functionString = fillConstructor(name, parentname, defaults, props, inh
         
     fullClassName = sprintf('types.%s.%s', namespace.name, name);
 
+    [argumentStr, bodyString, argNames] = deal(string.empty);
+
+    % Only create arguments block if this is not an abstract class
     if ~ismember(string(fullClassName), ignoreList)
         [argumentStr, argNames] = fillArgumentsBlock(name, parentname, defaults, props, inherited, namespace);
-        bodyString = fillBodyNew(parentname, defaults, props, namespace);
-    else
-        argumentStr = string.empty;
-        bodyString = string.empty;
-        argNames = string.empty;
+        bodyString = fillBodyNew(parentname, defaults, props, inherited, namespace);
     end
     
+    initSetStr = fillSetInitialiser(props);
+
     %bodyString = fillBody(parentname, defaults, props, namespace);
-    if ~isempty(argumentStr)
-        functionBody = strjoin([functionBody, string(argumentStr)], newline);
-    end
-    if ~isempty(bodyString)
-        functionBody = strjoin([functionBody, string(bodyString)], newline);
-    end
+
+    functionBody = strjoin([functionBody, string(argumentStr), string(bodyString), initSetStr], newline);
+
 
     % functionBody = strjoin({functionBody, ...
     %     sprintf('if strcmp(class(obj), ''%s'')', namespace.getFullClassName(name)), ...
@@ -54,7 +52,7 @@ function functionString = fillConstructor(name, parentname, defaults, props, inh
         'end'}, newline());
 end
 
-function [argumentBlockStr, inputArguments] = fillArgumentsBlock(name, parentName, defaults, props, inherited, namespace)
+function [argumentBlockStr, inputArguments] = fillArgumentsBlock(name, superclassName, defaults, props, inherited, namespace)
 
     inputArguments = string.empty;
     argumentBlockStr = "arguments";
@@ -64,31 +62,36 @@ function [argumentBlockStr, inputArguments] = fillArgumentsBlock(name, parentNam
     classDefaults = string(setdiff(defaults, inherited, 'stable'));
     classProps = string(setdiff(props.keys, inherited, 'stable'));
 
-    if ~isempty(parentName)
+    if ~isempty(superclassName)
+        % Need to define default values for the superclass properties
+        % before the generic superPropValues.?*. This way, if a value for a
+        % named argument is passed as input it will take precedence,
+        % otherwise the default value is used.
         if ~isempty(superclassDefaults)
             for i = 1:numel(superclassDefaults)
                 name = superclassDefaults{i};
-                propMeta = props(name);
-                value = propMeta.value;
+                valueStr = getValueAsStr(props, name);
                 
                 argumentBlockStr = [...
                     argumentBlockStr, ...
-                    sprintf("    superPropValues.%s = ""%s""", name, value)]; %#ok<AGROW>
+                    sprintf("    superPropValues.%s = %s", name, valueStr)]; %#ok<AGROW>
             end
         end
         
         argumentBlockStr = [ ...
             argumentBlockStr, ...
-            sprintf("    superPropValues.?%s", parentName) ...
+            sprintf("    superPropValues.?%s", superclassName) ...
             ];
         inputArguments = [inputArguments, "superPropValues"];
 
+        % Need to fill all class properties
         if ~isempty(classProps)
             for i = 1:numel(classProps)
-                if ismember(classProps{i}, classDefaults)
-                    propMeta = props(classProps{i});
-                    value = propMeta.value;
-                    argumentDef = sprintf("    propValues.%s = ""%s""", classProps{i}, value);
+                if ismember(classProps{i}, classDefaults) || isSet(props, classProps{i})
+                    name = classProps{i};
+                    valueStr = getValueAsStr(props, name);
+                    
+                    argumentDef = sprintf("    propValues.%s = %s", classProps{i}, valueStr);
                 else
                     argumentDef = sprintf("    propValues.%s", classProps{i});
                 end
@@ -101,16 +104,17 @@ function [argumentBlockStr, inputArguments] = fillArgumentsBlock(name, parentNam
             inputArguments = [inputArguments, "propValues"];
         end
     else
+        % First, fill class properties with default values, then use the .?
+        % to include all properties defined in class
         if ~isempty(classProps)
             if ~isempty(classDefaults)
                 for i = 1:numel(classDefaults)
                     name = classDefaults{i};
-                    propMeta = props(name);
-                    value = propMeta.value;
+                    valueStr = getValueAsStr(props, name);
                     
                     argumentBlockStr = [...
                         argumentBlockStr, ...
-                        sprintf("    propValues.%s = ""%s""", name, value)]; %#ok<AGROW>
+                        sprintf("    propValues.%s = %s", name, valueStr)]; %#ok<AGROW>
                 end
             end
             argumentBlockStr = [ ...
@@ -127,7 +131,7 @@ function [argumentBlockStr, inputArguments] = fillArgumentsBlock(name, parentNam
     argumentBlockStr = char(strjoin(argumentBlockStr, newline));
 end
 
-function bodyStr = fillBodyNew(parentName, defaults, props, namespace)
+function bodyStr = fillBodyNew(parentName, defaults, props, inherited, namespace)
     bodyStr = "";
     if ~isempty(parentName)
         bodyStr = strjoin([...
@@ -137,10 +141,160 @@ function bodyStr = fillBodyNew(parentName, defaults, props, namespace)
             ""], newline);
     end
     
+    classProps = setdiff(props.keys(), inherited, 'stable');
+    if isempty(classProps)
+        propertySetStr = string.empty;
+    else
+        propertySetStr = "obj.set(propValues)";
+    end
+    %customParserStr = fillCustomParsers(parentName, props, namespace);
+    customParserStr = string.empty;
+
     bodyStr = strjoin([...
         bodyStr, ...
-        "obj.set(propValues)" ...
+        customParserStr, ...
+        propertySetStr ...
         ], newline);
+end
+
+function initSetStr = fillSetInitialiser(props)
+    initSetStr = string.empty;
+    propNames = props.keys();
+    setPropNames = string.empty;
+
+    for i = 1:numel(propNames)
+        if isSet(props, propNames{i})
+            setPropNames(end+1) = string(propNames{i}); %#ok<AGROW>
+        end
+    end
+
+    if ~isempty(setPropNames)
+
+        setPropListStr = compose("    ""%s"", ...", setPropNames');
+        setPropListStr(end) = strrep(setPropListStr(end), ', ...', ' ...');
+
+        initSetStr = [...
+            "setPropertyList = [...", ...
+            setPropListStr', ...
+            "    ];", ...
+            "for i = 1:numel(setPropertyList)", ...
+            "    propName = setPropertyList(i);", ...
+            "    if isempty(obj.(propName))", ...
+            "       obj.(propName) = types.untyped.Set();", ...
+            "    end", ...
+            "end" ...
+            ];
+
+        initSetStr = strjoin(initSetStr, newline);
+    end
+end
+
+function customParserStr = fillCustomParsers(parentName, props, namespace)
+    
+    names = keys(props);
+
+    % if there's a root object that is a constrained set, let it be hoistable from dynamic arguments
+    dynamicConstrained = false(size(names));
+    isAnonymousType = false(size(names));
+    isAttribute = false(size(names));
+    typenames = repmat({''}, size(names));
+    varnames = repmat({''}, size(names));
+    for i = 1:length(names)
+        nm = names{i};
+        prop = props(nm);
+
+        if isa(prop, 'file.Attribute')
+            isAttribute(i) = true;
+            continue;
+        end
+
+        if isa(prop, 'file.interface.HasProps')
+            isDynamicConstrained = false(size(prop));
+            isAnon = false(size(prop));
+            hasType = false(size(prop));
+            typeNames = cell(size(prop));
+            for iProp = 1:length(prop)
+                p = prop(iProp);
+                isDynamicConstrained(iProp) = p.isConstrainedSet && strcmpi(nm, p.type);
+                isAnon(iProp) = ~p.isConstrainedSet && isempty(p.name);
+                hasType(iProp) = ~isempty(p.type);
+                typeNames{iProp} = p.type;
+            end
+            dynamicConstrained(i) = all(isDynamicConstrained);
+            isAnonymousType(i) = all(isAnon);
+
+            if all(hasType)
+                varnames{i} = nm;
+                typeNameCell = cell(size(prop));
+                try
+                    for iProp = 1:length(prop)
+                        typeNameCell{iProp} = namespace.getFullClassName(prop(iProp).type);
+                    end
+                catch ME
+                    if ~strcmp(ME.identifier, 'NWB:Scheme:Namespace:NotFound')
+                        rethrow(ME);
+                    end
+                end
+                typenames{i} = misc.cellPrettyPrint(typeNameCell);
+            end
+        end
+    end
+
+    % warn for missing namespaces/property types
+    warningId = 'NWB:ClassGenerator:NamespaceOrTypeNotFound';
+    warnmsg = ['`' parentName '`''s constructor is unable to check for type `%1$s` ' ...
+        'because its namespace or type specifier could not be found.  Try generating ' ...
+        'the namespace or class definition for type `%1$s` or fix its schema.'];
+
+    invalid = cellfun('isempty', typenames);
+    invalidWarn = invalid & (dynamicConstrained | isAnonymousType) & ~isAttribute;
+    invalidVars = varnames(invalidWarn);
+    for i=1:length(invalidVars)
+        warning(warningId, warnmsg, invalidVars{i});
+    end
+    varnames = lower(varnames);
+
+    %we delete the entry in varargin such that any conflicts do not show up in inputParser
+    deleteFromVars = 'varargin(ivarargin) = [];';
+    
+    %if constrained/anon sets exist, then check for nonstandard parameters and add as
+    %container.map
+    constrainedTypes = typenames(dynamicConstrained & ~invalid);
+    constrainedVars = varnames(dynamicConstrained & ~invalid);
+    
+    % methodCalls = strcat('[obj.', constrainedVars, ', ivarargin] = ',...
+    %     ' types.util.parseConstrained(obj,''', constrainedVars, ''', ''',...
+    %     constrainedTypes, ''', varargin{:});');
+    
+    methodCalls = compose( "obj.%s = types.util.parseConstrained(obj, '%s', '%s', propValues);", ...
+        string(constrainedVars)', string(constrainedVars)', string(constrainedTypes)' );
+    clearCalls = compose("propValues = rmfield(propValues, '%s');", string(constrainedVars)');
+    fullBody = cat(1, methodCalls', clearCalls');
+    fullBody = strjoin(fullBody, newline);
+
+    if numel(methodCalls) > 1
+        %keyboard
+    end
+    % fullBody = cell(length(methodCalls) * 2,1);
+    % fullBody(1:2:end) = methodCalls;
+    % fullBody(2:2:end) = {deleteFromVars};
+    % fullBody = strjoin(fullBody, newline);
+    customParserStr = fullBody;
+
+    %if anonymous values exist, then check for nonstandard parameters and add
+    %as Anon
+
+    anonTypes = typenames(isAnonymousType & ~invalid);
+    anonVars = varnames(isAnonymousType & ~invalid);
+
+    methodCalls = compose( "obj.%s = types.util.parseAnon('%s', propValues);", ...
+        string(anonVars)', string(anonTypes)' );
+    clearCalls = compose("propValues = rmfield(propValues, '%s');", string(anonVars)');
+    
+    fullBody = cat(1, methodCalls, clearCalls);
+    fullBody = strjoin(fullBody, newline);
+
+    customParserStr = strjoin([customParserStr, fullBody], newline);
 end
 
 function bodystr = fillBody(parentName, defaults, props, namespace)
@@ -170,6 +324,7 @@ function bodystr = fillBody(parentName, defaults, props, namespace)
     if isempty(names)
         return;
     end
+
     % if there's a root object that is a constrained set, let it be hoistable from dynamic arguments
     dynamicConstrained = false(size(names));
     isAnonymousType = false(size(names));
@@ -240,6 +395,9 @@ function bodystr = fillBody(parentName, defaults, props, namespace)
     methodCalls = strcat('[obj.', constrainedVars, ', ivarargin] = ',...
         ' types.util.parseConstrained(obj,''', constrainedVars, ''', ''',...
         constrainedTypes, ''', varargin{:});');
+    if numel(methodCalls) > 1
+        keyboard
+    end
     fullBody = cell(length(methodCalls) * 2,1);
     fullBody(1:2:end) = methodCalls;
     fullBody(2:2:end) = {deleteFromVars};
@@ -258,6 +416,7 @@ function bodystr = fillBody(parentName, defaults, props, namespace)
     fullBody(2:2:end) = {deleteFromVars};
     fullBody = strjoin(fullBody, newline);
     bodystr(end+1:end+length(fullBody)+1) = [newline fullBody];
+
 
     parser = {...
         'p = inputParser;',...
@@ -282,6 +441,7 @@ function bodystr = fillBody(parentName, defaults, props, namespace)
             defaults{i} = '[]';
         end
     end
+
     % add parameters
     parser = [parser, strcat('addParameter(p, ''', names, ''', ', defaults,');')];
     % parse
@@ -315,4 +475,37 @@ function checkTxt = fillCheck(name, namespace)
         '    types.util.dynamictable.checkConfig(obj);', ...
         'end',...
         }, newline);
+end
+
+function valueStr = getValueAsStr(props, name)
+    
+    if isSet(props, name)
+        valueStr = 'types.untyped.Set';
+        return
+    end
+
+    if strcmp(props(name).dtype, 'char')
+        valueStr = sprintf("""%s""", props(name).value);
+    else
+        valueStr = ...
+            sprintf('types.util.correctType(%d, ''%s'')',...
+            props(name).value,...
+            props(name).dtype);
+    end
+end
+
+function tf = isSet(props, name)
+    prop = props(name);
+    isPluralSet = isa(prop, 'file.interface.HasProps') && ~isscalar(prop);
+    isGroupSet = ~isPluralSet ...
+        && isa(prop, 'file.Group') ...
+        && (prop.hasAnonData || prop.hasAnonGroups || prop.isConstrainedSet);
+    isDataSet = ~isPluralSet ...
+        && isa(prop, 'file.Dataset')...
+        && prop.isConstrainedSet;
+    if isPluralSet || isGroupSet || isDataSet
+        tf = true;
+    else
+        tf = false;
+    end
 end
