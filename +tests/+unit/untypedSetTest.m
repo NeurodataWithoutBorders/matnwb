@@ -32,13 +32,15 @@ function testCreateSetFromNvPairsPlusFunctionHandle(testCase)
 end
 
 function testDisplayEmptyObject(testCase)
-    emptyUntypedSet = types.untyped.Set();
-    disp(emptyUntypedSet)
+    emptyUntypedSet = types.untyped.Set(); %#ok<NASGU>
+    C = evalc( 'disp(emptyUntypedSet)' );
+    testCase.verifyClass(C, 'char')
 end
 
 function testDisplayScalarObject(testCase)
-    scalarSet = types.untyped.Set('a',1)
-    disp(scalarSet)
+    scalarSet = types.untyped.Set('a', 1); %#ok<NASGU>
+    C = evalc( 'disp(scalarSet)' );
+    testCase.verifyClass(C, 'char')
 end
 
 function testGetSetSize(testCase)
