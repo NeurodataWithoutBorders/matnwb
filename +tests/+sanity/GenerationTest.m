@@ -5,10 +5,13 @@ classdef GenerationTest < matlab.unittest.TestCase
     
     methods (TestClassSetup)
         function setupClass(testCase)
-            rootPath = fullfile(fileparts(mfilename('fullpath')), '..', '..');
-            testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
-            nwbClearGenerated()
-            testCase.addTeardown(@(varargin) generateCore('savedir','.'))
+            import matlab.unittest.fixtures.PathFixture
+            import tests.fixtures.ResetGeneratedTypesFixture
+
+            rootPath = tests.util.getProjectDirectory();
+            testCase.applyFixture( PathFixture(rootPath) );
+
+            testCase.applyFixture( ResetGeneratedTypesFixture );
         end
     end
     
