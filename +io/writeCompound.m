@@ -95,7 +95,7 @@ function writeCompound(fid, fullpath, data, varargin)
     % convert logical values
     boolNames = names(strcmp(classes, 'logical'));
     for iField = 1:length(boolNames)
-        data.(boolNames{iField}) = strcmp('TRUE', data.(boolNames{iField}));
+        data.(boolNames{iField}) = int8(data.(boolNames{iField}));
     end
 
     %transpose numeric column arrays to row arrays
@@ -134,6 +134,9 @@ function writeCompound(fid, fullpath, data, varargin)
                     warning('NWB:WriteCompund:ContinuousCompoundResize', ...
                         'Attempted to change size of continuous compound `%s`.  Skipping.', ...
                         fullpath);
+                    H5D.close(did);
+                    H5S.close(sid);
+                    return
                 end
             end
             H5P.close(create_plist);

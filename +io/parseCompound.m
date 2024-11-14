@@ -51,6 +51,12 @@ function data = parseCompound(datasetId, data)
     logicalFieldName = fieldName(isLogicalType);
     for iFieldName = 1:length(logicalFieldName)
         name = logicalFieldName{iFieldName};
-        data.(name) = strcmp('TRUE', data.(name));
+        if isa(data.(name), 'int8')
+            data.(name) = logical(data.(name));
+        elseif isa(data.(name), 'cell') && ismember(string(data.(name){1}), ["TRUE", "FALSE"])
+            data.(name) = strcmp('TRUE', data.(name));
+        else
+            error('NWB:ParseCompound:UnknownLogicalFormat', 'Could not resolve data of logical type')
+        end
     end
 end
