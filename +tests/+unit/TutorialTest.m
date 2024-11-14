@@ -237,9 +237,14 @@ classdef TutorialTest <  matlab.unittest.TestCase
             for i = 1:numel(resultsIn)
                 resultsIn(i).ignore = any(strcmp(CHECK_IGNORE, resultsIn(i).check_name));
             
-                % Special case to ignore
+                % Special cases to ignore
                 if resultsIn(i).location == "/acquisition/ExternalVideos" && ...
                         resultsIn(i).check_name == "check_timestamps_match_first_dimension"
+                    resultsIn(i).ignore = true;
+                elseif resultsIn(i).location == "/acquisition/SpikeEvents_Shank0" && ...
+                    resultsIn(i).check_name == "check_data_orientation"
+                    % Data for this example is actually longer in another dimension
+                    % than time.
                     resultsIn(i).ignore = true;
                 end
             end
