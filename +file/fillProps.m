@@ -58,7 +58,8 @@ function propStr = getPropStr(prop, propName)
                 case 'object'
                     refTypeName = 'Object';
                 otherwise
-                    error('Invalid reftype found whilst filling Constructor prop docs.');
+                    error('NWB:ClassGenerator:InvalidRefType', ...
+                        'Invalid reftype found while filling description for class property "%s".', propName);
             end
             typeStr = sprintf('%s Reference to %s', refTypeName, prop.dtype('target_type'));
         else
@@ -71,7 +72,8 @@ function propStr = getPropStr(prop, propName)
             case 'object'
                 refTypeName = 'object';
             otherwise
-                error('Invalid reftype found whilst filling Constructor prop docs.');
+                error('NWB:ClassGenerator:InvalidRefType', ...
+                    'Invalid reftype found while filling description for class property "%s".', propName);
         end
         typeStr = sprintf('%s Reference to %s', refTypeName, prop('target_type'));
     elseif isa(prop, 'file.interface.HasProps')

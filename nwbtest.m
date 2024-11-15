@@ -46,6 +46,7 @@ function results = nwbtest(varargin)
         ws = pwd;
         
         nwbClearGenerated(); % Clear default files if any.
+        cleanupObj = onCleanup(@() generateCore);
         cleaner = onCleanup(@generateCore); % Regenerate core when finished
 
         pvcell = struct2pvcell(parser.Unmatched);

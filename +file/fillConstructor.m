@@ -100,7 +100,8 @@ function bodystr = fillBody(parentName, defaults, props, namespace)
         end
     end
 
-    %warn for missing namespaces/property types
+    % warn for missing namespaces/property types
+    warningId = 'NWB:ClassGenerator:NamespaceOrTypeNotFound';
     warnmsg = ['`' parentName '`''s constructor is unable to check for type `%1$s` ' ...
         'because its namespace or type specifier could not be found.  Try generating ' ...
         'the namespace or class definition for type `%1$s` or fix its schema.'];
@@ -109,7 +110,7 @@ function bodystr = fillBody(parentName, defaults, props, namespace)
     invalidWarn = invalid & (dynamicConstrained | isAnonymousType) & ~isAttribute;
     invalidVars = varnames(invalidWarn);
     for i=1:length(invalidVars)
-        warning(warnmsg, invalidVars{i});
+        warning(warningId, warnmsg, invalidVars{i});
     end
     varnames = lower(varnames);
 

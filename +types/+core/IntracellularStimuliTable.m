@@ -50,7 +50,7 @@ methods
         if isequal(val, 'Table for storing intracellular stimulus related metadata.')
             val = 'Table for storing intracellular stimulus related metadata.';
         else
-            error('Unable to set the ''description'' property of class ''<a href="matlab:doc types.core.IntracellularStimuliTable">IntracellularStimuliTable</a>'' because it is read-only.')
+            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''description'' property of class ''<a href="matlab:doc types.core.IntracellularStimuliTable">IntracellularStimuliTable</a>'' because it is read-only.')
         end
     end
     function val = validate_stimulus(obj, val)

@@ -93,7 +93,7 @@ methods
             return;
         end
         if ~istable(val) && ~isstruct(val) && ~isa(val, 'containers.Map')
-            error('Property `position` must be a table,struct, or containers.Map.');
+            error('NWB:Type:InvalidPropertyType', 'Property `position` must be a table, struct, or containers.Map.');
         end
         vprops = struct();
         vprops.x = 'single';
