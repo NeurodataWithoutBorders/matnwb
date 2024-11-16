@@ -1,7 +1,5 @@
-function exportTutorials(options)
-% exportTutorials - Export tutorial mlx files the specified output format
-
-% see also fullfile(matlabroot, 'toolbox/matlab/codetools/+matlab/+internal')
+function matnwb_exportTutorials(options)
+% matnwb_exportTutorials - Export mlx tutorial files to the specified output format
 
     arguments
         options.ExportFormat (1,:) string {mustStartWithDot} = [".m", ".html"]
