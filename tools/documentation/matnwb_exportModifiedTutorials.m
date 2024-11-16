@@ -13,19 +13,7 @@ function matnwb_exportModifiedTutorials()
         repo = gitrepo(misc.getMatnwbDir);
         modifiedFiles = repo.ModifiedFiles;
     else
-        currentDir = pwd;
-        cleanupObj = onCleanup(@(fp) cd(currentDir));
-        cd(misc.getMatnwbDir)
-        [status, cmdout] = system('git --no-pager diff --name-only');
-        clear cleanupObj
-        if status == 0
-            modifiedFiles = splitlines(cmdout);
-            modifiedFiles = string(modifiedFiles);
-            modifiedFiles(modifiedFiles=="") = [];
-            modifiedFiles = fullfile(misc.getMatnwbDir, modifiedFiles);
-        else
-            error('Could not use git to detect modified files.')
-        end
+        modifiedFiles = matnwb_listModifiedFiles();
     end
 
     isTutorialFile = startsWith(modifiedFiles, fullfile(misc.getMatnwbDir, 'tutorials'));

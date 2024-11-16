@@ -54,6 +54,7 @@ function matnwb_exportTutorials(options)
 
     tempDir = fullfile(tempdir, 'nwbTutorials');
     if ~isfolder(tempDir); mkdir(tempDir); end
+    disp('Changing into temporary directory:')
     cd(tempDir)
 
     cleanupDeleteTempFiles = onCleanup(@(fp) rmdir(tempDir, 's'));
@@ -62,11 +63,14 @@ function matnwb_exportTutorials(options)
     for i = 1:numel(filePaths)
         sourcePath = char( fullfile(filePaths(i)) );
         if options.RunLivescript
+            fprintf('Running livescript "%s"\n', fileNames(i))
+
             matlab.internal.liveeditor.executeAndSave(sourcePath);
         end
         
         for j = 1:numel(exportFormat)
             targetPath = fullfile(targetFolderPaths(j), fileNames(i) + exportFormat(j));
+            fprintf('Exporting livescript "%s" to "%s"\n', fileNames(i), exportFormat(j))
             export(sourcePath, strrep(targetPath, '.mlx', exportFormat(j)));
         end
     end
