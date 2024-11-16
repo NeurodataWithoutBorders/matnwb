@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Get a list of changed files that are staged for commit
+changed_files=$(git --no-pager diff --cached --name-only)
+
+# Check if any of the changed files end with .mlx
+if echo "$changed_files" | grep -q '\.mlx$'; then
+    # Run the MATLAB script if .mlx files are detected
+    {{matlabroot}}/bin/matlab -batch "try; addpath(genpath('.')); run('tools/githooks/pre_commit.m'); catch e; disp(getReport(e)); exit(1); end; exit(0);"
+else
+    # Exit with code 0 if no .mlx files are detected
+    exit 0
+fi
