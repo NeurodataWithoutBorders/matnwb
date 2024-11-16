@@ -4,8 +4,7 @@ function matnwb_generateDocs()
 %   matnwb_generateDocs() generate documentation for MATLAB files in the 
 %   current matnwb root directory.
 %
-%   Requires <a href="matlab:
-%   web('https://www.artefact.tk/software/matlab/m2html/')">m2html</a> in your path.
+%   Requires <a href="matlab:web('https://github.com/gllmflndn/m2html')">m2html</a> in your path.
 
 rootDir = misc.getMatnwbDir();
 rootFiles = dir(rootDir);
