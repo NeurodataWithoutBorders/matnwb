@@ -15,7 +15,7 @@ function exportTutorials(options)
     [exportFormat, targetFolderNames] = deal(options.ExportFormat);
 
     targetFolderNames = extractAfter(targetFolderNames, ".");
-    targetFolderNames(strcmp(targetFolderNames, "m")) = "mcode";
+    targetFolderNames(strcmp(targetFolderNames, "m")) = fullfile("private", "mcode");
 
     nwbTutorialDir = fullfile(misc.getMatnwbDir, "tutorials");
     targetFolderPaths = fullfile(nwbTutorialDir, targetFolderNames);
@@ -40,6 +40,12 @@ function exportTutorials(options)
     [~, fileNames] = fileparts(filePaths);
     if ~isempty(options.FileNames)
         [fileNames, iA] = intersect(fileNames, options.FileNames, 'stable');
+        filePaths = filePaths(iA);
+    end
+        
+    if ~isempty(options.IgnoreFiles)
+        [~, fileNames] = fileparts(filePaths);
+        [fileNames, iA] = setdiff(fileNames, options.IgnoreFiles, 'stable');
         filePaths = filePaths(iA);
     end
 
