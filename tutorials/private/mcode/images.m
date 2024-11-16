@@ -35,11 +35,15 @@ nwb
 % what images were shown to the subject and at what times.
 % 
 % Image data can be stored either in the HDF5 file or as an external image file. 
-% For this tutorial, we will use fake image data with shape of |('RGB', 'y', 'x', 
-% 'time') = (200, 50, 50, 3)|. As in all <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/TimeSeries.html 
+% For this tutorial, we will use fake image data with shape of |('time', 'x', 
+% 'y', 'RGB') = (200, 50, 50, 3)|. As in all <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/TimeSeries.html 
 % |*TimeSeries*|>, the first dimension is time. The second and third dimensions 
 % represent x and y. The fourth dimension represents the RGB value (length of 
-% 3) for color images.
+% 3) for color images. *Please note*: As described in the <https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dimensionMapNoDataPipes.html 
+% dimensionMapNoDataPipes> tutorial, when a MATLAB array is exported to HDF5, 
+% the array is transposed. Therefore, in order to correctly export the data, we 
+% will need to create a transposed array, where the dimensions are in reverse 
+% order compared to the type specification.
 % 
 % NWB differentiates between acquired data and data that was presented as stimulus. 
 % We can add it to the <https://neurodatawithoutborders.github.io/matnwb/doc/NwbFile.html 
@@ -49,7 +53,7 @@ nwb
 % time. For irregularly sampled recordings, use |timestamps| to specify time for 
 % each sample image.
 
-image_data = randi(255, [3, 50, 50, 200]);
+image_data = randi(255, [3, 50, 50, 200]); % NB: Array is transposed
 optical_series = types.core.OpticalSeries( ...
     'distance', 0.7, ...  % required
     'field_of_view', [0.2, 0.3, 0.7], ...  % required
@@ -72,7 +76,7 @@ nwb.stimulus_presentation.set('StimulusPresentation', optical_series);
 % series of features that are derived from the raw image data.
 
 % Create some fake feature data
-feature_data = rand(200, 3);  % 200 time points, 3 features
+feature_data = rand(3, 200);  % 200 time points, 3 features
 
 % Create an AbstractFeatureSeries object
 abstract_feature_series = types.core.AbstractFeatureSeries( ...

@@ -40,11 +40,6 @@ nwb
 % Since this is a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
 % |*DynamicTable*|>, we can add additional metadata fields. We will be adding 
 % a "label" column to the table.
-% 
-% Here, we also demonstate another method for creating |DynamicTable|s, by first 
-% creating a MATLAB native |Table| object and then calling |util.table2nwb| to 
-% convert this |Table| object into a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
-% |*DynamicTable*|>.
 
 numShanks = 4;
 numChannelsPerShank = 3;
@@ -75,7 +70,7 @@ for iShank = 1:numShanks
             'label', sprintf('%s-electrode%d', shankGroupName, iElectrode));
     end
 end
-ElectrodesDynamicTable.toTable()
+ElectrodesDynamicTable.toTable() % Display the table
 
 nwb.general_extracellular_ephys_electrodes = ElectrodesDynamicTable;
 %% Links
@@ -152,7 +147,7 @@ ecephys_module = types.core.ProcessingModule(...
 
 ecephys_module.nwbdatainterface.set('LFP', lfp);
 nwb.processing.set('ecephys', ecephys_module);
-%% Spike Times
+%% Sorted Spike Times
 % Ragged Arrays
 % Spike times are stored in another <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
 % |*DynamicTable*|> of subtype <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Units.html 
@@ -187,6 +182,40 @@ nwb.units = types.core.Units( ...
     'spike_times', spike_times_vector, ...
     'spike_times_index', spike_times_index ...
 );
+
+nwb.units.toTable
+%% Unsorted Spike Times
+% In MATLAB, while the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Units.html 
+% |*Units*|> table is used to store spike times and waveform data for spike-sorted, 
+% single-unit activity, you may also want to store spike times and waveform snippets 
+% of unsorted spiking activity. This is useful for recording multi-unit activity 
+% detected via threshold crossings during data acquisition. Such information can 
+% be stored using <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/SpikeEventSeries.html 
+% |*SpikeEventSeries*|> objects.
+
+% In the SpikeEventSeries the dimensions should be ordered as 
+% [num_events, num_channels, num_samples].
+% Define spike snippets: 20 events, 3 channels, 40 samples per event. 
+spike_snippets = rand(20, 3, 40);
+% Permute spike snippets (See dimensionMapNoDataPipes tutorial)
+spike_snippets = permute(spike_snippets, [3,2,1]) 
+
+% Create electrode table region referencing electrodes 0, 1, and 2
+shank0_table_region = types.hdmf_common.DynamicTableRegion( ...
+    'table', types.untyped.ObjectView(ElectrodesDynamicTable), ...
+    'description', 'shank0', ...
+    'data', (0:2)');
+
+% Define spike event series for unsorted spike times
+spike_events = types.core.SpikeEventSeries( ...
+    'data', spike_snippets, ...
+    'timestamps', (0:19)', ...  % Timestamps for each event
+    'description', 'events detected with 100uV threshold', ...
+    'electrodes', shank0_table_region ...
+);
+
+% Add spike event series to NWB file acquisition
+nwb.acquisition.set('SpikeEvents_Shank0', spike_events);
 %% Designating Electrophysiology Data
 % As mentioned above, <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/ElectricalSeries.html 
 % |*ElectricalSeries*|> objects are meant for storing specific types of extracellular 
@@ -197,22 +226,22 @@ nwb.units = types.core.Units( ...
 % *API documentation*> and <https://neurodatawithoutborders.github.io/matnwb/tutorials/html/intro.html 
 % *Intro to NWB*> for more details on using these objects.
 % 
-% For storing spike data, there are two options. Which one you choose depends 
-% on what data you have available. If you need to store complete and/or continuous 
-% raw voltage traces, you should store the traces with <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/ElectricalSeries.html 
+% For storing unsorted spiking data, there are two options. Which one you choose 
+% depends on what data you have available. If you need to store complete and/or 
+% continuous raw voltage traces, you should store the traces with <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/ElectricalSeries.html 
 % |*ElectricalSeries*|> objects as acquisition data, and use the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/EventDetection.html 
 % |*EventDetection*|> class for identifying the spike events in your raw traces. 
 % If you do not want to store the raw voltage traces and only the waveform ‘snippets’ 
-% surrounding spike events, you should use the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/EventWaveform.html 
-% |*EventWaveform*|> class, which can store one or more <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/SpikeEventSeries.html 
+% surrounding spike events, you should use <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/SpikeEventSeries.html 
 % |*SpikeEventSeries*|> objects.
 % 
 % The results of spike sorting (or clustering) should be stored in the top-level 
 % <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Units.html 
-% |*Units*|> table. Note that it is not required to store spike waveforms in order 
-% to store spike events or mean waveforms–if you only want to store the spike 
-% times of clustered units you can use only the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Units.html 
-% |*Units*|> table.
+% |*Units*|> table. The <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Units.html 
+% |*Units*|> table can hold just the spike times of sorted units or, optionally, 
+% include additional waveform information. You can use the optional predefined 
+% columns |waveform_mean|, |waveform_sd|, and |waveforms| in the  <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Units.html 
+% |*Units*|> table to store individual and mean waveform data.
 % 
 % For local field potential data, there are two options. Again, which one you 
 % choose depends on what data you have available. With both options, you should 

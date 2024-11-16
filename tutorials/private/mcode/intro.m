@@ -7,7 +7,7 @@
 !git clone https://github.com/NeurodataWithoutBorders/matnwb.git
 addpath(genpath(pwd));
 %}
-%% Set up the NWB file
+%% Set up the NWB File
 % An NWB file represents a single session of an experiment. Each file must have 
 % a session_description, identifier, and session start time. Create a new <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/NWBFile.html 
 % |*NWBFile*|> object with those and additional metadata using the <https://neurodatawithoutborders.github.io/matnwb/doc/NwbFile.html 
@@ -24,7 +24,7 @@ nwb = NwbFile( ...
     'general_institution', 'University of My Institution', ... % optional
     'general_related_publications', {'DOI:10.1016/j.neuron.2016.12.011'}); % optional
 nwb
-%% Subject information
+%% Subject Information
 % You can also provide information about your subject in the NWB file. Create 
 % a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Subject.html 
 % |*Subject*|> object to store information such as age, species, genotype, sex, 
@@ -52,15 +52,15 @@ subject = types.core.Subject( ...
 nwb.general_subject = subject;
 
 subject
+%% 
+% Note: the DANDI archive requires all NWB files to have a subject object with 
+% subject_id specified, and strongly encourages specifying the other fields.
 %% Time Series Data
 % <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/TimeSeries.html 
 % |*TimeSeries*|> is a common base class for measurements sampled over time, and 
 % provides fields for |data| and |timestamps| (regularly or irregularly sampled). 
 % You will also need to supply the |name| and |unit| of measurement (<https://en.wikipedia.org/wiki/International_System_of_Units 
 % SI unit>).
-% 
-% Note: the DANDI archive requires all NWB files to have a subject object with 
-% subject_id specified, and strongly encourages specifying the other fields.
 % 
 % 
 % 
@@ -83,6 +83,37 @@ time_series_with_timestamps = types.core.TimeSeries( ...
     'data', linspace(0, 100, 10), ...
     'data_unit', 'm', ...
     'timestamps', linspace(0, 1, 10));
+%% 
+% The <https://pynwb.readthedocs.io/en/latest/pynwb.base.html#pynwb.base.TimeSeries 
+% |*TimeSeries*|> class serves as the foundation for all other time series types 
+% in the NWB format. Several specialized subclasses extend the functionality of 
+% <https://pynwb.readthedocs.io/en/latest/pynwb.base.html#pynwb.base.TimeSeries 
+% |*TimeSeries*|>, each tailored to handle specific kinds of data. In the next 
+% section, we’ll explore one of these specialized types. For a full overview, 
+% please check out the <https://nwb-schema.readthedocs.io/en/latest/format.html#type-hierarchy 
+% type hierarchy> in the NWB schema documentation.
+%% Other Types of Time Series 
+% As mentioned previously, there are many subtypes of <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/TimeSeries.html 
+% |*TimeSeries*|> in MatNWB that are used to store different kinds of data. One 
+% example is <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/AnnotationSeries.html 
+% |*AnnotationSeries*|>, a subclass of <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/TimeSeries.html 
+% |*TimeSeries*|> that stores text-based records about the experiment. Similar 
+% to our <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/TimeSeries.html 
+% |*TimeSeries*|> example above, we can create an <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/AnnotationSeries.html 
+% |*AnnotationSeries*|> object with text information about a stimulus and add 
+% it to the stimulus_presentation group in the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/NWBFile.html 
+% |*NWBFile*|>. Below is an example where we create an AnnotationSeries object 
+% with annotations for airpuff stimuli and add it to the NWBFile.
+
+% Create an AnnotationSeries object with annotations for airpuff stimuli
+annotations = types.core.AnnotationSeries( ...
+    'description', 'Airpuff events delivered to the animal', ...
+    'data', {'Left Airpuff', 'Right Airpuff', 'Right Airpuff'}, ...
+    'timestamps', [1.0, 3.0, 8.0] ...
+);
+
+% Add the AnnotationSeries to the NWBFile's stimulus group
+nwb.stimulus_presentation.set('Airpuffs', annotations)
 %% Behavior
 % SpatialSeries and Position
 % Many types of data have special data types in NWB. To store the spatial position 
@@ -104,13 +135,17 @@ time_series_with_timestamps = types.core.TimeSeries( ...
 % provides fields for data and time (regularly or irregularly sampled). Here, 
 % we put a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/SpatialSeries.html 
 % |*SpatialSeries*|> object called |'SpatialSeries'| in a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Position.html 
-% |*Position*|> object. 
+% |*Position*|> object. If the data is sampled at a regular interval, it is recommended 
+% to specify the |starting_time| and the sampling rate (|starting_time_rate|), 
+% although it is still possible to specify |timestamps| as in the |*time_series_with_timestamps*| 
+% example above.
 
 % create SpatialSeries object
 spatial_series_ts = types.core.SpatialSeries( ...
     'data', [linspace(0,10,100); linspace(0,8,100)], ...
     'reference_frame', '(0,0) is bottom left corner', ...
-    'timestamps', linspace(0, 100)/200 ...
+    'starting_time', 0, ...
+    'starting_time_rate', 200 ...
 );
 
 % create Position object and add SpatialSeries
@@ -201,7 +236,7 @@ read_nwbfile = nwbRead('intro_tutorial.nwb', 'ignorecache')
 
 read_spatial_series = read_nwbfile.processing.get('behavior'). ...
     nwbdatainterface.get('Position').spatialseries.get('SpatialSeries')
-% Reading data
+% Reading Data
 % Counter to normal MATLAB workflow, data arrays are read passively from the 
 % file. Calling |*read_spatial_series.data*| does not read the data values, but 
 % presents a |*DataStub*| object that can be indexed to read data. 
@@ -221,7 +256,7 @@ read_spatial_series.data.load
 % into your available RAM.
 
 read_spatial_series.data(:, 1:10)
-%% Next steps
+%% Next Steps
 % This concludes the introductory tutorial. Please proceed to one of the specialized 
 % tutorials, which are designed to follow this one.
 %% 
