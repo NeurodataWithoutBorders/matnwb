@@ -1,12 +1,21 @@
 function matnwb_exportTutorials(options)
 % matnwb_exportTutorials - Export mlx tutorial files to the specified output format
+%
+% Note: This function will ignore the following live scripts:
+%  - basicUsage.mlx : depends on output from convertTrials.m
+%  - read_demo.mlx : depends on external data, potentially slow
+%  - remote_read.mlx : Uses nwbRead on s3 url, potentially very slow]
+%
+%   To export all livescripts (assuming you have made sure the above will run)
+%   call the function with IgnoreFiles set to empty, i.e
+%       matnwb_exportTutorials(..., "IgnoreFiles", string.empty)
 
     arguments
         options.ExportFormat (1,:) string {mustStartWithDot} = [".m", ".html"]
         options.Expression (1,1) string = "*" % Filter by expression
         options.FileNames (1,:) string = string.empty % Filter by file names
         options.FilePaths (1,:) string = string.empty % Export specified files
-        options.IgnoreFiles (1,:) string = string.empty %["remote_read"] <- takes a long time to run
+        options.IgnoreFiles (1,:) string =["basicUsage.mlx", "read_demo.mlx", "remote_read.mlx"];
         options.RunLivescript (1,1) logical = true
     end
     
