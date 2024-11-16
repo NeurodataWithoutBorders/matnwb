@@ -8,7 +8,7 @@ through diffs in source control.
 ### For Developers
 
 To update the exports after modifying a live script, run the 
-`matnwb.exportModifiedTutorials` function located in 
+`matnwb_exportModifiedTutorials` function located in 
 `<matnwb_root>/tools/documentation/`. 
 This function will re-export the live script as both HTML and `.m` files.
 

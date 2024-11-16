@@ -15,7 +15,7 @@ function matnwb_exportTutorials(options)
         options.Expression (1,1) string = "*" % Filter by expression
         options.FileNames (1,:) string = string.empty % Filter by file names
         options.FilePaths (1,:) string = string.empty % Export specified files
-        options.IgnoreFiles (1,:) string =["basicUsage.mlx", "read_demo.mlx", "remote_read.mlx"];
+        options.IgnoreFiles (1,:) string =["basicUsage", "read_demo", "remote_read"];
         options.RunLivescript (1,1) logical = true
     end
     

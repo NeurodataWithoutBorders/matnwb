@@ -32,8 +32,8 @@ nwb
 % In order to store extracellular electrophysiology data, you first must create 
 % an electrodes table describing the electrodes that generated this data. Extracellular 
 % electrodes are stored in an |electrodes| table, which is also a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
-% |*DynamicTable*|>. |electrodes| has several required fields: x, y, z, impedence, 
-% location, filtering, and electrode_group.
+% |*DynamicTable*|>. |electrodes| has several required fields: |x|, |y|, |z|, 
+% |impedance|, |location|, |filtering|, and |electrode_group|.
 %% Electrodes Table
 % 
 % 

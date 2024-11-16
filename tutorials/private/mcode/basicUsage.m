@@ -32,7 +32,7 @@ unit_names = keys(nwb.analysis);
 % with MATLAB version R2022b, a notable addition of the <https://www.mathworks.com/help/matlab/ref/dictionary.html?s_tid=doc_ta 
 % dictionary> object offers significantly faster functionality.
 % 
-% You can intialize a dictionary and configure its contents from relevant analysed 
+% You can initialize a dictionary and configure its contents from relevant analysed 
 % NWB data with the same key/values noted above. 
 % 
 % Number of entries in a dictionary can be done with the new <https://www.mathworks.com/help/matlab/ref/dictionary.numentries.html 
@@ -260,7 +260,7 @@ neuron_ids = [11, 2]; % neuron unit IDs corresponding to the Fig 1e labels
 num_conditions = 4; % photostim conditions: nostim, sample, early, middle if applicable
 num_neurons = length(neuron_ids);
 
-% Inititalize data structures for each summary plot of categorized neural spike data at specified stimulus condition
+% Initialize data structures for each summary plot of categorized neural spike data at specified stimulus condition
 RasterPlot = struct(...
     'xs', 0,...
     'ys', 0);

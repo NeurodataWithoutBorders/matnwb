@@ -173,7 +173,7 @@ table_ragged_col.addRow('col1', {'3a'; '3b'; '3c'}, 'id', 2);
 my_table.getRow(1)
 %% 
 % If you want to access values for just a subset of columns you can pass in 
-% the 'columns' arguement along with a cell array with the desired column names
+% the 'columns' argument along with a cell array with the desired column names
 
 my_table.getRow(1:3, 'columns', {'col1'})
 %% 
@@ -187,7 +187,7 @@ my_table.getRow(1, 'useId', true)
 
 table_ragged_col.getRow(1:2)
 %% Accessing column elements
-% To acess all rows from a particular column use the .get method on the vectordata 
+% To access all rows from a particular column use the .get method on the vectordata 
 % field of the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
 % *DynamicTable*> object
 
@@ -198,7 +198,7 @@ my_table.vectordata.get('col2').data
 % *DynamicTableRegion*> object as a column of a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
 % *DynamicTable*>. This is analogous to a foreign key in a relational database. 
 % The <file:///Users/cesar/Repositories/matnwb/doc/+types/+hdmf_common/DynamicTableRegion.html 
-% *DynamicTableRegion*> class takes in an |ObjectView| object as arguement. |ObjectView| 
+% *DynamicTableRegion*> class takes in an |ObjectView| object as argument. |ObjectView| 
 % objects create links from one object type referencing another.
 
 dtr_col = types.hdmf_common.DynamicTableRegion( ...
@@ -243,7 +243,7 @@ dtr_table.toTable(false)
 % *ElementIdentifiers*> columns of a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
 % *DynamicTable*>*.* Specifically, you must wrap the column data with a *DataPipe* 
 % object. The *DataPipe* class takes in maxSize and axis as arguments to indicate 
-% the maximum desired size for each axis and the axis to whcih to append to, respectively. 
+% the maximum desired size for each axis and the axis to which to append to, respectively. 
 % For example, creating a *DataPipe* object with a _maxSize_ value equal to |[Inf, 
 % 1]| indicates that the number of rows may increase indifinetely. In contrast, 
 % setting _maxSize_  equal to |[8, 1]| would allow the column to grow to a maximum 
@@ -373,8 +373,8 @@ multi_ragged_table = types.hdmf_common.DynamicTable( ...
 % *DynamicTable*> objects with multidimensional array columns can also be constructed 
 % by adding a single row at a time. This method makes use of *DataPipe* objects 
 % due to the fact that MATLAB doesn't support singleton dimensions for arrays 
-% with more than 2 dimensions. The code block below demonstates how to build a 
-% <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
+% with more than 2 dimensions. The code block below demonstrates how to build 
+% a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
 % *DynamicTable*> object with a mutidimensional raaged array column in this manner.
 
 % Create file

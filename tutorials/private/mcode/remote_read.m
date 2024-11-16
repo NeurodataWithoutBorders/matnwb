@@ -28,7 +28,7 @@ nwbfile = nwbRead(s3);
 %% 
 % That's it! MATLAB will automatically detect that this is an S3 path instead 
 % of a local filepath and will set up a remote read interface for that NWB file. 
-% This appoach works on any computer with a fairly recent version of MATLAB and 
+% This approach works on any computer with a fairly recent version of MATLAB and 
 % an internet connection. It works particularly well on the <http://hub.dandiarchive.org 
 % DANDI Hub>, which has a very fast connection to the DANDI S3 store and which 
 % provides a MATLAB environment for free provided you have a license.
