@@ -11,5 +11,3 @@ To update the exports after modifying a live script, run the
 `matnwb_exportModifiedTutorials` function located in 
 `<matnwb_root>/tools/documentation/`. 
 This function will re-export the live script as both HTML and `.m` files.
-
-**Note:** Consider setting up a Git pre-commit hook to automate this export process.
