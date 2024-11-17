@@ -14,12 +14,15 @@ function matnwb_checkTutorials()
 %
 %   See also matnwb_listModifiedFiles, matnwb_exportTutorials
 
-    modifiedFiles = matnwb_listModifiedFiles();
-    
-    isTutorialFile = startsWith(modifiedFiles, fullfile(misc.getMatnwbDir, 'tutorials'));
-    isTutorialFile = isTutorialFile & endsWith(modifiedFiles, ".mlx");
-    tutorialFiles = modifiedFiles(isTutorialFile);
-    
+    tutorialFolder = fullfile(misc.getMatnwbDir, 'tutorials');
+
+    modifiedFiles = matnwb_listModifiedFiles("all");
+
+    isInTutorialFolder = startsWith(modifiedFiles, tutorialFolder);
+    isLivescript = endsWith(modifiedFiles, ".mlx");
+
+    tutorialFiles = modifiedFiles(isInTutorialFolder & isLivescript);
+
     if ~isempty(tutorialFiles)
         [~, fileNames] = fileparts(tutorialFiles);
         fileNames = string(fileNames) + ".mlx";
