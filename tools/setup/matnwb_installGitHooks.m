@@ -18,9 +18,6 @@ function matnwb_installGitHooks(projectDirectory)
 
     gitHooksSourceFolder = fullfile(projectDirectory, 'tools', 'githooks');
 
-    % List all .m files in the githooks source folder
-    L = dir(fullfile(gitHooksSourceFolder, '*.m'));
-
     % Define supported hook names
     supportedHookNames = ["pre-commit", "pre-push"];
 
@@ -33,19 +30,19 @@ function matnwb_installGitHooks(projectDirectory)
               "The specified project directory does not contain a valid git repository.");
     end
 
-    % Loop through the .m files and create symlinks for recognized hooks
-    for i = 1:numel(L)
-        [~, mFileName] = fileparts(L(i).name);
-
-        % Convert the script name to a git hook name
-        hookName = strrep(mFileName, '_', '-');
-
-        % Check if the hook name is supported
-        if ismember(hookName, supportedHookNames)
+    for hookName = supportedHookNames
+        if ismac
+            postfix = "mac";
+        elseif isunix
+            postfix = "linux";
+        elseif ispc
+            postfix = "win";
+        end
+    
+        listing = dir(fullfile(gitHooksSourceFolder, hookName+"-"+postfix));
+        if ~isempty(listing)
             targetPath = fullfile(gitHooksTargetFolder, hookName);
-            
-            scriptContent = fileread(fullfile(gitHooksSourceFolder, hookName));
-            scriptContent = strrep(scriptContent, '{{matlabroot}}', matlabroot);
+            scriptContent = fileread(fullfile(gitHooksSourceFolder, listing.name));
 
             fid = fopen(targetPath, "wt");
             fwrite(fid, scriptContent);
@@ -55,10 +52,9 @@ function matnwb_installGitHooks(projectDirectory)
                 % Make the target executable
                 system(sprintf('chmod +x "%s"', targetPath));
             end
-
             fprintf('Installed hook: %s -> %s\n', hookName, targetPath);
         else
-            fprintf('Skipped unsupported hook: %s\n', hookName);
+            fprintf('Skipped missing hook: %s\n', hookName);
         end
     end
 end
