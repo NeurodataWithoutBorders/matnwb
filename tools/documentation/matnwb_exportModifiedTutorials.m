@@ -16,9 +16,18 @@ function matnwb_exportModifiedTutorials()
         modifiedFiles = matnwb_listModifiedFiles();
     end
 
-    isTutorialFile = startsWith(modifiedFiles, fullfile(misc.getMatnwbDir, 'tutorials'));
-    isTutorialFile = isTutorialFile & endsWith(modifiedFiles, ".mlx");
-    tutorialFiles = modifiedFiles(isTutorialFile);
+    tutorialFolder = fullfile(misc.getMatnwbDir, 'tutorials');
+    isInTutorialFolder = startsWith(modifiedFiles, tutorialFolder);
+    isLivescript = endsWith(modifiedFiles, ".mlx");
     
-    matnwb_exportTutorials("FilePaths", tutorialFiles)
+    tutorialFiles = modifiedFiles(isInTutorialFolder & isLivescript);
+
+    filesToIgnore = ["basicUsage", "read_demo", "remote_read"];
+    isIgnored = endsWith(tutorialFiles, filesToIgnore + ".mlx");
+    if any(isIgnored)
+        warning('Skipping export for the following files (see matnwb_exportTutorials):\n%s', ...
+            strjoin("  - " + filesToIgnore(isIgnored) + ".mlx", newline))
+    end
+
+    matnwb_exportTutorials("FilePaths", tutorialFiles, "IgnoreFiles", filesToIgnore)
 end

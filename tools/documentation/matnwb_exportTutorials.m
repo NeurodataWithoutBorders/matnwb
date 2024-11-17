@@ -6,8 +6,8 @@ function matnwb_exportTutorials(options)
 %  - read_demo.mlx : depends on external data, potentially slow
 %  - remote_read.mlx : Uses nwbRead on s3 url, potentially very slow]
 %
-%   To export all livescripts (assuming you have made sure the above will run)
-%   call the function with IgnoreFiles set to empty, i.e
+%   To export all livescripts (assuming you have made sure the above-mentioned 
+%   files will run) call the function with IgnoreFiles set to empty, i.e:
 %       matnwb_exportTutorials(..., "IgnoreFiles", string.empty)
 
     arguments
@@ -15,7 +15,7 @@ function matnwb_exportTutorials(options)
         options.Expression (1,1) string = "*" % Filter by expression
         options.FileNames (1,:) string = string.empty % Filter by file names
         options.FilePaths (1,:) string = string.empty % Export specified files
-        options.IgnoreFiles (1,:) string =["basicUsage", "read_demo", "remote_read"];
+        options.IgnoreFiles (1,:) string = ["basicUsage", "read_demo", "remote_read"];
         options.RunLivescript (1,1) logical = true
     end
     

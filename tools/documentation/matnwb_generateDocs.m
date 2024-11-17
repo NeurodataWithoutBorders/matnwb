@@ -1,8 +1,14 @@
 function matnwb_generateDocs()
-% MATNWB_GENERATEDOCS generates docs for MatNWB user API
+% MATNWB_GENERATEDOCS generates html docs for MatNWB API functions
 %
-%   matnwb_generateDocs() generate documentation for MATLAB files in the 
+%   matnwb_generateDocs() generates html documentation for MATLAB files in the 
 %   current matnwb root directory.
+%
+%   The following files are included:
+%       - generateCore.m
+%       - generateExtension.m
+%       - nwbRead.m
+%       - nwbExport.m
 %
 %   Requires <a href="matlab:web('https://github.com/gllmflndn/m2html')">m2html</a> in your path.
 
