@@ -1,4 +1,4 @@
-function modifiedFiles = matnwb_listModifiedFiles()
+function modifiedFiles = matnwb_listModifiedFiles(mode)
 % matnwb_listModifiedFiles - Lists modified files in the repository using Git.
 %
 % This function identifies files modified in the current Git repository by
@@ -9,7 +9,9 @@ function modifiedFiles = matnwb_listModifiedFiles()
 %   modifiedFiles = matnwb_listModifiedFiles()
 %
 % Inputs:
-%   None
+%   mode - (string) [optional] Which mode to use. Options: "all" or "staged"
+%                   Whether to list all modified files or only files staged for 
+%                   commit. Default is "all".
 %
 % Outputs:
 %   modifiedFiles - (string array) A list of modified files in the repository,
@@ -18,20 +20,41 @@ function modifiedFiles = matnwb_listModifiedFiles()
 %
 % Errors:
 %   - Raises an error if Git fails or is unavailable.
+    
+    arguments
+        mode (1,1) string {mustBeMember(mode, ["staged", "all"])} = "all"
+    end
 
     currentDir = pwd;
     cleanupObj = onCleanup(@(fp) cd(currentDir));
 
     cd(misc.getMatnwbDir)
-    [status, cmdout] = system('git --no-pager diff --name-only');
+    
+    switch mode
+        case "all"
+            [status, cmdout] = system([...
+                'git --no-pager diff --cached --name-only ', ...
+                '&& git --no-pager diff --name-only | sort | uniq' ]);
+        case "staged"
+            [status, cmdout] = system('git --no-pager diff --cached --name-only');
+    end
     clear cleanupObj
 
     if status == 0
         modifiedFiles = splitlines(cmdout);
         modifiedFiles = string(modifiedFiles);
         modifiedFiles(modifiedFiles=="") = [];
+        modifiedFiles = removeHiddenFormatting(modifiedFiles);
         modifiedFiles = fullfile(misc.getMatnwbDir, modifiedFiles);
     else
         error('Could not use git to detect modified files.')
     end
+end
+
+function cleanText = removeHiddenFormatting(inputText)
+    % Define the regex pattern for ANSI escape sequences
+    ansiPattern = '\x1B\[[0-9;]*[a-zA-Z]';
+
+    % Remove ANSI escape sequences using regexprep
+    cleanText = regexprep(inputText, ansiPattern, '');
 end
