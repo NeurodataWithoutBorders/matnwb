@@ -53,8 +53,6 @@ function matnwb_installGitHooks(projectDirectory)
                 system(sprintf('chmod +x "%s"', targetPath));
             end
             fprintf('Installed hook: %s -> %s\n', hookName, targetPath);
-        else
-            fprintf('Skipped missing hook: %s\n', hookName);
         end
     end
 end
