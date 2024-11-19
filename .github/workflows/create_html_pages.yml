@@ -27,7 +27,7 @@ jobs:
             addpath(genpath('tools'));
             matnwb_setup;
             matnwb_generateDocs;
-            matnwb_exportTutorials(ExportFormat="html");
+            matnwb_exportTutorials(ExportFormat=".html");
 
       - name: Checkout gh-pages branch
         uses: actions/checkout@v4
@@ -35,7 +35,7 @@ jobs:
           ref: gh-pages
           path: gh-pages
 
-      - name: Push to gh-badges
+      - name: Push to gh-pages
         run: |
           cp docs/html gh-pages/docs/html
           cd gh-pages
