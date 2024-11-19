@@ -120,9 +120,7 @@ classdef TutorialTest <  matlab.unittest.TestCase
                     results = py.list(py.nwbinspector.inspect_nwbfile(nwbfile_path=nwbFilename));
                     results = testCase.convertNwbInspectorResultsToStruct(results);
                 elseif testCase.NWBInspectorMode == "CLI"
-                    nwbInspectorPath = '/Library/Frameworks/Python.framework/Versions/3.11/bin/nwbinspector'
-                    [~, m] = system(sprintf('%s %s --levels importance', nwbInspectorPath, nwbFilename));
-                    
+                    [~, m] = system(sprintf('nwbinspector %s --levels importance', nwbFilename));
                     results = testCase.parseNWBInspectorTextOutput(m);
                 end
                 
