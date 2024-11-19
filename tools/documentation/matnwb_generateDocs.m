@@ -1,25 +1,35 @@
-function generateDocs()
-% GENERATEDOCS generates docs for MatNWB user API
-%   GENERATEDOCS() generate documentation for MATLAB files in the current working directory.
+function matnwb_generateDocs()
+% MATNWB_GENERATEDOCS generates html docs for MatNWB API functions
 %
-%   Requires <a href="matlab:
-%   web('https://www.artefact.tk/software/matlab/m2html/')">m2html</a> in your path.
-rootFiles = dir('.');
+%   matnwb_generateDocs() generates html documentation for MATLAB files in the 
+%   current matnwb root directory.
+%
+%   The following files are included:
+%       - generateCore.m
+%       - generateExtension.m
+%       - nwbRead.m
+%       - nwbExport.m
+%
+%   Requires <a href="matlab:web('https://github.com/gllmflndn/m2html')">m2html</a> in your path.
+
+rootDir = misc.getMatnwbDir();
+rootFiles = dir(rootDir);
 rootFiles = {rootFiles.name};
 rootWhitelist = {'generateCore.m', 'generateExtension.m', 'nwbRead.m', 'nwbExport.m'};
 isWhitelisted = ismember(rootFiles, rootWhitelist);
 rootFiles(~isWhitelisted) = [];
 
-m2html('mfiles', rootFiles, 'htmldir', 'doc');
+docDir = fullfile(rootDir, 'doc');
+m2html('mfiles', rootFiles, 'htmldir', docDir);
 
 % correct html files in root directory as the stylesheets will be broken
 fprintf('Correcting files in root directory...\n');
-rootFiles = dir('doc');
+rootFiles = dir(docDir);
 rootFiles = {rootFiles.name};
 htmlMatches = regexp(rootFiles, '\.html$', 'once');
 isHtmlFile = ~cellfun('isempty', htmlMatches);
 rootFiles(~isHtmlFile) = [];
-rootFiles = fullfile('doc', rootFiles);
+rootFiles = fullfile(docDir, rootFiles);
 
 for iDoc=1:length(rootFiles)
     fileName = rootFiles{iDoc};
@@ -29,7 +39,7 @@ end
 
 % correct index.html so the header indicates MatNWB
 fprintf('Correcting index.html Header...\n');
-indexPath = fullfile('doc', 'index.html');
+indexPath = fullfile(docDir, 'index.html');
 fileReplace(indexPath, 'Index for \.', 'Index for MatNWB');
 
 % remove directories listing in index.html
