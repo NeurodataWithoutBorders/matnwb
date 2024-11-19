@@ -1,0 +1,53 @@
+# Create updated html pages for documentation
+name: Create HTML
+
+on:
+  push:
+    branches:
+      - master
+      - feature/create-html-workflow
+
+jobs:
+  run_tests:
+    name: Create HTML Pages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install MATLAB
+        uses: matlab-actions/setup-matlab@v2
+        with:
+          release: R2023b # R2020a This is necessary to create the pages for types
+      
+      - name: Create pages
+        uses: matlab-actions/run-command@v2
+        with:
+          command: |
+            addpath(genpath('tools'));
+            matnwb_setup;
+            matnwb_generateDocs;
+            matnwb_exportTutorials(ExportFormat="html");
+
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Push to gh-badges
+        run: |
+          cp docs/html gh-pages/docs/html
+          cd gh-pages
+
+          git config user.name "${{ github.workflow }} by ${{ github.actor }}"
+          git config user.email "<>"
+
+          # Only proceed with commit and push if changes are detected
+          if [[ $(git add . --dry-run | wc -l) -gt 0 ]]; then
+            git add .
+            git commit -m "Update html pages"
+            git push -f
+          else
+            echo "Nothing to commit"
+          fi

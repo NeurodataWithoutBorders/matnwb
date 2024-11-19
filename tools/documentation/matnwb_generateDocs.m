@@ -19,7 +19,7 @@ rootWhitelist = {'generateCore.m', 'generateExtension.m', 'nwbRead.m', 'nwbExpor
 isWhitelisted = ismember(rootFiles, rootWhitelist);
 rootFiles(~isWhitelisted) = [];
 
-docDir = fullfile(rootDir, 'doc');
+docDir = fullfile(rootDir, 'docs', 'html');
 m2html('mfiles', rootFiles, 'htmldir', docDir);
 
 % correct html files in root directory as the stylesheets will be broken

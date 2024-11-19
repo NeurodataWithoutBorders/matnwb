@@ -17,6 +17,7 @@ function matnwb_exportTutorials(options)
         options.FilePaths (1,:) string = string.empty % Export specified files
         options.IgnoreFiles (1,:) string = ["basicUsage", "read_demo", "remote_read"];
         options.RunLivescript (1,1) logical = true
+        options.OutputFolder (1,1) string = fullfile("docs", "html", "tutorials")
     end
     
     [exportFormat, targetFolderNames] = deal(options.ExportFormat);
@@ -25,7 +26,8 @@ function matnwb_exportTutorials(options)
     targetFolderNames(strcmp(targetFolderNames, "m")) = fullfile("private", "mcode");
 
     nwbTutorialDir = fullfile(misc.getMatnwbDir, "tutorials");
-    targetFolderPaths = fullfile(nwbTutorialDir, targetFolderNames);
+    %targetFolderPaths = fullfile(nwbTutorialDir, targetFolderNames);
+    targetFolderPaths = fullfile(misc.getMatnwbDir, options.OutputFolder);
 
     for folderPath = targetFolderPaths
         if ~isfolder(folderPath); mkdir(folderPath); end
