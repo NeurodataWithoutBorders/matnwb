@@ -133,20 +133,59 @@ nwb.acquisition.set('ElectricalSeries', electrical_series);
 % 
 % 
 
-electrical_series = types.core.ElectricalSeries( ...
+lfp_electrical_series = types.core.ElectricalSeries( ...
     'starting_time', 0.0, ... % seconds
     'starting_time_rate', 1000., ... % Hz
     'data', randn(12, 100), ...
     'electrodes', electrode_table_region, ...
     'data_unit', 'volts');
 
-lfp = types.core.LFP('ElectricalSeries', electrical_series);
+lfp = types.core.LFP('ElectricalSeries', lfp_electrical_series);
 
 ecephys_module = types.core.ProcessingModule(...
     'description', 'extracellular electrophysiology');
 
 ecephys_module.nwbdatainterface.set('LFP', lfp);
 nwb.processing.set('ecephys', ecephys_module);
+% Decomposition of LFP Data into Frequency Bands
+% In some cases, you may want to further process the LFP data and decompose 
+% the signal into different frequency bands for additional downstream analyses. 
+% You can store the processed data from these spectral analyses using a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/DecompositionSeries.html 
+% |*DecompositionSeries*|> object. This object allows you to include metadata 
+% about the frequency bands and metric used (e.g., |power|, |phase|, |amplitude|), 
+% as well as link the decomposed data to the original <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/TimeSeries.html 
+% |*TimeSeries*|> signal the data was derived from.
+% 
+% *Note*: When adding data to a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/DecompositionSeries.html 
+% |*DecompositionSeries*|>, the |data| argument is assumed to be 3D where the 
+% first dimension is time, the second dimension is channels, and the third dimension 
+% is bands. In MatNWB, the data needs to be permuted because the dimensions are 
+% written to file in reverse order (See the <./dimensionMapNoDataPipes.mlx dimensionMapNoDataPipes> 
+% tutorial)
+
+% Define the frequency bands of interest (in Hz):
+band_names = {'theta'; 'beta'; 'gamma'};
+band_limits = [[4.0, 12.0]; [12.0, 30.0]; [30.0, 80.0]];
+
+% The bands should be added to the DecompositionSeries as a dynamic table
+bands = table(band_names, band_limits, 'VariableNames', {'band_names', 'band_limits'})
+bands = util.table2nwb( bands );
+
+% Generate random phase data for the demonstration.
+phase_data = randn(50, 12, numel(band_names)); % 50 samples, 12 channels, 3 frequency bands
+phase_data = permute(phase_data, [3,2,1]); % See dimensionMapNoDataPipes tutorial
+
+decomp_series = types.core.DecompositionSeries(...
+    'data', phase_data, ...
+    'bands', bands, ...
+    'metric', 'phase', ...
+    'starting_time', 0.0, ... % seconds
+    'starting_time_rate', 1000.0, ... % Hz
+    'source_channels', electrode_table_region, ...
+    'source_timeseries', lfp_electrical_series);
+
+% Add decomposition series to ecephys module
+ecephys_module.nwbdatainterface.set('theta', decomp_series);
 %% Sorted Spike Times
 % Ragged Arrays
 % Spike times are stored in another <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
