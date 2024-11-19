@@ -165,10 +165,14 @@ nwb.processing.set('ecephys', ecephys_module);
 
 % Define the frequency bands of interest (in Hz):
 band_names = {'theta'; 'beta'; 'gamma'};
-band_limits = [[4.0, 12.0]; [12.0, 30.0]; [30.0, 80.0]];
+band_mean = [8; 21; 55];
+band_stdev = [2; 4.5; 12.5];
+band_limits = [band_mean - 2*band_stdev, band_mean + 2*band_stdev];
 
 % The bands should be added to the DecompositionSeries as a dynamic table
-bands = table(band_names, band_limits, 'VariableNames', {'band_names', 'band_limits'})
+bands = table(band_names, band_mean, band_stdev, band_limits, ...
+    'VariableNames', {'band_names', 'band_mean', 'band_stdev', 'band_limits'})
+
 bands = util.table2nwb( bands );
 
 % Generate random phase data for the demonstration.
