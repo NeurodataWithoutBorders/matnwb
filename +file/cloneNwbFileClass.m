@@ -5,14 +5,21 @@ function cloneNwbFileClass(typeFileName, fullTypeName)
 
 nwbFilePath = which('NwbFile');
 installPath = fileparts(nwbFilePath);
-fileId = fopen(nwbFilePath);
-text = strrep(char(fread(fileId) .'),...
-    'NwbFile < types.core.NWBFile',...
+nwbFileClassDef = fileread(nwbFilePath);
+
+% Update superclass name
+updatedNwbFileClassDef = strrep(nwbFileClassDef, ...
+    'NwbFile < types.core.NWBFile', ...
     sprintf('NwbFile < %s', fullTypeName));
-fclose(fileId);
+
+% Update call to superclass constructor
+updatedNwbFileClassDef = strrep(updatedNwbFileClassDef, ...
+    'obj = obj@types.core.NWBFile', ...
+    sprintf('obj = obj@%s', fullTypeName));
 
 fileId = fopen(fullfile(installPath, [typeFileName '.m']), 'W');
-fwrite(fileId, text);
+fwrite(fileId, updatedNwbFileClassDef);
 fclose(fileId);
-end
 
+rehash();
+end

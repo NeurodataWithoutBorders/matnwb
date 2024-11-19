@@ -28,7 +28,7 @@ classdef ExternalLink < handle
                 % if path is valid hdf5 path, then returns either a Nwb Object, DataStub, or Link Object
                 % otherwise errors, probably.
                 assert(ischar(Link.filename), 'expecting filename to be a char array.');
-                assert(2 == exist(Link.filename, 'file'), '%s does not exist.', Link.filename);
+                assert(isfile(Link.filename), '%s does not exist.', Link.filename);
                 
                 fid = H5F.open(Link.filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
                 LinkedInfo = h5info(Link.filename, Link.path);

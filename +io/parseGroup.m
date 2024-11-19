@@ -76,9 +76,7 @@ else
             parsed = NwbFile(kwargs{:});
         else
             file.cloneNwbFileClass(Type.name, Type.typename);
-            rehash();
             parsed = io.createParsedType(info.Name, Type.typename, kwargs{:});
-
         end
         
         return;

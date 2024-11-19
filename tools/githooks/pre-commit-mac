@@ -1,0 +1,68 @@
+#!/bin/bash
+
+# Relative paths
+TUTORIAL_FOLDER="tutorials"
+PRIVATE_FOLDER="$TUTORIAL_FOLDER/private"
+
+# Define file mappings (script files and their corresponding documentation)
+SCRIPT_FILES=("generateCore.m" "generateExtension.m" "nwbRead.m" "nwbExport.m")
+DOC_FOLDER="doc"
+
+# Get modified files (staged)
+MODIFIED_FILES=$(git diff --cached --name-only)
+
+# Check for .mlx files in the tutorials folder
+TUTORIAL_FILES=$(echo "$MODIFIED_FILES" | grep "^$TUTORIAL_FOLDER" | grep "\.mlx$")
+
+# If there are tutorial files, check that they have been exported
+if [[ -n "$TUTORIAL_FILES" ]]; then
+    
+    for TUTORIAL_FILE in $TUTORIAL_FILES; do
+        # Get the base name without extension
+        BASENAME=$(basename "$TUTORIAL_FILE" .mlx)
+
+        # Find corresponding .html and .m files
+        HTML_FILE=$(find "$TUTORIAL_FOLDER" -name "$BASENAME.html" -print -quit)
+        MC_FILE=$(find "$PRIVATE_FOLDER" -name "$BASENAME.m" -print -quit)
+
+        # Get modification dates (default to 0 if file doesn't exist)
+        TUTORIAL_FILE_DATE=$(stat -f "%m" "$TUTORIAL_FILE")
+        HTML_FILE_DATE=$(stat -f "%m" "$HTML_FILE" 2>/dev/null || echo 0)
+        MC_FILE_DATE=$(stat -f "%m" "$MC_FILE" 2>/dev/null || echo 0)
+
+        # Check if .html or .m file is outdated
+        if [[ "$TUTORIAL_FILE_DATE" -gt "$HTML_FILE_DATE" || "$TUTORIAL_FILE_DATE" -gt "$MC_FILE_DATE" ]]; then
+            echo "Error: Please re-export html/m-files for live script \"$BASENAME.mlx\"." >&2
+            exit 1
+        fi
+    done
+fi
+
+# Flag to track if any files are outdated
+OUTDATED_FOUND=0
+
+# Loop through each script file
+for SCRIPT_FILE in "${SCRIPT_FILES[@]}"; do
+    # Check if the script file has been modified
+    if echo "$MODIFIED_FILES" | grep -q "^$SCRIPT_FILE$"; then
+        # Get the corresponding HTML file in the doc folder
+        HTML_FILE="$DOC_FOLDER/${SCRIPT_FILE%.m}.html"
+
+        # Get modification dates (default to 0 if file doesn't exist)
+        SCRIPT_FILE_DATE=$(stat -f "%m" "$SCRIPT_FILE")
+        HTML_FILE_DATE=$(stat -f "%m" "$HTML_FILE" 2>/dev/null || echo 0)
+
+        # Check if the script is newer than the HTML file
+        if [[ "$SCRIPT_FILE_DATE" -gt "$HTML_FILE_DATE" ]]; then
+            echo "Error: Please re-export documentation for \"$SCRIPT_FILE\"." >&2
+            OUTDATED_FOUND=1
+        fi
+    fi
+done
+
+# Exit with error if any files are outdated
+if [[ $OUTDATED_FOUND -eq 1 ]]; then
+    exit 1
+fi
+
+exit 0

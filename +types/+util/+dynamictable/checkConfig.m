@@ -1,4 +1,4 @@
-function checkConfig(DynamicTable, varargin)
+function checkConfig(DynamicTable, ignoreList)
     % CHECKCONFIG Given a DynamicTable object, this functions checks for proper
     % DynamicTable configuration
     %
@@ -13,10 +13,9 @@ function checkConfig(DynamicTable, varargin)
     %  1) The length of all columns in the dynamic table is the same.
     %  2) All rows have a corresponding id. If none exist, this function creates them.
     %  3) No index loops exist.
-    if nargin<2
-        ignoreList = {};
-    else
-        ignoreList = varargin{1};
+    arguments
+        DynamicTable
+        ignoreList (1,:) cell = {};
     end
 
     if isempty(DynamicTable.colnames)

@@ -21,9 +21,6 @@ function festr = fillExport(propertyNames, RawClass, parentName)
     for i = 1:length(propertyNames)
         propertyName = propertyNames{i};
         pathProps = traverseRaw(propertyName, RawClass);
-        if isempty(pathProps)
-            keyboard;
-        end
         prop = pathProps{end};
         elideProps = pathProps(1:end-1);
         elisions = cell(length(elideProps),1);
@@ -84,11 +81,10 @@ function path = traverseRaw(propertyName, RawClass)
     path = {}; 
 
     if isa(RawClass, 'file.Dataset')
-        if isempty(RawClass.attributes)
-            return;
+        if ~isempty(RawClass.attributes)
+            matchesAttribute = strcmp({RawClass.attributes.name}, propertyName);
+            path = {RawClass.attributes(matchesAttribute)};
         end
-        matchesAttribute = strcmp({RawClass.attributes.name}, propertyName);
-        path = {RawClass.attributes(matchesAttribute)};
         return;
     end
 
