@@ -4,7 +4,7 @@ Namespace = schemes.loadNamespace(namespaceName, saveDir);
 
 classFileDir = fullfile(saveDir, '+types', ['+' misc.str2validName(Namespace.name)]);
 
-if 7 ~= exist(classFileDir, 'dir')
+if ~isfolder(classFileDir)
     mkdir(classFileDir);
 end
 
@@ -14,18 +14,14 @@ for i=1:length(classes)
     className = classes{i};
     [processed, classprops, inherited] = file.processClass(className, Namespace, pregenerated);
     
-    if isempty(processed)
-        continue;
-    end
-    
-    fid = fopen(fullfile(classFileDir, [className '.m']), 'W');
-    try
+    if ~isempty(processed)
+        fid = fopen(fullfile(classFileDir, [className '.m']), 'W');
+        % Create cleanup object to close to file in case the write operation fails.
+        fileCleanupObj = onCleanup(@(id) fclose(fid));
         fwrite(fid, file.fillClass(className, Namespace, processed, ...
             classprops, inherited), 'char');
-    catch ME
-        fclose(fid);
-        rethrow(ME)
+    else
+        % pass
     end
-    fclose(fid);
 end
 end

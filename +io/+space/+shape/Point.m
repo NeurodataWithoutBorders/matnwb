@@ -22,11 +22,9 @@ classdef Point < io.space.Shape
         end
         
         function varargout = getMatlabIndex(obj)
-            if 0 == nargout
-                return;
+            if nargout > 0
+                varargout{1} = obj.index;
             end
-            
-            varargout{1} = obj.index;
         end
     end
 end

@@ -12,17 +12,29 @@ classdef NwbFile < types.core.NWBFile
     % See also NWBREAD, GENERATECORE, GENERATEEXTENSION
 
     methods
-        function obj = NwbFile(varargin)
-            obj = obj@types.core.NWBFile(varargin{:});
-            if strcmp(class(obj), 'NwbFile')
-                cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
+        function obj = NwbFile(propValues)
+            arguments
+                propValues.?types.core.NWBFile
+                propValues.nwb_version
+            end
+            nameValuePairs = namedargs2cell(propValues);
+            obj = obj@types.core.NWBFile(nameValuePairs{:});
+            if strcmp(class(obj), 'NwbFile') %#ok<STISA>
+                cellStringArguments = convertContainedStringsToChars(nameValuePairs(1:2:end));
                 types.util.checkUnset(obj, unique(cellStringArguments));
             end
         end
 
-        function export(obj, filename)
-            %add to file create date
-            
+        function export(obj, filename, mode)
+        % export - Export NWB file object
+
+            arguments
+                obj (1,1) NwbFile
+                filename (1,1) string
+                mode (1,1) string {mustBeMember(mode, ["edit", "overwrite"])} = "edit"
+            end
+
+            % add to file create date
             if isa(obj.file_create_date, 'types.untyped.DataStub')
                 obj.file_create_date = obj.file_create_date.load();
             end
@@ -43,26 +55,22 @@ classdef NwbFile < types.core.NWBFile
                 obj.timestamps_reference_time = obj.session_start_time;
             end
 
-            try
-                output_file_id = H5F.create(filename);
-                isEditingFile = false;
-            catch ME % if file exists, open and edit
-                if verLessThan('matlab', '9.9') % < 2020b
-                    isEditingFile = strcmp(ME.identifier, 'MATLAB:imagesci:hdf5lib:libraryError')...
-                        && contains(ME.message, '''File exists''');
-                else
-                    isEditingFile = strcmp(ME.identifier, 'MATLAB:imagesci:hdf5io:resourceAlreadyExists');
-                end
+            isEditingFile = false;
 
-                if isEditingFile
+            if isfile(filename)
+                if mode == "edit"
                     output_file_id = H5F.open(filename, 'H5F_ACC_RDWR', 'H5P_DEFAULT');
-                else
-                    rethrow(ME);
+                    isEditingFile = true;
+                elseif mode == "overwrite"
+                    output_file_id = H5F.create(filename, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 end
+            else
+                output_file_id = H5F.create(filename);
             end
 
             try
-                obj.embedSpecifications(output_file_id);
+                jsonSpecs = schemes.exportJson();
+                io.spec.writeEmbeddedSpecifications(output_file_id, jsonSpecs);
                 refs = export@types.core.NWBFile(obj, output_file_id, '/', {});
                 obj.resolveReferences(output_file_id, refs);
                 H5F.close(output_file_id);
@@ -116,69 +124,23 @@ classdef NwbFile < types.core.NWBFile
                     resolved(iRef) = exportSuccess;
                 end
 
-                if ~any(resolved)
-                    errorFormat = ['object(s) could not be created:\n%s\n\nThe '...
-                        'listed object(s) above contain an ObjectView, '...
-                        'RegionView , or SoftLink object that has failed to resolve itself. '...
-                        'Please check for any references that were not assigned to the root '...
-                        ' NwbFile or if any of the above paths are incorrect.'];
-                    unresolvedRefs = strjoin(references, newline);
-                    error('NWB:NwbFile:UnresolvedReferences',...
-                        errorFormat, file.addSpaces(unresolvedRefs, 4));
-                end
+                errorMessage = sprintf(...
+                    ['Object(s) could not be created:\n%s\n\nThe listed '...
+                    'object(s) above contain an ObjectView, RegionView, or ' ...
+                    'SoftLink object that has failed to resolve itself. '...
+                    'Please check for any references that were not assigned ' ...
+                    'to the root  NwbFile or if any of the above paths are ' ...
+                    'incorrect.'], file.addSpaces(strjoin(references, newline), 4));
+
+                assert( ...
+                    all(resolved), ...
+                    'NWB:NwbFile:UnresolvedReferences', ...
+                    errorMessage ...
+                    )
 
                 references(resolved) = [];
             end
         end
-
-        function embedSpecifications(~, fid)
-            try
-                attrId = H5A.open(fid, '/.specloc');
-                specLocation = H5R.get_name(fid, 'H5R_OBJECT', H5A.read(attrId));
-                H5A.close(attrId);
-            catch
-                specLocation = '/specifications';
-                io.writeGroup(fid, specLocation);
-                specView = types.untyped.ObjectView(specLocation);
-                io.writeAttribute(fid, '/.specloc', specView);
-            end
-
-            JsonData = schemes.exportJson();
-            for iJson = 1:length(JsonData)
-                JsonDatum = JsonData(iJson);
-                schemaNamespaceLocation = strjoin({specLocation, JsonDatum.name}, '/');
-                namespaceExists = io.writeGroup(fid, schemaNamespaceLocation);
-                if namespaceExists
-                    namespaceGroupId = H5G.open(fid, schemaNamespaceLocation);
-                    names = getVersionNames(namespaceGroupId);
-                    H5G.close(namespaceGroupId);
-                    for iNames = 1:length(names)
-                        H5L.delete(fid, [schemaNamespaceLocation '/' names{iNames}],...
-                            'H5P_DEFAULT');
-                    end
-                end
-                schemaLocation =...
-                    strjoin({schemaNamespaceLocation, JsonDatum.version}, '/');
-                io.writeGroup(fid, schemaLocation);
-                Json = JsonDatum.json;
-                schemeNames = keys(Json);
-                for iScheme = 1:length(schemeNames)
-                    name = schemeNames{iScheme};
-                    path = [schemaLocation '/' name];
-                    io.writeDataset(fid, path, Json(name));
-                end
-            end
-        end
-    end
-end
-
-function versionNames = getVersionNames(namespaceGroupId)
-    [~, ~, versionNames] = H5L.iterate(namespaceGroupId,...
-        'H5_INDEX_NAME', 'H5_ITER_NATIVE',...
-        0, @removeGroups, {});
-    function [status, versionNames] = removeGroups(~, name, versionNames)
-        versionNames{end+1} = name;
-        status = 0;
     end
 end
 

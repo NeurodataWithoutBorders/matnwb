@@ -155,34 +155,19 @@ function unitValidationStr = fillDatasetValidation(name, prop, namespaceReg)
             fillDimensionValidation(prop.dtype, prop.shape)...
             }, newline);
     elseif prop.isConstrainedSet
-        try
-            fullname = namespaceReg.getFullClassName(prop.type);
-        catch ME
-            if ~endsWith(ME.identifier, 'Namespace:NotFound')
-                rethrow(ME);
-            end
-
-            warning('NWB:Fill:Validators:NamespaceNotFound',...
-                ['Namespace could not be found for type `%s`.' ...
-                '  Skipping Validation for property `%s`.'], prop.type, name);
-            return;
+        fullname = getFullClassName(namespaceReg, prop.type, name);
+        if isempty(fullname)
+            return
         end
+
         unitValidationStr = strjoin({unitValidationStr...
             ['constrained = { ''' fullname ''' };']...
             ['types.util.checkSet(''' name ''', struct(), constrained, val);']...
             }, newline);
     else
-        try
-            fullname = namespaceReg.getFullClassName(prop.type);
-        catch ME
-            if ~endsWith(ME.identifier, 'Namespace:NotFound')
-                rethrow(ME);
-            end
-
-            warning('NWB:Fill:Validators:NamespaceNotFound',...
-                ['Namespace could not be found for type `%s`.' ...
-                '  Skipping Validation for property `%s`.'], prop.type, name);
-            return;
+        fullname = getFullClassName(namespaceReg, prop.type, name);
+        if isempty(fullname)
+            return
         end
         unitValidationStr = [unitValidationStr newline fillDtypeValidation(name, fullname)];
     end
@@ -318,4 +303,19 @@ function fdvstr = fillReadOnlyValidator(name, value, className)
             condition, ...
             sprintf('    %s', errorStr), ...
             'end' }, newline );
+end
+
+function fullname = getFullClassName(namespaceReg, propType, name)
+    fullname = '';
+    try
+        fullname = namespaceReg.getFullClassName(propType);
+    catch ME
+        if ~endsWith(ME.identifier, 'Namespace:NotFound')
+            rethrow(ME);
+        end
+
+        warning('NWB:Fill:Validators:NamespaceNotFound',...
+            ['Namespace could not be found for type `%s`.' ...
+            '  Skipping Validation for property `%s`.'], propType, name);
+    end
 end

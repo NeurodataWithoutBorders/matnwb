@@ -68,3 +68,9 @@ function testVerticalConcatenation(testCase)
 
     testCase.verifyError(@() [untypedSetA; untypedSetB], 'NWB:Set:Unsupported') 
 end
+
+function testSetCharValue(testCase)
+    untypedSet = types.untyped.Set( struct('a', 'a', 'b', 'b') );
+    untypedSet.set('c', 'c')
+    testCase.verifyEqual(untypedSet.get('c'), 'c')
+end

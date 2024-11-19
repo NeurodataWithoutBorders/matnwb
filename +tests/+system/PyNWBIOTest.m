@@ -37,7 +37,7 @@ classdef PyNWBIOTest < tests.system.RoundTripTest
             tests.util.addFolderToPythonPath( fileparts(mfilename('fullpath')) )
             
             envPath = fullfile('+tests', 'env.mat');
-            if 2 == exist(envPath, 'file')
+            if isfile(envPath)
                 Env = load(envPath, '-mat');
                 if isfield(Env, 'pythonPath')
                     pythonPath = Env.pythonPath;

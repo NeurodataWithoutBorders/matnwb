@@ -52,30 +52,14 @@ function propStr = getPropStr(prop, propName)
         typeStr = ['Table with columns: (', strjoin(columnDocStr, ', '), ')'];
     elseif isa(prop, 'file.Attribute')
         if isa(prop.dtype, 'containers.Map')
-            switch prop.dtype('reftype')
-                case 'region'
-                    refTypeName = 'Region';
-                case 'object'
-                    refTypeName = 'Object';
-                otherwise
-                    error('NWB:ClassGenerator:InvalidRefType', ...
-                        'Invalid reftype found while filling description for class property "%s".', propName);
-            end
-            typeStr = sprintf('%s Reference to %s', refTypeName, prop.dtype('target_type'));
+            assertValidRefType(prop.dtype('reftype'))
+            typeStr = sprintf('%s reference to %s', capitalize(prop.dtype('reftype')), prop.dtype('target_type'));
         else
             typeStr = prop.dtype;
         end
     elseif isa(prop, 'containers.Map')
-        switch prop('reftype')
-            case 'region'
-                refTypeName = 'region';
-            case 'object'
-                refTypeName = 'object';
-            otherwise
-                error('NWB:ClassGenerator:InvalidRefType', ...
-                    'Invalid reftype found while filling description for class property "%s".', propName);
-        end
-        typeStr = sprintf('%s Reference to %s', refTypeName, prop('target_type'));
+        assertValidRefType(prop('reftype'))
+        typeStr = sprintf('%s reference to %s', capitalize(prop('reftype')), prop('target_type'));
     elseif isa(prop, 'file.interface.HasProps')
         typeStrCell = cell(size(prop));
         for iProp = 1:length(typeStrCell)
@@ -108,4 +92,20 @@ function propStr = getPropStr(prop, propName)
     if nargin >= 2
         propStr = [propName ' = ' propStr];
     end
+end
+
+function assertValidRefType(referenceType)
+    arguments
+        referenceType (1,1) string
+    end
+    assert( ismember(referenceType, ["region", "object"]), ...
+        'NWB:ClassGenerator:InvalidRefType', ...
+        'Invalid reftype found while filling description for class properties.')
+end
+
+function word = capitalize(word)
+    arguments
+        word (1,:) char
+    end
+    word(1) = upper(word(1));
 end

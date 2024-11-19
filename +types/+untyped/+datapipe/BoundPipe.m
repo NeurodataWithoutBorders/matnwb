@@ -242,13 +242,13 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
         end
         
         function tf = hasPipeProperty(obj, name)
+            tf = false; 
             for i = 1:length(obj.pipeProperties)
                 if isa(obj.pipeProperties{i}, name)
                     tf = true;
                     return;
                 end
             end
-            tf = false;
         end
         
         function removePipeProperty(~, ~)

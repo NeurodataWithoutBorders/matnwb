@@ -5,7 +5,6 @@ classdef GenerationTest < matlab.unittest.TestCase
     
     methods (TestClassSetup)
         function setupClass(testCase)
-            
             import matlab.unittest.fixtures.PathFixture
             import tests.fixtures.ResetGeneratedTypesFixture
 
