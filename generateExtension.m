@@ -1,4 +1,4 @@
-function generateExtension(varargin)
+function generateExtension(namespaceFilePath, options)
     % GENERATEEXTENSION Generate Matlab classes from NWB extension schema file
     %   GENERATEEXTENSION(extension_path...)  Generate classes
     %   (Matlab m-files) from one or more NWB schema extension namespace
@@ -17,46 +17,42 @@ function generateExtension(varargin)
     %
     %   See also GENERATECORE
     
-    for iOption = 1:length(varargin)
-        option = varargin{iOption};
-        validateattributes(option, {'char', 'string'}, {'scalartext'} ...
-            , 'generateExtension', 'extension name', iOption);
-        if isstring(option)
-            varargin{iOption} = char(option);
+    arguments (Repeating)
+        namespaceFilePath (1,1) string {mustBeYamlFile}
+    end
+    arguments
+        options.savedir (1,1) string = misc.getMatnwbDir()
+    end
+
+    assert( ...
+        ~isempty(namespaceFilePath), ...
+        'NWB:GenerateExtension:NamespaceMissing', ...
+        'Please provide the file path to at least one namespace specification file.' ...
+        )
+
+    for iNamespaceFiles = 1:length(namespaceFilePath)
+
+        source = namespaceFilePath{iNamespaceFiles};
+        namespaceText = fileread(source);
+                
+        [namespaceRootFolder, ~, ~] = fileparts(source);
+        parsedNamespaceList = spec.generate(namespaceText, namespaceRootFolder);
+        
+        for iNamespace = 1:length(parsedNamespaceList)
+            parsedNamespace = parsedNamespaceList(iNamespace);
+            spec.saveCache(parsedNamespace, options.savedir);
+            file.writeNamespace(parsedNamespace.name, options.savedir);
         end
     end
-    
-    saveDirMask = strcmp(varargin, 'savedir');
-    if any(saveDirMask)
-        assert(~saveDirMask(end),...
-            'NWB:GenerateExtenion:InvalidParameter',...
-            'savedir must be paired with the desired save directory.');
-        saveDir = varargin{find(saveDirMask, 1, 'last') + 1};
-        saveDirParametersMask = saveDirMask | circshift(saveDirMask, 1);
-        sourceList = varargin(~saveDirParametersMask);
-    else
-        saveDir = misc.getMatnwbDir();
-        sourceList = varargin;
+    rehash()
+end
+
+function mustBeYamlFile(filePath)
+    arguments
+        filePath (1,1) string {mustBeFile}
     end
     
-    for iNamespaceFiles = 1:length(sourceList)
-        source = sourceList{iNamespaceFiles};
-        validateattributes(source, {'char', 'string'}, {'scalartext'});
-        
-        [localpath, ~, ~] = fileparts(source);
-        assert(2 == exist(source, 'file'),...
-            'NWB:GenerateExtension:FileNotFound', 'Path to file `%s` could not be found.', source);
-        fid = fopen(source);
-        namespaceText = fread(fid, '*char') .';
-        fclose(fid);
-        
-        Namespaces = spec.generate(namespaceText, localpath);
-        
-        for iNamespace = 1:length(Namespaces)
-            Namespace = Namespaces(iNamespace);
-            spec.saveCache(Namespace, saveDir);
-            file.writeNamespace(Namespace.name, saveDir);
-            rehash();
-        end
-    end
+    assert(endsWith(filePath, [".yaml", ".yml"], "IgnoreCase", true), ...
+        'NWB:GenerateExtension:MustBeYaml', ...
+        'Expected file to point to a yaml file', filePath)
 end
