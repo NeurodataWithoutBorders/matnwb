@@ -1,5 +1,5 @@
 classdef EventWaveform < types.core.NWBDataInterface & types.untyped.GroupClass
-% EVENTWAVEFORM Represents either the waveforms of detected events, as extracted from a raw data trace in /acquisition, or the event waveforms that were stored during experiment acquisition.
+% EVENTWAVEFORM DEPRECATED. Represents either the waveforms of detected events, as extracted from a raw data trace in /acquisition, or the event waveforms that were stored during experiment acquisition.
 
 
 % OPTIONAL PROPERTIES

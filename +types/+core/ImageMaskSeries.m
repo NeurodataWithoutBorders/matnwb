@@ -1,5 +1,5 @@
 classdef ImageMaskSeries < types.core.ImageSeries & types.untyped.GroupClass
-% IMAGEMASKSERIES An alpha mask that is applied to a presented visual stimulus. The 'data' array contains an array of mask values that are applied to the displayed image. Mask values are stored as RGBA. Mask can vary with time. The timestamps array indicates the starting time of a mask, and that mask pattern continues until it's explicitly changed.
+% IMAGEMASKSERIES DEPRECATED. An alpha mask that is applied to a presented visual stimulus. The 'data' array contains an array of mask values that are applied to the displayed image. Mask values are stored as RGBA. Mask can vary with time. The timestamps array indicates the starting time of a mask, and that mask pattern continues until it's explicitly changed.
 
 
 % OPTIONAL PROPERTIES
