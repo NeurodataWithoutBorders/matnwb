@@ -70,6 +70,14 @@ td {
     font-size: 13px;
 }
 
+.helptext pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-width: 100%;
+  padding: 10px;
+  overflow: auto;
+}
+
 .subheader {
     background-color: #E7EBF7;
     width: 100%;
