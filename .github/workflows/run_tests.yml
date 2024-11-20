@@ -9,6 +9,7 @@ on:
       - "*.md"
       - "*.codespellrc"
       - ".github/**"
+      - "doc/**"
   push:
     branches:
       - master
