@@ -27,7 +27,7 @@ jobs:
             addpath(genpath('tools'));
             matnwb_setup;
             matnwb_generateDocs;
-            matnwb_exportTutorials(ExportFormat=".html");
+            matnwb_exportTutorials(ExportFormat=".html",RunLivescript=false);
 
       - name: Checkout gh-pages branch
         uses: actions/checkout@v4
@@ -37,7 +37,8 @@ jobs:
 
       - name: Push to gh-pages
         run: |
-          cp docs/html gh-pages/docs/html
+          mkdir -p gh-pages/docs
+          cp -r docs/html gh-pages/docs/
           cd gh-pages
 
           git config user.name "${{ github.workflow }} by ${{ github.actor }}"
