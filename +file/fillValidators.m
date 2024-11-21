@@ -4,7 +4,6 @@ function validationStr = fillValidators(propnames, props, namespacereg, classNam
         nm = propnames{i};
         prop = props(nm);
 
-
         if isa(prop, 'file.Attribute') && prop.readonly && ~isempty(prop.value)
             % Need to add a validator for inherited and readonly properties. In 
             % the superclass these properties might not be read only and due to
@@ -14,6 +13,8 @@ function validationStr = fillValidators(propnames, props, namespacereg, classNam
             else
                 continue
             end
+        elseif isa(prop, 'file.Link')
+            validationBody = fillLinkValidation(nm, prop, namespacereg);
         else
             if startsWith(class(prop), 'file.')
                 validationBody = fillUnitValidation(nm, prop, namespacereg);
@@ -171,6 +172,31 @@ function unitValidationStr = fillDatasetValidation(name, prop, namespaceReg)
         end
         unitValidationStr = [unitValidationStr newline fillDtypeValidation(name, fullname)];
     end
+end
+
+function validationStr = fillLinkValidation(name, prop, namespacereg)
+    fullName = namespacereg.getFullClassName(prop.type);
+    
+    % Create a validation function body that 1) checks (validates) the
+    % target if the input is a SoftLink type, otherwise 2) checks (validates) 
+    % if the expected (target) type is provided. If the validation passes
+    % and the value is not empty, it is wrapped in a SoftLink.
+
+    validationStr = sprintf([ ...
+        'if isa(val, ''types.untyped.SoftLink'')\n', ...
+        '    if isprop(val, ''target'')\n', ...
+        '        types.util.checkDtype(''%s'', ''%s'', val.target);\n', ...
+        '    end\n', ...
+        'else\n', ...
+        '    %s\n', ...
+        '    if ~isempty(val)\n', ...
+        '        val = types.untyped.SoftLink(val);\n', ...
+        '    end\n', ...
+        'end' ...
+        ], ...
+        name, fullName, ...
+        fillDtypeValidation(name, fullName) ...
+    );
 end
 
 function fdvstr = fillDimensionValidation(type, shape)
