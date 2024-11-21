@@ -334,7 +334,7 @@ ecephys_module.nwbdatainterface.set('ThresholdEvents', event_detection);
 
 % Generate random feature data (time x channel x feature)
 features = rand(3, 12, 4); % 3 time points, 12 channels, 4 features
-features = permute(features, [3,2,1]) % reverse dimension order for matnwb
+features = permute(features, [3,2,1]); % reverse dimension order for matnwb
 
 % Create the FeatureExtraction object
 feature_extraction = types.core.FeatureExtraction( ...
