@@ -6,7 +6,7 @@
   <meta name="keywords" content="generateCore">
   <meta name="description" content="GENERATECORE Generate Matlab classes from NWB core schema files">
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="generator" content="m2html &copy; 2003-2019 Guillaume Flandin">
   <meta name="robots" content="index, follow">
   <link type="text/css" rel="stylesheet" href="m2html.css">
 </head>
@@ -24,16 +24,16 @@
 <div class="box"><strong>GENERATECORE Generate Matlab classes from NWB core schema files</strong></div>
 
 <h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="up.png"></a></h2>
-<div class="box"><strong>function generateCore(varargin) </strong></div>
+<div class="box"><strong>function generateCore(version, options) </strong></div>
 
 <h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="up.png"></a></h2>
 <div class="fragment"><pre class="comment"> GENERATECORE Generate Matlab classes from NWB core schema files
    GENERATECORE()  Generate classes (Matlab m-files) from the
-   NWB:N core namespace file.
+   NWB core namespace file. By default, generates off of the most recent nwb-schema
+   release.
 
-   GENERATECORE(core_or_extension_paths,...)  Generate classes for the
-   core namespace as well as one or more extenstions.  Each input filename
-   should be an NWB namespace file.
+   GENERATECORE(version)  Generate classes for the
+   core namespace of the listed version.
 
    A cache of schema data is generated in the 'namespaces' subdirectory in
    the current working directory.  This is for allowing cross-referencing
@@ -42,12 +42,14 @@
    Output files are generated placed in a '+types' subdirectory in the
    current working directory.
 
+   GENERATECORE(__, 'savedir', saveDirectory) Generates the core class
+   files in the specified directory.
+
    Example:
       generateCore();
-      generateCore('schema/core/nwb.namespace.yaml');
-      generateCore('schema/my_ext/myext.namespace.yaml');
+      generateCore('2.2.3');
 
-   See also <a href="generateExtension.html" class="code" title="function generateExtension(source)">GENERATEEXTENSION</a></pre></div>
+   See also <a href="generateExtension.html" class="code" title="function generateExtension(namespaceFilePath, options)">GENERATEEXTENSION</a></pre></div>
 
 <!-- crossreference -->
 <h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="up.png"></a></h2>
@@ -62,38 +64,58 @@ This function is called by:
 
 
 <h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="up.png"></a></h2>
-<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function generateCore(varargin)</a>
-0002 <span class="comment">% GENERATECORE Generate Matlab classes from NWB core schema files</span>
-0003 <span class="comment">%   GENERATECORE()  Generate classes (Matlab m-files) from the</span>
-0004 <span class="comment">%   NWB:N core namespace file.</span>
-0005 <span class="comment">%</span>
-0006 <span class="comment">%   GENERATECORE(core_or_extension_paths,...)  Generate classes for the</span>
-0007 <span class="comment">%   core namespace as well as one or more extenstions.  Each input filename</span>
-0008 <span class="comment">%   should be an NWB namespace file.</span>
-0009 <span class="comment">%</span>
-0010 <span class="comment">%   A cache of schema data is generated in the 'namespaces' subdirectory in</span>
-0011 <span class="comment">%   the current working directory.  This is for allowing cross-referencing</span>
-0012 <span class="comment">%   classes between multiple namespaces.</span>
-0013 <span class="comment">%</span>
-0014 <span class="comment">%   Output files are generated placed in a '+types' subdirectory in the</span>
-0015 <span class="comment">%   current working directory.</span>
-0016 <span class="comment">%</span>
-0017 <span class="comment">%   Example:</span>
-0018 <span class="comment">%      generateCore();</span>
-0019 <span class="comment">%      generateCore('schema/core/nwb.namespace.yaml');</span>
-0020 <span class="comment">%      generateCore('schema/my_ext/myext.namespace.yaml');</span>
-0021 <span class="comment">%</span>
-0022 <span class="comment">%   See also GENERATEEXTENSION</span>
-0023 <span class="keyword">if</span> nargin == 0
-0024     [nwbLocation, ~, ~] = fileparts(mfilename(<span class="string">'fullpath'</span>));
-0025     namespacePath = fullfile(nwbLocation, <span class="string">'schema'</span>, <span class="string">'core'</span>, <span class="string">'nwb.namespace.yaml'</span>);
-0026     generateExtension(namespacePath);
-0027 <span class="keyword">else</span>
-0028     <span class="keyword">for</span> i=1:length(varargin)
-0029         generateExtension(varargin{i});
-0030     <span class="keyword">end</span>
-0031 <span class="keyword">end</span>
-0032 <span class="keyword">end</span></pre></div>
-<hr><address>Generated on Fri 09-Aug-2019 14:27:49 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function generateCore(version, options)</a>
+0002     <span class="comment">% GENERATECORE Generate Matlab classes from NWB core schema files</span>
+0003     <span class="comment">%   GENERATECORE()  Generate classes (Matlab m-files) from the</span>
+0004     <span class="comment">%   NWB core namespace file. By default, generates off of the most recent nwb-schema</span>
+0005     <span class="comment">%   release.</span>
+0006     <span class="comment">%</span>
+0007     <span class="comment">%   GENERATECORE(version)  Generate classes for the</span>
+0008     <span class="comment">%   core namespace of the listed version.</span>
+0009     <span class="comment">%</span>
+0010     <span class="comment">%   A cache of schema data is generated in the 'namespaces' subdirectory in</span>
+0011     <span class="comment">%   the current working directory.  This is for allowing cross-referencing</span>
+0012     <span class="comment">%   classes between multiple namespaces.</span>
+0013     <span class="comment">%</span>
+0014     <span class="comment">%   Output files are generated placed in a '+types' subdirectory in the</span>
+0015     <span class="comment">%   current working directory.</span>
+0016     <span class="comment">%</span>
+0017     <span class="comment">%   GENERATECORE(__, 'savedir', saveDirectory) Generates the core class</span>
+0018     <span class="comment">%   files in the specified directory.</span>
+0019     <span class="comment">%</span>
+0020     <span class="comment">%   Example:</span>
+0021     <span class="comment">%      generateCore();</span>
+0022     <span class="comment">%      generateCore('2.2.3');</span>
+0023     <span class="comment">%</span>
+0024     <span class="comment">%   See also GENERATEEXTENSION</span>
+0025 
+0026     arguments
+0027         version (1,1) string {matnwb.common.mustBeValidSchemaVersion} = &quot;latest&quot;
+0028         options.savedir (1,1) string = misc.getMatnwbDir()
+0029     <span class="keyword">end</span>
+0030 
+0031     <span class="keyword">if</span> version == &quot;latest&quot;
+0032         version = matnwb.common.findLatestSchemaVersion();
+0033     <span class="keyword">end</span>
+0034 
+0035     schemaPath = fullfile(misc.getMatnwbDir(), &quot;nwb-schema&quot;, version);
+0036     corePath = fullfile(schemaPath, &quot;core&quot;, &quot;nwb.namespace.yaml&quot;);
+0037     commonPath = fullfile(schemaPath, <span class="keyword">...</span>
+0038         &quot;hdmf-common-schema&quot;, <span class="keyword">...</span>
+0039         &quot;common&quot;, <span class="keyword">...</span>
+0040         &quot;namespace.yaml&quot;);
+0041     assert(isfile(corePath), <span class="keyword">...</span>
+0042         <span class="string">'NWB:GenerateCore:MissingCoreSchema'</span>, <span class="keyword">...</span>
+0043         <span class="string">'Cannot find suitable core namespace for schema version `%s`'</span>, <span class="keyword">...</span>
+0044         version);
+0045 
+0046     namespaceFiles = corePath;
+0047     <span class="keyword">if</span> isfile(commonPath)
+0048         <span class="comment">% Important: generate common before core if common is available</span>
+0049         namespaceFiles = [commonPath, namespaceFiles];
+0050     <span class="keyword">end</span>
+0051     generateExtension(namespaceFiles{:}, <span class="string">'savedir'</span>, options.savedir);
+0052 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Tue 19-Nov-2024 22:15:51 by <strong><a href="https://github.com/gllmflndn/m2html">m2html</a></strong> &copy; 2003-2022</address>
 </body>
 </html>
