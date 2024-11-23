@@ -85,7 +85,7 @@ function repoFolder = downloadZippedRepo(githubUrl, targetFolder, updateFlag, th
     [~, ~, fileType] = fileparts(githubUrl);
     tempFilepath = [tempname, fileType];
     
-    % Download the file containing the addon toolbox
+    % Download the file containing the zipped repository
     try
         tempFilepath = websave(tempFilepath, githubUrl);
         fileCleanupObj = onCleanup( @(fname) delete(tempFilepath) );
