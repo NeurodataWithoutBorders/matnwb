@@ -1,8 +1,10 @@
 function matnwb_createNwbInstallExtension()
 % matnwb_createNwbInstallExtension - Create nwbInstallExtension from template
 %
-%   This function can be run to update the list of available extension
-%   names in the function's arguments block based on the neurodata
+%   Running this function will update the nwbInstallExtension function in
+%   the root directory of the matnwb package. It will update the list of 
+%   available extension names in the nwbInstallExtension function's arguments 
+%   block and docstring based on the available records in the neurodata 
 %   extensions catalog
 
     matnwbRootDir = misc.getMatnwbDir();
