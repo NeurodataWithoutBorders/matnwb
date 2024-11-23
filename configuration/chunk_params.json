@@ -1,0 +1,25 @@
+{
+    "NWBContainer": {
+        "chunk_compression": "gzip",
+        "chunk_compression_args": 4,
+        "chunk_default_size": 10000000.0,
+        "chunk_default_size_unit": "bytes"
+    },
+    "ElectricalSeries": {
+        "data": {
+            "chunk_dimensions": [
+                null,
+                32
+            ]
+        }
+    },
+    "ImageSeries": {
+        "data": {
+            "chunk_dimensions": [
+                null,
+                "max",
+                "max"
+            ]
+        }
+    }
+}
