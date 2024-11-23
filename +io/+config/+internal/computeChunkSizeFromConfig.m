@@ -23,7 +23,7 @@ function chunkSize = computeChunkSizeFromConfig(A, chunkSpecification)
     numDimensions = numel(dataSize);
 
     % Extract relevant configuration parameters
-    chunkDimensions = squeeze(chunkSpecification.data.chunk_dimensions);
+    chunkDimensions = chunkSpecification.data.chunk_dimensions;
     defaultChunkSize = chunkSpecification.chunk_default_size; % in bytes
     dataByteSize = io.config.internal.getDataByteSize(A);
 

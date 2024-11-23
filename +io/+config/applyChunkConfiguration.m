@@ -29,7 +29,7 @@ function applyChunkConfiguration(nwbObject, chunkConfiguration)
         dataTypeChunkOptions = io.config.internal.resolveDataTypeChunkConfig(chunkConfiguration, thisNwbObject);
 
         if isprop(thisNwbObject, 'data')
-            if ~isa(thisNwbObject.data, 'types.untyped.DataPipe')
+            if isnumeric(thisNwbObject.data)
                 % Create a datapipe object for the property value.
                 dataByteSize = io.config.internal.getDataByteSize(thisNwbObject.data);
                 if dataByteSize > dataTypeChunkOptions.chunk_default_size
