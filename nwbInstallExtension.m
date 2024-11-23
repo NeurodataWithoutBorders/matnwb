@@ -7,7 +7,7 @@ function nwbInstallExtension(extensionNames)
 %   extensionNames is a scalar string or a string array, containing the name
 %   of one or more extensions from the Neurodata Extensions Catalog
 %
-% Valid Extension Names:
+% Valid Extension Names (from https://nwb-extensions.github.io):
 %  - "ndx-miniscope"
 %  - "ndx-simulation-output"
 %  - "ndx-ecog"

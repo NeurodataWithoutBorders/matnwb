@@ -69,6 +69,7 @@ function installExtension(extensionName)
         'More than one namespace file was found for extension "%s"', extensionName ...
         )
     generateExtension( fullfile(L.folder, L.name) );
+    fprintf("Installed extension ""%s"".\n", extensionName)
 end
 
 function repoFolder = downloadZippedRepo(githubUrl, targetFolder, updateFlag, throwErrorIfFails)
