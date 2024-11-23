@@ -75,7 +75,7 @@ classdef NwbFile < types.core.NWBFile
                 includedNwbTypes = obj.listNwbTypes();
                 namespaceNames = getNamespacesOfTypes(includedNwbTypes);
 
-                allMatlabNamespaceNames = strrep({JsonData.name}, '-', '_');
+                allMatlabNamespaceNames = strrep({jsonSpecs.name}, '-', '_');
                 [~, keepIdx] = intersect(allMatlabNamespaceNames, namespaceNames, 'stable');
                 jsonSpecs = jsonSpecs(keepIdx);
 
