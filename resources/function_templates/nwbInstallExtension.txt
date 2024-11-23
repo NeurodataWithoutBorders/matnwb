@@ -1,0 +1,35 @@
+function nwbInstallExtension(extensionName)
+% nwbInstallExtension - Installs a specified NWB extension.
+%
+%   nwbInstallExtension(extensionName) installs a Neurodata Without Borders 
+%   (NWB) extension to extend the functionality of the core NWB schemas. 
+%   extensionName is a scalar string or a string array, containing the name
+%   of one or more extensions from the Neurodata Extesions Catalog
+%
+% Usage:
+%   nwbInstallExtension(extensionName)
+%
+% Valid Extension Names:
+{{extensionNamesDoc}}
+%
+% Example:
+%   % Install the "ndx-miniscope" extension
+%   nwbInstallExtension("ndx-miniscope")
+%
+% See also:
+%   matnwb.extension.listExtensions, matnwb.extension.installExtension
+
+    arguments
+        extensionName (1,:) string {mustBeMember(extensionName, [...
+{{extensionNames}} ...
+            ] ...
+        )} = []
+    end
+    if isempty(extensionName)
+        T = matnwb.extension.listExtensions();
+        extensionList = join( compose("  %s", [T.name]), newline );
+        error("Please specify the name of an extension. Available extensions:\n\n%s\n", extensionList)
+    else
+        matnwb.extension.installExtension(extensionName)
+    end
+end
