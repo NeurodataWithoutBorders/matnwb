@@ -124,7 +124,7 @@ methods
         if isequal(val, 'N/A')
             val = 'N/A';
         else
-            error('Unable to set the ''data_unit'' property of class ''<a href="matlab:doc types.core.IndexSeries">IndexSeries</a>'' because it is read-only.')
+            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''data_unit'' property of class ''<a href="matlab:doc types.core.IndexSeries">IndexSeries</a>'' because it is read-only.')
         end
     end
     function val = validate_indexed_images(obj, val)

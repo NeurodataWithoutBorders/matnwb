@@ -121,15 +121,19 @@ classdef Dataset < file.interface.HasProps
             
             %constrained
             % error unless it defines the object.
+
+            assert(...
+                ~isempty(obj.type), ...
+                'NWB:Dataset:UnsupportedOperation', ...
+                'The method `getProps` should not be called on an untyped dataset.' ...
+                );
             
-            if isempty(obj.type)
-                error('You shouldn''t be calling getProps on an untyped dataset');
-            end
-            
-            if obj.isConstrainedSet && ~obj.definesType
-                error('You shouldn''t be calling getProps on a constrained dataset');
-            end
-            
+            assert( ...
+                ~obj.isConstrainedSet || obj.definesType, ...
+                'NWB:Dataset:UnsupportedOperation', ...
+                'The method `getProps` should not be called on constrained dataset.' ...
+                );
+
             if ~isempty(obj.dtype)
                 props('data') = obj.dtype;
             end

@@ -155,34 +155,19 @@ function unitValidationStr = fillDatasetValidation(name, prop, namespaceReg)
             fillDimensionValidation(prop.dtype, prop.shape)...
             }, newline);
     elseif prop.isConstrainedSet
-        try
-            fullname = namespaceReg.getFullClassName(prop.type);
-        catch ME
-            if ~endsWith(ME.identifier, 'Namespace:NotFound')
-                rethrow(ME);
-            end
-
-            warning('NWB:Fill:Validators:NamespaceNotFound',...
-                ['Namespace could not be found for type `%s`.' ...
-                '  Skipping Validation for property `%s`.'], prop.type, name);
-            return;
+        fullname = getFullClassName(namespaceReg, prop.type, name);
+        if isempty(fullname)
+            return
         end
+
         unitValidationStr = strjoin({unitValidationStr...
             ['constrained = { ''' fullname ''' };']...
             ['types.util.checkSet(''' name ''', struct(), constrained, val);']...
             }, newline);
     else
-        try
-            fullname = namespaceReg.getFullClassName(prop.type);
-        catch ME
-            if ~endsWith(ME.identifier, 'Namespace:NotFound')
-                rethrow(ME);
-            end
-
-            warning('NWB:Fill:Validators:NamespaceNotFound',...
-                ['Namespace could not be found for type `%s`.' ...
-                '  Skipping Validation for property `%s`.'], prop.type, name);
-            return;
+        fullname = getFullClassName(namespaceReg, prop.type, name);
+        if isempty(fullname)
+            return
         end
         unitValidationStr = [unitValidationStr newline fillDtypeValidation(name, fullname)];
     end
@@ -240,7 +225,7 @@ function fdvstr = fillDtypeValidation(name, type)
             '    return;'...
             'end'...
             'if ~istable(val) && ~isstruct(val) && ~isa(val, ''containers.Map'')'...
-            ['    error(''Property `' name '` must be a table,struct, or containers.Map.'');']...
+            ['    error(''NWB:Type:InvalidPropertyType'', ''Property `' name '` must be a table, struct, or containers.Map.'');']...
             'end'...
             'vprops = struct();'...
             }, newline);
@@ -294,8 +279,7 @@ function fdvstr = fillReadOnlyValidator(name, value, className)
 
     classNameSplit = strsplit(className, '.');
     shortName = classNameSplit{end};
-
-    errorStr = sprintf( 'error(''Unable to set the ''''%s'''' property of class ''''<a href="matlab:doc %s">%s</a>'''' because it is read-only.'')', name, className, shortName);  
+    errorStr = sprintf( 'error(''NWB:Type:ReadOnlyProperty'', ''Unable to set the ''''%s'''' property of class ''''<a href="matlab:doc %s">%s</a>'''' because it is read-only.'')', name, className, shortName);  
 
     if ischar(value)
         condition = strjoin({ ...
@@ -311,11 +295,27 @@ function fdvstr = fillReadOnlyValidator(name, value, className)
         % Note: According to the documentation for Attribute specification keys
         % (https://schema-language.readthedocs.io/en/latest/description.html#sec-attributes-spec),
         % the above cases should be sufficient.
-        error('Unhandled case')
+        error('NWB:ClassGenerator:ReadOnlyValidatorNotImplemented', ...
+            'Read-only validator is not implemented for values of type "%s"', class(value))
     end
     
     fdvstr = strjoin({...
             condition, ...
             sprintf('    %s', errorStr), ...
             'end' }, newline );
+end
+
+function fullname = getFullClassName(namespaceReg, propType, name)
+    fullname = '';
+    try
+        fullname = namespaceReg.getFullClassName(propType);
+    catch ME
+        if ~endsWith(ME.identifier, 'Namespace:NotFound')
+            rethrow(ME);
+        end
+
+        warning('NWB:Fill:Validators:NamespaceNotFound',...
+            ['Namespace could not be found for type `%s`.' ...
+            '  Skipping Validation for property `%s`.'], propType, name);
+    end
 end

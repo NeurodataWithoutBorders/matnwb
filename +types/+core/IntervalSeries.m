@@ -52,14 +52,14 @@ methods
         if isequal(val, -1)
             val = -1;
         else
-            error('Unable to set the ''data_resolution'' property of class ''<a href="matlab:doc types.core.IntervalSeries">IntervalSeries</a>'' because it is read-only.')
+            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''data_resolution'' property of class ''<a href="matlab:doc types.core.IntervalSeries">IntervalSeries</a>'' because it is read-only.')
         end
     end
     function val = validate_data_unit(obj, val)
         if isequal(val, 'n/a')
             val = 'n/a';
         else
-            error('Unable to set the ''data_unit'' property of class ''<a href="matlab:doc types.core.IntervalSeries">IntervalSeries</a>'' because it is read-only.')
+            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''data_unit'' property of class ''<a href="matlab:doc types.core.IntervalSeries">IntervalSeries</a>'' because it is read-only.')
         end
     end
     %% EXPORT

@@ -1,6 +1,6 @@
-function nwbExport(nwb, filenames)
+function nwbExport(nwbFileObjects, filePaths, mode)
     %NWBEXPORT Writes an NWB file.
-    %  nwbRead(nwb,filename) Writes the nwb object to a file at filename.
+    %  nwbRead(nwb, filename) Writes the nwb object to a file at filename.
     %
     %  Example:
     %    % Generate Matlab code for the NWB objects from the core schema.
@@ -14,31 +14,19 @@ function nwbExport(nwb, filenames)
     %    nwbExport(nwb, 'empty.nwb');
     %
     %  See also GENERATECORE, GENERATEEXTENSION, NWBFILE, NWBREAD
-    validateattributes(nwb, {'NwbFile'}, {'nonempty'}, 'nwbExport', 'nwb', 1);
-    validateattributes(filenames, {'cell', 'string', 'char'}, {'nonempty'}, 'nwbExport', 'filenames', 2);
-    if isstring(filenames)
-        filenames = convertStringsToChars(filenames);
+
+    arguments
+        nwbFileObjects (1,:) NwbFile {mustBeNonempty}
+        filePaths (1,:) string {mustBeNonzeroLengthText}
+        mode (1,1) string {mustBeMember(mode, ["edit", "overwrite"])} = "edit"
     end
-    if iscell(filenames)
-        for iName = 1:length(filenames)
-            name = filenames{iName};
-            validateattributes(name, {'string', 'char'}, {'scalartext', 'nonempty'} ...
-                , 'nwbExport', 'filenames', 2);
-            filenames{iName} = char(name);
-        end
-    end
-    if ~isscalar(nwb)
-        assert(~ischar(filenames) && length(filenames) == length(nwb), ...
-            'NwbFile and filename array dimensions must match.');
-    end
-    
-    for iFiles = 1:length(nwb)
-        if iscellstr(filenames)
-            filename = filenames{iFiles};
-        else
-            filename = filenames;
-        end
-        
-        nwb(iFiles).export(filename);
+
+    assert(length(nwbFileObjects) == length(filePaths), ...
+        'NWB:Export:FilepathLengthMismatch', ...
+        'Lists of NWB objects to export and list of file paths must be the same length.')
+
+    for iFiles = 1:length(nwbFileObjects)
+        filePath = char(filePaths(iFiles));
+        nwbFileObjects(iFiles).export(filePath, mode);
     end
 end

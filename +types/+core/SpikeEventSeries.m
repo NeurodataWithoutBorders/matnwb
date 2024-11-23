@@ -56,7 +56,7 @@ methods
         if isequal(val, 'volts')
             val = 'volts';
         else
-            error('Unable to set the ''data_unit'' property of class ''<a href="matlab:doc types.core.SpikeEventSeries">SpikeEventSeries</a>'' because it is read-only.')
+            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''data_unit'' property of class ''<a href="matlab:doc types.core.SpikeEventSeries">SpikeEventSeries</a>'' because it is read-only.')
         end
     end
     function val = validate_timestamps(obj, val)
@@ -81,14 +81,14 @@ methods
         if isequal(val, 1)
             val = 1;
         else
-            error('Unable to set the ''timestamps_interval'' property of class ''<a href="matlab:doc types.core.SpikeEventSeries">SpikeEventSeries</a>'' because it is read-only.')
+            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''timestamps_interval'' property of class ''<a href="matlab:doc types.core.SpikeEventSeries">SpikeEventSeries</a>'' because it is read-only.')
         end
     end
     function val = validate_timestamps_unit(obj, val)
         if isequal(val, 'seconds')
             val = 'seconds';
         else
-            error('Unable to set the ''timestamps_unit'' property of class ''<a href="matlab:doc types.core.SpikeEventSeries">SpikeEventSeries</a>'' because it is read-only.')
+            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''timestamps_unit'' property of class ''<a href="matlab:doc types.core.SpikeEventSeries">SpikeEventSeries</a>'' because it is read-only.')
         end
     end
     %% EXPORT

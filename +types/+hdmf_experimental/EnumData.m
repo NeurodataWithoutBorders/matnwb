@@ -4,7 +4,7 @@ classdef EnumData < types.hdmf_common.VectorData & types.untyped.DatasetClass
 
 % OPTIONAL PROPERTIES
 properties
-    elements; %  (Object Reference to VectorData) Reference to the VectorData object that contains the enumerable elements
+    elements; %  (Object reference to VectorData) Reference to the VectorData object that contains the enumerable elements
 end
 
 methods
