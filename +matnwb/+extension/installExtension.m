@@ -1,9 +1,9 @@
 function installExtension(extensionName)
 % installExtension - Install NWB extension from Neurodata Extensions Catalog
 %
-%   matnwb.extension.nwbInstallExtension(extensionNames) installs Neurodata 
-%   Without Borders (NWB) extensions to extend the functionality of the core 
-%   NWB schemas. 
+%   matnwb.extension.nwbInstallExtension(extensionName) installs a Neurodata 
+%   Without Borders (NWB) extension from the Neurodata Extensions Catalog to 
+%   extend the functionality of the core NWB schemas. 
 
     arguments
         extensionName (1,1) string
