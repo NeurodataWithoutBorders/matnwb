@@ -140,7 +140,7 @@ classdef NwbFile < types.core.NWBFile
             end
             
             % Get the namespace names
-            namespaceNames = getNamespacesOfTypes(includedNwbTypes);
+            namespaceNames = getNamespacesOfTypes(includedNwbTypesWithParents);
             
             % In the specs, the hyphen (-) is used as a word separator, while in
             % matnwb the underscore (_) is used. Translate names here:
