@@ -69,17 +69,7 @@ classdef NwbFile < types.core.NWBFile
             end
 
             try
-                jsonSpecs = schemes.exportJson();
-
-                % Only embed namespaces for types that are included in the file
-                includedNwbTypes = obj.listNwbTypes();
-                namespaceNames = getNamespacesOfTypes(includedNwbTypes);
-
-                allMatlabNamespaceNames = strrep({jsonSpecs.name}, '-', '_');
-                [~, keepIdx] = intersect(allMatlabNamespaceNames, namespaceNames, 'stable');
-                jsonSpecs = jsonSpecs(keepIdx);
-
-                io.spec.writeEmbeddedSpecifications(output_file_id, jsonSpecs);
+                obj.embedSpecifications(output_file_id)
                 refs = export@types.core.NWBFile(obj, output_file_id, '/', {});
                 obj.resolveReferences(output_file_id, refs);
                 H5F.close(output_file_id);
@@ -136,6 +126,31 @@ classdef NwbFile < types.core.NWBFile
 
     %% PRIVATE
     methods(Access=private)
+        function embedSpecifications(obj, output_file_id)
+            jsonSpecs = schemes.exportJson();
+
+            % Resolve the name of all types and parent types that are
+            % included in this file, in order to only include the specs for
+            % namespaces of types that are included in the file.
+            includedNwbTypes = obj.listNwbTypes();
+            includedNwbTypesWithParents = string.empty;
+            for i = 1:numel(includedNwbTypes)
+                typeHierarchy = schemes.utility.listNwbTypeHierarchy(includedNwbTypes{i});
+                includedNwbTypesWithParents = [includedNwbTypesWithParents, typeHierarchy]; %#ok<AGROW>
+            end
+            
+            % Get the namespace names
+            namespaceNames = getNamespacesOfTypes(includedNwbTypes);
+            
+            % In the specs, the hyphen (-) is used as a word separator, while in
+            % matnwb the underscore (_) is used. Translate names here:
+            allMatlabNamespaceNames = strrep({jsonSpecs.name}, '-', '_');
+            [~, keepIdx] = intersect(allMatlabNamespaceNames, namespaceNames, 'stable');
+            jsonSpecs = jsonSpecs(keepIdx);
+
+            io.spec.writeEmbeddedSpecifications(output_file_id, jsonSpecs);
+        end
+        
         function resolveReferences(obj, fid, references)
             while ~isempty(references)
                 resolved = false(size(references));
