@@ -23,13 +23,18 @@ function testCreateTypeWithValidInputs(testCase)
 end
 
 function testCreateTypeWithInvalidInputs(testCase)
+    import matlab.unittest.fixtures.SuppressedWarningsFixture
+
     testPath = 'some/dataset/path';
     testType = 'types.hdmf_common.VectorIndex';
     kwargs = {'description', 'this is a test', 'comment', 'this is another test'};
-    type = io.createParsedType(testPath, testType, kwargs{:});
-    testCase.verifyClass(type, testType)
-
+    
     testCase.verifyWarning(...
         @(varargin)io.createParsedType(testPath, testType, kwargs{:}), ...
         'NWB:CheckUnset:InvalidProperties')
+    
+    % Suppress warning and check that the type is created correctly.
+    testCase.applyFixture( SuppressedWarningsFixture('NWB:CheckUnset:InvalidProperties') )
+    type = io.createParsedType(testPath, testType, kwargs{:});
+    testCase.verifyClass(type, testType)
 end
