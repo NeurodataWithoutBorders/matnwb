@@ -39,6 +39,8 @@ classdef PynwbTutorialTest <  matlab.unittest.TestCase
     properties (Access = private)
         PythonEnvironment % Stores the value of the environment variable 
         % "PYTHONPATH" to restore when test is finished.
+
+        Debug (1,1) logical = false
     end
 
     methods (TestClassSetup)
@@ -69,9 +71,10 @@ classdef PynwbTutorialTest <  matlab.unittest.TestCase
             setenv('PYTHONPATH', pythonPath)
 
             pythonPath = tests.util.getPythonPath();
-
-            [s, m] = system(sprintf('%s -m pip list', pythonPath));
-            disp(m)
+            
+            if testCase.Debug
+                [~, m] = system(sprintf('%s -m pip list', pythonPath)); disp(m)
+            end
         end
     end
 
@@ -178,9 +181,12 @@ classdef PynwbTutorialTest <  matlab.unittest.TestCase
             for i = 1:numel(testCase.PythonDependencies)
                 iName = testCase.PythonDependencies{i};
                 installCmdStr = sprintf('%s install %s', pipExecutable, iName);
-                [s,m] = system(installCmdStr);
-                disp(m)
-                %evalc( "system(installCmdStr)" ); % Install without command window output
+
+                if testCase.Debug
+                    [~, m] = system(installCmdStr); disp(m)
+                else
+                    evalc( "system(installCmdStr)" ); % Install without command window output
+                end
             end
         end
     end
