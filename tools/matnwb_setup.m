@@ -9,4 +9,3 @@ addpath(genpath(currentFolder))
 matnwb_installGitHooks()
 
 matnwb_installm2html(fileparts(currentFolder))
-
