@@ -44,7 +44,7 @@ classdef NWBFileIOTest < tests.system.PyNWBIOTest
             fileName = ['MatNWB.' testCase.className() '.testLoadAll.nwb'];
             nwbExport(testCase.file, fileName)
             nwb = nwbRead(fileName, "ignorecache");            
-            nwb.loadAll()
+            nwb.loadAll();
         end
 
         function readWithStringArg(testCase)
