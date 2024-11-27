@@ -28,8 +28,8 @@ nwbtable = types.hdmf_common.DynamicTable( ...
 
 for col = T
     if ~strcmp(col.Properties.VariableNames{1},'id')
-
-        if ~isempty(col.Properties.VariableDescriptions{1})
+        if ~isempty(col.Properties.VariableDescriptions) ...
+                && ~isempty(col.Properties.VariableDescriptions{1})
             description = col.Properties.VariableDescriptions{1};
         else
             description = 'no description provided';
