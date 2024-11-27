@@ -10,7 +10,7 @@ function tf = isNeurodataTypeClassName(typeName)
     end
 
     tf = false;
-    if startsWith(typeName, 'types.') && ~startsWith('types.untyped')
+    if startsWith(typeName, 'types.') && ~startsWith(typeName, 'types.untyped')
         tf = true;
     end
 end
