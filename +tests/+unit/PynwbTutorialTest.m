@@ -66,6 +66,11 @@ classdef PynwbTutorialTest <  matlab.unittest.TestCase
             L = dir('temp_venv/lib/python*/site-*'); % Find the site-packages folder
             pythonPath = fullfile(L.folder, L.name);
             setenv('PYTHONPATH', pythonPath)
+
+            pythonPath = tests.util.getPythonPath();
+
+            [s, m] = system(sprintf('%s -m pip list', pythonPath));
+            disp(m)
         end
     end
 
