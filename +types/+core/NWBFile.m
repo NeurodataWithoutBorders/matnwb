@@ -65,7 +65,7 @@ end
 methods
     function obj = NWBFile(varargin)
         % NWBFILE Constructor for NWBFile
-        varargin = [{'nwb_version' '2.8.0', 'general_was_generated_by', {'matnwb'; '2.8.0'}} varargin];
+        varargin = [{'nwb_version' '2.8.0'} varargin];
         obj = obj@types.core.NWBContainer(varargin{:});
         
         

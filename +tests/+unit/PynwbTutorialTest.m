@@ -177,7 +177,9 @@ classdef PynwbTutorialTest <  matlab.unittest.TestCase
             for i = 1:numel(testCase.PythonDependencies)
                 iName = testCase.PythonDependencies{i};
                 installCmdStr = sprintf('%s install %s', pipExecutable, iName);
-                evalc( "system(installCmdStr)" ); % Install without command window output
+                [s,m] = system(installCmdStr);
+                disp(m)
+                %evalc( "system(installCmdStr)" ); % Install without command window output
             end
         end
     end
@@ -213,7 +215,7 @@ function folderPath = getMatNwbRootDirectory()
 end
 
 function pynwbFolder = downloadPynwb()
-    githubUrl = 'https://github.com/NeurodataWithoutBorders/pynwb/archive/refs/heads/master.zip';
+    githubUrl = 'https://github.com/NeurodataWithoutBorders/pynwb/archive/refs/heads/dev.zip';
     pynwbFolder = downloadZippedGithubRepo(githubUrl, '.'); % Download in current directory
 end
 
