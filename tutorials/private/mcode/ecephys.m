@@ -220,7 +220,7 @@ band_limits = [band_mean - 2*band_stdev, band_mean + 2*band_stdev];
 
 % The bands should be added to the DecompositionSeries as a dynamic table
 bands = table(band_names, band_mean, band_stdev, band_limits, ...
-    'VariableNames', {'band_names', 'band_mean', 'band_stdev', 'band_limits'})
+    'VariableNames', {'band_name', 'band_mean', 'band_stdev', 'band_limits'})
 
 bands = util.table2nwb( bands );
 
