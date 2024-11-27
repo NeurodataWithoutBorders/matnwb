@@ -51,13 +51,27 @@ nwb
 % |*ImagingPlane*|>.
 % 
 % 
+% 
+% Create a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Device.html 
+% |*Device*|> representing a two-photon microscope. The fields |description|, 
+% |manufacturer|, |model_number|, |model_name|, and |serial_number| are optional, 
+% but recommended. Then create an <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/OpticalChannel.html 
+% |*OpticalChannel*|> and add both of these to the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/ImagingPlane.html 
+% |*ImagingPlane*|>|*.*|
+
+device = types.core.Device( ...
+    'description', 'My two-photon microscope', ...
+    'manufacturer', 'Loki Labs', ...
+    'model_number', 'ABC-123', ...
+    'model_name', 'Loki 1.0', ...
+    'serial_number', '1234567890');
+
+% Add device to nwb object
+nwb.general_devices.set('Device', device);
 
 optical_channel = types.core.OpticalChannel( ...
     'description', 'description', ...
     'emission_lambda', 500.);
-
-device = types.core.Device();
-nwb.general_devices.set('Device', device);
 
 imaging_plane_name = 'imaging_plane';
 imaging_plane = types.core.ImagingPlane( ...
