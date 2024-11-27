@@ -6,7 +6,7 @@ classdef IZeroClampSeries < types.core.CurrentClampSeries & types.untyped.GroupC
 methods
     function obj = IZeroClampSeries(varargin)
         % IZEROCLAMPSERIES Constructor for IZeroClampSeries
-        varargin = [{'stimulus_description' 'N/A'} varargin];
+        varargin = [{'bias_current' types.util.correctType(0, 'single') 'bridge_balance' types.util.correctType(0, 'single') 'capacitance_compensation' types.util.correctType(0, 'single') 'stimulus_description' 'N/A'} varargin];
         obj = obj@types.core.CurrentClampSeries(varargin{:});
         
         
@@ -33,58 +33,25 @@ methods
     %% VALIDATORS
     
     function val = validate_bias_current(obj, val)
-        val = types.util.checkDtype('bias_current', 'single', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
+        if isequal(val, 0)
+            val = 0;
         else
-            valsz = size(val);
+            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''bias_current'' property of class ''<a href="matlab:doc types.core.IZeroClampSeries">IZeroClampSeries</a>'' because it is read-only.')
         end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
     end
     function val = validate_bridge_balance(obj, val)
-        val = types.util.checkDtype('bridge_balance', 'single', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
+        if isequal(val, 0)
+            val = 0;
         else
-            valsz = size(val);
+            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''bridge_balance'' property of class ''<a href="matlab:doc types.core.IZeroClampSeries">IZeroClampSeries</a>'' because it is read-only.')
         end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
     end
     function val = validate_capacitance_compensation(obj, val)
-        val = types.util.checkDtype('capacitance_compensation', 'single', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
+        if isequal(val, 0)
+            val = 0;
         else
-            valsz = size(val);
+            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''capacitance_compensation'' property of class ''<a href="matlab:doc types.core.IZeroClampSeries">IZeroClampSeries</a>'' because it is read-only.')
         end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
     end
     function val = validate_stimulus_description(obj, val)
         if isequal(val, 'N/A')
