@@ -7,3 +7,5 @@ workspace/
 *.swp
 .DS_Store
 +tests/env.mat
+
+nwbtest.env
