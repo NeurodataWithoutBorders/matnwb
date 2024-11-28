@@ -1,4 +1,4 @@
-function installExtension(extensionName)
+function installExtension(extensionName, options)
 % installExtension - Install NWB extension from Neurodata Extensions Catalog
 %
 %   matnwb.extension.nwbInstallExtension(extensionName) installs a Neurodata 
@@ -7,6 +7,7 @@ function installExtension(extensionName)
 
     arguments
         extensionName (1,1) string
+        options.savedir (1,1) string = misc.getMatnwbDir()
     end
 
     repoTargetFolder = fullfile(userpath, "NWB-Extension-Source");
@@ -68,7 +69,7 @@ function installExtension(extensionName)
         'NWB:InstallExtension:MultipleNamespacesFound', ...
         'More than one namespace file was found for extension "%s"', extensionName ...
         )
-    generateExtension( fullfile(L.folder, L.name) );
+    generateExtension( fullfile(L.folder, L.name), 'savedir', options.savedir );
     fprintf("Installed extension ""%s"".\n", extensionName)
 end
 

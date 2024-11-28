@@ -1,4 +1,4 @@
-function nwbInstallExtension(extensionNames)
+function nwbInstallExtension(extensionNames, options)
 % nwbInstallExtension - Installs a specified NWB extension.
 %
 % Usage:
@@ -66,6 +66,7 @@ function nwbInstallExtension(extensionNames)
             "ndx-ophys-devices" ...
             ] ...
         )} = []
+        options.savedir (1,1) string = misc.getMatnwbDir()
     end
     if isempty(extensionNames)
         T = matnwb.extension.listExtensions();
@@ -73,7 +74,7 @@ function nwbInstallExtension(extensionNames)
         error("Please specify the name of an extension. Available extensions:\n\n%s\n", extensionList)
     else
         for extensionName = extensionNames
-            matnwb.extension.installExtension(extensionName)
+            matnwb.extension.installExtension(extensionName, 'savedir', options.savedir)
         end
     end
 end
