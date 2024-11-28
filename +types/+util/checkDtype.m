@@ -125,8 +125,8 @@ if isa(value, 'types.untyped.DataStub') ...
 end
 
 if matnwb.utility.isNeurodataType(typeDescriptor)
-    errorId = 'NWB:CheckDataType:InvalidPropertyValue';
-    errorMessage = sprintf(['Expected property value for `%s` to be of ', ...
+    errorId = 'NWB:CheckDType:InvalidNeurodataType';
+    errorMessage = sprintf(['Expected value for `%s` to be of ', ...
         'type `%s`. Instead it was `%s`'], name, typeDescriptor, class(value));
     assert(isa(value, typeDescriptor), errorId, errorMessage)
     correctedValue = value;
