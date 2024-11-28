@@ -125,9 +125,10 @@ nwb.stimulus_presentation.set('Airpuffs', annotations)
 % 
 % Note: These diagrams follow a standard convention called "UML class diagram" 
 % to express the object-oriented relationships between NWB classes. For our purposes, 
-% all you need to know is that an open triangle means "extends" and an open diamond 
-% means "is contained within." Learn more about class diagrams on <https://en.wikipedia.org/wiki/Class_diagram 
-% the wikipedia page>.
+% all you need to know is that an open triangle means "extends" (i.e., is a specialized 
+% subtype of), and an open diamond means "is contained within." Learn more about 
+% class diagrams on <https://en.wikipedia.org/wiki/Class_diagram the wikipedia 
+% page>.
 % 
 % <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/SpatialSeries.html 
 % |*SpatialSeries*|> is a subclass of <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/TimeSeries.html 
@@ -149,13 +150,7 @@ spatial_series_ts = types.core.SpatialSeries( ...
 );
 
 % create Position object and add SpatialSeries
-Position = types.core.Position('SpatialSeries', spatial_series_ts);
-
-% create processing module
-behavior_mod = types.core.ProcessingModule('description',  'contains behavioral data');
-
-% add the Position object (that holds the SpatialSeries object)
-behavior_mod.nwbdatainterface.set('Position', Position);
+position = types.core.Position('SpatialSeries', spatial_series_ts);
 %% 
 % NWB differentiates between raw, _acquired_ data, which should never change, 
 % and _processed_ data, which are the results of preprocessing algorithms and 
@@ -171,14 +166,14 @@ behavior_mod.nwbdatainterface.set('Position', Position);
 % |*Position*|> object to the module.
 
 % create processing module
-behavior_mod = types.core.ProcessingModule('description',  'contains behavioral data');
+behavior_module = types.core.ProcessingModule('description', 'contains behavioral data');
 
-% add the Position object (that holds the SpatialSeries object) to the
-% module and name the Position object "Position"
-behavior_mod.nwbdatainterface.set('Position', Position);
+% add the Position object (that holds the SpatialSeries object) to the module 
+% and name the Position object "Position"
+behavior_module.nwbdatainterface.set('Position', position);
 
 % add the processing module to the NWBFile object, and name the processing module "behavior"
-nwb.processing.set('behavior', behavior_mod);
+nwb.processing.set('behavior', behavior_module);
 % Trials
 % Trials are stored in a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/TimeIntervals.html 
 % |*TimeIntervals*|> object which is a subclass of <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
@@ -207,7 +202,7 @@ trials.addRow('start_time', 0.1, 'stop_time', 1.0, 'correct', false)
 trials.addRow('start_time', 1.5, 'stop_time', 2.0, 'correct', true)
 trials.addRow('start_time', 2.5, 'stop_time', 3.0, 'correct', false)
 
-trials.toTable()  % visualize the table
+trials.toTable() % visualize the table
 nwb.intervals_trials = trials;
 
 % If you have multiple trials tables, you will need to use custom names for
@@ -269,3 +264,5 @@ read_spatial_series.data(:, 1:10)
 %% 
 % See the <https://neurodatawithoutborders.github.io/matnwb/doc/index.html API 
 % documentation> to learn what data types are available.
+% 
+%
