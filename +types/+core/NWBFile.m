@@ -50,6 +50,7 @@ properties
     general_subject; %  (Subject) Information about the animal or person from which the data was measured.
     general_surgery; %  (char) Narrative description about surgery/surgeries, including date(s) and who performed surgery.
     general_virus; %  (char) Information about virus(es) used in experiments, including virus ID, source, date made, injection location, volume, etc.
+    general_was_generated_by; %  (char) Name and version of software package(s) used to generate data contained in this NWB File. For each software package or library, include the name of the software as the first value and the version as the second value.
     intervals; %  (TimeIntervals) Optional additional table(s) for describing other experimental time intervals.
     intervals_epochs; %  (TimeIntervals) Divisions in time marking experimental stages or sub-divisions of a single recording session.
     intervals_invalid_times; %  (TimeIntervals) Time intervals that should be removed from analysis.
@@ -64,7 +65,7 @@ end
 methods
     function obj = NWBFile(varargin)
         % NWBFILE Constructor for NWBFile
-        varargin = [{'nwb_version' '2.7.0'} varargin];
+        varargin = [{'nwb_version' '2.8.0'} varargin];
         obj = obj@types.core.NWBContainer(varargin{:});
         
         
@@ -107,6 +108,7 @@ methods
         addParameter(p, 'general_subject',[]);
         addParameter(p, 'general_surgery',[]);
         addParameter(p, 'general_virus',[]);
+        addParameter(p, 'general_was_generated_by',[]);
         addParameter(p, 'identifier',[]);
         addParameter(p, 'intervals',types.untyped.Set());
         addParameter(p, 'intervals_epochs',[]);
@@ -157,6 +159,7 @@ methods
         obj.general_subject = p.Results.general_subject;
         obj.general_surgery = p.Results.general_surgery;
         obj.general_virus = p.Results.general_virus;
+        obj.general_was_generated_by = p.Results.general_was_generated_by;
         obj.identifier = p.Results.identifier;
         obj.intervals = p.Results.intervals;
         obj.intervals_epochs = p.Results.intervals_epochs;
@@ -281,6 +284,9 @@ methods
     end
     function set.general_virus(obj, val)
         obj.general_virus = obj.validate_general_virus(val);
+    end
+    function set.general_was_generated_by(obj, val)
+        obj.general_was_generated_by = obj.validate_general_was_generated_by(val);
     end
     function set.identifier(obj, val)
         obj.identifier = obj.validate_identifier(val);
@@ -727,6 +733,24 @@ methods
         validshapes = {[1]};
         types.util.checkDims(valsz, validshapes);
     end
+    function val = validate_general_was_generated_by(obj, val)
+        val = types.util.checkDtype('general_was_generated_by', 'char', val);
+        if isa(val, 'types.untyped.DataStub')
+            if 1 == val.ndims
+                valsz = [val.dims 1];
+            else
+                valsz = val.dims;
+            end
+        elseif istable(val)
+            valsz = [height(val) 1];
+        elseif ischar(val)
+            valsz = [size(val, 1) 1];
+        else
+            valsz = size(val);
+        end
+        validshapes = {[2,Inf]};
+        types.util.checkDims(valsz, validshapes);
+    end
     function val = validate_identifier(obj, val)
         val = types.util.checkDtype('identifier', 'char', val);
         if isa(val, 'types.untyped.DataStub')
@@ -1039,6 +1063,14 @@ methods
                 refs = obj.general_virus.export(fid, [fullpath '/general/virus'], refs);
             elseif ~isempty(obj.general_virus)
                 io.writeDataset(fid, [fullpath '/general/virus'], obj.general_virus);
+            end
+        end
+        io.writeGroup(fid, [fullpath '/general']);
+        if ~isempty(obj.general_was_generated_by)
+            if startsWith(class(obj.general_was_generated_by), 'types.untyped.')
+                refs = obj.general_was_generated_by.export(fid, [fullpath '/general/was_generated_by'], refs);
+            elseif ~isempty(obj.general_was_generated_by)
+                io.writeDataset(fid, [fullpath '/general/was_generated_by'], obj.general_was_generated_by, 'forceArray');
             end
         end
         if startsWith(class(obj.identifier), 'types.untyped.')
