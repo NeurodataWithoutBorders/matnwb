@@ -2,7 +2,7 @@ function nwbExport(nwbFileObjects, filePaths, mode)
 %NWBEXPORT - Writes an NWB file.
 %
 % Syntax:
-%   NWBEXPORT(nwb, filename) Writes the nwb object to a file at filename.
+%  NWBEXPORT(nwb, filename) Writes the nwb object to a file at filename.
 %
 % Input Arguments:
 %   - nwb (NwbFile) - Nwb file object

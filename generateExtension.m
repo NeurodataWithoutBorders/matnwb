@@ -2,16 +2,16 @@ function generateExtension(namespaceFilePath, options)
 % GENERATEEXTENSION - Generate Matlab classes from NWB extension schema file
 %
 % Syntax:
-%   GENERATEEXTENSION(extension_path...) Generate classes (Matlab m-files) 
-%   from one or more NWB schema extension namespace files. A registry of 
-%   already generated core types is used to resolve dependent types.
+%  GENERATEEXTENSION(extension_path...) Generate classes (Matlab m-files) 
+%  from one or more NWB schema extension namespace files. A registry of 
+%  already generated core types is used to resolve dependent types.
 %
-%   A cache of schema data is generated in the ``namespaces`` subdirectory in
-%   the matnwb root directory.  This is for allowing cross-referencing
-%   classes between multiple namespaces.
+%  A cache of schema data is generated in the ``namespaces`` subdirectory in
+%  the matnwb root directory.  This is for allowing cross-referencing
+%  classes between multiple namespaces.
 %
-%   Output files are placed in a ``+types`` subdirectory in the
-%   matnwb root directory directory.
+%  Output files are placed in a ``+types`` subdirectory in the
+%  matnwb root directory directory.
 %
 % Input Arguments:
 %  - namespaceFilePath (string) - 

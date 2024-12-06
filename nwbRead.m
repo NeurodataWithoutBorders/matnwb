@@ -18,8 +18,8 @@ function nwb = nwbRead(filename, flags, options)
 % 
 %  - flags (string) -
 %    Flag for setting the mode for the NWBREAD operation. Available options are:
-%    'ignorecache'. If the 'ignorecache' flag is used, classes for NWB data types
-%    are not re-generated based on the embedded schemas in the file.
+%    'ignorecache'. If the 'ignorecache' flag is used, classes for NWB data 
+%    types are not re-generated based on the embedded schemas in the file.
 % 
 %  - options (name-value pairs) -
 %    Optional name-value pairs. Available options:

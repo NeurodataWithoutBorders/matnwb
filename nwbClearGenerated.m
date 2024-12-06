@@ -2,8 +2,8 @@ function clearedNamespaceNames = nwbClearGenerated(targetFolder, options)
 % NWBCLEARGENERATED - Clear generated class files.
 %
 % Syntax:
-%   NWBCLEARGENERATED() Clear generated class files from the ``+types`` 
-%   folder in the matnwb root directory.
+%  NWBCLEARGENERATED() Clear generated class files from the ``+types``
+%  folder in the matnwb root directory.
 %
 % Input Arguments:
 %  - targetFolder (string) - 
