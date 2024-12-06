@@ -32,9 +32,10 @@ function nwbInstallExtension(extensionNames, options)
 %  - "ndx-hed"
 %  - "ndx-ophys-devices"
 %
-% Example:
-%   % Install the "ndx-miniscope" extension
-%   nwbInstallExtension("ndx-miniscope")
+% Usage: 
+%  Example 1 - Install "ndx-miniscope" extension::
+%
+%    nwbInstallExtension("ndx-miniscope")
 %
 % See also:
 %   matnwb.extension.listExtensions, matnwb.extension.installExtension
