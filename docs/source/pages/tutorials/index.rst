@@ -1,24 +1,37 @@
 Tutorials
 =========
 
+General Tutorials
+-----------------
 .. toctree::
    :maxdepth: 1
-   :caption: Tutorials
 
+   intro
+   read_demo
    basicUsage
-   behavior
-   convertTrials
-   dataPipe
    dimensionMapNoDataPipes
    dimensionMapWithDataPipes
+   convertTrials
    dynamic_tables
-   dynamically_loaded_filters
+   scratch
+
+Domain-Specific Tutorials
+-------------------------
+.. toctree::
+   :maxdepth: 1
+
+   behavior
    ecephys
    icephys
    images
-   intro
    ogen
    ophys
-   read_demo
+
+Advanced I/O
+------------
+.. toctree::
+   :maxdepth: 1
+
+   dataPipe
+   dynamically_loaded_filters
    remote_read
-   scratch

@@ -1,6 +1,10 @@
-{{tutorial_name}}
-===============================
+{{tutorial_title}}
+{{tutorial_title_underline}}
+
+.. image:: https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg
+   :target: https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/{{tutorial_name}}.mlx
+   :alt: Open in MATLAB Online
 
 .. raw:: html
 
-   <iframe src="{{static_html_path}}" style="width: 900px; height: 100vh; overflow: hidden; border: none;"></iframe>
+   <iframe src="{{static_html_path}}" style="width: 100%; height: 100vh; overflow: hidden; border: none;"></iframe>

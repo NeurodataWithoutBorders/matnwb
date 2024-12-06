@@ -7,6 +7,9 @@ function generateRstForTutorials()
     tutorialRstTargetDir = fullfile(docsSourceRootDir, 'pages', 'tutorials');
     if ~isfolder(tutorialRstTargetDir); mkdir(tutorialRstTargetDir); end
     
+    tutorialConfigFilePath = fullfile(docsSourceRootDir, '_config', 'tutorial_config.json');
+    S = jsondecode(fileread(tutorialConfigFilePath));
+
     rstTemplate = fileread( getRstTemplateFile('tutorial') );
 
     % List all html files in source dir
@@ -17,9 +20,12 @@ function generateRstForTutorials()
         relPath = strrep(thisFilePath, docsSourceRootDir, '../..');
     
         [~, name] = fileparts(relPath);
+        title = S.(name);
     
         rstOutput = replace(rstTemplate, '{{static_html_path}}', relPath);
         rstOutput = replace(rstOutput, '{{tutorial_name}}', name);
+        rstOutput = replace(rstOutput, '{{tutorial_title}}', title);
+        rstOutput = replace(rstOutput, '{{tutorial_title_underline}}', repmat('=', 1, numel(title)));
         
         rstOutputFile = fullfile(tutorialRstTargetDir, [name, '.rst']);
         fid = fopen(rstOutputFile, 'wt');
@@ -34,5 +40,5 @@ function generateRstForTutorials()
     
     thisRst = fillTemplate(indexTemplate, data);
     rstFilePath = fullfile(tutorialRstTargetDir, ['index', '.rst']);
-    filewrite(rstFilePath, thisRst);
+    %filewrite(rstFilePath, thisRst);
 end

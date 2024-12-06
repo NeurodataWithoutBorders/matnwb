@@ -1,6 +1,10 @@
-dynamically_loaded_filters
-===============================
+Implementing Dynamically Loaded Filters
+=======================================
+
+.. image:: https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg
+   :target: https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/dynamically_loaded_filters.mlx
+   :alt: Open in MATLAB Online
 
 .. raw:: html
 
-   <iframe src="../../_static/html/tutorials/dynamically_loaded_filters.html" style="width: 900px; height: 100vh; overflow: hidden; border: none;"></iframe>
+   <iframe src="../../_static/html/tutorials/dynamically_loaded_filters.html" style="width: 100%; height: 100vh; overflow: hidden; border: none;"></iframe>
