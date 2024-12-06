@@ -30,6 +30,7 @@ extensions = [
     'sphinx.ext.autodoc', # autogenerate docs
     'sphinx.ext.napoleon', # for parsing e.g google style parameter docstring
     'sphinx.ext.viewcode',
+    'sphinx.ext.extlinks', # For maintaining external links
     'sphinx_copybutton',
 ]
 
@@ -67,3 +68,18 @@ exclude_patterns = []
 html_css_files = [
     'css/custom.css',
 ]
+
+
+# External links used in the documentation 
+extlinks = {
+    'incf_lesson': ('https://training.incf.org/lesson/%s', '%s'),
+    'incf_collection': ('https://training.incf.org/collection/%s', '%s'),
+    'nwb_extension': ('https://github.com/nwb-extensions/%s', '%s'),
+    'pynwb': ('https://github.com/NeurodataWithoutBorders/pynwb/%s', '%s'),
+    'nwb_overview': ('https://nwb-overview.readthedocs.io/en/latest/%s', '%s'),
+    'hdmf-docs': ('https://hdmf.readthedocs.io/en/stable/%s', '%s'),
+    'dandi': ('https://www.dandiarchive.org/%s', '%s'),
+    "nwbinspector": ("https://nwbinspector.readthedocs.io/en/dev/%s", "%s"),
+    'hdmf-zarr': ('https://hdmf-zarr.readthedocs.io/en/latest/%s', '%s'),
+    'matlab-online-tutorial': ('https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/%s.mlx', '%s')
+}
