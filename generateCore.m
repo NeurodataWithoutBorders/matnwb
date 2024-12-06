@@ -1,27 +1,40 @@
 function generateCore(version, options)
-    % GENERATECORE Generate Matlab classes from NWB core schema files
-    %   GENERATECORE()  Generate classes (Matlab m-files) from the
-    %   NWB core namespace file. By default, generates off of the most recent nwb-schema
-    %   release.
-    %
-    %   GENERATECORE(version)  Generate classes for the
-    %   core namespace of the listed version.
-    %
-    %   A cache of schema data is generated in the 'namespaces' subdirectory in
-    %   the current working directory.  This is for allowing cross-referencing
-    %   classes between multiple namespaces.
-    %
-    %   Output files are generated placed in a '+types' subdirectory in the
-    %   current working directory.
-    %
-    %   GENERATECORE(__, 'savedir', saveDirectory) Generates the core class
-    %   files in the specified directory.
-    %
-    %   Example:
-    %      generateCore();
-    %      generateCore('2.2.3');
-    %
-    %   See also GENERATEEXTENSION
+% GENERATECORE - Generate Matlab classes from NWB core schema files
+%
+% Syntax:
+%   GENERATECORE() Generate classes (Matlab m-files) from the
+%   NWB core namespace file. By default, generates off of the most recent 
+%   nwb-schema release.
+%
+%   GENERATECORE(version)  Generate classes for the
+%   core namespace of the listed version.
+%
+%   GENERATECORE(__, Name, Value)  Generate classes based on optional 
+%   name-value pairs controlling the output .
+%
+%   A cache of schema data is generated in the ``namespaces`` subdirectory in
+%   the matnwb root directory.  This is for allowing cross-referencing
+%   classes between multiple namespaces.
+%
+%   Output files are placed in a ``+types`` subdirectory in the
+%   matnwb root directory directory.
+%
+% Usage:
+%  Example 1 - Generate core schemas for the latest version of NWB::
+%
+%    generateCore();
+%
+%  Example 2 - Generate core schemas for an older version of NWB::
+%
+%     generateCore('2.2.3');
+%
+%  Example 3 - Generate and save classes in a custom location::
+%
+%     %  Generates the core class files in the specified directory.
+%     generateCore('savedir', saveDirectory)
+%
+% See also:
+%   generateExtension
 
     arguments
         version (1,1) string {matnwb.common.mustBeValidSchemaVersion} = "latest"
