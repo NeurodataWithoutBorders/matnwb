@@ -1,0 +1,6 @@
+{{tutorial_name}}
+===============================
+
+.. raw:: html
+
+   <iframe src="{{static_html_path}}" style="width: 900px; height: 100vh; overflow: hidden; border: none;"></iframe>

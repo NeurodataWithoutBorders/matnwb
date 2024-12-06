@@ -1,0 +1,10 @@
+MatNWB Functions
+================
+
+These are the main functions of the MatNWB API
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Functions
+
+{{ function_list }}

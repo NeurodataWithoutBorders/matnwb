@@ -1,0 +1,10 @@
+Neurodata Types
+===============
+
+These are the MatNWB neurodata types from the core schema specification.
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Functions
+
+{{ function_list }}
