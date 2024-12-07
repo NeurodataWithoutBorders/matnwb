@@ -11,9 +11,14 @@ import sys
 
 sys.path.append('sphinx_extensions')
 from docstring_processors import process_matlab_docstring
+from custom_roles import MatClassRole, register_matlab_types, register_type_short_names
 
 def setup(app):
     app.connect("autodoc-process-docstring", process_matlab_docstring)
+    app.connect("env-purge-doc", register_matlab_types)
+    app.connect("env-purge-doc", register_type_short_names)
+    app.add_role('matclass', MatClassRole())
+
 
 project = 'MatNWB'
 copyright = '2024, Neurodata Without Borders' # Todo: compute year
@@ -81,5 +86,7 @@ extlinks = {
     'dandi': ('https://www.dandiarchive.org/%s', '%s'),
     "nwbinspector": ("https://nwbinspector.readthedocs.io/en/dev/%s", "%s"),
     'hdmf-zarr': ('https://hdmf-zarr.readthedocs.io/en/latest/%s', '%s'),
-    'matlab-online-tutorial': ('https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/%s.mlx', '%s')
+    'matlab-online-tutorial': ('https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/%s.mlx', '%s'),
+    'nwb-core-type-schema': ('https://nwb-schema.readthedocs.io/en/latest/format.html#%s', '%s'),
+    'nwb-hdmf_common-type-schema': ('https://hdmf-common-schema.readthedocs.io/en/stable/format.html#%s', '%s')
 }

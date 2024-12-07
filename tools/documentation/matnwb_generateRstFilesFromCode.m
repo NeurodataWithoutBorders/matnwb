@@ -1,5 +1,7 @@
 function matnwb_generateRstFilesFromCode()
     generateRstForTutorials()
     generateRstForNwbFunctions()
-    generateRstForNwbTypeClasses()
+    generateRstForNeurodataTypeClasses('core')
+    generateRstForNeurodataTypeClasses('hdmf_common')
+    %generateRstForNeurodataTypeClasses('hdmf_experimental')
 end

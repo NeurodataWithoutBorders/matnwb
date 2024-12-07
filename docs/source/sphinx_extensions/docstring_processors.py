@@ -1,8 +1,11 @@
+import os
 import re
+from _util import list_neurodata_types
 
 
 def process_matlab_docstring(app, what, name, obj, options, lines):
     _format_matlab_type_as_code_literal(lines)
+    _format_nwbtype_shortnames(lines)
     _make_syntax_examples_code_literals(lines)
     _format_input_arguments(lines)
     _split_and_format_example_lines(lines)
@@ -18,19 +21,26 @@ def _format_matlab_type_as_code_literal(lines):
         "string", "complex"
     }
 
-    # Regex pattern to match MATLAB types as whole words, optionally wrapped in parentheses
     type_pattern = re.compile(
-        rf"(?<!\w)(?P<before>\(?)"
+        rf"(?P<before>\()"
         rf"(?P<type>{'|'.join(re.escape(t) for t in matlab_types)})"
-        rf"(?P<after>\)?)(?!\w)"
+        rf"(?P<after>\))"
     )
-
+    
     for i, line in enumerate(lines):
         # Replace matches with inline code formatting, preserving parentheses
+        # lines[i] = type_pattern.sub(
+        #     lambda match: (
+        #         f"{match.group('before') or ''}"
+        #         f"``{match.group('type')}``"
+        #         f"{match.group('after') or ''}"
+        #     ),
+        #     line
+        # )
         lines[i] = type_pattern.sub(
             lambda match: (
                 f"{match.group('before') or ''}"
-                f"``{match.group('type')}``"
+                f":matclass:`{match.group('type')}`"
                 f"{match.group('after') or ''}"
             ),
             line
@@ -140,6 +150,30 @@ def _split_and_format_example_lines(lines):
             i += 2  # Skip over the newly added line
         else:
             i += 1  # Move to the next line if no match
+
+
+def _format_nwbtype_shortnames(lines):
+    """
+    Preprocesses a list of docstring lines to replace occurrences of patterns
+    with their respective :class:`pattern` references.
+    
+    Modifies the list of lines in place.
+    
+    Parameters:
+        lines (list of str): The docstring lines to preprocess.
+        patterns (list of str): A list of patterns (e.g., ["TimeSeries", "DataArray"]).
+    """
+
+    patterns = list_neurodata_types('core') + list_neurodata_types('hdmf_common') 
+    # Create a dictionary for replacements
+    replacements = {pattern: f"(:class:`{pattern}`)" for pattern in patterns}
+    
+    # Compile a regex that matches any of the patterns
+    regex = re.compile(r'\((' + '|'.join(map(re.escape, patterns)) + r')\)')
+
+    # Iterate over the lines and replace matches in place
+    for i in range(len(lines)):
+        lines[i] = regex.sub(lambda match: replacements[match.group(1)], lines[i])
 
 
 def _is_section_header(line):

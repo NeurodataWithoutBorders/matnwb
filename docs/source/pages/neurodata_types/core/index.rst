@@ -1,5 +1,5 @@
-Neurodata Types
-===============
+Core Neurodata Types
+====================
 
 These are the MatNWB neurodata types from the core schema specification.
 

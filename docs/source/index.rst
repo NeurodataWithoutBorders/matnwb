@@ -27,6 +27,7 @@ Contents
    
    pages/functions/index
    pages/neurodata_types/core/index
+   pages/neurodata_types/hdmf_common/index
 
 .. toctree::
    :maxdepth: 2
