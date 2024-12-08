@@ -83,9 +83,12 @@ function matnwb_exportTutorials(options)
         end
         
         for j = 1:numel(exportFormat)
-            targetPath = fullfile(targetFolderPaths(j), fileNames(i) + exportFormat(j));
+            targetFilePath = fullfile(targetFolderPaths(j), fileNames(i) + exportFormat(j));
             fprintf('Exporting livescript "%s" to "%s"\n', fileNames(i), exportFormat(j))
-            export(sourcePath, strrep(targetPath, '.mlx', exportFormat(j)));
+            export(sourcePath, targetFilePath);
+            if strcmp(exportFormat(j), '.html')
+                postProcessLivescriptHtml(targetFilePath)
+            end
         end
     end
 end
