@@ -198,4 +198,13 @@ nwb
 nwbExport(nwb, 'ogen_tutorial.nwb');
 ##### SOURCE END #####
 -->
-</div></body></html>
+</div><script>
+    // Update all links with href starting with "https:" to have target="top"
+    document.addEventListener("DOMContentLoaded", function() {
+        const links = document.querySelectorAll('a[href^="https:"]');
+        links.forEach(link => {
+            link.setAttribute("target", "top");
+        });
+    });
+</script>
+</body></html>
