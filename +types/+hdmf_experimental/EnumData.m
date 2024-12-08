@@ -1,5 +1,8 @@
 classdef EnumData < types.hdmf_common.VectorData & types.untyped.DatasetClass
-% ENUMDATA Data that come from a fixed set of values. A data value of i corresponds to the i-th value in the VectorData referenced by the 'elements' attribute.
+% ENUMDATA - Data that come from a fixed set of values. A data value of i corresponds to the i-th value in the VectorData referenced by the 'elements' attribute.
+%
+% Required Properties:
+%  data
 
 
 % OPTIONAL PROPERTIES
@@ -9,7 +12,23 @@ end
 
 methods
     function obj = EnumData(varargin)
-        % ENUMDATA Constructor for EnumData
+        % ENUMDATA - Constructor for EnumData
+        %
+        % Syntax:
+        %  enumData = types.hdmf_experimental.ENUMDATA() creates a EnumData object with unset property values.
+        %
+        %  enumData = types.hdmf_experimental.ENUMDATA(Name, Value) creates a EnumData object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - data (uint8) - No description
+        %
+        %  - description (char) - Description of what these vectors represent.
+        %
+        %  - elements (Object reference to VectorData) - Reference to the VectorData object that contains the enumerable elements
+        %
+        % Output Arguments:
+        %  - enumData (types.hdmf_experimental.EnumData) - A EnumData object
+        
         obj = obj@types.hdmf_common.VectorData(varargin{:});
         
         

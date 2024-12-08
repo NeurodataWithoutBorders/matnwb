@@ -1,5 +1,8 @@
 classdef Device < types.core.NWBContainer & types.untyped.GroupClass
-% DEVICE Metadata about a data acquisition device, e.g., recording system, electrode, microscope.
+% DEVICE - Metadata about a data acquisition device, e.g., recording system, electrode, microscope.
+%
+% Required Properties:
+%  None
 
 
 % OPTIONAL PROPERTIES
@@ -13,7 +16,27 @@ end
 
 methods
     function obj = Device(varargin)
-        % DEVICE Constructor for Device
+        % DEVICE - Constructor for Device
+        %
+        % Syntax:
+        %  device = types.core.DEVICE() creates a Device object with unset property values.
+        %
+        %  device = types.core.DEVICE(Name, Value) creates a Device object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - description (char) - Description of the device as free-form text. If there is any software/firmware associated with the device, the names and versions of those can be added to NWBFile.was_generated_by.
+        %
+        %  - manufacturer (char) - The name of the manufacturer of the device, e.g., Imec, Plexon, Thorlabs.
+        %
+        %  - model_name (char) - The model name of the device, e.g., Neuropixels 1.0, V-Probe, Bergamo III.
+        %
+        %  - model_number (char) - The model number (or part/product number) of the device, e.g., PRB_1_4_0480_1, PLX-VP-32-15SE(75)-(260-80)(460-10)-300-(1)CON/32m-V, BERGAMO.
+        %
+        %  - serial_number (char) - The serial number of the device.
+        %
+        % Output Arguments:
+        %  - device (types.core.Device) - A Device object
+        
         obj = obj@types.core.NWBContainer(varargin{:});
         
         

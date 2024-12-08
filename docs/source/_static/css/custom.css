@@ -1,0 +1,74 @@
+/* arg formatting by line, taken from https://github.com/sphinx-doc/sphinx/issues/1514#issuecomment-742703082 */
+
+/* For general themes */
+div.body, .wy-nav-content {
+    max-width: 1000px; /* Set the content width */
+    margin: 0;         /* Remove auto-centering */
+    padding-left: 30;   /* Optional: Adjust padding */
+}
+
+/* For Read the Docs theme specifically */
+.wy-nav-content {
+    margin: 0; /* Remove centering (auto) */
+    padding-left: 30px; /* Align content to the left */
+}
+
+
+/*Newlines (\a) and spaces (\20) before each parameter*/
+dl.class em:not([class])::before {
+    content: "\a\20\20\20\20\20\20\20\20\20\20\20\20\20\20\20\20";
+    white-space: pre;
+}
+
+/*Newline after the last parameter (so the closing bracket is on a new line)*/
+dl.class em:not([class]):last-of-type::after {
+    content: "\a";
+    white-space: pre;
+}
+
+/*To have blue background of width of the block (instead of width of content)*/
+dl.class > dt:first-of-type {
+    display: block !important;
+}
+
+.rst-content code.literal, .rst-content tt.literal {
+    color: #2b417e; /* Replace with your desired color */
+}
+.rst-content div[class^=highlight], .rst-content pre.literal-block {
+    margin: 1px 0 14px
+}
+
+.rst-content .section ol li>*, .rst-content .section ul li>*, .rst-content .toctree-wrapper ol li>*, .rst-content .toctree-wrapper ul li>*, .rst-content section ol li>*, .rst-content section ul li>* {
+    margin-top: 0px;
+}
+
+/* Ensure there is 10px spacing between nested list items at different levels*/
+.rst-content li > dl > dt {
+    margin-bottom: 10px;
+}
+.rst-content dd > ul > li {
+    margin-bottom: 10px;
+}
+.rst-content .section ol.simple li>*, .rst-content .section ol.simple li ol, .rst-content .section ol.simple li ul, .rst-content .section ul.simple li>*, .rst-content .section ul.simple li ol, .rst-content .section ul.simple li ul, .rst-content .toctree-wrapper ol.simple li>*, .rst-content .toctree-wrapper ol.simple li ol, .rst-content .toctree-wrapper ol.simple li ul, .rst-content .toctree-wrapper ul.simple li>*, .rst-content .toctree-wrapper ul.simple li ol, .rst-content .toctree-wrapper ul.simple li ul, .rst-content section ol.simple li>*, .rst-content section ol.simple li ol, .rst-content section ol.simple li ul, .rst-content section ul.simple li>*, .rst-content section ul.simple li ol, .rst-content section ul.simple li ul{
+    margin-bottom: 10px;
+}
+
+/* Improve padding and margins for function docstring section titles */
+.rst-content dd > dl > dt {
+    padding-left: 5px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+html.writer-html4 .rst-content dl:not(.docutils) dl:not(.option-list):not(.field-list):not(.footnote):not(.citation):not(.glossary):not(.simple)>dt, html.writer-html5 .rst-content dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.citation):not(.glossary):not(.simple) dl:not(.option-list):not(.field-list):not(.footnote):not(.citation):not(.glossary):not(.simple)>dt{
+    margin-top: 28px;
+    margin-bottom: 10px;
+}
+
+button.copybtn {
+    height:25px;
+    width:25px;
+    opacity: 0.5;
+    padding: 0;
+    border: none;
+    background: none;
+}

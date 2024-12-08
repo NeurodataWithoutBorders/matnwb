@@ -1,5 +1,8 @@
 classdef BehavioralTimeSeries < types.core.NWBDataInterface & types.untyped.GroupClass
-% BEHAVIORALTIMESERIES TimeSeries for storing Behavoioral time series data. See description of <a href="#BehavioralEpochs">BehavioralEpochs</a> for more details.
+% BEHAVIORALTIMESERIES - TimeSeries for storing Behavoioral time series data. See description of <a href="#BehavioralEpochs">BehavioralEpochs</a> for more details.
+%
+% Required Properties:
+%  None
 
 
 % OPTIONAL PROPERTIES
@@ -9,7 +12,19 @@ end
 
 methods
     function obj = BehavioralTimeSeries(varargin)
-        % BEHAVIORALTIMESERIES Constructor for BehavioralTimeSeries
+        % BEHAVIORALTIMESERIES - Constructor for BehavioralTimeSeries
+        %
+        % Syntax:
+        %  behavioralTimeSeries = types.core.BEHAVIORALTIMESERIES() creates a BehavioralTimeSeries object with unset property values.
+        %
+        %  behavioralTimeSeries = types.core.BEHAVIORALTIMESERIES(Name, Value) creates a BehavioralTimeSeries object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - timeseries (TimeSeries) - TimeSeries object containing continuous behavioral data.
+        %
+        % Output Arguments:
+        %  - behavioralTimeSeries (types.core.BehavioralTimeSeries) - A BehavioralTimeSeries object
+        
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.timeseries, ivarargin] = types.util.parseConstrained(obj,'timeseries', 'types.core.TimeSeries', varargin{:});
         varargin(ivarargin) = [];

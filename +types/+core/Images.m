@@ -1,5 +1,8 @@
 classdef Images < types.core.NWBDataInterface & types.untyped.GroupClass
-% IMAGES A collection of images with an optional way to specify the order of the images using the "order_of_images" dataset. An order must be specified if the images are referenced by index, e.g., from an IndexSeries.
+% IMAGES - A collection of images with an optional way to specify the order of the images using the "order_of_images" dataset. An order must be specified if the images are referenced by index, e.g., from an IndexSeries.
+%
+% Required Properties:
+%  image
 
 
 % REQUIRED PROPERTIES
@@ -14,7 +17,23 @@ end
 
 methods
     function obj = Images(varargin)
-        % IMAGES Constructor for Images
+        % IMAGES - Constructor for Images
+        %
+        % Syntax:
+        %  images = types.core.IMAGES() creates a Images object with unset property values.
+        %
+        %  images = types.core.IMAGES(Name, Value) creates a Images object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - description (char) - Description of this collection of images.
+        %
+        %  - image (Image) - Images stored in this collection.
+        %
+        %  - order_of_images (ImageReferences) - Ordered dataset of references to Image objects stored in the parent group. Each Image object in the Images group should be stored once and only once, so the dataset should have the same length as the number of images.
+        %
+        % Output Arguments:
+        %  - images (types.core.Images) - A Images object
+        
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.image, ivarargin] = types.util.parseConstrained(obj,'image', 'types.core.Image', varargin{:});
         varargin(ivarargin) = [];

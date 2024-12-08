@@ -1,5 +1,8 @@
 classdef IndexSeries < types.core.TimeSeries & types.untyped.GroupClass
-% INDEXSERIES Stores indices to image frames stored in an ImageSeries. The purpose of the IndexSeries is to allow a static image stack to be stored in an Images object, and the images in the stack to be referenced out-of-order. This can be for the display of individual images, or of movie segments (as a movie is simply a series of images). The data field stores the index of the frame in the referenced Images object, and the timestamps array indicates when that image was displayed.
+% INDEXSERIES - Stores indices to image frames stored in an ImageSeries. The purpose of the IndexSeries is to allow a static image stack to be stored in an Images object, and the images in the stack to be referenced out-of-order. This can be for the display of individual images, or of movie segments (as a movie is simply a series of images). The data field stores the index of the frame in the referenced Images object, and the timestamps array indicates when that image was displayed.
+%
+% Required Properties:
+%  data
 
 
 % OPTIONAL PROPERTIES
@@ -10,7 +13,45 @@ end
 
 methods
     function obj = IndexSeries(varargin)
-        % INDEXSERIES Constructor for IndexSeries
+        % INDEXSERIES - Constructor for IndexSeries
+        %
+        % Syntax:
+        %  indexSeries = types.core.INDEXSERIES() creates a IndexSeries object with unset property values.
+        %
+        %  indexSeries = types.core.INDEXSERIES(Name, Value) creates a IndexSeries object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - comments (char) - Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string.
+        %
+        %  - control (uint8) - Numerical labels that apply to each time point in data for the purpose of querying and slicing data by these values. If present, the length of this array should be the same size as the first dimension of data.
+        %
+        %  - control_description (char) - Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0.
+        %
+        %  - data (uint32) - Index of the image (using zero-indexing) in the linked Images object.
+        %
+        %  - data_continuity (char) - Optionally describe the continuity of the data. Can be "continuous", "instantaneous", or "step". For example, a voltage trace would be "continuous", because samples are recorded from a continuous process. An array of lick times would be "instantaneous", because the data represents distinct moments in time. Times of image presentations would be "step" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable.
+        %
+        %  - data_conversion (single) - This field is unused by IndexSeries.
+        %
+        %  - data_offset (single) - This field is unused by IndexSeries.
+        %
+        %  - data_resolution (single) - This field is unused by IndexSeries.
+        %
+        %  - description (char) - Description of the time series.
+        %
+        %  - indexed_images (Images) - Link to Images object containing an ordered set of images that are indexed. The Images object must contain a 'ordered_images' dataset specifying the order of the images in the Images type.
+        %
+        %  - indexed_timeseries (ImageSeries) - Link to ImageSeries object containing images that are indexed. Use of this link is discouraged and will be deprecated. Link to an Images type instead.
+        %
+        %  - starting_time (double) - Timestamp of the first sample in seconds. When timestamps are uniformly spaced, the timestamp of the first sample can be specified and all subsequent ones calculated from the sampling rate attribute.
+        %
+        %  - starting_time_rate (single) - Sampling rate, in Hz.
+        %
+        %  - timestamps (double) - Timestamps for samples stored in data, in seconds, relative to the common experiment master-clock stored in NWBFile.timestamps_reference_time.
+        %
+        % Output Arguments:
+        %  - indexSeries (types.core.IndexSeries) - A IndexSeries object
+        
         varargin = [{'data_unit' 'N/A'} varargin];
         obj = obj@types.core.TimeSeries(varargin{:});
         

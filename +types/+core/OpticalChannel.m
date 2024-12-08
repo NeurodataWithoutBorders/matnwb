@@ -1,5 +1,8 @@
 classdef OpticalChannel < types.core.NWBContainer & types.untyped.GroupClass
-% OPTICALCHANNEL An optical channel used to record from an imaging plane.
+% OPTICALCHANNEL - An optical channel used to record from an imaging plane.
+%
+% Required Properties:
+%  description, emission_lambda
 
 
 % REQUIRED PROPERTIES
@@ -10,7 +13,21 @@ end
 
 methods
     function obj = OpticalChannel(varargin)
-        % OPTICALCHANNEL Constructor for OpticalChannel
+        % OPTICALCHANNEL - Constructor for OpticalChannel
+        %
+        % Syntax:
+        %  opticalChannel = types.core.OPTICALCHANNEL() creates a OpticalChannel object with unset property values.
+        %
+        %  opticalChannel = types.core.OPTICALCHANNEL(Name, Value) creates a OpticalChannel object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - description (char) - Description or other notes about the channel.
+        %
+        %  - emission_lambda (single) - Emission wavelength for channel, in nm.
+        %
+        % Output Arguments:
+        %  - opticalChannel (types.core.OpticalChannel) - A OpticalChannel object
+        
         obj = obj@types.core.NWBContainer(varargin{:});
         
         

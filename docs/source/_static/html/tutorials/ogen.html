@@ -1,0 +1,216 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge,IE=9,chrome=1"><meta name="generator" content="MATLAB 2023b"><title>Optogenetics</title><style type="text/css">.rtcContent { padding: 30px; } .S0 { margin: 3px 10px 5px 4px; padding: 0px; line-height: 28.8px; min-height: 0px; white-space: pre-wrap; color: rgb(192, 76, 11); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 24px; font-weight: 400; text-align: left;  }
+.S1 { margin: 2px 10px 9px 4px; padding: 0px; line-height: 21px; min-height: 0px; white-space: pre-wrap; color: rgb(33, 33, 33); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 14px; font-weight: 400; text-align: left;  }
+.S2 { margin: 20px 10px 5px 4px; padding: 0px; line-height: 20px; min-height: 0px; white-space: pre-wrap; color: rgb(33, 33, 33); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 20px; font-weight: 700; text-align: left;  }
+.CodeBlock { background-color: #F5F5F5; margin: 10px 0 10px 0; }
+.S3 { border-left: 1px solid rgb(217, 217, 217); border-right: 1px solid rgb(217, 217, 217); border-top: 1px solid rgb(217, 217, 217); border-bottom: 0px none rgb(33, 33, 33); border-radius: 4px 4px 0px 0px; padding: 6px 45px 0px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }
+.S4 { border-left: 1px solid rgb(217, 217, 217); border-right: 1px solid rgb(217, 217, 217); border-top: 0px none rgb(33, 33, 33); border-bottom: 0px none rgb(33, 33, 33); border-radius: 0px; padding: 0px 45px 0px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }
+.S5 { border-left: 1px solid rgb(217, 217, 217); border-right: 1px solid rgb(217, 217, 217); border-top: 0px none rgb(33, 33, 33); border-bottom: 1px solid rgb(217, 217, 217); border-radius: 0px; padding: 0px 45px 4px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }
+.S6 { color: rgb(33, 33, 33); padding: 10px 0px 6px 17px; background: rgb(255, 255, 255) none repeat scroll 0% 0% / auto padding-box border-box; font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px; overflow-x: hidden; line-height: 17.234px;  }
+/* Styling that is common to warnings and errors is in diagnosticOutput.css */.embeddedOutputsErrorElement {    min-height: 18px;    max-height: 550px;}
+.embeddedOutputsErrorElement .diagnosticMessage-errorType {    overflow: auto;}
+.embeddedOutputsErrorElement.inlineElement {}
+.embeddedOutputsErrorElement.rightPaneElement {}
+/* Styling that is common to warnings and errors is in diagnosticOutput.css */.embeddedOutputsWarningElement {    min-height: 18px;    max-height: 550px;}
+.embeddedOutputsWarningElement .diagnosticMessage-warningType {    overflow: auto;}
+.embeddedOutputsWarningElement.inlineElement {}
+.embeddedOutputsWarningElement.rightPaneElement {}
+/* Copyright 2015-2023 The MathWorks, Inc. *//* In this file, styles are not scoped to rtcContainer since they could be in the Dojo Tooltip */.diagnosticMessage-wrapper {    font-family: Menlo, Monaco, Consolas, "Courier New", monospace;    font-size: 12px;}
+.diagnosticMessage-wrapper.diagnosticMessage-warningType {    /*This fallback value will be used for appdesigner warnings*/    color: var(--rtc-warning-output-color, var(--mw-color-matlabWarning));}
+.diagnosticMessage-wrapper.diagnosticMessage-warningType a {    /*This fallback value will be used for appdesigner warnings*/    color: var(--rtc-warning-output-color, var(--mw-color-matlabWarning));    text-decoration: underline;}
+.rtcThemeDefaultOverride .diagnosticMessage-wrapper.diagnosticMessage-warningType,.rtcThemeDefaultOverride .diagnosticMessage-wrapper.diagnosticMessage-warningType a {    color: var(--mw-color-matlabWarning) !important;}
+.diagnosticMessage-wrapper.diagnosticMessage-errorType {    /*This fallback value will be used in appdesigner error tooltip text*/    color: var(--rtc-error-output-color, var(--mw-color-matlabErrors));}
+.diagnosticMessage-wrapper.diagnosticMessage-errorType a {    /*This fallback value will be used in appdesigner error tooltip text*/    color: var(--rtc-error-output-color, var(--mw-color-matlabErrors));    text-decoration: underline;}
+.rtcThemeDefaultOverride .diagnosticMessage-wrapper.diagnosticMessage-errorType,.rtcThemeDefaultOverride .diagnosticMessage-wrapper.diagnosticMessage-errorType a {    color: var(--mw-color-matlabErrors) !important;}
+.diagnosticMessage-wrapper .diagnosticMessage-messagePart,.diagnosticMessage-wrapper .diagnosticMessage-causePart {    white-space: pre-wrap;}
+.diagnosticMessage-wrapper .diagnosticMessage-stackPart {    white-space: pre;}
+.embeddedOutputsTextElement,.embeddedOutputsVariableStringElement {    white-space: pre;    word-wrap:  initial;    min-height: 18px;    max-height: 550px;}
+.embeddedOutputsTextElement .textElement,.embeddedOutputsVariableStringElement .textElement {    overflow: auto;}
+.textElement,.rtcDataTipElement .textElement {    padding-top: 2px;}
+.embeddedOutputsTextElement.inlineElement,.embeddedOutputsVariableStringElement.inlineElement {}
+.inlineElement .textElement {}
+.embeddedOutputsTextElement.rightPaneElement,.embeddedOutputsVariableStringElement.rightPaneElement {    min-height: 16px;}
+.rightPaneElement .textElement {    padding-top: 2px;    padding-left: 9px;}
+.S7 { border-left: 1px solid rgb(217, 217, 217); border-right: 1px solid rgb(217, 217, 217); border-top: 0px none rgb(33, 33, 33); border-bottom: 1px solid rgb(217, 217, 217); border-radius: 0px 0px 4px 4px; padding: 0px 45px 4px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }
+.S8 { margin: 10px 10px 9px 4px; padding: 0px; line-height: 21px; min-height: 0px; white-space: pre-wrap; color: rgb(33, 33, 33); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 14px; font-weight: 400; text-align: left;  }
+.S9 { border-left: 1px solid rgb(217, 217, 217); border-right: 1px solid rgb(217, 217, 217); border-top: 1px solid rgb(217, 217, 217); border-bottom: 1px solid rgb(217, 217, 217); border-radius: 4px; padding: 6px 45px 4px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }</style></head><body><div class = rtcContent><h1  class = 'S0'><span>Optogenetics</span></h1><div  class = 'S1'><span>This tutorial will demonstrate how to write optogenetics data.</span></div><h2  class = 'S2'><span>Creating an NWBFile object</span></h2><div  class = 'S1'><span>When creating a NWB file, the first step is to create the</span><span> </span><span style=' font-weight: bold; font-family: monospace;'>NWBFile</span><span> </span><span>object using </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/functions/NwbFile.html"><span style=' font-weight: bold; font-family: monospace;'>NwbFile</span></a><span>.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S3'><span style="white-space: pre"><span >nwb = NwbFile( </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'session_description'</span><span >, </span><span style="color: #a709f5;">'mouse in open exploration'</span><span >,</span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'identifier'</span><span >, char(java.util.UUID.randomUUID), </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'session_start_time'</span><span >, datetime(2018, 4, 25, 2, 30, 3, </span><span style="color: #a709f5;">'TimeZone'</span><span >, </span><span style="color: #a709f5;">'local'</span><span >), </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'general_experimenter'</span><span >, </span><span style="color: #a709f5;">'Last, First M.'</span><span >, </span><span style="color: #0e00ff;">...</span><span style="color: #008013;"> % optional</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'general_session_id'</span><span >, </span><span style="color: #a709f5;">'session_1234'</span><span >, </span><span style="color: #0e00ff;">...</span><span style="color: #008013;"> % optional</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'general_institution'</span><span >, </span><span style="color: #a709f5;">'University of My Institution'</span><span >, </span><span style="color: #0e00ff;">...</span><span style="color: #008013;"> % optional</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'general_related_publications'</span><span >, </span><span style="color: #a709f5;">'DOI:10.1016/j.neuron.2016.12.011'</span><span >); </span><span style="color: #008013;">% optional</span></span></div></div><div class="inlineWrapper outputs"><div  class = 'S5'><span style="white-space: pre"><span >nwb</span></span></div><div  class = 'S6'><div class="inlineElement eoOutputWrapper disableDefaultGestureHandling embeddedOutputsVariableStringElement scrollableOutput" uid="743DD94B" prevent-scroll="true" data-testid="output_0" tabindex="-1" style="width: 1145px; white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;"><div class="textElement eoOutputContent scrollArea" data-previous-available-width="1108" data-previous-scroll-height="832" data-hashorizontaloverflow="false" style="max-height: 261px; white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;" tabindex="-1"><div style="white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;"><span class="variableNameElement" style="white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;">nwb = </span></div><div style="white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;">  NwbFile with properties:
+
+                                             nwb_version: '2.8.0'
+                                        file_create_date: []
+                                              identifier: 'c90fcea4-7fcd-4fdf-aa84-16470b818579'
+                                     session_description: 'mouse in open exploration'
+                                      session_start_time: {[2018-04-25T02:30:03.000000+02:00]}
+                               timestamps_reference_time: []
+                                             acquisition: [0×1 types.untyped.Set]
+                                                analysis: [0×1 types.untyped.Set]
+                                                 general: [0×1 types.untyped.Set]
+                                 general_data_collection: ''
+                                         general_devices: [0×1 types.untyped.Set]
+                          general_experiment_description: ''
+                                    general_experimenter: 'Last, First M.'
+                             general_extracellular_ephys: [0×1 types.untyped.Set]
+                  general_extracellular_ephys_electrodes: []
+                                     general_institution: 'University of My Institution'
+                             general_intracellular_ephys: [0×1 types.untyped.Set]
+     general_intracellular_ephys_experimental_conditions: []
+                   general_intracellular_ephys_filtering: ''
+    general_intracellular_ephys_intracellular_recordings: []
+                 general_intracellular_ephys_repetitions: []
+       general_intracellular_ephys_sequential_recordings: []
+     general_intracellular_ephys_simultaneous_recordings: []
+                 general_intracellular_ephys_sweep_table: []
+                                        general_keywords: ''
+                                             general_lab: ''
+                                           general_notes: ''
+                                    general_optogenetics: [0×1 types.untyped.Set]
+                                  general_optophysiology: [0×1 types.untyped.Set]
+                                    general_pharmacology: ''
+                                        general_protocol: ''
+                            general_related_publications: 'DOI:10.1016/j.neuron.2016.12.011'
+                                      general_session_id: 'session_1234'
+                                          general_slices: ''
+                                   general_source_script: ''
+                         general_source_script_file_name: ''
+                                        general_stimulus: ''
+                                         general_subject: []
+                                         general_surgery: ''
+                                           general_virus: ''
+                                general_was_generated_by: ''
+                                               intervals: [0×1 types.untyped.Set]
+                                        intervals_epochs: []
+                                 intervals_invalid_times: []
+                                        intervals_trials: []
+                                              processing: [0×1 types.untyped.Set]
+                                                 scratch: [0×1 types.untyped.Set]
+                                   stimulus_presentation: [0×1 types.untyped.Set]
+                                      stimulus_templates: [0×1 types.untyped.Set]
+                                                   units: []
+
+Warning: The following required properties are missing for instance for type "NwbFile":
+    timestamps_reference_time </div></div></div></div></div></div><h2  class = 'S2'><span>Adding optogenetic data</span><a href = "http://localhost:63342/pynwb/docs/_build/html/tutorials/domain/ogen.html#adding-optogenetic-data"><span>¶</span></a></h2><div  class = 'S1'><span>The</span><span> </span><span style=' font-weight: bold; font-family: monospace;'>ogen </span><span>module contains two data types that you will need to write optogenetics data,</span><span> </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OptogeneticStimulusSite.html"><span style=' font-weight: bold; font-family: monospace;'>OptogeneticStimulusSite</span></a><span>, which contains metadata about the stimulus site, and</span><span> </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OptogeneticSeries.html"><span style=' font-weight: bold; font-family: monospace;'>OptogeneticSeries</span></a><span>, which contains the values of the time series.</span></div><div  class = 'S1'><span>First, you need to create a</span><span> </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Device.html"><span style=' font-weight: bold; font-family: monospace;'>Device</span></a><span> </span><span>object linked to the</span><span> </span><span style=' font-weight: bold; font-family: monospace;'>NWBFile</span><span>:</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S3'><span style="white-space: pre"><span >device = types.core.Device();</span></span></div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >nwb.general_devices.set(</span><span style="color: #a709f5;">'Device'</span><span >, device);</span></span></div></div></div><div  class = 'S8'><span>Now, you can create and add an </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OptogeneticStimulusSite.html"><span style=' font-weight: bold; font-family: monospace;'>OptogeneticStimulusSite</span></a><span>. </span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S3'><span style="white-space: pre"><span >ogen_stim_site = types.core.OptogeneticStimulusSite( </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'device'</span><span >, types.untyped.SoftLink(device), </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'description'</span><span >, </span><span style="color: #a709f5;">'This is an example optogenetic site.'</span><span >, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'excitation_lambda'</span><span >, 600.0, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'location'</span><span >, </span><span style="color: #a709f5;">'VISrl'</span><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >nwb.general_optogenetics.set(</span><span style="color: #a709f5;">'OptogeneticStimulusSite'</span><span >, ogen_stim_site);</span></span></div></div></div><div  class = 'S8'><span>With the</span><span> </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OptogeneticStimulusSite.html"><span style=' font-weight: bold; font-family: monospace;'>OptogeneticStimulusSite</span></a><span> </span><span>added, you can now create and add a</span><span> </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OptogeneticSeries.html"><span style=' font-weight: bold; font-family: monospace;'>OptogeneticSeries</span></a><span>. Here, we will generate some random data and specify the timing using</span><span> </span><span style=' font-family: monospace;'>rate</span><span>. If you have samples at irregular intervals, you should use</span><span> </span><span style=' font-family: monospace;'>timestamps</span><span> </span><span>instead.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S3'><span style="white-space: pre"><span >ogen_series = types.core.OptogeneticSeries( </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data'</span><span >, randn(20, 1), </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'site'</span><span >, types.untyped.SoftLink(ogen_stim_site), </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'starting_time'</span><span >, 0.0, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'starting_time_rate'</span><span >, 30.0);  </span><span style="color: #008013;">% Hz</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >nwb.stimulus_presentation.set(</span><span style="color: #a709f5;">'OptogeneticSeries'</span><span >, ogen_series);</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'>&nbsp;</div></div><div class="inlineWrapper outputs"><div  class = 'S5'><span style="white-space: pre"><span >nwb</span></span></div><div  class = 'S6'><div class="inlineElement eoOutputWrapper disableDefaultGestureHandling embeddedOutputsVariableStringElement scrollableOutput" uid="F88E7D6B" prevent-scroll="true" data-testid="output_1" tabindex="-1" style="width: 1145px; white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;"><div class="textElement eoOutputContent scrollArea" data-previous-available-width="1108" data-previous-scroll-height="832" data-hashorizontaloverflow="false" style="max-height: 261px; white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;" tabindex="-1"><div style="white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;"><span class="variableNameElement" style="white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;">nwb = </span></div><div style="white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;">  NwbFile with properties:
+
+                                             nwb_version: '2.8.0'
+                                        file_create_date: []
+                                              identifier: 'c90fcea4-7fcd-4fdf-aa84-16470b818579'
+                                     session_description: 'mouse in open exploration'
+                                      session_start_time: {[2018-04-25T02:30:03.000000+02:00]}
+                               timestamps_reference_time: []
+                                             acquisition: [0×1 types.untyped.Set]
+                                                analysis: [0×1 types.untyped.Set]
+                                                 general: [0×1 types.untyped.Set]
+                                 general_data_collection: ''
+                                         general_devices: [1×1 types.untyped.Set]
+                          general_experiment_description: ''
+                                    general_experimenter: 'Last, First M.'
+                             general_extracellular_ephys: [0×1 types.untyped.Set]
+                  general_extracellular_ephys_electrodes: []
+                                     general_institution: 'University of My Institution'
+                             general_intracellular_ephys: [0×1 types.untyped.Set]
+     general_intracellular_ephys_experimental_conditions: []
+                   general_intracellular_ephys_filtering: ''
+    general_intracellular_ephys_intracellular_recordings: []
+                 general_intracellular_ephys_repetitions: []
+       general_intracellular_ephys_sequential_recordings: []
+     general_intracellular_ephys_simultaneous_recordings: []
+                 general_intracellular_ephys_sweep_table: []
+                                        general_keywords: ''
+                                             general_lab: ''
+                                           general_notes: ''
+                                    general_optogenetics: [1×1 types.untyped.Set]
+                                  general_optophysiology: [0×1 types.untyped.Set]
+                                    general_pharmacology: ''
+                                        general_protocol: ''
+                            general_related_publications: 'DOI:10.1016/j.neuron.2016.12.011'
+                                      general_session_id: 'session_1234'
+                                          general_slices: ''
+                                   general_source_script: ''
+                         general_source_script_file_name: ''
+                                        general_stimulus: ''
+                                         general_subject: []
+                                         general_surgery: ''
+                                           general_virus: ''
+                                general_was_generated_by: ''
+                                               intervals: [0×1 types.untyped.Set]
+                                        intervals_epochs: []
+                                 intervals_invalid_times: []
+                                        intervals_trials: []
+                                              processing: [0×1 types.untyped.Set]
+                                                 scratch: [0×1 types.untyped.Set]
+                                   stimulus_presentation: [1×1 types.untyped.Set]
+                                      stimulus_templates: [0×1 types.untyped.Set]
+                                                   units: []
+
+Warning: The following required properties are missing for instance for type "NwbFile":
+    timestamps_reference_time </div></div></div></div></div></div><div  class = 'S8'><span>Now you can write the NWB file.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >nwbExport(nwb, </span><span style="color: #a709f5;">'ogen_tutorial.nwb'</span><span >);</span></span></div></div></div>
+<br>
+<!-- 
+##### SOURCE BEGIN #####
+%% Optogenetics
+% This tutorial will demonstrate how to write optogenetics data.
+%% Creating an NWBFile object
+% When creating a NWB file, the first step is to create the |*NWBFile*| object 
+% using <https://matnwb.readthedocs.io/en/latest/pages/functions/NwbFile.html |*NwbFile*|>.
+
+nwb = NwbFile( ...
+    'session_description', 'mouse in open exploration',...
+    'identifier', char(java.util.UUID.randomUUID), ...
+    'session_start_time', datetime(2018, 4, 25, 2, 30, 3, 'TimeZone', 'local'), ...
+    'general_experimenter', 'Last, First M.', ... % optional
+    'general_session_id', 'session_1234', ... % optional
+    'general_institution', 'University of My Institution', ... % optional
+    'general_related_publications', 'DOI:10.1016/j.neuron.2016.12.011'); % optional
+nwb
+%% Adding optogenetic data<http://localhost:63342/pynwb/docs/_build/html/tutorials/domain/ogen.html#adding-optogenetic-data ¶>
+% The |*ogen*| module contains two data types that you will need to write optogenetics 
+% data, <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OptogeneticStimulusSite.html 
+% |*OptogeneticStimulusSite*|>, which contains metadata about the stimulus site, 
+% and <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OptogeneticSeries.html 
+% |*OptogeneticSeries*|>, which contains the values of the time series.
+% 
+% First, you need to create a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Device.html 
+% |*Device*|> object linked to the |*NWBFile*|:
+
+device = types.core.Device();
+nwb.general_devices.set('Device', device);
+%% 
+% Now, you can create and add an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OptogeneticStimulusSite.html 
+% |*OptogeneticStimulusSite*|>. 
+
+ogen_stim_site = types.core.OptogeneticStimulusSite( ...
+    'device', types.untyped.SoftLink(device), ...
+    'description', 'This is an example optogenetic site.', ...
+    'excitation_lambda', 600.0, ...
+    'location', 'VISrl');
+
+nwb.general_optogenetics.set('OptogeneticStimulusSite', ogen_stim_site);
+%% 
+% With the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OptogeneticStimulusSite.html 
+% |*OptogeneticStimulusSite*|> added, you can now create and add a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OptogeneticSeries.html 
+% |*OptogeneticSeries*|>. Here, we will generate some random data and specify 
+% the timing using |rate|. If you have samples at irregular intervals, you should 
+% use |timestamps| instead.
+
+ogen_series = types.core.OptogeneticSeries( ...
+    'data', randn(20, 1), ...
+    'site', types.untyped.SoftLink(ogen_stim_site), ...
+    'starting_time', 0.0, ...
+    'starting_time_rate', 30.0);  % Hz
+nwb.stimulus_presentation.set('OptogeneticSeries', ogen_series);
+
+nwb
+%% 
+% Now you can write the NWB file.
+
+nwbExport(nwb, 'ogen_tutorial.nwb');
+##### SOURCE END #####
+-->
+</div><script>
+    // Update all links with href starting with "https:" to have target="_top"
+    document.addEventListener("DOMContentLoaded", function() {
+        const links = document.querySelectorAll('a[href^="https:"]');
+        links.forEach(link => {
+            link.setAttribute("target", "_top");
+        });
+    });
+</script>
+</body></html>

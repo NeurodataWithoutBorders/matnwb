@@ -1,5 +1,8 @@
 classdef TimeIntervals < types.hdmf_common.DynamicTable & types.untyped.GroupClass
-% TIMEINTERVALS A container for aggregating epoch data and the TimeSeries that each epoch applies to.
+% TIMEINTERVALS - A container for aggregating epoch data and the TimeSeries that each epoch applies to.
+%
+% Required Properties:
+%  id, start_time, stop_time
 
 
 % REQUIRED PROPERTIES
@@ -17,7 +20,37 @@ end
 
 methods
     function obj = TimeIntervals(varargin)
-        % TIMEINTERVALS Constructor for TimeIntervals
+        % TIMEINTERVALS - Constructor for TimeIntervals
+        %
+        % Syntax:
+        %  timeIntervals = types.core.TIMEINTERVALS() creates a TimeIntervals object with unset property values.
+        %
+        %  timeIntervals = types.core.TIMEINTERVALS(Name, Value) creates a TimeIntervals object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - colnames (char) - The names of the columns in this table. This should be used to specify an order to the columns.
+        %
+        %  - description (char) - Description of what is in this dynamic table.
+        %
+        %  - id (ElementIdentifiers) - Array of unique identifiers for the rows of this dynamic table.
+        %
+        %  - start_time (VectorData) - Start time of epoch, in seconds.
+        %
+        %  - stop_time (VectorData) - Stop time of epoch, in seconds.
+        %
+        %  - tags (VectorData) - User-defined tags that identify or categorize events.
+        %
+        %  - tags_index (VectorIndex) - Index for tags.
+        %
+        %  - timeseries (TimeSeriesReferenceVectorData) - An index into a TimeSeries object.
+        %
+        %  - timeseries_index (VectorIndex) - Index for timeseries.
+        %
+        %  - vectordata (VectorData) - Vector columns, including index columns, of this dynamic table.
+        %
+        % Output Arguments:
+        %  - timeIntervals (types.core.TimeIntervals) - A TimeIntervals object
+        
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         
         

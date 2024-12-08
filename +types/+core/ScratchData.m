@@ -1,5 +1,8 @@
 classdef ScratchData < types.core.NWBData & types.untyped.DatasetClass
-% SCRATCHDATA Any one-off datasets
+% SCRATCHDATA - Any one-off datasets
+%
+% Required Properties:
+%  data
 
 
 % OPTIONAL PROPERTIES
@@ -9,7 +12,21 @@ end
 
 methods
     function obj = ScratchData(varargin)
-        % SCRATCHDATA Constructor for ScratchData
+        % SCRATCHDATA - Constructor for ScratchData
+        %
+        % Syntax:
+        %  scratchData = types.core.SCRATCHDATA() creates a ScratchData object with unset property values.
+        %
+        %  scratchData = types.core.SCRATCHDATA(Name, Value) creates a ScratchData object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - data (any) - No description
+        %
+        %  - notes (char) - Any notes the user has about the dataset being stored
+        %
+        % Output Arguments:
+        %  - scratchData (types.core.ScratchData) - A ScratchData object
+        
         obj = obj@types.core.NWBData(varargin{:});
         
         

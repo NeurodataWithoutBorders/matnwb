@@ -1,11 +1,21 @@
 classdef NWBDataInterface < types.core.NWBContainer & types.untyped.GroupClass
-% NWBDATAINTERFACE An abstract data type for a generic container storing collections of data, as opposed to metadata.
+% NWBDATAINTERFACE - An abstract data type for a generic container storing collections of data, as opposed to metadata.
+%
+% Required Properties:
+%  None
 
 
 
 methods
     function obj = NWBDataInterface(varargin)
-        % NWBDATAINTERFACE Constructor for NWBDataInterface
+        % NWBDATAINTERFACE - Constructor for NWBDataInterface
+        %
+        % Syntax:
+        %  nWBDataInterface = types.core.NWBDATAINTERFACE() creates a NWBDataInterface object with unset property values.
+        %
+        % Output Arguments:
+        %  - nWBDataInterface (types.core.NWBDataInterface) - A NWBDataInterface object
+        
         obj = obj@types.core.NWBContainer(varargin{:});
         if strcmp(class(obj), 'types.core.NWBDataInterface')
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));

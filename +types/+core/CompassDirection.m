@@ -1,5 +1,8 @@
 classdef CompassDirection < types.core.NWBDataInterface & types.untyped.GroupClass
-% COMPASSDIRECTION With a CompassDirection interface, a module publishes a SpatialSeries object representing a floating point value for theta. The SpatialSeries::reference_frame field should indicate what direction corresponds to 0 and which is the direction of rotation (this should be clockwise). The si_unit for the SpatialSeries should be radians or degrees.
+% COMPASSDIRECTION - With a CompassDirection interface, a module publishes a SpatialSeries object representing a floating point value for theta. The SpatialSeries::reference_frame field should indicate what direction corresponds to 0 and which is the direction of rotation (this should be clockwise). The si_unit for the SpatialSeries should be radians or degrees.
+%
+% Required Properties:
+%  None
 
 
 % OPTIONAL PROPERTIES
@@ -9,7 +12,19 @@ end
 
 methods
     function obj = CompassDirection(varargin)
-        % COMPASSDIRECTION Constructor for CompassDirection
+        % COMPASSDIRECTION - Constructor for CompassDirection
+        %
+        % Syntax:
+        %  compassDirection = types.core.COMPASSDIRECTION() creates a CompassDirection object with unset property values.
+        %
+        %  compassDirection = types.core.COMPASSDIRECTION(Name, Value) creates a CompassDirection object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - spatialseries (SpatialSeries) - SpatialSeries object containing direction of gaze travel.
+        %
+        % Output Arguments:
+        %  - compassDirection (types.core.CompassDirection) - A CompassDirection object
+        
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.spatialseries, ivarargin] = types.util.parseConstrained(obj,'spatialseries', 'types.core.SpatialSeries', varargin{:});
         varargin(ivarargin) = [];

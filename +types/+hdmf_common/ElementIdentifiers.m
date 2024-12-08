@@ -1,11 +1,26 @@
 classdef ElementIdentifiers < types.hdmf_common.Data & types.untyped.DatasetClass
-% ELEMENTIDENTIFIERS A list of unique identifiers for values within a dataset, e.g. rows of a DynamicTable.
+% ELEMENTIDENTIFIERS - A list of unique identifiers for values within a dataset, e.g. rows of a DynamicTable.
+%
+% Required Properties:
+%  data
 
 
 
 methods
     function obj = ElementIdentifiers(varargin)
-        % ELEMENTIDENTIFIERS Constructor for ElementIdentifiers
+        % ELEMENTIDENTIFIERS - Constructor for ElementIdentifiers
+        %
+        % Syntax:
+        %  elementIdentifiers = types.hdmf_common.ELEMENTIDENTIFIERS() creates a ElementIdentifiers object with unset property values.
+        %
+        %  elementIdentifiers = types.hdmf_common.ELEMENTIDENTIFIERS(Name, Value) creates a ElementIdentifiers object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - data (int8) - No description
+        %
+        % Output Arguments:
+        %  - elementIdentifiers (types.hdmf_common.ElementIdentifiers) - A ElementIdentifiers object
+        
         obj = obj@types.hdmf_common.Data(varargin{:});
         
         

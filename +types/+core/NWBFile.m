@@ -1,5 +1,8 @@
 classdef NWBFile < types.core.NWBContainer & types.untyped.GroupClass
-% NWBFILE An NWB file storing cellular-based neurophysiology data from a single experimental session.
+% NWBFILE - An NWB file storing cellular-based neurophysiology data from a single experimental session.
+%
+% Required Properties:
+%  file_create_date, identifier, session_description, session_start_time, timestamps_reference_time
 
 
 % READONLY PROPERTIES
@@ -64,7 +67,115 @@ end
 
 methods
     function obj = NWBFile(varargin)
-        % NWBFILE Constructor for NWBFile
+        % NWBFILE - Constructor for NWBFile
+        %
+        % Syntax:
+        %  nWBFile = types.core.NWBFILE() creates a NWBFile object with unset property values.
+        %
+        %  nWBFile = types.core.NWBFILE(Name, Value) creates a NWBFile object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - acquisition (DynamicTable|NWBDataInterface) - Tabular data that is relevant to acquisition
+        %
+        %  - analysis (DynamicTable|NWBContainer) - Tabular data that is relevant to data stored in analysis
+        %
+        %  - file_create_date (datetime) - A record of the date the file was created and of subsequent modifications. The date is stored in UTC with local timezone offset as ISO 8601 extended formatted strings: 2018-09-28T14:43:54.123+02:00. Dates stored in UTC end in "Z" with no timezone offset. Date accuracy is up to milliseconds. The file can be created after the experiment was run, so this may differ from the experiment start time. Each modification to the nwb file adds a new entry to the array.
+        %
+        %  - general (LabMetaData) - Place-holder than can be extended so that lab-specific meta-data can be placed in /general.
+        %
+        %  - general_data_collection (char) - Notes about data collection and analysis.
+        %
+        %  - general_devices (Device) - Data acquisition devices.
+        %
+        %  - general_experiment_description (char) - General description of the experiment.
+        %
+        %  - general_experimenter (char) - Name of person(s) who performed the experiment. Can also specify roles of different people involved.
+        %
+        %  - general_extracellular_ephys (ElectrodeGroup) - Physical group of electrodes.
+        %
+        %  - general_extracellular_ephys_electrodes (DynamicTable) - A table of all electrodes (i.e. channels) used for recording.
+        %
+        %  - general_institution (char) - Institution(s) where experiment was performed.
+        %
+        %  - general_intracellular_ephys (IntracellularElectrode) - An intracellular electrode.
+        %
+        %  - general_intracellular_ephys_experimental_conditions (ExperimentalConditionsTable) - A table for grouping different intracellular recording repetitions together that belong to the same experimental experimental_conditions.
+        %
+        %  - general_intracellular_ephys_filtering (char) - [DEPRECATED] Use IntracellularElectrode.filtering instead. Description of filtering used. Includes filtering type and parameters, frequency fall-off, etc. If this changes between TimeSeries, filter description should be stored as a text attribute for each TimeSeries.
+        %
+        %  - general_intracellular_ephys_intracellular_recordings (IntracellularRecordingsTable) - A table to group together a stimulus and response from a single electrode and a single simultaneous recording. Each row in the table represents a single recording consisting typically of a stimulus and a corresponding response. In some cases, however, only a stimulus or a response are recorded as as part of an experiment. In this case both, the stimulus and response will point to the same TimeSeries while the idx_start and count of the invalid column will be set to -1, thus, indicating that no values have been recorded for the stimulus or response, respectively. Note, a recording MUST contain at least a stimulus or a response. Typically the stimulus and response are PatchClampSeries. However, the use of AD/DA channels that are not associated to an electrode is also common in intracellular electrophysiology, in which case other TimeSeries may be used.
+        %
+        %  - general_intracellular_ephys_repetitions (RepetitionsTable) - A table for grouping different sequential intracellular recordings together. With each SequentialRecording typically representing a particular type of stimulus, the RepetitionsTable table is typically used to group sets of stimuli applied in sequence.
+        %
+        %  - general_intracellular_ephys_sequential_recordings (SequentialRecordingsTable) - A table for grouping different sequential recordings from the SimultaneousRecordingsTable table together. This is typically used to group together sequential recordings where the a sequence of stimuli of the same type with varying parameters have been presented in a sequence.
+        %
+        %  - general_intracellular_ephys_simultaneous_recordings (SimultaneousRecordingsTable) - A table for grouping different intracellular recordings from the IntracellularRecordingsTable table together that were recorded simultaneously from different electrodes
+        %
+        %  - general_intracellular_ephys_sweep_table (SweepTable) - [DEPRECATED] Table used to group different PatchClampSeries. SweepTable is being replaced by IntracellularRecordingsTable and SimultaneousRecordingsTable tables. Additional SequentialRecordingsTable, RepetitionsTable and ExperimentalConditions tables provide enhanced support for experiment metadata.
+        %
+        %  - general_keywords (char) - Terms to search over.
+        %
+        %  - general_lab (char) - Laboratory where experiment was performed.
+        %
+        %  - general_notes (char) - Notes about the experiment.
+        %
+        %  - general_optogenetics (OptogeneticStimulusSite) - An optogenetic stimulation site.
+        %
+        %  - general_optophysiology (ImagingPlane) - An imaging plane.
+        %
+        %  - general_pharmacology (char) - Description of drugs used, including how and when they were administered. Anesthesia(s), painkiller(s), etc., plus dosage, concentration, etc.
+        %
+        %  - general_protocol (char) - Experimental protocol, if applicable. e.g., include IACUC protocol number.
+        %
+        %  - general_related_publications (char) - Publication information. PMID, DOI, URL, etc.
+        %
+        %  - general_session_id (char) - Lab-specific ID for the session.
+        %
+        %  - general_slices (char) - Description of slices, including information about preparation thickness, orientation, temperature, and bath solution.
+        %
+        %  - general_source_script (char) - Script file or link to public source code used to create this NWB file.
+        %
+        %  - general_source_script_file_name (char) - Name of script file.
+        %
+        %  - general_stimulus (char) - Notes about stimuli, such as how and where they were presented.
+        %
+        %  - general_subject (Subject) - Information about the animal or person from which the data was measured.
+        %
+        %  - general_surgery (char) - Narrative description about surgery/surgeries, including date(s) and who performed surgery.
+        %
+        %  - general_virus (char) - Information about virus(es) used in experiments, including virus ID, source, date made, injection location, volume, etc.
+        %
+        %  - general_was_generated_by (char) - Name and version of software package(s) used to generate data contained in this NWB File. For each software package or library, include the name of the software as the first value and the version as the second value.
+        %
+        %  - identifier (char) - A unique text identifier for the file. For example, concatenated lab name, file creation date/time and experimentalist, or a hash of these and/or other values. The goal is that the string should be unique to all other files.
+        %
+        %  - intervals (TimeIntervals) - Optional additional table(s) for describing other experimental time intervals.
+        %
+        %  - intervals_epochs (TimeIntervals) - Divisions in time marking experimental stages or sub-divisions of a single recording session.
+        %
+        %  - intervals_invalid_times (TimeIntervals) - Time intervals that should be removed from analysis.
+        %
+        %  - intervals_trials (TimeIntervals) - Repeated experimental events that have a logical grouping.
+        %
+        %  - processing (ProcessingModule) - Intermediate analysis of acquired data.
+        %
+        %  - scratch (DynamicTable|NWBContainer|ScratchData) - No description
+        %
+        %  - session_description (char) - A description of the experimental session and data in the file.
+        %
+        %  - session_start_time (datetime) - Date and time of the experiment/session start. The date is stored in UTC with local timezone offset as ISO 8601 extended formatted string: 2018-09-28T14:43:54.123+02:00. Dates stored in UTC end in "Z" with no timezone offset. Date accuracy is up to milliseconds.
+        %
+        %  - stimulus_presentation (DynamicTable|NWBDataInterface|TimeSeries) - DynamicTable objects containing data of presented stimuli.
+        %
+        %  - stimulus_templates (Images|TimeSeries) - Images objects containing images of presented stimuli.
+        %
+        %  - timestamps_reference_time (datetime) - Date and time corresponding to time zero of all timestamps. The date is stored in UTC with local timezone offset as ISO 8601 extended formatted string: 2018-09-28T14:43:54.123+02:00. Dates stored in UTC end in "Z" with no timezone offset. Date accuracy is up to milliseconds. All times stored in the file use this time as reference (i.e., time zero).
+        %
+        %  - units (Units) - Data about sorted spike units.
+        %
+        % Output Arguments:
+        %  - nWBFile (types.core.NWBFile) - A NWBFile object
+        
         varargin = [{'nwb_version' '2.8.0'} varargin];
         obj = obj@types.core.NWBContainer(varargin{:});
         

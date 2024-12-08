@@ -1,5 +1,8 @@
 classdef SimpleMultiContainer < types.hdmf_common.Container & types.untyped.GroupClass
-% SIMPLEMULTICONTAINER A simple Container for holding onto multiple containers.
+% SIMPLEMULTICONTAINER - A simple Container for holding onto multiple containers.
+%
+% Required Properties:
+%  None
 
 
 % OPTIONAL PROPERTIES
@@ -10,7 +13,21 @@ end
 
 methods
     function obj = SimpleMultiContainer(varargin)
-        % SIMPLEMULTICONTAINER Constructor for SimpleMultiContainer
+        % SIMPLEMULTICONTAINER - Constructor for SimpleMultiContainer
+        %
+        % Syntax:
+        %  simpleMultiContainer = types.hdmf_common.SIMPLEMULTICONTAINER() creates a SimpleMultiContainer object with unset property values.
+        %
+        %  simpleMultiContainer = types.hdmf_common.SIMPLEMULTICONTAINER(Name, Value) creates a SimpleMultiContainer object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - container (Container) - Container objects held within this SimpleMultiContainer.
+        %
+        %  - data (Data) - Data objects held within this SimpleMultiContainer.
+        %
+        % Output Arguments:
+        %  - simpleMultiContainer (types.hdmf_common.SimpleMultiContainer) - A SimpleMultiContainer object
+        
         obj = obj@types.hdmf_common.Container(varargin{:});
         [obj.container, ivarargin] = types.util.parseConstrained(obj,'container', 'types.hdmf_common.Container', varargin{:});
         varargin(ivarargin) = [];

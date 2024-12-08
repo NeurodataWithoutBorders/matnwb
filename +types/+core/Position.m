@@ -1,5 +1,8 @@
 classdef Position < types.core.NWBDataInterface & types.untyped.GroupClass
-% POSITION Position data, whether along the x, x/y or x/y/z axis.
+% POSITION - Position data, whether along the x, x/y or x/y/z axis.
+%
+% Required Properties:
+%  spatialseries
 
 
 % REQUIRED PROPERTIES
@@ -9,7 +12,19 @@ end
 
 methods
     function obj = Position(varargin)
-        % POSITION Constructor for Position
+        % POSITION - Constructor for Position
+        %
+        % Syntax:
+        %  position = types.core.POSITION() creates a Position object with unset property values.
+        %
+        %  position = types.core.POSITION(Name, Value) creates a Position object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - spatialseries (SpatialSeries) - SpatialSeries object containing position data.
+        %
+        % Output Arguments:
+        %  - position (types.core.Position) - A Position object
+        
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.spatialseries, ivarargin] = types.util.parseConstrained(obj,'spatialseries', 'types.core.SpatialSeries', varargin{:});
         varargin(ivarargin) = [];
