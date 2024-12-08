@@ -511,7 +511,7 @@ nwbfile2 = nwbRead('test_new_icephys.nwb', 'ignorecache')
     document.addEventListener("DOMContentLoaded", function() {
         const links = document.querySelectorAll('a[href^="https:"]');
         links.forEach(link => {
-            link.setAttribute("target", "top");
+            link.setAttribute("target", "_top");
         });
     });
 </script>

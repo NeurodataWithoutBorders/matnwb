@@ -143,7 +143,7 @@ nwbExport(nwbFile, 'test.nwb');
     document.addEventListener("DOMContentLoaded", function() {
         const links = document.querySelectorAll('a[href^="https:"]');
         links.forEach(link => {
-            link.setAttribute("target", "top");
+            link.setAttribute("target", "_top");
         });
     });
 </script>
