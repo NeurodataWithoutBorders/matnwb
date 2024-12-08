@@ -1,5 +1,8 @@
 classdef OptogeneticStimulusSite < types.core.NWBContainer & types.untyped.GroupClass
-% OPTOGENETICSTIMULUSSITE A site of optogenetic stimulation.
+% OPTOGENETICSTIMULUSSITE - A site of optogenetic stimulation.
+%
+% Required Properties:
+%  description, excitation_lambda, location
 
 
 % REQUIRED PROPERTIES
@@ -15,7 +18,25 @@ end
 
 methods
     function obj = OptogeneticStimulusSite(varargin)
-        % OPTOGENETICSTIMULUSSITE Constructor for OptogeneticStimulusSite
+        % OPTOGENETICSTIMULUSSITE - Constructor for OptogeneticStimulusSite
+        %
+        % Syntax:
+        %  optogeneticStimulusSite = types.core.OPTOGENETICSTIMULUSSITE() creates a OptogeneticStimulusSite object with unset property values.
+        %
+        %  optogeneticStimulusSite = types.core.OPTOGENETICSTIMULUSSITE(Name, Value) creates a OptogeneticStimulusSite object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - description (char) - Description of stimulation site.
+        %
+        %  - device (Device) - Device that generated the stimulus.
+        %
+        %  - excitation_lambda (single) - Excitation wavelength, in nm.
+        %
+        %  - location (char) - Location of the stimulation site. Specify the area, layer, comments on estimation of area/layer, stereotaxic coordinates if in vivo, etc. Use standard atlas names for anatomical regions when possible.
+        %
+        % Output Arguments:
+        %  - optogeneticStimulusSite (types.core.OptogeneticStimulusSite) - A OptogeneticStimulusSite object
+        
         obj = obj@types.core.NWBContainer(varargin{:});
         
         

@@ -1,5 +1,8 @@
 classdef PupilTracking < types.core.NWBDataInterface & types.untyped.GroupClass
-% PUPILTRACKING Eye-tracking data, representing pupil size.
+% PUPILTRACKING - Eye-tracking data, representing pupil size.
+%
+% Required Properties:
+%  timeseries
 
 
 % REQUIRED PROPERTIES
@@ -9,7 +12,19 @@ end
 
 methods
     function obj = PupilTracking(varargin)
-        % PUPILTRACKING Constructor for PupilTracking
+        % PUPILTRACKING - Constructor for PupilTracking
+        %
+        % Syntax:
+        %  pupilTracking = types.core.PUPILTRACKING() creates a PupilTracking object with unset property values.
+        %
+        %  pupilTracking = types.core.PUPILTRACKING(Name, Value) creates a PupilTracking object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - timeseries (TimeSeries) - TimeSeries object containing time series data on pupil size.
+        %
+        % Output Arguments:
+        %  - pupilTracking (types.core.PupilTracking) - A PupilTracking object
+        
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.timeseries, ivarargin] = types.util.parseConstrained(obj,'timeseries', 'types.core.TimeSeries', varargin{:});
         varargin(ivarargin) = [];
