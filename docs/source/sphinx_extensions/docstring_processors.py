@@ -6,6 +6,8 @@ from _util import list_neurodata_types
 def process_matlab_docstring(app, what, name, obj, options, lines):
     _format_matlab_type_as_code_literal(lines)
     _format_nwbtype_shortnames(lines)
+    _format_required_properties(lines)
+    _replace_class_contructor_method_role_with_class_role(lines)
     _make_syntax_examples_code_literals(lines)
     _format_input_arguments(lines)
     _split_and_format_example_lines(lines)
@@ -47,6 +49,68 @@ def _format_matlab_type_as_code_literal(lines):
         )
 
 
+def _format_required_properties(lines):
+    """
+    Process lines to find the 'Required Properties' section and format its values.
+
+    Args:
+        lines (list of str): Lines from a docstring to process.
+    """
+    
+    try:
+        # Find the index of the "Required Properties:" line
+        required_idx = next(i for i, line in enumerate(lines) if "Required Properties:" in line)
+        
+        if not required_idx: 
+            return
+
+        lines[required_idx] = lines[required_idx].replace("Required Properties:", "Required Properties\ `*`__:")
+
+        # Process the line following "Required Properties:"
+        required_line = lines[required_idx + 1]
+
+        values = required_line.strip().split(", ")
+
+        # Format the values
+        formatted_values = [
+            f":attr:`{value.strip()}`" if value.lower() != "none" else f"``{value.strip()}``"
+            for value in values
+        ]
+        # Update the line with required properties. Add single preceding space
+        # for proper indentation
+        lines[required_idx + 1] = " " + ", ".join(formatted_values)
+    
+    except (StopIteration, IndexError):
+        # If "Required Properties:" or the following line is not found, return the original lines
+        pass
+
+
+def _replace_class_contructor_method_role_with_class_role(lines):
+    """
+    Process docstrings to replace `:meth:` expressions with `:class:`.
+
+    Args:
+        lines: List of lines in the docstring.
+    """
+    
+    # Regular expression to match the `:meth:` pattern
+    pattern = re.compile(
+        r":meth:`([^`]+)\s*<([a-zA-Z0-9_.]+)\.([a-zA-Z0-9_]+)\.([a-zA-Z0-9_]+)>`"
+    )
+
+    # Replacement function for re.sub
+    def replace_meth_with_class(match):
+        display_name = match.group(1).replace("()", "").strip()  # The displayed name, e.g., "AbstractFeatureSeries"
+        namespace_prefix = match.group(2)  # The module path, e.g., "types.core"
+        class_name = match.group(3)  # The class name, e.g., "AbstractFeatureSeries"
+        # Construct the new :class: pattern
+        return f":class:`{display_name} <{namespace_prefix}.{class_name}>`"
+
+    # Update lines in place
+    for i, line in enumerate(lines):
+        lines[i] = pattern.sub(replace_meth_with_class, line)
+
+
 def _make_syntax_examples_code_literals(lines):
     """
     Process a MATLAB docstring to wrap expressions in the Syntax section with double backticks.
@@ -59,7 +123,7 @@ def _make_syntax_examples_code_literals(lines):
 
     # Regex to match MATLAB expressions
     matlab_expr_pattern = re.compile(
-        r"^\s*((?:\[[\w,\s]*\]\s*=\s*|[\w]+\s*=\s*)?[A-Za-z]\w*\([^)]*\))"
+        r"^\s*((?:\[[\w,\s]*\]\s*=\s*|[\w]+\s*=\s*)?[A-Za-z][\w\.]*\([^)]*\))"
     )
     
     for i, line in enumerate(lines):
@@ -89,10 +153,8 @@ def _format_input_arguments(lines):
 
     Args:
         lines (list of str): List of lines in the Input Arguments section.
-
-    Returns:
-        list of str: Formatted lines.
     """
+
     # Regex pattern for list item names with optional types in parentheses
     input_arg_pattern = re.compile(
         r"(?P<indent>^\s*)-\s*(?P<name>\w+)"  # Match the name of the argument
@@ -115,8 +177,6 @@ def _format_input_arguments(lines):
             ),
             line
         )
-
-    return lines
 
 
 def _split_and_format_example_lines(lines):
@@ -161,7 +221,6 @@ def _format_nwbtype_shortnames(lines):
     
     Parameters:
         lines (list of str): The docstring lines to preprocess.
-        patterns (list of str): A list of patterns (e.g., ["TimeSeries", "DataArray"]).
     """
 
     patterns = list_neurodata_types('core') + list_neurodata_types('hdmf_common') 
