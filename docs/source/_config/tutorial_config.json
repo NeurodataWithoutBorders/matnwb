@@ -9,11 +9,11 @@
         "dynamic_tables": "Using Dynamic Tables in MatNWB",
         "scratch": "Working with Scratch Space in MatNWB",
         "behavior": "Behavior Data Processing",
-        "ecephys": "Electrophysiology",
+        "ecephys": "Extracellular Electrophysiology",
         "icephys": "Intracellular Electrophysiology",
         "images": "Image Data",
         "ogen": "Optogenetics",
-        "ophys": "Optical Physiology",
+        "ophys": "Calcium Imaging",
         "dataPipe": "Advanced Writing Using DataPipes",
         "dynamically_loaded_filters": "Implementing Dynamically Loaded Filters",
         "remote_read": "Reading NWB Files from Remote Locations"
