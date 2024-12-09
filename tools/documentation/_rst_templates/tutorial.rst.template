@@ -1,0 +1,20 @@
+{{tutorial_title}}
+{{tutorial_title_underline}}
+
+.. image:: https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg
+   :target: https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/{{tutorial_name}}.mlx
+   :alt: Open in MATLAB Online
+.. image:: https://img.shields.io/badge/View-Full_Page-blue
+   :target: {{static_html_path}}
+   :alt: View full page
+{{youtube_badge_block}}
+
+.. raw:: html
+
+   <iframe id="tutorialIframe" src="{{static_html_path}}" style="width: 100%; overflow: hidden; border: none;"></iframe>
+   <script>
+       const iframe = document.getElementById('tutorialIframe');
+       iframe.onload = () => {
+           iframe.style.height = iframe.contentWindow.document.body.scrollHeight + 'px';
+       };
+   </script>
