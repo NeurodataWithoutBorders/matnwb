@@ -18,4 +18,4 @@ After downloading MatNWB, make sure to add it to MATLAB's search path:
 Requirements
 ------------
 
-MATLAB R2016 or later?
+Recommended to use MATLAB R2017b or later.

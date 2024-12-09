@@ -8,7 +8,7 @@
         "convertTrials": "Converting Trials to NWB Format",
         "dynamic_tables": "Using Dynamic Tables in MatNWB",
         "scratch": "Working with Scratch Space in MatNWB",
-        "behavior": "Behavior Data Processing",
+        "behavior": "Behavior Data",
         "ecephys": "Extracellular Electrophysiology",
         "icephys": "Intracellular Electrophysiology",
         "images": "Image Data",

@@ -85,7 +85,7 @@ See the documentation at the following link:
    * - (P, O, N, M)
      - (M, N, O, P)
 
-** \*\* Use scalar as input to ``maxSize`` argument to write a dataset of shape (N,)
+\*\* Use scalar as input to ``maxSize`` argument to write a dataset of shape (N,)
 
 **Reading from File**
 
