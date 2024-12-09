@@ -34,7 +34,6 @@
 
 
 ## Installation
-
 Download the current release of MatNWB from the [MatNWB releases page](https://github.com/NeurodataWithoutBorders/matnwb/releases) or from the [![View NeurodataWithoutBorders/matnwb on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://www.mathworks.com/matlabcentral/fileexchange/67741-neurodatawithoutborders-matnwb). You can also check out the latest development version via 
 
 ```bash
@@ -49,7 +48,6 @@ addpath('path/to/matnwb');
 ## Getting Started
 
 ### Step 1: Reading from an NWB File
-
 If you wish to read from an NWB file, you can do so using the `nwbRead` command:
 ```matlab
 nwbFile = nwbRead('/path/to/file.nwb');
@@ -66,7 +64,6 @@ nwbExport(nwbFile, 'path/to/file.nwb');
 ```
 
 ### Extensions: Generate MatNWB Classes for Extensions
-
 The `generateExtension` command generates extension classes given a file path to an extension's namespace. This can be useful if you need to work with data types from [neurodata extensions](https://nwb-extensions.github.io).
 
 ```matlab
@@ -74,7 +71,6 @@ generateExtension('some/folder/my_extension1.namespace.yaml', ...);
 ```
 
 ### Advanced: Generating Legacy MatNWB Classes
-
 The `generateCore` command can generate classes for older versions of the nwb schema.
 
 ```matlab
@@ -85,47 +81,56 @@ Supported schema versions are provided in the MatNWB root directory under [`nwb-
 
 
 ## Tutorials
+[Intro to MatNWB](https://matnwb.readthedocs.io/en/latest/pages/tutorials/intro.html)
 
-[Intro to MatNWB](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/intro.html)
+[Basic File Reading](https://matnwb.readthedocs.io/en/latest/pages/tutorials/read_demo.html) | a demo showcase for basic visualization from a DANDI dataset.
 
-[Basic File Reading](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/read_demo.html) | a demo showcase for basic visualization from a DANDI dataset.
-
-[Extracellular Electrophysiology](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ecephys.html) | 
+[Extracellular Electrophysiology](https://matnwb.readthedocs.io/en/latest/pages/tutorials/ecephys.html) | 
 [▶️ in MATLAB Online](https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/ecephys.mlx) | 
 [YouTube walkthrough](https://www.youtube.com/watch?v=W8t4_quIl1k&ab_channel=NeurodataWithoutBorders)
 
-[Calcium Imaging](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ophys.html) | 
+[Calcium Imaging](https://matnwb.readthedocs.io/en/latest/pages/tutorials/ophys.html) | 
 <a href="https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/ophys.mlx" target="_blank">▶️ in MATLAB Online</a> | 
 [YouTube walkthrough](https://www.youtube.com/watch?v=OBidHdocnTc&ab_channel=NeurodataWithoutBorders)
 
-[Intracellular Electrophysiology](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/icephys.html)
+[Intracellular Electrophysiology](https://matnwb.readthedocs.io/en/latest/pages/tutorials/icephys.html)
 
-[Behavior](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/behavior.html)
+[Behavior](https://matnwb.readthedocs.io/en/latest/pages/tutorials/behavior.html)
 
-[Optogenetics](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ogen.html)
+[Optogenetics](https://matnwb.readthedocs.io/en/latest/pages/tutorials/ogen.html)
 
-[Dynamic tables](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dynamic_tables.html)
+[Dynamic tables](https://matnwb.readthedocs.io/en/latest/pages/tutorials/dynamic_tables.html)
 
-[Images](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/images.html)
+[Images](https://matnwb.readthedocs.io/en/latest/pages/tutorials/images.html)
 
-[Advanced data write](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dataPipe.html)  | [YouTube walkthrough](https://www.youtube.com/watch?v=PIE_F4iVv98&ab_channel=NeurodataWithoutBorders)
+[Advanced data write](https://matnwb.readthedocs.io/en/latest/pages/tutorials/dataPipe.html)  | [YouTube walkthrough](https://www.youtube.com/watch?v=PIE_F4iVv98&ab_channel=NeurodataWithoutBorders)
 
-[Using Dynamically Loaded Filters](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dynamically_loaded_filters.html)
+[Using Dynamically Loaded Filters](https://matnwb.readthedocs.io/en/latest/pages/tutorials/dynamically_loaded_filters.html)
 
-[Remote read](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/remote_read.html)
+[Remote read](https://matnwb.readthedocs.io/en/latest/pages/tutorials/remote_read.html)
 
-[Scratch Space](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/scratch.html)
+[Scratch Space](https://matnwb.readthedocs.io/en/latest/pages/tutorials/scratch.html)
+
+
+## Use Cases
+[Basic Data Retrieval](https://matnwb.readthedocs.io/en/latest/pages/tutorials/basicUsage.html)
+| showcases how one would read and process converted NWB file data to display a raster diagram.
+
+[Conversion of Real Electrophysiology/Optophysiology Data](https://matnwb.readthedocs.io/en/latest/pages/tutorials/convertTrials.html)
+| converts Electrophysiology/Optophysiology Data recorded from:
+>Li, Daie, Svoboda, Druckman (2016); Data and simulations related to: Robust neuronal dynamics in premotor cortex during motor planning. Li, Daie, Svoboda, Druckman, Nature. CRCNS.org
+http://dx.doi.org/10.6080/K0RB72JW
+
+Analysis examples will be added in the [dandi-example-live-scripts repo](https://github.com/NeurodataWithoutBorders/dandi-example-live-scripts)
 
 
 ## Under the Hood
-
 NWB files are HDF5 files with data stored according to the Neurodata Without Borders (NWB) [schema](https://github.com/NeurodataWithoutBorders/nwb-schema/tree/dev/core). The schema is described in a set of YAML documents which defines the various types and their attributes.
 
 Certain functions, like `generateCore` and `nwbRead`, automatically read these specifications and converts them to a set of MATLAB class files. These classes generally map directly to attributes and constraints of the types defined in the schema.
 
 
 ## Caveats
-
 The NWB schema has regular updates and is open to addition of new types along with modification of previously defined types. As such, certain type presumptions made by MatNWB may be invalidated in the future from newer NWB schema versions. Furthermore, new types may require implementations that will be missing in MatNWB until patched in.
 
 For those planning on using MatNWB alongside PyNWB, please keep the following in mind:
@@ -136,24 +141,11 @@ The `master` branch of this repository is considered perpetually unstable. If yo
 This package reads and writes NWB 2.0 files and does not support older formats.
 
 
-## Use Cases
-
-[Basic Data Retrieval](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/basicUsage.html)
-| showcases how one would read and process converted NWB file data to display a raster diagram.
-
-[Conversion of Real Electrophysiology/Optophysiology Data](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/convertTrials.html)
-| converts Electrophysiology/Optophysiology Data recorded from:
->Li, Daie, Svoboda, Druckman (2016); Data and simulations related to: Robust neuronal dynamics in premotor cortex during motor planning. Li, Daie, Svoboda, Druckman, Nature. CRCNS.org
-http://dx.doi.org/10.6080/K0RB72JW
-
-Analysis examples will be added in the [dandi-example-live-scripts repo](https://github.com/NeurodataWithoutBorders/dandi-example-live-scripts)
-
 ## Third-party Support
 The `+contrib` folder contains tools for converting from other common data formats/specifications to NWB. Currently supported data types are TDT, MWorks, and Blackrock. We are interested in expanding this section to other data specifications and would greatly value your contribution!
 
 ## Contributing
 For details on how to contribute to MatNWB, please stay tuned.
-
 
 ## Citing NWB
 * **Manuscript:** Oliver Rübel, Andrew Tritt, Ryan Ly, Benjamin K Dichter, Satrajit Ghosh, Lawrence Niu, Pamela Baker, Ivan Soltesz, Lydia Ng, Karel Svoboda, Loren Frank, Kristofer E Bouchard. (2022). The Neurodata Without Borders ecosystem for neurophysiological data science. eLife, 11:e78362. doi: https://doi.org/10.7554/eLife.78362
