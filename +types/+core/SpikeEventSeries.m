@@ -1,5 +1,5 @@
 classdef SpikeEventSeries < types.core.ElectricalSeries & types.untyped.GroupClass
-% SPIKEEVENTSERIES Stores snapshots/snippets of recorded spike events (i.e., threshold crossings). This may also be raw data, as reported by ephys hardware. If so, the TimeSeries::description field should describe how events were detected. All SpikeEventSeries should reside in a module (under EventWaveform interface) even if the spikes were reported and stored by hardware. All events span the same recording channels and store snapshots of equal duration. TimeSeries::data array structure: [num events] [num channels] [num samples] (or [num events] [num samples] for single electrode).
+% SPIKEEVENTSERIES Stores snapshots/snippets of recorded spike events (i.e., threshold crossings). This may also be raw data, as reported by ephys hardware. If so, the TimeSeries::description field should describe how events were detected. All events span the same recording channels and store snapshots of equal duration. TimeSeries::data array structure: [num events] [num channels] [num samples] (or [num events] [num samples] for single electrode).
 
 
 
@@ -56,7 +56,7 @@ methods
         if isequal(val, 'volts')
             val = 'volts';
         else
-            error('Unable to set the ''data_unit'' property of class ''<a href="matlab:doc types.core.SpikeEventSeries">SpikeEventSeries</a>'' because it is read-only.')
+            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''data_unit'' property of class ''<a href="matlab:doc types.core.SpikeEventSeries">SpikeEventSeries</a>'' because it is read-only.')
         end
     end
     function val = validate_timestamps(obj, val)
@@ -81,14 +81,14 @@ methods
         if isequal(val, 1)
             val = 1;
         else
-            error('Unable to set the ''timestamps_interval'' property of class ''<a href="matlab:doc types.core.SpikeEventSeries">SpikeEventSeries</a>'' because it is read-only.')
+            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''timestamps_interval'' property of class ''<a href="matlab:doc types.core.SpikeEventSeries">SpikeEventSeries</a>'' because it is read-only.')
         end
     end
     function val = validate_timestamps_unit(obj, val)
         if isequal(val, 'seconds')
             val = 'seconds';
         else
-            error('Unable to set the ''timestamps_unit'' property of class ''<a href="matlab:doc types.core.SpikeEventSeries">SpikeEventSeries</a>'' because it is read-only.')
+            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''timestamps_unit'' property of class ''<a href="matlab:doc types.core.SpikeEventSeries">SpikeEventSeries</a>'' because it is read-only.')
         end
     end
     %% EXPORT

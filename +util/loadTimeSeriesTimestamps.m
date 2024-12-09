@@ -28,8 +28,9 @@ if ~isempty(timeseries.starting_time)
     
 else
     if downsample_factor ~= 1
-        warning(['Downsampling a timestamps of a timeseries that may'...
-        'not be uniformly sampled. This may have unintended behavior'])
+        warning('NWB:LoadTimeStamps:DownsampleNonUniformTimestamps', ...
+            [ 'Downsampling timestamps of a timeseries that may' ...
+              'not be uniformly sampled. This may have unintended behavior'])
     end
     start_ind = fastsearch(timeseries.timestamps, interval(1), 1);
     if isinf(interval(2))

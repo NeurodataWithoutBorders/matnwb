@@ -139,7 +139,7 @@ methods
         if isequal(val, 'amperes')
             val = 'amperes';
         else
-            error('Unable to set the ''data_unit'' property of class ''<a href="matlab:doc types.core.VoltageClampSeries">VoltageClampSeries</a>'' because it is read-only.')
+            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''data_unit'' property of class ''<a href="matlab:doc types.core.VoltageClampSeries">VoltageClampSeries</a>'' because it is read-only.')
         end
     end
     function val = validate_resistance_comp_bandwidth(obj, val)

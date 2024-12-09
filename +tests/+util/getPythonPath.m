@@ -1,7 +1,7 @@
 function pythonPath = getPythonPath()
     envPath = fullfile('+tests', 'env.mat');
     
-    if 2 == exist(envPath, 'file')
+    if isfile(fullfile(misc.getMatnwbDir, envPath))
         Env = load(envPath, '-mat');
         if isfield(Env, 'pythonPath')
             pythonPath = Env.pythonPath;

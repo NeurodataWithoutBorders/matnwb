@@ -1,2 +1,3 @@
-pynwb
 hdf5plugin
+git+https://github.com/NeurodataWithoutBorders/nwbinspector.git@dev
+git+https://github.com/NeurodataWithoutBorders/pynwb.git@dev

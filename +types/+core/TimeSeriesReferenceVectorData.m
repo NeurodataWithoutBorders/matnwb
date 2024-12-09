@@ -30,7 +30,7 @@ methods
             return;
         end
         if ~istable(val) && ~isstruct(val) && ~isa(val, 'containers.Map')
-            error('Property `data` must be a table,struct, or containers.Map.');
+            error('NWB:Type:InvalidPropertyType', 'Property `data` must be a table, struct, or containers.Map.');
         end
         vprops = struct();
         vprops.idx_start = 'int32';
