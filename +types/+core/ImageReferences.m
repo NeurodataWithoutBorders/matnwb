@@ -1,11 +1,26 @@
 classdef ImageReferences < types.core.NWBData & types.untyped.DatasetClass
-% IMAGEREFERENCES Ordered dataset of references to Image objects.
+% IMAGEREFERENCES - Ordered dataset of references to Image objects.
+%
+% Required Properties:
+%  data
 
 
 
 methods
     function obj = ImageReferences(varargin)
-        % IMAGEREFERENCES Constructor for ImageReferences
+        % IMAGEREFERENCES - Constructor for ImageReferences
+        %
+        % Syntax:
+        %  imageReferences = types.core.IMAGEREFERENCES() creates a ImageReferences object with unset property values.
+        %
+        %  imageReferences = types.core.IMAGEREFERENCES(Name, Value) creates a ImageReferences object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - data (Object reference to Image) - No description
+        %
+        % Output Arguments:
+        %  - imageReferences (types.core.ImageReferences) - A ImageReferences object
+        
         obj = obj@types.core.NWBData(varargin{:});
         
         

@@ -1,5 +1,8 @@
 classdef SweepTable < types.hdmf_common.DynamicTable & types.untyped.GroupClass
-% SWEEPTABLE [DEPRECATED] Table used to group different PatchClampSeries. SweepTable is being replaced by IntracellularRecordingsTable and SimultaneousRecordingsTable tables. Additional SequentialRecordingsTable, RepetitionsTable, and ExperimentalConditions tables provide enhanced support for experiment metadata.
+% SWEEPTABLE - [DEPRECATED] Table used to group different PatchClampSeries. SweepTable is being replaced by IntracellularRecordingsTable and SimultaneousRecordingsTable tables. Additional SequentialRecordingsTable, RepetitionsTable, and ExperimentalConditions tables provide enhanced support for experiment metadata.
+%
+% Required Properties:
+%  id, series, series_index, sweep_number
 
 
 % REQUIRED PROPERTIES
@@ -11,7 +14,31 @@ end
 
 methods
     function obj = SweepTable(varargin)
-        % SWEEPTABLE Constructor for SweepTable
+        % SWEEPTABLE - Constructor for SweepTable
+        %
+        % Syntax:
+        %  sweepTable = types.core.SWEEPTABLE() creates a SweepTable object with unset property values.
+        %
+        %  sweepTable = types.core.SWEEPTABLE(Name, Value) creates a SweepTable object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - colnames (char) - The names of the columns in this table. This should be used to specify an order to the columns.
+        %
+        %  - description (char) - Description of what is in this dynamic table.
+        %
+        %  - id (ElementIdentifiers) - Array of unique identifiers for the rows of this dynamic table.
+        %
+        %  - series (VectorData) - The PatchClampSeries with the sweep number in that row.
+        %
+        %  - series_index (VectorIndex) - Index for series.
+        %
+        %  - sweep_number (VectorData) - Sweep number of the PatchClampSeries in that row.
+        %
+        %  - vectordata (VectorData) - Vector columns, including index columns, of this dynamic table.
+        %
+        % Output Arguments:
+        %  - sweepTable (types.core.SweepTable) - A SweepTable object
+        
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         
         

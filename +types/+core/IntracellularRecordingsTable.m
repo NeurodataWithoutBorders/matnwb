@@ -1,5 +1,8 @@
 classdef IntracellularRecordingsTable < types.hdmf_common.AlignedDynamicTable & types.untyped.GroupClass
-% INTRACELLULARRECORDINGSTABLE A table to group together a stimulus and response from a single electrode and a single simultaneous recording. Each row in the table represents a single recording consisting typically of a stimulus and a corresponding response. In some cases, however, only a stimulus or a response is recorded as part of an experiment. In this case, both the stimulus and response will point to the same TimeSeries while the idx_start and count of the invalid column will be set to -1, thus, indicating that no values have been recorded for the stimulus or response, respectively. Note, a recording MUST contain at least a stimulus or a response. Typically the stimulus and response are PatchClampSeries. However, the use of AD/DA channels that are not associated to an electrode is also common in intracellular electrophysiology, in which case other TimeSeries may be used.
+% INTRACELLULARRECORDINGSTABLE - A table to group together a stimulus and response from a single electrode and a single simultaneous recording. Each row in the table represents a single recording consisting typically of a stimulus and a corresponding response. In some cases, however, only a stimulus or a response is recorded as part of an experiment. In this case, both the stimulus and response will point to the same TimeSeries while the idx_start and count of the invalid column will be set to -1, thus, indicating that no values have been recorded for the stimulus or response, respectively. Note, a recording MUST contain at least a stimulus or a response. Typically the stimulus and response are PatchClampSeries. However, the use of AD/DA channels that are not associated to an electrode is also common in intracellular electrophysiology, in which case other TimeSeries may be used.
+%
+% Required Properties:
+%  electrodes, id, responses, stimuli
 
 
 % REQUIRED PROPERTIES
@@ -11,7 +14,33 @@ end
 
 methods
     function obj = IntracellularRecordingsTable(varargin)
-        % INTRACELLULARRECORDINGSTABLE Constructor for IntracellularRecordingsTable
+        % INTRACELLULARRECORDINGSTABLE - Constructor for IntracellularRecordingsTable
+        %
+        % Syntax:
+        %  intracellularRecordingsTable = types.core.INTRACELLULARRECORDINGSTABLE() creates a IntracellularRecordingsTable object with unset property values.
+        %
+        %  intracellularRecordingsTable = types.core.INTRACELLULARRECORDINGSTABLE(Name, Value) creates a IntracellularRecordingsTable object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - categories (char) - The names of the categories in this AlignedDynamicTable. Each category is represented by one DynamicTable stored in the parent group. This attribute should be used to specify an order of categories and the category names must match the names of the corresponding DynamicTable in the group.
+        %
+        %  - colnames (char) - The names of the columns in this table. This should be used to specify an order to the columns.
+        %
+        %  - dynamictable (DynamicTable) - A DynamicTable representing a particular category for columns in the AlignedDynamicTable parent container. The table MUST be aligned with (i.e., have the same number of rows) as all other DynamicTables stored in the AlignedDynamicTable parent container. The name of the category is given by the name of the DynamicTable and its description by the description attribute of the DynamicTable.
+        %
+        %  - electrodes (IntracellularElectrodesTable) - Table for storing intracellular electrode related metadata.
+        %
+        %  - id (ElementIdentifiers) - Array of unique identifiers for the rows of this dynamic table.
+        %
+        %  - responses (IntracellularResponsesTable) - Table for storing intracellular response related metadata.
+        %
+        %  - stimuli (IntracellularStimuliTable) - Table for storing intracellular stimulus related metadata.
+        %
+        %  - vectordata (VectorData) - Vector columns, including index columns, of this dynamic table.
+        %
+        % Output Arguments:
+        %  - intracellularRecordingsTable (types.core.IntracellularRecordingsTable) - A IntracellularRecordingsTable object
+        
         varargin = [{'description' 'A table to group together a stimulus and response from a single electrode and a single simultaneous recording and for storing metadata about the intracellular recording.'} varargin];
         obj = obj@types.hdmf_common.AlignedDynamicTable(varargin{:});
         

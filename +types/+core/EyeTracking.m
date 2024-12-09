@@ -1,5 +1,8 @@
 classdef EyeTracking < types.core.NWBDataInterface & types.untyped.GroupClass
-% EYETRACKING Eye-tracking data, representing direction of gaze.
+% EYETRACKING - Eye-tracking data, representing direction of gaze.
+%
+% Required Properties:
+%  None
 
 
 % OPTIONAL PROPERTIES
@@ -9,7 +12,19 @@ end
 
 methods
     function obj = EyeTracking(varargin)
-        % EYETRACKING Constructor for EyeTracking
+        % EYETRACKING - Constructor for EyeTracking
+        %
+        % Syntax:
+        %  eyeTracking = types.core.EYETRACKING() creates a EyeTracking object with unset property values.
+        %
+        %  eyeTracking = types.core.EYETRACKING(Name, Value) creates a EyeTracking object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - spatialseries (SpatialSeries) - SpatialSeries object containing data measuring direction of gaze.
+        %
+        % Output Arguments:
+        %  - eyeTracking (types.core.EyeTracking) - A EyeTracking object
+        
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.spatialseries, ivarargin] = types.util.parseConstrained(obj,'spatialseries', 'types.core.SpatialSeries', varargin{:});
         varargin(ivarargin) = [];

@@ -1,5 +1,8 @@
 classdef Data < types.untyped.MetaClass & types.untyped.DatasetClass
-% DATA An abstract data type for a dataset.
+% DATA - An abstract data type for a dataset.
+%
+% Required Properties:
+%  data
 
 
 % REQUIRED PROPERTIES
@@ -9,7 +12,19 @@ end
 
 methods
     function obj = Data(varargin)
-        % DATA Constructor for Data
+        % DATA - Constructor for Data
+        %
+        % Syntax:
+        %  data = types.hdmf_common.DATA() creates a Data object with unset property values.
+        %
+        %  data = types.hdmf_common.DATA(Name, Value) creates a Data object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - data (any) - No description
+        %
+        % Output Arguments:
+        %  - data (types.hdmf_common.Data) - A Data object
+        
         obj = obj@types.untyped.MetaClass(varargin{:});
         
         

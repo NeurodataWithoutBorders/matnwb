@@ -1,5 +1,8 @@
 classdef HERD < types.hdmf_common.Container & types.untyped.GroupClass
-% HERD HDMF External Resources Data Structure. A set of six tables for tracking external resource references in a file or across multiple files.
+% HERD - HDMF External Resources Data Structure. A set of six tables for tracking external resource references in a file or across multiple files.
+%
+% Required Properties:
+%  entities, entity_keys, files, keys, object_keys, objects
 
 
 % REQUIRED PROPERTIES
@@ -14,7 +17,29 @@ end
 
 methods
     function obj = HERD(varargin)
-        % HERD Constructor for HERD
+        % HERD - Constructor for HERD
+        %
+        % Syntax:
+        %  hERD = types.hdmf_experimental.HERD() creates a HERD object with unset property values.
+        %
+        %  hERD = types.hdmf_experimental.HERD(Name, Value) creates a HERD object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - entities (Data) - A table for mapping user terms (i.e., keys) to resource entities.
+        %
+        %  - entity_keys (Data) - A table for identifying which keys use which entity.
+        %
+        %  - files (Data) - A table for storing object ids of files used in external resources.
+        %
+        %  - keys (Data) - A table for storing user terms that are used to refer to external resources.
+        %
+        %  - object_keys (Data) - A table for identifying which objects use which keys.
+        %
+        %  - objects (Data) - A table for identifying which objects in a file contain references to external resources.
+        %
+        % Output Arguments:
+        %  - hERD (types.hdmf_experimental.HERD) - A HERD object
+        
         obj = obj@types.hdmf_common.Container(varargin{:});
         
         

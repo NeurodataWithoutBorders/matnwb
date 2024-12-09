@@ -1,11 +1,21 @@
 classdef LabMetaData < types.core.NWBContainer & types.untyped.GroupClass
-% LABMETADATA Lab-specific meta-data.
+% LABMETADATA - Lab-specific meta-data.
+%
+% Required Properties:
+%  None
 
 
 
 methods
     function obj = LabMetaData(varargin)
-        % LABMETADATA Constructor for LabMetaData
+        % LABMETADATA - Constructor for LabMetaData
+        %
+        % Syntax:
+        %  labMetaData = types.core.LABMETADATA() creates a LabMetaData object with unset property values.
+        %
+        % Output Arguments:
+        %  - labMetaData (types.core.LabMetaData) - A LabMetaData object
+        
         obj = obj@types.core.NWBContainer(varargin{:});
         if strcmp(class(obj), 'types.core.LabMetaData')
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));

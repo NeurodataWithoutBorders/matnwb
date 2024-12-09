@@ -29,7 +29,7 @@ nwbfile = NwbFile( ...
 );
 
 % Device metadata
-% Device metadata is represented by <https://pynwb.readthedocs.io/en/stable/pynwb.device.html#pynwb.device.Device 
+% Device metadata is represented by <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Device.html 
 % |*Device*|> objects.
 
 

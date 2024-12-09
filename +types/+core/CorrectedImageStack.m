@@ -1,5 +1,8 @@
 classdef CorrectedImageStack < types.core.NWBDataInterface & types.untyped.GroupClass
-% CORRECTEDIMAGESTACK Results from motion correction of an image stack.
+% CORRECTEDIMAGESTACK - Results from motion correction of an image stack.
+%
+% Required Properties:
+%  corrected, xy_translation
 
 
 % REQUIRED PROPERTIES
@@ -14,7 +17,23 @@ end
 
 methods
     function obj = CorrectedImageStack(varargin)
-        % CORRECTEDIMAGESTACK Constructor for CorrectedImageStack
+        % CORRECTEDIMAGESTACK - Constructor for CorrectedImageStack
+        %
+        % Syntax:
+        %  correctedImageStack = types.core.CORRECTEDIMAGESTACK() creates a CorrectedImageStack object with unset property values.
+        %
+        %  correctedImageStack = types.core.CORRECTEDIMAGESTACK(Name, Value) creates a CorrectedImageStack object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - corrected (ImageSeries) - Image stack with frames shifted to the common coordinates.
+        %
+        %  - original (ImageSeries) - Link to ImageSeries object that is being registered.
+        %
+        %  - xy_translation (TimeSeries) - Stores the x,y delta necessary to align each frame to the common coordinates, for example, to align each frame to a reference image.
+        %
+        % Output Arguments:
+        %  - correctedImageStack (types.core.CorrectedImageStack) - A CorrectedImageStack object
+        
         obj = obj@types.core.NWBDataInterface(varargin{:});
         
         
