@@ -69,7 +69,7 @@ nwbExport(nwbFile, 'path/to/file.nwb');
 The `generateExtension` command generates extension classes given a file path to an extension's namespace. This can be useful if you need to work with data types from [neurodata extensions](https://nwb-extensions.github.io).
 
 ```matlab
-generateExtension('schema/core/nwb.namespace.yaml', '.../my_extensions1.namespace.yaml',...);
+generateExtension('some/folder/my_extension1.namespace.yaml', ...);
 ```
 
 ### Advanced: Generating Legacy MatNWB Classes
@@ -114,61 +114,12 @@ Supported schema versions are provided in the MatNWB root directory under [`nwb-
 
 [Scratch Space](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/scratch.html)
 
-## API Documentation
-
-For more information regarding the MatNWB API or any of the NWB Core types in MatNWB, visit the [MatNWB API Documentation pages](https://neurodatawithoutborders.github.io/matnwb/doc/index.html).
-
 
 ## Under the Hood
 
 NWB files are HDF5 files with data stored according to the Neurodata Without Borders (NWB) [schema](https://github.com/NeurodataWithoutBorders/nwb-schema/tree/dev/core). The schema is described in a set of YAML documents  which defines the various types and their attributes.
 
 Certain functions, like `generateCore` and `nwbRead`, automatically read these specifications and converts them to a MATLAB class file. These classes generally map directly to attributes and constraints of the types defined in the schema.
-
-
-## Data Dimensions
-
-NWB files use the HDF5 format to store data. There are two main differences between the way MATLAB and HDF5 represents dimensions. The first is that HDF5 is C-ordered, which means it stores data is a rows-first pattern, and the MATLAB is F-ordered, storing data in the reverse pattern, with the last dimension of the array stored consecutively. The result is that the data in HDF5 is effectively the transpose of the array in MATLAB. The second difference is that HDF5 can store 1-D arrays, but in MATLAB the lowest dimensionality of an array is 2-D. Due to differences in how MATLAB and HDF5 represent data, the dimensions of datasets are flipped when writing to/from file in MatNWB. This behavior differs depending on whether ```VectorData``` use ```DataPipe``` objects to contain the data. It's important to keep in mind the mappings below to make sure is written to and read from file as expected.
-
-[without DataPipes](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dimensionMapNoDataPipes.html)
-
-**Writing to File**
-
-| Shape <br /> in MatNWB| Shape<br />in HDF5|
-| :----------: | :----------: |
-|    (M, 1)    |     (M,)     |
-|    (1, M)    |     (M,)     |
-| (P, O, N, M) | (M, N, O, P) |
-
-**Reading from File**
-
-| Shape <br /> in HDF5| Shape<br />in MatNWB|
-| :----------: | :----------: |
-|     (M,)     |     (M,1)    |
-| (M, N, O, P) | (P, O, N, M) |
-
-**NOTE:** MATLAB does not support 1D datasets. HDF5 datasets of size (M,) are loaded into MATLAB as datasets of size (M,1). To avoid changes in dimensions when writing to/from file use column vectors for 1D datasets. 
-
-[with DataPipes](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dimensionMapWithDataPipes.html)
-
-**Writing to File**
-
-| Shape <br /> in MatNWB| Shape <br /> in HDF5|
-| :----------: | :----------: |
-|    (M, 1)    |    (1, M)    | 
-|    (1, M)    |(M, 1)/(M,)** |
-| (P, O, N, M) | (M, N, O, P) |
-
-** Use scalar as input to 'maxSize' argument to write dataset of shape (N,)
-
-**Reading from File**
-
-| Shape <br /> in HDF5| Shape<br />in MatNWB|
-| :----------: | :----------: |
-|    (M, 1)    |    (1, M)    |
-|    (1, M)    |    (M, 1)    |
-|     (M,)     |    (M, 1)    |
-| (M, N, O, P) | (P, O, N, M) |
 
 
 ## Caveats
