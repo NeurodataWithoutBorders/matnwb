@@ -3,7 +3,7 @@
   <a href="logo/logo_matnwb_small.png"><img src="logo/logo_matnwb.png" alt="MatNWB Logo" width="300"></a>
 </h1>
 
-<h4 align="center">MatNWB is a  Matlab interface for reading and writing Neurodata Without Borders (NWB) 2.x files..</h4>
+<h4 align="center">MatNWB is a  Matlab interface for reading and writing Neurodata Without Borders (NWB) 2.x files.</h4>
 
 <h4 align="center">
   <a href="https://github.com/NeurodataWithoutBorders/matnwb/releases/latest">
