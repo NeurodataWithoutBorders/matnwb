@@ -99,5 +99,6 @@ extlinks = {
     'hdmf-zarr': ('https://hdmf-zarr.readthedocs.io/en/latest/%s', '%s'),
     'matlab-online-tutorial': ('https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/%s.mlx', '%s'),
     'nwb-core-type-schema': ('https://nwb-schema.readthedocs.io/en/latest/format.html#%s', '%s'),
-    'nwb-hdmf_common-type-schema': ('https://hdmf-common-schema.readthedocs.io/en/stable/format.html#%s', '%s')
+    'nwb-hdmf_common-type-schema': ('https://hdmf-common-schema.readthedocs.io/en/stable/format.html#%s', '%s'),
+    'nwb-hdmf_experimental-type-schema': ('https://hdmf-common-schema.readthedocs.io/en/stable/format.html#%s', '%s')
 }

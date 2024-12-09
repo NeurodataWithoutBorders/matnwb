@@ -17,9 +17,11 @@ Contents
    :maxdepth: 2
    :caption: Getting Started
 
-   pages/installation_users
+   pages/getting_started/installation_users
+   pages/getting_started/important
+   pages/getting_started/file_read
    pages/tutorials/index
-   pages/overview_citing
+   pages/getting_started/overview_citing
 
 .. toctree::
    :maxdepth: 2
@@ -28,10 +30,12 @@ Contents
    pages/functions/index
    pages/neurodata_types/core/index
    pages/neurodata_types/hdmf_common/index
+   pages/neurodata_types/hdmf_experimental/index
 
 .. toctree::
    :maxdepth: 2
    :caption: For Developers
 
-   pages/developers
-   pages/developer/documentation/formatting_docstrings
+   pages/developer/contributing
+   pages/developer/documentation
+

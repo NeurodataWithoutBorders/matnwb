@@ -74,14 +74,15 @@ def register_type_short_names(app, env, docname):
     if "objects" not in env.domaindata["mat"]:
         env.domaindata["mat"]["objects"] = {}
 
-    core_nwb_types = list_neurodata_types('core')
-    for type_name in core_nwb_types:
-        # Register the type with a special 'external' object type
-        docname = f"pages/neurodata_types/core/{type_name}"
-        env.domaindata["mat"]["objects"][type_name] = (docname, "class")
+    # List of modules to process
+    modules = ["core", "hdmf_common", "hdmf_experimental"]
+    
+    # Loop through the modules
+    for module in modules:
+        # List the neurodata types for the current module
+        nwb_types = list_neurodata_types(module)
+        for type_name in nwb_types:
+            # Register the type with as a 'class' object type
+            docname = f"pages/neurodata_types/{module}/{type_name}"
+            env.domaindata["mat"]["objects"][type_name] = (docname, "class")
 
-    hdmf_data_types = list_neurodata_types('hdmf_common')
-    for type_name in hdmf_data_types:
-        # Register the type with a special 'external' object type
-        docname = f"pages/neurodata_types/hdmf_common/{type_name}"
-        env.domaindata["mat"]["objects"][type_name] = (docname, "class")
