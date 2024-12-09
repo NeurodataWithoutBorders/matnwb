@@ -5,7 +5,7 @@ Image Data
    :target: https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/images.mlx
    :alt: Open in MATLAB Online
 .. image:: https://img.shields.io/badge/View-Full_Page-blue
-   :target: https://neurodatawithoutborders.github.io/matnwb/tutorials/html/images.html
+   :target: ../../_static/html/tutorials/images.html
    :alt: View full page
 
 

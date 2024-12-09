@@ -5,7 +5,7 @@ Mapping Dimensions without DataPipes
    :target: https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/dimensionMapNoDataPipes.mlx
    :alt: Open in MATLAB Online
 .. image:: https://img.shields.io/badge/View-Full_Page-blue
-   :target: https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dimensionMapNoDataPipes.html
+   :target: ../../_static/html/tutorials/dimensionMapNoDataPipes.html
    :alt: View full page
 
 

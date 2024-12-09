@@ -477,7 +477,7 @@ nwb.units.spike_times = types.hdmf_common.VectorData(<span class="keyword">...</
     <span class="keyword">end</span>
 <span class="keyword">end</span>
 </pre>
-<p>To better understand how <tt>spike_times_index</tt> and <tt>spike_times</tt> map to each other, refer to <a href="https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ecephys.html#13">this diagram</a> from the Extracellular Electrophysiology Tutorial.</p>
+<p>To better understand how <tt>spike_times_index</tt> and <tt>spike_times</tt> map to each other, refer to <a href="https://matnwb.readthedocs.io/en/latest/pages/tutorials/ecephys.html#13">this diagram</a> from the Extracellular Electrophysiology Tutorial.</p>
 <h2 id="26">Raw Acquisition Data</h2>
 <p>Each ALM-3 session is associated with a large number of raw voltage data grouped by trial ID. To map this data to NWB, each trial is created as its own <b>ElectricalSeries</b> object under the name 'trial n' where 'n' is the trial ID. The trials are then linked to the <tt>trials</tt> dynamic table for easy referencing.</p>
 <pre class="codeinput">fprintf(<span class="string">'Processing Raw Acquisition Data from `%s` (will take a while)\n'</span>, rawdata_loc);
@@ -1023,7 +1023,7 @@ for i=1:length(ids)
 end
 %%
 % To better understand how |spike_times_index| and |spike_times| map to each other, refer to
-% <https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ecephys.html#13 this
+% <https://matnwb.readthedocs.io/en/latest/pages/tutorials/ecephys.html#13 this
 % diagram> from the Extracellular Electrophysiology Tutorial.
 
 %% Raw Acquisition Data

@@ -5,7 +5,7 @@ Converting Trials to NWB Format
    :target: https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/convertTrials.mlx
    :alt: Open in MATLAB Online
 .. image:: https://img.shields.io/badge/View-Full_Page-blue
-   :target: https://neurodatawithoutborders.github.io/matnwb/tutorials/html/convertTrials.html
+   :target: ../../_static/html/tutorials/convertTrials.html
    :alt: View full page
 
 

@@ -5,7 +5,7 @@ Advanced Writing Using DataPipes
    :target: https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/dataPipe.mlx
    :alt: Open in MATLAB Online
 .. image:: https://img.shields.io/badge/View-Full_Page-blue
-   :target: https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dataPipe.html
+   :target: ../../_static/html/tutorials/dataPipe.html
    :alt: View full page
 
 

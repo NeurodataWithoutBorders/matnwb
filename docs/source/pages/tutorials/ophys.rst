@@ -5,7 +5,7 @@ Optical Physiology
    :target: https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/ophys.mlx
    :alt: Open in MATLAB Online
 .. image:: https://img.shields.io/badge/View-Full_Page-blue
-   :target: https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ophys.html
+   :target: ../../_static/html/tutorials/ophys.html
    :alt: View full page
 .. image:: https://img.shields.io/badge/View-Youtube-red
    :target: https://www.youtube.com/watch?v=OBidHdocnTc&ab_channel=NeurodataWithoutBorders

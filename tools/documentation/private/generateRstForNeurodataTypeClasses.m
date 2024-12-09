@@ -49,6 +49,8 @@ function generateRstForNeurodataTypeClasses(namespaceName)
             data.section_title = "Core Neurodata Types";
         case 'hdmf_common'
             data.section_title = "HDMF-Common Data Types";
+        case 'hdmf_experimental'
+            data.section_title = "HDMF-Experimental Data Types";     
     end
     data.section_title_underline = repmat('=', 1, strlength(data.section_title));
     

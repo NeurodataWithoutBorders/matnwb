@@ -5,7 +5,7 @@ Getting Started with MatNWB
    :target: https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/intro.mlx
    :alt: Open in MATLAB Online
 .. image:: https://img.shields.io/badge/View-Full_Page-blue
-   :target: https://neurodatawithoutborders.github.io/matnwb/tutorials/html/intro.html
+   :target: ../../_static/html/tutorials/intro.html
    :alt: View full page
 
 

@@ -5,7 +5,7 @@ Reading NWB Files from Remote Locations
    :target: https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/remote_read.mlx
    :alt: Open in MATLAB Online
 .. image:: https://img.shields.io/badge/View-Full_Page-blue
-   :target: https://neurodatawithoutborders.github.io/matnwb/tutorials/html/remote_read.html
+   :target: ../../_static/html/tutorials/remote_read.html
    :alt: View full page
 
 

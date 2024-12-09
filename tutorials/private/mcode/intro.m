@@ -255,12 +255,9 @@ read_spatial_series.data(:, 1:10)
 % This concludes the introductory tutorial. Please proceed to one of the specialized 
 % tutorials, which are designed to follow this one.
 %% 
-% * <https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ecephys.html 
-% Extracellular electrophysiology>
-% * <https://neurodatawithoutborders.github.io/matnwb/tutorials/html/icephys.html 
-% Intracellular electrophysiology>
-% * <https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ophys.html 
-% Optical physiology>
+% * <./ecephys.mlx Extracellular electrophysiology>
+% * <./icephys.mlx Intracellular electrophysiology>
+% * <./ophys.mlx Optical physiology>
 %% 
 % See the <https://neurodatawithoutborders.github.io/matnwb/doc/index.html API 
 % documentation> to learn what data types are available.

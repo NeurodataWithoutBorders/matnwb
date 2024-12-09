@@ -42,22 +42,30 @@ function postProcessLivescriptHtml(htmlFile)
         "</div></body></html>", ...
         sprintf("</div>%s</body></html>", str));
 
-    % Update links
-    for namespaceName = ["core", "hdmf_common"]
+    % Update links: type classes
+    for namespaceName = ["core", "hdmf_common", "hdmf_experimental"]
         updatedHtmlContent = strrep(updatedHtmlContent, ...
             sprintf('https://neurodatawithoutborders.github.io/matnwb/doc/+types/+%s/',namespaceName), ...
             sprintf('https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/%s/',namespaceName) );
     end
 
+    % Update links: Nwb functions
     for functionName = ["NwbFile", "nwbExport", "nwbRead", "generateCore", "generateExtension"]
         updatedHtmlContent = strrep(updatedHtmlContent, ...
             sprintf('https://neurodatawithoutborders.github.io/matnwb/doc/%s.html', functionName), ...
             sprintf('https://matnwb.readthedocs.io/en/latest/pages/functions/%s.html', functionName) );
     end
-    
+
+    % Update links: tutorials
     updatedHtmlContent = strrep(updatedHtmlContent, ...
         'https://neurodatawithoutborders.github.io/matnwb/tutorials/html/', ...
         'https://matnwb.readthedocs.io/en/latest/pages/tutorials/' );
+
+    % Update links: api documentation
+    updatedHtmlContent = strrep(updatedHtmlContent, ...
+        'https://neurodatawithoutborders.github.io/matnwb/doc/index.html', ...
+        'https://matnwb.readthedocs.io/en/latest/index.html' );
+ 
 
     % Write the modified content back to the HTML file
     try

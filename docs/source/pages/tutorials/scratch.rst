@@ -5,7 +5,7 @@ Working with Scratch Space in MatNWB
    :target: https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/scratch.mlx
    :alt: Open in MATLAB Online
 .. image:: https://img.shields.io/badge/View-Full_Page-blue
-   :target: https://neurodatawithoutborders.github.io/matnwb/tutorials/html/scratch.html
+   :target: ../../_static/html/tutorials/scratch.html
    :alt: View full page
 
 

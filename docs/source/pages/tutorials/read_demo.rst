@@ -5,7 +5,7 @@ Reading NWB Files with MatNWB
    :target: https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/read_demo.mlx
    :alt: Open in MATLAB Online
 .. image:: https://img.shields.io/badge/View-Full_Page-blue
-   :target: https://neurodatawithoutborders.github.io/matnwb/tutorials/html/read_demo.html
+   :target: ../../_static/html/tutorials/read_demo.html
    :alt: View full page
 
 
