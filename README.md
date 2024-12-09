@@ -117,9 +117,9 @@ Supported schema versions are provided in the MatNWB root directory under [`nwb-
 
 ## Under the Hood
 
-NWB files are HDF5 files with data stored according to the Neurodata Without Borders (NWB) [schema](https://github.com/NeurodataWithoutBorders/nwb-schema/tree/dev/core). The schema is described in a set of YAML documents  which defines the various types and their attributes.
+NWB files are HDF5 files with data stored according to the Neurodata Without Borders (NWB) [schema](https://github.com/NeurodataWithoutBorders/nwb-schema/tree/dev/core). The schema is described in a set of YAML documents which defines the various types and their attributes.
 
-Certain functions, like `generateCore` and `nwbRead`, automatically read these specifications and converts them to a MATLAB class file. These classes generally map directly to attributes and constraints of the types defined in the schema.
+Certain functions, like `generateCore` and `nwbRead`, automatically read these specifications and converts them to a set of MATLAB class files. These classes generally map directly to attributes and constraints of the types defined in the schema.
 
 
 ## Caveats
