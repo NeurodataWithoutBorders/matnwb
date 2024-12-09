@@ -148,23 +148,6 @@ Analysis examples will be added in the [dandi-example-live-scripts repo](https:/
 ## Third-party Support
 The `+contrib` folder contains tools for converting from other common data formats/specifications to NWB. Currently supported data types are TDT, MWorks, and Blackrock. We are interested in expanding this section to other data specifications and would greatly value your contribution!
 
-## Testing
-
-Run the test suite with `nwbtest`.
-
-## FAQ
-
-1. "A class definition must be in an "@" directory."
-
-Make sure that there are no "@" signs **anywhere** in your *full* file path.  This includes even directories that are not part of the matnwb root path and any "@" signs that are not at the beginning of the directory path.
-
-Alternatively, this issue disappears after MATLAB version 2017b.  Installing this version may also resolve these issues.  Note that the updates provided with 2017b should also be installed.
-
-
-2. I Have Issues Reading From a NWB File!
-
-Some simple methods to troubleshoot failed NWB file reads can be found in the [NWB Overview Documentation](https://nwb-overview.readthedocs.io/en/latest/file_read/matnwb/troubleshooting.html).
-
 ## Contributing
 For details on how to contribute to MatNWB, please stay tuned.
 
