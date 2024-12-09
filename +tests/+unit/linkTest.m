@@ -88,3 +88,25 @@ metaExternalLink = types.untyped.ExternalLink('test2.nwb', '/acquisition/lfp/esl
 % for links, deref() should return its own link.
 tests.util.verifyContainerEqual(testCase, metaExternalLink.deref().deref(), expected);
 end
+
+function testDirectTypeAssignmentToSoftLinkProperty(testCase)
+    device = types.core.Device('description', 'test_device');
+    electrodeGroup = types.core.ElectrodeGroup(...
+        'description', 'test_group', ...
+        'device', device);
+
+    testCase.verifyClass(electrodeGroup.device, 'types.untyped.SoftLink')
+    testCase.verifyClass(electrodeGroup.device.target, 'types.core.Device')
+end
+
+function testWrongTypeInSoftLinkAssignment(testCase)
+    
+    function createElectrodeGroupWithWrongDeviceType()
+        not_a_device = types.core.OpticalChannel('description', 'test_channel');
+        electrodeGroup = types.core.ElectrodeGroup(...
+            'description', 'test_group', ...
+            'device', not_a_device); %#ok<NASGU>
+    end
+    testCase.verifyError(@createElectrodeGroupWithWrongDeviceType, ...
+        'NWB:TypeCorrection:InvalidConversion')
+end
