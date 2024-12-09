@@ -4,8 +4,8 @@ function validationStr = fillValidators(propnames, props, namespacereg, classNam
         nm = propnames{i};
         prop = props(nm);
 
-
-        if isa(prop, 'file.Attribute') && prop.readonly && ~isempty(prop.value)
+        if (isa(prop, 'file.Attribute') || isa(prop, 'file.Dataset')) ...
+                && prop.readonly && ~isempty(prop.value)
             % Need to add a validator for inherited and readonly properties. In 
             % the superclass these properties might not be read only and due to
             % inheritance its not possible to change property attributes

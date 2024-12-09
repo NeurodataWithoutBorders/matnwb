@@ -33,16 +33,22 @@ function template = fillClass(name, namespace, processed, classprops, inherited)
             optional = [optional {propertyName}];
         end
 
-        if isa(prop, 'file.Attribute')
+        if isa(prop, 'file.Attribute') || isa(prop, 'file.Dataset') 
             if prop.readonly
                 readonly = [readonly {propertyName}];
             end
 
             if ~isempty(prop.value)
-                defaults = [defaults {propertyName}];
+                if isa(prop, 'file.Attribute') 
+                    defaults = [defaults {propertyName}];
+                else % file.Dataset
+                    if isRequired || all(isPropertyRequired)
+                        defaults = [defaults {propertyName}];
+                    end
+                end
             end
 
-            if ~isempty(prop.dependent)
+            if isa(prop, 'file.Attribute') && ~isempty(prop.dependent)
                 %extract prefix
                 parentName = strrep(propertyName, ['_' prop.name], '');
                 parent = classprops(parentName);
