@@ -69,7 +69,16 @@ methods
         val = types.util.checkDtype('corrected', 'types.core.ImageSeries', val);
     end
     function val = validate_original(obj, val)
-        val = types.util.checkDtype('original', 'types.core.ImageSeries', val);
+        if isa(val, 'types.untyped.SoftLink')
+            if isprop(val, 'target')
+                types.util.checkDtype('original', 'types.core.ImageSeries', val.target);
+            end
+        else
+            val = types.util.checkDtype('original', 'types.core.ImageSeries', val);
+            if ~isempty(val)
+                val = types.untyped.SoftLink(val);
+            end
+        end
     end
     function val = validate_xy_translation(obj, val)
         val = types.util.checkDtype('xy_translation', 'types.core.TimeSeries', val);

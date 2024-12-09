@@ -74,7 +74,16 @@ methods
     %% VALIDATORS
     
     function val = validate_clustering_interface(obj, val)
-        val = types.util.checkDtype('clustering_interface', 'types.core.Clustering', val);
+        if isa(val, 'types.untyped.SoftLink')
+            if isprop(val, 'target')
+                types.util.checkDtype('clustering_interface', 'types.core.Clustering', val.target);
+            end
+        else
+            val = types.util.checkDtype('clustering_interface', 'types.core.Clustering', val);
+            if ~isempty(val)
+                val = types.untyped.SoftLink(val);
+            end
+        end
     end
     function val = validate_waveform_filtering(obj, val)
         val = types.util.checkDtype('waveform_filtering', 'char', val);

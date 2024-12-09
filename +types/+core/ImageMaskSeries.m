@@ -83,7 +83,16 @@ methods
     %% VALIDATORS
     
     function val = validate_masked_imageseries(obj, val)
-        val = types.util.checkDtype('masked_imageseries', 'types.core.ImageSeries', val);
+        if isa(val, 'types.untyped.SoftLink')
+            if isprop(val, 'target')
+                types.util.checkDtype('masked_imageseries', 'types.core.ImageSeries', val.target);
+            end
+        else
+            val = types.util.checkDtype('masked_imageseries', 'types.core.ImageSeries', val);
+            if ~isempty(val)
+                val = types.untyped.SoftLink(val);
+            end
+        end
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

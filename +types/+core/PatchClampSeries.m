@@ -137,7 +137,16 @@ methods
         types.util.checkDims(valsz, validshapes);
     end
     function val = validate_electrode(obj, val)
-        val = types.util.checkDtype('electrode', 'types.core.IntracellularElectrode', val);
+        if isa(val, 'types.untyped.SoftLink')
+            if isprop(val, 'target')
+                types.util.checkDtype('electrode', 'types.core.IntracellularElectrode', val.target);
+            end
+        else
+            val = types.util.checkDtype('electrode', 'types.core.IntracellularElectrode', val);
+            if ~isempty(val)
+                val = types.untyped.SoftLink(val);
+            end
+        end
     end
     function val = validate_gain(obj, val)
         val = types.util.checkDtype('gain', 'single', val);

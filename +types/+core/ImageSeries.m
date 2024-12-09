@@ -125,7 +125,16 @@ methods
         types.util.checkDims(valsz, validshapes);
     end
     function val = validate_device(obj, val)
-        val = types.util.checkDtype('device', 'types.core.Device', val);
+        if isa(val, 'types.untyped.SoftLink')
+            if isprop(val, 'target')
+                types.util.checkDtype('device', 'types.core.Device', val.target);
+            end
+        else
+            val = types.util.checkDtype('device', 'types.core.Device', val);
+            if ~isempty(val)
+                val = types.untyped.SoftLink(val);
+            end
+        end
     end
     function val = validate_dimension(obj, val)
         val = types.util.checkDtype('dimension', 'int32', val);
