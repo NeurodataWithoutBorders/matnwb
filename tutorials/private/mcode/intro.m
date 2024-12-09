@@ -84,10 +84,10 @@ time_series_with_timestamps = types.core.TimeSeries( ...
     'data_unit', 'm', ...
     'timestamps', linspace(0, 1, 10));
 %% 
-% The <https://pynwb.readthedocs.io/en/latest/pynwb.base.html#pynwb.base.TimeSeries 
+% The <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/TimeSeries.html 
 % |*TimeSeries*|> class serves as the foundation for all other time series types 
 % in the NWB format. Several specialized subclasses extend the functionality of 
-% <https://pynwb.readthedocs.io/en/latest/pynwb.base.html#pynwb.base.TimeSeries 
+% <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/TimeSeries.html 
 % |*TimeSeries*|>, each tailored to handle specific kinds of data. In the next 
 % section, we’ll explore one of these specialized types. For a full overview, 
 % please check out the <https://nwb-schema.readthedocs.io/en/latest/format.html#type-hierarchy 
