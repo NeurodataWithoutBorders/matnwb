@@ -20,12 +20,21 @@ function generateRstForTutorials()
         relPath = strrep(thisFilePath, docsSourceRootDir, '../..');
     
         [~, name] = fileparts(relPath);
-        title = S.(name);
+        title = S.titles.(name);
     
         rstOutput = replace(rstTemplate, '{{static_html_path}}', relPath);
         rstOutput = replace(rstOutput, '{{tutorial_name}}', name);
         rstOutput = replace(rstOutput, '{{tutorial_title}}', title);
         rstOutput = replace(rstOutput, '{{tutorial_title_underline}}', repmat('=', 1, numel(title)));
+
+        % Add the youtube badge block if the tutorial has a corresponding youtube video
+        if isfield(S.youtube, name)
+            youtubeBadge = fileread( getRstTemplateFile('youtube_badge') );
+            youtubeBadge = replace(youtubeBadge, '{{youtube_url}}', S.youtube.(name));
+        else
+            youtubeBadge = '';
+        end
+        rstOutput = replace(rstOutput, '{{youtube_badge_block}}', youtubeBadge);
         
         rstOutputFile = fullfile(tutorialRstTargetDir, [name, '.rst']);
         fid = fopen(rstOutputFile, 'wt');

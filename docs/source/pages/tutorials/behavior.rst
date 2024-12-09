@@ -8,6 +8,13 @@ Behavior Data Processing
    :target: https://neurodatawithoutborders.github.io/matnwb/tutorials/html/behavior.html
    :alt: View full page
 
+
 .. raw:: html
 
-   <iframe src="../../_static/html/tutorials/behavior.html" style="width: 100%; height: 100vh; overflow: hidden; border: none;"></iframe>
+   <iframe id="tutorialIframe" src="../../_static/html/tutorials/behavior.html" style="width: 100%; overflow: hidden; border: none;"></iframe>
+   <script>
+       const iframe = document.getElementById('tutorialIframe');
+       iframe.onload = () => {
+           iframe.style.height = iframe.contentWindow.document.body.scrollHeight + 'px';
+       };
+   </script>

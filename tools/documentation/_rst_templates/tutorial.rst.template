@@ -7,7 +7,14 @@
 .. image:: https://img.shields.io/badge/View-Full_Page-blue
    :target: https://neurodatawithoutborders.github.io/matnwb/tutorials/html/{{tutorial_name}}.html
    :alt: View full page
+{{youtube_badge_block}}
 
 .. raw:: html
 
-   <iframe src="{{static_html_path}}" style="width: 100%; height: 100vh; overflow: hidden; border: none;"></iframe>
+   <iframe id="tutorialIframe" src="{{static_html_path}}" style="width: 100%; overflow: hidden; border: none;"></iframe>
+   <script>
+       const iframe = document.getElementById('tutorialIframe');
+       iframe.onload = () => {
+           iframe.style.height = iframe.contentWindow.document.body.scrollHeight + 'px';
+       };
+   </script>

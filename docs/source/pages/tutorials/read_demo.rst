@@ -8,6 +8,13 @@ Reading NWB Files with MatNWB
    :target: https://neurodatawithoutborders.github.io/matnwb/tutorials/html/read_demo.html
    :alt: View full page
 
+
 .. raw:: html
 
-   <iframe src="../../_static/html/tutorials/read_demo.html" style="width: 100%; height: 100vh; overflow: hidden; border: none;"></iframe>
+   <iframe id="tutorialIframe" src="../../_static/html/tutorials/read_demo.html" style="width: 100%; overflow: hidden; border: none;"></iframe>
+   <script>
+       const iframe = document.getElementById('tutorialIframe');
+       iframe.onload = () => {
+           iframe.style.height = iframe.contentWindow.document.body.scrollHeight + 'px';
+       };
+   </script>

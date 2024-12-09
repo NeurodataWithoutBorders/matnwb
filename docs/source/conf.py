@@ -35,6 +35,7 @@ extensions = [
     'sphinx.ext.autodoc', # autogenerate docs
     'sphinx.ext.napoleon', # for parsing e.g google style parameter docstring
     'sphinx.ext.viewcode',
+    'sphinx.ext.linkcode',
     'sphinx.ext.extlinks', # For maintaining external links
     'sphinx_copybutton',
 ]
@@ -55,6 +56,14 @@ matlab_class_signature = True
 matlab_auto_link = "all"
 matlab_show_property_default_value = True
 
+
+def linkcode_resolve(domain, info):
+    filename = info['module'].replace('.', '/')
+    source_url = 'https://github.com/NeurodataWithoutBorders/matnwb/blob/master/'+filename+'/'+info['fullname']+'.m'
+    print(source_url)
+    return source_url
+
+
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
@@ -62,6 +71,8 @@ html_theme = "sphinx_rtd_theme"
 
 html_static_path = ['_static']
 html_logo = os.path.join(matlab_src_dir, 'logo', 'logo_matnwb_small.png')
+html_favicon = os.path.join(matlab_src_dir, 'logo', 'logo_favicon.svg')
+
 html_theme_options = {
     # "style_nav_header_background": "#AFD2E8"
     "style_nav_header_background": "#000000"
