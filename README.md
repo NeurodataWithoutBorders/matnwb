@@ -45,6 +45,7 @@ From MATLAB's command window, add MatNWB to the [search path](https://www.mathwo
 addpath('path/to/matnwb');
 ```
 
+
 ## Getting Started
 
 ### Step 1: Reading from an NWB File
@@ -81,6 +82,7 @@ generateCore('2.1.0'); % generates classes for NWB schema version 2.1.0
 ```
 
 Supported schema versions are provided in the MatNWB root directory under [`nwb-schema`](https://github.com/NeurodataWithoutBorders/matnwb/tree/update-readme-2024/nwb-schema).
+
 
 ## Tutorials
 
@@ -124,14 +126,15 @@ Certain functions, like `generateCore` and `nwbRead`, automatically read these s
 
 ## Caveats
 
-The NWB schema has regular updates and is open to addition of new types along with modification of previously defined types. As such, certain type presumptions made by MatNWB may be invalidated in the future from a NWB schema. Furthermore, new types may require implementations that will be missing in MatNWB until patched in.
+The NWB schema has regular updates and is open to addition of new types along with modification of previously defined types. As such, certain type presumptions made by MatNWB may be invalidated in the future from newer NWB schema versions. Furthermore, new types may require implementations that will be missing in MatNWB until patched in.
 
-For those planning on using matnwb alongside pynwb, please keep the following in mind:
- - MatNWB is dependent on the schema, which may not necessary correspond with your PyNWB schema version.  Please consider overwriting the contents within MatNWB's **~/schema/core** directory with the generating PyNWB's **src/pynwb/data directory** and running generateCore to ensure compatibility between systems.
+For those planning on using MatNWB alongside PyNWB, please keep the following in mind:
+ - MatNWB is dependent on the schema, which may not necessarily correspond with your PyNWB schema version. Please consider overwriting the contents within MatNWB's **~/schema/core** directory with the generating PyNWB's **src/pynwb/data directory** and running `generateCore` to ensure compatibility between systems.
  
-The `master` branch in this repository is considered perpetually unstable. If you desire Matnwb's full functionality (full round-trip with nwb data), please consider downloading the more stable releases in the Releases tab. Most releases will coincide with nwb-schema releases and guarantee compatibility of new features introduced with the schema release along with backwards compatibility with all previous nwb-schema releases.
+The `master` branch of this repository is considered perpetually unstable. If you want to stay on the safer side, please consider downloading the more stable releases from the [Releases](https://github.com/NeurodataWithoutBorders/matnwb/releases) page. Most releases will coincide with nwb-schema releases and guarantee compatibility of new features introduced with the schema release along with backwards compatibility with all previous nwb-schema releases.
 
 This package reads and writes NWB 2.0 files and does not support older formats.
+
 
 ## Use Cases
 
@@ -151,8 +154,7 @@ The `+contrib` folder contains tools for converting from other common data forma
 ## Contributing
 For details on how to contribute to MatNWB, please stay tuned.
 
+
 ## Citing NWB
-
 * **Manuscript:** Oliver Rübel, Andrew Tritt, Ryan Ly, Benjamin K Dichter, Satrajit Ghosh, Lawrence Niu, Pamela Baker, Ivan Soltesz, Lydia Ng, Karel Svoboda, Loren Frank, Kristofer E Bouchard. (2022). The Neurodata Without Borders ecosystem for neurophysiological data science. eLife, 11:e78362. doi: https://doi.org/10.7554/eLife.78362
-* **RRID:** (PyNWB, RRID:SCR_017452)
-
+* **RRID:** (MatNWB, RRID:SCR_021156)
