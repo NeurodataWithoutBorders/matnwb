@@ -35,8 +35,9 @@ jobs:
         uses: matlab-actions/run-command@v2
         with:
           command: |
+            setenv('DISPLAY', ':100');
             addpath(genpath('tools'));
-            matnwb_setup;
+            disp('Display environment:')
             disp(getenv('DISPLAY'))
             matnwb_exportTutorials(ExportFormat=".html",RunLivescript=false);
 
