@@ -14,11 +14,6 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-
-      - name: Install MATLAB
-        uses: matlab-actions/setup-matlab@v2
-        with:
-          release: R2023b # R2020a This is necessary to create the pages for types
       
       - name: Set up dependencies
         run: |
@@ -31,12 +26,18 @@ jobs:
           echo "Starting virtual frame buffer..."
           Xvfb -ac :100 -screen 0 1280x1024x24 > /dev/null &
 
+      - name: Install MATLAB
+        uses: matlab-actions/setup-matlab@v2
+        with:
+          release: R2023b # R2020a This is necessary to create the pages for types
+
       - name: Create pages
         uses: matlab-actions/run-command@v2
         with:
           command: |
             addpath(genpath('tools'));
             matnwb_setup;
+            disp(getenv('DISPLAY'))
             matnwb_exportTutorials(ExportFormat=".html",RunLivescript=false);
 
       - name: Checkout gh-pages branch
