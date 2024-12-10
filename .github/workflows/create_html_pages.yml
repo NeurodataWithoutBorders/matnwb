@@ -32,6 +32,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: '11'
+          distribution: 'adoptopenjdk'  # Java distribution (e.g., 'adoptopenjdk', 'zulu')
           
       - name: Install MATLAB
         uses: matlab-actions/setup-matlab@v2
