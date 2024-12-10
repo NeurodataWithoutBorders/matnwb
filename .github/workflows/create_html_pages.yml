@@ -18,7 +18,7 @@ jobs:
       - name: Set up dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y xvfb xdpyinfo
+          sudo apt-get install -y xvfb
       - name: Start virtual frame buffer
         run: |
           export DISPLAY=:100
@@ -27,7 +27,6 @@ jobs:
       - name: Debug Xvfb
         run: |
           export DISPLAY=:100
-          xdpyinfo
           
       - name: Install MATLAB
         uses: matlab-actions/setup-matlab@v2
