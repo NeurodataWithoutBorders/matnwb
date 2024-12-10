@@ -20,13 +20,23 @@ jobs:
         with:
           release: R2023b # R2020a This is necessary to create the pages for types
       
+      - name: Set up dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+    
+      - name: Start virtual frame buffer
+        run: |
+          export DISPLAY=:100
+          echo "Starting virtual frame buffer..."
+          Xvfb -ac :100 -screen 0 1280x1024x24 > /dev/null &
+
       - name: Create pages
         uses: matlab-actions/run-command@v2
         with:
           command: |
             addpath(genpath('tools'));
             matnwb_setup;
-            matnwb_generateDocs;
             matnwb_exportTutorials(ExportFormat=".html",RunLivescript=false);
 
       - name: Checkout gh-pages branch
