@@ -18,8 +18,7 @@ jobs:
       - name: Set up dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y xvfb
-    
+          sudo apt-get install -y xvfb xdpyinfo
       - name: Start virtual frame buffer
         run: |
           export DISPLAY=:100
