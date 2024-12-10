@@ -25,11 +25,15 @@ jobs:
           export DISPLAY=:100
           echo "Starting virtual frame buffer..."
           Xvfb -ac :100 -screen 0 1280x1024x24 > /dev/null &
-
+      - name: Debug Xvfb
+        run: |
+          export DISPLAY=:100
+          xdpyinfo
+          
       - name: Install MATLAB
         uses: matlab-actions/setup-matlab@v2
         with:
-          release: R2023b # R2020a This is necessary to create the pages for types
+          release: R2024a # R2020a This is necessary to create the pages for types
 
       - name: Create pages
         uses: matlab-actions/run-command@v2
