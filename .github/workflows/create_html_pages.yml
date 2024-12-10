@@ -42,6 +42,7 @@ jobs:
       - name: Create pages
         uses: matlab-actions/run-command@v2
         with:
+          startup-options: -batch
           command: |
             setenv('DISPLAY', ':100');
             addpath(genpath('tools'));
