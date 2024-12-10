@@ -82,7 +82,7 @@ function matnwb_exportTutorials(options)
         for j = 1:numel(exportFormat)
             targetPath = fullfile(targetFolderPaths(j), fileNames(i) + exportFormat(j));
             fprintf('Exporting livescript "%s" to "%s"\n', fileNames(i), exportFormat(j))
-            matlab.internal.liveeditor.openAndConvert(sourcePath, strrep(targetPath, '.mlx', exportFormat(j)))
+            matlab.internal.liveeditor.openAndConvert(char(sourcePath), char(strrep(targetPath, '.mlx', exportFormat(j))))
             disp('first try passed')
             export(sourcePath, strrep(targetPath, '.mlx', exportFormat(j)));
         end
