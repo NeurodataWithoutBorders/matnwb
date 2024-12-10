@@ -24,13 +24,12 @@
 </h4>
 
 <p align="center">
-  <a href="https://matnwb.readthedocs.io">Documentation</a> •
-  <a href="#installation">Installation</a> •
-  <a href="#getting-started">Getting Started</a> •
-  <a href="#tutorials">Tutorials</a> •
-  <a href="#use-cases">Use Cases</a> •
-  <a href="#contributing">Contributing</a> •
-  <a href="#citing-nwb">Citing NWB</a>
+  <a href="#installation">⚙️ Installation</a> •
+  <a href="#getting-started">🚀 Getting Started</a> •
+  <a href="#tutorials">🎓 Tutorials</a> •
+  <a href="#use-cases">💡 Use Cases</a> •
+  <a href="#contributing">🤝 Contributing</a> •
+  <a href="#citing-nwb">📄 Citing NWB</a>
 </p>
 
 
