@@ -1,20 +1,23 @@
 import os
 import re
 
-def replace_text_in_html_files():
+def replace_text_in_html_files(directory=None):
 
-    # Get the absolute path of the script's directory
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    
-    # Create the absolute path for the built html
-    directory = os.path.abspath(os.path.join(script_dir, '..', '..', 'build', 'html'))
+    if directory is None:
+        # Get the absolute path of the script's directory
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        # Create the absolute path for the built html
+        directory = os.path.abspath(os.path.join(script_dir, '..', '..', 'build', 'html'))
 
     old_text = "Edit on GitHub"
     new_text = "MatNWB on GitHub"
     main_repo_url = "https://github.com/NeurodataWithoutBorders/matnwb"
 
+    print(directory)
     for root, _, files in os.walk(directory):
         for file in files:
+            print(file)
             if file.endswith(".html"):
                 file_path = os.path.join(root, file)
 
@@ -37,4 +40,5 @@ def replace_text_in_html_files():
                     f.write(updated_content)
 
 if __name__ == '__main__':
-    replace_text_in_html_files()
+    directory = sys.argv[1]
+    replace_text_in_html_files(directory)

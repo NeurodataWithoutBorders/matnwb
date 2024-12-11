@@ -6,7 +6,7 @@ build:
     python: "3.10"
   jobs:
     post_build:
-      - python docs/source/sphinx_extensions/postprocess_html.py
+      - python docs/source/sphinx_extensions/postprocess_html.py $READTHEDOCS_OUTPUT/html/
 
 python:
   install:
