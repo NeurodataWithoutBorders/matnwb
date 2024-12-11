@@ -2,7 +2,13 @@ import os
 import re
 
 def replace_text_in_html_files():
-    directory = "build/html"
+
+    # Get the absolute path of the script's directory
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Create the absolute path for the built html
+    directory = os.path.abspath(os.path.join(script_dir, '..', '..', 'build', 'html'))
+
     old_text = "Edit on GitHub"
     new_text = "MatNWB on GitHub"
     main_repo_url = "https://github.com/NeurodataWithoutBorders/matnwb"
