@@ -1,5 +1,8 @@
 classdef ClusterWaveforms < types.core.NWBDataInterface & types.untyped.GroupClass
-% CLUSTERWAVEFORMS DEPRECATED The mean waveform shape, including standard deviation, of the different clusters. Ideally, the waveform analysis should be performed on data that is only high-pass filtered. This is a separate module because it is expected to require updating. For example, IMEC probes may require different storage requirements to store/display mean waveforms, requiring a new interface or an extension of this one.
+% CLUSTERWAVEFORMS - DEPRECATED The mean waveform shape, including standard deviation, of the different clusters. Ideally, the waveform analysis should be performed on data that is only high-pass filtered. This is a separate module because it is expected to require updating. For example, IMEC probes may require different storage requirements to store/display mean waveforms, requiring a new interface or an extension of this one.
+%
+% Required Properties:
+%  waveform_filtering, waveform_mean, waveform_sd
 
 
 % REQUIRED PROPERTIES
@@ -15,7 +18,25 @@ end
 
 methods
     function obj = ClusterWaveforms(varargin)
-        % CLUSTERWAVEFORMS Constructor for ClusterWaveforms
+        % CLUSTERWAVEFORMS - Constructor for ClusterWaveforms
+        %
+        % Syntax:
+        %  clusterWaveforms = types.core.CLUSTERWAVEFORMS() creates a ClusterWaveforms object with unset property values.
+        %
+        %  clusterWaveforms = types.core.CLUSTERWAVEFORMS(Name, Value) creates a ClusterWaveforms object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - clustering_interface (Clustering) - Link to Clustering interface that was the source of the clustered data
+        %
+        %  - waveform_filtering (char) - Filtering applied to data before generating mean/sd
+        %
+        %  - waveform_mean (single) - The mean waveform for each cluster, using the same indices for each wave as cluster numbers in the associated Clustering module (i.e, cluster 3 is in array slot [3]). Waveforms corresponding to gaps in cluster sequence should be empty (e.g., zero- filled)
+        %
+        %  - waveform_sd (single) - Stdev of waveforms for each cluster, using the same indices as in mean
+        %
+        % Output Arguments:
+        %  - clusterWaveforms (types.core.ClusterWaveforms) - A ClusterWaveforms object
+        
         obj = obj@types.core.NWBDataInterface(varargin{:});
         
         
@@ -53,7 +74,16 @@ methods
     %% VALIDATORS
     
     function val = validate_clustering_interface(obj, val)
-        val = types.util.checkDtype('clustering_interface', 'types.core.Clustering', val);
+        if isa(val, 'types.untyped.SoftLink')
+            if isprop(val, 'target')
+                types.util.checkDtype('clustering_interface', 'types.core.Clustering', val.target);
+            end
+        else
+            val = types.util.checkDtype('clustering_interface', 'types.core.Clustering', val);
+            if ~isempty(val)
+                val = types.untyped.SoftLink(val);
+            end
+        end
     end
     function val = validate_waveform_filtering(obj, val)
         val = types.util.checkDtype('waveform_filtering', 'char', val);

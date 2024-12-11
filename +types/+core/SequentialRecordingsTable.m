@@ -1,5 +1,8 @@
 classdef SequentialRecordingsTable < types.hdmf_common.DynamicTable & types.untyped.GroupClass
-% SEQUENTIALRECORDINGSTABLE A table for grouping different sequential recordings from the SimultaneousRecordingsTable table together. This is typically used to group together sequential recordings where a sequence of stimuli of the same type with varying parameters have been presented in a sequence.
+% SEQUENTIALRECORDINGSTABLE - A table for grouping different sequential recordings from the SimultaneousRecordingsTable table together. This is typically used to group together sequential recordings where a sequence of stimuli of the same type with varying parameters have been presented in a sequence.
+%
+% Required Properties:
+%  id, simultaneous_recordings, simultaneous_recordings_index, stimulus_type
 
 
 % REQUIRED PROPERTIES
@@ -11,7 +14,31 @@ end
 
 methods
     function obj = SequentialRecordingsTable(varargin)
-        % SEQUENTIALRECORDINGSTABLE Constructor for SequentialRecordingsTable
+        % SEQUENTIALRECORDINGSTABLE - Constructor for SequentialRecordingsTable
+        %
+        % Syntax:
+        %  sequentialRecordingsTable = types.core.SEQUENTIALRECORDINGSTABLE() creates a SequentialRecordingsTable object with unset property values.
+        %
+        %  sequentialRecordingsTable = types.core.SEQUENTIALRECORDINGSTABLE(Name, Value) creates a SequentialRecordingsTable object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - colnames (char) - The names of the columns in this table. This should be used to specify an order to the columns.
+        %
+        %  - description (char) - Description of what is in this dynamic table.
+        %
+        %  - id (ElementIdentifiers) - Array of unique identifiers for the rows of this dynamic table.
+        %
+        %  - simultaneous_recordings (DynamicTableRegion) - A reference to one or more rows in the SimultaneousRecordingsTable table.
+        %
+        %  - simultaneous_recordings_index (VectorIndex) - Index dataset for the simultaneous_recordings column.
+        %
+        %  - stimulus_type (VectorData) - The type of stimulus used for the sequential recording.
+        %
+        %  - vectordata (VectorData) - Vector columns, including index columns, of this dynamic table.
+        %
+        % Output Arguments:
+        %  - sequentialRecordingsTable (types.core.SequentialRecordingsTable) - A SequentialRecordingsTable object
+        
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         
         

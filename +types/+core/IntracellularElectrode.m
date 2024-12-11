@@ -1,5 +1,8 @@
 classdef IntracellularElectrode < types.core.NWBContainer & types.untyped.GroupClass
-% INTRACELLULARELECTRODE An intracellular electrode and its metadata.
+% INTRACELLULARELECTRODE - An intracellular electrode and its metadata.
+%
+% Required Properties:
+%  description
 
 
 % REQUIRED PROPERTIES
@@ -20,7 +23,35 @@ end
 
 methods
     function obj = IntracellularElectrode(varargin)
-        % INTRACELLULARELECTRODE Constructor for IntracellularElectrode
+        % INTRACELLULARELECTRODE - Constructor for IntracellularElectrode
+        %
+        % Syntax:
+        %  intracellularElectrode = types.core.INTRACELLULARELECTRODE() creates a IntracellularElectrode object with unset property values.
+        %
+        %  intracellularElectrode = types.core.INTRACELLULARELECTRODE(Name, Value) creates a IntracellularElectrode object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - cell_id (char) - unique ID of the cell
+        %
+        %  - description (char) - Description of electrode (e.g.,  whole-cell, sharp, etc.).
+        %
+        %  - device (Device) - Device that was used to record from this electrode.
+        %
+        %  - filtering (char) - Electrode specific filtering.
+        %
+        %  - initial_access_resistance (char) - Initial access resistance.
+        %
+        %  - location (char) - Location of the electrode. Specify the area, layer, comments on estimation of area/layer, stereotaxic coordinates if in vivo, etc. Use standard atlas names for anatomical regions when possible.
+        %
+        %  - resistance (char) - Electrode resistance, in ohms.
+        %
+        %  - seal (char) - Information about seal used for recording.
+        %
+        %  - slice (char) - Information about slice used for recording.
+        %
+        % Output Arguments:
+        %  - intracellularElectrode (types.core.IntracellularElectrode) - A IntracellularElectrode object
+        
         obj = obj@types.core.NWBContainer(varargin{:});
         
         
@@ -119,7 +150,16 @@ methods
         types.util.checkDims(valsz, validshapes);
     end
     function val = validate_device(obj, val)
-        val = types.util.checkDtype('device', 'types.core.Device', val);
+        if isa(val, 'types.untyped.SoftLink')
+            if isprop(val, 'target')
+                types.util.checkDtype('device', 'types.core.Device', val.target);
+            end
+        else
+            val = types.util.checkDtype('device', 'types.core.Device', val);
+            if ~isempty(val)
+                val = types.untyped.SoftLink(val);
+            end
+        end
     end
     function val = validate_filtering(obj, val)
         val = types.util.checkDtype('filtering', 'char', val);

@@ -1,11 +1,30 @@
 classdef GrayscaleImage < types.core.Image & types.untyped.DatasetClass
-% GRAYSCALEIMAGE A grayscale image.
+% GRAYSCALEIMAGE - A grayscale image.
+%
+% Required Properties:
+%  data
 
 
 
 methods
     function obj = GrayscaleImage(varargin)
-        % GRAYSCALEIMAGE Constructor for GrayscaleImage
+        % GRAYSCALEIMAGE - Constructor for GrayscaleImage
+        %
+        % Syntax:
+        %  grayscaleImage = types.core.GRAYSCALEIMAGE() creates a GrayscaleImage object with unset property values.
+        %
+        %  grayscaleImage = types.core.GRAYSCALEIMAGE(Name, Value) creates a GrayscaleImage object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - data (numeric) - No description
+        %
+        %  - description (char) - Description of the image.
+        %
+        %  - resolution (single) - Pixel resolution of the image, in pixels per centimeter.
+        %
+        % Output Arguments:
+        %  - grayscaleImage (types.core.GrayscaleImage) - A GrayscaleImage object
+        
         obj = obj@types.core.Image(varargin{:});
         
         
