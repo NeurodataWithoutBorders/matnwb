@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 
 def replace_text_in_html_files(directory=None):
 
