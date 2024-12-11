@@ -80,7 +80,7 @@ html_theme = "sphinx_rtd_theme"
 
 html_static_path = ['_static']
 html_logo = os.path.join(matlab_src_dir, 'logo', 'logo_matnwb_small.png')
-#html_favicon = os.path.join(matlab_src_dir, 'logo', 'logo_favicon.svg')
+html_favicon = os.path.join(matlab_src_dir, 'logo', 'logo_favicon_32.png')
 
 html_theme_options = {
     "style_nav_header_background": "#000000"
@@ -91,11 +91,7 @@ html_context = {
     "github_user": "NeurodataWithoutBorders",
     "github_repo": "matnwb",
     "github_version": "master",  # Default branch
-    "conf_py_path": "/docs/source/",  # Path in the repo where docs are located
-    'favicon_apple_touch': os.path.join(matlab_src_dir, 'logo', 'logo_favicon.svg'),
-    'favicon32x32': os.path.join(matlab_src_dir, 'logo', 'logo_favicon_32.png'),
-    'favicon16x16': os.path.join(matlab_src_dir, 'logo', 'logo_favicon_16.png'),
-    'favicon_safari_pinned_tab': os.path.join(matlab_src_dir, 'logo', 'logo_favicon.svg'),
+    "conf_py_path": "/docs/source/"  # Path in the repo where docs are located
 }
 
 exclude_patterns = []

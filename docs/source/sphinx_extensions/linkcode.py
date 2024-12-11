@@ -51,9 +51,13 @@ def doctree_read(app: Sphinx, doctree: Node) -> None:
             if not info:
                 continue
 
+            print('in linkcode pre skip')
+
             # Skip method names and attribute names
             if '.' in info['fullname']:
                 continue
+                
+            print('in linkcode post skip')
 
             # Call user code to resolve the link
             uri = resolve_target(domain, info)
