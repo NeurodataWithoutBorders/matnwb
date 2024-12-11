@@ -1,5 +1,8 @@
 classdef EventDetection < types.core.NWBDataInterface & types.untyped.GroupClass
-% EVENTDETECTION Detected spike events from voltage trace(s).
+% EVENTDETECTION - Detected spike events from voltage trace(s).
+%
+% Required Properties:
+%  detection_method, source_idx, times
 
 
 % READONLY PROPERTIES
@@ -19,7 +22,25 @@ end
 
 methods
     function obj = EventDetection(varargin)
-        % EVENTDETECTION Constructor for EventDetection
+        % EVENTDETECTION - Constructor for EventDetection
+        %
+        % Syntax:
+        %  eventDetection = types.core.EVENTDETECTION() creates a EventDetection object with unset property values.
+        %
+        %  eventDetection = types.core.EVENTDETECTION(Name, Value) creates a EventDetection object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - detection_method (char) - Description of how events were detected, such as voltage threshold, or dV/dT threshold, as well as relevant values.
+        %
+        %  - source_electricalseries (ElectricalSeries) - Link to the ElectricalSeries that this data was calculated from. Metadata about electrodes and their position can be read from that ElectricalSeries so it's not necessary to include that information here.
+        %
+        %  - source_idx (int32) - Indices (zero-based) into source ElectricalSeries::data array corresponding to time of event. ''description'' should define what is meant by time of event (e.g., .25 ms before action potential peak, zero-crossing time, etc). The index points to each event from the raw data.
+        %
+        %  - times (double) - Timestamps of events, in seconds.
+        %
+        % Output Arguments:
+        %  - eventDetection (types.core.EventDetection) - A EventDetection object
+        
         varargin = [{'times_unit' 'seconds'} varargin];
         obj = obj@types.core.NWBDataInterface(varargin{:});
         

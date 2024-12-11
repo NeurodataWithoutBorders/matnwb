@@ -1,18 +1,23 @@
 classdef NwbFile < types.core.NWBFile
-    % NWBFILE Root object representing data read from an NWB file.
-    %
-    % Requires that core and extension NWB types have been generated
-    % and reside in a 'types' package on the matlab path.
-    %
-    % Example. Construct an object from scratch for export:
-    %    nwb = NwbFile;
-    %    nwb.epochs = types.core.Epochs;
-    %    nwbExport(nwb, 'epoch.nwb');
-    %
-    % See also NWBREAD, GENERATECORE, GENERATEEXTENSION
+% NWBFILE - Root object representing an NWB file.
+%
+% Requires that core and extension NWB types have been generated
+% and reside in a ``+types`` namespace on the MATLAB search path.
+%
+% Usage:
+%  Example 1 - Construct a simple NwbFile object for export::
+%
+%    nwb = NwbFile;
+%    nwb.epochs = types.core.Epochs;
+%    nwbExport(nwb, 'epoch.nwb');
+%
+% See also:
+%   nwbRead, generateCore, generateExtension
 
     methods
         function obj = NwbFile(propValues)
+        % NWBFILE - Create an NWB File object
+
             arguments
                 propValues.?types.core.NWBFile
                 propValues.nwb_version
@@ -26,7 +31,7 @@ classdef NwbFile < types.core.NWBFile
         end
 
         function export(obj, filename, mode)
-        % export - Export NWB file object
+        % EXPORT - Export NWB file object
 
             arguments
                 obj (1,1) NwbFile
@@ -98,10 +103,14 @@ classdef NwbFile < types.core.NWBFile
         end
 
         function objectMap = searchFor(obj, typename, varargin)
-            % Searches this NwbFile object for a given typename
+            % searchFor - Search for for a given typename within the NwbFile object
+            %
             % Including the full namespace is optional.
-            % WARNING: The returned paths are resolvable but do not necessarily
-            % indicate a real HDF5 path. Their only function is to be resolvable.
+            %
+            % .. warning:: 
+            %   The returned paths are resolvable but do not necessarily
+            %   indicate a real HDF5 path. Their only function is to be resolvable.
+
             objectMap = searchProperties(...
                 containers.Map,...
                 obj,...

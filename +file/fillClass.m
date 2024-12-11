@@ -1,4 +1,4 @@
-function template = fillClass(name, namespace, processed, classprops, inherited)
+function template = fillClass(name, namespace, processed, classprops, inherited, superClassProps)
     %name is the name of the scheme
     %namespace is the namespace context for this class
 
@@ -87,7 +87,20 @@ function template = fillClass(name, namespace, processed, classprops, inherited)
     %% return classfile string
     classDefinitionHeader = [...
         'classdef ' name ' < ' depnm ' & ' classTag newline... %header, dependencies
-        '% ' upper(name) ' ' class.doc]; %name, docstr
+        '% ' upper(name) ' - ' class.doc]; %name, docstr
+
+    allClassProps = file.internal.mergeProps(classprops, superClassProps);
+    allRequiredPropertyNames = file.internal.getRequiredPropertyNames(allClassProps);
+    if isempty(allRequiredPropertyNames)
+        allRequiredPropertyNames = {'None'};
+    end
+
+    % Add list of required properties in class docstring
+    classDefinitionHeader = [classDefinitionHeader, newline...
+        '%', newline, ...
+        '% Required Properties:', newline, ...
+        sprintf('%%  %s', strjoin(allRequiredPropertyNames, ', '))];
+ 
     hiddenAndReadonly = intersect(hidden, readonly);
     hidden = setdiff(hidden, hiddenAndReadonly);
     readonly = setdiff(readonly, hiddenAndReadonly);
@@ -126,7 +139,8 @@ function template = fillClass(name, namespace, processed, classprops, inherited)
         depnm,...
         defaults,... %all defaults, regardless of inheritance
         classprops,...
-        namespace);
+        namespace, ...
+        superClassProps);
     setterFcns = file.fillSetters(setdiff(nonInherited, union(readonly, hiddenAndReadonly)));
     validatorFcns = file.fillValidators(allProperties, classprops, namespace, namespace.getFullClassName(name), inherited);
     exporterFcns = file.fillExport(nonInherited, class, depnm);

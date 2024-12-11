@@ -1,5 +1,8 @@
 classdef BehavioralEvents < types.core.NWBDataInterface & types.untyped.GroupClass
-% BEHAVIORALEVENTS TimeSeries for storing behavioral events. See description of <a href="#BehavioralEpochs">BehavioralEpochs</a> for more details.
+% BEHAVIORALEVENTS - TimeSeries for storing behavioral events. See description of <a href="#BehavioralEpochs">BehavioralEpochs</a> for more details.
+%
+% Required Properties:
+%  None
 
 
 % OPTIONAL PROPERTIES
@@ -9,7 +12,19 @@ end
 
 methods
     function obj = BehavioralEvents(varargin)
-        % BEHAVIORALEVENTS Constructor for BehavioralEvents
+        % BEHAVIORALEVENTS - Constructor for BehavioralEvents
+        %
+        % Syntax:
+        %  behavioralEvents = types.core.BEHAVIORALEVENTS() creates a BehavioralEvents object with unset property values.
+        %
+        %  behavioralEvents = types.core.BEHAVIORALEVENTS(Name, Value) creates a BehavioralEvents object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - timeseries (TimeSeries) - TimeSeries object containing behavioral events.
+        %
+        % Output Arguments:
+        %  - behavioralEvents (types.core.BehavioralEvents) - A BehavioralEvents object
+        
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.timeseries, ivarargin] = types.util.parseConstrained(obj,'timeseries', 'types.core.TimeSeries', varargin{:});
         varargin(ivarargin) = [];

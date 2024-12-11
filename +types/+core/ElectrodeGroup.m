@@ -1,5 +1,8 @@
 classdef ElectrodeGroup < types.core.NWBContainer & types.untyped.GroupClass
-% ELECTRODEGROUP A physical grouping of electrodes, e.g. a shank of an array.
+% ELECTRODEGROUP - A physical grouping of electrodes, e.g. a shank of an array.
+%
+% Required Properties:
+%  None
 
 
 % OPTIONAL PROPERTIES
@@ -12,7 +15,25 @@ end
 
 methods
     function obj = ElectrodeGroup(varargin)
-        % ELECTRODEGROUP Constructor for ElectrodeGroup
+        % ELECTRODEGROUP - Constructor for ElectrodeGroup
+        %
+        % Syntax:
+        %  electrodeGroup = types.core.ELECTRODEGROUP() creates a ElectrodeGroup object with unset property values.
+        %
+        %  electrodeGroup = types.core.ELECTRODEGROUP(Name, Value) creates a ElectrodeGroup object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - description (char) - Description of this electrode group.
+        %
+        %  - device (Device) - Link to the device that was used to record from this electrode group.
+        %
+        %  - location (char) - Location of electrode group. Specify the area, layer, comments on estimation of area/layer, etc. Use standard atlas names for anatomical regions when possible.
+        %
+        %  - position (Table with columns: (single, single, single)) - stereotaxic or common framework coordinates
+        %
+        % Output Arguments:
+        %  - electrodeGroup (types.core.ElectrodeGroup) - A ElectrodeGroup object
+        
         obj = obj@types.core.NWBContainer(varargin{:});
         
         

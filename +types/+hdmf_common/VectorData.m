@@ -1,5 +1,8 @@
 classdef VectorData < types.hdmf_common.Data & types.untyped.DatasetClass
-% VECTORDATA An n-dimensional dataset representing a column of a DynamicTable. If used without an accompanying VectorIndex, first dimension is along the rows of the DynamicTable and each step along the first dimension is a cell of the larger table. VectorData can also be used to represent a ragged array if paired with a VectorIndex. This allows for storing arrays of varying length in a single cell of the DynamicTable by indexing into this VectorData. The first vector is at VectorData[0:VectorIndex[0]]. The second vector is at VectorData[VectorIndex[0]:VectorIndex[1]], and so on.
+% VECTORDATA - An n-dimensional dataset representing a column of a DynamicTable. If used without an accompanying VectorIndex, first dimension is along the rows of the DynamicTable and each step along the first dimension is a cell of the larger table. VectorData can also be used to represent a ragged array if paired with a VectorIndex. This allows for storing arrays of varying length in a single cell of the DynamicTable by indexing into this VectorData. The first vector is at VectorData[0:VectorIndex[0]]. The second vector is at VectorData[VectorIndex[0]:VectorIndex[1]], and so on.
+%
+% Required Properties:
+%  data
 
 
 % HIDDEN READONLY PROPERTIES
@@ -18,7 +21,25 @@ end
 
 methods
     function obj = VectorData(varargin)
-        % VECTORDATA Constructor for VectorData
+        % VECTORDATA - Constructor for VectorData
+        %
+        % Syntax:
+        %  vectorData = types.hdmf_common.VECTORDATA() creates a VectorData object with unset property values.
+        %
+        %  vectorData = types.hdmf_common.VECTORDATA(Name, Value) creates a VectorData object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - data (any) - No description
+        %
+        %  - description (char) - Description of what these vectors represent.
+        %
+        %  - resolution (double) - NOTE: this is a special value for compatibility with the Units table and is only written to file when detected to be in that specific HDF5 Group. The smallest possible difference between two spike times. Usually 1 divided by the acquisition sampling rate from which spike times were extracted, but could be larger if the acquisition time series was downsampled or smaller if the acquisition time series was smoothed/interpolated and it is possible for the spike time to be between samples.
+        %
+        %  - sampling_rate (single) - NOTE: this is a special value for compatibility with the Units table and is only written to file when detected to be in that specific HDF5 Group. Must be Hertz
+        %
+        % Output Arguments:
+        %  - vectorData (types.hdmf_common.VectorData) - A VectorData object
+        
         varargin = [{'unit' 'volts'} varargin];
         obj = obj@types.hdmf_common.Data(varargin{:});
         
