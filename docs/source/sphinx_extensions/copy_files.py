@@ -13,3 +13,6 @@ def copy_files():
     shutil.copy(source_module_path, target_module_path)
 
     print( f'Copied "{source_module_path}" to "{target_module_path}".')
+
+if __name__ == '__main__':
+    copy_files()

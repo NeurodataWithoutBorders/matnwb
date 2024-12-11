@@ -15,10 +15,8 @@ def replace_text_in_html_files(directory=None):
     new_text = "MatNWB on GitHub"
     main_repo_url = "https://github.com/NeurodataWithoutBorders/matnwb"
 
-    print(directory)
     for root, _, files in os.walk(directory):
         for file in files:
-            print(file)
             if file.endswith(".html"):
                 file_path = os.path.join(root, file)
 
