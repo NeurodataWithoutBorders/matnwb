@@ -36,6 +36,13 @@ classdef InstallExtensionTest < matlab.unittest.TestCase
             testCase.verifyClass(nwbObject.general_devices.get('TestMiniscope'), ...
                 'types.ndx_miniscope.Miniscope')
         end
+
+        function testDisplayExtensionMetadata(testCase)
+            extensionName = "ndx-miniscope";
+            metadata = matnwb.extension.getExtensionInfo(extensionName);
+            testCase.verifyClass(metadata, 'struct')
+            testCase.verifyEqual(metadata.name, extensionName)
+        end
     end
 
     methods (Static)

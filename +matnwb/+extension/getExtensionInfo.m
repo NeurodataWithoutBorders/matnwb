@@ -1,4 +1,6 @@
-function dispExtensionInfo(extensionName)
+function metadata = getExtensionInfo(extensionName)
+% getExtensionInfo - Get metadata for specified extension
+
     arguments
         extensionName (1,1) string
     end
@@ -11,5 +13,4 @@ function dispExtensionInfo(extensionName)
         'NWB:DisplayExtensionMetadata:ExtensionNotFound', ...
         'Extension "%s" was not found in the extension catalog:\n%s', extensionName, extensionList)
     metadata = table2struct(T(isMatch, :));
-    disp(metadata)
 end
