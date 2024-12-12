@@ -34,5 +34,12 @@ classdef FunctionTests < matlab.unittest.TestCase
             io.writeCompound(fid, '/map_data', data)
             H5F.close(fid);
         end
+        function testIsNeurodatatype(testCase)
+            timeSeries = types.core.TimeSeries();
+            testCase.verifyTrue(matnwb.utility.isNeurodataType(timeSeries))
+            
+            dataPipe = types.untyped.DataPipe('data', rand(10,10));
+            testCase.verifyFalse(matnwb.utility.isNeurodataType(dataPipe))
+        end
     end 
 end
