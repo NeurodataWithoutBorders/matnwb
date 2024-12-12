@@ -44,31 +44,3 @@ function [wasDownloaded, repoTargetFolder] = downloadExtensionRepository(...
         end
     end
 end
-
-function downloadUrl = buildRepoDownloadUrl(repositoryUrl, branchName, extensionName)
-% buildRepoDownloadUrl - Build a download URL for a given repository and branch
-    arguments
-        repositoryUrl (1,1) string
-        branchName (1,1) string
-        extensionName (1,1) string
-    end
-
-    if endsWith(repositoryUrl, '/')
-        repositoryUrl = extractBefore(repositoryUrl, strlength(repositoryUrl));
-    end
-    if contains(repositoryUrl, 'github.com')
-        downloadUrl = sprintf( '%s/archive/refs/heads/%s.zip', repositoryUrl, branchName );
-    
-    elseif contains(repositoryUrl, 'gitlab.com')
-        repoPathSegments = strsplit(repositoryUrl, '/');
-        repoName = repoPathSegments{end};
-        downloadUrl = sprintf( '%s/-/archive/%s/%s-%s.zip', ...
-            repositoryUrl, branchName, repoName, branchName);
-    
-    else
-        error('NWB:InstallExtension:UnknownRepository', ...
-            ['Extension "%s" is located in an unsupported repository ', ...
-             '/ source location. \nPlease create an issue on MatNWB''s ', ...
-             'github page'], extensionName)
-    end
-end
