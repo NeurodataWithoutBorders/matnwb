@@ -15,6 +15,12 @@ classdef InstallExtensionTest < matlab.unittest.TestCase
     end
 
     methods (Test)
+        function testInstallExtensionFailsWithNoInputArgument(testCase)
+            testCase.verifyError(...
+                @(varargin) nwbInstallExtension(), ...
+                'NWB:InstallExtension:MissingArgument')
+        end
+
         function testInstallExtension(testCase)
             nwbInstallExtension("ndx-miniscope", 'savedir', '.')
 
@@ -42,6 +48,13 @@ classdef InstallExtensionTest < matlab.unittest.TestCase
             metadata = matnwb.extension.getExtensionInfo(extensionName);
             testCase.verifyClass(metadata, 'struct')
             testCase.verifyEqual(metadata.name, extensionName)
+        end
+
+        function testDownloadUnknownRepository(testCase)
+            repositoryUrl = "https://www.unknown-repo.com/anon/my_nwb_extension";
+            testCase.verifyError(...
+                @() matnwb.extension.internal.downloadExtensionRepository(repositoryUrl, "", "my_nwb_extension"), ...
+                 'NWB:InstallExtension:UnknownRepository');
         end
     end
 

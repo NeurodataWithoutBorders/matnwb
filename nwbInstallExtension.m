@@ -72,10 +72,12 @@ function nwbInstallExtension(extensionNames, options)
     if isempty(extensionNames)
         T = matnwb.extension.listExtensions();
         extensionList = join( compose("  %s", [T.name]), newline );
-        error("Please specify the name of an extension. Available extensions:\n\n%s\n", extensionList)
+        error('NWB:InstallExtension:MissingArgument', ...
+            'Please specify the name of an extension. Available extensions:\n\n%s\n', extensionList)
     else
         for extensionName = extensionNames
             matnwb.extension.installExtension(extensionName, 'savedir', options.savedir)
         end
     end
 end
+
