@@ -21,22 +21,26 @@ classdef PynwbTutorialTest <  matlab.unittest.TestCase
     properties (Constant)
         % SkippedTutorials - Tutorials from pynwb to skip
         SkippedTutorials = {...
+            'plot_read_basics.py', ...      % Downloads file from dandi archive, does not export nwb file
             'streaming.py', ...             % Requires that HDF5 library is installed with the ROS3 driver enabled which is not a given
             'object_id.py', ...             % Does not export nwb file
             'plot_configurator.py', ...     % Does not export nwb file
+            'plot_zarr_io', ...             % Does not export nwb file in nwb format
             'brain_observatory.py', ...     % Requires allen sdk
-            'extensions.py'};               % Discrepency between tutorial and schema: https://github.com/NeurodataWithoutBorders/pynwb/issues/1952
+            'extensions.py'};               % Discrepancy between tutorial and schema: https://github.com/NeurodataWithoutBorders/pynwb/issues/1952
 
         % SkippedFiles - Name of exported nwb files to skip reading with matnwb
         SkippedFiles = {'family_nwb_file_0.nwb'} % requires family driver from h5py
         
         % PythonDependencies - Package dependencies for running pynwb tutorials
-        PythonDependencies = {'hdmf-zarr', 'dataframe-image', 'matplotlib', 'dandi'}
+        PythonDependencies = {'dataframe-image', 'matplotlib'}
     end
 
     properties (Access = private)
         PythonEnvironment % Stores the value of the environment variable 
         % "PYTHONPATH" to restore when test is finished.
+
+        Debug (1,1) logical = false
     end
 
     methods (TestClassSetup)
@@ -65,6 +69,12 @@ classdef PynwbTutorialTest <  matlab.unittest.TestCase
             L = dir('temp_venv/lib/python*/site-*'); % Find the site-packages folder
             pythonPath = fullfile(L.folder, L.name);
             setenv('PYTHONPATH', pythonPath)
+
+            pythonPath = tests.util.getPythonPath();
+            
+            if testCase.Debug
+                [~, m] = system(sprintf('%s -m pip list', pythonPath)); disp(m)
+            end
         end
     end
 
@@ -101,7 +111,7 @@ classdef PynwbTutorialTest <  matlab.unittest.TestCase
 
             pythonPath = tests.util.getPythonPath();
             
-            cmd = sprintf('"%s" %s', pythonPath, tutorialFile );
+            cmd = sprintf('%s %s', pythonPath, tutorialFile);
             [status, cmdout] = system(cmd);
 
             if status == 1
@@ -171,7 +181,12 @@ classdef PynwbTutorialTest <  matlab.unittest.TestCase
             for i = 1:numel(testCase.PythonDependencies)
                 iName = testCase.PythonDependencies{i};
                 installCmdStr = sprintf('%s install %s', pipExecutable, iName);
-                evalc( "system(installCmdStr)" ); % Install without command window output
+
+                if testCase.Debug
+                    [~, m] = system(installCmdStr); disp(m)
+                else
+                    evalc( "system(installCmdStr)" ); % Install without command window output
+                end
             end
         end
     end
@@ -207,8 +222,8 @@ function folderPath = getMatNwbRootDirectory()
 end
 
 function pynwbFolder = downloadPynwb()
-    githubUrl = 'https://github.com/NeurodataWithoutBorders/pynwb/archive/refs/heads/master.zip';
-    pynwbFolder = downloadZippedGithubRepo(githubUrl, '.'); % Download in current direcory
+    githubUrl = 'https://github.com/NeurodataWithoutBorders/pynwb/archive/refs/heads/dev.zip';
+    pynwbFolder = downloadZippedGithubRepo(githubUrl, '.'); % Download in current directory
 end
 
 function repoFolder = downloadZippedGithubRepo(githubUrl, targetFolder)

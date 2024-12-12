@@ -1,5 +1,8 @@
 classdef DfOverF < types.core.NWBDataInterface & types.untyped.GroupClass
-% DFOVERF dF/F information about a region of interest (ROI). Storage hierarchy of dF/F should be the same as for segmentation (i.e., same names for ROIs and for image planes).
+% DFOVERF - dF/F information about a region of interest (ROI). Storage hierarchy of dF/F should be the same as for segmentation (i.e., same names for ROIs and for image planes).
+%
+% Required Properties:
+%  roiresponseseries
 
 
 % REQUIRED PROPERTIES
@@ -9,7 +12,19 @@ end
 
 methods
     function obj = DfOverF(varargin)
-        % DFOVERF Constructor for DfOverF
+        % DFOVERF - Constructor for DfOverF
+        %
+        % Syntax:
+        %  dfOverF = types.core.DFOVERF() creates a DfOverF object with unset property values.
+        %
+        %  dfOverF = types.core.DFOVERF(Name, Value) creates a DfOverF object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - roiresponseseries (RoiResponseSeries) - RoiResponseSeries object(s) containing dF/F for a ROI.
+        %
+        % Output Arguments:
+        %  - dfOverF (types.core.DfOverF) - A DfOverF object
+        
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.roiresponseseries, ivarargin] = types.util.parseConstrained(obj,'roiresponseseries', 'types.core.RoiResponseSeries', varargin{:});
         varargin(ivarargin) = [];

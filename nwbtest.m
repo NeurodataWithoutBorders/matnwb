@@ -46,6 +46,7 @@ function results = nwbtest(varargin)
         ws = pwd;
         
         nwbClearGenerated(); % Clear default files if any.
+        cleanupObj = onCleanup(@() generateCore);
         cleaner = onCleanup(@generateCore); % Regenerate core when finished
 
         pvcell = struct2pvcell(parser.Unmatched);
@@ -62,7 +63,7 @@ function results = nwbtest(varargin)
         coverageFile = fullfile(ws, 'coverage.xml');
         [installDir, ~, ~] = fileparts(mfilename('fullpath'));
         
-        ignoreFolders = {'tutorials', '+contrib', '+util', 'external_packages', '+tests'};
+        ignoreFolders = {'tutorials', 'tools', '+contrib', '+util', 'external_packages', '+tests'};
         ignorePaths = {fullfile('+misc', 'generateDocs.m'), [mfilename '.m'], 'nwbClearGenerated.m'};
         mfilePaths = getMfilePaths(installDir, ignoreFolders, ignorePaths);
         if ~verLessThan('matlab', '9.3') && ~isempty(mfilePaths)

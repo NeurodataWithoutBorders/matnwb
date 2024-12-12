@@ -1,167 +1,146 @@
-function nwb = nwbRead(filename, varargin)
-    %NWBREAD Reads an NWB file.
-    %  nwb = NWBREAD(filename) Reads the nwb file at filename and returns an
-    %  NWBFile object representing its contents.
-    %  nwb = nwbRead(filename, 'ignorecache') Reads the nwb file without generating classes
-    %  off of the cached schema if one exists.
-    %
-    %  nwb = NWBREAD(filename, options)
-    %
-    %  Requires that core and extension NWB types have been generated
-    %  and reside in a 'types' package on the matlab path.
-    %
-    %  Example:
-    %    nwb = nwbRead('data.nwb');
-    %    nwb = nwbRead('data.nwb', 'ignorecache');
-    %    nwb = nwbRead('data.nwb', 'savedir', '.');
-    %
-    %  See also GENERATECORE, GENERATEEXTENSION, NWBFILE, NWBEXPORT
+function nwb = nwbRead(filename, flags, options)
+% NWBREAD - Read an NWB file.
+%
+% Syntax:
+%  nwb = NWBREAD(filename) Reads the nwb file at filename and returns an
+%  NWBFile object representing its contents.
+%
+%  nwb = NWBREAD(filename, flags) Reads the nwb file using optional 
+%  flags controlling the mode for how to read the file. See input
+%  arguments for a list of available flags.
+%
+%  nwb = NWBREAD(filename, Name, Value) Reads the nwb file using optional 
+%  name-value pairs controlling options for how to read the file.
+%
+% Input Arguments:
+%  - filename (string) - 
+%    Filepath pointing to an NWB file.
+% 
+%  - flags (string) -
+%    Flag for setting the mode for the NWBREAD operation. Available options are:
+%    'ignorecache'. If the 'ignorecache' flag is used, classes for NWB data 
+%    types are not re-generated based on the embedded schemas in the file.
+% 
+%  - options (name-value pairs) -
+%    Optional name-value pairs. Available options:
+%  
+%    - savedir (string) -
+%      A folder to save generated classes for NWB types.
+% 
+% Output Arguments:
+%  - nwb (NwbFile) - Nwb file object
+%
+% Usage:
+%  Example 1 - Read an NWB file::
+%
+%    nwb = nwbRead('data.nwb');
+%
+%  Example 2 - Read an NWB file without re-generating classes for NWB types::
+%
+%    nwb = nwbRead('data.nwb', 'ignorecache');
+%
+%  Note: This is a good option to use if you are reading several files
+%  which are created of the same version of the NWB schemas.
+%
+%  Example 3 - Read an NWB file and generate classes for NWB types in the current working directory::
+%
+%    nwb = nwbRead('data.nwb', 'savedir', '.');
+%
+% See also:
+%   generateCore, generateExtension, NwbFile, nwbExport
     
-    for iOption = 1:length(varargin)
-        option = varargin{iOption};
-        if isstring(option)
-            option = char(option);
-        end
-        assert(ischar(option), 'NWB:Read:InvalidParameter' ...
-            , 'Invalid optional parameter in argument position %u', 1 + iOption);
-        varargin{iOption} = option;
+    arguments
+        filename (1,1) string {matnwb.common.mustBeNwbFile}
     end
-    
-    ignoreCache = any(strcmpi(varargin, 'ignorecache'));
-    
-    saveDirMask = strcmpi(varargin, 'savedir');
-    assert(isempty(saveDirMask) || ~saveDirMask(end), 'NWB:NWBRead:InvalidSaveDir',...
-        '`savedir` is a key value pair requiring a directory string as a value.');
-    if any(saveDirMask)
-        saveDir = varargin{find(saveDirMask, 1, 'last') + 1};
-    else
-        saveDir = misc.getMatnwbDir();
+    arguments (Repeating)
+        flags (1,1) string {mustBeMember(flags, "ignorecache")}
     end
-    
-    Blacklist = struct(...
-        'attributes', {{'.specloc', 'object_id'}},...
-        'groups', {{}});
-    validateattributes(filename, {'char', 'string'}, {'scalartext', 'nonempty'} ...
-        , 'nwbRead', 'filename', 1);
-    
-    filename = char(filename);
-    specLocation = getEmbeddedSpec(filename);
-    schemaVersion = util.getSchemaVersion(filename);
-    if ~isempty(specLocation)
-        Blacklist.groups{end+1} = specLocation;
+    arguments
+        options.savedir (1,1) string = misc.getMatnwbDir(); % {mustBeFolder} ?
     end
 
-    % validate supported schema version
-    Schemas = dir(fullfile(misc.getMatnwbDir(), 'nwb-schema'));
-    supportedSchemas = setdiff({Schemas.name}, {'.', '..'});
-    if ~any(strcmp(schemaVersion, supportedSchemas))
-        warning('NWB:Read:UnsupportedSchema' ...
-            , ['NWB schema version %s is not support by this version of MatNWB. ' ...
-            'This file is not guaranteed to be supported.'] ...
-            , schemaVersion);
+    regenerateSchemaClasses = not( any(strcmpi(string(flags), 'ignorecache')) );
+
+    schemaVersion = util.getSchemaVersion(filename);
+    try
+        matnwb.common.mustBeValidSchemaVersion(schemaVersion)
+    catch
+        warning('NWB:Read:UnsupportedSchema', ...
+            ['NWB schema version `%s` is not support by this version of MatNWB. ' ...
+            'This file is not guaranteed to be supported.'], schemaVersion )
     end
-    
-    if ~ignoreCache
+
+    specLocation = io.spec.getEmbeddedSpecLocation(filename);
+
+    if regenerateSchemaClasses
         if isempty(specLocation)
             try
-                generateCore(schemaVersion, 'savedir', saveDir);
+                generateCore(schemaVersion, 'savedir', options.savedir);
             catch ME
-                if ~strcmp(ME.identifier, 'NWB:GenerateCore:MissingCoreSchema')
+                if ~strcmp(ME.identifier, 'NWB:VersionValidator:UnsupportedSchemaVersion')
                     rethrow(ME);
                 end
             end
         else
-            generateSpec(filename, h5info(filename, specLocation), 'savedir', saveDir);
+            generateEmbeddedSpec(filename, specLocation, 'savedir', options.savedir);
         end
         rehash();
     end
-    
-    nwb = io.parseGroup(filename, h5info(filename), Blacklist);
-end
 
-function specLocation = getEmbeddedSpec(filename)
-    specLocation = '';
-    fid = H5F.open(filename);
-    try
-        %check for .specloc
-        attributeId = H5A.open(fid, '.specloc');
-        referenceRawData = H5A.read(attributeId);
-        specLocation = H5R.get_name(attributeId, 'H5R_OBJECT', referenceRawData);
-        H5A.close(attributeId);
-    catch ME
-        if ~strcmp(ME.identifier, 'MATLAB:imagesci:hdf5lib:libraryError')
-            rethrow(ME);
-        end % don't error if the attribute doesn't exist.
+    blackList = struct(...
+        'attributes', {{'.specloc', 'object_id'}},...
+        'groups', {{}});    
+    if ~isempty(specLocation)
+        blackList.groups{end+1} = specLocation;
     end
     
-    H5F.close(fid);
+    nwb = io.parseGroup(filename, h5info(filename), blackList);
 end
 
-function generateSpec(filename, specinfo, varargin)
-    saveDirMask = strcmp(varargin, 'savedir');
-    if any(saveDirMask)
-        assert(~saveDirMask(end),...
-            'NWB:Read:InvalidParameter',...
-            'savedir must be paired with the desired save directory.');
-        saveDir = varargin{find(saveDirMask, 1, 'last') + 1};
-    else
-        saveDir = misc.getMatnwbDir();
+
+function generateEmbeddedSpec(filename, specLocation, options)
+% generateEmbeddedSpec - Generate embedded specifications / namespaces
+    arguments
+        filename (1,1) string {mustBeFile}
+        specLocation (1,1) string
+        options.savedir (1,1) string = misc.getMatnwbDir(); % {mustBeFolder} ?
     end
-    
-    specNames = cell(size(specinfo.Groups));
-    fid = H5F.open(filename);
-    for iGroup = 1:length(specinfo.Groups)
-        location = specinfo.Groups(iGroup).Groups(1);
+
+    specs = io.spec.readEmbeddedSpecifications(filename, specLocation);
+    specNames = cell(size(specs));
+
+    for iSpec = 1:numel(specs)
+        namespaceName = specs{iSpec}.namespaceName;
+        namespaceDef = specs{iSpec}.namespaceText;
+        schemaMap = specs{iSpec}.schemaMap;
+
+        parsedNamespace = spec.generate(namespaceDef, schemaMap);
         
-        namespaceName = split(specinfo.Groups(iGroup).Name, '/');
-        namespaceName = namespaceName{end};
-        
-        filenames = {location.Datasets.Name};
-        if ~any(strcmp('namespace', filenames))
-            warning('NWB:Read:GenerateSpec:CacheInvalid',...
-                'Couldn''t find a `namespace` in namespace `%s`.  Skipping cache generation.',...
-                namespaceName);
-            return;
+        % Ensure the namespace name matches the name of the parsed namespace
+        isMatch = strcmp({parsedNamespace.name}, namespaceName);
+        if ~any(isMatch) % Legacy check
+            % Check if namespaceName is using the old underscore convention.
+            isMatch = strcmp({parsedNamespace.name}, strrep(namespaceName, '_', '-'));
         end
-        sourceNames = {location.Datasets.Name};
-        fileLocation = strcat(location.Name, '/', sourceNames);
-        schemaMap = containers.Map;
-        for iFileLocation = 1:length(fileLocation)
-            did = H5D.open(fid, fileLocation{iFileLocation});
-            if strcmp('namespace', sourceNames{iFileLocation})
-                namespaceText = H5D.read(did);
-            else
-                schemaMap(sourceNames{iFileLocation}) = H5D.read(did);
-            end
-            H5D.close(did);
-        end
-        
-        Namespaces = spec.generate(namespaceText, schemaMap);
-        % Handle embedded namespaces.
-        Namespace = Namespaces(strcmp({Namespaces.name}, namespaceName));
-        if isempty(Namespace)
-            % legacy checks in case namespaceName is using the old underscore
-            % conversion name.
-            namespaceName = strrep(namespaceName, '_', '-');
-            Namespace = Namespaces(strcmp({Namespaces.name}, namespaceName));
-        end
-        
-        assert(~isempty(Namespace), ...
+
+        assert(any(isMatch), ...
             'NWB:Namespace:NameNotFound', ...
-            'Namespace %s not found in schema. Perhaps an extension should be generated?', ...
+            'Namespace `%s` not found in specification. Perhaps an extension should be generated?', ...
             namespaceName);
+
+        parsedNamespace = parsedNamespace(isMatch);
         
-        spec.saveCache(Namespace, saveDir);
-        specNames{iGroup} = Namespace.name;
+        spec.saveCache(parsedNamespace, options.savedir);
+        specNames{iSpec} = parsedNamespace.name;
     end
-    H5F.close(fid);
     
     missingNames = cell(size(specNames));
     for iName = 1:length(specNames)
         name = specNames{iName};
         try
-            file.writeNamespace(name, saveDir);
+            file.writeNamespace(name, options.savedir);
         catch ME
+            % Todo: Can this actually happen?
             if strcmp(ME.identifier, 'NWB:Namespace:CacheMissing')
                 missingNames{iName} = name;
             else
@@ -169,6 +148,7 @@ function generateSpec(filename, specinfo, varargin)
             end
         end
     end
+
     missingNames(cellfun('isempty', missingNames)) = [];
     assert(isempty(missingNames), 'NWB:Namespace:DependencyMissing',...
         'Missing generated caches and dependent caches for the following namespaces:\n%s',...

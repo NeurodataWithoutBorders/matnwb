@@ -9,11 +9,11 @@
 % 
 %  author: Lawrence Niu
 %  contact: lawrence@vidriotech.com
-%  last updated: May 27, 2021
+%  last updated: Sep 14, 2024
 
 %% Script Configuration
-% The following details configuration parameters specific to the publishing script,
-% and can be skipped when implementing your own conversion.
+% The following section describes configuration parameters specific to the 
+% publishing script, and can be skipped when implementing your own conversion.
 % The parameters can be changed to fit any of the available sessions.
 
 animal = 'ANM255201';
@@ -21,29 +21,31 @@ session = '20141124';
 
 identifier = [animal '_' session];
 
-metadata_loc = fullfile('data','metadata', ['meta_data_' identifier '.mat']);
-datastructure_loc = fullfile('data','data_structure_files',...
+% Specify the local path for the downloaded data:
+data_root_path = 'data';
+
+metadata_loc = fullfile(data_root_path, 'metadata', ['meta_data_' identifier '.mat']);
+datastructure_loc = fullfile(data_root_path, 'data_structure_files',...
     ['data_structure_' identifier '.mat']);
-rawdata_loc = fullfile('data', 'RawVoltageTraces', [identifier '.tar']);
+rawdata_loc = fullfile(data_root_path, 'RawVoltageTraces', [identifier '.tar']);
 %%
 % The animal and session specifier can be changed with the |animal| and |session|
 % variable name respectively.  |metadata_loc|, |datastructure_loc|, and |rawdata_loc|
 % should refer to the metadata .mat file, the data structure .mat file, 
 % and the raw .tar file.
 
-outloc = 'out';
+output_directory = 'out';
 
-if 7 ~= exist(outloc, 'dir')
-    mkdir(outloc);
+if ~isfolder(output_directory)
+    mkdir(output_directory);
 end
 
 source_file = [mfilename() '.m'];
 [~, source_script, ~] = fileparts(source_file);
 %%
-% The NWB file will be saved in the output directory indicated by |outdir|
+% The NWB file will be saved in the output directory indicated by |output_directory|
 
 %% General Information
-
 nwb = NwbFile();
 nwb.identifier = identifier;
 nwb.general_source_script = source_script;
@@ -83,7 +85,7 @@ nwb.session_description = sprintf('Animal `%s` on Session `%s`', animal, session
 %% The ALM-3 File Structure
 % Each ALM-3 session has three files: a metadata .mat file describing the experiment, a
 % data structures .mat file containing analyzed data, and a raw .tar archive
-% containing multiple raw electrophysiology data separated by trial as .mat files.
+% containing multiple raw electrophysiology data separated by trials as .mat files.
 % All files will be merged into a single NWB file.
 
 %% Metadata
@@ -95,15 +97,15 @@ fprintf('Processing Meta Data from `%s`\n', metadata_loc);
 loaded = load(metadata_loc, 'meta_data');
 meta = loaded.meta_data;
 
-%experiment-specific treatment for animals with the ReaChR gene modification
+% Experiment-specific treatment for animals with the ReaChR gene modification
 isreachr = any(cell2mat(strfind(meta.animalGeneModification, 'ReaChR')));
 
-%sessions are separated by date of experiment.
+% Sessions are separated by date of experiment.
 nwb.general_session_id = meta.dateOfExperiment;
 
-%ALM-3 data start time is equivalent to the reference time.
+% ALM-3 data start time is equivalent to the reference time.
 nwb.session_start_time = datetime([meta.dateOfExperiment meta.timeOfExperiment],...
-    'InputFormat', 'yyyyMMddHHmmss');
+    'InputFormat', 'yyyyMMddHHmmss', 'TimeZone', 'America/New_York'); % Eastern Daylight Time
 nwb.timestamps_reference_time = nwb.session_start_time;
 
 nwb.general_experimenter = strjoin(meta.experimenters, ', ');
@@ -124,9 +126,9 @@ nwb.general_subject = types.core.Subject(...
 % However, since these fields are mostly experimental annotations, we instead pack the
 % extra values into the |description| field as a string.
 
-%The formatStruct function simply prints the field and values given the struct.
-%An optional cell array of field names specifies whitelist of fields to print.  This
-%function is provided with this script in the tutorials directory.
+% The formatStruct function simply prints the field and values given the struct.
+% An optional cell array of field names specifies whitelist of fields to print. 
+% This function is provided with this script in the tutorials directory.
 nwb.general_subject.genotype = formatStruct(...
     meta, ...
     {'animalStrain'; 'animalGeneModification'; 'animalGeneCopy';...
@@ -150,8 +152,8 @@ nwb.general_experiment_description = [...
     newline, ...
     formatStruct(meta.behavior, {'task_keyword'})];
 
-% Miscellaneous collection information from ALM-3 that didn't quite fit any NWB properties
-% are stored in general/data_collection.
+% Miscellaneous collection information from ALM-3 that didn't quite fit any NWB 
+% properties are stored in general/data_collection.
 nwb.general_data_collection = formatStruct(meta.extracellular,...
     {'extracellularDataType';'cellType';'identificationMethod';'amplifierRolloff';...
     'spikeSorting';'ADunit'});
@@ -183,16 +185,15 @@ egroup = types.core.ElectrodeGroup(...
     'device', types.untyped.SoftLink(['/general/devices/' deviceName]));
 nwb.general_extracellular_ephys.set(deviceName, egroup);
 %%
-% The NWB *ElectrodeGroup* object stores experimental information regarding a group of
-% probes.  Doing so requires a *SoftLink* to the probe specified under
+% The NWB *ElectrodeGroup* object stores experimental information regarding a 
+% group of probes.  Doing so requires a *SoftLink* to the probe specified under
 % |general_devices|.  SoftLink objects are direct maps to
-% <https://portal.hdfgroup.org/display/HDF5/H5L_CREATE_SOFT HDF5 Soft Links> on export,
-% and thus, require a true HDF5 path.
+% <https://portal.hdfgroup.org/display/HDF5/H5L_CREATE_SOFT HDF5 Soft Links> on 
+% export, and thus, require a true HDF5 path.
 
-% you can specify column names and values as key-value arguments in the DynamicTable
+% You can specify column names and values as key-value arguments in the DynamicTable
 % constructor.
-dtColNames = {'x', 'y', 'z', 'imp', 'location', 'filtering','group',...
-    'group_name'};
+dtColNames = {'x', 'y', 'z', 'imp', 'location', 'filtering','group', 'group_name'};
 dynTable = types.hdmf_common.DynamicTable(...
     'colnames', dtColNames,...
     'description', 'Electrodes',...
@@ -207,13 +208,13 @@ dynTable = types.hdmf_common.DynamicTable(...
     'group', types.hdmf_common.VectorData('description', 'Reference to the ElectrodeGroup this electrode is a part of.'),...
     'group_name', types.hdmf_common.VectorData('description', 'Name of the ElectrodeGroup this electrode is a part of.'));
 
-%raw HDF5 path to the above electrode group. Referenced by
+% Raw HDF5 path to the above electrode group. Referenced by
 % the general/extracellular_ephys Dynamic Table
 egroupPath = ['/general/extracellular_ephys/' deviceName];
 eGroupReference = types.untyped.ObjectView(egroupPath);
 for i = 1:length(meta.extracellular.siteLocations)
     location = meta.extracellular.siteLocations{i};
-    % add each row in the dynamic table. The `id` column is populated
+    % Add each row in the dynamic table. The `id` column is populated
     % dynamically.
     dynTable.addRow(...
         'x', location(1), 'y', location(2), 'z', location(3),...
@@ -249,6 +250,7 @@ nwb.general_optogenetics.set('photostim', ...
     'device', types.untyped.SoftLink(['/general/devices/' laserName]), ...
     'description', formatStruct(meta.photostim, {...
     'stimulationMethod';'photostimCoordinates';'identificationMethod'})));
+
 %% Analysis Data Structure
 % The ALM-3 data structures .mat file contains analyzed spike data, trial-specific
 % parameters, and behavioral analysis data.
@@ -278,7 +280,7 @@ trial_timeseries = cell(size(data.trialIds));
 ephus = data.timeSeriesArrayHash.value{1};
 ephusUnit = data.timeUnitNames{data.timeUnitIds(ephus.timeUnit)};
 
-% lick direction and timestamps trace
+% Lick direction and timestamps trace
 tsIdx = strcmp(ephus.idStr, 'lick_trace');
 bts = types.core.BehavioralTimeSeries();
 
@@ -292,7 +294,7 @@ bts.timeseries.set('lick_trace_ts', ...
 nwb.acquisition.set('lick_trace', bts);
 bts_ref = types.untyped.ObjectView('/acquisition/lick_trace/lick_trace_ts');
 
-% acousto-optic modulator input trace
+% Acousto-optic modulator input trace
 tsIdx = strcmp(ephus.idStr, 'aom_input_trace');
 ts = types.core.TimeSeries(...
     'data', ephus.valueMatrix(:,tsIdx), ...
@@ -303,11 +305,11 @@ ts = types.core.TimeSeries(...
 nwb.stimulus_presentation.set('aom_input_trace', ts);
 ts_ref = types.untyped.ObjectView('/stimulus/presentation/aom_input_trace');
 
-% laser power
+% Laser power
 tsIdx = strcmp(ephus.idStr, 'laser_power');
 ots = types.core.OptogeneticSeries(...
-    'data', ephus.valueMatrix(:,tsIdx), ...
-    'data_unit', 'mW', ...
+    'data', ephus.valueMatrix(:, tsIdx), ...
+    'data_conversion', 1e-3, ... % data is stored in mW, data unit for OptogeneticSeries is watts
     'description', ephus.idStrDetailed{tsIdx}, ...
     'timestamps', ephus.time, ...
     'timestamps_unit', ephusUnit, ...
@@ -315,7 +317,7 @@ ots = types.core.OptogeneticSeries(...
 nwb.stimulus_presentation.set('laser_power', ots);
 ots_ref = types.untyped.ObjectView('/stimulus/presentation/laser_power');
 
-% append trials timeseries references in order
+% Append trials timeseries references in order
 [ephus_trials, ~, trials_to_data] = unique(ephus.trial);
 for i=1:length(ephus_trials)
     i_loc = i == trials_to_data;
@@ -347,35 +349,38 @@ end
 % Though TimeIntervals is a subclass of the DynamicTable type, we opt for
 % populating the Dynamic Table data by column instead of using `addRow`
 % here because of how the data is formatted. DynamicTable is flexible
-% enough to accomodate both styles of data conversion.
+% enough to accommodate both styles of data conversion.
 trials_epoch = types.core.TimeIntervals(...
-    'start_time', types.hdmf_common.VectorData('data', data.trialStartTimes,...
-        'description', 'Start time of epoch, in seconds.'),...
-    'colnames', [data.trialTypeStr; data.trialPropertiesHash.keyNames .';...
-        {'start_time'; 'stop_time'; 'acquisition'; 'timeseries'}],...
+    'colnames', {'start_time'}, ...
     'description', 'trial data and properties', ...
-    'id', types.hdmf_common.ElementIdentifiers('data', data.trialIds),...
-    'timeseries', types.hdmf_common.VectorData('description', 'Index into timeseries Data'),...
-    'timeseries_index', types.hdmf_common.VectorIndex(...
-    'description', 'Index into Timeseries VectorData',...
-    'target', types.untyped.ObjectView('/intervals/trials/timeseries')));
+    'start_time', types.hdmf_common.VectorData(...
+        'data', data.trialStartTimes', ...
+        'description', 'Start time of epoch, in seconds.'), ...
+    'id', types.hdmf_common.ElementIdentifiers(...
+        'data', data.trialIds' ) );
 
+% Add columns for the trial types
 for i=1:length(data.trialTypeStr)
-    trials_epoch.vectordata.set(data.trialTypeStr{i}, ...
-        types.hdmf_common.VectorData('data', data.trialTypeMat(i,:),...
-            'description', data.trialTypeStr{i}));
+    columnName = data.trialTypeStr{i};
+    columnData = types.hdmf_common.VectorData(...
+         'data', data.trialTypeMat(i,:)', ... % transpose for column vector 
+         'description', data.trialTypeStr{i});
+    trials_epoch.addColumn( columnName, columnData )
 end
 
+% Add columns for the trial properties
 for i=1:length(data.trialPropertiesHash.keyNames)
+    columnName = data.trialPropertiesHash.keyNames{i};
     descr = data.trialPropertiesHash.descr{i};
     if iscellstr(descr)
         descr = strjoin(descr, newline);
     end
-    trials_epoch.vectordata.set(data.trialPropertiesHash.keyNames{i}, ...
-        types.hdmf_common.VectorData(...
-        'data', data.trialPropertiesHash.value{i}, ...
-        'description', descr));
+    columnData = types.hdmf_common.VectorData(...
+         'data', data.trialPropertiesHash.value{i},...
+         'description', data.trialTypeStr{i});
+    trials_epoch.addColumn( columnName, columnData )
 end
+
 nwb.intervals_trials = trials_epoch;
 
 %%
@@ -388,7 +393,7 @@ nwb.intervals_trials = trials_epoch;
 % ('unitx' where 'x' is some unit ID).
 
 %%
-% Trial IDs, wherever they are used, are placed in a relevent |control| property in the
+% Trial IDs, wherever they are used, are placed in a relevant |control| property in the
 % data object and will indicate what data is associated with what trial as
 % defined in |trials|'s |id| column.
 
@@ -403,7 +408,7 @@ nwb.units.spike_times = types.hdmf_common.VectorData(...
 
 for i=1:length(ids)
     esData = esHash.value{i};
-    % add trials ID reference
+    % Add trials ID reference
     
     good_trials_mask = ismember(esData.eventTrials, nwb.intervals_trials.id.data);
     eventTrials = esData.eventTrials(good_trials_mask);
@@ -411,7 +416,7 @@ for i=1:length(ids)
     waveforms = esData.waveforms(good_trials_mask,:);
     channel = esData.channel(good_trials_mask);
     
-    % add waveform data to "unitx" and associate with "waveform" column as ObjectView.
+    % Add waveform data to "unitx" and associate with "waveform" column as ObjectView.
     ses = types.core.SpikeEventSeries(...
         'control', ids(i),...
         'control_description', 'Units Table ID',...
@@ -430,10 +435,9 @@ for i=1:length(ids)
     end
     nwb.analysis.set(ses_name, ses);
     nwb.units.addRow(...
-        'id', ids(i), 'trials', eventTrials,'spike_times', eventTimes, 'waveforms', ses_ref,...
-        'tablepath', '/units');
+        'id', ids(i), 'trials', eventTrials, 'spike_times', eventTimes, 'waveforms', ses_ref);
     
-    %add this timeseries into the trials table as well.
+    % Add this timeseries into the trials table as well.
     [s_trials, ~, trials_to_data] = unique(eventTrials);
     for j=1:length(s_trials)
         trial = s_trials(j);
@@ -455,9 +459,9 @@ end
 % object under the name 'trial n' where 'n' is the trial ID.  The trials are then linked
 % to the |trials| dynamic table for easy referencing.
 fprintf('Processing Raw Acquisition Data from `%s` (will take a while)\n', rawdata_loc);
-untarLoc = fullfile(pwd, identifier);
-if 7 ~= exist(untarLoc, 'dir')
-    untar(rawdata_loc, pwd);
+untarLoc = strrep(rawdata_loc, '.tar', '');
+if ~isfolder(untarLoc)
+    untar(rawdata_loc, fileparts(rawdata_loc));
 end
 
 rawfiles = dir(untarLoc);
@@ -469,8 +473,8 @@ tablereg = types.hdmf_common.DynamicTableRegion(...
     'table',types.untyped.ObjectView('/general/extracellular_ephys/electrodes'),...
     'data',(1:nrows) - 1);
 objrefs = cell(size(rawfiles));
-trials_idx = nwb.intervals_trials;
-endTimestamps = trials_idx.start_time.data;
+
+endTimestamps = trials_epoch.start_time.data;
 for i=1:length(rawfiles)
     tnumstr = regexp(rawfiles{i}, '_trial_(\d+)\.mat$', 'tokens', 'once');
     tnumstr = tnumstr{1};
@@ -493,32 +497,45 @@ for i=1:length(rawfiles)
     objrefs{tnum} = types.untyped.ObjectView(['/acquisition/' tname]);
 end
 
-%Link to the raw data by adding the acquisition column with ObjectViews
-%to the data
+% Link to the raw data by adding the acquisition column with ObjectViews
+% to the data
 emptyrefs = cellfun('isempty', objrefs);
 objrefs(emptyrefs) = {types.untyped.ObjectView('')};
-trials_idx.vectordata.set('acquisition', types.hdmf_common.VectorData(...
+
+trials_epoch.addColumn('acquisition', types.hdmf_common.VectorData(...
     'description', 'soft link to acquisition data for this trial',...
-    'data', [objrefs{:}]));
-trials_idx.stop_time = types.hdmf_common.VectorData(...
-    'data', endTimestamps,...
-    'description', 'the end time of each trial');
+    'data', [objrefs{:}]'));
 
-%% Export
+trials_epoch.stop_time = types.hdmf_common.VectorData(...
+     'data', endTimestamps',...
+     'description', 'the end time of each trial');
+trials_epoch.colnames{end+1} = 'stop_time';
 
-%first, we'll format and store |trial_timeseries| into |intervals_trials|.
+%% Add timeseries to trials_epoch
+% First, we'll format and store |trial_timeseries| into |intervals_trials|.
 % note that |timeseries_index| data is 0-indexed.
 ts_len = cellfun('size', trial_timeseries, 1);
-is_len_nonzero = ts_len > 0;
-ts_len_nonzero = ts_len(is_len_nonzero);
-nwb.intervals_trials.timeseries_index.data = cumsum(ts_len_nonzero);
-% intervals/trials/timeseries is a compound type so we use cell2table to
-% convert this 2-d cell array into a compatible table.
-nwb.intervals_trials.timeseries.data = cell2table(vertcat(trial_timeseries{is_len_nonzero}),...
-    'VariableNames', {'timeseries', 'idx_start', 'count'});
+nwb.intervals_trials.timeseries_index = types.hdmf_common.VectorIndex(...
+    'description', 'Index into Timeseries VectorData', ...
+    'data', cumsum(ts_len)', ...
+    'target', types.untyped.ObjectView('/intervals/trials/timeseries') );
 
-outDest = fullfile(outloc, [identifier '.nwb']);
-if 2 == exist(outDest, 'file')
-    delete(outDest);
+% Intervals/trials/timeseries is a compound type so we use cell2table to
+% convert this 2-d cell array into a compatible table.
+is_len_nonzero = ts_len > 0;
+trial_timeseries_table = cell2table(vertcat(trial_timeseries{is_len_nonzero}),...
+    'VariableNames', {'timeseries', 'idx_start', 'count'});
+trial_timeseries_table = movevars(trial_timeseries_table, 'timeseries', 'After', 'count');
+
+interval_trials_timeseries = types.core.TimeSeriesReferenceVectorData(...
+    'description', 'Index into TimeSeries data', ...
+    'data', trial_timeseries_table);
+nwb.intervals_trials.timeseries = interval_trials_timeseries;
+nwb.intervals_trials.colnames{end+1} = 'timeseries';
+
+%% Export
+nwbFilePath = fullfile(output_directory, [identifier '.nwb']);
+if isfile(nwbFilePath)
+    delete(nwbFilePath);
 end
-nwbExport(nwb, outDest);
+nwbExport(nwb, nwbFilePath);

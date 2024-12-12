@@ -2,7 +2,7 @@ function saveCache(NamespaceInfo, saveDir)
 %SAVECACHE saves namespace info as .mat in `namespaces` directory
 
 namespacePath = fullfile(saveDir, 'namespaces');
-if 7 ~= exist(namespacePath, 'dir')
+if ~isfolder(namespacePath)
     mkdir(namespacePath);
 end
 

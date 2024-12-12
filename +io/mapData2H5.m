@@ -56,7 +56,7 @@ end
 %% Do Data Conversions
 switch class(data)
     case {'types.untyped.RegionView' 'types.untyped.ObjectView'}
-        %will throw errors if refdata DNE.  Caught at NWBData level.
+        %will throw errors if refdata DNE (does not exist).  Caught at NWBData level.
         data = io.getRefData(fid, data);
     case 'logical'
         % encode as int8 values.

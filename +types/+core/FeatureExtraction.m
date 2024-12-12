@@ -1,5 +1,8 @@
 classdef FeatureExtraction < types.core.NWBDataInterface & types.untyped.GroupClass
-% FEATUREEXTRACTION Features, such as PC1 and PC2, that are extracted from signals stored in a SpikeEventSeries or other source.
+% FEATUREEXTRACTION - Features, such as PC1 and PC2, that are extracted from signals stored in a SpikeEventSeries or other source.
+%
+% Required Properties:
+%  description, electrodes, features, times
 
 
 % REQUIRED PROPERTIES
@@ -12,7 +15,25 @@ end
 
 methods
     function obj = FeatureExtraction(varargin)
-        % FEATUREEXTRACTION Constructor for FeatureExtraction
+        % FEATUREEXTRACTION - Constructor for FeatureExtraction
+        %
+        % Syntax:
+        %  featureExtraction = types.core.FEATUREEXTRACTION() creates a FeatureExtraction object with unset property values.
+        %
+        %  featureExtraction = types.core.FEATUREEXTRACTION(Name, Value) creates a FeatureExtraction object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - description (char) - Description of features (eg, ''PC1'') for each of the extracted features.
+        %
+        %  - electrodes (DynamicTableRegion) - DynamicTableRegion pointer to the electrodes that this time series was generated from.
+        %
+        %  - features (single) - Multi-dimensional array of features extracted from each event.
+        %
+        %  - times (double) - Times of events that features correspond to (can be a link).
+        %
+        % Output Arguments:
+        %  - featureExtraction (types.core.FeatureExtraction) - A FeatureExtraction object
+        
         obj = obj@types.core.NWBDataInterface(varargin{:});
         
         

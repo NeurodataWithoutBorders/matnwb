@@ -1,4 +1,4 @@
-function template = fillClass(name, namespace, processed, classprops, inherited)
+function template = fillClass(name, namespace, processed, classprops, inherited, superClassProps)
     %name is the name of the scheme
     %namespace is the namespace context for this class
 
@@ -33,16 +33,22 @@ function template = fillClass(name, namespace, processed, classprops, inherited)
             optional = [optional {propertyName}];
         end
 
-        if isa(prop, 'file.Attribute')
+        if isa(prop, 'file.Attribute') || isa(prop, 'file.Dataset') 
             if prop.readonly
                 readonly = [readonly {propertyName}];
             end
 
             if ~isempty(prop.value)
-                defaults = [defaults {propertyName}];
+                if isa(prop, 'file.Attribute') 
+                    defaults = [defaults {propertyName}];
+                else % file.Dataset
+                    if isRequired || all(isPropertyRequired)
+                        defaults = [defaults {propertyName}];
+                    end
+                end
             end
 
-            if ~isempty(prop.dependent)
+            if isa(prop, 'file.Attribute') && ~isempty(prop.dependent)
                 %extract prefix
                 parentName = strrep(propertyName, ['_' prop.name], '');
                 parent = classprops(parentName);
@@ -81,7 +87,20 @@ function template = fillClass(name, namespace, processed, classprops, inherited)
     %% return classfile string
     classDefinitionHeader = [...
         'classdef ' name ' < ' depnm ' & ' classTag newline... %header, dependencies
-        '% ' upper(name) ' ' class.doc]; %name, docstr
+        '% ' upper(name) ' - ' class.doc]; %name, docstr
+
+    allClassProps = file.internal.mergeProps(classprops, superClassProps);
+    allRequiredPropertyNames = file.internal.getRequiredPropertyNames(allClassProps);
+    if isempty(allRequiredPropertyNames)
+        allRequiredPropertyNames = {'None'};
+    end
+
+    % Add list of required properties in class docstring
+    classDefinitionHeader = [classDefinitionHeader, newline...
+        '%', newline, ...
+        '% Required Properties:', newline, ...
+        sprintf('%%  %s', strjoin(allRequiredPropertyNames, ', '))];
+ 
     hiddenAndReadonly = intersect(hidden, readonly);
     hidden = setdiff(hidden, hiddenAndReadonly);
     readonly = setdiff(readonly, hiddenAndReadonly);
@@ -120,7 +139,8 @@ function template = fillClass(name, namespace, processed, classprops, inherited)
         depnm,...
         defaults,... %all defaults, regardless of inheritance
         classprops,...
-        namespace);
+        namespace, ...
+        superClassProps);
     setterFcns = file.fillSetters(setdiff(nonInherited, union(readonly, hiddenAndReadonly)));
     validatorFcns = file.fillValidators(allProperties, classprops, namespace, namespace.getFullClassName(name), inherited);
     exporterFcns = file.fillExport(nonInherited, class, depnm);
@@ -128,6 +148,11 @@ function template = fillClass(name, namespace, processed, classprops, inherited)
         '%% SETTERS' setterFcns...
         '%% VALIDATORS' validatorFcns...
         '%% EXPORT' exporterFcns}, newline);
+
+    customConstraintStr = file.fillCustomConstraint(name);
+    if ~isempty(customConstraintStr)
+        methodBody = strjoin({methodBody, '%% CUSTOM CONSTRAINTS', customConstraintStr}, newline);
+    end
 
     if strcmp(name, 'DynamicTable')
         methodBody = strjoin({methodBody, '%% TABLE METHODS', file.fillDynamicTableMethods()}, newline);

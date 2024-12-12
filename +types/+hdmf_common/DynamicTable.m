@@ -1,5 +1,8 @@
 classdef DynamicTable < types.hdmf_common.Container & types.untyped.GroupClass
-% DYNAMICTABLE A group containing multiple datasets that are aligned on the first dimension (Currently, this requirement if left up to APIs to check and enforce). These datasets represent different columns in the table. Apart from a column that contains unique identifiers for each row, there are no other required datasets. Users are free to add any number of custom VectorData objects (columns) here. DynamicTable also supports ragged array columns, where each element can be of a different size. To add a ragged array column, use a VectorIndex type to index the corresponding VectorData type. See documentation for VectorData and VectorIndex for more details. Unlike a compound data type, which is analogous to storing an array-of-structs, a DynamicTable can be thought of as a struct-of-arrays. This provides an alternative structure to choose from when optimizing storage for anticipated access patterns. Additionally, this type provides a way of creating a table without having to define a compound type up front. Although this convenience may be attractive, users should think carefully about how data will be accessed. DynamicTable is more appropriate for column-centric access, whereas a dataset with a compound type would be more appropriate for row-centric access. Finally, data size should also be taken into account. For small tables, performance loss may be an acceptable trade-off for the flexibility of a DynamicTable.
+% DYNAMICTABLE - A group containing multiple datasets that are aligned on the first dimension (Currently, this requirement if left up to APIs to check and enforce). These datasets represent different columns in the table. Apart from a column that contains unique identifiers for each row, there are no other required datasets. Users are free to add any number of custom VectorData objects (columns) here. DynamicTable also supports ragged array columns, where each element can be of a different size. To add a ragged array column, use a VectorIndex type to index the corresponding VectorData type. See documentation for VectorData and VectorIndex for more details. Unlike a compound data type, which is analogous to storing an array-of-structs, a DynamicTable can be thought of as a struct-of-arrays. This provides an alternative structure to choose from when optimizing storage for anticipated access patterns. Additionally, this type provides a way of creating a table without having to define a compound type up front. Although this convenience may be attractive, users should think carefully about how data will be accessed. DynamicTable is more appropriate for column-centric access, whereas a dataset with a compound type would be more appropriate for row-centric access. Finally, data size should also be taken into account. For small tables, performance loss may be an acceptable trade-off for the flexibility of a DynamicTable.
+%
+% Required Properties:
+%  id
 
 
 % REQUIRED PROPERTIES
@@ -15,7 +18,25 @@ end
 
 methods
     function obj = DynamicTable(varargin)
-        % DYNAMICTABLE Constructor for DynamicTable
+        % DYNAMICTABLE - Constructor for DynamicTable
+        %
+        % Syntax:
+        %  dynamicTable = types.hdmf_common.DYNAMICTABLE() creates a DynamicTable object with unset property values.
+        %
+        %  dynamicTable = types.hdmf_common.DYNAMICTABLE(Name, Value) creates a DynamicTable object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - colnames (char) - The names of the columns in this table. This should be used to specify an order to the columns.
+        %
+        %  - description (char) - Description of what is in this dynamic table.
+        %
+        %  - id (ElementIdentifiers) - Array of unique identifiers for the rows of this dynamic table.
+        %
+        %  - vectordata (VectorData) - Vector columns, including index columns, of this dynamic table.
+        %
+        % Output Arguments:
+        %  - dynamicTable (types.hdmf_common.DynamicTable) - A DynamicTable object
+        
         obj = obj@types.hdmf_common.Container(varargin{:});
         [obj.vectordata, ivarargin] = types.util.parseConstrained(obj,'vectordata', 'types.hdmf_common.VectorData', varargin{:});
         varargin(ivarargin) = [];

@@ -21,9 +21,6 @@ function festr = fillExport(propertyNames, RawClass, parentName)
     for i = 1:length(propertyNames)
         propertyName = propertyNames{i};
         pathProps = traverseRaw(propertyName, RawClass);
-        if isempty(pathProps)
-            keyboard;
-        end
         prop = pathProps{end};
         elideProps = pathProps(1:end-1);
         elisions = cell(length(elideProps),1);
@@ -84,11 +81,10 @@ function path = traverseRaw(propertyName, RawClass)
     path = {}; 
 
     if isa(RawClass, 'file.Dataset')
-        if isempty(RawClass.attributes)
-            return;
+        if ~isempty(RawClass.attributes)
+            matchesAttribute = strcmp({RawClass.attributes.name}, propertyName);
+            path = {RawClass.attributes(matchesAttribute)};
         end
-        matchesAttribute = strcmp({RawClass.attributes.name}, propertyName);
-        path = {RawClass.attributes(matchesAttribute)};
         return;
     end
 
@@ -235,6 +231,14 @@ function dataExportString = fillDataExport(name, prop, elisions)
         propertyChecks{end+1} = sprintf(['~isempty(%1$s) ' ...
         '&& ~isa(%1$s, ''types.untyped.SoftLink'') ' ...
         '&& ~isa(%1$s, ''types.untyped.ExternalLink'')'], propertyReference);
+
+        % Properties that are required and dependent will not be exported
+        % if the property they depend on are unset (empty). Ensure such cases 
+        % are warned against if they occur.
+        if prop.required && ~prop.readonly
+            warnIfNotExportedString = sprintf('obj.warnIfPropertyAttributeNotExported(''%s'', ''%s'', fullpath)', name, depPropname);
+            warningNeededCheck = sprintf('isempty(obj.%s) && ~isempty(obj.%s)', depPropname, name);
+        end
     end
 
     if ~prop.required
@@ -242,8 +246,15 @@ function dataExportString = fillDataExport(name, prop, elisions)
     end
 
     if ~isempty(propertyChecks)
-        dataExportString = sprintf('if %s\n%s\nend' ...
+        dataExportString = sprintf('if %s\n%s' ...
             , strjoin(propertyChecks, ' && '), file.addSpaces(dataExportString, 4) ...
             );
+        if prop.required && ~prop.readonly
+            dataExportString = sprintf('%s\nelseif %s\n%s\nend' ...
+                , dataExportString, warningNeededCheck, file.addSpaces(warnIfNotExportedString, 4) ...
+                );
+        else
+             dataExportString = sprintf('%s\nend', dataExportString);
+        end
     end
 end
