@@ -48,7 +48,7 @@ classdef Attribute
             else
                 obj.value = [];
                 obj.readonly = false;
-            end            
+            end
 
             if isKey(source, 'dims')
                 obj.dimnames = source('dims');

@@ -1,5 +1,8 @@
 classdef ImagingRetinotopy < types.core.NWBDataInterface & types.untyped.GroupClass
-% IMAGINGRETINOTOPY DEPRECATED. Intrinsic signal optical imaging or widefield imaging for measuring retinotopy. Stores orthogonal maps (e.g., altitude/azimuth; radius/theta) of responses to specific stimuli and a combined polarity map from which to identify visual areas. This group does not store the raw responses imaged during retinotopic mapping or the stimuli presented, but rather the resulting phase and power maps after applying a Fourier transform on the averaged responses. Note: for data consistency, all images and arrays are stored in the format [row][column] and [row, col], which equates to [y][x]. Field of view and dimension arrays may appear backward (i.e., y before x).
+% IMAGINGRETINOTOPY - DEPRECATED. Intrinsic signal optical imaging or widefield imaging for measuring retinotopy. Stores orthogonal maps (e.g., altitude/azimuth; radius/theta) of responses to specific stimuli and a combined polarity map from which to identify visual areas. This group does not store the raw responses imaged during retinotopic mapping or the stimuli presented, but rather the resulting phase and power maps after applying a Fourier transform on the averaged responses. Note: for data consistency, all images and arrays are stored in the format [row][column] and [row, col], which equates to [y][x]. Field of view and dimension arrays may appear backward (i.e., y before x).
+%
+% Required Properties:
+%  axis_1_phase_map, axis_2_phase_map, axis_descriptions, vasculature_image
 
 
 % REQUIRED PROPERTIES
@@ -42,7 +45,79 @@ end
 
 methods
     function obj = ImagingRetinotopy(varargin)
-        % IMAGINGRETINOTOPY Constructor for ImagingRetinotopy
+        % IMAGINGRETINOTOPY - Constructor for ImagingRetinotopy
+        %
+        % Syntax:
+        %  imagingRetinotopy = types.core.IMAGINGRETINOTOPY() creates a ImagingRetinotopy object with unset property values.
+        %
+        %  imagingRetinotopy = types.core.IMAGINGRETINOTOPY(Name, Value) creates a ImagingRetinotopy object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - axis_1_phase_map (single) - Phase response to stimulus on the first measured axis.
+        %
+        %  - axis_1_phase_map_dimension (int32) - Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.
+        %
+        %  - axis_1_phase_map_field_of_view (single) - Size of viewing area, in meters.
+        %
+        %  - axis_1_phase_map_unit (char) - Unit that axis data is stored in (e.g., degrees).
+        %
+        %  - axis_1_power_map (single) - Power response on the first measured axis. Response is scaled so 0.0 is no power in the response and 1.0 is maximum relative power.
+        %
+        %  - axis_1_power_map_dimension (int32) - Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.
+        %
+        %  - axis_1_power_map_field_of_view (single) - Size of viewing area, in meters.
+        %
+        %  - axis_1_power_map_unit (char) - Unit that axis data is stored in (e.g., degrees).
+        %
+        %  - axis_2_phase_map (single) - Phase response to stimulus on the second measured axis.
+        %
+        %  - axis_2_phase_map_dimension (int32) - Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.
+        %
+        %  - axis_2_phase_map_field_of_view (single) - Size of viewing area, in meters.
+        %
+        %  - axis_2_phase_map_unit (char) - Unit that axis data is stored in (e.g., degrees).
+        %
+        %  - axis_2_power_map (single) - Power response on the second measured axis. Response is scaled so 0.0 is no power in the response and 1.0 is maximum relative power.
+        %
+        %  - axis_2_power_map_dimension (int32) - Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.
+        %
+        %  - axis_2_power_map_field_of_view (single) - Size of viewing area, in meters.
+        %
+        %  - axis_2_power_map_unit (char) - Unit that axis data is stored in (e.g., degrees).
+        %
+        %  - axis_descriptions (char) - Two-element array describing the contents of the two response axis fields. Description should be something like ['altitude', 'azimuth'] or '['radius', 'theta'].
+        %
+        %  - focal_depth_image (uint16) - Gray-scale image taken with same settings/parameters (e.g., focal depth, wavelength) as data collection. Array format: [rows][columns].
+        %
+        %  - focal_depth_image_bits_per_pixel (int32) - Number of bits used to represent each value. This is necessary to determine maximum (white) pixel value.
+        %
+        %  - focal_depth_image_dimension (int32) - Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.
+        %
+        %  - focal_depth_image_field_of_view (single) - Size of viewing area, in meters.
+        %
+        %  - focal_depth_image_focal_depth (single) - Focal depth offset, in meters.
+        %
+        %  - focal_depth_image_format (char) - Format of image. Right now only 'raw' is supported.
+        %
+        %  - sign_map (single) - Sine of the angle between the direction of the gradient in axis_1 and axis_2.
+        %
+        %  - sign_map_dimension (int32) - Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.
+        %
+        %  - sign_map_field_of_view (single) - Size of viewing area, in meters.
+        %
+        %  - vasculature_image (uint16) - Gray-scale anatomical image of cortical surface. Array structure: [rows][columns]
+        %
+        %  - vasculature_image_bits_per_pixel (int32) - Number of bits used to represent each value. This is necessary to determine maximum (white) pixel value
+        %
+        %  - vasculature_image_dimension (int32) - Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.
+        %
+        %  - vasculature_image_field_of_view (single) - Size of viewing area, in meters.
+        %
+        %  - vasculature_image_format (char) - Format of image. Right now only 'raw' is supported.
+        %
+        % Output Arguments:
+        %  - imagingRetinotopy (types.core.ImagingRetinotopy) - A ImagingRetinotopy object
+        
         obj = obj@types.core.NWBDataInterface(varargin{:});
         
         

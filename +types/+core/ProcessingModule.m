@@ -1,5 +1,8 @@
 classdef ProcessingModule < types.core.NWBContainer & types.untyped.GroupClass
-% PROCESSINGMODULE A collection of processed data.
+% PROCESSINGMODULE - A collection of processed data.
+%
+% Required Properties:
+%  None
 
 
 % OPTIONAL PROPERTIES
@@ -11,7 +14,23 @@ end
 
 methods
     function obj = ProcessingModule(varargin)
-        % PROCESSINGMODULE Constructor for ProcessingModule
+        % PROCESSINGMODULE - Constructor for ProcessingModule
+        %
+        % Syntax:
+        %  processingModule = types.core.PROCESSINGMODULE() creates a ProcessingModule object with unset property values.
+        %
+        %  processingModule = types.core.PROCESSINGMODULE(Name, Value) creates a ProcessingModule object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - description (char) - Description of this collection of processed data.
+        %
+        %  - dynamictable (DynamicTable) - Tables stored in this collection.
+        %
+        %  - nwbdatainterface (NWBDataInterface) - Data objects stored in this collection.
+        %
+        % Output Arguments:
+        %  - processingModule (types.core.ProcessingModule) - A ProcessingModule object
+        
         obj = obj@types.core.NWBContainer(varargin{:});
         [obj.dynamictable, ivarargin] = types.util.parseConstrained(obj,'dynamictable', 'types.hdmf_common.DynamicTable', varargin{:});
         varargin(ivarargin) = [];
