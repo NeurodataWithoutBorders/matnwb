@@ -11,6 +11,13 @@
 % Introduction to MatNWB tutorial>, which demonstrates installing MatNWB and creating 
 % an NWB file with subject information, animal position, and trials, as well as 
 % writing and reading NWB files in MATLAB.
+% 
+% *Please note*: The dimensions of timeseries data in MatNWB should be defined 
+% in the opposite order of how it is defined in the nwb-schemas. In NWB, time 
+% is always stored in the first dimension of the data, whereas in MatNWB data 
+% should be specified with time along the last dimension. This is explained in 
+% more detail here: <https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dimensionMapNoDataPipes.html 
+% MatNWB <-> HDF5 Dimension Mapping>.
 %% Set up the NWB file
 % An NWB file represents a single session of an experiment. Each file must have 
 % a session_description, identifier, and session start time. Create a new |NWBFile| 
@@ -44,13 +51,27 @@ nwb
 % |*ImagingPlane*|>.
 % 
 % 
+% 
+% Create a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Device.html 
+% |*Device*|> representing a two-photon microscope. The fields |description|, 
+% |manufacturer|, |model_number|, |model_name|, and |serial_number| are optional, 
+% but recommended. Then create an <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/OpticalChannel.html 
+% |*OpticalChannel*|> and add both of these to the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/ImagingPlane.html 
+% |*ImagingPlane*|>|*.*|
+
+device = types.core.Device( ...
+    'description', 'My two-photon microscope', ...
+    'manufacturer', 'Loki Labs', ...
+    'model_number', 'ABC-123', ...
+    'model_name', 'Loki 1.0', ...
+    'serial_number', '1234567890');
+
+% Add device to nwb object
+nwb.general_devices.set('Device', device);
 
 optical_channel = types.core.OpticalChannel( ...
     'description', 'description', ...
     'emission_lambda', 500.);
-
-device = types.core.Device();
-nwb.general_devices.set('Device', device);
 
 imaging_plane_name = 'imaging_plane';
 imaging_plane = types.core.ImagingPlane( ...
@@ -88,13 +109,64 @@ nwb.acquisition.set('2pInternal', InternalTwoPhoton);
 
 % using internal data. this data will be stored inside the NWB file
 InternalOnePhoton = types.core.OnePhotonSeries( ...
-    'data', ones(100, 100, 1000), ...
+    'data', ones(100, 100, 1000), ... 
     'imaging_plane', types.untyped.SoftLink(imaging_plane), ...
     'starting_time', 0., ...
     'starting_time_rate', 1.0, ...
     'data_unit', 'normalized amplitude' ...
 );
 nwb.acquisition.set('1pInternal', InternalOnePhoton);
+% Motion Correction (optional)
+% You can also store the result of motion correction using a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/MotionCorrection.html 
+% *MotionCorrection*> object, a container type that can hold one or more <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/CorrectedImageStack.html 
+% *CorrectedImageStack*> objects.
+
+% Create the corrected ImageSeries
+corrected = types.core.ImageSeries( ...
+    'description', 'A motion corrected image stack', ...
+    'data', ones(100, 100, 1000), ...  % 3D data array
+    'data_unit', 'n/a', ...
+    'format', 'raw', ...
+    'starting_time', 0.0, ...
+    'starting_time_rate', 1.0 ...
+);
+
+% Create the xy_translation TimeSeries
+xy_translation = types.core.TimeSeries( ...
+    'description', 'x,y translation in pixels', ...
+    'data', ones(2, 1000), ...  % 2D data array
+    'data_unit', 'pixels', ...
+    'starting_time', 0.0, ...
+    'starting_time_rate', 1.0 ...
+);
+
+% Create the CorrectedImageStack
+corrected_image_stack = types.core.CorrectedImageStack( ...
+    'corrected', corrected, ...
+    'original', types.untyped.SoftLink(InternalOnePhoton), ...  % Ensure `InternalOnePhoton` exists
+    'xy_translation', xy_translation ...
+);
+
+% Create the MotionCorrection object
+motion_correction = types.core.MotionCorrection();
+motion_correction.correctedimagestack.set('CorrectedImageStack', corrected_image_stack);
+%% 
+% The motion corrected data is considered processed data and will be added to 
+% the |processing| field of the |nwb| object using a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/ProcessingModule.html 
+% |*ProcessingModule*|> called "|ophys|". First, create the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/ProcessingModule.html 
+% |*ProcessingModule*|> object and then add the |motion_correction| object to 
+% it, naming it "|MotionCorrection|". 
+
+ophys_module = types.core.ProcessingModule( ...
+    'description', 'Contains optical physiology data');
+ophys_module.nwbdatainterface.set('MotionCorrection', motion_correction);
+%% 
+% Finally, add the "ophys" <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/ProcessingModule.html 
+% |*ProcessingModule*|> to the |nwb| (Note that we can continue adding objects 
+% to the "ophys" <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/ProcessingModule.html 
+% |*ProcessingModule*|> without needing to explicitly update the nwb):
+
+nwb.processing.set('ophys', ophys_module);
 % Plane Segmentation
 % Image segmentation stores the detected regions of interest in the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/TwoPhotonSeries.html 
 % |*TwoPhotonSeries*|> data. <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/ImageSegmentation.html 
@@ -181,53 +253,69 @@ end
 % Adding ROIs to NWB file 
 % Now create an <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/ImageSegmentation.html 
 % |*ImageSegmentation*|> object and put the |plane_segmentation| object inside 
-% of it, naming it <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/PlaneSegmentation.html 
-% |*PlaneSegmentation*|>.
+% of it, naming it "|PlaneSegmentation"|.
 
 img_seg = types.core.ImageSegmentation();
 img_seg.planesegmentation.set('PlaneSegmentation', plane_segmentation);
 %% 
-% Now create a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/ProcessingModule.html 
-% |*ProcessingModule*|> called "ophys" and put our |img_seg| object in it, calling 
-% it "|ImageSegmentation"|, and add the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/ProcessingModule.html 
-% |*ProcessingModule*|> to |nwb.|
+% Add the |img_seg| object to the "ophys" <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/ProcessingModule.html 
+% |*ProcessingModule*|> we created before, naming it "|ImageSegmentation|"|.|
 
-ophys_module = types.core.ProcessingModule( ...
-    'description',  'contains optical physiology data')
 ophys_module.nwbdatainterface.set('ImageSegmentation', img_seg);
-nwb.processing.set('ophys', ophys_module);
 % Storing fluorescence of ROIs over time
-% Now that ROIs are stored, you can store fluorescence dF/F data for these regions 
+% Now that ROIs are stored, you can store fluorescence data for these regions 
 % of interest. This type of data is stored using the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/RoiResponseSeries.html 
-% |*RoiResponseSeries*|> class. You will not need to instantiate this class directly 
-% to create objects of this type, but it is worth noting that this is the class 
-% you will work with after you read data back in.
+% |*RoiResponseSeries*|> class. 
 % 
 % 
 % 
-% First, create a data interface to store this data in
+% To create a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/RoiResponseSeries.html 
+% |*RoiResponseSeries*|> object, we will need to reference a set of rows from 
+% the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/PlaneSegmentation.html 
+% |*PlaneSegmentation*|> table to indicate which ROIs correspond to which rows 
+% of your recorded data matrix. This is done using a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/DynamicTableRegion.html 
+% |*DynamicTableRegion*|>, which is a type of link that allows you to reference 
+% specific rows of a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/DynamicTable.html 
+% |*DynamicTable*|>, such as a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/PlaneSegmentation.html 
+% |*PlaneSegmentation*|> table by row indices.
+% 
+% First, we create a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/DynamicTableRegion.html 
+% |*DynamicTableRegion*|> that references the ROIs of the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/PlaneSegmentation.html 
+% |*PlaneSegmentation*|> table.
 
 roi_table_region = types.hdmf_common.DynamicTableRegion( ...
     'table', types.untyped.ObjectView(plane_segmentation), ...
     'description', 'all_rois', ...
     'data', (0:n_rois-1)');
+%% 
+% Then we create a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/RoiResponseSeries.html 
+% |*RoiResponseSeries*|> object to store fluorescence data for those ROIs.
 
 roi_response_series = types.core.RoiResponseSeries( ...
     'rois', roi_table_region, ...
-    'data', NaN(n_rois, 100), ...
+    'data', NaN(n_rois, 100), ... % [nRoi, nT]
     'data_unit', 'lumens', ...
     'starting_time_rate', 3.0, ...
     'starting_time', 0.0);
+%% 
+% To help data analysis and visualization tools know that this <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/RoiResponseSeries.html 
+% |*RoiResponseSeries*|> object represents fluorescence data, we will store the 
+% <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/RoiResponseSeries.html 
+% |*RoiResponseSeries*|> object inside of a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Fluorescence.html 
+% |*Fluorescence*|> object. Then we add the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Fluorescence.html 
+% |*Fluorescence*|> object into the same <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/ProcessingModule.html 
+% |*ProcessingModule*|> named |"ophys"| that we created earlier.
 
 fluorescence = types.core.Fluorescence();
 fluorescence.roiresponseseries.set('RoiResponseSeries', roi_response_series);
 
 ophys_module.nwbdatainterface.set('Fluorescence', fluorescence);
 %% 
-% Finally, the ophys <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/ProcessingModule.html 
-% |*ProcessingModule*|> is added to the |NwbFile|.
-
-nwb.processing.set('ophys', ophys_module);
+% *Tip*: If you want to store dF/F data instead of fluorescence data, then store 
+% the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/RoiResponseSeries.html 
+% |*RoiResponseSeries*|> object in a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/DfOverF.html 
+% |*DfOverF*|> object, which works the same way as the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Fluorescence.html 
+% |*Fluorescence*|> class.
 %% Writing the NWB file
 
 nwb_file_name = 'ophys_tutorial.nwb';
@@ -297,10 +385,10 @@ imshow(roi_mask)
 %% 
 % *Check out other tutorials that teach advanced NWB topics:*
 %% 
-% * <https://pynwb.readthedocs.io/en/stable/tutorials/general/iterative_write.html#sphx-glr-tutorials-general-iterative-write-py 
+% * <https://pynwb.readthedocs.io/en/stable/tutorials/advanced_io/plot_iterative_write.html#sphx-glr-tutorials-advanced-io-plot-iterative-write-py 
 % Iterative data write>
 % * <https://pynwb.readthedocs.io/en/stable/tutorials/general/extensions.html#sphx-glr-tutorials-general-extensions-py 
 % Extensions>
-% * <https://pynwb.readthedocs.io/en/stable/tutorials/general/advanced_hdf5_io.html#sphx-glr-tutorials-general-advanced-hdf5-io-py 
+% * <https://pynwb.readthedocs.io/en/stable/tutorials/advanced_io/h5dataio.html#sphx-glr-tutorials-advanced-io-h5dataio-py 
 % Advanced HDF5 I/O>
 %%

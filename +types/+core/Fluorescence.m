@@ -1,5 +1,8 @@
 classdef Fluorescence < types.core.NWBDataInterface & types.untyped.GroupClass
-% FLUORESCENCE Fluorescence information about a region of interest (ROI). Storage hierarchy of fluorescence should be the same as for segmentation (ie, same names for ROIs and for image planes).
+% FLUORESCENCE - Fluorescence information about a region of interest (ROI). Storage hierarchy of fluorescence should be the same as for segmentation (ie, same names for ROIs and for image planes).
+%
+% Required Properties:
+%  roiresponseseries
 
 
 % REQUIRED PROPERTIES
@@ -9,7 +12,19 @@ end
 
 methods
     function obj = Fluorescence(varargin)
-        % FLUORESCENCE Constructor for Fluorescence
+        % FLUORESCENCE - Constructor for Fluorescence
+        %
+        % Syntax:
+        %  fluorescence = types.core.FLUORESCENCE() creates a Fluorescence object with unset property values.
+        %
+        %  fluorescence = types.core.FLUORESCENCE(Name, Value) creates a Fluorescence object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - roiresponseseries (RoiResponseSeries) - RoiResponseSeries object(s) containing fluorescence data for a ROI.
+        %
+        % Output Arguments:
+        %  - fluorescence (types.core.Fluorescence) - A Fluorescence object
+        
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.roiresponseseries, ivarargin] = types.util.parseConstrained(obj,'roiresponseseries', 'types.core.RoiResponseSeries', varargin{:});
         varargin(ivarargin) = [];

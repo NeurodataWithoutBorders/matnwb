@@ -18,3 +18,4 @@ workspace/
 !+types/+untyped/
 !+types/+util/
 
+docs/build
