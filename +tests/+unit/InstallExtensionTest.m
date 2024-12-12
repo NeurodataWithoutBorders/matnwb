@@ -30,7 +30,7 @@ classdef InstallExtensionTest < matlab.unittest.TestCase
 
         function testUseInstalledExtension(testCase)
             nwbObject = testCase.initNwbFile();
-            
+
             miniscopeDevice = types.ndx_miniscope.Miniscope(...
                 'deviceType', 'test_device', ...
                 'compression', 'GREY', ...
@@ -43,7 +43,7 @@ classdef InstallExtensionTest < matlab.unittest.TestCase
                 'types.ndx_miniscope.Miniscope')
         end
 
-        function testDisplayExtensionMetadata(testCase)
+        function testGetExtensionMetadata(testCase)
             extensionName = "ndx-miniscope";
             metadata = matnwb.extension.getExtensionInfo(extensionName);
             testCase.verifyClass(metadata, 'struct')
@@ -54,7 +54,25 @@ classdef InstallExtensionTest < matlab.unittest.TestCase
             repositoryUrl = "https://www.unknown-repo.com/anon/my_nwb_extension";
             testCase.verifyError(...
                 @() matnwb.extension.internal.downloadExtensionRepository(repositoryUrl, "", "my_nwb_extension"), ...
-                 'NWB:InstallExtension:UnknownRepository');
+                 'NWB:InstallExtension:UnsupportedRepository');
+        end
+
+        function testBuildRepoDownloadUrl(testCase)
+
+            import matnwb.extension.internal.buildRepoDownloadUrl
+
+            repoUrl = buildRepoDownloadUrl('https://github.com/user/test', 'main');
+            testCase.verifyEqual(repoUrl, 'https://github.com/user/test/archive/refs/heads/main.zip')
+
+            repoUrl = buildRepoDownloadUrl('https://github.com/user/test/', 'main');
+            testCase.verifyEqual(repoUrl, 'https://github.com/user/test/archive/refs/heads/main.zip')
+
+            repoUrl = buildRepoDownloadUrl('https://gitlab.com/user/test', 'main');
+            testCase.verifyEqual(repoUrl, 'https://gitlab.com/user/test/-/archive/main/test-main.zip')
+
+            testCase.verifyError(...
+                @() buildRepoDownloadUrl('https://unsupported.com/user/test', 'main'), ...
+                'NWB:BuildRepoDownloadUrl:UnsupportedRepository')
         end
     end
 

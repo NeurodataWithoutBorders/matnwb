@@ -19,15 +19,10 @@ function repoFolder = downloadZippedRepo(githubUrl, targetFolder)
     targetFolder = fullfile(targetFolder, repoFolderName);
 
     if isfolder(targetFolder)
-        if contains(path, fullfile(targetFolder, filesep))
-            pathList = strsplit(path, pathsep);
-            pathList_ = pathList(startsWith(pathList, fullfile(targetFolder, filesep)));
-            rmpath(strjoin(pathList_, pathsep))
-        end
         try
             rmdir(targetFolder, 's')
         catch
-            error('Could not delete previously downloaded extension which is located here:\n"%s"', targetFolder)
+            error('Could not delete previously downloaded extension which is located at:\n"%s"', targetFolder)
         end
     else
         % pass

@@ -18,20 +18,26 @@ function [wasDownloaded, repoTargetFolder] = downloadExtensionRepository(...
     end
 
     import matnwb.extension.internal.downloadZippedRepo
-    
+    import matnwb.extension.internal.buildRepoDownloadUrl
+
     defaultBranchNames = ["main", "master"];
 
     wasDownloaded = false;
     for i = 1:2
         try
             branchName = defaultBranchNames(i);
-            downloadUrl = buildRepoDownloadUrl(repositoryUrl, branchName, extensionName);
+            downloadUrl = buildRepoDownloadUrl(repositoryUrl, branchName);
             repoTargetFolder = downloadZippedRepo(downloadUrl, repoTargetFolder);
             wasDownloaded = true;
             break
         catch ME
             if strcmp(ME.identifier, 'MATLAB:webservices:HTTP404StatusCodeError')
                 continue
+            elseif strcmp(ME.identifier, 'NWB:BuildRepoDownloadUrl:UnsupportedRepository')
+                error('NWB:InstallExtension:UnsupportedRepository', ...
+                    ['Extension "%s" is located in an unsupported repository ', ...
+                     '/ source location. \nPlease create an issue on MatNWB''s ', ...
+                     'github page'], extensionName)
             else
                 rethrow(ME)
             end
