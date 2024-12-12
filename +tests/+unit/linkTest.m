@@ -100,7 +100,7 @@ function testDirectTypeAssignmentToSoftLinkProperty(testCase)
 end
 
 function testWrongTypeInSoftLinkAssignment(testCase)
-    
+    % Adding an OpticalChannel as device for ElectrodeGroup should fail.
     function createElectrodeGroupWithWrongDeviceType()
         not_a_device = types.core.OpticalChannel('description', 'test_channel');
         electrodeGroup = types.core.ElectrodeGroup(...
@@ -108,5 +108,5 @@ function testWrongTypeInSoftLinkAssignment(testCase)
             'device', not_a_device); %#ok<NASGU>
     end
     testCase.verifyError(@createElectrodeGroupWithWrongDeviceType, ...
-        'NWB:TypeCorrection:InvalidConversion')
+        'NWB:CheckDType:InvalidNeurodataType')
 end
