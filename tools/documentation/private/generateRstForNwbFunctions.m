@@ -5,7 +5,7 @@ function generateRstForNwbFunctions()
     rootDir = misc.getMatnwbDir();
     rootFiles = dir(rootDir);
     rootFileNames = {rootFiles.name};
-    rootWhitelist = {'nwbRead.m', 'NwbFile.m', 'nwbExport.m', 'generateCore.m', 'generateExtension.m', 'nwbClearGenerated.m'};%, 'nwbInstallExtension.m'};
+    rootWhitelist = {'nwbRead.m', 'NwbFile.m', 'nwbExport.m', 'generateCore.m', 'generateExtension.m', 'nwbClearGenerated.m', 'nwbInstallExtension.m'};
     isWhitelisted = ismember(rootFileNames, rootWhitelist);
     
     rootFiles(~isWhitelisted) = [];

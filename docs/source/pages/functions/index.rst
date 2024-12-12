@@ -13,3 +13,4 @@ These are the main functions of the MatNWB API
    generateCore
    generateExtension
    nwbClearGenerated
+   nwbInstallExtension
