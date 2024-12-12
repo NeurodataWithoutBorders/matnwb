@@ -1,0 +1,23 @@
+{{ class_name }}
+{{ class_name_header_underline }}
+
+See also:
+  :nwb-{{ namespace_name }}-type-schema:`Format Specification<{{ lower_class_name }}>` 
+  or :nwb-{{ namespace_name }}-type-schema:`Source Specification<sec-{{ lower_class_name }}-src>` for {{ class_name }}.
+
+.. mat:module:: {{ module_name }}
+.. autoclass:: {{ full_class_name }}
+    :members:
+    :show-inheritance:
+
+
+..
+   Add an anonymous reference target which should be linked to from the 
+   Required Properties section
+
+__
+
+.. tip::
+
+   **\*** If a required property link is not functional, the property may be 
+   defined in a superclass. Please refer to the superclass documentation.

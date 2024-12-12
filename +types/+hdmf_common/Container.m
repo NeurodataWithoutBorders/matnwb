@@ -1,11 +1,21 @@
 classdef Container < types.untyped.MetaClass & types.untyped.GroupClass
-% CONTAINER An abstract data type for a group storing collections of data and metadata. Base type for all data and metadata containers.
+% CONTAINER - An abstract data type for a group storing collections of data and metadata. Base type for all data and metadata containers.
+%
+% Required Properties:
+%  None
 
 
 
 methods
     function obj = Container(varargin)
-        % CONTAINER Constructor for Container
+        % CONTAINER - Constructor for Container
+        %
+        % Syntax:
+        %  container = types.hdmf_common.CONTAINER() creates a Container object with unset property values.
+        %
+        % Output Arguments:
+        %  - container (types.hdmf_common.Container) - A Container object
+        
         obj = obj@types.untyped.MetaClass(varargin{:});
         if strcmp(class(obj), 'types.hdmf_common.Container')
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
