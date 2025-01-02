@@ -20,6 +20,7 @@ Contents
    pages/getting_started/installation_users
    pages/getting_started/important
    pages/getting_started/file_read
+   pages/getting_started/using_extenstions.rst
    pages/tutorials/index
    pages/getting_started/overview_citing
 
@@ -38,4 +39,3 @@ Contents
 
    pages/developer/contributing
    pages/developer/documentation
-
