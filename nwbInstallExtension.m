@@ -2,10 +2,10 @@ function nwbInstallExtension(extensionNames, options)
 % NWBINSTALLEXTENSION - Installs a specified NWB extension.
 %
 % Syntax:
-%   NWBINSTALLEXTENSION(extensionNames) installs Neurodata Without Borders 
-%   (NWB) extensions to extend the functionality of the core NWB schemas. 
-%   extensionNames is a scalar string or a string array, containing the name
-%   of one or more extensions from the Neurodata Extensions Catalog
+%  NWBINSTALLEXTENSION(extensionNames) installs Neurodata Without Borders 
+%  (NWB) extensions to extend the functionality of the core NWB schemas. 
+%  extensionNames is a scalar string or a string array, containing the name
+%  of one or more extensions from the Neurodata Extensions Catalog
 %
 % Valid Extension Names (from https://nwb-extensions.github.io):
 %  - "ndx-miniscope"
