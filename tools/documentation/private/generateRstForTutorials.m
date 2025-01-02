@@ -34,9 +34,6 @@ function generateRstForTutorials()
             youtubeBadge = '';
         end
         rstOutput = replace(rstOutput, '{{youtube_badge_block}}', youtubeBadge);
-        rstOutput = replace(rstOutput, '{{tutorial_title}}', title);
-        rstOutput = replace(rstOutput, '{{tutorial_title_underline}}', repmat('=', 1, numel(title)));
-
         rstOutputFile = fullfile(tutorialRstTargetDir, [name, '.rst']);
         fid = fopen(rstOutputFile, 'wt');
         fwrite(fid, rstOutput);
