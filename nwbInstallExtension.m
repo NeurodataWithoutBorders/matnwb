@@ -1,8 +1,8 @@
 function nwbInstallExtension(extensionNames, options)
-% nwbInstallExtension - Installs a specified NWB extension.
+% NWBINSTALLEXTENSION - Installs a specified NWB extension.
 %
-% Usage:
-%   nwbInstallExtension(extensionNames) installs Neurodata Without Borders 
+% Syntax:
+%   NWBINSTALLEXTENSION(extensionNames) installs Neurodata Without Borders 
 %   (NWB) extensions to extend the functionality of the core NWB schemas. 
 %   extensionNames is a scalar string or a string array, containing the name
 %   of one or more extensions from the Neurodata Extensions Catalog
