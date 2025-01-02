@@ -21,7 +21,7 @@ Assuming we have an extension called ``ndx-example`` which define a
 
 .. important::
     Spaces are not allowed in Neurodata Extensions names, and ``-`` is used instead. 
-    In MATLAB, any occurence of ``-`` is converted to ``_``, and in general, MatNWB 
+    In MATLAB, any occurrence of ``-`` is converted to ``_``, and in general, MatNWB 
     will convert namespace names if they are not valid MATLAB identifiers. See 
     `Variable Names <https://www.mathworks.com/help/matlab/matlab_prog/variable-names.html>`_ 
     for more information. In most cases, the conversion conforms with MATLAB's approach 
