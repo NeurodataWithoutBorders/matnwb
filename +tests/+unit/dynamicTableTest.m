@@ -74,6 +74,32 @@ function testClearDynamicTableV2_1(testCase)
     rehash();
 end
 
+function testToTableForNdVectorData(testCase)
+    import matlab.unittest.fixtures.SuppressedWarningsFixture
+    testCase.applyFixture(...
+        SuppressedWarningsFixture('NWB:DynamicTable:VectorDataAmbiguousSize'))
+    
+    arrayLength = 5;
+    numTableRows = 3;
+    nDimsToTest = [2,3,4];
+
+    for nDims = nDimsToTest
+        vectorDataShape = repmat(arrayLength, 1, nDims-1);
+
+        dynamicTable = types.hdmf_common.DynamicTable( ...
+            'description', 'test table with n-dimensional VectorData', ...
+            'colnames', {'columnA', 'columnB'}, ...
+            'columnA', types.hdmf_common.VectorData('data', randi(10, [vectorDataShape, numTableRows])), ...
+            'columnB', types.hdmf_common.VectorData('data', randi(10, [vectorDataShape, numTableRows])), ...
+            'id', types.hdmf_common.ElementIdentifiers('data', (0:numTableRows-1)'  ) );
+        
+        T = dynamicTable.toTable();
+        testCase.verifyClass(T, 'table');
+        testCase.verifySize(T.columnA, [numTableRows, vectorDataShape])
+    end
+end
+
+
 % Non-test functions
 function dtr_table = createDynamicTableWithTableRegionReferences()
     % Create a dynamic table with two columns, where the data of each column is 
