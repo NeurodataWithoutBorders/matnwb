@@ -2,20 +2,21 @@ function extensionTable = listExtensions(options)
 % listExtensions - List available extensions in the Neurodata Extension Catalog
 %
 % Syntax:
-%  extensionTable = matnwb.extension.listExtensions() returns a table where
-%   each row holds information about a registered extension.
+%  extensionTable = matnwb.extension.LISTEXTENSIONS() returns a table where
+%  each row holds information about a registered extension.
 %
-% Output Arguments:
+% Output Arguments:  
 %  - extensionTable (table) - 
 %    Table of metadata / information for each registered extension. The table 
-%    has the following columns
-%      - name         : The name of the extension.
-%      - version      : The current version of the extension.
-%      - last_updated : A timestamp indicating when the extension was last updated.
-%      - src          : The URL to the source repository or homepage of the extension.
-%      - license      : The license type under which the extension is distributed.
-%      - maintainers  : A cell array or array of strings listing the maintainers.
-%      - readme       : A string containing the README documentation or description.
+%    has the following columns:
+%  
+%    - name - The name of the extension.
+%    - version - The current version of the extension.
+%    - last_updated - A timestamp indicating when the extension was last updated.
+%    - src - The URL to the source repository or homepage of the extension.
+%    - license - The license type under which the extension is distributed.
+%    - maintainers - A cell array or array of strings listing the maintainers.
+%    - readme - A string containing the README documentation or description.
 %
 % See also: matnwb.extension.getExtensionInfo
 
