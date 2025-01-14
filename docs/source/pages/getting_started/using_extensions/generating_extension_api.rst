@@ -12,8 +12,8 @@ path name to the namespace.yaml file):
 
 The class files will be generated under the ``+types/+<extension>`` namespace in
 the matnwb root directory, and can be accessed via standard MATLAB class syntax.
-Assuming we have an extension called ``ndx-example`` which define a 
-``TetrodeSeries`` neurodata type, simply call:
+For example, if we had an extension called ``ndx-example`` which defined a 
+``TetrodeSeries`` neurodata type, we would call:
 
 .. code-block:: MATLAB
 

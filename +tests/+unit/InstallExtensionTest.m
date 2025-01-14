@@ -43,7 +43,7 @@ classdef InstallExtensionTest < matlab.unittest.TestCase
                 'types.ndx_miniscope.Miniscope')
         end
 
-        function testGetExtensionMetadata(testCase)
+        function testGetExtensionInfo(testCase)
             extensionName = "ndx-miniscope";
             metadata = matnwb.extension.getExtensionInfo(extensionName);
             testCase.verifyClass(metadata, 'struct')
