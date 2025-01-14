@@ -18,7 +18,14 @@ function extensionTable = listExtensions(options)
 %    - maintainers - A cell array or array of strings listing the maintainers.
 %    - readme - A string containing the README documentation or description.
 %
-% See also: matnwb.extension.getExtensionInfo
+% Usage:
+%  Example 1 - List and display extensions::
+% 
+%    T = matnwb.extension.listExtensions();
+%    disp(T)
+%
+% See also: 
+%   matnwb.extension.getExtensionInfo
 
     arguments
         % Refresh - Flag to refresh the catalog (Only relevant if the
