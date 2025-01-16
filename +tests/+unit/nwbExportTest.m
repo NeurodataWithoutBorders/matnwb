@@ -79,7 +79,7 @@ classdef nwbExportTest < matlab.unittest.TestCase
             nwbFileName = 'testEmbeddedSpecs.nwb';
 
             % Install extension. 
-            %nwbInstallExtension(["ndx-miniscope", "ndx-photostim"])
+            nwbInstallExtension(["ndx-miniscope", "ndx-photostim"], 'savedir', '.')
             
             % Export a file not using a type from an extension
             nwb = testCase.initNwbFile();
@@ -99,13 +99,26 @@ classdef nwbExportTest < matlab.unittest.TestCase
 
             % Add type for extension.
             testDevice = types.ndx_photostim.Laser('model', 'Spectra-Physics');
-            nwb.general_devices.set('TestDevice', testDevice)
+            nwb.general_devices.set('TestDevice', testDevice);
             
             nwbExport(nwb, nwbFileName);
             embeddedNamespaces = io.spec.listEmbeddedSpecNamespaces(nwbFileName);
 
             % Verify that extension namespace is part of embedded specs.
             testCase.verifyEqual(sort(embeddedNamespaces), {'core', 'hdmf-common', 'ndx-photostim'})
+
+            nwb.general_devices.remove('TestDevice');
+            nwbExport(nwb, nwbFileName);
+            
+            embeddedNamespaces = io.spec.listEmbeddedSpecNamespaces(nwbFileName);
+            testCase.verifyEqual(sort(embeddedNamespaces), {'core', 'hdmf-common'})
+
+            % Test that warning for missing namespace works
+            [fileId, fileCleanupObj] = io.internal.h5.openFile(nwbFileName); %#ok<ASGLU>
+            expectedNamespaces = {'core', 'hdmf-common', 'ndx-photostim'};
+            testCase.verifyWarning( ...
+                @(fid,names) io.spec.validateEmbeddedSpecifications(fileId, expectedNamespaces), ...
+                'NWB:validators:MissingEmbeddedNamespace')
         end
     end
 

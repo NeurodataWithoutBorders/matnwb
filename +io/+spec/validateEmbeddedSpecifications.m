@@ -30,7 +30,7 @@ function checkMissingNamespaces(expectedNamespaceNames, embeddedNamespaceNames)
     missingNamespaces = setdiff(expectedNamespaceNames, embeddedNamespaceNames);
     if ~isempty(missingNamespaces)
         missingNamespacesStr = strjoin("  " + string(missingNamespaces), newline);
-        warning('Namespace is missing:\n%s', missingNamespacesStr)
+        warning('NWB:validators:MissingEmbeddedNamespace', 'Namespace is missing:\n%s', missingNamespacesStr)
     end
 end
 
