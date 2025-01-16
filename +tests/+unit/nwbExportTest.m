@@ -73,6 +73,40 @@ classdef nwbExportTest < matlab.unittest.TestCase
             nwbFilePath = fullfile(testCase.OutputFolder, 'test_part1.nwb');
             testCase.verifyError(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), 'NWB:CustomConstraintUnfulfilled')
         end
+
+        function testEmbeddedSpecs(testCase)
+            
+            nwbFileName = 'testEmbeddedSpecs.nwb';
+
+            % Install extension. 
+            %nwbInstallExtension(["ndx-miniscope", "ndx-photostim"])
+            
+            % Export a file not using a type from an extension
+            nwb = testCase.initNwbFile();
+            
+            nwbExport(nwb, nwbFileName);
+            embeddedNamespaces = io.spec.listEmbeddedSpecNamespaces(nwbFileName);
+            testCase.verifyEmpty(embeddedNamespaces)
+
+            ts = types.core.TimeSeries('data', rand(1,10), 'timestamps', 1:10);
+            nwb.acquisition.set('test', ts)
+
+            nwbExport(nwb, nwbFileName);
+            embeddedNamespaces = io.spec.listEmbeddedSpecNamespaces(nwbFileName);
+            
+            % Verify that extension namespace is not part of embedded specs
+            testCase.verifyEqual(sort(embeddedNamespaces), {'core', 'hdmf-common'})
+
+            % Add type for extension.
+            testDevice = types.ndx_photostim.Laser('model', 'Spectra-Physics');
+            nwb.general_devices.set('TestDevice', testDevice)
+            
+            nwbExport(nwb, nwbFileName);
+            embeddedNamespaces = io.spec.listEmbeddedSpecNamespaces(nwbFileName);
+
+            % Verify that extension namespace is part of embedded specs.
+            testCase.verifyEqual(sort(embeddedNamespaces), {'core', 'hdmf-common', 'ndx-photostim'})
+        end
     end
 
     methods (Static)
