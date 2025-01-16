@@ -118,8 +118,13 @@ classdef NwbFile < types.core.NWBFile
                 varargin{:});
         end
 
-        function nwbTypeNames = listNwbTypes(obj)
-        % listNwbTypes - List all unique NWB types in file
+        function nwbTypeNames = listNwbTypes(obj, options)
+        % listNwbTypes - List all unique NWB (neurodata) types in file
+            arguments
+                obj (1,1) NwbFile
+                options.IncludeParentTypes (1,1) logical = false
+            end
+
             objectMap = searchProperties(containers.Map, obj, '', '');
 
             objects = objectMap.values();
@@ -130,6 +135,15 @@ classdef NwbFile < types.core.NWBFile
             ignore = startsWith(objectClassNames, "types.untyped");
 
             nwbTypeNames = objectClassNames(keep & ~ignore);
+
+            if options.IncludeParentTypes
+                includedNwbTypesWithParents = string.empty;
+                for i = 1:numel(nwbTypeNames)
+                    typeHierarchy = schemes.utility.listNwbTypeHierarchy(nwbTypeNames{i});
+                    includedNwbTypesWithParents = [includedNwbTypesWithParents, typeHierarchy]; %#ok<AGROW>
+                end
+                nwbTypeNames = includedNwbTypesWithParents;
+            end
         end
     end
 
@@ -139,17 +153,13 @@ classdef NwbFile < types.core.NWBFile
             jsonSpecs = schemes.exportJson();
 
             % Resolve the name of all types and parent types that are
-            % included in this file, in order to only include the specs for
-            % namespaces of types that are included in the file.
-            includedNwbTypes = obj.listNwbTypes();
-            includedNwbTypesWithParents = string.empty;
-            for i = 1:numel(includedNwbTypes)
-                typeHierarchy = schemes.utility.listNwbTypeHierarchy(includedNwbTypes{i});
-                includedNwbTypesWithParents = [includedNwbTypesWithParents, typeHierarchy]; %#ok<AGROW>
-            end
+            % included in this file. This will be used to filter the specs
+            % to embed, so that only specs with used neurodata types are
+            % embedded.
+            includedNeurodataTypes = obj.listNwbTypes("IncludeParentTypes", true);
             
             % Get the namespace names
-            namespaceNames = getNamespacesOfTypes(includedNwbTypesWithParents);
+            namespaceNames = getNamespacesForDataTypes(includedNeurodataTypes);
             
             % In the specs, the hyphen (-) is used as a word separator, while in
             % matnwb the underscore (_) is used. Translate names here:
@@ -157,7 +167,13 @@ classdef NwbFile < types.core.NWBFile
             [~, keepIdx] = intersect(allMatlabNamespaceNames, namespaceNames, 'stable');
             jsonSpecs = jsonSpecs(keepIdx);
 
-            io.spec.writeEmbeddedSpecifications(output_file_id, jsonSpecs);
+            io.spec.writeEmbeddedSpecifications(...
+                output_file_id, ...
+                jsonSpecs);
+
+            io.spec.validateEmbeddedSpecifications(...
+                output_file_id, ...
+                strrep(namespaceNames, '_', '-'))
         end
         
         function resolveReferences(obj, fid, references)
@@ -255,7 +271,7 @@ function pathToObjectMap = searchProperties(...
     end
 end
 
-function namespaceNames = getNamespacesOfTypes(nwbTypeNames)
+function namespaceNames = getNamespacesForDataTypes(nwbTypeNames)
 % getNamespacesOfTypes - Get namespace names for a list of nwb types
     arguments
         nwbTypeNames (1,:) string
