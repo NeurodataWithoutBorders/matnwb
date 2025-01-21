@@ -1,0 +1,48 @@
+{
+    "Default": {
+        "layout": "chunked",
+        "target_chunk_size": {
+            "value": 10000000,
+            "unit": "bytes"
+        },
+        "chunk_dimensions": [
+            [null], 
+            [null, "max"], 
+            [null, "max", "max"], 
+            [null, "max", "max", "max"]
+        ],
+        "compression": {
+            "algorithm": "deflate",
+            "level": 3,
+            "parameters": {},
+            "prefilters": ["shuffle"]
+        }
+    },
+    "TimeSeries": {
+        "data": {
+            "chunk_dimensions": [[null, 32], [null, 32, "max"]],
+            "compression": {
+                "algorithm": "deflate",
+                "level": 4
+            }
+        },
+        "timestamps": {
+            "chunk_dimensions": [null]
+        }
+    },
+    "ImageSeries": {
+        "data": {
+            "chunk_dimensions": [[null, "max", "max"], [null, "max", "max", "max"]]
+        }
+    },
+    "ElectricalSeries": {
+        "data": {
+            "chunk_dimensions": [[null, 32], [null, 32, "max"]]
+        }
+    },
+    "SpikeEventSeries": {
+        "data": {
+            "chunk_dimensions": [1000]
+        }
+    }
+}
