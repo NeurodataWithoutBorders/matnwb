@@ -2,34 +2,28 @@ function applyChunkConfiguration(nwbObject, chunkConfiguration, options)
 % applyChunkConfiguration - Apply chunk configuration to datasets of an NWB object
     
     arguments
-        nwbObject (1,1) types.untyped.MetaClass
+        nwbObject (1,1) NwbFile
         chunkConfiguration (1,1) struct = io.config.readDefaultChunkConfiguration() % Todo: class for this...?
         options.OverrideExisting (1,1) logical = false
     end
     
     import io.config.internal.resolveDataTypeChunkConfig
 
-    if isa(nwbObject, 'NwbFile')
-        neurodataObjects = getNeurodataObjectsFromNwbFile(nwbObject);
-    else
-        neurodataObjects = {nwbObject};
-    end
+    neurodataObjects = getNeurodataObjectsFromNwbFile(nwbObject);
 
     for iNeurodataObject = 1:numel(neurodataObjects)
         thisNeurodataObject = neurodataObjects{iNeurodataObject};
         thisNeurodataClassName = class(thisNeurodataObject);
         
-        % Need to keep track of this. A dataset can be defined across
-        % multiple levels of the class hierarchy, the lowest class should
-        % take precedence
+        % A dataset can be defined on multiple levels of the class hierarchy,
+        % so need to keep track of which datasets have been processed.
         processedDatasets = string.empty;
 
         isFinished = false;
         while ~isFinished % Iterate over type and it's ancestor types (superclasses)
 
             datasetNames = schemes.listDatasetsOfNeurodataType( thisNeurodataClassName );
-
-            for thisDatasetName = datasetNames % Iterate over all datasets of a type...
+            for thisDatasetName = datasetNames % Iterate over all datasets of a type
     
                 if ismember(thisDatasetName, processedDatasets)
                     continue
@@ -53,8 +47,8 @@ function applyChunkConfiguration(nwbObject, chunkConfiguration, options)
                         dataPipe = io.config.internal.reconfigureDataPipe(datasetData, datasetConfig);
                     end
                 elseif isa(datasetData, 'types.untyped.DataStub')
-                    % pass
-                    %error('Not implemented for files obtained by nwbRead')
+                    % todo
+                    % error('Not implemented for files obtained by nwbRead')
                 else
                     disp( class(datasetData) )
                 end
