@@ -18,15 +18,33 @@ function datasetNames = listDatasetsOfNeurodataType(typeClassName)
     
     assert(~isempty(typesIdx), 'Expected class name to contain "types"')
     namespaceName = classNameSplit(typesIdx+1);
+    namespaceName = strrep(namespaceName, '_', '-');
     namespace = schemes.loadNamespace(namespaceName, misc.getMatnwbDir);
     
     neurodataTypeName = classNameSplit(typesIdx+2);
     typeScheme = namespace.registry(neurodataTypeName);
     
-    datasetMaps = typeScheme('datasets');
+    switch typeScheme('class_type')
+        case 'groups'
+            if isKey(typeScheme, 'datasets')
+                datasetMaps = typeScheme('datasets');
+        
+                datasetNames = repmat("", size(datasetMaps));
+                for i = 1:numel(datasetMaps)
+                    if isKey(datasetMaps{i}, 'name')
+                        datasetNames(i) = datasetMaps{i}('name');
+                    else
+                        keyboard
+                    end
+                end
+                datasetNames(datasetNames=="") = [];
+            else
+                datasetNames = string.empty;
+            end
 
-    datasetNames = repmat("", size(datasetMaps));
-    for i = 1:numel(datasetMaps)
-        datasetNames(i) = datasetMaps{i}('name');
+        case 'datasets'
+            datasetNames = "data";
+        otherwise
+            error('Unexpected class type')
     end
 end

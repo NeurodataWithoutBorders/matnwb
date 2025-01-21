@@ -1,4 +1,4 @@
-function resolvedOptions = resolveDataTypeChunkConfig(chunkSpecification, nwbObject)
+function resolvedOptions = resolveDataTypeChunkConfig(chunkSpecification, nwbObject, datasetName)
 % resolveDataTypeChunkConfig - Resolve the chunk options for individual datatypes
 %   This function resolves the chunk configuration options for a given NWB object
 %   by traversing the object hierarchy and combining options from the most specific
@@ -14,10 +14,11 @@ function resolvedOptions = resolveDataTypeChunkConfig(chunkSpecification, nwbObj
     arguments
         chunkSpecification (1,1) struct
         nwbObject (1,1) types.untyped.MetaClass
+        datasetName (1,1) string
     end
 
-    % Initialize resolvedOptions with an empty struct
-    resolvedOptions = struct();
+    % Initialize resolvedOptions with default options.
+    resolvedOptions = chunkSpecification.Default;
 
     % Get the NWB object type hierarchy (from most specific to base type)
     typeHierarchy = getTypeHierarchy(nwbObject);
@@ -26,12 +27,16 @@ function resolvedOptions = resolveDataTypeChunkConfig(chunkSpecification, nwbObj
     for i = numel(typeHierarchy):-1:1
         typeName = typeHierarchy{i};
 
-        % Check if the type has a chunkSpecification
+        % Check if the neurodata type has a chunkSpecification
         if isfield(chunkSpecification, typeName)
             typeOptions = chunkSpecification.(typeName);
 
-            % Merge options into resolvedOptions
-            resolvedOptions = mergeStructs(resolvedOptions, typeOptions);
+            % Is datasetName part of typeOptions?
+            if isfield(typeOptions, datasetName)
+                % Merge options into resolvedOptions
+                datasetOptions = typeOptions.(datasetName);
+                resolvedOptions = mergeStructs(resolvedOptions, datasetOptions);
+            end
         end
     end
 end

@@ -23,8 +23,13 @@ function chunkSize = computeChunkSizeFromConfig(A, chunkSpecification)
     numDimensions = numel(dataSize);
 
     % Extract relevant configuration parameters
-    chunkDimensions = chunkSpecification.data.chunk_dimensions;
-    defaultChunkSize = chunkSpecification.chunk_default_size; % in bytes
+    chunkDimensions = chunkSpecification.chunk_dimensions;
+    if iscell(chunkDimensions)
+        numChunkDimensions = cellfun(@numel, chunkDimensions);
+        chunkDimensions = chunkDimensions{numChunkDimensions == numDimensions};
+    end
+
+    defaultChunkSize = chunkSpecification.target_chunk_size.value; % in bytes
     dataByteSize = io.config.internal.getDataByteSize(A);
 
     % Initialize chunk size array

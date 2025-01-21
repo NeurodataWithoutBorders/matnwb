@@ -1,49 +1,90 @@
-function applyChunkConfiguration(nwbObject, chunkConfiguration)
-    arguments
-        nwbObject (1,1) NwbFile
-        chunkConfiguration (1,1) struct = io.config.readDefaultChunkConfiguration()
-    end
-
-    objectMap = nwbObject.searchFor('');
-    objectKeys = objectMap.keys();
-
-    filteredObjectMap = containers.Map();
-    for i = 1:numel(objectKeys)
-        thisObjectKey = objectKeys{i};
-        thisNwbObject = objectMap(thisObjectKey);
-        if startsWith(class(thisNwbObject), "types.") && ~startsWith(class(thisNwbObject), "types.untyped")
-            filteredObjectMap(thisObjectKey) = thisNwbObject;
-        end
-    end
-    clear objectMap
+function applyChunkConfiguration(nwbObject, chunkConfiguration, options)
+% applyChunkConfiguration - Apply chunk configuration to datasets of an NWB object
     
-    objectKeys = filteredObjectMap.keys();
-    for i = 1:numel(objectKeys)
-        thisObjectKey = objectKeys{i};
-        thisNwbObject = filteredObjectMap(thisObjectKey);
+    arguments
+        nwbObject (1,1) types.untyped.MetaClass
+        chunkConfiguration (1,1) struct = io.config.readDefaultChunkConfiguration() % Todo: class for this...?
+        options.OverrideExisting (1,1) logical = false
+    end
+    
+    import io.config.internal.resolveDataTypeChunkConfig
 
-        % Todo: Find dataset properties where it makes sense to do chunking
-        % I.e data, timestamps etc. Can this be determined automatically,
-        % or do we need a lookup?
+    if isa(nwbObject, 'NwbFile')
+        neurodataObjects = getNeurodataObjectsFromNwbFile(nwbObject);
+    else
+        neurodataObjects = {nwbObject};
+    end
 
-        dataTypeChunkOptions = io.config.internal.resolveDataTypeChunkConfig(chunkConfiguration, thisNwbObject);
+    for iNeurodataObject = 1:numel(neurodataObjects)
+        thisNeurodataObject = neurodataObjects{iNeurodataObject};
+        thisNeurodataClassName = class(thisNeurodataObject);
+        
+        % Need to keep track of this. A dataset can be defined across
+        % multiple levels of the class hierarchy, the lowest class should
+        % take precedence
+        processedDatasets = string.empty;
 
-        if isprop(thisNwbObject, 'data')
-            if isnumeric(thisNwbObject.data)
-                % Create a datapipe object for the property value.
-                dataByteSize = io.config.internal.getDataByteSize(thisNwbObject.data);
-                if dataByteSize > dataTypeChunkOptions.chunk_default_size
-                    chunkSize = io.config.internal.computeChunkSizeFromConfig(thisNwbObject.data, dataTypeChunkOptions);
-                    maxSize = size(thisNwbObject.data);
+        isFinished = false;
+        while ~isFinished % Iterate over type and it's ancestor types (superclasses)
 
-                    dataPipe = types.untyped.DataPipe( ...
-                        'data', thisNwbObject.data, ...
-                        'maxSize', maxSize, ...
-                        'chunkSize', chunkSize, ...
-                        'compressionLevel', dataTypeChunkOptions.chunk_compression_args);
-                    thisNwbObject.data = dataPipe;
+            datasetNames = schemes.listDatasetsOfNeurodataType( thisNeurodataClassName );
+
+            for thisDatasetName = datasetNames % Iterate over all datasets of a type...
+    
+                if ismember(thisDatasetName, processedDatasets)
+                    continue
                 end
+
+                datasetConfig = resolveDataTypeChunkConfig(...
+                    chunkConfiguration, ...
+                    thisNeurodataObject, ...
+                    thisDatasetName);
+    
+                datasetData = thisNeurodataObject.(thisDatasetName);
+        
+                if isnumeric(datasetData)
+                    % Create a datapipe object for a numeric dataset value.
+                    dataByteSize = io.config.internal.getDataByteSize(datasetData);
+                    if dataByteSize > datasetConfig.target_chunk_size.value
+                        dataPipe = io.config.internal.configureDataPipeFromData(datasetData, datasetConfig);
+                    end
+                elseif isa(datasetData, 'types.untyped.DataPipe')
+                    if options.OverrideExisting
+                        dataPipe = io.config.internal.reconfigureDataPipe(datasetData, datasetConfig);
+                    end
+                elseif isa(datasetData, 'types.untyped.DataStub')
+                    % pass
+                    %error('Not implemented for files obtained by nwbRead')
+                else
+                    disp( class(datasetData) )
+                end
+    
+                if exist('dataPipe', 'var')
+                    thisNeurodataObject.(thisDatasetName) = dataPipe;
+                    processedDatasets = [processedDatasets, thisDatasetName]; %#ok<AGROW>
+                    clear dataPipe
+                end
+            end
+
+            parentType = matnwb.common.getParentType(thisNeurodataClassName);
+
+            if isempty(parentType)
+                isFinished = true;
+            else
+                thisNeurodataClassName = parentType;
             end
         end
     end
+end
+
+function neurodataObjects = getNeurodataObjectsFromNwbFile(nwbObject)
+% getNeurodataObjectsFromNwbObject - Return all neurodata objects in a NwbFile object
+    
+    objectMap = nwbObject.searchFor('types.');
+
+    neurodataObjects = objectMap.values();
+    neurodataClassNames = cellfun(@(c) class(c), neurodataObjects, 'uni', 0); 
+
+    toIgnore = startsWith(neurodataClassNames, "types.untyped");
+    neurodataObjects(toIgnore) = [];
 end
