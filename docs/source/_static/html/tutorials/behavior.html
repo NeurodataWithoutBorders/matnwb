@@ -1,0 +1,379 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge,IE=9,chrome=1"><meta name="generator" content="MATLAB 2023b"><title>Behavior Data</title><style type="text/css">.rtcContent { padding: 30px; } .S0 { margin: 3px 10px 5px 4px; padding: 0px; line-height: 28.8px; min-height: 0px; white-space: pre-wrap; color: rgb(192, 76, 11); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 24px; font-weight: 400; text-align: left;  }
+.S1 { margin: 2px 10px 9px 4px; padding: 0px; line-height: 21px; min-height: 0px; white-space: pre-wrap; color: rgb(33, 33, 33); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 14px; font-weight: 400; text-align: left;  }
+.S2 { margin: 20px 10px 5px 4px; padding: 0px; line-height: 20px; min-height: 0px; white-space: pre-wrap; color: rgb(33, 33, 33); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 20px; font-weight: 700; text-align: left;  }
+.CodeBlock { background-color: #F5F5F5; margin: 10px 0 10px 0; }
+.S3 { border-left: 1px solid rgb(217, 217, 217); border-right: 1px solid rgb(217, 217, 217); border-top: 1px solid rgb(217, 217, 217); border-bottom: 0px none rgb(33, 33, 33); border-radius: 4px 4px 0px 0px; padding: 6px 45px 0px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }
+.S4 { border-left: 1px solid rgb(217, 217, 217); border-right: 1px solid rgb(217, 217, 217); border-top: 0px none rgb(33, 33, 33); border-bottom: 0px none rgb(33, 33, 33); border-radius: 0px; padding: 0px 45px 0px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }
+.S5 { border-left: 1px solid rgb(217, 217, 217); border-right: 1px solid rgb(217, 217, 217); border-top: 0px none rgb(33, 33, 33); border-bottom: 1px solid rgb(217, 217, 217); border-radius: 0px; padding: 0px 45px 4px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }
+.S6 { color: rgb(33, 33, 33); padding: 10px 0px 6px 17px; background: rgb(255, 255, 255) none repeat scroll 0% 0% / auto padding-box border-box; font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px; overflow-x: hidden; line-height: 17.234px;  }
+/* Styling that is common to warnings and errors is in diagnosticOutput.css */.embeddedOutputsErrorElement {    min-height: 18px;    max-height: 550px;}
+.embeddedOutputsErrorElement .diagnosticMessage-errorType {    overflow: auto;}
+.embeddedOutputsErrorElement.inlineElement {}
+.embeddedOutputsErrorElement.rightPaneElement {}
+/* Styling that is common to warnings and errors is in diagnosticOutput.css */.embeddedOutputsWarningElement {    min-height: 18px;    max-height: 550px;}
+.embeddedOutputsWarningElement .diagnosticMessage-warningType {    overflow: auto;}
+.embeddedOutputsWarningElement.inlineElement {}
+.embeddedOutputsWarningElement.rightPaneElement {}
+/* Copyright 2015-2023 The MathWorks, Inc. *//* In this file, styles are not scoped to rtcContainer since they could be in the Dojo Tooltip */.diagnosticMessage-wrapper {    font-family: Menlo, Monaco, Consolas, "Courier New", monospace;    font-size: 12px;}
+.diagnosticMessage-wrapper.diagnosticMessage-warningType {    /*This fallback value will be used for appdesigner warnings*/    color: var(--rtc-warning-output-color, var(--mw-color-matlabWarning));}
+.diagnosticMessage-wrapper.diagnosticMessage-warningType a {    /*This fallback value will be used for appdesigner warnings*/    color: var(--rtc-warning-output-color, var(--mw-color-matlabWarning));    text-decoration: underline;}
+.rtcThemeDefaultOverride .diagnosticMessage-wrapper.diagnosticMessage-warningType,.rtcThemeDefaultOverride .diagnosticMessage-wrapper.diagnosticMessage-warningType a {    color: var(--mw-color-matlabWarning) !important;}
+.diagnosticMessage-wrapper.diagnosticMessage-errorType {    /*This fallback value will be used in appdesigner error tooltip text*/    color: var(--rtc-error-output-color, var(--mw-color-matlabErrors));}
+.diagnosticMessage-wrapper.diagnosticMessage-errorType a {    /*This fallback value will be used in appdesigner error tooltip text*/    color: var(--rtc-error-output-color, var(--mw-color-matlabErrors));    text-decoration: underline;}
+.rtcThemeDefaultOverride .diagnosticMessage-wrapper.diagnosticMessage-errorType,.rtcThemeDefaultOverride .diagnosticMessage-wrapper.diagnosticMessage-errorType a {    color: var(--mw-color-matlabErrors) !important;}
+.diagnosticMessage-wrapper .diagnosticMessage-messagePart,.diagnosticMessage-wrapper .diagnosticMessage-causePart {    white-space: pre-wrap;}
+.diagnosticMessage-wrapper .diagnosticMessage-stackPart {    white-space: pre;}
+.embeddedOutputsTextElement,.embeddedOutputsVariableStringElement {    white-space: pre;    word-wrap:  initial;    min-height: 18px;    max-height: 550px;}
+.embeddedOutputsTextElement .textElement,.embeddedOutputsVariableStringElement .textElement {    overflow: auto;}
+.textElement,.rtcDataTipElement .textElement {    padding-top: 2px;}
+.embeddedOutputsTextElement.inlineElement,.embeddedOutputsVariableStringElement.inlineElement {}
+.inlineElement .textElement {}
+.embeddedOutputsTextElement.rightPaneElement,.embeddedOutputsVariableStringElement.rightPaneElement {    min-height: 16px;}
+.rightPaneElement .textElement {    padding-top: 2px;    padding-left: 9px;}
+.S7 { border-left: 1px solid rgb(217, 217, 217); border-right: 1px solid rgb(217, 217, 217); border-top: 1px solid rgb(217, 217, 217); border-bottom: 1px solid rgb(217, 217, 217); border-radius: 4px; padding: 6px 45px 4px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }
+.S8 { margin: 10px 10px 9px 4px; padding: 0px; line-height: 21px; min-height: 0px; white-space: pre-wrap; color: rgb(33, 33, 33); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 14px; font-weight: 400; text-align: left;  }
+.S9 { border-left: 1px solid rgb(217, 217, 217); border-right: 1px solid rgb(217, 217, 217); border-top: 0px none rgb(33, 33, 33); border-bottom: 1px solid rgb(217, 217, 217); border-radius: 0px 0px 4px 4px; padding: 0px 45px 4px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }
+.S10 { margin: 15px 10px 5px 4px; padding: 0px; line-height: 18px; min-height: 0px; white-space: pre-wrap; color: rgb(33, 33, 33); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 17px; font-weight: 700; text-align: left;  }</style></head><body><div class = rtcContent><h1  class = 'S0'><span>Behavior Data</span></h1><div  class = 'S1'><span>This tutorial will guide you in writing behavioral data to NWB.</span></div><h2  class = 'S2'><span>Creating an NWB File</span></h2><div  class = 'S1'><span>Create an NWBFile object with the required fields (</span><span style=' font-family: monospace;'>session_description</span><span>, </span><span style=' font-family: monospace;'>identifier</span><span>, and </span><span style=' font-family: monospace;'>session_start_time</span><span>) and additional metadata.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S3'><span style="white-space: pre"><span >nwb = NwbFile( </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'session_description'</span><span >, </span><span style="color: #a709f5;">'mouse in open exploration'</span><span >,</span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'identifier'</span><span >, </span><span style="color: #a709f5;">'Mouse5_Day3'</span><span >, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'session_start_time'</span><span >, datetime(2018, 4, 25, 2, 30, 3, </span><span style="color: #a709f5;">'TimeZone'</span><span >, </span><span style="color: #a709f5;">'local'</span><span >), </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'general_experimenter'</span><span >, </span><span style="color: #a709f5;">'My Name'</span><span >, </span><span style="color: #0e00ff;">...</span><span style="color: #008013;"> % optional</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'general_session_id'</span><span >, </span><span style="color: #a709f5;">'session_1234'</span><span >, </span><span style="color: #0e00ff;">...</span><span style="color: #008013;"> % optional</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'general_institution'</span><span >, </span><span style="color: #a709f5;">'University of My Institution'</span><span >, </span><span style="color: #0e00ff;">...</span><span style="color: #008013;"> % optional</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'general_related_publications'</span><span >, </span><span style="color: #a709f5;">'DOI:10.1016/j.neuron.2016.12.011'</span><span >); </span><span style="color: #008013;">% optional</span></span></div></div><div class="inlineWrapper outputs"><div  class = 'S5'><span style="white-space: pre"><span >nwb</span></span></div><div  class = 'S6'><div class="inlineElement eoOutputWrapper disableDefaultGestureHandling embeddedOutputsVariableStringElement scrollableOutput" uid="4C4B749F" prevent-scroll="true" data-testid="output_0" tabindex="-1" style="width: 1137px; white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;"><div class="textElement eoOutputContent scrollArea" data-previous-available-width="1100" data-previous-scroll-height="832" data-hashorizontaloverflow="false" style="max-height: 261px; white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;" tabindex="-1"><div style="white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;"><span class="variableNameElement" style="white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;">nwb = </span></div><div style="white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;">  NwbFile with properties:
+
+                                             nwb_version: '2.8.0'
+                                        file_create_date: []
+                                              identifier: 'Mouse5_Day3'
+                                     session_description: 'mouse in open exploration'
+                                      session_start_time: {[2018-04-25T02:30:03.000000+02:00]}
+                               timestamps_reference_time: []
+                                             acquisition: [0×1 types.untyped.Set]
+                                                analysis: [0×1 types.untyped.Set]
+                                                 general: [0×1 types.untyped.Set]
+                                 general_data_collection: ''
+                                         general_devices: [0×1 types.untyped.Set]
+                          general_experiment_description: ''
+                                    general_experimenter: 'My Name'
+                             general_extracellular_ephys: [0×1 types.untyped.Set]
+                  general_extracellular_ephys_electrodes: []
+                                     general_institution: 'University of My Institution'
+                             general_intracellular_ephys: [0×1 types.untyped.Set]
+     general_intracellular_ephys_experimental_conditions: []
+                   general_intracellular_ephys_filtering: ''
+    general_intracellular_ephys_intracellular_recordings: []
+                 general_intracellular_ephys_repetitions: []
+       general_intracellular_ephys_sequential_recordings: []
+     general_intracellular_ephys_simultaneous_recordings: []
+                 general_intracellular_ephys_sweep_table: []
+                                        general_keywords: ''
+                                             general_lab: ''
+                                           general_notes: ''
+                                    general_optogenetics: [0×1 types.untyped.Set]
+                                  general_optophysiology: [0×1 types.untyped.Set]
+                                    general_pharmacology: ''
+                                        general_protocol: ''
+                            general_related_publications: 'DOI:10.1016/j.neuron.2016.12.011'
+                                      general_session_id: 'session_1234'
+                                          general_slices: ''
+                                   general_source_script: ''
+                         general_source_script_file_name: ''
+                                        general_stimulus: ''
+                                         general_subject: []
+                                         general_surgery: ''
+                                           general_virus: ''
+                                general_was_generated_by: ''
+                                               intervals: [0×1 types.untyped.Set]
+                                        intervals_epochs: []
+                                 intervals_invalid_times: []
+                                        intervals_trials: []
+                                              processing: [0×1 types.untyped.Set]
+                                                 scratch: [0×1 types.untyped.Set]
+                                   stimulus_presentation: [0×1 types.untyped.Set]
+                                      stimulus_templates: [0×1 types.untyped.Set]
+                                                   units: []
+
+Warning: The following required properties are missing for instance for type "NwbFile":
+    timestamps_reference_time </div></div></div></div></div></div><h2  class = 'S2'><span>SpatialSeries: Storing continuous spatial data</span></h2><div  class = 'S1'><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html"><span style=' font-family: monospace;'>SpatialSeries</span></a><span> is a subclass of </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html"><span style=' font-family: monospace;'>TimeSeries</span></a><span> that represents data in space, such as the spatial direction e.g., of gaze or travel or position of an animal over time.</span></div><div  class = 'S1'><span>Create data that corresponds to x, y position over time.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S7'><span style="white-space: pre"><span >position_data = [linspace(0, 10, 50); linspace(0, 8, 50)]; </span><span style="color: #008013;">% 2 x nT array</span></span></div></div></div><div  class = 'S8'><span>In </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html"><span style=' font-family: monospace;'>SpatialSeries</span></a><span> data, the first dimension is always time (in seconds), the second dimension represents the x, y position. However, as described in the </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/tutorials/dimensionMapNoDataPipes.html"><span>dimensionMapNoDataPipes</span></a><span> tutorial, when a MATLAB array is exported to HDF5, the array is transposed. Therefore, in order to correctly export the data, in MATLAB the last dimension of an array should be time. </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html"><span style=' font-family: monospace;'>SpatialSeries</span></a><span> data should be stored as one continuous stream as it is acquired, not by trials as is often reshaped for analysis. Data can be trial-aligned on-the-fly using the trials table. See the trials tutorial for further information.</span></div><div  class = 'S1'><span>For position data </span><span style=' font-family: monospace;'>reference_frame</span><span> indicates the zero-position, e.g. the 0,0 point might be the bottom-left corner of an enclosure, as viewed from the tracking camera.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S3'><span style="white-space: pre"><span >timestamps = linspace(0, 50, 50)/ 200;</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >position_spatial_series = types.core.SpatialSeries( </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'description'</span><span >, </span><span style="color: #a709f5;">'Postion (x, y) in an open field.'</span><span >, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data'</span><span >, position_data, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'timestamps'</span><span >, timestamps, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'reference_frame'</span><span >, </span><span style="color: #a709f5;">'(0,0) is the bottom left corner.' </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper outputs"><div  class = 'S5'><span style="white-space: pre"><span >)</span></span></div><div  class = 'S6'><div class="inlineElement eoOutputWrapper disableDefaultGestureHandling embeddedOutputsVariableStringElement scrollableOutput" uid="3B55E8C0" prevent-scroll="true" data-testid="output_1" tabindex="-1" style="width: 1137px; white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;"><div class="textElement eoOutputContent scrollArea" data-previous-available-width="1100" data-previous-scroll-height="300" data-hashorizontaloverflow="true" style="max-height: 311px; white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;" tabindex="-1"><div style="white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;"><span class="variableNameElement" style="white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;">position_spatial_series = </span></div><div style="white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;">  SpatialSeries with properties:
+
+        reference_frame: '(0,0) is the bottom left corner.'
+     starting_time_unit: 'seconds'
+    timestamps_interval: 1
+        timestamps_unit: 'seconds'
+                   data: [2×50 double]
+               comments: 'no comments'
+                control: []
+    control_description: ''
+        data_continuity: ''
+        data_conversion: 1
+            data_offset: 0
+        data_resolution: -1
+              data_unit: 'meters'
+            description: 'Postion (x, y) in an open field.'
+          starting_time: []
+     starting_time_rate: []
+             timestamps: [0 0.0051 0.0102 0.0153 0.0204 0.0255 0.0306 0.0357 0.0408 0.0459 0.0510 0.0561 0.0612 0.0663 0.0714 0.0765 0.0816 0.0867 0.0918 0.0969 0.1020 0.1071 0.1122 0.1173 0.1224 0.1276 0.1327 0.1378 0.1429 0.1480 0.1531 … ] (1×50 double)
+</div></div></div></div></div></div><h2  class = 'S2'><span>Position: Storing position measured over time</span></h2><div  class = 'S1'><span>To help data analysis and visualization tools know that this </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html"><span style=' font-family: monospace;'>SpatialSeries</span></a><span> object represents the position of the subject, store the </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html"><span style=' font-family: monospace;'>SpatialSeries</span></a><span> object inside a </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Position.html"><span style=' font-family: monospace;'>Position</span></a><span> object, which can hold one or more </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html"><span style=' font-family: monospace;'>SpatialSeries</span></a><span> objects.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S3'><span style="white-space: pre"><span >position = types.core.Position();</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >position.spatialseries.set(</span><span style="color: #a709f5;">'SpatialSeries'</span><span >, position_spatial_series);</span></span></div></div></div><h2  class = 'S2'><span>Create a Behavior Processing Module</span></h2><div  class = 'S1'><span>Create a processing module called "behavior" for storing behavioral data in the NWBFile, then add the </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Position.html"><span style=' font-family: monospace;'>Position</span></a><span> object to the processing module.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S3'><span style="white-space: pre"><span >behavior_processing_module = types.core.ProcessingModule(</span><span style="color: #a709f5;">'description'</span><span >, </span><span style="color: #a709f5;">'stores behavioral data.'</span><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >behavior_processing_module.nwbdatainterface.set(</span><span style="color: #a709f5;">"Position"</span><span >, position);</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >nwb.processing.set(</span><span style="color: #a709f5;">"behavior"</span><span >, behavior_processing_module);</span></span></div></div></div><h2  class = 'S2'><span>CompassDirection: Storing view angle measured over time</span></h2><div  class = 'S1'><span>Analogous to how position can be stored, we can create a </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html"><span style=' font-family: monospace;'>SpatialSeries</span></a><span> object for representing the view angle of the subject.</span></div><div  class = 'S1'><span>For direction data </span><span style=' font-family: monospace;'>reference_frame</span><span> indicates the zero direction, for instance in this case "straight ahead" is 0 radians.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S3'><span style="white-space: pre"><span >view_angle_data = linspace(0, 4, 50);</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >direction_spatial_series = types.core.SpatialSeries( </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'description'</span><span >, </span><span style="color: #a709f5;">'View angle of the subject measured in radians.'</span><span >, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data'</span><span >, view_angle_data, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'timestamps'</span><span >, timestamps, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'reference_frame'</span><span >, </span><span style="color: #a709f5;">'straight ahead'</span><span >, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data_unit'</span><span >, </span><span style="color: #a709f5;">'radians' </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >direction = types.core.CompassDirection();</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >direction.spatialseries.set(</span><span style="color: #a709f5;">'spatial_series'</span><span >, direction_spatial_series);</span></span></div></div></div><div  class = 'S8'><span>We can add a </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/CompassDirection.html"><span style=' font-family: monospace;'>CompassDirection</span></a><span> object to the behavior processing module the same way we have added the position data.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S3'><span style="white-space: pre"><span style="color: #008013;">%behavior_processing_module = types.core.ProcessingModule("stores behavioral data.");  % if you have not already created it</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >behavior_processing_module.nwbdatainterface.set(</span><span style="color: #a709f5;">'CompassDirection'</span><span >, direction);</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span style="color: #008013;">%nwb.processing.set('behavior', behavior_processing_module); % if you have not already added it</span></span></div></div></div><h2  class = 'S2'><span>BehaviorTimeSeries: Storing continuous behavior data</span></h2><div  class = 'S1'><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/BehavioralTimeSeries.html"><span style=' font-family: monospace;'>BehavioralTimeSeries</span></a><span> is an interface for storing continuous behavior data, such as the speed of a subject.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S3'><span style="white-space: pre"><span >speed_data = linspace(0, 0.4, 50);</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >speed_time_series = types.core.TimeSeries( </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data'</span><span >, speed_data, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'starting_time'</span><span >, 1.0, </span><span style="color: #0e00ff;">...</span><span style="color: #008013;"> % NB: Important to set starting_time when using starting_time_rate</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'starting_time_rate'</span><span >, 10.0, </span><span style="color: #0e00ff;">...</span><span style="color: #008013;"> % Hz</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'description'</span><span >, </span><span style="color: #a709f5;">'he speed of the subject measured over time.'</span><span >, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data_unit'</span><span >, </span><span style="color: #a709f5;">'m/s' </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >behavioral_time_series = types.core.BehavioralTimeSeries();</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >behavioral_time_series.timeseries.set(</span><span style="color: #a709f5;">'speed'</span><span >, speed_time_series);</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span style="color: #008013;">%behavior_processing_module = types.core.ProcessingModule("stores behavioral data.");  % if you have not already created it</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >behavior_processing_module.nwbdatainterface.set(</span><span style="color: #a709f5;">'BehavioralTimeSeries'</span><span >, behavioral_time_series);</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span style="color: #008013;">%nwb.processing.set('behavior', behavior_processing_module); % if you have not already added it</span></span></div></div></div><h2  class = 'S2'><span>BehavioralEvents: Storing behavioral events</span></h2><div  class = 'S1'><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/BehavioralEvents.html"><span style=' font-family: monospace;'>BehavioralEvents</span></a><span> is an interface for storing behavioral events. We can use it for storing the timing and amount of rewards (e.g. water amount) or lever press times.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S3'><span style="white-space: pre"><span >reward_amount = [1.0, 1.5, 1.0, 1.5];</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >event_timestamps = [1.0, 2.0, 5.0, 6.0];</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >time_series = types.core.TimeSeries( </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data'</span><span >, reward_amount, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'timestamps'</span><span >, event_timestamps, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'description'</span><span >, </span><span style="color: #a709f5;">'The water amount the subject received as a reward.'</span><span >, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data_unit'</span><span >, </span><span style="color: #a709f5;">'ml' </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >behavioral_events = types.core.BehavioralEvents();</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >behavioral_events.timeseries.set(</span><span style="color: #a709f5;">'lever_presses'</span><span >, time_series);</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span style="color: #008013;">%behavior_processing_module = types.core.ProcessingModule("stores behavioral data.");  % if you have not already created it</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >behavior_processing_module.nwbdatainterface.set(</span><span style="color: #a709f5;">'BehavioralEvents'</span><span >, behavioral_events);</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span style="color: #008013;">%nwb.processing.set('behavior', behavior_processing_module); % if you have not already added it</span></span></div></div></div><div  class = 'S8'><span>Storing only the timestamps of the events is possible with the ndx-events NWB extension. You can also add labels associated with the events with this extension. You can find information about installation and example usage </span><a href = "https://github.com/nwb-extensions/ndx-events-record"><span>here</span></a><span>.</span></div><h2  class = 'S2'><span>BehavioralEpochs: Storing intervals of behavior data</span></h2><div  class = 'S1'><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/BehavioralEpochs.html"><span style=' font-family: monospace;'>BehavioralEpochs</span></a><span> is for storing intervals of behavior data. </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/BehavioralEpochs.html"><span style=' font-family: monospace;'>BehavioralEpochs</span></a><span> uses </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IntervalSeries.html"><span style=' font-family: monospace;'>IntervalSeries</span></a><span> to represent the time intervals. Create an </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IntervalSeries.html"><span style=' font-family: monospace;'>IntervalSeries</span></a><span> object that represents the time intervals when the animal was running. IntervalSeries uses 1 to indicate the beginning of an interval and -1 to indicate the end.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S3'><span style="white-space: pre"><span >run_intervals = types.core.IntervalSeries( </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'description'</span><span >, </span><span style="color: #a709f5;">'Intervals when the animal was running.'</span><span >, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data'</span><span >, [1, -1, 1, -1, 1, -1], </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'timestamps'</span><span >, [0.5, 1.5, 3.5, 4.0, 7.0, 7.3] </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >behavioral_epochs = types.core.BehavioralEpochs();</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >behavioral_epochs.intervalseries.set(</span><span style="color: #a709f5;">'running'</span><span >, run_intervals);</span></span></div></div></div><div  class = 'S8'><span>You can add more than one </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IntervalSeries.html"><span style=' font-family: monospace;'>IntervalSeries</span></a><span> to a </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/BehavioralEpochs.html"><span style=' font-family: monospace;'>BehavioralEpochs</span></a><span> object.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S3'><span style="white-space: pre"><span >sleep_intervals = types.core.IntervalSeries( </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'description'</span><span >, </span><span style="color: #a709f5;">'Intervals when the animal was sleeping'</span><span >, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data'</span><span >, [1, -1, 1, -1], </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'timestamps'</span><span >, [15.0, 30.0, 60.0, 95.0] </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >behavioral_epochs.intervalseries.set(</span><span style="color: #a709f5;">'sleeping'</span><span >, sleep_intervals);</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span style="color: #008013;">% behavior_processing_module = types.core.ProcessingModule("stores behavioral data.");</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span style="color: #008013;">% behavior_processing_module.nwbdatainterface.set('BehavioralEvents', behavioral_events);</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span style="color: #008013;">% nwb.processing.set('behavior', behavior_processing_module);</span></span></div></div></div><h3  class = 'S10'><span>Another approach: TimeIntervals</span></h3><div  class = 'S1'><span>Using </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeIntervals.html"><span style=' font-family: monospace;'>TimeIntervals</span></a><span> to represent time intervals is often preferred over </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/BehavioralEpochs.html"><span style=' font-family: monospace;'>BehavioralEpochs</span></a><span> and </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IntervalSeries.html"><span style=' font-family: monospace;'>IntervalSeries</span></a><span>. </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeIntervals.html"><span style=' font-family: monospace;'>TimeIntervals</span></a><span> is a subclass of </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html"><span style=' font-family: monospace;'>DynamicTable</span></a><span>, which offers flexibility for tabular data by allowing the addition of optional columns which are not defined in the standard DynamicTable class.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S3'><span style="white-space: pre"><span >sleep_intervals = types.core.TimeIntervals( </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'description'</span><span >, </span><span style="color: #a709f5;">'Intervals when the animal was sleeping.'</span><span >, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'colnames'</span><span >, {</span><span style="color: #a709f5;">'start_time'</span><span >, </span><span style="color: #a709f5;">'stop_time'</span><span >, </span><span style="color: #a709f5;">'stage'</span><span >} </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >sleep_intervals.addRow(</span><span style="color: #a709f5;">'start_time'</span><span >, 0.3, </span><span style="color: #a709f5;">'stop_time'</span><span >, 0.35, </span><span style="color: #a709f5;">'stage'</span><span >, 1);</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >sleep_intervals.addRow(</span><span style="color: #a709f5;">'start_time'</span><span >, 0.7, </span><span style="color: #a709f5;">'stop_time'</span><span >, 0.9, </span><span style="color: #a709f5;">'stage'</span><span >, 2);</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >sleep_intervals.addRow(</span><span style="color: #a709f5;">'start_time'</span><span >, 1.3, </span><span style="color: #a709f5;">'stop_time'</span><span >, 3.0, </span><span style="color: #a709f5;">'stage'</span><span >, 3);</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >nwb.intervals.set(</span><span style="color: #a709f5;">'sleep_intervals'</span><span >, sleep_intervals);</span></span></div></div></div><h2  class = 'S2'><span>EyeTracking: Storing continuous eye-tracking data of gaze direction</span></h2><div  class = 'S1'><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/EyeTracking.html"><span style=' font-family: monospace;'>EyeTracking</span></a><span> is for storing eye-tracking data which represents direction of gaze as measured by an eye tracking algorithm. An </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/EyeTracking.html"><span style=' font-family: monospace;'>EyeTracking</span></a><span> object holds one or more </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html"><span style=' font-family: monospace;'>SpatialSeries</span></a><span> objects that represent the gaze direction over time extracted from a video.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S3'><span style="white-space: pre"><span >eye_position_data = [linspace(-20, 30, 50); linspace(30, -20, 50)];</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >right_eye_position = types.core.SpatialSeries( </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'description'</span><span >, </span><span style="color: #a709f5;">'The position of the right eye measured in degrees.'</span><span >, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data'</span><span >, eye_position_data, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'starting_time'</span><span >, 1.0, </span><span style="color: #0e00ff;">...</span><span style="color: #008013;"> % NB: Important to set starting_time when using starting_time_rate</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'starting_time_rate'</span><span >, 50.0, </span><span style="color: #0e00ff;">...</span><span style="color: #008013;"> % Hz</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'reference_frame'</span><span >, </span><span style="color: #a709f5;">'(0,0) is middle'</span><span >, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data_unit'</span><span >, </span><span style="color: #a709f5;">'degrees' </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >left_eye_position = types.core.SpatialSeries( </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'description'</span><span >, </span><span style="color: #a709f5;">'The position of the right eye measured in degrees.'</span><span >, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data'</span><span >, eye_position_data, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'starting_time'</span><span >, 1.0, </span><span style="color: #0e00ff;">...</span><span style="color: #008013;"> % NB: Important to set starting_time when using starting_time_rate</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'starting_time_rate'</span><span >, 50.0, </span><span style="color: #0e00ff;">...</span><span style="color: #008013;"> % Hz</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'reference_frame'</span><span >, </span><span style="color: #a709f5;">'(0,0) is middle'</span><span >, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data_unit'</span><span >, </span><span style="color: #a709f5;">'degrees' </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >eye_tracking = types.core.EyeTracking();</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >eye_tracking.spatialseries.set(</span><span style="color: #a709f5;">'right_eye_position'</span><span >, right_eye_position);</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >eye_tracking.spatialseries.set(</span><span style="color: #a709f5;">'left_eye_position'</span><span >, left_eye_position);</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span style="color: #008013;">% behavior_processing_module = types.core.ProcessingModule("stores behavioral data.");</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >behavior_processing_module.nwbdatainterface.set(</span><span style="color: #a709f5;">'EyeTracking'</span><span >, eye_tracking);</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span style="color: #008013;">% nwb.processing.set('behavior', behavior_processing_module);</span></span></div></div></div><h2  class = 'S2'><span>PupilTracking: Storing continuous eye-tracking data of pupil size</span></h2><div  class = 'S1'><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/PupilTracking.html"><span style=' font-family: monospace;'>PupilTracking</span></a><span> is for storing eye-tracking data which represents pupil size. </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/PupilTracking.html"><span style=' font-family: monospace;'>PupilTracking</span></a><span> holds one or more </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html"><span style=' font-family: monospace;'>TimeSeries</span></a><span> objects that can represent different features such as the dilation of the pupil measured over time by a pupil tracking algorithm.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S3'><span style="white-space: pre"><span >pupil_diameter = types.core.TimeSeries( </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'description'</span><span >, </span><span style="color: #a709f5;">'Pupil diameter extracted from the video of the right eye.'</span><span >, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data'</span><span >, linspace(0.001, 0.002, 50), </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'starting_time'</span><span >, 1.0, </span><span style="color: #0e00ff;">...</span><span style="color: #008013;"> % NB: Important to set starting_time when using starting_time_rate</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'starting_time_rate'</span><span >, 20.0, </span><span style="color: #0e00ff;">...</span><span style="color: #008013;"> % Hz</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data_unit'</span><span >, </span><span style="color: #a709f5;">'meters' </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >pupil_tracking = types.core.PupilTracking();</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >pupil_tracking.timeseries.set(</span><span style="color: #a709f5;">'pupil_diameter'</span><span >, pupil_diameter);</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span style="color: #008013;">% behavior_processing_module = types.core.ProcessingModule("stores behavioral data.");</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >behavior_processing_module.nwbdatainterface.set(</span><span style="color: #a709f5;">'PupilTracking'</span><span >, pupil_tracking);</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span style="color: #008013;">% nwb.processing.set('behavior', behavior_processing_module);</span></span></div></div></div><h2  class = 'S2'><span>Writing the behavior data to an NWB file</span></h2><div  class = 'S1'><span>All of the above commands build an NWBFile object in-memory. To write this file, use </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/functions/nwbExport.html"><span style=' font-family: monospace;'>nwbExport</span></a><span style=' font-family: monospace;'>.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S3'><span style="white-space: pre"><span style="color: #008013;">% Save to tutorials/tutorial_nwb_files folder</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >nwbFilePath = misc.getTutorialNwbFilePath(</span><span style="color: #a709f5;">'behavior_tutorial.nwb'</span><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >nwbExport(nwb, nwbFilePath);</span></span></div></div><div class="inlineWrapper outputs"><div  class = 'S5'><span style="white-space: pre"><span >fprintf(</span><span style="color: #a709f5;">'Exported NWB file to "%s"\n'</span><span >, </span><span style="color: #a709f5;">'behavior_tutorial.nwb'</span><span >)</span></span></div><div  class = 'S6'><div class="inlineElement eoOutputWrapper disableDefaultGestureHandling embeddedOutputsTextElement" uid="D31EA02B" prevent-scroll="true" data-testid="output_2" tabindex="-1" style="width: 1137px; white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;"><div class="textElement eoOutputContent" data-previous-available-width="1100" data-previous-scroll-height="17" data-hashorizontaloverflow="false" style="max-height: 261px; white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;" tabindex="-1">Exported NWB file to "behavior_tutorial.nwb"</div></div></div></div></div>
+<br>
+<!-- 
+##### SOURCE BEGIN #####
+%% Behavior Data
+% This tutorial will guide you in writing behavioral data to NWB.
+%% Creating an NWB File
+% Create an NWBFile object with the required fields (|session_description|, 
+% |identifier|, and |session_start_time|) and additional metadata.
+
+nwb = NwbFile( ...
+    'session_description', 'mouse in open exploration',...
+    'identifier', 'Mouse5_Day3', ...
+    'session_start_time', datetime(2018, 4, 25, 2, 30, 3, 'TimeZone', 'local'), ...
+    'general_experimenter', 'My Name', ... % optional
+    'general_session_id', 'session_1234', ... % optional
+    'general_institution', 'University of My Institution', ... % optional
+    'general_related_publications', 'DOI:10.1016/j.neuron.2016.12.011'); % optional
+nwb
+%% SpatialSeries: Storing continuous spatial data
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
+% |SpatialSeries|> is a subclass of <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
+% |TimeSeries|> that represents data in space, such as the spatial direction e.g., 
+% of gaze or travel or position of an animal over time.
+% 
+% Create data that corresponds to x, y position over time.
+
+position_data = [linspace(0, 10, 50); linspace(0, 8, 50)]; % 2 x nT array
+%% 
+% In <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
+% |SpatialSeries|> data, the first dimension is always time (in seconds), the 
+% second dimension represents the x, y position. However, as described in the 
+% <https://matnwb.readthedocs.io/en/latest/pages/tutorials/dimensionMapNoDataPipes.html 
+% dimensionMapNoDataPipes> tutorial, when a MATLAB array is exported to HDF5, 
+% the array is transposed. Therefore, in order to correctly export the data, in 
+% MATLAB the last dimension of an array should be time. <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
+% |SpatialSeries|> data should be stored as one continuous stream as it is acquired, 
+% not by trials as is often reshaped for analysis. Data can be trial-aligned on-the-fly 
+% using the trials table. See the trials tutorial for further information.
+% 
+% For position data |reference_frame| indicates the zero-position, e.g. the 
+% 0,0 point might be the bottom-left corner of an enclosure, as viewed from the 
+% tracking camera.
+
+timestamps = linspace(0, 50, 50)/ 200;
+position_spatial_series = types.core.SpatialSeries( ...
+    'description', 'Postion (x, y) in an open field.', ...
+    'data', position_data, ...
+    'timestamps', timestamps, ...
+    'reference_frame', '(0,0) is the bottom left corner.' ...
+)
+%% Position: Storing position measured over time
+% To help data analysis and visualization tools know that this <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
+% |SpatialSeries|> object represents the position of the subject, store the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
+% |SpatialSeries|> object inside a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Position.html 
+% |Position|> object, which can hold one or more <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
+% |SpatialSeries|> objects.
+
+position = types.core.Position();
+position.spatialseries.set('SpatialSeries', position_spatial_series);
+%% Create a Behavior Processing Module
+% Create a processing module called "behavior" for storing behavioral data in 
+% the NWBFile, then add the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Position.html 
+% |Position|> object to the processing module.
+
+behavior_processing_module = types.core.ProcessingModule('description', 'stores behavioral data.');
+behavior_processing_module.nwbdatainterface.set("Position", position);
+nwb.processing.set("behavior", behavior_processing_module);
+%% CompassDirection: Storing view angle measured over time
+% Analogous to how position can be stored, we can create a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
+% |SpatialSeries|> object for representing the view angle of the subject.
+% 
+% For direction data |reference_frame| indicates the zero direction, for instance 
+% in this case "straight ahead" is 0 radians.
+
+view_angle_data = linspace(0, 4, 50);
+direction_spatial_series = types.core.SpatialSeries( ...
+    'description', 'View angle of the subject measured in radians.', ...
+    'data', view_angle_data, ...
+    'timestamps', timestamps, ...
+    'reference_frame', 'straight ahead', ...
+    'data_unit', 'radians' ...
+);
+direction = types.core.CompassDirection();
+direction.spatialseries.set('spatial_series', direction_spatial_series);
+%% 
+% We can add a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/CompassDirection.html 
+% |CompassDirection|> object to the behavior processing module the same way we 
+% have added the position data.
+
+%behavior_processing_module = types.core.ProcessingModule("stores behavioral data.");  % if you have not already created it
+behavior_processing_module.nwbdatainterface.set('CompassDirection', direction);
+%nwb.processing.set('behavior', behavior_processing_module); % if you have not already added it
+%% BehaviorTimeSeries: Storing continuous behavior data
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/BehavioralTimeSeries.html 
+% |BehavioralTimeSeries|> is an interface for storing continuous behavior data, 
+% such as the speed of a subject.
+
+speed_data = linspace(0, 0.4, 50);
+
+speed_time_series = types.core.TimeSeries( ...
+    'data', speed_data, ...
+    'starting_time', 1.0, ... % NB: Important to set starting_time when using starting_time_rate
+    'starting_time_rate', 10.0, ... % Hz
+    'description', 'he speed of the subject measured over time.', ...
+    'data_unit', 'm/s' ...
+);
+
+behavioral_time_series = types.core.BehavioralTimeSeries();
+behavioral_time_series.timeseries.set('speed', speed_time_series);
+
+%behavior_processing_module = types.core.ProcessingModule("stores behavioral data.");  % if you have not already created it
+behavior_processing_module.nwbdatainterface.set('BehavioralTimeSeries', behavioral_time_series);
+%nwb.processing.set('behavior', behavior_processing_module); % if you have not already added it
+%% BehavioralEvents: Storing behavioral events
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/BehavioralEvents.html 
+% |BehavioralEvents|> is an interface for storing behavioral events. We can use 
+% it for storing the timing and amount of rewards (e.g. water amount) or lever 
+% press times.
+
+reward_amount = [1.0, 1.5, 1.0, 1.5];
+event_timestamps = [1.0, 2.0, 5.0, 6.0];
+
+time_series = types.core.TimeSeries( ...
+    'data', reward_amount, ...
+    'timestamps', event_timestamps, ...
+    'description', 'The water amount the subject received as a reward.', ...
+    'data_unit', 'ml' ...
+);
+
+behavioral_events = types.core.BehavioralEvents();
+behavioral_events.timeseries.set('lever_presses', time_series);
+
+%behavior_processing_module = types.core.ProcessingModule("stores behavioral data.");  % if you have not already created it
+behavior_processing_module.nwbdatainterface.set('BehavioralEvents', behavioral_events);
+%nwb.processing.set('behavior', behavior_processing_module); % if you have not already added it
+%% 
+% Storing only the timestamps of the events is possible with the ndx-events 
+% NWB extension. You can also add labels associated with the events with this 
+% extension. You can find information about installation and example usage <https://github.com/nwb-extensions/ndx-events-record 
+% here>.
+%% BehavioralEpochs: Storing intervals of behavior data
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/BehavioralEpochs.html 
+% |BehavioralEpochs|> is for storing intervals of behavior data. <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/BehavioralEpochs.html 
+% |BehavioralEpochs|> uses <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IntervalSeries.html 
+% |IntervalSeries|> to represent the time intervals. Create an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IntervalSeries.html 
+% |IntervalSeries|> object that represents the time intervals when the animal 
+% was running. IntervalSeries uses 1 to indicate the beginning of an interval 
+% and -1 to indicate the end.
+
+run_intervals = types.core.IntervalSeries( ...
+    'description', 'Intervals when the animal was running.', ...
+    'data', [1, -1, 1, -1, 1, -1], ...
+    'timestamps', [0.5, 1.5, 3.5, 4.0, 7.0, 7.3] ...
+);
+
+behavioral_epochs = types.core.BehavioralEpochs();
+behavioral_epochs.intervalseries.set('running', run_intervals);
+%% 
+% You can add more than one <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IntervalSeries.html 
+% |IntervalSeries|> to a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/BehavioralEpochs.html 
+% |BehavioralEpochs|> object.
+
+sleep_intervals = types.core.IntervalSeries( ...
+    'description', 'Intervals when the animal was sleeping', ...
+    'data', [1, -1, 1, -1], ...
+    'timestamps', [15.0, 30.0, 60.0, 95.0] ...
+);
+behavioral_epochs.intervalseries.set('sleeping', sleep_intervals);
+
+% behavior_processing_module = types.core.ProcessingModule("stores behavioral data.");
+% behavior_processing_module.nwbdatainterface.set('BehavioralEvents', behavioral_events);
+% nwb.processing.set('behavior', behavior_processing_module);
+% Another approach: TimeIntervals
+% Using <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeIntervals.html 
+% |TimeIntervals|> to represent time intervals is often preferred over <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/BehavioralEpochs.html 
+% |BehavioralEpochs|> and <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IntervalSeries.html 
+% |IntervalSeries|>. <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeIntervals.html 
+% |TimeIntervals|> is a subclass of <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
+% |DynamicTable|>, which offers flexibility for tabular data by allowing the addition 
+% of optional columns which are not defined in the standard DynamicTable class.
+
+sleep_intervals = types.core.TimeIntervals( ...
+    'description', 'Intervals when the animal was sleeping.', ...
+    'colnames', {'start_time', 'stop_time', 'stage'} ...
+);
+
+sleep_intervals.addRow('start_time', 0.3, 'stop_time', 0.35, 'stage', 1);
+sleep_intervals.addRow('start_time', 0.7, 'stop_time', 0.9, 'stage', 2);
+sleep_intervals.addRow('start_time', 1.3, 'stop_time', 3.0, 'stage', 3);
+
+nwb.intervals.set('sleep_intervals', sleep_intervals);
+%% EyeTracking: Storing continuous eye-tracking data of gaze direction
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/EyeTracking.html 
+% |EyeTracking|> is for storing eye-tracking data which represents direction of 
+% gaze as measured by an eye tracking algorithm. An <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/EyeTracking.html 
+% |EyeTracking|> object holds one or more <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
+% |SpatialSeries|> objects that represent the gaze direction over time extracted 
+% from a video.
+
+eye_position_data = [linspace(-20, 30, 50); linspace(30, -20, 50)];
+
+right_eye_position = types.core.SpatialSeries( ...
+    'description', 'The position of the right eye measured in degrees.', ...
+    'data', eye_position_data, ...
+    'starting_time', 1.0, ... % NB: Important to set starting_time when using starting_time_rate
+    'starting_time_rate', 50.0, ... % Hz
+    'reference_frame', '(0,0) is middle', ...
+    'data_unit', 'degrees' ...
+);
+
+left_eye_position = types.core.SpatialSeries( ...
+    'description', 'The position of the right eye measured in degrees.', ...
+    'data', eye_position_data, ...
+    'starting_time', 1.0, ... % NB: Important to set starting_time when using starting_time_rate
+    'starting_time_rate', 50.0, ... % Hz
+    'reference_frame', '(0,0) is middle', ...
+    'data_unit', 'degrees' ...
+);
+
+eye_tracking = types.core.EyeTracking();
+eye_tracking.spatialseries.set('right_eye_position', right_eye_position);
+eye_tracking.spatialseries.set('left_eye_position', left_eye_position);
+
+% behavior_processing_module = types.core.ProcessingModule("stores behavioral data.");
+behavior_processing_module.nwbdatainterface.set('EyeTracking', eye_tracking);
+% nwb.processing.set('behavior', behavior_processing_module);
+%% PupilTracking: Storing continuous eye-tracking data of pupil size
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/PupilTracking.html 
+% |PupilTracking|> is for storing eye-tracking data which represents pupil size. 
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/PupilTracking.html 
+% |PupilTracking|> holds one or more <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
+% |TimeSeries|> objects that can represent different features such as the dilation 
+% of the pupil measured over time by a pupil tracking algorithm.
+
+pupil_diameter = types.core.TimeSeries( ...
+    'description', 'Pupil diameter extracted from the video of the right eye.', ...
+    'data', linspace(0.001, 0.002, 50), ...
+    'starting_time', 1.0, ... % NB: Important to set starting_time when using starting_time_rate
+    'starting_time_rate', 20.0, ... % Hz
+    'data_unit', 'meters' ...
+);
+
+pupil_tracking = types.core.PupilTracking();
+pupil_tracking.timeseries.set('pupil_diameter', pupil_diameter);
+
+% behavior_processing_module = types.core.ProcessingModule("stores behavioral data.");
+behavior_processing_module.nwbdatainterface.set('PupilTracking', pupil_tracking);
+% nwb.processing.set('behavior', behavior_processing_module);
+%% Writing the behavior data to an NWB file
+% All of the above commands build an NWBFile object in-memory. To write this 
+% file, use <https://matnwb.readthedocs.io/en/latest/pages/functions/nwbExport.html 
+% |nwbExport|>|.|
+
+% Save to tutorials/tutorial_nwb_files folder
+nwbFilePath = misc.getTutorialNwbFilePath('behavior_tutorial.nwb');
+nwbExport(nwb, nwbFilePath);
+fprintf('Exported NWB file to "%s"\n', 'behavior_tutorial.nwb')
+##### SOURCE END #####
+-->
+</div><script>
+    // Update all links with href starting with "https:" to have target="_top"
+    document.addEventListener("DOMContentLoaded", function() {
+        const links = document.querySelectorAll('a[href^="https:"]');
+        links.forEach(link => {
+            link.setAttribute("target", "_top");
+        });
+    });
+</script>
+</body></html>

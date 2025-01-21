@@ -1,0 +1,7 @@
+{{ function_name }}
+{{ function_header_underline }}
+
+.. mat:module:: {{ module_name }}
+.. autoclass:: {{ full_function_name }}
+    :members:
+    :show-inheritance:

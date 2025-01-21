@@ -1,5 +1,8 @@
 classdef FilteredEphys < types.core.NWBDataInterface & types.untyped.GroupClass
-% FILTEREDEPHYS Electrophysiology data from one or more channels that has been subjected to filtering. Examples of filtered data include Theta and Gamma (LFP has its own interface). FilteredEphys modules publish an ElectricalSeries for each filtered channel or set of channels. The name of each ElectricalSeries is arbitrary but should be informative. The source of the filtered data, whether this is from analysis of another time series or as acquired by hardware, should be noted in each's TimeSeries::description field. There is no assumed 1::1 correspondence between filtered ephys signals and electrodes, as a single signal can apply to many nearby electrodes, and one electrode may have different filtered (e.g., theta and/or gamma) signals represented. Filter properties should be noted in the ElectricalSeries 'filtering' attribute.
+% FILTEREDEPHYS - Electrophysiology data from one or more channels that has been subjected to filtering. Examples of filtered data include Theta and Gamma (LFP has its own interface). FilteredEphys modules publish an ElectricalSeries for each filtered channel or set of channels. The name of each ElectricalSeries is arbitrary but should be informative. The source of the filtered data, whether this is from analysis of another time series or as acquired by hardware, should be noted in each's TimeSeries::description field. There is no assumed 1::1 correspondence between filtered ephys signals and electrodes, as a single signal can apply to many nearby electrodes, and one electrode may have different filtered (e.g., theta and/or gamma) signals represented. Filter properties should be noted in the ElectricalSeries 'filtering' attribute.
+%
+% Required Properties:
+%  electricalseries
 
 
 % REQUIRED PROPERTIES
@@ -9,7 +12,19 @@ end
 
 methods
     function obj = FilteredEphys(varargin)
-        % FILTEREDEPHYS Constructor for FilteredEphys
+        % FILTEREDEPHYS - Constructor for FilteredEphys
+        %
+        % Syntax:
+        %  filteredEphys = types.core.FILTEREDEPHYS() creates a FilteredEphys object with unset property values.
+        %
+        %  filteredEphys = types.core.FILTEREDEPHYS(Name, Value) creates a FilteredEphys object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - electricalseries (ElectricalSeries) - ElectricalSeries object(s) containing filtered electrophysiology data.
+        %
+        % Output Arguments:
+        %  - filteredEphys (types.core.FilteredEphys) - A FilteredEphys object
+        
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.electricalseries, ivarargin] = types.util.parseConstrained(obj,'electricalseries', 'types.core.ElectricalSeries', varargin{:});
         varargin(ivarargin) = [];
