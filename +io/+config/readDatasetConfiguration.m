@@ -30,14 +30,7 @@ function datasetConfig = readDatasetConfiguration(profile)
             ])} = "default"
     end
 
-    switch profile
-        case "default"
-            filename = 'default_dataset_configuration.json';
-        case "cloud"
-            filename = 'cloud_dataset_configuration.json';
-        case "archive"
-            filename = 'archive_dataset_configuration.json';
-    end
+    filename = sprintf('%s_dataset_configuration.json', profile);
 
     configFilePath = fullfile(misc.getMatnwbDir, 'configuration', filename);
     datasetConfig = jsondecode(fileread(configFilePath));
