@@ -1,0 +1,21 @@
+{
+    "Default": {
+        "layout": "chunked",
+        "target_chunk_size": {
+            "value": 100000000,
+            "unit": "bytes"
+        },
+        "chunk_dimensions": [
+            [null], 
+            [null, "max"], 
+            [null, "max", "max"], 
+            [null, "max", "max", "max"]
+        ],
+        "compression": {
+            "algorithm": "ZStandard",
+            "level": 9,
+            "parameters": {},
+            "prefilters": ["shuffle"]
+        }
+    }
+}
