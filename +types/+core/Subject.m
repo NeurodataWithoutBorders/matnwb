@@ -1,5 +1,8 @@
 classdef Subject < types.core.NWBContainer & types.untyped.GroupClass
-% SUBJECT Information about the animal or person from which the data was measured.
+% SUBJECT - Information about the animal or person from which the data was measured.
+%
+% Required Properties:
+%  None
 
 
 % OPTIONAL PROPERTIES
@@ -18,7 +21,37 @@ end
 
 methods
     function obj = Subject(varargin)
-        % SUBJECT Constructor for Subject
+        % SUBJECT - Constructor for Subject
+        %
+        % Syntax:
+        %  subject = types.core.SUBJECT() creates a Subject object with unset property values.
+        %
+        %  subject = types.core.SUBJECT(Name, Value) creates a Subject object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - age (char) - Age of subject. Can be supplied instead of 'date_of_birth'.
+        %
+        %  - age_reference (char) - Age is with reference to this event. Can be 'birth' or 'gestational'. If reference is omitted, 'birth' is implied.
+        %
+        %  - date_of_birth (datetime) - Date of birth of subject. Can be supplied instead of 'age'.
+        %
+        %  - description (char) - Description of subject and where subject came from (e.g., breeder, if animal).
+        %
+        %  - genotype (char) - Genetic strain. If absent, assume Wild Type (WT).
+        %
+        %  - sex (char) - Gender of subject.
+        %
+        %  - species (char) - Species of subject.
+        %
+        %  - strain (char) - Strain of subject.
+        %
+        %  - subject_id (char) - ID of animal/person used/participating in experiment (lab convention).
+        %
+        %  - weight (char) - Weight at time of experiment, at time of surgery and at other important times.
+        %
+        % Output Arguments:
+        %  - subject (types.core.Subject) - A Subject object
+        
         varargin = [{'age_reference' 'birth'} varargin];
         obj = obj@types.core.NWBContainer(varargin{:});
         
