@@ -12,7 +12,8 @@ function dataPipe = configureDataPipeFromData(numericData, datasetConfig)
         "maxSize", maxSize, ...
         "chunkSize", chunkSize };
 
-    hasShuffle = contains(datasetConfig.compression.prefilters, 'shuffle');
+    hasShuffle = ~isempty(datasetConfig.compression.prefilters)...
+                 && contains(datasetConfig.compression.prefilters, 'shuffle');
 
     if strcmpi(datasetConfig.compression.algorithm, "Deflate")
         % Use standard compression filters

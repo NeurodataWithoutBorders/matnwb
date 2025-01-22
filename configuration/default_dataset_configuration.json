@@ -2,7 +2,7 @@
     "Default": {
         "layout": "chunked",
         "target_chunk_size": {
-            "value": null,
+            "value": 1000000,
             "unit": "bytes"
         },
         "chunk_dimensions": [

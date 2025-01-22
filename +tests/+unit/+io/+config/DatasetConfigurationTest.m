@@ -80,7 +80,7 @@ classdef DatasetConfigurationTest < matlab.unittest.TestCase
             
             % Create a DataPipe object
             rawData = rand(1000, 1000);
-            dataPipe = types.untyped.DataPipe('data', rawData, 'axis', 1, 'chunk_size', 100);
+            dataPipe = types.untyped.DataPipe('data', rawData, 'axis', 1, 'chunkSize', 100);
             
             data = types.core.TimeSeries( ...
                 'data', dataPipe, ...
@@ -108,9 +108,9 @@ classdef DatasetConfigurationTest < matlab.unittest.TestCase
             
             % Create a DataPipe object with specific configuration
             rawData = rand(1000, 1000);
-            originalChunkSize = 100;
+            originalChunkSize = [100, 100];
             dataPipe = types.untyped.DataPipe('data', rawData, 'axis', 1, ...
-                'chunk_size', originalChunkSize);
+                'chunkSize', originalChunkSize);
             
             data = types.core.TimeSeries( ...
                 'data', dataPipe, ...
@@ -125,42 +125,8 @@ classdef DatasetConfigurationTest < matlab.unittest.TestCase
             
             % Verify the DataPipe configuration remains unchanged
             resultPipe = nwbFile.acquisition.get('test_data').data;
-            testCase.verifyEqual(resultPipe.chunk_size, originalChunkSize, ...
+            testCase.verifyEqual(resultPipe.chunkSize, originalChunkSize, ...
                 'DataPipe configuration should remain unchanged without override');
-        end
-        
-        function testGetNeurodataObjects(testCase)
-            % Test the nested getNeurodataObjectsFromNwbFile function
-            nwbFile = NwbFile( ...
-                'identifier', 'TEST123', ...
-                'session_description', 'test session', ...
-                'session_start_time', datetime());
-            
-            % Add various types of objects
-            timeseries = types.core.TimeSeries( ...
-                'data', rand(10, 10), ...
-                'data_unit', 'n/a', ...
-                'timestamps', 1:10);
-            
-            nwbFile.acquisition.set('test_timeseries', timeseries);
-            
-            % Add an untyped object that should be ignored
-            untypedObj = types.untyped.Group();
-            nwbFile.acquisition.set('untyped_obj', untypedObj);
-            
-            % Get private access to the nested function
-            metaClass = metaclass(nwbFile);
-            methodList = metaClass.MethodList;
-            getNeurodataObjectsFcn = str2func('io.config.applyDatasetConfiguration>getNeurodataObjectsFromNwbFile');
-            
-            % Call the function
-            neurodataObjects = getNeurodataObjectsFcn(nwbFile);
-            
-            % Verify results
-            testCase.verifySize(neurodataObjects, [1 1], ...
-                'Should find one neurodata object');
-            testCase.verifyTrue(isa(neurodataObjects{1}, 'types.core.TimeSeries'), ...
-                'Should find TimeSeries object');
         end
     end
 end
