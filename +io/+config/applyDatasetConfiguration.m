@@ -1,13 +1,13 @@
-function applyChunkConfiguration(nwbObject, chunkConfiguration, options)
-% applyChunkConfiguration - Apply chunk configuration to datasets of an NWB object
+function applyDatasetConfiguration(nwbObject, datasetConfiguration, options)
+% applyDatasetConfiguration - Apply dataset configuration to datasets of an NWB object
     
     arguments
         nwbObject (1,1) NwbFile
-        chunkConfiguration (1,1) struct = io.config.readDefaultChunkConfiguration() % Todo: class for this...?
+        datasetConfiguration (1,1) struct = io.config.readDatasetConfiguration()
         options.OverrideExisting (1,1) logical = false
     end
     
-    import io.config.internal.resolveDataTypeChunkConfig
+    import io.config.internal.resolveDatasetConfigForDataType
 
     neurodataObjects = getNeurodataObjectsFromNwbFile(nwbObject);
 
@@ -29,8 +29,8 @@ function applyChunkConfiguration(nwbObject, chunkConfiguration, options)
                     continue
                 end
 
-                datasetConfig = resolveDataTypeChunkConfig(...
-                    chunkConfiguration, ...
+                datasetConfig = resolveDatasetConfigForDataType(...
+                    datasetConfiguration, ...
                     thisNeurodataObject, ...
                     thisDatasetName);
     
@@ -77,7 +77,7 @@ function neurodataObjects = getNeurodataObjectsFromNwbFile(nwbObject)
     objectMap = nwbObject.searchFor('types.');
 
     neurodataObjects = objectMap.values();
-    neurodataClassNames = cellfun(@(c) class(c), neurodataObjects, 'uni', 0); 
+    neurodataClassNames = cellfun(@(c) class(c), neurodataObjects, 'uni', 0);
 
     toIgnore = startsWith(neurodataClassNames, "types.untyped");
     neurodataObjects(toIgnore) = [];

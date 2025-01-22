@@ -1,24 +1,24 @@
-function resolvedOptions = resolveDataTypeChunkConfig(chunkSpecification, nwbObject, datasetName)
-% resolveDataTypeChunkConfig - Resolve the chunk options for individual datatypes
-%   This function resolves the chunk configuration options for a given NWB object
+function resolvedOptions = resolveDatasetConfigForDataType(datasetConfig, nwbObject, datasetName)
+% resolveDatasetConfigForDataType - Resolve the dataset configuration for individual neurodata types
+%   This function resolves the dataset configuration options for a given NWB object
 %   by traversing the object hierarchy and combining options from the most specific
-%   type to the base type, as defined in the chunkSpecification.
+%   type to the base type, as defined in the datasetConfig structure.
 %
 %   Input:
-%       chunkSpecification (struct): A struct representation of the chunk configuration JSON.
-%       nwbObject (types.untyped.MetaClass): An NWB object whose chunk configuration will be resolved.
+%       datasetConfig (struct): A struct representation of the dataset configuration JSON.
+%       nwbObject (types.untyped.MetaClass): An NWB object whose dataset configuration will be resolved.
 %
 %   Output:
-%       resolvedOptions (struct): A struct containing the resolved chunk configuration options.
+%       resolvedOptions (struct): A struct containing the resolved dataset configuration options.
 
     arguments
-        chunkSpecification (1,1) struct
+        datasetConfig (1,1) struct
         nwbObject (1,1) types.untyped.MetaClass
         datasetName (1,1) string
     end
 
     % Initialize resolvedOptions with default options.
-    resolvedOptions = chunkSpecification.Default;
+    resolvedOptions = datasetConfig.Default;
 
     % Get the NWB object type hierarchy (from most specific to base type)
     typeHierarchy = getTypeHierarchy(nwbObject);
@@ -27,9 +27,9 @@ function resolvedOptions = resolveDataTypeChunkConfig(chunkSpecification, nwbObj
     for i = numel(typeHierarchy):-1:1
         typeName = typeHierarchy{i};
 
-        % Check if the neurodata type has a chunkSpecification
-        if isfield(chunkSpecification, typeName)
-            typeOptions = chunkSpecification.(typeName);
+        % Check if the neurodata type has a datasetConfig
+        if isfield(datasetConfig, typeName)
+            typeOptions = datasetConfig.(typeName);
 
             % Is datasetName part of typeOptions?
             if isfield(typeOptions, datasetName)
