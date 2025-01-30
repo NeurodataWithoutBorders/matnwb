@@ -73,6 +73,29 @@ classdef nwbExportTest < matlab.unittest.TestCase
             nwbFilePath = fullfile(testCase.OutputFolder, 'test_part1.nwb');
             testCase.verifyError(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), 'NWB:CustomConstraintUnfulfilled')
         end
+
+        function testExportScalarTextAttributeWithEmptyString(testCase)
+            nwbFile = testCase.NwbObject;
+            
+            processingModule = types.core.ProcessingModule(...
+                'description', '');
+            nwbFile.processing.set('TestModule', processingModule);
+
+            nwbFilePath = fullfile(testCase.OutputFolder, 'test_scalar_text_attribute.nwb');
+            nwbExport(nwbFile, nwbFilePath)
+
+            nwbFileInMat = nwbRead(nwbFilePath);
+            
+            value = nwbFileInMat.processing.get('TestModule').description;
+            testCase.verifyClass(value, 'char')
+            testCase.verifyEmpty(value)
+
+            [nwbFileInPy, fileCleanup] = testCase.readNwbFileWithPynwb(nwbFilePath); %#ok<ASGLU>
+            value = nwbFileInPy.processing{'TestModule'}.description;
+            testCase.verifyClass(value, 'py.str')
+            testCase.verifyEmpty(value)
+            clear fileCleanup
+        end
     end
 
     methods (Static)
@@ -81,6 +104,21 @@ classdef nwbExportTest < matlab.unittest.TestCase
                 'session_description', 'test file for nwb export', ...
                 'identifier', 'export_test', ...
                 'session_start_time', datetime("now", 'TimeZone', 'local') );
+        end
+
+        function [nwbFile, nwbFileCleanup] = readNwbFileWithPynwb(nwbFilename)
+
+            try
+                io = py.pynwb.NWBHDF5IO(nwbFilename);
+                nwbFile = io.read();
+                nwbFileCleanup = onCleanup(@(x) closePyNwbObject(io));
+            catch ME
+                error(ME.message)
+            end
+
+            function closePyNwbObject(io)
+                io.close()
+            end
         end
     end
 end
