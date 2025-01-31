@@ -42,6 +42,24 @@ nwb
 % electrodes are stored in an |electrodes| table, which is also a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
 % |*DynamicTable*|>. |electrodes| has several required fields: |x|, |y|, |z|, 
 % |impedance|, |location|, |filtering|, and |electrode_group|.
+% 
+% The electrodes table references a required <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/ElectrodeGroup.html 
+% |*ElectrodeGroup*|>, which is used to represent a group of electrodes. Before 
+% creating an <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/ElectrodeGroup.html 
+% |*ElectrodeGroup*|>, you must define a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Device.html 
+% |*Device*|> object. The fields |description|, |manufacturer|, |model_number|, 
+% |model_name|, and |serial_number| are optional, but recommended.
+
+device = types.core.Device(...
+    'description', 'A 12-channel array with 4 shanks and 3 channels per shank', ...
+    'manufacturer', 'Array Technologies', ...
+    'model_number', 'PRB_1_4_0480_123', ...
+    'model_name', 'Neurovoxels 0.99', ...
+    'serial_number', '1234567890' ...
+);
+
+% Add device to nwb object
+nwb.general_devices.set('array', device);
 % Electrodes Table
 % 
 % 
@@ -57,11 +75,6 @@ electrodesDynamicTable = types.hdmf_common.DynamicTable(...
     'colnames', {'location', 'group', 'group_name', 'label'}, ...
     'description', 'all electrodes');
 
-device = types.core.Device(...
-    'description', 'the best array', ...
-    'manufacturer', 'Probe Company 9000' ...
-);
-nwb.general_devices.set('array', device);
 for iShank = 1:numShanks
     shankGroupName = sprintf('shank%d', iShank);
     electrodeGroup = types.core.ElectrodeGroup( ...
@@ -220,7 +233,7 @@ band_limits = [band_mean - 2*band_stdev, band_mean + 2*band_stdev];
 
 % The bands should be added to the DecompositionSeries as a dynamic table
 bands = table(band_names, band_mean, band_stdev, band_limits, ...
-    'VariableNames', {'band_names', 'band_mean', 'band_stdev', 'band_limits'})
+    'VariableNames', {'band_name', 'band_mean', 'band_stdev', 'band_limits'})
 
 bands = util.table2nwb( bands );
 
@@ -423,9 +436,9 @@ nwb.units.getRow(1).spike_times{1}
 %% 
 % *Check out other tutorials that teach advanced NWB topics:*
 %% 
-% * <https://pynwb.readthedocs.io/en/stable/tutorials/general/iterative_write.html#sphx-glr-tutorials-general-iterative-write-py 
+% * <https://pynwb.readthedocs.io/en/stable/tutorials/advanced_io/plot_iterative_write.html#sphx-glr-tutorials-advanced-io-plot-iterative-write-py 
 % Iterative data write>
 % * <https://pynwb.readthedocs.io/en/stable/tutorials/general/extensions.html#sphx-glr-tutorials-general-extensions-py 
 % Extensions>
-% * <https://pynwb.readthedocs.io/en/stable/tutorials/general/advanced_hdf5_io.html#sphx-glr-tutorials-general-advanced-hdf5-io-py 
+% * <https://pynwb.readthedocs.io/en/stable/tutorials/advanced_io/h5dataio.html#sphx-glr-tutorials-advanced-io-h5dataio-py 
 % Advanced HDF5 I/O>

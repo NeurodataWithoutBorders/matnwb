@@ -1,5 +1,8 @@
 classdef LFP < types.core.NWBDataInterface & types.untyped.GroupClass
-% LFP LFP data from one or more channels. The electrode map in each published ElectricalSeries will identify which channels are providing LFP data. Filter properties should be noted in the ElectricalSeries 'filtering' attribute.
+% LFP - LFP data from one or more channels. The electrode map in each published ElectricalSeries will identify which channels are providing LFP data. Filter properties should be noted in the ElectricalSeries 'filtering' attribute.
+%
+% Required Properties:
+%  electricalseries
 
 
 % REQUIRED PROPERTIES
@@ -9,7 +12,19 @@ end
 
 methods
     function obj = LFP(varargin)
-        % LFP Constructor for LFP
+        % LFP - Constructor for LFP
+        %
+        % Syntax:
+        %  lFP = types.core.LFP() creates a LFP object with unset property values.
+        %
+        %  lFP = types.core.LFP(Name, Value) creates a LFP object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - electricalseries (ElectricalSeries) - ElectricalSeries object(s) containing LFP data for one or more channels.
+        %
+        % Output Arguments:
+        %  - lFP (types.core.LFP) - A LFP object
+        
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.electricalseries, ivarargin] = types.util.parseConstrained(obj,'electricalseries', 'types.core.ElectricalSeries', varargin{:});
         varargin(ivarargin) = [];

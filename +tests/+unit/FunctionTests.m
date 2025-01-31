@@ -1,6 +1,20 @@
 classdef FunctionTests < matlab.unittest.TestCase
 % FunctionTests - Unit test for functions.
 
+    methods (TestClassSetup)
+        function setupClass(testCase)
+            % Get the root path of the matnwb repository
+            rootPath = misc.getMatnwbDir();
+
+            % Use a fixture to add the folder to the search path
+            testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
+
+            % Use a fixture to create a temporary working directory
+            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
+            generateCore('savedir', '.');
+        end
+    end
+    
     methods (Test)
         function testString2ValidName(testCase)
             testCase.verifyWarning( ...
@@ -33,6 +47,13 @@ classdef FunctionTests < matlab.unittest.TestCase
             data = struct('a','b');
             io.writeCompound(fid, '/map_data', data)
             H5F.close(fid);
+        end
+        function testIsNeurodatatype(testCase)
+            timeSeries = types.core.TimeSeries();
+            testCase.verifyTrue(matnwb.utility.isNeurodataType(timeSeries))
+            
+            dataPipe = types.untyped.DataPipe('data', rand(10,10));
+            testCase.verifyFalse(matnwb.utility.isNeurodataType(dataPipe))
         end
     end 
 end

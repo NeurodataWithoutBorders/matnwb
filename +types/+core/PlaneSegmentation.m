@@ -1,5 +1,8 @@
 classdef PlaneSegmentation < types.hdmf_common.DynamicTable & types.untyped.GroupClass
-% PLANESEGMENTATION Results from image segmentation of a specific imaging plane.
+% PLANESEGMENTATION - Results from image segmentation of a specific imaging plane.
+%
+% Required Properties:
+%  id
 
 
 % OPTIONAL PROPERTIES
@@ -15,7 +18,39 @@ end
 
 methods
     function obj = PlaneSegmentation(varargin)
-        % PLANESEGMENTATION Constructor for PlaneSegmentation
+        % PLANESEGMENTATION - Constructor for PlaneSegmentation
+        %
+        % Syntax:
+        %  planeSegmentation = types.core.PLANESEGMENTATION() creates a PlaneSegmentation object with unset property values.
+        %
+        %  planeSegmentation = types.core.PLANESEGMENTATION(Name, Value) creates a PlaneSegmentation object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - colnames (char) - The names of the columns in this table. This should be used to specify an order to the columns.
+        %
+        %  - description (char) - Description of what is in this dynamic table.
+        %
+        %  - id (ElementIdentifiers) - Array of unique identifiers for the rows of this dynamic table.
+        %
+        %  - image_mask (VectorData) - ROI masks for each ROI. Each image mask is the size of the original imaging plane (or volume) and members of the ROI are finite non-zero.
+        %
+        %  - imaging_plane (ImagingPlane) - Link to ImagingPlane object from which this data was generated.
+        %
+        %  - pixel_mask (VectorData) - Pixel masks for each ROI: a list of indices and weights for the ROI. Pixel masks are concatenated and parsing of this dataset is maintained by the PlaneSegmentation
+        %
+        %  - pixel_mask_index (VectorIndex) - Index into pixel_mask.
+        %
+        %  - reference_images (ImageSeries) - One or more image stacks that the masks apply to (can be one-element stack).
+        %
+        %  - vectordata (VectorData) - Vector columns, including index columns, of this dynamic table.
+        %
+        %  - voxel_mask (VectorData) - Voxel masks for each ROI: a list of indices and weights for the ROI. Voxel masks are concatenated and parsing of this dataset is maintained by the PlaneSegmentation
+        %
+        %  - voxel_mask_index (VectorIndex) - Index into voxel_mask.
+        %
+        % Output Arguments:
+        %  - planeSegmentation (types.core.PlaneSegmentation) - A PlaneSegmentation object
+        
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         
         
@@ -74,7 +109,16 @@ methods
         val = types.util.checkDtype('image_mask', 'types.hdmf_common.VectorData', val);
     end
     function val = validate_imaging_plane(obj, val)
-        val = types.util.checkDtype('imaging_plane', 'types.core.ImagingPlane', val);
+        if isa(val, 'types.untyped.SoftLink')
+            if isprop(val, 'target')
+                types.util.checkDtype('imaging_plane', 'types.core.ImagingPlane', val.target);
+            end
+        else
+            val = types.util.checkDtype('imaging_plane', 'types.core.ImagingPlane', val);
+            if ~isempty(val)
+                val = types.untyped.SoftLink(val);
+            end
+        end
     end
     function val = validate_pixel_mask(obj, val)
         val = types.util.checkDtype('pixel_mask', 'types.hdmf_common.VectorData', val);

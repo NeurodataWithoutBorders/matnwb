@@ -1,6 +1,11 @@
-function functionString = fillConstructor(name, parentname, defaults, props, namespace)
+function functionString = fillConstructor(name, parentname, defaults, props, namespace, superClassProps)
     caps = upper(name);
-    functionBody = ['% ' caps ' Constructor for ' name];
+    functionBody = ['% ' caps ' - Constructor for ' name];
+
+    docString = fillConstructorDocString(name, props, namespace, superClassProps);
+    if ~isempty(docString)
+        functionBody = [functionBody newline() docString];
+    end
 
     bodyString = fillBody(parentname, defaults, props, namespace);
     if ~isempty(bodyString)
@@ -23,7 +28,6 @@ function functionString = fillConstructor(name, parentname, defaults, props, nam
         ['function obj = ' name '(varargin)']...
         file.addSpaces(functionBody, 4)...
         'end'}, newline());
-
 end
 
 function bodystr = fillBody(parentName, defaults, props, namespace)
@@ -198,4 +202,116 @@ function checkTxt = fillCheck(name, namespace)
         '    types.util.dynamictable.checkConfig(obj);', ...
         'end',...
         }, newline);
+end
+
+function docString = fillConstructorDocString(name, props, namespace, superClassProps)
+    
+    classVarName = name; classVarName(1) = lower(classVarName(1));
+    fullClassName = sprintf('types.%s.%s', namespace.name, name);
+    fullClassNameUpper = sprintf('types.%s.%s', namespace.name, upper(name));
+    
+    props = file.internal.mergeProps(props, superClassProps);
+    names = props.keys();
+
+    docString = [...
+        "%", ...
+        "% Syntax:", ...
+        sprintf("%%  %s = %s() creates a %s object with unset property values.", classVarName, fullClassNameUpper, name), ...
+        "%", ...
+        ];
+    
+    if ~isempty(names)
+        docString = [docString, ...
+            sprintf("%%  %s = %s(Name, Value) creates a %s object where one or more property values are specified using name-value pairs.", classVarName, fullClassNameUpper, name), ...
+            "%", ...
+            "% Input Arguments (Name-Value Arguments):", ...
+        ];
+    end
+
+    for i = 1:numel(names)
+        propName = names{i};
+        thisProp = props(propName);
+        try
+            if isprop(thisProp, 'readonly') && thisProp.readonly
+                continue
+            end
+        catch 
+            % pass
+        end
+
+        valueType = getTypeStr(thisProp);
+        try
+            description = thisProp.doc;
+        catch
+            description = 'No description';
+        end
+
+        docString = [docString, ...
+            sprintf("%%  - %s (%s) - %s", propName, valueType, description), ...
+            "%"]; %#ok<AGROW>
+    end
+
+    docString = [docString, ...
+        "% Output Arguments:", ...
+        sprintf("%%  - %s (%s) - A %s object", classVarName, fullClassName, name), ...
+        ""
+    ];
+
+    docString = char( strjoin(docString, newline) );
+end
+
+% Todo: Mostly duplicate code from file.fillProps. Should consolidate
+function typeStr = getTypeStr(prop)
+    if ischar(prop)
+        typeStr = prop;
+    elseif isstruct(prop)
+        columnNames = fieldnames(prop);
+        columnDocStr = cell(size(columnNames));
+        for i=1:length(columnNames)
+            name = columnNames{i};
+            columnDocStr{i} = getTypeStr(prop.(name));
+        end
+        typeStr = ['Table with columns: (', strjoin(columnDocStr, ', '), ')'];
+    elseif isa(prop, 'file.Attribute')
+        if isa(prop.dtype, 'containers.Map')
+            assertValidRefType(prop.dtype('reftype'))
+            typeStr = sprintf('%s reference to %s', capitalize(prop.dtype('reftype')), prop.dtype('target_type'));
+        else
+            typeStr = prop.dtype;
+        end
+    elseif isa(prop, 'containers.Map')
+        assertValidRefType(prop('reftype'))
+        typeStr = sprintf('%s reference to %s', capitalize(prop('reftype')), prop('target_type'));
+    elseif isa(prop, 'file.interface.HasProps')
+        typeStrCell = cell(size(prop));
+        for iProp = 1:length(typeStrCell)
+            anonProp = prop(iProp);
+            if isa(anonProp, 'file.Dataset') && isempty(anonProp.type)
+                typeStrCell{iProp} = getTypeStr(anonProp.dtype);
+            elseif isempty(anonProp.type)
+                typeStrCell{iProp} = 'types.untyped.Set';
+            else
+                typeStrCell{iProp} = anonProp.type;
+            end
+        end
+        typeStr = strjoin(typeStrCell, '|');
+    else
+        typeStr = prop.type;
+    end
+end
+
+function assertValidRefType(referenceType)
+    arguments
+        referenceType (1,1) string
+    end
+    assert( ismember(referenceType, ["region", "object"]), ...
+        'NWB:ClassGenerator:InvalidRefType', ...
+        'Invalid reftype found while filling description for class properties.')
+end
+
+function word = capitalize(word)
+    arguments
+        word (1,:) char
+    end
+    word(1) = upper(word(1));
 end

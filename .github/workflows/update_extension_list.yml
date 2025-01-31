@@ -1,0 +1,49 @@
+name: Update extension list
+
+on:
+  schedule:
+    # Run at 8:15 on working days [Minute Hour Day Month Weekdays]
+    # Run this 15 minutes after source repo is updated
+    # https://github.com/nwb-extensions/nwb-extensions.github.io/blob/main/.github/workflows/data.yml
+    - cron: 15 8 * * 0-5
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update_extension_list:
+    runs-on: ubuntu-latest
+    steps:
+      # Use deploy key to push back to protected branch
+      - name: Checkout repository using deploy key
+        uses: actions/checkout@v4
+        with:
+          ref: refs/heads/main
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
+
+      - name: Install MATLAB
+        uses: matlab-actions/setup-matlab@v2
+      
+      - name: Update extension list in nwbInstallExtensions
+        uses: matlab-actions/run-command@v2
+        with:
+          command: |
+            addpath(genpath("tools"));
+            matnwb_createNwbInstallExtension();
+
+      - name: Commit the updated nwbInstallExtension function
+        run: |
+          set -e  # Exit script on error
+          git config user.name "${{ github.workflow }} by ${{ github.actor }}"
+          git config user.email "<>"
+          git pull --rebase  # Ensure the branch is up-to-date
+
+          if [[ -n $(git status --porcelain nwbInstallExtension.m) ]]; then
+            git add nwbInstallExtension.m
+            git commit -m "Update list of extensions in nwbInstallExtension"
+            git push
+          else
+            echo "Nothing to commit"
+          fi
+        
