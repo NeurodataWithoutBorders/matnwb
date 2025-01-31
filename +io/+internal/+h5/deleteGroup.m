@@ -22,7 +22,16 @@ function deleteGroup(fileReference, groupLocation)
 
     % Open the HDF5 file in read-write mode
     [fileId, fileCleanupObj] = io.internal.h5.resolveFileReference(fileReference, "w"); %#ok<ASGLU>
+            
+    [objectId, objectCleanupObj] = io.internal.h5.openObject(fileId, groupLocation); %#ok<ASGLU>
+    objInfo = H5O.get_info(objectId);
+    clear objectCleanupObj
     
-    % Delete the group
-    H5L.delete(fileId, groupLocation, 'H5P_DEFAULT');
+    if objInfo.type == H5ML.get_constant_value('H5O_TYPE_GROUP')
+        % Delete the group
+        H5L.delete(fileId, groupLocation, 'H5P_DEFAULT');
+    else
+        error('NWB:DeleteGroup:NotAGroup', ...
+            'The h5 object in location "%s" is not a group', groupLocation)
+    end
 end
