@@ -46,8 +46,7 @@ function results = nwbtest(varargin)
         ws = pwd;
         
         nwbClearGenerated(); % Clear default files if any.
-        cleanupObj = onCleanup(@() generateCore);
-        cleaner = onCleanup(@generateCore); % Regenerate core when finished
+        cleanupObj = onCleanup(@() generateCore); % Regenerate core when finished
 
         pvcell = struct2pvcell(parser.Unmatched);
         suite = TestSuite.fromPackage('tests', 'IncludingSubpackages', true, pvcell{:});
