@@ -25,6 +25,14 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
                 p = prop(iProp);
                 isPropertyRequired(iProp) = p.required;
             end
+        elseif isa(prop, 'file.Attribute')
+            if isempty(prop.dependent)
+                isRequired = prop.required;
+            else
+                isRequired = resolveRequiredForDependentProp(propertyName, prop, classprops);
+            end
+        elseif isa(prop, 'file.Link')
+            isRequired = prop.required;
         end
 
         if isRequired || all(isPropertyRequired)
@@ -164,3 +172,12 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
         [newline newline]);
 end
 
+function tf = resolveRequiredForDependentProp(propertyName, propInfo, allProps)
+    if ~propInfo.required 
+        tf = false;
+    else % Check if parent is required
+        parentName = strrep(propertyName, ['_' propInfo.name], '');
+        parentInfo = allProps(parentName);
+        tf = parentInfo.required;
+    end
+end
