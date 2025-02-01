@@ -73,6 +73,10 @@ function results = nwbtest(varargin)
                 'Producing', CoberturaFormat(coverageFile)));
         end % add cobertura coverage
         
+        % Sort suite by shared fixture. Todo: Make it work for different shared fixtures
+        hasSharedFixture = arrayfun(@(x) ~isempty(x.SharedTestFixtures), suite);
+        suite = [suite(hasSharedFixture), suite(~hasSharedFixture)];
+
         results = runner.run(suite);
         
         display(results);
