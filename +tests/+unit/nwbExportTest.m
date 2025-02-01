@@ -38,6 +38,44 @@ classdef nwbExportTest < matlab.unittest.TestCase
                 'NWB:RequiredPropertyMissing')
         end
 
+        function testExportNwbFileWithMissingRequiredAttribute(testCase)
+            processingModule = types.core.ProcessingModule();
+            testCase.NwbObject.processing.set('TestModule', processingModule);
+            
+            nwbFilePath = 'testExportNwbFileWithMissingRequiredAttribute.nwb';
+            testCase.verifyError(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), ...
+                'NWB:RequiredPropertyMissing')
+
+            testCase.NwbObject.processing.remove('TestModule');
+        end
+              
+        function testExportNwbFileWithMissingRequiredLink(testCase)
+            electrode = types.core.IntracellularElectrode('description', 'test');
+            testCase.NwbObject.general_intracellular_ephys.set('Electrode', electrode)
+
+            nwbFilePath = 'testExportNwbFileWithMissingRequiredLink.nwb';
+            testCase.verifyError(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), ...
+                'NWB:RequiredPropertyMissing')
+
+            testCase.NwbObject.general_intracellular_ephys.remove('Electrode');
+        end
+
+        function testExportWithMissingRequiredDependentProperty(testCase)
+            nwbFile = testCase.initNwbFile();
+            fileName = "testExportWithMissingRequiredDependentProperty";
+
+            % Should work without warning
+            testCase.verifyWarningFree( ...
+                @(nwbObj, filePath) nwbExport(nwbFile, fileName + "_1.nwb") )
+
+            nwbFile.general_source_script = '.../nwbExportTest.m';
+
+            % Should issue warning work
+            testCase.verifyWarning( ...
+                @(nwbObj, filePath) nwbExport(nwbFile, fileName + "_2.nwb"), ...
+                'NWB:DependentRequiredPropertyMissing')
+        end
+
         function testExportTimeseriesWithMissingTimestampsAndStartingTime(testCase)
             time_series = types.core.TimeSeries( ...
                  'data', linspace(0, 0.4, 50), ...
