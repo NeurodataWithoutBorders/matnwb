@@ -231,14 +231,11 @@ function docString = fillConstructorDocString(name, props, namespace, superClass
     for i = 1:numel(names)
         propName = names{i};
         thisProp = props(propName);
-        try
-            if isa(thisProp, 'file.Attribute') || isa(thisProp, 'file.Dataset')
-                if thisProp.readonly
-                    continue
-                end
+        
+        if isa(thisProp, 'file.Attribute') || isa(thisProp, 'file.Dataset')
+            if thisProp.readonly
+                continue
             end
-        catch 
-            % pass
         end
 
         valueType = getTypeStr(thisProp);
