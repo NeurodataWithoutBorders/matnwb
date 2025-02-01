@@ -1,4 +1,5 @@
-classdef TutorialTest <  matlab.unittest.TestCase
+classdef (SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture}) ...
+        TutorialTest <  matlab.unittest.TestCase
 % TutorialTest - Unit test for testing the matnwb tutorials.
 %
 %   This test will test most tutorial files (while skipping tutorials with 
@@ -61,7 +62,7 @@ classdef TutorialTest <  matlab.unittest.TestCase
             testCase.MatNwbDirectory = rootPath;
 
             % Use a fixture to add the folder to the search path
-            testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
+            %testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
             testCase.applyFixture(matlab.unittest.fixtures.PathFixture(tutorialsFolder));
             
             % Check if it is possible to call py.nwbinspector.* functions.
@@ -73,14 +74,14 @@ classdef TutorialTest <  matlab.unittest.TestCase
                 testCase.NWBInspectorMode = "CLI";
             end
 
-            testCase.applyFixture( ResetGeneratedTypesFixture );
+            %testCase.applyFixture( ResetGeneratedTypesFixture );
         end
     end
 
     methods (TestMethodSetup)
         function setupMethod(testCase)
             testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
-            generateCore('savedir', '.');
+            %generateCore('savedir', '.');
         end
     end
     
