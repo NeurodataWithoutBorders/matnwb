@@ -1,4 +1,7 @@
 classdef GenerationTest < matlab.unittest.TestCase
+% Note: Sometimes this test does not work for the first 2 schemaVersion. 
+% In this situation, restarting MATLAB does the trick.
+
     properties (MethodSetupParameter)
         schemaVersion = listSchemaVersions()
     end
