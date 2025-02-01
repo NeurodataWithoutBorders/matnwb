@@ -151,7 +151,7 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
         superClassProps);
     setterFcns = file.fillSetters(setdiff(nonInherited, union(readonly, hiddenAndReadonly)));
     validatorFcns = file.fillValidators(allProperties, classprops, namespace, namespace.getFullClassName(name), inherited);
-    exporterFcns = file.fillExport(nonInherited, class, depnm);
+    exporterFcns = file.fillExport(nonInherited, class, depnm, required);
     methodBody = strjoin({constructorBody...
         '%% SETTERS' setterFcns...
         '%% VALIDATORS' validatorFcns...
@@ -173,6 +173,9 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
 end
 
 function tf = resolveRequiredForDependentProp(propertyName, propInfo, allProps)
+% resolveRequiredForDependentProp - If a dependent property is required,
+% whether it is required on object level also depends on whether it's parent 
+% property is required.
     if ~propInfo.required 
         tf = false;
     else % Check if parent is required
