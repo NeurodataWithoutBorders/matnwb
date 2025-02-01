@@ -232,8 +232,10 @@ function docString = fillConstructorDocString(name, props, namespace, superClass
         propName = names{i};
         thisProp = props(propName);
         try
-            if isprop(thisProp, 'readonly') && thisProp.readonly
-                continue
+            if isa(thisProp, 'file.Attribute') || isa(thisProp, 'file.Dataset')
+                if thisProp.readonly
+                    continue
+                end
             end
         catch 
             % pass
