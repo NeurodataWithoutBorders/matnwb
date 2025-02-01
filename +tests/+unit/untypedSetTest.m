@@ -71,6 +71,6 @@ end
 
 function testSetCharValue(testCase)
     untypedSet = types.untyped.Set( struct('a', 'a', 'b', 'b') );
-    untypedSet.set('c', 'c')
+    untypedSet.set('c', 'c');
     testCase.verifyEqual(untypedSet.get('c'), 'c')
 end
