@@ -106,6 +106,17 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
         end
 
         function warnIfPropertyAttributeNotExported(obj, propName, depPropName, fullpath)
+            % Skip warning if the value is equal to the default value for
+            % the property (value was probably not set by the user).
+            mc = metaclass(obj);
+            propInfo = mc.PropertyList(strcmp({mc.PropertyList.Name}, propName));
+            if propInfo.HasDefault
+                propValue = obj.(propName);
+                if isequal(propValue, propInfo.DefaultValue)
+                    return
+                end
+            end
+
             warnState = warning('backtrace', 'off');
             cleanupObj = onCleanup(@(s) warning(warnState));
             warningId = 'NWB:DependentAttributeNotExported';
