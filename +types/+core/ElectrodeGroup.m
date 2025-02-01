@@ -5,11 +5,14 @@ classdef ElectrodeGroup < types.core.NWBContainer & types.untyped.GroupClass
 %  None
 
 
+% REQUIRED PROPERTIES
+properties
+    description; % REQUIRED (char) Description of this electrode group.
+    device; % REQUIRED Device
+    location; % REQUIRED (char) Location of electrode group. Specify the area, layer, comments on estimation of area/layer, etc. Use standard atlas names for anatomical regions when possible.
+end
 % OPTIONAL PROPERTIES
 properties
-    description; %  (char) Description of this electrode group.
-    device; %  Device
-    location; %  (char) Location of electrode group. Specify the area, layer, comments on estimation of area/layer, etc. Use standard atlas names for anatomical regions when possible.
     position; %  (Table with columns: (x = single, y = single, z = single)) stereotaxic or common framework coordinates
 end
 

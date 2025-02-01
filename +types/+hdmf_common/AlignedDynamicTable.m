@@ -5,9 +5,12 @@ classdef AlignedDynamicTable < types.hdmf_common.DynamicTable & types.untyped.Gr
 %  id
 
 
+% REQUIRED PROPERTIES
+properties
+    categories; % REQUIRED (char) The names of the categories in this AlignedDynamicTable. Each category is represented by one DynamicTable stored in the parent group. This attribute should be used to specify an order of categories and the category names must match the names of the corresponding DynamicTable in the group.
+end
 % OPTIONAL PROPERTIES
 properties
-    categories; %  (char) The names of the categories in this AlignedDynamicTable. Each category is represented by one DynamicTable stored in the parent group. This attribute should be used to specify an order of categories and the category names must match the names of the corresponding DynamicTable in the group.
     dynamictable; %  (DynamicTable) A DynamicTable representing a particular category for columns in the AlignedDynamicTable parent container. The table MUST be aligned with (i.e., have the same number of rows) as all other DynamicTables stored in the AlignedDynamicTable parent container. The name of the category is given by the name of the DynamicTable and its description by the description attribute of the DynamicTable.
 end
 

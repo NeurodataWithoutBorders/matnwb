@@ -7,6 +7,7 @@ classdef ImagingPlane < types.core.NWBContainer & types.untyped.GroupClass
 
 % REQUIRED PROPERTIES
 properties
+    device; % REQUIRED Device
     excitation_lambda; % REQUIRED (single) Excitation wavelength, in nm.
     indicator; % REQUIRED (char) Calcium indicator.
     location; % REQUIRED (char) Location of the imaging plane. Specify the area, layer, comments on estimation of area/layer, stereotaxic coordinates if in vivo, etc. Use standard atlas names for anatomical regions when possible.
@@ -15,7 +16,6 @@ end
 % OPTIONAL PROPERTIES
 properties
     description; %  (char) Description of the imaging plane.
-    device; %  Device
     grid_spacing; %  (single) Space between pixels in (x, y) or voxels in (x, y, z) directions, in the specified unit. Assumes imaging plane is a regular grid. See also reference_frame to interpret the grid.
     grid_spacing_unit; %  (char) Measurement units for grid_spacing. The default value is 'meters'.
     imaging_rate; %  (single) Rate that images are acquired, in Hz. If the corresponding TimeSeries is present, the rate should be stored there instead.
@@ -443,6 +443,9 @@ methods
         elseif isempty(obj.grid_spacing) && ~isempty(obj.grid_spacing_unit)
             obj.warnIfPropertyAttributeNotExported('grid_spacing_unit', 'grid_spacing', fullpath)
         end
+        if ~isempty(obj.grid_spacing) && isempty(obj.grid_spacing_unit)
+            obj.warnIfRequiredDependencyMissing('grid_spacing_unit', 'grid_spacing', fullpath)
+        end
         if ~isempty(obj.imaging_rate)
             if startsWith(class(obj.imaging_rate), 'types.untyped.')
                 refs = obj.imaging_rate.export(fid, [fullpath '/imaging_rate'], refs);
@@ -485,6 +488,9 @@ methods
             io.writeAttribute(fid, [fullpath '/origin_coords/unit'], obj.origin_coords_unit);
         elseif isempty(obj.origin_coords) && ~isempty(obj.origin_coords_unit)
             obj.warnIfPropertyAttributeNotExported('origin_coords_unit', 'origin_coords', fullpath)
+        end
+        if ~isempty(obj.origin_coords) && isempty(obj.origin_coords_unit)
+            obj.warnIfRequiredDependencyMissing('origin_coords_unit', 'origin_coords', fullpath)
         end
         if ~isempty(obj.reference_frame)
             if startsWith(class(obj.reference_frame), 'types.untyped.')

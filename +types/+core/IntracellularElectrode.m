@@ -8,11 +8,11 @@ classdef IntracellularElectrode < types.core.NWBContainer & types.untyped.GroupC
 % REQUIRED PROPERTIES
 properties
     description; % REQUIRED (char) Description of electrode (e.g.,  whole-cell, sharp, etc.).
+    device; % REQUIRED Device
 end
 % OPTIONAL PROPERTIES
 properties
     cell_id; %  (char) unique ID of the cell
-    device; %  Device
     filtering; %  (char) Electrode specific filtering.
     initial_access_resistance; %  (char) Initial access resistance.
     location; %  (char) Location of the electrode. Specify the area, layer, comments on estimation of area/layer, stereotaxic coordinates if in vivo, etc. Use standard atlas names for anatomical regions when possible.
