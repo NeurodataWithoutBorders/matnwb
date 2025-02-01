@@ -7,7 +7,7 @@ classdef NWBFile < types.core.NWBContainer & types.untyped.GroupClass
 
 % READONLY PROPERTIES
 properties(SetAccess = protected)
-    nwb_version; %  (char) File version string. Use semantic versioning, e.g. 1.2.1. This will be the name of the format with trailing major, minor and patch numbers.
+    nwb_version = "2.8.0"; %  (char) File version string. Use semantic versioning, e.g. 1.2.1. This will be the name of the format with trailing major, minor and patch numbers.
 end
 % REQUIRED PROPERTIES
 properties

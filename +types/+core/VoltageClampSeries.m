@@ -7,13 +7,13 @@ classdef VoltageClampSeries < types.core.PatchClampSeries & types.untyped.GroupC
 
 % READONLY PROPERTIES
 properties(SetAccess = protected)
-    capacitance_fast_unit; %  (char) Unit of measurement for capacitance_fast, which is fixed to 'farads'.
-    capacitance_slow_unit; %  (char) Unit of measurement for capacitance_fast, which is fixed to 'farads'.
-    resistance_comp_bandwidth_unit; %  (char) Unit of measurement for resistance_comp_bandwidth, which is fixed to 'hertz'.
-    resistance_comp_correction_unit; %  (char) Unit of measurement for resistance_comp_correction, which is fixed to 'percent'.
-    resistance_comp_prediction_unit; %  (char) Unit of measurement for resistance_comp_prediction, which is fixed to 'percent'.
-    whole_cell_capacitance_comp_unit; %  (char) Unit of measurement for whole_cell_capacitance_comp, which is fixed to 'farads'.
-    whole_cell_series_resistance_comp_unit; %  (char) Unit of measurement for whole_cell_series_resistance_comp, which is fixed to 'ohms'.
+    capacitance_fast_unit = "farads"; %  (char) Unit of measurement for capacitance_fast, which is fixed to 'farads'.
+    capacitance_slow_unit = "farads"; %  (char) Unit of measurement for capacitance_fast, which is fixed to 'farads'.
+    resistance_comp_bandwidth_unit = "hertz"; %  (char) Unit of measurement for resistance_comp_bandwidth, which is fixed to 'hertz'.
+    resistance_comp_correction_unit = "percent"; %  (char) Unit of measurement for resistance_comp_correction, which is fixed to 'percent'.
+    resistance_comp_prediction_unit = "percent"; %  (char) Unit of measurement for resistance_comp_prediction, which is fixed to 'percent'.
+    whole_cell_capacitance_comp_unit = "farads"; %  (char) Unit of measurement for whole_cell_capacitance_comp, which is fixed to 'farads'.
+    whole_cell_series_resistance_comp_unit = "ohms"; %  (char) Unit of measurement for whole_cell_series_resistance_comp, which is fixed to 'ohms'.
 end
 % OPTIONAL PROPERTIES
 properties

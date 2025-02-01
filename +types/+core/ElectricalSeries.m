@@ -7,7 +7,7 @@ classdef ElectricalSeries < types.core.TimeSeries & types.untyped.GroupClass
 
 % READONLY PROPERTIES
 properties(SetAccess = protected)
-    channel_conversion_axis; %  (int32) The zero-indexed axis of the 'data' dataset that the channel-specific conversion factor corresponds to. This value is fixed to 1.
+    channel_conversion_axis = 1; %  (int32) The zero-indexed axis of the 'data' dataset that the channel-specific conversion factor corresponds to. This value is fixed to 1.
 end
 % REQUIRED PROPERTIES
 properties
