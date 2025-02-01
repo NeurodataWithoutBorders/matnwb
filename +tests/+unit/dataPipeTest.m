@@ -16,60 +16,55 @@ end
 function testInit(testCase)
     import types.untyped.datapipe.*;
     import matlab.unittest.fixtures.SuppressedWarningsFixture
-    %testCase.applyFixture(SuppressedWarningsFixture('NWB:DataPipeTest:Debug'))
-
-    warnDebugId = 'NWB:DataPipeTest:Debug';
-    warning('off', warnDebugId);
-    warning(warnDebugId, '');
     
-    %% extra data type
+    %% Providing data and dataType should issue warning
     data = rand(100, 1);
-    % types.untyped.DataPipe('data', data, 'dataType', 'double');
-    % [~,lastId] = lastwarn();
-    % testCase.verifyEqual(lastId, 'NWB:DataPipe:RedundantDataType');
-
-    testCase.verifyWarning(...
+    pipe = testCase.verifyWarning(...
         @(varargin) types.untyped.DataPipe('data', data, 'dataType', 'double'), ...
-        'NWB:DataPipe:RedundantDataType')
-    
-    warning(warnDebugId, '');
-    
-    %% compressionLevel and hasShuffle ignored if filters is provided
-    pipe = types.untyped.DataPipe('data', data ...
-        , 'compressionLevel', 3 ...
-        , 'hasShuffle', true ...
-        , 'filters', [properties.Compression(4)]);
-    [~,lastId] = lastwarn();
-    testCase.verifyEqual(lastId, 'NWB:DataPipe:FilterOverride');
-    testCase.verifyEqual(pipe.compressionLevel, 4);
-    testCase.verifyTrue(~pipe.hasShuffle);
+        'NWB:DataPipe:RedundantDataType');
+        
     pipe.compressionLevel = 2;
-    testCase.verifyEqual(pipe.compressionLevel, 2);
     pipe.hasShuffle = true;
-    testCase.verifyTrue(pipe.hasShuffle);
-    
-    warning(warnDebugId, '');
-    
-    %% extraneous properties from file
+
+    %% Extraneous properties from file
     filename = 'testInit.h5';
     datasetName = '/test_data';
     fid = H5F.create(filename);
     pipe.export(fid, datasetName, {});
     H5F.close(fid);
     
-    testCase.verifyWarning(...
+    pipe = testCase.verifyWarning(...
         @(varargin) types.untyped.DataPipe('filename', filename, 'path', datasetName, 'dataType', 'double'), ...
-        'NWB:DataPipe:UnusedArguments')
+        'NWB:DataPipe:UnusedArguments');
 
-    testCase.applyFixture(SuppressedWarningsFixture('NWB:DataPipe:UnusedArguments'))
-    pipe = types.untyped.DataPipe('filename', filename, 'path', datasetName, 'dataType', 'double');
-    % [~,lastId] = lastwarn();
-    % testCase.verifyEqual(lastId, 'NWB:DataPipe:UnusedArguments');
+    % Verify that proprerty values from file are present in object.
     testCase.verifyEqual(pipe.compressionLevel, 2);
     testCase.verifyTrue(pipe.hasShuffle);
+end
+
+function testFilterOverride(testCase)
+    import types.untyped.datapipe.*;
+
+    constructorArgs = { ...
+        'data', rand(100, 1), ...
+        'compressionLevel', 3, ...
+        'hasShuffle', true, ...
+        'filters', [properties.Compression(4)] ...
+        };
+
+    pipe = testCase.verifyWarning(...
+        @(varargin) types.untyped.DataPipe(constructorArgs{:}), ...
+        'NWB:DataPipe:FilterOverride');
     
-    % cleanup
-    warning('on', warnDebugId);
+    % Verify that compressionLevel and hasShuffle is ignored if filters is provided
+    testCase.verifyEqual(pipe.compressionLevel, 4);
+    testCase.verifyFalse(pipe.hasShuffle);
+
+    % Explicitly set property values and verify that they are updated
+    pipe.compressionLevel = 2;
+    testCase.verifyEqual(pipe.compressionLevel, 2);
+    pipe.hasShuffle = true;
+    testCase.verifyTrue(pipe.hasShuffle);
 end
 
 function testIndex(testCase)
@@ -197,8 +192,6 @@ function testBoundPipe(testCase)
     import types.untyped.*;
     filename = 'bound.h5';
     dsName = '/test_data';
-    debugId = 'NWB:DataPipe:Debug';
-    warning('off', debugId);
     
     %% full pipe case
     fullpipe = DataPipe('data', rand(100, 1));
@@ -236,17 +229,14 @@ function testBoundPipe(testCase)
     H5D.close(did);
     H5F.close(fid);
     
-    warning(debugId, '');
-    multipipe = DataPipe('filename', filename, 'path', dsName);
-    [~,lastId] = lastwarn();
-    testCase.verifyEqual(lastId, 'NWB:BoundPipe:InvalidPipeShape');
+    multipipe = testCase.verifyWarning(...
+        @(varargin) DataPipe('filename', filename, 'path', dsName), ...
+        'NWB:BoundPipe:InvalidPipeShape');
     
-    try
-        multipipe.append(rand(10, 2, 10));
-    catch ME
-        testCase.verifyEqual(ME.identifier, 'NWB:BoundPipe:InvalidDataShape');
-    end
-    
+    testCase.verifyError(...
+        @(varargin) multipipe.append(rand(10, 2, 10)), ...
+        'NWB:BoundPipe:InvalidDataShape')
+
     delete(filename);
     
     %% not chunked behavior
@@ -259,14 +249,12 @@ function testBoundPipe(testCase)
     H5D.write(did, 'H5ML_DEFAULT', 'H5S_ALL', 'H5S_ALL', 'H5P_DEFAULT', data);
     H5D.close(did);
     H5F.close(fid);
-    warning(debugId, '');
-    nochunk = DataPipe('filename', filename, 'path', dsName);
-    [~,lastId] = lastwarn();
-    testCase.verifyEqual(lastId, 'NWB:BoundPipe:NotChunked');
+
+    nochunk = testCase.verifyWarning(...
+        @(varargin) DataPipe('filename', filename, 'path', dsName), ...
+        'NWB:BoundPipe:NotChunked');
+
     nochunk.load(); % test still loadable.
-    
-    %% cleanup
-    warning('on', debugId);
 end
 
 function testConfigurationFromData(testCase)
