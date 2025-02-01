@@ -106,6 +106,17 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
         end
 
         function warnIfPropertyAttributeNotExported(obj, propName, depPropName, fullpath)
+            % Skip warning if the value is equal to the default value for
+            % the property (value was probably not set by the user).
+            mc = metaclass(obj);
+            propInfo = mc.PropertyList(strcmp({mc.PropertyList.Name}, propName));
+            if propInfo.HasDefault
+                propValue = obj.(propName);
+                if isequal(propValue, propInfo.DefaultValue)
+                    return
+                end
+            end
+
             warnState = warning('backtrace', 'off');
             cleanupObj = onCleanup(@(s) warning(warnState));
             warningId = 'NWB:DependentAttributeNotExported';
@@ -160,6 +171,19 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
                 warning('NWB:RequiredPropertyMissing', ...
                     'The following required properties are missing for instance for type "%s":\n%s', class(obj), propertyListStr)
             end
+        end
+
+        function warnIfRequiredDependencyMissing(obj, propName, depPropName, fullpath)
+            if isempty(fullpath); fullpath = 'root'; end
+            warnState = warning('backtrace', 'off');
+            cleanupObj = onCleanup(@(s) warning(warnState));
+            warningId = 'NWB:DependentRequiredPropertyMissing';
+            warningMessage = sprintf( [ ...
+                'The property "%s" of type "%s" in file location "%s" is ' ...
+                'required when the property "%s" is set. Please add a value ' ...
+                'for "%s" and re-export.'], ...
+                propName, class(obj), fullpath, depPropName, propName);
+            warning(warningId, warningMessage) %#ok<SPWRN>
         end
 
         function throwErrorIfMissingRequiredProps(obj, fullpath)

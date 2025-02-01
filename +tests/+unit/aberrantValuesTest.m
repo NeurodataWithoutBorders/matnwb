@@ -32,7 +32,8 @@ end
 function testInvalidConstraint(TestCase)
     % Add a fake valid dataset to force the constrained validation to fail.
     fid = H5F.open(TestCase.TestData.Filename, 'H5F_ACC_RDWR', 'H5P_DEFAULT');
-    wrongData = types.hdmf_common.VectorData('data', rand(3,1));
+    % add a fake valid dataset to force the constrained validation to fail.
+    wrongData = types.hdmf_common.VectorData('data', rand(3,1), 'description', 'fake data');
     refs = wrongData.export(fid, '/acquisition/fakedata', {});
     TestCase.assertEmpty(refs);
     H5F.close(fid);

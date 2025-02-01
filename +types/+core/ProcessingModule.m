@@ -5,9 +5,12 @@ classdef ProcessingModule < types.core.NWBContainer & types.untyped.GroupClass
 %  None
 
 
+% REQUIRED PROPERTIES
+properties
+    description; % REQUIRED (char) Description of this collection of processed data.
+end
 % OPTIONAL PROPERTIES
 properties
-    description; %  (char) Description of this collection of processed data.
     dynamictable; %  (DynamicTable) Tables stored in this collection.
     nwbdatainterface; %  (NWBDataInterface) Data objects stored in this collection.
 end

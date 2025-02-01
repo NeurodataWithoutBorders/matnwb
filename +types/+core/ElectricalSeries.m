@@ -7,7 +7,7 @@ classdef ElectricalSeries < types.core.TimeSeries & types.untyped.GroupClass
 
 % READONLY PROPERTIES
 properties(SetAccess = protected)
-    channel_conversion_axis; %  (int32) The zero-indexed axis of the 'data' dataset that the channel-specific conversion factor corresponds to. This value is fixed to 1.
+    channel_conversion_axis = 1; %  (int32) The zero-indexed axis of the 'data' dataset that the channel-specific conversion factor corresponds to. This value is fixed to 1.
 end
 % REQUIRED PROPERTIES
 properties
@@ -179,6 +179,9 @@ methods
         end
         if ~isempty(obj.channel_conversion) && ~isa(obj.channel_conversion, 'types.untyped.SoftLink') && ~isa(obj.channel_conversion, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/channel_conversion/axis'], obj.channel_conversion_axis);
+        end
+        if ~isempty(obj.channel_conversion) && isempty(obj.channel_conversion_axis)
+            obj.warnIfRequiredDependencyMissing('channel_conversion_axis', 'channel_conversion', fullpath)
         end
         refs = obj.electrodes.export(fid, [fullpath '/electrodes'], refs);
         if ~isempty(obj.filtering)
