@@ -45,7 +45,7 @@ classdef (SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture}) ...
               
         function testExportNwbFileWithMissingRequiredLink(testCase)
             electrode = types.core.IntracellularElectrode('description', 'test');
-            testCase.NwbObject.general_intracellular_ephys.set('Electrode', electrode)
+            testCase.NwbObject.general_intracellular_ephys.set('Electrode', electrode);
 
             nwbFilePath = 'testExportNwbFileWithMissingRequiredLink.nwb';
             testCase.verifyError(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), ...
