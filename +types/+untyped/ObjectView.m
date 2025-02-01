@@ -64,11 +64,18 @@ classdef ObjectView < handle
         end
         
         function tf = has_path(obj)
-            try
+            if ~isempty(obj.target)
+                tf = ~isempty(obj.target.metaClass_fullPath);
+            else
                 tf = ~isempty(obj.path);
-            catch
-                tf = false;
             end
+
+            % try
+            %     tfOld = ~isempty(obj.path);
+            % catch
+            %     tfOld = false;
+            % end
+            % assert(tf==tfOld)
         end
     end
 end

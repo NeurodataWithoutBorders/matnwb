@@ -1,4 +1,6 @@
-classdef NwbTestInterface < matlab.unittest.TestCase
+classdef (SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture}) ...
+        NwbTestInterface < matlab.unittest.TestCase
+
     properties
         %     registry
         file
@@ -7,16 +9,12 @@ classdef NwbTestInterface < matlab.unittest.TestCase
     
     methods (TestClassSetup)
         function setupClass(testCase)
-            rootPath = fullfile(fileparts(mfilename('fullpath')), '..', '..');
-            testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
-            testCase.root = rootPath;
         end
     end
     
     methods (TestMethodSetup)
         function setupMethod(testCase)
             testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
-            generateCore('savedir', '.');
             testCase.file = NwbFile( ...
                 'session_description', 'a test NWB File', ...
                 'identifier', 'TEST123', ...

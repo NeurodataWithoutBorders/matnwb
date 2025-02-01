@@ -1,5 +1,5 @@
 function pythonPath = getPythonPath()
-    envPath = fullfile('+tests', 'env.mat');
+    envPath = fullfile(misc.getMatnwbDir, '+tests', 'env.mat');
     
     try
         S = pyenv();

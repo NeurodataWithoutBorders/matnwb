@@ -1,17 +1,11 @@
-classdef FunctionTests < matlab.unittest.TestCase
+classdef (SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture}) ...        
+    FunctionTests < matlab.unittest.TestCase
 % FunctionTests - Unit test for functions.
 
     methods (TestClassSetup)
         function setupClass(testCase)
-            % Get the root path of the matnwb repository
-            rootPath = misc.getMatnwbDir();
-
-            % Use a fixture to add the folder to the search path
-            testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
-
             % Use a fixture to create a temporary working directory
             testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
-            generateCore('savedir', '.');
         end
     end
     

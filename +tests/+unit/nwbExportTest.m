@@ -1,4 +1,5 @@
-classdef nwbExportTest < matlab.unittest.TestCase
+classdef (SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture}) ...
+        nwbExportTest < matlab.unittest.TestCase
 
     properties
         NwbObject
@@ -7,15 +8,8 @@ classdef nwbExportTest < matlab.unittest.TestCase
 
     methods (TestClassSetup)
         function setupClass(testCase)
-            % Get the root path of the matnwb repository
-            rootPath = misc.getMatnwbDir();
-
-            % Use a fixture to add the folder to the search path
-            testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
-
             % Use a fixture to create a temporary working directory
             testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
-            generateCore('savedir', '.');
         end
     end
 

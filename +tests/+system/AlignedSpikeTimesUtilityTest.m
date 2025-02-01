@@ -1,8 +1,9 @@
-classdef AlignedSpikeTimesUtilityTest < matlab.unittest.TestCase
+classdef (SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture}) ...
+        AlignedSpikeTimesUtilityTest < matlab.unittest.TestCase
+
     methods (TestMethodSetup)
         function setupMethod(testCase)
             testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
-            generateCore('savedir', '.');
         end
     end
     methods (Test)

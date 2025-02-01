@@ -1,16 +1,10 @@
-classdef InstallExtensionTest < matlab.unittest.TestCase
+classdef (SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture}) ...
+        InstallExtensionTest < matlab.unittest.TestCase
 
     methods (TestClassSetup)
         function setupClass(testCase)
-            % Get the root path of the matnwb repository
-            rootPath = misc.getMatnwbDir();
-
-            % Use a fixture to add the folder to the search path
-            testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
-
             % Use a fixture to create a temporary working directory
             testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
-            generateCore('savedir', '.');
         end
     end
 
@@ -22,6 +16,7 @@ classdef InstallExtensionTest < matlab.unittest.TestCase
         end
 
         function testInstallExtension(testCase)
+            generateCore('savedir', '.')
             nwbInstallExtension("ndx-miniscope", 'savedir', '.')
 
             testCase.verifyTrue(isfolder('./+types/+ndx_miniscope'), ...
