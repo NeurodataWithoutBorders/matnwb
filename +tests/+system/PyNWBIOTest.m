@@ -36,18 +36,8 @@ classdef PyNWBIOTest < tests.system.RoundTripTest
         function [status, cmdout] = runPyTest(testCase, testName)
             tests.util.addFolderToPythonPath( fileparts(mfilename('fullpath')) )
             
-            envPath = fullfile('+tests', 'env.mat');
-            if isfile(envPath)
-                Env = load(envPath, '-mat');
-                if isfield(Env, 'pythonPath')
-                    pythonPath = Env.pythonPath;
-                else
-                    pythonPath = fullfile(Env.pythonDir, 'python');
-                end
-            else
-                pythonPath = 'python';
-            end
-            
+            pythonPath = tests.util.getPythonPath();
+
             cmd = sprintf('"%s" -B -m unittest %s.%s.%s',...
                 pythonPath,...
                 'PyNWBIOTest', testCase.className(), testName);
