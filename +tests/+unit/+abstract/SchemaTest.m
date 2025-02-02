@@ -24,6 +24,8 @@ classdef (Abstract, SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture
         function setup(testCase)
             % SETUP Performs fixture setup at the class level
 
+            import tests.fixtures.ExtensionFixture
+
             F = testCase.getSharedTestFixtures();
             isMatch = arrayfun(@(x) isa(x, 'tests.fixtures.NwbTypeGeneratorFixture'), F);
             F = F(isMatch);
@@ -35,7 +37,8 @@ classdef (Abstract, SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture
                 testCase.SchemaFolder, ...
                 testCase.SchemaNamespaceFileName);
 
-            generateExtension(namespaceFilePath, 'savedir', typesOutputFolder);
+            testCase.applyFixture( ...
+                ExtensionFixture(namespaceFilePath, typesOutputFolder) )
         end
     end
 

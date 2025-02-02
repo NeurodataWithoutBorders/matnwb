@@ -5,6 +5,7 @@ classdef (SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture}) ...
         function setupClass(testCase)
             % Use a fixture to create a temporary working directory
             testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
+            testCase.addTeardown(@testCase.clearExtension)
         end
     end
 
@@ -80,6 +81,12 @@ classdef (SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture}) ...
             F = F(isMatch);
             
             typesOutputFolder = F.TypesOutputFolder;
+        end
+        
+        function clearExtension(testCase)
+            typesOutputFolder = testCase.getTypesOutputFolder();
+            rmdir(fullfile(typesOutputFolder, '+types', '+ndx_miniscope'), 's')
+            delete(fullfile(typesOutputFolder, 'namespaces', 'ndx-miniscope.mat'))
         end
     end
 
