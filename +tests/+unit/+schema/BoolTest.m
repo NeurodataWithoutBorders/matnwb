@@ -1,4 +1,4 @@
-classdef boolTest < tests.unit.abstract.SchemaTest
+classdef BoolTest < tests.unit.abstract.SchemaTest
 
     properties (Constant)
         SchemaFolder = "boolSchema"

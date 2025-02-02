@@ -1,4 +1,4 @@
-classdef anonTest < tests.unit.abstract.SchemaTest
+classdef AnonTest < tests.unit.abstract.SchemaTest
 
     properties (Constant)
         SchemaFolder = "anonSchema"

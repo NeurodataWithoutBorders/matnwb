@@ -1,4 +1,4 @@
-classdef multipleShapesTest < tests.unit.abstract.SchemaTest
+classdef MultipleShapesTest < tests.unit.abstract.SchemaTest
 
     properties (Constant)
         SchemaFolder = "multipleShapesSchema"

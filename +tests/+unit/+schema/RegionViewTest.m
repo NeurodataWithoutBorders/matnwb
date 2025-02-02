@@ -1,4 +1,4 @@
-classdef regionViewTest < tests.unit.abstract.SchemaTest
+classdef RegionViewTest < tests.unit.abstract.SchemaTest
 
     properties (Constant)
         SchemaFolder = "regionReferenceSchema"
@@ -41,9 +41,9 @@ classdef regionViewTest < tests.unit.abstract.SchemaTest
             
             for i = 1:100
                 refName = sprintf('ref%d', i);
-                Reference = nwb.acquisition.get(refName);
-                testCase.verifyEqual(Reference.attribute_regref.refresh(nwb),...
-                    Reference.attribute_regref.refresh(nwbActual));
+                reference = nwb.acquisition.get(refName);
+                testCase.verifyEqual(reference.attribute_regref.refresh(nwb),...
+                    reference.attribute_regref.refresh(nwbActual));
             end
         end
     end
