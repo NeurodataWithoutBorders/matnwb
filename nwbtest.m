@@ -47,12 +47,14 @@ function results = nwbtest(varargin)
         
         ws = pwd;
         
+        % Create test suite
         pvcell = struct2pvcell(parser.Unmatched);
         suite = TestSuite.fromPackage('tests', 'IncludingSubpackages', true, pvcell{:});
         if ~isempty(parser.Results.Selector)
             suite = suite.selectIf(parser.Results.Selector);
         end
-        
+        suite = suite.sortByFixtures();
+
         runner = TestRunner.withTextOutput('Verbosity', parser.Results.Verbosity);
         
         resultsFile = fullfile(ws, 'testResults.xml');
@@ -74,7 +76,6 @@ function results = nwbtest(varargin)
             end
         end % add cobertura coverage
 
-        suite = suite.sortByFixtures();
         results = runner.run(suite);
         
         if ~nargout
