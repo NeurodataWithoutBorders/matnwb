@@ -41,13 +41,12 @@ function results = nwbtest(varargin)
         parser.KeepUnmatched = true;
         parser.addParameter('Verbosity', 1);
         parser.addParameter('Selector', [])
+        parser.addParameter('SkipCoverage', false)
+
         parser.parse(varargin{:});
         
         ws = pwd;
         
-        nwbClearGenerated(); % Clear default files if any.
-        cleanupObj = onCleanup(@() generateCore); % Regenerate core when finished
-
         pvcell = struct2pvcell(parser.Unmatched);
         suite = TestSuite.fromPackage('tests', 'IncludingSubpackages', true, pvcell{:});
         if ~isempty(parser.Results.Selector)
@@ -69,17 +68,18 @@ function results = nwbtest(varargin)
             'nwbClearGenerated.m'};
         mfilePaths = getMfilePaths(installDir, ignoreFolders, ignorePaths);
         if ~verLessThan('matlab', '9.3') && ~isempty(mfilePaths)
-            runner.addPlugin(CodeCoveragePlugin.forFile(mfilePaths,...
-                'Producing', CoberturaFormat(coverageFile)));
+            if ~parser.Results.SkipCoverage
+                runner.addPlugin(CodeCoveragePlugin.forFile(mfilePaths,...
+                    'Producing', CoberturaFormat(coverageFile)));
+            end
         end % add cobertura coverage
-        
-        % Sort suite by shared fixture. Todo: Make it work for different shared fixtures
-        hasSharedFixture = arrayfun(@(x) ~isempty(x.SharedTestFixtures), suite);
-        suite = [suite(hasSharedFixture), suite(~hasSharedFixture)];
 
+        suite = suite.sortByFixtures();
         results = runner.run(suite);
         
-        display(results);
+        if ~nargout
+            display(results); clear results
+        end
     catch e
         disp(e.getReport('extended'));
         results = [];
