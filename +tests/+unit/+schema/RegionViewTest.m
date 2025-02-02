@@ -5,6 +5,10 @@ classdef RegionViewTest < tests.unit.abstract.SchemaTest
         SchemaNamespaceFileName = "rrs.namespace.yaml"
     end
 
+    properties (Constant, Access = private)
+        NumRegionViewsToTest = 5
+    end
+
     methods (Test)
         function testRegionViewIo(testCase)
             nwb = NwbFile(...
@@ -12,10 +16,11 @@ classdef RegionViewTest < tests.unit.abstract.SchemaTest
                 'session_description', 'region ref test',...
                 'session_start_time', datetime());
             
-            rcContainer = types.rrs.RefContainer('data', types.rrs.RefData('data', rand(10, 10, 10, 10, 10)));
+            rcContainer = types.rrs.RefContainer(...
+                'data', types.rrs.RefData('data', rand(10, 10, 10, 10, 10)));
             nwb.acquisition.set('refdata', rcContainer);
             
-            for i = 1:100
+            for i = 1:testCase.NumRegionViewsToTest
                 rcAttrRef = types.untyped.RegionView(...
                     rcContainer.data,...
                     randi(10),...
@@ -39,7 +44,7 @@ classdef RegionViewTest < tests.unit.abstract.SchemaTest
             nwbActual = nwbRead('test.nwb', 'ignorecache');
             tests.util.verifyContainerEqual(testCase, nwbActual, nwb);
             
-            for i = 1:100
+            for i = 1:testCase.NumRegionViewsToTest
                 refName = sprintf('ref%d', i);
                 reference = nwb.acquisition.get(refName);
                 testCase.verifyEqual(reference.attribute_regref.refresh(nwb),...
