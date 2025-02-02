@@ -74,10 +74,15 @@ classdef (SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture}) ...
         
         function testObjectCopy(testCase)
             rootDir = misc.getMatnwbDir();
-            unitTestLocation = fullfile(rootDir, '+tests', '+unit');
-            generateExtension(fullfile(unitTestLocation, 'regionReferenceSchema', 'rrs.namespace.yaml'), 'savedir', '.');
-            generateExtension(fullfile(unitTestLocation, 'compoundSchema', 'cs.namespace.yaml'), 'savedir', '.');
-            rehash();
+
+            testSchemaLocation = fullfile(rootDir, '+tests', 'test-schema');
+            typesOutputFolder = testCase.getTypesOutputFolder();
+
+            generateExtension(fullfile(testSchemaLocation, 'regionReferenceSchema', 'rrs.namespace.yaml'), ...
+                'savedir', typesOutputFolder);
+            generateExtension(fullfile(testSchemaLocation, 'compoundSchema', 'cs.namespace.yaml'), ...
+                'savedir', typesOutputFolder);
+            
             nwb = NwbFile(...
                 'identifier', 'DATASTUB',...
                 'session_description', 'test datastub object copy',...
@@ -98,6 +103,16 @@ classdef (SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture}) ...
             nwbNew = nwbRead('original.nwb', 'ignorecache');
             tests.util.verifyContainerEqual(testCase, nwbNew, nwb);
             nwbExport(nwbNew, 'new.nwb');
+        end
+    end
+
+    methods (Access = private)
+        function typesOutputFolder = getTypesOutputFolder(testCase)
+            F = testCase.getSharedTestFixtures();
+            isMatch = arrayfun(@(x) isa(x, 'tests.fixtures.NwbTypeGeneratorFixture'), F);
+            F = F(isMatch);
+            
+            typesOutputFolder = F.TypesOutputFolder;
         end
     end
 end

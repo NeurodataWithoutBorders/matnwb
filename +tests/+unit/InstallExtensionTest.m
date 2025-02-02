@@ -16,10 +16,12 @@ classdef (SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture}) ...
         end
 
         function testInstallExtension(testCase)
-            generateCore('savedir', '.')
-            nwbInstallExtension("ndx-miniscope", 'savedir', '.')
+            typesOutputFolder = testCase.getTypesOutputFolder();
+            % use evalc to suppress output
+            evalc(sprintf('nwbInstallExtension("ndx-miniscope", "savedir", "%s")', typesOutputFolder));
 
-            testCase.verifyTrue(isfolder('./+types/+ndx_miniscope'), ...
+            extensionTypesFolder = fullfile(typesOutputFolder, "+types", "+ndx_miniscope");
+            testCase.verifyTrue(isfolder(extensionTypesFolder), ...
                 'Folder with extension types does not exist')
         end
 
@@ -68,6 +70,16 @@ classdef (SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture}) ...
             testCase.verifyError(...
                 @() buildRepoDownloadUrl('https://unsupported.com/user/test', 'main'), ...
                 'NWB:BuildRepoDownloadUrl:UnsupportedRepository')
+        end
+    end
+
+    methods (Access = private)
+        function typesOutputFolder = getTypesOutputFolder(testCase)
+            F = testCase.getSharedTestFixtures();
+            isMatch = arrayfun(@(x) isa(x, 'tests.fixtures.NwbTypeGeneratorFixture'), F);
+            F = F(isMatch);
+            
+            typesOutputFolder = F.TypesOutputFolder;
         end
     end
 
