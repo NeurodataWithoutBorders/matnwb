@@ -79,7 +79,7 @@ function results = nwbtest(varargin)
         results = runner.run(suite);
         
         if ~nargout
-            display(results); clear results
+            display(results)
         end
     catch e
         disp(e.getReport('extended'));
