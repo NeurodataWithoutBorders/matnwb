@@ -159,7 +159,7 @@ classdef (SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture}) ...
     methods (Static)
         function resultsOut = convertNwbInspectorResultsToStruct(resultsIn)
             
-            resultsOut = tests.unit.TutorialTest.getEmptyNwbInspectorResultStruct();
+            resultsOut = tests.system.tutorial.TutorialTest.getEmptyNwbInspectorResultStruct();
                     
             C = cell(resultsIn);
             for i = 1:numel(C)
@@ -179,7 +179,7 @@ classdef (SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture}) ...
         end
     
         function resultsOut = parseNWBInspectorTextOutput(systemCommandOutput)
-            resultsOut = tests.unit.TutorialTest.getEmptyNwbInspectorResultStruct();
+            resultsOut = tests.system.tutorial.TutorialTest.getEmptyNwbInspectorResultStruct();
             
             importanceLevels = containers.Map(...
                 ["BEST_PRACTICE_SUGGESTION", ...
@@ -265,5 +265,5 @@ function tutorialNames = listTutorialFiles()
         );
 
     L( [L.isdir] ) = []; % Ignore folders
-    tutorialNames = setdiff({L.name}, tests.unit.TutorialTest.SkippedTutorials);
+    tutorialNames = setdiff({L.name}, tests.system.tutorial.TutorialTest.SkippedTutorials);
 end

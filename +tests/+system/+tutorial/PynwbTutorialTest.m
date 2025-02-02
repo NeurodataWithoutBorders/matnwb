@@ -136,7 +136,7 @@ classdef PynwbTutorialTest <  matlab.unittest.TestCase
             
             for i = 1:numel(nwbListing)
                 nwbFilename = nwbListing(i).name;
-                if any(strcmp(nwbFilename, tests.unit.PynwbTutorialTest.SkippedFiles))
+                if any(strcmp(nwbFilename, tests.system.tutorial.PynwbTutorialTest.SkippedFiles))
                     continue
                 end
 
@@ -213,12 +213,12 @@ function tutorialNames = listTutorialFiles()
 
     % Exclude skipped files.
     fileNames = strcat(fileNames(keep), '.py');
-    [~, iA] = setdiff(fileNames, tests.unit.PynwbTutorialTest.SkippedTutorials, 'stable');
+    [~, iA] = setdiff(fileNames, tests.system.tutorial.PynwbTutorialTest.SkippedTutorials, 'stable');
     tutorialNames = allFilePaths(iA);
 end
 
 function folderPath = getMatNwbRootDirectory()
-    folderPath = fileparts(fileparts(fileparts(mfilename('fullpath'))));
+    folderPath = fileparts(fileparts(fileparts(fileparts(mfilename('fullpath')))));
 end
 
 function pynwbFolder = downloadPynwb()
