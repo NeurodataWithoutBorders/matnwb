@@ -48,8 +48,14 @@ classdef (SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture}) ...
             import matlab.unittest.fixtures.SuppressedWarningsFixture
             testCase.applyFixture(SuppressedWarningsFixture('NWB:CheckUnset:InvalidProperties'))
             
-            nwbClearGenerated('.', 'ClearCache', true)
-            generateCore("2.1.0", "savedir", '.')
+            F = testCase.getSharedTestFixtures();
+            isMatch = arrayfun(@(x) isa(x, 'tests.fixtures.NwbTypeGeneratorFixture'), F);
+            F = F(isMatch);
+            
+            typesOutputFolder = F.TypesOutputFolder;
+
+            nwbClearGenerated(typesOutputFolder, 'ClearCache', true)
+            generateCore("2.1.0", "savedir", typesOutputFolder)
             rehash();
             table = types.core.DynamicTable( ...
                 'description', 'test table with DynamicTableRegion', ...
@@ -63,9 +69,8 @@ classdef (SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture}) ...
             % testCase.verifyEmpty(dtr_table.vectordata) %todo when PR merged
             testCase.verifyEqual(size(table.vectordata), uint64([0,1]))
         
-            nwbClearGenerated('.','ClearCache',true)
-            generateCore('savedir', '.');
-            rehash();
+            nwbClearGenerated(typesOutputFolder, 'ClearCache',true)
+            generateCore('savedir', typesOutputFolder);
         end
         
         function testToTableForNdVectorData(testCase)
