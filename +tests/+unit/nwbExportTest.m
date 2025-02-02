@@ -39,6 +39,7 @@ classdef nwbExportTest < matlab.unittest.TestCase
         end
 
         function testExportNwbFileWithMissingRequiredAttribute(testCase)
+            % this should raise an error because ProcessingModule requires a 'description' attribute
             processingModule = types.core.ProcessingModule();
             testCase.NwbObject.processing.set('TestModule', processingModule);
             
