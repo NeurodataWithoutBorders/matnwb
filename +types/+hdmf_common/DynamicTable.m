@@ -7,12 +7,12 @@ classdef DynamicTable < types.hdmf_common.Container & types.untyped.GroupClass
 
 % REQUIRED PROPERTIES
 properties
+    colnames; % REQUIRED (char) The names of the columns in this table. This should be used to specify an order to the columns.
+    description; % REQUIRED (char) Description of what is in this dynamic table.
     id; % REQUIRED (ElementIdentifiers) Array of unique identifiers for the rows of this dynamic table.
 end
 % OPTIONAL PROPERTIES
 properties
-    colnames; %  (char) The names of the columns in this table. This should be used to specify an order to the columns.
-    description; %  (char) Description of what is in this dynamic table.
     vectordata; %  (VectorData) Vector columns, including index columns, of this dynamic table.
 end
 

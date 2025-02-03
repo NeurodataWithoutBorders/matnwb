@@ -10,10 +10,7 @@ properties
     data; % REQUIRED (any) The non-zero values in the matrix.
     indices; % REQUIRED (uint) The column indices.
     indptr; % REQUIRED (uint) The row index pointer.
-end
-% OPTIONAL PROPERTIES
-properties
-    shape; %  (uint) The shape (number of rows, number of columns) of this sparse matrix.
+    shape; % REQUIRED (uint) The shape (number of rows, number of columns) of this sparse matrix.
 end
 
 methods

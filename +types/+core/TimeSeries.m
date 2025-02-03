@@ -14,6 +14,7 @@ end
 % REQUIRED PROPERTIES
 properties
     data; % REQUIRED (any) Data values. Data can be in 1-D, 2-D, 3-D, or 4-D. The first dimension should always represent time. This can also be used to store binary data (e.g., image frames). This can also be a link to data stored in an external file.
+    data_unit; % REQUIRED (char) Base unit of measurement for working with the data. Actual stored values are not necessarily stored in these units. To access the data in these units, multiply 'data' by 'conversion' and add 'offset'.
 end
 % OPTIONAL PROPERTIES
 properties
@@ -24,7 +25,6 @@ properties
     data_conversion; %  (single) Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data to the specified 'unit'. e.g. if the data acquisition system stores values in this object as signed 16-bit integers (int16 range -32,768 to 32,767) that correspond to a 5V range (-2.5V to 2.5V), and the data acquisition system gain is 8000X, then the 'conversion' multiplier to get from raw data acquisition values to recorded volts is 2.5/32768/8000 = 9.5367e-9.
     data_offset; %  (single) Scalar to add to the data after scaling by 'conversion' to finalize its coercion to the specified 'unit'. Two common examples of this include (a) data stored in an unsigned type that requires a shift after scaling to re-center the data, and (b) specialized recording devices that naturally cause a scalar offset with respect to the true units.
     data_resolution; %  (single) Smallest meaningful difference between values in data, stored in the specified by unit, e.g., the change in value of the least significant bit, or a larger number if signal noise is known to be present. If unknown, use -1.0.
-    data_unit; %  (char) Base unit of measurement for working with the data. Actual stored values are not necessarily stored in these units. To access the data in these units, multiply 'data' by 'conversion' and add 'offset'.
     description; %  (char) Description of the time series.
     starting_time; %  (double) Timestamp of the first sample in seconds. When timestamps are uniformly spaced, the timestamp of the first sample can be specified and all subsequent ones calculated from the sampling rate attribute.
     starting_time_rate; %  (single) Sampling rate, in Hz.
@@ -437,8 +437,14 @@ methods
         elseif isempty(obj.starting_time) && ~isempty(obj.starting_time_rate)
             obj.warnIfPropertyAttributeNotExported('starting_time_rate', 'starting_time', fullpath)
         end
+        if ~isempty(obj.starting_time) && isempty(obj.starting_time_rate)
+            obj.warnIfRequiredDependencyMissing('starting_time_rate', 'starting_time', fullpath)
+        end
         if ~isempty(obj.starting_time) && ~isa(obj.starting_time, 'types.untyped.SoftLink') && ~isa(obj.starting_time, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/starting_time/unit'], obj.starting_time_unit);
+        end
+        if ~isempty(obj.starting_time) && isempty(obj.starting_time_unit)
+            obj.warnIfRequiredDependencyMissing('starting_time_unit', 'starting_time', fullpath)
         end
         if ~isempty(obj.timestamps)
             if startsWith(class(obj.timestamps), 'types.untyped.')
@@ -450,8 +456,14 @@ methods
         if ~isempty(obj.timestamps) && ~isa(obj.timestamps, 'types.untyped.SoftLink') && ~isa(obj.timestamps, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/timestamps/interval'], obj.timestamps_interval);
         end
+        if ~isempty(obj.timestamps) && isempty(obj.timestamps_interval)
+            obj.warnIfRequiredDependencyMissing('timestamps_interval', 'timestamps', fullpath)
+        end
         if ~isempty(obj.timestamps) && ~isa(obj.timestamps, 'types.untyped.SoftLink') && ~isa(obj.timestamps, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/timestamps/unit'], obj.timestamps_unit);
+        end
+        if ~isempty(obj.timestamps) && isempty(obj.timestamps_unit)
+            obj.warnIfRequiredDependencyMissing('timestamps_unit', 'timestamps', fullpath)
         end
     end
     %% CUSTOM CONSTRAINTS

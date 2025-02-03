@@ -5,10 +5,13 @@ classdef PlaneSegmentation < types.hdmf_common.DynamicTable & types.untyped.Grou
 %  id
 
 
+% REQUIRED PROPERTIES
+properties
+    imaging_plane; % REQUIRED ImagingPlane
+end
 % OPTIONAL PROPERTIES
 properties
     image_mask; %  (VectorData) ROI masks for each ROI. Each image mask is the size of the original imaging plane (or volume) and members of the ROI are finite non-zero.
-    imaging_plane; %  ImagingPlane
     pixel_mask; %  (VectorData) Pixel masks for each ROI: a list of indices and weights for the ROI. Pixel masks are concatenated and parsing of this dataset is maintained by the PlaneSegmentation
     pixel_mask_index; %  (VectorIndex) Index into pixel_mask.
     reference_images; %  (ImageSeries) One or more image stacks that the masks apply to (can be one-element stack).

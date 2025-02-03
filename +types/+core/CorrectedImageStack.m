@@ -8,11 +8,8 @@ classdef CorrectedImageStack < types.core.NWBDataInterface & types.untyped.Group
 % REQUIRED PROPERTIES
 properties
     corrected; % REQUIRED (ImageSeries) Image stack with frames shifted to the common coordinates.
+    original; % REQUIRED ImageSeries
     xy_translation; % REQUIRED (TimeSeries) Stores the x,y delta necessary to align each frame to the common coordinates, for example, to align each frame to a reference image.
-end
-% OPTIONAL PROPERTIES
-properties
-    original; %  ImageSeries
 end
 
 methods
