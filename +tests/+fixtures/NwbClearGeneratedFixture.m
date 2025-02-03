@@ -15,6 +15,9 @@ classdef NwbClearGeneratedFixture < matlab.unittest.fixtures.Fixture
 
     methods
         function fixture = NwbClearGeneratedFixture(outputFolder)
+            arguments
+                outputFolder (1,1) string {mustBeFolder} = misc.getMatnwbDir
+            end
             fixture.TypesOutputFolder = outputFolder;
         end
     end
