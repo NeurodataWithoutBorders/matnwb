@@ -1,5 +1,15 @@
 classdef ExtensionGenerationFixture < matlab.unittest.fixtures.Fixture
-    
+%EXTENSIONGENERATIONFIXTURE - Fixture for generating an NWB extension.
+% 
+% EXTENSIONGENERATIONFIXTURE provides a fixture for generating extension code 
+% from an NWB specification's namespace file. When the testing framework
+% sets up the fixture, it calls the generateExtension function to produce the 
+% necessary code in the specified output folder. When the framework tears down
+% the fixture, it removes the generated files and associated cache data, 
+% ensuring that no artifacts remain from the test generation process.
+%
+% See also matlab.unittest.fixtures.Fixture generateExtension nwbClearGenerated
+
     properties
         % TypesOutputFolder - Folder to output generated types for test
         % classes that share this fixture
