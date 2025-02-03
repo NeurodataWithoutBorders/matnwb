@@ -5,9 +5,9 @@ classdef DynamicTableRegion < types.hdmf_common.VectorData & types.untyped.Datas
 %  data
 
 
-% OPTIONAL PROPERTIES
+% REQUIRED PROPERTIES
 properties
-    table; %  (Object reference to DynamicTable) Reference to the DynamicTable object that this region applies to.
+    table; % REQUIRED (Object reference to DynamicTable) Reference to the DynamicTable object that this region applies to.
 end
 
 methods

@@ -25,6 +25,14 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
                 p = prop(iProp);
                 isPropertyRequired(iProp) = p.required;
             end
+        elseif isa(prop, 'file.Attribute')
+            if isempty(prop.dependent)
+                isRequired = prop.required;
+            else
+                isRequired = resolveRequiredForDependentProp(propertyName, prop, classprops);
+            end
+        elseif isa(prop, 'file.Link')
+            isRequired = prop.required;
         end
 
         if isRequired || all(isPropertyRequired)
@@ -143,7 +151,7 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
         superClassProps);
     setterFcns = file.fillSetters(setdiff(nonInherited, union(readonly, hiddenAndReadonly)));
     validatorFcns = file.fillValidators(allProperties, classprops, namespace, namespace.getFullClassName(name), inherited);
-    exporterFcns = file.fillExport(nonInherited, class, depnm);
+    exporterFcns = file.fillExport(nonInherited, class, depnm, required);
     methodBody = strjoin({constructorBody...
         '%% SETTERS' setterFcns...
         '%% VALIDATORS' validatorFcns...
@@ -164,3 +172,15 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
         [newline newline]);
 end
 
+function tf = resolveRequiredForDependentProp(propertyName, propInfo, allProps)
+% resolveRequiredForDependentProp - If a dependent property is required,
+% whether it is required on object level also depends on whether it's parent 
+% property is required.
+    if ~propInfo.required 
+        tf = false;
+    else % Check if parent is required
+        parentName = strrep(propertyName, ['_' propInfo.name], '');
+        parentInfo = allProps(parentName);
+        tf = parentInfo.required;
+    end
+end

@@ -8,22 +8,26 @@ classdef ImagingRetinotopy < types.core.NWBDataInterface & types.untyped.GroupCl
 % REQUIRED PROPERTIES
 properties
     axis_1_phase_map; % REQUIRED (single) Phase response to stimulus on the first measured axis.
+    axis_1_phase_map_dimension; % REQUIRED (int32) Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.
+    axis_1_phase_map_field_of_view; % REQUIRED (single) Size of viewing area, in meters.
+    axis_1_phase_map_unit; % REQUIRED (char) Unit that axis data is stored in (e.g., degrees).
     axis_2_phase_map; % REQUIRED (single) Phase response to stimulus on the second measured axis.
+    axis_2_phase_map_dimension; % REQUIRED (int32) Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.
+    axis_2_phase_map_field_of_view; % REQUIRED (single) Size of viewing area, in meters.
+    axis_2_phase_map_unit; % REQUIRED (char) Unit that axis data is stored in (e.g., degrees).
     axis_descriptions; % REQUIRED (char) Two-element array describing the contents of the two response axis fields. Description should be something like ['altitude', 'azimuth'] or '['radius', 'theta'].
     vasculature_image; % REQUIRED (uint16) Gray-scale anatomical image of cortical surface. Array structure: [rows][columns]
+    vasculature_image_bits_per_pixel; % REQUIRED (int32) Number of bits used to represent each value. This is necessary to determine maximum (white) pixel value
+    vasculature_image_dimension; % REQUIRED (int32) Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.
+    vasculature_image_field_of_view; % REQUIRED (single) Size of viewing area, in meters.
+    vasculature_image_format; % REQUIRED (char) Format of image. Right now only 'raw' is supported.
 end
 % OPTIONAL PROPERTIES
 properties
-    axis_1_phase_map_dimension; %  (int32) Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.
-    axis_1_phase_map_field_of_view; %  (single) Size of viewing area, in meters.
-    axis_1_phase_map_unit; %  (char) Unit that axis data is stored in (e.g., degrees).
     axis_1_power_map; %  (single) Power response on the first measured axis. Response is scaled so 0.0 is no power in the response and 1.0 is maximum relative power.
     axis_1_power_map_dimension; %  (int32) Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.
     axis_1_power_map_field_of_view; %  (single) Size of viewing area, in meters.
     axis_1_power_map_unit; %  (char) Unit that axis data is stored in (e.g., degrees).
-    axis_2_phase_map_dimension; %  (int32) Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.
-    axis_2_phase_map_field_of_view; %  (single) Size of viewing area, in meters.
-    axis_2_phase_map_unit; %  (char) Unit that axis data is stored in (e.g., degrees).
     axis_2_power_map; %  (single) Power response on the second measured axis. Response is scaled so 0.0 is no power in the response and 1.0 is maximum relative power.
     axis_2_power_map_dimension; %  (int32) Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.
     axis_2_power_map_field_of_view; %  (single) Size of viewing area, in meters.
@@ -37,10 +41,6 @@ properties
     sign_map; %  (single) Sine of the angle between the direction of the gradient in axis_1 and axis_2.
     sign_map_dimension; %  (int32) Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.
     sign_map_field_of_view; %  (single) Size of viewing area, in meters.
-    vasculature_image_bits_per_pixel; %  (int32) Number of bits used to represent each value. This is necessary to determine maximum (white) pixel value
-    vasculature_image_dimension; %  (int32) Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.
-    vasculature_image_field_of_view; %  (single) Size of viewing area, in meters.
-    vasculature_image_format; %  (char) Format of image. Right now only 'raw' is supported.
 end
 
 methods
@@ -885,15 +885,24 @@ methods
         elseif isempty(obj.axis_1_power_map) && ~isempty(obj.axis_1_power_map_dimension)
             obj.warnIfPropertyAttributeNotExported('axis_1_power_map_dimension', 'axis_1_power_map', fullpath)
         end
+        if ~isempty(obj.axis_1_power_map) && isempty(obj.axis_1_power_map_dimension)
+            obj.warnIfRequiredDependencyMissing('axis_1_power_map_dimension', 'axis_1_power_map', fullpath)
+        end
         if ~isempty(obj.axis_1_power_map) && ~isa(obj.axis_1_power_map, 'types.untyped.SoftLink') && ~isa(obj.axis_1_power_map, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/axis_1_power_map/field_of_view'], obj.axis_1_power_map_field_of_view, 'forceArray');
         elseif isempty(obj.axis_1_power_map) && ~isempty(obj.axis_1_power_map_field_of_view)
             obj.warnIfPropertyAttributeNotExported('axis_1_power_map_field_of_view', 'axis_1_power_map', fullpath)
         end
+        if ~isempty(obj.axis_1_power_map) && isempty(obj.axis_1_power_map_field_of_view)
+            obj.warnIfRequiredDependencyMissing('axis_1_power_map_field_of_view', 'axis_1_power_map', fullpath)
+        end
         if ~isempty(obj.axis_1_power_map) && ~isa(obj.axis_1_power_map, 'types.untyped.SoftLink') && ~isa(obj.axis_1_power_map, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/axis_1_power_map/unit'], obj.axis_1_power_map_unit);
         elseif isempty(obj.axis_1_power_map) && ~isempty(obj.axis_1_power_map_unit)
             obj.warnIfPropertyAttributeNotExported('axis_1_power_map_unit', 'axis_1_power_map', fullpath)
+        end
+        if ~isempty(obj.axis_1_power_map) && isempty(obj.axis_1_power_map_unit)
+            obj.warnIfRequiredDependencyMissing('axis_1_power_map_unit', 'axis_1_power_map', fullpath)
         end
         if startsWith(class(obj.axis_2_phase_map), 'types.untyped.')
             refs = obj.axis_2_phase_map.export(fid, [fullpath '/axis_2_phase_map'], refs);
@@ -927,15 +936,24 @@ methods
         elseif isempty(obj.axis_2_power_map) && ~isempty(obj.axis_2_power_map_dimension)
             obj.warnIfPropertyAttributeNotExported('axis_2_power_map_dimension', 'axis_2_power_map', fullpath)
         end
+        if ~isempty(obj.axis_2_power_map) && isempty(obj.axis_2_power_map_dimension)
+            obj.warnIfRequiredDependencyMissing('axis_2_power_map_dimension', 'axis_2_power_map', fullpath)
+        end
         if ~isempty(obj.axis_2_power_map) && ~isa(obj.axis_2_power_map, 'types.untyped.SoftLink') && ~isa(obj.axis_2_power_map, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/axis_2_power_map/field_of_view'], obj.axis_2_power_map_field_of_view, 'forceArray');
         elseif isempty(obj.axis_2_power_map) && ~isempty(obj.axis_2_power_map_field_of_view)
             obj.warnIfPropertyAttributeNotExported('axis_2_power_map_field_of_view', 'axis_2_power_map', fullpath)
         end
+        if ~isempty(obj.axis_2_power_map) && isempty(obj.axis_2_power_map_field_of_view)
+            obj.warnIfRequiredDependencyMissing('axis_2_power_map_field_of_view', 'axis_2_power_map', fullpath)
+        end
         if ~isempty(obj.axis_2_power_map) && ~isa(obj.axis_2_power_map, 'types.untyped.SoftLink') && ~isa(obj.axis_2_power_map, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/axis_2_power_map/unit'], obj.axis_2_power_map_unit);
         elseif isempty(obj.axis_2_power_map) && ~isempty(obj.axis_2_power_map_unit)
             obj.warnIfPropertyAttributeNotExported('axis_2_power_map_unit', 'axis_2_power_map', fullpath)
+        end
+        if ~isempty(obj.axis_2_power_map) && isempty(obj.axis_2_power_map_unit)
+            obj.warnIfRequiredDependencyMissing('axis_2_power_map_unit', 'axis_2_power_map', fullpath)
         end
         if startsWith(class(obj.axis_descriptions), 'types.untyped.')
             refs = obj.axis_descriptions.export(fid, [fullpath '/axis_descriptions'], refs);
@@ -954,25 +972,40 @@ methods
         elseif isempty(obj.focal_depth_image) && ~isempty(obj.focal_depth_image_bits_per_pixel)
             obj.warnIfPropertyAttributeNotExported('focal_depth_image_bits_per_pixel', 'focal_depth_image', fullpath)
         end
+        if ~isempty(obj.focal_depth_image) && isempty(obj.focal_depth_image_bits_per_pixel)
+            obj.warnIfRequiredDependencyMissing('focal_depth_image_bits_per_pixel', 'focal_depth_image', fullpath)
+        end
         if ~isempty(obj.focal_depth_image) && ~isa(obj.focal_depth_image, 'types.untyped.SoftLink') && ~isa(obj.focal_depth_image, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/focal_depth_image/dimension'], obj.focal_depth_image_dimension, 'forceArray');
         elseif isempty(obj.focal_depth_image) && ~isempty(obj.focal_depth_image_dimension)
             obj.warnIfPropertyAttributeNotExported('focal_depth_image_dimension', 'focal_depth_image', fullpath)
+        end
+        if ~isempty(obj.focal_depth_image) && isempty(obj.focal_depth_image_dimension)
+            obj.warnIfRequiredDependencyMissing('focal_depth_image_dimension', 'focal_depth_image', fullpath)
         end
         if ~isempty(obj.focal_depth_image) && ~isa(obj.focal_depth_image, 'types.untyped.SoftLink') && ~isa(obj.focal_depth_image, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/focal_depth_image/field_of_view'], obj.focal_depth_image_field_of_view, 'forceArray');
         elseif isempty(obj.focal_depth_image) && ~isempty(obj.focal_depth_image_field_of_view)
             obj.warnIfPropertyAttributeNotExported('focal_depth_image_field_of_view', 'focal_depth_image', fullpath)
         end
+        if ~isempty(obj.focal_depth_image) && isempty(obj.focal_depth_image_field_of_view)
+            obj.warnIfRequiredDependencyMissing('focal_depth_image_field_of_view', 'focal_depth_image', fullpath)
+        end
         if ~isempty(obj.focal_depth_image) && ~isa(obj.focal_depth_image, 'types.untyped.SoftLink') && ~isa(obj.focal_depth_image, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/focal_depth_image/focal_depth'], obj.focal_depth_image_focal_depth);
         elseif isempty(obj.focal_depth_image) && ~isempty(obj.focal_depth_image_focal_depth)
             obj.warnIfPropertyAttributeNotExported('focal_depth_image_focal_depth', 'focal_depth_image', fullpath)
         end
+        if ~isempty(obj.focal_depth_image) && isempty(obj.focal_depth_image_focal_depth)
+            obj.warnIfRequiredDependencyMissing('focal_depth_image_focal_depth', 'focal_depth_image', fullpath)
+        end
         if ~isempty(obj.focal_depth_image) && ~isa(obj.focal_depth_image, 'types.untyped.SoftLink') && ~isa(obj.focal_depth_image, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/focal_depth_image/format'], obj.focal_depth_image_format);
         elseif isempty(obj.focal_depth_image) && ~isempty(obj.focal_depth_image_format)
             obj.warnIfPropertyAttributeNotExported('focal_depth_image_format', 'focal_depth_image', fullpath)
+        end
+        if ~isempty(obj.focal_depth_image) && isempty(obj.focal_depth_image_format)
+            obj.warnIfRequiredDependencyMissing('focal_depth_image_format', 'focal_depth_image', fullpath)
         end
         if ~isempty(obj.sign_map)
             if startsWith(class(obj.sign_map), 'types.untyped.')
@@ -986,10 +1019,16 @@ methods
         elseif isempty(obj.sign_map) && ~isempty(obj.sign_map_dimension)
             obj.warnIfPropertyAttributeNotExported('sign_map_dimension', 'sign_map', fullpath)
         end
+        if ~isempty(obj.sign_map) && isempty(obj.sign_map_dimension)
+            obj.warnIfRequiredDependencyMissing('sign_map_dimension', 'sign_map', fullpath)
+        end
         if ~isempty(obj.sign_map) && ~isa(obj.sign_map, 'types.untyped.SoftLink') && ~isa(obj.sign_map, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/sign_map/field_of_view'], obj.sign_map_field_of_view, 'forceArray');
         elseif isempty(obj.sign_map) && ~isempty(obj.sign_map_field_of_view)
             obj.warnIfPropertyAttributeNotExported('sign_map_field_of_view', 'sign_map', fullpath)
+        end
+        if ~isempty(obj.sign_map) && isempty(obj.sign_map_field_of_view)
+            obj.warnIfRequiredDependencyMissing('sign_map_field_of_view', 'sign_map', fullpath)
         end
         if startsWith(class(obj.vasculature_image), 'types.untyped.')
             refs = obj.vasculature_image.export(fid, [fullpath '/vasculature_image'], refs);

@@ -5,9 +5,9 @@ classdef VectorIndex < types.hdmf_common.VectorData & types.untyped.DatasetClass
 %  data
 
 
-% OPTIONAL PROPERTIES
+% REQUIRED PROPERTIES
 properties
-    target; %  (Object reference to VectorData) Reference to the target dataset that this index applies to.
+    target; % REQUIRED (Object reference to VectorData) Reference to the target dataset that this index applies to.
 end
 
 methods

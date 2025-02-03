@@ -5,10 +5,13 @@ classdef TwoPhotonSeries < types.core.ImageSeries & types.untyped.GroupClass
 %  data
 
 
+% REQUIRED PROPERTIES
+properties
+    imaging_plane; % REQUIRED ImagingPlane
+end
 % OPTIONAL PROPERTIES
 properties
     field_of_view; %  (single) Width, height and depth of image, or imaged area, in meters.
-    imaging_plane; %  ImagingPlane
     pmt_gain; %  (single) Photomultiplier gain.
     scan_line_rate; %  (single) Lines imaged per second. This is also stored in /general/optophysiology but is kept here as it is useful information for analysis, and so good to be stored w/ the actual data.
 end

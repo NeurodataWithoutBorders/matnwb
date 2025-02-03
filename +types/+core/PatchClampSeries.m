@@ -5,11 +5,14 @@ classdef PatchClampSeries < types.core.TimeSeries & types.untyped.GroupClass
 %  data
 
 
+% REQUIRED PROPERTIES
+properties
+    electrode; % REQUIRED IntracellularElectrode
+    stimulus_description; % REQUIRED (char) Protocol/stimulus name for this patch-clamp dataset.
+end
 % OPTIONAL PROPERTIES
 properties
-    electrode; %  IntracellularElectrode
     gain; %  (single) Gain of the recording, in units Volt/Amp (v-clamp) or Volt/Volt (c-clamp).
-    stimulus_description; %  (char) Protocol/stimulus name for this patch-clamp dataset.
     sweep_number; %  (uint32) Sweep number, allows to group different PatchClampSeries together.
 end
 
