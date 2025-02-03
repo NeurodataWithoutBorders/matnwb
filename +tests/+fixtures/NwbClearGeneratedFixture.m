@@ -26,4 +26,10 @@ classdef NwbClearGeneratedFixture < matlab.unittest.fixtures.Fixture
             nwbClearGenerated(fixture.TypesOutputFolder)
         end
     end
+
+    methods (Access = protected)
+        function tf = isCompatible(fixtureA, fixtureB)
+            tf = strcmp(fixtureA.TypesOutputFolder, fixtureB.TypesOutputFolder);
+        end
+    end
 end

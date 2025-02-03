@@ -1,4 +1,4 @@
-classdef (SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture}) ...
+classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
         InstallExtensionTest < matlab.unittest.TestCase
 
     methods (TestClassSetup)
@@ -77,7 +77,7 @@ classdef (SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture}) ...
     methods (Access = private)
         function typesOutputFolder = getTypesOutputFolder(testCase)
             F = testCase.getSharedTestFixtures();
-            isMatch = arrayfun(@(x) isa(x, 'tests.fixtures.NwbTypeGeneratorFixture'), F);
+            isMatch = arrayfun(@(x) isa(x, 'tests.fixtures.GenerateCoreFixture'), F);
             F = F(isMatch);
             
             typesOutputFolder = F.TypesOutputFolder;

@@ -1,4 +1,4 @@
-classdef (Abstract, SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture}) ...        
+classdef (Abstract, SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...        
     SchemaTest < matlab.unittest.TestCase
 % SCHEMATEST - Abstract class for generating and testing test-schemas.
 %
@@ -8,7 +8,7 @@ classdef (Abstract, SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture
 %
 %   Example subclasses are found in the "tests.unit.schema" namespace
 %
-%   See also: matlab.unittest.TestCase, tests.fixtures.NwbTypeGeneratorFixture
+%   See also: matlab.unittest.TestCase, tests.fixtures.GenerateCoreFixture
     
     properties (Constant, Abstract)
         SchemaFolder % Name of folder containing the schema definition files
@@ -27,7 +27,7 @@ classdef (Abstract, SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture
             import tests.fixtures.ExtensionGenerationFixture
 
             F = testCase.getSharedTestFixtures();
-            isMatch = arrayfun(@(x) isa(x, 'tests.fixtures.NwbTypeGeneratorFixture'), F);
+            isMatch = arrayfun(@(x) isa(x, 'tests.fixtures.GenerateCoreFixture'), F);
             F = F(isMatch);
             
             typesOutputFolder = F.TypesOutputFolder;

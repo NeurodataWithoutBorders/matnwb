@@ -1,4 +1,4 @@
-classdef (SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture}) ...        
+classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...        
     dynamicTableTest < matlab.unittest.TestCase
 
     methods (TestClassSetup)
@@ -49,7 +49,7 @@ classdef (SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture}) ...
             testCase.applyFixture(SuppressedWarningsFixture('NWB:CheckUnset:InvalidProperties'))
             
             F = testCase.getSharedTestFixtures();
-            isMatch = arrayfun(@(x) isa(x, 'tests.fixtures.NwbTypeGeneratorFixture'), F);
+            isMatch = arrayfun(@(x) isa(x, 'tests.fixtures.GenerateCoreFixture'), F);
             F = F(isMatch);
             
             typesOutputFolder = F.TypesOutputFolder;
