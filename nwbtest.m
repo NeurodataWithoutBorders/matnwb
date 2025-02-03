@@ -30,45 +30,52 @@ function results = nwbtest(varargin)
     %     nwbtest('ProcedureName', 'testSmoke*')
     %
     %   See also: matlab.unittest.TestSuite.fromPackage
+    
     import matlab.unittest.TestSuite;
     import matlab.unittest.TestRunner;
+
     import matlab.unittest.plugins.XMLPlugin;
-    
     import matlab.unittest.plugins.CodeCoveragePlugin;
     import matlab.unittest.plugins.codecoverage.CoberturaFormat;
+    
     try
         parser = inputParser;
         parser.KeepUnmatched = true;
         parser.addParameter('Verbosity', 1);
         parser.addParameter('Selector', [])
+        parser.addParameter('Namespace', 'tests')
         parser.addParameter('SkipCoverage', false)
 
         parser.parse(varargin{:});
         
-        ws = pwd;
-        
+        numReports = 1 + ~parser.Results.SkipCoverage;
+        [reportOutputFolder, folderCleanupObject] = createReportsFolder(numReports); %#ok<ASGLU>
+
         % Create test suite
         pvcell = struct2pvcell(parser.Unmatched);
-        suite = TestSuite.fromPackage('tests', 'IncludingSubpackages', true, pvcell{:});
+        suite = TestSuite.fromPackage(parser.Results.Namespace, ...
+            'IncludingSubpackages', true, pvcell{:});
         if ~isempty(parser.Results.Selector)
             suite = suite.selectIf(parser.Results.Selector);
         end
         suite = suite.sortByFixtures();
 
+        % Configure test runner
         runner = TestRunner.withTextOutput('Verbosity', parser.Results.Verbosity);
         
-        resultsFile = fullfile(ws, 'testResults.xml');
+        resultsFile = fullfile(reportOutputFolder, 'testResults.xml');
         runner.addPlugin(XMLPlugin.producingJUnitFormat(resultsFile));
         
-        coverageFile = fullfile(ws, 'coverage.xml');
-        [installDir, ~, ~] = fileparts(mfilename('fullpath'));
+        coverageFile = fullfile(reportOutputFolder, 'coverage.xml');
+        
+        [matnwbRootDir, ~, ~] = fileparts(mfilename('fullpath'));
         
         ignoreFolders = {'tutorials', 'tools', '+contrib', '+util', 'external_packages', '+tests', '+types/+core', '+types/+hdmf_common', '+types/+hdmf_experimental'};
         ignorePaths = {...
             fullfile('+matnwb', '+extension', 'installAll.m'), ...
             [mfilename '.m'], ...
             'nwbClearGenerated.m'};
-        mfilePaths = getMfilePaths(installDir, ignoreFolders, ignorePaths);
+        mfilePaths = getMfilePaths(matnwbRootDir, ignoreFolders, ignorePaths);
         if ~verLessThan('matlab', '9.3') && ~isempty(mfilePaths)
             if ~parser.Results.SkipCoverage
                 runner.addPlugin(CodeCoveragePlugin.forFile(mfilePaths,...
@@ -76,6 +83,7 @@ function results = nwbtest(varargin)
             end
         end % add cobertura coverage
 
+        % Run tests
         results = runner.run(suite);
         
         if ~nargout
@@ -109,5 +117,23 @@ function paths = getMfilePaths(folder, excludeFolders, excludePaths)
             continue;
         end
         paths{end+1} = filePath; %#ok<AGROW>
+    end
+end
+
+function [reportOutputFolder, folderCleanupObject] = createReportsFolder(numReports)
+    
+    reportRootFolder = fullfile(misc.getMatnwbDir, 'docs', 'reports');
+    timestamp = string(datetime("now", 'Format', 'uuuu_MM_dd_HHmm'));
+    reportOutputFolder = fullfile(reportRootFolder, timestamp);
+    if ~isfolder(reportOutputFolder); mkdir(reportOutputFolder); end
+
+    folderCleanupObject = onCleanup(...
+        @() deleteFolderIfCanceled(reportOutputFolder, numReports));
+
+    function deleteFolderIfCanceled(folderPath, numReports)
+        L = dir(fullfile(folderPath, '*.xml'));
+        if ~isequal(numel(L), numReports)
+            rmdir(folderPath, 's')
+        end
     end
 end
