@@ -7,11 +7,11 @@ classdef Images < types.core.NWBDataInterface & types.untyped.GroupClass
 
 % REQUIRED PROPERTIES
 properties
+    description; % REQUIRED (char) Description of this collection of images.
     image; % REQUIRED (Image) Images stored in this collection.
 end
 % OPTIONAL PROPERTIES
 properties
-    description; %  (char) Description of this collection of images.
     order_of_images; %  (ImageReferences) Ordered dataset of references to Image objects stored in the parent group. Each Image object in the Images group should be stored once and only once, so the dataset should have the same length as the number of images.
 end
 

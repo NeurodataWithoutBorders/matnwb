@@ -162,6 +162,19 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
             end
         end
 
+        function warnIfRequiredDependencyMissing(obj, propName, depPropName, fullpath)
+            if isempty(fullpath); fullpath = 'root'; end
+            warnState = warning('backtrace', 'off');
+            cleanupObj = onCleanup(@(s) warning(warnState));
+            warningId = 'NWB:DependentRequiredPropertyMissing';
+            warningMessage = sprintf( [ ...
+                'The property "%s" of type "%s" in file location "%s" is ' ...
+                'required when the property "%s" is set. Please add a value ' ...
+                'for "%s" and re-export.'], ...
+                propName, class(obj), fullpath, depPropName, propName);
+            warning(warningId, warningMessage) %#ok<SPWRN>
+        end
+
         function throwErrorIfMissingRequiredProps(obj, fullpath)
             missingRequiredProps = obj.checkRequiredProps();
             if ~isempty( missingRequiredProps )
