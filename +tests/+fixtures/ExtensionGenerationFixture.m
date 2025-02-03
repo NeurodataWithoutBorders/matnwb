@@ -1,4 +1,4 @@
-classdef ExtensionFixture < matlab.unittest.fixtures.Fixture
+classdef ExtensionGenerationFixture < matlab.unittest.fixtures.Fixture
     
     properties
         % TypesOutputFolder - Folder to output generated types for test
@@ -10,7 +10,7 @@ classdef ExtensionFixture < matlab.unittest.fixtures.Fixture
     end
 
     methods
-        function fixture = ExtensionFixture(namespaceFilepath, outputFolder)
+        function fixture = ExtensionGenerationFixture(namespaceFilepath, outputFolder)
             fixture.NamespaceFilepath = namespaceFilepath;
             fixture.TypesOutputFolder = outputFolder;
         end

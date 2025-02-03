@@ -73,7 +73,7 @@ classdef (SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture}) ...
         end
         
         function testObjectCopy(testCase)
-            import tests.fixtures.ExtensionFixture
+            import tests.fixtures.ExtensionGenerationFixture
 
             rootDir = misc.getMatnwbDir();
 
@@ -82,11 +82,11 @@ classdef (SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture}) ...
 
             extensionNamespaceFile = fullfile(testSchemaLocation, 'regionReferenceSchema', 'rrs.namespace.yaml');
             testCase.applyFixture(...
-                ExtensionFixture(extensionNamespaceFile, typesOutputFolder))
+                ExtensionGenerationFixture(extensionNamespaceFile, typesOutputFolder))
             
             extensionNamespaceFile = fullfile(testSchemaLocation, 'compoundSchema', 'cs.namespace.yaml');
             testCase.applyFixture(...
-                ExtensionFixture(extensionNamespaceFile, typesOutputFolder))
+                ExtensionGenerationFixture(extensionNamespaceFile, typesOutputFolder))
 
             nwb = NwbFile(...
                 'identifier', 'DATASTUB',...
