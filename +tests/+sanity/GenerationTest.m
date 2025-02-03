@@ -1,6 +1,6 @@
 classdef GenerationTest < matlab.unittest.TestCase
-% Note: Sometimes this test does not work for the first 2 schemaVersion. 
-% In this situation, restarting MATLAB does the trick.
+% Note: Sometimes this test does not work for the first two schema versions. 
+% Restarting MATLAB can fix this.
 
     properties (MethodSetupParameter)
         schemaVersion = listSchemaVersions()
@@ -9,12 +9,12 @@ classdef GenerationTest < matlab.unittest.TestCase
     methods (TestClassSetup)
         function setupClass(testCase)
             import matlab.unittest.fixtures.PathFixture
-            import tests.fixtures.ResetGeneratedTypesFixture
+            import tests.fixtures.NwbClearGeneratedFixture
 
             rootPath = tests.util.getProjectDirectory();
             testCase.applyFixture( PathFixture(rootPath) );
 
-            testCase.applyFixture( ResetGeneratedTypesFixture );
+            testCase.applyFixture( NwbClearGeneratedFixture );
         end
     end
     

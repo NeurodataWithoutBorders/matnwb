@@ -53,8 +53,6 @@ classdef (SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture}) ...
     methods (TestClassSetup)
         function setupClass(testCase)
             
-            import tests.fixtures.ResetGeneratedTypesFixture
-
             % Get the root path of the matnwb repository
             rootPath = tests.util.getProjectDirectory();
             tutorialsFolder = fullfile(rootPath, 'tutorials');
@@ -73,8 +71,6 @@ classdef (SharedTestFixtures = {tests.fixtures.NwbTypeGeneratorFixture}) ...
             catch
                 testCase.NWBInspectorMode = "CLI";
             end
-
-            %testCase.applyFixture( ResetGeneratedTypesFixture );
         end
     end
 

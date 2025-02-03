@@ -46,7 +46,7 @@ classdef PynwbTutorialTest <  matlab.unittest.TestCase
     methods (TestClassSetup)
         function setupClass(testCase)
 
-            import tests.fixtures.ResetGeneratedTypesFixture
+            import tests.fixtures.NwbClearGeneratedFixture
 
             % Get the root path of the matnwb repository
             rootPath = getMatNwbRootDirectory();
@@ -56,7 +56,7 @@ classdef PynwbTutorialTest <  matlab.unittest.TestCase
             testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
             
             % Clear the generated schema classes
-            testCase.applyFixture(ResetGeneratedTypesFixture) 
+            testCase.applyFixture(NwbClearGeneratedFixture) 
 
             % Use a fixture to create a temporary working directory
             testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
