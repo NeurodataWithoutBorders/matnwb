@@ -21,3 +21,4 @@ nwbtest.env
 !+types/+util/
 
 docs/build
+docs/reports
