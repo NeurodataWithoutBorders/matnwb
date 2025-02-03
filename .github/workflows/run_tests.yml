@@ -40,7 +40,7 @@ jobs:
         with:
           command: |
             pyenv("ExecutionMode", "OutOfProcess");
-            results = assertSuccess(nwbtest); 
+            results = assertSuccess(nwbtest('ReportOutputFolder', '.')); 
             assert(~isempty(results), 'No tests ran');
       - name: Upload JUnit results
         if: always()

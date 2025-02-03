@@ -45,11 +45,16 @@ function results = nwbtest(varargin)
         parser.addParameter('Selector', [])
         parser.addParameter('Namespace', 'tests')
         parser.addParameter('ProduceCodeCoverage', true)
+        parser.addParameter('ReportOutputFolder', '')
 
         parser.parse(varargin{:});
         
-        numReports = 1 + parser.Results.ProduceCodeCoverage;
-        [reportOutputFolder, folderCleanupObject] = createReportsFolder(numReports); %#ok<ASGLU>
+        if isempty(parser.Results.ReportOutputFolder)
+            numReports = 1 + parser.Results.ProduceCodeCoverage;
+            [reportOutputFolder, folderCleanupObject] = createReportsFolder(numReports); %#ok<ASGLU>
+        else
+            reportOutputFolder = parser.Results.ReportOutputFolder;
+        end
 
         % Create test suite
         pvcell = struct2pvcell(parser.Unmatched);
