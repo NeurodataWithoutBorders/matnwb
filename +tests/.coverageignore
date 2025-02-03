@@ -1,0 +1,12 @@
++contrib
++tests
++types/+core
++types/+hdmf_common
++types/+hdmf_experimental
++util
+external_packages
+tools
+tutorials
++matnwb/+extension/installAll.m
+nwbtest.m
+nwbClearGenerated.m

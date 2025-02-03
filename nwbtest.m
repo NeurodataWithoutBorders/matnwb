@@ -44,11 +44,11 @@ function results = nwbtest(varargin)
         parser.addParameter('Verbosity', 1);
         parser.addParameter('Selector', [])
         parser.addParameter('Namespace', 'tests')
-        parser.addParameter('SkipCoverage', false)
+        parser.addParameter('ProduceCodeCoverage', true)
 
         parser.parse(varargin{:});
         
-        numReports = 1 + ~parser.Results.SkipCoverage;
+        numReports = 1 + parser.Results.ProduceCodeCoverage;
         [reportOutputFolder, folderCleanupObject] = createReportsFolder(numReports); %#ok<ASGLU>
 
         % Create test suite
@@ -65,21 +65,13 @@ function results = nwbtest(varargin)
         
         resultsFile = fullfile(reportOutputFolder, 'testResults.xml');
         runner.addPlugin(XMLPlugin.producingJUnitFormat(resultsFile));
-        
-        coverageFile = fullfile(reportOutputFolder, 'coverage.xml');
-        
-        [matnwbRootDir, ~, ~] = fileparts(mfilename('fullpath'));
-        
-        ignoreFolders = {'tutorials', 'tools', '+contrib', '+util', 'external_packages', '+tests', '+types/+core', '+types/+hdmf_common', '+types/+hdmf_experimental'};
-        ignorePaths = {...
-            fullfile('+matnwb', '+extension', 'installAll.m'), ...
-            [mfilename '.m'], ...
-            'nwbClearGenerated.m'};
-        mfilePaths = getMfilePaths(matnwbRootDir, ignoreFolders, ignorePaths);
-        if ~verLessThan('matlab', '9.3') && ~isempty(mfilePaths)
-            if ~parser.Results.SkipCoverage
-                runner.addPlugin(CodeCoveragePlugin.forFile(mfilePaths,...
-                    'Producing', CoberturaFormat(coverageFile)));
+                
+        if parser.Results.ProduceCodeCoverage
+            filesForCoverage = getFilesForCoverage();
+            if ~verLessThan('matlab', '9.3') && ~isempty(filesForCoverage)
+                coverageResultFile = fullfile(reportOutputFolder, 'coverage.xml');
+                runner.addPlugin(CodeCoveragePlugin.forFile(filesForCoverage,...
+                    'Producing', CoberturaFormat(coverageResultFile)));
             end
         end % add cobertura coverage
 
@@ -105,19 +97,19 @@ function pv = struct2pvcell(s)
     pv(2:2:n) = v;
 end
 
-function paths = getMfilePaths(folder, excludeFolders, excludePaths)
-    mfiles = dir(fullfile(folder, '**', '*.m'));
-    excludeFolders = fullfile(folder, excludeFolders);
-    excludePaths = fullfile(folder, excludePaths);
-    paths = {};
-    for i = 1:numel(mfiles)
-        file = mfiles(i);
-        filePath = fullfile(file.folder, file.name);
-        if any(startsWith(file.folder, excludeFolders)) || any(strcmp(filePath, excludePaths))
-            continue;
-        end
-        paths{end+1} = filePath; %#ok<AGROW>
-    end
+function filePaths = getFilesForCoverage()
+    matnwbDir = misc.getMatnwbDir();
+    
+    coverageIgnoreFile = fullfile(matnwbDir, '+tests', '.coverageignore');
+    ignorePatterns = string(splitlines( fileread(coverageIgnoreFile) ));
+    ignorePatterns(ignorePatterns=="") = [];
+
+    mFileListing = dir(fullfile(matnwbDir, '**', '*.m'));
+    absoluteFilePaths = fullfile({mFileListing.folder}, {mFileListing.name});
+    relativePaths = replace(absoluteFilePaths, [matnwbDir filesep], '');
+
+    keep = ~startsWith(relativePaths, ignorePatterns);
+    filePaths = fullfile(matnwbDir, relativePaths(keep));
 end
 
 function [reportOutputFolder, folderCleanupObject] = createReportsFolder(numReports)
