@@ -54,7 +54,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             % an error.
 
             electrode = types.core.IntracellularElectrode('description', 'test');
-            testCase.NwbObject.general_intracellular_ephys.set('Electrode', electrode)
+            testCase.NwbObject.general_intracellular_ephys.set('Electrode', electrode);
 
             nwbFilePath = 'testExportNwbFileWithMissingRequiredLink.nwb';
             testCase.verifyError(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), ...
@@ -88,6 +88,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
         end
 
         function testExportFileWithAttributeOfEmptyDataset(testCase)
+            import matlab.unittest.fixtures.SuppressedWarningsFixture
             
             nwbFile = testCase.initNwbFile();
 
@@ -106,10 +107,12 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                 @() nwbExport(nwbFile, 'test_1.nwb'))
 
             % Change value for attribute of the grid_spacing dataset.
-            % Because grid_spacing is not set, this attribute value is not
-            % exported to the file. Verify that warning is issued.
+            testCase.applyFixture(...
+                SuppressedWarningsFixture('NWB:AttributeDependencyNotSet'))
             imaging_plane.grid_spacing_unit = "microns";
 
+            % Because grid_spacing is not set, this attribute value is not
+            % exported to the file. Verify that warning is issued on export.
             testCase.verifyWarning(...
                 @() nwbExport(nwbFile, 'test_2.nwb'), ...
                 'NWB:DependentAttributeNotExported')
@@ -129,9 +132,15 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
         end
 
         function testExportDependentAttributeWithMissingParentA(testCase)
+            import matlab.unittest.fixtures.SuppressedWarningsFixture
+            testCase.applyFixture(...
+                SuppressedWarningsFixture('NWB:AttributeDependencyNotSet'))
+
             testCase.NwbObject.general_source_script_file_name = 'my_test_script.m';
             nwbFilePath = fullfile(testCase.OutputFolder, 'test_part1.nwb');
-            testCase.verifyWarning(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), 'NWB:DependentAttributeNotExported')
+            testCase.verifyWarning(...
+                @(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), ...
+                'NWB:DependentAttributeNotExported')
             
             % Add value for dataset which attribute depends on and export again
             testCase.NwbObject.general_source_script = 'my test';
