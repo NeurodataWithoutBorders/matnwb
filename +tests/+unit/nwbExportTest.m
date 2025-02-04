@@ -33,6 +33,9 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
         end
 
         function testExportNwbFileWithMissingRequiredAttribute(testCase)
+            % This should raise an error because ProcessingModule requires the 
+            % 'description' property to be set (description is a required 
+            % attribute of ProcessingModule).
             processingModule = types.core.ProcessingModule();
             testCase.NwbObject.processing.set('TestModule', processingModule);
             
@@ -44,13 +47,19 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
         end
               
         function testExportNwbFileWithMissingRequiredLink(testCase)
+            % Here we try to export an IntracellularElectrode with an unset
+            % device. The device is a required property (Link-type) of the 
+            % IntracellularElectrode and exporting the object should throw
+            % an error.
+
             electrode = types.core.IntracellularElectrode('description', 'test');
-            testCase.NwbObject.general_intracellular_ephys.set('Electrode', electrode);
+            testCase.NwbObject.general_intracellular_ephys.set('Electrode', electrode)
 
             nwbFilePath = 'testExportNwbFileWithMissingRequiredLink.nwb';
             testCase.verifyError(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), ...
                 'NWB:RequiredPropertyMissing')
 
+            % Clean up: the NwbObject is reused by other tests.
             testCase.NwbObject.general_intracellular_ephys.remove('Electrode');
         end
 
@@ -62,9 +71,15 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             testCase.verifyWarningFree( ...
                 @(nwbObj, filePath) nwbExport(nwbFile, fileName + "_1.nwb") )
 
+            % Now we add a value to the "general_source_script" property. This
+            % is a dataset with a required attribute called "file_name".
+            % Hence, the property "general_source_script_file_name" becomes
+            % required when we add a value to the "general_source_script"
+            % property.
             nwbFile.general_source_script = '.../nwbExportTest.m';
 
-            % Should issue warning work
+            % Verify that exporting the file issues warning that a required
+            % property (i.e general_source_script_file_name) is missing
             testCase.verifyWarning( ...
                 @(nwbObj, filePath) nwbExport(nwbFile, fileName + "_2.nwb"), ...
                 'NWB:DependentRequiredPropertyMissing')
