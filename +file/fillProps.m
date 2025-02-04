@@ -23,8 +23,21 @@ function s = fillProps(props, names, varargin)
     proplines = cell(size(names));
     for i=1:length(names)
         pnm = names{i};
+        propInfo = props(pnm);
         propStr = strjoin(strsplit(getPropStr(props(pnm)), newline), [newline '% ']);
-        proplines{i} = [pnm '; % ' requiredStr ' ' propStr];
+        defaultValue = [];
+        if startsWith(class(propInfo), 'file.')
+            if isprop(propInfo, 'value')
+                defaultValue = propInfo.value;
+            end
+        end
+        if isempty(defaultValue)
+            proplines{i} = [pnm '; % ' requiredStr ' ' propStr];
+        else
+            defaultValue = formatValueAsString(defaultValue);
+            proplines{i} = [pnm ' = %s; %% ', requiredStr ' ' propStr];
+            proplines{i} = sprintf(proplines{i}, defaultValue);
+        end
     end
     
     if isempty(p.Results.PropertyAttributes)
@@ -52,28 +65,14 @@ function propStr = getPropStr(prop, propName)
         typeStr = ['Table with columns: (', strjoin(columnDocStr, ', '), ')'];
     elseif isa(prop, 'file.Attribute')
         if isa(prop.dtype, 'containers.Map')
-            switch prop.dtype('reftype')
-                case 'region'
-                    refTypeName = 'Region';
-                case 'object'
-                    refTypeName = 'Object';
-                otherwise
-                    error('Invalid reftype found whilst filling Constructor prop docs.');
-            end
-            typeStr = sprintf('%s Reference to %s', refTypeName, prop.dtype('target_type'));
+            assertValidRefType(prop.dtype('reftype'))
+            typeStr = sprintf('%s reference to %s', capitalize(prop.dtype('reftype')), prop.dtype('target_type'));
         else
             typeStr = prop.dtype;
         end
     elseif isa(prop, 'containers.Map')
-        switch prop('reftype')
-            case 'region'
-                refTypeName = 'region';
-            case 'object'
-                refTypeName = 'object';
-            otherwise
-                error('Invalid reftype found whilst filling Constructor prop docs.');
-        end
-        typeStr = sprintf('%s Reference to %s', refTypeName, prop('target_type'));
+        assertValidRefType(prop('reftype'))
+        typeStr = sprintf('%s reference to %s', capitalize(prop('reftype')), prop('target_type'));
     elseif isa(prop, 'file.interface.HasProps')
         typeStrCell = cell(size(prop));
         for iProp = 1:length(typeStrCell)
@@ -105,5 +104,31 @@ function propStr = getPropStr(prop, propName)
     
     if nargin >= 2
         propStr = [propName ' = ' propStr];
+    end
+end
+
+function assertValidRefType(referenceType)
+    arguments
+        referenceType (1,1) string
+    end
+    assert( ismember(referenceType, ["region", "object"]), ...
+        'NWB:ClassGenerator:InvalidRefType', ...
+        'Invalid reftype found while filling description for class properties.')
+end
+
+function word = capitalize(word)
+    arguments
+        word (1,:) char
+    end
+    word(1) = upper(word(1));
+end
+
+function valueAsStr = formatValueAsString(value)
+    if isnumeric(value)
+        valueAsStr = num2str(value);
+    elseif ischar(value)
+        valueAsStr = sprintf("""%s""", value);
+    else
+        error('Not implemented. If you see this error, please report')
     end
 end

@@ -1,0 +1,25 @@
+{
+    "titles": {
+        "intro": "Getting Started with MatNWB",
+        "read_demo": "Reading NWB Files with MatNWB",
+        "basicUsage": "Basic Usage of MatNWB",
+        "dimensionMapNoDataPipes": "Mapping Dimensions without DataPipes",
+        "dimensionMapWithDataPipes": "Mapping Dimensions with DataPipes",
+        "convertTrials": "Converting Trials to NWB Format",
+        "dynamic_tables": "Using Dynamic Tables in MatNWB",
+        "scratch": "Working with Scratch Space in MatNWB",
+        "behavior": "Behavior Data",
+        "ecephys": "Extracellular Electrophysiology",
+        "icephys": "Intracellular Electrophysiology",
+        "images": "Image Data",
+        "ogen": "Optogenetics",
+        "ophys": "Calcium Imaging",
+        "dataPipe": "Advanced Writing Using DataPipes",
+        "dynamically_loaded_filters": "Implementing Dynamically Loaded Filters",
+        "remote_read": "Reading NWB Files from Remote Locations"
+    },
+    "youtube": {
+        "ecephys": "https://www.youtube.com/watch?v=W8t4_quIl1k&ab_channel=NeurodataWithoutBorders",
+        "ophys": "https://www.youtube.com/watch?v=OBidHdocnTc&ab_channel=NeurodataWithoutBorders"
+    }
+}

@@ -57,11 +57,12 @@ if isstruct(typeDescriptor)
             'Number of elements for each struct field must match to be valid.'], ...
             num2str(fieldSizes));
     end
-
+        
+    parentName = name;
     for iField = 1:length(expectedFields)
         % validate subfield types.
         name = expectedFields{iField};
-        subName = [name '.' name];
+        subName = [parentName '.' name];
         subType = typeDescriptor.(name);
 
         if (isstruct(value) && isscalar(value)) || istable(value)
@@ -123,7 +124,15 @@ if isa(value, 'types.untyped.DataStub') ...
     value = unwrapValue(value);
 end
 
-correctedValue = types.util.correctType(value, typeDescriptor);
+if matnwb.utility.isNeurodataType(typeDescriptor)
+    errorId = 'NWB:CheckDType:InvalidNeurodataType';
+    errorMessage = sprintf(['Expected value for `%s` to be of ', ...
+        'type `%s`. Instead it was `%s`'], name, typeDescriptor, class(value));
+    assert(isa(value, typeDescriptor), errorId, errorMessage)
+    correctedValue = value;
+else
+    correctedValue = types.util.correctType(value, typeDescriptor);
+end
 % this specific conversion is fine as HDF5 doesn't have a representative
 % datetime type. Thus we suppress the warning for this case.
 isDatetimeConversion = isa(correctedValue, 'datetime')...

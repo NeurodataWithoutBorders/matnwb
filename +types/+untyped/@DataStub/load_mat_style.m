@@ -53,6 +53,18 @@ function data = load_mat_style(obj, varargin)
         end
 
         points = cell(length(dataDimensions), 1);
+
+        if isscalar(dataDimensions)
+            % Starting in MATLAB R2024b, the input argument for the size 
+            % of an array in ind2sub must be a vector of positive integers 
+            % with two or more elements. This fix replicates the behavior of 
+            % older MATLAB versions, where it was assumed that the a scalar
+            % size referred to the row dimension. For scalar dimensions 
+            % (i.e., row or column vectors), we can still assume this
+            % to be true in matnwb.
+            dataDimensions = [dataDimensions, 1];
+        end
+
         [points{:}] = ind2sub(dataDimensions, orderedSelection);
         readSpaceId = H5S.copy(spaceId);
         H5S.select_none(readSpaceId);
@@ -195,7 +207,6 @@ function reordered = reorderLoadedData(data, selections)
         indexKeyIndex((indexKeyIndexNextIndex+1):end) = 1;
     end
 end
-
 
 function emptyInstance = getEmptyRepresentation(nonEmptyInstance)
     try

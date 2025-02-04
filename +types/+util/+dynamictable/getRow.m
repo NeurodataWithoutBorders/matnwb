@@ -46,11 +46,12 @@ for i = 1:length(columns)
     row{i} = select(DynamicTable, indexNames, ind);
 
     if ~istable(row{i})
-        % transpose row vectors
-        if isrow(row{i})
-            row{i} = row{i} .';
-        % or permute arrays to place last dimension first
-        elseif ~ismatrix(row{i}) % i.e nd array where n >= 3
+        if iscolumn(row{i})
+            % keep column vectors as is
+        elseif isrow(row{i})
+            row{i} = row{i} .'; % transpose row vectors
+        elseif ndims(row{i}) >= 2 % i.e nd array where ndims >= 2
+            % permute arrays to place last dimension first
             array_size = size(row{i});
             num_rows = numel(ind);
 
@@ -63,7 +64,7 @@ for i = 1:length(columns)
                 if is_row_dim(1) && is_row_dim(end)
                     % Last dimension takes precedence
                     is_row_dim(1:end-1) = false;
-                    warning(...
+                    warning('NWB:DynamicTable:VectorDataAmbiguousSize', ...
                         ['The length of the first and last dimensions of ', ...
                          'VectorData for column "%s" match the number of ', ...
                          'rows in the dynamic table. Data is rearranged based on ', ...

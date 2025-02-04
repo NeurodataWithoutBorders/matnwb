@@ -1,5 +1,8 @@
 classdef MotionCorrection < types.core.NWBDataInterface & types.untyped.GroupClass
-% MOTIONCORRECTION An image stack where all frames are shifted (registered) to a common coordinate system, to account for movement and drift between frames. Note: each frame at each point in time is assumed to be 2-D (has only x & y dimensions).
+% MOTIONCORRECTION - An image stack where all frames are shifted (registered) to a common coordinate system, to account for movement and drift between frames. Note: each frame at each point in time is assumed to be 2-D (has only x & y dimensions).
+%
+% Required Properties:
+%  correctedimagestack
 
 
 % REQUIRED PROPERTIES
@@ -9,7 +12,19 @@ end
 
 methods
     function obj = MotionCorrection(varargin)
-        % MOTIONCORRECTION Constructor for MotionCorrection
+        % MOTIONCORRECTION - Constructor for MotionCorrection
+        %
+        % Syntax:
+        %  motionCorrection = types.core.MOTIONCORRECTION() creates a MotionCorrection object with unset property values.
+        %
+        %  motionCorrection = types.core.MOTIONCORRECTION(Name, Value) creates a MotionCorrection object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - correctedimagestack (CorrectedImageStack) - Results from motion correction of an image stack.
+        %
+        % Output Arguments:
+        %  - motionCorrection (types.core.MotionCorrection) - A MotionCorrection object
+        
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.correctedimagestack, ivarargin] = types.util.parseConstrained(obj,'correctedimagestack', 'types.core.CorrectedImageStack', varargin{:});
         varargin(ivarargin) = [];

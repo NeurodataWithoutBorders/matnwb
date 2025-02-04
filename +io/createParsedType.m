@@ -29,7 +29,7 @@ function typeInstance = createParsedType(typePath, typeName, varargin)
 
     [warningMessage, warningID] = lastwarn();
 
-    % Handle any warnings if they occured.
+    % Handle any warnings if they occurred.
     if ~isempty(warningMessage)
         if strcmp( warningID, 'NWB:CheckUnset:InvalidProperties' )
             

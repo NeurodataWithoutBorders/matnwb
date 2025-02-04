@@ -31,6 +31,109 @@ classdef nwbExportTest < matlab.unittest.TestCase
     end
 
     methods (Test)
+        function testExportNwbFileWithMissingRequiredProperties(testCase)
+            nwb = NwbFile();
+            nwbFilePath = fullfile(testCase.OutputFolder, 'testfile.nwb');
+            testCase.verifyError(@(file, path) nwbExport(nwb, nwbFilePath), ...
+                'NWB:RequiredPropertyMissing')
+        end
+
+        function testExportNwbFileWithMissingRequiredAttribute(testCase)
+            % This should raise an error because ProcessingModule requires the 
+            % 'description' property to be set (description is a required 
+            % attribute of ProcessingModule).
+
+            processingModule = types.core.ProcessingModule();
+            testCase.NwbObject.processing.set('TestModule', processingModule);
+            
+            nwbFilePath = 'testExportNwbFileWithMissingRequiredAttribute.nwb';
+            testCase.verifyError(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), ...
+                'NWB:RequiredPropertyMissing')
+
+            testCase.NwbObject.processing.remove('TestModule');
+        end
+              
+        function testExportNwbFileWithMissingRequiredLink(testCase)
+            % Here we try to export an IntracellularElectrode with an unset
+            % device. The device is a required property (Link-type) of the 
+            % IntracellularElectrode and exporting the object should throw
+            % an error.
+
+            electrode = types.core.IntracellularElectrode('description', 'test');
+            testCase.NwbObject.general_intracellular_ephys.set('Electrode', electrode)
+
+            nwbFilePath = 'testExportNwbFileWithMissingRequiredLink.nwb';
+            testCase.verifyError(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), ...
+                'NWB:RequiredPropertyMissing')
+
+            % Clean up: the NwbObject is reused by other tests.
+            testCase.NwbObject.general_intracellular_ephys.remove('Electrode');
+        end
+
+        function testExportWithMissingRequiredDependentProperty(testCase)
+            nwbFile = testCase.initNwbFile();
+            fileName = "testExportWithMissingRequiredDependentProperty";
+
+            % Should work without warning
+            testCase.verifyWarningFree( ...
+                @(nwbObj, filePath) nwbExport(nwbFile, fileName + "_1.nwb") )
+
+            % Now we add a value to the "general_source_script" property. This
+            % is a dataset with a required attribute called "file_name".
+            % Hence, the property "general_source_script_file_name" becomes
+            % required when we add a value to the "general_source_script"
+            % property.
+            nwbFile.general_source_script = '.../nwbExportTest.m';
+
+            % Verify that exporting the file issues warning that a required
+            % property (i.e general_source_script_file_name) is missing
+
+            testCase.verifyWarning( ...
+                @(nwbObj, filePath) nwbExport(nwbFile, fileName + "_2.nwb"), ...
+                'NWB:DependentRequiredPropertyMissing')
+        end
+
+        function testExportFileWithAttributeOfEmptyDataset(testCase)
+            
+            nwbFile = testCase.initNwbFile();
+
+            % Add device to nwb object
+            device = types.core.Device();
+            nwbFile.general_devices.set('Device', device);
+            
+            imaging_plane = types.core.ImagingPlane( ...
+                'device', types.untyped.SoftLink(device), ...
+                'excitation_lambda', 600., ...
+                'indicator', 'GFP', ...
+                'location', 'my favorite brain location');
+            nwbFile.general_optophysiology.set('ImagingPlane', imaging_plane);
+
+            testCase.verifyWarningFree(...
+                @() nwbExport(nwbFile, 'test_1.nwb'))
+
+            % Change value for attribute of the grid_spacing dataset.
+            % Because grid_spacing is not set, this attribute value is not
+            % exported to the file. Verify that warning is issued.
+            imaging_plane.grid_spacing_unit = "microns";
+
+            testCase.verifyWarning(...
+                @() nwbExport(nwbFile, 'test_2.nwb'), ...
+                'NWB:DependentAttributeNotExported')
+        end
+
+        function testExportTimeseriesWithMissingTimestampsAndStartingTime(testCase)
+            time_series = types.core.TimeSeries( ...
+                 'data', linspace(0, 0.4, 50), ...
+                 'description', 'a test series', ...
+                 'data_unit', 'n/a' ...
+             );
+
+             testCase.NwbObject.acquisition.set('time_series', time_series);
+             nwbFilePath = fullfile(testCase.OutputFolder, 'testfile.nwb');
+             testCase.verifyError(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), ...
+                 'NWB:CustomConstraintUnfulfilled')
+        end
+
         function testExportDependentAttributeWithMissingParentA(testCase)
             testCase.NwbObject.general_source_script_file_name = 'my_test_script.m';
             nwbFilePath = fullfile(testCase.OutputFolder, 'test_part1.nwb');
@@ -42,22 +145,16 @@ classdef nwbExportTest < matlab.unittest.TestCase
             testCase.verifyWarningFree(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath))
         end
 
-        function testExportDependentAttributeWithMissingParentB(testCase)
+        function testExportTimeseriesWithoutStartingTimeRate(testCase)
             time_series = types.core.TimeSeries( ...
                 'data', linspace(0, 0.4, 50), ...
-                'starting_time_rate', 10.0, ...
+                'starting_time', 1, ...
                 'description', 'a test series', ...
                 'data_unit', 'n/a' ...
             );
-
             testCase.NwbObject.acquisition.set('time_series', time_series);
             nwbFilePath = fullfile(testCase.OutputFolder, 'test_part1.nwb');
-            testCase.verifyWarning(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), 'NWB:DependentAttributeNotExported')
-
-            % Add value for dataset which attribute depends on and export again
-            time_series.starting_time = 1;
-            nwbFilePath = fullfile(testCase.OutputFolder, 'test_part2.nwb');
-            testCase.verifyWarningFree(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath))
+            testCase.verifyError(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), 'NWB:CustomConstraintUnfulfilled')
         end
     end
 

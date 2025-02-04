@@ -1,18 +1,42 @@
 classdef ElectrodeGroup < types.core.NWBContainer & types.untyped.GroupClass
-% ELECTRODEGROUP A physical grouping of electrodes, e.g. a shank of an array.
+% ELECTRODEGROUP - A physical grouping of electrodes, e.g. a shank of an array.
+%
+% Required Properties:
+%  None
 
 
+% REQUIRED PROPERTIES
+properties
+    description; % REQUIRED (char) Description of this electrode group.
+    device; % REQUIRED Device
+    location; % REQUIRED (char) Location of electrode group. Specify the area, layer, comments on estimation of area/layer, etc. Use standard atlas names for anatomical regions when possible.
+end
 % OPTIONAL PROPERTIES
 properties
-    description; %  (char) Description of this electrode group.
-    device; %  Device
-    location; %  (char) Location of electrode group. Specify the area, layer, comments on estimation of area/layer, etc. Use standard atlas names for anatomical regions when possible.
     position; %  (Table with columns: (x = single, y = single, z = single)) stereotaxic or common framework coordinates
 end
 
 methods
     function obj = ElectrodeGroup(varargin)
-        % ELECTRODEGROUP Constructor for ElectrodeGroup
+        % ELECTRODEGROUP - Constructor for ElectrodeGroup
+        %
+        % Syntax:
+        %  electrodeGroup = types.core.ELECTRODEGROUP() creates a ElectrodeGroup object with unset property values.
+        %
+        %  electrodeGroup = types.core.ELECTRODEGROUP(Name, Value) creates a ElectrodeGroup object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - description (char) - Description of this electrode group.
+        %
+        %  - device (Device) - Link to the device that was used to record from this electrode group.
+        %
+        %  - location (char) - Location of electrode group. Specify the area, layer, comments on estimation of area/layer, etc. Use standard atlas names for anatomical regions when possible.
+        %
+        %  - position (Table with columns: (single, single, single)) - stereotaxic or common framework coordinates
+        %
+        % Output Arguments:
+        %  - electrodeGroup (types.core.ElectrodeGroup) - A ElectrodeGroup object
+        
         obj = obj@types.core.NWBContainer(varargin{:});
         
         
@@ -68,7 +92,16 @@ methods
         types.util.checkDims(valsz, validshapes);
     end
     function val = validate_device(obj, val)
-        val = types.util.checkDtype('device', 'types.core.Device', val);
+        if isa(val, 'types.untyped.SoftLink')
+            if isprop(val, 'target')
+                types.util.checkDtype('device', 'types.core.Device', val.target);
+            end
+        else
+            val = types.util.checkDtype('device', 'types.core.Device', val);
+            if ~isempty(val)
+                val = types.untyped.SoftLink(val);
+            end
+        end
     end
     function val = validate_location(obj, val)
         val = types.util.checkDtype('location', 'char', val);
@@ -93,7 +126,7 @@ methods
             return;
         end
         if ~istable(val) && ~isstruct(val) && ~isa(val, 'containers.Map')
-            error('Property `position` must be a table,struct, or containers.Map.');
+            error('NWB:Type:InvalidPropertyType', 'Property `position` must be a table, struct, or containers.Map.');
         end
         vprops = struct();
         vprops.x = 'single';

@@ -1,21 +1,39 @@
 classdef OptogeneticStimulusSite < types.core.NWBContainer & types.untyped.GroupClass
-% OPTOGENETICSTIMULUSSITE A site of optogenetic stimulation.
+% OPTOGENETICSTIMULUSSITE - A site of optogenetic stimulation.
+%
+% Required Properties:
+%  description, excitation_lambda, location
 
 
 % REQUIRED PROPERTIES
 properties
     description; % REQUIRED (char) Description of stimulation site.
+    device; % REQUIRED Device
     excitation_lambda; % REQUIRED (single) Excitation wavelength, in nm.
     location; % REQUIRED (char) Location of the stimulation site. Specify the area, layer, comments on estimation of area/layer, stereotaxic coordinates if in vivo, etc. Use standard atlas names for anatomical regions when possible.
-end
-% OPTIONAL PROPERTIES
-properties
-    device; %  Device
 end
 
 methods
     function obj = OptogeneticStimulusSite(varargin)
-        % OPTOGENETICSTIMULUSSITE Constructor for OptogeneticStimulusSite
+        % OPTOGENETICSTIMULUSSITE - Constructor for OptogeneticStimulusSite
+        %
+        % Syntax:
+        %  optogeneticStimulusSite = types.core.OPTOGENETICSTIMULUSSITE() creates a OptogeneticStimulusSite object with unset property values.
+        %
+        %  optogeneticStimulusSite = types.core.OPTOGENETICSTIMULUSSITE(Name, Value) creates a OptogeneticStimulusSite object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - description (char) - Description of stimulation site.
+        %
+        %  - device (Device) - Device that generated the stimulus.
+        %
+        %  - excitation_lambda (single) - Excitation wavelength, in nm.
+        %
+        %  - location (char) - Location of the stimulation site. Specify the area, layer, comments on estimation of area/layer, stereotaxic coordinates if in vivo, etc. Use standard atlas names for anatomical regions when possible.
+        %
+        % Output Arguments:
+        %  - optogeneticStimulusSite (types.core.OptogeneticStimulusSite) - A OptogeneticStimulusSite object
+        
         obj = obj@types.core.NWBContainer(varargin{:});
         
         
@@ -71,7 +89,16 @@ methods
         types.util.checkDims(valsz, validshapes);
     end
     function val = validate_device(obj, val)
-        val = types.util.checkDtype('device', 'types.core.Device', val);
+        if isa(val, 'types.untyped.SoftLink')
+            if isprop(val, 'target')
+                types.util.checkDtype('device', 'types.core.Device', val.target);
+            end
+        else
+            val = types.util.checkDtype('device', 'types.core.Device', val);
+            if ~isempty(val)
+                val = types.untyped.SoftLink(val);
+            end
+        end
     end
     function val = validate_excitation_lambda(obj, val)
         val = types.util.checkDtype('excitation_lambda', 'single', val);

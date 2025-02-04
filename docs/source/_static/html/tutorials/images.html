@@ -1,0 +1,381 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge,IE=9,chrome=1"><meta name="generator" content="MATLAB 2023b"><title>Storing Image Data in NWB</title><style type="text/css">.rtcContent { padding: 30px; } .S0 { margin: 3px 10px 5px 4px; padding: 0px; line-height: 28.8px; min-height: 0px; white-space: pre-wrap; color: rgb(192, 76, 11); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 24px; font-weight: 400; text-align: left;  }
+.S1 { margin: 2px 10px 9px 4px; padding: 0px; line-height: 21px; min-height: 0px; white-space: pre-wrap; color: rgb(33, 33, 33); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 14px; font-weight: 400; text-align: left;  }
+.S2 { margin: 10px 0px 20px; padding-left: 0px; font-family: Helvetica, Arial, sans-serif; font-size: 14px;  }
+.S3 { margin-left: 56px; line-height: 21px; min-height: 0px; text-align: left; white-space: pre-wrap;  }
+.S4 { margin-bottom: 20px; padding-bottom: 4px;  }
+.S5 { margin: 0px; padding: 10px 0px 10px 5px; line-height: 21px; min-height: 0px; white-space: pre-wrap; color: rgb(33, 33, 33); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 14px; font-weight: 700; text-align: start;  }
+.S6 { margin: -1px 0px 0px; padding: 10px 0px 10px 7px; line-height: 21px; min-height: 0px; white-space: pre-wrap; color: rgb(33, 33, 33); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 14px; font-weight: 400; text-align: start;  }
+.S7 { margin: 20px 10px 5px 4px; padding: 0px; line-height: 20px; min-height: 0px; white-space: pre-wrap; color: rgb(33, 33, 33); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 20px; font-weight: 700; text-align: left;  }
+.CodeBlock { background-color: #F5F5F5; margin: 10px 0 10px 0; }
+.S8 { border-left: 1px solid rgb(217, 217, 217); border-right: 1px solid rgb(217, 217, 217); border-top: 1px solid rgb(217, 217, 217); border-bottom: 0px none rgb(33, 33, 33); border-radius: 4px 4px 0px 0px; padding: 6px 45px 0px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }
+.S9 { border-left: 1px solid rgb(217, 217, 217); border-right: 1px solid rgb(217, 217, 217); border-top: 0px none rgb(33, 33, 33); border-bottom: 0px none rgb(33, 33, 33); border-radius: 0px; padding: 0px 45px 0px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }
+.S10 { border-left: 1px solid rgb(217, 217, 217); border-right: 1px solid rgb(217, 217, 217); border-top: 0px none rgb(33, 33, 33); border-bottom: 1px solid rgb(217, 217, 217); border-radius: 0px; padding: 0px 45px 4px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }
+.S11 { color: rgb(33, 33, 33); padding: 10px 0px 6px 17px; background: rgb(255, 255, 255) none repeat scroll 0% 0% / auto padding-box border-box; font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px; overflow-x: hidden; line-height: 17.234px;  }
+/* Styling that is common to warnings and errors is in diagnosticOutput.css */.embeddedOutputsErrorElement {    min-height: 18px;    max-height: 550px;}
+.embeddedOutputsErrorElement .diagnosticMessage-errorType {    overflow: auto;}
+.embeddedOutputsErrorElement.inlineElement {}
+.embeddedOutputsErrorElement.rightPaneElement {}
+/* Styling that is common to warnings and errors is in diagnosticOutput.css */.embeddedOutputsWarningElement {    min-height: 18px;    max-height: 550px;}
+.embeddedOutputsWarningElement .diagnosticMessage-warningType {    overflow: auto;}
+.embeddedOutputsWarningElement.inlineElement {}
+.embeddedOutputsWarningElement.rightPaneElement {}
+/* Copyright 2015-2023 The MathWorks, Inc. *//* In this file, styles are not scoped to rtcContainer since they could be in the Dojo Tooltip */.diagnosticMessage-wrapper {    font-family: Menlo, Monaco, Consolas, "Courier New", monospace;    font-size: 12px;}
+.diagnosticMessage-wrapper.diagnosticMessage-warningType {    /*This fallback value will be used for appdesigner warnings*/    color: var(--rtc-warning-output-color, var(--mw-color-matlabWarning));}
+.diagnosticMessage-wrapper.diagnosticMessage-warningType a {    /*This fallback value will be used for appdesigner warnings*/    color: var(--rtc-warning-output-color, var(--mw-color-matlabWarning));    text-decoration: underline;}
+.rtcThemeDefaultOverride .diagnosticMessage-wrapper.diagnosticMessage-warningType,.rtcThemeDefaultOverride .diagnosticMessage-wrapper.diagnosticMessage-warningType a {    color: var(--mw-color-matlabWarning) !important;}
+.diagnosticMessage-wrapper.diagnosticMessage-errorType {    /*This fallback value will be used in appdesigner error tooltip text*/    color: var(--rtc-error-output-color, var(--mw-color-matlabErrors));}
+.diagnosticMessage-wrapper.diagnosticMessage-errorType a {    /*This fallback value will be used in appdesigner error tooltip text*/    color: var(--rtc-error-output-color, var(--mw-color-matlabErrors));    text-decoration: underline;}
+.rtcThemeDefaultOverride .diagnosticMessage-wrapper.diagnosticMessage-errorType,.rtcThemeDefaultOverride .diagnosticMessage-wrapper.diagnosticMessage-errorType a {    color: var(--mw-color-matlabErrors) !important;}
+.diagnosticMessage-wrapper .diagnosticMessage-messagePart,.diagnosticMessage-wrapper .diagnosticMessage-causePart {    white-space: pre-wrap;}
+.diagnosticMessage-wrapper .diagnosticMessage-stackPart {    white-space: pre;}
+.embeddedOutputsTextElement,.embeddedOutputsVariableStringElement {    white-space: pre;    word-wrap:  initial;    min-height: 18px;    max-height: 550px;}
+.embeddedOutputsTextElement .textElement,.embeddedOutputsVariableStringElement .textElement {    overflow: auto;}
+.textElement,.rtcDataTipElement .textElement {    padding-top: 2px;}
+.embeddedOutputsTextElement.inlineElement,.embeddedOutputsVariableStringElement.inlineElement {}
+.inlineElement .textElement {}
+.embeddedOutputsTextElement.rightPaneElement,.embeddedOutputsVariableStringElement.rightPaneElement {    min-height: 16px;}
+.rightPaneElement .textElement {    padding-top: 2px;    padding-left: 9px;}
+.S12 { border-left: 1px solid rgb(217, 217, 217); border-right: 1px solid rgb(217, 217, 217); border-top: 0px none rgb(33, 33, 33); border-bottom: 1px solid rgb(217, 217, 217); border-radius: 0px 0px 4px 4px; padding: 0px 45px 4px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }
+.S13 { margin: 15px 10px 5px 4px; padding: 0px; line-height: 18px; min-height: 0px; white-space: pre-wrap; color: rgb(33, 33, 33); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 17px; font-weight: 700; text-align: left;  }
+.S14 { margin: 10px 10px 9px 4px; padding: 0px; line-height: 21px; min-height: 0px; white-space: pre-wrap; color: rgb(33, 33, 33); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 14px; font-weight: 400; text-align: left;  }
+.S15 { border-left: 1px solid rgb(217, 217, 217); border-right: 1px solid rgb(217, 217, 217); border-top: 1px solid rgb(217, 217, 217); border-bottom: 1px solid rgb(217, 217, 217); border-radius: 4px; padding: 6px 45px 4px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }</style></head><body><div class = rtcContent><h1  class = 'S0' id = 'T_5D69E798' ><span>Storing Image Data in NWB</span></h1><div  class = 'S1'><span>Image data can be a collection of individual images or movie segments (as a movie is simply a series of images), about the subject, the environment, the presented stimuli, or other parts related to the experiment. This tutorial focuses in particular on the usage of:</span></div><ul  class = 'S2'><li  class = 'S3'><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OpticalSeries.html"><span style=' font-weight: bold; font-family: monospace;'>types.core.OpticalSeries</span></a><span> and </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/AbstractFeatureSeries.html"><span style=' font-weight: bold; font-family: monospace;'>types.core.AbstractFeatureSeries</span></a><span style=' font-weight: bold; font-family: monospace;'> </span><span>for series of images that were presented as stimulus</span></li><li  class = 'S3'><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImageSeries.html"><span style=' font-weight: bold; font-family: monospace;'>types.core.ImageSeries</span></a><span>, for series of images (movie segments);</span></li><li  class = 'S3'><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/GrayscaleImage.html"><span style=' font-weight: bold; font-family: monospace;'>types.core.GrayscaleImage</span></a><span>, </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RGBImage.html"><span style=' font-weight: bold; font-family: monospace;'>types.core.RGBImage</span></a><span>, and </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RGBAImage.html"><span style=' font-weight: bold; font-family: monospace;'>types.core.RGBAImage</span></a><span>, for static images</span></li></ul><div  class = 'S4'><div  class = 'S5'><span style=' font-weight: bold;'>Table of Contents</span></div><div  class = 'S6'><a href = "#H_3394E0F0"><span>Create an NWB File
+</span></a><a href = "#H_02DDAF83"><span>OpticalSeries: Storing series of images as stimuli
+</span></a><a href = "#H_8A87EBD8"><span>AbstractFeatureSeries: Storing features of visual stimuli
+</span></a><a href = "#H_EC128D14"><span>ImageSeries: Storing series of images as acquisition
+</span></a><a href = "#H_91053109"><span>External Files
+</span></a><a href = "#H_F8123EE7"><span>Static Images
+</span></a><span>    </span><a href = "#H_2EA61755"><span>RGBAImage: for color images with transparency
+</span></a><span>    </span><a href = "#H_D64AC655"><span>RGBImage: for color images
+</span></a><span>    </span><a href = "#H_C8483399"><span>GrayscaleImage: for grayscale images
+</span></a><span>    </span><a href = "#H_D45EE760"><span>Images: a container for images
+</span></a><a href = "#H_E87CA44B"><span>Index Series for Repeated Images
+</span></a><a href = "#H_09D098C1"><span>Writing the images to an NWB File</span></a></div></div><h2  class = 'S7' id = 'H_3394E0F0' ><span>Create an NWB File</span></h2><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S8'><span style="white-space: pre"><span >nwb = NwbFile( </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'session_description'</span><span >, </span><span style="color: #a709f5;">'mouse in open exploration'</span><span >,</span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'identifier'</span><span >, </span><span style="color: #a709f5;">'Mouse5_Day3'</span><span >, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'session_start_time'</span><span >, datetime(2018, 4, 25, 2, 30, 3, </span><span style="color: #a709f5;">'TimeZone'</span><span >, </span><span style="color: #a709f5;">'local'</span><span >), </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'timestamps_reference_time'</span><span >, datetime(2018, 4, 25, 3, 0, 45, </span><span style="color: #a709f5;">'TimeZone'</span><span >, </span><span style="color: #a709f5;">'local'</span><span >), </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'general_experimenter'</span><span >, </span><span style="color: #a709f5;">'LastName, FirstName'</span><span >, </span><span style="color: #0e00ff;">...</span><span style="color: #008013;"> % optional</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'general_session_id'</span><span >, </span><span style="color: #a709f5;">'session_1234'</span><span >, </span><span style="color: #0e00ff;">...</span><span style="color: #008013;"> % optional</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'general_institution'</span><span >, </span><span style="color: #a709f5;">'University of My Institution'</span><span >, </span><span style="color: #0e00ff;">...</span><span style="color: #008013;"> % optional</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'general_related_publications'</span><span >, </span><span style="color: #a709f5;">'DOI:10.1016/j.neuron.2016.12.011' </span><span style="color: #0e00ff;">...</span><span style="color: #008013;"> % optional</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >);</span></span></div></div><div class="inlineWrapper outputs"><div  class = 'S10'><span style="white-space: pre"><span >nwb</span></span></div><div  class = 'S11'><div class="inlineElement eoOutputWrapper disableDefaultGestureHandling embeddedOutputsVariableStringElement scrollableOutput" uid="339C086E" prevent-scroll="true" data-testid="output_0" tabindex="-1" style="width: 1137px; white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;"><div class="textElement eoOutputContent scrollArea" data-previous-available-width="1100" data-previous-scroll-height="788" data-hashorizontaloverflow="false" style="max-height: 261px; white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;" tabindex="-1"><div style="white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;"><span class="variableNameElement" style="white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;">nwb = </span></div><div style="white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;">  NwbFile with properties:
+
+                                             nwb_version: '2.8.0'
+                                        file_create_date: []
+                                              identifier: 'Mouse5_Day3'
+                                     session_description: 'mouse in open exploration'
+                                      session_start_time: {[2018-04-25T02:30:03.000000+02:00]}
+                               timestamps_reference_time: {[2018-04-25T03:00:45.000000+02:00]}
+                                             acquisition: [0×1 types.untyped.Set]
+                                                analysis: [0×1 types.untyped.Set]
+                                                 general: [0×1 types.untyped.Set]
+                                 general_data_collection: ''
+                                         general_devices: [0×1 types.untyped.Set]
+                          general_experiment_description: ''
+                                    general_experimenter: 'LastName, FirstName'
+                             general_extracellular_ephys: [0×1 types.untyped.Set]
+                  general_extracellular_ephys_electrodes: []
+                                     general_institution: 'University of My Institution'
+                             general_intracellular_ephys: [0×1 types.untyped.Set]
+     general_intracellular_ephys_experimental_conditions: []
+                   general_intracellular_ephys_filtering: ''
+    general_intracellular_ephys_intracellular_recordings: []
+                 general_intracellular_ephys_repetitions: []
+       general_intracellular_ephys_sequential_recordings: []
+     general_intracellular_ephys_simultaneous_recordings: []
+                 general_intracellular_ephys_sweep_table: []
+                                        general_keywords: ''
+                                             general_lab: ''
+                                           general_notes: ''
+                                    general_optogenetics: [0×1 types.untyped.Set]
+                                  general_optophysiology: [0×1 types.untyped.Set]
+                                    general_pharmacology: ''
+                                        general_protocol: ''
+                            general_related_publications: 'DOI:10.1016/j.neuron.2016.12.011'
+                                      general_session_id: 'session_1234'
+                                          general_slices: ''
+                                   general_source_script: ''
+                         general_source_script_file_name: ''
+                                        general_stimulus: ''
+                                         general_subject: []
+                                         general_surgery: ''
+                                           general_virus: ''
+                                general_was_generated_by: ''
+                                               intervals: [0×1 types.untyped.Set]
+                                        intervals_epochs: []
+                                 intervals_invalid_times: []
+                                        intervals_trials: []
+                                              processing: [0×1 types.untyped.Set]
+                                                 scratch: [0×1 types.untyped.Set]
+                                   stimulus_presentation: [0×1 types.untyped.Set]
+                                      stimulus_templates: [0×1 types.untyped.Set]
+                                                   units: []
+</div></div></div></div></div></div><h2  class = 'S7' id = 'H_02DDAF83' ><span>OpticalSeries: Storing series of images as stimuli</span></h2><div  class = 'S1'><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OpticalSeries.html"><span style=' font-weight: bold; font-family: monospace;'>OpticalSeries</span></a><span> </span><span>is for time series of images that were presented to the subject as stimuli. We will create an</span><span> </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OpticalSeries.html"><span style=' font-weight: bold; font-family: monospace;'>OpticalSeries</span></a><span> </span><span>object with the name</span><span> </span><span style=' font-family: monospace;'>"StimulusPresentation"</span><span> </span><span>representing what images were shown to the subject and at what times.</span></div><div  class = 'S1'><span>Image data can be stored either in the HDF5 file or as an external image file. For this tutorial, we will use fake image data with shape of </span><span style=' font-family: monospace;'>('time', 'x', 'y', 'RGB') = (200, 50, 50, 3)</span><span>. As in all </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html"><span style=' font-weight: bold; font-family: monospace;'>TimeSeries</span></a><span>, the first dimension is time. The second and third dimensions represent x and y. The fourth dimension represents the RGB value (length of 3) for color images. </span><span style=' font-weight: bold;'>Please note</span><span>: As described in the </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/tutorials/dimensionMapNoDataPipes.html"><span>dimensionMapNoDataPipes</span></a><span> tutorial, when a MATLAB array is exported to HDF5, the array is transposed. Therefore, in order to correctly export the data, we will need to create a transposed array, where the dimensions are in reverse order compared to the type specification.</span></div><div  class = 'S1'><span>NWB differentiates between acquired data and data that was presented as stimulus. We can add it to the</span><span> </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/functions/NwbFile.html"><span style=' font-weight: bold; font-family: monospace;'>NWBFile</span></a><span> </span><span>object as stimulus data.</span></div><div  class = 'S1'><span>If the sampling rate is constant, use </span><span style=' font-family: monospace;'>rate</span><span> and </span><span style=' font-family: monospace;'>starting_time</span><span> to specify time. For irregularly sampled recordings, use </span><span style=' font-family: monospace;'>timestamps</span><span> to specify time for each sample image.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S8'><span style="white-space: pre"><span >image_data = randi(255, [3, 50, 50, 200]); </span><span style="color: #008013;">% NB: Array is transposed</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >optical_series = types.core.OpticalSeries( </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'distance'</span><span >, 0.7, </span><span style="color: #0e00ff;">...</span><span style="color: #008013;">  % required</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'field_of_view'</span><span >, [0.2, 0.3, 0.7], </span><span style="color: #0e00ff;">...</span><span style="color: #008013;">  % required</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'orientation'</span><span >, </span><span style="color: #a709f5;">'lower left'</span><span >, </span><span style="color: #0e00ff;">...</span><span style="color: #008013;">  % required</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data'</span><span >, image_data, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data_unit'</span><span >, </span><span style="color: #a709f5;">'n.a.'</span><span >, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'starting_time_rate'</span><span >, 1.0, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'starting_time'</span><span >, 0.0, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'description'</span><span >, </span><span style="color: #a709f5;">'The images presented to the subject as stimuli' </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S12'><span style="white-space: pre"><span >nwb.stimulus_presentation.set(</span><span style="color: #a709f5;">'StimulusPresentation'</span><span >, optical_series);</span></span></div></div></div><h2  class = 'S7' id = 'H_8A87EBD8' ><span>AbstractFeatureSeries: Storing features of visual stimuli</span></h2><div  class = 'S1'><span>While it is usually recommended to store the entire image data as an</span><span> </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OpticalSeries.html"><span style=' font-weight: bold; font-family: monospace;'>OpticalSeries</span></a><span>, sometimes it is useful to store features of the visual stimuli instead of or in addition to the raw image data. For example, you may want to store the mean luminance of the image, the contrast, or the spatial frequency. This can be done using an instance of</span><span> </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/AbstractFeatureSeries.html"><span style=' font-weight: bold; font-family: monospace;'>AbstractFeatureSeries</span></a><span>. This class is a general container for storing time series of features that are derived from the raw image data.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S8'><span style="white-space: pre"><span style="color: #008013;">% Create some fake feature data</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >feature_data = rand(3, 200);  </span><span style="color: #008013;">% 200 time points, 3 features</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span style="color: #008013;">% Create an AbstractFeatureSeries object</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >abstract_feature_series = types.core.AbstractFeatureSeries( </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data'</span><span >, feature_data, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'timestamps'</span><span >, linspace(0, 1, 200), </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'description'</span><span >, </span><span style="color: #a709f5;">'Features of the visual stimuli'</span><span >, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'features'</span><span >, {</span><span style="color: #a709f5;">'luminance'</span><span >, </span><span style="color: #a709f5;">'contrast'</span><span >, </span><span style="color: #a709f5;">'spatial frequency'</span><span >}, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'feature_units'</span><span >, {</span><span style="color: #a709f5;">'n.a.'</span><span >, </span><span style="color: #a709f5;">'n.a.'</span><span >, </span><span style="color: #a709f5;">'cycles/degree'</span><span >} </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span style="color: #008013;">% Add the AbstractFeatureSeries to the NWBFile</span></span></div></div><div class="inlineWrapper"><div  class = 'S12'><span style="white-space: pre"><span >nwb.stimulus_presentation.set(</span><span style="color: #a709f5;">'StimulusFeatures'</span><span >, abstract_feature_series);</span></span></div></div></div><h2  class = 'S7' id = 'H_EC128D14' ><span>ImageSeries: Storing series of images as acquisition</span></h2><div  class = 'S1'><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImageSeries.html"><span style=' font-weight: bold; font-family: monospace;'>ImageSeries</span></a><span> </span><span>is a general container for time series of images acquired during the experiment. Image data can be stored either in the HDF5 file or as an external image file. When color images are stored in the HDF5 file the color channel order is expected to be RGB.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S8'><span style="white-space: pre"><span >image_data = randi(255, [3, 50, 50, 200]);</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >behavior_images = types.core.ImageSeries( </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data'</span><span >, image_data, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'description'</span><span >, </span><span style="color: #a709f5;">'Image data of an animal in environment'</span><span >, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data_unit'</span><span >, </span><span style="color: #a709f5;">'n.a.'</span><span >, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'starting_time_rate'</span><span >, 1.0, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'starting_time'</span><span >, 0.0 </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S12'><span style="white-space: pre"><span >nwb.acquisition.set(</span><span style="color: #a709f5;">'ImageSeries'</span><span >, behavior_images);</span></span></div></div></div><h2  class = 'S7' id = 'H_91053109' ><span>External Files</span></h2><div  class = 'S1'><span>External files (e.g. video files of the behaving animal) can be added to the</span><span> </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/functions/NwbFile.html"><span style=' font-weight: bold; font-family: monospace;'>NWBFile</span></a><span> </span><span>by creating an</span><span> </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImageSeries.html"><span style=' font-weight: bold; font-family: monospace;'>ImageSeries</span></a><span> </span><span>object using the</span><span> </span><span style=' font-family: monospace;'>external_file</span><span> </span><span>attribute that specifies the path to the external file(s) on disk. The file(s) path must be relative to the path of the NWB file. Either</span><span> </span><span style=' font-family: monospace;'>external_file</span><span> </span><span>or</span><span> </span><span style=' font-family: monospace;'>data</span><span> </span><span>must be specified, but not both. </span><span style=' font-family: monospace;'>external_file</span><span> can be a cell array of multiple video files.</span></div><div  class = 'S1'><span>The </span><span style=' font-family: monospace;'>starting_frame</span><span> attribute serves as an index to indicate the starting frame of each external file, allowing you to skip the beginning of videos.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S8'><span style="white-space: pre"><span >external_files = {</span><span style="color: #a709f5;">'video1.pmp4'</span><span >, </span><span style="color: #a709f5;">'video2.pmp4'</span><span >};</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >timestamps = [0.0, 0.04, 0.07, 0.1, 0.14, 0.16, 0.21];</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >behavior_external_file = types.core.ImageSeries( </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'description'</span><span >, </span><span style="color: #a709f5;">'Behavior video of animal moving in environment'</span><span >, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data_unit'</span><span >, </span><span style="color: #a709f5;">'n.a.'</span><span >, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'external_file'</span><span >, external_files, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'format'</span><span >, </span><span style="color: #a709f5;">'external'</span><span >, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'external_file_starting_frame'</span><span >, [0, 2], </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'timestamps'</span><span >, timestamps </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S12'><span style="white-space: pre"><span >nwb.acquisition.set(</span><span style="color: #a709f5;">'ExternalVideos'</span><span >, behavior_external_file);</span></span></div></div></div><h2  class = 'S7' id = 'H_F8123EE7' ><span>Static Images</span></h2><div  class = 'S1'><span>Static images can be stored in an</span><span> </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/functions/NwbFile.html"><span style=' font-weight: bold; font-family: monospace;'>NWBFile</span></a><span> </span><span>object by creating an</span><span> </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RGBAImage.html"><span style=' font-weight: bold; font-family: monospace;'>RGBAImage</span></a><span>,</span><span> </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RGBImage.html"><span style=' font-weight: bold; font-family: monospace;'>RGBImage</span></a><span> </span><span>or</span><span> </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/GrayscaleImage.html"><span style=' font-weight: bold; font-family: monospace;'>GrayscaleImage</span></a><span> </span><span>object with the image data. All of these image types provide an optional </span><span style=' font-family: monospace;'>description</span><span> parameter to include text description about the image and the </span><span style=' font-family: monospace;'>resolution</span><span> parameter to specify the pixels/cm resolution of the image.</span></div><h3  class = 'S13' id = 'H_2EA61755' ><span>RGBAImage: for color images with transparency</span></h3><div  class = 'S1'><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RGBAImage.html"><span style=' font-weight: bold; font-family: monospace;'>RGBAImage</span></a><span> is for storing data of color image with transparency. </span><span style=' font-family: monospace;'>data</span><span> must be 3D where the first and second dimensions represent x and y. The third dimension has length 4 and represents the RGBA value.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S8'><span style="white-space: pre"><span >image_data = randi(255, [4, 200, 200]);</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >rgba_image = types.core.RGBAImage( </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data'</span><span >, image_data, </span><span style="color: #0e00ff;">...</span><span style="color: #008013;">  % required</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'resolution'</span><span >, 70.0, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'description'</span><span >, </span><span style="color: #a709f5;">'RGBA image' </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S12'><span style="white-space: pre"><span >);</span></span></div></div></div><h3  class = 'S13' id = 'H_D64AC655' ><span>RGBImage: for color images</span></h3><div  class = 'S1'><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RGBImage.html"><span style=' font-weight: bold; font-family: monospace;'>RGBImage</span></a><span> </span><span>is for storing data of RGB color image.</span><span> </span><span style=' font-family: monospace;'>data</span><span> </span><span>must be 3D where the first and second dimensions represent x and y. The third dimension has length 3 and represents the RGB value.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S8'><span style="white-space: pre"><span >image_data = randi(255, [3, 200, 200]);</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >rgb_image = types.core.RGBImage( </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data'</span><span >, image_data, </span><span style="color: #0e00ff;">...</span><span style="color: #008013;">  % required</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'resolution'</span><span >, 70.0, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'description'</span><span >, </span><span style="color: #a709f5;">'RGB image' </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S12'><span style="white-space: pre"><span >);</span></span></div></div></div><h3  class = 'S13' id = 'H_C8483399' ><span style=' font-weight: bold;'>GrayscaleImage: for grayscale images</span></h3><div  class = 'S1'><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/GrayscaleImage.html"><span style=' font-weight: bold; font-family: monospace;'>GrayscaleImage</span></a><span> </span><span>is for storing grayscale image data.</span><span> </span><span style=' font-family: monospace;'>data</span><span> </span><span>must be 2D where the first and second dimensions represent x and y.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S8'><span style="white-space: pre"><span >image_data = randi(255, [200, 200]);</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >grayscale_image = types.core.GrayscaleImage( </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data'</span><span >, image_data, </span><span style="color: #0e00ff;">...</span><span style="color: #008013;">  % required</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'resolution'</span><span >, 70.0, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'description'</span><span >, </span><span style="color: #a709f5;">'Grayscale image' </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S12'><span style="white-space: pre"><span >);</span></span></div></div></div><h3  class = 'S13' id = 'H_D45EE760' ><span>Images: a container for images</span></h3><div  class = 'S1'><span>Add the images to an</span><span> </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Images.html"><span style=' font-weight: bold; font-family: monospace;'>Images</span></a><span> </span><span>container that accepts any of these image types.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S8'><span style="white-space: pre"><span >image_collection = types.core.Images( </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'description'</span><span >, </span><span style="color: #a709f5;">'A collection of logo images presented to the subject.'</span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >image_collection.image.set(</span><span style="color: #a709f5;">'rgba_image'</span><span >, rgba_image);</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >image_collection.image.set(</span><span style="color: #a709f5;">'rgb_image'</span><span >, rgb_image);</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >image_collection.image.set(</span><span style="color: #a709f5;">'grayscale_image'</span><span >, grayscale_image);</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S12'><span style="white-space: pre"><span >nwb.acquisition.set(</span><span style="color: #a709f5;">'image_collection'</span><span >, image_collection);</span></span></div></div></div><h2  class = 'S7' id = 'H_E87CA44B' ><span>Index Series for Repeated Images</span></h2><div  class = 'S1'><span>You may want to set up a time series of images where some images are repeated many times. You could create an </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImageSeries.html"><span style=' font-family: monospace;'>ImageSeries</span></a><span> that repeats the data each time the image is shown, but that would be inefficient, because it would store the same data multiple times. A better solution would be to store the unique images once and reference those images. This is how </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IndexSeries.html"><span style=' font-family: monospace;'>IndexSeries</span></a><span style=' font-family: monospace;'> </span><span>works. First, create an </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Images.html"><span style=' font-family: monospace;'>Images</span></a><span> container with the order of images defined using an </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImageReferences.html"><span style=' font-family: monospace;'>ImageReferences</span></a><span>. Then create an </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IndexSeries.html"><span style=' font-family: monospace;'>IndexSeries</span></a><span> that indexes into the </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Images.html"><span style=' font-family: monospace;'>Images</span></a><span>.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S8'><span style="white-space: pre"><span >rgbImage = imread(</span><span style="color: #a709f5;">'street2.jpg'</span><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >grayImage = uint8(sum(double(rgbImage), 3) ./ double(max(max(max(rgbImage)))));</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >GsStreet = types.core.GrayscaleImage(</span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data'</span><span >, grayImage, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'description'</span><span >, </span><span style="color: #a709f5;">'grayscale image of a street.'</span><span >, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'resolution'</span><span >, 28 </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >RgbStreet = types.core.RGBImage( </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data'</span><span >, rgbImage, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'resolution'</span><span >, 28, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'description'</span><span >, </span><span style="color: #a709f5;">'RGB Street' </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >ImageOrder = types.core.ImageReferences(</span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data'</span><span >, [types.untyped.ObjectView(RgbStreet), types.untyped.ObjectView(GsStreet)] </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >Images = types.core.Images( </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'gs_face'</span><span >, GsStreet, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'rgb_face'</span><span >, RgbStreet, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'description'</span><span >, </span><span style="color: #a709f5;">'A collection of streets.'</span><span >, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'order_of_images'</span><span >, ImageOrder </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >types.core.IndexSeries(</span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'data'</span><span >, [0, 1, 0, 1], </span><span style="color: #0e00ff;">...</span><span style="color: #008013;"> % NOTE: 0-indexed</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'indexed_images'</span><span >, Images, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S9'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'timestamps'</span><span >, [0.1, 0.2, 0.3, 0.4] </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper outputs"><div  class = 'S10'><span style="white-space: pre"><span >)</span></span></div><div  class = 'S11'><div class="inlineElement eoOutputWrapper disableDefaultGestureHandling embeddedOutputsVariableStringElement" uid="2A00D5C3" prevent-scroll="true" data-testid="output_1" tabindex="-1" style="width: 1137px; white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;"><div class="textElement eoOutputContent" data-previous-available-width="1100" data-previous-scroll-height="315" data-hashorizontaloverflow="false" style="max-height: 326px; white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;" tabindex="-1"><div style="white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;"><span class="variableNameElement" style="white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;">ans = </span></div><div style="white-space: pre; font-style: normal; color: rgb(33, 33, 33); font-size: 12px;">  IndexSeries with properties:
+
+         indexed_images: [1×1 types.untyped.SoftLink]
+     indexed_timeseries: []
+     starting_time_unit: 'seconds'
+    timestamps_interval: 1
+        timestamps_unit: 'seconds'
+                   data: [0 1 0 1]
+               comments: 'no comments'
+                control: []
+    control_description: ''
+        data_continuity: ''
+        data_conversion: []
+            data_offset: []
+        data_resolution: []
+              data_unit: 'N/A'
+            description: 'no description'
+          starting_time: []
+     starting_time_rate: []
+             timestamps: [0.1000 0.2000 0.3000 0.4000]
+</div></div></div></div></div></div><div  class = 'S14' id = 'H_1CBAEB29' ><span>Here </span><span style=' font-style: italic;'>data</span><span> contains the (0-indexed) index of the displayed image as they are ordered in the </span><span style=' font-family: monospace;'>ImageReference</span><span>.</span></div><h2  class = 'S7' id = 'H_09D098C1' ><span>Writing the images to an NWB File</span></h2><div  class = 'S1'><span>Now use </span><a href = "https://matnwb.readthedocs.io/en/latest/pages/functions/nwbExport.html"><span style=' font-weight: bold; font-family: monospace;'>nwbExport</span></a><span> to write the file.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S15'><span style="white-space: pre"><span >nwbExport(nwb, </span><span style="color: #a709f5;">"images_test.nwb"</span><span >);</span></span></div></div></div>
+<br>
+<!-- 
+##### SOURCE BEGIN #####
+%% Storing Image Data in NWB
+% Image data can be a collection of individual images or movie segments (as 
+% a movie is simply a series of images), about the subject, the environment, the 
+% presented stimuli, or other parts related to the experiment. This tutorial focuses 
+% in particular on the usage of:
+%% 
+% * <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OpticalSeries.html 
+% |*types.core.OpticalSeries*|> and <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/AbstractFeatureSeries.html 
+% |*types.core.AbstractFeatureSeries*|> for series of images that were presented 
+% as stimulus
+% * <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImageSeries.html 
+% |*types.core.ImageSeries*|>, for series of images (movie segments);
+% * <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/GrayscaleImage.html 
+% |*types.core.GrayscaleImage*|>, <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RGBImage.html 
+% |*types.core.RGBImage*|>, and <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RGBAImage.html 
+% |*types.core.RGBAImage*|>, for static images
+%% Create an NWB File
+
+nwb = NwbFile( ...
+    'session_description', 'mouse in open exploration',...
+    'identifier', 'Mouse5_Day3', ...
+    'session_start_time', datetime(2018, 4, 25, 2, 30, 3, 'TimeZone', 'local'), ...
+    'timestamps_reference_time', datetime(2018, 4, 25, 3, 0, 45, 'TimeZone', 'local'), ...
+    'general_experimenter', 'LastName, FirstName', ... % optional
+    'general_session_id', 'session_1234', ... % optional
+    'general_institution', 'University of My Institution', ... % optional
+    'general_related_publications', 'DOI:10.1016/j.neuron.2016.12.011' ... % optional
+);
+nwb
+%% OpticalSeries: Storing series of images as stimuli
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OpticalSeries.html 
+% |*OpticalSeries*|> is for time series of images that were presented to the subject 
+% as stimuli. We will create an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OpticalSeries.html 
+% |*OpticalSeries*|> object with the name |"StimulusPresentation"| representing 
+% what images were shown to the subject and at what times.
+% 
+% Image data can be stored either in the HDF5 file or as an external image file. 
+% For this tutorial, we will use fake image data with shape of |('time', 'x', 
+% 'y', 'RGB') = (200, 50, 50, 3)|. As in all <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
+% |*TimeSeries*|>, the first dimension is time. The second and third dimensions 
+% represent x and y. The fourth dimension represents the RGB value (length of 
+% 3) for color images. *Please note*: As described in the <https://matnwb.readthedocs.io/en/latest/pages/tutorials/dimensionMapNoDataPipes.html 
+% dimensionMapNoDataPipes> tutorial, when a MATLAB array is exported to HDF5, 
+% the array is transposed. Therefore, in order to correctly export the data, we 
+% will need to create a transposed array, where the dimensions are in reverse 
+% order compared to the type specification.
+% 
+% NWB differentiates between acquired data and data that was presented as stimulus. 
+% We can add it to the <https://matnwb.readthedocs.io/en/latest/pages/functions/NwbFile.html 
+% |*NWBFile*|> object as stimulus data.
+% 
+% If the sampling rate is constant, use |rate| and |starting_time| to specify 
+% time. For irregularly sampled recordings, use |timestamps| to specify time for 
+% each sample image.
+
+image_data = randi(255, [3, 50, 50, 200]); % NB: Array is transposed
+optical_series = types.core.OpticalSeries( ...
+    'distance', 0.7, ...  % required
+    'field_of_view', [0.2, 0.3, 0.7], ...  % required
+    'orientation', 'lower left', ...  % required
+    'data', image_data, ...
+    'data_unit', 'n.a.', ...
+    'starting_time_rate', 1.0, ...
+    'starting_time', 0.0, ...
+    'description', 'The images presented to the subject as stimuli' ...
+);
+
+nwb.stimulus_presentation.set('StimulusPresentation', optical_series);
+%% AbstractFeatureSeries: Storing features of visual stimuli
+% While it is usually recommended to store the entire image data as an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OpticalSeries.html 
+% |*OpticalSeries*|>, sometimes it is useful to store features of the visual stimuli 
+% instead of or in addition to the raw image data. For example, you may want to 
+% store the mean luminance of the image, the contrast, or the spatial frequency. 
+% This can be done using an instance of <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/AbstractFeatureSeries.html 
+% |*AbstractFeatureSeries*|>. This class is a general container for storing time 
+% series of features that are derived from the raw image data.
+
+% Create some fake feature data
+feature_data = rand(3, 200);  % 200 time points, 3 features
+
+% Create an AbstractFeatureSeries object
+abstract_feature_series = types.core.AbstractFeatureSeries( ...
+    'data', feature_data, ...
+    'timestamps', linspace(0, 1, 200), ...
+    'description', 'Features of the visual stimuli', ...
+    'features', {'luminance', 'contrast', 'spatial frequency'}, ...
+    'feature_units', {'n.a.', 'n.a.', 'cycles/degree'} ...
+);
+% Add the AbstractFeatureSeries to the NWBFile
+nwb.stimulus_presentation.set('StimulusFeatures', abstract_feature_series);
+%% ImageSeries: Storing series of images as acquisition
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImageSeries.html 
+% |*ImageSeries*|> is a general container for time series of images acquired during 
+% the experiment. Image data can be stored either in the HDF5 file or as an external 
+% image file. When color images are stored in the HDF5 file the color channel 
+% order is expected to be RGB.
+
+image_data = randi(255, [3, 50, 50, 200]);
+behavior_images = types.core.ImageSeries( ...
+    'data', image_data, ...
+    'description', 'Image data of an animal in environment', ...
+    'data_unit', 'n.a.', ...
+    'starting_time_rate', 1.0, ...
+    'starting_time', 0.0 ...
+);
+
+nwb.acquisition.set('ImageSeries', behavior_images);
+%% External Files
+% External files (e.g. video files of the behaving animal) can be added to the 
+% <https://matnwb.readthedocs.io/en/latest/pages/functions/NwbFile.html |*NWBFile*|> 
+% by creating an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImageSeries.html 
+% |*ImageSeries*|> object using the |external_file| attribute that specifies the 
+% path to the external file(s) on disk. The file(s) path must be relative to the 
+% path of the NWB file. Either |external_file| or |data| must be specified, but 
+% not both. |external_file| can be a cell array of multiple video files.
+% 
+% The |starting_frame| attribute serves as an index to indicate the starting 
+% frame of each external file, allowing you to skip the beginning of videos.
+
+external_files = {'video1.pmp4', 'video2.pmp4'};
+
+timestamps = [0.0, 0.04, 0.07, 0.1, 0.14, 0.16, 0.21];
+behavior_external_file = types.core.ImageSeries( ...
+    'description', 'Behavior video of animal moving in environment', ...
+    'data_unit', 'n.a.', ...
+    'external_file', external_files, ...
+    'format', 'external', ...
+    'external_file_starting_frame', [0, 2], ...
+    'timestamps', timestamps ...
+);
+
+nwb.acquisition.set('ExternalVideos', behavior_external_file);
+%% Static Images
+% Static images can be stored in an <https://matnwb.readthedocs.io/en/latest/pages/functions/NwbFile.html 
+% |*NWBFile*|> object by creating an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RGBAImage.html 
+% |*RGBAImage*|>, <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RGBImage.html 
+% |*RGBImage*|> or <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/GrayscaleImage.html 
+% |*GrayscaleImage*|> object with the image data. All of these image types provide 
+% an optional |description| parameter to include text description about the image 
+% and the |resolution| parameter to specify the pixels/cm resolution of the image.
+% RGBAImage: for color images with transparency
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RGBAImage.html 
+% |*RGBAImage*|> is for storing data of color image with transparency. |data| 
+% must be 3D where the first and second dimensions represent x and y. The third 
+% dimension has length 4 and represents the RGBA value.
+
+image_data = randi(255, [4, 200, 200]);
+
+rgba_image = types.core.RGBAImage( ...
+    'data', image_data, ...  % required
+    'resolution', 70.0, ...
+    'description', 'RGBA image' ...
+);
+% RGBImage: for color images
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RGBImage.html 
+% |*RGBImage*|> is for storing data of RGB color image. |data| must be 3D where 
+% the first and second dimensions represent x and y. The third dimension has length 
+% 3 and represents the RGB value.
+
+image_data = randi(255, [3, 200, 200]);
+
+rgb_image = types.core.RGBImage( ...
+    'data', image_data, ...  % required
+    'resolution', 70.0, ...
+    'description', 'RGB image' ...
+);
+% *GrayscaleImage: for grayscale images*
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/GrayscaleImage.html 
+% |*GrayscaleImage*|> is for storing grayscale image data. |data| must be 2D where 
+% the first and second dimensions represent x and y.
+
+image_data = randi(255, [200, 200]);
+
+grayscale_image = types.core.GrayscaleImage( ...
+    'data', image_data, ...  % required
+    'resolution', 70.0, ...
+    'description', 'Grayscale image' ...
+);
+% Images: a container for images
+% Add the images to an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Images.html 
+% |*Images*|> container that accepts any of these image types.
+
+image_collection = types.core.Images( ...
+    'description', 'A collection of logo images presented to the subject.'...
+);
+
+image_collection.image.set('rgba_image', rgba_image);
+image_collection.image.set('rgb_image', rgb_image);
+image_collection.image.set('grayscale_image', grayscale_image);
+
+nwb.acquisition.set('image_collection', image_collection);
+%% Index Series for Repeated Images
+% You may want to set up a time series of images where some images are repeated 
+% many times. You could create an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImageSeries.html 
+% |ImageSeries|> that repeats the data each time the image is shown, but that 
+% would be inefficient, because it would store the same data multiple times. A 
+% better solution would be to store the unique images once and reference those 
+% images. This is how <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IndexSeries.html 
+% |IndexSeries|> works. First, create an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Images.html 
+% |Images|> container with the order of images defined using an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImageReferences.html 
+% |ImageReferences|>. Then create an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IndexSeries.html 
+% |IndexSeries|> that indexes into the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Images.html 
+% |Images|>.
+
+rgbImage = imread('street2.jpg');
+grayImage = uint8(sum(double(rgbImage), 3) ./ double(max(max(max(rgbImage)))));
+GsStreet = types.core.GrayscaleImage(...
+    'data', grayImage, ...
+    'description', 'grayscale image of a street.', ...
+    'resolution', 28 ...
+);
+
+RgbStreet = types.core.RGBImage( ...
+    'data', rgbImage, ...
+    'resolution', 28, ...
+    'description', 'RGB Street' ...
+);
+
+ImageOrder = types.core.ImageReferences(...
+    'data', [types.untyped.ObjectView(RgbStreet), types.untyped.ObjectView(GsStreet)] ...
+);
+Images = types.core.Images( ...
+    'gs_face', GsStreet, ...
+    'rgb_face', RgbStreet, ...
+    'description', 'A collection of streets.', ...
+    'order_of_images', ImageOrder ...
+);
+
+types.core.IndexSeries(...
+    'data', [0, 1, 0, 1], ... % NOTE: 0-indexed
+    'indexed_images', Images, ...
+    'timestamps', [0.1, 0.2, 0.3, 0.4] ...
+)
+%% 
+% Here _data_ contains the (0-indexed) index of the displayed image as they 
+% are ordered in the |ImageReference|.
+%% Writing the images to an NWB File
+% Now use <https://matnwb.readthedocs.io/en/latest/pages/functions/nwbExport.html 
+% |*nwbExport*|> to write the file.
+
+nwbExport(nwb, "images_test.nwb");
+##### SOURCE END #####
+-->
+</div><script>
+    // Update all links with href starting with "https:" to have target="_top"
+    document.addEventListener("DOMContentLoaded", function() {
+        const links = document.querySelectorAll('a[href^="https:"]');
+        links.forEach(link => {
+            link.setAttribute("target", "_top");
+        });
+    });
+</script>
+</body></html>

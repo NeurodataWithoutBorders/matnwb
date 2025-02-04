@@ -45,6 +45,7 @@ elseif startsWith(type, {'int' 'uint'})
     
     id = [prefix suffix];
 else
-    error('Type `%s` is not a supported raw type', type);
+    error('NWB:IO:UnsupportedBaseType', ...
+        'Type `%s` is not a supported raw type', type);
 end
 end

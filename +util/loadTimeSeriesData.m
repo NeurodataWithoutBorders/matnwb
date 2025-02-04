@@ -27,10 +27,11 @@ end
 
 if length(electrodes) > 1
     fs = timeseries.starting_time_rate;
-    if isfinite(interval(2)):
+    if isfinite(interval(2))
         data = NaN(ceil(diff(interval) * fs), length(electrodes));
-    else:
-        error('must specify time interval');
+    else
+        error('NWB:LoadTimeSeries:UnspecifiedTimeInterval', ...
+            'must specify time interval');
     end
     for i = 1:length(electrodes)
         data(:,i) = util.loadTimeSeriesData(timeseries, interval, ...
@@ -47,7 +48,8 @@ else
             fs = timeseries.starting_time_rate;
             t0 = timeseries.starting_time;
             if interval(1) < t0
-                error('interval bounds outside of time range');
+                error('NWB:LoadTimeSeries:InvalidTimeInterval', ...
+                    'interval bounds outside of time range');
             end
             start_ind = (interval(1) - t0) * fs;
         end
@@ -63,7 +65,8 @@ else
             fs = timeseries.starting_time_rate;
             t0 = timeseries.starting_time;
             if interval(2) > (dims(end) * fs + t0)
-                error('interval bounds outside of time range');
+                error('NWB:LoadTimeSeries:InvalidTimeInterval', ...
+                    'interval bounds outside of time range');
             end
             end_ind = (interval(2) - t0) * fs;
         end
