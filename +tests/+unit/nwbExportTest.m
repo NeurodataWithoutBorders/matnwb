@@ -65,7 +65,7 @@ classdef nwbExportTest < matlab.unittest.TestCase
             testCase.verifyError(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), ...
                 'NWB:RequiredPropertyMissing')
 
-            % Clean up: the NwbObject is re-used by other tests.
+            % Clean up: the NwbObject is reused by other tests.
             testCase.NwbObject.general_intracellular_ephys.remove('Electrode');
         end
 
