@@ -245,7 +245,7 @@ function dataExportString = fillDataExport(name, prop, elisions, required)
         % group is not required, we need to issue a warning if the parent
         % is set and the dependent required property is unset.
         isParentRequired = any(strcmp(depPropname, required));
-        if prop.required && not(isParentRequired)
+        if prop.required && not(prop.readonly) && not(isParentRequired)
             dependencyCheck{end+1} = sprintf('~isempty(obj.%s) && isempty(obj.%s)', depPropname, name);
             warnIfMissingRequiredDependentAttributeStr = ...
                 sprintf('obj.warnIfRequiredDependencyMissing(''%s'', ''%s'', fullpath)', name, depPropname);
