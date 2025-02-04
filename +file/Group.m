@@ -245,10 +245,22 @@ classdef Group < file.interface.HasProps
                         end
                         PropertyMap(groupName) = [SetType, Descendant];
                     else
+                        if isa(Descendant, 'file.Attribute')
+                            % Ad hoc convenience step: We need the parent's 
+                            % expanded property name when populating the
+                            % type's class definition. Here, we construct a full 
+                            % name from groupName + descendantName, then remove 
+                            % the descendantName (and its underscore) and
+                            % add the result to the attribute object for
+                            % easy retrieval when needed.
+                            fullName = [groupName, '_', descendantName];
+                            Descendant.dependent_fullname = strrep(fullName, ['_', Descendant.name], '');
+                        end
                         PropertyMap([groupName, '_', descendantName]) = Descendant;
                     end
                 end
             end
+
         end
     end
 end
