@@ -100,6 +100,12 @@ methods
     end
     function set.external_file_starting_frame(obj, val)
         obj.external_file_starting_frame = obj.validate_external_file_starting_frame(val);
+        obj.postset_external_file_starting_frame()
+    end
+    function postset_external_file_starting_frame(obj)
+        if isempty(obj.external_file) && ~isempty(obj.external_file_starting_frame)
+            obj.warnIfAttributeDependencyMissing('external_file_starting_frame', 'external_file')
+        end
     end
     function set.format(obj, val)
         obj.format = obj.validate_format(val);

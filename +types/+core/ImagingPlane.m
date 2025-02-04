@@ -128,6 +128,12 @@ methods
     end
     function set.grid_spacing_unit(obj, val)
         obj.grid_spacing_unit = obj.validate_grid_spacing_unit(val);
+        obj.postset_grid_spacing_unit()
+    end
+    function postset_grid_spacing_unit(obj)
+        if isempty(obj.grid_spacing) && ~isempty(obj.grid_spacing_unit)
+            obj.warnIfAttributeDependencyMissing('grid_spacing_unit', 'grid_spacing')
+        end
     end
     function set.imaging_rate(obj, val)
         obj.imaging_rate = obj.validate_imaging_rate(val);
@@ -143,9 +149,21 @@ methods
     end
     function set.manifold_conversion(obj, val)
         obj.manifold_conversion = obj.validate_manifold_conversion(val);
+        obj.postset_manifold_conversion()
+    end
+    function postset_manifold_conversion(obj)
+        if isempty(obj.manifold) && ~isempty(obj.manifold_conversion)
+            obj.warnIfAttributeDependencyMissing('manifold_conversion', 'manifold')
+        end
     end
     function set.manifold_unit(obj, val)
         obj.manifold_unit = obj.validate_manifold_unit(val);
+        obj.postset_manifold_unit()
+    end
+    function postset_manifold_unit(obj)
+        if isempty(obj.manifold) && ~isempty(obj.manifold_unit)
+            obj.warnIfAttributeDependencyMissing('manifold_unit', 'manifold')
+        end
     end
     function set.opticalchannel(obj, val)
         obj.opticalchannel = obj.validate_opticalchannel(val);
@@ -155,6 +173,12 @@ methods
     end
     function set.origin_coords_unit(obj, val)
         obj.origin_coords_unit = obj.validate_origin_coords_unit(val);
+        obj.postset_origin_coords_unit()
+    end
+    function postset_origin_coords_unit(obj)
+        if isempty(obj.origin_coords) && ~isempty(obj.origin_coords_unit)
+            obj.warnIfAttributeDependencyMissing('origin_coords_unit', 'origin_coords')
+        end
     end
     function set.reference_frame(obj, val)
         obj.reference_frame = obj.validate_reference_frame(val);

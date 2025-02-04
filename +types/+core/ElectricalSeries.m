@@ -180,9 +180,6 @@ methods
         if ~isempty(obj.channel_conversion) && ~isa(obj.channel_conversion, 'types.untyped.SoftLink') && ~isa(obj.channel_conversion, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/channel_conversion/axis'], obj.channel_conversion_axis);
         end
-        if ~isempty(obj.channel_conversion) && isempty(obj.channel_conversion_axis)
-            obj.warnIfRequiredDependencyMissing('channel_conversion_axis', 'channel_conversion', fullpath)
-        end
         refs = obj.electrodes.export(fid, [fullpath '/electrodes'], refs);
         if ~isempty(obj.filtering)
             io.writeAttribute(fid, [fullpath '/filtering'], obj.filtering);
