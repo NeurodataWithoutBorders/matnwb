@@ -7,7 +7,7 @@ classdef VectorData < types.hdmf_common.Data & types.untyped.DatasetClass
 
 % HIDDEN READONLY PROPERTIES
 properties(Hidden, SetAccess = protected)
-    unit; %  (char) NOTE: this is a special value for compatibility with the Units table and is only written to file when detected to be in that specific HDF5 Group. The value must be 'volts'
+    unit = "volts"; %  (char) NOTE: this is a special value for compatibility with the Units table and is only written to file when detected to be in that specific HDF5 Group. The value must be 'volts'
 end
 % HIDDEN PROPERTIES
 properties(Hidden)

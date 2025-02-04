@@ -199,48 +199,120 @@ methods
     end
     function set.axis_1_phase_map_dimension(obj, val)
         obj.axis_1_phase_map_dimension = obj.validate_axis_1_phase_map_dimension(val);
+        obj.postset_axis_1_phase_map_dimension()
+    end
+    function postset_axis_1_phase_map_dimension(obj)
+        if isempty(obj.axis_1_phase_map) && ~isempty(obj.axis_1_phase_map_dimension)
+            obj.warnIfAttributeDependencyMissing('axis_1_phase_map_dimension', 'axis_1_phase_map')
+        end
     end
     function set.axis_1_phase_map_field_of_view(obj, val)
         obj.axis_1_phase_map_field_of_view = obj.validate_axis_1_phase_map_field_of_view(val);
+        obj.postset_axis_1_phase_map_field_of_view()
+    end
+    function postset_axis_1_phase_map_field_of_view(obj)
+        if isempty(obj.axis_1_phase_map) && ~isempty(obj.axis_1_phase_map_field_of_view)
+            obj.warnIfAttributeDependencyMissing('axis_1_phase_map_field_of_view', 'axis_1_phase_map')
+        end
     end
     function set.axis_1_phase_map_unit(obj, val)
         obj.axis_1_phase_map_unit = obj.validate_axis_1_phase_map_unit(val);
+        obj.postset_axis_1_phase_map_unit()
+    end
+    function postset_axis_1_phase_map_unit(obj)
+        if isempty(obj.axis_1_phase_map) && ~isempty(obj.axis_1_phase_map_unit)
+            obj.warnIfAttributeDependencyMissing('axis_1_phase_map_unit', 'axis_1_phase_map')
+        end
     end
     function set.axis_1_power_map(obj, val)
         obj.axis_1_power_map = obj.validate_axis_1_power_map(val);
     end
     function set.axis_1_power_map_dimension(obj, val)
         obj.axis_1_power_map_dimension = obj.validate_axis_1_power_map_dimension(val);
+        obj.postset_axis_1_power_map_dimension()
+    end
+    function postset_axis_1_power_map_dimension(obj)
+        if isempty(obj.axis_1_power_map) && ~isempty(obj.axis_1_power_map_dimension)
+            obj.warnIfAttributeDependencyMissing('axis_1_power_map_dimension', 'axis_1_power_map')
+        end
     end
     function set.axis_1_power_map_field_of_view(obj, val)
         obj.axis_1_power_map_field_of_view = obj.validate_axis_1_power_map_field_of_view(val);
+        obj.postset_axis_1_power_map_field_of_view()
+    end
+    function postset_axis_1_power_map_field_of_view(obj)
+        if isempty(obj.axis_1_power_map) && ~isempty(obj.axis_1_power_map_field_of_view)
+            obj.warnIfAttributeDependencyMissing('axis_1_power_map_field_of_view', 'axis_1_power_map')
+        end
     end
     function set.axis_1_power_map_unit(obj, val)
         obj.axis_1_power_map_unit = obj.validate_axis_1_power_map_unit(val);
+        obj.postset_axis_1_power_map_unit()
+    end
+    function postset_axis_1_power_map_unit(obj)
+        if isempty(obj.axis_1_power_map) && ~isempty(obj.axis_1_power_map_unit)
+            obj.warnIfAttributeDependencyMissing('axis_1_power_map_unit', 'axis_1_power_map')
+        end
     end
     function set.axis_2_phase_map(obj, val)
         obj.axis_2_phase_map = obj.validate_axis_2_phase_map(val);
     end
     function set.axis_2_phase_map_dimension(obj, val)
         obj.axis_2_phase_map_dimension = obj.validate_axis_2_phase_map_dimension(val);
+        obj.postset_axis_2_phase_map_dimension()
+    end
+    function postset_axis_2_phase_map_dimension(obj)
+        if isempty(obj.axis_2_phase_map) && ~isempty(obj.axis_2_phase_map_dimension)
+            obj.warnIfAttributeDependencyMissing('axis_2_phase_map_dimension', 'axis_2_phase_map')
+        end
     end
     function set.axis_2_phase_map_field_of_view(obj, val)
         obj.axis_2_phase_map_field_of_view = obj.validate_axis_2_phase_map_field_of_view(val);
+        obj.postset_axis_2_phase_map_field_of_view()
+    end
+    function postset_axis_2_phase_map_field_of_view(obj)
+        if isempty(obj.axis_2_phase_map) && ~isempty(obj.axis_2_phase_map_field_of_view)
+            obj.warnIfAttributeDependencyMissing('axis_2_phase_map_field_of_view', 'axis_2_phase_map')
+        end
     end
     function set.axis_2_phase_map_unit(obj, val)
         obj.axis_2_phase_map_unit = obj.validate_axis_2_phase_map_unit(val);
+        obj.postset_axis_2_phase_map_unit()
+    end
+    function postset_axis_2_phase_map_unit(obj)
+        if isempty(obj.axis_2_phase_map) && ~isempty(obj.axis_2_phase_map_unit)
+            obj.warnIfAttributeDependencyMissing('axis_2_phase_map_unit', 'axis_2_phase_map')
+        end
     end
     function set.axis_2_power_map(obj, val)
         obj.axis_2_power_map = obj.validate_axis_2_power_map(val);
     end
     function set.axis_2_power_map_dimension(obj, val)
         obj.axis_2_power_map_dimension = obj.validate_axis_2_power_map_dimension(val);
+        obj.postset_axis_2_power_map_dimension()
+    end
+    function postset_axis_2_power_map_dimension(obj)
+        if isempty(obj.axis_2_power_map) && ~isempty(obj.axis_2_power_map_dimension)
+            obj.warnIfAttributeDependencyMissing('axis_2_power_map_dimension', 'axis_2_power_map')
+        end
     end
     function set.axis_2_power_map_field_of_view(obj, val)
         obj.axis_2_power_map_field_of_view = obj.validate_axis_2_power_map_field_of_view(val);
+        obj.postset_axis_2_power_map_field_of_view()
+    end
+    function postset_axis_2_power_map_field_of_view(obj)
+        if isempty(obj.axis_2_power_map) && ~isempty(obj.axis_2_power_map_field_of_view)
+            obj.warnIfAttributeDependencyMissing('axis_2_power_map_field_of_view', 'axis_2_power_map')
+        end
     end
     function set.axis_2_power_map_unit(obj, val)
         obj.axis_2_power_map_unit = obj.validate_axis_2_power_map_unit(val);
+        obj.postset_axis_2_power_map_unit()
+    end
+    function postset_axis_2_power_map_unit(obj)
+        if isempty(obj.axis_2_power_map) && ~isempty(obj.axis_2_power_map_unit)
+            obj.warnIfAttributeDependencyMissing('axis_2_power_map_unit', 'axis_2_power_map')
+        end
     end
     function set.axis_descriptions(obj, val)
         obj.axis_descriptions = obj.validate_axis_descriptions(val);
@@ -250,42 +322,108 @@ methods
     end
     function set.focal_depth_image_bits_per_pixel(obj, val)
         obj.focal_depth_image_bits_per_pixel = obj.validate_focal_depth_image_bits_per_pixel(val);
+        obj.postset_focal_depth_image_bits_per_pixel()
+    end
+    function postset_focal_depth_image_bits_per_pixel(obj)
+        if isempty(obj.focal_depth_image) && ~isempty(obj.focal_depth_image_bits_per_pixel)
+            obj.warnIfAttributeDependencyMissing('focal_depth_image_bits_per_pixel', 'focal_depth_image')
+        end
     end
     function set.focal_depth_image_dimension(obj, val)
         obj.focal_depth_image_dimension = obj.validate_focal_depth_image_dimension(val);
+        obj.postset_focal_depth_image_dimension()
+    end
+    function postset_focal_depth_image_dimension(obj)
+        if isempty(obj.focal_depth_image) && ~isempty(obj.focal_depth_image_dimension)
+            obj.warnIfAttributeDependencyMissing('focal_depth_image_dimension', 'focal_depth_image')
+        end
     end
     function set.focal_depth_image_field_of_view(obj, val)
         obj.focal_depth_image_field_of_view = obj.validate_focal_depth_image_field_of_view(val);
+        obj.postset_focal_depth_image_field_of_view()
+    end
+    function postset_focal_depth_image_field_of_view(obj)
+        if isempty(obj.focal_depth_image) && ~isempty(obj.focal_depth_image_field_of_view)
+            obj.warnIfAttributeDependencyMissing('focal_depth_image_field_of_view', 'focal_depth_image')
+        end
     end
     function set.focal_depth_image_focal_depth(obj, val)
         obj.focal_depth_image_focal_depth = obj.validate_focal_depth_image_focal_depth(val);
+        obj.postset_focal_depth_image_focal_depth()
+    end
+    function postset_focal_depth_image_focal_depth(obj)
+        if isempty(obj.focal_depth_image) && ~isempty(obj.focal_depth_image_focal_depth)
+            obj.warnIfAttributeDependencyMissing('focal_depth_image_focal_depth', 'focal_depth_image')
+        end
     end
     function set.focal_depth_image_format(obj, val)
         obj.focal_depth_image_format = obj.validate_focal_depth_image_format(val);
+        obj.postset_focal_depth_image_format()
+    end
+    function postset_focal_depth_image_format(obj)
+        if isempty(obj.focal_depth_image) && ~isempty(obj.focal_depth_image_format)
+            obj.warnIfAttributeDependencyMissing('focal_depth_image_format', 'focal_depth_image')
+        end
     end
     function set.sign_map(obj, val)
         obj.sign_map = obj.validate_sign_map(val);
     end
     function set.sign_map_dimension(obj, val)
         obj.sign_map_dimension = obj.validate_sign_map_dimension(val);
+        obj.postset_sign_map_dimension()
+    end
+    function postset_sign_map_dimension(obj)
+        if isempty(obj.sign_map) && ~isempty(obj.sign_map_dimension)
+            obj.warnIfAttributeDependencyMissing('sign_map_dimension', 'sign_map')
+        end
     end
     function set.sign_map_field_of_view(obj, val)
         obj.sign_map_field_of_view = obj.validate_sign_map_field_of_view(val);
+        obj.postset_sign_map_field_of_view()
+    end
+    function postset_sign_map_field_of_view(obj)
+        if isempty(obj.sign_map) && ~isempty(obj.sign_map_field_of_view)
+            obj.warnIfAttributeDependencyMissing('sign_map_field_of_view', 'sign_map')
+        end
     end
     function set.vasculature_image(obj, val)
         obj.vasculature_image = obj.validate_vasculature_image(val);
     end
     function set.vasculature_image_bits_per_pixel(obj, val)
         obj.vasculature_image_bits_per_pixel = obj.validate_vasculature_image_bits_per_pixel(val);
+        obj.postset_vasculature_image_bits_per_pixel()
+    end
+    function postset_vasculature_image_bits_per_pixel(obj)
+        if isempty(obj.vasculature_image) && ~isempty(obj.vasculature_image_bits_per_pixel)
+            obj.warnIfAttributeDependencyMissing('vasculature_image_bits_per_pixel', 'vasculature_image')
+        end
     end
     function set.vasculature_image_dimension(obj, val)
         obj.vasculature_image_dimension = obj.validate_vasculature_image_dimension(val);
+        obj.postset_vasculature_image_dimension()
+    end
+    function postset_vasculature_image_dimension(obj)
+        if isempty(obj.vasculature_image) && ~isempty(obj.vasculature_image_dimension)
+            obj.warnIfAttributeDependencyMissing('vasculature_image_dimension', 'vasculature_image')
+        end
     end
     function set.vasculature_image_field_of_view(obj, val)
         obj.vasculature_image_field_of_view = obj.validate_vasculature_image_field_of_view(val);
+        obj.postset_vasculature_image_field_of_view()
+    end
+    function postset_vasculature_image_field_of_view(obj)
+        if isempty(obj.vasculature_image) && ~isempty(obj.vasculature_image_field_of_view)
+            obj.warnIfAttributeDependencyMissing('vasculature_image_field_of_view', 'vasculature_image')
+        end
     end
     function set.vasculature_image_format(obj, val)
         obj.vasculature_image_format = obj.validate_vasculature_image_format(val);
+        obj.postset_vasculature_image_format()
+    end
+    function postset_vasculature_image_format(obj)
+        if isempty(obj.vasculature_image) && ~isempty(obj.vasculature_image_format)
+            obj.warnIfAttributeDependencyMissing('vasculature_image_format', 'vasculature_image')
+        end
     end
     %% VALIDATORS
     
