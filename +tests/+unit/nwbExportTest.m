@@ -59,7 +59,7 @@ classdef nwbExportTest < matlab.unittest.TestCase
             % an error.
 
             electrode = types.core.IntracellularElectrode('description', 'test');
-            testCase.NwbObject.general_intracellular_ephys.set('Electrode', electrode)
+            testCase.NwbObject.general_intracellular_ephys.set('Electrode', electrode);
 
             nwbFilePath = 'testExportNwbFileWithMissingRequiredLink.nwb';
             testCase.verifyError(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), ...
@@ -141,7 +141,8 @@ classdef nwbExportTest < matlab.unittest.TestCase
             embeddedNamespaces = io.spec.listEmbeddedSpecNamespaces(nwbFileName);
             testCase.verifyEmpty(embeddedNamespaces)
 
-            ts = types.core.TimeSeries('data', rand(1,10), 'timestamps', 1:10);
+            ts = types.core.TimeSeries(...
+                'data', rand(1,10), 'timestamps', 1:10, 'data_unit', 'test');
             nwb.acquisition.set('test', ts);
 
             nwbExport(nwb, nwbFileName);
@@ -191,7 +192,8 @@ classdef nwbExportTest < matlab.unittest.TestCase
             nwb = testCase.initNwbFile();
             
             % Add a timeseries object
-            ts = types.core.TimeSeries('data', rand(1,10), 'timestamps', 1:10);
+            ts = types.core.TimeSeries(...
+                'data', rand(1,10), 'timestamps', 1:10, 'data_unit', 'test');
             nwb.acquisition.set('test', ts);
             
             % Add type from ndx-photostim extension.
