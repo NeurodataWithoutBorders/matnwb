@@ -128,23 +128,24 @@ classdef nwbExportTest < matlab.unittest.TestCase
         end
 
         function testExportScalarTextAttributeWithEmptyString(testCase)
-            nwbFile = testCase.NwbObject;
+            import matlab.unittest.fixtures.SuppressedWarningsFixture
+            testCase.applyFixture(SuppressedWarningsFixture('NWB:DependentRequiredPropertyMissing'))
             
-            processingModule = types.core.ProcessingModule(...
-                'description', '');
-            nwbFile.processing.set('TestModule', processingModule);
+            nwbFile = testCase.NwbObject;
+
+            nwbFile.general_source_script = mfilename("fullpath");
 
             nwbFilePath = fullfile(testCase.OutputFolder, 'test_scalar_text_attribute.nwb');
             nwbExport(nwbFile, nwbFilePath)
 
             nwbFileInMat = nwbRead(nwbFilePath);
             
-            value = nwbFileInMat.processing.get('TestModule').description;
+            value = nwbFileInMat.general_source_script_file_name;
             testCase.verifyClass(value, 'char')
             testCase.verifyEmpty(value)
 
             [nwbFileInPy, fileCleanup] = testCase.readNwbFileWithPynwb(nwbFilePath); %#ok<ASGLU>
-            value = nwbFileInPy.processing{'TestModule'}.description;
+            value = nwbFileInPy.source_script_file_name;
             testCase.verifyClass(value, 'py.str')
             testCase.verifyEmpty(value)
             clear fileCleanup
