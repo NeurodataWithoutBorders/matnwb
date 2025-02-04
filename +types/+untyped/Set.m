@@ -70,11 +70,6 @@ classdef Set < handle & matlab.mixin.CustomDisplay
         function cnt = Count(obj)
             cnt = obj.Map.Count;
         end
-        
-        % overloads isemty
-        function tf = isempty(obj)
-            tf = obj.Count == 0;
-        end
 
         %overloads size(obj)
         function varargout = size(obj, dim)
@@ -198,9 +193,9 @@ classdef Set < handle & matlab.mixin.CustomDisplay
     
     methods(Access=protected)
         function displayEmptyObject(obj)
-            hdr = ['  Empty '...
-                '<a href="matlab:helpPopup types.untyped.Set" style="font-weight:bold">'...
-                'Set</a>'];
+            hdr = sprintf('  %s with no elements.', ...
+                ['<a href="matlab:helpPopup types.untyped.Set" style="font-weight:bold">'...
+                'Set</a>']);
             footer = getFooter(obj);
             disp([hdr newline footer]);
         end
