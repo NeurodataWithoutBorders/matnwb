@@ -105,16 +105,29 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
             end
         end
 
+        function warnIfAttributeDependencyMissing(obj, propName, dependencyPropName)
+            % Skip warning if the value is equal to the default value for
+            % the property (value was probably not set by the user).
+            if obj.propertyValueEqualsDefaultValue(propName)
+                return
+            end
+
+            warnState = warning('backtrace', 'off');
+            cleanupObj = onCleanup(@(s) warning(warnState));
+            warningId = 'NWB:AttributeDependencyNotSet';
+            warningMessage = sprintf( [ ...
+                'The property "%s" of type "%s" depends on the property "%s", ' ...
+                'which is unset. If you do not set a value for "%s, the ' ...
+                'value of "%s" will not be exported to file.'], ...
+                propName, class(obj), dependencyPropName, dependencyPropName, propName);
+            warning(warningId, warningMessage) %#ok<SPWRN>
+        end
+
         function warnIfPropertyAttributeNotExported(obj, propName, depPropName, fullpath)
             % Skip warning if the value is equal to the default value for
             % the property (value was probably not set by the user).
-            mc = metaclass(obj);
-            propInfo = mc.PropertyList(strcmp({mc.PropertyList.Name}, propName));
-            if propInfo.HasDefault
-                propValue = obj.(propName);
-                if isequal(propValue, propInfo.DefaultValue)
-                    return
-                end
+            if obj.propertyValueEqualsDefaultValue(propName)
+                return
             end
 
             warnState = warning('backtrace', 'off');
@@ -226,6 +239,17 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
                 isRequired = startsWith(propertyDescription, 'REQUIRED');
                 requiredProps = {mc.PropertyList(isRequired).Name};
                 obj.REQUIRED( class(obj) ) = requiredProps;
+            end
+        end
+
+        function tf = propertyValueEqualsDefaultValue(obj, propName)
+        % propertyValueEqualsDefaultValue - Check if value of property is
+        % equal to the property's default value
+            mc = metaclass(obj);
+            propInfo = mc.PropertyList(strcmp({mc.PropertyList.Name}, propName));
+            if propInfo.HasDefault
+                propValue = obj.(propName);
+                tf = isequal(propValue, propInfo.DefaultValue);
             end
         end
     end
