@@ -307,9 +307,6 @@ methods
         if ~isempty(obj.capacitance_fast) && ~isa(obj.capacitance_fast, 'types.untyped.SoftLink') && ~isa(obj.capacitance_fast, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/capacitance_fast/unit'], obj.capacitance_fast_unit);
         end
-        if ~isempty(obj.capacitance_fast) && isempty(obj.capacitance_fast_unit)
-            obj.warnIfRequiredDependencyMissing('capacitance_fast_unit', 'capacitance_fast', fullpath)
-        end
         if ~isempty(obj.capacitance_slow)
             if startsWith(class(obj.capacitance_slow), 'types.untyped.')
                 refs = obj.capacitance_slow.export(fid, [fullpath '/capacitance_slow'], refs);
@@ -319,9 +316,6 @@ methods
         end
         if ~isempty(obj.capacitance_slow) && ~isa(obj.capacitance_slow, 'types.untyped.SoftLink') && ~isa(obj.capacitance_slow, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/capacitance_slow/unit'], obj.capacitance_slow_unit);
-        end
-        if ~isempty(obj.capacitance_slow) && isempty(obj.capacitance_slow_unit)
-            obj.warnIfRequiredDependencyMissing('capacitance_slow_unit', 'capacitance_slow', fullpath)
         end
         if ~isempty(obj.resistance_comp_bandwidth)
             if startsWith(class(obj.resistance_comp_bandwidth), 'types.untyped.')
@@ -333,9 +327,6 @@ methods
         if ~isempty(obj.resistance_comp_bandwidth) && ~isa(obj.resistance_comp_bandwidth, 'types.untyped.SoftLink') && ~isa(obj.resistance_comp_bandwidth, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/resistance_comp_bandwidth/unit'], obj.resistance_comp_bandwidth_unit);
         end
-        if ~isempty(obj.resistance_comp_bandwidth) && isempty(obj.resistance_comp_bandwidth_unit)
-            obj.warnIfRequiredDependencyMissing('resistance_comp_bandwidth_unit', 'resistance_comp_bandwidth', fullpath)
-        end
         if ~isempty(obj.resistance_comp_correction)
             if startsWith(class(obj.resistance_comp_correction), 'types.untyped.')
                 refs = obj.resistance_comp_correction.export(fid, [fullpath '/resistance_comp_correction'], refs);
@@ -345,9 +336,6 @@ methods
         end
         if ~isempty(obj.resistance_comp_correction) && ~isa(obj.resistance_comp_correction, 'types.untyped.SoftLink') && ~isa(obj.resistance_comp_correction, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/resistance_comp_correction/unit'], obj.resistance_comp_correction_unit);
-        end
-        if ~isempty(obj.resistance_comp_correction) && isempty(obj.resistance_comp_correction_unit)
-            obj.warnIfRequiredDependencyMissing('resistance_comp_correction_unit', 'resistance_comp_correction', fullpath)
         end
         if ~isempty(obj.resistance_comp_prediction)
             if startsWith(class(obj.resistance_comp_prediction), 'types.untyped.')
@@ -359,9 +347,6 @@ methods
         if ~isempty(obj.resistance_comp_prediction) && ~isa(obj.resistance_comp_prediction, 'types.untyped.SoftLink') && ~isa(obj.resistance_comp_prediction, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/resistance_comp_prediction/unit'], obj.resistance_comp_prediction_unit);
         end
-        if ~isempty(obj.resistance_comp_prediction) && isempty(obj.resistance_comp_prediction_unit)
-            obj.warnIfRequiredDependencyMissing('resistance_comp_prediction_unit', 'resistance_comp_prediction', fullpath)
-        end
         if ~isempty(obj.whole_cell_capacitance_comp)
             if startsWith(class(obj.whole_cell_capacitance_comp), 'types.untyped.')
                 refs = obj.whole_cell_capacitance_comp.export(fid, [fullpath '/whole_cell_capacitance_comp'], refs);
@@ -372,9 +357,6 @@ methods
         if ~isempty(obj.whole_cell_capacitance_comp) && ~isa(obj.whole_cell_capacitance_comp, 'types.untyped.SoftLink') && ~isa(obj.whole_cell_capacitance_comp, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/whole_cell_capacitance_comp/unit'], obj.whole_cell_capacitance_comp_unit);
         end
-        if ~isempty(obj.whole_cell_capacitance_comp) && isempty(obj.whole_cell_capacitance_comp_unit)
-            obj.warnIfRequiredDependencyMissing('whole_cell_capacitance_comp_unit', 'whole_cell_capacitance_comp', fullpath)
-        end
         if ~isempty(obj.whole_cell_series_resistance_comp)
             if startsWith(class(obj.whole_cell_series_resistance_comp), 'types.untyped.')
                 refs = obj.whole_cell_series_resistance_comp.export(fid, [fullpath '/whole_cell_series_resistance_comp'], refs);
@@ -384,9 +366,6 @@ methods
         end
         if ~isempty(obj.whole_cell_series_resistance_comp) && ~isa(obj.whole_cell_series_resistance_comp, 'types.untyped.SoftLink') && ~isa(obj.whole_cell_series_resistance_comp, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/whole_cell_series_resistance_comp/unit'], obj.whole_cell_series_resistance_comp_unit);
-        end
-        if ~isempty(obj.whole_cell_series_resistance_comp) && isempty(obj.whole_cell_series_resistance_comp_unit)
-            obj.warnIfRequiredDependencyMissing('whole_cell_series_resistance_comp_unit', 'whole_cell_series_resistance_comp', fullpath)
         end
     end
 end

@@ -131,18 +131,48 @@ methods
     end
     function set.data_continuity(obj, val)
         obj.data_continuity = obj.validate_data_continuity(val);
+        obj.postset_data_continuity()
+    end
+    function postset_data_continuity(obj)
+        if isempty(obj.data) && ~isempty(obj.data_continuity)
+            obj.warnIfAttributeDependencyMissing('data_continuity', 'data')
+        end
     end
     function set.data_conversion(obj, val)
         obj.data_conversion = obj.validate_data_conversion(val);
+        obj.postset_data_conversion()
+    end
+    function postset_data_conversion(obj)
+        if isempty(obj.data) && ~isempty(obj.data_conversion)
+            obj.warnIfAttributeDependencyMissing('data_conversion', 'data')
+        end
     end
     function set.data_offset(obj, val)
         obj.data_offset = obj.validate_data_offset(val);
+        obj.postset_data_offset()
+    end
+    function postset_data_offset(obj)
+        if isempty(obj.data) && ~isempty(obj.data_offset)
+            obj.warnIfAttributeDependencyMissing('data_offset', 'data')
+        end
     end
     function set.data_resolution(obj, val)
         obj.data_resolution = obj.validate_data_resolution(val);
+        obj.postset_data_resolution()
+    end
+    function postset_data_resolution(obj)
+        if isempty(obj.data) && ~isempty(obj.data_resolution)
+            obj.warnIfAttributeDependencyMissing('data_resolution', 'data')
+        end
     end
     function set.data_unit(obj, val)
         obj.data_unit = obj.validate_data_unit(val);
+        obj.postset_data_unit()
+    end
+    function postset_data_unit(obj)
+        if isempty(obj.data) && ~isempty(obj.data_unit)
+            obj.warnIfAttributeDependencyMissing('data_unit', 'data')
+        end
     end
     function set.description(obj, val)
         obj.description = obj.validate_description(val);
@@ -152,6 +182,12 @@ methods
     end
     function set.starting_time_rate(obj, val)
         obj.starting_time_rate = obj.validate_starting_time_rate(val);
+        obj.postset_starting_time_rate()
+    end
+    function postset_starting_time_rate(obj)
+        if isempty(obj.starting_time) && ~isempty(obj.starting_time_rate)
+            obj.warnIfAttributeDependencyMissing('starting_time_rate', 'starting_time')
+        end
     end
     function set.timestamps(obj, val)
         obj.timestamps = obj.validate_timestamps(val);
@@ -443,9 +479,6 @@ methods
         if ~isempty(obj.starting_time) && ~isa(obj.starting_time, 'types.untyped.SoftLink') && ~isa(obj.starting_time, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/starting_time/unit'], obj.starting_time_unit);
         end
-        if ~isempty(obj.starting_time) && isempty(obj.starting_time_unit)
-            obj.warnIfRequiredDependencyMissing('starting_time_unit', 'starting_time', fullpath)
-        end
         if ~isempty(obj.timestamps)
             if startsWith(class(obj.timestamps), 'types.untyped.')
                 refs = obj.timestamps.export(fid, [fullpath '/timestamps'], refs);
@@ -456,14 +489,8 @@ methods
         if ~isempty(obj.timestamps) && ~isa(obj.timestamps, 'types.untyped.SoftLink') && ~isa(obj.timestamps, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/timestamps/interval'], obj.timestamps_interval);
         end
-        if ~isempty(obj.timestamps) && isempty(obj.timestamps_interval)
-            obj.warnIfRequiredDependencyMissing('timestamps_interval', 'timestamps', fullpath)
-        end
         if ~isempty(obj.timestamps) && ~isa(obj.timestamps, 'types.untyped.SoftLink') && ~isa(obj.timestamps, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/timestamps/unit'], obj.timestamps_unit);
-        end
-        if ~isempty(obj.timestamps) && isempty(obj.timestamps_unit)
-            obj.warnIfRequiredDependencyMissing('timestamps_unit', 'timestamps', fullpath)
         end
     end
     %% CUSTOM CONSTRAINTS

@@ -36,6 +36,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             % This should raise an error because ProcessingModule requires the 
             % 'description' property to be set (description is a required 
             % attribute of ProcessingModule).
+
             processingModule = types.core.ProcessingModule();
             testCase.NwbObject.processing.set('TestModule', processingModule);
             
@@ -80,6 +81,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
 
             % Verify that exporting the file issues warning that a required
             % property (i.e general_source_script_file_name) is missing
+
             testCase.verifyWarning( ...
                 @(nwbObj, filePath) nwbExport(nwbFile, fileName + "_2.nwb"), ...
                 'NWB:DependentRequiredPropertyMissing')

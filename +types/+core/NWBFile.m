@@ -383,6 +383,12 @@ methods
     end
     function set.general_source_script_file_name(obj, val)
         obj.general_source_script_file_name = obj.validate_general_source_script_file_name(val);
+        obj.postset_general_source_script_file_name()
+    end
+    function postset_general_source_script_file_name(obj)
+        if isempty(obj.general_source_script) && ~isempty(obj.general_source_script_file_name)
+            obj.warnIfAttributeDependencyMissing('general_source_script_file_name', 'general_source_script')
+        end
     end
     function set.general_stimulus(obj, val)
         obj.general_stimulus = obj.validate_general_stimulus(val);

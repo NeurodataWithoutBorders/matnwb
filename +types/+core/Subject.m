@@ -92,6 +92,12 @@ methods
     end
     function set.age_reference(obj, val)
         obj.age_reference = obj.validate_age_reference(val);
+        obj.postset_age_reference()
+    end
+    function postset_age_reference(obj)
+        if isempty(obj.age) && ~isempty(obj.age_reference)
+            obj.warnIfAttributeDependencyMissing('age_reference', 'age')
+        end
     end
     function set.date_of_birth(obj, val)
         obj.date_of_birth = obj.validate_date_of_birth(val);
