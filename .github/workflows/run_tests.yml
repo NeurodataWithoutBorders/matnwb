@@ -4,14 +4,14 @@ name: Run tests
 on:
   pull_request:
     branches:
-      - master
+      - main
     paths-ignore:
       - "*.md"
       - "*.codespellrc"
       - ".github/**"
   push:
     branches:
-      - master
+      - main
 
 jobs:
   run_tests:
