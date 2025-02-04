@@ -245,11 +245,14 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
         function tf = propertyValueEqualsDefaultValue(obj, propName)
         % propertyValueEqualsDefaultValue - Check if value of property is
         % equal to the property's default value
+            
             mc = metaclass(obj);
             propInfo = mc.PropertyList(strcmp({mc.PropertyList.Name}, propName));
             if propInfo.HasDefault
                 propValue = obj.(propName);
                 tf = isequal(propValue, propInfo.DefaultValue);
+            else
+                tf = false;
             end
         end
     end
