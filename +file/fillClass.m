@@ -1,4 +1,4 @@
-function template = fillClass(name, namespace, processed, classprops, inherited)
+function template = fillClass(name, namespace, processed, classprops, inherited, superClassProps)
     %name is the name of the scheme
     %namespace is the namespace context for this class
 
@@ -25,6 +25,14 @@ function template = fillClass(name, namespace, processed, classprops, inherited)
                 p = prop(iProp);
                 isPropertyRequired(iProp) = p.required;
             end
+        elseif isa(prop, 'file.Attribute')
+            if isempty(prop.dependent)
+                isRequired = prop.required;
+            else
+                isRequired = resolveRequiredForDependentProp(propertyName, prop, classprops);
+            end
+        elseif isa(prop, 'file.Link')
+            isRequired = prop.required;
         end
 
         if isRequired || all(isPropertyRequired)
@@ -33,16 +41,22 @@ function template = fillClass(name, namespace, processed, classprops, inherited)
             optional = [optional {propertyName}];
         end
 
-        if isa(prop, 'file.Attribute')
+        if isa(prop, 'file.Attribute') || isa(prop, 'file.Dataset') 
             if prop.readonly
                 readonly = [readonly {propertyName}];
             end
 
             if ~isempty(prop.value)
-                defaults = [defaults {propertyName}];
+                if isa(prop, 'file.Attribute') 
+                    defaults = [defaults {propertyName}];
+                else % file.Dataset
+                    if isRequired || all(isPropertyRequired)
+                        defaults = [defaults {propertyName}];
+                    end
+                end
             end
 
-            if ~isempty(prop.dependent)
+            if isa(prop, 'file.Attribute') && ~isempty(prop.dependent)
                 %extract prefix
                 parentName = strrep(propertyName, ['_' prop.name], '');
                 parent = classprops(parentName);
@@ -81,7 +95,20 @@ function template = fillClass(name, namespace, processed, classprops, inherited)
     %% return classfile string
     classDefinitionHeader = [...
         'classdef ' name ' < ' depnm ' & ' classTag newline... %header, dependencies
-        '% ' upper(name) ' ' class.doc]; %name, docstr
+        '% ' upper(name) ' - ' class.doc]; %name, docstr
+
+    allClassProps = file.internal.mergeProps(classprops, superClassProps);
+    allRequiredPropertyNames = file.internal.getRequiredPropertyNames(allClassProps);
+    if isempty(allRequiredPropertyNames)
+        allRequiredPropertyNames = {'None'};
+    end
+
+    % Add list of required properties in class docstring
+    classDefinitionHeader = [classDefinitionHeader, newline...
+        '%', newline, ...
+        '% Required Properties:', newline, ...
+        sprintf('%%  %s', strjoin(allRequiredPropertyNames, ', '))];
+ 
     hiddenAndReadonly = intersect(hidden, readonly);
     hidden = setdiff(hidden, hiddenAndReadonly);
     readonly = setdiff(readonly, hiddenAndReadonly);
@@ -120,10 +147,11 @@ function template = fillClass(name, namespace, processed, classprops, inherited)
         depnm,...
         defaults,... %all defaults, regardless of inheritance
         classprops,...
-        namespace);
-    setterFcns = file.fillSetters(setdiff(nonInherited, union(readonly, hiddenAndReadonly)));
+        namespace, ...
+        superClassProps);
+    setterFcns = file.fillSetters(setdiff(nonInherited, union(readonly, hiddenAndReadonly)), classprops);
     validatorFcns = file.fillValidators(allProperties, classprops, namespace, namespace.getFullClassName(name), inherited);
-    exporterFcns = file.fillExport(nonInherited, class, depnm);
+    exporterFcns = file.fillExport(nonInherited, class, depnm, required);
     methodBody = strjoin({constructorBody...
         '%% SETTERS' setterFcns...
         '%% VALIDATORS' validatorFcns...
@@ -144,3 +172,15 @@ function template = fillClass(name, namespace, processed, classprops, inherited)
         [newline newline]);
 end
 
+function tf = resolveRequiredForDependentProp(propertyName, propInfo, allProps)
+% resolveRequiredForDependentProp - If a dependent property is required,
+% whether it is required on object level also depends on whether it's parent 
+% property is required.
+    if ~propInfo.required 
+        tf = false;
+    else % Check if parent is required
+        parentName = strrep(propertyName, ['_' propInfo.name], '');
+        parentInfo = allProps(parentName);
+        tf = parentInfo.required;
+    end
+end

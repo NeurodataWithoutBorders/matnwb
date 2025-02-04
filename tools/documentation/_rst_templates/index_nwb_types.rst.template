@@ -1,0 +1,10 @@
+{{ section_title }}
+{{ section_title_underline }}
+
+These are the MatNWB neurodata types from the {{ namespace_name }} schema specification.
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Functions
+
+{{ function_list }}

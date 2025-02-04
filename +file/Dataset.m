@@ -6,6 +6,8 @@ classdef Dataset < file.interface.HasProps
         dtype;
         isConstrainedSet;
         required;
+        value;
+        readonly; %determines whether value can be changed or not
         scalar;
         shape;
         dimnames;
@@ -22,12 +24,15 @@ classdef Dataset < file.interface.HasProps
             obj.type = '';
             obj.dtype = 'any';
             obj.required = true;
+            obj.value = [];
+            obj.readonly = false;
             obj.scalar = true;
             obj.definesType = false;
             
             obj.shape = {};
             obj.dimnames = {};
             obj.attributes = [];
+
             
             if nargin < 1
                 return;
@@ -41,6 +46,20 @@ classdef Dataset < file.interface.HasProps
             nameKey = 'name';
             if isKey(source, nameKey)
                 obj.name = source(nameKey);
+            end
+
+            % Todo: same as for attribute, should consolidate
+            valueKey = 'value';
+            defaultKey = 'default_value';
+            if isKey(source, defaultKey)
+                obj.value = source(defaultKey);
+                obj.readonly = false;
+            elseif isKey(source, valueKey)
+                obj.value = source(valueKey);
+                obj.readonly = true;
+            else
+                obj.value = [];
+                obj.readonly = false;
             end
             
             typeKeys = {'neurodata_type_def', 'data_type_def'};
@@ -121,15 +140,19 @@ classdef Dataset < file.interface.HasProps
             
             %constrained
             % error unless it defines the object.
+
+            assert(...
+                ~isempty(obj.type), ...
+                'NWB:Dataset:UnsupportedOperation', ...
+                'The method `getProps` should not be called on an untyped dataset.' ...
+                );
             
-            if isempty(obj.type)
-                error('You shouldn''t be calling getProps on an untyped dataset');
-            end
-            
-            if obj.isConstrainedSet && ~obj.definesType
-                error('You shouldn''t be calling getProps on a constrained dataset');
-            end
-            
+            assert( ...
+                ~obj.isConstrainedSet || obj.definesType, ...
+                'NWB:Dataset:UnsupportedOperation', ...
+                'The method `getProps` should not be called on constrained dataset.' ...
+                );
+
             if ~isempty(obj.dtype)
                 props('data') = obj.dtype;
             end

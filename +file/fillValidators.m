@@ -4,8 +4,8 @@ function validationStr = fillValidators(propnames, props, namespacereg, classNam
         nm = propnames{i};
         prop = props(nm);
 
-
-        if isa(prop, 'file.Attribute') && prop.readonly && ~isempty(prop.value)
+        if (isa(prop, 'file.Attribute') || isa(prop, 'file.Dataset')) ...
+                && prop.readonly && ~isempty(prop.value)
             % Need to add a validator for inherited and readonly properties. In 
             % the superclass these properties might not be read only and due to
             % inheritance its not possible to change property attributes
@@ -14,6 +14,8 @@ function validationStr = fillValidators(propnames, props, namespacereg, classNam
             else
                 continue
             end
+        elseif isa(prop, 'file.Link')
+            validationBody = fillLinkValidation(nm, prop, namespacereg);
         else
             if startsWith(class(prop), 'file.')
                 validationBody = fillUnitValidation(nm, prop, namespacereg);
@@ -155,37 +157,47 @@ function unitValidationStr = fillDatasetValidation(name, prop, namespaceReg)
             fillDimensionValidation(prop.dtype, prop.shape)...
             }, newline);
     elseif prop.isConstrainedSet
-        try
-            fullname = namespaceReg.getFullClassName(prop.type);
-        catch ME
-            if ~endsWith(ME.identifier, 'Namespace:NotFound')
-                rethrow(ME);
-            end
-
-            warning('NWB:Fill:Validators:NamespaceNotFound',...
-                ['Namespace could not be found for type `%s`.' ...
-                '  Skipping Validation for property `%s`.'], prop.type, name);
-            return;
+        fullname = getFullClassName(namespaceReg, prop.type, name);
+        if isempty(fullname)
+            return
         end
+
         unitValidationStr = strjoin({unitValidationStr...
             ['constrained = { ''' fullname ''' };']...
             ['types.util.checkSet(''' name ''', struct(), constrained, val);']...
             }, newline);
     else
-        try
-            fullname = namespaceReg.getFullClassName(prop.type);
-        catch ME
-            if ~endsWith(ME.identifier, 'Namespace:NotFound')
-                rethrow(ME);
-            end
-
-            warning('NWB:Fill:Validators:NamespaceNotFound',...
-                ['Namespace could not be found for type `%s`.' ...
-                '  Skipping Validation for property `%s`.'], prop.type, name);
-            return;
+        fullname = getFullClassName(namespaceReg, prop.type, name);
+        if isempty(fullname)
+            return
         end
         unitValidationStr = [unitValidationStr newline fillDtypeValidation(name, fullname)];
     end
+end
+
+function validationStr = fillLinkValidation(name, prop, namespacereg)
+    fullName = namespacereg.getFullClassName(prop.type);
+    
+    % Create a validation function body that 1) checks (validates) the
+    % target if the input is a SoftLink type, otherwise 2) checks (validates) 
+    % if the expected (target) type is provided. If the validation passes
+    % and the value is not empty, it is wrapped in a SoftLink.
+
+    validationStr = sprintf([ ...
+        'if isa(val, ''types.untyped.SoftLink'')\n', ...
+        '    if isprop(val, ''target'')\n', ...
+        '        types.util.checkDtype(''%s'', ''%s'', val.target);\n', ...
+        '    end\n', ...
+        'else\n', ...
+        '    %s\n', ...
+        '    if ~isempty(val)\n', ...
+        '        val = types.untyped.SoftLink(val);\n', ...
+        '    end\n', ...
+        'end' ...
+        ], ...
+        name, fullName, ...
+        fillDtypeValidation(name, fullName) ...
+    );
 end
 
 function fdvstr = fillDimensionValidation(type, shape)
@@ -240,7 +252,7 @@ function fdvstr = fillDtypeValidation(name, type)
             '    return;'...
             'end'...
             'if ~istable(val) && ~isstruct(val) && ~isa(val, ''containers.Map'')'...
-            ['    error(''Property `' name '` must be a table,struct, or containers.Map.'');']...
+            ['    error(''NWB:Type:InvalidPropertyType'', ''Property `' name '` must be a table, struct, or containers.Map.'');']...
             'end'...
             'vprops = struct();'...
             }, newline);
@@ -294,8 +306,7 @@ function fdvstr = fillReadOnlyValidator(name, value, className)
 
     classNameSplit = strsplit(className, '.');
     shortName = classNameSplit{end};
-
-    errorStr = sprintf( 'error(''Unable to set the ''''%s'''' property of class ''''<a href="matlab:doc %s">%s</a>'''' because it is read-only.'')', name, className, shortName);  
+    errorStr = sprintf( 'error(''NWB:Type:ReadOnlyProperty'', ''Unable to set the ''''%s'''' property of class ''''<a href="matlab:doc %s">%s</a>'''' because it is read-only.'')', name, className, shortName);  
 
     if ischar(value)
         condition = strjoin({ ...
@@ -311,11 +322,27 @@ function fdvstr = fillReadOnlyValidator(name, value, className)
         % Note: According to the documentation for Attribute specification keys
         % (https://schema-language.readthedocs.io/en/latest/description.html#sec-attributes-spec),
         % the above cases should be sufficient.
-        error('Unhandled case')
+        error('NWB:ClassGenerator:ReadOnlyValidatorNotImplemented', ...
+            'Read-only validator is not implemented for values of type "%s"', class(value))
     end
     
     fdvstr = strjoin({...
             condition, ...
             sprintf('    %s', errorStr), ...
             'end' }, newline );
+end
+
+function fullname = getFullClassName(namespaceReg, propType, name)
+    fullname = '';
+    try
+        fullname = namespaceReg.getFullClassName(propType);
+    catch ME
+        if ~endsWith(ME.identifier, 'Namespace:NotFound')
+            rethrow(ME);
+        end
+
+        warning('NWB:Fill:Validators:NamespaceNotFound',...
+            ['Namespace could not be found for type `%s`.' ...
+            '  Skipping Validation for property `%s`.'], propType, name);
+    end
 end

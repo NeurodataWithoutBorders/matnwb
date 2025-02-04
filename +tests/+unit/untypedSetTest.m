@@ -32,13 +32,15 @@ function testCreateSetFromNvPairsPlusFunctionHandle(testCase)
 end
 
 function testDisplayEmptyObject(testCase)
-    emptyUntypedSet = types.untyped.Set();
-    disp(emptyUntypedSet)
+    emptyUntypedSet = types.untyped.Set(); %#ok<NASGU>
+    C = evalc( 'disp(emptyUntypedSet)' );
+    testCase.verifyClass(C, 'char')
 end
 
 function testDisplayScalarObject(testCase)
-    scalarSet = types.untyped.Set('a',1)
-    disp(scalarSet)
+    scalarSet = types.untyped.Set('a', 1); %#ok<NASGU>
+    C = evalc( 'disp(scalarSet)' );
+    testCase.verifyClass(C, 'char')
 end
 
 function testGetSetSize(testCase)
@@ -65,4 +67,10 @@ function testVerticalConcatenation(testCase)
     untypedSetB = types.untyped.Set( struct('c',3, 'd', 3) );
 
     testCase.verifyError(@() [untypedSetA; untypedSetB], 'NWB:Set:Unsupported') 
+end
+
+function testSetCharValue(testCase)
+    untypedSet = types.untyped.Set( struct('a', 'a', 'b', 'b') );
+    untypedSet.set('c', 'c')
+    testCase.verifyEqual(untypedSet.get('c'), 'c')
 end

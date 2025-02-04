@@ -1,10 +1,13 @@
 classdef NWBFile < types.core.NWBContainer & types.untyped.GroupClass
-% NWBFILE An NWB file storing cellular-based neurophysiology data from a single experimental session.
+% NWBFILE - An NWB file storing cellular-based neurophysiology data from a single experimental session.
+%
+% Required Properties:
+%  file_create_date, identifier, session_description, session_start_time, timestamps_reference_time
 
 
 % READONLY PROPERTIES
 properties(SetAccess = protected)
-    nwb_version; %  (char) File version string. Use semantic versioning, e.g. 1.2.1. This will be the name of the format with trailing major, minor and patch numbers.
+    nwb_version = "2.8.0"; %  (char) File version string. Use semantic versioning, e.g. 1.2.1. This will be the name of the format with trailing major, minor and patch numbers.
 end
 % REQUIRED PROPERTIES
 properties
@@ -50,6 +53,7 @@ properties
     general_subject; %  (Subject) Information about the animal or person from which the data was measured.
     general_surgery; %  (char) Narrative description about surgery/surgeries, including date(s) and who performed surgery.
     general_virus; %  (char) Information about virus(es) used in experiments, including virus ID, source, date made, injection location, volume, etc.
+    general_was_generated_by; %  (char) Name and version of software package(s) used to generate data contained in this NWB File. For each software package or library, include the name of the software as the first value and the version as the second value.
     intervals; %  (TimeIntervals) Optional additional table(s) for describing other experimental time intervals.
     intervals_epochs; %  (TimeIntervals) Divisions in time marking experimental stages or sub-divisions of a single recording session.
     intervals_invalid_times; %  (TimeIntervals) Time intervals that should be removed from analysis.
@@ -63,8 +67,116 @@ end
 
 methods
     function obj = NWBFile(varargin)
-        % NWBFILE Constructor for NWBFile
-        varargin = [{'nwb_version' '2.7.0'} varargin];
+        % NWBFILE - Constructor for NWBFile
+        %
+        % Syntax:
+        %  nWBFile = types.core.NWBFILE() creates a NWBFile object with unset property values.
+        %
+        %  nWBFile = types.core.NWBFILE(Name, Value) creates a NWBFile object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - acquisition (DynamicTable|NWBDataInterface) - Tabular data that is relevant to acquisition
+        %
+        %  - analysis (DynamicTable|NWBContainer) - Tabular data that is relevant to data stored in analysis
+        %
+        %  - file_create_date (datetime) - A record of the date the file was created and of subsequent modifications. The date is stored in UTC with local timezone offset as ISO 8601 extended formatted strings: 2018-09-28T14:43:54.123+02:00. Dates stored in UTC end in "Z" with no timezone offset. Date accuracy is up to milliseconds. The file can be created after the experiment was run, so this may differ from the experiment start time. Each modification to the nwb file adds a new entry to the array.
+        %
+        %  - general (LabMetaData) - Place-holder than can be extended so that lab-specific meta-data can be placed in /general.
+        %
+        %  - general_data_collection (char) - Notes about data collection and analysis.
+        %
+        %  - general_devices (Device) - Data acquisition devices.
+        %
+        %  - general_experiment_description (char) - General description of the experiment.
+        %
+        %  - general_experimenter (char) - Name of person(s) who performed the experiment. Can also specify roles of different people involved.
+        %
+        %  - general_extracellular_ephys (ElectrodeGroup) - Physical group of electrodes.
+        %
+        %  - general_extracellular_ephys_electrodes (DynamicTable) - A table of all electrodes (i.e. channels) used for recording.
+        %
+        %  - general_institution (char) - Institution(s) where experiment was performed.
+        %
+        %  - general_intracellular_ephys (IntracellularElectrode) - An intracellular electrode.
+        %
+        %  - general_intracellular_ephys_experimental_conditions (ExperimentalConditionsTable) - A table for grouping different intracellular recording repetitions together that belong to the same experimental experimental_conditions.
+        %
+        %  - general_intracellular_ephys_filtering (char) - [DEPRECATED] Use IntracellularElectrode.filtering instead. Description of filtering used. Includes filtering type and parameters, frequency fall-off, etc. If this changes between TimeSeries, filter description should be stored as a text attribute for each TimeSeries.
+        %
+        %  - general_intracellular_ephys_intracellular_recordings (IntracellularRecordingsTable) - A table to group together a stimulus and response from a single electrode and a single simultaneous recording. Each row in the table represents a single recording consisting typically of a stimulus and a corresponding response. In some cases, however, only a stimulus or a response are recorded as as part of an experiment. In this case both, the stimulus and response will point to the same TimeSeries while the idx_start and count of the invalid column will be set to -1, thus, indicating that no values have been recorded for the stimulus or response, respectively. Note, a recording MUST contain at least a stimulus or a response. Typically the stimulus and response are PatchClampSeries. However, the use of AD/DA channels that are not associated to an electrode is also common in intracellular electrophysiology, in which case other TimeSeries may be used.
+        %
+        %  - general_intracellular_ephys_repetitions (RepetitionsTable) - A table for grouping different sequential intracellular recordings together. With each SequentialRecording typically representing a particular type of stimulus, the RepetitionsTable table is typically used to group sets of stimuli applied in sequence.
+        %
+        %  - general_intracellular_ephys_sequential_recordings (SequentialRecordingsTable) - A table for grouping different sequential recordings from the SimultaneousRecordingsTable table together. This is typically used to group together sequential recordings where the a sequence of stimuli of the same type with varying parameters have been presented in a sequence.
+        %
+        %  - general_intracellular_ephys_simultaneous_recordings (SimultaneousRecordingsTable) - A table for grouping different intracellular recordings from the IntracellularRecordingsTable table together that were recorded simultaneously from different electrodes
+        %
+        %  - general_intracellular_ephys_sweep_table (SweepTable) - [DEPRECATED] Table used to group different PatchClampSeries. SweepTable is being replaced by IntracellularRecordingsTable and SimultaneousRecordingsTable tables. Additional SequentialRecordingsTable, RepetitionsTable and ExperimentalConditions tables provide enhanced support for experiment metadata.
+        %
+        %  - general_keywords (char) - Terms to search over.
+        %
+        %  - general_lab (char) - Laboratory where experiment was performed.
+        %
+        %  - general_notes (char) - Notes about the experiment.
+        %
+        %  - general_optogenetics (OptogeneticStimulusSite) - An optogenetic stimulation site.
+        %
+        %  - general_optophysiology (ImagingPlane) - An imaging plane.
+        %
+        %  - general_pharmacology (char) - Description of drugs used, including how and when they were administered. Anesthesia(s), painkiller(s), etc., plus dosage, concentration, etc.
+        %
+        %  - general_protocol (char) - Experimental protocol, if applicable. e.g., include IACUC protocol number.
+        %
+        %  - general_related_publications (char) - Publication information. PMID, DOI, URL, etc.
+        %
+        %  - general_session_id (char) - Lab-specific ID for the session.
+        %
+        %  - general_slices (char) - Description of slices, including information about preparation thickness, orientation, temperature, and bath solution.
+        %
+        %  - general_source_script (char) - Script file or link to public source code used to create this NWB file.
+        %
+        %  - general_source_script_file_name (char) - Name of script file.
+        %
+        %  - general_stimulus (char) - Notes about stimuli, such as how and where they were presented.
+        %
+        %  - general_subject (Subject) - Information about the animal or person from which the data was measured.
+        %
+        %  - general_surgery (char) - Narrative description about surgery/surgeries, including date(s) and who performed surgery.
+        %
+        %  - general_virus (char) - Information about virus(es) used in experiments, including virus ID, source, date made, injection location, volume, etc.
+        %
+        %  - general_was_generated_by (char) - Name and version of software package(s) used to generate data contained in this NWB File. For each software package or library, include the name of the software as the first value and the version as the second value.
+        %
+        %  - identifier (char) - A unique text identifier for the file. For example, concatenated lab name, file creation date/time and experimentalist, or a hash of these and/or other values. The goal is that the string should be unique to all other files.
+        %
+        %  - intervals (TimeIntervals) - Optional additional table(s) for describing other experimental time intervals.
+        %
+        %  - intervals_epochs (TimeIntervals) - Divisions in time marking experimental stages or sub-divisions of a single recording session.
+        %
+        %  - intervals_invalid_times (TimeIntervals) - Time intervals that should be removed from analysis.
+        %
+        %  - intervals_trials (TimeIntervals) - Repeated experimental events that have a logical grouping.
+        %
+        %  - processing (ProcessingModule) - Intermediate analysis of acquired data.
+        %
+        %  - scratch (DynamicTable|NWBContainer|ScratchData) - No description
+        %
+        %  - session_description (char) - A description of the experimental session and data in the file.
+        %
+        %  - session_start_time (datetime) - Date and time of the experiment/session start. The date is stored in UTC with local timezone offset as ISO 8601 extended formatted string: 2018-09-28T14:43:54.123+02:00. Dates stored in UTC end in "Z" with no timezone offset. Date accuracy is up to milliseconds.
+        %
+        %  - stimulus_presentation (DynamicTable|NWBDataInterface|TimeSeries) - DynamicTable objects containing data of presented stimuli.
+        %
+        %  - stimulus_templates (Images|TimeSeries) - Images objects containing images of presented stimuli.
+        %
+        %  - timestamps_reference_time (datetime) - Date and time corresponding to time zero of all timestamps. The date is stored in UTC with local timezone offset as ISO 8601 extended formatted string: 2018-09-28T14:43:54.123+02:00. Dates stored in UTC end in "Z" with no timezone offset. Date accuracy is up to milliseconds. All times stored in the file use this time as reference (i.e., time zero).
+        %
+        %  - units (Units) - Data about sorted spike units.
+        %
+        % Output Arguments:
+        %  - nWBFile (types.core.NWBFile) - A NWBFile object
+        
+        varargin = [{'nwb_version' '2.8.0'} varargin];
         obj = obj@types.core.NWBContainer(varargin{:});
         
         
@@ -107,6 +219,7 @@ methods
         addParameter(p, 'general_subject',[]);
         addParameter(p, 'general_surgery',[]);
         addParameter(p, 'general_virus',[]);
+        addParameter(p, 'general_was_generated_by',[]);
         addParameter(p, 'identifier',[]);
         addParameter(p, 'intervals',types.untyped.Set());
         addParameter(p, 'intervals_epochs',[]);
@@ -157,6 +270,7 @@ methods
         obj.general_subject = p.Results.general_subject;
         obj.general_surgery = p.Results.general_surgery;
         obj.general_virus = p.Results.general_virus;
+        obj.general_was_generated_by = p.Results.general_was_generated_by;
         obj.identifier = p.Results.identifier;
         obj.intervals = p.Results.intervals;
         obj.intervals_epochs = p.Results.intervals_epochs;
@@ -269,6 +383,12 @@ methods
     end
     function set.general_source_script_file_name(obj, val)
         obj.general_source_script_file_name = obj.validate_general_source_script_file_name(val);
+        obj.postset_general_source_script_file_name()
+    end
+    function postset_general_source_script_file_name(obj)
+        if isempty(obj.general_source_script) && ~isempty(obj.general_source_script_file_name)
+            obj.warnIfAttributeDependencyMissing('general_source_script_file_name', 'general_source_script')
+        end
     end
     function set.general_stimulus(obj, val)
         obj.general_stimulus = obj.validate_general_stimulus(val);
@@ -281,6 +401,9 @@ methods
     end
     function set.general_virus(obj, val)
         obj.general_virus = obj.validate_general_virus(val);
+    end
+    function set.general_was_generated_by(obj, val)
+        obj.general_was_generated_by = obj.validate_general_was_generated_by(val);
     end
     function set.identifier(obj, val)
         obj.identifier = obj.validate_identifier(val);
@@ -727,6 +850,24 @@ methods
         validshapes = {[1]};
         types.util.checkDims(valsz, validshapes);
     end
+    function val = validate_general_was_generated_by(obj, val)
+        val = types.util.checkDtype('general_was_generated_by', 'char', val);
+        if isa(val, 'types.untyped.DataStub')
+            if 1 == val.ndims
+                valsz = [val.dims 1];
+            else
+                valsz = val.dims;
+            end
+        elseif istable(val)
+            valsz = [height(val) 1];
+        elseif ischar(val)
+            valsz = [size(val, 1) 1];
+        else
+            valsz = size(val);
+        end
+        validshapes = {[2,Inf]};
+        types.util.checkDims(valsz, validshapes);
+    end
     function val = validate_identifier(obj, val)
         val = types.util.checkDtype('identifier', 'char', val);
         if isa(val, 'types.untyped.DataStub')
@@ -1013,6 +1154,9 @@ methods
         elseif isempty(obj.general_source_script) && ~isempty(obj.general_source_script_file_name)
             obj.warnIfPropertyAttributeNotExported('general_source_script_file_name', 'general_source_script', fullpath)
         end
+        if ~isempty(obj.general_source_script) && isempty(obj.general_source_script_file_name)
+            obj.warnIfRequiredDependencyMissing('general_source_script_file_name', 'general_source_script', fullpath)
+        end
         io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_stimulus)
             if startsWith(class(obj.general_stimulus), 'types.untyped.')
@@ -1039,6 +1183,14 @@ methods
                 refs = obj.general_virus.export(fid, [fullpath '/general/virus'], refs);
             elseif ~isempty(obj.general_virus)
                 io.writeDataset(fid, [fullpath '/general/virus'], obj.general_virus);
+            end
+        end
+        io.writeGroup(fid, [fullpath '/general']);
+        if ~isempty(obj.general_was_generated_by)
+            if startsWith(class(obj.general_was_generated_by), 'types.untyped.')
+                refs = obj.general_was_generated_by.export(fid, [fullpath '/general/was_generated_by'], refs);
+            elseif ~isempty(obj.general_was_generated_by)
+                io.writeDataset(fid, [fullpath '/general/was_generated_by'], obj.general_was_generated_by, 'forceArray');
             end
         end
         if startsWith(class(obj.identifier), 'types.untyped.')

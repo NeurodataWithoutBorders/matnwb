@@ -225,19 +225,4 @@ classdef Set < handle & matlab.mixin.CustomDisplay
             disp([hdr newline body newline footer]);
         end
     end
-    
-    methods(Access=private)
-        %converts to cell string.  Does not do type checking.
-        function cellval = merge_stringtypes(obj, val)
-            if isstring(val)
-                val = convertStringsToChars(val);
-            end
-            
-            if ischar(val)
-                cellval = {val};
-            else
-                cellval = val;
-            end
-        end
-    end
 end

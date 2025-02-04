@@ -41,6 +41,65 @@ function testNwbToTableWithReferencedTablesAsTableRows(testCase)
     testCase.verifyClass(row1colB, 'table')
 end
 
+function testClearDynamicTable(testCase)
+    dtr_table = createDynamicTableWithTableRegionReferences();
+    types.util.dynamictable.clear(dtr_table)
+
+    % testCase.verifyEmpty(dtr_table.vectordata) %todo when PR merged
+    testCase.verifyEqual(size(dtr_table.vectordata), uint64([0,1]))
+end
+
+function testClearDynamicTableV2_1(testCase)
+
+    import matlab.unittest.fixtures.SuppressedWarningsFixture
+    testCase.applyFixture(SuppressedWarningsFixture('NWB:CheckUnset:InvalidProperties'))
+    
+    nwbClearGenerated('.', 'ClearCache', true)
+    generateCore("2.1.0", "savedir", '.')
+    rehash();
+    table = types.core.DynamicTable( ...
+        'description', 'test table with DynamicTableRegion', ...
+        'colnames', {'dtr_col_a', 'dtr_col_b'}, ...
+        'dtr_col_a', 1:4, ...
+        'dtr_col_b', 5:8, ...
+        'id', types.core.ElementIdentifiers('data', [0; 1; 2; 3]) );
+
+    types.util.dynamictable.clear(table)
+
+    % testCase.verifyEmpty(dtr_table.vectordata) %todo when PR merged
+    testCase.verifyEqual(size(table.vectordata), uint64([0,1]))
+
+    nwbClearGenerated('.','ClearCache',true)
+    generateCore('savedir', '.');
+    rehash();
+end
+
+function testToTableForNdVectorData(testCase)
+    import matlab.unittest.fixtures.SuppressedWarningsFixture
+    testCase.applyFixture(...
+        SuppressedWarningsFixture('NWB:DynamicTable:VectorDataAmbiguousSize'))
+    
+    arrayLength = 5;
+    numTableRows = 3;
+    nDimsToTest = [2,3,4];
+
+    for nDims = nDimsToTest
+        vectorDataShape = repmat(arrayLength, 1, nDims-1);
+
+        dynamicTable = types.hdmf_common.DynamicTable( ...
+            'description', 'test table with n-dimensional VectorData', ...
+            'colnames', {'columnA', 'columnB'}, ...
+            'columnA', types.hdmf_common.VectorData('data', randi(10, [vectorDataShape, numTableRows])), ...
+            'columnB', types.hdmf_common.VectorData('data', randi(10, [vectorDataShape, numTableRows])), ...
+            'id', types.hdmf_common.ElementIdentifiers('data', (0:numTableRows-1)'  ) );
+        
+        T = dynamicTable.toTable();
+        testCase.verifyClass(T, 'table');
+        testCase.verifySize(T.columnA, [numTableRows, vectorDataShape])
+    end
+end
+
+
 % Non-test functions
 function dtr_table = createDynamicTableWithTableRegionReferences()
     % Create a dynamic table with two columns, where the data of each column is 

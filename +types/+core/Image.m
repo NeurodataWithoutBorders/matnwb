@@ -1,5 +1,8 @@
 classdef Image < types.core.NWBData & types.untyped.DatasetClass
-% IMAGE An abstract data type for an image. Shape can be 2-D (x, y), or 3-D where the third dimension can have three or four elements, e.g. (x, y, (r, g, b)) or (x, y, (r, g, b, a)).
+% IMAGE - An abstract data type for an image. Shape can be 2-D (x, y), or 3-D where the third dimension can have three or four elements, e.g. (x, y, (r, g, b)) or (x, y, (r, g, b, a)).
+%
+% Required Properties:
+%  data
 
 
 % OPTIONAL PROPERTIES
@@ -10,7 +13,23 @@ end
 
 methods
     function obj = Image(varargin)
-        % IMAGE Constructor for Image
+        % IMAGE - Constructor for Image
+        %
+        % Syntax:
+        %  image = types.core.IMAGE() creates a Image object with unset property values.
+        %
+        %  image = types.core.IMAGE(Name, Value) creates a Image object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - data (numeric) - No description
+        %
+        %  - description (char) - Description of the image.
+        %
+        %  - resolution (single) - Pixel resolution of the image, in pixels per centimeter.
+        %
+        % Output Arguments:
+        %  - image (types.core.Image) - A Image object
+        
         obj = obj@types.core.NWBData(varargin{:});
         
         

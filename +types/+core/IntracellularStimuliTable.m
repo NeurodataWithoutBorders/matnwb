@@ -1,5 +1,8 @@
 classdef IntracellularStimuliTable < types.hdmf_common.DynamicTable & types.untyped.GroupClass
-% INTRACELLULARSTIMULITABLE Table for storing intracellular stimulus related metadata.
+% INTRACELLULARSTIMULITABLE - Table for storing intracellular stimulus related metadata.
+%
+% Required Properties:
+%  id, stimulus
 
 
 % REQUIRED PROPERTIES
@@ -13,7 +16,27 @@ end
 
 methods
     function obj = IntracellularStimuliTable(varargin)
-        % INTRACELLULARSTIMULITABLE Constructor for IntracellularStimuliTable
+        % INTRACELLULARSTIMULITABLE - Constructor for IntracellularStimuliTable
+        %
+        % Syntax:
+        %  intracellularStimuliTable = types.core.INTRACELLULARSTIMULITABLE() creates a IntracellularStimuliTable object with unset property values.
+        %
+        %  intracellularStimuliTable = types.core.INTRACELLULARSTIMULITABLE(Name, Value) creates a IntracellularStimuliTable object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - colnames (char) - The names of the columns in this table. This should be used to specify an order to the columns.
+        %
+        %  - id (ElementIdentifiers) - Array of unique identifiers for the rows of this dynamic table.
+        %
+        %  - stimulus (TimeSeriesReferenceVectorData) - Column storing the reference to the recorded stimulus for the recording (rows).
+        %
+        %  - stimulus_template (TimeSeriesReferenceVectorData) - Column storing the reference to the stimulus template for the recording (rows).
+        %
+        %  - vectordata (VectorData) - Vector columns, including index columns, of this dynamic table.
+        %
+        % Output Arguments:
+        %  - intracellularStimuliTable (types.core.IntracellularStimuliTable) - A IntracellularStimuliTable object
+        
         varargin = [{'description' 'Table for storing intracellular stimulus related metadata.'} varargin];
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         
@@ -50,7 +73,7 @@ methods
         if isequal(val, 'Table for storing intracellular stimulus related metadata.')
             val = 'Table for storing intracellular stimulus related metadata.';
         else
-            error('Unable to set the ''description'' property of class ''<a href="matlab:doc types.core.IntracellularStimuliTable">IntracellularStimuliTable</a>'' because it is read-only.')
+            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''description'' property of class ''<a href="matlab:doc types.core.IntracellularStimuliTable">IntracellularStimuliTable</a>'' because it is read-only.')
         end
     end
     function val = validate_stimulus(obj, val)

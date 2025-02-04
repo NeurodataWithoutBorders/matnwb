@@ -146,8 +146,14 @@ classdef Group < file.interface.HasProps
             %should never happen
             
             if obj.isConstrainedSet && ~obj.definesType
-                error('getProps shouldn''t be called on a constrained set.');
+                error('NWB:Group:UnsupportedOperation', ...
+                      'The method `getProps` should not be called on a constrained dataset.');
             end
+            assert( ...
+                ~obj.isConstrainedSet || obj.definesType, ...
+                'NWB:Group:UnsupportedOperation', ...
+                'The method `getProps` should not be called on a constrained group.' ...
+                );
             
             %datasets
             for i=1:length(obj.datasets)
@@ -239,10 +245,22 @@ classdef Group < file.interface.HasProps
                         end
                         PropertyMap(groupName) = [SetType, Descendant];
                     else
+                        if isa(Descendant, 'file.Attribute')
+                            % Ad hoc convenience step: We need the parent's 
+                            % expanded property name when populating the
+                            % type's class definition. Here, we construct a full 
+                            % name from groupName + descendantName, then remove 
+                            % the descendantName (and its underscore) and
+                            % add the result to the attribute object for
+                            % easy retrieval when needed.
+                            fullName = [groupName, '_', descendantName];
+                            Descendant.dependent_fullname = strrep(fullName, ['_', Descendant.name], '');
+                        end
                         PropertyMap([groupName, '_', descendantName]) = Descendant;
                     end
                 end
             end
+
         end
     end
 end
