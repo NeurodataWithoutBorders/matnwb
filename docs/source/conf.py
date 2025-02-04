@@ -59,7 +59,7 @@ matlab_show_property_default_value = True
 
 def linkcode_resolve(domain, info):
     filename = info['module'].replace('.', '/')
-    source_url = 'https://github.com/NeurodataWithoutBorders/matnwb/blob/master/'+filename+'/'+info['fullname']+'.m'
+    source_url = 'https://github.com/NeurodataWithoutBorders/matnwb/blob/main/'+filename+'/'+info['fullname']+'.m'
     print(source_url)
     return source_url
 
