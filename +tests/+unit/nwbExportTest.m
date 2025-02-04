@@ -42,6 +42,7 @@ classdef nwbExportTest < matlab.unittest.TestCase
             % This should raise an error because ProcessingModule requires the 
             % 'description' property to be set (description is a required 
             % attribute of ProcessingModule).
+
             processingModule = types.core.ProcessingModule();
             testCase.NwbObject.processing.set('TestModule', processingModule);
             
@@ -65,7 +66,7 @@ classdef nwbExportTest < matlab.unittest.TestCase
             testCase.verifyError(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), ...
                 'NWB:RequiredPropertyMissing')
 
-            % Clean up: the NwbObject is re-used by other tests.
+            % Clean up: the NwbObject is reused by other tests.
             testCase.NwbObject.general_intracellular_ephys.remove('Electrode');
         end
 
@@ -86,9 +87,38 @@ classdef nwbExportTest < matlab.unittest.TestCase
 
             % Verify that exporting the file issues warning that a required
             % property (i.e general_source_script_file_name) is missing
+
             testCase.verifyWarning( ...
                 @(nwbObj, filePath) nwbExport(nwbFile, fileName + "_2.nwb"), ...
                 'NWB:DependentRequiredPropertyMissing')
+        end
+
+        function testExportFileWithAttributeOfEmptyDataset(testCase)
+            
+            nwbFile = testCase.initNwbFile();
+
+            % Add device to nwb object
+            device = types.core.Device();
+            nwbFile.general_devices.set('Device', device);
+            
+            imaging_plane = types.core.ImagingPlane( ...
+                'device', types.untyped.SoftLink(device), ...
+                'excitation_lambda', 600., ...
+                'indicator', 'GFP', ...
+                'location', 'my favorite brain location');
+            nwbFile.general_optophysiology.set('ImagingPlane', imaging_plane);
+
+            testCase.verifyWarningFree(...
+                @() nwbExport(nwbFile, 'test_1.nwb'))
+
+            % Change value for attribute of the grid_spacing dataset.
+            % Because grid_spacing is not set, this attribute value is not
+            % exported to the file. Verify that warning is issued.
+            imaging_plane.grid_spacing_unit = "microns";
+
+            testCase.verifyWarning(...
+                @() nwbExport(nwbFile, 'test_2.nwb'), ...
+                'NWB:DependentAttributeNotExported')
         end
 
         function testExportTimeseriesWithMissingTimestampsAndStartingTime(testCase)

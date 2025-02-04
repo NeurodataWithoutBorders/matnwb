@@ -7,7 +7,7 @@ classdef EventDetection < types.core.NWBDataInterface & types.untyped.GroupClass
 
 % READONLY PROPERTIES
 properties(SetAccess = protected)
-    times_unit; %  (char) Unit of measurement for event times, which is fixed to 'seconds'.
+    times_unit = "seconds"; %  (char) Unit of measurement for event times, which is fixed to 'seconds'.
 end
 % REQUIRED PROPERTIES
 properties

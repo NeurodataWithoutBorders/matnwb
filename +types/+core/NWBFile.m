@@ -7,7 +7,7 @@ classdef NWBFile < types.core.NWBContainer & types.untyped.GroupClass
 
 % READONLY PROPERTIES
 properties(SetAccess = protected)
-    nwb_version; %  (char) File version string. Use semantic versioning, e.g. 1.2.1. This will be the name of the format with trailing major, minor and patch numbers.
+    nwb_version = "2.8.0"; %  (char) File version string. Use semantic versioning, e.g. 1.2.1. This will be the name of the format with trailing major, minor and patch numbers.
 end
 % REQUIRED PROPERTIES
 properties
@@ -383,6 +383,12 @@ methods
     end
     function set.general_source_script_file_name(obj, val)
         obj.general_source_script_file_name = obj.validate_general_source_script_file_name(val);
+        obj.postset_general_source_script_file_name()
+    end
+    function postset_general_source_script_file_name(obj)
+        if isempty(obj.general_source_script) && ~isempty(obj.general_source_script_file_name)
+            obj.warnIfAttributeDependencyMissing('general_source_script_file_name', 'general_source_script')
+        end
     end
     function set.general_stimulus(obj, val)
         obj.general_stimulus = obj.validate_general_stimulus(val);
