@@ -55,12 +55,6 @@ end
 if isempty(Type.typename)
     parsed = types.untyped.Set(...
         [attributeProperties; datasetProperties; groupProperties; linkProperties]);
-    
-    if isempty(parsed)
-        %special case where a directory is simply empty.  Return itself but
-        %empty
-        parsed(root) = [];
-    end
 else
     if groupProperties.Count > 0
         %elide group properties
