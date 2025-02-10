@@ -211,13 +211,19 @@ end
 function emptyInstance = getEmptyRepresentation(nonEmptyInstance)
     try
         emptyInstance = nonEmptyInstance;
-        emptyInstance(:) = [];
-    catch ME
-        switch ME.identifier
-            case 'MATLAB:table:LinearSubscript'
-                emptyInstance(:, :) = [];
-            otherwise
-                error('Not implemented for value of type: "%s"', class(nonEmptyInstance))
+        if istable(nonEmptyInstance)
+            % To make an empty table instance, we need to use row/column colon
+            % indices to clear all the table's data. We want to keep the
+            % original table's metadata, like variable names etc, so we clear
+            % the table data instead of creating a new empty table with
+            % table.empty
+            emptyInstance(:, :) = [];
+        else
+            % All other types should support linear indexing.
+            emptyInstance(:) = [];
         end
+    catch ME
+        error('Failed to retrieve empty type for value of class "%s". Reason:\n%s', ...
+            class(nonEmptyInstance), ME.message)
     end
 end
