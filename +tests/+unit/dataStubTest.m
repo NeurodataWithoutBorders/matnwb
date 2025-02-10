@@ -103,3 +103,29 @@ nwbNew = nwbRead('original.nwb', 'ignorecache');
 tests.util.verifyContainerEqual(testCase, nwbNew, nwb);
 nwbExport(nwbNew, 'new.nwb');
 end
+
+function testLoadWithEmptyIndices(testCase)
+    nwb = NwbFile(...
+        'identifier', 'DATASTUB',...
+        'session_description', 'test datastub object copy',...
+        'session_start_time', datetime());
+    
+    T = table( 't', 0, {''} );
+    dynamicTable = util.table2nwb(T);
+
+    nwb.acquisition.set('Test', dynamicTable)
+    
+    nwbExport(nwb, 'testLoadWithEmptyIndices.nwb')
+
+    nwbIn = nwbRead('testLoadWithEmptyIndices.nwb');
+    T = nwbIn.acquisition.get('Test');
+
+    T.toTable()
+    T = nwbIn.acquisition.get('Test');
+
+    T.toTable()
+
+    tt=nwbIn.acquisition.get('Test')
+    tt.vectordata.get('Var2').data.load([])
+
+end
