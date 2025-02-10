@@ -110,22 +110,39 @@ function testLoadWithEmptyIndices(testCase)
         'session_description', 'test datastub object copy',...
         'session_start_time', datetime());
     
-    T = table( 't', 0, {''} );
-    dynamicTable = util.table2nwb(T);
+    testDevice = types.core.Device('description', 'test device');
+    nwb.general_devices.set('TestDevice', testDevice);
 
-    nwb.acquisition.set('Test', dynamicTable)
-    
+    % Add different datatypes to a table, and try to read them in later
+    % using empty indexing on a DataStub representation
+    tableToExport = table( ...
+        {'test'}, ... % Cell
+        0, ... % Double
+        false, ... % Logical
+        struct('x', 1, 'y', 1, 'z', 1) ... % Struct (compound)
+    );
+    dynamicTable = util.table2nwb(tableToExport);
+    nwb.acquisition.set('Test', dynamicTable);
+   
     nwbExport(nwb, 'testLoadWithEmptyIndices.nwb')
 
-    nwbIn = nwbRead('testLoadWithEmptyIndices.nwb');
-    T = nwbIn.acquisition.get('Test');
+    nwbIn = nwbRead('testLoadWithEmptyIndices.nwb', 'ignorecache');
 
-    T.toTable()
-    T = nwbIn.acquisition.get('Test');
+    importedTable = nwbIn.acquisition.get('Test');
+    varNames = transpose( string(importedTable.colnames) );
 
-    T.toTable()
+    for iVarName = varNames
+        iDataStub = importedTable.vectordata.get(iVarName).data;
 
-    tt=nwbIn.acquisition.get('Test')
-    tt.vectordata.get('Var2').data.load([])
-
+        testCase.assertClass(iDataStub, 'types.untyped.DataStub')
+        value = iDataStub([]);
+        testCase.assertEmpty(value)
+        
+        if isstruct(tableToExport.(iVarName))
+            expectedClass = 'table';
+        else
+            expectedClass = class(tableToExport.(iVarName));
+        end
+        testCase.assertClass(value, expectedClass)
+    end
 end
