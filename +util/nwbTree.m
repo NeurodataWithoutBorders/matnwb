@@ -1,51 +1,67 @@
-function nwbTree(nwbfile)
-    
-f = uifigure('Name', 'NWB Tree');
-tree = uitree(f,'Position',[20, 20 f.Position(3) - 20, f.Position(4) - 20]);
-traverse_node(nwbfile, tree);
+function nwbTree(nwbfile, options)
+    arguments
+        nwbfile (1,1) NwbFile
+        options.Parent = []
+        options.Margin = 20
+    end
 
+    if isempty(options.Parent)
+        hParent = uifigure('Name', 'NWB Tree');
+    else
+        hParent = options.Parent;
+    end
+    tree = uitree(hParent);
+       
+    M = options.Margin;
+    tree.Position = [repmat(options.Margin, 1,2), hParent.Position(3:4) - options.Margin*2];
+    traverse_node(nwbfile, tree);
+
+    tree.DoubleClickedFcn = @(src, evt) onDoubleClickOnNode(src, evt, nwbfile);
 end
 
 
 function out = traverse_node(node, tree_node)
 
 if any(strcmp(superclasses(node), 'types.untyped.GroupClass')) || isa(node, 'types.untyped.DataStub')
-    pp = properties(node);
-    for p = pp'
-        if ~isempty(node.(p{1}))
-            new_node = node.(p{1});
-            if any(strcmp(superclasses(new_node), 'types.untyped.GroupClass'))
-                new_tree_node = uitreenode(tree_node, 'Text', p{1});
-                traverse_node(new_node, new_tree_node);
-            elseif isa(new_node, 'types.untyped.Set')
-                if new_node.Count
-                    new_tree_node = uitreenode(tree_node, 'Text', p{1});
-                    traverse_node(new_node, new_tree_node);
+    propertyNames = string( properties(node)' );
+    for propertyName = propertyNames
+        if ~isempty(node.(propertyName))
+            propertyValue = node.(propertyName);
+            if any(strcmp(superclasses(propertyValue), 'types.untyped.GroupClass'))
+                new_tree_node = uitreenode(tree_node, 'Text', propertyName, 'NodeData', propertyValue);
+                traverse_node(propertyValue, new_tree_node);
+            elseif isa(propertyValue, 'types.untyped.Set')
+                if propertyValue.Count
+                    new_tree_node = uitreenode(tree_node, 'Text', propertyName);
+                    traverse_node(propertyValue, new_tree_node);
                 end
-            elseif isa(new_node, 'types.untyped.DataStub')
-                new_tree_node = uitreenode(tree_node, 'Text', p{1});
-                traverse_node(new_node, new_tree_node);
-            elseif isa(new_node, 'char')
-                uitreenode(tree_node, 'Text', [p{1} ': ' new_node]);
-            elseif isnumeric(new_node)
-                if numel(new_node)  == 1
-                    uitreenode(tree_node, 'Text', [p{1} ': ' num2str(new_node)]);
+            elseif isa(propertyValue, 'types.untyped.DataStub')
+                new_tree_node = uitreenode(tree_node, 'Text', propertyName, 'NodeData', propertyValue);
+                traverse_node(propertyValue, new_tree_node);
+            elseif isa(propertyValue, 'char')
+                uitreenode(tree_node, 'Text', propertyName + ": " + propertyValue);
+            elseif isnumeric(propertyValue)
+                if isscalar(propertyValue)
+                    uitreenode(tree_node, 'Text', propertyName + ": " + num2str(propertyValue));
                 else
-                    data_node = uitreenode(tree_node, 'Text', p{1});
-                    uitreenode(data_node, 'Text', ['shape: [' num2str(size(new_node)) ']']);
-                    uitreenode(data_node, 'Text', ['class: ' class(new_node)]);
+                    data_node = uitreenode(tree_node, 'Text', propertyName, 'NodeData', propertyValue);
+                    uitreenode(data_node, 'Text', ['shape: [' num2str(size(propertyValue)) ']']);
+                    uitreenode(data_node, 'Text', ['class: ' class(propertyValue)]);
                 end 
             else
-                uitreenode(tree_node, 'Text', p{1});
+                % new_tree_node = createNode(tree_node, propertyName, node.get(key{1}));
+
+                uitreenode(tree_node, 'Text', propertyName, 'NodeData', propertyValue);
             end
         end
     end
 elseif isa(node, 'types.untyped.Set')
     for key = node.keys()
-        new_tree_node = uitreenode(tree_node, 'Text', key{1});
+        new_tree_node = createNode(tree_node, key{1}, node.get(key{1}));
         traverse_node(node.get(key{1}), new_tree_node);
     end
 end
+
 
 
 function [ bytes ] = getMemSize( variable, sizelimit, name, indent )
@@ -107,4 +123,33 @@ function [ bytes ] = getMemSize( variable, sizelimit, name, indent )
 end
 
 
+end
+
+function new_tree_node = createNode(parentTreeNode, nodeName, nodeValue)
+    nodeLabel = sprintf('%s (%s)', nodeName, class(nodeValue));
+    new_tree_node = uitreenode(parentTreeNode, 'Text', nodeLabel, 'NodeData', nodeValue);
+    if ~nargout
+        clear new_tree_node
+    end
+end
+
+function onDoubleClickOnNode(src, evt, nwbfile)
+    textLabel = evt.Source.SelectedNodes.Text;
+    if contains(textLabel, '(')
+        name = extractBefore(evt.Source.SelectedNodes.Text, '(');
+    else
+        name = textLabel;
+    end
+    name = strtrim(name);
+    value = evt.Source.SelectedNodes.NodeData;
+    if ~isempty(value)
+        if strcmp(name, "")
+            keyboard
+        end
+        assignin('base', name, value)
+        eval(sprintf('%s=value', name));
+    else
+        
+    end
+    %disp(value)
 end
