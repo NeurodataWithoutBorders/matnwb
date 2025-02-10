@@ -109,9 +109,6 @@ function testLoadWithEmptyIndices(testCase)
         'identifier', 'DATASTUB',...
         'session_description', 'test datastub object copy',...
         'session_start_time', datetime());
-    
-    testDevice = types.core.Device('description', 'test device');
-    nwb.general_devices.set('TestDevice', testDevice);
 
     % Add different datatypes to a table, and try to read them in later
     % using empty indexing on a DataStub representation
