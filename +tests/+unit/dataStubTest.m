@@ -1,5 +1,4 @@
-classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...        
-    dataStubTest < matlab.unittest.TestCase
+classdef dataStubTest < tests.abstract.NwbTestCase
     
     methods (TestMethodSetup)
         function setupMethod(testCase)
@@ -148,16 +147,6 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                 end
                 testCase.assertClass(value, expectedClass)
             end
-        end
-    end
-
-    methods (Access = private)
-        function typesOutputFolder = getTypesOutputFolder(testCase)
-            F = testCase.getSharedTestFixtures();
-            isMatch = arrayfun(@(x) isa(x, 'tests.fixtures.GenerateCoreFixture'), F);
-            F = F(isMatch);
-            
-            typesOutputFolder = F.TypesOutputFolder;
         end
     end
 end

@@ -1,5 +1,4 @@
-classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
-        nwbExportTest < matlab.unittest.TestCase
+classdef nwbExportTest < tests.abstract.NwbTestCase
 
     properties
         NwbObject
@@ -165,7 +164,10 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             nwbFileName = 'testEmbeddedSpecs.nwb';
 
             % Install extension. 
-            nwbInstallExtension(["ndx-miniscope", "ndx-photostim"], 'savedir', '.')
+            generatedTypesOutputFolder = testCase.getTypesOutputFolder();
+            nwbInstallExtension(["ndx-miniscope", "ndx-photostim"], 'savedir', generatedTypesOutputFolder)
+            testCase.addTeardown(@() testCase.clearExtension("ndx-miniscope"))
+            testCase.addTeardown(@() testCase.clearExtension("ndx-photostim"))
             
             % Export a file not using a type from an extension
             nwb = testCase.initNwbFile();
@@ -216,10 +218,18 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             % deleted from disk before an nwb object containing types from
             % that namespace is exported to file.
             
+            % A cached namespace is manually deleted in this test, so will
+            % use a fixture to ignore the warning for a missing file when
+            % the installed extension is cleared.
+            import matlab.unittest.fixtures.SuppressedWarningsFixture
+            testCase.applyFixture(SuppressedWarningsFixture('MATLAB:DELETE:FileNotFound'))
+            
             nwbFileName = 'testWarnIfMissingNamespaceSpecification.nwb';
 
-            % Install extension. 
-            nwbInstallExtension("ndx-photostim", 'savedir', '.')
+            % Install extension.
+            generatedTypesOutputFolder = testCase.getTypesOutputFolder();
+            nwbInstallExtension("ndx-photostim", 'savedir', generatedTypesOutputFolder)
+            testCase.addTeardown(@() testCase.clearExtension("ndx-photostim"))
             
             % Export a file not using a type from an extension
             nwb = testCase.initNwbFile();
@@ -235,7 +245,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
 
             % Simulate the rare case where a user might delete the cached
             % namespace specification before exporting a file
-            cachedNamespaceSpec = fullfile("namespaces/ndx-photostim.mat");
+            cachedNamespaceSpec = fullfile(generatedTypesOutputFolder, "namespaces", "ndx-photostim.mat");
             delete(cachedNamespaceSpec)
             
             % Test that warning for missing namespace works

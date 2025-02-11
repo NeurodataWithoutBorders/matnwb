@@ -1,11 +1,10 @@
-classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
-        InstallExtensionTest < matlab.unittest.TestCase
-
+classdef InstallExtensionTest < tests.abstract.NwbTestCase
+    
     methods (TestClassSetup)
         function setupClass(testCase)
             % Use a fixture to create a temporary working directory
             testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
-            testCase.addTeardown(@testCase.clearExtension)
+            testCase.addTeardown(@() testCase.clearExtension("ndx-miniscope"))
         end
     end
 
@@ -71,22 +70,6 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             testCase.verifyError(...
                 @() buildRepoDownloadUrl('https://unsupported.com/user/test', 'main'), ...
                 'NWB:BuildRepoDownloadUrl:UnsupportedRepository')
-        end
-    end
-
-    methods (Access = private)
-        function typesOutputFolder = getTypesOutputFolder(testCase)
-            F = testCase.getSharedTestFixtures();
-            isMatch = arrayfun(@(x) isa(x, 'tests.fixtures.GenerateCoreFixture'), F);
-            F = F(isMatch);
-            
-            typesOutputFolder = F.TypesOutputFolder;
-        end
-        
-        function clearExtension(testCase)
-            typesOutputFolder = testCase.getTypesOutputFolder();
-            rmdir(fullfile(typesOutputFolder, '+types', '+ndx_miniscope'), 's')
-            delete(fullfile(typesOutputFolder, 'namespaces', 'ndx-miniscope.mat'))
         end
     end
 
