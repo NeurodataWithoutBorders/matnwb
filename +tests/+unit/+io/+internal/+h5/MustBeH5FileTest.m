@@ -1,4 +1,5 @@
-classdef MustBeH5FileTest < matlab.unittest.TestCase
+classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
+        MustBeH5FileTest < matlab.unittest.TestCase
     
     properties (TestParameter)
         ValidFileName = {'test_file.h5', 'test_file.nwb'}
