@@ -18,6 +18,7 @@ classdef InstallExtensionTest < tests.abstract.NwbTestCase
         function testInstallExtension(testCase)
             testCase.installExtension("ndx-miniscope");
 
+            typesOutputFolder = testCase.getTypesOutputFolder();
             extensionTypesFolder = fullfile(typesOutputFolder, "+types", "+ndx_miniscope");
             testCase.verifyTrue(isfolder(extensionTypesFolder), ...
                 'Folder with extension types does not exist')
