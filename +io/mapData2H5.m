@@ -20,7 +20,7 @@ tid = io.getBaseType(class(data));
 unlimited_size = H5ML.get_constant_value('H5S_UNLIMITED');
 %determine space size
 if ischar(data)
-    if ~forceArray && size(data,1) == 1
+    if ~forceArray && (size(data,1) == 1 || isempty(data))
         sid = H5S.create('H5S_SCALAR');
     else
         dims = size(data, 1);
