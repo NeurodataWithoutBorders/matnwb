@@ -5,9 +5,9 @@ classdef OptogeneticSeries < types.core.TimeSeries & types.untyped.GroupClass
 %  data
 
 
-% OPTIONAL PROPERTIES
+% REQUIRED PROPERTIES
 properties
-    site; %  OptogeneticStimulusSite
+    site; % REQUIRED OptogeneticStimulusSite
 end
 
 methods

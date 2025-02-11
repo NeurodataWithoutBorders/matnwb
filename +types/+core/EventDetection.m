@@ -7,17 +7,14 @@ classdef EventDetection < types.core.NWBDataInterface & types.untyped.GroupClass
 
 % READONLY PROPERTIES
 properties(SetAccess = protected)
-    times_unit; %  (char) Unit of measurement for event times, which is fixed to 'seconds'.
+    times_unit = "seconds"; %  (char) Unit of measurement for event times, which is fixed to 'seconds'.
 end
 % REQUIRED PROPERTIES
 properties
     detection_method; % REQUIRED (char) Description of how events were detected, such as voltage threshold, or dV/dT threshold, as well as relevant values.
+    source_electricalseries; % REQUIRED ElectricalSeries
     source_idx; % REQUIRED (int32) Indices (zero-based) into source ElectricalSeries::data array corresponding to time of event. ''description'' should define what is meant by time of event (e.g., .25 ms before action potential peak, zero-crossing time, etc). The index points to each event from the raw data.
     times; % REQUIRED (double) Timestamps of events, in seconds.
-end
-% OPTIONAL PROPERTIES
-properties
-    source_electricalseries; %  ElectricalSeries
 end
 
 methods
