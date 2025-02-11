@@ -24,7 +24,8 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             testCase.createNwbFile(nwbFileName)
 
             % Create file which is not h5  
-            system( sprintf("touch %s", testCase.InvalidFileName{1}) )
+            s = system( sprintf("touch %s", testCase.InvalidFileName{1}) );
+            assert(s==0)
         end
     end
     

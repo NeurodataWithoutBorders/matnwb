@@ -16,9 +16,7 @@ classdef InstallExtensionTest < tests.abstract.NwbTestCase
         end
 
         function testInstallExtension(testCase)
-            typesOutputFolder = testCase.getTypesOutputFolder();
-            % use evalc to suppress output
-            evalc(sprintf('nwbInstallExtension("ndx-miniscope", "savedir", "%s")', typesOutputFolder));
+            testCase.installExtension("ndx-miniscope");
 
             extensionTypesFolder = fullfile(typesOutputFolder, "+types", "+ndx_miniscope");
             testCase.verifyTrue(isfolder(extensionTypesFolder), ...

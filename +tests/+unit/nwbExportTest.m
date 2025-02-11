@@ -163,10 +163,10 @@ classdef nwbExportTest < tests.abstract.NwbTestCase
             
             nwbFileName = 'testEmbeddedSpecs.nwb';
 
-            % Install extension. 
-            generatedTypesOutputFolder = testCase.getTypesOutputFolder();
-            nwbInstallExtension(["ndx-miniscope", "ndx-photostim"], 'savedir', generatedTypesOutputFolder)
+            % Install extensions, one will be used, the other will not. 
+            testCase.installExtension("ndx-miniscope")
             testCase.addTeardown(@() testCase.clearExtension("ndx-miniscope"))
+            testCase.installExtension("ndx-photostim")
             testCase.addTeardown(@() testCase.clearExtension("ndx-photostim"))
             
             % Export a file not using a type from an extension
@@ -227,8 +227,7 @@ classdef nwbExportTest < tests.abstract.NwbTestCase
             nwbFileName = 'testWarnIfMissingNamespaceSpecification.nwb';
 
             % Install extension.
-            generatedTypesOutputFolder = testCase.getTypesOutputFolder();
-            nwbInstallExtension("ndx-photostim", 'savedir', generatedTypesOutputFolder)
+            testCase.installExtension("ndx-photostim");
             testCase.addTeardown(@() testCase.clearExtension("ndx-photostim"))
             
             % Export a file not using a type from an extension
@@ -245,6 +244,7 @@ classdef nwbExportTest < tests.abstract.NwbTestCase
 
             % Simulate the rare case where a user might delete the cached
             % namespace specification before exporting a file
+            generatedTypesOutputFolder = testCase.getTypesOutputFolder();
             cachedNamespaceSpec = fullfile(generatedTypesOutputFolder, "namespaces", "ndx-photostim.mat");
             delete(cachedNamespaceSpec)
             

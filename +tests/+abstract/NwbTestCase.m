@@ -12,6 +12,16 @@ classdef (Abstract, SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) .
             typesOutputFolder = F.TypesOutputFolder;
         end
 
+        function installExtension(testCase, extensionName)
+            typesOutputFolder = testCase.getTypesOutputFolder();
+            
+            % Use evalc to suppress output while running tests.
+            matlabExpression = sprintf(...
+                'nwbInstallExtension("%s", "savedir", "%s")', ...
+                extensionName, typesOutputFolder);
+            evalc(matlabExpression);
+        end
+
         function clearExtension(testCase, extensionName)
             extensionName = char(extensionName);
             namespaceFolderName = strrep(extensionName, '-', '_');
