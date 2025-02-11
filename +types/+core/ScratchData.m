@@ -5,9 +5,9 @@ classdef ScratchData < types.core.NWBData & types.untyped.DatasetClass
 %  data
 
 
-% OPTIONAL PROPERTIES
+% REQUIRED PROPERTIES
 properties
-    notes; %  (char) Any notes the user has about the dataset being stored
+    notes; % REQUIRED (char) Any notes the user has about the dataset being stored
 end
 
 methods

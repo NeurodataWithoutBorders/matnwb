@@ -5,11 +5,14 @@ classdef OnePhotonSeries < types.core.ImageSeries & types.untyped.GroupClass
 %  data
 
 
+% REQUIRED PROPERTIES
+properties
+    imaging_plane; % REQUIRED ImagingPlane
+end
 % OPTIONAL PROPERTIES
 properties
     binning; %  (uint8) Amount of pixels combined into 'bins'; could be 1, 2, 4, 8, etc.
     exposure_time; %  (single) Exposure time of the sample; often the inverse of the frequency.
-    imaging_plane; %  ImagingPlane
     intensity; %  (single) Intensity of the excitation in mW/mm^2, if known.
     pmt_gain; %  (single) Photomultiplier gain.
     power; %  (single) Power of the excitation in mW, if known.

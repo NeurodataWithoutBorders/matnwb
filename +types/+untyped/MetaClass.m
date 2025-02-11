@@ -105,7 +105,31 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
             end
         end
 
+        function warnIfAttributeDependencyMissing(obj, propName, dependencyPropName)
+            % Skip warning if the value is equal to the default value for
+            % the property (value was probably not set by the user).
+            if obj.propertyValueEqualsDefaultValue(propName)
+                return
+            end
+
+            warnState = warning('backtrace', 'off');
+            cleanupObj = onCleanup(@(s) warning(warnState));
+            warningId = 'NWB:AttributeDependencyNotSet';
+            warningMessage = sprintf( [ ...
+                'The property "%s" of type "%s" depends on the property "%s", ' ...
+                'which is unset. If you do not set a value for "%s, the ' ...
+                'value of "%s" will not be exported to file.'], ...
+                propName, class(obj), dependencyPropName, dependencyPropName, propName);
+            warning(warningId, warningMessage) %#ok<SPWRN>
+        end
+
         function warnIfPropertyAttributeNotExported(obj, propName, depPropName, fullpath)
+            % Skip warning if the value is equal to the default value for
+            % the property (value was probably not set by the user).
+            if obj.propertyValueEqualsDefaultValue(propName)
+                return
+            end
+
             warnState = warning('backtrace', 'off');
             cleanupObj = onCleanup(@(s) warning(warnState));
             warningId = 'NWB:DependentAttributeNotExported';
@@ -162,6 +186,19 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
             end
         end
 
+        function warnIfRequiredDependencyMissing(obj, propName, depPropName, fullpath)
+            if isempty(fullpath); fullpath = 'root'; end
+            warnState = warning('backtrace', 'off');
+            cleanupObj = onCleanup(@(s) warning(warnState));
+            warningId = 'NWB:DependentRequiredPropertyMissing';
+            warningMessage = sprintf( [ ...
+                'The property "%s" of type "%s" in file location "%s" is ' ...
+                'required when the property "%s" is set. Please add a value ' ...
+                'for "%s" and re-export.'], ...
+                propName, class(obj), fullpath, depPropName, propName);
+            warning(warningId, warningMessage) %#ok<SPWRN>
+        end
+
         function throwErrorIfMissingRequiredProps(obj, fullpath)
             missingRequiredProps = obj.checkRequiredProps();
             if ~isempty( missingRequiredProps )
@@ -202,6 +239,20 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
                 isRequired = startsWith(propertyDescription, 'REQUIRED');
                 requiredProps = {mc.PropertyList(isRequired).Name};
                 obj.REQUIRED( class(obj) ) = requiredProps;
+            end
+        end
+
+        function tf = propertyValueEqualsDefaultValue(obj, propName)
+        % propertyValueEqualsDefaultValue - Check if value of property is
+        % equal to the property's default value
+            
+            mc = metaclass(obj);
+            propInfo = mc.PropertyList(strcmp({mc.PropertyList.Name}, propName));
+            if propInfo.HasDefault
+                propValue = obj.(propName);
+                tf = isequal(propValue, propInfo.DefaultValue);
+            else
+                tf = false;
             end
         end
     end
