@@ -431,6 +431,12 @@ methods
     end
     function set.session_start_time(obj, val)
         obj.session_start_time = obj.validate_session_start_time(val);
+        obj.postset_session_start_time()
+    end
+    function postset_session_start_time(obj)
+        if isempty(obj.timestamps_reference_time)
+            obj.timestamps_reference_time = obj.session_start_time;
+        end
     end
     function set.stimulus_presentation(obj, val)
         obj.stimulus_presentation = obj.validate_stimulus_presentation(val);
@@ -1155,7 +1161,7 @@ methods
             obj.warnIfPropertyAttributeNotExported('general_source_script_file_name', 'general_source_script', fullpath)
         end
         if ~isempty(obj.general_source_script) && isempty(obj.general_source_script_file_name)
-            obj.warnIfRequiredDependencyMissing('general_source_script_file_name', 'general_source_script', fullpath)
+            obj.throwErrorIfRequiredDependencyMissing('general_source_script_file_name', 'general_source_script', fullpath)
         end
         io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_stimulus)
