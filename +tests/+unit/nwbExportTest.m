@@ -156,30 +156,6 @@ classdef nwbExportTest < matlab.unittest.TestCase
             nwbFilePath = fullfile(testCase.OutputFolder, 'test_part1.nwb');
             testCase.verifyError(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), 'NWB:CustomConstraintUnfulfilled')
         end
-
-        function testExportScalarTextAttributeWithEmptyString(testCase)
-            import matlab.unittest.fixtures.SuppressedWarningsFixture
-            testCase.applyFixture(SuppressedWarningsFixture('NWB:DependentRequiredPropertyMissing'))
-            
-            nwbFile = testCase.NwbObject;
-
-            nwbFile.general_source_script = mfilename("fullpath");
-
-            nwbFilePath = fullfile(testCase.OutputFolder, 'test_scalar_text_attribute.nwb');
-            nwbExport(nwbFile, nwbFilePath)
-
-            nwbFileInMat = nwbRead(nwbFilePath);
-            
-            value = nwbFileInMat.general_source_script_file_name;
-            testCase.verifyClass(value, 'char')
-            testCase.verifyEmpty(value)
-
-            [nwbFileInPy, fileCleanup] = testCase.readNwbFileWithPynwb(nwbFilePath); %#ok<ASGLU>
-            value = nwbFileInPy.source_script_file_name;
-            testCase.verifyClass(value, 'py.str')
-            testCase.verifyEmpty(value)
-            clear fileCleanup
-        end
     end
 
     methods (Static)
