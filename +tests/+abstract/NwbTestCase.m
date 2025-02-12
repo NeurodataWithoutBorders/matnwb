@@ -30,4 +30,20 @@ classdef (Abstract, SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) .
             delete(fullfile(typesOutputFolder, 'namespaces', [extensionName '.mat']))
         end
     end
+
+    methods (Static, Access = protected)
+        function [nwbFile, nwbFileCleanup] = readNwbFileWithPynwb(nwbFilename)
+            try
+                io = py.pynwb.NWBHDF5IO(nwbFilename);
+                nwbFile = io.read();
+                nwbFileCleanup = onCleanup(@(x) closePyNwbObject(io));
+            catch ME
+                error(ME.message)
+            end
+
+            function closePyNwbObject(io)
+                io.close()
+            end
+        end
+    end
 end
