@@ -62,7 +62,7 @@ classdef ObjectView < handle
                 path = obj.path;
             end
         end
-        
+
         function tf = has_path(obj)
             if ~isempty(obj.target)
                 tf = ~isempty(obj.target.metaClass_fullPath);
