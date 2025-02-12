@@ -1155,7 +1155,7 @@ methods
             obj.warnIfPropertyAttributeNotExported('general_source_script_file_name', 'general_source_script', fullpath)
         end
         if ~isempty(obj.general_source_script) && isempty(obj.general_source_script_file_name)
-            obj.warnIfRequiredDependencyMissing('general_source_script_file_name', 'general_source_script', fullpath)
+            obj.throwErrorIfRequiredDependencyMissing('general_source_script_file_name', 'general_source_script', fullpath)
         end
         io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_stimulus)

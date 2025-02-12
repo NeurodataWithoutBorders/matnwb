@@ -74,9 +74,8 @@ classdef nwbExportTest < matlab.unittest.TestCase
             nwbFile = testCase.initNwbFile();
             fileName = "testExportWithMissingRequiredDependentProperty";
 
-            % Should work without warning
-            testCase.verifyWarningFree( ...
-                @(nwbObj, filePath) nwbExport(nwbFile, fileName + "_1.nwb") )
+            % Should work without error
+            nwbExport(nwbFile, fileName + "_1.nwb")
 
             % Now we add a value to the "general_source_script" property. This
             % is a dataset with a required attribute called "file_name".
@@ -85,10 +84,9 @@ classdef nwbExportTest < matlab.unittest.TestCase
             % property.
             nwbFile.general_source_script = '.../nwbExportTest.m';
 
-            % Verify that exporting the file issues warning that a required
-            % property (i.e general_source_script_file_name) is missing
-
-            testCase.verifyWarning( ...
+            % Verify that exporting the file throws an error, stating that a 
+            % required property (i.e general_source_script_file_name) is missing
+            testCase.verifyError( ...
                 @(nwbObj, filePath) nwbExport(nwbFile, fileName + "_2.nwb"), ...
                 'NWB:DependentRequiredPropertyMissing')
         end

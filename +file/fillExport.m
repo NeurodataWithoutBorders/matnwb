@@ -248,7 +248,7 @@ function dataExportString = fillDataExport(name, prop, elisions, required)
         if prop.required && not(prop.readonly) && not(isParentRequired)
             dependencyCheck{end+1} = sprintf('~isempty(obj.%s) && isempty(obj.%s)', depPropname, name);
             warnIfMissingRequiredDependentAttributeStr = ...
-                sprintf('obj.warnIfRequiredDependencyMissing(''%s'', ''%s'', fullpath)', name, depPropname);
+                sprintf('obj.throwErrorIfRequiredDependencyMissing(''%s'', ''%s'', fullpath)', name, depPropname);
         end
     end
 
