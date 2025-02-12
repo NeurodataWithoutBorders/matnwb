@@ -69,13 +69,6 @@ classdef ObjectView < handle
             else
                 tf = ~isempty(obj.path);
             end
-
-            % try
-            %     tfOld = ~isempty(obj.path);
-            % catch
-            %     tfOld = false;
-            % end
-            % assert(tf==tfOld)
         end
     end
 end
