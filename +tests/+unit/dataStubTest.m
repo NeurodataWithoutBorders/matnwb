@@ -10,10 +10,7 @@ classdef dataStubTest < tests.abstract.NwbTestCase
     methods (Test)
         function testRegionRead(testCase)
         
-            nwb = NwbFile(...
-                'session_description', 'a test NWB File', ...
-                'identifier', 'mouse004_day4', ...
-                'session_start_time', datetime(2018, 3, 1, 12, 0, 0, 'TimeZone', 'local'));
+            nwb = tests.factory.NWBFile();
             
             data = reshape(1:5000, 25, 5, 4, 2, 5);
             

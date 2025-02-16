@@ -14,7 +14,7 @@ classdef nwbExportTest < tests.abstract.NwbTestCase
 
     methods (TestMethodSetup)
         function setupMethod(testCase)
-            testCase.NwbObject = testCase.initNwbFile();
+            testCase.NwbObject = tests.factory.NWBFile();
 
             if isfolder( testCase.OutputFolder )
                 rmdir(testCase.OutputFolder, "s")
@@ -64,7 +64,7 @@ classdef nwbExportTest < tests.abstract.NwbTestCase
         end
 
         function testExportWithMissingRequiredDependentProperty(testCase)
-            nwbFile = testCase.initNwbFile();
+            nwbFile = tests.factory.NWBFile();
             fileName = "testExportWithMissingRequiredDependentProperty";
 
             % Should work without error
@@ -87,7 +87,7 @@ classdef nwbExportTest < tests.abstract.NwbTestCase
         function testExportFileWithAttributeOfEmptyDataset(testCase)
             import matlab.unittest.fixtures.SuppressedWarningsFixture
             
-            nwbFile = testCase.initNwbFile();
+            nwbFile = tests.factory.NWBFile();
 
             % Add device to nwb object
             device = types.core.Device();
@@ -168,7 +168,7 @@ classdef nwbExportTest < tests.abstract.NwbTestCase
             testCase.addTeardown(@() testCase.clearExtension("ndx-photostim"))
             
             % Export a file not using a type from an extension
-            nwb = testCase.initNwbFile();
+            nwb = tests.factory.NWBFile();
             
             nwbExport(nwb, nwbFileName);
             embeddedNamespaces = io.spec.listEmbeddedSpecNamespaces(nwbFileName);
@@ -229,7 +229,7 @@ classdef nwbExportTest < tests.abstract.NwbTestCase
             testCase.addTeardown(@() testCase.clearExtension("ndx-photostim"))
             
             % Export a file not using a type from an extension
-            nwb = testCase.initNwbFile();
+            nwb = tests.factory.NWBFile();
             
             % Add a timeseries object
             ts = types.core.TimeSeries(...
@@ -250,15 +250,6 @@ classdef nwbExportTest < tests.abstract.NwbTestCase
             testCase.verifyWarning(...
                 @() nwbExport(nwb, nwbFileName), ...
                 'NWB:validators:MissingEmbeddedNamespace')
-        end
-    end
-
-    methods (Static)
-        function nwb = initNwbFile()
-            nwb = NwbFile( ...
-                'session_description', 'test file for nwb export', ...
-                'identifier', 'export_test', ...
-                'session_start_time', datetime("now", 'TimeZone', 'local') );
         end
     end
 end

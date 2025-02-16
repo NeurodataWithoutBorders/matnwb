@@ -25,7 +25,7 @@ classdef InstallExtensionTest < tests.abstract.NwbTestCase
         end
 
         function testUseInstalledExtension(testCase)
-            nwbObject = testCase.initNwbFile();
+            nwbObject = tests.factory.NWBFile();
 
             miniscopeDevice = types.ndx_miniscope.Miniscope(...
                 'deviceType', 'test_device', ...
@@ -69,15 +69,6 @@ classdef InstallExtensionTest < tests.abstract.NwbTestCase
             testCase.verifyError(...
                 @() buildRepoDownloadUrl('https://unsupported.com/user/test', 'main'), ...
                 'NWB:BuildRepoDownloadUrl:UnsupportedRepository')
-        end
-    end
-
-    methods (Static)
-        function nwb = initNwbFile()
-            nwb = NwbFile( ...
-                'session_description', 'test file for nwb extension', ...
-                'identifier', 'export_test', ...
-                'session_start_time', datetime("now", 'TimeZone', 'local') );
         end
     end
 end
