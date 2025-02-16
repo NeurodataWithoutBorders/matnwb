@@ -14,5 +14,5 @@ for i=length(Cache.dependencies):-1:1
     ancestry(i) = schemes.loadNamespace(ancestorName, saveDir);
 end
 
-Namespace = schemes.Namespace(name, ancestry, Cache.schema);
+Namespace = schemes.Namespace(name, Cache.version, ancestry, Cache.schema);
 end
