@@ -7,13 +7,14 @@ classdef GenerationTest < matlab.unittest.TestCase
     end
     
     methods (TestClassSetup)
-        function setupClass(testCase)
+        function setupMatNWBPathFixture(testCase)
             import matlab.unittest.fixtures.PathFixture
+            matNwbRootPath = tests.util.getProjectDirectory();
+            testCase.applyFixture( PathFixture(matNwbRootPath) );
+        end
+
+        function setupNwbClearGeneratedFixture(testCase)
             import tests.fixtures.NwbClearGeneratedFixture
-
-            rootPath = tests.util.getProjectDirectory();
-            testCase.applyFixture( PathFixture(rootPath) );
-
             testCase.applyFixture( NwbClearGeneratedFixture );
         end
     end
