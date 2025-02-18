@@ -156,7 +156,11 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
             for i = 1:numel(requiredProps)
                 thisPropName = requiredProps{i};
                 if isempty(obj.(thisPropName))
-                    missingRequiredProps{end+1} = thisPropName; %#ok<AGROW>
+                    if ismatrix(obj.(thisPropName))
+                        missingRequiredProps{end+1} = thisPropName; %#ok<AGROW>
+                    else
+                        % Special case intentionally ignored
+                    end
                 end
             end
         end
