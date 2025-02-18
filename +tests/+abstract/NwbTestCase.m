@@ -45,5 +45,12 @@ classdef (Abstract, SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) .
                 io.close()
             end
         end
+    
+        function nwbFilename = getRandomFilename()
+            % Assumes that this method is called from a test method
+            functionCallStackTrace = dbstack();
+            testName = regexp(functionCallStackTrace(2).name, '\w*$', 'match', 'once');
+            nwbFilename = sprintf('%s_%05d.nwb', testName, randi(9999));
+        end
     end
 end

@@ -250,13 +250,4 @@ classdef nwbExportTest < tests.abstract.NwbTestCase
                 'NWB:validators:MissingEmbeddedNamespace')
         end
     end
-
-    methods (Static)
-        function nwbFilename = getRandomFilename()
-            % Assumes that this method is called from a test method
-            functionCallStackTrace = dbstack();
-            testName = regexp(functionCallStackTrace(2).name, '\w*$', 'match', 'once');
-            nwbFilename = sprintf('%s_%05d.nwb', testName, randi(9999));
-        end
-    end
 end
