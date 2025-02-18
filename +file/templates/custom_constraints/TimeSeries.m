@@ -1,0 +1,26 @@
+function checkCustomConstraint(obj)
+% checkCustomConstraint - Check custom constraints of TimeSeries
+%
+% Add method to validate constraint that either timestamps or 
+% starting_time must be present
+
+    assert(~isempty(obj.timestamps) || ~isempty(obj.starting_time), ...
+        'NWB:TimeSeries:TimeNotSpecified', ...
+        '"timestamps" or "starting_time" must be specified.')
+    assert( isempty(obj.timestamps) || isempty(obj.starting_time), ...
+        'NWB:TimeSeries:MutuallyExclusiveTimePropertiesSet', ...
+        '"timestamps" or "starting_time" must be specified, but not both.')
+    
+    if ~isempty(obj.starting_time)
+        assert(~isempty(obj.starting_time_rate), ...
+            'NWB:TimeSeries:RateMissing', ...
+            '"starting_time_rate" must be specified when "starting_time" is specified.')
+    end
+    if ~isempty(obj.timestamps)
+        numTimestamps = numel(obj.timestamps);
+        dataSize = size(obj.data);
+        assert(isequal(numTimestamps, dataSize(end)), ...
+            'NWB:TimeSeries:Timestamps', ...
+            '"data" and "timestamps" are not the same length.')
+    end
+end
