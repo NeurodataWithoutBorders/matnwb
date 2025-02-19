@@ -1,11 +1,10 @@
-classdef PynwbTutorialTest <  matlab.unittest.TestCase
+classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) ...
+        PynwbTutorialTest < matlab.unittest.TestCase
 % PynwbTutorialTest - Unit test for testing the pynwb tutorials.
 %
 %   This test will test most pynwb tutorial files (while skipping tutorials with 
 %   dependencies) If the tutorial creates nwb file(s), the test will also try 
 %   to open these with matnwb.
-%
-%   See also tests.util.getPythonPath 
 
     properties
         MatNwbDirectory
@@ -40,13 +39,15 @@ classdef PynwbTutorialTest <  matlab.unittest.TestCase
         PythonEnvironment % Stores the value of the environment variable 
         % "PYTHONPATH" to restore when test is finished.
 
-        Debug (1,1) logical = false
+        Debug (1,1) logical
     end
 
     methods (TestClassSetup)
         function setupClass(testCase)
 
             import tests.fixtures.NwbClearGeneratedFixture
+            
+            testCase.Debug = strcmp(getenv('NWB_TEST_DEBUG'), '1');
 
             % Get the root path of the matnwb repository
             rootPath = getMatNwbRootDirectory();
@@ -73,11 +74,10 @@ classdef PynwbTutorialTest <  matlab.unittest.TestCase
             L = dir('temp_venv/lib/python*/site-*'); % Find the site-packages folder
             pythonPath = fullfile(L.folder, L.name);
             setenv('PYTHONPATH', pythonPath)
-
-            pythonPath = tests.util.getPythonPath();
             
             if testCase.Debug
-                [~, m] = system(sprintf('%s -m pip list', pythonPath)); disp(m)
+                pythonExecutable = getenv("PYTHON_EXECUTABLE");
+                [~, m] = system(sprintf('%s -m pip list', pythonExecutable)); disp(m)
             end
         end
     end
@@ -110,12 +110,8 @@ classdef PynwbTutorialTest <  matlab.unittest.TestCase
     methods (Test)
         function testTutorial(testCase, tutorialFile)
 
-            %S = pyenv();
-            %pythonPath = S.Executable;
-
-            pythonPath = tests.util.getPythonPath();
-            
-            cmd = sprintf('%s %s', pythonPath, tutorialFile);
+            pythonExecutable = getenv("PYTHON_EXECUTABLE");
+            cmd = sprintf('%s %s', pythonExecutable, tutorialFile);
             [status, cmdout] = system(cmd);
 
             if status == 1
@@ -152,19 +148,17 @@ classdef PynwbTutorialTest <  matlab.unittest.TestCase
                     nwbFile = nwbRead(nwbFilename, 'savedir', '.'); %#ok<NASGU>
                 catch ME
                     error(ME.message)
-                    %testCase.verifyFail(sprintf('Failed to read file %s with error: %s', nwbListing(i).name, ME.message));
                 end
             end
         end
     end
 
     methods (Access = private) % Utility functions
-        function createVirtualPythonEnvironment(testCase)
-            % Todo: Consider to use py.*
-            %py.venv.create('.', with_pip=true)
+        function createVirtualPythonEnvironment(testCase) %#ok<MANU>
 
-            pythonPath = tests.util.getPythonPath();
-            cmd = sprintf("%s -m venv ./temp_venv", pythonPath );
+            pythonExecutable = getenv("PYTHON_EXECUTABLE");
+
+            cmd = sprintf("%s -m venv ./temp_venv", pythonExecutable );
             [status, cmdout] = system(cmd);
 
             if ~status == 0
@@ -206,7 +200,7 @@ function tutorialNames = listTutorialFiles()
     else
         token = '';
     end
-
+    
     allFilePaths = listFilesInRepo(...
         'NeurodataWithoutBorders', 'pynwb', 'docs/gallery/', token);
     

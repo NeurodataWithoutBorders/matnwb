@@ -6,8 +6,8 @@ workspace/
 *.asv
 *.swp
 .DS_Store
-+tests/env.mat
 
++tests/env.mat # Deprecated
 nwbtest.env
 
 # Ignore everything in the +types/ folder

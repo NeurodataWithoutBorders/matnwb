@@ -1,4 +1,4 @@
-classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
+classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture, tests.fixtures.SetEnvironmentVariableFixture}) ...
         TutorialTest <  matlab.unittest.TestCase
 % TutorialTest - Unit test for testing the matnwb tutorials.
 %
@@ -117,7 +117,8 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                     results = py.list(py.nwbinspector.inspect_nwbfile(nwbfile_path=nwbFilename));
                     results = testCase.convertNwbInspectorResultsToStruct(results);
                 elseif testCase.NWBInspectorMode == "CLI"
-                    [s, m] = system(sprintf('nwbinspector %s --levels importance', nwbFilename));
+                    nwbInspectorExecutable = getenv("NWBINSPECTOR_EXECUTABLE");
+                    [s, m] = system(sprintf('%s %s --levels importance', nwbInspectorExecutable, nwbFilename));
                     testCase.assertEqual(s,0, 'Failed to run NWB Inspector using system command.')
                     results = testCase.parseNWBInspectorTextOutput(m);
                 end
