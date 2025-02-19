@@ -1,4 +1,5 @@
-classdef PyNWBIOTest < tests.system.RoundTripTest
+classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) ...
+        PyNWBIOTest < tests.system.RoundTripTest
     % Assumes PyNWB and unittest2 has been installed on the system.
     %
     % To install PyNWB, execute:
