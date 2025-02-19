@@ -183,7 +183,7 @@ class PhotonSeriesIOTest(PyNWBIOTest):
             indicator = 'GFP',
             location = 'somewhere in the brain',
             imaging_rate = 2.718)
-        data = np.ones((3, 3, 3))
+        data = np.ones((10, 3, 3))
         timestamps = list(range(10))
         fov = [2.0, 2.0, 5.0]
         tps = TwoPhotonSeries('test_2ps', ip, data, 'image_unit', 'raw',
