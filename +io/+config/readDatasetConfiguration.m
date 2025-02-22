@@ -34,4 +34,6 @@ function datasetConfig = readDatasetConfiguration(profile)
 
     configFilePath = fullfile(misc.getMatnwbDir, 'configuration', filename);
     datasetConfig = jsondecode(fileread(configFilePath));
+
+    datasetConfig = io.config.internal.applyCustomMatNWBPropertyNames(datasetConfig);
 end
