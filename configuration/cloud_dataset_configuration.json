@@ -6,10 +6,10 @@
             "unit": "bytes"
         },
         "chunk_dimensions": [
-            [null], 
-            [null, "max"], 
-            [null, "max", "max"], 
-            [null, "max", "max", "max"]
+            ["flex"], 
+            ["flex", "max"], 
+            ["flex", "max", "max"], 
+            ["flex", "max", "max", "max"]
         ],
         "compression": {
             "algorithm": "deflate",
@@ -18,26 +18,32 @@
             "prefilters": ["shuffle"]
         }
     },
+    "VectorData": {
+        "compression": {
+            "algorithm": "deflate",
+            "level": 7
+        }
+    },
     "TimeSeries": {
         "data": {
-            "chunk_dimensions": [[null, 32], [null, 32, "max"]],
+            "chunk_dimensions": [["flex", 32], ["flex", 32, "max"]],
             "compression": {
                 "algorithm": "deflate",
                 "level": 4
             }
         },
         "timestamps": {
-            "chunk_dimensions": [null]
+            "chunk_dimensions": ["flex"]
         }
     },
     "ImageSeries": {
         "data": {
-            "chunk_dimensions": [[null, "max", "max"], [null, "max", "max", "max"]]
+            "chunk_dimensions": [["flex", "max", "max"], ["flex", "max", "max", "max"]]
         }
     },
     "ElectricalSeries": {
         "data": {
-            "chunk_dimensions": [[null, 32], [null, 32, "max"]]
+            "chunk_dimensions": [["flex", 64], ["flex", 64, "max"]]
         }
     },
     "SpikeEventSeries": {
