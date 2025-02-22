@@ -33,8 +33,13 @@ function datasetNames = listDatasetsOfNeurodataType(typeClassName)
                 for i = 1:numel(datasetMaps)
                     if isKey(datasetMaps{i}, 'name')
                         datasetNames(i) = datasetMaps{i}('name');
+                    elseif isKey(datasetMaps{i}, 'data_type_inc')
+                        datasetNames(i) = lower( datasetMaps{i}('data_type_inc') );
+                    elseif isKey(datasetMaps{i}, 'data_type_def')
+                        datasetNames(i) = lower( datasetMaps{i}('data_type_def') );
                     else
                         keyboard
+                        error('NWB:UnexpectedError', 'Something unexpected happened.')
                     end
                 end
                 datasetNames(datasetNames=="") = [];
