@@ -1,8 +1,9 @@
 function resolvedOptions = resolveDatasetConfigForDataType(datasetConfig, nwbObject, datasetName)
 % resolveDatasetConfigForDataType - Resolve the dataset configuration for individual neurodata types
-%   This function resolves the dataset configuration options for a given NWB object
-%   by traversing the object hierarchy and combining options from the most specific
-%   type to the base type, as defined in the datasetConfig structure.
+%   This function resolves the dataset configuration options for a given NWB 
+%   object by traversing the object hierarchy and combining options from the 
+%   most specific type to the base type, as defined in the datasetConfig 
+%   structure.
 %
 %   Input:
 %       datasetConfig (struct): A struct representation of the dataset configuration JSON.
