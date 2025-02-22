@@ -243,7 +243,7 @@ methods
             obj.warnIfPropertyAttributeNotExported('external_file_starting_frame', 'external_file', fullpath)
         end
         if ~isempty(obj.external_file) && isempty(obj.external_file_starting_frame)
-            obj.warnIfRequiredDependencyMissing('external_file_starting_frame', 'external_file', fullpath)
+            obj.throwErrorIfRequiredDependencyMissing('external_file_starting_frame', 'external_file', fullpath)
         end
         if ~isempty(obj.format)
             if startsWith(class(obj.format), 'types.untyped.')

@@ -474,7 +474,7 @@ methods
             obj.warnIfPropertyAttributeNotExported('starting_time_rate', 'starting_time', fullpath)
         end
         if ~isempty(obj.starting_time) && isempty(obj.starting_time_rate)
-            obj.warnIfRequiredDependencyMissing('starting_time_rate', 'starting_time', fullpath)
+            obj.throwErrorIfRequiredDependencyMissing('starting_time_rate', 'starting_time', fullpath)
         end
         if ~isempty(obj.starting_time) && ~isa(obj.starting_time, 'types.untyped.SoftLink') && ~isa(obj.starting_time, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/starting_time/unit'], obj.starting_time_unit);

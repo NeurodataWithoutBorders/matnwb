@@ -1,4 +1,11 @@
 function writeEmbeddedSpecifications(fid, jsonSpecs)
+% writeEmbeddedSpecifications - Write schema specifications to an NWB file
+
+    arguments
+        fid         % File id for a h5 file
+        jsonSpecs   % String representation of schema specifications in json format
+    end
+
     specLocation = io.spec.internal.readEmbeddedSpecLocation(fid);
 
     if isempty(specLocation)
@@ -37,8 +44,8 @@ end
 function versionNames = getVersionNames(namespaceGroupId)
     [~, ~, versionNames] = H5L.iterate(namespaceGroupId,...
         'H5_INDEX_NAME', 'H5_ITER_NATIVE',...
-        0, @removeGroups, {});
-    function [status, versionNames] = removeGroups(~, name, versionNames)
+        0, @appendName, {});
+    function [status, versionNames] = appendName(~, name, versionNames)
         versionNames{end+1} = name;
         status = 0;
     end

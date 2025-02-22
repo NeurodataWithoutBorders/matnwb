@@ -468,7 +468,7 @@ methods
             obj.warnIfPropertyAttributeNotExported('grid_spacing_unit', 'grid_spacing', fullpath)
         end
         if ~isempty(obj.grid_spacing) && isempty(obj.grid_spacing_unit)
-            obj.warnIfRequiredDependencyMissing('grid_spacing_unit', 'grid_spacing', fullpath)
+            obj.throwErrorIfRequiredDependencyMissing('grid_spacing_unit', 'grid_spacing', fullpath)
         end
         if ~isempty(obj.imaging_rate)
             if startsWith(class(obj.imaging_rate), 'types.untyped.')
@@ -514,7 +514,7 @@ methods
             obj.warnIfPropertyAttributeNotExported('origin_coords_unit', 'origin_coords', fullpath)
         end
         if ~isempty(obj.origin_coords) && isempty(obj.origin_coords_unit)
-            obj.warnIfRequiredDependencyMissing('origin_coords_unit', 'origin_coords', fullpath)
+            obj.throwErrorIfRequiredDependencyMissing('origin_coords_unit', 'origin_coords', fullpath)
         end
         if ~isempty(obj.reference_frame)
             if startsWith(class(obj.reference_frame), 'types.untyped.')
