@@ -3,6 +3,7 @@ function writeNamespace(namespaceName, saveDir)
 Namespace = schemes.loadNamespace(namespaceName, saveDir);
 
 classFileDir = fullfile(saveDir, '+types', ['+' misc.str2validName(Namespace.name)]);
+writeNamespaceVersion(classFileDir, Namespace.version)
 
 if ~isfolder(classFileDir)
     mkdir(classFileDir);
@@ -29,4 +30,28 @@ for i=1:length(classes)
         % pass
     end
 end
+end
+
+function writeNamespaceVersion(classFileDir, version)
+% writeNamespaceVersion - Write function for retrieving version of
+% generated namespace.
+    
+    functionTemplate = strjoin([...
+        "function version = %s()", ...
+        "    version = '%s';", ...
+        "end" ...
+    ], newline);
+    
+    functionDefinition = sprintf(functionTemplate, ...
+        matnwb.common.constant.VERSIONFUNCTION, ...
+        version);
+
+    if ~isfolder(classFileDir); mkdir(classFileDir); end  
+    namespaceVersionFilename = fullfile(...
+        classFileDir, ...
+        matnwb.common.constant.VERSIONFILE);
+    
+    fid = fopen(namespaceVersionFilename, 'wt');
+    fwrite(fid, functionDefinition);
+    fclose(fid);
 end

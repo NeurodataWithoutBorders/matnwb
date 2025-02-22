@@ -4,10 +4,14 @@ function generateRstForNeurodataTypeClasses(namespaceName)
     arguments
         namespaceName (1,1) string
     end
+
+    filenameToIgnore = {matnwb.common.constant.VERSIONFILE};
+
     namespaceName = char(namespaceName);
 
     rootDir = misc.getMatnwbDir();
     classFiles = dir(fullfile(rootDir, '+types', ['+', namespaceName], '*.m'));
+    classFiles(ismember({classFiles.name}, filenameToIgnore)) = [];
 
     docsSourceRootDir = fullfile(misc.getMatnwbDir, 'docs', 'source');
     exportDir = fullfile(docsSourceRootDir, 'pages', 'neurodata_types', namespaceName);

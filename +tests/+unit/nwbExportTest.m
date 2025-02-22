@@ -60,7 +60,7 @@ classdef nwbExportTest < matlab.unittest.TestCase
             % an error.
 
             electrode = types.core.IntracellularElectrode('description', 'test');
-            testCase.NwbObject.general_intracellular_ephys.set('Electrode', electrode)
+            testCase.NwbObject.general_intracellular_ephys.set('Electrode', electrode);
 
             nwbFilePath = 'testExportNwbFileWithMissingRequiredLink.nwb';
             testCase.verifyError(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), ...
@@ -74,9 +74,8 @@ classdef nwbExportTest < matlab.unittest.TestCase
             nwbFile = testCase.initNwbFile();
             fileName = "testExportWithMissingRequiredDependentProperty";
 
-            % Should work without warning
-            testCase.verifyWarningFree( ...
-                @(nwbObj, filePath) nwbExport(nwbFile, fileName + "_1.nwb") )
+            % Should work without error
+            nwbExport(nwbFile, fileName + "_1.nwb")
 
             % Now we add a value to the "general_source_script" property. This
             % is a dataset with a required attribute called "file_name".
@@ -85,10 +84,9 @@ classdef nwbExportTest < matlab.unittest.TestCase
             % property.
             nwbFile.general_source_script = '.../nwbExportTest.m';
 
-            % Verify that exporting the file issues warning that a required
-            % property (i.e general_source_script_file_name) is missing
-
-            testCase.verifyWarning( ...
+            % Verify that exporting the file throws an error, stating that a 
+            % required property (i.e general_source_script_file_name) is missing
+            testCase.verifyError( ...
                 @(nwbObj, filePath) nwbExport(nwbFile, fileName + "_2.nwb"), ...
                 'NWB:DependentRequiredPropertyMissing')
         end
@@ -155,6 +153,90 @@ classdef nwbExportTest < matlab.unittest.TestCase
             testCase.NwbObject.acquisition.set('time_series', time_series);
             nwbFilePath = fullfile(testCase.OutputFolder, 'test_part1.nwb');
             testCase.verifyError(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), 'NWB:CustomConstraintUnfulfilled')
+        end
+
+        function testEmbeddedSpecs(testCase)
+            
+            nwbFileName = 'testEmbeddedSpecs.nwb';
+
+            % Install extension. 
+            nwbInstallExtension(["ndx-miniscope", "ndx-photostim"], 'savedir', '.')
+            
+            % Export a file not using a type from an extension
+            nwb = testCase.initNwbFile();
+            
+            nwbExport(nwb, nwbFileName);
+            embeddedNamespaces = io.spec.listEmbeddedSpecNamespaces(nwbFileName);
+            testCase.verifyEmpty(embeddedNamespaces)
+
+            ts = types.core.TimeSeries(...
+                'data', rand(1,10), 'timestamps', 1:10, 'data_unit', 'test');
+            nwb.acquisition.set('test', ts);
+
+            nwbExport(nwb, nwbFileName);
+            embeddedNamespaces = io.spec.listEmbeddedSpecNamespaces(nwbFileName);
+            
+            % Verify that extension namespace is not part of embedded specs
+            testCase.verifyEqual(sort(embeddedNamespaces), {'core', 'hdmf-common'})
+
+            % Add type for extension.
+            testDevice = types.ndx_photostim.Laser('model', 'Spectra-Physics');
+            nwb.general_devices.set('TestDevice', testDevice);
+            
+            nwbExport(nwb, nwbFileName);
+            embeddedNamespaces = io.spec.listEmbeddedSpecNamespaces(nwbFileName);
+
+            % Verify that extension namespace is part of embedded specs.
+            testCase.verifyEqual(sort(embeddedNamespaces), {'core', 'hdmf-common', 'ndx-photostim'})
+
+            % When we remove the TestDevice from the NWB object, and
+            % re-export, the ndx-photostim namespace/extension should be 
+            % removed from the embedded specifications in the file, because
+            % there are not longer any types from the ndx-photostim
+            % extension in the file.
+
+            % Please note: The following commands only removes the
+            % TestDevice from the nwbFile object, not from the actual file
+            % See matnwb issue #649:
+            % https://github.com/NeurodataWithoutBorders/matnwb/issues/649
+            nwb.general_devices.remove('TestDevice');
+            nwbExport(nwb, nwbFileName);
+            
+            embeddedNamespaces = io.spec.listEmbeddedSpecNamespaces(nwbFileName);
+            testCase.verifyEqual(sort(embeddedNamespaces), {'core', 'hdmf-common'})
+        end
+
+        function testWarnIfMissingNamespaceSpecification(testCase)
+            % Tests the case where a cached namespace specification is
+            % deleted from disk before an nwb object containing types from
+            % that namespace is exported to file.
+            
+            nwbFileName = 'testWarnIfMissingNamespaceSpecification.nwb';
+
+            % Install extension. 
+            nwbInstallExtension("ndx-photostim", 'savedir', '.')
+            
+            % Export a file not using a type from an extension
+            nwb = testCase.initNwbFile();
+            
+            % Add a timeseries object
+            ts = types.core.TimeSeries(...
+                'data', rand(1,10), 'timestamps', 1:10, 'data_unit', 'test');
+            nwb.acquisition.set('test', ts);
+            
+            % Add type from ndx-photostim extension.
+            testDevice = types.ndx_photostim.Laser('model', 'Spectra-Physics');
+            nwb.general_devices.set('TestDevice', testDevice);
+
+            % Simulate the rare case where a user might delete the cached
+            % namespace specification before exporting a file
+            cachedNamespaceSpec = fullfile("namespaces/ndx-photostim.mat");
+            delete(cachedNamespaceSpec)
+            
+            % Test that warning for missing namespace works
+            testCase.verifyWarning(...
+                @() nwbExport(nwb, nwbFileName), ...
+                'NWB:validators:MissingEmbeddedNamespace')
         end
     end
 

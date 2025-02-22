@@ -85,7 +85,8 @@ matlabTable = [matlabTable DynamicTable.getRow( ...
     'columns', remainingColumns ...
 )];
 
-% Update the columns order to be the same as the original 
+% Update the columns order to be the same as the original
+if iscolumn(columns); columns = transpose(columns); end
 matlabTable = matlabTable(:, [{'id'}, columns]);
 
 % Add variable descriptions
