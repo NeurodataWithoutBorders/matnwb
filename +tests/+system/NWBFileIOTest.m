@@ -1,4 +1,5 @@
 classdef NWBFileIOTest < tests.system.PyNWBIOTest
+
     methods
         function addContainer(testCase, file) %#ok<INUSL>
             ts = types.core.TimeSeries(...
@@ -44,7 +45,7 @@ classdef NWBFileIOTest < tests.system.PyNWBIOTest
             fileName = ['MatNWB.' testCase.className() '.testLoadAll.nwb'];
             nwbExport(testCase.file, fileName)
             nwb = nwbRead(fileName, "ignorecache");            
-            nwb.loadAll()
+            nwb.loadAll();
         end
 
         function readWithStringArg(testCase)
@@ -60,7 +61,7 @@ classdef NWBFileIOTest < tests.system.PyNWBIOTest
 
             io.internal.h5.deleteGroup(fileName, 'specifications')
 
-            nwbRead(fileName);
+            nwbRead(fileName, "ignorecache");
         end
 
         function readFileWithoutSpecLoc(testCase)
@@ -72,7 +73,7 @@ classdef NWBFileIOTest < tests.system.PyNWBIOTest
 
             % When specloc is missing, the specifications are not added to
             % the blacklist, so it will get passed as an input to NwbFile.
-            testCase.verifyError(@(fn) nwbRead(fileName), 'MATLAB:TooManyInputs');
+            testCase.verifyError(@(fn) nwbRead(fileName, "ignorecache"), 'MATLAB:TooManyInputs');
         end
 
         function readFileWithUnsupportedVersion(testCase)
@@ -85,7 +86,7 @@ classdef NWBFileIOTest < tests.system.PyNWBIOTest
             io.writeAttribute(file_id, '/nwb_version', '1.0.0')
             H5F.close(file_id);
 
-            testCase.verifyWarning(@(fn) nwbRead(fileName), 'NWB:Read:UnsupportedSchema')
+            testCase.verifyWarning(@(fn) nwbRead(fileName, "ignorecache"), 'NWB:Read:UnsupportedSchema')
         end
 
         function readFileWithUnsupportedVersionAndNoSpecloc(testCase)
@@ -104,7 +105,7 @@ classdef NWBFileIOTest < tests.system.PyNWBIOTest
 
             % When specloc is missing, the specifications are not added to
             % the blacklist, so it will get passed as an input to NwbFile.
-            testCase.verifyError(@(fn) nwbRead(fileName), 'MATLAB:TooManyInputs');
+            testCase.verifyError(@(fn) nwbRead(fileName, "ignorecache"), 'MATLAB:TooManyInputs');
         end
     end
 end

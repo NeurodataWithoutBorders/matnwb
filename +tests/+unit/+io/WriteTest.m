@@ -16,7 +16,7 @@ classdef WriteTest < matlab.unittest.TestCase
             fileCleanupObj = onCleanup(@(id) H5F.close(fid));
     
             targetPath = '/';
-            io.writeGroup(fid, targetPath)
+            io.writeGroup(fid, targetPath);
 
             % Define target dataset path and create it in the HDF5 file
             io.writeAttribute(fid, '/test', true);  % First write to create the dataset

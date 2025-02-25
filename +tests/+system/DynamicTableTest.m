@@ -206,13 +206,17 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
         end
 
         function getRowRoundtripTest(testCase)
+            import matlab.unittest.fixtures.SuppressedWarningsFixture
+            suppressedWarningId = 'NWB:DynamicTable:VectorDataAmbiguousSize';
+            testCase.applyFixture(SuppressedWarningsFixture(suppressedWarningId))
+            
             filename = ['MatNWB.' testCase.className() '.testGetRow.nwb'];
             nwbExport(testCase.file, filename);
             ActualFile = nwbRead(filename, 'ignorecache');
             ActualTable = ActualFile.intervals_trials;
             ExpectedTable = testCase.file.intervals_trials;
 
-            % even if struct is passed in. It is still read back as a
+            % Even if struct is passed in. It is still read back as a
             % table. So we cheat a bit here since this is expected a2a.
             CompoundStructVector = ExpectedTable.vectordata.get('compound_struct');
             ExpectedCompoundStruct = CompoundStructVector.data;

@@ -1,4 +1,5 @@
-classdef TutorialTest <  matlab.unittest.TestCase
+classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture, tests.fixtures.SetEnvironmentVariableFixture}) ...
+        TutorialTest <  matlab.unittest.TestCase
 % TutorialTest - Unit test for testing the matnwb tutorials.
 %
 %   This test will test most tutorial files (while skipping tutorials with 
@@ -52,8 +53,6 @@ classdef TutorialTest <  matlab.unittest.TestCase
     methods (TestClassSetup)
         function setupClass(testCase)
             
-            import tests.fixtures.ResetGeneratedTypesFixture
-
             % Get the root path of the matnwb repository
             rootPath = tests.util.getProjectDirectory();
             tutorialsFolder = fullfile(rootPath, 'tutorials');
@@ -61,7 +60,7 @@ classdef TutorialTest <  matlab.unittest.TestCase
             testCase.MatNwbDirectory = rootPath;
 
             % Use a fixture to add the folder to the search path
-            testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
+            %testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
             testCase.applyFixture(matlab.unittest.fixtures.PathFixture(tutorialsFolder));
             
             % Check if it is possible to call py.nwbinspector.* functions.
@@ -72,15 +71,13 @@ classdef TutorialTest <  matlab.unittest.TestCase
             catch
                 testCase.NWBInspectorMode = "CLI";
             end
-
-            testCase.applyFixture( ResetGeneratedTypesFixture );
         end
     end
 
     methods (TestMethodSetup)
         function setupMethod(testCase)
             testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
-            generateCore('savedir', '.');
+            %generateCore('savedir', '.');
         end
     end
     
@@ -120,7 +117,8 @@ classdef TutorialTest <  matlab.unittest.TestCase
                     results = py.list(py.nwbinspector.inspect_nwbfile(nwbfile_path=nwbFilename));
                     results = testCase.convertNwbInspectorResultsToStruct(results);
                 elseif testCase.NWBInspectorMode == "CLI"
-                    [s, m] = system(sprintf('nwbinspector %s --levels importance', nwbFilename));
+                    nwbInspectorExecutable = getenv("NWBINSPECTOR_EXECUTABLE");
+                    [s, m] = system(sprintf('%s %s --levels importance', nwbInspectorExecutable, nwbFilename));
                     testCase.assertEqual(s,0, 'Failed to run NWB Inspector using system command.')
                     results = testCase.parseNWBInspectorTextOutput(m);
                 end
@@ -158,7 +156,7 @@ classdef TutorialTest <  matlab.unittest.TestCase
     methods (Static)
         function resultsOut = convertNwbInspectorResultsToStruct(resultsIn)
             
-            resultsOut = tests.unit.TutorialTest.getEmptyNwbInspectorResultStruct();
+            resultsOut = tests.system.tutorial.TutorialTest.getEmptyNwbInspectorResultStruct();
                     
             C = cell(resultsIn);
             for i = 1:numel(C)
@@ -178,7 +176,7 @@ classdef TutorialTest <  matlab.unittest.TestCase
         end
     
         function resultsOut = parseNWBInspectorTextOutput(systemCommandOutput)
-            resultsOut = tests.unit.TutorialTest.getEmptyNwbInspectorResultStruct();
+            resultsOut = tests.system.tutorial.TutorialTest.getEmptyNwbInspectorResultStruct();
             
             importanceLevels = containers.Map(...
                 ["BEST_PRACTICE_SUGGESTION", ...
@@ -264,5 +262,5 @@ function tutorialNames = listTutorialFiles()
         );
 
     L( [L.isdir] ) = []; % Ignore folders
-    tutorialNames = setdiff({L.name}, tests.unit.TutorialTest.SkippedTutorials);
+    tutorialNames = setdiff({L.name}, tests.system.tutorial.TutorialTest.SkippedTutorials);
 end

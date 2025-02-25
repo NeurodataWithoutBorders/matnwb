@@ -1,40 +1,24 @@
-classdef nwbExportTest < matlab.unittest.TestCase
-
-    properties
-        NwbObject
-        OutputFolder = "out"
-    end
+classdef nwbExportTest < tests.abstract.NwbTestCase
+% nwbExportTest - Unit tests for testing various aspects of exporting to an NWB file.
 
     methods (TestClassSetup)
-        function setupClass(testCase)
-            % Get the root path of the matnwb repository
-            rootPath = misc.getMatnwbDir();
-
-            % Use a fixture to add the folder to the search path
-            testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
-
+        function setupTemporaryWorkingFolder(testCase)
             % Use a fixture to create a temporary working directory
             testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
-            generateCore('savedir', '.');
         end
     end
 
     methods (TestMethodSetup)
-        function setupMethod(testCase)
-            testCase.NwbObject = testCase.initNwbFile();
-
-            if isfolder( testCase.OutputFolder )
-                rmdir(testCase.OutputFolder, "s")
-            end
-            mkdir(testCase.OutputFolder)
-        end
+        % No method setup
     end
 
     methods (Test)
         function testExportNwbFileWithMissingRequiredProperties(testCase)
             nwb = NwbFile();
-            nwbFilePath = fullfile(testCase.OutputFolder, 'testfile.nwb');
-            testCase.verifyError(@(file, path) nwbExport(nwb, nwbFilePath), ...
+            nwbFilePath = testCase.getRandomFilename();
+
+            testCase.verifyError(...
+                @() nwbExport(nwb, nwbFilePath), ...
                 'NWB:RequiredPropertyMissing')
         end
 
@@ -43,14 +27,15 @@ classdef nwbExportTest < matlab.unittest.TestCase
             % 'description' property to be set (description is a required 
             % attribute of ProcessingModule).
 
+            nwbFile = tests.factory.NWBFile();
             processingModule = types.core.ProcessingModule();
-            testCase.NwbObject.processing.set('TestModule', processingModule);
+            nwbFile.processing.set('TestModule', processingModule);
             
-            nwbFilePath = 'testExportNwbFileWithMissingRequiredAttribute.nwb';
-            testCase.verifyError(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), ...
+            nwbFilePath = testCase.getRandomFilename();
+            
+            testCase.verifyError(...
+                @() nwbExport(nwbFile, nwbFilePath), ...
                 'NWB:RequiredPropertyMissing')
-
-            testCase.NwbObject.processing.remove('TestModule');
         end
               
         function testExportNwbFileWithMissingRequiredLink(testCase)
@@ -59,23 +44,21 @@ classdef nwbExportTest < matlab.unittest.TestCase
             % IntracellularElectrode and exporting the object should throw
             % an error.
 
+            nwbFile = tests.factory.NWBFile();
             electrode = types.core.IntracellularElectrode('description', 'test');
-            testCase.NwbObject.general_intracellular_ephys.set('Electrode', electrode);
+            nwbFile.general_intracellular_ephys.set('Electrode', electrode);
 
-            nwbFilePath = 'testExportNwbFileWithMissingRequiredLink.nwb';
-            testCase.verifyError(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), ...
+            nwbFilePath = testCase.getRandomFilename();
+            testCase.verifyError(...
+                @() nwbExport(nwbFile, nwbFilePath), ...
                 'NWB:RequiredPropertyMissing')
-
-            % Clean up: the NwbObject is reused by other tests.
-            testCase.NwbObject.general_intracellular_ephys.remove('Electrode');
         end
 
         function testExportWithMissingRequiredDependentProperty(testCase)
-            nwbFile = testCase.initNwbFile();
-            fileName = "testExportWithMissingRequiredDependentProperty";
-
-            % Should work without error
-            nwbExport(nwbFile, fileName + "_1.nwb")
+            nwbFile = tests.factory.NWBFile();
+            
+            nwbFilePath = testCase.getRandomFilename();
+            nwbExport(nwbFile, nwbFilePath) % Should work without error
 
             % Now we add a value to the "general_source_script" property. This
             % is a dataset with a required attribute called "file_name".
@@ -86,95 +69,115 @@ classdef nwbExportTest < matlab.unittest.TestCase
 
             % Verify that exporting the file throws an error, stating that a 
             % required property (i.e general_source_script_file_name) is missing
+            nwbFilePath = testCase.getRandomFilename();
             testCase.verifyError( ...
-                @(nwbObj, filePath) nwbExport(nwbFile, fileName + "_2.nwb"), ...
+                @() nwbExport(nwbFile, nwbFilePath), ...
                 'NWB:DependentRequiredPropertyMissing')
         end
 
-        function testExportFileWithAttributeOfEmptyDataset(testCase)
-            
-            nwbFile = testCase.initNwbFile();
+        function testExportDependentAttributeWithMissingParent(testCase)
+            import matlab.unittest.fixtures.SuppressedWarningsFixture
+            testCase.applyFixture(...
+                SuppressedWarningsFixture('NWB:AttributeDependencyNotSet'))
 
-            % Add device to nwb object
+            nwbFile = tests.factory.NWBFile();
+            nwbFile.general_source_script_file_name = 'my_test_script.m';
+            nwbFilePath = testCase.getRandomFilename();
+            
+            testCase.verifyWarning(...
+                @() nwbExport(nwbFile, nwbFilePath), ...
+                'NWB:DependentAttributeNotExported')
+            
+            % Add value for dataset which attribute depends on and export again
+            nwbFile.general_source_script = 'my test';
+            nwbFilePath = testCase.getRandomFilename();
+            
+            testCase.verifyWarningFree(@() nwbExport(nwbFile, nwbFilePath))
+        end
+
+        function testExportFileWithAttributeOfEmptyDataset(testCase)
+            import matlab.unittest.fixtures.SuppressedWarningsFixture
+            
+            nwbFile = tests.factory.NWBFile();
+            
             device = types.core.Device();
             nwbFile.general_devices.set('Device', device);
             
-            imaging_plane = types.core.ImagingPlane( ...
-                'device', types.untyped.SoftLink(device), ...
-                'excitation_lambda', 600., ...
-                'indicator', 'GFP', ...
-                'location', 'my favorite brain location');
-            nwbFile.general_optophysiology.set('ImagingPlane', imaging_plane);
-
+            imagingPlane = tests.factory.ImagingPlane(device);
+            nwbFile.general_optophysiology.set('ImagingPlane', imagingPlane);
+   
+            nwbFilePath = testCase.getRandomFilename();
             testCase.verifyWarningFree(...
-                @() nwbExport(nwbFile, 'test_1.nwb'))
+                @() nwbExport(nwbFile, nwbFilePath))
 
             % Change value for attribute of the grid_spacing dataset.
-            % Because grid_spacing is not set, this attribute value is not
-            % exported to the file. Verify that warning is issued.
-            imaging_plane.grid_spacing_unit = "microns";
+            testCase.applyFixture(...
+                SuppressedWarningsFixture('NWB:AttributeDependencyNotSet'))
+            imagingPlane.grid_spacing_unit = "microns";
 
+            % Because grid_spacing is not set, this attribute value is not
+            % exported to the file. Verify that warning is issued on export.
+            nwbFilePath = testCase.getRandomFilename();
             testCase.verifyWarning(...
-                @() nwbExport(nwbFile, 'test_2.nwb'), ...
+                @() nwbExport(nwbFile, nwbFilePath), ...
                 'NWB:DependentAttributeNotExported')
         end
 
         function testExportTimeseriesWithMissingTimestampsAndStartingTime(testCase)
+            nwbFile = tests.factory.NWBFile();
+            
             time_series = types.core.TimeSeries( ...
                  'data', linspace(0, 0.4, 50), ...
                  'description', 'a test series', ...
                  'data_unit', 'n/a' ...
-             );
-
-             testCase.NwbObject.acquisition.set('time_series', time_series);
-             nwbFilePath = fullfile(testCase.OutputFolder, 'testfile.nwb');
-             testCase.verifyError(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), ...
-                 'NWB:CustomConstraintUnfulfilled')
-        end
-
-        function testExportDependentAttributeWithMissingParentA(testCase)
-            testCase.NwbObject.general_source_script_file_name = 'my_test_script.m';
-            nwbFilePath = fullfile(testCase.OutputFolder, 'test_part1.nwb');
-            testCase.verifyWarning(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), 'NWB:DependentAttributeNotExported')
+            );
+            nwbFile.acquisition.set('time_series', time_series);
             
-            % Add value for dataset which attribute depends on and export again
-            testCase.NwbObject.general_source_script = 'my test';
-            nwbFilePath = fullfile(testCase.OutputFolder, 'test_part2.nwb');
-            testCase.verifyWarningFree(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath))
+            nwbFilePath = testCase.getRandomFilename();
+            testCase.verifyError(...
+                @() nwbExport(nwbFile, nwbFilePath), ...
+                'NWB:CustomConstraintUnfulfilled')
         end
-
+        
         function testExportTimeseriesWithoutStartingTimeRate(testCase)
+            nwbFile = tests.factory.NWBFile();
+            
             time_series = types.core.TimeSeries( ...
                 'data', linspace(0, 0.4, 50), ...
                 'starting_time', 1, ...
                 'description', 'a test series', ...
                 'data_unit', 'n/a' ...
             );
-            testCase.NwbObject.acquisition.set('time_series', time_series);
-            nwbFilePath = fullfile(testCase.OutputFolder, 'test_part1.nwb');
-            testCase.verifyError(@(f, fn) nwbExport(testCase.NwbObject, nwbFilePath), 'NWB:CustomConstraintUnfulfilled')
+            nwbFile.acquisition.set('time_series', time_series);
+            
+            nwbFilePath = testCase.getRandomFilename();
+            testCase.verifyError(...
+                @() nwbExport(nwbFile, nwbFilePath), ...
+                'NWB:CustomConstraintUnfulfilled')
         end
 
         function testEmbeddedSpecs(testCase)
             
-            nwbFileName = 'testEmbeddedSpecs.nwb';
-
-            % Install extension. 
-            nwbInstallExtension(["ndx-miniscope", "ndx-photostim"], 'savedir', '.')
+            % Install extensions, one will be used, the other will not. 
+            testCase.installExtension("ndx-miniscope")
+            testCase.addTeardown(@() testCase.clearExtension("ndx-miniscope"))
+            testCase.installExtension("ndx-photostim")
+            testCase.addTeardown(@() testCase.clearExtension("ndx-photostim"))
             
             % Export a file not using a type from an extension
-            nwb = testCase.initNwbFile();
-            
-            nwbExport(nwb, nwbFileName);
-            embeddedNamespaces = io.spec.listEmbeddedSpecNamespaces(nwbFileName);
+            nwb = tests.factory.NWBFile();
+            nwbFilePath = testCase.getRandomFilename();
+            nwbExport(nwb, nwbFilePath);
+
+            % Verify that no namespaces were embedded in file
+            embeddedNamespaces = io.spec.listEmbeddedSpecNamespaces(nwbFilePath);
             testCase.verifyEmpty(embeddedNamespaces)
 
-            ts = types.core.TimeSeries(...
-                'data', rand(1,10), 'timestamps', 1:10, 'data_unit', 'test');
+            ts = tests.factory.TimeSeriesWithTimestamps();
             nwb.acquisition.set('test', ts);
 
-            nwbExport(nwb, nwbFileName);
-            embeddedNamespaces = io.spec.listEmbeddedSpecNamespaces(nwbFileName);
+            nwbExport(nwb, nwbFilePath);
+            embeddedNamespaces = io.spec.listEmbeddedSpecNamespaces(nwbFilePath);
             
             % Verify that extension namespace is not part of embedded specs
             testCase.verifyEqual(sort(embeddedNamespaces), {'core', 'hdmf-common'})
@@ -183,8 +186,8 @@ classdef nwbExportTest < matlab.unittest.TestCase
             testDevice = types.ndx_photostim.Laser('model', 'Spectra-Physics');
             nwb.general_devices.set('TestDevice', testDevice);
             
-            nwbExport(nwb, nwbFileName);
-            embeddedNamespaces = io.spec.listEmbeddedSpecNamespaces(nwbFileName);
+            nwbExport(nwb, nwbFilePath);
+            embeddedNamespaces = io.spec.listEmbeddedSpecNamespaces(nwbFilePath);
 
             % Verify that extension namespace is part of embedded specs.
             testCase.verifyEqual(sort(embeddedNamespaces), {'core', 'hdmf-common', 'ndx-photostim'})
@@ -200,9 +203,9 @@ classdef nwbExportTest < matlab.unittest.TestCase
             % See matnwb issue #649:
             % https://github.com/NeurodataWithoutBorders/matnwb/issues/649
             nwb.general_devices.remove('TestDevice');
-            nwbExport(nwb, nwbFileName);
+            nwbExport(nwb, nwbFilePath);
             
-            embeddedNamespaces = io.spec.listEmbeddedSpecNamespaces(nwbFileName);
+            embeddedNamespaces = io.spec.listEmbeddedSpecNamespaces(nwbFilePath);
             testCase.verifyEqual(sort(embeddedNamespaces), {'core', 'hdmf-common'})
         end
 
@@ -211,17 +214,23 @@ classdef nwbExportTest < matlab.unittest.TestCase
             % deleted from disk before an nwb object containing types from
             % that namespace is exported to file.
             
-            nwbFileName = 'testWarnIfMissingNamespaceSpecification.nwb';
+            % A cached namespace is manually deleted in this test, so will
+            % use a fixture to ignore the warning for a missing file when
+            % the installed extension is cleared.
+            import matlab.unittest.fixtures.SuppressedWarningsFixture
+            testCase.applyFixture(SuppressedWarningsFixture('MATLAB:DELETE:FileNotFound'))
+            
+            nwbFilePath = testCase.getRandomFilename();
 
-            % Install extension. 
-            nwbInstallExtension("ndx-photostim", 'savedir', '.')
+            % Install extension.
+            testCase.installExtension("ndx-photostim");
+            testCase.addTeardown(@() testCase.clearExtension("ndx-photostim"))
             
             % Export a file not using a type from an extension
-            nwb = testCase.initNwbFile();
+            nwb = tests.factory.NWBFile();
             
             % Add a timeseries object
-            ts = types.core.TimeSeries(...
-                'data', rand(1,10), 'timestamps', 1:10, 'data_unit', 'test');
+            ts = tests.factory.TimeSeriesWithTimestamps();
             nwb.acquisition.set('test', ts);
             
             % Add type from ndx-photostim extension.
@@ -230,22 +239,15 @@ classdef nwbExportTest < matlab.unittest.TestCase
 
             % Simulate the rare case where a user might delete the cached
             % namespace specification before exporting a file
-            cachedNamespaceSpec = fullfile("namespaces/ndx-photostim.mat");
+            generatedTypesOutputFolder = testCase.getTypesOutputFolder();
+            cachedNamespaceSpec = fullfile(generatedTypesOutputFolder, ...
+                "namespaces", "ndx-photostim.mat");
             delete(cachedNamespaceSpec)
             
             % Test that warning for missing namespace works
             testCase.verifyWarning(...
-                @() nwbExport(nwb, nwbFileName), ...
+                @() nwbExport(nwb, nwbFilePath), ...
                 'NWB:validators:MissingEmbeddedNamespace')
-        end
-    end
-
-    methods (Static)
-        function nwb = initNwbFile()
-            nwb = NwbFile( ...
-                'session_description', 'test file for nwb export', ...
-                'identifier', 'export_test', ...
-                'session_start_time', datetime("now", 'TimeZone', 'local') );
         end
     end
 end

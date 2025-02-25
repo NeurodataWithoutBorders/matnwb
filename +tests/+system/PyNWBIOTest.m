@@ -1,4 +1,5 @@
-classdef PyNWBIOTest < tests.system.RoundTripTest
+classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) ...
+        PyNWBIOTest < tests.system.RoundTripTest
     % Assumes PyNWB and unittest2 has been installed on the system.
     %
     % To install PyNWB, execute:
@@ -36,20 +37,9 @@ classdef PyNWBIOTest < tests.system.RoundTripTest
         function [status, cmdout] = runPyTest(testCase, testName)
             tests.util.addFolderToPythonPath( fileparts(mfilename('fullpath')) )
             
-            envPath = fullfile('+tests', 'env.mat');
-            if isfile(envPath)
-                Env = load(envPath, '-mat');
-                if isfield(Env, 'pythonPath')
-                    pythonPath = Env.pythonPath;
-                else
-                    pythonPath = fullfile(Env.pythonDir, 'python');
-                end
-            else
-                pythonPath = 'python';
-            end
-            
+            pythonExecutable = getenv("PYTHON_EXECUTABLE");
             cmd = sprintf('"%s" -B -m unittest %s.%s.%s',...
-                pythonPath,...
+                pythonExecutable,...
                 'PyNWBIOTest', testCase.className(), testName);
             [status, cmdout] = system(cmd);
         end
