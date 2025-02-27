@@ -1,4 +1,5 @@
-classdef MustBeH5FileTest < matlab.unittest.TestCase
+classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
+        MustBeH5FileTest < matlab.unittest.TestCase
     
     properties (TestParameter)
         ValidFileName = {'test_file.h5', 'test_file.nwb'}
@@ -23,7 +24,8 @@ classdef MustBeH5FileTest < matlab.unittest.TestCase
             testCase.createNwbFile(nwbFileName)
 
             % Create file which is not h5  
-            system( sprintf("touch %s", testCase.InvalidFileName{1}) )
+            s = system( sprintf("touch %s", testCase.InvalidFileName{1}) );
+            assert(s==0)
         end
     end
     
@@ -80,10 +82,7 @@ classdef MustBeH5FileTest < matlab.unittest.TestCase
         end
 
         function createNwbFile(filePath)
-            nwbFile = NwbFile( ...
-                'session_description', 'Test file for nwb export', ...
-                'identifier', 'export_test', ...
-                'session_start_time', datetime("now", 'TimeZone', 'local') );
+            nwbFile = tests.factory.NWBFile();
             nwbExport(nwbFile, filePath)
         end
     end
