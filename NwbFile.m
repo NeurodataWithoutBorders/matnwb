@@ -158,6 +158,12 @@ classdef NwbFile < types.core.NWBFile
             % embedded.
             includedNeurodataTypes = obj.listNwbTypes("IncludeParentTypes", true);
             
+            % Include class name for NWBFile superclass
+            allSuperclasses = string(superclasses(obj));
+            includedNeurodataTypes = [...
+                allSuperclasses(endsWith(allSuperclasses, 'NWBFile')), ...
+                includedNeurodataTypes];
+
             % Get the namespace names
             namespaceNames = getNamespacesForDataTypes(includedNeurodataTypes);
             
