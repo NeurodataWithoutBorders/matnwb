@@ -226,27 +226,41 @@ end
 
 function pathToObjectMap = searchProperties(...
         pathToObjectMap,...
-        obj,...
-        basePath,...
-        typename,...
-        varargin)
-    assert(all(iscellstr(varargin)),...
+        neurodataObject,...
+        h5LocationPath,...
+        neurodataTypeName,...
+        flags, options)
+
+    arguments
+        pathToObjectMap
+        neurodataObject
+        h5LocationPath
+        neurodataTypeName
+    end
+    arguments (Repeating)
+        flags
+    end
+    arguments
+        options.Name (1,1) string = missing
+    end
+
+    assert(all(iscellstr(flags)),...
         'NWB:NwbFile:SearchProperties:InvalidVariableArguments',...
         'Optional keywords for searchFor must be char arrays.');
-    shouldSearchSuperClasses = any(strcmpi(varargin, 'includeSubClasses'));
+    shouldSearchSuperClasses = any(strcmpi(flags, 'includeSubClasses'));
 
-    if isa(obj, 'types.untyped.MetaClass')
-        propertyNames = properties(obj);
+    if isa(neurodataObject, 'types.untyped.MetaClass')
+        propertyNames = properties(neurodataObject);
         getProperty = @(x, prop) x.(prop);
-    elseif isa(obj, 'types.untyped.Set')
-        propertyNames = obj.keys();
+    elseif isa(neurodataObject, 'types.untyped.Set')
+        propertyNames = neurodataObject.keys();
         getProperty = @(x, prop) x.get(prop);
-    elseif isa(obj, 'types.untyped.Anon')
-        propertyNames = {obj.name};
+    elseif isa(neurodataObject, 'types.untyped.Anon')
+        propertyNames = {neurodataObject.name};
         getProperty = @(x, prop) x.value;
     else
         error('NWB:NwbFile:SearchProperties:InvalidType',...
-            'Invalid object type passed %s', class(obj));
+            'Invalid object type passed %s', class(neurodataObject));
     end
 
     searchTypename = @(obj, typename) contains(class(obj), typename, 'IgnoreCase', true);
@@ -256,17 +270,23 @@ function pathToObjectMap = searchProperties(...
 
     for i = 1:length(propertyNames)
         propName = propertyNames{i};
-        propValue = getProperty(obj, propName);
-        fullPath = [basePath '/' propName];
-        if searchTypename(propValue, typename)
-            pathToObjectMap(fullPath) = propValue;
+        propValue = getProperty(neurodataObject, propName);
+        fullPath = [h5LocationPath '/' propName];
+        if searchTypename(propValue, neurodataTypeName)
+            if ~ismissing(options.Name)
+                if strcmp(options.Name, propName)
+                    pathToObjectMap(fullPath) = propValue;
+                end
+            else
+                pathToObjectMap(fullPath) = propValue;
+            end
         end
 
         if isa(propValue, 'types.untyped.GroupClass')...
                 || isa(propValue, 'types.untyped.Set')...
                 || isa(propValue, 'types.untyped.Anon')
             % recursible (even if there is a match!)
-            searchProperties(pathToObjectMap, propValue, fullPath, typename, varargin{:});
+            searchProperties(pathToObjectMap, propValue, fullPath, neurodataTypeName, flags{:}, 'Name', options.Name);
         end
     end
 end
