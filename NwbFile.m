@@ -161,6 +161,12 @@ classdef NwbFile < types.core.NWBFile
         function embedSpecifications(obj, output_file_id)
             jsonSpecs = schemes.exportJson();
 
+            if isempty(jsonSpecs)
+                % Call generateCore to create cached namespaces
+                generateCore()
+                jsonSpecs = schemes.exportJson();
+            end
+
             % Resolve the name of all types and parent types that are
             % included in this file. This will be used to filter the specs
             % to embed, so that only specs with used neurodata types are
