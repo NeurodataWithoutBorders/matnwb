@@ -163,7 +163,7 @@ classdef NwbFile < types.core.NWBFile
 
             if isempty(jsonSpecs)
                 % Call generateCore to create cached namespaces
-                generateCore()
+                generateCore(obj.nwb_version)
                 jsonSpecs = schemes.exportJson();
             end
 
