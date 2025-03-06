@@ -1,16 +1,16 @@
 {
     "Default": {
         "layout": "chunked",
-        "target_chunk_size": {
-            "value": 10000000,
-            "unit": "bytes"
+        "chunking": {
+            "target_chunk_size": 10000000,
+            "target_chunk_size_unit": "bytes",
+            "strategy_by_rank": {
+                "1": ["flex"],
+                "2": ["flex", "max"],
+                "3": ["flex", "max", "max"],
+                "4": ["flex", "max", "max", "max"]
+            }
         },
-        "chunk_dimensions": [
-            ["flex"], 
-            ["flex", "max"], 
-            ["flex", "max", "max"], 
-            ["flex", "max", "max", "max"]
-        ],
         "compression": {
             "algorithm": "deflate",
             "level": 3,
@@ -19,36 +19,58 @@
         }
     },
     "VectorData": {
-        "compression": {
-            "algorithm": "deflate",
-            "level": 7
+        "chunking": {
+            "strategy_by_rank": {
+                "1": ["flex"],
+                "2": ["flex", "max"],
+                "3": ["flex", "max", "max"],
+                "4": ["flex", "max", "max", "max"]
+            }
         }
     },
-    "TimeSeries": {
-        "data": {
-            "chunk_dimensions": [["flex", 32], ["flex", 32, "max"]],
-            "compression": {
-                "algorithm": "deflate",
-                "level": 4
+    "TimeSeries/data": {
+        "chunking": {
+            "strategy_by_rank": {
+                "1": ["flex"],
+                "2": ["flex", "max"],
+                "3": ["flex", "max", "max"],
+                "4": ["flex", "max", "max", "max"]
             }
         },
-        "timestamps": {
-            "chunk_dimensions": ["flex"]
+        "compression": {
+            "algorithm": "deflate",
+            "level": 4
         }
     },
-    "ImageSeries": {
-        "data": {
-            "chunk_dimensions": [["flex", "max", "max"], ["flex", "max", "max", "max"]]
+    "TimeSeries/timestamps": {
+        "chunking": {
+            "strategy_by_rank": {
+                "1": ["flex"]
+            }
         }
     },
-    "ElectricalSeries": {
-        "data": {
-            "chunk_dimensions": [["flex", 64], ["flex", 64, "max"]]
+    "ImageSeries/data": {
+        "chunking": {
+            "strategy_by_rank": {
+                "3": ["flex", "max", "max"],
+                "4": ["flex", "max", "max", "max"]
+            }
         }
     },
-    "SpikeEventSeries": {
-        "data": {
-            "chunk_dimensions": [1000]
+    "ElectricalSeries/data": {
+        "chunking": {
+            "strategy_by_rank": {
+                "1": ["flex"],
+                "2": ["flex", 32],
+                "3": ["flex", 32, "max"]
+            }
+        }
+    },
+    "SpikeEventSeries/data": {
+        "chunking": {
+            "strategy_by_rank": {
+                "1": [1000]
+            }
         }
     }
 }

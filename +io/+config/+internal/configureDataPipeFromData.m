@@ -4,7 +4,7 @@ function dataPipe = configureDataPipeFromData(numericData, datasetConfig)
     import io.config.internal.computeChunkSizeFromConfig
     import types.untyped.datapipe.properties.DynamicFilter
 
-    chunkSize = computeChunkSizeFromConfig(numericData, datasetConfig);
+    chunkSize = computeChunkSizeFromConfig(numericData, datasetConfig.chunking);
     maxSize = size(numericData);
 
     dataPipeArgs = {...

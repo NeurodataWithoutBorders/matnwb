@@ -1,16 +1,17 @@
 {
+ {
     "Default": {
         "layout": "chunked",
-        "target_chunk_size": {
-            "value": 100000000,
-            "unit": "bytes"
+        "chunking": {
+            "target_chunk_size": 100000000,
+            "target_chunk_size_unit": "bytes",
+            "strategy_by_rank": {
+                "1": ["flex"],
+                "2": ["flex", "max"],
+                "3": ["flex", "max", "max"],
+                "4": ["flex", "max", "max", "max"]
+            }
         },
-        "chunk_dimensions": [
-            [null], 
-            [null, "max"], 
-            [null, "max", "max"], 
-            [null, "max", "max", "max"]
-        ],
         "compression": {
             "algorithm": "ZStandard",
             "level": 5,

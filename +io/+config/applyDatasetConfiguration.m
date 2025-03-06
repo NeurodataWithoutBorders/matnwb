@@ -17,6 +17,7 @@ function applyDatasetConfiguration(nwbObject, datasetConfiguration, options)
         
         % A dataset can be defined on multiple levels of the class hierarchy,
         % so need to keep track of which datasets have been processed.
+        % Todo: This needs a better explanation
         processedDatasets = string.empty;
 
         isFinished = false;
@@ -39,7 +40,7 @@ function applyDatasetConfiguration(nwbObject, datasetConfiguration, options)
                 if isnumeric(datasetData)
                     % Create a datapipe object for a numeric dataset value.
                     dataByteSize = io.config.internal.getDataByteSize(datasetData);
-                    if dataByteSize > datasetConfig.target_chunk_size.value
+                    if dataByteSize > datasetConfig.chunking.target_chunk_size
                         dataPipe = io.config.internal.configureDataPipeFromData(datasetData, datasetConfig);
                     end
                 elseif isa(datasetData, 'types.untyped.DataPipe')

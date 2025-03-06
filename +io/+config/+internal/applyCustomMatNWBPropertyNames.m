@@ -28,29 +28,41 @@ function datasetConfiguration = applyCustomMatNWBPropertyNames(datasetConfigurat
         datasetConfiguration (1,1) struct
     end
     
-    fields = fieldnames(datasetConfiguration);
-
     classNameMap = getNwbTypesClassnameMap();
+
+    fields = fieldnames(datasetConfiguration);
 
     for i = 1:numel(fields)
         
         thisField = fields{i};
-        if ~isKey(classNameMap, thisField)
+
+        % Split of last part if the field name is "nested"
+        if contains(thisField, '_')
+            shortName = extractAfter(thisField, '_');
+        else
+            shortName = thisField;
+        end
+
+        if ~isKey(classNameMap, shortName)
             continue % Not a neurodata / nwb type
         end
         
-        fullClassName = classNameMap(thisField);
+        fullClassName = classNameMap(shortName);
         superclassNames = superclasses(fullClassName);
 
         if any(strcmp(superclassNames, "types.untyped.MetaClass"))
             thisSubConfig = datasetConfiguration.(thisField);
             if any(strcmp(superclassNames, "types.untyped.GroupClass"))
-                % Recursively process subgroups.
-                datasetConfiguration.(thisField) = ...
-                    io.config.internal.applyCustomMatNWBPropertyNames(thisSubConfig);
+                % Todo: Remove this? Nested specs will not be supported... 
+
+                % % Recursively process subgroups.
+                % datasetConfiguration.(thisField) = ...
+                %     io.config.internal.applyCustomMatNWBPropertyNames(thisSubConfig);
             elseif any(strcmp(superclassNames, "types.untyped.DatasetClass"))
-                % Wrap Dataset type configurations in a struct with a "data" field.
-                datasetConfiguration.(thisField) = struct('data', thisSubConfig);
+                % Rename the field to include the _data suffix
+                newFieldName = sprintf('%s_data', thisField);
+                datasetConfiguration.(newFieldName) = thisSubConfig;
+                datasetConfiguration = rmfield(datasetConfiguration, thisField);
             else
                 error('NWB:UnexpectedError', 'Something unexpected happened.')
             end

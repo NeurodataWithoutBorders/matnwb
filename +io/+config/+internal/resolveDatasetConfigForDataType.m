@@ -20,7 +20,8 @@ function resolvedOptions = resolveDatasetConfigForDataType(datasetConfig, nwbObj
 
     % Initialize resolvedOptions with default options.
     resolvedOptions = datasetConfig.Default;
-
+    datasetConfigKeys = fieldnames(datasetConfig);
+    
     % Get the NWB object type hierarchy (from most specific to base type)
     typeHierarchy = getTypeHierarchy(nwbObject);
 
@@ -28,16 +29,14 @@ function resolvedOptions = resolveDatasetConfigForDataType(datasetConfig, nwbObj
     for i = numel(typeHierarchy):-1:1
         typeName = typeHierarchy{i};
 
-        % Check if the neurodata type has a datasetConfig
-        if isfield(datasetConfig, typeName)
-            typeOptions = datasetConfig.(typeName);
+        thisDatasetConfigKey = sprintf('%s_%s', typeName, datasetName);
 
-            % Is datasetName part of typeOptions?
-            if isfield(typeOptions, datasetName)
-                % Merge options into resolvedOptions
-                datasetOptions = typeOptions.(datasetName);
-                resolvedOptions = mergeStructs(resolvedOptions, datasetOptions);
-            end
+        isMatchedKey = endsWith(datasetConfigKeys, thisDatasetConfigKey);
+            
+        if any( isMatchedKey )
+            assert( sum(isMatchedKey) == 1, 'Expected exactly one match')
+            datasetOptions = datasetConfig.(datasetConfigKeys{isMatchedKey});
+            resolvedOptions = mergeStructs(resolvedOptions, datasetOptions);
         end
     end
 end
