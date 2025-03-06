@@ -1,104 +1,92 @@
-function chunkSize = computeChunkSizeFromConfig(A, chunkingConfig)
+function chunkSize = computeChunkSizeFromConfig(A, configuration)
 % computeChunkSizeFromConfig - Compute the chunk size for a dataset using the provided configuration.
 %   This function determines the chunk size for a dataset based on the chunk
-%   dimensions provided in the datasetConfig structure. It adjusts dimensions 
-%   according to rules: 'max' uses the dataset size, fixed numbers use their 
-%   value, and 'flex' calculates the dimension size to approximate the target 
-%   chunk size in bytes.
+%   constraints/strategies provided in the configuration structure. It adjusts
+%   dimensions according to rules: 'max' uses the dataset size, fixed numbers 
+%   use their value, and 'flex' calculates the dimension size to approximate the 
+%   target chunk size in bytes.
 %
 %   Inputs:
 %       A - A numeric dataset whose chunk size is to be computed.
-%       datasetConfig (1,1) struct - Struct defining chunk dimensions and chunk target size.
+%       configuration (1,1) struct - Struct defining chunking strategy for
+%       different ranks of a dataset. 
 %
 %   Output:
 %       chunkSize - A vector specifying the chunk size for each dimension of A.
 
     arguments
         A {mustBeNumeric}
-        chunkingConfig (1,1) struct
+        configuration (1,1) struct ...
+            {mustHaveField(configuration, "strategy_by_rank", "target_chunk_size")}
     end
-    
-    assert(isfield(chunkingConfig, 'strategy_by_rank'), ...
-        'Expected datasetConfig to have field "strategy_by_rank"')
-    assert(isfield(chunkingConfig, 'target_chunk_size'), ...
-        'Expected datasetConfig to have field "target_chunk_size"')
 
     % Get dataset size
     dataSize = size(A);
     numDimensions = numel(dataSize);
 
-    isDimensionReduced = false;
+    % NWB / H5 supports true 1D vectors. If the data is a vector, represent
+    % dataSize as a scalar for computation of chunkSize.
     if numDimensions == 2 && any(dataSize==1)
-        isDimensionReduced = true;
         numDimensions = 1;
-        dataSizeOrig = dataSize;
+        originalDataSize = dataSize;
         dataSize(dataSize==1) = [];
     end
 
-    % Extract chunk dimensions configuration
-    chunkDimensionsConstraints = chunkingConfig.strategy_by_rank;
-    
+    % Retrieve constraints for current rank.
+    strategy = configuration.strategy_by_rank;
     rankFieldName = sprintf('x%d', numDimensions); % Adjust for quirk in MATLAB where fieldname of numeric value is prepended with "x" when reading from json 
-    if ~isfield(chunkDimensionsConstraints, rankFieldName)
-        error("NWB:ComputeChunkSizeFromConfig:MatchingRankNotFound")
+    if ~isfield(strategy, rankFieldName)
+        error('NWB:ComputeChunkSizeFromConfig:MatchingRankNotFound', ...
+              'Configuration for %d dimensions is missing.', numDimensions)
     end
+    constraints = strategy.(rankFieldName);
+    assert(iscell(constraints), ...
+        'Expected constraints for dimensions to be provided as a cell array, got %s.', class(constraints))
 
-    chunkDimensionsConstraint = chunkDimensionsConstraints.(rankFieldName);
-
-
-    % if isnumeric(chunkDimensionsConstraints)
-    %     chunkDimensionsConstraints = arrayfun(@(x) x, chunkDimensionsConstraints, 'UniformOutput', false);
-    % elseif ~iscell(chunkDimensionsConstraints) && ischar(chunkDimensionsConstraints)
-    %     chunkDimensionsConstraints = {chunkDimensionsConstraints};
-    % end
-
-    defaultChunkSize = chunkingConfig.target_chunk_size; % in bytes
-    %dataByteSize = io.config.internal.getDataByteSize(A);
-
+    % Determine the target number of array elements per chunk.
+    defaultChunkSize = configuration.target_chunk_size; % in bytes
     elementSize = io.config.internal.getDataByteSize(A) / numel(A); % bytes per element
-
-    % Determine the target number of elements per chunk.
     targetNumElements = defaultChunkSize / elementSize;
 
-    % Initialize chunk size array
+    % Preallocate arrays.
     chunkSize = zeros(1, numDimensions);
-    flexDims = false(1, numDimensions);
-
-    assert(iscell(chunkDimensionsConstraint), "Something unexpected happened")
+    isFlexDim = false(1, numDimensions);
 
     isFlex = @(x) ischar(x) && strcmp(x, 'flex');
     isMax = @(x) ischar(x) && strcmp(x, 'max');
 
     % Calculate chunk size for each dimension
     for dim = 1:numDimensions
-        if dim > numel(chunkDimensionsConstraint)
+        if dim > numel(constraints)
             % Use full size for dimensions beyond the specification
             chunkSize(dim) = dataSize(dim);
         else
-            dimSpec = chunkDimensionsConstraint{dim};
-            if isFlex(dimSpec)
-                flexDims(dim) = true;
+            thisDimensionConstraint = constraints{dim};
+            if isFlex(thisDimensionConstraint)
+                isFlexDim(dim) = true;
                 % Leave chunkSize(dim) to be determined.
-            elseif isnumeric(dimSpec)
-                chunkSize(dim) = min( [dimSpec, dataSize(dim)] ) ; % dimSpec is upper bound
-            elseif isMax(dimSpec)
+            elseif isMax(thisDimensionConstraint)
                 chunkSize(dim) = dataSize(dim);
+            elseif isnumeric(thisDimensionConstraint)
+                chunkSize(dim) = min([thisDimensionConstraint, dataSize(dim)]);
+                % thisDimensionConstraint is upper bound
             else
-                error('Invalid chunk specification for dimension %d.', dim);
+                error('NWB:ComputeChunkSizeFromConfig:InvalidConstraint', ...
+                    'Invalid chunk constraint for dimension %d.', dim);
             end
         end
     end
 
     % Compute the product of fixed dimensions (number of elements per chunk).
-    if any(~flexDims)
-        fixedProduct = prod(chunkSize(~flexDims));
+    if any(~isFlexDim)
+        fixedProduct = prod(chunkSize(~isFlexDim));
     else
         fixedProduct = 1;
     end
 
     % For flex dimensions, compute the remaining number of elements
     % and allocate them equally in the exponent space.
-    nFlex = sum(flexDims);
+    nFlex = sum(isFlexDim);
     if nFlex > 0
         remainingElements = targetNumElements / fixedProduct;
         % Ensure remainingElements is at least 1.
@@ -106,19 +94,35 @@ function chunkSize = computeChunkSizeFromConfig(A, chunkingConfig)
         % Compute an equal allocation factor for each flex dimension.
         elementsPerFlexDimension = nthroot(remainingElements, nFlex);
         % Assign computed chunk size for each flex dimension.
-        for dim = find(flexDims)
+        for dim = find(isFlexDim)
             proposedSize = max(1, round(elementsPerFlexDimension));
             % Do not exceed the full dimension size.
             chunkSize(dim) = min(proposedSize, dataSize(dim));
         end
     end
 
-    % Ensure chunk size does not exceed dataset dimensions
-    %chunkSize = fliplr(chunkSize);
+    % Ensure chunk size does not exceed dataset size in any dimension
     chunkSize = min(chunkSize, dataSize);
 
-    if isDimensionReduced
-        dataSizeOrig(dataSizeOrig~=1)=chunkSize;
-        chunkSize = dataSizeOrig;
+    if numDimensions == 1
+        originalDataSize(originalDataSize~=1) = chunkSize;
+        chunkSize = originalDataSize;
     end
+end
+
+function mustHaveField(s, fieldName)
+    arguments
+        s struct
+    end
+    arguments (Repeating)
+        fieldName (1,1) string
+    end
+
+    fieldName = string(fieldName);
+
+    isMissingField = ~isfield(s, fieldName);
+    assert(all(~isMissingField), ...
+        'NWB:validators:MustHaveField', ...
+        'Expected structure to have field(s):\n%s\n', ...
+        strjoin("  " + fieldName(isMissingField), newline) )
 end

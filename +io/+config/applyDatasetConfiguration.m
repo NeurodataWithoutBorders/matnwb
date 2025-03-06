@@ -51,7 +51,8 @@ function applyDatasetConfiguration(nwbObject, datasetConfiguration, options)
                     % todo
                     % error('Not implemented for files obtained by nwbRead')
                 else
-                    disp( class(datasetData) )
+                    % todo: types.untyped.Set ?
+                    % disp( class(datasetData) )
                 end
     
                 if exist('dataPipe', 'var')
