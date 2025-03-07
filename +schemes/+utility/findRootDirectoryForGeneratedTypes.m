@@ -7,7 +7,9 @@ function rootDirectoryForGeneration = findRootDirectoryForGeneratedTypes()
 %   throws an error
     
     generatedTypeName = 'types.core.NWBFile';
-    generatedTypeLocation = which(generatedTypeName, "-all");
+    relPathForGeneratedType = matnwb.common.internal.classname2path(generatedTypeName);
+
+    generatedTypeLocation = which(relPathForGeneratedType, '-all');
 
     if isempty(generatedTypeLocation)
         ME = MException('NWB:Types:GeneratedTypesNotFound', ...
@@ -27,6 +29,5 @@ function rootDirectoryForGeneration = findRootDirectoryForGeneratedTypes()
     
     % Remove the namespace folders from the path location of the 
     % "types.core.NWBFile" class to obtain the root directory for generated types. 
-    relPathForGeneratedType = matnwb.common.internal.classname2path(generatedTypeName);
     rootDirectoryForGeneration = replace(generatedTypeLocation{1}, relPathForGeneratedType, '');
 end
