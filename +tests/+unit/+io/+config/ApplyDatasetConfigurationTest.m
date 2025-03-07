@@ -1,6 +1,9 @@
 classdef ApplyDatasetConfigurationTest < tests.abstract.NwbTestCase
-% Additional tests for io.config.applyDatasetConfiguration function
-% Complements the existing DatasetConfigurationTest
+% Tests for io.config.applyDatasetConfiguration function
+    
+% Todo: 
+%   [ ] Test configuration with a custom compression filter
+
 
     properties
         DefaultConfig
@@ -20,14 +23,13 @@ classdef ApplyDatasetConfigurationTest < tests.abstract.NwbTestCase
             testCase.CustomConfig.TimeSeries_data.chunking.strategy_by_rank.x2 = {10, 'flex'};
             
             % Set a custom compression filter
-            testCase.CustomConfig.Default.compression.algorithm = 'gzip';
-            testCase.CustomConfig.Default.compression.level = 5;
+            testCase.CustomConfig.TimeSeries_data.compression.algorithm = 'ZStandard';
+            testCase.CustomConfig.TimeSeries_data.compression.level = 5;
         end
     end
     
     methods(Test)
-        function testCustomChunkSettingForNeurodataType(testCase)
-            % Test making a neurodata type with a customized chunk setting
+        function testCustomConfiguration(testCase)
             nwbFile = tests.factory.NWBFile();
             
             % Create a large TimeSeries dataset
@@ -50,36 +52,9 @@ classdef ApplyDatasetConfigurationTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(resultPipe.chunkSize(1), 10, ...
                 'First dimension of chunk size should match custom configuration');
         end
-        
-        function testCustomCompressionFilter(testCase)
-            % Test configuration with a custom compression filter
-            nwbFile = tests.factory.NWBFile();
-            
-            % Create a large dataset
-            data = types.core.TimeSeries( ...
-                'data', rand(32, 50000), ...
-                'data_unit', 'n/a', ...
-                'timestamps', 1:50000);
-            
-            nwbFile.acquisition.set('compressed_data', data);
-            
-            % Apply custom configuration with compression
-            io.config.applyDatasetConfiguration(nwbFile, testCase.CustomConfig);
-            
-            % Verify the dataset was converted to DataPipe
-            resultPipe = nwbFile.acquisition.get('compressed_data').data;
-            testCase.verifyTrue(isa(resultPipe, 'types.untyped.DataPipe'), ...
-                'Large dataset should be converted to DataPipe');
-            
-            % Verify compression settings were applied
-            % Note: We can't directly verify the compression method in the DataPipe
-            % as it might be applied during file writing, but we can check the pipe exists
-            testCase.verifyNotEmpty(resultPipe.chunkSize, ...
-                'DataPipe should have chunk size set');
-        end
-        
-        function testVectorDataWithAssertions(testCase)
-            % Test Dataset-based neurodata type (VectorData) with assertions
+
+        function testVectorData(testCase)
+            % Test Dataset-based neurodata type (VectorData)
             nwbFile = tests.factory.NWBFile();
             
             numTimePoints = 10000000;
@@ -110,8 +85,8 @@ classdef ApplyDatasetConfigurationTest < tests.abstract.NwbTestCase
                 'VectorData columnB should be converted to DataPipe');
         end
         
-        function testChunkDimensionSpecifications(testCase)
-            % Test all cases of chunk_dimension specification
+        function testChunkDimensionConstraints(testCase)
+            % Test all cases of chunk_dimension constraints
             nwbFile = tests.factory.NWBFile();
             
             % Create custom configurations for different chunk dimension specifications
@@ -248,6 +223,118 @@ classdef ApplyDatasetConfigurationTest < tests.abstract.NwbTestCase
                 'Small dataset should remain numeric');
             testCase.verifyTrue(isnumeric(resultObj.starting_time_rate), ...
                 'Small dataset should remain numeric');
+        end
+
+        function testBasicFunctionality(testCase)
+            % Test basic functionality with default configuration
+            nwbFile = tests.factory.NWBFile();
+
+            % Should not throw any errors
+            io.config.applyDatasetConfiguration(nwbFile, testCase.DefaultConfig);
+        end
+        
+        function testNumericDatasetConfiguration(testCase)
+            % Test configuration of numeric datasets
+            nwbFile = tests.factory.NWBFile();
+
+            % Create a large numeric dataset
+            data = types.core.TimeSeries( ...
+                'data', rand(64, 10000000), ...
+                'data_unit', 'n/a', ...
+                'timestamps', 1:1000);
+            
+            nwbFile.acquisition.set('test_data', data);
+            
+            % Apply configuration
+            io.config.applyDatasetConfiguration(nwbFile, testCase.DefaultConfig);
+            
+            % Verify the dataset was converted to DataPipe
+            testCase.verifyTrue(isa(nwbFile.acquisition.get('test_data').data, ...
+                'types.untyped.DataPipe'), ...
+                'Large numeric dataset should be converted to DataPipe');
+        end
+
+        function testSmallNumericDataset(testCase)
+            % Test that small numeric datasets remain unchanged
+            nwbFile = NwbFile( ...
+                'identifier', 'TEST123', ...
+                'session_description', 'test session', ...
+                'session_start_time', datetime());
+            
+            % Create a small numeric dataset
+            data = types.core.TimeSeries( ...
+                'data', rand(10, 10), ...
+                'data_unit', 'n/a', ...
+                'timestamps', 1:10);
+            
+            nwbFile.acquisition.set('test_data', data);
+            
+            % Apply configuration
+            io.config.applyDatasetConfiguration(nwbFile, testCase.DefaultConfig);
+            
+            % Verify the dataset remains numeric
+            testCase.verifyTrue(isnumeric(nwbFile.acquisition.get('test_data').data), ...
+                'Small numeric dataset should remain numeric');
+        end
+        
+        function testOverrideExisting(testCase)
+            % Test override behavior for existing DataPipe object
+
+            % todo
+            nwbFile = NwbFile( ...
+                'identifier', 'TEST123', ...
+                'session_description', 'test session', ...
+                'session_start_time', datetime());
+            
+            % Create a DataPipe object
+            rawData = rand(1000, 1000);
+            dataPipe = types.untyped.DataPipe('data', rawData, 'axis', 1, 'chunkSize', 100);
+            
+            data = types.core.TimeSeries( ...
+                'data', dataPipe, ...
+                'data_unit', 'n/a', ...
+                'timestamps', 1:1000);
+            
+            nwbFile.acquisition.set('test_data', data);
+            
+            % Apply configuration with override
+            io.config.applyDatasetConfiguration(nwbFile, testCase.DefaultConfig, ...
+                'OverrideExisting', true);
+            
+            % Verify the DataPipe was reconfigured
+            resultPipe = nwbFile.acquisition.get('test_data').data;
+            testCase.verifyTrue(isa(resultPipe, 'types.untyped.DataPipe'), ...
+                'Result should still be a DataPipe');
+        end
+        
+        function testNoOverrideExisting(testCase)
+            % Test that existing DataPipe objects are not modified without override
+            nwbFile = NwbFile( ...
+                'identifier', 'TEST123', ...
+                'session_description', 'test session', ...
+                'session_start_time', datetime());
+            
+            % Create a DataPipe object with specific configuration
+            rawData = rand(1000, 1000);
+            originalChunkSize = [100, 100];
+            dataPipe = types.untyped.DataPipe('data', rawData, 'axis', 1, ...
+                'chunkSize', originalChunkSize);
+            
+            data = types.core.TimeSeries( ...
+                'data', dataPipe, ...
+                'data_unit', 'n/a', ...
+                'timestamps', 1:1000);
+            
+            nwbFile.acquisition.set('test_data', data);
+            
+            % Apply configuration without override
+            io.config.applyDatasetConfiguration(nwbFile, testCase.DefaultConfig, ...
+                'OverrideExisting', false);
+            
+            % Verify the DataPipe configuration remains unchanged
+            resultPipe = nwbFile.acquisition.get('test_data').data;
+            testCase.verifyEqual(resultPipe.chunkSize, originalChunkSize, ...
+                'DataPipe configuration should remain unchanged without override');
         end
     end
 end
