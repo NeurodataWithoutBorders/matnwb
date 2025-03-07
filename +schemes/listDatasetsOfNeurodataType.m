@@ -19,7 +19,7 @@ function datasetNames = listDatasetsOfNeurodataType(typeClassName)
     assert(~isempty(typesIdx), 'Expected class name to contain "types"')
     namespaceName = classNameSplit(typesIdx+1);
     namespaceName = strrep(namespaceName, '_', '-');
-    namespace = schemes.loadNamespace(namespaceName, misc.getMatnwbDir);
+    namespace = schemes.loadNamespace(namespaceName);
     
     neurodataTypeName = classNameSplit(typesIdx+2);
     typeScheme = namespace.registry(neurodataTypeName);
