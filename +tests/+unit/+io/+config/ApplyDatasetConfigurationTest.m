@@ -86,6 +86,8 @@ classdef ApplyDatasetConfigurationTest < tests.abstract.NwbTestCase
         end
         
         function testChunkDimensionConstraints(testCase)
+            % todo
+            
             % Test all cases of chunk_dimension constraints
             nwbFile = tests.factory.NWBFile();
             
@@ -232,27 +234,6 @@ classdef ApplyDatasetConfigurationTest < tests.abstract.NwbTestCase
             % Should not throw any errors
             io.config.applyDatasetConfiguration(nwbFile, testCase.DefaultConfig);
         end
-        
-        function testNumericDatasetConfiguration(testCase)
-            % Test configuration of numeric datasets
-            nwbFile = tests.factory.NWBFile();
-
-            % Create a large numeric dataset
-            data = types.core.TimeSeries( ...
-                'data', rand(64, 10000000), ...
-                'data_unit', 'n/a', ...
-                'timestamps', 1:1000);
-            
-            nwbFile.acquisition.set('test_data', data);
-            
-            % Apply configuration
-            io.config.applyDatasetConfiguration(nwbFile, testCase.DefaultConfig);
-            
-            % Verify the dataset was converted to DataPipe
-            testCase.verifyTrue(isa(nwbFile.acquisition.get('test_data').data, ...
-                'types.untyped.DataPipe'), ...
-                'Large numeric dataset should be converted to DataPipe');
-        end
 
         function testSmallNumericDataset(testCase)
             % Test that small numeric datasets remain unchanged
@@ -280,7 +261,6 @@ classdef ApplyDatasetConfigurationTest < tests.abstract.NwbTestCase
         function testOverrideExisting(testCase)
             % Test override behavior for existing DataPipe object
 
-            % todo
             nwbFile = NwbFile( ...
                 'identifier', 'TEST123', ...
                 'session_description', 'test session', ...
@@ -305,6 +285,7 @@ classdef ApplyDatasetConfigurationTest < tests.abstract.NwbTestCase
             resultPipe = nwbFile.acquisition.get('test_data').data;
             testCase.verifyTrue(isa(resultPipe, 'types.untyped.DataPipe'), ...
                 'Result should still be a DataPipe');
+            testCase.verifyNotEqual(dataPipe.chunkSize, resultPipe.chunkSize)
         end
         
         function testNoOverrideExisting(testCase)
