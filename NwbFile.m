@@ -123,6 +123,7 @@ classdef NwbFile < types.core.NWBFile
             arguments
                 obj (1,1) NwbFile
                 options.IncludeParentTypes (1,1) logical = false
+                options.IncludeNwbFile (1,1) logical = false
             end
 
             objectMap = searchProperties(containers.Map, obj, '', '');
@@ -135,6 +136,14 @@ classdef NwbFile < types.core.NWBFile
             ignore = startsWith(objectClassNames, "types.untyped");
 
             nwbTypeNames = objectClassNames(keep & ~ignore);
+
+            if options.IncludeNwbFile
+                % Include class name for NWBFile superclass
+                allSuperclasses = string(superclasses(obj));
+                nwbTypeNames = [...
+                    allSuperclasses(endsWith(allSuperclasses, 'NWBFile')), ...
+                    nwbTypeNames];
+            end
 
             if options.IncludeParentTypes
                 includedNwbTypesWithParents = string.empty;
@@ -152,12 +161,20 @@ classdef NwbFile < types.core.NWBFile
         function embedSpecifications(obj, output_file_id)
             jsonSpecs = schemes.exportJson();
 
+            if isempty(jsonSpecs)
+                % Call generateCore to create cached namespaces
+                generateCore(obj.nwb_version)
+                jsonSpecs = schemes.exportJson();
+            end
+
             % Resolve the name of all types and parent types that are
             % included in this file. This will be used to filter the specs
             % to embed, so that only specs with used neurodata types are
             % embedded.
-            includedNeurodataTypes = obj.listNwbTypes("IncludeParentTypes", true);
-            
+            includedNeurodataTypes = obj.listNwbTypes(...
+                "IncludeParentTypes", true, ...
+                "IncludeNwbFile", true);
+
             % Get the namespace names
             namespaceNames = getNamespacesForDataTypes(includedNeurodataTypes);
             

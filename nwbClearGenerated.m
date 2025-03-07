@@ -35,7 +35,9 @@ function clearedNamespaceNames = nwbClearGenerated(targetFolder, options)
     moduleNames = setdiff({listing.name}, {'+untyped', '+util', '.', '..'});
     generatedPaths = fullfile(typesPath, moduleNames);
     for i=1:length(generatedPaths)
-        rmdir(generatedPaths{i}, 's');
+        if isfolder(generatedPaths{i})
+            rmdir(generatedPaths{i}, 's');
+        end
     end
 
     if options.ClearCache
