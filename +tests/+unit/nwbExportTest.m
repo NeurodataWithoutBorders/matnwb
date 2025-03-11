@@ -169,9 +169,9 @@ classdef nwbExportTest < tests.abstract.NwbTestCase
             nwbFilePath = testCase.getRandomFilename();
             nwbExport(nwb, nwbFilePath);
 
-            % Verify that no namespaces were embedded in file
+            % Verify that core and hdmf-common were embedded in "empty" file
             embeddedNamespaces = io.spec.listEmbeddedSpecNamespaces(nwbFilePath);
-            testCase.verifyEmpty(embeddedNamespaces)
+            testCase.verifyEqual(sort(embeddedNamespaces), {'core', 'hdmf-common'})
 
             ts = tests.factory.TimeSeriesWithTimestamps();
             nwb.acquisition.set('test', ts);
@@ -248,6 +248,43 @@ classdef nwbExportTest < tests.abstract.NwbTestCase
             testCase.verifyWarning(...
                 @() nwbExport(nwb, nwbFilePath), ...
                 'NWB:validators:MissingEmbeddedNamespace')
+        end
+
+        function testExportFileWithStringDataType(testCase)
+            nwb = tests.factory.NWBFile();
+
+            generalExperimenter = ["John Doe", "Jane Doe"];
+            generalExperimentDescription = "Test with string data types";
+            nwb.general_experimenter = generalExperimenter;
+            nwb.general_experiment_description = generalExperimentDescription;
+
+            ts = tests.factory.TimeSeriesWithTimestamps();
+            ts.comments = "String comment";
+            ts.data_unit = "test";
+
+            nwb.acquisition.set("TimeSeries", ts);
+            nwbFilename = testCase.getRandomFilename();
+            nwbExport(nwb, nwbFilename);
+
+            nwbIn = nwbRead(nwbFilename, 'ignorecache');
+
+            testCase.assertEqual( ...
+                string( nwbIn.general_experimenter.load())', ...
+                generalExperimenter)
+
+            testCase.assertEqual( ...
+                string(nwbIn.general_experiment_description)', ...
+                generalExperimentDescription)
+
+            tsIn = nwbIn.acquisition.get("TimeSeries");
+                     
+            testCase.assertEqual( ...
+                string(tsIn.comments), ...
+                ts.comments)
+
+            testCase.assertEqual( ...
+                string(tsIn.data_unit), ...
+                ts.data_unit)
         end
     end
 end

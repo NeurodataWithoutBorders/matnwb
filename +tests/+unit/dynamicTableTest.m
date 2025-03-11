@@ -103,7 +103,7 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
 
             nwbExport(nwb, fileName)
         
-            nwbIn = nwbRead(fileName);
+            nwbIn = nwbRead(fileName, "ignorecache");
         
             T = nwbIn.acquisition.get('DynamicTable').toTable();
             testCase.verifyClass(T, 'table')
