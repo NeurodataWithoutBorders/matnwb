@@ -13,7 +13,14 @@ if iscell(data)
         || all(cellfun('isclass', data, 'string')) ...
         , 'NWB:MapData:NonCellStr', ['Cell arrays must be cell arrays of character vectors. ' ...
         'Cell arrays of other types are not supported.']);
+elseif isstring(data)
+    if isscalar(data)
+        data = char(data);
+    else
+        data = cellstr(data);
+    end
 end
+
 tid = io.getBaseType(class(data));
 
 % max size is always unlimited
