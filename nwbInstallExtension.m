@@ -80,4 +80,3 @@ function nwbInstallExtension(extensionNames, options)
         end
     end
 end
-
