@@ -169,9 +169,9 @@ classdef nwbExportTest < tests.abstract.NwbTestCase
             nwbFilePath = testCase.getRandomFilename();
             nwbExport(nwb, nwbFilePath);
 
-            % Verify that no namespaces were embedded in file
+            % Verify that core and hdmf-common were embedded in "empty" file
             embeddedNamespaces = io.spec.listEmbeddedSpecNamespaces(nwbFilePath);
-            testCase.verifyEmpty(embeddedNamespaces)
+            testCase.verifyEqual(sort(embeddedNamespaces), {'core', 'hdmf-common'})
 
             ts = tests.factory.TimeSeriesWithTimestamps();
             nwb.acquisition.set('test', ts);
