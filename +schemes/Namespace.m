@@ -1,9 +1,9 @@
 classdef Namespace < handle
     properties (SetAccess=private)
-        name = ''           % name of this namespace
-        version = ''        % version of this namespace
-        dependencies = []   % parent namespaces by [Namespace]
-        registry = []       % maps name to class
+        name char = ''          % name of this namespace
+        version char = ''       % version of this namespace
+        dependencies = []       % parent namespaces by [Namespace]
+        registry = []           % maps name to class
     end
     
     properties (Constant)
