@@ -10,6 +10,7 @@ These are the main functions of the MatNWB API
    nwbRead
    NwbFile
    nwbExport
+   inspectNwbFile
    generateCore
    generateExtension
    nwbClearGenerated
