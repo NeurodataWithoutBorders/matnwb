@@ -30,6 +30,10 @@ classdef NwbInspectorWrapperTest < tests.abstract.NwbTestCase
 
         function testRareExceptionWithMissingLocation(testCase)
             % Test special case where location is a NoneType (for bands table of ecephys tutorial)
+            tutorialFolder = fullfile(misc.getMatnwbDir, 'tutorials');            
+            % Use a fixture to add the folder to the search path
+            testCase.applyFixture(matlab.unittest.fixtures.PathFixture(tutorialFolder));
+            
             C = evalc( 'run(''ecephys.mlx'')' ); %#ok<NASGU>
             report = inspectNwbFile('ecephys_tutorial.nwb');
             testCase.verifyClass(report, 'table')
