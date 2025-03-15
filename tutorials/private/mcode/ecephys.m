@@ -260,14 +260,16 @@ ecephys_module.nwbdatainterface.set('theta', decomp_series);
 % |*Units*|> table is located at |/units| in the HDF5 file. You can add columns 
 % to the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Units.html 
 % |*Units*|> table just like you did for |electrodes| and |trials| (see <https://neurodatawithoutborders.github.io/matnwb/tutorials/html/convertTrials.html 
-% convertTrials>). Here, we generate some random spike data and populate the table. 
+% convertTrials>). Here, we generate some random spike time data and populate 
+% the table. Note: Spike times of a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Units.html 
+% |*Units*|> table should be sorted in ascending order.
 
 num_cells = 10;
-spikes = cell(1, num_cells);
+spike_times = cell(1, num_cells);
 for iShank = 1:num_cells
-    spikes{iShank} = rand(1, randi([16, 28]));
+    spike_times{iShank} = sort( rand(1, randi([16, 28])), 'ascend');
 end
-spikes
+spike_times
 % Ragged Arrays
 % Spike times are an example of a ragged array- it's like a matrix, but each 
 % row has a different number of elements. We can represent this type of data as 
@@ -282,7 +284,7 @@ spikes
 % 
 % 
 
-[spike_times_vector, spike_times_index] = util.create_indexed_column(spikes);
+[spike_times_vector, spike_times_index] = util.create_indexed_column(spike_times);
 
 nwb.units = types.core.Units( ...
     'colnames', {'spike_times'}, ...
@@ -291,7 +293,7 @@ nwb.units = types.core.Units( ...
     'spike_times_index', spike_times_index ...
 );
 
-nwb.units.toTable
+nwb.units.toTable()
 % Unsorted Spike Times
 % While the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Units.html 
 % |*Units*|> table is used to store spike times and waveform data for spike-sorted, 
