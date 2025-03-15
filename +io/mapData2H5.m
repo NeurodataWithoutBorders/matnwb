@@ -13,14 +13,21 @@ if iscell(data)
         || all(cellfun('isclass', data, 'string')) ...
         , 'NWB:MapData:NonCellStr', ['Cell arrays must be cell arrays of character vectors. ' ...
         'Cell arrays of other types are not supported.']);
+elseif isstring(data)
+    if isscalar(data)
+        data = char(data);
+    else
+        data = cellstr(data);
+    end
 end
+
 tid = io.getBaseType(class(data));
 
 % max size is always unlimited
 unlimited_size = H5ML.get_constant_value('H5S_UNLIMITED');
 %determine space size
 if ischar(data)
-    if ~forceArray && size(data,1) == 1
+    if ~forceArray && (size(data,1) == 1 || isempty(data))
         sid = H5S.create('H5S_SCALAR');
     else
         dims = size(data, 1);

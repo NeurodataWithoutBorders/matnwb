@@ -15,6 +15,9 @@ jobs:
   update_extension_list:
     runs-on: ubuntu-latest
     steps:
+      - name: Install MATLAB
+        uses: matlab-actions/setup-matlab@v2
+      
       # Use deploy key to push back to protected branch
       - name: Checkout repository using deploy key
         uses: actions/checkout@v4
@@ -22,9 +25,6 @@ jobs:
           ref: refs/heads/main
           ssh-key: ${{ secrets.DEPLOY_KEY }}
 
-      - name: Install MATLAB
-        uses: matlab-actions/setup-matlab@v2
-      
       - name: Update extension list in nwbInstallExtensions
         uses: matlab-actions/run-command@v2
         with:
@@ -37,7 +37,6 @@ jobs:
           set -e  # Exit script on error
           git config user.name "${{ github.workflow }} by ${{ github.actor }}"
           git config user.email "<>"
-          git pull --rebase  # Ensure the branch is up-to-date
 
           if [[ -n $(git status --porcelain nwbInstallExtension.m) ]]; then
             git add nwbInstallExtension.m
@@ -46,4 +45,3 @@ jobs:
           else
             echo "Nothing to commit"
           fi
-        

@@ -4,14 +4,14 @@ name: Run tests
 on:
   pull_request:
     branches:
-      - master
+      - main
     paths-ignore:
       - "*.md"
       - "*.codespellrc"
       - ".github/**"
   push:
     branches:
-      - master
+      - main
 
 jobs:
   run_tests:
@@ -40,7 +40,7 @@ jobs:
         with:
           command: |
             pyenv("ExecutionMode", "OutOfProcess");
-            results = assertSuccess(nwbtest); 
+            results = assertSuccess(nwbtest('ReportOutputFolder', '.')); 
             assert(~isempty(results), 'No tests ran');
       - name: Upload JUnit results
         if: always()

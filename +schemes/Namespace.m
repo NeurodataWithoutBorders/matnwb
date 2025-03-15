@@ -1,6 +1,7 @@
 classdef Namespace < handle
     properties (SetAccess=private)
         name = ''           % name of this namespace
+        version = ''        % version of this namespace
         dependencies = []   % parent namespaces by [Namespace]
         registry = []       % maps name to class
     end
@@ -11,12 +12,13 @@ classdef Namespace < handle
     end
     
     methods
-        function obj = Namespace(name, deplist, source)
+        function obj = Namespace(name, version, deplist, source)
             if nargin == 0
                 return
             end
             
             obj.name = strrep(name, '-', '_');
+            obj.version = version;
             obj.dependencies = deplist;
             namespaceFiles = keys(source);
             obj.registry = [];

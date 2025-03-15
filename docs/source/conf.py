@@ -69,9 +69,8 @@ def linkcode_resolve(domain, info):
     name = fullname.split('.')[0]
 
     repo_base_url = 'https://github.com/NeurodataWithoutBorders/matnwb'
-    source_url = f"{repo_base_url}/blob/master{module_name}/{name}.m"
+    source_url = f"{repo_base_url}/blob/main{module_name}/{name}.m"
     return source_url
-
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output

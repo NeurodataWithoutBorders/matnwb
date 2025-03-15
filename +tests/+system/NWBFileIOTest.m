@@ -1,4 +1,5 @@
 classdef NWBFileIOTest < tests.system.PyNWBIOTest
+
     methods
         function addContainer(testCase, file) %#ok<INUSL>
             ts = types.core.TimeSeries(...
@@ -7,14 +8,15 @@ classdef NWBFileIOTest < tests.system.PyNWBIOTest
                 'timestamps', (0:9) .', ...
                 'data_resolution', 0.1);
             file.acquisition.set('test_timeseries', ts);
-            clust = types.core.Clustering( ...
-                'description', 'A fake Clustering interface', ...
-                'num', [0, 1, 2, 0, 1, 2] .', ...
-                'peak_over_rms', [100, 101, 102] .', ...
-                'times', (10:10:60) .');
+            spatialSeries = types.core.SpatialSeries( ...
+                'description', 'A test spatial series', ...
+                'data', int64((1:10))' , ...
+                'data_unit', 'n/a', ...
+                'timestamps', int64((1:10))');
+
             mod = types.core.ProcessingModule( ...
                 'description', 'a test module', ...
-                'Clustering', clust);
+                'SpatialSeries', spatialSeries);
             file.processing.set('test_module', mod);
         end
         
@@ -44,7 +46,7 @@ classdef NWBFileIOTest < tests.system.PyNWBIOTest
             fileName = ['MatNWB.' testCase.className() '.testLoadAll.nwb'];
             nwbExport(testCase.file, fileName)
             nwb = nwbRead(fileName, "ignorecache");            
-            nwb.loadAll()
+            nwb.loadAll();
         end
 
         function readWithStringArg(testCase)
@@ -58,32 +60,34 @@ classdef NWBFileIOTest < tests.system.PyNWBIOTest
             fileName = ['MatNWB.' testCase.className() '.testReadFileWithoutSpec.nwb'];
             nwbExport(testCase.file, fileName)
 
-            testCase.deleteGroupFromFile(fileName, 'specifications')
-            nwbRead(fileName);
+            io.internal.h5.deleteGroup(fileName, 'specifications')
+
+            nwbRead(fileName, "ignorecache");
         end
 
         function readFileWithoutSpecLoc(testCase)
+             
             fileName = ['MatNWB.' testCase.className() '.testReadFileWithoutSpecLoc.nwb'];
             nwbExport(testCase.file, fileName)
 
-            testCase.deleteAttributeFromFile(fileName, '/', '.specloc')
+            io.internal.h5.deleteAttribute(fileName, '/', '.specloc')
 
             % When specloc is missing, the specifications are not added to
             % the blacklist, so it will get passed as an input to NwbFile.
-            testCase.verifyError(@(fn) nwbRead(fileName), 'MATLAB:TooManyInputs');
+            testCase.verifyError(@(fn) nwbRead(fileName, "ignorecache"), 'MATLAB:TooManyInputs');
         end
 
         function readFileWithUnsupportedVersion(testCase)
             fileName = ['MatNWB.' testCase.className() '.testReadFileWithUnsupportedVersion.nwb'];
             nwbExport(testCase.file, fileName)
 
-            testCase.deleteAttributeFromFile(fileName, '/', 'nwb_version')
+            io.internal.h5.deleteAttribute(fileName, '/', 'nwb_version')
             
             file_id = H5F.open(fileName, 'H5F_ACC_RDWR', 'H5P_DEFAULT');
             io.writeAttribute(file_id, '/nwb_version', '1.0.0')
             H5F.close(file_id);
 
-            testCase.verifyWarning(@(fn) nwbRead(fileName), 'NWB:Read:UnsupportedSchema')
+            testCase.verifyWarning(@(fn) nwbRead(fileName, "ignorecache"), 'NWB:Read:UnsupportedSchema')
         end
 
         function readFileWithUnsupportedVersionAndNoSpecloc(testCase)
@@ -93,8 +97,8 @@ classdef NWBFileIOTest < tests.system.PyNWBIOTest
             fileName = ['MatNWB.' testCase.className() '.testReadFileWithUnsupportedVersionAndNoSpecloc.nwb'];
             nwbExport(testCase.file, fileName)
             
-            testCase.deleteAttributeFromFile(fileName, '/', '.specloc')
-            testCase.deleteAttributeFromFile(fileName, '/', 'nwb_version')
+            io.internal.h5.deleteAttribute(fileName, '/', '.specloc')
+            io.internal.h5.deleteAttribute(fileName, '/', 'nwb_version')
             
             file_id = H5F.open(fileName, 'H5F_ACC_RDWR', 'H5P_DEFAULT');
             io.writeAttribute(file_id, '/nwb_version', '1.0.0')
@@ -102,42 +106,7 @@ classdef NWBFileIOTest < tests.system.PyNWBIOTest
 
             % When specloc is missing, the specifications are not added to
             % the blacklist, so it will get passed as an input to NwbFile.
-            testCase.verifyError(@(fn) nwbRead(fileName), 'MATLAB:TooManyInputs');
-        end
-    end
-
-    methods (Static, Access = private)
-        function deleteGroupFromFile(fileName, groupName)
-            if ~startsWith(groupName, '/')
-                groupName = ['/', groupName];
-            end
-            
-            % Open the HDF5 file in read-write mode
-            file_id = H5F.open(fileName, 'H5F_ACC_RDWR', 'H5P_DEFAULT');
-            
-            % Delete the group
-            H5L.delete(file_id, groupName, 'H5P_DEFAULT');
-            
-            % Close the HDF5 file
-            H5F.close(file_id);
-        end
-
-        function deleteAttributeFromFile(fileName, objectName, attributeName)
-            % Open the HDF5 file in read-write mode
-            file_id = H5F.open(fileName, 'H5F_ACC_RDWR', 'H5P_DEFAULT');
-            
-            % Open the object (dataset or group)
-            object_id = H5O.open(file_id, objectName, 'H5P_DEFAULT');
-            
-            % Delete the attribute
-            H5A.delete(object_id, attributeName);
-            
-            % Close the object
-            H5O.close(object_id);
-            
-            % Close the HDF5 file
-            H5F.close(file_id);
+            testCase.verifyError(@(fn) nwbRead(fileName, "ignorecache"), 'MATLAB:TooManyInputs');
         end
     end
 end
-

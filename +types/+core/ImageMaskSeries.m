@@ -5,9 +5,9 @@ classdef ImageMaskSeries < types.core.ImageSeries & types.untyped.GroupClass
 %  data
 
 
-% OPTIONAL PROPERTIES
+% REQUIRED PROPERTIES
 properties
-    masked_imageseries; %  ImageSeries
+    masked_imageseries; % REQUIRED ImageSeries
 end
 
 methods

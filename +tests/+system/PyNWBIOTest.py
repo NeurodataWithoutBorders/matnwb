@@ -7,7 +7,8 @@ import numpy.testing as npt
 import h5py
 
 from pynwb import get_manager, NWBFile, TimeSeries
-from pynwb.ecephys import ElectricalSeries, Clustering
+from pynwb.ecephys import ElectricalSeries
+from pynwb.behavior import SpatialSeries
 from pynwb.ophys import OpticalChannel, TwoPhotonSeries
 from pynwb.misc import Units
 from hdmf.backends.hdf5 import HDF5IO
@@ -183,7 +184,7 @@ class PhotonSeriesIOTest(PyNWBIOTest):
             indicator = 'GFP',
             location = 'somewhere in the brain',
             imaging_rate = 2.718)
-        data = np.ones((3, 3, 3))
+        data = np.ones((10, 3, 3))
         timestamps = list(range(10))
         fov = [2.0, 2.0, 5.0]
         tps = TwoPhotonSeries('test_2ps', ip, data, 'image_unit', 'raw',
@@ -201,8 +202,10 @@ class NWBFileIOTest(PyNWBIOTest):
                         'SIunit', timestamps=list(range(10)), resolution=0.1)
         self.file.add_acquisition(ts)
         mod = file.create_processing_module('test_module', 'a test module')
-        mod.add_container(Clustering("A fake Clustering interface", [0, 1, 2, 0, 1, 2],
-                                     [100., 101., 102.], list(range(10, 61, 10))))
+        mod.add_container(SpatialSeries("SpatialSeries", list(range(1, 11)),
+                                    description='A test spatial series',
+                                    unit='n/a',
+                                    timestamps=list(range(1, 11))))
 
     def getContainer(self, file):
         return file

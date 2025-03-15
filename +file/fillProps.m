@@ -23,8 +23,21 @@ function s = fillProps(props, names, varargin)
     proplines = cell(size(names));
     for i=1:length(names)
         pnm = names{i};
+        propInfo = props(pnm);
         propStr = strjoin(strsplit(getPropStr(props(pnm)), newline), [newline '% ']);
-        proplines{i} = [pnm '; % ' requiredStr ' ' propStr];
+        defaultValue = [];
+        if startsWith(class(propInfo), 'file.')
+            if isprop(propInfo, 'value')
+                defaultValue = propInfo.value;
+            end
+        end
+        if isempty(defaultValue)
+            proplines{i} = [pnm '; % ' requiredStr ' ' propStr];
+        else
+            defaultValue = formatValueAsString(defaultValue);
+            proplines{i} = [pnm ' = %s; %% ', requiredStr ' ' propStr];
+            proplines{i} = sprintf(proplines{i}, defaultValue);
+        end
     end
     
     if isempty(p.Results.PropertyAttributes)
@@ -108,4 +121,14 @@ function word = capitalize(word)
         word (1,:) char
     end
     word(1) = upper(word(1));
+end
+
+function valueAsStr = formatValueAsString(value)
+    if isnumeric(value)
+        valueAsStr = num2str(value);
+    elseif ischar(value)
+        valueAsStr = sprintf("""%s""", value);
+    else
+        error('Not implemented. If you see this error, please report')
+    end
 end

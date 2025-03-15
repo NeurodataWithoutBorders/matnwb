@@ -34,7 +34,14 @@ function data = load_mat_style(obj, varargin)
             , iDimension, dimensionSize);
     end
     
-    if isscalar(userSelection) && ~ischar(userSelection{1})
+    if isscalar(userSelection) && isempty(userSelection{1})
+        % If userselection (indices) is empty, get the first element of this 
+        % DataStub and try to return an empty representation of that type.
+        data = obj.load_mat_style(1);
+        data = getEmptyRepresentation(data);
+        return
+
+    elseif isscalar(userSelection) && ~ischar(userSelection{1})
         % linear index into the fast dimension.
         orderedSelection = unique(userSelection{1});
 
@@ -198,5 +205,25 @@ function reordered = reorderLoadedData(data, selections)
         end
         indexKeyIndex(indexKeyIndexNextIndex) = indexKeyIndex(indexKeyIndexNextIndex) + 1;
         indexKeyIndex((indexKeyIndexNextIndex+1):end) = 1;
+    end
+end
+
+function emptyInstance = getEmptyRepresentation(nonEmptyInstance)
+    try
+        emptyInstance = nonEmptyInstance;
+        if istable(nonEmptyInstance)
+            % To make an empty table instance, we need to use row/column colon
+            % indices to clear all the table's data. We want to keep the
+            % original table's metadata, like variable names etc, so we clear
+            % the table data instead of creating a new empty table with
+            % table.empty
+            emptyInstance(:, :) = [];
+        else
+            % All other types should support linear indexing.
+            emptyInstance(:) = [];
+        end
+    catch ME
+        error('Failed to retrieve empty type for value of class "%s". Reason:\n%s', ...
+            class(nonEmptyInstance), ME.message)
     end
 end

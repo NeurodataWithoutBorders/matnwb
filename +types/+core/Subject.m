@@ -8,7 +8,7 @@ classdef Subject < types.core.NWBContainer & types.untyped.GroupClass
 % OPTIONAL PROPERTIES
 properties
     age; %  (char) Age of subject. Can be supplied instead of 'date_of_birth'.
-    age_reference; %  (char) Age is with reference to this event. Can be 'birth' or 'gestational'. If reference is omitted, 'birth' is implied.
+    age_reference = "birth"; %  (char) Age is with reference to this event. Can be 'birth' or 'gestational'. If reference is omitted, 'birth' is implied.
     date_of_birth; %  (datetime) Date of birth of subject. Can be supplied instead of 'age'.
     description; %  (char) Description of subject and where subject came from (e.g., breeder, if animal).
     genotype; %  (char) Genetic strain. If absent, assume Wild Type (WT).
@@ -92,6 +92,12 @@ methods
     end
     function set.age_reference(obj, val)
         obj.age_reference = obj.validate_age_reference(val);
+        obj.postset_age_reference()
+    end
+    function postset_age_reference(obj)
+        if isempty(obj.age) && ~isempty(obj.age_reference)
+            obj.warnIfAttributeDependencyMissing('age_reference', 'age')
+        end
     end
     function set.date_of_birth(obj, val)
         obj.date_of_birth = obj.validate_date_of_birth(val);

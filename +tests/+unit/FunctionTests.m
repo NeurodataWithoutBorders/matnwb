@@ -1,6 +1,14 @@
-classdef FunctionTests < matlab.unittest.TestCase
+classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...        
+    FunctionTests < matlab.unittest.TestCase
 % FunctionTests - Unit test for functions.
 
+    methods (TestClassSetup)
+        function setupClass(testCase)
+            % Use a fixture to create a temporary working directory
+            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
+        end
+    end
+    
     methods (Test)
         function testString2ValidName(testCase)
             testCase.verifyWarning( ...
