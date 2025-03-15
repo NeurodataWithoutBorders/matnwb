@@ -32,7 +32,8 @@ function result = inspectNwbFile(nwbFilepath, options)
 %    nwb = inspectNwbFile('my_nwb_file.nwb', ...
 %        'VariableOrder', variableOrder);
 %
-% Note 1: This function requires the python nwbinspector module to be
+% .. note::
+%  This function requires the python nwbinspector module to be
 %  installed and available from MATLAB. From MATLAB R2019, it is possible to 
 %  run python modules directly from MATLAB. Ensure nwbinspector is installed
 %  in the python environment returned by running `pyenv` in MATLAB.
@@ -42,9 +43,10 @@ function result = inspectNwbFile(nwbFilepath, options)
 %  "NWBINSPECTOR_EXECUTABLE", for example 
 %  `setenv("NWBINSPECTOR_EXECUTABLE", 'path/to/python/ver/bin/nwbinspector')`
 %
-% Note 2: This function is meant as a convenience method to run nwbinspector
-%  as part of an MatNWB workflow, and does not expose moreadvanced functionality
-%  of the nwbinspector.
+% .. note::
+%  This function is meant as a convenience method for running the nwbinspector
+%  as part of an MatNWB workflow, and it does not expose more advanced 
+%  functionality of the nwbinspector.
 % 
 % See also:
 %   pyenv
