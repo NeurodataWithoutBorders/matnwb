@@ -73,7 +73,7 @@ function result = inspectNwbFile(nwbFilepath, options)
         systemCommand = sprintf('%s %s --levels importance --json-file-path %s', ...
             nwbInspectorExecutable, nwbFilepath, reportFilePath);
         
-        status = system(systemCommand);
+        [status, ~] = system(systemCommand);
         if status == 0
             cleanupObj = onCleanup( @() delete(reportFilePath));
             result = convertJsonReportToTable(reportFilePath);
@@ -156,7 +156,8 @@ end
 function isNwbInspectorInstalled = isPyNwbInspectorAvailable()
     isNwbInspectorInstalled = false;
     if exist("pyenv", "builtin") == 5
-        try py.importlib.metadata.version(distribution_name="nwbinspector")
+        try 
+            py.importlib.metadata.version(distribution_name="nwbinspector");
             isNwbInspectorInstalled = true;
         catch ME
             if contains(ME.message, "PackageNotFoundError")
@@ -185,6 +186,6 @@ function [isNwbInspectorInstalled, nwbInspectorExecutable] = isCliNwbInspectorAv
     else
         error('Unkown platform')
     end
-    status = system(systemCommand);
+    [status, ~] = system(systemCommand);
     isNwbInspectorInstalled = status == 0;
 end
