@@ -1,12 +1,12 @@
 function result = inspectNwbFile(nwbFilepath, options)
-% inspectNwbFile - Run nwbinspector on the specified NWB file
+% INSPECTNWBFILE - Run nwbinspector on the specified NWB file
 %
 % Syntax:
 %  report = INSPECTNWBFILE(nwbFilepath) runs nwbinspector on the NWB file at 
 %  nwbFilepath and returns a tabular report listing potential issues. 
 %
-%  report = NWBREAD(nwbFilepath, Name, Value) runs nwbinspector using optional 
-%  name-value pairs for customizing the report.
+%  report = INSPECTNWBFILE(nwbFilepath, Name, Value) runs nwbinspector using 
+%  optional name-value pairs for customizing the report.
 %
 % Input Arguments:
 %  - nwbFilepath (string) - 
@@ -28,7 +28,9 @@ function result = inspectNwbFile(nwbFilepath, options)
 %
 %  Example 2 - Inspect an NWB file and specify the order to display report variables::
 %
-%    nwb = nwbRead('data.nwb', 'VariableOrder', ["importance", "message", "check_function_name", "object_name"]);
+%    variableOrder = ["importance", "message", "check_function_name", "object_name"];
+%    nwb = inspectNwbFile('my_nwb_file.nwb', ...
+%        'VariableOrder', variableOrder);
 %
 % Note 1: This function requires the python nwbinspector module to be
 %  installed and available from MATLAB. From MATLAB R2019, it is possible to 
