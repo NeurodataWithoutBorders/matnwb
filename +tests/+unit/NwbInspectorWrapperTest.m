@@ -27,5 +27,12 @@ classdef NwbInspectorWrapperTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(size(cliReport), size(report))
             testCase.verifyEqual(report, cliReport) % Note: this might be to strict.
         end
+
+        function testRareExceptionWithMissingLocation(testCase)
+            % Test special case where location is a NoneType (for bands table of ecephys tutorial)
+            C = evalc( 'run(''ecephys.mlx'')' ); %#ok<NASGU>
+            report = inspectNwbFile('ecephys_tutorial.nwb');
+            testCase.verifyClass(report, 'table')
+        end
     end
 end

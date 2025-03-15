@@ -184,7 +184,7 @@ function [isNwbInspectorInstalled, nwbInspectorExecutable] = isCliNwbInspectorAv
         systemCommand = sprintf('where %s', nwbInspectorExecutable);
     end
     assert(exist('systemCommand', 'var'), ...
-        'Unkown platform, could not generate system command. Please report!')
+        'Unknown platform, could not generate system command. Please report!')
     [status, ~] = system(systemCommand);
     isNwbInspectorInstalled = status == 0;
 end
