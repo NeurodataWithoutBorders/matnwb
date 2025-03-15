@@ -1,12 +1,12 @@
 function result = inspectNwbFile(nwbFilepath, options)
-% inspectNwbFile - Run nwbinspector on the specified NWB file
+% INSPECTNWBFILE - Run nwbinspector on the specified NWB file
 %
 % Syntax:
 %  report = INSPECTNWBFILE(nwbFilepath) runs nwbinspector on the NWB file at 
 %  nwbFilepath and returns a tabular report listing potential issues. 
 %
-%  report = NWBREAD(nwbFilepath, Name, Value) runs nwbinspector using optional 
-%  name-value pairs for customizing the report.
+%  report = INSPECTNWBFILE(nwbFilepath, Name, Value) runs nwbinspector using 
+%  optional name-value pairs for customizing the report.
 %
 % Input Arguments:
 %  - nwbFilepath (string) - 
@@ -28,7 +28,9 @@ function result = inspectNwbFile(nwbFilepath, options)
 %
 %  Example 2 - Inspect an NWB file and specify the order to display report variables::
 %
-%    nwb = nwbRead('data.nwb', 'VariableOrder', ["importance", "message", "check_function_name", "object_name"]);
+%    variableOrder = ["importance", "message", "check_function_name", "object_name"];
+%    nwb = inspectNwbFile('my_nwb_file.nwb', ...
+%        'VariableOrder', variableOrder);
 %
 % Note 1: This function requires the python nwbinspector module to be
 %  installed and available from MATLAB. From MATLAB R2019, it is possible to 
@@ -74,14 +76,14 @@ function result = inspectNwbFile(nwbFilepath, options)
             nwbInspectorExecutable, nwbFilepath, reportFilePath);
         
         [status, ~] = system(systemCommand);
-        if status == 0
-            cleanupObj = onCleanup( @() delete(reportFilePath));
-            result = convertJsonReportToTable(reportFilePath);
-        else
-            error('NWB:InspectNwbFile:UnknownError', ...
-                ['Failed to run nwbinspector using system command. ', ...
-                'The following message was returned:\n%s'], m)
-        end
+        
+        assert(status == 0, ...
+            'NWB:InspectNwbFile:UnknownError', ...
+            ['Failed to run nwbinspector using system command. ', ...
+            'The following message was returned:\n%s'], m)
+
+        cleanupObj = onCleanup( @() delete(reportFilePath));
+        result = convertJsonReportToTable(reportFilePath);
     else
         error('NWB:InspectNwbFile:NwbInspectorNotFound', ...
             'Did not find nwbinspector. See `help inspectNwbFile` for more details')
@@ -98,7 +100,7 @@ function resultTable = convertNwbInspectorResultsToTable(resultsIn)
         resultTable(i).importance = string( py.getattr(C{i}.importance, 'name') );
         resultTable(i).severity = string( py.getattr(C{i}.severity, 'name') );
         try
-            resultTable(i).location =  string(C{i}.location);
+            resultTable(i).location = string(C{i}.location);
         catch
             resultTable(i).location = "N/A";
         end
@@ -161,10 +163,9 @@ function isNwbInspectorInstalled = isPyNwbInspectorAvailable()
             isNwbInspectorInstalled = true;
         catch ME
             if contains(ME.message, "PackageNotFoundError")
-                S = pyenv();
                 warning([...
                     'nwbinspector is not installed for MATLAB''s default ', ...
-                    'python environment:\n%s'], S.Home)
+                    'python environment:\n%s'], pyenv().Home)
             else
                 throwAsCaller(ME)
             end
@@ -183,9 +184,9 @@ function [isNwbInspectorInstalled, nwbInspectorExecutable] = isCliNwbInspectorAv
         systemCommand = sprintf('which %s', nwbInspectorExecutable);
     elseif ispc
         systemCommand = sprintf('where %s', nwbInspectorExecutable);
-    else
-        error('Unkown platform')
     end
+    assert(exist('systemCommand', 'var'), ...
+        'Unknown platform, could not generate system command. Please report!')
     [status, ~] = system(systemCommand);
     isNwbInspectorInstalled = status == 0;
 end
