@@ -74,14 +74,14 @@ function result = inspectNwbFile(nwbFilepath, options)
             nwbInspectorExecutable, nwbFilepath, reportFilePath);
         
         [status, ~] = system(systemCommand);
-        if status == 0
-            cleanupObj = onCleanup( @() delete(reportFilePath));
-            result = convertJsonReportToTable(reportFilePath);
-        else
-            error('NWB:InspectNwbFile:UnknownError', ...
-                ['Failed to run nwbinspector using system command. ', ...
-                'The following message was returned:\n%s'], m)
-        end
+        
+        assert(status == 0, ...
+            'NWB:InspectNwbFile:UnknownError', ...
+            ['Failed to run nwbinspector using system command. ', ...
+            'The following message was returned:\n%s'], m)
+
+        cleanupObj = onCleanup( @() delete(reportFilePath));
+        result = convertJsonReportToTable(reportFilePath);
     else
         error('NWB:InspectNwbFile:NwbInspectorNotFound', ...
             'Did not find nwbinspector. See `help inspectNwbFile` for more details')
@@ -98,7 +98,7 @@ function resultTable = convertNwbInspectorResultsToTable(resultsIn)
         resultTable(i).importance = string( py.getattr(C{i}.importance, 'name') );
         resultTable(i).severity = string( py.getattr(C{i}.severity, 'name') );
         try
-            resultTable(i).location =  string(C{i}.location);
+            resultTable(i).location = string(C{i}.location);
         catch
             resultTable(i).location = "N/A";
         end
@@ -161,10 +161,9 @@ function isNwbInspectorInstalled = isPyNwbInspectorAvailable()
             isNwbInspectorInstalled = true;
         catch ME
             if contains(ME.message, "PackageNotFoundError")
-                S = pyenv();
                 warning([...
                     'nwbinspector is not installed for MATLAB''s default ', ...
-                    'python environment:\n%s'], S.Home)
+                    'python environment:\n%s'], pyenv().Home)
             else
                 throwAsCaller(ME)
             end
@@ -183,9 +182,9 @@ function [isNwbInspectorInstalled, nwbInspectorExecutable] = isCliNwbInspectorAv
         systemCommand = sprintf('which %s', nwbInspectorExecutable);
     elseif ispc
         systemCommand = sprintf('where %s', nwbInspectorExecutable);
-    else
-        error('Unkown platform')
     end
+    assert(exist('systemCommand', 'var'), ...
+        'Unkown platform, could not generate system command. Please report!')
     [status, ~] = system(systemCommand);
     isNwbInspectorInstalled = status == 0;
 end
