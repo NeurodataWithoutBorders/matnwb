@@ -1,9 +1,5 @@
 classdef ApplyDatasetConfigurationTest < tests.abstract.NwbTestCase
 % Tests for io.config.applyDatasetConfiguration function
-    
-% Todo: 
-%   [ ] Test configuration with a custom compression filter
-
 
     properties
         DefaultConfig
