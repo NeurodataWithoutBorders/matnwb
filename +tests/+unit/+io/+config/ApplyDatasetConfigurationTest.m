@@ -313,5 +313,26 @@ classdef ApplyDatasetConfigurationTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(resultPipe.chunkSize, originalChunkSize, ...
                 'DataPipe configuration should remain unchanged without override');
         end
+    
+    
+        function testApplyCustomMatNWBPropertyNames(testCase)
+            % Create a custom configuration with a dataset-type neurodata
+            % type
+            customConfig = testCase.DefaultConfig;
+            
+            % Customize the configuration for specific neurodata types
+            % Set a custom chunk dimension strategy for TimeSeries data
+            customConfig.VectorData.layout = "contiguous";
+            customConfig.GrayscaleImage.chunking.chunk_target_size = 1000;
+            
+            updatedConfig = io.config.internal.applyCustomMatNWBPropertyNames(customConfig);
+
+            % Verify that custom fieldnames are renamed/remapped by appending _data
+            testCase.verifyFalse( isfield(updatedConfig, 'VectorData') );
+            testCase.verifyFalse( isfield(updatedConfig, 'GrayscaleImage') );
+
+            testCase.verifyTrue( isfield(updatedConfig, 'VectorData_data') );
+            testCase.verifyTrue( isfield(updatedConfig, 'GrayscaleImage_data') );
+        end    
     end
 end
