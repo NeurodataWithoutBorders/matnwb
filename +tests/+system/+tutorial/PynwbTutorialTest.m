@@ -195,11 +195,8 @@ function tutorialNames = listTutorialFiles()
 
     % Note: Without a token, github api requests are limited to 60 per
     % hour. The listFilesInRepo will make 4 requests per call
-    if isenv('GITHUB_TOKEN')
-        token = getenv('GITHUB_TOKEN');
-    else
-        token = '';
-    end
+    token = getenv('GITHUB_TOKEN'); % If not present, defaults to empty char
+
     
     allFilePaths = listFilesInRepo(...
         'NeurodataWithoutBorders', 'pynwb', 'docs/gallery/', token);
