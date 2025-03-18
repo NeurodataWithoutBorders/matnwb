@@ -53,18 +53,12 @@ function datasetConfiguration = applyCustomMatNWBPropertyNames(datasetConfigurat
         if any(strcmp(superclassNames, "types.untyped.MetaClass"))
             thisSubConfig = datasetConfiguration.(thisField);
             if any(strcmp(superclassNames, "types.untyped.GroupClass"))
-                % Todo: Remove this? Nested specs will not be supported... 
-
-                % % Recursively process subgroups.
-                % datasetConfiguration.(thisField) = ...
-                %     io.config.internal.applyCustomMatNWBPropertyNames(thisSubConfig);
+                % Todo: Remove this? Nested specs are currently not supported.
             elseif any(strcmp(superclassNames, "types.untyped.DatasetClass"))
                 % Rename the field to include the _data suffix
                 newFieldName = sprintf('%s_data', thisField);
                 datasetConfiguration.(newFieldName) = thisSubConfig;
                 datasetConfiguration = rmfield(datasetConfiguration, thisField);
-            else
-                error('NWB:UnexpectedError', 'Something unexpected happened.')
             end
         else
             % For non-NWB types, leave the field unmodified.
