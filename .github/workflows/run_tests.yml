@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        matlab-version: [R2022b, R2023b, R2024a]
+        matlab-version: [R2021a, R2022a, R2023a, R2024a]
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
