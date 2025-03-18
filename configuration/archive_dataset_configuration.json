@@ -1,22 +1,23 @@
 {
- {
-    "Default": {
-        "layout": "chunked",
-        "chunking": {
-            "target_chunk_size": 100000000,
-            "target_chunk_size_unit": "bytes",
-            "strategy_by_rank": {
-                "1": ["flex"],
-                "2": ["flex", "max"],
-                "3": ["flex", "max", "max"],
-                "4": ["flex", "max", "max", "max"]
+    "datasetSpecifications": {
+        "Default": {
+            "layout": "chunked",
+            "chunking": {
+                "target_chunk_size": 100000000,
+                "target_chunk_size_unit": "bytes",
+                "strategy_by_rank": {
+                    "1": ["flex"],
+                    "2": ["flex", "max"],
+                    "3": ["flex", "max", "max"],
+                    "4": ["flex", "max", "max", "max"]
+                }
+            },
+            "compression": {
+                "algorithm": "ZStandard",
+                "level": 5,
+                "parameters": {},
+                "prefilters": ["shuffle"]
             }
-        },
-        "compression": {
-            "algorithm": "ZStandard",
-            "level": 5,
-            "parameters": {},
-            "prefilters": ["shuffle"]
         }
     }
 }

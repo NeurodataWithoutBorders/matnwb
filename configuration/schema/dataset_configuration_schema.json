@@ -25,11 +25,12 @@
         "additionalProperties": false
     }
   },
+  "additionalProperties": false,
   "$defs": {
     "defaultSpecification": {
       "type": "object",
       "properties": {
-        "layout": { "type": "string" },
+        "layout": { "$ref": "#/$defs/layout" },
         "chunking": { "$ref": "#/$defs/chunkingFull" },
         "compression": { "$ref": "#/$defs/compressionFull" }
       },
@@ -39,7 +40,7 @@
     "overrideSpecification": {
       "type": "object",
       "properties": {
-        "layout": { "type": "string" },
+        "layout": { "$ref": "#/$defs/layout" },
         "chunking": { "$ref": "#/$defs/chunkingPartial" },
         "compression": { "$ref": "#/$defs/compressionPartial" }
       },
