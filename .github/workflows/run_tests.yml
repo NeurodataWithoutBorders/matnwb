@@ -7,7 +7,7 @@ on:
     paths-ignore:
       - "*.md"
       - "*.codespellrc"
-    push:
+  push:
     branches:
       - main
 jobs:
@@ -92,4 +92,3 @@ jobs:
           files: coverage*.xml
           name: codecov-matnwb
           verbose: true
-          flags: matlab-${{ matrix.matlab-version }}
