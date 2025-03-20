@@ -20,6 +20,7 @@
     },
     "youtube": {
         "ecephys": "https://www.youtube.com/watch?v=W8t4_quIl1k&ab_channel=NeurodataWithoutBorders",
-        "ophys": "https://www.youtube.com/watch?v=OBidHdocnTc&ab_channel=NeurodataWithoutBorders"
+        "ophys": "https://www.youtube.com/watch?v=OBidHdocnTc&ab_channel=NeurodataWithoutBorders", 
+        "dataPipe": "https://www.youtube.com/watch?v=PIE_F4iVv98&ab_channel=NeurodataWithoutBorders"
     }
 }
