@@ -24,18 +24,18 @@ function generateRstForTutorials()
     
         rstOutput = replace(rstTemplate, '{{static_html_path}}', relPath);
         rstOutput = replace(rstOutput, '{{tutorial_name}}', name);
-        rstOutput = replace(rstOutput, '{{tutorial_title}}', title);
-        rstOutput = replace(rstOutput, '{{tutorial_title_underline}}', repmat('=', 1, numel(title)));
 
         % Add the youtube badge block if the tutorial has a corresponding youtube video
         if isfield(S.youtube, name)
             youtubeBadge = fileread( getRstTemplateFile('youtube_badge') );
             youtubeBadge = replace(youtubeBadge, '{{youtube_url}}', S.youtube.(name));
+            title = sprintf('%s 🎬', title); % Add emoji in the title if there is a video
         else
             youtubeBadge = '';
         end
         rstOutput = replace(rstOutput, '{{youtube_badge_block}}', youtubeBadge);
-        
+        rstOutput = replace(rstOutput, '{{tutorial_title}}', title);
+        rstOutput = replace(rstOutput, '{{tutorial_title_underline}}', repmat('=', 1, numel(title)));
         rstOutputFile = fullfile(tutorialRstTargetDir, [name, '.rst']);
         fid = fopen(rstOutputFile, 'wt');
         fwrite(fid, rstOutput);
@@ -49,5 +49,7 @@ function generateRstForTutorials()
     
     thisRst = fillTemplate(indexTemplate, data);
     rstFilePath = fullfile(tutorialRstTargetDir, ['index', '.rst']);
+
+    % Commented out because currently this index file is edited manually.
     %filewrite(rstFilePath, thisRst);
 end

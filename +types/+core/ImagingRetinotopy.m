@@ -2,7 +2,7 @@ classdef ImagingRetinotopy < types.core.NWBDataInterface & types.untyped.GroupCl
 % IMAGINGRETINOTOPY - DEPRECATED. Intrinsic signal optical imaging or widefield imaging for measuring retinotopy. Stores orthogonal maps (e.g., altitude/azimuth; radius/theta) of responses to specific stimuli and a combined polarity map from which to identify visual areas. This group does not store the raw responses imaged during retinotopic mapping or the stimuli presented, but rather the resulting phase and power maps after applying a Fourier transform on the averaged responses. Note: for data consistency, all images and arrays are stored in the format [row][column] and [row, col], which equates to [y][x]. Field of view and dimension arrays may appear backward (i.e., y before x).
 %
 % Required Properties:
-%  axis_1_phase_map, axis_2_phase_map, axis_descriptions, vasculature_image
+%  axis_1_phase_map, axis_1_phase_map_dimension, axis_1_phase_map_field_of_view, axis_1_phase_map_unit, axis_2_phase_map, axis_2_phase_map_dimension, axis_2_phase_map_field_of_view, axis_2_phase_map_unit, axis_descriptions, vasculature_image, vasculature_image_bits_per_pixel, vasculature_image_dimension, vasculature_image_field_of_view, vasculature_image_format
 
 
 % REQUIRED PROPERTIES

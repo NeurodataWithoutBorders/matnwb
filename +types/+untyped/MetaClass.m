@@ -231,9 +231,8 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
     methods (Access = private)
         function requiredProps = getRequiredProperties(obj)
 
-            % Introspectively retrieve required properties and add to
-            % persistent cache/map.
-
+            % Parse NWB schemas to retrieve required properties for the 
+            % neurodata type and add to persistent cache/map.
             typeClassName = class(obj);
             typeNamespaceVersion = getNamespaceVersionForType(typeClassName);
 
@@ -242,21 +241,8 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
             if isKey(obj.REQUIRED, typeKey)
                 requiredProps = obj.REQUIRED( typeKey );
             else
-                mc = metaclass(obj);
-                propertyNames = {mc.PropertyList.Name};
-                propertyDescription = {mc.PropertyList.Description};
-                if startsWith(propertyDescription{1}, [propertyNames{1} ' - '])
-                    % For MATLAB R2022a and older, the description is
-                    % prepended with the property name. Need to strip that
-                    % away.
-                    for i = 1:numel(propertyDescription)
-                        descriptionPrefix = [propertyNames{i} ' - '];
-                        propertyDescription{i} = strtrim(extractAfter(propertyDescription{i}, descriptionPrefix));
-                    end
-                end
-                isRequired = startsWith(propertyDescription, 'REQUIRED');
-
-                requiredProps = {mc.PropertyList(isRequired).Name};
+                className = class(obj);
+                requiredProps = schemes.internal.getRequiredPropsForClass(className);
                 obj.REQUIRED( typeKey ) = requiredProps;
             end
         end

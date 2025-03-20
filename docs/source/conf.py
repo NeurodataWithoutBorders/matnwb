@@ -13,12 +13,15 @@ sys.path.append('sphinx_extensions')
 from docstring_processors import process_matlab_docstring
 from custom_roles import MatClassRole, register_matlab_types, register_type_short_names
 
+from copy_files import copy_files
+
+copy_files() # Override internal linkcode module to correctly link matlab source.
+
 def setup(app):
     app.connect("autodoc-process-docstring", process_matlab_docstring)
     app.connect("env-purge-doc", register_matlab_types)
     app.connect("env-purge-doc", register_type_short_names)
     app.add_role('matclass', MatClassRole())
-
 
 project = 'MatNWB'
 copyright = '2024, Neurodata Without Borders' # Todo: compute year
@@ -43,7 +46,6 @@ extensions = [
 # -- Options that are MATLAB specific ----------------------------------------
 
 highlight_language = 'matlab'
-
 primary_domain = "mat"
 
 # Get the absolute path of the script's directory
@@ -56,35 +58,45 @@ matlab_class_signature = True
 matlab_auto_link = "all"
 matlab_show_property_default_value = True
 
-
 def linkcode_resolve(domain, info):
-    filename = info['module'].replace('.', '/')
-    source_url = 'https://github.com/NeurodataWithoutBorders/matnwb/blob/main/'+filename+'/'+info['fullname']+'.m'
-    print(source_url)
-    return source_url
+    module_name = info['module']
+    if not(module_name) or module_name == '.':
+        module_name = ''
+    else:
+        module_name = f"/+{module_name.replace('.', '/+')}"
 
+    fullname = info['fullname'];
+    name = fullname.split('.')[0]
+
+    repo_base_url = 'https://github.com/NeurodataWithoutBorders/matnwb'
+    source_url = f"{repo_base_url}/blob/main{module_name}/{name}.m"
+    return source_url
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
-
+templates_path = [os.path.abspath(os.path.join(script_dir,'_templates'))]
 html_theme = "sphinx_rtd_theme"
 
 html_static_path = ['_static']
 html_logo = os.path.join(matlab_src_dir, 'logo', 'logo_matnwb_small.png')
-html_favicon = os.path.join(matlab_src_dir, 'logo', 'logo_favicon.svg')
+html_favicon = os.path.join(matlab_src_dir, 'logo', 'logo_favicon_32.png')
 
 html_theme_options = {
-    # "style_nav_header_background": "#AFD2E8"
     "style_nav_header_background": "#000000"
-    }
-    #    'navigation_depth': 1,  # Adjust the depth as needed
+}
 
-templates_path = ['_templates']
+html_context = {
+    "display_github": True,  # Integrates the "Edit on GitHub" link
+    "github_user": "NeurodataWithoutBorders",
+    "github_repo": "matnwb",
+    "github_version": "master",  # Default branch
+    "conf_py_path": "/docs/source/"  # Path in the repo where docs are located
+}
+
 exclude_patterns = []
 html_css_files = [
     'css/custom.css',
 ]
-
 
 # External links used in the documentation 
 extlinks = {

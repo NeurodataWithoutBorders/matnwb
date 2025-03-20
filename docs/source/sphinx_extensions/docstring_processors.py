@@ -173,11 +173,11 @@ def _format_input_arguments(lines):
                         match.group('type').strip().startswith(":")      # Sphinx directive
                     )
                     else f" (``{match.group('type').strip()}``)"  # Add backticks if unformatted
-                ) if match.group('type') else ""  # No type provided  
+                if match.group('type') else "" )  # No type provided  
             ),
             line
         )
-
+        
 
 def _split_and_format_example_lines(lines):
     """

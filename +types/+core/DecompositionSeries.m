@@ -2,7 +2,7 @@ classdef DecompositionSeries < types.core.TimeSeries & types.untyped.GroupClass
 % DECOMPOSITIONSERIES - Spectral analysis of a time series, e.g. of an LFP or a speech signal.
 %
 % Required Properties:
-%  bands, data, metric
+%  bands, data, data_unit, metric
 
 
 % REQUIRED PROPERTIES

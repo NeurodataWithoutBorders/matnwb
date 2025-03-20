@@ -1,5 +1,5 @@
-Calcium Imaging
-===============
+Calcium Imaging 🎬
+==================
 
 .. image:: https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg
    :target: https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/ophys.mlx

@@ -2,7 +2,7 @@ classdef ScratchData < types.core.NWBData & types.untyped.DatasetClass
 % SCRATCHDATA - Any one-off datasets
 %
 % Required Properties:
-%  data
+%  data, notes
 
 
 % REQUIRED PROPERTIES

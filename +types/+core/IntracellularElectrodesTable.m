@@ -2,7 +2,7 @@ classdef IntracellularElectrodesTable < types.hdmf_common.DynamicTable & types.u
 % INTRACELLULARELECTRODESTABLE - Table for storing intracellular electrode related metadata.
 %
 % Required Properties:
-%  electrode, id
+%  colnames, electrode, id
 
 
 % REQUIRED PROPERTIES

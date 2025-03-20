@@ -24,13 +24,13 @@
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
-     inkscape:zoom="0.17555616"
-     inkscape:cx="1216.1351"
-     inkscape:cy="754.74424"
+     inkscape:zoom="0.050990868"
+     inkscape:cx="-29.417032"
+     inkscape:cy="-549.11793"
      inkscape:window-width="1728"
-     inkscape:window-height="1080"
+     inkscape:window-height="975"
      inkscape:window-x="0"
-     inkscape:window-y="37"
+     inkscape:window-y="38"
      inkscape:window-maximized="0"
      inkscape:current-layer="svg33" />
   <defs
@@ -295,290 +295,284 @@
     </marker>
   </defs>
   <g
-     id="g70"
-     transform="translate(37.696071,25.242413)">
-    <g
-       id="g36"
-       transform="matrix(0.91296013,0,0,1,-292.87332,-504.12779)">
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img1"
-         fill="none"
-         opacity="1"
-         transform="translate(314.55606,1077.827)"
-         id="use1"
-         inkscape:label="use1" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img3"
-         fill="none"
-         opacity="1"
-         transform="translate(498.55606,1398.827)"
-         id="use3" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img4"
-         fill="none"
-         opacity="1"
-         transform="translate(1135.5561,1504.827)"
-         id="use4" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img5"
-         fill="none"
-         opacity="1"
-         transform="translate(1542.5561,1481.827)"
-         id="use5" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img6"
-         fill="none"
-         opacity="1"
-         transform="translate(1761.5561,1194.827)"
-         id="use6" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img7"
-         fill="none"
-         opacity="1"
-         transform="translate(1498.5561,1092.827)"
-         id="use7" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img8"
-         fill="none"
-         opacity="1"
-         transform="translate(1040.5561,1053.827)"
-         id="use8" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img9"
-         fill="none"
-         opacity="1"
-         transform="translate(1197.5561,1325.827)"
-         id="use9" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img10"
-         fill="none"
-         opacity="1"
-         transform="translate(606.55606,1171.827)"
-         id="use10" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img11"
-         fill="none"
-         opacity="1"
-         transform="translate(517.55606,1217.827)"
-         id="use11" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img12"
-         fill="none"
-         opacity="1"
-         transform="translate(663.55606,1449.827)"
-         id="use12" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img13"
-         fill="none"
-         opacity="1"
-         transform="translate(730.55606,1684.827)"
-         id="use13" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img13"
-         fill="none"
-         opacity="1"
-         transform="translate(953.55604,1246.827)"
-         id="use14" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img14"
-         fill="none"
-         opacity="1"
-         transform="translate(1405.5561,1437.827)"
-         id="use15" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img15"
-         fill="none"
-         opacity="1"
-         transform="translate(1660.5561,1087.827)"
-         id="use16" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img16"
-         fill="none"
-         opacity="1"
-         transform="translate(1488.5561,1172.827)"
-         id="use17" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img17"
-         fill="none"
-         opacity="1"
-         transform="translate(1018.5561,1111.827)"
-         id="use18" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img18"
-         fill="none"
-         opacity="1"
-         transform="translate(1657.5561,1173.827)"
-         id="use19" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img19"
-         fill="none"
-         opacity="1"
-         transform="translate(1324.5561,1162.827)"
-         id="use20" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img20"
-         fill="none"
-         opacity="1"
-         transform="translate(865.55604,1369.827)"
-         id="use21" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img21"
-         fill="none"
-         opacity="1"
-         transform="translate(1311.5561,1008.8269)"
-         id="use22" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img22"
-         fill="none"
-         opacity="1"
-         transform="translate(961.55604,1439.827)"
-         id="use23" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img23"
-         fill="none"
-         opacity="1"
-         transform="translate(855.55606,1568.827)"
-         id="use24" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img24"
-         fill="none"
-         opacity="1"
-         transform="translate(1165.5561,1060.827)"
-         id="use25" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img25"
-         fill="none"
-         opacity="1"
-         transform="translate(807.55606,1071.827)"
-         id="use26" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img26"
-         fill="none"
-         opacity="1"
-         transform="translate(1698.5561,1382.827)"
-         id="use27" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img27"
-         fill="none"
-         opacity="1"
-         transform="translate(682.55606,1283.827)"
-         id="use28" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img28"
-         fill="none"
-         opacity="1"
-         transform="translate(1777.5561,1267.827)"
-         id="use29" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img29"
-         fill="none"
-         opacity="1"
-         transform="translate(1685.5561,1333.827)"
-         id="use30" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img30"
-         fill="none"
-         opacity="1"
-         transform="translate(1424.5561,1260.827)"
-         id="use31" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img31"
-         fill="none"
-         opacity="1"
-         transform="translate(1084.5561,1168.827)"
-         id="use32" />
-      <use
-         width="100%"
-         height="100%"
-         xlink:href="#img32"
-         fill="none"
-         opacity="1"
-         transform="translate(900.55604,1350.827)"
-         id="use33" />
-    </g>
-    <g
-       id="g35"
-       transform="translate(-365.89045,-451.7861)">
-      <path
-         d="m 453.92724,2023.959 c 0,-22.92 18.58,-41.5 41.5,-41.5 22.92,0 41.5,18.58 41.5,41.5 0,22.92 -18.58,41.5 -41.5,41.5 -22.92,0 -41.5,-18.58 -41.5,-41.5 z"
-         fill="#0f4c7c"
-         fill-rule="evenodd"
-         fill-opacity="1"
-         id="path2" />
-      <path
-         style="fill:#0f4c7c;fill-opacity:1;stroke:#0f4c7c;stroke-width:30.2387;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker35)"
-         d="m 495.42724,678.78583 c 0,452.65877 0,905.31757 0,1357.97617"
-         id="path34" />
-      <path
-         style="fill:#0f4c7c;fill-opacity:1;stroke:#0f4c7c;stroke-width:31.2585;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker35-8)"
-         d="m 1933.3178,2023.959 c -483.708,0 -967.4162,0 -1451.12423,0"
-         id="path34-1" />
-    </g>
-    <path
-       style="fill:#0f4c7c;fill-opacity:1;stroke:#0f4c7c;stroke-width:31.2585;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker35-8-1)"
-       d="m 1538.4654,1188.7057 c -467.7942,123.0524 -935.58895,246.105 -1403.3831,369.1576"
-       id="path34-1-9" />
+     id="g36"
+     transform="matrix(0.91296013,0,0,1,-227.17725,-520.88538)">
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img1"
+       fill="none"
+       opacity="1"
+       transform="translate(314.55606,1077.827)"
+       id="use1"
+       inkscape:label="use1" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img3"
+       fill="none"
+       opacity="1"
+       transform="translate(498.55606,1398.827)"
+       id="use3" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img4"
+       fill="none"
+       opacity="1"
+       transform="translate(1135.5561,1504.827)"
+       id="use4" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img5"
+       fill="none"
+       opacity="1"
+       transform="translate(1542.5561,1481.827)"
+       id="use5" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img6"
+       fill="none"
+       opacity="1"
+       transform="translate(1761.5561,1194.827)"
+       id="use6" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img7"
+       fill="none"
+       opacity="1"
+       transform="translate(1498.5561,1092.827)"
+       id="use7" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img8"
+       fill="none"
+       opacity="1"
+       transform="translate(1040.5561,1053.827)"
+       id="use8" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img9"
+       fill="none"
+       opacity="1"
+       transform="translate(1197.5561,1325.827)"
+       id="use9" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img10"
+       fill="none"
+       opacity="1"
+       transform="translate(606.55606,1171.827)"
+       id="use10" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img11"
+       fill="none"
+       opacity="1"
+       transform="translate(517.55606,1217.827)"
+       id="use11" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img12"
+       fill="none"
+       opacity="1"
+       transform="translate(663.55606,1449.827)"
+       id="use12" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img13"
+       fill="none"
+       opacity="1"
+       transform="translate(730.55606,1684.827)"
+       id="use13" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img13"
+       fill="none"
+       opacity="1"
+       transform="translate(953.55604,1246.827)"
+       id="use14" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img14"
+       fill="none"
+       opacity="1"
+       transform="translate(1405.5561,1437.827)"
+       id="use15" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img15"
+       fill="none"
+       opacity="1"
+       transform="translate(1660.5561,1087.827)"
+       id="use16" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img16"
+       fill="none"
+       opacity="1"
+       transform="translate(1488.5561,1172.827)"
+       id="use17" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img17"
+       fill="none"
+       opacity="1"
+       transform="translate(1018.5561,1111.827)"
+       id="use18" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img18"
+       fill="none"
+       opacity="1"
+       transform="translate(1657.5561,1173.827)"
+       id="use19" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img19"
+       fill="none"
+       opacity="1"
+       transform="translate(1324.5561,1162.827)"
+       id="use20" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img20"
+       fill="none"
+       opacity="1"
+       transform="translate(865.55604,1369.827)"
+       id="use21" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img21"
+       fill="none"
+       opacity="1"
+       transform="translate(1311.5561,1008.8269)"
+       id="use22" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img22"
+       fill="none"
+       opacity="1"
+       transform="translate(961.55604,1439.827)"
+       id="use23" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img23"
+       fill="none"
+       opacity="1"
+       transform="translate(855.55606,1568.827)"
+       id="use24" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img24"
+       fill="none"
+       opacity="1"
+       transform="translate(1165.5561,1060.827)"
+       id="use25" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img25"
+       fill="none"
+       opacity="1"
+       transform="translate(807.55606,1071.827)"
+       id="use26" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img26"
+       fill="none"
+       opacity="1"
+       transform="translate(1698.5561,1382.827)"
+       id="use27" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img27"
+       fill="none"
+       opacity="1"
+       transform="translate(682.55606,1283.827)"
+       id="use28" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img28"
+       fill="none"
+       opacity="1"
+       transform="translate(1777.5561,1267.827)"
+       id="use29" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img29"
+       fill="none"
+       opacity="1"
+       transform="translate(1685.5561,1333.827)"
+       id="use30" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img30"
+       fill="none"
+       opacity="1"
+       transform="translate(1424.5561,1260.827)"
+       id="use31" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img31"
+       fill="none"
+       opacity="1"
+       transform="translate(1084.5561,1168.827)"
+       id="use32" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img32"
+       fill="none"
+       opacity="1"
+       transform="translate(900.55604,1350.827)"
+       id="use33" />
   </g>
+  <path
+     d="m 121.23286,1589.4153 c 0,-27.6144 22.38556,-50 50,-50 27.61444,0 50,22.3856 50,50 0,27.6144 -22.38556,50 -50,50 -27.61444,0 -50,-22.3856 -50,-50 z"
+     fill="#0f4c7c"
+     fill-rule="evenodd"
+     fill-opacity="1"
+     id="path2"
+     style="stroke-width:1.2048;stroke-dasharray:none" />
+  <path
+     style="fill:#0f4c7c;fill-opacity:1;stroke:#0f4c7c;stroke-width:45;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker35)"
+     d="m 167.23286,252.24214 c 0,452.65877 0,905.31756 0,1357.97616"
+     id="path34" />
+  <path
+     style="fill:#0f4c7c;fill-opacity:1;stroke:#0f4c7c;stroke-width:45;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker35-8)"
+     d="m 1605.1235,1597.4153 c -483.7081,0 -967.41628,0 -1451.12431,0"
+     id="path34-1" />
+  <path
+     style="fill:#0f4c7c;fill-opacity:1;stroke:#0f4c7c;stroke-width:45;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker35-8-1)"
+     d="m 1576.1615,1205.9481 c -397.9475,104.6794 -795.89551,209.3589 -1193.84313,314.0384 -69.84668,18.3731 -139.69335,36.7461 -209.54,55.1192"
+     id="path34-1-9"
+     sodipodi:nodetypes="csc" />
 </svg>
