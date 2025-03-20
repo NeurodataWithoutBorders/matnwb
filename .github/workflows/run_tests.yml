@@ -61,7 +61,7 @@ jobs:
         uses: matlab-actions/run-command@v2
         with:
           command: |
-            setenv("SKIP_PYNWB_COMPATIBILITY_TEST_FOR_TUTORIALS", matrix.skip-pynwb-compatibilty-test-for-tutorial)
+            setenv("SKIP_PYNWB_COMPATIBILITY_TEST_FOR_TUTORIALS", ${{ matrix.skip-pynwb-compatibilty-test-for-tutorial }})
             pyenv("ExecutionMode", "OutOfProcess");
             results = assertSuccess(nwbtest('ReportOutputFolder', '.')); 
             assert(~isempty(results), 'No tests ran');
