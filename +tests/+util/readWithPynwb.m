@@ -4,7 +4,7 @@ function [nwbFile, nwbFileCleanup] = readWithPynwb(nwbFilename)
         nwbFile = io.read();
         nwbFileCleanup = onCleanup(@(x) closePyNwbObject(io));
     catch ME
-        error(ME.message)
+        rethrow(ME)
     end
 
     function closePyNwbObject(io)
