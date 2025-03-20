@@ -2,7 +2,7 @@ classdef IntracellularRecordingsTable < types.hdmf_common.AlignedDynamicTable & 
 % INTRACELLULARRECORDINGSTABLE - A table to group together a stimulus and response from a single electrode and a single simultaneous recording. Each row in the table represents a single recording consisting typically of a stimulus and a corresponding response. In some cases, however, only a stimulus or a response is recorded as part of an experiment. In this case, both the stimulus and response will point to the same TimeSeries while the idx_start and count of the invalid column will be set to -1, thus, indicating that no values have been recorded for the stimulus or response, respectively. Note, a recording MUST contain at least a stimulus or a response. Typically the stimulus and response are PatchClampSeries. However, the use of AD/DA channels that are not associated to an electrode is also common in intracellular electrophysiology, in which case other TimeSeries may be used.
 %
 % Required Properties:
-%  electrodes, id, responses, stimuli
+%  categories, colnames, electrodes, id, responses, stimuli
 
 
 % REQUIRED PROPERTIES

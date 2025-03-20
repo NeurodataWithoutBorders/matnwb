@@ -2,7 +2,7 @@ classdef TimeSeries < types.core.NWBDataInterface & types.untyped.GroupClass
 % TIMESERIES - General purpose time series.
 %
 % Required Properties:
-%  data
+%  data, data_unit
 
 
 % READONLY PROPERTIES
