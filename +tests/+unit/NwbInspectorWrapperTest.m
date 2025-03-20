@@ -37,6 +37,9 @@ classdef NwbInspectorWrapperTest < tests.abstract.NwbTestCase
             C = evalc( 'run(''ecephys.mlx'')' ); %#ok<NASGU>
             report = inspectNwbFile('ecephys_tutorial.nwb');
             testCase.verifyClass(report, 'table')
+
+            report = inspectNwbFile('ecephys_tutorial.nwb', 'UseCLI', true);
+            testCase.verifyClass(report, 'table')
         end
     end
 end
