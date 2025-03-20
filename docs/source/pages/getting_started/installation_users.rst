@@ -17,5 +17,8 @@ After downloading MatNWB, make sure to add it to MATLAB's search path:
 
 Requirements
 ------------
+MatNWB requires MATLAB R2019b or newer. As a general rule, we strive to maintain 
+compatibility with MATLAB releases from the past five years.
 
-Recommended to use MATLAB R2017b or later.
+**Known exceptions**:
+* Dynamically loaded filters for dataset compression are supported only in MATLAB R2022a or later.
