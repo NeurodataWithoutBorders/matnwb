@@ -19,9 +19,9 @@ jobs:
       matrix:
         include:
           - matlab-version: R2021a
-            python-version: '3.7'
-          - matlab-version: R2022a
             python-version: '3.8'
+          - matlab-version: R2022a
+            python-version: '3.9'
           - matlab-version: R2023a
             python-version: '3.10'
           - matlab-version: R2024a
