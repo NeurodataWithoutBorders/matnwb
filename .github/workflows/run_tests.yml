@@ -17,14 +17,24 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        matlab-version: [R2021a, R2022a, R2023a, R2024a]
+        include:
+          - matlab-version: R2021a
+            python-version: '3.7'
+          - matlab-version: R2022a
+            python-version: '3.8'
+          - matlab-version: R2023a
+            python-version: '3.10'
+          - matlab-version: R2024a
+            python-version: '3.11'
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
       - name: Install python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: ${{ matrix.python-version }}
+
       - name: Configure python env
         run: |
           python -m pip install -U pip
@@ -32,10 +42,12 @@ jobs:
           python -m pip list
           echo "HDF5_PLUGIN_PATH=$(python -c "import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)")" >> "$GITHUB_ENV"
           echo $( python -m pip show nwbinspector | grep ^Location: | awk '{print $2}' )
+
       - name: Install MATLAB
         uses: matlab-actions/setup-matlab@v2
         with:
           release: ${{ matrix.matlab-version }}
+
       - name: Run tests
         uses: matlab-actions/run-command@v2
         with:
@@ -43,6 +55,7 @@ jobs:
             pyenv("ExecutionMode", "OutOfProcess");
             results = assertSuccess(nwbtest('ReportOutputFolder', '.')); 
             assert(~isempty(results), 'No tests ran');
+
       - name: Upload JUnit results
         if: always()
         uses: actions/upload-artifact@v4
@@ -50,12 +63,14 @@ jobs:
           name: test-results-${{ matrix.matlab-version }}
           path: testResults.xml
           retention-days: 1
+
       - name: Upload coverage results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-coverage-${{ matrix.matlab-version }}
           path: ./coverage.xml
+
   publish_junit:
     name: Publish JUnit test results
     runs-on: ubuntu-latest
@@ -64,15 +79,18 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
       - name: Retrieve result files
         uses: actions/download-artifact@v4
         with:
           pattern: test-results-*
           merge-multiple: true
+
       - name: Publish test results
         uses: mikepenz/action-junit-report@v4
         with:
           report_paths: 'testResults*.xml'
+
   publish_coverage:
     name: Publish Cobertura test coverage
     runs-on: ubuntu-latest
@@ -80,11 +98,13 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
       - name: Retrieve code coverage files
         uses: actions/download-artifact@v4
         with:
           pattern: test-coverage-*
           merge-multiple: true
+
       - name: Publish on coverage results on Codecov
         uses: codecov/codecov-action@v4
         with:
