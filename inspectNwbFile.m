@@ -161,7 +161,7 @@ function isNwbInspectorInstalled = isPyNwbInspectorAvailable()
     isNwbInspectorInstalled = false;
     if exist("pyenv", "builtin") == 5
         try 
-            py.importlib.metadata.version(distribution_name="nwbinspector");
+            py.importlib.metadata.version("nwbinspector");
             isNwbInspectorInstalled = true;
         catch ME
             if contains(ME.message, "PackageNotFoundError")
