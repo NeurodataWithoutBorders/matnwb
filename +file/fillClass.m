@@ -98,7 +98,7 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
         '% ' upper(name) ' - ' class.doc]; %name, docstr
 
     fullClassName = strjoin({'types', misc.str2validName(namespace.name), name}, '.');
-    allRequiredPropertyNames = schemes.internal.getRequiredPropsForClass(fullClassName);
+    allRequiredPropertyNames = schemes.internal.getRequiredPropsForClass(fullClassName, namespace);
     if isempty(allRequiredPropertyNames)
         allRequiredPropertyNames = {'None'};
     end

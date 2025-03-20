@@ -1,8 +1,9 @@
-function requiredPropertyNames = getRequiredPropsForClass(fullClassName)
+function requiredPropertyNames = getRequiredPropsForClass(fullClassName, namespace)
 % getRequiredPropsForClass - List required properties for a neurodata type / class
 
     arguments
         fullClassName (1,1) string % E.g types.core.TimeSeries
+        namespace schemes.Namespace = schemes.Namespace.empty
     end
 
     % For the NwbFile class, we need to replace it with the generated
@@ -15,9 +16,11 @@ function requiredPropertyNames = getRequiredPropsForClass(fullClassName)
     % Load cached namespace specifications
     classNameSplit = strsplit(fullClassName, '.');
     className = classNameSplit(end);
-    namespaceName = classNameSplit(find(strcmp(classNameSplit, 'types'))+1);
-    namespaceName = strrep(namespaceName, '_', '-');
-    namespace = schemes.loadNamespace(namespaceName);
+    if isempty(namespace)
+        namespaceName = classNameSplit(find(strcmp(classNameSplit, 'types'))+1);
+        namespaceName = strrep(namespaceName, '_', '-');
+        namespace = schemes.loadNamespace(namespaceName);
+    end
    
     % Process/parse the namespace specifications to retrieve attributes for
     % the class properties.
