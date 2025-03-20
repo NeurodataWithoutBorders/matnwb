@@ -243,8 +243,19 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
                 requiredProps = obj.REQUIRED( typeKey );
             else
                 mc = metaclass(obj);
+                propertyNames = {mc.PropertyList.Name};
                 propertyDescription = {mc.PropertyList.Description};
+                if startsWith(propertyDescription{1}, [propertyNames{1} ' - '])
+                    % For MATLAB R2022a and older, the description is
+                    % prepended with the property name. Need to strip that
+                    % away.
+                    for i = 1:numel(propertyDescription)
+                        descriptionPrefix = [propertyNames{i} ' - '];
+                        propertyDescription{i} = strtrim(extractAfter(propertyDescription{i}, descriptionPrefix));
+                    end
+                end
                 isRequired = startsWith(propertyDescription, 'REQUIRED');
+
                 requiredProps = {mc.PropertyList(isRequired).Name};
                 obj.REQUIRED( typeKey ) = requiredProps;
             end
