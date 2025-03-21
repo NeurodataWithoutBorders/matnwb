@@ -64,6 +64,7 @@ function results = nwbtest(varargin)
             suite = suite.selectIf(parser.Results.Selector);
         end
         suite = suite.sortByFixtures();
+        suite = filterTestsByCompatibility(suite); % local function
 
         % Configure test runner
         runner = TestRunner.withTextOutput('Verbosity', parser.Results.Verbosity);
@@ -132,5 +133,26 @@ function [reportOutputFolder, folderCleanupObject] = createReportsFolder(numRepo
         if ~isequal(numel(L), numReports)
             rmdir(folderPath, 's')
         end
+    end
+end
+
+function suite = filterTestsByCompatibility(suite)
+    import matlab.unittest.selectors.HasTag
+
+    skipPythonTests = getenv("SKIP_PYNWB_COMPATIBILITY_TEST_FOR_TUTORIALS");
+    skipPythonTests = ~isempty(skipPythonTests) && logical(str2double(skipPythonTests));
+
+    if skipPythonTests
+        suite = suite.selectIf(~HasTag('UsesPython'));
+    end
+
+    % Filter out tests testing dynamically loaded filters. Using
+    % dynamically loaded filters is only supported in MATLAB R2022a and
+    % newer
+    if ~exist("isMATLABReleaseOlderThan", "file") || isMATLABReleaseOlderThan('R2022a')
+        suite = suite.selectIf(~HasTag('UsesDynamicallyLoadedFilters'));
+        % Manually skip test for "dynamically loaded filters" tutorial
+        isDynamicLoadedFiltersTutorial = contains({suite.Name}, "tutorialFile=dynamically_loaded_filters_mlx");
+        suite(isDynamicLoadedFiltersTutorial) = [];
     end
 end

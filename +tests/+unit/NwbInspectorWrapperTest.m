@@ -8,10 +8,11 @@ classdef NwbInspectorWrapperTest < tests.abstract.NwbTestCase
         end
     end
 
-    methods (Test)
+    methods (Test, TestTags={'UsesPython'})
         function testNwbInspector(testCase)
             nwbFile = tests.factory.NWBFile();
             nwbExport(nwbFile, 'temp.nwb');
+                
             report = inspectNwbFile('temp.nwb');
 
             testCase.verifyClass(report, 'table')
