@@ -378,7 +378,7 @@ imshow(roi_mask)
 % Extracellular electrophysiology>
 % * <https://pynwb.readthedocs.io/en/stable/tutorials/domain/ophys.html#sphx-glr-tutorials-domain-ophys-py 
 % Calcium imaging>
-% * <https://pynwb.readthedocs.io/en/stable/tutorials/domain/icephys.html#sphx-glr-tutorials-domain-icephys-py 
+% * <https://pynwb.readthedocs.io/en/stable/tutorials/domain/plot_icephys.html#intracellular-electrophysiology 
 % Intracellular electrophysiology>
 %% 
 % *Check out other tutorials that teach advanced NWB topics:*
