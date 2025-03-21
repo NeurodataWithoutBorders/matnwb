@@ -18,7 +18,6 @@ function matnwb_createNwbInstallExtension()
     extensionNamesStr = compose("%s""%s""", indentStr, extensionNames);
     extensionNamesStr = strjoin(extensionNamesStr, ", ..." + newline);
     fcnStr = replace(fcnTemplate, "{{extensionNames}}", extensionNamesStr);
-
     extensionNamesStr = compose("%%  - ""%s""", extensionNames);
     extensionNamesStr = strjoin(extensionNamesStr, newline);
     fcnStr = replace(fcnStr, "{{extensionNamesDoc}}", extensionNamesStr);

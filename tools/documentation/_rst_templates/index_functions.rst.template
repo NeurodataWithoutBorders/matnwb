@@ -1,7 +1,7 @@
-MatNWB Functions
-================
+{{ title }}
+{{ title_underline }}
 
-These are the main functions of the MatNWB API
+{{ module_description }}
 
 .. toctree::
    :maxdepth: 2

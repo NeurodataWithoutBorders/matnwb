@@ -9,7 +9,7 @@
   <a href="https://github.com/NeurodataWithoutBorders/matnwb/releases/latest">
     <img src="https://img.shields.io/github/v/release/NeurodataWithoutBorders/matnwb?label=version" alt="Version">
   </a>
-  <a href="https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/basicUsage.mlx">
+  <a href="https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/intro.mlx">
     <img src="https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg" alt="MATLAB Online">
   </a>
   <a href="https://codecov.io/gh/NeurodataWithoutBorders/matnwb" >  
@@ -24,7 +24,7 @@
 </h4>
 
 <p align="center">
-  ⚙️ <a href="#installation">Installation</a> •
+  ⚙️ <a href="#installation-and-requirements">Installation</a> •
   🚀 <a href="#getting-started">Getting Started</a> •
   🎓 <a href="#tutorials">Tutorials</a> •
   💡 <a href="#use-cases">Use Cases</a> •
@@ -33,7 +33,7 @@
 </p>
 
 
-## Installation
+## Installation and Requirements
 Download the current release of MatNWB from the [Releases page](https://github.com/NeurodataWithoutBorders/matnwb/releases) or from [![View NeurodataWithoutBorders/matnwb on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://www.mathworks.com/matlabcentral/fileexchange/67741-neurodatawithoutborders-matnwb). You can also check out the latest development version via 
 
 ```bash
@@ -44,6 +44,7 @@ From MATLAB's command window, add MatNWB to the [search path](https://www.mathwo
 addpath('path/to/matnwb');
 ```
 
+MatNWB requires MATLAB **R2019b** or newer. As a general rule, we strive to maintain compatibility with MATLAB releases from the past five years.
 
 ## Getting Started
 The MatNWB 📖 documentation can be found at https://matnwb.readthedocs.io. If you find MatNWB useful, please come back later and leave us a star ⭐
