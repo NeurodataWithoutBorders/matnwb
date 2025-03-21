@@ -165,7 +165,8 @@ function suite = filterTestsByCompatibility(suite)
             % reasons is not available for R2022* releases when using 
             % matlab-actions on GitHub runners.
             if contains(releaseInfo.Release, ["R2022a", "R2022b"])
-                isImagesTutorial = contains({suite.Name}, "tutorialFile=images_mlx");
+                isImagesTutorial = contains({suite.Name}, ...
+                    ["tutorialFile=images_mlx", "tutorialFile=images.mlx"]); % images_mlx <= R2022a, images.mlx >= R2022b
                 suite(isImagesTutorial) = [];
             end
         end
