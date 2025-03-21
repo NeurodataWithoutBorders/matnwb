@@ -2,7 +2,8 @@
 % This tutorial will demonstrate how to write optogenetics data.
 %% Creating an NWBFile object
 % When creating a NWB file, the first step is to create the |*NWBFile*| object 
-% using <https://neurodatawithoutborders.github.io/matnwb/doc/NwbFile.html |*NwbFile*|>.
+% using <https://matnwb.readthedocs.io/en/latest/pages/functions/NwbFile.html 
+% |*NwbFile*|>.
 
 nwb = NwbFile( ...
     'session_description', 'mouse in open exploration',...
@@ -13,20 +14,20 @@ nwb = NwbFile( ...
     'general_institution', 'University of My Institution', ... % optional
     'general_related_publications', 'DOI:10.1016/j.neuron.2016.12.011'); % optional
 nwb
-%% Adding optogenetic data<http://localhost:63342/pynwb/docs/_build/html/tutorials/domain/ogen.html#adding-optogenetic-data ¶>
+%% Adding optogenetic data
 % The |*ogen*| module contains two data types that you will need to write optogenetics 
-% data, <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/OptogeneticStimulusSite.html 
+% data, <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OptogeneticStimulusSite.html 
 % |*OptogeneticStimulusSite*|>, which contains metadata about the stimulus site, 
-% and <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/OptogeneticSeries.html 
+% and <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OptogeneticSeries.html 
 % |*OptogeneticSeries*|>, which contains the values of the time series.
 % 
-% First, you need to create a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Device.html 
+% First, you need to create a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Device.html 
 % |*Device*|> object linked to the |*NWBFile*|:
 
 device = types.core.Device();
 nwb.general_devices.set('Device', device);
 %% 
-% Now, you can create and add an <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/OptogeneticStimulusSite.html 
+% Now, you can create and add an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OptogeneticStimulusSite.html 
 % |*OptogeneticStimulusSite*|>. 
 
 ogen_stim_site = types.core.OptogeneticStimulusSite( ...
@@ -37,8 +38,8 @@ ogen_stim_site = types.core.OptogeneticStimulusSite( ...
 
 nwb.general_optogenetics.set('OptogeneticStimulusSite', ogen_stim_site);
 %% 
-% With the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/OptogeneticStimulusSite.html 
-% |*OptogeneticStimulusSite*|> added, you can now create and add a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/OptogeneticSeries.html 
+% With the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OptogeneticStimulusSite.html 
+% |*OptogeneticStimulusSite*|> added, you can now create and add a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OptogeneticSeries.html 
 % |*OptogeneticSeries*|>. Here, we will generate some random data and specify 
 % the timing using |rate|. If you have samples at irregular intervals, you should 
 % use |timestamps| instead.
