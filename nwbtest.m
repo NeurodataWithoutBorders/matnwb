@@ -159,11 +159,12 @@ function suite = filterTestsByCompatibility(suite)
     if ~isempty(getenv("GITHUB_ACTIONS")) && strcmp(getenv("GITHUB_ACTIONS"), "true")
         if exist("matlabRelease", "file")
             releaseInfo = matlabRelease();
+            disp(releaseInfo.Release)
             % Skip images tutorial when testing on R2022a and R2022b on 
             % GitHub Actions. The tutorial loads an image which for unknown 
             % reasons is not available for R2022* releases when using 
             % matlab-actions on GitHub runners.
-            if ismember(releaseInfo.Release, ["R2022a", "R2022b"])
+            if contains(releaseInfo.Release, ["R2022a", "R2022b"])
                 isImagesTutorial = contains({suite.Name}, "tutorialFile=images_mlx");
                 suite(isImagesTutorial) = [];
             end
