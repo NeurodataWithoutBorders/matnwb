@@ -1,4 +1,5 @@
-classdef NwbInspectorWrapperTest < tests.abstract.NwbTestCase
+classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) ...
+        NwbInspectorWrapperTest < tests.abstract.NwbTestCase
 % nwbExportTest - Unit tests for testing various aspects of exporting to an NWB file.
 
     methods (TestClassSetup)

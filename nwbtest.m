@@ -63,7 +63,7 @@ function results = nwbtest(varargin)
         if ~isempty(parser.Results.Selector)
             suite = suite.selectIf(parser.Results.Selector);
         end
-        suite = suite.sortByFixtures();
+        suite = suite.sortByFixtures(); % Todo: Sorting with multiple fixtures does not work great...
         suite = filterTestsByCompatibility(suite); % local function
 
         % Configure test runner
@@ -166,7 +166,7 @@ function suite = filterTestsByCompatibility(suite)
             % matlab-actions on GitHub runners.
             if contains(releaseInfo.Release, ["R2022a", "R2022b"])
                 isImagesTutorial = contains({suite.Name}, ...
-                    ["tutorialFile=images_mlx", "tutorialFile=images.mlx"]); % images_mlx <= R2022a, images.mlx >= R2022b
+                    ["tutorialFile=images_mlx", "tutorialFile=images.mlx"]); % "images_mlx" <= R2022a, "images.mlx" >= R2022b
                 suite(isImagesTutorial) = [];
             end
         end
