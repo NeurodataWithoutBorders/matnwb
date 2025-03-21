@@ -273,13 +273,13 @@ ophys_module.nwbdatainterface.set('ImageSegmentation', img_seg);
 % |*RoiResponseSeries*|> object, we will need to reference a set of rows from 
 % the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/PlaneSegmentation.html 
 % |*PlaneSegmentation*|> table to indicate which ROIs correspond to which rows 
-% of your recorded data matrix. This is done using a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/DynamicTableRegion.html 
+% of your recorded data matrix. This is done using a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTableRegion.html 
 % |*DynamicTableRegion*|>, which is a type of link that allows you to reference 
-% specific rows of a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/DynamicTable.html 
+% specific rows of a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
 % |*DynamicTable*|>, such as a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/PlaneSegmentation.html 
 % |*PlaneSegmentation*|> table by row indices.
 % 
-% First, we create a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/DynamicTableRegion.html 
+% First, we create a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTableRegion.html 
 % |*DynamicTableRegion*|> that references the ROIs of the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/PlaneSegmentation.html 
 % |*PlaneSegmentation*|> table.
 
