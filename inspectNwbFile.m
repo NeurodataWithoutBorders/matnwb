@@ -69,7 +69,7 @@ function result = inspectNwbFile(nwbFilepath, options)
     [hasCliNwbInspector, nwbInspectorExecutable] = isCliNwbInspectorAvailable();
 
     if hasPyNwbInspector && ~options.UseCLI
-        pyResult = py.list(py.nwbinspector.inspect_nwbfile(nwbfile_path=nwbFilepath));
+        pyResult = py.list(py.nwbinspector.inspect_nwbfile('nwbfile_path', nwbFilepath));
         result = convertNwbInspectorResultsToTable(pyResult);
 
     elseif hasCliNwbInspector
@@ -160,16 +160,21 @@ end
 function isNwbInspectorInstalled = isPyNwbInspectorAvailable()
     isNwbInspectorInstalled = false;
     if exist("pyenv", "builtin") == 5
-        try 
-            py.importlib.metadata.version("nwbinspector");
-            isNwbInspectorInstalled = true;
-        catch ME
-            if contains(ME.message, "PackageNotFoundError")
-                warning([...
-                    'nwbinspector is not installed for MATLAB''s default ', ...
-                    'python environment:\n%s'], pyenv().Home)
-            else
-                throwAsCaller(ME)
+        pythonEnv = pyenv();
+        if pythonEnv.Executable == ""
+            return
+        else
+            try 
+                py.importlib.metadata.version("nwbinspector");
+                isNwbInspectorInstalled = true;
+            catch ME
+                if contains(ME.message, "PackageNotFoundError")
+                    warning([...
+                        'nwbinspector is not installed for MATLAB''s default ', ...
+                        'python environment:\n%s'], pyenv().Home)
+                else
+                    throwAsCaller(ME)
+                end
             end
         end
     end
@@ -187,7 +192,7 @@ function [isNwbInspectorInstalled, nwbInspectorExecutable] = isCliNwbInspectorAv
     elseif ispc
         systemCommand = sprintf('where %s', nwbInspectorExecutable);
     end
-    assert(exist('systemCommand', 'var'), ...
+    assert(logical(exist('systemCommand', 'var')), ...
         'Unknown platform, could not generate system command. Please report!')
     [status, ~] = system(systemCommand);
     isNwbInspectorInstalled = status == 0;
