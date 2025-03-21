@@ -171,26 +171,26 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture, tests.fixtur
     end
 
     methods (Static)
-        function resultsOut = convertNwbInspectorResultsToStruct(resultsIn)
-            
-            resultsOut = tests.system.tutorial.TutorialTest.getEmptyNwbInspectorResultStruct();
-                    
-            C = cell(resultsIn);
-            for i = 1:numel(C)
-                resultsOut(i).importance = double( py.getattr(C{i}.importance, 'value') );
-                resultsOut(i).severity = double( py.getattr(C{i}.severity, 'value') );
-        
-                try
-                    resultsOut(i).location =  string(C{i}.location);
-                catch
-                    resultsOut(i).location = "N/A";
-                end
-        
-                resultsOut(i).message = string(C{i}.message);
-                resultsOut(i).filepath = string(C{i}.file_path);
-                resultsOut(i).check_name = string(C{i}.check_function_name);
-            end
-        end
+%         function resultsOut = convertNwbInspectorResultsToStruct(resultsIn)
+%             
+%             resultsOut = tests.system.tutorial.TutorialTest.getEmptyNwbInspectorResultStruct();
+%                     
+%             C = cell(resultsIn);
+%             for i = 1:numel(C)
+%                 resultsOut(i).importance = double( py.getattr(C{i}.importance, 'value') );
+%                 resultsOut(i).severity = double( py.getattr(C{i}.severity, 'value') );
+%         
+%                 try
+%                     resultsOut(i).location =  string(C{i}.location);
+%                 catch
+%                     resultsOut(i).location = "N/A";
+%                 end
+%         
+%                 resultsOut(i).message = string(C{i}.message);
+%                 resultsOut(i).filepath = string(C{i}.file_path);
+%                 resultsOut(i).check_name = string(C{i}.check_function_name);
+%             end
+%         end
     
         function resultsOut = parseNWBInspectorTextOutput(systemCommandOutput)
             resultsOut = tests.system.tutorial.TutorialTest.getEmptyNwbInspectorResultStruct();
