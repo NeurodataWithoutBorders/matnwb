@@ -18,6 +18,9 @@ classdef SpikeEventSeriesTest < tests.abstract.NwbTestCase
                 'description', 'test electrodes', ...
                 'data', (0:length(electrodeTable.id.data)-1)');
 
+            % Create a spike event series using starting time instead of
+            % timestamps. This should fail on export because timestamps is
+            % a required property of SpikeEventSeries.
             spikeEventSeries = types.core.SpikeEventSeries(...
                 'electrodes', electrodeReference, ...
                 'data', rand(1,10), ...
@@ -25,10 +28,10 @@ classdef SpikeEventSeriesTest < tests.abstract.NwbTestCase
                 'starting_time_rate', 1);
 
             processingModule = types.core.ProcessingModule('description', 'ecephys');
+            processingModule.nwbdatainterface.set('SpikeEventSeries', spikeEventSeries);
             nwbFile.processing.set('Ecephys', processingModule);
 
-            processingModule.nwbdatainterface.set('SpikeEventSeries', spikeEventSeries);
-
+            % Verify that export fails
             nwbFilePath = testCase.getRandomFilename();
             testCase.verifyError( ...
                 @() nwbExport(nwbFile, nwbFilePath), ...
@@ -36,8 +39,8 @@ classdef SpikeEventSeriesTest < tests.abstract.NwbTestCase
 
             processingModule.nwbdatainterface.remove('SpikeEventSeries');
 
-
-            % Add timestamps and verify that export works
+            % Create a new spike event series with proper timestamps and verify 
+            % that export works
             spikeEventSeries = types.core.SpikeEventSeries(...
                 'electrodes', electrodeReference, ...
                 'data', rand(1,10), ...
