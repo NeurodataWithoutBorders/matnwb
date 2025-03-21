@@ -9,7 +9,7 @@
   <a href="https://github.com/NeurodataWithoutBorders/matnwb/releases/latest">
     <img src="https://img.shields.io/github/v/release/NeurodataWithoutBorders/matnwb?label=version" alt="Version">
   </a>
-  <a href="https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/basicUsage.mlx">
+  <a href="https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/intro.mlx">
     <img src="https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg" alt="MATLAB Online">
   </a>
   <a href="https://codecov.io/gh/NeurodataWithoutBorders/matnwb" >  
