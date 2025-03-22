@@ -68,8 +68,8 @@
 % This tutorial will be using the <https://github.com/aparamon/HDF5Plugin-Zstandard 
 % Zstd dynamic filter> as an example.
 % 
-% The |DynamicFilter| property takes in an enumerated type |Filter| which is 
-% a hard-coded list of all listed <https://portal.hdfgroup.org/display/support/Registered+Filter+Plugins 
+% The |DynamicFilter| property accepts an enumerated type |Filter| where the 
+% enumeration members represent a hard-coded subset of the <https://github.com/HDFGroup/hdf5_plugins/blob/master/docs/RegisteredFilterPlugins.md 
 % registered filter plugins> in HDF5.
 
 import types.untyped.datapipe.properties.DynamicFilter

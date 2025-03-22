@@ -10,8 +10,8 @@
 % _Illustration of the hierarchy of metadata tables used to describe the organization 
 % of intracellular electrophysiology experiments._
 %% Creating an NWBFile
-% When creating an NWB file, the first step is to create the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/NWBFile.html 
-% |*NWBFile*|>, which you can create using the <https://neurodatawithoutborders.github.io/matnwb/doc/NwbFile.html 
+% When creating an NWB file, the first step is to create the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html 
+% |*NWBFile*|>, which you can create using the <https://matnwb.readthedocs.io/en/latest/pages/functions/NwbFile.html 
 % |*NwbFile*|> command.
 
 session_start_time = datetime(2018, 3, 1, 12, 0, 0, 'TimeZone', 'local');
@@ -29,16 +29,15 @@ nwbfile = NwbFile( ...
 );
 
 % Device metadata
-% Device metadata is represented by <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Device.html 
-% |*Device*|> objects.
+% Device metadata is represented by |*Device*| objects.
 
 
 device = types.core.Device();
 nwbfile.general_devices.set('Heka ITC-1600', device);
 % *Electrode metadata*
-% Intracellular electrode metadata is represented by <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/IntracellularElectrode.html 
-% |*IntracellularElectrode*|> objects. Create an electrode object, which requires 
-% a link to the device of the previous step. Then add it to the NWB file.
+% Intracellular electrode metadata is represented by |*IntracellularElectrode*| 
+% objects. Create an electrode object, which requires a link to the device of 
+% the previous step. Then add it to the NWB file.
 
 electrode = types.core.IntracellularElectrode( ...
     'description', 'a mock intracellular electrode', ...
@@ -48,25 +47,25 @@ electrode = types.core.IntracellularElectrode( ...
 nwbfile.general_intracellular_ephys.set('elec0', electrode);
 %% *Stimulus and response data*
 % Intracellular stimulus and response data are represented with subclasses of 
-% <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/PatchClampSeries.html 
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/PatchClampSeries.html 
 % |*PatchClampSeries*|>. A stimulus is described by a time series representing 
 % voltage or current stimulation with a particular set of parameters. There are 
 % two classes for representing stimulus data:
 %% 
-% * <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/VoltageClampStimulusSeries.html 
+% * <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/VoltageClampStimulusSeries.html 
 % |*VoltageClampStimulusSeries*|>
-% * <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/CurrentClampStimulusSeries.html 
+% * <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/CurrentClampStimulusSeries.html 
 % |*CurrentClampStimulusSeries*|>
 %% 
 % The response is then described by a time series representing voltage or current 
 % recorded from a single cell using a single intracellular electrode via one of 
 % the following classes:
 %% 
-% * <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/VoltageClampSeries.html 
+% * <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/VoltageClampSeries.html 
 % |*VoltageClampSeries*|>
-% * <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/CurrentClampSeries.html 
+% * <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/CurrentClampSeries.html 
 % |*CurrentClampSeries*|>
-% * <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/IZeroClampSeries.html 
+% * <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IZeroClampSeries.html 
 % |*IZeroClampSeries*|>
 %% 
 % Below we create a simple example stimulus/response recording data pair for 
@@ -131,7 +130,7 @@ ccs = types.core.CurrentClampSeries(...
 nwbfile.acquisition.set('ccs',  ccs);
 
 %% 
-% <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/IZeroClampSeries.html 
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IZeroClampSeries.html 
 % |*IZeroClampSeries*|> is used when the current is clamped to 0.
 
 % Create an IZeroClampSeries object
@@ -147,7 +146,7 @@ izcs = types.core.IZeroClampSeries(...
 );
 nwbfile.acquisition.set('izcs',  izcs);
 % Adding an intracellular recording
-% The <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/IntracellularRecordingsTable.html 
+% The <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IntracellularRecordingsTable.html 
 % |*IntracellularRecordingsTable*|> relates electrode, stimulus and response pairs 
 % and describes metadata specific to individual recordings.
 % 
@@ -155,11 +154,11 @@ nwbfile.acquisition.set('izcs',  izcs);
 % 
 % _Illustration of the structure of the IntracellularRecordingsTable_
 % 
-% We can add an <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/IntracellularRecordingsTable.html 
-% |*IntracellularRecordingsTable*|> and add the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/IntracellularElectrodesTable.html 
-% |*IntracellularElectrodesTable*|>, <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/IntracellularStimuliTable.html 
-% |*IntracellularStimuliTable*|>, and <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/IntracellularResponsesTable.html 
-% |*IntracellularResponsesTable*|> to it, then add them all to the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/NWBFile.html 
+% We can add an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IntracellularRecordingsTable.html 
+% |*IntracellularRecordingsTable*|> and add the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IntracellularElectrodesTable.html 
+% |*IntracellularElectrodesTable*|>, <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IntracellularStimuliTable.html 
+% |*IntracellularStimuliTable*|>, and <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IntracellularResponsesTable.html 
+% |*IntracellularResponsesTable*|> to it, then add them all to the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html 
 % |*NWBFile*|> object.
 
 ic_rec_table = types.core.IntracellularRecordingsTable( ...
@@ -229,18 +228,18 @@ ic_rec_table.responses = types.core.IntracellularResponsesTable( ...
 );
 
 %% 
-% The <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/IntracellularRecordingsTable.html 
-% |*IntracellularRecordingsTable*|> table is not just a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
-% |*DynamicTable*|> but an <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/AlignedDynamicTable.html 
-% |*AlignedDynamicTable*|>|. The <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/AlignedDynamicTable.html 
-% |*AlignedDynamicTable*|> type is itself a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
-% |*DynamicTable*|> that may contain an arbitrary number of additional <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
+% The <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IntracellularRecordingsTable.html 
+% |*IntracellularRecordingsTable*|> table is not just a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
+% |*DynamicTable*|> but an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/AlignedDynamicTable.html 
+% |*AlignedDynamicTable*|>. The <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/AlignedDynamicTable.html 
+% |*AlignedDynamicTable*|> type is itself a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
+% |*DynamicTable*|> that may contain an arbitrary number of additional <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
 % |*DynamicTable*|>, each of which defines a "category." This is similar to a 
-% table with “sub-headings”. In the case of the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/IntracellularRecordingsTable.html 
+% table with “sub-headings”. In the case of the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IntracellularRecordingsTable.html 
 % |*IntracellularRecordingsTable*|>, we have three predefined categories, i.e., 
 % electrodes, stimuli, and responses. We can also dynamically add new categories 
-% to the table. As each category corresponds to a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
-% |*DynamicTable*|>, this means we have to create a new <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
+% to the table. As each category corresponds to a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
+% |*DynamicTable*|>, this means we have to create a new <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
 % |*DynamicTable*|> and add it to our table.
 
 % add category
@@ -259,7 +258,7 @@ ic_rec_table.dynamictable.set( ...
     ) ...
 );
 %% 
-% In an <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/AlignedDynamicTable.html 
+% In an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/AlignedDynamicTable.html 
 % |*AlignedDynamicTable*|> all category tables must align with the main table, 
 % i.e., all tables must have the same number of rows and rows are expected to 
 % correspond to each other by index.
@@ -284,7 +283,7 @@ nwbfile.general_intracellular_ephys_intracellular_recordings = ic_rec_table;
 % DynamicTables enabling users to add columns for custom metadata. Storing data 
 % in hierarchical tables has the advantage that it allows us to avoid duplication 
 % of metadata. E.g., for a single experiment we only need to describe the metadata 
-% that is constant across an experimental condition as a single row in the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/SimultaneousRecordingsTable.html 
+% that is constant across an experimental condition as a single row in the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SimultaneousRecordingsTable.html 
 % |*SimultaneousRecordingsTable*|> without having to replicate the same information 
 % across all repetitions and sequential-, simultaneous-, and individual intracellular 
 % recordings. For analysis, this means that we can easily focus on individual 
@@ -293,8 +292,8 @@ nwbfile.general_intracellular_ephys_intracellular_recordings = ic_rec_table;
 % to use one you must use all of the lower level tables, even if you only need 
 % a single row.
 % Add a simultaneous recording
-% The <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/SimultaneousRecordingsTable.html 
-% |*SimultaneousRecordingsTable*|> groups intracellular recordings from the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/IntracellularRecordingsTable.html 
+% The <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SimultaneousRecordingsTable.html 
+% |*SimultaneousRecordingsTable*|> groups intracellular recordings from the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IntracellularRecordingsTable.html 
 % |*IntracellularRecordingsTable*|> together that were recorded simultaneously 
 % from different electrodes and/or cells and describes metadata that is constant 
 % across the simultaneous recordings. In practice a simultaneous recording is 
@@ -341,9 +340,9 @@ ic_sim_recs_table.vectordata.set( ...
 
 nwbfile.general_intracellular_ephys_simultaneous_recordings = ic_sim_recs_table;
 % Add a sequential recording
-% The <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/SequentialRecordingsTable.html 
+% The <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SequentialRecordingsTable.html 
 % |*SequentialRecordingsTable*|> groups simultaneously recorded intracellular 
-% recordings from the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/SimultaneousRecordingsTable.html 
+% recordings from the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SimultaneousRecordingsTable.html 
 % |*SimultaneousRecordingsTable*|> together and describes metadata that is constant 
 % across the simultaneous recordings. In practice a sequential recording is often 
 % also referred to as a sweep sequence. A common use of sequential recordings 
@@ -379,10 +378,10 @@ sequential_recordings = types.core.SequentialRecordingsTable( ...
 
 nwbfile.general_intracellular_ephys_sequential_recordings = sequential_recordings;
 % Add repetitions table
-% The <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/RepetitionsTable.html 
-% |*RepetitionsTable*|> groups sequential recordings from the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/SequentialRecordingsTable.html 
+% The <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RepetitionsTable.html 
+% |*RepetitionsTable*|> groups sequential recordings from the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SequentialRecordingsTable.html 
 % |*SequentialRecordingsTable*|>. In practice, a repetition is often also referred 
-% to a run. A typical use of the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/RepetitionsTable.html 
+% to a run. A typical use of the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RepetitionsTable.html 
 % |*RepetitionsTable*|> is to group sets of different stimuli that are applied 
 % in sequence that may be repeated.
 
@@ -407,9 +406,9 @@ nwbfile.general_intracellular_ephys_repetitions = types.core.RepetitionsTable( .
     'sequential_recordings_index', sequential_recordings_vector_index ...
 );
 % Add experimental condition table
-% The <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/ExperimentalConditionsTable.html 
+% The <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ExperimentalConditionsTable.html 
 % |*ExperimentalConditionsTable*|> groups repetitions of intracellular recording 
-% from the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/RepetitionsTable.html 
+% from the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RepetitionsTable.html 
 % |*RepetitionsTable*|> together that belong to the same experimental conditions.
 
 [repetitions_vector_data, repetitions_vector_index] = util.create_indexed_column( ...

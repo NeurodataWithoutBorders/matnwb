@@ -14,8 +14,8 @@ nwb = NwbFile( ...
     'general_related_publications', 'DOI:10.1016/j.neuron.2016.12.011'); % optional
 nwb
 %% SpatialSeries: Storing continuous spatial data
-% <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/SpatialSeries.html 
-% |SpatialSeries|> is a subclass of <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/TimeSeries.html 
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
+% |SpatialSeries|> is a subclass of <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
 % |TimeSeries|> that represents data in space, such as the spatial direction e.g., 
 % of gaze or travel or position of an animal over time.
 % 
@@ -23,13 +23,12 @@ nwb
 
 position_data = [linspace(0, 10, 50); linspace(0, 8, 50)]; % 2 x nT array
 %% 
-% In <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/SpatialSeries.html 
+% In <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
 % |SpatialSeries|> data, the first dimension is always time (in seconds), the 
 % second dimension represents the x, y position. However, as described in the 
-% <https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dimensionMapNoDataPipes.html 
-% dimensionMapNoDataPipes> tutorial, when a MATLAB array is exported to HDF5, 
-% the array is transposed. Therefore, in order to correctly export the data, in 
-% MATLAB the last dimension of an array should be time. <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/SpatialSeries.html 
+% <./dimensionMapNoDataPipes.mlx dimensionMapNoDataPipes> tutorial, when a MATLAB 
+% array is exported to HDF5, the array is transposed. Therefore, in order to correctly 
+% export the data, in MATLAB the last dimension of an array should be time. <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
 % |SpatialSeries|> data should be stored as one continuous stream as it is acquired, 
 % not by trials as is often reshaped for analysis. Data can be trial-aligned on-the-fly 
 % using the trials table. See the trials tutorial for further information.
@@ -44,26 +43,26 @@ position_spatial_series = types.core.SpatialSeries( ...
     'data', position_data, ...
     'timestamps', timestamps, ...
     'reference_frame', '(0,0) is the bottom left corner.' ...
-)
+    )
 %% Position: Storing position measured over time
-% To help data analysis and visualization tools know that this <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/SpatialSeries.html 
-% |SpatialSeries|> object represents the position of the subject, store the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/SpatialSeries.html 
-% |SpatialSeries|> object inside a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Position.html 
-% |Position|> object, which can hold one or more <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/SpatialSeries.html 
+% To help data analysis and visualization tools know that this <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
+% |SpatialSeries|> object represents the position of the subject, store the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
+% |SpatialSeries|> object inside a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Position.html 
+% |Position|> object, which can hold one or more <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
 % |SpatialSeries|> objects.
 
 position = types.core.Position();
 position.spatialseries.set('SpatialSeries', position_spatial_series);
 %% Create a Behavior Processing Module
 % Create a processing module called "behavior" for storing behavioral data in 
-% the NWBFile, then add the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Position.html 
+% the NWBFile, then add the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Position.html 
 % |Position|> object to the processing module.
 
 behavior_processing_module = types.core.ProcessingModule('description', 'stores behavioral data.');
 behavior_processing_module.nwbdatainterface.set("Position", position);
 nwb.processing.set("behavior", behavior_processing_module);
 %% CompassDirection: Storing view angle measured over time
-% Analogous to how position can be stored, we can create a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/SpatialSeries.html 
+% Analogous to how position can be stored, we can create a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
 % |SpatialSeries|> object for representing the view angle of the subject.
 % 
 % For direction data |reference_frame| indicates the zero direction, for instance 
@@ -76,11 +75,11 @@ direction_spatial_series = types.core.SpatialSeries( ...
     'timestamps', timestamps, ...
     'reference_frame', 'straight ahead', ...
     'data_unit', 'radians' ...
-);
+    );
 direction = types.core.CompassDirection();
 direction.spatialseries.set('spatial_series', direction_spatial_series);
 %% 
-% We can add a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/CompassDirection.html 
+% We can add a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/CompassDirection.html 
 % |CompassDirection|> object to the behavior processing module the same way we 
 % have added the position data.
 
@@ -88,7 +87,7 @@ direction.spatialseries.set('spatial_series', direction_spatial_series);
 behavior_processing_module.nwbdatainterface.set('CompassDirection', direction);
 %nwb.processing.set('behavior', behavior_processing_module); % if you have not already added it
 %% BehaviorTimeSeries: Storing continuous behavior data
-% <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/BehavioralTimeSeries.html 
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/BehavioralTimeSeries.html 
 % |BehavioralTimeSeries|> is an interface for storing continuous behavior data, 
 % such as the speed of a subject.
 
@@ -100,7 +99,7 @@ speed_time_series = types.core.TimeSeries( ...
     'starting_time_rate', 10.0, ... % Hz
     'description', 'he speed of the subject measured over time.', ...
     'data_unit', 'm/s' ...
-);
+    );
 
 behavioral_time_series = types.core.BehavioralTimeSeries();
 behavioral_time_series.timeseries.set('speed', speed_time_series);
@@ -109,7 +108,7 @@ behavioral_time_series.timeseries.set('speed', speed_time_series);
 behavior_processing_module.nwbdatainterface.set('BehavioralTimeSeries', behavioral_time_series);
 %nwb.processing.set('behavior', behavior_processing_module); % if you have not already added it
 %% BehavioralEvents: Storing behavioral events
-% <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/BehavioralEvents.html 
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/BehavioralEvents.html 
 % |BehavioralEvents|> is an interface for storing behavioral events. We can use 
 % it for storing the timing and amount of rewards (e.g. water amount) or lever 
 % press times.
@@ -122,7 +121,7 @@ time_series = types.core.TimeSeries( ...
     'timestamps', event_timestamps, ...
     'description', 'The water amount the subject received as a reward.', ...
     'data_unit', 'ml' ...
-);
+    );
 
 behavioral_events = types.core.BehavioralEvents();
 behavioral_events.timeseries.set('lever_presses', time_series);
@@ -136,10 +135,10 @@ behavior_processing_module.nwbdatainterface.set('BehavioralEvents', behavioral_e
 % extension. You can find information about installation and example usage <https://github.com/nwb-extensions/ndx-events-record 
 % here>.
 %% BehavioralEpochs: Storing intervals of behavior data
-% <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/BehavioralEpochs.html 
-% |BehavioralEpochs|> is for storing intervals of behavior data. <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/BehavioralEpochs.html 
-% |BehavioralEpochs|> uses <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/IntervalSeries.html 
-% |IntervalSeries|> to represent the time intervals. Create an <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/IntervalSeries.html 
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/BehavioralEpochs.html 
+% |BehavioralEpochs|> is for storing intervals of behavior data. <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/BehavioralEpochs.html 
+% |BehavioralEpochs|> uses <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IntervalSeries.html 
+% |IntervalSeries|> to represent the time intervals. Create an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IntervalSeries.html 
 % |IntervalSeries|> object that represents the time intervals when the animal 
 % was running. IntervalSeries uses 1 to indicate the beginning of an interval 
 % and -1 to indicate the end.
@@ -148,38 +147,38 @@ run_intervals = types.core.IntervalSeries( ...
     'description', 'Intervals when the animal was running.', ...
     'data', [1, -1, 1, -1, 1, -1], ...
     'timestamps', [0.5, 1.5, 3.5, 4.0, 7.0, 7.3] ...
-);
+    );
 
 behavioral_epochs = types.core.BehavioralEpochs();
 behavioral_epochs.intervalseries.set('running', run_intervals);
 %% 
-% You can add more than one <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/IntervalSeries.html 
-% |IntervalSeries|> to a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/BehavioralEpochs.html 
+% You can add more than one <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IntervalSeries.html 
+% |IntervalSeries|> to a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/BehavioralEpochs.html 
 % |BehavioralEpochs|> object.
 
 sleep_intervals = types.core.IntervalSeries( ...
     'description', 'Intervals when the animal was sleeping', ...
     'data', [1, -1, 1, -1], ...
     'timestamps', [15.0, 30.0, 60.0, 95.0] ...
-);
+    );
 behavioral_epochs.intervalseries.set('sleeping', sleep_intervals);
 
 % behavior_processing_module = types.core.ProcessingModule("stores behavioral data.");
 % behavior_processing_module.nwbdatainterface.set('BehavioralEvents', behavioral_events);
 % nwb.processing.set('behavior', behavior_processing_module);
 % Another approach: TimeIntervals
-% Using <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/TimeIntervals.html 
-% |TimeIntervals|> to represent time intervals is often preferred over <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/BehavioralEpochs.html 
-% |BehavioralEpochs|> and <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/IntervalSeries.html 
-% |IntervalSeries|>. <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/TimeIntervals.html 
-% |TimeIntervals|> is a subclass of <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
+% Using <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeIntervals.html 
+% |TimeIntervals|> to represent time intervals is often preferred over <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/BehavioralEpochs.html 
+% |BehavioralEpochs|> and <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IntervalSeries.html 
+% |IntervalSeries|>. <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeIntervals.html 
+% |TimeIntervals|> is a subclass of <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
 % |DynamicTable|>, which offers flexibility for tabular data by allowing the addition 
 % of optional columns which are not defined in the standard DynamicTable class.
 
 sleep_intervals = types.core.TimeIntervals( ...
     'description', 'Intervals when the animal was sleeping.', ...
     'colnames', {'start_time', 'stop_time', 'stage'} ...
-);
+    );
 
 sleep_intervals.addRow('start_time', 0.3, 'stop_time', 0.35, 'stage', 1);
 sleep_intervals.addRow('start_time', 0.7, 'stop_time', 0.9, 'stage', 2);
@@ -187,10 +186,10 @@ sleep_intervals.addRow('start_time', 1.3, 'stop_time', 3.0, 'stage', 3);
 
 nwb.intervals.set('sleep_intervals', sleep_intervals);
 %% EyeTracking: Storing continuous eye-tracking data of gaze direction
-% <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/EyeTracking.html 
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/EyeTracking.html 
 % |EyeTracking|> is for storing eye-tracking data which represents direction of 
-% gaze as measured by an eye tracking algorithm. An <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/EyeTracking.html 
-% |EyeTracking|> object holds one or more <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/SpatialSeries.html 
+% gaze as measured by an eye tracking algorithm. An <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/EyeTracking.html 
+% |EyeTracking|> object holds one or more <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
 % |SpatialSeries|> objects that represent the gaze direction over time extracted 
 % from a video.
 
@@ -203,7 +202,7 @@ right_eye_position = types.core.SpatialSeries( ...
     'starting_time_rate', 50.0, ... % Hz
     'reference_frame', '(0,0) is middle', ...
     'data_unit', 'degrees' ...
-);
+    );
 
 left_eye_position = types.core.SpatialSeries( ...
     'description', 'The position of the right eye measured in degrees.', ...
@@ -212,7 +211,7 @@ left_eye_position = types.core.SpatialSeries( ...
     'starting_time_rate', 50.0, ... % Hz
     'reference_frame', '(0,0) is middle', ...
     'data_unit', 'degrees' ...
-);
+    );
 
 eye_tracking = types.core.EyeTracking();
 eye_tracking.spatialseries.set('right_eye_position', right_eye_position);
@@ -222,10 +221,10 @@ eye_tracking.spatialseries.set('left_eye_position', left_eye_position);
 behavior_processing_module.nwbdatainterface.set('EyeTracking', eye_tracking);
 % nwb.processing.set('behavior', behavior_processing_module);
 %% PupilTracking: Storing continuous eye-tracking data of pupil size
-% <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/PupilTracking.html 
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/PupilTracking.html 
 % |PupilTracking|> is for storing eye-tracking data which represents pupil size. 
-% <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/PupilTracking.html 
-% |PupilTracking|> holds one or more <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/TimeSeries.html 
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/PupilTracking.html 
+% |PupilTracking|> holds one or more <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
 % |TimeSeries|> objects that can represent different features such as the dilation 
 % of the pupil measured over time by a pupil tracking algorithm.
 
@@ -235,7 +234,7 @@ pupil_diameter = types.core.TimeSeries( ...
     'starting_time', 1.0, ... % NB: Important to set starting_time when using starting_time_rate
     'starting_time_rate', 20.0, ... % Hz
     'data_unit', 'meters' ...
-);
+    );
 
 pupil_tracking = types.core.PupilTracking();
 pupil_tracking.timeseries.set('pupil_diameter', pupil_diameter);
@@ -245,8 +244,8 @@ behavior_processing_module.nwbdatainterface.set('PupilTracking', pupil_tracking)
 % nwb.processing.set('behavior', behavior_processing_module);
 %% Writing the behavior data to an NWB file
 % All of the above commands build an NWBFile object in-memory. To write this 
-% file, use <https://neurodatawithoutborders.github.io/matnwb/doc/nwbExport.html 
-% |nwbExport|>|.|
+% file, use <https://matnwb.readthedocs.io/en/latest/pages/functions/nwbExport.html 
+% |nwbExport|>.
 
 % Save to tutorials/tutorial_nwb_files folder
 nwbFilePath = misc.getTutorialNwbFilePath('behavior_tutorial.nwb');
