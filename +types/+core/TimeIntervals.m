@@ -2,7 +2,7 @@ classdef TimeIntervals < types.hdmf_common.DynamicTable & types.untyped.GroupCla
 % TIMEINTERVALS - A container for aggregating epoch data and the TimeSeries that each epoch applies to.
 %
 % Required Properties:
-%  id, start_time, stop_time
+%  colnames, description, id, start_time, stop_time
 
 
 % REQUIRED PROPERTIES

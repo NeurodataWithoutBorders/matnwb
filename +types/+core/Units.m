@@ -2,7 +2,7 @@ classdef Units < types.hdmf_common.DynamicTable & types.untyped.GroupClass
 % UNITS - Data about spiking units. Event times of observed units (e.g. cell, synapse, etc.) should be concatenated and stored in spike_times.
 %
 % Required Properties:
-%  id
+%  colnames, description, id
 
 
 % OPTIONAL PROPERTIES

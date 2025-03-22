@@ -64,7 +64,7 @@ end
 
 function mustBeYamlFile(filePath)
     arguments
-        filePath (1,1) string {mustBeFile}
+        filePath (1,1) string {matnwb.common.compatibility.mustBeFile}
     end
     
     assert(endsWith(filePath, [".yaml", ".yml"], "IgnoreCase", true), ...

@@ -2,7 +2,7 @@ classdef CurrentClampStimulusSeries < types.core.PatchClampSeries & types.untype
 % CURRENTCLAMPSTIMULUSSERIES - Stimulus current applied during current clamp recording.
 %
 % Required Properties:
-%  data
+%  data, electrode, stimulus_description
 
 
 

@@ -2,7 +2,7 @@ classdef OptogeneticSeries < types.core.TimeSeries & types.untyped.GroupClass
 % OPTOGENETICSERIES - An optogenetic stimulus.
 %
 % Required Properties:
-%  data
+%  data, site
 
 
 % REQUIRED PROPERTIES

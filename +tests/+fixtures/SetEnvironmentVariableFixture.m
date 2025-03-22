@@ -81,3 +81,7 @@ function envMap = readEnvFile(filename)
         envMap(key) = value;
     end
 end
+
+function tf = isenv(varName)
+    tf = ~isempty( getenv(varName) ); 
+end

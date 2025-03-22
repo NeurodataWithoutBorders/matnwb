@@ -2,7 +2,7 @@ classdef IZeroClampSeries < types.core.CurrentClampSeries & types.untyped.GroupC
 % IZEROCLAMPSERIES - Voltage data from an intracellular recording when all current and amplifier settings are off (i.e., CurrentClampSeries fields will be zero). There is no CurrentClampStimulusSeries associated with an IZero series because the amplifier is disconnected and no stimulus can reach the cell.
 %
 % Required Properties:
-%  bias_current, bridge_balance, capacitance_compensation, data
+%  data, electrode
 
 
 

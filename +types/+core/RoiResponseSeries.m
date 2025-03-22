@@ -2,7 +2,7 @@ classdef RoiResponseSeries < types.core.TimeSeries & types.untyped.GroupClass
 % ROIRESPONSESERIES - ROI responses over an imaging plane. The first dimension represents time. The second dimension, if present, represents ROIs.
 %
 % Required Properties:
-%  data, rois
+%  data, data_unit, rois
 
 
 % REQUIRED PROPERTIES

@@ -2,7 +2,7 @@ classdef SimultaneousRecordingsTable < types.hdmf_common.DynamicTable & types.un
 % SIMULTANEOUSRECORDINGSTABLE - A table for grouping different intracellular recordings from the IntracellularRecordingsTable table together that were recorded simultaneously from different electrodes.
 %
 % Required Properties:
-%  id, recordings, recordings_index
+%  colnames, description, id, recordings, recordings_index
 
 
 % REQUIRED PROPERTIES

@@ -2,7 +2,7 @@ classdef ElectrodeGroup < types.core.NWBContainer & types.untyped.GroupClass
 % ELECTRODEGROUP - A physical grouping of electrodes, e.g. a shank of an array.
 %
 % Required Properties:
-%  None
+%  description, device, location
 
 
 % REQUIRED PROPERTIES

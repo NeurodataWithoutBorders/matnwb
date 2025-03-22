@@ -2,7 +2,7 @@ classdef OpticalSeries < types.core.ImageSeries & types.untyped.GroupClass
 % OPTICALSERIES - Image data that is presented or recorded. A stimulus template movie will be stored only as an image. When the image is presented as stimulus, additional data is required, such as field of view (e.g., how much of the visual field the image covers, or how what is the area of the target being imaged). If the OpticalSeries represents acquired imaging data, orientation is also important.
 %
 % Required Properties:
-%  data
+%  data, data_unit
 
 
 % OPTIONAL PROPERTIES

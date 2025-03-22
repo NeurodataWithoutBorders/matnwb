@@ -231,9 +231,8 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
     methods (Access = private)
         function requiredProps = getRequiredProperties(obj)
 
-            % Introspectively retrieve required properties and add to
-            % persistent cache/map.
-
+            % Parse NWB schemas to retrieve required properties for the 
+            % neurodata type and add to persistent cache/map.
             typeClassName = class(obj);
             typeNamespaceVersion = getNamespaceVersionForType(typeClassName);
 
@@ -242,10 +241,8 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
             if isKey(obj.REQUIRED, typeKey)
                 requiredProps = obj.REQUIRED( typeKey );
             else
-                mc = metaclass(obj);
-                propertyDescription = {mc.PropertyList.Description};
-                isRequired = startsWith(propertyDescription, 'REQUIRED');
-                requiredProps = {mc.PropertyList(isRequired).Name};
+                className = class(obj);
+                requiredProps = schemes.internal.getRequiredPropsForClass(className);
                 obj.REQUIRED( typeKey ) = requiredProps;
             end
         end

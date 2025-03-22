@@ -2,7 +2,7 @@ classdef ProcessingModule < types.core.NWBContainer & types.untyped.GroupClass
 % PROCESSINGMODULE - A collection of processed data.
 %
 % Required Properties:
-%  None
+%  description
 
 
 % REQUIRED PROPERTIES

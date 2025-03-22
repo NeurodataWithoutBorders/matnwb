@@ -2,7 +2,7 @@ classdef ImagingPlane < types.core.NWBContainer & types.untyped.GroupClass
 % IMAGINGPLANE - An imaging plane and its metadata.
 %
 % Required Properties:
-%  excitation_lambda, indicator, location, opticalchannel
+%  device, excitation_lambda, indicator, location, opticalchannel
 
 
 % REQUIRED PROPERTIES

@@ -2,7 +2,7 @@ classdef CurrentClampSeries < types.core.PatchClampSeries & types.untyped.GroupC
 % CURRENTCLAMPSERIES - Voltage data from an intracellular current-clamp recording. A corresponding CurrentClampStimulusSeries (stored separately as a stimulus) is used to store the current injected.
 %
 % Required Properties:
-%  data
+%  data, electrode, stimulus_description
 
 
 % OPTIONAL PROPERTIES

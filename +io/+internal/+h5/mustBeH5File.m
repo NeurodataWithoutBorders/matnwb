@@ -1,6 +1,6 @@
 function mustBeH5File(value)
     arguments
-        value {mustBeFile}
+        value {matnwb.common.compatibility.mustBeFile}
     end
 
     VALID_FILE_ENDING = ["h5", "nwb"];

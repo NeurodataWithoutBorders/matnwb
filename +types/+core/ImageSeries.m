@@ -2,7 +2,7 @@ classdef ImageSeries < types.core.TimeSeries & types.untyped.GroupClass
 % IMAGESERIES - General image data that is common between acquisition and stimulus time series. Sometimes the image data is stored in the file in a raw format while other times it will be stored as a series of external image files in the host file system. The data field will either be binary data, if the data is stored in the NWB file, or empty, if the data is stored in an external image stack. [frame][x][y] or [frame][x][y][z].
 %
 % Required Properties:
-%  data
+%  data, data_unit
 
 
 % OPTIONAL PROPERTIES

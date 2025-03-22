@@ -2,7 +2,7 @@ classdef TimeSeriesReferenceVectorData < types.hdmf_common.VectorData & types.un
 % TIMESERIESREFERENCEVECTORDATA - Column storing references to a TimeSeries (rows). For each TimeSeries this VectorData column stores the start_index and count to indicate the range in time to be selected as well as an object reference to the TimeSeries.
 %
 % Required Properties:
-%  data
+%  data, description
 
 
 
