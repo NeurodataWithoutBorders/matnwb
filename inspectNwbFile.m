@@ -69,7 +69,7 @@ function result = inspectNwbFile(nwbFilepath, options)
     [hasCliNwbInspector, nwbInspectorExecutable] = isCliNwbInspectorAvailable();
 
     if hasPyNwbInspector && ~options.UseCLI
-        pyResult = py.list(py.nwbinspector.inspect_nwbfile('nwbfile_path', nwbFilepath));
+        pyResult = py.list(py.nwbinspector.inspect_nwbfile(nwbFilepath));
         result = convertNwbInspectorResultsToTable(pyResult);
 
     elseif hasCliNwbInspector
