@@ -2,7 +2,7 @@ classdef VoltageClampStimulusSeries < types.core.PatchClampSeries & types.untype
 % VOLTAGECLAMPSTIMULUSSERIES - Stimulus voltage applied during a voltage clamp recording.
 %
 % Required Properties:
-%  data
+%  data, electrode, stimulus_description
 
 
 

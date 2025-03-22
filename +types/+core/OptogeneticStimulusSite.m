@@ -2,7 +2,7 @@ classdef OptogeneticStimulusSite < types.core.NWBContainer & types.untyped.Group
 % OPTOGENETICSTIMULUSSITE - A site of optogenetic stimulation.
 %
 % Required Properties:
-%  description, excitation_lambda, location
+%  description, device, excitation_lambda, location
 
 
 % REQUIRED PROPERTIES

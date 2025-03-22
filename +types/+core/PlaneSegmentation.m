@@ -2,7 +2,7 @@ classdef PlaneSegmentation < types.hdmf_common.DynamicTable & types.untyped.Grou
 % PLANESEGMENTATION - Results from image segmentation of a specific imaging plane.
 %
 % Required Properties:
-%  id
+%  colnames, description, id, imaging_plane
 
 
 % REQUIRED PROPERTIES

@@ -53,7 +53,7 @@ function checkConfig(DynamicTable, ignoreList)
 
     if isempty(DynamicTable.id)
         idData = int64(1:tableHeight) .';
-        if 8 == exist('types.core.ElementIdentifiers', 'class')
+        if exist(fullfile('+types', '+core', 'ElementIdentifiers'), 'file')
             DynamicTable.id = types.core.ElementIdentifiers('data', idData);
         else
             DynamicTable.id = types.hdmf_common.ElementIdentifiers('data', idData);

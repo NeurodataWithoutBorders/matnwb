@@ -2,7 +2,7 @@ classdef EventDetection < types.core.NWBDataInterface & types.untyped.GroupClass
 % EVENTDETECTION - Detected spike events from voltage trace(s).
 %
 % Required Properties:
-%  detection_method, source_idx, times
+%  detection_method, source_electricalseries, source_idx, times
 
 
 % READONLY PROPERTIES

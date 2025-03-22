@@ -2,7 +2,7 @@ classdef TwoPhotonSeries < types.core.ImageSeries & types.untyped.GroupClass
 % TWOPHOTONSERIES - Image stack recorded over time from 2-photon microscope.
 %
 % Required Properties:
-%  data
+%  data, data_unit, imaging_plane
 
 
 % REQUIRED PROPERTIES

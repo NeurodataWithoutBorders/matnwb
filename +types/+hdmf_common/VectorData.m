@@ -2,7 +2,7 @@ classdef VectorData < types.hdmf_common.Data & types.untyped.DatasetClass
 % VECTORDATA - An n-dimensional dataset representing a column of a DynamicTable. If used without an accompanying VectorIndex, first dimension is along the rows of the DynamicTable and each step along the first dimension is a cell of the larger table. VectorData can also be used to represent a ragged array if paired with a VectorIndex. This allows for storing arrays of varying length in a single cell of the DynamicTable by indexing into this VectorData. The first vector is at VectorData[0:VectorIndex[0]]. The second vector is at VectorData[VectorIndex[0]:VectorIndex[1]], and so on.
 %
 % Required Properties:
-%  data
+%  data, description
 
 
 % HIDDEN READONLY PROPERTIES

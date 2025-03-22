@@ -2,7 +2,7 @@ classdef SequentialRecordingsTable < types.hdmf_common.DynamicTable & types.unty
 % SEQUENTIALRECORDINGSTABLE - A table for grouping different sequential recordings from the SimultaneousRecordingsTable table together. This is typically used to group together sequential recordings where a sequence of stimuli of the same type with varying parameters have been presented in a sequence.
 %
 % Required Properties:
-%  id, simultaneous_recordings, simultaneous_recordings_index, stimulus_type
+%  colnames, description, id, simultaneous_recordings, simultaneous_recordings_index, stimulus_type
 
 
 % REQUIRED PROPERTIES
