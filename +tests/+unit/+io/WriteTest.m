@@ -93,6 +93,46 @@ classdef WriteTest < matlab.unittest.TestCase
             parsedData = table2struct( struct2table(parsedData) )';
             testCase.verifyEqual(data, parsedData);
         end
+        
+        function testWriteCompoundMap(testCase)
+            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture)
+            fid = H5F.create('test.h5');
+            data = containers.Map({'a', 'b'}, 1:2);
+            io.writeCompound(fid, '/map_data', data)
+            H5F.close(fid);
+        end
+        
+        function testWriteCompoundEmpty(testCase)
+            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture)
+            fid = H5F.create('test.h5');
+            data = struct;
+            testCase.verifyError(...
+                @(varargin) io.writeCompound(fid, '/map_data', data), ...
+                'MATLAB:imagesci:hdf5lib:libraryError')
+            H5F.close(fid);
+        end
+        
+        function testWriteCompoundScalar(testCase)
+            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture)
+            fid = H5F.create('test.h5');
+            data = struct('a','b');
+            io.writeCompound(fid, '/map_data', data)
+            H5F.close(fid);
+        end
+
+        function testWriteCompoundNonScalar(testCase)
+            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture)
+            
+            numRows = 5;
+            numericVector = rand(numRows, 1);
+            charVector = char(randi([65 90], numRows, 1));
+            %stringVector = string(char(randi([65 90], numRows, 1)));
+            data = table(numericVector, charVector);
+                        
+            fid = H5F.create('test.h5');
+            io.writeCompound(fid, '/map_data', data)
+            H5F.close(fid);
+        end
 
         function testWriteCompoundOverWrite(testCase)
                    
