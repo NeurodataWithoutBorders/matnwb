@@ -113,6 +113,20 @@ classdef WriteTest < matlab.unittest.TestCase
             H5F.close(fid);
         end
 
+        function testWriteCompoundNonScalar(testCase)
+            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture)
+            
+            numRows = 5;
+            numericVector = rand(numRows, 1);
+            charVector = char(randi([65 90], numRows, 1));
+            %stringVector = string(char(randi([65 90], numRows, 1)));
+            data = table(numericVector, charVector);
+                        
+            fid = H5F.create('test.h5');
+            io.writeCompound(fid, '/map_data', data)
+            H5F.close(fid);
+        end
+
         function testWriteCompoundOverWrite(testCase)
                    
             % Create a temporary HDF5 file
