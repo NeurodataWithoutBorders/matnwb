@@ -45,6 +45,8 @@ classdef HasQuantity
                 elseif isnumeric(quantity)
                     if quantity == 1
                         isScalar = true;
+                    else
+                        isScalar = false;
                     end
                 end
             else
