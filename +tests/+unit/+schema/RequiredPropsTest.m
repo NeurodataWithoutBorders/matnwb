@@ -5,167 +5,181 @@ classdef RequiredPropsTest < tests.unit.abstract.SchemaTest
         SchemaNamespaceFileName = "rps.namespace.yaml"
     end
     properties
-        nwbFile
+        nwbFileObj
+        testGroup
+        nwbFileName
     end
     
     methods (TestMethodSetup)
         function setupNwbFile(testCase)
             % Create a valid NWB file for each test
-            testCase.nwbFile = NwbFile(...
+            testCase.nwbFileObj = NwbFile(...
                 'identifier', 'REQPROPS', ...
                 'session_description', 'required properties testing', ...
                 'session_start_time', datetime());
+
+            % Add a test group to the file's acquisition group
+            testCase.testGroup = types.rps.TestGroup();
+            testCase.nwbFileObj.acquisition.set('Test', testCase.testGroup);
+
+            % Create a filename for each test
+            testCase.nwbFileName = matlab.lang.internal.uuid() + ".nwb";
         end
     end
 
     methods (Test)
         function testDatasetWithRequiredAttributes(testCase)
             % Create a dataset with missing required attributes
-            datasetMissing = types.rps.DatasetWithRequiredAttr('data', 1.0);
+            dataIncomplete = types.rps.DataWithRequiredAttribute(...
+                'data', 1.0);
             
-            % Add to NWB file
-            testCase.nwbFile.scratch.set('datasetMissing', datasetMissing);
+            % Add dataset to test group and include in NWB File
+            testCase.testGroup.testdata.set('DataWithMissingRequiredAttribute', dataIncomplete);
             
             % Test that exporting fails due to missing required attribute
-            filename = matlab.lang.internal.uuid() + ".nwb";
-            testCase.verifyError(@() nwbExport(testCase.nwbFile, filename), ...
+            testCase.verifyError( ...
+                @() nwbExport(testCase.nwbFileObj, testCase.nwbFileName), ...
                 'NWB:RequiredPropertyMissing');
             
-            % Create a dataset with all required attributes
-            datasetComplete = types.rps.DatasetWithRequiredAttr('data', 1.0, 'required_attr', 'value');
+            % Create a dataset with non-missing required attributes
+            dataComplete = types.rps.DataWithRequiredAttribute(...
+                'data', 1.0, ...
+                'required_attr', 'value');
             
-            % Replace in NWB file
-            testCase.nwbFile.scratch.remove('datasetMissing');
-            testCase.nwbFile.scratch.set('datasetComplete', datasetComplete);
+            % Replace dataset in TestGroup
+            testCase.testGroup.testdata.remove('DataWithMissingRequiredAttribute');
+            testCase.testGroup.testdata.set('DataWithRequiredAttribute', dataComplete);
             
-            % Test that exporting succeeds
-            nwbExport(testCase.nwbFile, filename);
+            % Test that exporting now succeeds
+            nwbExport(testCase.nwbFileObj, testCase.nwbFileName);
         end
         
         function testInheritanceOverrideToRequired(testCase)
             % Test base dataset with optional attributes
-            baseDataset = types.rps.BaseDataset('data', 1.0);
-            testCase.nwbFile.scratch.set('baseDataset', baseDataset);
+            baseDataset = types.rps.BaseDataWithOptionalAttributes('data', 1.0);
+            testCase.testGroup.testdata.set('BaseDataset', baseDataset);
             
             % Export should succeed since attributes are optional
-            filename = matlab.lang.internal.uuid() + ".nwb";
-            nwbExport(testCase.nwbFile, filename);
+            nwbExport(testCase.nwbFileObj, testCase.nwbFileName);
+            delete(testCase.nwbFileName)
             
             % Test extended dataset that makes attributes required
-            extDatasetMissing = types.rps.ExtendedDataset('data', 1.0);
-            testCase.nwbFile.scratch.set('extDatasetMissing', extDatasetMissing);
+            extDatasetIncomplete = types.rps.ExtendedDataMakingOptionalAttributeRequired('data', 1.0);
+            testCase.testGroup.testdata.set('ExtendedDatasetIncomplete', extDatasetIncomplete);
             
             % Export should fail due to missing required attributes
-            testCase.verifyError(@() nwbExport(testCase.nwbFile, filename), ...
+            testCase.verifyError( ...
+                @() nwbExport(testCase.nwbFileObj, testCase.nwbFileName), ...
                 'NWB:RequiredPropertyMissing');
             
             % Test with only one required attribute provided
-            testCase.nwbFile.scratch.remove('extDatasetMissing');
-            extDatasetPartial = types.rps.ExtendedDataset('data', 1.0, 'attr1', 'value');
-            testCase.nwbFile.scratch.set('extDatasetPartial', extDatasetPartial);
+            testCase.testGroup.testdata.remove('ExtendedDatasetIncomplete');
+            extDatasetPartial = types.rps.ExtendedDataMakingOptionalAttributeRequired('data', 1.0, 'attr1', 'value');
+            testCase.testGroup.testdata.set('ExtendedDatasetPartial', extDatasetPartial);
             
             % Export should still fail due to missing attr3
-            testCase.verifyError(@() nwbExport(testCase.nwbFile, filename), ...
+            testCase.verifyError(@() nwbExport(testCase.nwbFileObj, testCase.nwbFileName), ...
                 'NWB:RequiredPropertyMissing');
             
             % Test with all required attributes provided
-            testCase.nwbFile.scratch.remove('extDatasetPartial');
-            extDatasetComplete = types.rps.ExtendedDataset('data', 1.0, 'attr1', 'value', 'attr3', 5);
-            testCase.nwbFile.scratch.set('extDatasetComplete', extDatasetComplete);
+            testCase.testGroup.testdata.remove('ExtendedDatasetPartial');
+            extDatasetComplete = types.rps.ExtendedDataMakingOptionalAttributeRequired('data', 1.0, 'attr1', 'value', 'attr3', 5);
+            testCase.testGroup.testdata.set('ExtendedDatasetComplete', extDatasetComplete);
             
             % Export should succeed
-            nwbExport(testCase.nwbFile, filename);
+            nwbExport(testCase.nwbFileObj, testCase.nwbFileName);
         end
         
         function testInheritanceOverrideToOptional(testCase)
             % Test base dataset with required attributes but missing them
-            baseDatasetMissing = types.rps.BaseDatasetWithRequired('data', 1.0);
-            testCase.nwbFile.scratch.set('baseDatasetMissing', baseDatasetMissing);
+            baseDatasetIncomplete = types.rps.BaseDataWithRequiredAttributes('data', 1.0);
+            testCase.testGroup.testdata.set('BaseDatasetIncomplete', baseDatasetIncomplete);
             
             % Export should fail due to missing required attribute
-            filename = matlab.lang.internal.uuid() + ".nwb";
-            testCase.verifyError(@() nwbExport(testCase.nwbFile, filename), ...
+            testCase.verifyError( ...
+                @() nwbExport(testCase.nwbFileObj, testCase.nwbFileName), ...
                 'NWB:RequiredPropertyMissing');
             
             % Test base dataset with all required attributes
-            testCase.nwbFile.scratch.remove('baseDatasetMissing');
-            baseDatasetComplete = types.rps.BaseDatasetWithRequired('data', 1.0, 'req_attr', 'value');
-            testCase.nwbFile.scratch.set('baseDatasetComplete', baseDatasetComplete);
+            testCase.testGroup.testdata.remove('BaseDatasetIncomplete');
+            baseDatasetComplete = types.rps.BaseDataWithRequiredAttributes('data', 1.0, 'req_attr', 'value');
+            testCase.testGroup.testdata.set('BaseDatasetComplete', baseDatasetComplete);
             
             % Export should succeed
-            nwbExport(testCase.nwbFile, filename);
+            nwbExport(testCase.nwbFileObj, testCase.nwbFileName);
+            delete(testCase.nwbFileName)
             
             % Test extended dataset that makes required attributes optional
-            extDataset = types.rps.ExtendedDatasetWithOptional('data', 1.0);
-            testCase.nwbFile.scratch.set('extDataset', extDataset);
+            extDataset = types.rps.ExtendedDataMakingRequiredAttributeOptional('data', 1.0);
+            testCase.testGroup.testdata.set('ExtendedValidDataset', extDataset);
             
             % Export should succeed even without setting req_attr (now optional)
-            nwbExport(testCase.nwbFile, filename);
+            nwbExport(testCase.nwbFileObj, testCase.nwbFileName);
         end
         
         function testGroupWithRequiredDatasets(testCase)
             % Test group with missing required datasets
-            groupMissing = types.rps.GroupWithRequiredDatasets();
-            testCase.nwbFile.scratch.set('groupMissing', groupMissing);
+            groupIncomplete = types.rps.GroupWithRequiredDatasets();
+            testCase.testGroup.testgroup.set('GroupIncomplete', groupIncomplete);
             
             % Export should fail due to missing required dataset
-            filename = matlab.lang.internal.uuid() + ".nwb";
-            testCase.verifyError(@() nwbExport(testCase.nwbFile, filename), ...
+            testCase.verifyError(...
+                @() nwbExport(testCase.nwbFileObj, testCase.nwbFileName), ...
                 'NWB:RequiredPropertyMissing');
             
             % Test group with all required datasets
-            testCase.nwbFile.scratch.remove('groupMissing');
+            testCase.testGroup.testgroup.remove('GroupIncomplete');
             groupComplete = types.rps.GroupWithRequiredDatasets('required_dataset', 1.0);
-            testCase.nwbFile.scratch.set('groupComplete', groupComplete);
+            testCase.testGroup.testgroup.set('GroupComplete', groupComplete);
             
             % Export should succeed
-            nwbExport(testCase.nwbFile, filename);
+            nwbExport(testCase.nwbFileObj, testCase.nwbFileName);
         end
         
         function testGroupWithRequiredLinks(testCase)
 
             % Test group with missing required links
-            groupMissing = types.rps.GroupWithRequiredLinks();
-            testCase.nwbFile.scratch.set('groupMissing', groupMissing);
+            groupIncomplete = types.rps.GroupWithRequiredLinks();
+            testCase.testGroup.testgroup.set('GroupIncomplete', groupIncomplete);
             
             % Export should fail due to missing required link
-            filename = matlab.lang.internal.uuid() + ".nwb";
-            testCase.verifyError(@() nwbExport(testCase.nwbFile, filename), ...
+            testCase.verifyError(...
+                @() nwbExport(testCase.nwbFileObj, testCase.nwbFileName), ...
                 'NWB:RequiredPropertyMissing');
             
-            testCase.nwbFile.scratch.remove('groupMissing');
+            testCase.testGroup.testgroup.remove('GroupIncomplete');
 
             % Create a data interface to use as a link target
             dataInterface = types.core.NWBDataInterface();
-            testCase.nwbFile.acquisition.set('LinkTarget', dataInterface);
+            testCase.nwbFileObj.acquisition.set('LinkTarget', dataInterface);
 
             % Test group with all required links
             groupComplete = types.rps.GroupWithRequiredLinks('required_link', dataInterface);
-            testCase.nwbFile.scratch.set('groupComplete', groupComplete);
+            testCase.testGroup.testgroup.set('GroupComplete', groupComplete);
             
             % Export should succeed
-            nwbExport(testCase.nwbFile, filename);
+            nwbExport(testCase.nwbFileObj, testCase.nwbFileName);
         end
         
         function testGroupInheritanceOverride(testCase)
             % Test base group with optional components
             baseGroup = types.rps.BaseGroup();
-            testCase.nwbFile.scratch.set('baseGroup', baseGroup);
+            testCase.testGroup.testgroup.set('baseGroup', baseGroup);
             
             % Export should succeed since components are optional
-            filename = matlab.lang.internal.uuid() + ".nwb";
-            nwbExport(testCase.nwbFile, filename);
+            nwbExport(testCase.nwbFileObj, testCase.nwbFileName);
             
             % Test extended group with missing required components
             extGroupMissing = types.rps.ExtendedGroup();
-            testCase.nwbFile.scratch.set('extGroupMissing', extGroupMissing);
+            testCase.testGroup.testgroup.set('extGroupMissing', extGroupMissing);
             
             % Export should fail due to missing required components
-            testCase.verifyError(@() nwbExport(testCase.nwbFile, filename), ...
+            testCase.verifyError(...
+                @() nwbExport(testCase.nwbFileObj, testCase.nwbFileName), ...
                 'NWB:RequiredPropertyMissing');
                        
             % Test extended group with all required components
-            testCase.nwbFile.scratch.remove('extGroupMissing');
+            testCase.testGroup.testgroup.remove('extGroupMissing');
 
 
             % Create a subgroup to use
@@ -173,10 +187,10 @@ classdef RequiredPropsTest < tests.unit.abstract.SchemaTest
 
             extGroupComplete = types.rps.ExtendedGroup('dataset1', 1.0, 'attr1', 'value');
             extGroupComplete.subgroup1.set('SubGroup', subgroup);
-            testCase.nwbFile.scratch.set('extGroupComplete', extGroupComplete);
+            testCase.testGroup.testgroup.set('extGroupComplete', extGroupComplete);
             
             % Export should succeed
-            nwbExport(testCase.nwbFile, filename);
+            nwbExport(testCase.nwbFileObj, testCase.nwbFileName);
         end
         
         function testMixedRequiredGroup(testCase)
@@ -185,37 +199,37 @@ classdef RequiredPropsTest < tests.unit.abstract.SchemaTest
             dataInterface = types.core.NWBDataInterface();
             
             % Test group with missing required components
-            groupMissing = types.rps.MixedRequiredGroup();
-            testCase.nwbFile.scratch.set('groupMissing', groupMissing);
+            groupIncomplete = types.rps.MixedRequiredGroup();
+            testCase.testGroup.testgroup.set('GroupIncomplete', groupIncomplete);
             
             % Export should fail due to missing required components
-            filename = matlab.lang.internal.uuid() + ".nwb";
-            testCase.verifyError(@() nwbExport(testCase.nwbFile, filename), ...
+            testCase.verifyError(...
+                @() nwbExport(testCase.nwbFileObj, testCase.nwbFileName), ...
                 'NWB:RequiredPropertyMissing');
             
             % Test group with only some required components
-            testCase.nwbFile.scratch.remove('groupMissing');
+            testCase.testGroup.testgroup.remove('GroupIncomplete');
             groupPartial = types.rps.MixedRequiredGroup('required_dataset', 1.0);
-            testCase.nwbFile.scratch.set('groupPartial', groupPartial);
+            testCase.testGroup.testgroup.set('GroupPartial', groupPartial);
             
             % Export should still fail
-            testCase.verifyError(@() nwbExport(testCase.nwbFile, filename), ...
+            testCase.verifyError(@() nwbExport(testCase.nwbFileObj, testCase.nwbFileName), ...
                 'NWB:RequiredPropertyMissing');
             
             % Add data interface as a link target
-            testCase.nwbFile.acquisition.set('LinkTarget', dataInterface);
+            testCase.nwbFileObj.acquisition.set('LinkTarget', dataInterface);
 
             % Test group with all required components
-            testCase.nwbFile.scratch.remove('groupPartial');
+            testCase.testGroup.testgroup.remove('GroupPartial');
             groupComplete = types.rps.MixedRequiredGroup(...
                 'required_dataset', 1.0, ...
                 'required_group', types.untyped.Set('subgroup', subgroup), ...
                 'required_attr', 'value', ...
                 'required_link', dataInterface);
-            testCase.nwbFile.scratch.set('groupComplete', groupComplete);
+            testCase.testGroup.testgroup.set('GroupComplete', groupComplete);
             
             % Export should succeed
-            nwbExport(testCase.nwbFile, filename);
+            nwbExport(testCase.nwbFileObj, testCase.nwbFileName);
             
             % Add optional components and verify export still works
             groupComplete.optional_dataset = 'optional value';
@@ -223,7 +237,7 @@ classdef RequiredPropsTest < tests.unit.abstract.SchemaTest
             groupComplete.optional_attr = 2.5;
             groupComplete.optional_link = dataInterface;
             
-            nwbExport(testCase.nwbFile, filename);
+            nwbExport(testCase.nwbFileObj, testCase.nwbFileName);
         end
         
         function testCompleteExportAndRead(testCase)
@@ -231,14 +245,14 @@ classdef RequiredPropsTest < tests.unit.abstract.SchemaTest
             % and reading it back to verify the properties are preserved
             
             % Create objects with all required properties
-            dataset = types.rps.DatasetWithRequiredAttr('data', 1.0, 'required_attr', 'value');
-            baseDataset = types.rps.BaseDatasetWithRequired('data', 1.0, 'req_attr', 'value');
+            dataset = types.rps.DataWithRequiredAttribute('data', 1.0, 'required_attr', 'value');
+            baseDataset = types.rps.BaseDataWithRequiredAttributes('data', 1.0, 'req_attr', 'value');
             
             dataInterface = types.core.NWBDataInterface();
             subgroup = types.core.NWBContainer();
             
             % Add data interface as a link target
-            testCase.nwbFile.acquisition.set('LinkTarget', dataInterface);
+            testCase.nwbFileObj.acquisition.set('LinkTarget', dataInterface);
 
             mixedGroup = types.rps.MixedRequiredGroup(...
                 'required_dataset', 1.0, ...
@@ -247,27 +261,26 @@ classdef RequiredPropsTest < tests.unit.abstract.SchemaTest
                 'required_link', dataInterface);
             
             % Add objects to the NWB file
-            testCase.nwbFile.scratch.set('dataset', dataset);
-            testCase.nwbFile.scratch.set('baseDataset', baseDataset);
-            testCase.nwbFile.scratch.set('mixedGroup', mixedGroup);
+            testCase.testGroup.testdata.set('Dataset', dataset);
+            testCase.testGroup.testdata.set('BaseDataset', baseDataset);
+            testCase.testGroup.testgroup.set('MixedGroup', mixedGroup);
             
             % Export the file
-            filename = matlab.lang.internal.uuid() + ".nwb";
-            nwbExport(testCase.nwbFile, filename);
+            nwbExport(testCase.nwbFileObj, testCase.nwbFileName);
             
             % Read the file back and verify the required properties
-            nwbObj = nwbRead(filename, 'ignorecache');
+            nwbObj = nwbRead(testCase.nwbFileName, 'ignorecache');
             
             % Verify dataset properties
-            readDataset = nwbObj.scratch.get('dataset');
+            readDataset = nwbObj.acquisition.get('Test').testdata.get('Dataset');
             testCase.verifyEqual(readDataset.required_attr, 'value');
             
             % Verify base dataset properties
-            readBaseDataset = nwbObj.scratch.get('baseDataset');
+            readBaseDataset = nwbObj.acquisition.get('Test').testdata.get('BaseDataset');
             testCase.verifyEqual(readBaseDataset.req_attr, 'value');
             
             % Verify mixed group properties
-            readMixedGroup = nwbObj.scratch.get('mixedGroup');
+            readMixedGroup = nwbObj.acquisition.get('Test').testgroup.get('MixedGroup');
             testCase.verifyEqual(readMixedGroup.required_dataset, 1.0);
             testCase.verifyEqual(readMixedGroup.required_attr, 'value')
         end

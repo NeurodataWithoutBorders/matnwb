@@ -1,17 +1,18 @@
 # nwb-schema-language 2.2.0
 datasets:
-  # Dataset for testing that can be placed in the scratch group
   - neurodata_type_def: TestData
-    neurodata_type_inc: ScratchData
-    doc: A base data type for testing using the scratch group
-    attributes:
-      - name: notes
-        doc: Override notes to optional so that it does not interfere with testing
-        dtype: text
-        required: false
-    
-  # Dataset with required attributes
-  - neurodata_type_def: DatasetWithRequiredAttr
+    neurodata_type_inc: Data
+    doc: A base data type for testing
+    dims:
+    - - dim0
+    - - dim0
+      - dim1
+    shape:
+    - - null
+    - - null
+      - null
+
+  - neurodata_type_def: DataWithRequiredAttribute
     neurodata_type_inc: TestData
     doc: A dataset with required attributes
     dtype: float
@@ -25,25 +26,23 @@ datasets:
         dtype: text
         required: false
         
-  # Base dataset with optional attributes
-  - neurodata_type_def: BaseDataset
+  - neurodata_type_def: BaseDataWithOptionalAttributes
     neurodata_type_inc: TestData
     doc: A base dataset with optional attributes
     dtype: float
     attributes:
       - name: attr1
-        doc: An optional attribute in the base class
+        doc: An optional attribute
         dtype: text
         required: false
       - name: attr2
-        doc: Another optional attribute in the base class
+        doc: Another optional attribute
         dtype: float
         required: false
         
-  # Extended dataset that makes attributes required
-  - neurodata_type_def: ExtendedDataset
-    neurodata_type_inc: BaseDataset
-    doc: An extended dataset that makes attributes required
+  - neurodata_type_def: ExtendedDataMakingOptionalAttributeRequired
+    neurodata_type_inc: BaseDataWithOptionalAttributes
+    doc: An extended dataset that makes optional attributes of parent type required
     attributes:
       - name: attr1
         doc: Now a required attribute in the extended class
@@ -54,8 +53,7 @@ datasets:
         dtype: int
         required: true
         
-  # Base dataset with required attributes
-  - neurodata_type_def: BaseDatasetWithRequired
+  - neurodata_type_def: BaseDataWithRequiredAttributes
     neurodata_type_inc: TestData
     doc: A base dataset with required attributes
     dtype: float
@@ -69,10 +67,9 @@ datasets:
         dtype: float
         required: false
         
-  # Extended dataset that makes required attributes optional
-  - neurodata_type_def: ExtendedDatasetWithOptional
-    neurodata_type_inc: BaseDatasetWithRequired
-    doc: An extended dataset that makes required attributes optional
+  - neurodata_type_def: ExtendedDataMakingRequiredAttributeOptional
+    neurodata_type_inc: BaseDataWithRequiredAttributes
+    doc: An extended dataset that makes required attributes of parent type optional
     attributes:
       - name: req_attr
         doc: Now an optional attribute in the extended class
@@ -84,20 +81,20 @@ datasets:
         required: false
 
 groups:
-  # Group with optional subgroups
-  - name: required_group_with_optional_subgroups
-    doc: Group with optional subgroups
+  - neurodata_type_def: TestGroup
+    neurodata_type_inc: NWBDataInterface
+    doc: General purpose test group.
     groups:
-    - neurodata_type_inc: NWBDataInterface
-      doc: First subgroup.
-      quantity: '*'
-    - neurodata_type_inc: DynamicTable
-      doc: Second subgroup.
+      - neurodata_type_inc: TestGroup
+        doc: Any test group
+        quantity: '*'
+    datasets:
+    - neurodata_type_inc: TestData
+      doc: Any test dataset
       quantity: '*'
       
-  # Group with required datasets
   - neurodata_type_def: GroupWithRequiredDatasets
-    neurodata_type_inc: NWBDataInterface
+    neurodata_type_inc: TestGroup
     doc: A group with required datasets
     datasets:
       - name: required_dataset
@@ -109,9 +106,8 @@ groups:
         dtype: text
         quantity: '?'
         
-  # Group with required links
   - neurodata_type_def: GroupWithRequiredLinks
-    neurodata_type_inc: NWBDataInterface
+    neurodata_type_inc: TestGroup
     doc: A group with required links
     links:
       - name: required_link
@@ -123,9 +119,8 @@ groups:
         target_type: NWBDataInterface
         quantity: '?'
         
-  # Base group with optional components
   - neurodata_type_def: BaseGroup
-    neurodata_type_inc: NWBDataInterface
+    neurodata_type_inc: TestGroup
     doc: A base group with optional components
     datasets:
       - name: dataset1
@@ -169,9 +164,8 @@ groups:
         dtype: text
         required: true
         
-  # Group with mixed required and optional properties
   - neurodata_type_def: MixedRequiredGroup
-    neurodata_type_inc: NWBContainer
+    neurodata_type_inc: TestGroup
     doc: A group with mixed required and optional properties
     datasets:
       - name: required_dataset
