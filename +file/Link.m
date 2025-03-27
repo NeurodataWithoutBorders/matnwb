@@ -1,4 +1,4 @@
-classdef Link
+classdef Link < file.interface.HasQuantity
     properties (SetAccess = private)
         doc;
         name;
@@ -19,12 +19,7 @@ classdef Link
             obj.doc = source('doc');
             obj.name = source('name');
             obj.type = source('target_type');
-            
-            quantityKey = 'quantity';
-            if isKey(source, quantityKey)
-                quantity = source(quantityKey);
-                obj.required = strcmp(quantity, '+');
-            end
+            obj.required = obj.isRequired(source);
         end
     end
 end
