@@ -135,10 +135,6 @@ classdef Group < file.interface.HasProps & file.interface.HasQuantity
             %typed + constrained
             %should never happen
 
-            if strcmp(obj.type, 'NWBFile')
-                %keyboard
-            end
-
             if obj.isConstrainedSet && ~obj.definesType
                 error('NWB:Group:UnsupportedOperation', ...
                       'The method `getProps` should not be called on a constrained dataset.');
@@ -254,7 +250,6 @@ classdef Group < file.interface.HasProps & file.interface.HasQuantity
                     end
                 end
             end
-
         end
     end
 end
