@@ -29,5 +29,31 @@ classdef QuantityTest < tests.unit.abstract.SchemaTest
             actualOptionalProperties = string(setdiff(allProperties, actualRequiredProperties));
             testCase.verifyEqual(actualOptionalProperties, expectedOptionalProperties)
         end
+
+        function testInvalidTextQuantitySpecification(testCase)
+            % Simulate a dataset specification with an invalid quantity value
+            specMap = containers.Map('quantity', 'none');
+            testCase.verifyError(...
+                @() file.Dataset(specMap), ...
+                'NWB:Schema:UnsupportedQuantity')
+        end
+
+        function testInvalidNumericQuantitySpecification(testCase)
+            % Simulate a dataset specification with an invalid numeric quantity value
+            specMap = containers.Map('quantity', 1.5);
+
+            testCase.verifyError(...
+                @() file.Dataset(specMap), ...
+                'NWB:Schema:UnsupportedQuantity')
+        end
+               
+        function testInvalidArrayQuantitySpecification(testCase)
+            % Simulate a dataset specification with an invalid numeric quantity value
+            specMap = containers.Map('quantity', {{'*', '+'}});
+
+            testCase.verifyError(...
+                @() file.Dataset(specMap), ...
+                'NWB:Schema:UnsupportedQuantity')
+        end
     end
 end
