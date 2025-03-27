@@ -137,7 +137,6 @@ classdef RequiredPropsTest < tests.unit.abstract.SchemaTest
         end
         
         function testGroupWithRequiredLinks(testCase)
-
             % Test group with missing required links
             groupIncomplete = types.rps.GroupWithRequiredLinks();
             testCase.testGroup.testgroup.set('GroupIncomplete', groupIncomplete);
@@ -180,7 +179,6 @@ classdef RequiredPropsTest < tests.unit.abstract.SchemaTest
                        
             % Test extended group with all required components
             testCase.testGroup.testgroup.remove('extGroupMissing');
-
 
             % Create a subgroup to use
             subgroup = types.core.NWBDataInterface();
