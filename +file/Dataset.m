@@ -1,4 +1,4 @@
-classdef Dataset < file.interface.HasProps
+classdef Dataset < file.interface.HasProps & file.interface.HasQuantity
     properties
         name;
         doc;
@@ -79,18 +79,8 @@ classdef Dataset < file.interface.HasProps
             end
             
             if isKey(source, 'quantity')
-                quantity = source('quantity');
-                switch quantity
-                    case '?'
-                        obj.required = false;
-                        obj.scalar = true;
-                    case '*'
-                        obj.required = false;
-                        obj.scalar = false;
-                    case '+'
-                        obj.required = true;
-                        obj.scalar = false;
-                end
+                obj.required = obj.isRequired(source);
+                obj.scalar = obj.isScalar(source);
             end
             
             obj.isConstrainedSet = ~isempty(obj.type) && ~obj.scalar;
