@@ -1,0 +1,44 @@
+groups:
+- neurodata_type_def: QuantityContainer
+  neurodata_type_inc: NWBDataInterface
+  datasets:
+    - name: data_optional_scalar_short_form
+      dtype: double
+      quantity: '?'
+      shape:
+      - null
+    - name: data_optional_scalar_long_form
+      dtype: double
+      quantity: 'zero_or_one'
+      shape:
+      - null
+    - name: data_optional_array_short_form
+      dtype: double
+      quantity: '*'
+      shape:
+      - null
+    - name: data_optional_array_long_form
+      dtype: double
+      quantity: 'zero_or_many'
+      shape:
+      - null
+    - name: data_required_array_short_form
+      dtype: double
+      quantity: '+'
+      shape:
+      - null
+    - name: data_required_array_long_form
+      dtype: double
+      quantity: 'one_or_many'
+      shape:
+      - null
+    - name: data_required_scalar
+      dtype: double
+      quantity: 1
+      shape:
+      - null
+    - name: data_required_array
+      dtype: double
+      quantity: 2
+      shape:
+      - null

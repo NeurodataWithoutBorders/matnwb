@@ -1,31 +1,29 @@
-function result = isPropertyRequired(prop, fullPropertyName, classprops)
+function result = isPropertyRequired(propInfo, fullPropertyName, allClassprops)
 % isPropertyRequired - Determine if a property is required
 
-    if ischar(prop) || isa(prop, 'containers.Map') || isstruct(prop)
+    if ischar(propInfo) || isa(propInfo, 'containers.Map') || isstruct(propInfo)
         result = true;
-    
-    elseif isa(prop, 'file.interface.HasProps')
-        isSubPropertyRequired = false(size(prop));
-        for iSubProp = 1:length(prop)
-            p = prop(iSubProp);
+    elseif isa(propInfo, 'file.interface.HasProps')
+        isSubPropertyRequired = false(size(propInfo));
+        for iSubProp = 1:length(propInfo)
+            p = propInfo(iSubProp);
             isSubPropertyRequired(iSubProp) = p.required;
         end
         result = all(isSubPropertyRequired);
-
-    elseif isa(prop, 'file.Attribute')
-        if isempty(prop.dependent)
-            result = prop.required;
+    elseif isa(propInfo, 'file.Attribute')
+        if isempty(propInfo.dependent)
+            result = propInfo.required;
         else
-            result = resolveRequiredForDependentProp(fullPropertyName, prop, classprops);
+            result = resolveRequiredForDependentProp(propInfo, fullPropertyName, allClassprops);
         end
-    elseif isa(prop, 'file.Link')
-        result = prop.required;
+    elseif isa(propInfo, 'file.Link')
+        result = propInfo.required;
     else
         result = false;
     end
 end
 
-function tf = resolveRequiredForDependentProp(propertyName, propInfo, allProps)
+function tf = resolveRequiredForDependentProp(propInfo, propertyName, allProps)
 % resolveRequiredForDependentProp - If a dependent property is required,
 % whether it is required on object level also depends on whether it's parent 
 % property is required.
