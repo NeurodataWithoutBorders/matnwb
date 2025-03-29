@@ -148,6 +148,7 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
         function requiredProps = getRequiredProperties(obj)
             % Parse NWB schemas to retrieve required properties for the 
             % neurodata type and add to persistent cache/map.
+
             typeClassName = class(obj);
             typeNamespaceVersion = getNamespaceVersionForType(typeClassName);
 
