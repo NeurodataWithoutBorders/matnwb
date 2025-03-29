@@ -2,7 +2,7 @@ classdef SweepTable < types.hdmf_common.DynamicTable & types.untyped.GroupClass
 % SWEEPTABLE - [DEPRECATED] Table used to group different PatchClampSeries. SweepTable is being replaced by IntracellularRecordingsTable and SimultaneousRecordingsTable tables. Additional SequentialRecordingsTable, RepetitionsTable, and ExperimentalConditions tables provide enhanced support for experiment metadata.
 %
 % Required Properties:
-%  id, series, series_index, sweep_number
+%  colnames, description, id, series, series_index, sweep_number
 
 
 % REQUIRED PROPERTIES
