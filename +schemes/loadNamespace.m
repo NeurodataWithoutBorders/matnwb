@@ -11,7 +11,7 @@ function namespace = loadNamespace(namespaceName, generatedTypesDirectory)
 
     arguments
         namespaceName (1,1) string
-        generatedTypesDirectory (1,1) string {mustBeFolder} = ...
+        generatedTypesDirectory (1,1) string {matnwb.common.compatibility.mustBeFolder} = ...
             schemes.utility.findRootDirectoryForGeneratedTypes()
     end
 

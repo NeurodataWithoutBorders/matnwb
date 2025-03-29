@@ -146,18 +146,18 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
         % testing purposes, or other use cases where type inspection might
         % be necessary.
         function requiredProps = getRequiredProperties(obj)
-            % Parse NWB schemas to retrieve required properties for the 
-            % neurodata type and add to persistent cache/map.
+        % getRequiredProperties - Get the required properties for the neurodata type.
 
             typeClassName = class(obj);
             typeNamespaceVersion = getNamespaceVersionForType(typeClassName);
-
             typeKey = sprintf('%s_%s', typeClassName, typeNamespaceVersion);
 
             if isKey(obj.REQUIRED, typeKey)
                 requiredProps = obj.REQUIRED( typeKey );
             else
                 className = class(obj);
+                % Parse NWB schemas to retrieve required properties for the 
+                % neurodata type and add to persistent cache/map.
                 requiredProps = schemes.internal.getRequiredPropsForClass(className);
                 obj.REQUIRED( typeKey ) = requiredProps;
             end

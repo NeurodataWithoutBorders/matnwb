@@ -39,7 +39,24 @@ deleteMask = typeDefMask | namespaceMask | blacklistMask;
 attributes(deleteMask) = [];
 for i=1:length(attributes)
     attr = attributes(i);
+
     switch attr.Datatype.Class
+        case 'H5T_STRING'
+            % H5 String type attributes are loaded differently in releases 
+            % prior to MATLAB R2020a. For details, see:
+            % https://se.mathworks.com/help/matlab/ref/h5readatt.html
+            attributeValue = attr.Value;
+            if verLessThan('matlab', '9.8') % MATLAB < R2020a
+                if iscell(attr.Value)
+                    if isempty(attr.Value)
+                        attributeValue = '';
+                    elseif isscalar(attr.Value)
+                        attributeValue = attr.Value{1};
+                    else
+                        attributeValue = attr.Value;
+                    end
+                end
+            end
         case 'H5T_REFERENCE'
             fid = H5F.open(filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
             aid = H5A.open_by_name(fid, context, attr.Name);
