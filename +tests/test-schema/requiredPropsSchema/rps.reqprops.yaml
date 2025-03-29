@@ -1,0 +1,211 @@
+# nwb-schema-language 2.2.0
+datasets:
+  - neurodata_type_def: TestData
+    neurodata_type_inc: Data
+    doc: A base data type for testing
+    dims:
+    - - dim0
+    - - dim0
+      - dim1
+    shape:
+    - - null
+    - - null
+      - null
+
+  - neurodata_type_def: DataWithRequiredAttribute
+    neurodata_type_inc: TestData
+    doc: A dataset with required attributes
+    dtype: float
+    attributes:
+      - name: required_attr
+        doc: A required attribute
+        dtype: text
+        required: true
+      - name: optional_attr
+        doc: An optional attribute
+        dtype: text
+        required: false
+        
+  - neurodata_type_def: BaseDataWithOptionalAttributes
+    neurodata_type_inc: TestData
+    doc: A base dataset with optional attributes
+    dtype: float
+    attributes:
+      - name: attr1
+        doc: An optional attribute
+        dtype: text
+        required: false
+      - name: attr2
+        doc: Another optional attribute
+        dtype: float
+        required: false
+        
+  - neurodata_type_def: ExtendedDataMakingOptionalAttributeRequired
+    neurodata_type_inc: BaseDataWithOptionalAttributes
+    doc: An extended dataset that makes optional attributes of parent type required
+    attributes:
+      - name: attr1
+        doc: Now a required attribute in the extended class
+        dtype: text
+        required: true
+      - name: attr3
+        doc: A new required attribute in the extended class
+        dtype: int
+        required: true
+        
+  - neurodata_type_def: BaseDataWithRequiredAttributes
+    neurodata_type_inc: TestData
+    doc: A base dataset with required attributes
+    dtype: float
+    attributes:
+      - name: req_attr
+        doc: A required attribute in the base class
+        dtype: text
+        required: true
+      - name: opt_attr
+        doc: An optional attribute in the base class
+        dtype: float
+        required: false
+        
+  - neurodata_type_def: ExtendedDataMakingRequiredAttributeOptional
+    neurodata_type_inc: BaseDataWithRequiredAttributes
+    doc: An extended dataset that makes required attributes of parent type optional
+    attributes:
+      - name: req_attr
+        doc: Now an optional attribute in the extended class
+        dtype: text
+        required: false
+      - name: new_attr
+        doc: A new optional attribute in the extended class
+        dtype: int
+        required: false
+
+groups:
+  - neurodata_type_def: TestGroup
+    neurodata_type_inc: NWBDataInterface
+    doc: General purpose test group.
+    groups:
+      - neurodata_type_inc: TestGroup
+        doc: Any test group
+        quantity: '*'
+    datasets:
+    - neurodata_type_inc: TestData
+      doc: Any test dataset
+      quantity: '*'
+      
+  - neurodata_type_def: GroupWithRequiredDatasets
+    neurodata_type_inc: TestGroup
+    doc: A group with required datasets
+    datasets:
+      - name: required_dataset
+        doc: A required dataset
+        dtype: float
+        quantity: 1
+      - name: optional_dataset
+        doc: An optional dataset
+        dtype: text
+        quantity: '?'
+        
+  - neurodata_type_def: GroupWithRequiredLinks
+    neurodata_type_inc: TestGroup
+    doc: A group with required links
+    links:
+      - name: required_link
+        doc: A required link
+        target_type: NWBDataInterface
+        quantity: '1'
+      - name: optional_link
+        doc: An optional link
+        target_type: NWBDataInterface
+        quantity: '?'
+        
+  - neurodata_type_def: BaseGroup
+    neurodata_type_inc: TestGroup
+    doc: A base group with optional components
+    datasets:
+      - name: dataset1
+        doc: An optional dataset
+        dtype: float
+        quantity: '?'
+    groups:
+      - name: subgroup1
+        doc: An optional subgroup
+        quantity: '?'
+        groups:
+        - neurodata_type_inc: NWBDataInterface
+          doc: Test container.
+          quantity: '*'
+    attributes:
+      - name: attr1
+        doc: An optional attribute
+        dtype: text
+        required: false
+        
+  # Extended group that makes components required
+  - neurodata_type_def: ExtendedGroup
+    neurodata_type_inc: BaseGroup
+    doc: An extended group that makes components required
+    datasets:
+      - name: dataset1
+        doc: Now a required dataset
+        dtype: float
+        quantity: 1
+    groups:
+      - name: subgroup1
+        doc: Now a required subgroup
+        quantity: 1
+        groups:
+        - neurodata_type_inc: NWBDataInterface
+          doc: Test container.
+          quantity: '+'
+    attributes:
+      - name: attr1
+        doc: Now a required attribute
+        dtype: text
+        required: true
+        
+  - neurodata_type_def: MixedRequiredGroup
+    neurodata_type_inc: TestGroup
+    doc: A group with mixed required and optional properties
+    datasets:
+      - name: required_dataset
+        doc: A required dataset
+        dtype: float
+        quantity: 1
+      - name: optional_dataset
+        doc: An optional dataset
+        dtype: text
+        quantity: '?'
+    groups:
+      - name: required_group
+        doc: A required subgroup
+        quantity: 1
+        groups:
+        - neurodata_type_inc: NWBContainer
+          doc: Test interface for required group.
+          quantity: '+'
+      - name: optional_group
+        doc: An optional subgroup
+        quantity: '?'
+        groups:
+        - neurodata_type_inc: NWBContainer
+          doc: Test interface for optional group.
+          quantity: '+'
+    attributes:
+      - name: required_attr
+        doc: A required attribute
+        dtype: text
+        required: true
+      - name: optional_attr
+        doc: An optional attribute
+        dtype: float
+        required: false
+    links:
+      - name: required_link
+        doc: A required link
+        target_type: NWBDataInterface
+        quantity: 1
+      - name: optional_link
+        doc: An optional link
+        target_type: NWBDataInterface
+        quantity: '?'

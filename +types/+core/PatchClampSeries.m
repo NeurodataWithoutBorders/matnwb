@@ -2,7 +2,7 @@ classdef PatchClampSeries < types.core.TimeSeries & types.untyped.GroupClass
 % PATCHCLAMPSERIES - An abstract base class for patch-clamp data - stimulus or response, current or voltage.
 %
 % Required Properties:
-%  data
+%  data, data_unit, electrode, stimulus_description
 
 
 % REQUIRED PROPERTIES

@@ -2,7 +2,7 @@ classdef Images < types.core.NWBDataInterface & types.untyped.GroupClass
 % IMAGES - A collection of images with an optional way to specify the order of the images using the "order_of_images" dataset. An order must be specified if the images are referenced by index, e.g., from an IndexSeries.
 %
 % Required Properties:
-%  image
+%  description, image
 
 
 % REQUIRED PROPERTIES

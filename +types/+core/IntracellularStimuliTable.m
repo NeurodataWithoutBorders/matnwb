@@ -2,7 +2,7 @@ classdef IntracellularStimuliTable < types.hdmf_common.DynamicTable & types.unty
 % INTRACELLULARSTIMULITABLE - Table for storing intracellular stimulus related metadata.
 %
 % Required Properties:
-%  id, stimulus
+%  colnames, id, stimulus
 
 
 % REQUIRED PROPERTIES

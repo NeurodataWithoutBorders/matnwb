@@ -2,7 +2,7 @@ classdef IntracellularElectrode < types.core.NWBContainer & types.untyped.GroupC
 % INTRACELLULARELECTRODE - An intracellular electrode and its metadata.
 %
 % Required Properties:
-%  description
+%  description, device
 
 
 % REQUIRED PROPERTIES

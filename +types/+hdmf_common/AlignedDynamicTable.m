@@ -2,7 +2,7 @@ classdef AlignedDynamicTable < types.hdmf_common.DynamicTable & types.untyped.Gr
 % ALIGNEDDYNAMICTABLE - DynamicTable container that supports storing a collection of sub-tables. Each sub-table is a DynamicTable itself that is aligned with the main table by row index. I.e., all DynamicTables stored in this group MUST have the same number of rows. This type effectively defines a 2-level table in which the main data is stored in the main table implemented by this type and additional columns of the table are grouped into categories, with each category being represented by a separate DynamicTable stored within the group.
 %
 % Required Properties:
-%  id
+%  categories, colnames, description, id
 
 
 % REQUIRED PROPERTIES

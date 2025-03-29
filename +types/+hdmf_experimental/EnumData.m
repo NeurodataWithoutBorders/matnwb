@@ -2,7 +2,7 @@ classdef EnumData < types.hdmf_common.VectorData & types.untyped.DatasetClass
 % ENUMDATA - Data that come from a fixed set of values. A data value of i corresponds to the i-th value in the VectorData referenced by the 'elements' attribute.
 %
 % Required Properties:
-%  data
+%  data, description, elements
 
 
 % REQUIRED PROPERTIES

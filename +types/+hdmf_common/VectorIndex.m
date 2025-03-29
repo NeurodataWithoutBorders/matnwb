@@ -2,7 +2,7 @@ classdef VectorIndex < types.hdmf_common.VectorData & types.untyped.DatasetClass
 % VECTORINDEX - Used with VectorData to encode a ragged array. An array of indices into the first dimension of the target VectorData, and forming a map between the rows of a DynamicTable and the indices of the VectorData. The name of the VectorIndex is expected to be the name of the target VectorData object followed by "_index".
 %
 % Required Properties:
-%  data
+%  data, description, target
 
 
 % REQUIRED PROPERTIES

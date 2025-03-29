@@ -2,7 +2,7 @@ classdef ExperimentalConditionsTable < types.hdmf_common.DynamicTable & types.un
 % EXPERIMENTALCONDITIONSTABLE - A table for grouping different intracellular recording repetitions together that belong to the same experimental condition.
 %
 % Required Properties:
-%  id, repetitions, repetitions_index
+%  colnames, description, id, repetitions, repetitions_index
 
 
 % REQUIRED PROPERTIES

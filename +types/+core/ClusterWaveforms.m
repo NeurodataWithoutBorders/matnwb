@@ -2,7 +2,7 @@ classdef ClusterWaveforms < types.core.NWBDataInterface & types.untyped.GroupCla
 % CLUSTERWAVEFORMS - DEPRECATED The mean waveform shape, including standard deviation, of the different clusters. Ideally, the waveform analysis should be performed on data that is only high-pass filtered. This is a separate module because it is expected to require updating. For example, IMEC probes may require different storage requirements to store/display mean waveforms, requiring a new interface or an extension of this one.
 %
 % Required Properties:
-%  waveform_filtering, waveform_mean, waveform_sd
+%  clustering_interface, waveform_filtering, waveform_mean, waveform_sd
 
 
 % REQUIRED PROPERTIES

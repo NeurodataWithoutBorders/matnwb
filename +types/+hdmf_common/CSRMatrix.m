@@ -2,7 +2,7 @@ classdef CSRMatrix < types.hdmf_common.Container & types.untyped.GroupClass
 % CSRMATRIX - A compressed sparse row matrix. Data are stored in the standard CSR format, where column indices for row i are stored in indices[indptr[i]:indptr[i+1]] and their corresponding values are stored in data[indptr[i]:indptr[i+1]].
 %
 % Required Properties:
-%  data, indices, indptr
+%  data, indices, indptr, shape
 
 
 % REQUIRED PROPERTIES
