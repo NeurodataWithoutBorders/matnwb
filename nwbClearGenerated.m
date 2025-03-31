@@ -26,7 +26,8 @@ function clearedNamespaceNames = nwbClearGenerated(targetFolder, options)
 %   generateCore, generateExtension
     
     arguments
-        targetFolder (1,1) string  {mustBeFolder} = misc.getMatnwbDir()
+        targetFolder (1,1) string ...
+            {matnwb.common.compatibility.mustBeFolder} = misc.getMatnwbDir()
         options.ClearCache (1,1) logical = false
     end
 

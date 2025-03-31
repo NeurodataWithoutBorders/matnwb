@@ -39,7 +39,7 @@ function nwbExport(nwbFileObjects, filePaths, mode)
 
     arguments
         nwbFileObjects (1,:) NwbFile {mustBeNonempty}
-        filePaths (1,:) string {mustBeNonzeroLengthText}
+        filePaths (1,:) string {matnwb.common.compatibility.mustBeNonzeroLengthText}
         mode (1,1) string {mustBeMember(mode, ["edit", "overwrite"])} = "edit"
     end
 

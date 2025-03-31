@@ -71,7 +71,11 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
 
             % Add site-packages to python path
             testCase.PythonEnvironment = getenv('PYTHONPATH');
-            L = dir('temp_venv/lib/python*/site-*'); % Find the site-packages folder
+            if isunix
+                L = dir('temp_venv/lib/python*/site-*'); % Find the site-packages folder
+            elseif ispc
+                L = dir('temp_venv/Lib/site-*'); % Find the site-packages folder
+            end
             pythonPath = fullfile(L.folder, L.name);
             setenv('PYTHONPATH', pythonPath)
             
@@ -195,17 +199,20 @@ function tutorialNames = listTutorialFiles()
 
     % Note: Without a token, github api requests are limited to 60 per
     % hour. The listFilesInRepo will make 4 requests per call
-    if isenv('GITHUB_TOKEN')
-        token = getenv('GITHUB_TOKEN');
-    else
-        token = '';
-    end
+    token = getenv('GITHUB_TOKEN'); % If not present, defaults to empty char
     
     allFilePaths = listFilesInRepo(...
         'NeurodataWithoutBorders', 'pynwb', 'docs/gallery/', token);
-    
+
     % Exclude files that are not .py files.
-    [~, fileNames, fileExt] = fileparts(allFilePaths);
+    try
+        [~, fileNames, fileExt] = fileparts(allFilePaths);
+    catch % Support MATLAB R2019b:
+        [fileNames, fileExt] = deal(cell(size(allFilePaths)));
+        for i = 1:numel(allFilePaths)
+            [~, fileNames{i}, fileExt{i}] = fileparts(allFilePaths{i});
+        end
+    end
     keep = strcmp(fileExt, '.py');
     allFilePaths = allFilePaths(keep);
 

@@ -2,7 +2,7 @@ function [groupId, groupCleanupObj] = openGroup(fileId, h5Location)
 % openGroup Opens an HDF5 group at given location and ensures cleanup.
 
     arguments
-        fileId {mustBeA(fileId, "H5ML.id")}
+        fileId {matnwb.common.compatibility.mustBeA(fileId, "H5ML.id")}
         h5Location (1,1) string
     end
     

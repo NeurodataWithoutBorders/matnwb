@@ -56,7 +56,7 @@ function nwb = nwbRead(filename, flags, options)
         flags (1,1) string {mustBeMember(flags, "ignorecache")}
     end
     arguments
-        options.savedir (1,1) string = misc.getMatnwbDir(); % {mustBeFolder} ?
+        options.savedir (1,1) string = misc.getMatnwbDir(); % {matnwb.common.compatibility.mustBeFolder} ?
     end
 
     regenerateSchemaClasses = not( any(strcmpi(string(flags), 'ignorecache')) );
@@ -101,9 +101,9 @@ end
 function generateEmbeddedSpec(filename, specLocation, options)
 % generateEmbeddedSpec - Generate embedded specifications / namespaces
     arguments
-        filename (1,1) string {mustBeFile}
+        filename (1,1) string {matnwb.common.compatibility.mustBeFile}
         specLocation (1,1) string
-        options.savedir (1,1) string = misc.getMatnwbDir(); % {mustBeFolder} ?
+        options.savedir (1,1) string = misc.getMatnwbDir(); % {matnwb.common.compatibility.mustBeFolder} ?
     end
 
     specs = io.spec.readEmbeddedSpecifications(filename, specLocation);

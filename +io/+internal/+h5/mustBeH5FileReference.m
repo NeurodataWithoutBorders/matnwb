@@ -1,6 +1,6 @@
 function mustBeH5FileReference(value)
     arguments
-        value {mustBeA(value, ["char", "string", "H5ML.id"])}
+        value {matnwb.common.compatibility.mustBeA(value, ["char", "string", "H5ML.id"])}
     end
 
     if isa(value, "char") || isa(value, "string")
