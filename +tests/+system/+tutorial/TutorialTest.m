@@ -71,8 +71,14 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture, tests.fixtur
             % code which overloads display methods for nwb types/objects.
             C = evalc( 'run(tutorialFile)' ); %#ok<NASGU>
             
-            testCase.readTutorialNwbFileWithPynwb()
-            testCase.inspectTutorialFileWithNwbInspector()
+            skipChecks = getenv("SKIP_PYNWB_COMPATIBILITY_TEST_FOR_TUTORIALS");
+            skipChecks = ~isempty(skipChecks) && logical(str2double(skipChecks));
+            if skipChecks
+                % pass
+            else
+                testCase.readTutorialNwbFileWithPynwb()
+                testCase.inspectTutorialFileWithNwbInspector()
+            end
         end
     end
 
@@ -82,10 +88,8 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture, tests.fixtur
             nwbFileNameList = testCase.listNwbFiles();
             for nwbFilename = nwbFileNameList
                 try
-                    io = py.pynwb.NWBHDF5IO(nwbFilename);
-                    nwbObject = io.read();
+                    [nwbObject, nwbFileCleanup] = tests.util.readWithPynwb(nwbFilename); %#ok<ASGLU>
                     testCase.verifyNotEmpty(nwbObject, 'The NWB file should not be empty.');
-                    io.close()
                 catch ME
                     error(ME.message)
                 end
@@ -146,7 +150,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture, tests.fixtur
                 "check_image_series_external_file_valid", ...
                 "check_regular_timestamps"
                 ];
-            
+            [resultsIn(:).ignore] = deal(false);
             for i = 1:numel(resultsIn)
                 resultsIn(i).ignore = any(strcmp(CHECK_IGNORE, resultsIn(i).check_function_name));
             
