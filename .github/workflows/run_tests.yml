@@ -52,11 +52,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      
-      # Workaround for Python 3.8: pre-install a newer numpy version
-      - name: Pre-install numpy for Python 3.8 workaround
-        if: matrix.python-version == '3.8'
-        run: pip install numpy==1.22.4
 
       - name: Configure python env
         run: |
