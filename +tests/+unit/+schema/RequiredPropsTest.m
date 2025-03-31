@@ -23,7 +23,12 @@ classdef RequiredPropsTest < tests.unit.abstract.SchemaTest
             testCase.nwbFileObj.acquisition.set('Test', testCase.testGroup);
 
             % Create a filename for each test
-            testCase.nwbFileName = matlab.lang.internal.uuid() + ".nwb";
+            try
+                testCase.nwbFileName = matlab.lang.internal.uuid() + ".nwb";
+            catch
+                randUuid = string(java.util.UUID.randomUUID().toString());
+                testCase.nwbFileName = randUuid + ".nwb";
+            end
         end
     end
 
