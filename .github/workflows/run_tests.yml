@@ -127,8 +127,7 @@ jobs:
       - name: Retrieve code coverage files
         uses: actions/download-artifact@v4
         with:
-          pattern: test-coverage-*
-          merge-multiple: true
+          name: test-coverage-R2024b
 
       - name: Publish on coverage results on Codecov
         uses: codecov/codecov-action@v4
