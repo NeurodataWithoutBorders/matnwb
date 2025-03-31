@@ -202,7 +202,14 @@ function tutorialNames = listTutorialFiles()
         'NeurodataWithoutBorders', 'pynwb', 'docs/gallery/', token);
     
     % Exclude files that are not .py files.
-    [~, fileNames, fileExt] = fileparts(allFilePaths);
+    try
+        [~, fileNames, fileExt] = fileparts(allFilePaths);
+    catch % Support MATLAB R2019b:
+        [fileNames, fileExt] = deal(cell(size(allFilePaths)));
+        for i = 1:numel(allFilePaths)
+            [~, fileNames{i}, fileExt{i}] = fileparts(allFilePaths{i});
+        end
+    end
     keep = strcmp(fileExt, '.py');
     allFilePaths = allFilePaths(keep);
 
