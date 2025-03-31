@@ -192,7 +192,7 @@ function [isNwbInspectorInstalled, nwbInspectorExecutable] = isCliNwbInspectorAv
     elseif ispc
         if isfile([nwbInspectorExecutable, '.exe'])
             % If the nwbexecutable exists as a file, we have the absolute
-            % path and dont need to check with the where command
+            % path and don't need to check with the where command
             isNwbInspectorInstalled = true;
             return
         else
