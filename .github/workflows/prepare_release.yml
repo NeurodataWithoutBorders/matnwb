@@ -23,7 +23,7 @@ jobs:
           echo "Version '$version' is valid."
 
   run_tests:
-    name: Run MATLAB tests (${{ matrix.matlab-version }})
+    name: Run MATLAB tests (${{ matrix.matlab-version }} on ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     needs: [validate_version]
     strategy:
