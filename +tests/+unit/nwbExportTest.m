@@ -286,5 +286,23 @@ classdef nwbExportTest < tests.abstract.NwbTestCase
                 string(tsIn.data_unit), ...
                 ts.data_unit)
         end
+
+        function testWasGeneratedByProperty(testCase)
+            nwb = tests.factory.NWBFile();
+            nwbFilename = testCase.getRandomFilename();
+            nwbExport(nwb, nwbFilename);
+
+            nwbIn = nwbRead(nwbFilename);
+            testCase.verifyTrue(any(contains(nwbIn.general_was_generated_by.load(), 'matnwb')))
+
+            % Export again
+            nwbFilename2 = testCase.getRandomFilename();
+            nwbExport(nwbIn, nwbFilename2);
+
+            nwbIn2 = nwbRead(nwbFilename2);
+
+            % Verify that was_generated_by still has one entry (i.e not getting duplicate entries)
+            testCase.verifyEqual(size(nwbIn2.general_was_generated_by.load()), [2,1])
+        end
     end
 end
