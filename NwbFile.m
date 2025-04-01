@@ -55,6 +55,8 @@ classdef NwbFile < types.core.NWBFile
                 obj.file_create_date(end+1) = current_time;
             end
 
+            obj.addWasGeneratedBy()
+
             %equate reference time to session_start_time if empty
             if isempty(obj.timestamps_reference_time)
                 obj.timestamps_reference_time = obj.session_start_time;
@@ -158,6 +160,25 @@ classdef NwbFile < types.core.NWBFile
 
     %% PRIVATE
     methods(Access=private)
+        function addWasGeneratedBy(obj)
+            if isprop(obj, 'general_was_generated_by')
+                if isa(obj.general_was_generated_by, 'types.untyped.DataStub')
+                    obj.general_was_generated_by = obj.general_was_generated_by.load();
+                end
+    
+                matnwbInfo = ver('matnwb');
+                wasGeneratedBy = {'matnwb'; matnwbInfo.Version};
+    
+                if isempty(obj.general_was_generated_by)
+                    obj.general_was_generated_by = wasGeneratedBy;
+                else
+                    if ~any(contains(obj.general_was_generated_by(:), 'matnwb'))
+                        obj.general_was_generated_by(:, end+1) = wasGeneratedBy;
+                    end
+                end
+            end
+        end
+
         function embedSpecifications(obj, output_file_id)
             jsonSpecs = schemes.exportJson();
 
