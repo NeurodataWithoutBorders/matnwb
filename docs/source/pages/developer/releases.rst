@@ -3,7 +3,7 @@
 How to Create a New Release
 ===========================
 
-1. **Navigate to the `"Actions" <https://github.com/NeurodataWithoutBorders/matnwb/actions/workflows/prepare_release.yml>`_ tab** in the MatNwb repository on GitHub.
+1. **Navigate to the** `"Actions" <https://github.com/NeurodataWithoutBorders/matnwb/actions/workflows/prepare_release.yml>`_ **tab** in the MatNwb repository on GitHub.
 
 2. **Click "Run workflow"**, then:
    - Enter the desired version number in ``major.minor.patch`` format (e.g., ``2.8.0``).
