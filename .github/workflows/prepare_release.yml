@@ -24,11 +24,13 @@ jobs:
 
   run_tests:
     name: Run MATLAB tests (${{ matrix.matlab-version }})
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     needs: [validate_version]
     strategy:
       fail-fast: false
       matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        matlab-version: [R2021a, R2021b, R2022a, R2022b, R2023a, R2023b, R2024a, R2024b]
         include:
           - matlab-version: R2021a
             python-version: '3.9'
@@ -169,7 +171,7 @@ jobs:
           with open('.github/badges/v${{ inputs.version }}/tested_with.svg', 'w') as f:
               f.write(badge(
                   left_text='tested with',
-                  right_text='R2021a | R2021b | R2022a | R2022b | R2023a | R2023b | R20204 | R2024b',
+                  right_text='R2021a | R2021b | R2022a | R2022b | R2023a | R2023b | R2024 | R2024b',
                   right_color='green'
               ))
           "
