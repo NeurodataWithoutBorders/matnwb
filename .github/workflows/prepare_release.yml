@@ -29,7 +29,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        os: [windows-latest, ubuntu-latest, macos-13]
         matlab-version: [R2021a, R2021b, R2022a, R2022b, R2023a, R2023b, R2024a, R2024b]
         include:
           - matlab-version: R2021a
@@ -65,13 +65,23 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Configure python env
+      - name: Install python dependencies
         run: |
           python -m pip install -U pip
           pip install -r +tests/requirements.txt
           python -m pip list
+
+      - name: Configure python env (macOS, ubuntu)
+        if: runner.os != 'Windows'
+        run: |
           echo "HDF5_PLUGIN_PATH=$(python -c "import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)")" >> "$GITHUB_ENV"
-          echo $( python -m pip show nwbinspector | grep ^Location: | awk '{print $2}' )
+
+      - name: Configure python env (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $pluginPath = python -c "import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)"
+          Add-Content -Path $env:GITHUB_ENV -Value "HDF5_PLUGIN_PATH=$pluginPath"
 
       - name: Install MATLAB
         uses: matlab-actions/setup-matlab@v2
@@ -80,6 +90,8 @@ jobs:
 
       - name: Run tests
         uses: matlab-actions/run-command@v2
+        env:
+          HDF5_PLUGIN_PATH: ${{ env.HDF5_PLUGIN_PATH }}
         with:
           command: |
             setenv("SKIP_PYNWB_COMPATIBILITY_TEST_FOR_TUTORIALS", ...
@@ -92,7 +104,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ matrix.matlab-version }}
+          name: test-results-${{ matrix.os }}-${{ matrix.matlab-version }}
           path: testResults.xml
 
   publish_junit:
@@ -113,7 +125,7 @@ jobs:
       - name: Publish test results
         uses: mikepenz/action-junit-report@v4
         with:
-          report_paths: 'testResults*.xml'
+          report_paths: 'testResults.xml'
 
   update_version:
     name: Create new draft relase for given version
@@ -184,7 +196,7 @@ jobs:
           git config user.name "${{ github.workflow }} by ${{ github.actor }}"
           git config user.email "<>"
 
-          # Recreate the tag with a message
+          # Create the tag with a message
           git tag -a "${{ inputs.version }}" -m "Release ${{ inputs.version }}" 
 
           # Push the new tag to the remote repository
@@ -222,4 +234,6 @@ jobs:
           draft: true
           tag: ${{ inputs.version }}
           generateReleaseNotes: true
-          body: "![MATLAB Versions Tested](https://raw.githubusercontent.com/NeurodataWithoutBorders/matnwb/refs/heads/gh-badges/.github/badges/v${{ inputs.version }}/tested_with.svg)"
+          body: |
+            ![Tested On Platforms](https://raw.githubusercontent.com/NeurodataWithoutBorders/matnwb/refs/heads/gh-badges/.github/badges/tested_on.svg)
+            ![MATLAB Versions Tested](https://raw.githubusercontent.com/NeurodataWithoutBorders/matnwb/refs/heads/gh-badges/.github/badges/v${{ inputs.version }}/tested_with.svg)
