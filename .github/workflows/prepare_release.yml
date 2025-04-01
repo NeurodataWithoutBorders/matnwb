@@ -120,12 +120,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: test-results-*
-          merge-multiple: true
+          merge-multiple: false
 
       - name: Publish test results
         uses: mikepenz/action-junit-report@v4
         with:
-          report_paths: 'testResults.xml'
+          report_paths: '*/testResults.xml'
 
   update_version:
     name: Create new draft relase for given version
