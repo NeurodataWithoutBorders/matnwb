@@ -33,11 +33,12 @@ class PyNWBIOTest(unittest.TestCase):
 
     def testInFromMatNWB(self):
         filename = 'MatNWB.' + self.__class__.__name__ + '.testOutToPyNWB.nwb'
-        with HDF5IO(filename, manager=get_manager(), mode='r') as io:
+        with HDF5IO(filename, manager=get_manager(), mode='r+') as io:
             matfile = io.read()
             matcontainer = self.getContainer(matfile)
             pycontainer = self.getContainer(self.file)
-            self.assertContainerEqual(matcontainer, pycontainer)
+            # ignore was_generated_by because it will be specific to matnwb generated file
+            self.assertContainerEqual(matcontainer, pycontainer, ignoreFields=["was_generated_by"])
 
     def testOutToMatNWB(self):
         filename = 'PyNWB.' + self.__class__.__name__ + '.testOutToMatNWB.nwb'
@@ -51,7 +52,7 @@ class PyNWBIOTest(unittest.TestCase):
     def getContainer(self, file):
         raise unittest.SkipTest('Cannot run test unless getContainer is implemented')
 
-    def assertContainerEqual(self, container1, container2):           # noqa: C901
+    def assertContainerEqual(self, container1, container2, ignoreFields=[]):           # noqa: C901
         '''
         container1 is what was read or generated
         container2 is what is hardcoded in the TestCase
@@ -64,6 +65,8 @@ class PyNWBIOTest(unittest.TestCase):
         except AttributeError:
             container_fields = container1.__fields__
         for nwbfield in container_fields:
+            if nwbfield in ignoreFields:
+                continue
             with self.subTest(nwbfield=nwbfield, container_type=type1.__name__):
                 field1 = getattr(container1, nwbfield)
                 field2 = getattr(container2, nwbfield)
