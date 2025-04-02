@@ -1190,7 +1190,7 @@ methods
             if startsWith(class(obj.general_was_generated_by), 'types.untyped.')
                 refs = obj.general_was_generated_by.export(fid, [fullpath '/general/was_generated_by'], refs);
             elseif ~isempty(obj.general_was_generated_by)
-                io.writeDataset(fid, [fullpath '/general/was_generated_by'], obj.general_was_generated_by, 'forceArray');
+                io.writeDataset(fid, [fullpath '/general/was_generated_by'], obj.general_was_generated_by, 'forceArray', 'forceMatrix');
             end
         end
         if startsWith(class(obj.identifier), 'types.untyped.')

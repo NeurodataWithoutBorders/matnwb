@@ -151,12 +151,12 @@ methods
         if startsWith(class(obj.waveform_mean), 'types.untyped.')
             refs = obj.waveform_mean.export(fid, [fullpath '/waveform_mean'], refs);
         elseif ~isempty(obj.waveform_mean)
-            io.writeDataset(fid, [fullpath '/waveform_mean'], obj.waveform_mean, 'forceArray');
+            io.writeDataset(fid, [fullpath '/waveform_mean'], obj.waveform_mean, 'forceArray', 'forceMatrix');
         end
         if startsWith(class(obj.waveform_sd), 'types.untyped.')
             refs = obj.waveform_sd.export(fid, [fullpath '/waveform_sd'], refs);
         elseif ~isempty(obj.waveform_sd)
-            io.writeDataset(fid, [fullpath '/waveform_sd'], obj.waveform_sd, 'forceArray');
+            io.writeDataset(fid, [fullpath '/waveform_sd'], obj.waveform_sd, 'forceArray', 'forceMatrix');
         end
     end
 end
