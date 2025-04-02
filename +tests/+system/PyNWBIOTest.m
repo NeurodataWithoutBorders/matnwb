@@ -29,7 +29,10 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
             nwbExport(testCase.file, 'temp.nwb'); % hack to fill out ObjectView container paths.
             % ignore file_create_date because nwbExport will actually
             % mutate the property every export.
-            tests.util.verifyContainerEqual(testCase, pycontainer, matcontainer, {'file_create_date'});
+            % ignore general/was_generated_by because the value will be
+            % specific to matnwb generated file.
+            ignoreFields = {'file_create_date', 'general_was_generated_by'};
+            tests.util.verifyContainerEqual(testCase, pycontainer, matcontainer, ignoreFields);
         end
     end
     

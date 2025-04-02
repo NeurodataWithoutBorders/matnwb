@@ -4,6 +4,7 @@ function [tid, sid, data] = mapData2H5(fid, data, varargin)
 %   and properly converted data
 
 forceArray = any(strcmp('forceArray', varargin));
+forceMatrix = any(strcmp('forceMatrix', varargin));
 forceChunked = any(strcmp('forceChunking', varargin));
 
 if iscell(data)
@@ -43,7 +44,7 @@ elseif ~forceArray && ~iscell(data) && isscalar(data)
 elseif ~forceChunked && isempty(data)
     sid = H5S.create_simple(1, 0, 0);
 else
-    if isvector(data) || isempty(data)
+    if ~forceMatrix && (isvector(data) || isempty(data))
         num_dims = 1;
         dims = length(data);
     else

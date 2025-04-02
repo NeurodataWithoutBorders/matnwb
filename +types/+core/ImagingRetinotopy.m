@@ -994,7 +994,7 @@ methods
         if startsWith(class(obj.axis_1_phase_map), 'types.untyped.')
             refs = obj.axis_1_phase_map.export(fid, [fullpath '/axis_1_phase_map'], refs);
         elseif ~isempty(obj.axis_1_phase_map)
-            io.writeDataset(fid, [fullpath '/axis_1_phase_map'], obj.axis_1_phase_map, 'forceArray');
+            io.writeDataset(fid, [fullpath '/axis_1_phase_map'], obj.axis_1_phase_map, 'forceArray', 'forceMatrix');
         end
         if ~isempty(obj.axis_1_phase_map) && ~isa(obj.axis_1_phase_map, 'types.untyped.SoftLink') && ~isa(obj.axis_1_phase_map, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/axis_1_phase_map/dimension'], obj.axis_1_phase_map_dimension, 'forceArray');
@@ -1015,7 +1015,7 @@ methods
             if startsWith(class(obj.axis_1_power_map), 'types.untyped.')
                 refs = obj.axis_1_power_map.export(fid, [fullpath '/axis_1_power_map'], refs);
             elseif ~isempty(obj.axis_1_power_map)
-                io.writeDataset(fid, [fullpath '/axis_1_power_map'], obj.axis_1_power_map, 'forceArray');
+                io.writeDataset(fid, [fullpath '/axis_1_power_map'], obj.axis_1_power_map, 'forceArray', 'forceMatrix');
             end
         end
         if ~isempty(obj.axis_1_power_map) && ~isa(obj.axis_1_power_map, 'types.untyped.SoftLink') && ~isa(obj.axis_1_power_map, 'types.untyped.ExternalLink')
@@ -1045,7 +1045,7 @@ methods
         if startsWith(class(obj.axis_2_phase_map), 'types.untyped.')
             refs = obj.axis_2_phase_map.export(fid, [fullpath '/axis_2_phase_map'], refs);
         elseif ~isempty(obj.axis_2_phase_map)
-            io.writeDataset(fid, [fullpath '/axis_2_phase_map'], obj.axis_2_phase_map, 'forceArray');
+            io.writeDataset(fid, [fullpath '/axis_2_phase_map'], obj.axis_2_phase_map, 'forceArray', 'forceMatrix');
         end
         if ~isempty(obj.axis_2_phase_map) && ~isa(obj.axis_2_phase_map, 'types.untyped.SoftLink') && ~isa(obj.axis_2_phase_map, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/axis_2_phase_map/dimension'], obj.axis_2_phase_map_dimension, 'forceArray');
@@ -1066,7 +1066,7 @@ methods
             if startsWith(class(obj.axis_2_power_map), 'types.untyped.')
                 refs = obj.axis_2_power_map.export(fid, [fullpath '/axis_2_power_map'], refs);
             elseif ~isempty(obj.axis_2_power_map)
-                io.writeDataset(fid, [fullpath '/axis_2_power_map'], obj.axis_2_power_map, 'forceArray');
+                io.writeDataset(fid, [fullpath '/axis_2_power_map'], obj.axis_2_power_map, 'forceArray', 'forceMatrix');
             end
         end
         if ~isempty(obj.axis_2_power_map) && ~isa(obj.axis_2_power_map, 'types.untyped.SoftLink') && ~isa(obj.axis_2_power_map, 'types.untyped.ExternalLink')
@@ -1102,7 +1102,7 @@ methods
             if startsWith(class(obj.focal_depth_image), 'types.untyped.')
                 refs = obj.focal_depth_image.export(fid, [fullpath '/focal_depth_image'], refs);
             elseif ~isempty(obj.focal_depth_image)
-                io.writeDataset(fid, [fullpath '/focal_depth_image'], obj.focal_depth_image, 'forceArray');
+                io.writeDataset(fid, [fullpath '/focal_depth_image'], obj.focal_depth_image, 'forceArray', 'forceMatrix');
             end
         end
         if ~isempty(obj.focal_depth_image) && ~isa(obj.focal_depth_image, 'types.untyped.SoftLink') && ~isa(obj.focal_depth_image, 'types.untyped.ExternalLink')
@@ -1149,7 +1149,7 @@ methods
             if startsWith(class(obj.sign_map), 'types.untyped.')
                 refs = obj.sign_map.export(fid, [fullpath '/sign_map'], refs);
             elseif ~isempty(obj.sign_map)
-                io.writeDataset(fid, [fullpath '/sign_map'], obj.sign_map, 'forceArray');
+                io.writeDataset(fid, [fullpath '/sign_map'], obj.sign_map, 'forceArray', 'forceMatrix');
             end
         end
         if ~isempty(obj.sign_map) && ~isa(obj.sign_map, 'types.untyped.SoftLink') && ~isa(obj.sign_map, 'types.untyped.ExternalLink')
@@ -1171,7 +1171,7 @@ methods
         if startsWith(class(obj.vasculature_image), 'types.untyped.')
             refs = obj.vasculature_image.export(fid, [fullpath '/vasculature_image'], refs);
         elseif ~isempty(obj.vasculature_image)
-            io.writeDataset(fid, [fullpath '/vasculature_image'], obj.vasculature_image, 'forceArray');
+            io.writeDataset(fid, [fullpath '/vasculature_image'], obj.vasculature_image, 'forceArray', 'forceMatrix');
         end
         if ~isempty(obj.vasculature_image) && ~isa(obj.vasculature_image, 'types.untyped.SoftLink') && ~isa(obj.vasculature_image, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/vasculature_image/bits_per_pixel'], obj.vasculature_image_bits_per_pixel);
