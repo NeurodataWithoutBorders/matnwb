@@ -186,6 +186,10 @@ function dataExportString = fillDataExport(name, prop, elisions, required)
             options = [options {'''forceChunking''', '''forceArray'''}];
         elseif ~prop.scalar
             options = [options {'''forceArray'''}];
+            % If dataset is 2D, need to force matrix-like
+            if numel(prop.shape) == 2 && ~iscell(prop.shape{1})
+                options = [options {'''forceMatrix'''}];
+            end
         end
 
         % untyped compound
