@@ -39,3 +39,5 @@ Contents
 
    pages/developer/contributing
    pages/developer/documentation
+   pages/developer/releases
+
