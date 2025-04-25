@@ -2,6 +2,7 @@
     "titles": {
         "intro": "Getting Started with MatNWB",
         "read_demo": "Reading NWB Files with MatNWB",
+        "read_demo_dandihub": "Reading NWB Files with MatNWB on DandiHub",
         "basicUsage": "Basic Usage of MatNWB",
         "dimensionMapNoDataPipes": "Mapping Dimensions without DataPipes",
         "dimensionMapWithDataPipes": "Mapping Dimensions with DataPipes",
