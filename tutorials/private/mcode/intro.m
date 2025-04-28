@@ -9,8 +9,8 @@ addpath(genpath(pwd));
 %}
 %% Set up the NWB File
 % An NWB file represents a single session of an experiment. Each file must have 
-% a session_description, identifier, and session start time. Create a new <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/NWBFile.html 
-% |*NWBFile*|> object with those and additional metadata using the <https://neurodatawithoutborders.github.io/matnwb/doc/NwbFile.html 
+% a session_description, identifier, and session start time. Create a new <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html 
+% |*NWBFile*|> object with those and additional metadata using the <https://matnwb.readthedocs.io/en/latest/pages/functions/NwbFile.html 
 % |*NwbFile*|> command. For all MatNWB classes and functions, we use the Matlab 
 % method of entering keyword argument pairs, where arguments are entered as name 
 % followed by value. Ellipses are used for clarity.
@@ -26,9 +26,9 @@ nwb = NwbFile( ...
 nwb
 %% Subject Information
 % You can also provide information about your subject in the NWB file. Create 
-% a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Subject.html 
+% a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Subject.html 
 % |*Subject*|> object to store information such as age, species, genotype, sex, 
-% and a freeform description. Then set |*nwb.general_subject*| to the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Subject.html 
+% and a freeform description. Then set |*nwb.general_subject*| to the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Subject.html 
 % |*Subject*|> object.
 % 
 % 
@@ -56,7 +56,7 @@ subject
 % Note: the DANDI archive requires all NWB files to have a subject object with 
 % subject_id specified, and strongly encourages specifying the other fields.
 %% Time Series Data
-% <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/TimeSeries.html 
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
 % |*TimeSeries*|> is a common base class for measurements sampled over time, and 
 % provides fields for |data| and |timestamps| (regularly or irregularly sampled). 
 % You will also need to supply the |name| and |unit| of measurement (<https://en.wikipedia.org/wiki/International_System_of_Units 
@@ -64,7 +64,7 @@ subject
 % 
 % 
 % 
-% For instance, we can store a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/TimeSeries.html 
+% For instance, we can store a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
 % |*TimeSeries*|> data where recording started |0.0| seconds after |start_time| 
 % and sampled every second (1 Hz):
 
@@ -84,24 +84,24 @@ time_series_with_timestamps = types.core.TimeSeries( ...
     'data_unit', 'm', ...
     'timestamps', linspace(0, 1, 10));
 %% 
-% The <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/TimeSeries.html 
+% The <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
 % |*TimeSeries*|> class serves as the foundation for all other time series types 
 % in the NWB format. Several specialized subclasses extend the functionality of 
-% <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/TimeSeries.html 
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
 % |*TimeSeries*|>, each tailored to handle specific kinds of data. In the next 
 % section, we’ll explore one of these specialized types. For a full overview, 
 % please check out the <https://nwb-schema.readthedocs.io/en/latest/format.html#type-hierarchy 
 % type hierarchy> in the NWB schema documentation.
 %% Other Types of Time Series 
-% As mentioned previously, there are many subtypes of <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/TimeSeries.html 
+% As mentioned previously, there are many subtypes of <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
 % |*TimeSeries*|> in MatNWB that are used to store different kinds of data. One 
-% example is <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/AnnotationSeries.html 
-% |*AnnotationSeries*|>, a subclass of <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/TimeSeries.html 
+% example is <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/AnnotationSeries.html 
+% |*AnnotationSeries*|>, a subclass of <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
 % |*TimeSeries*|> that stores text-based records about the experiment. Similar 
-% to our <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/TimeSeries.html 
-% |*TimeSeries*|> example above, we can create an <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/AnnotationSeries.html 
+% to our <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
+% |*TimeSeries*|> example above, we can create an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/AnnotationSeries.html 
 % |*AnnotationSeries*|> object with text information about a stimulus and add 
-% it to the stimulus_presentation group in the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/NWBFile.html 
+% it to the stimulus_presentation group in the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html 
 % |*NWBFile*|>. Below is an example where we create an AnnotationSeries object 
 % with annotations for airpuff stimuli and add it to the NWBFile.
 
@@ -117,8 +117,8 @@ nwb.stimulus_presentation.set('Airpuffs', annotations)
 %% Behavior
 % SpatialSeries and Position
 % Many types of data have special data types in NWB. To store the spatial position 
-% of a subject, we will use the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/SpatialSeries.html 
-% |*SpatialSeries*|> and <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Position.html 
+% of a subject, we will use the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
+% |*SpatialSeries*|> and <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Position.html 
 % |*Position*|> classes. 
 % 
 % 
@@ -130,12 +130,12 @@ nwb.stimulus_presentation.set('Airpuffs', annotations)
 % class diagrams on <https://en.wikipedia.org/wiki/Class_diagram the wikipedia 
 % page>.
 % 
-% <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/SpatialSeries.html 
-% |*SpatialSeries*|> is a subclass of <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/TimeSeries.html 
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
+% |*SpatialSeries*|> is a subclass of <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
 % |*TimeSeries*|>, a common base class for measurements sampled over time, and 
 % provides fields for data and time (regularly or irregularly sampled). Here, 
-% we put a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/SpatialSeries.html 
-% |*SpatialSeries*|> object called |'SpatialSeries'| in a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Position.html 
+% we put a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
+% |*SpatialSeries*|> object called |'SpatialSeries'| in a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Position.html 
 % |*Position*|> object. If the data is sampled at a regular interval, it is recommended 
 % to specify the |starting_time| and the sampling rate (|starting_time_rate|), 
 % although it is still possible to specify |timestamps| as in the |*time_series_with_timestamps*| 
@@ -161,8 +161,8 @@ position = types.core.Position('SpatialSeries', spatial_series_ts);
 % single algorithm. 
 % 
 % Create a processing module called "behavior" for storing behavioral data in 
-% the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/NWBFile.html 
-% |*NWBFile*|> and add the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Position.html 
+% the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html 
+% |*NWBFile*|> and add the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Position.html 
 % |*Position*|> object to the module.
 
 % create processing module
@@ -175,22 +175,22 @@ behavior_module.nwbdatainterface.set('Position', position);
 % add the processing module to the NWBFile object, and name the processing module "behavior"
 nwb.processing.set('behavior', behavior_module);
 % Trials
-% Trials are stored in a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/TimeIntervals.html 
-% |*TimeIntervals*|> object which is a subclass of <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
-% |*DynamicTable*|>. <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
+% Trials are stored in a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeIntervals.html 
+% |*TimeIntervals*|> object which is a subclass of <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
+% |*DynamicTable*|>. <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
 % |*DynamicTable*|> objects are used to store tabular metadata throughout NWB, 
 % including for trials, electrodes, and sorted units. They offer flexibility for 
 % tabular data by allowing required columns, optional columns, and custom columns.
 % 
 % 
 % 
-% The trials <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
+% The trials <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
 % |*DynamicTable*|> can be thought of as a table with this structure:
 % 
 % 
 % 
-% Trials are stored in a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/TimeIntervals.html 
-% |*TimeIntervals*|> object which subclasses <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
+% Trials are stored in a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeIntervals.html 
+% |*TimeIntervals*|> object which subclasses <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
 % |*DynamicTable*|>. Here, we are adding |'correct'|, which will be a logical 
 % array.
 
@@ -222,11 +222,11 @@ nwbExport(nwb, 'intro_tutorial.nwb')
 
 read_nwbfile = nwbRead('intro_tutorial.nwb', 'ignorecache')
 %% 
-% We can print the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/SpatialSeries.html 
+% We can print the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
 % |*SpatialSeries*|> data traversing the hierarchy of objects. The processing 
-% module called |'behavior'| contains our <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Position.html 
-% |*Position*|> object named |'Position'|. The <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Position.html 
-% |*Position*|> object contains our <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/SpatialSeries.html 
+% module called |'behavior'| contains our <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Position.html 
+% |*Position*|> object named |'Position'|. The <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Position.html 
+% |*Position*|> object contains our <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
 % |*SpatialSeries*|> object named |'SpatialSeries'|.
 
 read_spatial_series = read_nwbfile.processing.get('behavior'). ...
@@ -259,7 +259,7 @@ read_spatial_series.data(:, 1:10)
 % * <./icephys.mlx Intracellular electrophysiology>
 % * <./ophys.mlx Optical physiology>
 %% 
-% See the <https://neurodatawithoutborders.github.io/matnwb/doc/index.html API 
-% documentation> to learn what data types are available.
+% See the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/index.html 
+% API documentation> to learn what data types are available.
 % 
 %

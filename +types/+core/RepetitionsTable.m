@@ -2,7 +2,7 @@ classdef RepetitionsTable < types.hdmf_common.DynamicTable & types.untyped.Group
 % REPETITIONSTABLE - A table for grouping different sequential intracellular recordings together. With each SequentialRecording typically representing a particular type of stimulus, the RepetitionsTable table is typically used to group sets of stimuli applied in sequence.
 %
 % Required Properties:
-%  id, sequential_recordings, sequential_recordings_index
+%  colnames, description, id, sequential_recordings, sequential_recordings_index
 
 
 % REQUIRED PROPERTIES

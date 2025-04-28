@@ -140,6 +140,29 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
             warning(warningId, warningMessage) %#ok<SPWRN>
         end
     end
+    
+    methods (Hidden)
+        % Set of methods that should be publicly available, for example for
+        % testing purposes, or other use cases where type inspection might
+        % be necessary.
+        function requiredProps = getRequiredProperties(obj)
+        % getRequiredProperties - Get the required properties for the neurodata type.
+
+            typeClassName = class(obj);
+            typeNamespaceVersion = getNamespaceVersionForType(typeClassName);
+            typeKey = sprintf('%s_%s', typeClassName, typeNamespaceVersion);
+
+            if isKey(obj.REQUIRED, typeKey)
+                requiredProps = obj.REQUIRED( typeKey );
+            else
+                className = class(obj);
+                % Parse NWB schemas to retrieve required properties for the 
+                % neurodata type and add to persistent cache/map.
+                requiredProps = schemes.internal.getRequiredPropsForClass(className);
+                obj.REQUIRED( typeKey ) = requiredProps;
+            end
+        end
+    end
 
     methods (Access = protected) % Override matlab.mixin.CustomDisplay
         function str = getFooter(obj)
@@ -229,27 +252,6 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
     end
 
     methods (Access = private)
-        function requiredProps = getRequiredProperties(obj)
-
-            % Introspectively retrieve required properties and add to
-            % persistent cache/map.
-
-            typeClassName = class(obj);
-            typeNamespaceVersion = getNamespaceVersionForType(typeClassName);
-
-            typeKey = sprintf('%s_%s', typeClassName, typeNamespaceVersion);
-
-            if isKey(obj.REQUIRED, typeKey)
-                requiredProps = obj.REQUIRED( typeKey );
-            else
-                mc = metaclass(obj);
-                propertyDescription = {mc.PropertyList.Description};
-                isRequired = startsWith(propertyDescription, 'REQUIRED');
-                requiredProps = {mc.PropertyList(isRequired).Name};
-                obj.REQUIRED( typeKey ) = requiredProps;
-            end
-        end
-
         function tf = propertyValueEqualsDefaultValue(obj, propName)
         % propertyValueEqualsDefaultValue - Check if value of property is
         % equal to the property's default value

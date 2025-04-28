@@ -1,0 +1,5 @@
+% MatNWB : NWB For MATLAB
+% Version {{version_number}} (R2019b+) {{date_string}}
+%
+% Copyright (c) {{year_number}}, Neurodata Without Borders
+% ---------------------------------------------

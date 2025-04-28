@@ -1,0 +1,7 @@
+namespaces:
+- full_name: Required Properties Schema Test
+  name: rps
+  schema:
+  - namespace: core
+  - source: rps.reqprops.yaml
+  version: 1.0.0

@@ -2,7 +2,7 @@ classdef DynamicTableRegion < types.hdmf_common.VectorData & types.untyped.Datas
 % DYNAMICTABLEREGION - DynamicTableRegion provides a link from one table to an index or region of another. The `table` attribute is a link to another `DynamicTable`, indicating which table is referenced, and the data is int(s) indicating the row(s) (0-indexed) of the target array. `DynamicTableRegion`s can be used to associate rows with repeated meta-data without data duplication. They can also be used to create hierarchical relationships between multiple `DynamicTable`s. `DynamicTableRegion` objects may be paired with a `VectorIndex` object to create ragged references, so a single cell of a `DynamicTable` can reference many rows of another `DynamicTable`.
 %
 % Required Properties:
-%  data
+%  data, description, table
 
 
 % REQUIRED PROPERTIES

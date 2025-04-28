@@ -2,7 +2,7 @@
 % _last updated: January 1st, 2023_
 % 
 % In this tutorial, we demonstrate the reading and usage of the NWB file produced 
-% in the <https://neurodatawithoutborders.github.io/matnwb/tutorials/html/convertTrials.html 
+% in the <https://matnwb.readthedocs.io/en/latest/pages/tutorials/convertTrials.html 
 % File Conversion Tutorial>. The output is a near-reproduction of Figure 1e from 
 % the <https://www.ncbi.nlm.nih.gov/pubmed/27074502 Li et al> publication, showing 
 % raster and peristimulus time histogram (PSTH) plots for neural recordings from 

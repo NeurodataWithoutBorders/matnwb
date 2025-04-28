@@ -2,7 +2,7 @@ classdef ClusterWaveforms < types.core.NWBDataInterface & types.untyped.GroupCla
 % CLUSTERWAVEFORMS - DEPRECATED The mean waveform shape, including standard deviation, of the different clusters. Ideally, the waveform analysis should be performed on data that is only high-pass filtered. This is a separate module because it is expected to require updating. For example, IMEC probes may require different storage requirements to store/display mean waveforms, requiring a new interface or an extension of this one.
 %
 % Required Properties:
-%  waveform_filtering, waveform_mean, waveform_sd
+%  clustering_interface, waveform_filtering, waveform_mean, waveform_sd
 
 
 % REQUIRED PROPERTIES
@@ -151,12 +151,12 @@ methods
         if startsWith(class(obj.waveform_mean), 'types.untyped.')
             refs = obj.waveform_mean.export(fid, [fullpath '/waveform_mean'], refs);
         elseif ~isempty(obj.waveform_mean)
-            io.writeDataset(fid, [fullpath '/waveform_mean'], obj.waveform_mean, 'forceArray');
+            io.writeDataset(fid, [fullpath '/waveform_mean'], obj.waveform_mean, 'forceArray', 'forceMatrix');
         end
         if startsWith(class(obj.waveform_sd), 'types.untyped.')
             refs = obj.waveform_sd.export(fid, [fullpath '/waveform_sd'], refs);
         elseif ~isempty(obj.waveform_sd)
-            io.writeDataset(fid, [fullpath '/waveform_sd'], obj.waveform_sd, 'forceArray');
+            io.writeDataset(fid, [fullpath '/waveform_sd'], obj.waveform_sd, 'forceArray', 'forceMatrix');
         end
     end
 end

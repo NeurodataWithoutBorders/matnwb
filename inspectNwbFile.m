@@ -69,14 +69,19 @@ function result = inspectNwbFile(nwbFilepath, options)
     [hasCliNwbInspector, nwbInspectorExecutable] = isCliNwbInspectorAvailable();
 
     if hasPyNwbInspector && ~options.UseCLI
-        pyResult = py.list(py.nwbinspector.inspect_nwbfile(nwbfile_path=nwbFilepath));
+        pyResult = py.list(py.nwbinspector.inspect_nwbfile(nwbFilepath));
         result = convertNwbInspectorResultsToTable(pyResult);
 
     elseif hasCliNwbInspector
         reportFilePath = [tempname, '.json'];
-        systemCommand = sprintf('%s %s --levels importance --json-file-path %s', ...
-            nwbInspectorExecutable, nwbFilepath, reportFilePath);
-        
+        if isunix
+            systemCommand = sprintf('%s %s --levels importance --json-file-path %s', ...
+                nwbInspectorExecutable, nwbFilepath, reportFilePath);
+        elseif ispc
+            % Use double quotes in case there are spaces in the filepaths
+            systemCommand = sprintf('"%s" "%s" --levels importance --json-file-path "%s"', ...
+                nwbInspectorExecutable, nwbFilepath, reportFilePath);      
+        end
         [status, m] = system(systemCommand);
         
         assert(status == 0, ...
@@ -160,16 +165,21 @@ end
 function isNwbInspectorInstalled = isPyNwbInspectorAvailable()
     isNwbInspectorInstalled = false;
     if exist("pyenv", "builtin") == 5
-        try 
-            py.importlib.metadata.version(distribution_name="nwbinspector");
-            isNwbInspectorInstalled = true;
-        catch ME
-            if contains(ME.message, "PackageNotFoundError")
-                warning([...
-                    'nwbinspector is not installed for MATLAB''s default ', ...
-                    'python environment:\n%s'], pyenv().Home)
-            else
-                throwAsCaller(ME)
+        pythonEnv = pyenv();
+        if pythonEnv.Executable == ""
+            return
+        else
+            try 
+                py.importlib.metadata.version("nwbinspector");
+                isNwbInspectorInstalled = true;
+            catch ME
+                if contains(ME.message, "PackageNotFoundError")
+                    warning([...
+                        'nwbinspector is not installed for MATLAB''s default ', ...
+                        'python environment:\n%s'], pyenv().Home)
+                else
+                    throwAsCaller(ME)
+                end
             end
         end
     end
@@ -185,10 +195,18 @@ function [isNwbInspectorInstalled, nwbInspectorExecutable] = isCliNwbInspectorAv
     if isunix
         systemCommand = sprintf('which %s', nwbInspectorExecutable);
     elseif ispc
-        systemCommand = sprintf('where %s', nwbInspectorExecutable);
+        if isfile([nwbInspectorExecutable, '.exe'])
+            % If the nwbexecutable exists as a file, we have the absolute
+            % path and don't need to check with the where command
+            isNwbInspectorInstalled = true;
+            return
+        else
+            systemCommand = sprintf('where "%s"', nwbInspectorExecutable);
+        end
     end
-    assert(exist('systemCommand', 'var'), ...
+    assert(logical(exist('systemCommand', 'var')), ...
         'Unknown platform, could not generate system command. Please report!')
     [status, ~] = system(systemCommand);
+    
     isNwbInspectorInstalled = status == 0;
 end

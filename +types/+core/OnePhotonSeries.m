@@ -2,7 +2,7 @@ classdef OnePhotonSeries < types.core.ImageSeries & types.untyped.GroupClass
 % ONEPHOTONSERIES - Image stack recorded over time from 1-photon microscope.
 %
 % Required Properties:
-%  data
+%  data, data_unit, imaging_plane
 
 
 % REQUIRED PROPERTIES

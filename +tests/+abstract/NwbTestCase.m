@@ -33,17 +33,7 @@ classdef (Abstract, SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) .
 
     methods (Static, Access = protected)
         function [nwbFile, nwbFileCleanup] = readNwbFileWithPynwb(nwbFilename)
-            try
-                io = py.pynwb.NWBHDF5IO(nwbFilename);
-                nwbFile = io.read();
-                nwbFileCleanup = onCleanup(@(x) closePyNwbObject(io));
-            catch ME
-                error(ME.message)
-            end
-
-            function closePyNwbObject(io)
-                io.close()
-            end
+            [nwbFile, nwbFileCleanup] = tests.util.readWithPynwb(nwbFilename);
         end
     
         function nwbFilename = getRandomFilename()

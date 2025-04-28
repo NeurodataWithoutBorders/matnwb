@@ -2,7 +2,7 @@ classdef IntracellularResponsesTable < types.hdmf_common.DynamicTable & types.un
 % INTRACELLULARRESPONSESTABLE - Table for storing intracellular response related metadata.
 %
 % Required Properties:
-%  id, response
+%  colnames, id, response
 
 
 % REQUIRED PROPERTIES

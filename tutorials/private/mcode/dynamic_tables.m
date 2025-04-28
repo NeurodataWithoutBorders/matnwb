@@ -1,7 +1,7 @@
 %% DynamicTables Tutorial
-% This is a user guide to interacting with <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
+% This is a user guide to interacting with <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
 % *DynamicTable*> objects in MatNWB.
-%% *MatNWB Setup*
+%% *MatNWB setup*
 % Start by setting up your MATLAB workspace. The code below adds the directory 
 % containing the MatNWB package to the MATLAB search path. MatNWB works by automatically 
 % creating API classes based on a defined schema.
@@ -11,23 +11,23 @@ path_to_matnwb = '~/Repositories/matnwb'; % change to your own path location
 addpath(genpath(pwd));
 %}
 %% Constructing a table with initialized columns
-% The <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
+% The <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
 % *DynamicTable*> class represents a column-based table to which you can add custom 
 % columns. It consists of a description, a list of columns , and a list of row 
-% IDs. You can create a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
-% *DynamicTable*> by first defining the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/VectorData.html 
-% *VectorData*> objects that will make up the columns of the table. Each <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/VectorData.html 
+% IDs. You can create a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
+% *DynamicTable*> by first defining the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/VectorData.html 
+% *VectorData*> objects that will make up the columns of the table. Each <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/VectorData.html 
 % *VectorData*> object must contain the same number of rows. A list of rows IDs 
-% may be passed to the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
+% may be passed to the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
 % *DynamicTable*> using the id argument. Row IDs are a useful way to access row 
 % information independent of row location index. The list of row IDs must be cast 
-% as an <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/ElementIdentifiers.html 
-% *ElementIdentifiers*> object before being passed to the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
-% *DynamicTable*> object. If no value is passed to id, an <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/ElementIdentifiers.html 
+% as an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/ElementIdentifiers.html 
+% *ElementIdentifiers*> object before being passed to the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
+% *DynamicTable*> object. If no value is passed to id, an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/ElementIdentifiers.html 
 % *ElementIdentifiers*> object with 0-indexed row IDs will be created for you 
 % automatically.
 % 
-% *MATLAB Syntax Note*:  Using column vectors is crucial to properly build vectors 
+% *MATLAB Syntax Note*: Using column vectors is crucial to properly build vectors 
 % and tables. When defining individual values, make sure to use semi-colon (;) 
 % instead of instead of comma (,) when defining the data fields of these.
 
@@ -50,7 +50,7 @@ my_table = types.hdmf_common.DynamicTable( ...
 );
 my_table
 %% Adding rows
-% You can add rows to an existing <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
+% You can add rows to an existing <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
 % *DynamicTable*> using the object's |addRow| method. One way of using this method 
 % is to pass in the names of columns as parameter names followed by the elements 
 % to append. The class of the elements of the column must match the elements to 
@@ -58,7 +58,7 @@ my_table
 
 my_table.addRow('col1', 3, 'col2', {'c'}, 'id', 2);
 %% Adding columns
-% You can add new columns to an existing <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
+% You can add new columns to an existing <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
 % *DynamicTable*> object using the |addColumn| method. One way of using this method 
 % is to pass in the names of each new column followed by the corresponding values 
 % for each new column. The height of the new columns must match the height of 
@@ -71,8 +71,8 @@ col4 = types.hdmf_common.VectorData('description', 'column #4', ...
 
 my_table.addColumn('col3', col3,'col4', col4);
 %% Create MATLAB table and convert to dynamic table
-% As an alternative to building a dynamic table using the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
-% *DynamicTable*> and <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/VectorData.html 
+% As an alternative to building a dynamic table using the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
+% *DynamicTable*> and <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/VectorData.html 
 % *VectorData*> data types, it is also possible to create a MATLAB table and convert 
 % it to a dynamic table. Lets create the same table as before, but using MATLAB's 
 % table class:
@@ -96,26 +96,26 @@ T
 
 dynamic_table = util.table2nwb(T, 'A MATLAB table that was converted to a dynamic table')
 %% Enumerated (categorical) data
-% <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_experimental/EnumData.html 
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_experimental/EnumData.html 
 % |*EnumData*|> is a special type of column for storing an enumerated data type. 
 % This way each unique value is stored once, and the data references those values 
 % by index. Using this method is more efficient than storing a single value many 
 % times, and has the advantage of communicating to downstream tools that the data 
 % is categorical in nature.
-% Warning Regarding EnumData
-% <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_experimental/EnumData.html 
+% Warning regarding EnumData 
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_experimental/EnumData.html 
 % |*EnumData*|> is currently an experimental feature and as such should not be 
 % used in a production environment.
 
 CellTypeElements = types.hdmf_common.VectorData(...
     'description', 'fixed set of elements referenced by cell_type' ...
     , 'data', {'aa', 'bb', 'cc'} ... % the enumerated elements
-    );
+);
 CellType = types.hdmf_experimental.EnumData( ...
     'description', 'this column holds categorical variables' ... % properties derived from VectorData
     , 'data', [0, 1, 2, 1, 0] ... % zero-indexed offset to elements.
     , 'elements', types.untyped.ObjectView(CellTypeElements) ...
-    );
+);
 
 MyTable = types.hdmf_common.DynamicTable('description', 'an example table');
 MyTable.vectordata.set('cell_type_elements', CellTypeElements); % the *_elements format is required for compatibility with pynwb
@@ -123,23 +123,22 @@ MyTable.addColumn('cell_type', CellType);
 %% Ragged array columns
 % A table column with a different number of elements for each row is called 
 % a "ragged array column." To define a table with a ragged array column, pass 
-% both the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/VectorData.html 
-% *VectorData*> and the corresponding <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/VectorIndex.html 
-% *VectorIndex*> as columns of the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
-% *DynamicTable*> object. The <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/VectorData.html 
-% *VectorData*> columns will contain the data values. The <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/VectorIndex.html 
+% both the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/VectorData.html 
+% *VectorData*> and the corresponding <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/VectorIndex.html 
+% *VectorIndex*> as columns of the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
+% *DynamicTable*> object. The <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/VectorData.html 
+% *VectorData*> columns will contain the data values. The <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/VectorIndex.html 
 % *VectorIndex*> column serves to indicate how to arrange the data across rows. 
-% By convention the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/VectorIndex.html 
+% By convention the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/VectorIndex.html 
 % *VectorIndex*> object corresponding to a particular column must have have the 
 % same name with the addition of the '_index' suffix.
 % 
-% Below, the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/VectorIndex.html 
+% Below, the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/VectorIndex.html 
 % *VectorIndex*> values indicate to place the 1st to 3rd (inclusive) elements 
-% of the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/VectorData.html 
+% of the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/VectorData.html 
 % *VectorData*> into the first row and 4th element into the second row. The resulting 
 % table will have the cell {'1a'; '1b'; '1c'} in the first row and the cell {'2a'} 
 % in the second row.
-
 
 col1 = types.hdmf_common.VectorData( ...
     'description', 'column #1', ...
@@ -160,13 +159,13 @@ table_ragged_col = types.hdmf_common.DynamicTable( ...
     'id', types.hdmf_common.ElementIdentifiers('data', [0; 1]) ...  % 0-indexed, for compatibility with Python
 );
 % Adding ragged array rows
-% You can add a new row to the ragged array column. Under the hood, the addRow 
-% method will add the appropriate value to the VectorIndex column to maintain 
-% proper formatting.
+% You can add a new row to the ragged array column. Under the hood, the |addRow| 
+% method will add the appropriate value to the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/VectorIndex.html 
+% *VectorIndex*> column to maintain proper formatting.
 
 table_ragged_col.addRow('col1', {'3a'; '3b'; '3c'}, 'id', 2);
 %% Accessing row elements
-% You can access data from entire rows of a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
+% You can access data from entire rows of a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
 % *DynamicTable*> object by calling the |getRow| method for the corresponding 
 % object. You can supply either an individual row number or a list of row numbers.
 
@@ -188,14 +187,13 @@ my_table.getRow(1, 'useId', true)
 table_ragged_col.getRow(1:2)
 %% Accessing column elements
 % To access all rows from a particular column use the .get method on the vectordata 
-% field of the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
+% field of the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
 % *DynamicTable*> object
-
 
 my_table.vectordata.get('col2').data
 %% Referencing rows of other tables
 % You can create a column that references rows of other tables by adding a <file:///Users/cesar/Repositories/matnwb/doc/+types/+hdmf_common/DynamicTableRegion.html 
-% *DynamicTableRegion*> object as a column of a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
+% *DynamicTableRegion*> object as a column of a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
 % *DynamicTable*>. This is analogous to a foreign key in a relational database. 
 % The <file:///Users/cesar/Repositories/matnwb/doc/+types/+hdmf_common/DynamicTableRegion.html 
 % *DynamicTableRegion*> class takes in an |ObjectView| object as argument. |ObjectView| 
@@ -219,14 +217,14 @@ dtr_table = types.hdmf_common.DynamicTable( ...
     'data_col',data_col, ...
     'id',types.hdmf_common.ElementIdentifiers('data', [0; 1; 2; 3]) ...
 );
-%% Converting a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html *DynamicTable*> *to a MATLAB table*
-% You can convert a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
+%% Converting a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html *DynamicTable*> *to a MATLAB table*
+% You can convert a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
 % *DynamicTable*> object to a MATLAB table by making use of the object's |toTable| 
 % method. This is a useful way to view the whole table in a human-readable format.
 
 my_table.toTable()
 %% 
-% When the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
+% When the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
 % *DynamicTable*> object contains a column that references other tables, you can 
 % pass in a Boolean to indicate whether to include just the row indices of the 
 % referenced table. Passing in |false| will result in inclusion of the referenced 
@@ -238,15 +236,15 @@ dtr_table.toTable(false)
 % Dataset, which by default are set to an unchangeable size. This means that once 
 % a file is written, it is not possible to add a new row. If you want to be able 
 % to save this file, load it, and add more rows to the table, you will need to 
-% set this up when you create the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/VectorData.html 
-% *VectorData*> and <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/ElementIdentifiers.html 
-% *ElementIdentifiers*> columns of a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
-% *DynamicTable*>*.* Specifically, you must wrap the column data with a *DataPipe* 
-% object. The *DataPipe* class takes in maxSize and axis as arguments to indicate 
+% set this up when you create the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/VectorData.html 
+% *VectorData*> and <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/ElementIdentifiers.html 
+% *ElementIdentifiers*> columns of a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
+% *DynamicTable*>. Specifically, you must wrap the column data with a *DataPipe* 
+% object. The *DataPipe* class takes in |maxSize| and |axis| as arguments to indicate 
 % the maximum desired size for each axis and the axis to which to append to, respectively. 
 % For example, creating a *DataPipe* object with a _maxSize_ value equal to |[Inf, 
-% 1]| indicates that the number of rows may increase indifinetely. In contrast, 
-% setting _maxSize_  equal to |[8, 1]| would allow the column to grow to a maximum 
+% 1]| indicates that the number of rows may increase indefinitely. In contrast, 
+% setting _maxSize_ equal to |[8, 1]| would allow the column to grow to a maximum 
 % height of 8.
 
 % create NwbFile object with required fields
@@ -254,7 +252,7 @@ file= NwbFile( ...
     'session_start_time', datetime('2021-01-01 00:00:00', 'TimeZone', 'local'), ...
     'identifier', 'ident1', ...
     'session_description', 'ExpandableTableTutorial' ...
-    );
+);
 
 % create VectorData objects with DataPipe objects
 start_time_exp = types.hdmf_common.VectorData( ...
@@ -297,7 +295,7 @@ file.intervals_trials = types.core.TimeIntervals( ...
     'stop_time', stop_time_exp, ...
     'randomvalues', random_exp, ...
     'id', ids_exp ...
-);  
+);
 % export file
 nwbExport(file, 'expandableTableTestFile.nwb');
 %% 
@@ -313,16 +311,16 @@ readFile.intervals_trials.addRow( ...
 nwbExport(readFile, 'expandableTableTestFile.nwb');
 %% 
 % *Note: DataPipe* objects change how the dimension of the datasets for each 
-% column map onto the shape of HDF5 datasets. See <https://github.com/NeurodataWithoutBorders/matnwb#Data-Dimensions 
-% README>  for more details.
-%% Multidimensional Columns
+% column map onto the shape of HDF5 datasets. See the <https://matnwb.readthedocs.io/en/latest/pages/getting_started/important.html#data-dimensions 
+% documentation> for more details.
+%% Multidimensional columns
 % The order of dimensions of multidimensional columns in MatNWB is reversed 
-% relative to the Python HDMF package (see <https://github.com/NeurodataWithoutBorders/matnwb#Data-Dimensions 
-% README>  for detailed explanation). Therefore, the height of a multidimensional 
-% column belonging to a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
+% relative to the Python HDMF package (see <https://matnwb.readthedocs.io/en/latest/pages/getting_started/important.html#data-dimensions 
+% documentation> for detailed explanation). Therefore, the height of a multidimensional 
+% column belonging to a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
 % *DynamicTable*> object is defined by the shape of its last dimension. A valid 
-% <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
-% *DynamicTable*> must have matched height across columns.
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
+% *DynamicTable*> must have matched height across columns. 
 % Constructing multidimensional columns
 
 % Define 1D column
@@ -343,11 +341,10 @@ multi_dim_table = types.hdmf_common.DynamicTable( ...
     'multi', multi_col, ...
     'id', types.hdmf_common.ElementIdentifiers('data', (0:9)') ...  % 0-indexed, for compatibility with Python
 );
-
 % Multidimensional ragged array columns
-% <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
 % *DynamicTable*> objects with multidimensional ragged array columns can be constructed 
-% by passing in the corresponding <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/VectorIndex.html 
+% by passing in the corresponding <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/VectorIndex.html 
 % *VectorIndex*> column
 
 % Define column with data
@@ -369,33 +366,33 @@ multi_ragged_table = types.hdmf_common.DynamicTable( ...
     'id', types.hdmf_common.ElementIdentifiers('data', [0; 1; 2]) ...  % 0-indexed, for compatibility with Python
 );
 % Adding rows to multidimensional array columns
-% <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
 % *DynamicTable*> objects with multidimensional array columns can also be constructed 
 % by adding a single row at a time. This method makes use of *DataPipe* objects 
 % due to the fact that MATLAB doesn't support singleton dimensions for arrays 
 % with more than 2 dimensions. The code block below demonstrates how to build 
-% a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+hdmf_common/DynamicTable.html 
-% *DynamicTable*> object with a mutidimensional raaged array column in this manner.
+% a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
+% *DynamicTable*> object with a multidimensional ragged array column in this manner.
 
 % Create file
 file = NwbFile( ...
     'session_start_time', datetime('2021-01-01 00:00:00', 'TimeZone', 'local'), ...
     'identifier', 'ident1', ...
     'session_description', 'test_file' ...
-    );
+);
 
 % Define Vector Data Objects with first row of table
 start_time_exp = types.hdmf_common.VectorData( ...
     'description', 'start times column', ...
     'data', types.untyped.DataPipe( ...
-        'data', 1, ...  
+        'data', 1, ...
         'maxSize', Inf ...
     ) ...
 );
 stop_time_exp = types.hdmf_common.VectorData( ...
     'description', 'stop times column', ...
     'data', types.untyped.DataPipe( ...
-        'data', 10, ...  
+        'data', 10, ...
         'maxSize', Inf ...
     ) ...
 );
@@ -409,9 +406,9 @@ random_exp = types.hdmf_common.VectorData( ...
 );
 random_exp_index = types.hdmf_common.VectorIndex( ...
     'description', 'index to random data column', ...
-     'target',types.untyped.ObjectView(random_exp), ...
+    'target', types.untyped.ObjectView(random_exp), ...
     'data', types.untyped.DataPipe( ...
-        'data', uint64(5), ...  
+        'data', uint64(5), ...
         'maxSize', Inf ...
     ) ...
 );
@@ -431,7 +428,7 @@ file.intervals_trials = types.core.TimeIntervals( ...
     'randomvalues', random_exp, ...
     'randomvalues_index', random_exp_index, ...
     'id', ids_exp ...
-);  
+);
 % Export file
 nwbExport(file, 'multiRaggedExpandableTableTest.nwb');
 % Read in file
@@ -455,9 +452,7 @@ read_file.intervals_trials.addRow( ...
     'randomvalues', rand(3,2,8), ...
     'id', 3 ...
 );
-
-%% 
-%% Learn More!
+%% Learn more!
 % Python Tutorial
 % <https://hdmf.readthedocs.io/en/stable/tutorials/plot_dynamictable_tutorial.html#sphx-glr-tutorials-plot-dynamictable-tutorial-py 
 % DynamicTable Tutorial>
