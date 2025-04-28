@@ -1,4 +1,6 @@
 {
+    "schemaVersion" : "v1.0.0",
+    "storageFormat" : "HDF5",
     "datasetSpecifications": {
         "Default": {
             "layout": "chunked",
