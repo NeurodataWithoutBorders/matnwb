@@ -56,6 +56,14 @@ classdef ApplyDatasetConfigurationTest < tests.abstract.NwbTestCase
     end
 
     methods (Test)
+        function testForBlankFile(testCase)
+            % Test basic functionality with default configuration
+            nwbFile = tests.factory.NWBFile();
+
+            % Should not throw any errors
+            io.config.applyDatasetConfiguration(nwbFile, testCase.DefaultConfig);
+        end
+
         function testVectorData(testCase)
             % Test Dataset-based neurodata type (VectorData)
             nwbFile = tests.factory.NWBFile();
@@ -162,14 +170,6 @@ classdef ApplyDatasetConfigurationTest < tests.abstract.NwbTestCase
                 'Small dataset should remain numeric');
             testCase.verifyTrue(isnumeric(resultObj.starting_time_rate), ...
                 'Small dataset should remain numeric');
-        end
-
-        function testBasicFunctionality(testCase)
-            % Test basic functionality with default configuration
-            nwbFile = tests.factory.NWBFile();
-
-            % Should not throw any errors
-            io.config.applyDatasetConfiguration(nwbFile, testCase.DefaultConfig);
         end
 
         function testSmallNumericDataset(testCase)
