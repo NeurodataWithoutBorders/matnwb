@@ -5,13 +5,13 @@
   "description": "Configurations for chunking and compression of a dataset",
   "type": "object",
   "properties": {
-    "storageFormat": {
-        "type": "string",
-        "enum": ["HDF5", "Zarr"]
-    },
     "schemaVersion": {
         "type": "string",
         "pattern": "v\\d{1}\\.\\d{1}\\.\\d{1}"
+    },
+    "storageFormat": {
+        "type": "string",
+        "enum": ["HDF5", "Zarr"]
     },
     "datasetSpecifications": {
         "type": "object",
