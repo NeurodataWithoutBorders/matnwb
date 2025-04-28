@@ -39,8 +39,9 @@ function applyDatasetConfiguration(nwbObject, datasetConfiguration, options)
         
                 if isnumeric(datasetData)
                     % Create a datapipe object for a numeric dataset value.
-                    dataByteSize = io.config.internal.getDataByteSize(datasetData);
-                    if dataByteSize > datasetConfig.chunking.target_chunk_size
+                    dataSizeBytes = io.config.internal.getDataByteSize(datasetData);
+                    targetChunkSizeBytes = io.config.internal.getTargetChunkSizeInBytes(datasetConfig.chunking);
+                    if dataSizeBytes > targetChunkSizeBytes
                         dataPipe = io.config.internal.configureDataPipeFromData(datasetData, datasetConfig);
                     end
                 elseif isa(datasetData, 'types.untyped.DataPipe')

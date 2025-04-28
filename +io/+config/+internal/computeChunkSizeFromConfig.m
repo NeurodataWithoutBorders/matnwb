@@ -44,9 +44,9 @@ function chunkSize = computeChunkSizeFromConfig(A, configuration)
         'Expected constraints for dimensions to be provided as a cell array, got %s.', class(constraints))
 
     % Determine the target number of array elements per chunk.
-    defaultChunkSize = configuration.target_chunk_size; % in bytes
-    elementSize = io.config.internal.getDataByteSize(A) / numel(A); % bytes per element
-    targetNumElements = defaultChunkSize / elementSize;
+    targetChunkSizeBytes = io.config.internal.getTargetChunkSizeInBytes(configuration);
+    elementSizeBytes = io.config.internal.getDataByteSize(A) / numel(A); % bytes per element
+    targetNumElements = targetChunkSizeBytes / elementSizeBytes;
 
     % Preallocate arrays.
     chunkSize = zeros(1, numDimensions);

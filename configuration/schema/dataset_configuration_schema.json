@@ -54,7 +54,10 @@
       "type": "object",
       "properties": {
         "target_chunk_size": { "type": "integer" },
-        "target_chunk_size_unit": { "type": "string" },
+        "target_chunk_size_unit": { 
+          "type": "string",
+          "enum": ["bytes", "kiB", "MiB", "GiB"]
+        },
         "strategy_by_rank": { "$ref": "#/$defs/strategyByRankFull" }
       },
       "required": ["target_chunk_size", "target_chunk_size_unit", "strategy_by_rank"],
@@ -64,7 +67,10 @@
       "type": "object",
       "properties": {
         "target_chunk_size": { "type": "integer" },
-        "target_chunk_size_unit": { "type": "string" },
+        "target_chunk_size_unit": { 
+          "type": "string",
+          "enum": ["bytes", "kiB", "MiB", "GiB"]
+        },
         "strategy_by_rank": { "$ref": "#/$defs/strategyByRankPartial" }
       },
       "additionalProperties": false
