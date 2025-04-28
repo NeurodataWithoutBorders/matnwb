@@ -15,7 +15,9 @@ function dataPipe = configureDataPipeFromData(numericData, datasetConfig)
     hasShuffle = ~isempty(datasetConfig.compression.prefilters)...
                  && contains(datasetConfig.compression.prefilters, 'shuffle');
 
-    if strcmpi(datasetConfig.compression.algorithm, "Deflate")
+    % Check if the configured compression method is DEFLATE (gzip)
+    if strcmpi(datasetConfig.compression.method, "deflate") ...
+            || strcmpi(datasetConfig.compression.method, "gzip")
         if isempty(datasetConfig.compression.parameters) ...
                 || ~isfield(datasetConfig.compression.parameters, 'level')
             defaultCompressionLevel = 3;
@@ -36,7 +38,7 @@ function dataPipe = configureDataPipeFromData(numericData, datasetConfig)
         % Create property list of custom filters for dataset creation
         parameters = struct2cell(datasetConfig.compression.parameters);
         compressionFilter = DynamicFilter( ...
-            datasetConfig.compression.algorithm, ...
+            datasetConfig.compression.method, ...
             parameters{:} );
         
         if hasShuffle

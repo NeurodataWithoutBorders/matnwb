@@ -149,20 +149,20 @@
     "compressionFull": {
       "type": "object",
       "properties": {
-        "algorithm": { "type": "string" },
+        "method": { "type": "string" },
         "parameters": { "type": "object" },
         "prefilters": {
           "type": "array",
           "items": { "type": "string" }
         }
       },
-      "required": ["algorithm", "parameters", "prefilters"],
+      "required": ["method", "parameters", "prefilters"],
       "additionalProperties": false
     },
     "compressionPartial": {
       "type": "object",
       "properties": {
-        "algorithm": { "type": "string" },
+        "method": { "type": "string" },
         "parameters": { "type": "object" },
         "prefilters": {
           "type": "array",

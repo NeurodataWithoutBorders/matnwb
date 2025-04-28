@@ -6,7 +6,7 @@ classdef ApplyDatasetConfigurationTest < tests.abstract.NwbTestCase
         CustomConfig
     end
     
-    methods(TestMethodSetup)
+    methods (TestMethodSetup)
         function setup(testCase)
             % Setup default and custom configurations before each test
             testCase.DefaultConfig = io.config.readDatasetConfiguration("cloud");
@@ -19,7 +19,7 @@ classdef ApplyDatasetConfigurationTest < tests.abstract.NwbTestCase
             testCase.CustomConfig.TimeSeries_data.chunking.strategy_by_rank.x2 = {10, 'flex'};
             
             % Set a custom compression filter
-            testCase.CustomConfig.TimeSeries_data.compression.algorithm = 'ZStandard';
+            testCase.CustomConfig.TimeSeries_data.compression.method = 'ZStandard';
             testCase.CustomConfig.TimeSeries_data.compression.parameters.level = 5;
         end
     end
@@ -315,7 +315,6 @@ classdef ApplyDatasetConfigurationTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(resultPipe.chunkSize, originalChunkSize, ...
                 'DataPipe configuration should remain unchanged without override');
         end
-    
     
         function testApplyCustomMatNWBPropertyNames(testCase)
             % Create a custom configuration with a dataset-type neurodata

@@ -15,7 +15,7 @@
                 }
             },
             "compression": {
-                "algorithm": "deflate",
+                "method": "deflate",
                 "parameters": {
                     "level": 3
                 },

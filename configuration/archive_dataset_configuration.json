@@ -15,7 +15,7 @@
                 }
             },
             "compression": {
-                "algorithm": "ZStandard",
+                "method": "ZStandard",
                 "parameters": {
                     "level": 5
                 },
