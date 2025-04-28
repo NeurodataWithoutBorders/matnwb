@@ -6,6 +6,14 @@ classdef ApplyDatasetConfigurationTest < tests.abstract.NwbTestCase
         CustomConfig
     end
     
+    methods (TestClassSetup)
+        function suppressExpectedWarning(testCase)
+            import matlab.unittest.fixtures.SuppressedWarningsFixture
+            warningToSuppress = 'NWB:ComputeChunkSizeFromConfig:TargetSizeExceeded';
+            testCase.applyFixture(SuppressedWarningsFixture(warningToSuppress))
+        end
+    end
+
     methods (TestMethodSetup)
         function setup(testCase)
             % Setup default and custom configurations before each test
@@ -83,9 +91,7 @@ classdef ApplyDatasetConfigurationTest < tests.abstract.NwbTestCase
                 'VectorData columnB should be converted to DataPipe');
         end
         
-        function testChunkDimensionConstraints(testCase)
-            % todo
-            
+        function testChunkDimensionConstraints(testCase)            
             % Test all cases of chunk_dimension constraints
             nwbFile = tests.factory.NWBFile();
             
