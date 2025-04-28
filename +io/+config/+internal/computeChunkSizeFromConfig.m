@@ -46,7 +46,7 @@ function chunkSize = computeChunkSizeFromConfig(A, configuration)
     % Determine the target number of array elements per chunk.
     targetChunkSizeBytes = io.config.internal.getTargetChunkSizeInBytes(configuration);
     elementSizeBytes = io.config.internal.getDataByteSize(A) / numel(A); % bytes per element
-    targetNumElements = targetChunkSizeBytes / elementSizeBytes;
+    targetNumElements = targetChunkSizeBytes / elementSizeBytes; % Per chunk
 
     % Preallocate arrays.
     chunkSize = zeros(1, numDimensions);
@@ -107,5 +107,12 @@ function chunkSize = computeChunkSizeFromConfig(A, configuration)
     if numDimensions == 1
         originalDataSize(originalDataSize~=1) = chunkSize;
         chunkSize = originalDataSize;
+    end
+
+    actualBytesPerChunk = prod(chunkSize) * elementSizeBytes;
+    if actualBytesPerChunk > targetChunkSizeBytes
+        warning('NWB:ComputeChunkSizeFromConfig:TargetSizeExceeded', ...
+            ['The provided dataset configuration produces chunks that have a ', ...
+            'larger bytesize than the specified target chunk size.'])
     end
 end
