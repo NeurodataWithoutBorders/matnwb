@@ -17,7 +17,7 @@ function chunkSize = computeChunkSizeFromConfig(A, configuration)
     arguments
         A {mustBeNumeric}
         configuration (1,1) struct ...
-            {mustHaveField(configuration, "strategy_by_rank", "target_chunk_size")}
+            {matnwb.common.mustHaveField(configuration, "strategy_by_rank", "target_chunk_size", "target_chunk_size_unit")}
     end
 
     % Get dataset size
@@ -108,21 +108,4 @@ function chunkSize = computeChunkSizeFromConfig(A, configuration)
         originalDataSize(originalDataSize~=1) = chunkSize;
         chunkSize = originalDataSize;
     end
-end
-
-function mustHaveField(s, fieldName)
-    arguments
-        s struct
-    end
-    arguments (Repeating)
-        fieldName (1,1) string
-    end
-
-    fieldName = string(fieldName);
-
-    isMissingField = ~isfield(s, fieldName);
-    assert(all(~isMissingField), ...
-        'NWB:validators:MustHaveField', ...
-        'Expected structure to have field(s):\n%s\n', ...
-        strjoin("  " + fieldName(isMissingField), newline) )
 end

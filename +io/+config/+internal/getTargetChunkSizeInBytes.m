@@ -19,7 +19,7 @@ function targetSizeInBytes = getTargetChunkSizeInBytes(chunkConfig)
 
     arguments
         chunkConfig (1,1) struct ...
-            {mustHaveField(chunkConfig, "strategy_by_rank", "target_chunk_size")}
+            {matnwb.common.mustHaveField(chunkConfig, "strategy_by_rank", "target_chunk_size", "target_chunk_size_unit")}
     end
 
     % Extract target size and unit from the configuration
