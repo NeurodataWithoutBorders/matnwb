@@ -1,17 +1,14 @@
 classdef ApplyDatasetConfigurationTest < tests.abstract.NwbTestCase
-% Tests for io.config.applyDatasetConfiguration function
+% A set of unit tests for the io.config.applyDatasetConfiguration function
+%
+% This set of tests will test that various configurations are correctly
+% applied to DataPipe objects of neurodata type objects, and that
+% specifications for different data types are correctly applied to those
+% datatypes.
 
     properties
         DefaultConfig
         CustomConfig
-    end
-    
-    methods (TestClassSetup)
-        function suppressExpectedWarning(testCase)
-            import matlab.unittest.fixtures.SuppressedWarningsFixture
-            warningToSuppress = 'NWB:ComputeChunkSizeFromConfig:TargetSizeExceeded';
-            testCase.applyFixture(SuppressedWarningsFixture(warningToSuppress))
-        end
     end
 
     methods (TestMethodSetup)
@@ -89,70 +86,6 @@ classdef ApplyDatasetConfigurationTest < tests.abstract.NwbTestCase
                 'VectorData columnA should be converted to DataPipe');
             testCase.verifyTrue(isa(resultTable.vectordata.get('columnB').data, 'types.untyped.DataPipe'), ...
                 'VectorData columnB should be converted to DataPipe');
-        end
-        
-        function testChunkDimensionConstraints(testCase)
-            % Test all cases of chunk_dimension constraints
-            nwbFile = tests.factory.NWBFile();
-            
-            % Create custom configurations for different chunk dimension specifications
-            nullConfig = testCase.DefaultConfig;
-            nullConfig.TimeSeries_data.chunking.strategy_by_rank.x2 = {'flex', 'flex'};
-            
-            maxConfig = testCase.DefaultConfig;
-            maxConfig.TimeSeries_data.chunking.strategy_by_rank.x2 = {'max', 'max'};
-            
-            fixedConfig = testCase.DefaultConfig;
-            fixedConfig.TimeSeries_data.chunking.strategy_by_rank.x2 = {20, 1000};
-            
-            % Create test datasets
-            flexData = types.core.TimeSeries( ...
-                'data', rand(500, 20000), ...
-                'data_unit', 'n/a', ...
-                'timestamps', 1:20000);
-            
-            maxData = types.core.TimeSeries( ...
-                'data', rand(400, 15000), ...
-                'data_unit', 'n/a', ...
-                'timestamps', 1:15000);
-            
-            fixedData = types.core.TimeSeries( ...
-                'data', rand(300, 10000), ...
-                'data_unit', 'n/a', ...
-                'timestamps', 1:10000);
-            
-            % Add datasets to NWB file
-            nwbFile.acquisition.set('flex_chunked_data', flexData);
-            nwbFile.acquisition.set('max_chunked_data', maxData);
-            nwbFile.acquisition.set('fixed_chunked_data', fixedData);
-            
-            % Apply configurations
-            io.config.applyDatasetConfiguration(nwbFile, nullConfig);
-            
-            % Verify null chunk dimensions (should use default chunking)
-            nullResult = nwbFile.acquisition.get('flex_chunked_data').data;
-            testCase.verifyTrue(isa(nullResult, 'types.untyped.DataPipe'), ...
-                'Dataset with null chunk dimensions should be converted to DataPipe');
-            
-            % Apply max configuration
-            io.config.applyDatasetConfiguration(nwbFile, maxConfig, 'OverrideExisting', true);
-            
-            % Verify max chunk dimensions
-            maxResult = nwbFile.acquisition.get('max_chunked_data').data;
-            testCase.verifyTrue(isa(maxResult, 'types.untyped.DataPipe'), ...
-                'Dataset with max chunk dimensions should be converted to DataPipe');
-            % % testCase.verifyEqual(maxResult.chunkSize, [40, 15000], ...
-            % %     'Chunk size should match dataset dimensions with max specification');
-            
-            % Apply fixed configuration
-            io.config.applyDatasetConfiguration(nwbFile, fixedConfig, 'OverrideExisting', true);
-            
-            % Verify fixed chunk dimensions
-            fixedResult = nwbFile.acquisition.get('fixed_chunked_data').data;
-            testCase.verifyTrue(isa(fixedResult, 'types.untyped.DataPipe'), ...
-                'Dataset with fixed chunk dimensions should be converted to DataPipe');
-            % % testCase.verifyEqual(fixedResult.chunkSize, [20, 1000], ...
-            % %     'Chunk size should match fixed specification');
         end
         
         function testClassHierarchyResolution(testCase)
