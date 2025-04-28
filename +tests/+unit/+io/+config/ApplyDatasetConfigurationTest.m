@@ -24,7 +24,7 @@ classdef ApplyDatasetConfigurationTest < tests.abstract.NwbTestCase
         end
     end
     
-    methods(Test)
+    methods (Test, TestTags={'UsesDynamicallyLoadedFilters'})
         function testCustomConfiguration(testCase)
             nwbFile = tests.factory.NWBFile();
             
@@ -48,7 +48,9 @@ classdef ApplyDatasetConfigurationTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(resultPipe.chunkSize(1), 10, ...
                 'First dimension of chunk size should match custom configuration');
         end
+    end
 
+    methods (Test)
         function testVectorData(testCase)
             % Test Dataset-based neurodata type (VectorData)
             nwbFile = tests.factory.NWBFile();
