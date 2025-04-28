@@ -1,9 +1,17 @@
 classdef ComputeChunkSizeFromConfigTest < matlab.unittest.TestCase
-    % Unit tests for computeChunkSizeFromConfig function
-    % Tests the function that computes chunk sizes based on configuration
+% Unit tests for computeChunkSizeFromConfig function
+% Tests the function that computes chunk sizes based on configuration
 
     properties (TestParameter)
         ChunkSizeUnit = {'bytes', 'kiB', 'MiB', 'GiB'}
+    end
+
+    methods (TestClassSetup)
+        function suppressExpectedWarning(testCase)
+            import matlab.unittest.fixtures.SuppressedWarningsFixture
+            warningToSuppress = 'NWB:ComputeChunkSizeFromConfig:TargetSizeExceeded';
+            testCase.applyFixture(SuppressedWarningsFixture(warningToSuppress))
+        end
     end
 
     methods (Test)
