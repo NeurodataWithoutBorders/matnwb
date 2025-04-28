@@ -20,7 +20,7 @@ classdef ApplyDatasetConfigurationTest < tests.abstract.NwbTestCase
             
             % Set a custom compression filter
             testCase.CustomConfig.TimeSeries_data.compression.algorithm = 'ZStandard';
-            testCase.CustomConfig.TimeSeries_data.compression.level = 5;
+            testCase.CustomConfig.TimeSeries_data.compression.parameters.level = 5;
         end
     end
     

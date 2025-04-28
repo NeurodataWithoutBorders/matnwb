@@ -16,8 +16,9 @@
             },
             "compression": {
                 "algorithm": "deflate",
-                "level": 3,
-                "parameters": {},
+                "parameters": {
+                    "level": 3
+                },
                 "prefilters": ["shuffle"]
             }
         },

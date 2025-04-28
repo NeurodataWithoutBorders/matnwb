@@ -16,8 +16,9 @@
             },
             "compression": {
                 "algorithm": "ZStandard",
-                "level": 5,
-                "parameters": {},
+                "parameters": {
+                    "level": 5
+                },
                 "prefilters": ["shuffle"]
             }
         }

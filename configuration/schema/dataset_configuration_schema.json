@@ -150,21 +150,19 @@
       "type": "object",
       "properties": {
         "algorithm": { "type": "string" },
-        "level": { "type": "integer" },
         "parameters": { "type": "object" },
         "prefilters": {
           "type": "array",
           "items": { "type": "string" }
         }
       },
-      "required": ["algorithm", "level", "parameters", "prefilters"],
+      "required": ["algorithm", "parameters", "prefilters"],
       "additionalProperties": false
     },
     "compressionPartial": {
       "type": "object",
       "properties": {
         "algorithm": { "type": "string" },
-        "level": { "type": "integer" },
         "parameters": { "type": "object" },
         "prefilters": {
           "type": "array",
