@@ -91,7 +91,7 @@ classdef ApplyDatasetConfigurationTest < tests.abstract.NwbTestCase
                 'VectorData columnB should be converted to DataPipe');
         end
         
-        function testChunkDimensionConstraints(testCase)            
+        function testChunkDimensionConstraints(testCase)
             % Test all cases of chunk_dimension constraints
             nwbFile = tests.factory.NWBFile();
             
@@ -340,6 +340,6 @@ classdef ApplyDatasetConfigurationTest < tests.abstract.NwbTestCase
 
             testCase.verifyTrue( isfield(updatedConfig, 'VectorData_data') );
             testCase.verifyTrue( isfield(updatedConfig, 'GrayscaleImage_data') );
-        end    
+        end
     end
 end

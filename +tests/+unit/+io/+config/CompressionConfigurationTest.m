@@ -33,7 +33,7 @@ classdef CompressionConfigurationTest < matlab.unittest.TestCase
             testConfiguration = testCase.DefaultConfig.Default;
             testConfiguration.compression.parameters.level = CUSTOM_COMPRESSION_LEVEL;
 
-            dataPipe = testCase.getConfiguredDataPipe(testConfiguration);            
+            dataPipe = testCase.getConfiguredDataPipe(testConfiguration);
 
             testCase.verifyEqual(dataPipe.compressionLevel, CUSTOM_COMPRESSION_LEVEL);
         end
@@ -57,7 +57,7 @@ classdef CompressionConfigurationTest < matlab.unittest.TestCase
             testConfiguration = testCase.DefaultConfig.Default;
             testConfiguration.compression.prefilters = "invalid";
                       
-            dataPipe = testCase.getConfiguredDataPipe(testConfiguration);            
+            dataPipe = testCase.getConfiguredDataPipe(testConfiguration);
             dataPipeProperties = dataPipe.internal.pipeProperties;
 
             % No extra property filter should be set in addition to
@@ -91,7 +91,7 @@ classdef CompressionConfigurationTest < matlab.unittest.TestCase
             testConfiguration.compression.method = CUSTOM_COMPRESSION_METHOD;
             testConfiguration.compression.parameters.level = CUSTOM_COMPRESSION_LEVEL;
 
-            dataPipe = testCase.getConfiguredDataPipe(testConfiguration);            
+            dataPipe = testCase.getConfiguredDataPipe(testConfiguration);
             dynamicFilterObject = testCase.getDynamicFilterFromDataPipe(dataPipe);
             
             actualFilterName = string(dynamicFilterObject.dynamicFilter);
