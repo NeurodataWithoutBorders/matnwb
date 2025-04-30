@@ -92,6 +92,12 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
         classTag = 'types.untyped.DatasetClass';
     end
 
+    if isa(class, 'file.Group')
+        if class.hasAnonGroups
+            classTag = sprintf('%s & matnwb.mixin.HasGroups', classTag);
+        end
+    end
+
     %% return classfile string
     classDefinitionHeader = [...
         'classdef ' name ' < ' depnm ' & ' classTag newline... %header, dependencies
@@ -128,6 +134,7 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
         , '% OPTIONAL PROPERTIES' ...
         } ...
         );
+
     fullPropertyDefinition = '';
     for iGroup = 1:length(PropertyGroups)
         Group = PropertyGroups(iGroup);
@@ -140,6 +147,17 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
             , Group.Separator ...
             , propertyDefinitionBody ...
             }, newline);
+    end
+    if isa(class, 'file.Group')
+        if class.hasAnonGroups
+            isAnonGroup = arrayfun(@(x) isempty(x.name), class.subgroups, 'uni', true);
+            anonNames = arrayfun(@(x) lower(x.type), class.subgroups(isAnonGroup), 'uni', false);
+            fullPropertyDefinition = strjoin({...
+                fullPropertyDefinition, ...
+                '    properties (Access = protected)', ...
+                sprintf('        GroupPropertyNames = {%s}', strjoin(strcat('''', anonNames, ''''), ', ') ), ...
+                '    end'}, newline);
+        end
     end
 
     constructorBody = file.fillConstructor(...
