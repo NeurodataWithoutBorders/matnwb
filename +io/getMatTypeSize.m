@@ -1,6 +1,4 @@
-function typeSize = getMatSize(type)
-%GETMATSIZE Summary of this function goes here
-%   Detailed explanation goes here
+function typeSize = getMatTypeSize(type)
 switch (type)
     case {'uint8', 'int8'}
         typeSize = 1;

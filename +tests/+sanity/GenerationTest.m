@@ -1,12 +1,21 @@
 classdef GenerationTest < matlab.unittest.TestCase
+% Note: Sometimes this test does not work for the first two schema versions. 
+% Restarting MATLAB can fix this.
+
     properties (MethodSetupParameter)
-        schemaVersion = setdiff({dir('nwb-schema').name}, {'.', '..'});
+        schemaVersion = listSchemaVersions()
     end
     
     methods (TestClassSetup)
-        function setupClass(testCase)
-            rootPath = fullfile(fileparts(mfilename('fullpath')), '..', '..');
-            testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
+        function setupMatNWBPathFixture(testCase)
+            import matlab.unittest.fixtures.PathFixture
+            matNwbRootPath = tests.util.getProjectDirectory();
+            testCase.applyFixture( PathFixture(matNwbRootPath) );
+        end
+
+        function setupNwbClearGeneratedFixture(testCase)
+            import tests.fixtures.NwbClearGeneratedFixture
+            testCase.applyFixture( NwbClearGeneratedFixture );
         end
     end
     
@@ -62,3 +71,7 @@ classdef GenerationTest < matlab.unittest.TestCase
     end
 end
 
+function schemaVersions = listSchemaVersions()
+    nwbSchemaDir = fullfile(misc.getMatnwbDir, 'nwb-schema');
+    schemaVersions = setdiff({dir(nwbSchemaDir).name}, {'.', '..'});
+end

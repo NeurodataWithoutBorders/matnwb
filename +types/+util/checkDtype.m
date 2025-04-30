@@ -1,4 +1,4 @@
-function val = checkDtype(name, type, val)
+function value = checkDtype(name, typeDescriptor, value)
 %ref
 %any, double, int/uint, char
 persistent WHITELIST;
@@ -8,241 +8,177 @@ if isempty(WHITELIST)
         'types.untyped.SoftLink'...
         };
 end
+%% compound type processing
+if isstruct(typeDescriptor)
+    expectedFields = fieldnames(typeDescriptor);
+    assert(isstruct(value) || istable(value) || isa(value, 'containers.Map') ...
+        , 'NWB:CheckDType:InvalidValue' ...
+        , 'Compound Type must be a struct, table, or a containers.Map' ...
+        );
 
-if isstruct(type)
-    names = fieldnames(type);
-    assert(isstruct(val) || istable(val) || isa(val, 'containers.Map'), ...
-        'types.untyped.checkDtype: Compound Type must be a struct, table, or a containers.Map');
-    if (isstruct(val) && isscalar(val)) || isa(val, 'containers.Map')
-        %check for correct array shape
-        sizes = zeros(length(names),1);
-        for i=1:length(names)
-            if isstruct(val)
-                subv = val.(names{i});
+    % assert field names and order of fields is correct.
+    if isstruct(value)
+        valueFields = fieldnames(value);
+    else % table
+        valueFields = value.Properties.VariableNames;
+    end
+    assert(isempty(setdiff(expectedFields, valueFields)) ...
+        , 'NWB:CheckDType:InvalidValue' ...
+        , 'Compound type must only contain fields (%s)', strjoin(expectedFields, ', ') ...
+        );
+    for iField = 1:length(expectedFields)
+        assert(strcmp(expectedFields{iField}, valueFields{iField}) ...
+            , 'NWB:CheckDType:InvalidValue' ...
+            , 'Compound fields are out of order.\nExpected (%s) Got (%s)' ...
+            , strjoin(expectedFields, ', '), strjoin(valueFields, ', '));
+    end
+    
+    if (isstruct(value) && isscalar(value)) || isa(value, 'containers.Map')
+        % check for correct array shape
+        fieldSizes = zeros(length(expectedFields),1);
+        for iField = 1:length(expectedFields)
+            if isstruct(value)
+                subValue = value.(expectedFields{iField});
             else
-                subv = val(names{i});
+                subValue = value(expectedFields{iField});
             end
-            assert(isvector(subv),...
+            assert(isvector(subValue),...
                 'NWB:CheckDType:InvalidShape',...
                 ['struct of arrays as a compound type ',...
                 'cannot have multidimensional data in their fields. ',...
                 'Field data shape must be scalar or vector to be valid.']);
-            sizes(i) = length(subv);
+            fieldSizes(iField) = length(subValue);
         end
-        sizes = unique(sizes);
-        assert(isscalar(sizes),...
+        fieldSizes = unique(fieldSizes);
+        assert(isscalar(fieldSizes),...
             'NWB:CheckDType:InvalidShape',...
             ['struct of arrays as a compound type ',...
             'contains mismatched number of elements with unique sizes: [%s].  ',...
             'Number of elements for each struct field must match to be valid.'], ...
-            num2str(sizes));
+            num2str(fieldSizes));
     end
-    for i=1:length(names)
-        pnm = names{i};
-        subnm = [name '.' pnm];
-        typenm = type.(pnm);
         
-        if (isstruct(val) && isscalar(val)) || istable(val)
-            val.(pnm) = types.util.checkDtype(subnm,typenm,val.(pnm));
-        elseif isstruct(val)
-            for j=1:length(val)
-                elem = val(j).(pnm);
+    parentName = name;
+    for iField = 1:length(expectedFields)
+        % validate subfield types.
+        name = expectedFields{iField};
+        subName = [parentName '.' name];
+        subType = typeDescriptor.(name);
+
+        if (isstruct(value) && isscalar(value)) || istable(value)
+            % scalar struct or table with columns.
+            value.(name) = types.util.checkDtype(subName,subType,value.(name));
+        elseif isstruct(value)
+            % array of structs
+            for j=1:length(value)
+                elem = value(j).(name);
                 assert(~iscell(elem) && ...
                     (isempty(elem) || ...
                     (isscalar(elem) || (ischar(elem) && isvector(elem)))),...
                     'NWB:CheckDType:InvalidType',...
                     ['Fields for an array of structs for '...
                     'compound types should have non-cell scalar values or char arrays.']);
-                val(j).(pnm) = types.util.checkDtype(subnm, typenm, elem);
+                value(j).(name) = types.util.checkDtype(subName, subType, elem);
             end
         else
-            val(names{i}) = types.util.checkDtype(subnm,typenm,val(names{i}));
+            value(expectedFields{iField}) = types.util.checkDtype( ...
+                subName, subType, value(expectedFields{iField}));
         end
     end
-else
-    errid = 'NWB:CheckDType:InvalidType';
-    errmsg = ['Property `' name '` must be a ' type '.'];
-    if isempty(val)
-        return;
+    return;
+end
+
+
+%% primitives
+
+if isa(value, 'types.untyped.SoftLink')
+    % Softlinks cannot be validated at this level.
+    return;
+end
+
+if isempty(value)
+    % MATLAB's "null" operator. Even if it's numeric, you can replace it with any class.
+    % we can replace empty values with their equivalents, however.
+    replaceableNullTypes = {...
+        'char' ...
+        , 'logical' ...
+        , 'single', 'double' ...
+        , 'int8', 'uint8' ...
+        , 'int16', 'uint16' ...
+        , 'int32', 'uint32' ...
+        , 'int64', 'uint64' ...
+        };
+    if ischar(typeDescriptor) && any(strcmp(typeDescriptor, replaceableNullTypes))
+        value = cast(value, typeDescriptor);
     end
-    
-    if isa(val, 'types.untyped.DataStub')
+    return;
+end
+
+% retrieve comparable value
+valueWrapper = [];
+if isa(value, 'types.untyped.DataStub') ...
+    || isa(value, 'types.untyped.DataPipe') ...
+    || isa(value, 'types.untyped.Anon') ...
+    || (isa(value, 'types.untyped.ExternalLink') && ~strcmp(typeDescriptor, 'types.untyped.ExternalLink'))
+    valueWrapper = value;
+    value = unwrapValue(value);
+end
+
+if matnwb.utility.isNeurodataType(typeDescriptor)
+    errorId = 'NWB:CheckDType:InvalidNeurodataType';
+    errorMessage = sprintf(['Expected value for `%s` to be of ', ...
+        'type `%s`. Instead it was `%s`'], name, typeDescriptor, class(value));
+    assert(isa(value, typeDescriptor), errorId, errorMessage)
+    correctedValue = value;
+else
+    correctedValue = types.util.correctType(value, typeDescriptor);
+end
+% this specific conversion is fine as HDF5 doesn't have a representative
+% datetime type. Thus we suppress the warning for this case.
+isDatetimeConversion = isa(correctedValue, 'datetime')...
+    && (ischar(value) || isstring(value) || iscellstr(value));
+if ~isempty(valueWrapper) ...
+        && ~strcmp(class(correctedValue), class(value)) ...
+        && ~isDatetimeConversion
+    warning('NWB:CheckDataType:NeedsManualConversion',...
+            'Property `%s` is not of type `%s` and should be corrected by the user.', ...
+            name, class(correctedValue));
+else
+    value = correctedValue;
+end
+
+% re-wrap value
+if ~isempty(valueWrapper)
+    value = valueWrapper;
+end
+end
+
+function unwrapped = unwrapValue(wrapped, history)
+    if nargin < 2
+        history = {};
+    end
+    for iHistory = 1:length(history)
+        assert(wrapped ~= history{iHistory}, ...
+            'NWB:CheckDataType:InfiniteLoop' ...
+            , ['Infinite loop of a previously defined wrapped value detected. ' ...
+            'Please ensure infinite loops do not occur with reference types like Links.']);
+    end
+    if isa(wrapped, 'types.untyped.DataStub')
         %grab first element and check
-        truval = val;
-        if any(val.dims == 0)
-            val = [];
+        if any(wrapped.dims == 0)
+            unwrapped = [];
         else
-            val = val.load(1);
+            unwrapped = wrapped.load(1);
         end
-    elseif isa(val, 'types.untyped.Anon')
-        truval = val;
-        val = val.value;
-    elseif isa(val, 'types.untyped.ExternalLink') &&...
-            ~strcmp(type, 'types.untyped.ExternalLink')
-        truval = val;
-        val = val.deref();
-    elseif isa(val, 'types.untyped.DataPipe')
-        truval = val;
-        val = cast([], val.dataType);
+    elseif isa(wrapped, 'types.untyped.DataPipe')
+        unwrapped = cast([], wrapped.dataType);
+    elseif isa(wrapped, 'types.untyped.Anon')
+        history{end+1} = wrapped;
+        unwrapped = unwrapValue(wrapped.value, history);
+    elseif isa(wrapped, 'types.untyped.ExternalLink')
+        history{end+1} = wrapped;
+        unwrapped = unwrapValue(wrapped.deref(), history);
     else
-        truval = [];
+        unwrapped = wrapped;
     end
-    
-    if any(strcmpi(type, {'single' 'double' 'logical' 'numeric'})) ||...
-            startsWith(type, {'int' 'uint' 'float'})
-        if isa(val, 'types.untyped.SoftLink')
-            % derefing through softlink would require writing and/or the root NwbFile object
-            return;
-        end
-        
-        if isa(truval, 'types.untyped.ExternalLink')
-            assert(any(strcmp('data', properties(val))), errid, errmsg);
-            val = val.data;
-            if isa(val, 'types.untyped.DataStub')
-                val = val.load(1);
-            end
-            
-            if ~isa(val, type)
-                warning(errid,...
-                    'Externally Linked Numeric Property `%s` is not of type `%s` (actual type is `%s`).',...
-                    name, type, class(val));
-            end
-        else
-            val = types.util.correctType(val, type);
-        end
-    elseif strcmp(type, 'isodatetime')
-        assert(ischar(val)...
-            || iscellstr(val)...
-            || isdatetime(val) ...
-            || (iscell(val) && all(cellfun('isclass', val, 'datetime'))),...
-            errid, errmsg);
-        if ischar(val) || iscellstr(val)
-            if ischar(val)
-                val = mat2cell(val, ones(1, size(val,1)));
-            end
-            
-            datevals = cell(size(val));
-            for i = 1:length(val)
-                datevals{i} = datetime8601(strtrim(val{i}));
-            end
-            val = datevals;
-        end
-        
-        if isdatetime(val)
-            val = {val};
-        end
-        
-        for i = 1:length(val)
-            if isempty(val{i}.TimeZone)
-                val{i}.TimeZone = 'local';
-            end
-            val{i}.Format = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSSZZZZZ';
-        end
-        
-        if isscalar(val)
-            val = val{1};
-        elseif isrow(val)
-            val = val .';
-        end
-    elseif strcmp(type, 'char')
-        assert(ischar(val) || iscellstr(val), errid, errmsg);
-    else %class, ref, or link
-        
-        noncell = false;
-        if ~iscell(val)
-            val = {val};
-            noncell = true;
-        end
-        for i=1:length(val)
-            subval = val{i};
-            if isempty(subval)
-                continue;
-            end
-            
-            if ~isa(subval, type) && ~any(strcmp(class(subval), WHITELIST))
-                error(errid, errmsg);
-            end
-        end
-        if noncell
-            val = val{1};
-        end
-    end
-    
-    %reset to datastub/anon
-    if ~isempty(truval)
-        val = truval;
-    end
-end
-end
-
-function dt = datetime8601(datestr)
-addpath(fullfile(fileparts(which('NwbFile')), 'external_packages', 'datenum8601'));
-[~, ~, format] = datenum8601(datestr);
-format = format{1};
-has_delimiters = format(1) == '*';
-if has_delimiters
-    format = format(2:end);
-end
-
-assert(strncmp(format, 'ymd', 3),...
-    'NWB:CheckDType:DateTime:Unsupported8601',...
-    'non-ymd formats not supported.');
-separator = format(4);
-if separator ~= ' '
-    % non-space digits will error when specifying import format
-    separator = ['''' separator ''''];
-end
-
-has_fractional_sec = isstrprop(format(8:end), 'digit');
-if has_fractional_sec
-   seconds_precision = str2double(format(8:end));
-   if seconds_precision > 9
-       warning('MatNWB:CheckDType:DateTime:LossySeconds',...
-           ['Potential loss of time data detected.  MATLAB fractional seconds '...
-           'precision is limited to 1 ns.  Extra precision will be truncated.']);
-   end
-end
-day_segments = {'yyyy', 'MM', 'dd'};
-time_segments = {'HH', 'mm', 'ss'};
-
-if has_delimiters
-    day_delimiter = '-';
-    time_delimiter = ':';
-else
-    day_delimiter = '';
-    time_delimiter = '';
-end
-
-day_format = strjoin(day_segments, day_delimiter);
-time_format = strjoin(time_segments, time_delimiter);
-format = [day_format separator time_format];
-if has_fractional_sec
-    format = sprintf('%s.%s', format, repmat('S', 1, seconds_precision));
-end
-
-[datestr, timezone] = derive_timezone(datestr);
-dt = datetime(datestr,...
-    'InputFormat', format,...
-    'TimeZone', timezone);
-end
-
-function [datestr, timezone] = derive_timezone(datestr)
-% one of:
-% +-hh:mm
-% +-hhmm
-% +-hh
-% Z
-
-tzre_pattern = '(?:[+-]\d{2}(?::?\d{2})?|Z)$';
-tzre_match = regexp(datestr, tzre_pattern, 'once');
-
-if isempty(tzre_match)
-    timezone = 'local';
-else
-    timezone = datestr(tzre_match:end);
-    if strcmp(timezone, 'Z')
-        timezone = 'UTC';
-    end
-    datestr = datestr(1:(tzre_match - 1));
-end
 end

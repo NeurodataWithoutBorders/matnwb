@@ -4,7 +4,23 @@ function [tid, sid, data] = mapData2H5(fid, data, varargin)
 %   and properly converted data
 
 forceArray = any(strcmp('forceArray', varargin));
+forceMatrix = any(strcmp('forceMatrix', varargin));
 forceChunked = any(strcmp('forceChunking', varargin));
+
+if iscell(data)
+    assert(...
+        iscellstr(data) ...
+        || all(cellfun('isclass', data, 'datetime')) ...
+        || all(cellfun('isclass', data, 'string')) ...
+        , 'NWB:MapData:NonCellStr', ['Cell arrays must be cell arrays of character vectors. ' ...
+        'Cell arrays of other types are not supported.']);
+elseif isstring(data)
+    if isscalar(data)
+        data = char(data);
+    else
+        data = cellstr(data);
+    end
+end
 
 tid = io.getBaseType(class(data));
 
@@ -12,7 +28,7 @@ tid = io.getBaseType(class(data));
 unlimited_size = H5ML.get_constant_value('H5S_UNLIMITED');
 %determine space size
 if ischar(data)
-    if ~forceArray && size(data,1) == 1
+    if ~forceArray && (size(data,1) == 1 || isempty(data))
         sid = H5S.create('H5S_SCALAR');
     else
         dims = size(data, 1);
@@ -25,8 +41,10 @@ if ischar(data)
     end
 elseif ~forceArray && ~iscell(data) && isscalar(data)
     sid = H5S.create('H5S_SCALAR');
+elseif ~forceChunked && isempty(data)
+    sid = H5S.create_simple(1, 0, 0);
 else
-    if isvector(data)
+    if ~forceMatrix && (isvector(data) || isempty(data))
         num_dims = 1;
         dims = length(data);
     else
@@ -46,13 +64,17 @@ end
 %% Do Data Conversions
 switch class(data)
     case {'types.untyped.RegionView' 'types.untyped.ObjectView'}
-        %will throw errors if refdata DNE.  Caught at NWBData level.
+        %will throw errors if refdata DNE (does not exist).  Caught at NWBData level.
         data = io.getRefData(fid, data);
     case 'logical'
-        %In HDF5, HBOOL is mapped to INT32LE
-        data = int32(data);
+        % encode as int8 values.
+        data = int8(data);
     case 'char'
-        data = mat2cell(data, size(data, 1));
+        if isempty(data)
+            data = {};
+        else
+            data = mat2cell(data, size(data, 1));
+        end
     case {'cell', 'datetime'}
         if isdatetime(data)
             data = num2cell(data);

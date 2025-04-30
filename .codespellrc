@@ -1,0 +1,3 @@
+[codespell]
+skip = *.html,*.svg,*fastsearch.m,*.yaml,*testResults.xml
+ignore-words-list = DNE,nd,whos

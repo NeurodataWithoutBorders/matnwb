@@ -1,38 +1,54 @@
-function nwbExport(nwb, filenames)
-%NWBEXPORT Writes an NWB file.
-%  nwbRead(nwb,filename) Writes the nwb object to a file at filename.
+function nwbExport(nwbFileObjects, filePaths, mode)
+%NWBEXPORT - Writes an NWB file.
 %
-%  Example:
-%    % Generate Matlab code for the NWB objects from the core schema.
-%    % This only needs to be done once.
-%    generateCore('schema\core\nwb.namespace.yaml');
-%    % Create some fake fata and write
+% Syntax:
+%  NWBEXPORT(nwb, filename) Writes the nwb object to a file at filename.
+%
+% Input Arguments:
+%   - nwb (NwbFile) - Nwb file object
+%   - filename (string) - Filepath pointing to an NWB file.
+%
+% Usage:
+%  Example 1 - Export an NWB file::
+%
+%    % Create an NWB object with some properties:
 %    nwb = NwbFile;
 %    nwb.session_start_time = datetime('now');
 %    nwb.identifier = 'EMPTY';
 %    nwb.session_description = 'empty test file';
+%
+%    % Write the nwb object to a file:
 %    nwbExport(nwb, 'empty.nwb');
 %
-%  See also GENERATECORE, GENERATEEXTENSION, NWBFILE, NWBREAD
-validateattributes(nwb, {'NwbFile'}, {'nonempty'});
-validateattributes(filenames, {'cell', 'string', 'char'}, {'nonempty'});
-if iscell(filenames)
-    assert(iscellstr(filenames), 'filename cell array must consist of strings');
-end
-if ~isscalar(nwb)
-    assert(~ischar(filenames) && length(filenames) == length(nwb), ...
-        'NwbFile and filename array dimensions must match.');
-end
+%  Example 2 - Export an NWB file using an older schema version::
+%
+%    % Generate classes for an older version of NWB schemas:
+%    generateCore('2.5.0')
+%
+%    % Create an NWB object with some properties:
+%    nwb = NwbFile;
+%    nwb.session_start_time = datetime('now');
+%    nwb.identifier = 'EMPTY';
+%    nwb.session_description = 'empty test file';
+%
+%    % Write the nwb object to a file:
+%    nwbExport(nwb, 'empty.nwb');
+%
+% See also:
+%   generateCore, generateExtension, NwbFile, nwbRead
 
-for i=1:length(nwb)
-    if iscellstr(filenames)
-        filename = filenames{i};
-    elseif isstring(filenames)
-        filename = filenames(i);
-    else
-        filename = filenames;
+    arguments
+        nwbFileObjects (1,:) NwbFile {mustBeNonempty}
+        filePaths (1,:) string {matnwb.common.compatibility.mustBeNonzeroLengthText}
+        mode (1,1) string {mustBeMember(mode, ["edit", "overwrite"])} = "edit"
     end
-    
-    nwb(i).export(filename);
-end
+
+    assert(length(nwbFileObjects) == length(filePaths), ...
+        'NWB:Export:FilepathLengthMismatch', ...
+        'Lists of NWB objects to export and list of file paths must be the same length.')
+
+    for iFiles = 1:length(nwbFileObjects)
+        filePath = char(filePaths(iFiles));
+        nwbFileObjects(iFiles).export(filePath, mode);
+    end
 end

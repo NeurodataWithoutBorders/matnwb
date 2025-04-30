@@ -23,47 +23,61 @@ for iCache = 1:length(Caches)
     keepRelevantNamespace(Cache);
     removeEmptySchemaComponents(Cache)
     stripNamespaceFileExt(Cache.namespace);
-    JsonMap = containers.Map({'namespace'}, {jsonencode(Cache.namespace, 'ConvertInfAndNaN', true)});
+    JsonMap = containers.Map({'namespace'}, {encodeJsonWithConversion(Cache.namespace)});
     for iScheme = 1:length(Cache.filenames)
         filename = Cache.filenames{iScheme};
         jsonencode(Cache.schema(filename));
-        JsonMap(filename) = jsonencode(Cache.schema(filename), 'ConvertInfAndNaN', true);
+        JsonMap(filename) = encodeJsonWithConversion(Cache.schema(filename));
     end
-    
+
     JsonData(iCache).version = Cache.version;
     JsonData(iCache).json = JsonMap;
 end
 end
-function removeEmptySchemaComponents(Cache)
-    Schema = Cache.schema;
-    SchemaKeys = keys(Schema);
-    for iScheme = 1:length(SchemaKeys)
-        Scheme = Schema(SchemaKeys{iScheme});
-        SchemeKeys = keys(Scheme);
-        for iSub = 1:length(SchemeKeys)
-            SubScheme = Scheme(SchemeKeys{iSub});
-            if isempty(SubScheme{1})
-                remove(Scheme,SchemeKeys{iSub});
-            end
-        end
-        Schema(SchemaKeys{iScheme}) = Scheme;
-    end
-    Cache.schema = Schema;
+
+function encoded = encodeJsonWithConversion(structs)
+if verLessThan('matlab', '9.3')
+    % R2017a and older don't support keyword arguments for jsonencode
+    warning('NWB:ExportJson:InvalidConversion', ...
+        ['MATLAB R2017a and earlier do not support automatic conversion ' ...
+        'of NaN, inf, and -inf to json null. If you encounter unreadable ' ...
+        'schemas, consider using a newer version of MATLAB.']);
+    encoded = jsonencode(structs);
+else
+    encoded = jsonencode(structs, 'ConvertInfAndNaN', true);
+end
 end
 
+function removeEmptySchemaComponents(Cache)
+Schema = Cache.schema;
+SchemaKeys = keys(Schema);
+for iScheme = 1:length(SchemaKeys)
+    Scheme = Schema(SchemaKeys{iScheme});
+    SchemeKeys = keys(Scheme);
+    for iSub = 1:length(SchemeKeys)
+        SubScheme = Scheme(SchemeKeys{iSub});
+        if isempty(SubScheme{1})
+            remove(Scheme,SchemeKeys{iSub});
+        end
+    end
+    Schema(SchemaKeys{iScheme}) = Scheme;
+end
+Cache.schema = Schema;
+end
 
 function keepRelevantNamespace(Cache)
-    Namespaces = Cache.namespace('namespaces');
-    ns = 1;
-    while ns <= length(Namespaces)
-        Namespace = Namespaces{ns};
-        if ~strcmp(Cache.name, Namespace('name'))
-            Namespaces(ns) = [];
-        end
-        ns = ns+1;
+Namespaces = Cache.namespace('namespaces');
+ns = 1;
+while ns <= length(Namespaces)
+    Namespace = Namespaces{ns};
+    if ~strcmp(Cache.name, Namespace('name'))
+        Namespaces(ns) = [];
     end
-    Cache.namespace('namespaces') = Namespaces;
+    ns = ns+1;
 end
+Cache.namespace('namespaces') = Namespaces;
+end
+
 function NamespaceRoot = stripNamespaceFileExt(NamespaceRoot)
 Namespaces = NamespaceRoot('namespaces');
 for ns = 1:length(Namespaces)

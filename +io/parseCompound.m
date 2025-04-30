@@ -1,53 +1,62 @@
-function data = parseCompound(did, data)
-%did is the dataset_id for the containing dataset
-%data should be a scalar struct with fields as columns
-if isempty(data)
-    return;
-end
-tid = H5D.get_type(did);
-ncol = H5T.get_nmembers(tid);
-subtids = cell(1, ncol);
-ref_i = false(1, ncol);
-char_i = false(1, ncol);
-for i = 1:ncol
-    subtid = H5T.get_member_type(tid, i-1);
-    subtids{i} = subtid;
-    switch H5T.get_member_class(tid, i-1)
-        case H5ML.get_constant_value('H5T_REFERENCE')
-            ref_i(i) = true;
-        case H5ML.get_constant_value('H5T_STRING')
-            %if not variable len (which would make it a cell array)
-            %then mark for transpose
-            char_i(i) = ~H5T.is_variable_str(subtid);
-        otherwise
-            %do nothing
+function data = parseCompound(datasetId, data)
+    %did is the dataset_id for the containing dataset
+    %data should be a scalar struct with fields as columns
+    if isempty(data)
+        return;
     end
-end
-propnames = fieldnames(data);
-if any(ref_i)
-    %resolve references by column
-    reftids = subtids(ref_i);
-    refPropNames = propnames(ref_i);
-    for j=1:length(refPropNames)
-        rpname = refPropNames{j};
-        refdata = data.(rpname);
-        reflist = cell(size(refdata, 2), 1);
-        for k=1:size(refdata, 2)
-            r = refdata(:,k);
-            reflist{k} = io.parseReference(did, reftids{j}, r);
+    typeId = H5D.get_type(datasetId);
+    numFields = H5T.get_nmembers(typeId);
+    subTypeId = cell(1, numFields);
+    isReferenceType = false(1, numFields);
+    isCharacterType = false(1, numFields);
+    isLogicalType = false(1,numFields);
+    for iField = 1:numFields
+        fieldTypeId = H5T.get_member_type(typeId, iField-1);
+        subTypeId{iField} = fieldTypeId;
+        switch H5T.get_member_class(typeId, iField-1)
+            case H5ML.get_constant_value('H5T_REFERENCE')
+                isReferenceType(iField) = true;
+            case H5ML.get_constant_value('H5T_STRING')
+                %if not variable len (which would make it a cell array)
+                %then mark for transpose
+                isCharacterType(iField) = ~H5T.is_variable_str(fieldTypeId);
+            case H5ML.get_constant_value('H5T_ENUM')
+                isLogicalType(iField) = io.isBool(fieldTypeId);
+            otherwise
+                %do nothing
         end
-        data.(rpname) = [reflist{:}] .';
     end
-end
 
-if any(char_i)
-    %transpose character arrays because they are column-ordered
-    %when read
-    charPropNames = propnames(char_i);
-    for j=1:length(charPropNames)
-        cpname = charPropNames{j};
-        data.(cpname) = data.(cpname) .';
+    fieldName = fieldnames(data);
+
+    % resolve references by column
+    referenceTypeId = subTypeId(isReferenceType);
+    referenceFieldName = fieldName(isReferenceType);
+    for iFieldName = 1:length(referenceFieldName)
+        name = referenceFieldName{iFieldName};
+        rawReference = data.(name);
+        rawTypeId = referenceTypeId{iFieldName};
+        data.(name) = io.parseReference(datasetId, rawTypeId, rawReference);
     end
-end
-data = struct2table(data);
+
+    % transpose character arrays because they are column-ordered
+    % when read
+    characterFieldName = fieldName(isCharacterType);
+    for iFieldName = 1:length(characterFieldName)
+        name = characterFieldName{iFieldName};
+        data.(name) = data.(name) .';
+    end
+
+    % convert column data to proper logical arrays/matrices
+    logicalFieldName = fieldName(isLogicalType);
+    for iFieldName = 1:length(logicalFieldName)
+        name = logicalFieldName{iFieldName};
+        if isa(data.(name), 'int8')
+            data.(name) = logical(data.(name));
+        elseif isa(data.(name), 'cell') && ismember(string(data.(name){1}), ["TRUE", "FALSE"])
+            data.(name) = strcmp('TRUE', data.(name));
+        else
+            error('NWB:ParseCompound:UnknownLogicalFormat', 'Could not resolve data of logical type')
+        end
+    end
 end

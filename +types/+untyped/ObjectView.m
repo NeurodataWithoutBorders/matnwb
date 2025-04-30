@@ -23,10 +23,12 @@ classdef ObjectView < handle
             % target = A generated NWB object.
             
             if ischar(target) || isstring(target)
-                validateattributes(target, {'char', 'string'}, {'scalartext'});
-                obj.path = target;
+                validateattributes(target, {'char', 'string'}, {'scalartext'} ...
+                    , 'types.untyped.ObjectView', 'target string', 1);
+                obj.path = char(target);
             else
-                validateattributes(target, {'types.untyped.MetaClass'}, {'scalar'});
+                validateattributes(target, {'types.untyped.MetaClass'}, {'scalar'} ...
+                    , 'types.untyped.ObjectView', 'target object', 1);
                 obj.target = target;
             end
         end
@@ -50,7 +52,7 @@ classdef ObjectView < handle
                 if isempty(obj.target)
                     path = '';
                 elseif isempty(obj.target.metaClass_fullPath)
-                    error('MatNWB:ObjectView:MissingPath',...
+                    error('NWB:ObjectView:MissingPath',...
                         ['Target fullpath has not been set yet. '...
                         'Is the referenced object assigned in the NWB File?']);
                 else
@@ -60,12 +62,12 @@ classdef ObjectView < handle
                 path = obj.path;
             end
         end
-        
+
         function tf = has_path(obj)
-            try
+            if ~isempty(obj.target)
+                tf = ~isempty(obj.target.metaClass_fullPath);
+            else
                 tf = ~isempty(obj.path);
-            catch
-                tf = false;
             end
         end
     end

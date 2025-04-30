@@ -1,0 +1,7 @@
+namespaces:
+- full_name: Boolean Values Schema Test
+  name: bool
+  schema:
+  - namespace: core
+  - source: bool.bools.yaml
+  version: 1.0.0

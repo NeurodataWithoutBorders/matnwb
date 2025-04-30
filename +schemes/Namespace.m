@@ -1,8 +1,9 @@
 classdef Namespace < handle
     properties (SetAccess=private)
-        name; %name of this namespace
-        dependencies; %parent namespaces by [Namespace]
-        registry; %maps name to class
+        name char = ''          % name of this namespace
+        version char = ''       % version of this namespace
+        dependencies = []       % parent namespaces by [Namespace]
+        registry = []           % maps name to class
     end
     
     properties (Constant)
@@ -11,15 +12,13 @@ classdef Namespace < handle
     end
     
     methods
-        function obj = Namespace(name, deplist, source)
+        function obj = Namespace(name, version, deplist, source)
             if nargin == 0
-                obj.name = '';
-                obj.dependencies = [];
-                obj.registry = [];
-                return;
+                return
             end
             
             obj.name = strrep(name, '-', '_');
+            obj.version = version;
             obj.dependencies = deplist;
             namespaceFiles = keys(source);
             obj.registry = [];
@@ -40,19 +39,22 @@ classdef Namespace < handle
 
         function parent = getParent(obj, classname)
             class = obj.getClass(classname);
-            if isempty(class)
-                error('Could not find class %s', classname);
-            end
+            
+            assert( ...
+                ~isempty(class), ...
+                'NWB:Namespace:ClassNotFound', ...
+                'Could not find class %s', classname ...
+                );
             
             parent = [];
             hasParentKey = isKey(class, obj.PARENT_KEYS);
             if any(hasParentKey)
                 parentName = class(obj.PARENT_KEYS{hasParentKey});
                 parent = obj.getClass(parentName);
-                assert(~isempty(parent),...
-                    'Parent %s for class %s doesn''t exist!  Missing Dependency?',...
-                    parentName,...
-                    classname);
+                assert(~isempty(parent), ...
+                    'NWB:Namespace:ParentNotFound', ...
+                    'Parent %s for class %s doesn''t exist!  Missing Dependency?', ...
+                    parentName, classname);
             end
         end
         
@@ -90,14 +92,23 @@ classdef Namespace < handle
         %the returned value is a cell array of containers.Maps [parent -> root]
         function branch = getRootBranch(obj, classname)
             cursor = obj.getClass(classname);
+            typeNames = {};
             branch = {};
-            hasTypeDef = isKey(cursor, obj.TYPEDEF_KEYS);
-            parent = obj.getParent(cursor(obj.TYPEDEF_KEYS{hasTypeDef}));
+            iHasTypeDef = isKey(cursor, obj.TYPEDEF_KEYS);
+            typeName = cursor(obj.TYPEDEF_KEYS{iHasTypeDef});
+            parent = obj.getParent(typeName);
             while ~isempty(parent)
-                branch = [branch {parent}];
+                branch{end+1} = parent;
+                typeNames{end+1} = typeName;
+                assert(length(unique(typeNames)) == length(typeNames), ...
+                    'NWB:Namespace:GetRootBranch:InfiniteLoopDetected', ...
+                    ['Failed to find root branch. A lower-level definition override might be causing ' ...
+                    'an infinite loop with parent name detection. If you are an extension developer, ' ...
+                    'this is usually due to overwriting a "core" type name.']);
                 cursor = parent;
-                hasTypeDef = isKey(cursor, obj.TYPEDEF_KEYS);
-                parent = obj.getParent(cursor(obj.TYPEDEF_KEYS{hasTypeDef}));
+                iHasTypeDef = isKey(cursor, obj.TYPEDEF_KEYS);
+                typeName = cursor(obj.TYPEDEF_KEYS{iHasTypeDef});
+                parent = obj.getParent(typeName);
             end
         end
     end

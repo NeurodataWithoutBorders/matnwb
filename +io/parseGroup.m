@@ -55,12 +55,6 @@ end
 if isempty(Type.typename)
     parsed = types.untyped.Set(...
         [attributeProperties; datasetProperties; groupProperties; linkProperties]);
-    
-    if isempty(parsed)
-        %special case where a directory is simply empty.  Return itself but
-        %empty
-        parsed(root) = [];
-    end
 else
     if groupProperties.Count > 0
         %elide group properties
@@ -76,13 +70,12 @@ else
             parsed = NwbFile(kwargs{:});
         else
             file.cloneNwbFileClass(Type.name, Type.typename);
-            rehash();
-            parsed = eval([Type.typename '(kwargs{:})']);
+            parsed = io.createParsedType(info.Name, Type.typename, kwargs{:});
         end
         
         return;
     end
-    parsed = eval([Type.typename '(kwargs{:})']);
+    parsed = io.createParsedType(info.Name, Type.typename, kwargs{:});
 end
 end
 
@@ -115,14 +108,14 @@ for i=1:length(potentials)
         if any(leads)
             %since set has been edited, we bubble up deletion of the old keys.
             subset = elide(pvalue, prop(leads), pvar);
-            elided = [elided; subset];
+            elided = [elided; subset]; %#ok<AGROW>
             if pvalue.Count == 0
                 drop(i) = true;
             elseif any(strcmp(pvar, prop))
                 elided(pvar) = pvalue;
                 drop(i) = true;
             else
-                warning('Unable to match property `%s` under prefix `%s`',...
+                warning('NWB:Parse:UnmatchedProperty', 'Unable to match property `%s` under prefix `%s`',...
                     pvar, prefix);
             end
         end

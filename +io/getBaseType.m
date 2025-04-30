@@ -15,7 +15,9 @@ elseif strcmp(type, 'double')
 elseif strcmp(type, 'single')
     id = 'H5T_IEEE_F32LE';
 elseif strcmp(type, 'logical')
-    id = 'H5T_STD_I32LE';
+    id = H5T.enum_create('H5T_STD_I8LE');
+    H5T.enum_insert(id, 'FALSE', 0);
+    H5T.enum_insert(id, 'TRUE', 1);
 elseif startsWith(type, {'int' 'uint'})
     prefix = 'H5T_STD_';
     pattern = 'int%d';
@@ -43,6 +45,7 @@ elseif startsWith(type, {'int' 'uint'})
     
     id = [prefix suffix];
 else
-    error('Type `%s` is not a supported raw type', type);
+    error('NWB:IO:UnsupportedBaseType', ...
+        'Type `%s` is not a supported raw type', type);
 end
 end

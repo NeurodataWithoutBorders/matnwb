@@ -1,0 +1,85 @@
+# hdmf-schema-language=2.0.2
+groups:
+ - data_type_def: ExternalResources
+   data_type_inc: Container
+   doc: "A set of four tables for tracking external resource references in a file. NOTE: this data type is in beta
+     testing and is subject to change in a later version."
+   datasets:
+    - data_type_inc: Data
+      name: keys
+      doc: A table for storing user terms that are used to refer to external resources.
+      dtype:
+       - name: key
+         dtype: text
+         doc: The user term that maps to one or more resources in the 'resources' table.
+      dims:
+      - num_rows
+      shape:
+      - null
+
+    - data_type_inc: Data
+      name: entities
+      doc: A table for mapping user terms (i.e., keys) to resource entities.
+      dtype:
+       - name: keys_idx
+         dtype: uint
+         doc: The index to the key in the 'keys' table.
+       - name: resources_idx
+         dtype: uint
+         doc: The index into the 'resources' table
+       - name: entity_id
+         dtype: text
+         doc: The unique identifier entity.
+       - name: entity_uri
+         dtype: text
+         doc: The URI for the entity this reference applies to. This can be an empty string.
+      dims:
+      - num_rows
+      shape:
+      - null
+
+    - data_type_inc: Data
+      name: resources
+      doc: A table for mapping user terms (i.e., keys) to resource entities.
+      dtype:
+       - name: resource
+         dtype: text
+         doc: The name of the resource.
+       - name: resource_uri
+         dtype: text
+         doc: The URI for the resource. This can be an empty string.
+      dims:
+      - num_rows
+      shape:
+      - null
+
+    - data_type_inc: Data
+      name: objects
+      doc: A table for identifying which objects in a file contain references to external resources.
+      dtype:
+       - name: object_id
+         dtype: text
+         doc: The UUID for the object.
+       - name: field
+         dtype: text
+         doc: The field of the object. This can be an empty string if the object is a dataset and the field is the
+           dataset values.
+      dims:
+      - num_rows
+      shape:
+      - null
+
+    - data_type_inc: Data
+      name: object_keys
+      doc: A table for identifying which objects use which keys.
+      dtype:
+       - name: objects_idx
+         dtype: uint
+         doc: The index to the 'objects' table for the object that holds the key.
+       - name: keys_idx
+         dtype: uint
+         doc: The index to the 'keys' table for the key.
+      dims:
+      - num_rows
+      shape:
+      - null

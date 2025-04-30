@@ -1,0 +1,46 @@
+# Note: This workflow allows specifying a custom location for the Codespell 
+# configuration file by defining CONFIG_FILE as an environment variable. 
+# A defined subset of options is extracted from this file and passed to the 
+# Codespell action. This also ensures that the output of the codespell action 
+# prints out the values of these options.
+# Todo: Generalize the extraction of codespell input arguments/options.
+
+name: Codespell
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  codespell:
+    name: Check for spelling errors
+    runs-on: ubuntu-latest
+    env:
+      CONFIG_FILE: .codespellrc
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract codespell configurations from configuration file
+        id: config
+        run: |
+          # Extract 'skip' value from the config file, excluding 'skip = ' part
+          skip=$(grep -E '^skip' "$CONFIG_FILE" | sed 's/^skip *= *//')
+          
+          # Extract 'ignore-words-list' value from the config file, excluding 'ignore-words-list = ' part
+          ignore_words=$(grep -E '^ignore-words-list' "$CONFIG_FILE" | sed 's/^ignore-words-list *= *//')
+          
+          # Export values as environment variables
+          echo "SKIP=$skip" >> $GITHUB_ENV
+          echo "IGNORE_WORDS_LIST=$ignore_words" >> $GITHUB_ENV
+
+      - name: Codespell
+        uses: codespell-project/actions-codespell@v2
+        with:
+          skip: "${{ env.SKIP }}"
+          ignore_words_list: "${{ env.IGNORE_WORDS_LIST }}"

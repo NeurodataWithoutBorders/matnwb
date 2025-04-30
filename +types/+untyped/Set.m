@@ -95,10 +95,10 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
                     varargout{1} = obj.Count;
                 end
             else
-                if nargout == 1
+                if nargout == 0 || nargout == 1
                     varargout{1} = [obj.Count, 1];
                 else
-                    [varargout{:}] = ones(nargout,1);
+                    varargout = num2cell( ones(1, nargout) );
                     varargout{1} = obj.Count;
                 end
             end
@@ -237,9 +237,9 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
         %% matlab.mixin.CustomDisplay overrides
 
         function displayEmptyObject(obj)
-            hdr = ['  Empty '...
-                '<a href="matlab:helpPopup types.untyped.Set" style="font-weight:bold">'...
-                'Set</a>'];
+            hdr = sprintf('  %s with no elements.', ...
+                ['<a href="matlab:helpPopup types.untyped.Set" style="font-weight:bold">'...
+                'Set</a>']);
             footer = getFooter(obj);
             disp([hdr newline footer]);
         end

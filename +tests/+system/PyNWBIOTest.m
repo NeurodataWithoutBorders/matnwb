@@ -1,4 +1,5 @@
-classdef PyNWBIOTest < tests.system.RoundTripTest
+classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) ...
+        PyNWBIOTest < tests.system.RoundTripTest
     % Assumes PyNWB and unittest2 has been installed on the system.
     %
     % To install PyNWB, execute:
@@ -28,25 +29,20 @@ classdef PyNWBIOTest < tests.system.RoundTripTest
             nwbExport(testCase.file, 'temp.nwb'); % hack to fill out ObjectView container paths.
             % ignore file_create_date because nwbExport will actually
             % mutate the property every export.
-            tests.util.verifyContainerEqual(testCase, pycontainer, matcontainer, {'file_create_date'});
+            % ignore general/was_generated_by because the value will be
+            % specific to matnwb generated file.
+            ignoreFields = {'file_create_date', 'general_was_generated_by'};
+            tests.util.verifyContainerEqual(testCase, pycontainer, matcontainer, ignoreFields);
         end
     end
     
     methods
         function [status, cmdout] = runPyTest(testCase, testName)
-            setenv('PYTHONPATH', fileparts(mfilename('fullpath')));
+            tests.util.addFolderToPythonPath( fileparts(mfilename('fullpath')) )
             
-            envPath = fullfile('+tests', 'env.mat');
-            if 2 == exist(envPath, 'file')
-                Env = load(envPath, '-mat', 'pythonDir');
-                
-                pythonPath = fullfile(Env.pythonDir, 'python');
-            else
-                pythonPath = 'python';
-            end
-            
+            pythonExecutable = getenv("PYTHON_EXECUTABLE");
             cmd = sprintf('"%s" -B -m unittest %s.%s.%s',...
-                pythonPath,...
+                pythonExecutable,...
                 'PyNWBIOTest', testCase.className(), testName);
             [status, cmdout] = system(cmd);
         end

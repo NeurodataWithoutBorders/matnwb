@@ -1,18 +1,36 @@
-function Namespace = loadNamespace(name, saveDir)
-%LOADNAMESPACE loads dependent class metadata
-% name is the pregenerated namespace name
-% Namespaces a schemes.Namespace object with dependency graph
+function namespace = loadNamespace(namespaceName, generatedTypesDirectory)
+%LOADNAMESPACE - Load cached specifications for a namespace with dependency graph
+%
+% Input Arguments:
+%   namespaceName (string) : Name of a format specification namespace, i.e "core"
+%   generatedTypesDirectory (string) : Optional, path name of directory
+%       where generated classes for neurodata types are located
+%   
+% Output Arguments:
+%   namespace (schemes.Namespace) - Namespace object with a dependency graph
 
-Cache = spec.loadCache(name, 'savedir', saveDir);
-assert(~isempty(Cache), 'NWB:Namespace:CacheMissing',...
-    ['No cache found for namespace `%s`.  '...
-    'Please generate any missing dependencies before generating this namespace.'], name);
-ancestry = schemes.Namespace.empty(length(Cache.dependencies), 0);
+    arguments
+        namespaceName (1,1) string
+        generatedTypesDirectory (1,1) string {matnwb.common.compatibility.mustBeFolder} = ...
+            schemes.utility.findRootDirectoryForGeneratedTypes()
+    end
 
-for i=length(Cache.dependencies):-1:1
-    ancestorName = Cache.dependencies{i};
-    ancestry(i) = schemes.loadNamespace(ancestorName, saveDir);
-end
-
-Namespace = schemes.Namespace(name, ancestry, Cache.schema);
+    cachedNamespaceSpecification = spec.loadCache(namespaceName, 'savedir', generatedTypesDirectory);
+    assert( ~isempty(cachedNamespaceSpecification), ...
+        'NWB:Namespace:CacheMissing',...
+        ['No cache found for namespace `%s`.\nPlease use generateCore or ' ...
+        'generateExtension to initialize a cache for the `%s` namespace.'], ...
+        namespaceName, namespaceName);
+    
+    ancestry = schemes.Namespace.empty(length(cachedNamespaceSpecification.dependencies), 0);
+    for i = length(cachedNamespaceSpecification.dependencies):-1:1
+        ancestorName = cachedNamespaceSpecification.dependencies{i};
+        ancestry(i) = schemes.loadNamespace(ancestorName, generatedTypesDirectory);
+    end
+    
+    namespace = schemes.Namespace(...
+        namespaceName, ...
+        cachedNamespaceSpecification.version, ...
+        ancestry, ...
+        cachedNamespaceSpecification.schema);
 end

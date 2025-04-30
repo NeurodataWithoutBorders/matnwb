@@ -39,16 +39,46 @@ deleteMask = typeDefMask | namespaceMask | blacklistMask;
 attributes(deleteMask) = [];
 for i=1:length(attributes)
     attr = attributes(i);
-    if strcmp(attr.Datatype.Class, 'H5T_REFERENCE')
-        fid = H5F.open(filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
-        aid = H5A.open_by_name(fid, context, attr.Name);
-        tid = H5A.get_type(aid);
-        args(attr.Name) = io.parseReference(aid, tid, attr.Value);
-        H5T.close(tid);
-        H5A.close(aid);
-        H5F.close(fid);
-    else
-        args(attr.Name) = attr.Value;
+
+    switch attr.Datatype.Class
+        case 'H5T_STRING'
+            % H5 String type attributes are loaded differently in releases 
+            % prior to MATLAB R2020a. For details, see:
+            % https://se.mathworks.com/help/matlab/ref/h5readatt.html
+            attributeValue = attr.Value;
+            if verLessThan('matlab', '9.8') % MATLAB < R2020a
+                if iscell(attr.Value)
+                    if isempty(attr.Value)
+                        attributeValue = '';
+                    elseif isscalar(attr.Value)
+                        attributeValue = attr.Value{1};
+                    else
+                        attributeValue = attr.Value;
+                    end
+                end
+            end
+        case 'H5T_REFERENCE'
+            fid = H5F.open(filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
+            aid = H5A.open_by_name(fid, context, attr.Name);
+            tid = H5A.get_type(aid);
+            attributeValue = io.parseReference(aid, tid, attr.Value);
+            H5T.close(tid);
+            H5A.close(aid);
+            H5F.close(fid);
+        case 'H5T_ENUM'
+            if io.isBool(attr.Datatype.Type)
+                % attr.Value should be cell array of strings here since
+                % MATLAB can't have arbitrary enum values.
+                attributeValue = strcmp('TRUE', attr.Value);
+            else
+                warning('NWB:Attribute:UnknownEnum', ...
+                    ['Encountered unknown enum under field `%s` with %d members. ' ...
+                    'Will be saved as cell array of characters.'], ...
+                    attr.Name, length(attr.Datatype.Type.Member));
+            end
+        otherwise
+            attributeValue = attr.Value;
     end
+    args(attr.Name) = attributeValue;
 end
 end

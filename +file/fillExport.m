@@ -1,206 +1,283 @@
-function festr = fillExport(propnames, raw, parentName)
-hdrstr = 'function refs = export(obj, fid, fullpath, refs)';
-if isa(raw, 'file.Dataset')
-    propnames = propnames(~strcmp(propnames, 'data'));
-end
-
-bodystr = {strjoin({...
-    ['refs = export@' parentName '(obj, fid, fullpath, refs);']...
-    'if any(strcmp(refs, fullpath))'...
-    '    return;'...
-    'end'...
-    }, newline)};
-
-if isa(raw, 'file.Group') && strcmp(raw.type, 'NWBFile')
-    %NWBFile is technically the root `group`, which in HDF5 is a single `/`
-    % this messes with property creation so we reassign the path here to
-    % empty string so concatenation looks right
-    bodystr = [bodystr {'fullpath = '''';'}];
-end
-
-for i = 1:length(propnames)
-    pnm = propnames{i};
-    pathProps = traverseRaw(pnm, raw);
-    if isempty(pathProps)
-        keyboard;
-%         bodystr{end+1} = fillDataExport(pnm, 
+function festr = fillExport(propertyNames, RawClass, parentName, required)
+    exportHeader = 'function refs = export(obj, fid, fullpath, refs)';
+    if isa(RawClass, 'file.Dataset')
+        propertyNames = propertyNames(~strcmp(propertyNames, 'data'));
     end
-    prop = pathProps{end};
-    elideProps = pathProps(1:end-1);
-    elisions = cell(length(elideProps),1);
-    %Construct elisions
-    for j = 1:length(elideProps)
-        elisions{j} = elideProps{j}.name;
-    end
-    
-    elisions = strjoin(elisions, '/');
-    if ~isempty(elideProps) && all(cellfun('isclass', elideProps, 'file.Group'))
-        bodystr{end+1} = ['io.writeGroup(fid, [fullpath ''/' elisions ''']);'];
-    end
-    bodystr{end+1} = fillDataExport(pnm, prop, elisions);
-end
 
-festr = strjoin({hdrstr...
-    file.addSpaces(strjoin(bodystr, newline), 4)...
-    'end'}, newline);
-end
-
-function path = traverseRaw(propname, raw)
-path = {};
-switch class(raw)
-    case 'file.Group'
-        %get names of both subgroups and datasets
-        gnames = {};
-        dsnames = {};
-        lnknames = {};
-        anames = {};
-        
-        if ~isempty(raw.attributes)
-            anames = {raw.attributes.name};
-        end
-        
-        if ~isempty(raw.subgroups)
-            gnames = {raw.subgroups.name};
-            lowerGroupTypes = lower({raw.subgroups.type});
-            useLower = [raw.subgroups.isConstrainedSet] | cellfun('isempty', gnames);
-            gnames(useLower) = lowerGroupTypes(useLower);
-        end
-        
-        if ~isempty(raw.datasets)
-            dsnames = {raw.datasets.name};
-            lowerDsTypes = lower({raw.datasets.type});
-            useLower = [raw.datasets.isConstrainedSet] | cellfun('isempty', dsnames);
-            dsnames(useLower) = lowerDsTypes(useLower);
-        end
-        
-        if ~isempty(raw.links)
-            lnknames = {raw.links.name};
-        end
-        
-        if any(strcmp([anames gnames dsnames lnknames], propname))
-            amatch = strcmp(anames, propname);
-            gmatch = strcmp(gnames, propname);
-            dsmatch = strcmp(dsnames, propname);
-            lnkmatch = strcmp(lnknames, propname);
-            if any(amatch)
-                path = {raw.attributes(amatch)};
-            elseif any(gmatch)
-                path = {raw.subgroups(gmatch)};
-            elseif any(dsmatch)
-                path = {raw.datasets(dsmatch)};
-            elseif any(lnkmatch)
-                path = {raw.links(lnkmatch)};
-            end
-            return;
-        end
-        
-        %find true path for elided property
-        if startsWith(propname, dsnames) || startsWith(propname, gnames)
-            for i=1:length(gnames)
-                nm = gnames{i};
-                suffix = propname(length(nm)+2:end);
-                if startsWith(propname, nm)
-                    res = traverseRaw(suffix, raw.subgroups(i));
-                    if ~isempty(res)
-                        path = [{raw.subgroups(i)} res];
-                        return;
-                    end
-                end
-            end
-            for i=1:length(dsnames)
-                nm = dsnames{i};
-                suffix = propname(length(nm)+2:end);
-                if startsWith(propname, nm)
-                    res = traverseRaw(suffix, raw.datasets(i));
-                    if ~isempty(res)
-                        path = [{raw.datasets(i)} res];
-                        return;
-                    end
-                end
-            end
-        end
-    case 'file.Dataset'
-        if isempty(raw.attributes)
-            return;
-        end
-        attrmatch = strcmp({raw.attributes.name}, propname);
-        path = {raw.attributes(attrmatch)};
-end
-end
-
-function fde = fillDataExport(name, prop, elisions)
-if isempty(elisions)
-    fullpath = ['[fullpath ''/' prop.name ''']'];
-    elisionpath = 'fullpath';
-else
-    fullpath = ['[fullpath ''/' elisions '/' prop.name ''']'];
-    elisionpath = ['[fullpath ''/' elisions ''']'];
-end
-
-if (isa(prop, 'file.Group') || isa(prop, 'file.Dataset')) && prop.isConstrainedSet
-    fde = ['refs = obj.' name '.export(fid, ' elisionpath ', refs);'];
-elseif isa(prop, 'file.Link') || isa(prop, 'file.Group') ||...
-        (isa(prop, 'file.Dataset') && ~isempty(prop.type))
-    % obj, loc_id, path, refs
-    fde = ['refs = obj.' name '.export(fid, ' fullpath ', refs);'];
-elseif isa(prop, 'file.Dataset') %untyped dataset
-    options = {};
-    
-    % special case due to unique behavior of file_create_date
-    if strcmp(name, 'file_create_date')
-        options = [options {'''forceChunking''', '''forceArray'''}];
-    elseif ~prop.scalar
-        options = [options {'''forceArray'''}];
-    end
-        
-    
-    % untyped compound
-    if isstruct(prop.dtype)
-        writerStr = 'io.writeCompound';
-    else
-        writerStr = 'io.writeDataset';
-    end
-    
-    % just to guarantee optional arguments are correct syntax
-    nameProp = sprintf('obj.%s', name);
-    nameArgs = [{nameProp} options];
-    nameArgs = strjoin(nameArgs, ', ');
-    fde = strjoin({...
-        ['if startsWith(class(obj.' name '), ''types.untyped.'')']...
-        ['    refs = obj.' name '.export(fid, ' fullpath ', refs);']...
-        ['elseif ~isempty(obj.' name ')']...
-        [sprintf('    %s(fid, %s, %s);', writerStr, fullpath, nameArgs)]...
+    exportBody = {strjoin({...
+        ['refs = export@' parentName '(obj, fid, fullpath, refs);']...
+        'if any(strcmp(refs, fullpath))'...
+        '    return;'...
         'end'...
+        }, newline)};
+
+    if isa(RawClass, 'file.Group') && strcmp(RawClass.type, 'NWBFile')
+        %NWBFile is technically the root `group`, which in HDF5 is a single `/`
+        % this messes with property creation so we reassign the path here to
+        % empty string so concatenation looks right
+        exportBody = [exportBody {'fullpath = '''';'}];
+    end
+
+    for i = 1:length(propertyNames)
+        propertyName = propertyNames{i};
+        pathProps = traverseRaw(propertyName, RawClass);
+        prop = pathProps{end};
+        elideProps = pathProps(1:end-1);
+        elisions = cell(length(elideProps),1);
+        % Construct elisions
+        for j = 1:length(elideProps)
+            elisions{j} = elideProps{j}.name;
+        end
+
+        elisions = strjoin(elisions, '/');
+        if ~isempty(elideProps) && all(cellfun('isclass', elideProps, 'file.Group'))
+            exportBody{end+1} = ['io.writeGroup(fid, [fullpath ''/' elisions ''']);'];
+        end
+
+        if strcmp(propertyName, 'unit') && strcmp(RawClass.type, 'VectorData')
+            exportBody{end+1} = fillVectorDataUnitConditional();
+        elseif strcmp(propertyName, 'sampling_rate') && strcmp(RawClass.type, 'VectorData')
+            exportBody{end+1} = fillVectorDataSamplingRateConditional();
+        elseif strcmp(propertyName, 'resolution') && strcmp(RawClass.type, 'VectorData')
+            exportBody{end+1} = fillVectorDataResolutionConditional();
+        else
+            exportBody{end+1} = fillDataExport(propertyName, prop, elisions, required);
+        end
+    end
+
+    festr = strjoin({ ...
+        exportHeader ...
+        , file.addSpaces(strjoin(exportBody, newline), 4) ...
+        , 'end' ...
         }, newline);
-else
-    if prop.scalar
-        forceArrayFlag = '';
-    else
-        forceArrayFlag = ', ''forceArray''';
+end
+
+function exportBody = fillVectorDataResolutionConditional()
+    exportBody = strjoin({...
+        'if ~isempty(obj.resolution) && any(endsWith(fullpath, ''units/spike_times''))' ...
+        , '    io.writeAttribute(fid, [fullpath ''/resolution''], obj.resolution);' ...
+        , 'end'}, newline);
+end
+
+function exportBody = fillVectorDataUnitConditional()
+    exportBody = strjoin({...
+          'validUnitPaths = strcat(''units/'', {''waveform_mean'', ''waveform_sd'', ''waveforms''});' ...
+        , 'if ~isempty(obj.unit) && any(endsWith(fullpath, validUnitPaths))' ...
+        , '    io.writeAttribute(fid, [fullpath ''/unit''], obj.unit);' ...
+        , 'end'}, newline);
+end
+
+function exportBody = fillVectorDataSamplingRateConditional()
+    exportBody = strjoin({...
+          'validDataSamplingPaths = strcat(''units/'', {''waveform_mean'', ''waveform_sd'', ''waveforms''});' ...
+        , 'if ~isempty(obj.sampling_rate) && any(endsWith(fullpath, validDataSamplingPaths))' ...
+        , '    io.writeAttribute(fid, [fullpath ''/sampling_rate''], obj.sampling_rate);' ...
+        , 'end'}, newline);
+end
+
+function path = traverseRaw(propertyName, RawClass)
+    % returns a cell array of named tokens which may or may not indicate an identifier.
+    % these tokens are relative to the Raw class
+    path = {}; 
+
+    if isa(RawClass, 'file.Dataset')
+        if ~isempty(RawClass.attributes)
+            matchesAttribute = strcmp({RawClass.attributes.name}, propertyName);
+            path = {RawClass.attributes(matchesAttribute)};
+        end
+        return;
     end
-    fde = sprintf('io.writeAttribute(fid, %1$s, obj.%2$s%3$s);',...
-        fullpath, name, forceArrayFlag);
-end
 
-propertyChecks = {};
+    % probably a file.Group
 
-if isa(prop, 'file.Attribute') && ~isempty(prop.dependent)
-    %if attribute is dependent, check before writing
-    if isempty(elisions) || strcmp(elisions, prop.dependent)
-        depPropname = prop.dependent;
-    else
-        flattened = strfind(elisions, '/');
-        flattened = strrep(elisions(1:flattened(end)), '/', '_');
-        depPropname = [flattened prop.dependent];
+    % get names of both subgroups and datasets
+    subgroupNames = {};
+    datasetNames = {};
+    linkNames = {};
+    attributeNames = {};
+
+    if ~isempty(RawClass.attributes)
+        attributeNames = {RawClass.attributes.name};
     end
-    propertyChecks{end+1} = ['~isempty(obj.' depPropname ')'];
+
+    if ~isempty(RawClass.subgroups)
+        subgroupNames = {RawClass.subgroups.name};
+        lowerGroupTypes = lower({RawClass.subgroups.type});
+        useLower = [RawClass.subgroups.isConstrainedSet] | cellfun('isempty', subgroupNames);
+        subgroupNames(useLower) = lowerGroupTypes(useLower);
+    end
+
+    if ~isempty(RawClass.datasets)
+        datasetNames = {RawClass.datasets.name};
+        lowerDsTypes = lower({RawClass.datasets.type});
+        useLower = [RawClass.datasets.isConstrainedSet] | cellfun('isempty', datasetNames);
+        datasetNames(useLower) = lowerDsTypes(useLower);
+    end
+
+    if ~isempty(RawClass.links)
+        linkNames = {RawClass.links.name};
+    end
+
+    if any(strcmp([attributeNames subgroupNames datasetNames linkNames], propertyName))
+        isAttribute = strcmp(attributeNames, propertyName);
+        isGroup = strcmp(subgroupNames, propertyName);
+        isDataset = strcmp(datasetNames, propertyName);
+        isLink = strcmp(linkNames, propertyName);
+        if any(isAttribute)
+            path = {RawClass.attributes(isAttribute)};
+        elseif any(isGroup)
+            path = {RawClass.subgroups(isGroup)};
+        elseif any(isDataset)
+            path = {RawClass.datasets(isDataset)};
+        elseif any(isLink)
+            path = {RawClass.links(isLink)};
+        end
+        return;
+    end
+
+    % find true path for elided property
+    if startsWith(propertyName, datasetNames) || startsWith(propertyName, subgroupNames)
+        for i=1:length(subgroupNames)
+            name = subgroupNames{i};
+            suffix = propertyName(length(name)+2:end);
+            if startsWith(propertyName, name)
+                res = traverseRaw(suffix, RawClass.subgroups(i));
+                if ~isempty(res)
+                    path = [{RawClass.subgroups(i)} res];
+                    return;
+                end
+            end
+        end
+        for i=1:length(datasetNames)
+            name = datasetNames{i};
+            suffix = propertyName(length(name)+2:end);
+            if startsWith(propertyName, name)
+                res = traverseRaw(suffix, RawClass.datasets(i));
+                if ~isempty(res)
+                    path = [{RawClass.datasets(i)} res];
+                    return;
+                end
+            end
+        end
+    end
 end
 
-if ~prop.required
-    propertyChecks{end+1} = ['~isempty(obj.' name ')'];
-end
+function dataExportString = fillDataExport(name, prop, elisions, required)
+    if isempty(elisions)
+        fullpath = ['[fullpath ''/' prop.name ''']'];
+        elisionpath = 'fullpath';
+    else
+        fullpath = ['[fullpath ''/' elisions '/' prop.name ''']'];
+        elisionpath = ['[fullpath ''/' elisions ''']'];
+    end
 
-if ~isempty(propertyChecks)
-    fde = ['if ' strjoin(propertyChecks, ' && ') newline file.addSpaces(fde, 4) newline 'end'];
-end
+    if (isa(prop, 'file.Group') || isa(prop, 'file.Dataset')) && prop.isConstrainedSet
+        % is a sub-object (with an export function)
+        dataExportString = ['refs = obj.' name '.export(fid, ' elisionpath ', refs);'];
+    elseif isa(prop, 'file.Link') || isa(prop, 'file.Group') ||...
+            (isa(prop, 'file.Dataset') && ~isempty(prop.type))
+        % obj, loc_id, path, refs
+        dataExportString = ['refs = obj.' name '.export(fid, ' fullpath ', refs);'];
+    elseif isa(prop, 'file.Dataset') %untyped dataset
+        options = {};
+
+        % special case due to unique behavior of file_create_date
+        if strcmp(name, 'file_create_date')
+            options = [options {'''forceChunking''', '''forceArray'''}];
+        elseif ~prop.scalar
+            options = [options {'''forceArray'''}];
+            % If dataset is 2D, need to force matrix-like
+            if numel(prop.shape) == 2 && ~iscell(prop.shape{1})
+                options = [options {'''forceMatrix'''}];
+            end
+        end
+
+        % untyped compound
+        if isstruct(prop.dtype)
+            writerStr = 'io.writeCompound';
+        else
+            writerStr = 'io.writeDataset';
+        end
+
+        % just to guarantee optional arguments are correct syntax
+        nameProp = sprintf('obj.%s', name);
+        nameArgs = [{nameProp} options];
+        nameArgs = strjoin(nameArgs, ', ');
+        dataExportString = strjoin({...
+            ['if startsWith(class(obj.' name '), ''types.untyped.'')']...
+            ['    refs = obj.' name '.export(fid, ' fullpath ', refs);']...
+            ['elseif ~isempty(obj.' name ')']...
+            [sprintf('    %s(fid, %s, %s);', writerStr, fullpath, nameArgs)]...
+            'end'...
+            }, newline);
+    else
+        if prop.scalar
+            forceArrayFlag = '';
+        else
+            forceArrayFlag = ', ''forceArray''';
+        end
+        dataExportString = sprintf('io.writeAttribute(fid, %1$s, obj.%2$s%3$s);',...
+            fullpath, name, forceArrayFlag);
+    end
+
+    propertyChecks = {};
+    dependencyCheck = {};
+
+    if isa(prop, 'file.Attribute') && ~isempty(prop.dependent)
+        %if attribute is dependent, check before writing
+        if isempty(elisions) || strcmp(elisions, prop.dependent)
+            depPropname = prop.dependent;
+        else
+            flattened = strfind(elisions, '/');
+            flattened = strrep(elisions(1:flattened(end)), '/', '_');
+            depPropname = [flattened prop.dependent];
+        end
+        propertyReference = sprintf('obj.%s', depPropname);
+        propertyChecks{end+1} = sprintf(['~isempty(%1$s) ' ...
+        '&& ~isa(%1$s, ''types.untyped.SoftLink'') ' ...
+        '&& ~isa(%1$s, ''types.untyped.ExternalLink'')'], propertyReference);
+
+        % Properties that are required and dependent will not be exported
+        % if the property they depend on are unset (empty). Ensure such cases 
+        % are warned against if they occur.
+        if prop.required && ~prop.readonly
+            warnIfNotExportedString = sprintf('obj.warnIfPropertyAttributeNotExported(''%s'', ''%s'', fullpath)', name, depPropname);
+            warningNeededCheck = sprintf('isempty(obj.%s) && ~isempty(obj.%s)', depPropname, name);
+        end
+        
+        % If a property (attribute) is required, and it's parent dataset or
+        % group is not required, we need to issue a warning if the parent
+        % is set and the dependent required property is unset.
+        isParentRequired = any(strcmp(depPropname, required));
+        if prop.required && not(prop.readonly) && not(isParentRequired)
+            dependencyCheck{end+1} = sprintf('~isempty(obj.%s) && isempty(obj.%s)', depPropname, name);
+            warnIfMissingRequiredDependentAttributeStr = ...
+                sprintf('obj.throwErrorIfRequiredDependencyMissing(''%s'', ''%s'', fullpath)', name, depPropname);
+        end
+    end
+
+    if ~prop.required
+        propertyChecks{end+1} = ['~isempty(obj.' name ')'];
+    end
+
+    if ~isempty(propertyChecks)
+        dataExportString = sprintf('if %s\n%s' ...
+            , strjoin(propertyChecks, ' && '), file.addSpaces(dataExportString, 4) ...
+            );
+        if prop.required && ~prop.readonly
+            dataExportString = sprintf('%s\nelseif %s\n%s\nend' ...
+                , dataExportString, warningNeededCheck, file.addSpaces(warnIfNotExportedString, 4) ...
+                );
+        else
+             dataExportString = sprintf('%s\nend', dataExportString);
+        end
+    end
+
+    if ~isempty(dependencyCheck)
+        dataExportString = sprintf('%s\nif %s\n%s\nend', ...
+            dataExportString, ...
+            strjoin(dependencyCheck, ' && '), ...
+            file.addSpaces(warnIfMissingRequiredDependentAttributeStr, 4) ...
+            );
+    end
 end

@@ -1,0 +1,19 @@
+version: "2"
+
+build:
+  os: "ubuntu-22.04"
+  tools:
+    python: "3.10"
+  jobs:
+    pre_build:
+      - python docs/source/sphinx_extensions/copy_files.py
+
+    post_build:
+      - python docs/source/sphinx_extensions/postprocess_html.py $READTHEDOCS_OUTPUT/html/
+
+python:
+  install:
+    - requirements: docs/requirements.txt
+
+sphinx:
+  configuration: docs/source/conf.py

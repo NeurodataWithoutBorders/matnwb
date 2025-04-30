@@ -1,6 +1,5 @@
 function type = getMatType(tid)
-%GETMATTYPE Given HDF5 type ID, returns string indicating MATLAB type.
-% only works for numeric values.
+%GETMATTYPE Given HDF5 type ID, returns string indicating probable MATLAB type.
 if H5T.equal(tid, 'H5T_IEEE_F64LE')
     type = 'double';
 elseif H5T.equal(tid, 'H5T_IEEE_F32LE')
@@ -27,6 +26,10 @@ elseif H5T.equal(tid, 'H5T_STD_REF_OBJ')
     type = 'types.untyped.ObjectView';
 elseif H5T.equal(tid, 'H5T_STD_REF_DSETREG')
     type = 'types.untyped.RegionView';
+elseif io.isBool(tid)
+    type = 'logical';
+elseif H5ML.get_constant_value('H5T_COMPOUND') == H5T.get_class(tid)
+    type = 'table';
 else
     if isa(tid, 'H5ML.id')
         identifier = tid.identifier;

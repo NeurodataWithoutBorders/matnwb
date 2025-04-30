@@ -1,164 +1,154 @@
-[![codecov](https://codecov.io/gh/NeurodataWithoutBorders/matnwb/branch/master/graph/badge.svg?token=apA7F24NsO)](https://codecov.io/gh/NeurodataWithoutBorders/matnwb) ![Azure DevOps tests](https://img.shields.io/azure-devops/tests/NeurodataWithoutBorders/matnwb/4)
-# MatNWB
+<h1 align="center">
+  <br>
+  <a href="https://github.com/NeurodataWithoutBorders/matnwb"><img src="logo/logo_matnwb.png" alt="MatNWB Logo" width="300"></a>
+</h1>
 
-A Matlab interface for reading and writing Neurodata Without Borders (NWB) 2.0 files.
+<h4 align="center">MatNWB is a  Matlab interface for reading and writing Neurodata Without Borders (NWB) 2.x files.</h4>
 
-## Setup
+<h4 align="center">
+  <a href="https://github.com/NeurodataWithoutBorders/matnwb/releases/latest">
+    <img src="https://img.shields.io/github/v/release/NeurodataWithoutBorders/matnwb?label=version" alt="Version">
+  </a>
+  <a href="https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/intro.mlx">
+    <img src="https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg" alt="MATLAB Online">
+  </a>
+  <a href="https://codecov.io/gh/NeurodataWithoutBorders/matnwb" >  
+    <img src="https://codecov.io/gh/NeurodataWithoutBorders/matnwb/graph/badge.svg?token=apA7F24NsO" alt="Codecov"/>    
+  </a>
+   <a href="https://github.com/NeurodataWithoutBorders/matnwb/actions/workflows/run_tests.yml?query=event%3Apush+branch%3Amain">
+   <img src="https://github.com/NeurodataWithoutBorders/matnwb/actions/workflows/run_tests.yml/badge.svg?branch=main" alt="Run tests">
+  </a>
+   <a href="https://github.com/NeurodataWithoutBorders/matnwb/actions/workflows/run_codespell.yml?query=event%3Apush+branch%3Amain">
+   <img src="https://github.com/NeurodataWithoutBorders/matnwb/actions/workflows/run_codespell.yml/badge.svg?branch=main" alt="Codespell">
+  </a>
+</h4>
 
-### Step 1: Download MatNWB
+<p align="center">
+  ⚙️ <a href="#installation-and-requirements">Installation</a> •
+  🚀 <a href="#getting-started">Getting Started</a> •
+  🎓 <a href="#tutorials">Tutorials</a> •
+  💡 <a href="#use-cases">Use Cases</a> •
+  🤝 <a href="#contributing">Contributing</a> •
+  📄 <a href="#citing-nwb">Citing NWB</a>
+</p>
 
-Download the current release of MatNWB from the [MatNWB releases page](https://github.com/NeurodataWithoutBorders/matnwb/releases) or from the [![View NeurodataWithoutBorders/matnwb on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://www.mathworks.com/matlabcentral/fileexchange/67741-neurodatawithoutborders-matnwb). You can also check out the latest development version via 
+
+## Installation and Requirements
+Download the current release of MatNWB from the [Releases page](https://github.com/NeurodataWithoutBorders/matnwb/releases) or from [![View NeurodataWithoutBorders/matnwb on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://www.mathworks.com/matlabcentral/fileexchange/67741-neurodatawithoutborders-matnwb). You can also check out the latest development version via 
 
 ```bash
 git clone https://github.com/NeurodataWithoutBorders/matnwb.git
 ```
-
-### Step 2: Generate the API
-
-From the Matlab command line, add MatNWB to the Matlab path and generate the core classes for the NWB schema.
-
+From MATLAB's command window, add MatNWB to the [search path](https://www.mathworks.com/help/matlab/matlab_env/what-is-the-matlab-search-path.html).
 ```matlab
-cd matnwb
-addpath(genpath(pwd));
-generateCore(); % generate the most recent nwb-schema release.
+addpath('path/to/matnwb');
 ```
 
-### Optional: Generate MatNWB code for extensions
+MatNWB requires MATLAB **R2019b** or newer. As a general rule, we strive to maintain compatibility with MATLAB releases from the past five years.
 
-The `generateExtension` command generates extension classes given a file path to the extension's namespace.
+## Getting Started
+The MatNWB 📖 documentation can be found at https://matnwb.readthedocs.io. If you find MatNWB useful, please come back later and leave us a star ⭐
 
+### Reading from an NWB File
+If you wish to read from an NWB file, you can do so using the `nwbRead` command:
 ```matlab
-generateExtension('schema/core/nwb.namespace.yaml', '.../my_extensions1.namespace.yaml',...);
+nwbFile = nwbRead('/path/to/file.nwb');
 ```
 
-Generated Matlab code will be put into a `+types` subdirectory.
-This is a Matlab package.  When the `+types` folder is accessible to the Matlab path, the generated code will be used for reading NWBFiles.
+The returned NwbFile object provides an in-memory view of the underlying NWB data. For more information, see the [MatNWB Documentation](https://matnwb.readthedocs.io/en/latest/pages/getting_started/file_read.html#reading-with-matnwb)
 
+### Writing an NWB File
+The building blocks of an NWB file are the neurodata types defined in the [NWB Format Specification](https://nwb-schema.readthedocs.io/en/latest/). In MatNWB, these types are autogenerated from the schema specifications and located as classes in the [`+types`](https://github.com/NeurodataWithoutBorders/matnwb/tree/main/%2Btypes) [namespace](https://www.mathworks.com/help/matlab/matlab_oop/scoping-classes-with-packages.html) of the MatNWB root directory. 
+
+To create an NWB file, you can create neurodata objects, add them to an NwbFile object and write to disk using the `nwbExport` function (detailed examples are provided in the tutorials):
 ```matlab
-nwb = nwbRead('data.nwb');
+nwbExport(nwbFile, 'path/to/file.nwb');
 ```
 
-### Optional: Generate an older core schema
-
-The `generateCore` command can generate older versions of the nwb schema.
+### Generate MatNWB Classes for Extensions
+The `generateExtension` command generates extension classes given a file path to an extension's namespace. This can be useful if you need to work with data types from [neurodata extensions](https://nwb-extensions.github.io).
 
 ```matlab
-generateCore();
+generateExtension('some/folder/my_extension1.namespace.yaml', ...);
 ```
 
-Currently, only schemas >= 2.2.0 are supported (2.1.0 and 2.0.1 are not supported at this time).
+### Advanced: Generating Legacy MatNWB Classes
+The `generateCore` command can generate classes for older versions of the nwb schema.
+
+```matlab
+generateCore('2.1.0'); % generates classes for NWB schema version 2.1.0
+```
+
+Supported schema versions are provided in the MatNWB root directory under [`nwb-schema`](https://github.com/NeurodataWithoutBorders/matnwb/tree/main/nwb-schema).
+
 
 ## Tutorials
+[Intro to MatNWB](https://matnwb.readthedocs.io/en/latest/pages/tutorials/intro.html)
 
-[Intro to MatNWB](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/intro.html)
+[Basic File Reading](https://matnwb.readthedocs.io/en/latest/pages/tutorials/read_demo.html) | a demo showcase for basic visualization from a DANDI dataset.
 
-[Extracellular Electrophysiology](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ecephys.html) | [YouTube walkthrough](https://www.youtube.com/watch?v=W8t4_quIl1k&ab_channel=NeurodataWithoutBorders)
+[Extracellular Electrophysiology](https://matnwb.readthedocs.io/en/latest/pages/tutorials/ecephys.html) | 
+[▶️ in MATLAB Online](https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/ecephys.mlx) | 
+[YouTube walkthrough](https://www.youtube.com/watch?v=W8t4_quIl1k&ab_channel=NeurodataWithoutBorders)
 
-[Calcium Imaging](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ophys.html) | [YouTube walkthrough](https://www.youtube.com/watch?v=OBidHdocnTc&ab_channel=NeurodataWithoutBorders)
+[Calcium Imaging](https://matnwb.readthedocs.io/en/latest/pages/tutorials/ophys.html) | 
+<a href="https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/ophys.mlx" target="_blank">▶️ in MATLAB Online</a> | 
+[YouTube walkthrough](https://www.youtube.com/watch?v=OBidHdocnTc&ab_channel=NeurodataWithoutBorders)
 
-[Intracellular Electrophysiology](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/icephys.html)
+[Intracellular Electrophysiology](https://matnwb.readthedocs.io/en/latest/pages/tutorials/icephys.html)
 
-[Dynamic tables](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dynamic_tables.html)
+[Behavior](https://matnwb.readthedocs.io/en/latest/pages/tutorials/behavior.html)
 
-[Advanced data write](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dataPipe.html)  | [YouTube walkthrough](https://www.youtube.com/watch?v=PIE_F4iVv98&ab_channel=NeurodataWithoutBorders)
+[Optogenetics](https://matnwb.readthedocs.io/en/latest/pages/tutorials/ogen.html)
 
-## API Documentation
+[Dynamic tables](https://matnwb.readthedocs.io/en/latest/pages/tutorials/dynamic_tables.html)
 
-For more information regarding the MatNWB API or any of the NWB Core types in MatNWB, visit the [MatNWB API Documentation pages](https://neurodatawithoutborders.github.io/matnwb/doc/index.html).
+[Images](https://matnwb.readthedocs.io/en/latest/pages/tutorials/images.html)
 
+[Advanced data write](https://matnwb.readthedocs.io/en/latest/pages/tutorials/dataPipe.html)  | [YouTube walkthrough](https://www.youtube.com/watch?v=PIE_F4iVv98&ab_channel=NeurodataWithoutBorders)
 
-## How does it work
+[Using Dynamically Loaded Filters](https://matnwb.readthedocs.io/en/latest/pages/tutorials/dynamically_loaded_filters.html)
 
-NWB files are HDF5 files with data stored according to the Neurodata Without Borders: Neurophysiology (NWB:N) [schema](https://github.com/NeurodataWithoutBorders/nwb-schema/tree/dev/core). The schema is described in a set of yaml documents. These define the various types and their attributes.
+[Remote read](https://matnwb.readthedocs.io/en/latest/pages/tutorials/remote_read.html)
 
-This package provides two functions `generateCore` and `generateExtension` that transform the yaml files that describe the schema into Matlab m-files. The generated code defines classes that reflect the types defined in the schema.  Object attributes, relationships, and documentation are automatically generated to reflect the schema where possible.
-
-Once the code generation step is done, NWB objects can be read, constructed and written from Matlab.
-
-PyNWB's cached schemas are also supported, bypassing the need to run `generateCore` or `generateExtension` if present.
-
-## Sources
-
-MatNWB is available online at https://github.com/NeurodataWithoutBorders/matnwb
-
-## Data Dimensions
-
-NWB files use the HDF5 format to store data. There are two main differences between the way MATLAB and HDF5 represents dimensions. The first is that HDF5 is C-ordered, which means it stores data is a rows-first pattern, and the MATLAB is F-ordered, storing data in the reverse pattern, with the last dimension of the array stored consecutively. The result is that the data in HDF5 is effectively the transpose of the array in MATLAB. The second difference is that HDF5 can store 1-D arrays, but in MATLAB the lowest dimensionality of an array is 2-D. Due to differences in how MATLAB and HDF5 represent data, the dimensions of datasets are flipped when writing to/from file in MatNWB. This behavior differs depending on whether ```VectorData``` use ```DataPipe``` objects to contain the data. It's important to keep in mind the mappings below to make sure is written to and read from file as expected.
-
-[without DataPipes](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dimensionMapNoDataPipes.html)
-
-**Writing to File**
-
-| Shape <br /> in MatNWB| Shape<br />in HDF5|
-| :----------: | :----------: |
-|    (M, 1)    |     (M,)     |
-|    (1, M)    |     (M,)     |
-| (P, O, N, M) | (M, N, O, P) |
-
-**Reading from File**
-
-| Shape <br /> in HDF5| Shape<br />in MatNWB|
-| :----------: | :----------: |
-|     (M,)     |     (M,1)    |
-| (M, N, O, P) | (P, O, N, M) |
-
-**NOTE:** MATLAB does not support 1D datasets. HDF5 datasets of size (M,) are loaded into MATLAB as datasets of size (M,1). To avoid changes in dimensions when writing to/from file use column vectors for 1D datasets. 
-
-[with DataPipes](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dimensionMapWithDataPipes.html)
-
-**Writing to File**
-
-| Shape <br /> in MatNWB| Shape <br /> in HDF5|
-| :----------: | :----------: |
-|    (M, 1)    |    (1, M)    | 
-|    (1, M)    |(M, 1)/(M,)** |
-| (P, O, N, M) | (M, N, O, P) |
-
-** Use scalar as input to 'maxSize' argument to write dataset of shape (N,)
-
-**Reading from File**
-
-| Shape <br /> in HDF5| Shape<br />in MatNWB|
-| :----------: | :----------: |
-|    (M, 1)    |    (1, M)    |
-|    (1, M)    |    (M, 1)    |
-|     (M,)     |    (M, 1)    |
-| (M, N, O, P) | (P, O, N, M) |
+[Scratch Space](https://matnwb.readthedocs.io/en/latest/pages/tutorials/scratch.html)
 
 
-## Caveats
-
-The NWB:N schema is in a state of some evolution.  This package assumes a certain set of rules are used to define the schema.  As the schema is updated, some of the rules may be changed and these will break this package.
-
-For those planning on using matnwb alongside pynwb, please keep the following in mind:
- - MatNWB is dependent on the schema, which may not necessary correspond with your PyNWB schema version.  Please consider overwriting the contents within MatNWB's **~/schema/core** directory with the generating PyNWB's **src/pynwb/data directory** and running generateCore to ensure compatibilty between systems.
- 
-The `master` branch in this repository is considered perpetually unstable.  If you desire matnwb's full functionality (full round-trip with nwb data), please consider downloading the more stable releases in the Releases tab.  Keep in mind that the Releases are generally only compatible with older versions of pynwb and may not supported newer data types supported by pynwb (such as data references or compound types).  Most releases will coincide with nwb-schema releases and contain compatibility with those features.
-
-This package reads and writes NWB:N 2.0 files and does not support older formats.
-
-
-## Examples
-
-[Basic Data Retrieval](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/basicUsage.html)
+## Use Cases
+[Basic Data Retrieval](https://matnwb.readthedocs.io/en/latest/pages/tutorials/basicUsage.html)
 | showcases how one would read and process converted NWB file data to display a raster diagram.
 
-[Conversion of Real Electrophysiology/Optophysiology Data](https://neurodatawithoutborders.github.io/matnwb/tutorials/html/convertTrials.html)
+[Conversion of Real Electrophysiology/Optophysiology Data](https://matnwb.readthedocs.io/en/latest/pages/tutorials/convertTrials.html)
 | converts Electrophysiology/Optophysiology Data recorded from:
 >Li, Daie, Svoboda, Druckman (2016); Data and simulations related to: Robust neuronal dynamics in premotor cortex during motor planning. Li, Daie, Svoboda, Druckman, Nature. CRCNS.org
 http://dx.doi.org/10.6080/K0RB72JW
 
+Analysis examples will be added in the [dandi-example-live-scripts repo](https://github.com/NeurodataWithoutBorders/dandi-example-live-scripts)
+
+
+## Under the Hood
+NWB files are HDF5 files with data stored according to the Neurodata Without Borders (NWB) [schema](https://github.com/NeurodataWithoutBorders/nwb-schema/tree/dev/core). The schema is described in a set of YAML documents which defines the various types and their attributes.
+
+Certain functions, like `generateCore` and `nwbRead`, automatically read these specifications and converts them to a set of MATLAB class files. These classes generally map directly to attributes and constraints of the types defined in the schema.
+
+
+## Caveats
+The NWB schema has regular updates and is open to addition of new types along with modification of previously defined types. As such, certain type presumptions made by MatNWB may be invalidated in the future from newer NWB schema versions. Furthermore, new types may require implementations that will be missing in MatNWB until patched in.
+
+For those planning on using MatNWB alongside PyNWB, please keep the following in mind:
+ - MatNWB is dependent on the schema, which may not necessarily correspond with your PyNWB schema version. Please consider overwriting the contents within MatNWB's **~/schema/core** directory with the generating PyNWB's **src/pynwb/data directory** and running `generateCore` to ensure compatibility between systems.
+ 
+The `main` branch of this repository is considered perpetually unstable. If you want to stay on the safer side, please consider downloading the more stable releases from the [Releases](https://github.com/NeurodataWithoutBorders/matnwb/releases) page. Most releases will coincide with nwb-schema releases and guarantee compatibility of new features introduced with the schema release along with backwards compatibility with all previous nwb-schema releases.
+
+This package reads and writes NWB 2.0 files and does not support older formats.
+
+
 ## Third-party Support
 The `+contrib` folder contains tools for converting from other common data formats/specifications to NWB. Currently supported data types are TDT, MWorks, and Blackrock. We are interested in expanding this section to other data specifications and would greatly value your contribution!
 
-## Testing
+## Contributing
+For details on how to contribute to MatNWB, please stay tuned.
 
-Run the test suite with `nwbtest`.
-
-## FAQ
-
-1. "A class definition must be in an "@" directory."
-
-Make sure that there are no "@" signs **anywhere** in your *full* file path.  This includes even directories that are not part of the matnwb root path and any "@" signs that are not at the beginning of the directory path.
-
-Alternatively, this issue disappears after MATLAB version 2017b.  Installing this version may also resolve these issues.  Note that the updates provided with 2017b should also be installed.
+## Citing NWB
+* **Manuscript:** Oliver Rübel, Andrew Tritt, Ryan Ly, Benjamin K Dichter, Satrajit Ghosh, Lawrence Niu, Pamela Baker, Ivan Soltesz, Lydia Ng, Karel Svoboda, Loren Frank, Kristofer E Bouchard. (2022). The Neurodata Without Borders ecosystem for neurophysiological data science. eLife, 11:e78362. doi: https://doi.org/10.7554/eLife.78362
+* **RRID:** (MatNWB, RRID:SCR_021156)

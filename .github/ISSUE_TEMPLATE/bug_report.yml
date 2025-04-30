@@ -1,0 +1,64 @@
+name: Bug Report
+description: File a bug report.
+title: "[Bug]: "
+labels: ["bug"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # Thanks for taking the time to fill out this bug report!
+        ### The following information will help us resolve your issue.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Also tell us, what did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: |
+        Please copy and paste a standalone code snippet (i.e., no external data) that completely reproduces the error.
+
+        The team will use this to recreate the exact conditions that caused the error, which is helpful for debugging. This section will be automatically formatted into code, so no need for backticks.
+      render: matlab
+    validations:
+      required: true
+  - type: textarea
+    id: error_message
+    attributes:
+      label: Error Message
+      description: |
+        Please copy and paste the entire error message.
+
+        This section will be automatically formatted into code, so no need for backticks.
+      render: matlab
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - Windows
+        - macOS
+        - Linux
+    validations:
+      required: true
+  - type: textarea
+    id: matlab_version
+    attributes:
+      label: Matlab Version
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/neurodatawithoutborders/matnwb/blob/main/.github/CODE_OF_CONDUCT.md)
+      options:
+        - label: I agree to follow this project's [Code of Conduct](https://github.com/neurodatawithoutborders/matnwb/blob/main/.github/CODE_OF_CONDUCT.md)
+          required: true
+        - label: Have you ensured this bug was not already [reported](https://github.com/NeurodataWithoutBorders/matnwb/issues)?
+          required: true

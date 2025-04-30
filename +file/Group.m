@@ -1,4 +1,4 @@
-classdef Group < handle
+classdef Group < file.interface.HasProps & file.interface.HasQuantity
     properties
         doc;
         name;
@@ -65,18 +65,8 @@ classdef Group < handle
             end
             
             if isKey(source, 'quantity')
-                quantity = source('quantity');
-                switch quantity
-                    case '?'
-                        obj.required = false;
-                        obj.scalar = true;
-                    case '*'
-                        obj.required = false;
-                        obj.scalar = false;
-                    case '+'
-                        obj.required = true;
-                        obj.scalar = false;
-                end
+                obj.required = obj.isRequired(source);
+                obj.scalar = obj.isScalar(source);
             end
             
             obj.isConstrainedSet = ~obj.scalar && ~isempty(obj.type);
@@ -139,14 +129,21 @@ classdef Group < handle
                 isempty(obj.attributes);
         end
         
-        function Prop_Map = getProps(obj)
-            Prop_Map = containers.Map;
+        %% HasProps
+        function PropertyMap = getProps(obj)
+            PropertyMap = containers.Map;
             %typed + constrained
             %should never happen
-            
+
             if obj.isConstrainedSet && ~obj.definesType
-                error('getProps shouldn''t be called on a constrained set.');
+                error('NWB:Group:UnsupportedOperation', ...
+                      'The method `getProps` should not be called on a constrained dataset.');
             end
+            assert( ...
+                ~obj.isConstrainedSet || obj.definesType, ...
+                'NWB:Group:UnsupportedOperation', ...
+                'The method `getProps` should not be called on a constrained group.' ...
+                );
             
             %datasets
             for i=1:length(obj.datasets)
@@ -161,27 +158,27 @@ classdef Group < handle
                         attr_names = strcat(SubData.name, '_', attr_names);
                         Sub_Attribute_Map =...
                             containers.Map(attr_names, num2cell(SubData.attributes));
-                        Prop_Map = [Prop_Map; Sub_Attribute_Map];
+                        PropertyMap = [PropertyMap; Sub_Attribute_Map];
                     end
-                    Prop_Map(SubData.name) = SubData;
+                    PropertyMap(SubData.name) = SubData;
                 else
                     if isempty(SubData.name)
-                        Prop_Map(lower(SubData.type)) = SubData;
+                        PropertyMap(lower(SubData.type)) = SubData;
                     else
-                        Prop_Map(SubData.name) = SubData;
+                        PropertyMap(SubData.name) = SubData;
                     end
                 end
             end
             
             %attributes
             if ~isempty(obj.attributes)
-                Prop_Map = [Prop_Map;...
+                PropertyMap = [PropertyMap;...
                     containers.Map({obj.attributes.name}, num2cell(obj.attributes))];
             end
             
             %links
             if ~isempty(obj.links)
-                Prop_Map = [Prop_Map;...
+                PropertyMap = [PropertyMap;...
                     containers.Map({obj.links.name}, num2cell(obj.links))];
             end
             
@@ -200,49 +197,57 @@ classdef Group < handle
                 %if untyped, check if elided
                 % if elided, add to prefix and check all subgroups, attributes and datasets.
                 % otherwise, call getprops and assign to its name.
-                Sub_Group = obj.subgroups(i);
-                groupName = Sub_Group.name;
-                groupType = Sub_Group.type;
+                SubGroup = obj.subgroups(i);
+                groupName = SubGroup.name;
+                groupType = SubGroup.type;
                 if ~isempty(groupType)
                     if isempty(groupName)
-                        Prop_Map(lower(groupType)) = Sub_Group;
+                        PropertyMap(lower(groupType)) = SubGroup;
                     else
-                        Prop_Map(groupName) = Sub_Group;
+                        PropertyMap(groupName) = SubGroup;
                     end
                     continue;
                 end
                 
-                if ~Sub_Group.elide
-                    Prop_Map(groupName) = Sub_Group;
+                if ~SubGroup.elide
+                    PropertyMap(groupName) = SubGroup;
                     continue;
                 end
-                
-                Descendant_Map = Sub_Group.getProps;
-                descendant_names = keys(Descendant_Map);
-                for iSubGroup = 1:length(descendant_names)
-                    descendantName = descendant_names{iSubGroup};
-                    Descendant = Descendant_Map(descendantName);
+
+                DescendantMap = SubGroup.getProps();
+                descendantNames = keys(DescendantMap);
+                for iSubGroup = 1:length(descendantNames)
+                    descendantName = descendantNames{iSubGroup};
+                    Descendant = DescendantMap(descendantName);
                     % hoist constrained sets to the current
                     % subname.
                     isPossiblyConstrained =...
                         isa(Descendant, 'file.Group')...
                         || isa(Descendant, 'file.Dataset');
                     isConstrained = isPossiblyConstrained...
-                        && strcmpi(descendantName, Descendant.type)...
-                        && Descendant.isConstrainedSet;
+                        && all(strcmpi(descendantName, {Descendant.type}))...
+                        && all(Descendant.isConstrainedSet);
                     if isConstrained
-                        propName = groupName;
+                        if isKey(PropertyMap, groupName)
+                            SetType = PropertyMap(groupName);
+                        else
+                            SetType = [];
+                        end
+                        PropertyMap(groupName) = [SetType, Descendant];
                     else
-                        propName = [groupName '_' descendantName];
+                        if isa(Descendant, 'file.Attribute')
+                            % Ad hoc convenience step: We need the parent's 
+                            % expanded property name when populating the
+                            % type's class definition. Here, we construct a full 
+                            % name from groupName + descendantName, then remove 
+                            % the descendantName (and its underscore) and
+                            % add the result to the attribute object for
+                            % easy retrieval when needed.
+                            fullName = [groupName, '_', descendantName];
+                            Descendant.dependent_fullname = strrep(fullName, ['_', Descendant.name], '');
+                        end
+                        PropertyMap([groupName, '_', descendantName]) = Descendant;
                     end
-                    
-                    if isKey(Prop_Map, propName) && ~isConstrained
-                        warning(['Generic group `%s` is currently unsupported '...
-                            'in MatNwb and is ignored.'], propName);
-                        continue;
-                    end
-                    
-                    Prop_Map(propName) = Descendant_Map(descendantName);
                 end
             end
         end

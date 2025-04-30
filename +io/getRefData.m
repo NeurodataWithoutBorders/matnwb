@@ -9,7 +9,7 @@ if isa(ref, 'types.untyped.RegionView')
         try
             did = H5D.open(fid, refpaths{i});
         catch ME
-            error('MatNWB:getRefData:InvalidPath',...
+            error('NWB:getRefData:InvalidPath',...
                 'Reference path `%s` was invalid', refpaths{i});
         end
         sid = H5D.get_space(did);
@@ -29,7 +29,7 @@ for i=validPaths
     try
         ref_data(:, i) = H5R.create(fid, ref(i).path, ref(i).reftype, refspace(i));
     catch ME
-        error('MatNWB:getRefData:InvalidPath',...
+        error('NWB:getRefData:InvalidPath',...
             'Reference path `%s` was invalid', ref(i).path);
     end
     if H5I.is_valid(refspace(i))
