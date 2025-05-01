@@ -79,28 +79,27 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
     optional = setdiff(intersect(optional, nonInherited), exclusivePropertyGroups);
 
     %% CLASSDEF
+    superclassNames = {};
     if length(processed) <= 1
-        depnm = 'types.untyped.MetaClass'; %WRITE
+        superclassNames{1} = 'types.untyped.MetaClass'; %WRITE
     else
         parentName = processed(2).type; %WRITE
-        depnm = namespace.getFullClassName(parentName);
+        superclassNames{1} = namespace.getFullClassName(parentName);
     end
 
     if isa(processed, 'file.Group')
-        classTag = 'types.untyped.GroupClass';
+        superclassNames{end+1} = 'types.untyped.GroupClass';
     else
-        classTag = 'types.untyped.DatasetClass';
+        superclassNames{end+1} = 'types.untyped.DatasetClass';
     end
 
-    if isa(class, 'file.Group')
-        if class.hasAnonGroups
-            classTag = sprintf('%s & matnwb.mixin.HasUnnamedGroups', classTag);
-        end
+    if isa(class, 'file.Group') && class.hasAnonGroups
+        superclassNames{end+1} = 'matnwb.mixin.HasUnnamedGroups';
     end
 
     %% return classfile string
     classDefinitionHeader = [...
-        'classdef ' name ' < ' depnm ' & ' classTag newline... %header, dependencies
+        'classdef ' name ' < ' strjoin(superclassNames, ' & ') newline... %header, dependencies
         '% ' upper(name) ' - ' class.doc]; %name, docstr
 
     fullClassName = strjoin({'types', misc.str2validName(namespace.name), name}, '.');
@@ -157,7 +156,7 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
 
     constructorBody = file.fillConstructor(...
         name,...
-        depnm,...
+        superclassNames{1},...
         defaults,... %all defaults, regardless of inheritance
         classprops,...
         namespace, ...
@@ -165,7 +164,7 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
         class);
     setterFcns = file.fillSetters(setdiff(nonInherited, union(readonly, hiddenAndReadonly)), classprops);
     validatorFcns = file.fillValidators(allProperties, classprops, namespace, namespace.getFullClassName(name), inherited);
-    exporterFcns = file.fillExport(nonInherited, class, depnm, required);
+    exporterFcns = file.fillExport(nonInherited, class, superclassNames{1}, required);
     methodBody = strjoin({constructorBody...
         '%% SETTERS' setterFcns...
         '%% VALIDATORS' validatorFcns...
