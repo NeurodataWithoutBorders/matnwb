@@ -17,16 +17,18 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
 %
 % Implementation details:
 %   - Data elements are added to objects of this class as dynamic properties.
-%   - Assign callback functions on Set object to make sure objects of this 
+%   - Assign callback functions on Set object to make sure objects of this
 %     class are always up-to-date with the included types.untyped.Set objects.
+%   - `add` method lets users assign data elements directly without
+%     going via the contained Set object
 %
 % Usage:
-%   - Subclasses must implement a static property `GroupPropertyNames` 
-%     listing the names of the internal Set properties (e.g. 
-%     {'nwbdatainterface','dynamictable'}). 
+%   - Subclasses must implement a static property `GroupPropertyNames`
+%     listing the names of the internal Set properties (e.g.
+%     {'nwbdatainterface','dynamictable'}).
 %     Note: This is added in the matnwb generator pipeline
 %
-%   - Once applied, any element added to one of those sets is 
+%   - Once applied, any element added to one of those sets is
 %     also available directly as a property.
 %
 % Example:
@@ -108,34 +110,13 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
     end
 
     methods (Access = protected)
-        
-        function createListeners(obj)
-            for i = 1:length(obj.GroupPropertyNames)
-                groupPropName = obj.GroupPropertyNames{i};
-
-                setObj = obj.(groupPropName);
-
-                setObj.ItemAddedFunction = ...
-                    @(itemName) obj.onSetItemAdded(itemName);
-                setObj.ItemRemovedFunction = ...
-                    @(itemName) obj.onSetItemRemoved(itemName);
-            end
+        function setupHasUnnamedGroupsMixin(obj)
+            obj.addDynamicProperties()
+            obj.assignContainedSetCallbackFunctions()
         end
+    end
 
-        function addDynamicProperties(obj)
-            % TODO: What if multiple groups have the same subkeys?
-            for i = 1:length(obj.GroupPropertyNames)
-                groupPropName = obj.GroupPropertyNames{i};
-    
-                setObj = obj.(groupPropName);
-                keys = setObj.keys;
-
-                for j = 1:numel(keys)
-                    obj.addSingleDynamicProperty(keys{j}, setObj.get(keys{j}))
-                end
-            end
-        end
-
+    methods (Access = protected) % matlab.mixin.CustomDisplay override
         function groups = getPropertyGroups(obj)
         % getPropertyGroups - Create property groups for display
 
@@ -196,18 +177,31 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
     end
 
     methods (Access = private)
-        function onSetItemAdded(obj, name)
-        % onSetItemAdded - Handle items being added to a contained types.untyped.Set
+        function assignContainedSetCallbackFunctions(obj)
+            for i = 1:length(obj.GroupPropertyNames)
+                groupPropName = obj.GroupPropertyNames{i};
 
-            % Todo: pass name to addDynamicProperties
-            obj.addDynamicProperties()
+                setObject = obj.(groupPropName);
+
+                setObject.ItemAddedFunction = ...
+                    @(itemName) obj.onSetItemAdded(itemName);
+                setObject.ItemRemovedFunction = ...
+                    @(itemName) obj.onSetItemRemoved(itemName);
+            end
         end
 
-        function onSetItemRemoved(obj, name)
-        % onSetItemRemoved - Handle items being removed from a contained types.untyped.Set
+        function addDynamicProperties(obj)
+            % TODO: What if multiple groups have the same subkeys?
+            for i = 1:length(obj.GroupPropertyNames)
+                groupPropName = obj.GroupPropertyNames{i};
+    
+                setObj = obj.(groupPropName);
+                keys = setObj.keys;
 
-            % Todo: pass name to pruneDynamicProperties
-            obj.pruneDynamicProperties()
+                for j = 1:numel(keys)
+                    obj.addSingleDynamicProperty(keys{j}, setObj.get(keys{j}))
+                end
+            end
         end
 
         function pruneDynamicProperties(obj)
@@ -255,6 +249,22 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
 
             isMatch = ismember(lower(typeClassNamesShort), groupPropertyNames);
             result = typeClassNames(isMatch);
+        end
+    end
+
+    methods (Access = private) % types.untyped.Set callback functions
+        function onSetItemAdded(obj, name)
+        % onSetItemAdded - Handle items being added to a contained types.untyped.Set
+
+            % Todo: pass name to addDynamicProperties
+            obj.addDynamicProperties()
+        end
+
+        function onSetItemRemoved(obj, name)
+        % onSetItemRemoved - Handle items being removed from a contained types.untyped.Set
+
+            % Todo: pass name to pruneDynamicProperties
+            obj.pruneDynamicProperties()
         end
     end
 end
