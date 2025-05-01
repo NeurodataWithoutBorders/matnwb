@@ -1,4 +1,4 @@
-classdef CompassDirection < types.core.NWBDataInterface & types.untyped.GroupClass
+classdef CompassDirection < types.core.NWBDataInterface & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups
 % COMPASSDIRECTION - With a CompassDirection interface, a module publishes a SpatialSeries object representing a floating point value for theta. The SpatialSeries::reference_frame field should indicate what direction corresponds to 0 and which is the direction of rotation (this should be clockwise). The si_unit for the SpatialSeries should be radians or degrees.
 %
 % Required Properties:
@@ -8,6 +8,9 @@ classdef CompassDirection < types.core.NWBDataInterface & types.untyped.GroupCla
 % OPTIONAL PROPERTIES
 properties
     spatialseries; %  (SpatialSeries) SpatialSeries object containing direction of gaze travel.
+end
+properties (Access = protected)
+    GroupPropertyNames = {'spatialseries'}
 end
 
 methods
@@ -28,6 +31,8 @@ methods
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.spatialseries, ivarargin] = types.util.parseConstrained(obj,'spatialseries', 'types.core.SpatialSeries', varargin{:});
         varargin(ivarargin) = [];
+        
+        obj.setupHasUnnamedGroupsMixin()
         
         p = inputParser;
         p.KeepUnmatched = true;

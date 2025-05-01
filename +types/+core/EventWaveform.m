@@ -1,4 +1,4 @@
-classdef EventWaveform < types.core.NWBDataInterface & types.untyped.GroupClass
+classdef EventWaveform < types.core.NWBDataInterface & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups
 % EVENTWAVEFORM - DEPRECATED. Represents either the waveforms of detected events, as extracted from a raw data trace in /acquisition, or the event waveforms that were stored during experiment acquisition.
 %
 % Required Properties:
@@ -8,6 +8,9 @@ classdef EventWaveform < types.core.NWBDataInterface & types.untyped.GroupClass
 % OPTIONAL PROPERTIES
 properties
     spikeeventseries; %  (SpikeEventSeries) SpikeEventSeries object(s) containing detected spike event waveforms.
+end
+properties (Access = protected)
+    GroupPropertyNames = {'spikeeventseries'}
 end
 
 methods
@@ -28,6 +31,8 @@ methods
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.spikeeventseries, ivarargin] = types.util.parseConstrained(obj,'spikeeventseries', 'types.core.SpikeEventSeries', varargin{:});
         varargin(ivarargin) = [];
+        
+        obj.setupHasUnnamedGroupsMixin()
         
         p = inputParser;
         p.KeepUnmatched = true;

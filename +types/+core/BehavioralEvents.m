@@ -1,4 +1,4 @@
-classdef BehavioralEvents < types.core.NWBDataInterface & types.untyped.GroupClass
+classdef BehavioralEvents < types.core.NWBDataInterface & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups
 % BEHAVIORALEVENTS - TimeSeries for storing behavioral events. See description of <a href="#BehavioralEpochs">BehavioralEpochs</a> for more details.
 %
 % Required Properties:
@@ -8,6 +8,9 @@ classdef BehavioralEvents < types.core.NWBDataInterface & types.untyped.GroupCla
 % OPTIONAL PROPERTIES
 properties
     timeseries; %  (TimeSeries) TimeSeries object containing behavioral events.
+end
+properties (Access = protected)
+    GroupPropertyNames = {'timeseries'}
 end
 
 methods
@@ -28,6 +31,8 @@ methods
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.timeseries, ivarargin] = types.util.parseConstrained(obj,'timeseries', 'types.core.TimeSeries', varargin{:});
         varargin(ivarargin) = [];
+        
+        obj.setupHasUnnamedGroupsMixin()
         
         p = inputParser;
         p.KeepUnmatched = true;
