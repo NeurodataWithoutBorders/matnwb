@@ -41,6 +41,10 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
 %   module.add('timeseries', types.core.TimeSeries);
 %   ts = module.timeseries;
 
+% Note: Subclasses for this mixin might include Anon sets. Currently there
+% are no schemas in NWB where Anon sets are used, and this class does not
+% currently support contained Anon sets.
+
     properties (Abstract, Access = protected, Transient)
         GroupPropertyNames % Cell array of property names that contain Sets
     end
@@ -65,6 +69,11 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             for i = 1:numel(obj.GroupPropertyNames)
                 thisGroupName = obj.GroupPropertyNames{i};
                 thisSet = obj.(thisGroupName);
+
+                if isa(thisSet, 'types.untyped.Anon')
+                    error('Not implemented yet')
+                end
+
                 try
                     thisSet.set(name, value, ...
                         'FailOnInvalidType', true, ...
@@ -73,7 +82,9 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                     break
                 catch ME
                     if strcmp(ME.identifier, 'NWB:Set:KeyExists')
-                        ME = MException('NWB:Set:KeyExists', 'A neurodata object with name `%s` already exists in this `%s`', name, obj.TypeName);
+                        ME = MException('NWB:HasUnnamedGroupsMixin:KeyExists', ...
+                            'A neurodata object with name `%s` already exists in this `%s`', ...
+                            name, obj.TypeName);
                         throwAsCaller(ME);
                     elseif strcmp(ME.identifier, 'NWB:Set:FailedValidation')
                         continue
@@ -84,8 +95,9 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             end
             if ~wasSuccess
                 % If we end up here, the type is invalid.
-                identifier = 'NWB:HasGroupsMixin:AddInvalidType';
-                message = 'Object with name `%s` was a "%s", but must be one of the following type(s):\n%s\n';
+                identifier = 'NWB:HasUnnamedGroupsMixin:AddInvalidType';
+                message = ['Object with name `%s` was a "%s", but must be ', ...
+                    'one of the following type(s):\n%s\n'];
                 allowedTypes = obj.getClassNamesForAllowedGroupTypes();
                 allowedTypes = strjoin("  - " + allowedTypes, newline);
                 error(identifier, message, name, class(value), allowedTypes)
@@ -96,6 +108,10 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             for i = 1:numel(obj.GroupPropertyNames)
                 thisGroupName = obj.GroupPropertyNames{i};
                 thisSet = obj.(thisGroupName);
+                                
+                if isa(thisSet, 'types.untyped.Anon')
+                    error('Not implemented yet')
+                end
                 
                 if thisSet.isKey(name)
                     try
@@ -182,11 +198,15 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                 groupPropName = obj.GroupPropertyNames{i};
 
                 setObject = obj.(groupPropName);
-
-                setObject.ItemAddedFunction = ...
-                    @(itemName) obj.onSetItemAdded(itemName);
-                setObject.ItemRemovedFunction = ...
-                    @(itemName) obj.onSetItemRemoved(itemName);
+                if isa(setObject, 'types.untyped.Set')
+                    setObject.ItemAddedFunction = ...
+                        @(itemName) obj.onSetItemAdded(itemName);
+                    setObject.ItemRemovedFunction = ...
+                        @(itemName) obj.onSetItemRemoved(itemName);
+                else
+                    warning('NWB:HasUnnamedGroupsMixin:NotImplemented', ...
+                        'Callback functions are not implemented for Anon sets.')
+                end
             end
         end
 
@@ -196,10 +216,18 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                 groupPropName = obj.GroupPropertyNames{i};
     
                 setObj = obj.(groupPropName);
-                keys = setObj.keys;
-
-                for j = 1:numel(keys)
-                    obj.addSingleDynamicProperty(keys{j}, setObj.get(keys{j}))
+                if isa(setObj, 'types.untyped.Set')
+                    keys = setObj.keys;
+    
+                    for j = 1:numel(keys)
+                        obj.addSingleDynamicProperty(keys{j}, setObj.get(keys{j}))
+                    end
+                elseif isa(setObj, 'types.untyped.Anon')
+                    name = setObj.name;
+                    value = setObj.value;
+                    if ~isempty(name)
+                        obj.addSingleDynamicProperty(name, value)
+                    end
                 end
             end
         end
