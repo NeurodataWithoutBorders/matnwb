@@ -17,8 +17,8 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
 %
 % Implementation details:
 %   - Data elements are added to objects of this class as dynamic properties.
-%   - Event listeners make sure objects of this class are always up-to-date
-%     with the included types.untyped.Set objects.
+%   - Assign callback functions on Set object to make sure objects of this 
+%     class are always up-to-date with the included types.untyped.Set objects.
 %
 % Usage:
 %   - Subclasses must implement a static property `GroupPropertyNames` 
@@ -48,14 +48,6 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
         % storing the dynamic property objects for each added dynamic
         % property, accessible by the dynamic property name
         DynamicPropertyMap
-
-        % SetItemAddedListener - Listener for ItemAdded events on the Set
-        % objects that are stored on the "unnamed group" properties
-        SetItemAddedListener event.listener
-
-        % SetItemRemovedListener - Listener for ItemRemoved events on the Set
-        % objects that are stored on the "unnamed group" properties
-        SetItemRemovedListener event.listener
     end
 
     methods
@@ -123,10 +115,10 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
 
                 setObj = obj.(groupPropName);
 
-                obj.SetItemAddedListener(i) = addlistener(setObj, ...
-                    'ItemAdded', @obj.onSetItemAdded);
-                obj.SetItemRemovedListener(i) = addlistener(setObj, ...
-                    'ItemRemoved', @obj.onSetItemRemoved);
+                setObj.ItemAddedFunction = ...
+                    @(itemName) obj.onSetItemAdded(itemName);
+                setObj.ItemRemovedFunction = ...
+                    @(itemName) obj.onSetItemRemoved(itemName);
             end
         end
 
@@ -204,15 +196,17 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
     end
 
     methods (Access = private)
-        function onSetItemAdded(obj, ~, ~)
-            % Todo: can be more specific by receiving event data with names
-            % of removed properties
+        function onSetItemAdded(obj, name)
+        % onSetItemAdded - Handle items being added to a contained types.untyped.Set
+
+            % Todo: pass name to addDynamicProperties
             obj.addDynamicProperties()
         end
 
-        function onSetItemRemoved(obj, ~, ~)
-            % Todo: can be more specific by receiving event data with names
-            % of removed properties
+        function onSetItemRemoved(obj, name)
+        % onSetItemRemoved - Handle items being removed from a contained types.untyped.Set
+
+            % Todo: pass name to pruneDynamicProperties
             obj.pruneDynamicProperties()
         end
 
