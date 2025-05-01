@@ -3,6 +3,13 @@ classdef Set < handle & matlab.mixin.CustomDisplay
         Map; % containers.Map
         ValidationFcn = @(key, value)[];
     end
+
+    properties (SetAccess = ?matnwb.mixin.HasUnnamedGroups)
+    % These properties enables the HasUnnamedGroups mixin to react when
+    % items are added or removed from the Set.
+        ItemAddedFunction function_handle
+        ItemRemovedFunction function_handle
+    end
     
     methods
         function obj = Set(varargin)
@@ -123,8 +130,14 @@ classdef Set < handle & matlab.mixin.CustomDisplay
             end
             remove(obj.Map, mapkeys(keyFailed));
         end
+
+        function add(obj, name, val)
+        % add - Add an element to the set
+            obj.set(name, val, 'FailIfKeyExists', true);
+        end
         
-        function obj = set(obj, name, val)
+        function obj = set(obj, name, val, varargin)
+            
             if ischar(name)
                 name = {name};
             end
@@ -132,29 +145,54 @@ classdef Set < handle & matlab.mixin.CustomDisplay
             if ischar(val)
                 val = {val};
             end
+
+            parser = inputParser();
+            addParameter(parser, 'FailOnInvalidType', false);
+            addParameter(parser, 'FailIfKeyExists', false);
+            parser.parse(varargin{:});
+
             cellExtract = iscell(val);
             
             assert(length(name) == length(val),...
                 'number of property names should match number of vals on set.');
-            for i=1:length(name)
+            for i = 1:length(name)
                 if cellExtract
                     elem = val{i};
                 else
                     elem = val(i);
                 end
+
+                if parser.Results.FailIfKeyExists
+                    if obj.isKey(name{i})
+                        error('NWB:Set:KeyExists', ...
+                            'Key `%s` already exists in Set', name{i})
+                    end
+                end
+
                 try
                     obj.ValidationFcn(name{i}, elem);
                     obj.Map(name{i}) = elem;
+                    if ~isempty(obj.ItemAddedFunction)
+                        obj.ItemAddedFunction(name{i})
+                    end
                 catch ME
-                    warning('NWB:Set:FailedValidation' ...
-                        , 'Failed to add key `%s` to Constrained Set with message:\n  %s' ...
-                        , name{i}, ME.message);
+                    identifier = 'NWB:Set:FailedValidation';
+                    message = 'Failed to add key `%s` to Constrained Set with message:\n  %s';
+
+                    if parser.Results.FailOnInvalidType
+                        error(identifier, message, name{i}, ME.message)
+                    else
+                        warning(identifier, message, name{i}, ME.message);
+                    end
                 end
             end
         end
         
         function obj = remove(obj, name)
             remove(obj.Map, name);
+            if ~isempty(obj.ItemRemovedFunction)
+                obj.ItemRemovedFunction(name)
+            end
         end
         
         function obj = clear(obj)
