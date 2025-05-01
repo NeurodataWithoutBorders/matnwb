@@ -94,7 +94,7 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
 
     if isa(class, 'file.Group')
         if class.hasAnonGroups
-            classTag = sprintf('%s & matnwb.mixin.HasGroups', classTag);
+            classTag = sprintf('%s & matnwb.mixin.HasUnnamedGroups', classTag);
         end
     end
 
@@ -148,16 +148,11 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
             , propertyDefinitionBody ...
             }, newline);
     end
-    if isa(class, 'file.Group')
-        if class.hasAnonGroups
-            isAnonGroup = arrayfun(@(x) isempty(x.name), class.subgroups, 'uni', true);
-            anonNames = arrayfun(@(x) lower(x.type), class.subgroups(isAnonGroup), 'uni', false);
-            fullPropertyDefinition = strjoin({...
-                fullPropertyDefinition, ...
-                '    properties (Access = protected)', ...
-                sprintf('        GroupPropertyNames = {%s}', strjoin(strcat('''', anonNames, ''''), ', ') ), ...
-                '    end'}, newline);
-        end
+    if isa(class, 'file.Group') && class.hasAnonGroups
+        mixinPropertyBlock = createPropertyBlockForHasUnnamedGroupMixin(class);
+        
+        fullPropertyDefinition = strjoin(...
+            {fullPropertyDefinition, mixinPropertyBlock}, newline);
     end
 
     constructorBody = file.fillConstructor(...
@@ -166,7 +161,8 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
         defaults,... %all defaults, regardless of inheritance
         classprops,...
         namespace, ...
-        superClassProps);
+        superClassProps, ...
+        class);
     setterFcns = file.fillSetters(setdiff(nonInherited, union(readonly, hiddenAndReadonly)), classprops);
     validatorFcns = file.fillValidators(allProperties, classprops, namespace, namespace.getFullClassName(name), inherited);
     exporterFcns = file.fillExport(nonInherited, class, depnm, required);
@@ -201,4 +197,14 @@ function tf = resolveRequiredForDependentProp(propertyName, propInfo, allProps)
         parentInfo = allProps(parentName);
         tf = parentInfo.required;
     end
+end
+
+function propertyBlockStr = createPropertyBlockForHasUnnamedGroupMixin(classInfo)
+    isAnonGroup = arrayfun(@(x) isempty(x.name), classInfo.subgroups, 'uni', true);
+    anonNames = arrayfun(@(x) lower(x.type), classInfo.subgroups(isAnonGroup), 'uni', false);
+    
+    propertyBlockStr = strjoin({...
+        'properties (Access = protected)', ...
+        sprintf('    GroupPropertyNames = {%s}', strjoin(strcat('''', anonNames, ''''), ', ') ), ...
+        'end'}, newline);
 end
