@@ -14,7 +14,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             % Create a ProcessingModule
             module = types.core.ProcessingModule();
             
-            % Add a new type using the Set interface
+            % Add a new type using the mixin's add method
             module.add('TimeSeries', types.core.TimeSeries());
             
             % Verify that the dynamic property was created
@@ -61,7 +61,8 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             % Add items with similar names to nwbdatainterface            
             module.add('Time-Series', types.core.TimeSeries())
 
-            % Verify that the dynamic property was created
+            % Verify that the dynamic property was created and accessible
+            % with a valid MATLAB name
             testCase.verifyTrue(isprop(module, 'Time_Series'), ...
                 'Dynamic property was not created');
 
@@ -121,13 +122,13 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             end
         end
 
-        function testAddingWithExistingName(testCase)
+        function testAddWithExistingName(testCase)
             % Create a ProcessingModule
             module = types.core.ProcessingModule();
 
-            % Add items with similar names to nwbdatainterface
             module.add('TimeSeries', types.core.TimeSeries())
 
+            % Adding a new object with the same name should fail
             testCase.verifyError(...
                 @() module.add('TimeSeries', types.core.TimeSeries()), ...
                 'NWB:HasUnnamedGroupsMixin:KeyExists')
@@ -165,7 +166,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             % Create a ProcessingModule
             module = types.core.ProcessingModule();
             
-            % Add items with the same name to different groups
+            % Add one object to each of the subgroups
             module.add('TimeSeries', types.core.TimeSeries());
             module.add('DynamicTable', types.hdmf_common.DynamicTable());
 
@@ -187,14 +188,19 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             % Create a ProcessingModule
             module = types.core.ProcessingModule();
             
-            % Add items with the same name to different groups
+            % Add items with similar names that will evaluate to the same
+            % valid name
             module.add('Time_Series', types.core.TimeSeries());
             module.add('Time-Series', types.core.TimeSeries());
 
             C = evalc('disp(module)');
 
-            expectedMessage = 'Warning: The following named elements of "ProcessingModule"';
-            testCase.verifyTrue( contains(C, expectedMessage))
+            % Verify that the displayed object will contain a warning
+            % message informing about "alias" names
+            expectedMessage = 'Warning: The following named elements of "ProcessingModule"'; % ...
+            testCase.verifyTrue( contains(C, expectedMessage)) 
+            % Would use startsWith instead of contains, but C contains some 
+            % hidden "display" characters in the beginning
         end
     end
 end

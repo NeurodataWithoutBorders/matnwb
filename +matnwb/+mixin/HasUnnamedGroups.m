@@ -291,7 +291,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                 end
             end
         end
-        
+
         function addSingleDynamicProperty(obj, name, groupName)
         % addSingleDynamicProperty - Add a single dynamic property to the class
             matlabValidName = obj.createValidName(name, groupName);
@@ -423,9 +423,6 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                     return;
                 end
             end
-            
-            % If not found, assume the valid name is the actual name
-            actualName = validName;
         end
     end
 

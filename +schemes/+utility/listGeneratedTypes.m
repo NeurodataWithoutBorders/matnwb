@@ -31,7 +31,7 @@ function typeClassNames = listGeneratedTypes(options)
 
     relativeFilePaths = strrep(absoluteFilePaths, typesDir, '');
     typeClassNames = strrep(relativeFilePaths, '.m', '');
-    typeClassNames = strrep(typeClassNames, filesep, '.'); % NB: needs to happen before next replacement
+    typeClassNames = strrep(typeClassNames, filesep, '.');
     typeClassNames = strrep(typeClassNames, '+', '');
 
     typeClassNames = string(typeClassNames);
