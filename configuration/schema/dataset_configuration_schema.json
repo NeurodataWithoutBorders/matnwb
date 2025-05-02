@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Dataset configuration",
+  "_schemaVersion": "v1.0.0",
+  "description": "Configurations for chunking and compression of a dataset",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+        "type": "string",
+        "pattern": "v\\d{1}\\.\\d{1}\\.\\d{1}"
+    },
+    "storageFormat": {
+        "type": "string",
+        "enum": ["HDF5", "Zarr"]
+    },
+    "datasetSpecifications": {
+        "type": "object",
+        "properties": {
+            "Default": { "$ref": "#/$defs/defaultSpecification" }
+        },
+        "patternProperties": {
+            "^(?!Default$).+": { "$ref": "#/$defs/overrideSpecification" }
+        },
+        "required": ["Default"],
+        "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "defaultSpecification": {
+      "type": "object",
+      "properties": {
+        "layout": { "$ref": "#/$defs/layout" },
+        "chunking": { "$ref": "#/$defs/chunkingFull" },
+        "compression": { "$ref": "#/$defs/compressionFull" }
+      },
+      "required": ["layout", "chunking", "compression"],
+      "additionalProperties": false
+    },
+    "overrideSpecification": {
+      "type": "object",
+      "properties": {
+        "layout": { "$ref": "#/$defs/layout" },
+        "chunking": { "$ref": "#/$defs/chunkingPartial" },
+        "compression": { "$ref": "#/$defs/compressionPartial" }
+      },
+      "additionalProperties": false
+    },
+    "layout": { 
+      "type": "string",
+      "enum": ["chunked", "contiguous"]
+    },
+    "chunkingFull": {
+      "type": "object",
+      "properties": {
+        "target_chunk_size": { "type": "integer" },
+        "target_chunk_size_unit": { 
+          "type": "string",
+          "enum": ["bytes", "kiB", "MiB", "GiB"]
+        },
+        "strategy_by_rank": { "$ref": "#/$defs/strategyByRankFull" }
+      },
+      "required": ["target_chunk_size", "target_chunk_size_unit", "strategy_by_rank"],
+      "additionalProperties": false
+    },
+    "chunkingPartial": {
+      "type": "object",
+      "properties": {
+        "target_chunk_size": { "type": "integer" },
+        "target_chunk_size_unit": { 
+          "type": "string",
+          "enum": ["bytes", "kiB", "MiB", "GiB"]
+        },
+        "strategy_by_rank": { "$ref": "#/$defs/strategyByRankPartial" }
+      },
+      "additionalProperties": false
+    },
+    "dimensionConstraint": {
+      "title": "Constraint for dimension chunking.",
+      "description": "Specifies how a dataset dimension should be chunked. A positive integer defines a fixed chunk length for that dimension. The keyword 'flex' indicates that the chunk size should be determined dynamically based on the target_chunk_size, while 'max' means that the dimension will not be split, using its full extent for each chunk.",
+      "oneOf": [
+        { "type": "string", "enum": ["max", "flex"] },
+        { "type": "integer", "minimum": 1 }
+      ]
+    },
+    "strategyByRankFull": {
+      "type": "object",
+      "description": "Specifies a strategy for how to chunk dimensions of 1D to 4D datasets. All properties are required",
+      "properties": {
+        "1": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/dimensionConstraint" },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "2": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/dimensionConstraint" },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "3": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/dimensionConstraint" },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "4": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/dimensionConstraint" },
+          "minItems": 4,
+          "maxItems": 4
+        }
+      },
+      "required": ["1", "2", "3", "4"],
+      "additionalProperties": false
+    },
+    "strategyByRankPartial": {
+      "type": "object",
+      "description": "Specifies a strategy for how to chunk dimensions of 1D to 4D datasets. Properties are optional.",
+      "properties": {
+        "1": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/dimensionConstraint" },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "2": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/dimensionConstraint" },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "3": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/dimensionConstraint" },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "4": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/dimensionConstraint" },
+          "minItems": 4,
+          "maxItems": 4
+        }
+      },
+      "additionalProperties": false
+    },
+    "compressionFull": {
+      "type": "object",
+      "properties": {
+        "method": { "type": "string" },
+        "parameters": { "type": "object" },
+        "prefilters": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["method", "parameters", "prefilters"],
+      "additionalProperties": false
+    },
+    "compressionPartial": {
+      "type": "object",
+      "properties": {
+        "method": { "type": "string" },
+        "parameters": { "type": "object" },
+        "prefilters": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
