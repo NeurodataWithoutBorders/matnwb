@@ -291,53 +291,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                 end
             end
         end
-
-        function pruneDynamicProperties(obj)
-            dynamicPropertyNames = obj.DynamicPropertyMap.keys();
-
-            subgroupElementNames = string.empty;
-            groupNames = string.empty;
-
-            for i = 1:numel(obj.GroupPropertyNames)
-                thisGroupName = obj.GroupPropertyNames{i};
-                thisSet = obj.(thisGroupName);
-                
-                keys = thisSet.keys();
-                subgroupElementNames = [subgroupElementNames, keys]; %#ok<AGROW>
-                groupNames = [groupNames, repmat(string(thisGroupName), 1, numel(keys))]; %#ok<AGROW>
-            end
-            
-            validMatlabNames = string.empty;
-            for i = 1:numel(subgroupElementNames)
-                if ~isempty(obj.ValidNameMaps(char(groupNames(i))))
-                    validMap = obj.ValidNameMaps(char(groupNames(i)));
-                    validKeys = validMap.keys();
-                    validValues = validMap.values();
-                    
-                    idx = find(strcmp(validValues, subgroupElementNames{i}), 1);
-                    if ~isempty(idx)
-                        validMatlabNames = [validMatlabNames, string(validKeys{idx})]; %#ok<AGROW>
-                    end
-                end
-            end
-            
-            removedPropNames = setdiff(dynamicPropertyNames, validMatlabNames);
-            
-            for i = 1:numel(removedPropNames)
-                dynamicPropertyMeta = obj.DynamicPropertyMap(removedPropNames{i});
-                delete(dynamicPropertyMeta)
-                obj.DynamicPropertyMap.remove(removedPropNames{i})
-                
-                % Remove from the appropriate ValidNameMap
-                for j = 1:numel(obj.GroupPropertyNames)
-                    thisGroupName = obj.GroupPropertyNames{j};
-                    if obj.ValidNameMaps.isKey(thisGroupName) && obj.ValidNameMaps(thisGroupName).isKey(removedPropNames{i})
-                        obj.ValidNameMaps(thisGroupName).remove(removedPropNames{i});
-                    end
-                end
-            end
-        end
-    
+        
         function addSingleDynamicProperty(obj, name, groupName)
         % addSingleDynamicProperty - Add a single dynamic property to the class
             matlabValidName = obj.createValidName(name, groupName);

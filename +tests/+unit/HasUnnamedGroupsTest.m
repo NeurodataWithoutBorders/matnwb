@@ -160,5 +160,41 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                 @() module.add('Device', types.core.Device()), ...
                 'NWB:HasUnnamedGroupsMixin:AddInvalidType')
         end
+
+        function testObjectDisplay(testCase)
+            % Create a ProcessingModule
+            module = types.core.ProcessingModule();
+            
+            % Add items with the same name to different groups
+            module.add('TimeSeries', types.core.TimeSeries());
+            module.add('DynamicTable', types.hdmf_common.DynamicTable());
+
+            origPrefValue = getpref('matnwb', 'displaymode', 'flat');
+            testCase.addTeardown(@() setpref('matnwb', 'displaymode', origPrefValue))
+
+            setpref('matnwb', 'displaymode', 'flat')
+            C = evalc('disp(module)');
+            testCase.verifyTrue(contains(C, 'TimeSeries:'))
+            testCase.verifyTrue(contains(C, 'DynamicTable:'))
+
+            setpref('matnwb', 'displaymode', 'groups')
+            C = evalc('disp(module)');
+            testCase.verifyTrue(contains(C, 'nwbdatainterface elements:'))
+            testCase.verifyTrue(contains(C, 'dynamictable elements:'))
+        end
+
+        function testObjectWithAliasedNames(testCase)
+            % Create a ProcessingModule
+            module = types.core.ProcessingModule();
+            
+            % Add items with the same name to different groups
+            module.add('Time_Series', types.core.TimeSeries());
+            module.add('Time-Series', types.core.TimeSeries());
+
+            C = evalc('disp(module)');
+
+            expectedMessage = 'Warning: The following named elements of "ProcessingModule"';
+            testCase.verifyTrue( contains(C, expectedMessage))
+        end
     end
 end
