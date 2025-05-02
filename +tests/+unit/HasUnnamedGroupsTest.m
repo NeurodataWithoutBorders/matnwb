@@ -120,6 +120,18 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                     'Dynamic property nwbdatainterface_Test returned incorrect value');
             end
         end
+
+        function testAddingWithExistingName(testCase)
+            % Create a ProcessingModule
+            module = types.core.ProcessingModule();
+
+            % Add items with similar names to nwbdatainterface
+            module.add('TimeSeries', types.core.TimeSeries())
+
+            testCase.verifyError(...
+                @() module.add('TimeSeries', types.core.TimeSeries()), ...
+                'NWB:HasUnnamedGroupsMixin:KeyExists')
+        end
         
         function testOverriding(testCase)
             % Test overriding an existing item
@@ -139,6 +151,14 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             % Verify the property has the new type
             testCase.verifyClass(module.Test, 'types.core.Fluorescence', ...
                 'Dynamic property Test did not return the overridden value');
+        end
+
+        function testInvalidType(testCase)
+            module = types.core.ProcessingModule();
+            
+            testCase.verifyError(...
+                @() module.add('Device', types.core.Device()), ...
+                'NWB:HasUnnamedGroupsMixin:AddInvalidType')
         end
     end
 end
