@@ -125,7 +125,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                 actualName = obj.getActualNameFromValidName(name);
                 if thisSet.isKey(actualName)
                     try
-                        thisSet.remove(actualName)
+                        thisSet.remove(actualName);
                         break
                     catch ME
                         rethrow(ME)
@@ -365,7 +365,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
         function deleteDynamicProperty(obj, name, groupName)
             dynamicPropertyMeta = obj.DynamicPropertyMap(name);
             delete(dynamicPropertyMeta)
-            obj.DynamicPropertyMap.remove(name)
+            obj.DynamicPropertyMap.remove(name);
 
             if obj.ValidNameMaps.isKey(groupName) && obj.ValidNameMaps(groupName).isKey(name)
                 obj.ValidNameMaps(groupName).remove(name);
