@@ -4,7 +4,7 @@ classdef Set < handle & matlab.mixin.CustomDisplay
         ValidationFcn = @(key, value)[];
     end
 
-    properties (SetAccess = ?matnwb.mixin.HasUnnamedGroups)
+    properties (Access = ?matnwb.mixin.HasUnnamedGroups)
     % These properties enables the HasUnnamedGroups mixin to react when
     % items are added or removed from the Set.
         ItemAddedFunction function_handle
@@ -162,6 +162,8 @@ classdef Set < handle & matlab.mixin.CustomDisplay
                     elem = val(i);
                 end
 
+                isOverride = obj.isKey(name{i});
+
                 if parser.Results.FailIfKeyExists
                     if obj.isKey(name{i})
                         error('NWB:Set:KeyExists', ...
@@ -172,7 +174,7 @@ classdef Set < handle & matlab.mixin.CustomDisplay
                 try
                     obj.ValidationFcn(name{i}, elem);
                     obj.Map(name{i}) = elem;
-                    if ~isempty(obj.ItemAddedFunction)
+                    if ~isOverride && ~isempty(obj.ItemAddedFunction)
                         obj.ItemAddedFunction(name{i})
                     end
                 catch ME
