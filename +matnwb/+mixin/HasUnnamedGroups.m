@@ -47,6 +47,10 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
 
 % Todo: Add custom footer if any names are aliased to valid matlab names.
 
+% Todo: consider reverse name map, because mapping from actual to valid
+% names is ambiguous if the same name is used across groups.
+% Or consider one map per contained group
+
     properties (Abstract, Access = protected, Transient)
         GroupPropertyNames % Cell array of property names that contain Sets
     end
@@ -57,6 +61,10 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
         % property, accessible by the dynamic property name
         DynamicPropertyMap
         ValidNameMap
+    end
+
+    properties (Access = private, Dependent, Transient)
+        NumGroups
     end
 
     methods
@@ -128,6 +136,12 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             end
         end
     end
+    
+    methods % Get
+        function numGroups = get.NumGroups(obj)
+            numGroups = numel(obj.GroupPropertyNames);
+        end
+    end
 
     methods (Access = protected)
         function setupHasUnnamedGroupsMixin(obj)
@@ -194,21 +208,24 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                     groups(end+1) = matlab.mixin.util.PropertyGroup(propList, title); %#ok<AGROW>
                 end
             end
-            obj.aliasWarning()
+            obj.displayAliasWarning()
         end
     
-        function aliasWarning(obj)
+        function displayAliasWarning(obj)
             allValidNames = string(obj.ValidNameMap.keys());
             allActualNames = string(obj.ValidNameMap.values());
 
             if ~isequal(allValidNames, allActualNames)
                 hasAlias = ~strcmp(allValidNames, allActualNames);
+                
+                T = table(allValidNames(hasAlias)', allActualNames(hasAlias)', ...
+                    'VariableNames', {'ValidName', 'ActualName'} ); %#ok<NASGU>
+                nameMap = evalc('disp(T)');
+
                 str = sprintf([...
-                    'The following names are remapped to valid MATLAB ', ...
-                    'names:\n%s\nbut will be written to file as originally ', ...
-                    'named:\n%s\n'], ...
-                    strjoin(" - " + allValidNames(hasAlias), newline), ...
-                    strjoin(" - " + allActualNames(hasAlias), newline));
+                    'The following named elements of "%s" are remapped to have valid MATLAB ', ...
+                    'names, but will be written to file with their actual names:', ...
+                    '\n%s\n'], obj.TypeName, strip(nameMap, 'right'));
             else
                 str = '';
             end
@@ -221,40 +238,45 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
     end
 
     methods (Access = private)
+        function containerObj = getGroupContainer(obj, groupNumber)
+            propertyNameForGroup = obj.GroupPropertyNames{groupNumber};
+            containerObj = obj.(propertyNameForGroup);
+        end
+        
         function assignContainedSetCallbackFunctions(obj)
-            for i = 1:length(obj.GroupPropertyNames)
-                groupPropName = obj.GroupPropertyNames{i};
-
-                setObject = obj.(groupPropName);
-                if isa(setObject, 'types.untyped.Set')
-                    setObject.ItemAddedFunction = ...
-                        @(itemName) obj.onSetItemAdded(itemName);
-                    setObject.ItemRemovedFunction = ...
-                        @(itemName) obj.onSetItemRemoved(itemName);
+            for i = 1:obj.NumGroups
+                propertyNameForGroup = obj.GroupPropertyNames{i};
+                containerObj = obj.getGroupContainer(i);
+                
+                if isa(containerObj, 'types.untyped.Set')
+                    containerObj.ItemAddedFunction = ...
+                        @(itemName, groupName) obj.onSetItemAdded(itemName, propertyNameForGroup);
+                    containerObj.ItemRemovedFunction = ...
+                        @(itemName, groupName) obj.onSetItemRemoved(itemName, propertyNameForGroup);
                 else
                     warning('NWB:HasUnnamedGroupsMixin:NotImplemented', ...
-                        'Callback functions are not implemented for Anon sets.')
+                        'Callback functions are not implemented for Anon types.')
                 end
             end
         end
 
         function addDynamicProperties(obj)
-            % TODO: What if multiple groups have the same subkeys?
-            for i = 1:length(obj.GroupPropertyNames)
-                groupPropName = obj.GroupPropertyNames{i};
-    
-                setObj = obj.(groupPropName);
-                if isa(setObj, 'types.untyped.Set')
-                    keys = setObj.keys;
+        % addDynamicProperties - Add dynamic properties for set values
+
+            for i = 1:obj.NumGroups
+                groupPropertyName = obj.GroupPropertyNames{i};
+                containerObj = obj.getGroupContainer(i);
+
+                if isa(containerObj, 'types.untyped.Set')
+                    keys = containerObj.keys();
     
                     for j = 1:numel(keys)
-                        obj.addSingleDynamicProperty(keys{j}, setObj.get(keys{j}), groupPropName)
+                        obj.addSingleDynamicProperty(keys{j}, groupPropertyName)
                     end
-                elseif isa(setObj, 'types.untyped.Anon')
-                    name = setObj.name;
-                    value = setObj.value;
+                elseif isa(containerObj, 'types.untyped.Anon')
+                    name = containerObj.name;
                     if ~isempty(name)
-                        obj.addSingleDynamicProperty(name, value)
+                        obj.addSingleDynamicProperty(name, groupPropertyName)
                     end
                 end
             end
@@ -282,28 +304,20 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             end
         end
     
-        function addSingleDynamicProperty(obj, name, value, groupName)
-            
-            % Todo: 
-            % - Need to consider where name is used in another group,
-            % and prepend the group name if yes
-            % - Need to consider that makeValidName can map different names
-            % to the same name, i.e "my_data" and "my-data" -> my_data
-            % Todo: make separate function
-            matlabValidName = matlab.lang.makeValidName(name);
+        function addSingleDynamicProperty(obj, name, groupName)
+        % addSingleDynamicProperty - Add a single dynamic property to the class
+            matlabValidName = obj.createValidName(name, groupName);
             
             if ~isprop(obj, matlabValidName)
                 p = obj.addprop(matlabValidName);
+                p.Dependent = true;
+                p.GetMethod = @(nm, gnm) obj.getDynamicPropertyValueFromSet(matlabValidName, groupName);
                 obj.DynamicPropertyMap(matlabValidName) = p;
                 obj.ValidNameMap(matlabValidName) = name;
             else
-                p = obj.DynamicPropertyMap(matlabValidName);
-                if iscell(p); p = p{1}; end
+                error('NWB:HasUnnamedGroupsMixin:DynamicPropertyExists', ...
+                    'Dynamic property with name "%s" already exists', matlabValidName)
             end
-            p.SetAccess = 'public';
-            obj.(matlabValidName) = value;
-            % Dynamic props can only be set from within the class
-            p.SetAccess = 'protected';
         end
 
         function result = getClassNamesForAllowedGroupTypes(obj)
@@ -317,7 +331,37 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             isMatch = ismember(lower(typeClassNamesShort), groupPropertyNames);
             result = typeClassNames(isMatch);
         end
-    
+        
+        function validName = createValidName(obj, name, groupName)
+        % createValidName - Create a valid MATLAB name to using for dynamic
+        % property.
+
+            % Make sure the valid name is unique across groups
+            if obj.NumGroups > 1
+                existingNames = obj.ValidNameMap.values();
+                % If the name already exists, prepend the group name to the
+                % name
+                if any(strcmp(name, existingNames))
+                    name = [groupName, '_', name];
+                end
+            end
+
+            % Make sure the valid name is unique across all other valid names
+            isFinished = false;
+            suggestedName = name;
+            counter = 0;
+            while ~isFinished
+                suggestedName = matlab.lang.makeValidName(suggestedName);
+                if ~any( strcmp(obj.ValidNameMap.keys(), suggestedName))
+                    isFinished = true;
+                else
+                    counter = counter+1;
+                    suggestedName = sprintf('%s_%d', name, counter);
+                end
+            end
+            validName = suggestedName;
+        end
+
         function validNames = getValidNames(obj, actualNames)
             allValidNames = obj.ValidNameMap.keys();
             allActualNames = obj.ValidNameMap.values();
@@ -330,15 +374,24 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
         end
     end
 
-    methods (Access = private) % types.untyped.Set callback functions
-        function onSetItemAdded(obj, name)
-        % onSetItemAdded - Handle items being added to a contained types.untyped.Set
+    methods % Dynamic property get method
+        function value = getDynamicPropertyValueFromSet(obj, name, groupName, varargin)
+            actualName = obj.ValidNameMap(name);
+            value = obj.(groupName).get(actualName);
+        end
+                
+        function value = getDynamicPropertyValueFromAnon(obj, groupName)
+            value = obj.(groupName).value;
+        end
+    end
 
-            % Todo: pass name to addDynamicProperties
-            obj.addDynamicProperties()
+    methods (Access = private) % types.untyped.Set callback functions
+        function onSetItemAdded(obj, name, groupName)
+        % onSetItemAdded - Handle items being added to a contained types.untyped.Set
+            obj.addSingleDynamicProperty(name, groupName)
         end
 
-        function onSetItemRemoved(obj, name)
+        function onSetItemRemoved(obj, name, groupName)
         % onSetItemRemoved - Handle items being removed from a contained types.untyped.Set
 
             % Todo: pass name to pruneDynamicProperties
