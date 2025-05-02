@@ -8,6 +8,7 @@ General Tutorials
 
    intro
    read_demo
+   read_demo_dandihub
    basicUsage
    dimensionMapNoDataPipes
    dimensionMapWithDataPipes

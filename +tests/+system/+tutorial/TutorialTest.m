@@ -37,6 +37,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture, tests.fixtur
             'convertTrials.m', ... % depends on basicUsage output
             'formatStruct.m', ...  % Actually a utility script, not a tutorial
             'read_demo.mlx', ...   % depends on external data
+            'read_demo_dandihub.mlx', ... % depends on external data
             'remote_read.mlx'};    % Uses nwbRead on s3 url, potentially very slow
         
         % SkippedFiles - Name of exported nwb files to skip reading with pynwb
