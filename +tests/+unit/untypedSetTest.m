@@ -72,5 +72,20 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             untypedSet.set('c', 'c');
             testCase.verifyEqual(untypedSet.get('c'), 'c')
         end
+
+        function testAddToSet(testCase)
+            nwbFile = tests.factory.NWBFile();
+            ts = tests.factory.TimeSeriesWithTimestamps;
+            nwbFile.acquisition.add('ts', ts)
+            
+           testCase.verifyTrue(...
+                 nwbFile.acquisition.isKey('ts'), ...
+                'Object set with `add` not present in types.untyped.Set');
+            
+            testCase.verifyClass(...
+                 nwbFile.acquisition.get('ts'), ...
+                'types.core.TimeSeries', ...
+                'Object set with `add` is incorrect value');
+        end
     end
 end
