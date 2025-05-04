@@ -42,33 +42,6 @@ classdef nwbReadTest < tests.abstract.NwbTestCase
             testCase.verifyTrue( isfolder(fullfile(pwd, "+types")) )
         end
 
-        function readFileWithUnsupportedVersionAndWithoutEmbeddedSpecs(testCase)
-            % Use a fixture to create a temporary working directory
-            testCase.applyFixture(...
-                matlab.unittest.fixtures.WorkingFolderFixture)
-            
-            % Use a fixture to ignore warning
-            testCase.applyFixture(...
-                matlab.unittest.fixtures.SuppressedWarningsFixture(...
-                    'NWB:Read:UnsupportedSchema'))
-
-            nwbFile = tests.factory.NWBFile();
-
-            fileName = 'testReadFileWithoutSpecAndWithInvalidVersion.nwb';
-            nwbExport(nwbFile, fileName)
-
-            io.internal.h5.deleteGroup(fileName, 'specifications')
-
-            % Override the version attribute with an unsupported version number   
-            testCase.changeVersionNumberInFile(fileName, '1.0.0')
-
-            nwbRead(fileName, "savedir", pwd);
-
-            % Should not generate types for file without embedded
-            % specifications and with unsupported version
-            testCase.verifyFalse( isfolder(fullfile(pwd, "+types")) )
-        end
-
         function readFileWithoutSpecLoc(testCase)
             nwbFile = tests.factory.NWBFile();
             fileName = 'testReadFileWithoutSpecLoc.nwb';
@@ -85,7 +58,8 @@ classdef nwbReadTest < tests.abstract.NwbTestCase
             % Todo: Is this different from readFileWithoutEmbeddedSpecsAndWithUnsupportedVersion
             import matlab.unittest.fixtures.SuppressedWarningsFixture
             testCase.applyFixture(SuppressedWarningsFixture('NWB:Read:UnsupportedSchema'))
-
+            testCase.applyFixture(SuppressedWarningsFixture('NWB:Read:AttemptReadWithVersionMismatch'))
+            
             nwbFile = tests.factory.NWBFile();
             fileName = 'testReadFileWithUnsupportedVersionAndNoSpecloc.nwb';
             nwbExport(nwbFile, fileName)
@@ -140,6 +114,62 @@ classdef nwbReadTest < tests.abstract.NwbTestCase
 
             testCase.verifyTrue(~isempty(nwb));
             testCase.verifyClass(nwb, 'NwbFile');
+        end
+
+        function testIgnoreCacheFlagForFileWithOtherNWBVersion(testCase)
+            
+            % Temporarily remove the generated types from path.
+            currentTypesFolder = testCase.getTypesOutputFolder();
+            testCase.addTeardown(@() addpath(currentTypesFolder))
+            rmpath(currentTypesFolder)
+
+            % Generate type classes using older version of NWB schemas
+            generateCore('2.1.0', 'savedir', pwd())
+            nwbFile = tests.factory.NWBFile();
+            fileNameOldVersion = 'file_v2_1_0.nwb';
+            nwbExport(nwbFile, fileNameOldVersion)
+            clear nwbFile % Important to clear, otherwise test will fail with 
+            % error tested for in readFileWithIncompatibleVersion
+
+            nwbClearGenerated(pwd, "ClearCache", true)
+            
+            % Generate type classes using latest version of NWB schemas
+            generateCore('latest', 'savedir', pwd())
+            
+            % Should see a warning about version mismatch if reading file with 
+            % older NWB version using ignorecache flag when the latest
+            % version is active in MatNWB
+            expectedWarningId = 'NWB:Read:AttemptReadWithVersionMismatch';
+            testCase.verifyWarning( ...
+                @() nwbRead(fileNameOldVersion, 'ignorecache'), ...
+                expectedWarningId)
+        end
+
+        function readFileWithIncompatibleVersion(testCase)
+
+            % Temporarily remove the generated types from path.
+            currentTypesFolder = testCase.getTypesOutputFolder();
+            testCase.addTeardown(@() addpath(currentTypesFolder))
+            rmpath(currentTypesFolder)
+
+            % Generate type classes using older version of NWB schemas
+            generateCore('2.1.0', 'savedir', pwd())
+            nwbFile = tests.factory.NWBFile();
+            fileNameOldVersion = 'file_v2_1_0.nwb';
+            nwbExport(nwbFile, fileNameOldVersion)
+            
+            % Generate type classes using latest version of NWB schemas.
+            % Some older classes are still loaded in memory.
+            nwbClearGenerated(pwd, "ClearCache", true)
+            generateCore('latest', 'savedir', pwd())
+
+            expectedErrorId = 'NWB:Read:VersionConflict';
+
+            try
+                nwbRead(fileNameOldVersion);
+            catch ME
+                testCase.verifyEqual(ME.cause{1}.identifier, expectedErrorId)
+            end
         end
     end
 
