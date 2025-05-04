@@ -304,5 +304,24 @@ classdef nwbExportTest < tests.abstract.NwbTestCase
             % Verify that was_generated_by still has one entry (i.e not getting duplicate entries)
             testCase.verifyEqual(size(nwbIn2.general_was_generated_by.load()), [2,1])
         end
+    
+        function testExportMultipleFiles(testCase)
+            fileA = tests.factory.NWBFile();
+            fileA.identifier = 'File A';
+
+            fileB = tests.factory.NWBFile();
+            fileB.identifier = 'File B';
+
+            fileNameA = 'testWriteMultipleA.nwb';
+            fileNameB = 'testWriteMultipleB.nwb';
+
+            nwbExport([fileA, fileB], {fileNameA, fileNameB});
+
+            fileAIn = nwbRead(fileNameA, 'ignorecache');
+            fileBIn = nwbRead(fileNameB, 'ignorecache');
+
+            testCase.verifyEqual(fileAIn.identifier, fileA.identifier);
+            testCase.verifyEqual(fileBIn.identifier, fileB.identifier);
+        end
     end
 end
