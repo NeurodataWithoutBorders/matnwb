@@ -61,7 +61,7 @@ function nwb = nwbRead(filename, flags, options)
 
     regenerateSchemaClasses = not( any(strcmpi(string(flags), 'ignorecache')) );
 
-    schemaVersionCurrent = types.core.Version();
+    schemaVersionCurrent = matnwb.common.getActiveSchemaVersion();
     schemaVersionOfFile = util.getSchemaVersion(filename);
     requiresVersionUpdate = ~strcmp(schemaVersionCurrent, schemaVersionOfFile);
 
