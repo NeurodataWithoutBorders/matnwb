@@ -47,7 +47,6 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
 
     properties (Abstract, Access = protected, Transient)
         GroupPropertyNames (1,:) string % String array of property names that contain Sets
-        % todo: string
     end
     
     properties (Access = private, Transient)
@@ -55,6 +54,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
         % storing the dynamic property objects for each added dynamic
         % property, accessible by the dynamic property name
         DynamicPropertyMap
+        
         % ValidNameMaps - A containers.Map (groupName) -> (containers.Map)
         % Each group has its own ValidNameMap that maps valid MATLAB names to 
         % actual NWB names
@@ -70,8 +70,13 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
     
     methods
         function add(obj, name, value)
+        % add - Add a named data object to an un-named subgroup
+
+            if obj.nameExists(name)
+                throwAsCaller( getNameExistsException(name, obj.TypeName) )
+            end
+                      
             wasSuccess = false;
-            
             for groupName = obj.GroupPropertyNames
                 currentSet = obj.(groupName);
 
@@ -81,17 +86,11 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
 
                 try
                     currentSet.set(name, value, ...
-                        'FailOnInvalidType', true, ...
-                        'FailIfKeyExists', true);
+                        'FailOnInvalidType', true);
                     wasSuccess = true;
                     break
                 catch ME
-                    if strcmp(ME.identifier, 'NWB:Set:KeyExists')
-                        ME = MException('NWB:HasUnnamedGroupsMixin:KeyExists', ...
-                            'A neurodata object with name `%s` already exists in this `%s`', ...
-                            name, obj.TypeName);
-                        throwAsCaller(ME);
-                    elseif strcmp(ME.identifier, 'NWB:Set:FailedValidation')
+                    if strcmp(ME.identifier, 'NWB:Set:FailedValidation')
                         continue
                     else
                         rethrow(ME)
@@ -110,7 +109,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
         end
    
         function remove(obj, name)
-        % remove - remove object given it's (matlab-valid) name
+        % remove - remove data object given it's (matlab-valid) name
             for groupName = obj.GroupPropertyNames
                 currentSet = obj.(groupName);
 
@@ -254,6 +253,18 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                 end
             end
         end
+            
+        function tf = nameExists(obj, name)
+        % nameExists - Check if name already exists in subgroup
+            tf = false;
+            for groupName = obj.GroupPropertyNames
+                containerObj = obj.(groupName);
+                if containerObj.isKey(name)
+                    tf = true;
+                    break
+                end
+            end
+        end
 
         function addDynamicProperties(obj)
         % addDynamicProperties - Add dynamic properties for set values
@@ -279,24 +290,23 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
         % createDynamicProperty - Add a single dynamic property to the class
             matlabValidName = obj.createValidName(name, groupName);
             
-            if ~isprop(obj, matlabValidName)
-                p = obj.addprop(matlabValidName);
-                p.Dependent = true;
-                p.GetMethod = @(nm, gnm) obj.getDynamicPropertyValueFromSet(matlabValidName, groupName);
-                obj.DynamicPropertyMap(matlabValidName) = p;
-                
-                % Create ValidNameMap for this group if it doesn't exist
-                if ~obj.ValidNameMaps.isKey(groupName)
-                    obj.ValidNameMaps(groupName) = containers.Map();
-                end
-                
-                % Add mapping to the group's ValidNameMap
-                nameMapForGoup = obj.ValidNameMaps(groupName);
-                nameMapForGoup(matlabValidName) = name; %#ok<NASGU>
-            else
-                error('NWB:HasUnnamedGroupsMixin:DynamicPropertyExists', ...
-                    'Dynamic property with name "%s" already exists', matlabValidName)
+            assert( ~isprop(obj, matlabValidName), ...
+                'NWB:HasUnnamedGroupsMixin:DynamicPropertyExists', ...
+                'Dynamic property with name "%s" already exists', matlabValidName )
+
+            p = obj.addprop(matlabValidName);
+            p.Dependent = true;
+            p.GetMethod = @(nm, gnm) obj.getDynamicPropertyValueFromSet(matlabValidName, groupName);
+            obj.DynamicPropertyMap(matlabValidName) = p;
+            
+            % Create ValidNameMap for this group if it doesn't exist
+            if ~obj.ValidNameMaps.isKey(groupName)
+                obj.ValidNameMaps(groupName) = containers.Map();
             end
+            
+            % Add mapping to the group's ValidNameMap
+            nameMapForGoup = obj.ValidNameMaps(groupName);
+            nameMapForGoup(matlabValidName) = name; %#ok<NASGU>
         end
 
         function deleteDynamicProperty(obj, name, groupName)
@@ -426,4 +436,10 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             obj.deleteDynamicProperty(name, groupName)
         end
     end
+end
+
+function ME = getNameExistsException(name, typeName)
+    ME = MException('NWB:HasUnnamedGroupsMixin:KeyExists', ...
+        'A neurodata object with name `%s` already exists in this `%s`', ...
+        name, typeName);
 end
