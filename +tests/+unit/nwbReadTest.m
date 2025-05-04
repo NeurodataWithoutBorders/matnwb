@@ -103,7 +103,7 @@ classdef nwbReadTest < tests.abstract.NwbTestCase
             nwbIn.loadAll();
             testCase.verifyTrue(isa(nwbIn.session_start_time, 'datetime'))
 
-            % Todo: Acquisition
+            % Todo: Acquisition (But, loadAll is currently not recursive.)
         end
 
         function readWithStringFilenameArg(testCase)
