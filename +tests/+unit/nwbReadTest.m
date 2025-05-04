@@ -13,7 +13,6 @@ classdef nwbReadTest < tests.abstract.NwbTestCase
     end
 
     methods (Test)
-
         function readFileWithUnsupportedVersion(testCase)
             nwbFile = tests.factory.NWBFile();
             fileName = 'testReadFileWithUnsupportedVersion.nwb';
