@@ -308,10 +308,10 @@ classdef nwbExportTest < tests.abstract.NwbTestCase
         function testExportMultipleFiles(testCase)
             fileA = tests.factory.NWBFile();
             fileA.identifier = 'File A';
-                      
+
             fileB = tests.factory.NWBFile();
             fileB.identifier = 'File B';
-            
+
             fileNameA = 'testWriteMultipleA.nwb';
             fileNameB = 'testWriteMultipleB.nwb';
 
