@@ -1,0 +1,154 @@
+classdef nwbReadTest < tests.abstract.NwbTestCase
+% nwbReadTest - Unit tests for testing the nwbRead function.
+
+    methods (TestClassSetup)
+        function setupTemporaryWorkingFolder(testCase)
+            % Use a fixture to create a temporary working directory
+            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
+        end
+    end
+
+    methods (TestMethodSetup)
+        % No method setup
+    end
+
+    methods (Test)
+
+        function readFileWithUnsupportedVersion(testCase)
+            nwbFile = tests.factory.NWBFile();
+            fileName = 'testReadFileWithUnsupportedVersion.nwb';
+            nwbExport(nwbFile, fileName)
+
+            % Override the version attribute with an unsupported version number  
+            testCase.changeVersionNumberInFile(fileName, '1.0.0')
+
+            testCase.verifyWarning(@(fn) nwbRead(fileName, "ignorecache"), 'NWB:Read:UnsupportedSchema')
+        end
+
+        function readFileWithoutEmbeddedSpecs(testCase)
+            % Use a fixture to create a temporary working directory
+            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
+
+            nwbFile = tests.factory.NWBFile();
+
+            fileName = 'testReadFileWithoutSpec.nwb';
+            nwbExport(nwbFile, fileName)
+
+            io.internal.h5.deleteGroup(fileName, 'specifications')
+
+            nwbRead(fileName, "savedir", pwd);
+
+            % Should generate types even if specifications are not embedded
+            testCase.verifyTrue( isfolder(fullfile(pwd, "+types")) )
+        end
+
+        function readFileWithUnsupportedVersionAndWithoutEmbeddedSpecs(testCase)
+            % Use a fixture to create a temporary working directory
+            testCase.applyFixture(...
+                matlab.unittest.fixtures.WorkingFolderFixture)
+            
+            % Use a fixture to ignore warning
+            testCase.applyFixture(...
+                matlab.unittest.fixtures.SuppressedWarningsFixture(...
+                    'NWB:Read:UnsupportedSchema'))
+
+            nwbFile = tests.factory.NWBFile();
+
+            fileName = 'testReadFileWithoutSpecAndWithInvalidVersion.nwb';
+            nwbExport(nwbFile, fileName)
+
+            io.internal.h5.deleteGroup(fileName, 'specifications')
+
+            % Override the version attribute with an unsupported version number   
+            testCase.changeVersionNumberInFile(fileName, '1.0.0')
+
+            nwbRead(fileName, "savedir", pwd);
+
+            % Should not generate types for file without embedded
+            % specifications and with unsupported version
+            testCase.verifyFalse( isfolder(fullfile(pwd, "+types")) )
+        end
+
+        function readFileWithoutSpecLoc(testCase)
+            nwbFile = tests.factory.NWBFile();
+            fileName = 'testReadFileWithoutSpecLoc.nwb';
+            nwbExport(nwbFile, fileName)
+
+            io.internal.h5.deleteAttribute(fileName, '/', '.specloc')
+
+            % When specloc is missing, the specifications are not added to
+            % the blacklist, so it will get passed as an input to NwbFile.
+            testCase.verifyError(@(fn) nwbRead(fileName, "ignorecache"), 'MATLAB:TooManyInputs');
+        end
+
+        function readFileWithUnsupportedVersionAndNoSpecloc(testCase)
+            % Todo: Is this different from readFileWithoutEmbeddedSpecsAndWithUnsupportedVersion
+            import matlab.unittest.fixtures.SuppressedWarningsFixture
+            testCase.applyFixture(SuppressedWarningsFixture('NWB:Read:UnsupportedSchema'))
+
+            nwbFile = tests.factory.NWBFile();
+            fileName = 'testReadFileWithUnsupportedVersionAndNoSpecloc.nwb';
+            nwbExport(nwbFile, fileName)
+            
+            io.internal.h5.deleteAttribute(fileName, '/', '.specloc')
+            
+            % Override the version attribute with an unsupported version number  
+            testCase.changeVersionNumberInFile(fileName, '1.0.0')
+
+            % When specloc is missing, the specifications are not added to
+            % the blacklist, so it will get passed as an input to NwbFile.
+            testCase.verifyError(@(fn) nwbRead(fileName, "ignorecache"), 'MATLAB:TooManyInputs');
+        end
+
+        function testWasGeneratedByProperty(testCase)
+            nwb = tests.factory.NWBFile();
+            nwbFilename = testCase.getRandomFilename();
+            nwbExport(nwb, nwbFilename);
+
+            nwbIn = nwbRead(nwbFilename, 'ignorecache');
+            testCase.verifyTrue(any(contains(nwbIn.general_was_generated_by.load(), 'matnwb')))
+
+            % Export again
+            nwbFilename2 = testCase.getRandomFilename();
+            nwbExport(nwbIn, nwbFilename2);
+
+            nwbIn2 = nwbRead(nwbFilename2, 'ignorecache');
+
+            % Verify that was_generated_by still has one entry (i.e not getting duplicate entries)
+            testCase.verifyEqual(size(nwbIn2.general_was_generated_by.load()), [2,1])
+        end
+    
+        function testLoadAll(testCase)
+            nwbFile = tests.factory.NWBFile();
+            nwbFile.acquisition.set('ts', tests.factory.TimeSeriesWithTimestamps);
+            fileName = 'testLoadAll.nwb';
+            nwbExport(nwbFile, fileName)
+            
+            nwbIn = nwbRead(fileName, "ignorecache");
+            testCase.verifyClass(nwbIn.session_start_time, 'types.untyped.DataStub')
+
+            nwbIn.loadAll();
+            testCase.verifyTrue(isa(nwbIn.session_start_time, 'datetime'))
+
+            % Todo: Acquisition
+        end
+
+        function readWithStringFilenameArg(testCase)
+            fileName = "testReadWithStringArg.nwb";
+            nwbExport(tests.factory.NWBFile(), fileName)
+            nwb = nwbRead(fileName, "ignorecache");
+
+            testCase.verifyTrue(~isempty(nwb));
+            testCase.verifyClass(nwb, 'NwbFile');
+        end
+    end
+
+    methods (Access = private, Static)
+        function changeVersionNumberInFile(fileName, newVersionNumber)
+            % Override the version attribute with an unsupported version number   
+            [fileId, fileCleanupObj] = io.internal.h5.openFile(fileName, 'w'); %#ok<ASGLU>
+            io.internal.h5.deleteAttribute(fileId, '/', 'nwb_version')
+            io.writeAttribute(fileId, '/nwb_version', newVersionNumber)
+        end
+    end
+end
