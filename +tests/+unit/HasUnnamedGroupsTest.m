@@ -26,10 +26,17 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                 'types.core.TimeSeries', ...
                 'Dynamic property returned incorrect value');
             
+            % Verify that object is present on the nwbdatainterface property
+            testCase.verifyTrue(module.nwbdatainterface.isKey('TimeSeries'))
+
             % Remove the item and verify it's gone
             module.remove('TimeSeries');
             testCase.verifyFalse(isprop(module, 'TimeSeries'), ...
                 'Dynamic property was not removed');
+
+            % Verify that object is also removed from the nwbdatainterface
+            % property
+            testCase.verifyFalse(module.nwbdatainterface.isKey('TimeSeries'))
         end
 
         function testLegacySyntax(testCase)
