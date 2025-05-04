@@ -154,6 +154,10 @@ classdef nwbReadTest < tests.abstract.NwbTestCase
 
         function readFileWithIncompatibleVersion(testCase)
 
+            import matlab.unittest.fixtures.SuppressedWarningsFixture
+            expectedWarningIdentifier = 'NWB:Read:AttemptReadWithVersionMismatch';
+            testCase.applyFixture(SuppressedWarningsFixture(expectedWarningIdentifier))
+
             % Temporarily remove the generated types from path.
             currentTypesFolder = testCase.getTypesOutputFolder();
             testCase.addTeardown(@() addpath(currentTypesFolder))
@@ -173,7 +177,8 @@ classdef nwbReadTest < tests.abstract.NwbTestCase
             expectedErrorId = 'NWB:Read:VersionConflict';
 
             try
-                nwbRead(fileNameOldVersion, 'savedir', pwd);
+                nwbRead(fileNameOldVersion, 'ignorecache');
+                testCase.verifyFail('Expected nwbRead to trigger an error.')
             catch ME
                 testCase.verifyEqual(ME.cause{1}.identifier, expectedErrorId)
             end
