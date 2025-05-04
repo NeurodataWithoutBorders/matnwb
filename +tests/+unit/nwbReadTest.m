@@ -1,5 +1,13 @@
 classdef nwbReadTest < tests.abstract.NwbTestCase
 % nwbReadTest - Unit tests for testing the nwbRead function.
+%
+% Important: When using nwbRead in tests, do one of the following:
+%   • pass the "ignorecache" flag, **or**
+%   • set the "savedir" option to your test’s temp folder
+%
+% If you don’t, MatNWB will write type definitions into its default
+% (root) directory, causing path conflicts with the test suite’s own
+% temp location.
 
     methods (TestClassSetup)
         function setupTemporaryWorkingFolder(testCase)
