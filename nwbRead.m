@@ -61,21 +61,25 @@ function nwb = nwbRead(filename, flags, options)
 
     regenerateSchemaClasses = not( any(strcmpi(string(flags), 'ignorecache')) );
 
-    schemaVersion = util.getSchemaVersion(filename);
-    try
-        matnwb.common.mustBeValidSchemaVersion(schemaVersion)
-    catch
-        warning('NWB:Read:UnsupportedSchema', ...
-            ['NWB schema version `%s` is not support by this version of MatNWB. ' ...
-            'This file is not guaranteed to be supported.'], schemaVersion )
+    schemaVersionCurrent = types.core.Version();
+    schemaVersionOfFile = util.getSchemaVersion(filename);
+    requiresVersionUpdate = ~strcmp(schemaVersionCurrent, schemaVersionOfFile);
+
+    if requiresVersionUpdate
+        try
+            matnwb.common.mustBeValidSchemaVersion(schemaVersionOfFile)
+        catch
+            warning('NWB:Read:UnsupportedSchema', ...
+                ['NWB schema version `%s` is not support by this version of MatNWB. ' ...
+                'This file is not guaranteed to be supported.'], schemaVersionOfFile )
+        end
     end
 
-    specLocation = io.spec.getEmbeddedSpecLocation(filename);
-
+    specLocation = io.spec.getEmbeddedSpecLocation(filename);    
     if regenerateSchemaClasses
         if isempty(specLocation)
             try
-                generateCore(schemaVersion, 'savedir', options.savedir);
+                generateCore(schemaVersionOfFile, 'savedir', options.savedir);
             catch ME
                 if ~strcmp(ME.identifier, 'NWB:VersionValidator:UnsupportedSchemaVersion')
                     rethrow(ME);
@@ -85,6 +89,17 @@ function nwb = nwbRead(filename, flags, options)
             generateEmbeddedSpec(filename, specLocation, 'savedir', options.savedir);
         end
         rehash();
+    else
+        if requiresVersionUpdate
+            identifier = 'NWB:Read:AttemptReadWithVersionMismatch';
+            message = sprintf([...
+                'The NWB version used to generate the file (%s) is ', ...
+                'different than current NWB version (%s). Some elements ', ...
+                'of the file might not be read correctly. Maybe you did not ', ...
+                'mean to use nwbRead with the "ignorecache" flag.'], ...
+                schemaVersionOfFile, schemaVersionCurrent);
+            warning(identifier, message) %#ok<SPWRN>
+        end
     end
 
     blackList = struct(...
@@ -94,7 +109,21 @@ function nwb = nwbRead(filename, flags, options)
         blackList.groups{end+1} = specLocation;
     end
     
-    nwb = io.parseGroup(filename, h5info(filename), blackList);
+    try
+        nwb = io.parseGroup(filename, h5info(filename), blackList);
+    catch ME
+        if requiresVersionUpdate && strcmp(ME.identifier, 'MATLAB:class:RequireSuperClass')
+            MECause = MException(...
+                'NWB:Read:VersionConflict', ...
+                ['This error typically occurs if NWB objects created with a ', ...
+                'different version are still loaded in memory. Try using ', ...
+                '`clear all` and run `nwbRead` again.']);
+            ME = ME.addCause(MECause);
+            throw(ME)
+        else
+            rethrow(ME)
+        end
+    end
 end
 
 
