@@ -165,7 +165,7 @@ classdef nwbReadTest < tests.abstract.NwbTestCase
             expectedErrorId = 'NWB:Read:VersionConflict';
 
             try
-                nwbRead(fileNameOldVersion);
+                nwbRead(fileNameOldVersion, 'savedir', pwd);
             catch ME
                 testCase.verifyEqual(ME.cause{1}.identifier, expectedErrorId)
             end
