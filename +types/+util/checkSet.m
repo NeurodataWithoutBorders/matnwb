@@ -7,7 +7,6 @@ function checkSet(pname, namedprops, constraints, val)
         'NWB:CheckSet:InvalidType',...
         'Property `%s` must be a `types.untyped.Set`', pname);
     
-    val.setValidationFcn(...
-        @(nm, val)types.util.checkConstraint(pname, nm, namedprops, constraints, val));
-    val.validateAll();
+    val.internal_validationFunction = @(nm, val)types.util.checkConstraint(pname, nm, ...
+        namedprops, constraints, val);
 end

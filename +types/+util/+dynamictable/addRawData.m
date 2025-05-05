@@ -13,9 +13,9 @@ function addRawData(DynamicTable, column, data)
     if isprop(DynamicTable, column)
         Vector = DynamicTable.(column);
     elseif isprop(DynamicTable, 'vectorindex') && DynamicTable.vectorindex.isKey(column)
-        Vector = DynamicTable.vectorindex.get(column);
+        Vector = DynamicTable.vectorindex.(column);
     else
-        Vector = DynamicTable.vectordata.get(column);
+        Vector = DynamicTable.vectordata.(column);
     end
 
     % grab all available indices for column.
@@ -95,7 +95,7 @@ function initVecData(DynamicTable, column, dataType)
     if isprop(DynamicTable, column)
         DynamicTable.(column) = VecData;
     else
-        DynamicTable.vectordata.set(column, VecData);
+        DynamicTable.vectordata.(column) = VecData;
     end
 end
 
