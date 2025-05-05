@@ -29,7 +29,9 @@ classdef nwbReadTest < tests.abstract.NwbTestCase
             % Override the version attribute with an unsupported version number  
             testCase.changeVersionNumberInFile(fileName, '1.0.0')
 
-            testCase.verifyWarning(@(fn) nwbRead(fileName, "ignorecache"), 'NWB:Read:UnsupportedSchema')
+            testCase.verifyWarning(...
+                @(fn) nwbRead(fileName, "ignorecache"), ...
+                'NWB:Read:UnsupportedSchemaVersion')
         end
 
         function readFileWithoutEmbeddedSpecs(testCase)
@@ -64,7 +66,7 @@ classdef nwbReadTest < tests.abstract.NwbTestCase
         function readFileWithUnsupportedVersionAndNoSpecloc(testCase)
             % Todo: Is this different from readFileWithoutEmbeddedSpecsAndWithUnsupportedVersion
             import matlab.unittest.fixtures.SuppressedWarningsFixture
-            testCase.applyFixture(SuppressedWarningsFixture('NWB:Read:UnsupportedSchema'))
+            testCase.applyFixture(SuppressedWarningsFixture('NWB:Read:UnsupportedSchemaVersion'))
             testCase.applyFixture(SuppressedWarningsFixture('NWB:Read:AttemptReadWithVersionMismatch'))
             
             nwbFile = tests.factory.NWBFile();
@@ -177,6 +179,8 @@ classdef nwbReadTest < tests.abstract.NwbTestCase
             expectedErrorId = 'NWB:Read:VersionConflict';
 
             try
+                % Simulate reading a file with the latest schema version
+                % when a file using an older schema version is on path
                 nwbRead(fileNameOldVersion, 'ignorecache');
                 testCase.verifyFail('Expected nwbRead to trigger an error.')
             catch ME
