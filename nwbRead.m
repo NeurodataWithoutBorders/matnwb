@@ -5,28 +5,28 @@ function nwb = nwbRead(filename, flags, options)
 %  nwb = NWBREAD(filename) Reads the nwb file at filename and returns an
 %  NWBFile object representing its contents.
 %
-%  nwb = NWBREAD(filename, flags) Reads the nwb file using optional 
+%  nwb = NWBREAD(filename, flags) Reads the nwb file using optional
 %  flags controlling the mode for how to read the file. See input
 %  arguments for a list of available flags.
 %
-%  nwb = NWBREAD(filename, Name, Value) Reads the nwb file using optional 
+%  nwb = NWBREAD(filename, Name, Value) Reads the nwb file using optional
 %  name-value pairs controlling options for how to read the file.
 %
 % Input Arguments:
-%  - filename (string) - 
+%  - filename (string) -
 %    Filepath pointing to an NWB file.
-% 
+%
 %  - flags (string) -
 %    Flag for setting the mode for the NWBREAD operation. Available options are:
-%    'ignorecache'. If the 'ignorecache' flag is used, classes for NWB data 
+%    'ignorecache'. If the 'ignorecache' flag is used, classes for NWB data
 %    types are not re-generated based on the embedded schemas in the file.
-% 
+%
 %  - options (name-value pairs) -
 %    Optional name-value pairs. Available options:
-%  
+%
 %    - savedir (string) -
 %      A folder to save generated classes for NWB types.
-% 
+%
 % Output Arguments:
 %  - nwb (NwbFile) - Nwb file object
 %
@@ -59,23 +59,21 @@ function nwb = nwbRead(filename, flags, options)
         options.savedir (1,1) string = misc.getMatnwbDir(); % {matnwb.common.compatibility.mustBeFolder} ?
     end
 
-    regenerateSchemaClasses = not( any(strcmpi(string(flags), 'ignorecache')) );
+    shouldRegenerateSchemaClasses = not( any(strcmpi(string(flags), 'ignorecache')) );
 
-    schemaVersion = util.getSchemaVersion(filename);
-    try
-        matnwb.common.mustBeValidSchemaVersion(schemaVersion)
-    catch
-        warning('NWB:Read:UnsupportedSchema', ...
-            ['NWB schema version `%s` is not support by this version of MatNWB. ' ...
-            'This file is not guaranteed to be supported.'], schemaVersion )
+    schemaVersionActive = matnwb.common.getActiveSchemaVersion();
+    schemaVersionOfFile = util.getSchemaVersion(filename);
+    isSchemaVersionMismatch = ~strcmp(schemaVersionOfFile, schemaVersionActive);
+
+    if isSchemaVersionMismatch
+        warnIfUnsupportedSchemaVersion(schemaVersionOfFile)
     end
 
     specLocation = io.spec.getEmbeddedSpecLocation(filename);
-
-    if regenerateSchemaClasses
-        if isempty(specLocation)
+    if shouldRegenerateSchemaClasses
+        if isempty(specLocation) % No embedded specifications
             try
-                generateCore(schemaVersion, 'savedir', options.savedir);
+                generateCore(schemaVersionOfFile, 'savedir', options.savedir);
             catch ME
                 if ~strcmp(ME.identifier, 'NWB:VersionValidator:UnsupportedSchemaVersion')
                     rethrow(ME);
@@ -84,19 +82,28 @@ function nwb = nwbRead(filename, flags, options)
         else
             generateEmbeddedSpec(filename, specLocation, 'savedir', options.savedir);
         end
-        rehash();
+    else
+        warnIfSchemaVersionsMismatch(schemaVersionOfFile, schemaVersionActive)
     end
 
     blackList = struct(...
         'attributes', {{'.specloc', 'object_id'}},...
-        'groups', {{}});    
+        'groups', {{}});
     if ~isempty(specLocation)
         blackList.groups{end+1} = specLocation;
     end
     
-    nwb = io.parseGroup(filename, h5info(filename), blackList);
+    try
+        nwb = io.parseGroup(filename, h5info(filename), blackList);
+    catch ME
+        if isSchemaVersionMismatch ...
+                && strcmp(ME.identifier, 'MATLAB:class:RequireSuperClass')
+            throwExceptionWithCauseOnVersionMismatch(ME)
+        else
+            rethrow(ME)
+        end
+    end
 end
-
 
 function generateEmbeddedSpec(filename, specLocation, options)
 % generateEmbeddedSpec - Generate embedded specifications / namespaces
@@ -148,9 +155,43 @@ function generateEmbeddedSpec(filename, specLocation, options)
             end
         end
     end
+    rehash()
 
     missingNames(cellfun('isempty', missingNames)) = [];
     assert(isempty(missingNames), 'NWB:Namespace:DependencyMissing',...
         'Missing generated caches and dependent caches for the following namespaces:\n%s',...
         misc.cellPrettyPrint(missingNames));
+end
+
+function warnIfUnsupportedSchemaVersion(schemaVersionOfFile)
+    try
+        matnwb.common.mustBeValidSchemaVersion(schemaVersionOfFile)
+    catch
+        warning('NWB:Read:UnsupportedSchemaVersion', ...
+            ['The NWB schema version `%s` used to create this file is not ' ...
+            'supported by the current version of MatNWB. The file may not be ' ...
+            'read correctly.'], ...
+            schemaVersionOfFile )
+    end
+end
+
+function warnIfSchemaVersionsMismatch(schemaVersionOfFile, schemaVersionCurrent)
+    if ~strcmp(schemaVersionCurrent, schemaVersionOfFile)
+        warning('NWB:Read:AttemptReadWithVersionMismatch', ...
+            ['The NWB version used to generate the file (%s) is different ', ...
+            'than current NWB version (%s). Some elements of the file might ', ...
+            'not be read correctly. Maybe you did not mean to use nwbRead ', ...
+            'with the "ignorecache" flag.'], ...
+            schemaVersionOfFile, schemaVersionCurrent)
+    end
+end
+
+function throwExceptionWithCauseOnVersionMismatch(ME)
+    MECause = MException(...
+        'NWB:Read:VersionConflict', ...
+        ['This error typically occurs if NWB objects created with a ', ...
+        'different version are still loaded in memory. Try using ', ...
+        '`clear all` and run `nwbRead` again.']);
+    ME = ME.addCause(MECause);
+    throwAsCaller(ME)
 end
