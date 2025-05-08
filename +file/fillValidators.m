@@ -57,7 +57,7 @@ function unitValidationStr = fillUnitValidation(name, prop, namespaceReg)
     elseif isa(prop, 'file.Attribute')
         unitValidationStr = strjoin({unitValidationStr...
             fillDtypeValidation(name, prop.dtype)...
-            fillDimensionValidation(prop.dtype, prop.shape)...
+            fillDimensionValidation(prop.shape)...
             }, newline);
     else % Link
         fullname = namespaceReg.getFullClassName(prop.type);
@@ -154,7 +154,7 @@ function unitValidationStr = fillDatasetValidation(name, prop, namespaceReg)
     if isempty(prop.type)
         unitValidationStr = strjoin({unitValidationStr...
             fillDtypeValidation(name, prop.dtype)...
-            fillDimensionValidation(prop.dtype, prop.shape)...
+            fillDimensionValidation(prop.shape)...
             }, newline);
     elseif prop.isConstrainedSet
         fullname = getFullClassName(namespaceReg, prop.type, name);
@@ -200,12 +200,7 @@ function validationStr = fillLinkValidation(name, prop, namespacereg)
     );
 end
 
-function fdvstr = fillDimensionValidation(type, shape)
-    if strcmp(type, 'any')
-        fdvstr = '';
-        return;
-    end
-
+function fdvstr = fillDimensionValidation(shape)
     if iscell(shape)
         if ~isempty(shape) && iscell(shape{1})
             for i = 1:length(shape)
