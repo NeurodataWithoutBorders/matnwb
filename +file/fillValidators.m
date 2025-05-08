@@ -7,8 +7,10 @@ function validationStr = fillValidators(propnames, props, namespacereg, classNam
         if (isa(prop, 'file.Attribute') || isa(prop, 'file.Dataset')) ...
                 && prop.readonly && ~isempty(prop.value)
             % Need to add a validator for inherited and readonly properties. In 
-            % the superclass these properties might not be read only and due to
-            % inheritance its not possible to change property attributes
+            % the superclass these properties might not be read-only and due to
+            % inheritance rules in MATLAB it is not possible to change property 
+            % attributes of a property from public (in a superclass) to 
+            % protected (in a subclass).
             if any(strcmp(nm, inherited))
                 validationBody = fillReadOnlyValidator(nm, prop.value, className);
             else
