@@ -1,4 +1,4 @@
-classdef AlignedDynamicTable < types.hdmf_common.DynamicTable & types.untyped.GroupClass
+classdef AlignedDynamicTable < types.hdmf_common.DynamicTable & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups
 % ALIGNEDDYNAMICTABLE - DynamicTable container that supports storing a collection of sub-tables. Each sub-table is a DynamicTable itself that is aligned with the main table by row index. I.e., all DynamicTables stored in this group MUST have the same number of rows. This type effectively defines a 2-level table in which the main data is stored in the main table implemented by this type and additional columns of the table are grouped into categories, with each category being represented by a separate DynamicTable stored within the group.
 %
 % Required Properties:
@@ -12,6 +12,9 @@ end
 % OPTIONAL PROPERTIES
 properties
     dynamictable; %  (DynamicTable) A DynamicTable representing a particular category for columns in the AlignedDynamicTable parent container. The table MUST be aligned with (i.e., have the same number of rows) as all other DynamicTables stored in the AlignedDynamicTable parent container. The name of the category is given by the name of the DynamicTable and its description by the description attribute of the DynamicTable.
+end
+properties (Access = protected)
+    GroupPropertyNames = {'dynamictable'}
 end
 
 methods
@@ -42,6 +45,8 @@ methods
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         [obj.dynamictable, ivarargin] = types.util.parseConstrained(obj,'dynamictable', 'types.hdmf_common.DynamicTable', varargin{:});
         varargin(ivarargin) = [];
+        
+        obj.setupHasUnnamedGroupsMixin()
         
         p = inputParser;
         p.KeepUnmatched = true;
