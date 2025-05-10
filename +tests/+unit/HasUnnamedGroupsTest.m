@@ -234,7 +234,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             nwbFile = tests.factory.NWBFile();
             
             ophysModule = types.core.ProcessingModule(...
-                'Description', 'optical physiology data');
+                'description', 'optical physiology data');
 
             nwbFile.processing.add('ophys', ophysModule)
 
