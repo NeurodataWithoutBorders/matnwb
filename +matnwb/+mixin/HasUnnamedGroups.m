@@ -107,6 +107,22 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                 error(identifier, message, name, class(value), allowedTypes)
             end
         end
+
+        function value = get(obj, name)
+        % get - get a value using it's real name
+            for groupName = obj.GroupPropertyNames
+                currentSet = obj.(groupName);
+                if isKey(currentSet, name)
+                    value = currentSet.get(name);
+                    return
+                end
+            end
+
+            % If we end up here, no value exists for the given name
+            error('NWB:HasUnnamedGroupsMixin:ObjectDoesNotExist', ...
+                'No object with name %s was found in this %s', ...
+                name, obj.TypeName)
+        end
    
         function remove(obj, name)
         % remove - remove data object given it's (matlab-valid) name

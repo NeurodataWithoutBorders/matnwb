@@ -38,6 +38,25 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             % property
             testCase.verifyFalse(module.nwbdatainterface.isKey('TimeSeries'))
         end
+        
+        function testGet(testCase)
+            % Create a ProcessingModule
+            module = types.core.ProcessingModule();
+            
+            % Add items with the same name to different groups
+            module.nwbdatainterface.set('TimeSeries', types.core.TimeSeries());
+            module.dynamictable.set('DynamicTable', types.hdmf_common.DynamicTable());
+
+            timeSeries = module.get('TimeSeries');
+            testCase.verifyClass(timeSeries, 'types.core.TimeSeries')
+
+            dynamicTable = module.get('DynamicTable');
+            testCase.verifyClass(dynamicTable, 'types.hdmf_common.DynamicTable')
+        
+            testCase.verifyError(...
+                @() module.get('NonExistingName'), ...
+                'NWB:HasUnnamedGroupsMixin:ObjectDoesNotExist')
+        end
 
         function testLegacySyntax(testCase)
             % Create a ProcessingModule
