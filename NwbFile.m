@@ -156,6 +156,27 @@ classdef NwbFile < types.core.NWBFile
                 nwbTypeNames = includedNwbTypesWithParents;
             end
         end
+    
+        function listRemappedNames(obj)
+            objectMap = searchProperties(containers.Map, obj, '', '');
+            
+            result = {};
+
+            allKeys = objectMap.keys();
+            for i = 1:numel(objectMap.Count)
+                currentKey = allKeys{i};
+                currentValue = objectMap(currentKey);
+                if isa(currentValue, 'matnwb.mixin.HasUnnamedGroups')
+                    T = currentValue.getRemappedNames();
+                    if ~isempty(T)
+                        S.Key = currentKey;
+                        S.Type = class(currentValue);
+                        S.Aliases = T;
+                        result{end+1} = S;
+                    end
+                end
+            end
+        end
     end
 
     %% PRIVATE

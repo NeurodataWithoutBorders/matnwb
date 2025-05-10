@@ -215,37 +215,17 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
         end
     
         function displayAliasWarning(obj)
-            allValidNames = string.empty;
-            allActualNames = string.empty;
-            
-            % Collect all valid and actual names from all groups
-            groupNames = obj.ValidNameMaps.keys();
-            for i = 1:numel(groupNames)
-                groupName = groupNames{i};
+        % displayAliasWarning - Display warning if any names have aliases
+            T = getTableWithAliasNames(obj);
 
-                validNameMap = obj.ValidNameMaps(groupName);
-                
-                if ~isempty(validNameMap)
-                    allValidNames = [allValidNames, string(validNameMap.keys())]; %#ok<AGROW>
-                    allActualNames = [allActualNames, string(validNameMap.values())]; %#ok<AGROW>
-                end
-            end
-
-            if ~isequal(allValidNames, allActualNames)
-                hasAlias = ~strcmp(allValidNames, allActualNames);
-                
-                T = table(allValidNames(hasAlias)', allActualNames(hasAlias)', ...
-                    'VariableNames', {'ValidName', 'ActualName'} ); %#ok<NASGU>
+            if ~isempty(T)
                 nameMap = evalc('disp(T)');
 
                 str = sprintf([...
                     'The following named elements of "%s" are remapped to have valid MATLAB ', ...
                     'names, but will be written to file with their actual names:', ...
                     '\n%s\n'], obj.TypeName, strip(nameMap, 'right'));
-            else
-                str = '';
-            end
-            if ~isempty(str)
+
                 warnState = warning('backtrace', 'off');
                 resetWarningObj = onCleanup(@() warning(warnState));
                 warning(str)
@@ -420,6 +400,34 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
 
             actualName = validNameMap(validName);
         end
+    
+        function T = getTableWithAliasNames(obj)
+            allValidNames = string.empty;
+            allActualNames = string.empty;
+            
+            % Collect all valid and actual names from all groups
+            groupNames = obj.ValidNameMaps.keys();
+            for i = 1:numel(groupNames)
+                groupName = groupNames{i};
+
+                validNameMap = obj.ValidNameMaps(groupName);
+                
+                if ~isempty(validNameMap)
+                    allValidNames = [allValidNames, string(validNameMap.keys())]; %#ok<AGROW>
+                    allActualNames = [allActualNames, string(validNameMap.values())]; %#ok<AGROW>
+                end
+            end
+
+            if ~isequal(allValidNames, allActualNames)
+                hasAlias = ~strcmp(allValidNames, allActualNames);
+                
+                T = table(allValidNames(hasAlias)', allActualNames(hasAlias)', ...
+                    'VariableNames', {'ValidName', 'ActualName'} ); %#ok<NASGU>
+            else
+                T = table.empty;
+            end
+        end
+    
     end
 
     methods % Dynamic property get methods
@@ -450,6 +458,12 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
         function onSetItemRemoved(obj, name, groupName)
         % onSetItemRemoved - Handle items being removed from a contained types.untyped.Set
             obj.deleteDynamicProperty(name, groupName)
+        end
+    end
+    
+    methods (Access = ?NwbFile)
+        function T = getRemappedNames(obj)
+            T = obj.getTableWithAliasNames(obj);
         end
     end
 end
