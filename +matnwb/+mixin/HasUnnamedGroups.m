@@ -463,7 +463,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
     
     methods (Access = ?NwbFile)
         function T = getRemappedNames(obj)
-            T = obj.getTableWithAliasNames(obj);
+            T = obj.getTableWithAliasNames();
         end
     end
 end

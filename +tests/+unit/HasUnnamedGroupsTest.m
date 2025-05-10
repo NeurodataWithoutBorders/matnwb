@@ -228,5 +228,29 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             % Would use startsWith instead of contains, but C contains some 
             % hidden "display" characters in the beginning
         end
+
+        function testListAliasNamesFromFile(testCase)
+
+            nwbFile = tests.factory.NWBFile();
+            
+            ophysModule = types.core.ProcessingModule(...
+                'Description', 'optical physiology data');
+
+            nwbFile.processing.add('ophys', ophysModule)
+
+            fluorescence = tests.factory.Fluorescence(...
+                tests.factory.RoiResponseSeries, ...
+                "Name", "Roi-Response-Series");
+
+            ophysModule.add('Raw-Fluorescence', fluorescence)
+
+            result = nwbFile.listRemappedNames();
+            
+            testCase.verifySize(result, [2,4])
+            testCase.verifyClass(result, 'table')
+
+            testCase.verifyEqual(result.ActualName, ...
+                ["Raw-Fluorescence"; "Roi-Response-Series"])
+        end
     end
 end
