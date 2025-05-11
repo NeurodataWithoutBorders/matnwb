@@ -1,14 +1,20 @@
 classdef Set < dynamicprops & matlab.mixin.CustomDisplay
-    properties
-        internal_validationFunction function_handle = function_handle.empty(); % validation function
-    end
-
-    properties (SetAccess = protected)
-        internal_dynamicPropertyToH5Name(:,2) cell; % cell string matrix where first column is (name) and second column is (hdf5 name)
-    end
+% Set - A (utility) container class for storing neurodata types.
 
     properties (Access = private)
-        internal_dynamicPropertiesMap; % containers.Map (name) -> (meta.DynamicProperty)
+        DynamicPropertiesMap % containers.Map (name) -> (meta.DynamicProperty)
+        ValidationFunction function_handle = function_handle.empty() % validation function
+        DynamicPropertyToH5Name (:,2) cell % cell string matrix where first column is (name) and second column is (hdf5 name)
+    end
+
+    methods (Static)
+        function fromStruct(S)
+
+        end
+
+        function fromContainersMap(M)
+
+        end
     end
 
     methods
@@ -19,7 +25,7 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
             % obj = SET(src) can be a struct or map
             % obj = SET(__,fcn) adds a validation function from a handle
 
-            obj.internal_dynamicPropertiesMap = containers.Map(...
+            obj.DynamicPropertiesMap = containers.Map(...
                 'KeyType', 'char', ...
                 'ValueType', 'any');
 
@@ -27,13 +33,17 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
                 return;
             end
 
+            % Pop validation function handle from input arguments
             numSourceArguments = length(varargin);
             if isa(varargin{end}, 'function_handle')
-                obj.internal_validationFunction = varargin{end};
+                obj.ValidationFunction = varargin{end};
                 numSourceArguments = numSourceArguments - 1;
             end
 
-            if 1 == numSourceArguments
+            if numSourceArguments == 0
+                return
+
+            elseif numSourceArguments == 1
                 assert(isstruct(varargin{1}) || isa(varargin{1}, 'containers.Map'), ...
                     'NWB:Untyped:Set:InvalidArguments', ...
                     'Expected a struct or a containers.Map. Got %s', class(varargin{1}));
@@ -59,15 +69,15 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
         end
 
         %% validation function propagation
-        function set.internal_validationFunction(obj, val)
-            obj.internal_validationFunction = val;
+        function set.ValidationFunction(obj, val)
+            obj.ValidationFunction = val;
 
-            if ~isempty(obj.internal_validationFunction)
-                dynamicPropertyNames = keys(obj.internal_dynamicPropertiesMap);
+            if ~isempty(obj.ValidationFunction)
+                dynamicPropertyNames = keys(obj.DynamicPropertiesMap);
                 for iPropNames = 1:length(dynamicPropertyNames)
                     propName = dynamicPropertyNames{iPropNames};
                     try
-                        obj.internal_validationFunction(propName, obj.(propName));
+                        obj.ValidationFunction(propName, obj.(propName));
                     catch ME
                         error('NWB:Untyped:Set:ValidationFunctionFailure', ...
                             ['Failed to set validation function with message:\n    ' ...
@@ -79,12 +89,42 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
                 end
             end
         end
+        
+        function validate(obj, name, val)
+            if ~isempty(obj.ValidationFunction)
+                obj.ValidationFunction(name, val);
+            end
+        end
+
+        function validateAll(obj)
+            allProperties = properties(obj);
+            for i = 1:numel(allProperties)
+                currentName = allProperties{i};
+                currentValue = obj.(currentName);
+                obj.validate(currentName, currentValue)
+            end
+        end
+
+        %% Export
+        function refs = export(obj, fid, fullpath, refs)
+            io.writeGroup(fid, fullpath);
+
+            dynamicPropertyNames = keys(obj.DynamicPropertiesMap);
+            for iPropName = 1:length(dynamicPropertyNames)
+                propName = dynamicPropertyNames{iPropName};
+                h5Name = obj.mapPropertyName2H5Name(propName);
+                propValue = obj.(propName);
+
+                propFullPath = [fullpath '/' h5Name];
+                if startsWith(class(propValue), 'types.')
+                    refs = propValue.export(fid, propFullPath, refs);
+                else
+                    io.writeDataset(fid, propFullPath, propValue);
+                end
+            end
+        end
 
         %% size() override
-        %return number of entries
-        function cnt = Count(obj)
-            cnt = obj.internal_dynamicPropertiesMap.Count;
-        end
 
         function varargout = size(obj, dim)
             % overloads size(obj)
@@ -104,41 +144,54 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
             end
         end
 
-        function C = horzcat(varargin)
+        function C = horzcat(varargin) %#ok<STOUT>
             % overloads horzcat(A1,A2,...,An)
             error('NWB:Set:Unsupported',...
                 'types.untyped.Set does not support concatenation');
         end
 
-        function C = vertcat(varargin)
+        function C = vertcat(varargin) %#ok<STOUT>
             % overloads vertcat(A1, A2,...,An)
             error('NWB:Set:Unsupported',...
                 'types.untyped.Set does not support concatenation.');
         end
+    end
 
-        %% Add/Remove Properties
+    methods (Hidden)
+        function setValidationFunction(obj, functionHandle)
+            obj.ValidationFunction = functionHandle;
+        end
+    end
+
+    % Methods for adding and removing dynamic properties
+    methods (Access = private)
         function addProperty(obj, name, value)
-            validateattributes(name, {'char'}, {'scalartext'}, 'addProperty', 'name', 1);
+            arguments
+                obj types.untyped.Set
+                name (1,1) string
+                value
+            end
+            name = char(name);
 
-            fixedName = matlab.lang.makeValidName(name, 'Prefix', 'matnwb');
-            assert(~obj.isH5Name(name) && ~obj.isPropName(fixedName), ...
+            validName = matlab.lang.makeValidName(name);
+            assert(~obj.isH5Name(name) && ~obj.isPropertyName(validName), ...
                 'NWB:Untyped:Set:DuplicateName', ...
                 'The provided property name `%s` (converted to `%s`) is a duplicate name.', ...
-                name, fixedName);
-            height = size(obj.internal_dynamicPropertyToH5Name, 1);
-            obj.internal_dynamicPropertyToH5Name(height+1, 1:2) = {fixedName, name};
-            obj.internal_dynamicPropertiesMap(fixedName) = obj.addprop(fixedName);
-            if ~isempty(obj.internal_validationFunction)
-                DynamicProperty = obj.internal_dynamicPropertiesMap(fixedName);
-                DynamicProperty.SetMethod = getDynamicSetMethodFilterFunction(fixedName);
+                name, validName);
+            height = size(obj.DynamicPropertyToH5Name, 1);
+            obj.DynamicPropertyToH5Name(height+1, 1:2) = {validName, name};
+            obj.DynamicPropertiesMap(validName) = obj.addprop(validName);
+            if ~isempty(obj.ValidationFunction)
+                DynamicProperty = obj.DynamicPropertiesMap(validName);
+                DynamicProperty.SetMethod = getDynamicSetMethodFilterFunction(validName);
             end
-            obj.(fixedName) = value;
+            obj.(validName) = value;
         end
 
         function value = removeProperty(obj, name)
             validateattributes(name, {'char'}, {'scalartext'}, 'removeProperty', 'name', 1);
 
-            assert(obj.isH5Name(name) || obj.isPropName(name), ...
+            assert(obj.isH5Name(name) || obj.isPropertyName(name), ...
                 'NWB:Untyped:Set:MissingName', ...
                 'Property name or HDF5 identifier `%s` does not exist for this Set.', ...
                 name);
@@ -148,15 +201,21 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
             end
             value = obj.(name);
 
-            delete(obj.internal_dynamicPropertiesMap(name));
-            remove(obj.internal_dynamicPropertiesMap, name);
+            delete(obj.DynamicPropertiesMap(name));
+            remove(obj.DynamicPropertiesMap, name);
         end
+    end
 
-        %% LEGACY GET/SET METHODS
+    % Legacy set/get methods
+    methods
         function obj = set(obj, name, val)
-            validateattributes(name, {'char'}, {'scalartext'}, 'set', 'name', 1);
+            arguments
+                obj types.untyped.Set
+                name (1,1) string
+                val
+            end
 
-            if ~obj.isH5Name(name) && ~obj.isPropName(name)
+            if ~obj.isH5Name(name) && ~obj.isPropertyName(name)
                 obj.addProperty(name, val);
                 return;
             end
@@ -176,21 +235,34 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
             if obj.isH5Name(name)
                 name = obj.mapH5Name2PropertyName(name);
             end
-            assert(obj.isPropName(name), 'NWB:Untyped:Set:MissingName', ...
+            assert(obj.isPropertyName(name), ...
+                'NWB:Untyped:Set:MissingName', ...
                 'Could not find property name `%s`', name);
-            o = obj.(name);
+            try
+                o = obj.(name);
+            catch
+                keyboard
+            end
+        end
+    end
+
+    % Legacy methods mirroring containers.Map interface
+    methods
+        function cnt = Count(obj)
+            cnt = obj.DynamicPropertiesMap.Count;
         end
 
-        %% LEGACY KEY METHODS
-        function propNames = keys(obj)
-            propNames = keys(obj.internal_dynamicPropertiesMap);
+        function keyNames = keys(obj)
+            %keyNames = keys(obj.DynamicPropertiesMap);
+            keyNames = obj.DynamicPropertyToH5Name(:, 2);
+            keyNames = transpose(keyNames);
         end
 
         function propValues = values(obj)
             propValues = keys(obj);
             for iProp = 1:length(propValues)
                 propName = propValues{iProp};
-                propValues{iProp} = obj.(propName);
+                propValues{iProp} = obj.get(propName);
             end
         end
 
@@ -202,40 +274,21 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
                 'removed keys provided must be a cell array of strings.');
             for iKey = 1:length(keys)
                 obj.removeProperty(keys{iKey});
+                obj.removeNameFromNameMap(keys{iKey})
             end
         end
 
         function tf = isKey(obj, name)
-            tf = obj.isH5Name(name) || obj.isPropName(name);
+            tf = obj.isH5Name(name) || obj.isPropertyName(name);
         end
 
         function clear(obj)
-            obj.remove(keys(obj.internal_dynamicPropertiesMap));
-        end
-
-        %% Export
-        function refs = export(obj, fid, fullpath, refs)
-            io.writeGroup(fid, fullpath);
-
-            dynamicPropertyNames = keys(obj.internal_dynamicPropertiesMap);
-            for iPropName = 1:length(dynamicPropertyNames)
-                propName = dynamicPropertyNames{iPropName};
-                h5Name = obj.mapPropName2H5Name(propName);
-                propValue = obj.(propName);
-
-                propFullPath = [fullpath '/' h5Name];
-                if startsWith(class(propValue), 'types.')
-                    refs = propValue.export(fid, propFullPath, refs);
-                else
-                    io.writeDataset(fid, propFullPath, propValue);
-                end
-            end
+            obj.remove(keys(obj.DynamicPropertiesMap));
         end
     end
 
+    % matlab.mixin.CustomDisplay overrides
     methods (Access = protected)
-        %% matlab.mixin.CustomDisplay overrides
-
         function displayEmptyObject(obj)
             hdr = sprintf('  %s with no elements.', ...
                 ['<a href="matlab:helpPopup types.untyped.Set" style="font-weight:bold">'...
@@ -251,56 +304,69 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
         function displayNonScalarObject(obj)
             hdr = getHeader(obj);
             footer = getFooter(obj);
-            mkeys = keys(obj);
-            mklen = cellfun('length', mkeys);
-            max_mklen = max(mklen);
-            body = cell(size(mkeys));
-            for i=1:length(mkeys)
-                mk = mkeys{i};
-                mkspace = repmat(' ', 1, max_mklen - mklen(i));
-                body{i} = [mkspace mk ': [' class(obj.(mk)) ']'];
+            
+            propertyNames = string( properties(obj) );
+            paddedPropertyNames = pad(propertyNames, 'left');
+        
+            numProperties = numel(propertyNames);
+            body = cell(1, numProperties);
+            for i = 1:numProperties
+                propertyName = propertyNames{i};
+                propertyType = class(obj.(propertyName));
+                body{i} = sprintf('%s: %s', paddedPropertyNames{i}, propertyType);                
             end
             body = file.addSpaces(strjoin(body, newline), 4);
             disp([hdr newline body newline footer]);
         end
     end
 
+    % Utility methods for the "valid name" to "h5 name" map
     methods (Access = private)
-        %% cell array table utilities
-        function tf = isPropName(obj, name)
-            validateattributes(name, {'char'}, {'scalartext'}, 'isPropName', 'name', 1);
-            tf = any(strcmp(obj.internal_dynamicPropertyToH5Name(:,1), name));
+        function tf = isPropertyName(obj, name)
+        % isPropertyName - Check if given name is present in the name map
+            arguments
+                obj types.untyped.Set
+                name (1,1) string
+            end
+            tf = any(strcmp(obj.DynamicPropertyToH5Name(:,1), name));
         end
 
         function tf = isH5Name(obj, name)
-            validateattributes(name, {'char'}, {'scalartext'}, 'isH5Name', 'name', 1);
-            tf = any(strcmp(obj.internal_dynamicPropertyToH5Name(:,2), name));
+        % isH5Name - Check if given name is present as h5 name in the name map
+            arguments
+                obj types.untyped.Set
+                name (1,1) string
+            end
+            tf = any(strcmp(obj.DynamicPropertyToH5Name(:,2), name));
         end
 
         function propName = mapH5Name2PropertyName(obj, h5Name)
             assert(obj.isH5Name(h5Name));
-            rowIndex = find(strcmp(obj.internal_dynamicPropertyToH5Name(:,2), h5Name), 1);
-            propName = obj.internal_dynamicPropertyToH5Name{rowIndex,1};
+            rowIndex = find(strcmp(obj.DynamicPropertyToH5Name(:,2), h5Name), 1);
+            propName = obj.DynamicPropertyToH5Name{rowIndex,1};
         end
 
-        function h5Name = mapPropName2H5Name(obj, propName)
-            assert(obj.isPropName(propName));
-            rowIndex = find(strcmp(obj.internal_dynamicPropertyToH5Name(:,1), propName), 1);
-            h5Name = obj.internal_dynamicPropertyToH5Name{rowIndex,2};
+        function h5Name = mapPropertyName2H5Name(obj, propName)
+            assert(obj.isPropertyName(propName));
+            rowIndex = find(strcmp(obj.DynamicPropertyToH5Name(:,1), propName), 1);
+            h5Name = obj.DynamicPropertyToH5Name{rowIndex,2};
         end
-
+    
+        function removeNameFromNameMap(obj, propName)
+            rowIndex = find(strcmp(obj.DynamicPropertyToH5Name(:,1), propName), 1);
+            obj.DynamicPropertyToH5Name(rowIndex, :) = [];
+        end
 
     end
 end
 
 function setterFunction = getDynamicSetMethodFilterFunction(name)
-% workaround as provided by https://www.mathworks.com/matlabcentral/answers/266684-how-do-i-write-setter-methods-for-properties-with-unknown-names
-setterFunction = @setProp;
+% workaround as provided by 
+% https://www.mathworks.com/matlabcentral/answers/266684-how-do-i-write-setter-methods-for-properties-with-unknown-names
+    setterFunction = @setProp;
 
     function setProp(obj, val)
-        if ~isempty(obj.internal_validationFunction)
-            obj.internal_validationFunction(name, val);
-        end
+        obj.validate(name, val)
         obj.(name) = val;
     end
 end
