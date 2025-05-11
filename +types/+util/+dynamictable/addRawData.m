@@ -95,7 +95,7 @@ function initVecData(DynamicTable, column, dataType)
     if isprop(DynamicTable, column)
         DynamicTable.(column) = VecData;
     else
-        DynamicTable.vectordata.(column) = VecData;
+        DynamicTable.vectordata.set(column, VecData);
     end
 end
 
