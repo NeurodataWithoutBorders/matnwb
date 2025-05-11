@@ -1,5 +1,5 @@
 % MatNWB : NWB For MATLAB
-% Version 2.8.0 (R2019b+) 02-Apr-2025
+% Version 2.8.1 (R2019b+) 06-May-2025
 %
 % Copyright (c) 2025, Neurodata Without Borders
 % ---------------------------------------------
