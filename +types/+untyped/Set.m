@@ -7,16 +7,6 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
         DynamicPropertyToH5Name (:,2) cell % cell string matrix where first column is (name) and second column is (hdf5 name)
     end
 
-    methods (Static)
-        function fromStruct(S)
-
-        end
-
-        function fromContainersMap(M)
-
-        end
-    end
-
     methods
         %% Constructor
         function obj = Set(varargin)
@@ -34,37 +24,18 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
             end
 
             % Pop validation function handle from input arguments
-            numSourceArguments = length(varargin);
             if isa(varargin{end}, 'function_handle')
                 obj.ValidationFunction = varargin{end};
-                numSourceArguments = numSourceArguments - 1;
+                varargin(end) = [];
             end
 
-            if numSourceArguments == 0
+            if isempty(varargin)
                 return
-
-            elseif numSourceArguments == 1
-                assert(isstruct(varargin{1}) || isa(varargin{1}, 'containers.Map'), ...
-                    'NWB:Set:InvalidArguments', ...
-                    'Expected a struct or a containers.Map. Got %s', class(varargin{1}));
-                if isstruct(varargin{1})
-                    sourceMap = containers.Map(fieldnames(varargin{1}), struct2cell(varargin{1}));
-                else
-                    sourceMap = varargin{1};
-                end
-            else
-                assert(0 == mod(numSourceArguments, 2) ...
-                    && iscellstr(varargin(1:2:numSourceArguments)), ...
-                    'NWB:Set:InvalidArguemnts', ...
-                    'Expected keyword arguments');
-                sourceMap = containers.Map(...
-                    varargin(1:2:numSourceArguments), varargin(2:2:numSourceArguments));
             end
 
-            sourceNames = sourceMap.keys();
-            for iKey = 1:length(sourceNames)
-                name = sourceNames{iKey};
-                obj.addProperty(name, sourceMap(name));
+            [names, values] = extractNamesAndValues(varargin{:});
+            for i = 1:length(names)
+                obj.addProperty(names{i}, values{i});
             end
         end
 
@@ -371,6 +342,34 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
             rowIndex = find(strcmp(obj.DynamicPropertyToH5Name(:,1), name), 1);
             obj.DynamicPropertyToH5Name(rowIndex, :) = [];
         end
+    end
+end
+
+function [names, values] = extractNamesAndValues(varargin)
+% extractNamesAndValues - Extract names and values from varargin
+    if isscalar(varargin)
+        assert(isstruct(varargin{1}) || isa(varargin{1}, 'containers.Map'), ...
+            'NWB:Set:InvalidArguments', ...
+            'Expected a struct or a containers.Map. Got %s', class(varargin{1}));
+        
+        switch class(varargin{1})
+            case 'struct'
+                names = fieldnames(varargin{1});
+                values = struct2cell(varargin{1});
+            case 'containers.Map'
+                names = varargin{1}.keys();
+                values = varargin{1}.values();
+        end
+    else
+        isValidKeywordArgs = mod(numel(varargin), 2) == 0 ...
+            && ( iscellstr(varargin(1:2:end)) || isstring(varargin(1:2:end)) );
+
+        assert( isValidKeywordArgs, ...
+            'NWB:Set:InvalidArguments', ...
+            'Expected keyword arguments');
+
+        names = varargin(1:2:end);
+        values = varargin(2:2:end);
     end
 end
 
