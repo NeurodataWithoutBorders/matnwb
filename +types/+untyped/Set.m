@@ -73,36 +73,50 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
             obj.ValidationFunction = val;
 
             if ~isempty(obj.ValidationFunction)
-                dynamicPropertyNames = keys(obj.DynamicPropertiesMap);
-                for iPropNames = 1:length(dynamicPropertyNames)
-                    propName = dynamicPropertyNames{iPropNames};
-                    try
-                        obj.ValidationFunction(propName, obj.(propName));
-                    catch ME
-                        error('NWB:Untyped:Set:ValidationFunctionFailure', ...
-                            ['Failed to set validation function with message:\n    ' ...
-                            '%s\n\nConsider passing a validation function which passes for all ' ...
-                            'current properties or remove `%s` from the Set.'], ...
-                            ME.message, ...
-                            propName);
-                    end
-                end
+                obj.validateAll("mode", "warn")
             end
         end
         
         function validate(obj, name, val)
             if ~isempty(obj.ValidationFunction)
-                obj.ValidationFunction(name, val);
+                try
+                    obj.ValidationFunction(name, val);
+                catch ME
+                    error('NWB:Set:ItemValidationFailed', ...
+                        ['Failed to validate Constrained Set key `%s`', ...
+                        'with message:\n%s.\n'], ...
+                        ME.message, ...
+                        name);
+                end
             end
         end
 
-        function validateAll(obj)
-            allProperties = properties(obj);
-            for i = 1:numel(allProperties)
-                currentName = allProperties{i};
-                currentValue = obj.(currentName);
-                obj.validate(currentName, currentValue)
+        function validateAll(obj, options)
+            arguments
+                obj types.untyped.Set
+                options.Mode (1,1) string ...
+                    {mustBeMember(options.Mode, ["warn", "fail"])} = "warn"
             end
+
+            setKeys = obj.keys();
+            keyFailed = false(size(setKeys));
+            
+            for i = 1:length(setKeys)
+                currentKey = setKeys{i};
+                try
+                    obj.validate(currentKey, obj.get(currentKey));
+                catch ME
+                    keyFailed(i) = true;
+                    if options.Mode == "warn"
+                        warning('NWB:Set:ItemValidationFailed', ...
+                            'Failed to validate Constrained Set key `%s` with message:\n%s.\nData will be dropped.', ...
+                            currentKey, ME.message);
+                    else
+                        rethrow(ME)
+                    end
+                end
+            end
+            obj.remove(setKeys(keyFailed))
         end
 
         %% Export
@@ -172,7 +186,7 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
                 value
             end
             name = char(name);
-
+            
             validName = matlab.lang.makeValidName(name);
             assert(~obj.isH5Name(name) && ~obj.isPropertyName(validName), ...
                 'NWB:Untyped:Set:DuplicateName', ...
@@ -215,6 +229,8 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
                 val
             end
 
+            obj.validate(name, val)
+
             if ~obj.isH5Name(name) && ~obj.isPropertyName(name)
                 obj.addProperty(name, val);
                 return;
@@ -238,11 +254,7 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
             assert(obj.isPropertyName(name), ...
                 'NWB:Untyped:Set:MissingName', ...
                 'Could not find property name `%s`', name);
-            try
-                o = obj.(name);
-            catch
-                keyboard
-            end
+            o = obj.(name);
         end
     end
 
@@ -352,11 +364,14 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
             h5Name = obj.DynamicPropertyToH5Name{rowIndex,2};
         end
     
-        function removeNameFromNameMap(obj, propName)
-            rowIndex = find(strcmp(obj.DynamicPropertyToH5Name(:,1), propName), 1);
+        function removeNameFromNameMap(obj, name)
+            if obj.isH5Name(name)
+                name = obj.mapH5Name2PropertyName(name);
+            end
+            
+            rowIndex = find(strcmp(obj.DynamicPropertyToH5Name(:,1), name), 1);
             obj.DynamicPropertyToH5Name(rowIndex, :) = [];
         end
-
     end
 end
 
