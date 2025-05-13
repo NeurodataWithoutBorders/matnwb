@@ -77,16 +77,15 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
             end
         end
         
-        function validate(obj, name, val)
+        function validateEntry(obj, name, val)
             if ~isempty(obj.ValidationFunction)
                 try
                     obj.ValidationFunction(name, val);
-                catch ME
-                    error('NWB:Set:ItemValidationFailed', ...
-                        ['Failed to validate Constrained Set key `%s`', ...
-                        'with message:\n%s.\n'], ...
-                        ME.message, ...
-                        name);
+                catch MECause
+                    ME = MException('NWB:Set:InvalidEntry', ...
+                        'Entry of Constrained Set with key `%s` is invalid.\n', name);
+                    ME = ME.addCause(MECause);
+                    throw(ME)
                 end
             end
         end
@@ -104,11 +103,11 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
             for i = 1:length(setKeys)
                 currentKey = setKeys{i};
                 try
-                    obj.validate(currentKey, obj.get(currentKey));
+                    obj.validateEntry(currentKey, obj.get(currentKey));
                 catch ME
                     keyFailed(i) = true;
                     if options.Mode == "warn"
-                        warning('NWB:Set:ItemValidationFailed', ...
+                        warning('NWB:Set:InvalidEntry', ...
                             'Failed to validate Constrained Set key `%s` with message:\n%s.\nData will be dropped.', ...
                             currentKey, ME.message);
                     else
@@ -229,7 +228,7 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
                 val
             end
 
-            obj.validate(name, val)
+            obj.validateEntry(name, val)
 
             if ~obj.isH5Name(name) && ~obj.isPropertyName(name)
                 obj.addProperty(name, val);
@@ -381,7 +380,7 @@ function setterFunction = getDynamicSetMethodFilterFunction(name)
     setterFunction = @setProp;
 
     function setProp(obj, val)
-        obj.validate(name, val)
+        obj.validateEntry(name, val)
         obj.(name) = val;
     end
 end
