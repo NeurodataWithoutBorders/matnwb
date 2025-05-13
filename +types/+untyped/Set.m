@@ -1,78 +1,117 @@
-classdef Set < handle & matlab.mixin.CustomDisplay
-    properties(SetAccess=protected)
-        Map; % containers.Map
-        ValidationFcn = @(key, value)[];
+classdef Set < dynamicprops & matlab.mixin.CustomDisplay
+% Set - A (utility) container class for storing neurodata types.
+
+    properties (Access = private)
+        DynamicPropertiesMap % containers.Map (name) -> (meta.DynamicProperty)
+        ValidationFunction function_handle = function_handle.empty() % validation function
+        DynamicPropertyToH5Name (:,2) cell % cell string matrix where first column is (name) and second column is (hdf5 name)
     end
-    
+
     methods
+        %% Constructor
         function obj = Set(varargin)
             % obj = SET returns an empty set
             % obj = SET(field1,value1,...,fieldN,valueN) returns a set from key value pairs
             % obj = SET(src) can be a struct or map
             % obj = SET(__,fcn) adds a validation function from a handle
-            obj.Map = containers.Map;
-            
+
+            obj.DynamicPropertiesMap = containers.Map(...
+                'KeyType', 'char', ...
+                'ValueType', 'any');
+
             if nargin == 0
                 return;
             end
-            
-            switch class(varargin{1})
-                case 'function_handle'
-                    obj.ValidationFcn = varargin{1};
-                case {'struct', 'containers.Map'}
-                    src = varargin{1};
-                    if isstruct(src)
-                        srcFields = fieldnames(src);
-                        for i=1:length(srcFields)
-                            obj.Map(srcFields{i}) = src.(srcFields{i});
-                        end
-                    else
-                        srcKeys = keys(src);
-                        obj.set(srcKeys, values(src, srcKeys));
-                    end
-                    
-                    if nargin > 1
-                        assert(isa(varargin{2}, 'function_handle'),...
-                            '`fcn` Expected a function_handle type');
-                        obj.ValidationFcn = varargin{2};
-                    end
-                case 'char'
-                    if mod(length(varargin), 2) == 1
-                        assert(isa(varargin{end}, 'function_handle'),...
-                            '`fcn` Expected a function_handle type');
-                        obj.ValidationFcn = varargin{end};
-                        varargin(end) = [];
-                    end
-                    assert(mod(length(varargin), 2) == 0,...
-                        ['KeyWord Argument Count Mismatch.  '...
-                        'Number of Keys do not match number of values']);
-                    assert(iscellstr(varargin(1:2:end)),...
-                        'KeyWord Argument Error: Keys must be char');
-                    obj.Map = containers.Map(varargin(1:2:end), varargin(2:2:end));
+
+            % Pop validation function handle from input arguments
+            if isa(varargin{end}, 'function_handle')
+                obj.ValidationFunction = varargin{end};
+                varargin(end) = [];
+            end
+
+            if isempty(varargin)
+                return
+            end
+
+            [names, values] = extractNamesAndValues(varargin{:});
+            for i = 1:length(names)
+                obj.addProperty(names{i}, values{i});
+            end
+        end
+
+        %% validation function propagation
+        function set.ValidationFunction(obj, val)
+            obj.ValidationFunction = val;
+
+            if ~isempty(obj.ValidationFunction)
+                obj.validateAll("mode", "warn")
             end
         end
         
-        function tf = isKey(obj, name)
-            tf = isKey(obj.Map, name);
-        end
-        
-        %return object's keys
-        function k = keys(obj)
-            k = keys(obj.Map);
-        end
-        
-        %return values of backed map
-        function v = values(obj)
-            v = values(obj.Map);
-        end
-        
-        %return number of entries
-        function cnt = Count(obj)
-            cnt = obj.Map.Count;
+        function validateEntry(obj, name, val)
+            if ~isempty(obj.ValidationFunction)
+                try
+                    obj.ValidationFunction(name, val);
+                catch MECause
+                    ME = MException('NWB:Set:InvalidEntry', ...
+                        'Entry of Constrained Set with key `%s` is invalid.\n', name);
+                    ME = ME.addCause(MECause);
+                    throw(ME)
+                end
+            end
         end
 
-        %overloads size(obj)
+        function validateAll(obj, options)
+            arguments
+                obj types.untyped.Set
+                options.Mode (1,1) string ...
+                    {mustBeMember(options.Mode, ["warn", "fail"])} = "warn"
+            end
+
+            setKeys = obj.keys();
+            keyFailed = false(size(setKeys));
+            
+            for i = 1:length(setKeys)
+                currentKey = setKeys{i};
+                try
+                    obj.validateEntry(currentKey, obj.get(currentKey));
+                catch ME
+                    keyFailed(i) = true;
+                    if options.Mode == "warn"
+                        warning('NWB:Set:InvalidEntry', ...
+                            'Failed to validate Constrained Set key `%s` with message:\n%s.\nData will be dropped.', ...
+                            currentKey, ME.message);
+                    else
+                        rethrow(ME)
+                    end
+                end
+            end
+            obj.remove(setKeys(keyFailed))
+        end
+
+        %% Export
+        function refs = export(obj, fid, fullpath, refs)
+            io.writeGroup(fid, fullpath);
+
+            dynamicPropertyNames = keys(obj.DynamicPropertiesMap);
+            for iPropName = 1:length(dynamicPropertyNames)
+                propName = dynamicPropertyNames{iPropName};
+                h5Name = obj.mapPropertyName2H5Name(propName);
+                propValue = obj.(propName);
+
+                propFullPath = [fullpath '/' h5Name];
+                if startsWith(class(propValue), 'types.')
+                    refs = propValue.export(fid, propFullPath, refs);
+                else
+                    io.writeDataset(fid, propFullPath, propValue);
+                end
+            end
+        end
+
+        %% size() override
+
         function varargout = size(obj, dim)
+            % overloads size(obj)
             if nargin > 1
                 if dim > 1
                     varargout{1} = 1;
@@ -88,110 +127,150 @@ classdef Set < handle & matlab.mixin.CustomDisplay
                 end
             end
         end
-        
-        %overloads horzcat(A1,A2,...,An)
-        function C = horzcat(varargin)
+
+        function C = horzcat(varargin) %#ok<STOUT>
+            % overloads horzcat(A1,A2,...,An)
             error('NWB:Set:Unsupported',...
                 'types.untyped.Set does not support concatenation');
         end
-        
-        %overloads vertcat(A1, A2,...,An)
-        function C = vertcat(varargin)
+
+        function C = vertcat(varargin) %#ok<STOUT>
+            % overloads vertcat(A1, A2,...,An)
             error('NWB:Set:Unsupported',...
                 'types.untyped.Set does not support concatenation.');
         end
-        
-        function setValidationFcn(obj, fcn)
-            assert(isa(fcn, 'function_handle'), ...
-                'Validation must be a function handle of form @(name, val) or empty array.');
-            obj.ValidationFcn = fcn;
-        end
-        
-        function validateAll(obj)
-            mapkeys = keys(obj.Map);
-            keyFailed = false(size(mapkeys));
-            for i=1:length(mapkeys)
-                mk = mapkeys{i};
-                try
-                    obj.ValidationFcn(mk, obj.Map(mk));
-                catch ME
-                    warning('NWB:Set:FailedValidation' ...
-                        , 'Failed to validate Constrained Set key `%s` with message:\n%s' ...
-                        , mk, ME.message);
-                    keyFailed(i) = true;
-                end
-            end
-            remove(obj.Map, mapkeys(keyFailed));
-        end
-        
-        function obj = set(obj, name, val)
-            if ischar(name)
-                name = {name};
-            end
-            
-            if ischar(val)
-                val = {val};
-            end
-            cellExtract = iscell(val);
-            
-            assert(length(name) == length(val),...
-                'number of property names should match number of vals on set.');
-            for i=1:length(name)
-                if cellExtract
-                    elem = val{i};
-                else
-                    elem = val(i);
-                end
-                try
-                    obj.ValidationFcn(name{i}, elem);
-                    obj.Map(name{i}) = elem;
-                catch ME
-                    warning('NWB:Set:FailedValidation' ...
-                        , 'Failed to add key `%s` to Constrained Set with message:\n  %s' ...
-                        , name{i}, ME.message);
-                end
-            end
-        end
-        
-        function obj = remove(obj, name)
-            remove(obj.Map, name);
-        end
-        
-        function obj = clear(obj)
-            obj.Map = containers.Map;
-        end
-        
-        function o = get(obj, name)
-            if ischar(name)
-                name = {name};
-            end
-            o = cell(length(name),1);
-            for i=1:length(name)
-                o{i} = obj.Map(name{i});
-            end
-            if isscalar(o)
-                o = o{1};
-            end
-        end
-        
-        function refs = export(obj, fid, fullpath, refs)
-            io.writeGroup(fid, fullpath);
-            k = keys(obj.Map);
-            val = values(obj.Map, k);
-            for i=1:length(k)
-                v = val{i};
-                nm = k{i};
-                propFullPath = [fullpath '/' nm];
-                if startsWith(class(v), 'types.')
-                    refs = v.export(fid, propFullPath, refs);
-                else
-                    refs = io.writeDataset(fid, propFullPath, v, refs);
-                end
-            end
+    end
+
+    methods (Hidden)
+        function setValidationFunction(obj, functionHandle)
+            obj.ValidationFunction = functionHandle;
         end
     end
-    
-    methods(Access=protected)
+
+    % Methods for adding and removing dynamic properties
+    methods (Access = private)
+        function addProperty(obj, name, value)
+            arguments
+                obj types.untyped.Set
+                name (1,1) string
+                value
+            end
+            name = char(name);
+
+            validName = matlab.lang.makeValidName(name);
+            assert(~obj.isH5Name(name) && ~obj.isPropertyName(validName), ...
+                'NWB:Set:DuplicateName', ...
+                'The provided property name `%s` (converted to `%s`) is a duplicate name.', ...
+                name, validName);
+            height = size(obj.DynamicPropertyToH5Name, 1);
+            obj.DynamicPropertyToH5Name(height+1, 1:2) = {validName, name};
+            obj.DynamicPropertiesMap(validName) = obj.addprop(validName);
+            if ~isempty(obj.ValidationFunction)
+                DynamicProperty = obj.DynamicPropertiesMap(validName);
+                DynamicProperty.SetMethod = getDynamicSetMethodFilterFunction(validName);
+            end
+            obj.(validName) = value;
+        end
+
+        function value = removeProperty(obj, name)
+            validateattributes(name, {'char'}, {'scalartext'}, 'removeProperty', 'name', 1);
+
+            assert(obj.isH5Name(name) || obj.isPropertyName(name), ...
+                'NWB:Set:MissingName', ...
+                'Property name or HDF5 identifier `%s` does not exist for this Set.', ...
+                name);
+
+            if obj.isH5Name(name)
+                name = obj.mapH5Name2PropertyName(name);
+            end
+            value = obj.(name);
+
+            delete(obj.DynamicPropertiesMap(name));
+            remove(obj.DynamicPropertiesMap, name);
+        end
+    end
+
+    % Legacy set/get methods
+    methods
+        function obj = set(obj, name, val)
+            arguments
+                obj types.untyped.Set
+                name (1,1) string
+                val
+            end
+
+            obj.validateEntry(name, val)
+
+            if ~obj.isH5Name(name) && ~obj.isPropertyName(name)
+                obj.addProperty(name, val);
+                return;
+            end
+
+            if obj.isH5Name(name)
+                name = obj.mapH5Name2PropertyName(name);
+            end
+
+            if isempty(val)
+                obj.removeProperty(name);
+            else
+                obj.(name) = val;
+            end
+        end
+
+        function o = get(obj, name)
+            if obj.isH5Name(name)
+                name = obj.mapH5Name2PropertyName(name);
+            end
+            assert(obj.isPropertyName(name), ...
+                'NWB:Set:MissingName', ...
+                'Could not find property name `%s`', name);
+            o = obj.(name);
+        end
+    end
+
+    % Legacy methods mirroring containers.Map interface
+    methods
+        function cnt = Count(obj)
+            cnt = obj.DynamicPropertiesMap.Count;
+        end
+
+        function keyNames = keys(obj)
+            %keyNames = keys(obj.DynamicPropertiesMap);
+            keyNames = obj.DynamicPropertyToH5Name(:, 2);
+            keyNames = transpose(keyNames);
+        end
+
+        function propValues = values(obj)
+            propValues = keys(obj);
+            for iProp = 1:length(propValues)
+                propName = propValues{iProp};
+                propValues{iProp} = obj.get(propName);
+            end
+        end
+
+        function remove(obj, keys)
+            if ischar(keys)
+                keys = {keys};
+            end
+            assert(iscellstr(keys), 'NWB:Set:InvalidArgument', ...
+                'removed keys provided must be a cell array of strings.');
+            for iKey = 1:length(keys)
+                obj.removeProperty(keys{iKey});
+                obj.removeNameFromNameMap(keys{iKey})
+            end
+        end
+
+        function tf = isKey(obj, name)
+            tf = obj.isH5Name(name) || obj.isPropertyName(name);
+        end
+
+        function clear(obj)
+            obj.remove(keys(obj.DynamicPropertiesMap));
+        end
+    end
+
+    % matlab.mixin.CustomDisplay overrides
+    methods (Access = protected)
         function displayEmptyObject(obj)
             hdr = sprintf('  %s with no elements.', ...
                 ['<a href="matlab:helpPopup types.untyped.Set" style="font-weight:bold">'...
@@ -199,25 +278,108 @@ classdef Set < handle & matlab.mixin.CustomDisplay
             footer = getFooter(obj);
             disp([hdr newline footer]);
         end
-        
+
         function displayScalarObject(obj)
             displayNonScalarObject(obj)
         end
-        
+
         function displayNonScalarObject(obj)
             hdr = getHeader(obj);
             footer = getFooter(obj);
-            mkeys = keys(obj);
-            mklen = cellfun('length', mkeys);
-            max_mklen = max(mklen);
-            body = cell(size(mkeys));
-            for i=1:length(mkeys)
-                mk = mkeys{i};
-                spacing = repmat(' ', 1, max_mklen - mklen(i));
-                body{i} = [spacing mk ': [' class(obj.Map(mk)) ']'];
+            
+            propertyNames = string( properties(obj) );
+            paddedPropertyNames = pad(propertyNames, 'left');
+        
+            numProperties = numel(propertyNames);
+            body = cell(1, numProperties);
+            for i = 1:numProperties
+                propertyName = propertyNames{i};
+                propertyType = class(obj.(propertyName));
+                body{i} = sprintf('%s: %s', paddedPropertyNames{i}, propertyType);                
             end
             body = file.addSpaces(strjoin(body, newline), 4);
             disp([hdr newline body newline footer]);
         end
+    end
+
+    % Utility methods for the "valid name" to "h5 name" map
+    methods (Access = private)
+        function tf = isPropertyName(obj, name)
+        % isPropertyName - Check if given name is present in the name map
+            arguments
+                obj types.untyped.Set
+                name (1,1) string
+            end
+            tf = any(strcmp(obj.DynamicPropertyToH5Name(:,1), name));
+        end
+
+        function tf = isH5Name(obj, name)
+        % isH5Name - Check if given name is present as h5 name in the name map
+            arguments
+                obj types.untyped.Set
+                name (1,1) string
+            end
+            tf = any(strcmp(obj.DynamicPropertyToH5Name(:,2), name));
+        end
+
+        function propName = mapH5Name2PropertyName(obj, h5Name)
+            assert(obj.isH5Name(h5Name));
+            rowIndex = find(strcmp(obj.DynamicPropertyToH5Name(:,2), h5Name), 1);
+            propName = obj.DynamicPropertyToH5Name{rowIndex,1};
+        end
+
+        function h5Name = mapPropertyName2H5Name(obj, propName)
+            assert(obj.isPropertyName(propName));
+            rowIndex = find(strcmp(obj.DynamicPropertyToH5Name(:,1), propName), 1);
+            h5Name = obj.DynamicPropertyToH5Name{rowIndex,2};
+        end
+    
+        function removeNameFromNameMap(obj, name)
+            if obj.isH5Name(name)
+                name = obj.mapH5Name2PropertyName(name);
+            end
+            
+            rowIndex = find(strcmp(obj.DynamicPropertyToH5Name(:,1), name), 1);
+            obj.DynamicPropertyToH5Name(rowIndex, :) = [];
+        end
+    end
+end
+
+function [names, values] = extractNamesAndValues(varargin)
+% extractNamesAndValues - Extract names and values from varargin
+    if isscalar(varargin)
+        assert(isstruct(varargin{1}) || isa(varargin{1}, 'containers.Map'), ...
+            'NWB:Set:InvalidArguments', ...
+            'Expected a struct or a containers.Map. Got %s', class(varargin{1}));
+        
+        switch class(varargin{1})
+            case 'struct'
+                names = fieldnames(varargin{1});
+                values = struct2cell(varargin{1});
+            case 'containers.Map'
+                names = varargin{1}.keys();
+                values = varargin{1}.values();
+        end
+    else
+        isValidKeywordArgs = mod(numel(varargin), 2) == 0 ...
+            && ( iscellstr(varargin(1:2:end)) || isstring(varargin(1:2:end)) );
+
+        assert( isValidKeywordArgs, ...
+            'NWB:Set:InvalidArguments', ...
+            'Expected keyword arguments');
+
+        names = varargin(1:2:end);
+        values = varargin(2:2:end);
+    end
+end
+
+function setterFunction = getDynamicSetMethodFilterFunction(name)
+% workaround as provided by 
+% https://www.mathworks.com/matlabcentral/answers/266684-how-do-i-write-setter-methods-for-properties-with-unknown-names
+    setterFunction = @setProp;
+
+    function setProp(obj, val)
+        obj.validateEntry(name, val)
+        obj.(name) = val;
     end
 end
