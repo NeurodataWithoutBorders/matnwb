@@ -71,7 +71,7 @@ classdef (Sealed) DataPipe < handle
             
             p = inputParser;
             p.addParameter('maxSize', []);
-            p.addParameter('axis', 1, @(x) isnumeric(x) && isscalar(x) && x > 0);
+            p.addParameter('axis', 0, @(x) isnumeric(x) && isscalar(x) && x > 0);
             p.addParameter('offset', 0, @(x) isnumeric(x) && isscalar(x) && x >= 0);
             p.addParameter('chunkSize', []);
             % note that compression level is defaulted to ON
@@ -126,12 +126,26 @@ classdef (Sealed) DataPipe < handle
                     'NWB:DataPipe:MissingArguments',...
                     'Missing required argument `maxSize` or dependent argument `data`')
                 maxSize = size(p.Results.data);
-                maxSize(p.Results.axis) = Inf;
+                if p.Results.axis == 0
+                    if isvector(p.Results.data)
+                        if iscolumn(p.Results.data)
+                            maxSize(1) = Inf;
+                        else
+                            maxSize(2) = Inf;
+                        end
+                    end
+                else
+                    maxSize(p.Results.axis) = Inf;
+                end
             else
                 maxSize = p.Results.maxSize;
             end
             config = Configuration(maxSize);
-            config.axis = p.Results.axis;
+            if p.Results.axis == 0
+                config.axis = 1;
+            else
+                config.axis = p.Results.axis;
+            end
             config.offset = p.Results.offset;
             
             if isempty(p.Results.data)
