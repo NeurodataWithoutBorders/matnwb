@@ -290,6 +290,72 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                 testCase.verifyEqual(ME.identifier,  'NWB:BoundPipe:CannotSetPipeProperty')
             end
         end
+        
+        function testBoundPipeExportToNewFileError(testCase)
+        % Test improved error message when exporting bound DataPipe to new file
+            
+            % Create original file with DataPipe
+            originalFile = 'test_bound_original.nwb';
+            newFile = 'test_bound_new.nwb';
+            
+            nwb = tests.factory.NWBFile();
+                           
+            fData = randi(250, 10, 100);
+            fData_compressed = types.untyped.DataPipe('data', fData);
+            
+            fdataNWB = types.core.TimeSeries( ...
+                'data', fData_compressed, ...
+                'data_unit', 'mV', ...
+                'starting_time', 0.0, ...
+                'starting_time_rate', 30.0);
+            
+            nwb.acquisition.set('test_data', fdataNWB);
+            nwbExport(nwb, originalFile);
+            
+            % Read the file (creates a bound DataPipe)
+            file = nwbRead(originalFile);
+            
+            % Try to export to new file - should give improved error message
+            testCase.verifyError(@() nwbExport(file, newFile), ...
+                'NWB:BoundPipe:CannotExportToNewFile');
+        end
+        
+        function testUnboundPipeExportToExistingFileError(testCase)
+            % Test improved error message when exporting unbound DataPipe to existing file
+            
+            existingFile = 'test_unbound_existing.nwb';
+            
+            % Create first file with DataPipe
+            nwb1 = tests.factory.NWBFile();
+
+            fData1 = randi(250, 10, 100);
+            fData1_compressed = types.untyped.DataPipe('data', fData1);
+            
+            fdataNWB1 = types.core.TimeSeries( ...
+                'data', fData1_compressed, ...
+                'data_unit', 'mV', ...
+                'starting_time', 0.0, ...
+                'starting_time_rate', 30.0);
+            
+            nwb1.acquisition.set('test_data', fdataNWB1);
+            nwbExport(nwb1, existingFile);
+            
+            % Create second NWB object with same structure
+            nwb2 = tests.factory.NWBFile();
+            
+            fData2 = randi(250, 10, 100);
+            fData2_compressed = types.untyped.DataPipe('data', fData2);
+            fdataNWB2 = types.core.TimeSeries( ...
+                'data', fData2_compressed, ...
+                'data_unit', 'mV', ...
+                'starting_time', 0.0, ...
+                'starting_time_rate', 30.0);
+            nwb2.acquisition.set('test_data', fdataNWB2);
+            
+            % Try to export to existing file - should give improved error message
+            testCase.verifyError(@() nwbExport(nwb2, existingFile), ...
+                'NWB:BlueprintPipe:DatasetAlreadyExists');
+        end
     end
 
     methods (Test, TestTags={'UsesDynamicallyLoadedFilters'})
