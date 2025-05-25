@@ -313,7 +313,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             nwbExport(nwb, originalFile);
             
             % Read the file (creates a bound DataPipe)
-            file = nwbRead(originalFile);
+            file = nwbRead(originalFile, 'ignorecache');
             
             % Try to export to new file - should give improved error message
             testCase.verifyError(@() nwbExport(file, newFile), ...
