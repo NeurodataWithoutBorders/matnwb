@@ -292,7 +292,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
         end
         
         function testBoundPipeExportToNewFileError(testCase)
-        % Test improved error message when exporting bound DataPipe to new file
+        % Test error message when exporting bound DataPipe to new file
             
             % Create original file with DataPipe
             originalFile = 'test_bound_original.nwb';
@@ -315,13 +315,16 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             % Read the file (creates a bound DataPipe)
             file = nwbRead(originalFile, 'ignorecache');
             
-            % Try to export to new file - should give improved error message
+            % Try to export to new file - this should fail, because the
+            % data pipe in the imported file object is a "bound" pipe (the data
+            % is not in memory), and the bound pipe's write method can not 
+            % "pipe" the data into a new file.
             testCase.verifyError(@() nwbExport(file, newFile), ...
                 'NWB:BoundPipe:CannotExportToNewFile');
         end
         
         function testUnboundPipeExportToExistingFileError(testCase)
-            % Test improved error message when exporting unbound DataPipe to existing file
+            % Test error message when exporting "unbound" DataPipe to existing file
             
             existingFile = 'test_unbound_existing.nwb';
             
@@ -352,7 +355,9 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                 'starting_time_rate', 30.0);
             nwb2.acquisition.set('test_data', fdataNWB2);
             
-            % Try to export to existing file - should give improved error message
+            % Try to export to existing file - this will fail, because a
+            % dataset already exists in the acquisition/test_data/test
+            % location.
             testCase.verifyError(@() nwbExport(nwb2, existingFile), ...
                 'NWB:BlueprintPipe:DatasetAlreadyExists');
         end
