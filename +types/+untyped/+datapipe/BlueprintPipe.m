@@ -216,7 +216,31 @@ classdef BlueprintPipe < types.untyped.datapipe.Pipe
             end
             dcpl = obj.makeDcpl();
             dapl = 'H5P_DEFAULT';
-            did = H5D.create(fid, fullpath, tid, sid, lcpl, dcpl, dapl);
+            
+            try
+                did = H5D.create(fid, fullpath, tid, sid, lcpl, dcpl, dapl);
+            catch ME
+                if contains(ME.message, "name already exists")
+                    H5P.close(dcpl);
+                    H5S.close(sid);
+                    if ~ischar(tid)
+                        H5T.close(tid);
+                    end
+                    error('NWB:BlueprintPipe:DatasetAlreadyExists', ...
+                        ['Cannot export an unbound DataPipe to an existing file that already ' ...
+                         'contains the dataset at path "%s". ' ...
+                         'To fix this: either export to a new file, or use export mode "overwrite" ' ...
+                         'to replace the existing file, or read the existing file and modify it in place.'], ...
+                         fullpath);
+                else
+                    H5P.close(dcpl);
+                    H5S.close(sid);
+                    if ~ischar(tid)
+                        H5T.close(tid);
+                    end
+                    rethrow(ME);
+                end
+            end
             
             H5D.close(did);
             H5P.close(dcpl);
