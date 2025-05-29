@@ -5,7 +5,13 @@ function dataPipe = configureDataPipeFromData(numericData, datasetConfig)
     import types.untyped.datapipe.properties.DynamicFilter
 
     chunkSize = computeChunkSizeFromConfig(numericData, datasetConfig.chunking);
-    maxSize = size(numericData);
+    if isvector(numericData)
+        % If input data is vector, we use maxSize = Inf to enforce a 1D
+        % columnar representation of data in file.
+        maxSize = Inf;
+    else
+        maxSize = size(numericData);
+    end
 
     dataPipeArgs = {...
         "data", numericData, ...
