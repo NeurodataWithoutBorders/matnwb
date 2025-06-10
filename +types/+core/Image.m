@@ -1,5 +1,5 @@
-classdef Image < types.core.NWBData & types.untyped.DatasetClass
-% IMAGE - An abstract data type for an image. Shape can be 2-D (x, y), or 3-D where the third dimension can have three or four elements, e.g. (x, y, (r, g, b)) or (x, y, (r, g, b, a)).
+classdef Image < types.core.BaseImage & types.untyped.DatasetClass
+% IMAGE - A type for storing image data directly. Shape can be 2-D (x, y), or 3-D where the third dimension can have three or four elements, e.g. (x, y, (r, g, b)) or (x, y, (r, g, b, a)).
 %
 % Required Properties:
 %  data
@@ -7,7 +7,6 @@ classdef Image < types.core.NWBData & types.untyped.DatasetClass
 
 % OPTIONAL PROPERTIES
 properties
-    description; %  (char) Description of the image.
     resolution; %  (single) Pixel resolution of the image, in pixels per centimeter.
 end
 
@@ -30,7 +29,7 @@ methods
         % Output Arguments:
         %  - image (types.core.Image) - A Image object
         
-        obj = obj@types.core.NWBData(varargin{:});
+        obj = obj@types.core.BaseImage(varargin{:});
         
         
         p = inputParser;
@@ -38,11 +37,9 @@ methods
         p.PartialMatching = false;
         p.StructExpand = false;
         addParameter(p, 'data',[]);
-        addParameter(p, 'description',[]);
         addParameter(p, 'resolution',[]);
         misc.parseSkipInvalidName(p, varargin);
         obj.data = p.Results.data;
-        obj.description = p.Results.description;
         obj.resolution = p.Results.resolution;
         if strcmp(class(obj), 'types.core.Image')
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
@@ -50,9 +47,6 @@ methods
         end
     end
     %% SETTERS
-    function set.description(obj, val)
-        obj.description = obj.validate_description(val);
-    end
     function set.resolution(obj, val)
         obj.resolution = obj.validate_resolution(val);
     end
@@ -60,24 +54,6 @@ methods
     
     function val = validate_data(obj, val)
         val = types.util.checkDtype('data', 'numeric', val);
-    end
-    function val = validate_description(obj, val)
-        val = types.util.checkDtype('description', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
     end
     function val = validate_resolution(obj, val)
         val = types.util.checkDtype('resolution', 'single', val);
@@ -99,12 +75,9 @@ methods
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.NWBData(obj, fid, fullpath, refs);
+        refs = export@types.core.BaseImage(obj, fid, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
-        end
-        if ~isempty(obj.description)
-            io.writeAttribute(fid, [fullpath '/description'], obj.description);
         end
         if ~isempty(obj.resolution)
             io.writeAttribute(fid, [fullpath '/resolution'], obj.resolution);
