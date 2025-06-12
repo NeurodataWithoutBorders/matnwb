@@ -40,10 +40,10 @@ jobs:
           
           if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.event.pull_request.draft }}" == "true" ]]; then
             echo "Draft PR detected - using latest MATLAB version only"
-            matrix=$(echo "$matrix_config" | yq -o=json '{"include": [.[-1]]}')
+            matrix=$(echo "$matrix_config" | yq -o=json '.[-1:] | {"include": .}')
           else
             echo "Non-draft PR or push event - using full matrix"
-            matrix=$(echo "$matrix_config" | yq -o=json '{"include": .}')
+            matrix=$(echo "$matrix_config" | yq -o=json '. | {"include": .}')
           fi
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
           echo "latest_matlab_version=$latest_matlab_version" >> $GITHUB_OUTPUT
