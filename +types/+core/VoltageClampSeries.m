@@ -97,8 +97,6 @@ methods
         addParameter(p, 'capacitance_fast_unit',[]);
         addParameter(p, 'capacitance_slow',[]);
         addParameter(p, 'capacitance_slow_unit',[]);
-        addParameter(p, 'data',[]);
-        addParameter(p, 'data_unit',[]);
         addParameter(p, 'resistance_comp_bandwidth',[]);
         addParameter(p, 'resistance_comp_bandwidth_unit',[]);
         addParameter(p, 'resistance_comp_correction',[]);
@@ -114,8 +112,6 @@ methods
         obj.capacitance_fast_unit = p.Results.capacitance_fast_unit;
         obj.capacitance_slow = p.Results.capacitance_slow;
         obj.capacitance_slow_unit = p.Results.capacitance_slow_unit;
-        obj.data = p.Results.data;
-        obj.data_unit = p.Results.data_unit;
         obj.resistance_comp_bandwidth = p.Results.resistance_comp_bandwidth;
         obj.resistance_comp_bandwidth_unit = p.Results.resistance_comp_bandwidth_unit;
         obj.resistance_comp_correction = p.Results.resistance_comp_correction;

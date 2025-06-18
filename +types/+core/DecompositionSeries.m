@@ -72,15 +72,11 @@ methods
         p.PartialMatching = false;
         p.StructExpand = false;
         addParameter(p, 'bands',[]);
-        addParameter(p, 'data',[]);
-        addParameter(p, 'data_unit',[]);
         addParameter(p, 'metric',[]);
         addParameter(p, 'source_channels',[]);
         addParameter(p, 'source_timeseries',[]);
         misc.parseSkipInvalidName(p, varargin);
         obj.bands = p.Results.bands;
-        obj.data = p.Results.data;
-        obj.data_unit = p.Results.data_unit;
         obj.metric = p.Results.metric;
         obj.source_channels = p.Results.source_channels;
         obj.source_timeseries = p.Results.source_timeseries;

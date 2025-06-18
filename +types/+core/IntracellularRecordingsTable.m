@@ -49,12 +49,10 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'description',[]);
         addParameter(p, 'electrodes',[]);
         addParameter(p, 'responses',[]);
         addParameter(p, 'stimuli',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.description = p.Results.description;
         obj.electrodes = p.Results.electrodes;
         obj.responses = p.Results.responses;
         obj.stimuli = p.Results.stimuli;

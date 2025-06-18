@@ -72,15 +72,11 @@ methods
         p.StructExpand = false;
         addParameter(p, 'channel_conversion',[]);
         addParameter(p, 'channel_conversion_axis',[]);
-        addParameter(p, 'data',[]);
-        addParameter(p, 'data_unit',[]);
         addParameter(p, 'electrodes',[]);
         addParameter(p, 'filtering',[]);
         misc.parseSkipInvalidName(p, varargin);
         obj.channel_conversion = p.Results.channel_conversion;
         obj.channel_conversion_axis = p.Results.channel_conversion_axis;
-        obj.data = p.Results.data;
-        obj.data_unit = p.Results.data_unit;
         obj.electrodes = p.Results.electrodes;
         obj.filtering = p.Results.filtering;
         if strcmp(class(obj), 'types.core.ElectricalSeries')

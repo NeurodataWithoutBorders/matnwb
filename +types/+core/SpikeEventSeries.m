@@ -57,17 +57,7 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'data',[]);
-        addParameter(p, 'data_unit',[]);
-        addParameter(p, 'timestamps',[]);
-        addParameter(p, 'timestamps_interval',[]);
-        addParameter(p, 'timestamps_unit',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.data = p.Results.data;
-        obj.data_unit = p.Results.data_unit;
-        obj.timestamps = p.Results.timestamps;
-        obj.timestamps_interval = p.Results.timestamps_interval;
-        obj.timestamps_unit = p.Results.timestamps_unit;
         if strcmp(class(obj), 'types.core.SpikeEventSeries')
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));

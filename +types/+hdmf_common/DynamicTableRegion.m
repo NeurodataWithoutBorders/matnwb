@@ -40,12 +40,8 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'data',[]);
-        addParameter(p, 'description',[]);
         addParameter(p, 'table',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.data = p.Results.data;
-        obj.description = p.Results.description;
         obj.table = p.Results.table;
         if strcmp(class(obj), 'types.hdmf_common.DynamicTableRegion')
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));

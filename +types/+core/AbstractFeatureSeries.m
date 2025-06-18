@@ -65,13 +65,9 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'data',[]);
-        addParameter(p, 'data_unit',[]);
         addParameter(p, 'feature_units',[]);
         addParameter(p, 'features',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.data = p.Results.data;
-        obj.data_unit = p.Results.data_unit;
         obj.feature_units = p.Results.feature_units;
         obj.features = p.Results.features;
         if strcmp(class(obj), 'types.core.AbstractFeatureSeries')

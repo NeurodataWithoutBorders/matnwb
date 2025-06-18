@@ -70,15 +70,11 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'data',[]);
-        addParameter(p, 'data_unit',[]);
         addParameter(p, 'electrode',[]);
         addParameter(p, 'gain',[]);
         addParameter(p, 'stimulus_description',[]);
         addParameter(p, 'sweep_number',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.data = p.Results.data;
-        obj.data_unit = p.Results.data_unit;
         obj.electrode = p.Results.electrode;
         obj.gain = p.Results.gain;
         obj.stimulus_description = p.Results.stimulus_description;

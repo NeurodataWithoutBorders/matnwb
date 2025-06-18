@@ -37,11 +37,9 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'data',[]);
         addParameter(p, 'description',[]);
         addParameter(p, 'resolution',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.data = p.Results.data;
         obj.description = p.Results.description;
         obj.resolution = p.Results.resolution;
         if strcmp(class(obj), 'types.core.Image')
