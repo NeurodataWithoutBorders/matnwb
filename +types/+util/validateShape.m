@@ -42,4 +42,18 @@ function validateShape(propertyName, validShapes, value)
         end
         throw(ME)
     end
+
+    % Check actual size of DataPipe and warn if it is not valid
+    if isa(value, 'types.untyped.DataPipe')
+        try
+            valueShape = size(value);
+            types.util.checkDims(valueShape, validShapes, enforceScalarShape);
+        catch ME
+            warning(...
+                'NWB:ValidateShape:InvalidDataPipeSize', ...
+                ['Invalid shape for property "%s". The maxSize of this ', ...
+                'DataPipe has a valid shape but the actual size of the ', ...
+                'dataPipe is not valid: %s'], propertyName, ME.message)
+        end
+    end
 end
