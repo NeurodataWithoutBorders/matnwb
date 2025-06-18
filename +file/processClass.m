@@ -3,9 +3,28 @@ function [Processed, classprops, inherited] = processClass(name, namespace, preg
     branch = [{namespace.getClass(name)} namespace.getRootBranch(name)];
     branchNames = cell(size(branch));
     TYPEDEF_KEYS = {'neurodata_type_def', 'data_type_def'};
+
+    % Resolve type hierarchy (class and superclasses)
     for i = 1:length(branch)
         hasTypeDefs = isKey(branch{i}, TYPEDEF_KEYS);
         branchNames{i} = branch{i}(TYPEDEF_KEYS{hasTypeDefs});
+    end
+    
+    if strcmp(name, 'CurrentClampSeries')
+        keyboard
+    end
+
+    for i = 2:length(branch)
+        currentNode = branch{1};
+        parentNode = branch{i};
+
+        if isKey(currentNode, 'groups')
+            %schemes.updateGroupFromParent(currentNode('groups'), parentNode('groups'))
+        end
+
+        if isKey(currentNode, 'datasets') && isKey(parentNode, 'datasets')
+            schemes.updateDatasetFromParent(currentNode('datasets'), parentNode('datasets'))
+        end
     end
 
     for iAncestor = 1:length(branch)
@@ -39,9 +58,16 @@ function [Processed, classprops, inherited] = processClass(name, namespace, preg
     classprops = pregen(name).props;
     names = keys(classprops);
     for iAncestor = 2:length(Processed)
-        pname = Processed(iAncestor).type;
-        parentPropNames = keys(pregen(pname).props);
-        inherited = union(inherited, intersect(names, parentPropNames));
+        superclassName = Processed(iAncestor).type;
+        superclassProps = pregen(superclassName).props;
+        superclassPropNames = keys(superclassProps);
+        inherited = union(inherited, intersect(names, superclassPropNames));
+
+        % % Too late, because missing values are set to default
+        % % % update props from superclass prop defs
+        % % for iInheritedProp = 1:numel(inherited)
+        % %     superclassProp = superclassProps(inherited{iInheritedProp})
+        % % end
     end
 end
 
