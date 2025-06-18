@@ -290,6 +290,29 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                 testCase.verifyEqual(ME.identifier,  'NWB:BoundPipe:CannotSetPipeProperty')
             end
         end
+    
+        function testShapeValidation(testCase)
+            % Create a DataPipe with both maxSize and actual size that are
+            % valid
+            dataPipe = types.untyped.DataPipe( 'data', rand(50, 50, 3), 'maxSize', [50,50,inf] );
+            try
+                imageSeries = types.core.ImageSeries('data', dataPipe, 'data_unit', 'test'); %#ok<NASGU>
+            catch
+                testCase.verifyFail('Expected DataPipe with valid shape for ImageSeries to pass')
+            end
+            % Create a DataPipe where maxSize is invalid
+            dataPipe = types.untyped.DataPipe( 'data', rand(50, 50, 3, 4, 10), 'maxSize', [50, 50, 3, 4, inf] );
+            testCase.verifyError(...
+                @() types.core.ImageSeries('data', dataPipe, 'data_unit', 'test'), ...
+                'NWB:CheckDims:InvalidDimensions')
+
+            % Create a DataPipe where maxSize is valid and actual size is
+            % invalid
+            dataPipe = types.untyped.DataPipe( 'data', rand(50, 50, 3, 4, 10), 'maxSize', [50, 50, 3, inf] );
+            testCase.verifyWarning(...
+                @() types.core.ImageSeries('data', dataPipe, 'data_unit', 'test'), ...
+                'NWB:CheckDims:InvalidDimensions')
+        end
     end
 
     methods (Test, TestTags={'UsesDynamicallyLoadedFilters'})
