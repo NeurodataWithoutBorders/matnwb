@@ -62,21 +62,7 @@ methods
     function val = validate_target(obj, val)
         % Reference to type `VectorData`
         val = types.util.checkDtype('target', 'types.untyped.ObjectView', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('target', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)
