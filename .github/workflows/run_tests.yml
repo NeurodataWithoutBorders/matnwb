@@ -2,6 +2,7 @@
 name: Run tests
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     branches:
       - main
     paths-ignore:
@@ -14,41 +15,52 @@ on:
       - main
 
 concurrency:
-  group: ${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  set_matrix:
+    name: Set test matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      latest_matlab_version: ${{ steps.set-matrix.outputs.latest_matlab_version }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set matrix
+        id: set-matrix
+        run: |
+          # Load the matrix configuration and extract latest version
+          latest_matlab_version=$(yq '.[-1].matlab-version' .github/workflows/configurations/matlab_release_matrix_strategy.yml)
+          
+          # Conditionally define the MATLAB test matrix based on the PR type.
+          # Draft pull requests are only tested against the latest MATLAB release,
+          # while non-draft PRs and push events are tested against all configured releases.
+          if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.event.pull_request.draft }}" == "true" ]]; then
+            echo "Draft PR detected - using latest MATLAB version only"
+            # Create matrix with only the latest entry
+            matrix=$(yq -o=json '.[-1:] | {"include": .}' .github/workflows/configurations/matlab_release_matrix_strategy.yml | tr -d '\n')
+          else
+            echo "Non-draft PR or push event - using full matrix"
+            # Create matrix with all entries
+            matrix=$(yq -o=json '{"include": .}' .github/workflows/configurations/matlab_release_matrix_strategy.yml | tr -d '\n')
+          fi
+          
+          # Assign `matrix` and `latest_matlab_version` as outputs of this job
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+          echo "latest_matlab_version=$latest_matlab_version" >> $GITHUB_OUTPUT
+
   run_tests:
     name: Run MATLAB tests (${{ matrix.matlab-version }})
+    needs: set_matrix
     runs-on: ubuntu-latest
+    env:
+      USE_CACHE: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft == true }}
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - matlab-version: R2021a
-            python-version: '3.9'
-            skip-pynwb-compatibilty-test-for-tutorial: '1'
-          - matlab-version: R2021b
-            python-version: '3.9'
-            skip-pynwb-compatibilty-test-for-tutorial: '1'
-          - matlab-version: R2022a
-            python-version: '3.9'
-            skip-pynwb-compatibilty-test-for-tutorial: '0'
-          - matlab-version: R2022b
-            python-version: '3.9'
-            skip-pynwb-compatibilty-test-for-tutorial: '0'
-          - matlab-version: R2023a
-            python-version: '3.10'
-            skip-pynwb-compatibilty-test-for-tutorial: '0'
-          - matlab-version: R2023b
-            python-version: '3.10'
-            skip-pynwb-compatibilty-test-for-tutorial: '0'
-          - matlab-version: R2024a
-            python-version: '3.11'
-            skip-pynwb-compatibilty-test-for-tutorial: '0'
-          - matlab-version: R2024b
-            python-version: '3.11'
-            skip-pynwb-compatibilty-test-for-tutorial: '0'
+      matrix: ${{ fromJSON(needs.set_matrix.outputs.matrix) }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -70,6 +82,7 @@ jobs:
         uses: matlab-actions/setup-matlab@v2
         with:
           release: ${{ matrix.matlab-version }}
+          cache: ${{ env.USE_CACHE }}
 
       - name: Run tests
         uses: matlab-actions/run-command@v2
@@ -90,7 +103,7 @@ jobs:
           retention-days: 1
 
       - name: Upload coverage results
-        if: always()
+        if: always() && matrix.matlab-version == needs.set_matrix.outputs.latest_matlab_version
         uses: actions/upload-artifact@v4
         with:
           name: test-coverage-${{ matrix.matlab-version }}
@@ -119,7 +132,7 @@ jobs:
   publish_coverage:
     name: Publish Cobertura test coverage
     runs-on: ubuntu-latest
-    needs: [run_tests]
+    needs: [run_tests, set_matrix]
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -127,7 +140,7 @@ jobs:
       - name: Retrieve code coverage files
         uses: actions/download-artifact@v4
         with:
-          name: test-coverage-R2024b
+          name: test-coverage-${{ needs.set_matrix.outputs.latest_matlab_version }}
 
       - name: Publish on coverage results on Codecov
         uses: codecov/codecov-action@v4
