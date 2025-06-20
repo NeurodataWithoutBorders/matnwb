@@ -45,13 +45,7 @@ jobs:
             matrix=$(yq -o=json '{"include": .}' .github/workflows/configurations/matlab_release_matrix_strategy.yml | tr -d '\n')
           fi
           
-          # Use multiline output format to handle complex JSON
-          {
-            echo "matrix<<EOF"
-            echo "$matrix"
-            echo "EOF"
-          } >> $GITHUB_OUTPUT
-          
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
           echo "latest_matlab_version=$latest_matlab_version" >> $GITHUB_OUTPUT
 
   run_tests:
