@@ -75,57 +75,15 @@ methods
     
     function val = validate_data(obj, val)
         val = types.util.checkDtype('data', 'numeric', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[3,Inf], [2,Inf], [1,Inf], [Inf]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('data', {[3,Inf], [2,Inf], [1,Inf], [Inf]}, val)
     end
     function val = validate_data_unit(obj, val)
         val = types.util.checkDtype('data_unit', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('data_unit', {[1]}, val)
     end
     function val = validate_reference_frame(obj, val)
         val = types.util.checkDtype('reference_frame', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('reference_frame', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

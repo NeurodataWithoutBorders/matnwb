@@ -61,21 +61,7 @@ methods
     
     function val = validate_data(obj, val)
         val = types.util.checkDtype('data', 'int8', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[Inf]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('data', {[Inf]}, val)
     end
     function val = validate_data_resolution(obj, val)
         if isequal(val, -1)

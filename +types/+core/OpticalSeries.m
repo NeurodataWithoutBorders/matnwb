@@ -100,75 +100,19 @@ methods
     
     function val = validate_data(obj, val)
         val = types.util.checkDtype('data', 'numeric', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[3,Inf,Inf,Inf], [Inf,Inf,Inf]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('data', {[3,Inf,Inf,Inf], [Inf,Inf,Inf]}, val)
     end
     function val = validate_distance(obj, val)
         val = types.util.checkDtype('distance', 'single', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('distance', {[1]}, val)
     end
     function val = validate_field_of_view(obj, val)
         val = types.util.checkDtype('field_of_view', 'single', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[3], [2]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('field_of_view', {[3], [2]}, val)
     end
     function val = validate_orientation(obj, val)
         val = types.util.checkDtype('orientation', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('orientation', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)
