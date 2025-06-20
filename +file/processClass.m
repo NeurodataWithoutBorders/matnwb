@@ -9,21 +9,34 @@ function [Processed, classprops, inherited] = processClass(name, namespace, preg
         hasTypeDefs = isKey(branch{i}, TYPEDEF_KEYS);
         branchNames{i} = branch{i}(TYPEDEF_KEYS{hasTypeDefs});
     end
+
+    % Update type specifications from ancestor types. In the schema
+    % specification, types will implicitly inherit specification keys for
+    % groups, datasets, attributes or links from the correspeonding group,
+    % dataset, attribute or link of it's ancestor types. If one of these is
+    % redefined in a sub type, only the keys that are overridden are set.
+    % In order for downstream generator classes to use the inherited
+    % specification values instead of default specification values we need
+    % to loop through the type hierarchy and fill in missing specification
+    % key/values from the ancestor's specifications
     
-    if strcmp(name, 'CurrentClampSeries')
-        keyboard
-    end
-
+    % Update type specifications based on ancestor types. In the schema
+    % specification, types implicitly inherit keys from the corresponding
+    % group, dataset, attribute, or link definitions of their ancestor types.
+    % If a key is redefined in a subtype, only the overridden keys are updated.
+    % To ensure that downstream generator classes use the inherited specification
+    % values (instead of default ones), we loop through the type hierarchy and
+    % fill in any missing key/value pairs from the ancestor specifications.
     for i = 2:length(branch)
-        currentNode = branch{1};
-        parentNode = branch{i};
+        currentType = branch{1};
+        parentType = branch{i};
 
-        if isKey(currentNode, 'groups')
+        if isKey(currentType, 'groups')
             %schemes.updateGroupFromParent(currentNode('groups'), parentNode('groups'))
         end
 
-        if isKey(currentNode, 'datasets') && isKey(parentNode, 'datasets')
-            schemes.updateDatasetFromParent(currentNode('datasets'), parentNode('datasets'))
+        if isKey(currentType, 'datasets') && isKey(parentType, 'datasets')
+            schemes.updateDatasetFromParent(currentType('datasets'), parentType('datasets'))
         end
     end
 
@@ -58,16 +71,9 @@ function [Processed, classprops, inherited] = processClass(name, namespace, preg
     classprops = pregen(name).props;
     names = keys(classprops);
     for iAncestor = 2:length(Processed)
-        superclassName = Processed(iAncestor).type;
-        superclassProps = pregen(superclassName).props;
-        superclassPropNames = keys(superclassProps);
-        inherited = union(inherited, intersect(names, superclassPropNames));
-
-        % % Too late, because missing values are set to default
-        % % % update props from superclass prop defs
-        % % for iInheritedProp = 1:numel(inherited)
-        % %     superclassProp = superclassProps(inherited{iInheritedProp})
-        % % end
+        pname = Processed(iAncestor).type;
+        parentPropNames = keys(pregen(pname).props);
+        inherited = union(inherited, intersect(names, parentPropNames));
     end
 end
 
