@@ -35,6 +35,9 @@ jobs:
           # Load the matrix configuration and extract latest version
           latest_matlab_version=$(yq '.[-1].matlab-version' .github/workflows/configurations/matlab_release_matrix_strategy.yml)
           
+          # Conditionally define the MATLAB test matrix based on the PR type.
+          # Draft pull requests are only tested against the latest MATLAB release,
+          # while non-draft PRs and push events are tested against all configured releases.
           if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.event.pull_request.draft }}" == "true" ]]; then
             echo "Draft PR detected - using latest MATLAB version only"
             # Create matrix with only the latest entry
@@ -45,6 +48,7 @@ jobs:
             matrix=$(yq -o=json '{"include": .}' .github/workflows/configurations/matlab_release_matrix_strategy.yml | tr -d '\n')
           fi
           
+          # Assign `matrix` and `latest_matlab_version` as outputs of this job
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
           echo "latest_matlab_version=$latest_matlab_version" >> $GITHUB_OUTPUT
 
