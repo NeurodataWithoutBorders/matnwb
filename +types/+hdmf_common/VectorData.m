@@ -48,13 +48,11 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'data',[]);
         addParameter(p, 'description',[]);
         addParameter(p, 'resolution',[]);
         addParameter(p, 'sampling_rate',[]);
         addParameter(p, 'unit',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.data = p.Results.data;
         obj.description = p.Results.description;
         obj.resolution = p.Results.resolution;
         obj.sampling_rate = p.Results.sampling_rate;

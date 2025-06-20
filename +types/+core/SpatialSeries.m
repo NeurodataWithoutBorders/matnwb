@@ -59,12 +59,8 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'data',[]);
-        addParameter(p, 'data_unit',[]);
         addParameter(p, 'reference_frame',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.data = p.Results.data;
-        obj.data_unit = p.Results.data_unit;
         obj.reference_frame = p.Results.reference_frame;
         if strcmp(class(obj), 'types.core.SpatialSeries')
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));

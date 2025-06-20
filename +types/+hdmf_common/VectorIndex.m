@@ -40,10 +40,8 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'data',[]);
         addParameter(p, 'target',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.data = p.Results.data;
         obj.target = p.Results.target;
         if strcmp(class(obj), 'types.hdmf_common.VectorIndex')
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));

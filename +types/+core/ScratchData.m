@@ -34,10 +34,8 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'data',[]);
         addParameter(p, 'notes',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.data = p.Results.data;
         obj.notes = p.Results.notes;
         if strcmp(class(obj), 'types.core.ScratchData')
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));

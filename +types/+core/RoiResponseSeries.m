@@ -58,10 +58,8 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'data',[]);
         addParameter(p, 'rois',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.data = p.Results.data;
         obj.rois = p.Results.rois;
         if strcmp(class(obj), 'types.core.RoiResponseSeries')
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));

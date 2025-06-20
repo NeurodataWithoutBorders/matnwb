@@ -57,12 +57,8 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'data',[]);
-        addParameter(p, 'data_unit',[]);
         addParameter(p, 'site',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.data = p.Results.data;
-        obj.data_unit = p.Results.data_unit;
         obj.site = p.Results.site;
         if strcmp(class(obj), 'types.core.OptogeneticSeries')
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));

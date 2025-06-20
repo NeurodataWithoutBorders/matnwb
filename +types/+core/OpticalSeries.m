@@ -74,12 +74,10 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'data',[]);
         addParameter(p, 'distance',[]);
         addParameter(p, 'field_of_view',[]);
         addParameter(p, 'orientation',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.data = p.Results.data;
         obj.distance = p.Results.distance;
         obj.field_of_view = p.Results.field_of_view;
         obj.orientation = p.Results.orientation;

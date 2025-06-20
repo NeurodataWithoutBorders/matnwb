@@ -49,13 +49,7 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'data',[]);
-        addParameter(p, 'data_resolution',[]);
-        addParameter(p, 'data_unit',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.data = p.Results.data;
-        obj.data_resolution = p.Results.data_resolution;
-        obj.data_unit = p.Results.data_unit;
         if strcmp(class(obj), 'types.core.AnnotationSeries')
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));

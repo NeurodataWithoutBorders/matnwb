@@ -36,10 +36,8 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'data',[]);
         addParameter(p, 'elements',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.data = p.Results.data;
         obj.elements = p.Results.elements;
         if strcmp(class(obj), 'types.hdmf_experimental.EnumData')
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));

@@ -70,14 +70,12 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'data',[]);
         addParameter(p, 'device',[]);
         addParameter(p, 'dimension',[]);
         addParameter(p, 'external_file',[]);
         addParameter(p, 'external_file_starting_frame',[]);
         addParameter(p, 'format',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.data = p.Results.data;
         obj.device = p.Results.device;
         obj.dimension = p.Results.dimension;
         obj.external_file = p.Results.external_file;

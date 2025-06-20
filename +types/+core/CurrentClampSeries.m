@@ -74,14 +74,10 @@ methods
         addParameter(p, 'bias_current',[]);
         addParameter(p, 'bridge_balance',[]);
         addParameter(p, 'capacitance_compensation',[]);
-        addParameter(p, 'data',[]);
-        addParameter(p, 'data_unit',[]);
         misc.parseSkipInvalidName(p, varargin);
         obj.bias_current = p.Results.bias_current;
         obj.bridge_balance = p.Results.bridge_balance;
         obj.capacitance_compensation = p.Results.capacitance_compensation;
-        obj.data = p.Results.data;
-        obj.data_unit = p.Results.data_unit;
         if strcmp(class(obj), 'types.core.CurrentClampSeries')
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));

@@ -60,19 +60,9 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'data',[]);
-        addParameter(p, 'data_conversion',[]);
-        addParameter(p, 'data_offset',[]);
-        addParameter(p, 'data_resolution',[]);
-        addParameter(p, 'data_unit',[]);
         addParameter(p, 'indexed_images',[]);
         addParameter(p, 'indexed_timeseries',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.data = p.Results.data;
-        obj.data_conversion = p.Results.data_conversion;
-        obj.data_offset = p.Results.data_offset;
-        obj.data_resolution = p.Results.data_resolution;
-        obj.data_unit = p.Results.data_unit;
         obj.indexed_images = p.Results.indexed_images;
         obj.indexed_timeseries = p.Results.indexed_timeseries;
         if strcmp(class(obj), 'types.core.IndexSeries')
