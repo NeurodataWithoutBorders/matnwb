@@ -9,16 +9,6 @@ function [Processed, classprops, inherited] = processClass(name, namespace, preg
         hasTypeDefs = isKey(branch{i}, TYPEDEF_KEYS);
         branchNames{i} = branch{i}(TYPEDEF_KEYS{hasTypeDefs});
     end
-
-    % Update type specifications from ancestor types. In the schema
-    % specification, types will implicitly inherit specification keys for
-    % groups, datasets, attributes or links from the correspeonding group,
-    % dataset, attribute or link of it's ancestor types. If one of these is
-    % redefined in a sub type, only the keys that are overridden are set.
-    % In order for downstream generator classes to use the inherited
-    % specification values instead of default specification values we need
-    % to loop through the type hierarchy and fill in missing specification
-    % key/values from the ancestor's specifications
     
     % Update type specifications based on ancestor types. In the schema
     % specification, types implicitly inherit keys from the corresponding
