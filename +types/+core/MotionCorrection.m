@@ -1,4 +1,4 @@
-classdef MotionCorrection < types.core.NWBDataInterface & types.untyped.GroupClass
+classdef MotionCorrection < types.core.NWBDataInterface & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups
 % MOTIONCORRECTION - An image stack where all frames are shifted (registered) to a common coordinate system, to account for movement and drift between frames. Note: each frame at each point in time is assumed to be 2-D (has only x & y dimensions).
 %
 % Required Properties:
@@ -8,6 +8,9 @@ classdef MotionCorrection < types.core.NWBDataInterface & types.untyped.GroupCla
 % REQUIRED PROPERTIES
 properties
     correctedimagestack; % REQUIRED (CorrectedImageStack) Results from motion correction of an image stack.
+end
+properties (Access = protected)
+    GroupPropertyNames = {'correctedimagestack'}
 end
 
 methods
@@ -28,6 +31,8 @@ methods
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.correctedimagestack, ivarargin] = types.util.parseConstrained(obj,'correctedimagestack', 'types.core.CorrectedImageStack', varargin{:});
         varargin(ivarargin) = [];
+        
+        obj.setupHasUnnamedGroupsMixin()
         
         p = inputParser;
         p.KeepUnmatched = true;

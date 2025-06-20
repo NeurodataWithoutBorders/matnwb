@@ -1,4 +1,4 @@
-classdef EyeTracking < types.core.NWBDataInterface & types.untyped.GroupClass
+classdef EyeTracking < types.core.NWBDataInterface & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups
 % EYETRACKING - Eye-tracking data, representing direction of gaze.
 %
 % Required Properties:
@@ -8,6 +8,9 @@ classdef EyeTracking < types.core.NWBDataInterface & types.untyped.GroupClass
 % OPTIONAL PROPERTIES
 properties
     spatialseries; %  (SpatialSeries) SpatialSeries object containing data measuring direction of gaze.
+end
+properties (Access = protected)
+    GroupPropertyNames = {'spatialseries'}
 end
 
 methods
@@ -28,6 +31,8 @@ methods
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.spatialseries, ivarargin] = types.util.parseConstrained(obj,'spatialseries', 'types.core.SpatialSeries', varargin{:});
         varargin(ivarargin) = [];
+        
+        obj.setupHasUnnamedGroupsMixin()
         
         p = inputParser;
         p.KeepUnmatched = true;
