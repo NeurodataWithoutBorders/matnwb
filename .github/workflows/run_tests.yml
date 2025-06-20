@@ -45,13 +45,7 @@ jobs:
             matrix=$(yq -o=json '{"include": .}' .github/workflows/configurations/matlab_release_matrix_strategy.yml | tr -d '\n')
           fi
           
-          # Use multiline output format to handle complex JSON
-          {
-            echo "matrix<<EOF"
-            echo "$matrix"
-            echo "EOF"
-          } >> $GITHUB_OUTPUT
-          
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
           echo "latest_matlab_version=$latest_matlab_version" >> $GITHUB_OUTPUT
 
   run_tests:
@@ -59,7 +53,7 @@ jobs:
     needs: set_matrix
     runs-on: ubuntu-latest
     env:
-      CACHE_MATLAB: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft == true }}
+      USE_CACHE: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft == true }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.set_matrix.outputs.matrix) }}
@@ -71,6 +65,15 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+
+      - name: Cache pip dependencies
+        if: env.USE_CACHE == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('+tests/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ matrix.python-version }}-
 
       - name: Configure python env
         run: |
@@ -84,7 +87,7 @@ jobs:
         uses: matlab-actions/setup-matlab@v2
         with:
           release: ${{ matrix.matlab-version }}
-          cache: ${{ env.CACHE_MATLAB }}
+          cache: ${{ env.USE_CACHE }}
 
       - name: Run tests
         uses: matlab-actions/run-command@v2
