@@ -360,7 +360,8 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             % location.
             testCase.verifyError(@() nwbExport(nwb2, existingFile), ...
                 'NWB:BlueprintPipe:DatasetAlreadyExists');
-    
+        end
+        
         function testShapeValidation(testCase)
             % Create a DataPipe with both maxSize and actual size that are
             % valid
