@@ -127,183 +127,43 @@ methods
     
     function val = validate_age(obj, val)
         val = types.util.checkDtype('age', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('age', {[1]}, val)
     end
     function val = validate_age_reference(obj, val)
         val = types.util.checkDtype('age_reference', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('age_reference', {[1]}, val)
     end
     function val = validate_date_of_birth(obj, val)
         val = types.util.checkDtype('date_of_birth', 'datetime', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('date_of_birth', {[1]}, val)
     end
     function val = validate_description(obj, val)
         val = types.util.checkDtype('description', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('description', {[1]}, val)
     end
     function val = validate_genotype(obj, val)
         val = types.util.checkDtype('genotype', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('genotype', {[1]}, val)
     end
     function val = validate_sex(obj, val)
         val = types.util.checkDtype('sex', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('sex', {[1]}, val)
     end
     function val = validate_species(obj, val)
         val = types.util.checkDtype('species', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('species', {[1]}, val)
     end
     function val = validate_strain(obj, val)
         val = types.util.checkDtype('strain', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('strain', {[1]}, val)
     end
     function val = validate_subject_id(obj, val)
         val = types.util.checkDtype('subject_id', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('subject_id', {[1]}, val)
     end
     function val = validate_weight(obj, val)
         val = types.util.checkDtype('weight', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('weight', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

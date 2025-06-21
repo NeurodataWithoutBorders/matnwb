@@ -97,8 +97,6 @@ methods
         addParameter(p, 'capacitance_fast_unit',[]);
         addParameter(p, 'capacitance_slow',[]);
         addParameter(p, 'capacitance_slow_unit',[]);
-        addParameter(p, 'data',[]);
-        addParameter(p, 'data_unit',[]);
         addParameter(p, 'resistance_comp_bandwidth',[]);
         addParameter(p, 'resistance_comp_bandwidth_unit',[]);
         addParameter(p, 'resistance_comp_correction',[]);
@@ -114,8 +112,6 @@ methods
         obj.capacitance_fast_unit = p.Results.capacitance_fast_unit;
         obj.capacitance_slow = p.Results.capacitance_slow;
         obj.capacitance_slow_unit = p.Results.capacitance_slow_unit;
-        obj.data = p.Results.data;
-        obj.data_unit = p.Results.data_unit;
         obj.resistance_comp_bandwidth = p.Results.resistance_comp_bandwidth;
         obj.resistance_comp_bandwidth_unit = p.Results.resistance_comp_bandwidth_unit;
         obj.resistance_comp_correction = p.Results.resistance_comp_correction;
@@ -157,39 +153,11 @@ methods
     
     function val = validate_capacitance_fast(obj, val)
         val = types.util.checkDtype('capacitance_fast', 'single', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('capacitance_fast', {[1]}, val)
     end
     function val = validate_capacitance_slow(obj, val)
         val = types.util.checkDtype('capacitance_slow', 'single', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('capacitance_slow', {[1]}, val)
     end
     function val = validate_data(obj, val)
     
@@ -203,93 +171,23 @@ methods
     end
     function val = validate_resistance_comp_bandwidth(obj, val)
         val = types.util.checkDtype('resistance_comp_bandwidth', 'single', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('resistance_comp_bandwidth', {[1]}, val)
     end
     function val = validate_resistance_comp_correction(obj, val)
         val = types.util.checkDtype('resistance_comp_correction', 'single', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('resistance_comp_correction', {[1]}, val)
     end
     function val = validate_resistance_comp_prediction(obj, val)
         val = types.util.checkDtype('resistance_comp_prediction', 'single', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('resistance_comp_prediction', {[1]}, val)
     end
     function val = validate_whole_cell_capacitance_comp(obj, val)
         val = types.util.checkDtype('whole_cell_capacitance_comp', 'single', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('whole_cell_capacitance_comp', {[1]}, val)
     end
     function val = validate_whole_cell_series_resistance_comp(obj, val)
         val = types.util.checkDtype('whole_cell_series_resistance_comp', 'single', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('whole_cell_series_resistance_comp', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

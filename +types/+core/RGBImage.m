@@ -32,9 +32,7 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'data',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.data = p.Results.data;
         if strcmp(class(obj), 'types.core.RGBImage')
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
