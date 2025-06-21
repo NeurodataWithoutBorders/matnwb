@@ -49,14 +49,16 @@ classdef Dataset < file.interface.HasProps & file.interface.HasQuantity
             end
 
             % Todo: same as for attribute, should consolidate
+            % Use either 'value' or 'default_value' (not both).
+            % If both are present, 'value' takes precedence.
             valueKey = 'value';
             defaultKey = 'default_value';
-            if isKey(source, defaultKey)
-                obj.value = source(defaultKey);
-                obj.readonly = false;
-            elseif isKey(source, valueKey)
+            if isKey(source, valueKey)
                 obj.value = source(valueKey);
                 obj.readonly = true;
+            elseif isKey(source, defaultKey)
+                obj.value = source(defaultKey);
+                obj.readonly = false;
             else
                 obj.value = [];
                 obj.readonly = false;
