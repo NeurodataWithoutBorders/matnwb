@@ -58,10 +58,8 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'data',[]);
         addParameter(p, 'rois',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.data = p.Results.data;
         obj.rois = p.Results.rois;
         if strcmp(class(obj), 'types.core.RoiResponseSeries')
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
@@ -76,21 +74,7 @@ methods
     
     function val = validate_data(obj, val)
         val = types.util.checkDtype('data', 'numeric', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[Inf,Inf], [Inf]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('data', {[Inf,Inf], [Inf]}, val)
     end
     function val = validate_rois(obj, val)
         val = types.util.checkDtype('rois', 'types.hdmf_common.DynamicTableRegion', val);

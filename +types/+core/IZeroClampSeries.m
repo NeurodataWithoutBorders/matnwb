@@ -57,15 +57,7 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'bias_current',[]);
-        addParameter(p, 'bridge_balance',[]);
-        addParameter(p, 'capacitance_compensation',[]);
-        addParameter(p, 'stimulus_description',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.bias_current = p.Results.bias_current;
-        obj.bridge_balance = p.Results.bridge_balance;
-        obj.capacitance_compensation = p.Results.capacitance_compensation;
-        obj.stimulus_description = p.Results.stimulus_description;
         if strcmp(class(obj), 'types.core.IZeroClampSeries')
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));

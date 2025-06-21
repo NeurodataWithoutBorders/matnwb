@@ -84,57 +84,15 @@ methods
     end
     function val = validate_waveform_filtering(obj, val)
         val = types.util.checkDtype('waveform_filtering', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('waveform_filtering', {[1]}, val)
     end
     function val = validate_waveform_mean(obj, val)
         val = types.util.checkDtype('waveform_mean', 'single', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[Inf,Inf]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('waveform_mean', {[Inf,Inf]}, val)
     end
     function val = validate_waveform_sd(obj, val)
         val = types.util.checkDtype('waveform_sd', 'single', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[Inf,Inf]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('waveform_sd', {[Inf,Inf]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)
