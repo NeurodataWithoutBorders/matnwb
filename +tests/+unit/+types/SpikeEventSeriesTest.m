@@ -10,6 +10,22 @@ classdef SpikeEventSeriesTest < tests.abstract.NwbTestCase
     methods (Test)
         function testExportSpikeEventSeries(testCase)
 
+            % This test should only run for NWB v2.9.0 or newer
+            versionToTest = [2, 9, 0];
+
+            currentVersionStr = types.core.Version();
+            currentVersionNum = str2double( strsplit(currentVersionStr, '.') );
+            
+            for i = 1:3
+                if currentVersionNum(i) < versionToTest(i)
+                    return
+                elseif currentVersionNum(i) > versionToTest(i)
+                    break
+                elseif currentVersionNum(i) == versionToTest(i)
+                    continue
+                end
+            end
+
             nwbFile = tests.factory.NWBFile();
             electrodeTable = tests.factory.ElectrodeTable(nwbFile);
 

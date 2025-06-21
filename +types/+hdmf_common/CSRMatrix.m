@@ -71,7 +71,7 @@ methods
     %% VALIDATORS
     
     function val = validate_data(obj, val)
-    
+        types.util.validateShape('data', {[Inf]}, val)
     end
     function val = validate_indices(obj, val)
         val = types.util.checkDtype('indices', 'uint', val);

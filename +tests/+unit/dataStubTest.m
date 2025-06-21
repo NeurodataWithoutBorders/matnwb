@@ -12,7 +12,7 @@ classdef dataStubTest < tests.abstract.NwbTestCase
         
             nwb = tests.factory.NWBFile();
             
-            data = reshape(1:5000, 25, 5, 4, 2, 5);
+            data = reshape(1:5000, 25, 5, 4, 10);
             
             timeseries = types.core.TimeSeries(...
                 'starting_time', 0.0, ... % seconds
@@ -37,7 +37,7 @@ classdef dataStubTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(stubData, stub.load([2, 2, 2], [4, 4, 4]));
             
             % test Inf
-            testCase.verifyEqual(stub(2:end, 2:end, 2:end, :), data(2:end, 2:end, 2:end, :));
+            testCase.verifyEqual(stub(2:end, 2:end, :), data(2:end, 2:end, :));
             
             % test stride
             testCase.verifyEqual(stub(1:2:25, 1:2:4, :, :), data(1:2:25, 1:2:4, :, :));
@@ -56,7 +56,7 @@ classdef dataStubTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(stub(primeInd, 2:4, :), data(primeInd, 2:4, :));
             testCase.verifyEqual(stub(primeInd, :, 1), data(primeInd, :, 1));
             testCase.verifyEqual(stub(primeInd, [1 2 5]), data(primeInd, [1 2 5]));
-            testCase.verifyEqual(stub([1 25], [1 5], [1 4], [1 2], [1 5]), data([1 25], [1 5], [1 4], [1 2], [1 5]));
+            testCase.verifyEqual(stub([1 25], [1 5], [1 4], [1 10]), data([1 25], [1 5], [1 4], [1 10]));
             overflowPrimeInd = primes(31);
             testCase.verifyEqual(stub(overflowPrimeInd), stub(ind2sub(stub.dims, overflowPrimeInd)));
             testCase.verifyEqual(stub(overflowPrimeInd), data(overflowPrimeInd));
@@ -65,7 +65,7 @@ classdef dataStubTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(stub([1 1 1 1]), data([1 1 1 1]));
             
             % test out of order indices
-            testCase.verifyEqual(stub([5 4 3 2 2]), data([5 4 3 2 2]));
+            testCase.verifyEqual(stub([5 4 3 10]), data([5 4 3 10]));
         end
         
         function testObjectCopy(testCase)

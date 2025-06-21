@@ -3,9 +3,31 @@ function [Processed, classprops, inherited] = processClass(name, namespace, preg
     branch = [{namespace.getClass(name)} namespace.getRootBranch(name)];
     branchNames = cell(size(branch));
     TYPEDEF_KEYS = {'neurodata_type_def', 'data_type_def'};
+
+    % Resolve type hierarchy (class and superclasses)
     for i = 1:length(branch)
         hasTypeDefs = isKey(branch{i}, TYPEDEF_KEYS);
         branchNames{i} = branch{i}(TYPEDEF_KEYS{hasTypeDefs});
+    end
+    
+    % Update type specifications based on ancestor types. In the schema
+    % specification, types implicitly inherit keys from the corresponding
+    % group, dataset, attribute, or link definitions of their ancestor types.
+    % If a key is redefined in a subtype, only the overridden keys are updated.
+    % To ensure that downstream generator classes use the inherited specification
+    % values (instead of default ones), we loop through the type hierarchy and
+    % fill in any missing key/value pairs from the ancestor specifications.
+    for i = 2:length(branch)
+        currentType = branch{1};
+        parentType = branch{i};
+
+        if isKey(currentType, 'groups') && isKey(parentType, 'groups')
+            schemes.internal.updateGroupSpecFromParent(currentType('groups'), parentType('groups'))
+        end
+
+        if isKey(currentType, 'datasets') && isKey(parentType, 'datasets')
+            schemes.internal.updateDatasetSpecFromParent(currentType('datasets'), parentType('datasets'))
+        end
     end
 
     for iAncestor = 1:length(branch)

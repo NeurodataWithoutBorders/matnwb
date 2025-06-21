@@ -78,7 +78,11 @@ classdef Dataset < file.interface.HasProps & file.interface.HasQuantity
                 obj.dtype = file.mapType(source(dataTypeKey));
             end
             
-            if isKey(source, 'quantity')
+            % If a value key is specified, the resulting property is a
+            % constant (and by definition required). Therefore we will only
+            % update the required flag based on the `quantity` key when the
+            % `value` key is missing.
+            if ~isKey(source, valueKey) && isKey(source, 'quantity')
                 obj.required = obj.isRequired(source);
                 obj.scalar = obj.isScalar(source);
             end
