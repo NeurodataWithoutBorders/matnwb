@@ -26,6 +26,10 @@ function matchingParentSpec = findMatchingParentSpec(spec, parentSpecs)
                     break
                 end
             end
+
+            % If a spec has an id key, but none of the parent specs matched on 
+            % that key, break here, otherwise we risk matching wrong specs.
+            break
         end
     end
 
