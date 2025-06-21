@@ -14,10 +14,12 @@ function updateDatasetSpecFromParent(childDatasets, parentDatasets)
         for iKey = 1:numel(parentDatasetKeys)
             currentKey = parentDatasetKeys{iKey};
 
-            if strcmp(currentKey, "attributes")
-                schemes.internal.updateAttributeSpecFromParent(...
-                    currentDataset('attributes'), ...
-                    matchingParentDataset('attributes'))
+            if strcmp(currentKey, 'attributes')
+                if isKey(matchingParentDataset, 'attributes')
+                    schemes.internal.updateAttributeSpecFromParent(...
+                        currentDataset('attributes'), ...
+                        matchingParentDataset('attributes'))
+                end
             
             elseif ~isKey(currentDataset, currentKey)
                 currentDataset(currentKey) = matchingParentDataset(currentKey);
