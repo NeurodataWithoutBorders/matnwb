@@ -34,10 +34,8 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'data',[]);
         addParameter(p, 'notes',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.data = p.Results.data;
         obj.notes = p.Results.notes;
         if strcmp(class(obj), 'types.core.ScratchData')
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
@@ -54,21 +52,7 @@ methods
     end
     function val = validate_notes(obj, val)
         val = types.util.checkDtype('notes', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('notes', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

@@ -111,21 +111,7 @@ methods
     
     function val = validate_field_of_view(obj, val)
         val = types.util.checkDtype('field_of_view', 'single', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[3], [2]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('field_of_view', {[3], [2]}, val)
     end
     function val = validate_imaging_plane(obj, val)
         if isa(val, 'types.untyped.SoftLink')
@@ -141,39 +127,11 @@ methods
     end
     function val = validate_pmt_gain(obj, val)
         val = types.util.checkDtype('pmt_gain', 'single', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('pmt_gain', {[1]}, val)
     end
     function val = validate_scan_line_rate(obj, val)
         val = types.util.checkDtype('scan_line_rate', 'single', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('scan_line_rate', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

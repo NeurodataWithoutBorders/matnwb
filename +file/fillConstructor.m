@@ -1,4 +1,4 @@
-function functionString = fillConstructor(name, parentname, defaults, props, namespace, superClassProps)
+function functionString = fillConstructor(name, parentname, defaults, props, namespace, superClassProps, inherited)
     caps = upper(name);
     functionBody = ['% ' caps ' - Constructor for ' name];
 
@@ -7,7 +7,7 @@ function functionString = fillConstructor(name, parentname, defaults, props, nam
         functionBody = [functionBody newline() docString];
     end
 
-    bodyString = fillBody(parentname, defaults, props, namespace);
+    bodyString = fillBody(parentname, defaults, props, namespace, inherited);
     if ~isempty(bodyString)
         functionBody = [functionBody newline() bodyString];
     end
@@ -30,7 +30,8 @@ function functionString = fillConstructor(name, parentname, defaults, props, nam
         'end'}, newline());
 end
 
-function bodystr = fillBody(parentName, defaults, props, namespace)
+function bodystr = fillBody(parentName, defaults, props, namespace, inherited)
+
     if isempty(defaults)
         bodystr = '';
     else
@@ -153,6 +154,8 @@ function bodystr = fillBody(parentName, defaults, props, namespace)
         'p.StructExpand = false;'};
 
     names = names(~dynamicConstrained & ~isAnonymousType);
+    names = setdiff(names, inherited, 'stable');
+    
     defaults = cell(size(names));
     for i=1:length(names)
         prop = props(names{i});
