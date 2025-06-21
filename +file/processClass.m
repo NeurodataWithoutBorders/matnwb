@@ -22,11 +22,11 @@ function [Processed, classprops, inherited] = processClass(name, namespace, preg
         parentType = branch{i};
 
         if isKey(currentType, 'groups')
-            %schemes.updateGroupFromParent(currentNode('groups'), parentNode('groups'))
+            schemes.internal.updateGroupFromSpecParent(currentNode('groups'), parentNode('groups'))
         end
 
         if isKey(currentType, 'datasets') && isKey(parentType, 'datasets')
-            schemes.updateDatasetFromParent(currentType('datasets'), parentType('datasets'))
+            schemes.internal.updateDatasetSpecFromParent(currentType('datasets'), parentType('datasets'))
         end
     end
 
