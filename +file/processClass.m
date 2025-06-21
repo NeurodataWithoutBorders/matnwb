@@ -21,7 +21,7 @@ function [Processed, classprops, inherited] = processClass(name, namespace, preg
         currentType = branch{1};
         parentType = branch{i};
 
-        if isKey(currentType, 'groups')
+        if isKey(currentType, 'groups') && isKey(parentType, 'groups')
             schemes.internal.updateGroupSpecFromParent(currentType('groups'), parentType('groups'))
         end
 
