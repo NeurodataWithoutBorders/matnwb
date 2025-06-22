@@ -7,8 +7,10 @@ function validationStr = fillValidators(propnames, props, namespacereg, classNam
         if (isa(prop, 'file.Attribute') || isa(prop, 'file.Dataset')) ...
                 && prop.readonly && ~isempty(prop.value)
             % Need to add a validator for inherited and readonly properties. In 
-            % the superclass these properties might not be read only and due to
-            % inheritance its not possible to change property attributes
+            % the superclass these properties might not be read-only and due to
+            % inheritance rules in MATLAB it is not possible to change property 
+            % attributes of a property from public (in a superclass) to 
+            % protected (in a subclass).
             if any(strcmp(nm, inherited))
                 validationBody = fillReadOnlyValidator(nm, prop.value, className);
             else
@@ -57,7 +59,7 @@ function unitValidationStr = fillUnitValidation(name, prop, namespaceReg)
     elseif isa(prop, 'file.Attribute')
         unitValidationStr = strjoin({unitValidationStr...
             fillDtypeValidation(name, prop.dtype)...
-            fillDimensionValidation(prop.dtype, prop.shape)...
+            fillDimensionValidation(name, prop.shape)...
             }, newline);
     else % Link
         fullname = namespaceReg.getFullClassName(prop.type);
@@ -154,7 +156,7 @@ function unitValidationStr = fillDatasetValidation(name, prop, namespaceReg)
     if isempty(prop.type)
         unitValidationStr = strjoin({unitValidationStr...
             fillDtypeValidation(name, prop.dtype)...
-            fillDimensionValidation(prop.dtype, prop.shape)...
+            fillDimensionValidation(name, prop.shape)...
             }, newline);
     elseif prop.isConstrainedSet
         fullname = getFullClassName(namespaceReg, prop.type, name);
@@ -200,11 +202,7 @@ function validationStr = fillLinkValidation(name, prop, namespacereg)
     );
 end
 
-function fdvstr = fillDimensionValidation(type, shape)
-    if strcmp(type, 'any')
-        fdvstr = '';
-        return;
-    end
+function fdvstr = fillDimensionValidation(name, shape)
 
     if iscell(shape)
         if ~isempty(shape) && iscell(shape{1})
@@ -214,33 +212,18 @@ function fdvstr = fillDimensionValidation(type, shape)
                 end
                 shape{i} = ['[' strjoin(shape{i}, ',') ']'];
             end
-            shapeStr = ['{' strjoin(shape, ', ') '}'];
+            validShapeStr = ['{' strjoin(shape, ', ') '}'];
         else
             for i = 1:length(shape)
                 shape{i} = num2str(shape{i});
             end
-            shapeStr = ['{[' strjoin(shape, ',') ']}'];
+            validShapeStr = ['{[' strjoin(shape, ',') ']}'];
         end
     else
-        shapeStr = ['{[' num2str(shape) ']}'];
+        validShapeStr = ['{[' num2str(shape) ']}'];
     end
 
-    fdvstr = strjoin({...
-        'if isa(val, ''types.untyped.DataStub'')' ...
-        '    if 1 == val.ndims' ...
-        '        valsz = [val.dims 1];' ...
-        '    else' ...
-        '        valsz = val.dims;' ...
-        '    end' ...
-        'elseif istable(val)' ...
-        '    valsz = [height(val) 1];'...
-        'elseif ischar(val)'...
-        '    valsz = [size(val, 1) 1];'...
-        'else'...
-        '    valsz = size(val);'...
-        'end' ...
-        ['validshapes = ' shapeStr ';']...
-        'types.util.checkDims(valsz, validshapes);'}, newline);
+    fdvstr = sprintf('types.util.validateShape(''%s'', %s, val)', name, validShapeStr);
 end
 
 %NOTE: can return empty strings

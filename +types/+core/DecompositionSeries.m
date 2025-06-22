@@ -72,15 +72,11 @@ methods
         p.PartialMatching = false;
         p.StructExpand = false;
         addParameter(p, 'bands',[]);
-        addParameter(p, 'data',[]);
-        addParameter(p, 'data_unit',[]);
         addParameter(p, 'metric',[]);
         addParameter(p, 'source_channels',[]);
         addParameter(p, 'source_timeseries',[]);
         misc.parseSkipInvalidName(p, varargin);
         obj.bands = p.Results.bands;
-        obj.data = p.Results.data;
-        obj.data_unit = p.Results.data_unit;
         obj.metric = p.Results.metric;
         obj.source_channels = p.Results.source_channels;
         obj.source_timeseries = p.Results.source_timeseries;
@@ -109,57 +105,15 @@ methods
     end
     function val = validate_data(obj, val)
         val = types.util.checkDtype('data', 'numeric', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[Inf,Inf,Inf]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('data', {[Inf,Inf,Inf]}, val)
     end
     function val = validate_data_unit(obj, val)
         val = types.util.checkDtype('data_unit', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('data_unit', {[1]}, val)
     end
     function val = validate_metric(obj, val)
         val = types.util.checkDtype('metric', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('metric', {[1]}, val)
     end
     function val = validate_source_channels(obj, val)
         val = types.util.checkDtype('source_channels', 'types.hdmf_common.DynamicTableRegion', val);

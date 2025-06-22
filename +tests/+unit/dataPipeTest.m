@@ -290,6 +290,100 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                 testCase.verifyEqual(ME.identifier,  'NWB:BoundPipe:CannotSetPipeProperty')
             end
         end
+        
+        function testBoundPipeExportToNewFileError(testCase)
+        % Test error message when exporting bound DataPipe to new file
+            
+            % Create original file with DataPipe
+            originalFile = 'test_bound_original.nwb';
+            newFile = 'test_bound_new.nwb';
+            
+            nwb = tests.factory.NWBFile();
+                           
+            fData = randi(250, 10, 100);
+            fData_compressed = types.untyped.DataPipe('data', fData);
+            
+            fdataNWB = types.core.TimeSeries( ...
+                'data', fData_compressed, ...
+                'data_unit', 'mV', ...
+                'starting_time', 0.0, ...
+                'starting_time_rate', 30.0);
+            
+            nwb.acquisition.set('test_data', fdataNWB);
+            nwbExport(nwb, originalFile);
+            
+            % Read the file (creates a bound DataPipe)
+            file = nwbRead(originalFile, 'ignorecache');
+            
+            % Try to export to new file - this should fail, because the
+            % data pipe in the imported file object is a "bound" pipe (the data
+            % is not in memory), and the bound pipe's write method can not 
+            % "pipe" the data into a new file.
+            testCase.verifyError(@() nwbExport(file, newFile), ...
+                'NWB:BoundPipe:CannotExportToNewFile');
+        end
+        
+        function testUnboundPipeExportToExistingFileError(testCase)
+            % Test error message when exporting "unbound" DataPipe to existing file
+            
+            existingFile = 'test_unbound_existing.nwb';
+            
+            % Create first file with DataPipe
+            nwb1 = tests.factory.NWBFile();
+
+            fData1 = randi(250, 10, 100);
+            fData1_compressed = types.untyped.DataPipe('data', fData1);
+            
+            fdataNWB1 = types.core.TimeSeries( ...
+                'data', fData1_compressed, ...
+                'data_unit', 'mV', ...
+                'starting_time', 0.0, ...
+                'starting_time_rate', 30.0);
+            
+            nwb1.acquisition.set('test_data', fdataNWB1);
+            nwbExport(nwb1, existingFile);
+            
+            % Create second NWB object with same structure
+            nwb2 = tests.factory.NWBFile();
+            
+            fData2 = randi(250, 10, 100);
+            fData2_compressed = types.untyped.DataPipe('data', fData2);
+            fdataNWB2 = types.core.TimeSeries( ...
+                'data', fData2_compressed, ...
+                'data_unit', 'mV', ...
+                'starting_time', 0.0, ...
+                'starting_time_rate', 30.0);
+            nwb2.acquisition.set('test_data', fdataNWB2);
+            
+            % Try to export to existing file - this will fail, because a
+            % dataset already exists in the acquisition/test_data/test
+            % location.
+            testCase.verifyError(@() nwbExport(nwb2, existingFile), ...
+                'NWB:BlueprintPipe:DatasetAlreadyExists');
+        end
+        
+        function testShapeValidation(testCase)
+            % Create a DataPipe with both maxSize and actual size that are
+            % valid
+            dataPipe = types.untyped.DataPipe( 'data', rand(50, 50, 3), 'maxSize', [50,50,inf] );
+            try
+                imageSeries = types.core.ImageSeries('data', dataPipe, 'data_unit', 'test'); %#ok<NASGU>
+            catch
+                testCase.verifyFail('Expected DataPipe with valid shape for ImageSeries to pass')
+            end
+            % Create a DataPipe where maxSize is invalid
+            dataPipe = types.untyped.DataPipe( 'data', rand(50, 50, 3, 4, 10), 'maxSize', [50, 50, 3, 4, inf] );
+            testCase.verifyError(...
+                @() types.core.ImageSeries('data', dataPipe, 'data_unit', 'test'), ...
+                'NWB:CheckDims:InvalidDimensions')
+
+            % Create a DataPipe where maxSize is valid and actual size is
+            % invalid
+            dataPipe = types.untyped.DataPipe( 'data', rand(50, 50, 3, 4, 10), 'maxSize', [50, 50, 3, inf] );
+            testCase.verifyWarning(...
+                @() types.core.ImageSeries('data', dataPipe, 'data_unit', 'test'), ...
+                'NWB:ValidateShape:InvalidDataPipeSize')
+        end
     end
 
     methods (Test, TestTags={'UsesDynamicallyLoadedFilters'})

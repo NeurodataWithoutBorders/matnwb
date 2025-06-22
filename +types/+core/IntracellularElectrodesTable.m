@@ -39,10 +39,8 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'description',[]);
         addParameter(p, 'electrode',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.description = p.Results.description;
         obj.electrode = p.Results.electrode;
         if strcmp(class(obj), 'types.core.IntracellularElectrodesTable')
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));

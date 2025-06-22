@@ -39,10 +39,8 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'description',[]);
         addParameter(p, 'response',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.description = p.Results.description;
         obj.response = p.Results.response;
         if strcmp(class(obj), 'types.core.IntracellularResponsesTable')
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));

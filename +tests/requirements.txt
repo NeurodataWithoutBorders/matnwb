@@ -2,5 +2,5 @@ scipy
 matplotlib
 hdf5plugin
 dataframe_image
-git+https://github.com/NeurodataWithoutBorders/nwbinspector.git@dev
 git+https://github.com/NeurodataWithoutBorders/pynwb.git@nwb-schema-2.9.0
+git+https://github.com/NeurodataWithoutBorders/nwbinspector.git@dev

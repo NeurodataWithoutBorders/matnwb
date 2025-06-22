@@ -82,21 +82,7 @@ methods
     
     function val = validate_detection_method(obj, val)
         val = types.util.checkDtype('detection_method', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('detection_method', {[1]}, val)
     end
     function val = validate_source_electricalseries(obj, val)
         if isa(val, 'types.untyped.SoftLink')
@@ -112,39 +98,11 @@ methods
     end
     function val = validate_source_idx(obj, val)
         val = types.util.checkDtype('source_idx', 'int32', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[2,Inf], [Inf]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('source_idx', {[2,Inf], [Inf]}, val)
     end
     function val = validate_times(obj, val)
         val = types.util.checkDtype('times', 'double', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[Inf]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('times', {[Inf]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

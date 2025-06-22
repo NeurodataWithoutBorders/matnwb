@@ -148,7 +148,8 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
         defaults,... %all defaults, regardless of inheritance
         classprops,...
         namespace, ...
-        superClassProps);
+        superClassProps, ...
+        inherited);
     setterFcns = file.fillSetters(setdiff(nonInherited, union(readonly, hiddenAndReadonly)), classprops);
     validatorFcns = file.fillValidators(allProperties, classprops, namespace, namespace.getFullClassName(name), inherited);
     exporterFcns = file.fillExport(nonInherited, class, depnm, required);

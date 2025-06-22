@@ -22,7 +22,7 @@ methods
         %
         %  - control_description (char) - Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0.
         %
-        %  - data (any) - Stimulus voltage applied.
+        %  - data (numeric) - Stimulus voltage applied.
         %
         %  - data_continuity (char) - Optionally describe the continuity of the data. Can be "continuous", "instantaneous", or "step". For example, a voltage trace would be "continuous", because samples are recorded from a continuous process. An array of lick times would be "instantaneous", because the data represents distinct moments in time. Times of image presentations would be "step" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable.
         %
@@ -59,11 +59,7 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'data',[]);
-        addParameter(p, 'data_unit',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.data = p.Results.data;
-        obj.data_unit = p.Results.data_unit;
         if strcmp(class(obj), 'types.core.VoltageClampStimulusSeries')
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
@@ -74,7 +70,8 @@ methods
     %% VALIDATORS
     
     function val = validate_data(obj, val)
-    
+        val = types.util.checkDtype('data', 'numeric', val);
+        types.util.validateShape('data', {[Inf]}, val)
     end
     function val = validate_data_unit(obj, val)
         if isequal(val, 'volts')
