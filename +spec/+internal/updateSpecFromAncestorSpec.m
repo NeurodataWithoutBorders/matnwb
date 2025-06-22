@@ -5,8 +5,8 @@ function updateSpecFromAncestorSpec(childSpecs, ancestorSpecs)
 %   spec.internal.updateSpecFromAncestorSpec(childSpecs, ancestorSpecs)
 %
 % Input Arguments:
-%   childSpecs - Cell array of child specification objects.
-%   ancestorSpecs - Cell array of ancestor specification objects.
+%   childSpecs - Cell array of child specification containers.Map objects.
+%   ancestorSpecs - Cell array of ancestor specification containers.Map objects.
 %
 % Output Arguments:
 %   None. The function modifies child specifications in place.
@@ -26,16 +26,16 @@ function updateSpecFromAncestorSpec(childSpecs, ancestorSpecs)
 
         ancestorSpecKeys = matchingAncestorSpec.keys();
         for iKey = 1:numel(ancestorSpecKeys)
-            currentKey = ancestorSpecKeys{iKey};
-            if any(strcmp(currentKey, primitiveTypeKeys))
-                if isKey(currentSpec, currentKey)
+            currentAncestorKey = ancestorSpecKeys{iKey};
+            if any(strcmp(currentAncestorKey, primitiveTypeKeys))
+                if isKey(currentSpec, currentAncestorKey)
                     % Recursively update nested specification primitives
                     spec.internal.updateSpecFromAncestorSpec(...
-                        currentSpec(currentKey), ...
-                        matchingAncestorSpec(currentKey))
+                        currentSpec(currentAncestorKey), ...
+                        matchingAncestorSpec(currentAncestorKey))
                 end
-            elseif ~isKey(currentSpec, currentKey)
-                currentSpec(currentKey) = matchingAncestorSpec(currentKey);
+            elseif ~isKey(currentSpec, currentAncestorKey)
+                currentSpec(currentAncestorKey) = matchingAncestorSpec(currentAncestorKey);
             end
         end
     end

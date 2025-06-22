@@ -4,7 +4,6 @@ function [Processed, classprops, inherited] = processClass(name, namespace, preg
     branchNames = cell(size(branch));
     TYPEDEF_KEYS = {'neurodata_type_def', 'data_type_def'};
 
-    % Resolve type hierarchy (class and superclasses)
     for i = 1:length(branch)
         hasTypeDefs = isKey(branch{i}, TYPEDEF_KEYS);
         branchNames{i} = branch{i}(TYPEDEF_KEYS{hasTypeDefs});
