@@ -1,5 +1,5 @@
-function matchingParentSpec = findMatchingParentSpec(spec, parentSpecs)
-% findMatchingParentSpec - Find a spec from a set of parent specs matching on name
+function matchingParentSpec = findMatchingAncestorSpec(spec, parentSpecs)
+% findMatchingAncestorSpec - Find a spec from a set of parent specs matching on name
 
     matchingParentSpec = [];
 

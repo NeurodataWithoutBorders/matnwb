@@ -1,12 +1,12 @@
-function updateSpecFromParentSpec(childSpecs, parentSpecs)
-% updateSpecFromParentSpec - Updates child specifications from parent specifications.
+function updateSpecFromAncestorSpec(childSpecs, ancestorSpecs)
+% updateSpecFromAncestorSpec - Updates child specifications from ancestor specifications.
 %
 % Syntax:
-%   schemes.internal.updateSpecFromParentSpec(childSpecs, parentSpecs)
+%   spec.internal.updateSpecFromAncestorSpec(childSpecs, ancestorSpecs)
 %
 % Input Arguments:
 %   childSpecs - Cell array of child specification objects.
-%   parentSpecs - Cell array of parent specification objects.
+%   ancestorSpecs - Cell array of ancestor specification objects.
 %
 % Output Arguments:
 %   None. The function modifies child specifications in place.
@@ -17,8 +17,8 @@ function updateSpecFromParentSpec(childSpecs, parentSpecs)
     for iSpec = 1:numel(childSpecs)
         currentSpec = childSpecs{iSpec};
         
-        matchingParentSpec = spec.internal.findMatchingParentSpec(...
-            currentSpec, parentSpecs);
+        matchingParentSpec = spec.internal.findMatchingAncestorSpec(...
+            currentSpec, ancestorSpecs);
     
         if isempty(matchingParentSpec)
             continue
@@ -30,7 +30,7 @@ function updateSpecFromParentSpec(childSpecs, parentSpecs)
             if any(strcmp(currentKey, specTypeKeys))
                 if isKey(currentSpec, currentKey)
                     % Recursively update contained specification types
-                    spec.internal.updateSpecFromParentSpec(...
+                    spec.internal.updateSpecFromAncestorSpec(...
                         currentSpec(currentKey), ...
                         matchingParentSpec(currentKey))
                 end

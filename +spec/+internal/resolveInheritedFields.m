@@ -15,9 +15,9 @@ function resolveInheritedFields(typeSpec, ancestorTypeSpecs)
         ancestorType = ancestorTypeSpecs{i};
 
         for j = 1:numel(primitiveTypes)
-            primitiveKey = primitiveTypes(j).Key;
+            primitiveKey = primitiveTypes(j).Key; % i.e: groups, datasets etc.
             if isKey(typeSpec, primitiveKey) && isKey(ancestorType, primitiveKey)
-                spec.internal.updateSpecFromParentSpec(...
+                spec.internal.updateSpecFromAncestorSpec(...
                     typeSpec(primitiveKey), ancestorType(primitiveKey))
             end
         end
