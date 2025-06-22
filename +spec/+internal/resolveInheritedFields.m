@@ -4,10 +4,11 @@ function resolveInheritedFields(typeSpec, ancestorTypeSpecs)
     % Update type specifications based on ancestor types. In the schema
     % specification, types implicitly inherit keys from the corresponding
     % group, dataset, attribute, or link definitions of their ancestor types.
-    % If a key is redefined in a subtype, only the overridden keys are updated.
-    % To ensure that downstream generator classes use the inherited specification
-    % values (instead of default ones), we loop through the type hierarchy and
-    % fill in any missing key/value pairs from the ancestor specifications.
+    % If a key is redefined in a subtype, only the overridden keys are typically 
+    % specified. To ensure that downstream generator classes use the inherited 
+    % specification values (instead of default ones), we loop through the type 
+    % hierarchy and fill in any missing key/value pairs from the ancestor 
+    % specifications.
 
     primitiveTypes = enumeration('spec.enum.Primitives');
     
@@ -15,7 +16,7 @@ function resolveInheritedFields(typeSpec, ancestorTypeSpecs)
         ancestorType = ancestorTypeSpecs{i};
 
         for j = 1:numel(primitiveTypes)
-            primitiveKey = primitiveTypes(j).Key; % i.e: groups, datasets etc.
+            primitiveKey = primitiveTypes(j).Key; % i.e: 'groups', 'datasets' etc.
             if isKey(typeSpec, primitiveKey) && isKey(ancestorType, primitiveKey)
                 spec.internal.updateSpecFromAncestorSpec(...
                     typeSpec(primitiveKey), ancestorType(primitiveKey))

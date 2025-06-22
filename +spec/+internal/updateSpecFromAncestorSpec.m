@@ -11,8 +11,8 @@ function updateSpecFromAncestorSpec(childSpecs, ancestorSpecs)
 % Output Arguments:
 %   None. The function modifies child specifications in place.
 
-    specTypes = enumeration('spec.enum.Primitives');
-    specTypeKeys = {specTypes.Key};
+    primitiveTypes = enumeration('spec.enum.Primitives');
+    primitiveTypeKeys = {primitiveTypes.Key};
 
     for iSpec = 1:numel(childSpecs)
         currentSpec = childSpecs{iSpec};
@@ -27,9 +27,9 @@ function updateSpecFromAncestorSpec(childSpecs, ancestorSpecs)
         ancestorSpecKeys = matchingAncestorSpec.keys();
         for iKey = 1:numel(ancestorSpecKeys)
             currentKey = ancestorSpecKeys{iKey};
-            if any(strcmp(currentKey, specTypeKeys))
+            if any(strcmp(currentKey, primitiveTypeKeys))
                 if isKey(currentSpec, currentKey)
-                    % Recursively update contained specification types
+                    % Recursively update nested specification primitives
                     spec.internal.updateSpecFromAncestorSpec(...
                         currentSpec(currentKey), ...
                         matchingAncestorSpec(currentKey))
