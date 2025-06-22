@@ -115,39 +115,11 @@ methods
     
     function val = validate_cell_id(obj, val)
         val = types.util.checkDtype('cell_id', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('cell_id', {[1]}, val)
     end
     function val = validate_description(obj, val)
         val = types.util.checkDtype('description', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('description', {[1]}, val)
     end
     function val = validate_device(obj, val)
         if isa(val, 'types.untyped.SoftLink')
@@ -163,111 +135,27 @@ methods
     end
     function val = validate_filtering(obj, val)
         val = types.util.checkDtype('filtering', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('filtering', {[1]}, val)
     end
     function val = validate_initial_access_resistance(obj, val)
         val = types.util.checkDtype('initial_access_resistance', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('initial_access_resistance', {[1]}, val)
     end
     function val = validate_location(obj, val)
         val = types.util.checkDtype('location', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('location', {[1]}, val)
     end
     function val = validate_resistance(obj, val)
         val = types.util.checkDtype('resistance', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('resistance', {[1]}, val)
     end
     function val = validate_seal(obj, val)
         val = types.util.checkDtype('seal', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('seal', {[1]}, val)
     end
     function val = validate_slice(obj, val)
         val = types.util.checkDtype('slice', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('slice', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

@@ -192,21 +192,7 @@ methods
     
     function val = validate_description(obj, val)
         val = types.util.checkDtype('description', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('description', {[1]}, val)
     end
     function val = validate_device(obj, val)
         if isa(val, 'types.untyped.SoftLink')
@@ -222,165 +208,39 @@ methods
     end
     function val = validate_excitation_lambda(obj, val)
         val = types.util.checkDtype('excitation_lambda', 'single', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('excitation_lambda', {[1]}, val)
     end
     function val = validate_grid_spacing(obj, val)
         val = types.util.checkDtype('grid_spacing', 'single', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[3], [2]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('grid_spacing', {[3], [2]}, val)
     end
     function val = validate_grid_spacing_unit(obj, val)
         val = types.util.checkDtype('grid_spacing_unit', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('grid_spacing_unit', {[1]}, val)
     end
     function val = validate_imaging_rate(obj, val)
         val = types.util.checkDtype('imaging_rate', 'single', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('imaging_rate', {[1]}, val)
     end
     function val = validate_indicator(obj, val)
         val = types.util.checkDtype('indicator', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('indicator', {[1]}, val)
     end
     function val = validate_location(obj, val)
         val = types.util.checkDtype('location', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('location', {[1]}, val)
     end
     function val = validate_manifold(obj, val)
         val = types.util.checkDtype('manifold', 'single', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[3,Inf,Inf,Inf], [3,Inf,Inf]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('manifold', {[3,Inf,Inf,Inf], [3,Inf,Inf]}, val)
     end
     function val = validate_manifold_conversion(obj, val)
         val = types.util.checkDtype('manifold_conversion', 'single', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('manifold_conversion', {[1]}, val)
     end
     function val = validate_manifold_unit(obj, val)
         val = types.util.checkDtype('manifold_unit', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('manifold_unit', {[1]}, val)
     end
     function val = validate_opticalchannel(obj, val)
         namedprops = struct();
@@ -389,57 +249,15 @@ methods
     end
     function val = validate_origin_coords(obj, val)
         val = types.util.checkDtype('origin_coords', 'single', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[3], [2]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('origin_coords', {[3], [2]}, val)
     end
     function val = validate_origin_coords_unit(obj, val)
         val = types.util.checkDtype('origin_coords_unit', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('origin_coords_unit', {[1]}, val)
     end
     function val = validate_reference_frame(obj, val)
         val = types.util.checkDtype('reference_frame', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('reference_frame', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

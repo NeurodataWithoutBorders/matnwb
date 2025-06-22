@@ -2,7 +2,7 @@ classdef SpikeEventSeries < types.core.ElectricalSeries & types.untyped.GroupCla
 % SPIKEEVENTSERIES - Stores snapshots/snippets of recorded spike events (i.e., threshold crossings). This may also be raw data, as reported by ephys hardware. If so, the TimeSeries::description field should describe how events were detected. All events span the same recording channels and store snapshots of equal duration. TimeSeries::data array structure: [num events] [num channels] [num samples] (or [num events] [num samples] for single electrode).
 %
 % Required Properties:
-%  data, electrodes, timestamps
+%  data, electrodes
 
 
 
@@ -57,17 +57,7 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'data',[]);
-        addParameter(p, 'data_unit',[]);
-        addParameter(p, 'timestamps',[]);
-        addParameter(p, 'timestamps_interval',[]);
-        addParameter(p, 'timestamps_unit',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.data = p.Results.data;
-        obj.data_unit = p.Results.data_unit;
-        obj.timestamps = p.Results.timestamps;
-        obj.timestamps_interval = p.Results.timestamps_interval;
-        obj.timestamps_unit = p.Results.timestamps_unit;
         if strcmp(class(obj), 'types.core.SpikeEventSeries')
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
@@ -79,21 +69,7 @@ methods
     
     function val = validate_data(obj, val)
         val = types.util.checkDtype('data', 'numeric', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[Inf,Inf,Inf], [Inf,Inf]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('data', {[Inf,Inf,Inf], [Inf,Inf]}, val)
     end
     function val = validate_data_unit(obj, val)
         if isequal(val, 'volts')
@@ -104,21 +80,7 @@ methods
     end
     function val = validate_timestamps(obj, val)
         val = types.util.checkDtype('timestamps', 'double', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[Inf]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('timestamps', {[Inf]}, val)
     end
     function val = validate_timestamps_interval(obj, val)
         if isequal(val, 1)

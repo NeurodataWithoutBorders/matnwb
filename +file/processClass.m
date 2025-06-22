@@ -3,6 +3,7 @@ function [Processed, classprops, inherited] = processClass(name, namespace, preg
     branch = [{namespace.getClass(name)} namespace.getRootBranch(name)];
     branchNames = cell(size(branch));
     TYPEDEF_KEYS = {'neurodata_type_def', 'data_type_def'};
+
     for i = 1:length(branch)
         hasTypeDefs = isKey(branch{i}, TYPEDEF_KEYS);
         branchNames{i} = branch{i}(TYPEDEF_KEYS{hasTypeDefs});
@@ -14,6 +15,9 @@ function [Processed, classprops, inherited] = processClass(name, namespace, preg
         nodename = node(TYPEDEF_KEYS{hasTypeDefs});
 
         if ~isKey(pregen, nodename)
+            
+            spec.internal.resolveInheritedFields(node, branch(iAncestor+1:end))
+            
             switch node('class_type')
                 case 'groups'
                     class = file.Group(node);

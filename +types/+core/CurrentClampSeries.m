@@ -34,7 +34,7 @@ methods
         %
         %  - control_description (char) - Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0.
         %
-        %  - data (any) - Recorded voltage.
+        %  - data (numeric) - Recorded voltage.
         %
         %  - data_continuity (char) - Optionally describe the continuity of the data. Can be "continuous", "instantaneous", or "step". For example, a voltage trace would be "continuous", because samples are recorded from a continuous process. An array of lick times would be "instantaneous", because the data represents distinct moments in time. Times of image presentations would be "step" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable.
         %
@@ -74,14 +74,10 @@ methods
         addParameter(p, 'bias_current',[]);
         addParameter(p, 'bridge_balance',[]);
         addParameter(p, 'capacitance_compensation',[]);
-        addParameter(p, 'data',[]);
-        addParameter(p, 'data_unit',[]);
         misc.parseSkipInvalidName(p, varargin);
         obj.bias_current = p.Results.bias_current;
         obj.bridge_balance = p.Results.bridge_balance;
         obj.capacitance_compensation = p.Results.capacitance_compensation;
-        obj.data = p.Results.data;
-        obj.data_unit = p.Results.data_unit;
         if strcmp(class(obj), 'types.core.CurrentClampSeries')
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
@@ -101,60 +97,19 @@ methods
     
     function val = validate_bias_current(obj, val)
         val = types.util.checkDtype('bias_current', 'single', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('bias_current', {[1]}, val)
     end
     function val = validate_bridge_balance(obj, val)
         val = types.util.checkDtype('bridge_balance', 'single', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('bridge_balance', {[1]}, val)
     end
     function val = validate_capacitance_compensation(obj, val)
         val = types.util.checkDtype('capacitance_compensation', 'single', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('capacitance_compensation', {[1]}, val)
     end
     function val = validate_data(obj, val)
-    
+        val = types.util.checkDtype('data', 'numeric', val);
+        types.util.validateShape('data', {[Inf]}, val)
     end
     function val = validate_data_unit(obj, val)
         if isequal(val, 'volts')

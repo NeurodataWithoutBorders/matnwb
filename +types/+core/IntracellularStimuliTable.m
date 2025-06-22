@@ -45,11 +45,9 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'description',[]);
         addParameter(p, 'stimulus',[]);
         addParameter(p, 'stimulus_template',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.description = p.Results.description;
         obj.stimulus = p.Results.stimulus;
         obj.stimulus_template = p.Results.stimulus_template;
         if strcmp(class(obj), 'types.core.IntracellularStimuliTable')
