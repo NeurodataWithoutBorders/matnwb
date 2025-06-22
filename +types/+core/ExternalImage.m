@@ -42,11 +42,9 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'data',[]);
         addParameter(p, 'image_format',[]);
         addParameter(p, 'image_mode',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.data = p.Results.data;
         obj.image_format = p.Results.image_format;
         obj.image_mode = p.Results.image_mode;
         if strcmp(class(obj), 'types.core.ExternalImage')
@@ -68,39 +66,11 @@ methods
     end
     function val = validate_image_format(obj, val)
         val = types.util.checkDtype('image_format', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('image_format', {[1]}, val)
     end
     function val = validate_image_mode(obj, val)
         val = types.util.checkDtype('image_mode', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('image_mode', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)
