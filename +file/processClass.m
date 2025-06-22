@@ -9,26 +9,6 @@ function [Processed, classprops, inherited] = processClass(name, namespace, preg
         hasTypeDefs = isKey(branch{i}, TYPEDEF_KEYS);
         branchNames{i} = branch{i}(TYPEDEF_KEYS{hasTypeDefs});
     end
-    
-    % Update type specifications based on ancestor types. In the schema
-    % specification, types implicitly inherit keys from the corresponding
-    % group, dataset, attribute, or link definitions of their ancestor types.
-    % If a key is redefined in a subtype, only the overridden keys are updated.
-    % To ensure that downstream generator classes use the inherited specification
-    % values (instead of default ones), we loop through the type hierarchy and
-    % fill in any missing key/value pairs from the ancestor specifications.
-    for i = 2:length(branch)
-        currentType = branch{1};
-        parentType = branch{i};
-
-        if isKey(currentType, 'groups') && isKey(parentType, 'groups')
-            schemes.internal.updateGroupSpecFromParent(currentType('groups'), parentType('groups'))
-        end
-
-        if isKey(currentType, 'datasets') && isKey(parentType, 'datasets')
-            schemes.internal.updateDatasetSpecFromParent(currentType('datasets'), parentType('datasets'))
-        end
-    end
 
     for iAncestor = 1:length(branch)
         node = branch{iAncestor};
@@ -36,6 +16,9 @@ function [Processed, classprops, inherited] = processClass(name, namespace, preg
         nodename = node(TYPEDEF_KEYS{hasTypeDefs});
 
         if ~isKey(pregen, nodename)
+            
+            spec.internal.resolveInheritedFields(node, branch(iAncestor+1:end))
+            
             switch node('class_type')
                 case 'groups'
                     class = file.Group(node);
