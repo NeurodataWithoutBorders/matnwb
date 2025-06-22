@@ -80,6 +80,7 @@ jobs:
 
       - name: Install MATLAB
         uses: matlab-actions/setup-matlab@v2
+        if: always()
         with:
           release: ${{ matrix.matlab-version }}
           cache: ${{ env.USE_CACHE }}
