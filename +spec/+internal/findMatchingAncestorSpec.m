@@ -1,16 +1,16 @@
-function matchingParentSpec = findMatchingAncestorSpec(spec, parentSpecs)
-% findMatchingAncestorSpec - Find a spec from a set of parent specs matching on name
+function matchingAncestorSpec = findMatchingAncestorSpec(spec, ancestorSpecs)
+% findMatchingAncestorSpec - Find a spec from a set of ancestor specs matching on name
 
-    matchingParentSpec = [];
+    matchingAncestorSpec = [];
 
     if isKey(spec, 'name')
         specId = spec('name');
         
-        for j = 1:numel(parentSpecs)
-            parentSpec = parentSpecs{j};
+        for j = 1:numel(ancestorSpecs)
+            ancestorSpec = ancestorSpecs{j};
             
-            if isKey(parentSpec, 'name') && strcmp(parentSpec('name'), specId)
-                matchingParentSpec = parentSpec;
+            if isKey(ancestorSpec, 'name') && strcmp(ancestorSpec('name'), specId)
+                matchingAncestorSpec = ancestorSpec;
                 break
             end
         end

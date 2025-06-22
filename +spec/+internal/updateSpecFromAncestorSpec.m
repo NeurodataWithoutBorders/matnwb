@@ -17,25 +17,25 @@ function updateSpecFromAncestorSpec(childSpecs, ancestorSpecs)
     for iSpec = 1:numel(childSpecs)
         currentSpec = childSpecs{iSpec};
         
-        matchingParentSpec = spec.internal.findMatchingAncestorSpec(...
+        matchingAncestorSpec = spec.internal.findMatchingAncestorSpec(...
             currentSpec, ancestorSpecs);
     
-        if isempty(matchingParentSpec)
+        if isempty(matchingAncestorSpec)
             continue
         end
 
-        parentSpecKeys = matchingParentSpec.keys();
-        for iKey = 1:numel(parentSpecKeys)
-            currentKey = parentSpecKeys{iKey};
+        ancestorSpecKeys = matchingAncestorSpec.keys();
+        for iKey = 1:numel(ancestorSpecKeys)
+            currentKey = ancestorSpecKeys{iKey};
             if any(strcmp(currentKey, specTypeKeys))
                 if isKey(currentSpec, currentKey)
                     % Recursively update contained specification types
                     spec.internal.updateSpecFromAncestorSpec(...
                         currentSpec(currentKey), ...
-                        matchingParentSpec(currentKey))
+                        matchingAncestorSpec(currentKey))
                 end
             elseif ~isKey(currentSpec, currentKey)
-                currentSpec(currentKey) = matchingParentSpec(currentKey);
+                currentSpec(currentKey) = matchingAncestorSpec(currentKey);
             end
         end
     end
