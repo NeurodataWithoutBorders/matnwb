@@ -201,8 +201,9 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
 
                     if options.FailOnInvalidType
                         error(identifier, message, names{i}, ME.message)
-                    else
+                    else % Skip while displaying warning
                         warning(identifier, message, names{i}, ME.message);
+                        continue
                     end
                 end
 
