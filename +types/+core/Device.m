@@ -10,7 +10,7 @@ properties
     description; %  (char) Description of the device as free-form text. If there is any software/firmware associated with the device, the names and versions of those can be added to NWBFile.was_generated_by.
     manufacturer; %  (char) DEPRECATED. The name of the manufacturer of the device, e.g., Imec, Plexon, Thorlabs. Instead of using this field, store the value in DeviceModel.manufacturer and link to that DeviceModel from this Device.
     model; %  DeviceModel
-    model_name; %  (char) DEPRECATED. The model name of the device, e.g., Neuropixels 1.0, V-Probe, Bergamo III. Instead of using this field, storing the value in DeviceModel.name and link to that DeviceModel from this Device.
+    model_name; %  (char) DEPRECATED. The model name of the device, e.g., Neuropixels 1.0, V-Probe, Bergamo III. Instead of using this field, create and add a new DeviceModel named the model name and link to that DeviceModel from this Device.
     model_number; %  (char) DEPRECATED. The model number (or part/product number) of the device, e.g., PRB_1_4_0480_1, PLX-VP-32-15SE(75)-(260-80)(460-10)-300-(1)CON/32m-V, BERGAMO. Instead of using this field, store the value in DeviceModel.model_number and link to that DeviceModel from this Device.
     serial_number; %  (char) The serial number of the device.
 end
@@ -31,7 +31,7 @@ methods
         %
         %  - model (DeviceModel) - The model of the device.
         %
-        %  - model_name (char) - DEPRECATED. The model name of the device, e.g., Neuropixels 1.0, V-Probe, Bergamo III. Instead of using this field, storing the value in DeviceModel.name and link to that DeviceModel from this Device.
+        %  - model_name (char) - DEPRECATED. The model name of the device, e.g., Neuropixels 1.0, V-Probe, Bergamo III. Instead of using this field, create and add a new DeviceModel named the model name and link to that DeviceModel from this Device.
         %
         %  - model_number (char) - DEPRECATED. The model number (or part/product number) of the device, e.g., PRB_1_4_0480_1, PLX-VP-32-15SE(75)-(260-80)(460-10)-300-(1)CON/32m-V, BERGAMO. Instead of using this field, store the value in DeviceModel.model_number and link to that DeviceModel from this Device.
         %

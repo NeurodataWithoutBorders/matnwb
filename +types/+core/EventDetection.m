@@ -17,7 +17,7 @@ properties
 end
 % OPTIONAL PROPERTIES
 properties
-    times; %  (double) Timestamps of events, in seconds.
+    times; %  (double) DEPRECATED. Timestamps of events, in seconds.
 end
 
 methods
@@ -36,7 +36,7 @@ methods
         %
         %  - source_idx (int32) - Indices (zero-based) into the linked source ElectricalSeries::data array corresponding to time of event or time and channel of event. ''description'' should define what is meant by time of event (e.g., .25 ms before action potential peak, zero-crossing time, etc). The index points to each event from the raw data.
         %
-        %  - times (double) - Timestamps of events, in seconds.
+        %  - times (double) - DEPRECATED. Timestamps of events, in seconds.
         %
         % Output Arguments:
         %  - eventDetection (types.core.EventDetection) - A EventDetection object
