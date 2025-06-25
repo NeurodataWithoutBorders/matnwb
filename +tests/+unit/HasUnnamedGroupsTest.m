@@ -106,6 +106,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             % Add items with similar names to nwbdatainterface
             module.add('Time_Series', types.core.TimeSeries())
 
+            % todo: Set needs to support names that will have the same alias
             module.add('Time-Series', types.core.TimeSeries())
 
             % Verify that the dynamic property was created
@@ -217,6 +218,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             % Add items with similar names that will evaluate to the same
             % valid name
             module.add('Time_Series', types.core.TimeSeries());
+            % todo: Set needs to support names that will have the same alias
             module.add('Time-Series', types.core.TimeSeries());
 
             C = evalc('disp(module)');
