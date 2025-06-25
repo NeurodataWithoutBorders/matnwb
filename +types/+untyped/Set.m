@@ -241,24 +241,19 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
                 try
                     obj.validateEntry(name{i}, elem)
                     
-                    obj.Map(name{i}) = elem;
-                    name = obj.getValidPropertyName(name{i});
+                    propertyName = obj.getValidPropertyName(name{i});
 
                     if isOverride
                         if isempty(val)
-                            obj.remove(name);
+                            obj.remove(propertyName);
                         else
-                            obj.(name) = val;
+                            obj.(propertyName) = val;
                         end
                     else
-                        if ~obj.isH5Name(name) && ~obj.isPropertyName(name)
-                            obj.addProperty(name{i}, elem);
-                            return;
-                        end
+                        obj.addProperty(propertyName, elem);
                         if  ~isempty(obj.ItemAddedFunction)
                             obj.ItemAddedFunction(name{i})
                         end
-
                     end
                 catch ME
                     identifier = 'NWB:Set:FailedValidation';
