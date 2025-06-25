@@ -229,13 +229,11 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
                     elem = val(i);
                 end
 
-                isOverride = obj.isKey(name{i});
+                propertyAlreadyExists = obj.isKey(name{i});
 
-                if options.FailIfKeyExists
-                    if obj.isKey(name{i})
-                        error('NWB:Set:KeyExists', ...
-                            'Key `%s` already exists in Set', name{i})
-                    end
+                if options.FailIfKeyExists && propertyAlreadyExists
+                    error('NWB:Set:KeyExists', ...
+                        'Key `%s` already exists in Set', name{i})
                 end
 
                 try
@@ -243,7 +241,7 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
                     
                     propertyName = obj.getValidPropertyName(name{i});
 
-                    if isOverride
+                    if propertyAlreadyExists
                         if isempty(val)
                             obj.remove(propertyName);
                         else
