@@ -339,6 +339,7 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
 
         function displayNonScalarObject(obj)
             hdr = getHeader(obj);
+            hdr = strrep(hdr, 'array with properties:', 'with elements:');
             footer = getFooter(obj);
             
             propertyNames = string( properties(obj) );
