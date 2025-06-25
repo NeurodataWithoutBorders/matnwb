@@ -204,53 +204,49 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
 
     % Legacy set/get methods
     methods
-        function obj = set(obj, name, val, options)
+        function obj = set(obj, names, values, options)
             
             arguments
                 obj types.untyped.Set
-                name (1,:) string
-                val
+                names (1,:) string
+                values {mustBeSameLength(values, names)}
                 options.FailOnInvalidType (1,1) logical = false
                 options.FailIfKeyExists (1,1) logical = false
             end
             
-            if ischar(val)
-                val = {val};
+            if ischar(values)
+                values = {values};
             end
 
-            cellExtract = iscell(val);
-            
-            assert(length(name) == length(val),...
-                'number of property names should match number of vals on set.');
-            for i = 1:length(name)
+            cellExtract = iscell(values);
+            for i = 1:length(names)
                 if cellExtract
-                    elem = val{i};
+                    elem = values{i};
                 else
-                    elem = val(i);
+                    elem = values(i);
                 end
 
-                propertyAlreadyExists = obj.isKey(name{i});
+                propertyAlreadyExists = obj.isKey(names{i});
 
                 if options.FailIfKeyExists && propertyAlreadyExists
                     error('NWB:Set:KeyExists', ...
-                        'Key `%s` already exists in Set', name{i})
+                        'Key `%s` already exists in Set', names{i})
                 end
 
                 try
-                    obj.validateEntry(name{i}, elem)
+                    obj.validateEntry(names{i}, elem)
                     
-                    propertyName = obj.getValidPropertyName(name{i});
-
                     if propertyAlreadyExists
-                        if isempty(val)
+                        propertyName = obj.getValidPropertyName(names{i});
+                        if isempty(values)
                             obj.remove(propertyName);
                         else
-                            obj.(propertyName) = val;
+                            obj.(propertyName) = values;
                         end
                     else
-                        obj.addProperty(propertyName, elem);
+                        obj.addProperty(names{i}, elem);
                         if  ~isempty(obj.ItemAddedFunction)
-                            obj.ItemAddedFunction(name{i})
+                            obj.ItemAddedFunction(names{i})
                         end
                     end
                 catch ME
@@ -258,9 +254,9 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
                     message = 'Failed to add key `%s` to Constrained Set with message:\n  %s';
 
                     if options.FailOnInvalidType
-                        error(identifier, message, name{i}, ME.message)
+                        error(identifier, message, names{i}, ME.message)
                     else
-                        warning(identifier, message, name{i}, ME.message);
+                        warning(identifier, message, names{i}, ME.message);
                     end
                 end
             end
@@ -450,5 +446,15 @@ function setterFunction = getDynamicSetMethodFilterFunction(name)
     function setProp(obj, val)
         obj.validateEntry(name, val)
         obj.(name) = val;
+    end
+end
+
+function mustBeSameLength(values, names)
+    isValid = length(names) == length(values);
+    if ~isValid
+        error(...
+            'NWB:Set:NameValueLengthMismatch', ...
+            ['The number of values must match the number of names ', ...
+            'provided to the Set.'])
     end
 end
