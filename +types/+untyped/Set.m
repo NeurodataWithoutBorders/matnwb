@@ -136,69 +136,26 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
         end
 
         function C = horzcat(varargin) %#ok<STOUT>
-            % overloads horzcat(A1,A2,...,An)
+        % horzcat - overloads horzcat(A1,A2,...,An)
             error('NWB:Set:Unsupported',...
                 'types.untyped.Set does not support concatenation');
         end
 
         function C = vertcat(varargin) %#ok<STOUT>
-            % overloads vertcat(A1, A2,...,An)
+        % vertcat - overloads vertcat(A1, A2,...,An)
             error('NWB:Set:Unsupported',...
                 'types.untyped.Set does not support concatenation.');
         end
 
-        function add(obj, name, val)
-        % add - Add an element to the set
-            obj.set(name, val, 'FailIfKeyExists', true);
+        function add(obj, name, value)
+        % add - Add an element (name, value pair) to the set
+            obj.set(name, value, 'FailIfKeyExists', true);
         end
     end
 
     methods (Hidden)
         function setValidationFunction(obj, functionHandle)
             obj.ValidationFunction = functionHandle;
-        end
-    end
-
-    % Methods for adding and removing dynamic properties
-    methods (Access = private)
-        function addProperty(obj, name, value)
-            arguments
-                obj types.untyped.Set
-                name (1,1) string
-                value
-            end
-            name = char(name);
-
-            validName = matlab.lang.makeValidName(name);
-            assert(~obj.isH5Name(name) && ~obj.isPropertyName(validName), ...
-                'NWB:Set:DuplicateName', ...
-                'The provided property name `%s` (converted to `%s`) is a duplicate name.', ...
-                name, validName);
-            height = size(obj.DynamicPropertyToH5Name, 1);
-            obj.DynamicPropertyToH5Name(height+1, 1:2) = {validName, name};
-            obj.DynamicPropertiesMap(validName) = obj.addprop(validName);
-            if ~isempty(obj.ValidationFunction)
-                DynamicProperty = obj.DynamicPropertiesMap(validName);
-                DynamicProperty.SetMethod = getDynamicSetMethodFilterFunction(validName);
-            end
-            obj.(validName) = value;
-        end
-
-        function value = removeProperty(obj, name)
-            validateattributes(name, {'char'}, {'scalartext'}, 'removeProperty', 'name', 1);
-
-            assert(obj.isH5Name(name) || obj.isPropertyName(name), ...
-                'NWB:Set:MissingName', ...
-                'Property name or HDF5 identifier `%s` does not exist for this Set.', ...
-                name);
-
-            if obj.isH5Name(name)
-                name = obj.mapH5Name2PropertyName(name);
-            end
-            value = obj.(name);
-
-            delete(obj.DynamicPropertiesMap(name));
-            remove(obj.DynamicPropertiesMap, name);
         end
     end
 
@@ -263,14 +220,14 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
             end
         end
 
-        function o = get(obj, name)
-            if ischar(name)
-                name = {name};
+        function o = get(obj, names)
+            if ischar(names)
+                names = {names};
             end
 
-            o = cell(length(name),1);
-            for i=1:length(name)
-                currentName = obj.getValidPropertyName(name{i});
+            o = cell(length(names),1);
+            for i=1:length(names)
+                currentName = obj.getValidPropertyName(names{i});
                 o{i} = obj.(currentName);
             end
             if isscalar(o)
@@ -286,9 +243,8 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
         end
 
         function keyNames = keys(obj)
-            %keyNames = keys(obj.DynamicPropertiesMap);
             keyNames = obj.DynamicPropertyToH5Name(:, 2);
-            keyNames = transpose(keyNames);
+            keyNames = transpose(keyNames); % Return as row vector
         end
 
         function propValues = values(obj)
@@ -309,7 +265,7 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
                 obj.removeProperty(keys{iKey});
                 obj.removeNameFromNameMap(keys{iKey})
                 if ~isempty(obj.ItemRemovedFunction)
-                    obj.ItemRemovedFunction(name)
+                    obj.ItemRemovedFunction(keys{iKey})
                 end
             end
         end
@@ -354,6 +310,49 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
             end
             body = file.addSpaces(strjoin(body, newline), 4);
             disp([hdr newline body newline footer]);
+        end
+    end
+
+    % Methods for adding and removing dynamic properties
+    methods (Access = private)
+        function addProperty(obj, name, value)
+            arguments
+                obj types.untyped.Set
+                name (1,1) string
+                value
+            end
+            name = char(name);
+
+            validName = matlab.lang.makeValidName(name);
+            assert(~obj.isH5Name(name) && ~obj.isPropertyName(validName), ...
+                'NWB:Set:DuplicateName', ...
+                'The provided property name `%s` (converted to `%s`) is a duplicate name.', ...
+                name, validName);
+            height = size(obj.DynamicPropertyToH5Name, 1);
+            obj.DynamicPropertyToH5Name(height+1, 1:2) = {validName, name};
+            obj.DynamicPropertiesMap(validName) = obj.addprop(validName);
+            if ~isempty(obj.ValidationFunction)
+                DynamicProperty = obj.DynamicPropertiesMap(validName);
+                DynamicProperty.SetMethod = getDynamicSetMethodFilterFunction(validName);
+            end
+            obj.(validName) = value;
+        end
+
+        function value = removeProperty(obj, name)
+            validateattributes(name, {'char'}, {'scalartext'}, 'removeProperty', 'name', 1);
+
+            assert(obj.isH5Name(name) || obj.isPropertyName(name), ...
+                'NWB:Set:MissingName', ...
+                'Property name or HDF5 identifier `%s` does not exist for this Set.', ...
+                name);
+
+            if obj.isH5Name(name)
+                name = obj.mapH5Name2PropertyName(name);
+            end
+            value = obj.(name);
+
+            delete(obj.DynamicPropertiesMap(name));
+            remove(obj.DynamicPropertiesMap, name);
         end
     end
 
