@@ -149,7 +149,9 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
 
         function add(obj, name, value)
         % add - Add an element (name, value pair) to the set
-            obj.set(name, value, 'FailIfKeyExists', true);
+            obj.set(name, value, ...
+                'FailIfKeyExists', true, ...
+                'FailOnInvalidType', true);
         end
     end
 
@@ -193,20 +195,6 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
 
                 try
                     obj.validateEntry(names{i}, currentValue)
-                    
-                    if propertyAlreadyExists
-                        propertyName = obj.getValidPropertyName(names{i});
-                        if isempty(currentValue)
-                            obj.remove(propertyName);
-                        else
-                            obj.(propertyName) = currentValue;
-                        end
-                    else
-                        obj.addProperty(names{i}, currentValue);
-                        if ~isempty(obj.ItemAddedFunction)
-                            obj.ItemAddedFunction(names{i})
-                        end
-                    end
                 catch ME
                     identifier = 'NWB:Set:FailedValidation';
                     message = 'Failed to add key `%s` to Constrained Set with message:\n  %s';
@@ -215,6 +203,20 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
                         error(identifier, message, names{i}, ME.message)
                     else
                         warning(identifier, message, names{i}, ME.message);
+                    end
+                end
+
+                if propertyAlreadyExists
+                    propertyName = obj.getValidPropertyName(names{i});
+                    if isempty(currentValue)
+                        obj.remove(propertyName);
+                    else
+                        obj.(propertyName) = currentValue;
+                    end
+                else
+                    obj.addProperty(names{i}, currentValue);
+                    if ~isempty(obj.ItemAddedFunction)
+                        obj.ItemAddedFunction(names{i})
                     end
                 end
             end
