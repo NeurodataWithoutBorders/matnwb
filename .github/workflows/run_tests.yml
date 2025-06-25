@@ -42,9 +42,8 @@ jobs:
           # Load the matrix configuration and extract latest version
           latest_matlab_version=$(yq '.[-1].matlab-version' .github/workflows/configurations/matlab_release_matrix_strategy.yml)
           
-          # Determine whether to use full matrix of MATLAB releases or just latest MATLAB release
-          use_full_matrix=false
-          
+          # Determine whether to use full matrix of MATLAB releases or just 
+          # latest MATLAB release
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.test_all_matlab_releases }}" == "true" ]]; then
             use_full_matrix=true
             echo "Workflow dispatch with full matrix for all MATLAB releases"
@@ -55,6 +54,7 @@ jobs:
             use_full_matrix=true
             echo "Non-draft PR - using full matrix"
           else
+            use_full_matrix=false
             echo "Using latest MATLAB release only"
           fi
           
