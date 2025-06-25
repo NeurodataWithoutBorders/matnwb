@@ -214,16 +214,17 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
                 options.FailIfKeyExists (1,1) logical = false
             end
             
+            % Wrap character vector in a cell array to treat it as a single 
+            % element. NB: This workaround is also supported by mustBeSameLength
             if ischar(values)
                 values = {values};
             end
 
-            cellExtract = iscell(values);
             for i = 1:length(names)
-                if cellExtract
-                    elem = values{i};
+                if iscell(values)
+                    currentValue = values{i}; % Extract from cell array
                 else
-                    elem = values(i);
+                    currentValue = values(i); % Extract from regular array
                 end
 
                 propertyAlreadyExists = obj.isKey(names{i});
@@ -234,18 +235,18 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
                 end
 
                 try
-                    obj.validateEntry(names{i}, elem)
+                    obj.validateEntry(names{i}, currentValue)
                     
                     if propertyAlreadyExists
                         propertyName = obj.getValidPropertyName(names{i});
-                        if isempty(values)
+                        if isempty(currentValue)
                             obj.remove(propertyName);
                         else
-                            obj.(propertyName) = values;
+                            obj.(propertyName) = currentValue;
                         end
                     else
-                        obj.addProperty(names{i}, elem);
-                        if  ~isempty(obj.ItemAddedFunction)
+                        obj.addProperty(names{i}, currentValue);
+                        if ~isempty(obj.ItemAddedFunction)
                             obj.ItemAddedFunction(names{i})
                         end
                     end
@@ -450,6 +451,11 @@ function setterFunction = getDynamicSetMethodFilterFunction(name)
 end
 
 function mustBeSameLength(values, names)
+    % Workaround to support character vectors as input for values.
+    if ischar(values)
+        values = {values};
+    end
+    
     isValid = length(names) == length(values);
     if ~isValid
         error(...
