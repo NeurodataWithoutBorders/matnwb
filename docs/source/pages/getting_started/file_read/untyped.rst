@@ -30,7 +30,7 @@ Data objects are added to a **Set** as name-value pairs using the ``add`` method
     someSet = types.untyped.Set();
     someSet.add('my timeseries', aTimeSeries)
 
-The small example above created a new **Set** with one entry:
+The example above creates a new **Set** with one entry:
 
 .. code-block:: MATLAB
 
@@ -42,13 +42,14 @@ The small example above created a new **Set** with one entry:
 
         myTimeseries: types.core.TimeSeries
 
-The data object (``TimeSeries``) is added as a dynamic property on the **Set** object. Because MATLAB does not support whitespace or special characters in property names, the name has been remapped to a valid MATLAB name.
+The data object (``TimeSeries``) is added as a dynamic property on the **Set** object. Because MATLAB does not support whitespace or special characters in property names, the name is remapped to a valid MATLAB identifier.
 
 .. note::
 
-    The actual name which is used when adding a data type to a **Set** will be used when the data is exported to an NWB file. Someone who reads the file with PyNWB or other NWB/HDF5 readers will only see that original name, i.e 'time series'. **In MatNWB we recommend using a consistent naming style that is valid in MATLAB, for example PascalCase, to avoid naming ambiguities.**
+    The name provided when adding a data object to a **Set** is preserved in the NWB file. Tools like PyNWB or other NWB/HDF5 readers will display this original name—for example, ``'my timeseries'``.  
+    **In MatNWB, we recommend using a consistent naming style that is valid in MATLAB (e.g., PascalCase) to avoid naming ambiguities.**
 
-To retrieve the value, simply refer to the property:
+To retrieve the value, refer to the property directly:
 
 .. code-block:: MATLAB
 
@@ -57,7 +58,8 @@ To retrieve the value, simply refer to the property:
 
 Supporting legacy syntax
 ------------------------
-MatNWB supports legacy syntax for setting and retrieving names and values from a **Set**:
+
+MatNWB also supports legacy syntax for setting and retrieving items in a **Set**:
 
 .. code-block:: MATLAB
 
@@ -69,7 +71,8 @@ MatNWB supports legacy syntax for setting and retrieving names and values from a
 
 .. note::
 
-    Sets also borrow ``containers.Map``'s ``keys`` and ``values`` methods to retrieve cell arrays of either.
+    The **Set** class also supports the ``keys`` and ``values`` methods, similar to ``containers.Map``, for retrieving cell arrays of keys or values.
+
 
 ..
    %% The paragraph describing Anon is commented out because the Anon appears to be unused %%
