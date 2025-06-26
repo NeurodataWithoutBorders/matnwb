@@ -5,17 +5,59 @@ Utility Types in MatNWB
 
 .. note::
 
-    Documentation for "untyped" types will be added soon
+    API documentation for "untyped" types will be added in the future.
 
+"Untyped" utility types are classes not defined by the NWB schema, but used alongside NWB data classes to provide additional functionality when reading or writing NWB files with MatNWB. These types are located in the ``+types/+untyped/`` namespace within the MatNWB root directory. The following untyped types are described in this section:
 
-"Untyped" Utility types are tools which allow for both flexibility as well as limiting certain constraints that are imposed by the NWB schema. These types are commonly stored in the ``+types/+untyped/`` package directories in your MatNWB installation.
+.. contents::
+   :local:
+   :depth: 1
 
 .. _matnwb-read-untyped-sets-anons:
 
-Sets and Anons
-~~~~~~~~~~~~~~
+Sets
+~~~~
 
-The **Set** (``types.untyped.Set`` or Constrained Sets) is used to capture a dynamic number of particular NWB-typed objects. They may contain certain type constraints on what types are allowable to be set. Set keys and values can be set and retrieved using their ``set`` and ``get`` methods:
+The **Set** class (``types.untyped.Set``) is used to store a dynamic collection of NWB-typed objects.
+Some NWB data types may include other data types as property values. The **Set** class supports this by enforcing constraints on its members—for example, restricting the set to contain only specified data types.
+For this reason, it is also referred to as a *constrained set*.
+
+Data objects are added to a **Set** as name-value pairs using the ``add`` method:
+
+.. code-block:: MATLAB
+
+    aTimeSeries = types.core.TimeSeries('data', rand(1,10));
+    someSet = types.untyped.Set();
+    someSet.add('my timeseries', aTimeSeries)
+
+The small example above created a new **Set** with one entry:
+
+.. code-block:: MATLAB
+
+    >> someSet
+
+    someSet = 
+
+      Set with entries:
+
+        myTimeseries: types.core.TimeSeries
+
+The data object (``TimeSeries``) is added as a dynamic property on the **Set** object. Because MATLAB does not support whitespace or special characters in property names, the name has been remapped to a valid MATLAB name.
+
+.. note::
+
+    The actual name which is used when adding a data type to a **Set** will be used when the data is exported to an NWB file. Someone who reads the file with PyNWB or other NWB/HDF5 readers will only see that original name, i.e 'time series'. **In MatNWB we recommend using a consistent naming style that is valid in MATLAB, for example PascalCase, to avoid naming ambiguities.**
+
+To retrieve the value, simply refer to the property:
+
+.. code-block:: MATLAB
+
+    timeSeriesCopy = someSet.myTimeseries
+
+
+Supporting legacy syntax
+------------------------
+MatNWB supports legacy syntax for setting and retrieving names and values from a **Set**:
 
 .. code-block:: MATLAB
 
@@ -29,7 +71,9 @@ The **Set** (``types.untyped.Set`` or Constrained Sets) is used to capture a dyn
 
     Sets also borrow ``containers.Map``'s ``keys`` and ``values`` methods to retrieve cell arrays of either.
 
-The **Anon** type (``types.untyped.Anon``) can be understood as a Set type with only a single key-value entry. This rarer type is only used for cases where the name for the stored object can be set by the user. Anon types may also hold NWB type constraints like Set.
+..
+   %% The paragraph describing Anon is commented out because the Anon appears to be unused %%
+   The **Anon** type (``types.untyped.Anon``) can be understood as a Set type with only a single key-value entry. This rarer type is only used for cases where the name for the stored object can be set by the user. Anon types may also hold NWB type constraints like Set.
 
 .. _matnwb-read-untyped-datastub-datapipe:
 
