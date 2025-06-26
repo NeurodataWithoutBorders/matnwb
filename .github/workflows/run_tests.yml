@@ -14,6 +14,12 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      test_all_matlab_releases:
+        description: 'Run test matrix with all matlab releases (true) or only latest MATLAB release (false)'
+        required: true
+        default: false
+        type: boolean
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -36,17 +42,29 @@ jobs:
           # Load the matrix configuration and extract latest version
           latest_matlab_version=$(yq '.[-1].matlab-version' .github/workflows/configurations/matlab_release_matrix_strategy.yml)
           
-          # Conditionally define the MATLAB test matrix based on the PR type.
-          # Draft pull requests are only tested against the latest MATLAB release,
-          # while non-draft PRs and push events are tested against all configured releases.
-          if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.event.pull_request.draft }}" == "true" ]]; then
-            echo "Draft PR detected - using latest MATLAB version only"
-            # Create matrix with only the latest entry
-            matrix=$(yq -o=json '.[-1:] | {"include": .}' .github/workflows/configurations/matlab_release_matrix_strategy.yml | tr -d '\n')
+          # Determine whether to use full matrix of MATLAB releases or just 
+          # latest MATLAB release
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.test_all_matlab_releases }}" == "true" ]]; then
+            use_full_matrix=true
+            echo "Workflow dispatch with full matrix for all MATLAB releases"
+          elif [[ "${{ github.event_name }}" != "workflow_dispatch" && "${{ github.event_name }}" != "pull_request" ]]; then
+            use_full_matrix=true
+            echo "Push event - using full matrix"
+          elif [[ "${{ github.event_name }}" == "pull_request" && "${{ github.event.pull_request.draft }}" != "true" ]]; then
+            use_full_matrix=true
+            echo "Non-draft PR - using full matrix"
           else
-            echo "Non-draft PR or push event - using full matrix"
-            # Create matrix with all entries
+            use_full_matrix=false
+            echo "Using latest MATLAB release only"
+          fi
+          
+          # Create the appropriate matrix based on the decision
+          if [[ "$use_full_matrix" == "true" ]]; then
+            # Create matrix with all MATLAB releases
             matrix=$(yq -o=json '{"include": .}' .github/workflows/configurations/matlab_release_matrix_strategy.yml | tr -d '\n')
+          else
+            # Create matrix with only the latest MATLAB release
+            matrix=$(yq -o=json '.[-1:] | {"include": .}' .github/workflows/configurations/matlab_release_matrix_strategy.yml | tr -d '\n')
           fi
           
           # Assign `matrix` and `latest_matlab_version` as outputs of this job
