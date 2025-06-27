@@ -68,6 +68,8 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             if obj.nameExists(name)
                 throwAsCaller(getNameExistsException(name, obj.TypeName))
             end
+
+            obj.assertNameNotReserved(name)
                       
             wasSuccess = false;
             for groupName = obj.GroupPropertyNames
@@ -213,7 +215,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                     end
                     
                     % Create a title for this group
-                    title = "<strong>" + groupName + " elements:</strong>";
+                    title = "<strong>" + groupName + " entries:</strong>";
                     
                     % Add this group to the property groups
                     groups(end+1) = matlab.mixin.util.PropertyGroup(propList, title); %#ok<AGROW>
@@ -230,8 +232,10 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                 nameMap = evalc('disp(T)');
 
                 str = sprintf([...
-                    'The following named elements of "%s" are remapped to have valid MATLAB ', ...
-                    'names, but will be written to file with their actual names:', ...
+                    ['Names for some entries of "%s" have been modified to ', ...
+                    'make them valid MATLAB identifiers before adding them as ', ...
+                    'properties of the object. The original names will still ', ...
+                    'be used when data is exported to file:\n'], ...
                     '\n%s\n'], obj.TypeName, strip(nameMap, 'right'));
 
                 warnState = warning('backtrace', 'off');
@@ -257,7 +261,16 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                 end
             end
         end
-            
+        
+        function assertNameNotReserved(obj, name)
+            if any( strcmp(obj.GroupPropertyNames, name) )
+                ME = MException(...
+                    'NWB:HasUnnamedGroups:ReservedName', ...
+                    '`%s` is a reserved name for a %s object. Please use another name.', name, class(obj));
+                throwAsCaller(ME)
+            end
+        end
+
         function tf = nameExists(obj, name)
         % nameExists - Check if name already exists in subgroup
             tf = false;
@@ -304,6 +317,15 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
         function createDynamicProperty(obj, name, groupName)
         % createDynamicProperty - Add a single dynamic property to the class
             
+            try
+                obj.assertNameNotReserved(name)
+            catch
+                error('NWB:HasUnnamedGroups:CouldNotAddEntry', ...
+                    ['Failed to add an entry with the name "%s" as a property ', ...
+                    'of this object because "%s" is a reserved name in ', ...
+                    '"%s".'], name, name, class(obj))
+            end
+
             % Create a valid MATLAB name
             setObj = obj.(groupName);
             propertyIdentifier = setObj.getPropertyName(name);
@@ -311,7 +333,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             % Check if property already exists
             assert(~isprop(obj, propertyIdentifier), ...
                 'NWB:HasUnnamedGroupsMixin:DynamicPropertyExists', ...
-                'Dynamic property with name "%s" already exists', propertyIdentifier)
+                'Property with name "%s" already exists', propertyIdentifier)
 
             % Verify that name only exists in one group
             nameCount = obj.countInstancesOfName(name);
@@ -366,7 +388,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             T = cat(1, T{:});
 
             if ~isempty(T)
-                keep = T.ValidName ~= T.ActualName;
+                keep = T.ValidIdentifier ~= T.OriginalName;
                 T = T(keep, :);
             end
         end

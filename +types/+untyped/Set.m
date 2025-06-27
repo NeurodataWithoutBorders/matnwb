@@ -9,7 +9,7 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
 %   entry, not the valid MATLAB identifier used for the Set s dynamic property 
 %   names. In legacy methods, `key` is equivalent to `name`.
 
-    properties (Access = private)        
+    properties (Access = private)
         ValidationFunction function_handle = function_handle.empty() % validation function for entries
         PropertyManager matnwb.utility.DynamicPropertyManager
     end
@@ -322,7 +322,8 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
 
         function displayNonScalarObject(obj)
             hdr = getHeader(obj);
-            hdr = strrep(hdr, 'array with properties:', 'with entries:');
+            hdr = strrep(hdr, 'with properties:', 'with entries:');
+            hdr = strrep(hdr, 'array ', '');
             footer = getFooter(obj);
             
             propertyNames = string( properties(obj) );
