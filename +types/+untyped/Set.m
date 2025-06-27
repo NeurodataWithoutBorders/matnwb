@@ -1,10 +1,15 @@
 classdef Set < dynamicprops & matlab.mixin.CustomDisplay
 % Set - A (utility) container class for storing neurodata types.
+%
+%   Neurodata types are added to the Set with name keys, forming name-value 
+%   pairs referred to as entries.  
 
     properties (Access = private)
         DynamicPropertiesMap % containers.Map (name) -> (meta.DynamicProperty)
-        ValidationFunction function_handle = function_handle.empty() % validation function
         DynamicPropertyToH5Name (:,2) cell % cell string matrix where first column is (name) and second column is (hdf5 name)
+        
+        ValidationFunction function_handle = function_handle.empty() % validation function
+        PropertyManager matnwb.utility.DynamicPropertyManager
     end
 
     properties (Access = ?matnwb.mixin.HasUnnamedGroups)
@@ -22,43 +27,31 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
             % obj = SET(src) can be a struct or map
             % obj = SET(__,fcn) adds a validation function from a handle
 
-            obj.DynamicPropertiesMap = containers.Map(...
-                'KeyType', 'char', ...
-                'ValueType', 'any');
+            obj.PropertyManager = matnwb.utility.DynamicPropertyManager(obj);
 
             if nargin == 0
                 return;
             end
 
-            % Pop validation function handle from input arguments
-            if isa(varargin{end}, 'function_handle')
-                obj.ValidationFunction = varargin{end};
-                varargin(end) = [];
-            end
+            % Handles case where `fcn` is passed as last input
+            varargin = obj.popValidationFunctionFromArgsIfPresent(varargin);
 
-            if isempty(varargin)
-                return
-            end
-
-            [names, values] = extractNamesAndValues(varargin{:});
-            for i = 1:length(names)
-                obj.addProperty(names{i}, values{i});
-            end
+            obj.addDynamicPropertiesFromArgsIfPresent(varargin)
         end
 
         %% validation function propagation
-        function set.ValidationFunction(obj, val)
-            obj.ValidationFunction = val;
+        function set.ValidationFunction(obj, value)
+            obj.ValidationFunction = value;
 
             if ~isempty(obj.ValidationFunction)
                 obj.validateAll("mode", "warn")
             end
         end
         
-        function validateEntry(obj, name, val)
+        function validateEntry(obj, name, value)
             if ~isempty(obj.ValidationFunction)
                 try
-                    obj.ValidationFunction(name, val);
+                    obj.ValidationFunction(name, value);
                 catch MECause
                     ME = MException('NWB:Set:InvalidEntry', ...
                         'Entry of Constrained Set with key `%s` is invalid.\n', name);
@@ -100,17 +93,18 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
         function refs = export(obj, fid, fullpath, refs)
             io.writeGroup(fid, fullpath);
 
-            dynamicPropertyNames = keys(obj.DynamicPropertiesMap);
-            for iPropName = 1:length(dynamicPropertyNames)
-                propName = dynamicPropertyNames{iPropName};
-                h5Name = obj.mapPropertyName2H5Name(propName);
-                propValue = obj.(propName);
-
-                propFullPath = [fullpath '/' h5Name];
-                if startsWith(class(propValue), 'types.')
-                    refs = propValue.export(fid, propFullPath, refs);
+            allPropertyNames = obj.PropertyManager.getPropertyNames();
+            for iPropName = 1:length(allPropertyNames)
+                propertyName = allPropertyNames{iPropName};
+                propertyValue = obj.(propertyName);
+                
+                originalName = obj.PropertyManager.getOriginalName(propertyName);
+                propertyFullPath = [fullpath '/' originalName];
+                
+                if startsWith(class(propertyValue), 'types.')
+                    refs = propertyValue.export(fid, propertyFullPath, refs);
                 else
-                    io.writeDataset(fid, propFullPath, propValue);
+                    io.writeDataset(fid, propertyFullPath, propertyValue);
                 end
             end
         end
@@ -155,16 +149,14 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
         end
     end
 
-    methods (Hidden)
+    methods (Hidden) % Allows setting custom validation function.
         function setValidationFunction(obj, functionHandle)
             obj.ValidationFunction = functionHandle;
         end
     end
-
-    % Legacy set/get methods
-    methods
+    
+    methods (Hidden) % Legacy set/get methods
         function obj = set(obj, names, values, options)
-            
             arguments
                 obj types.untyped.Set
                 names (1,:) string
@@ -186,106 +178,120 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
                     currentValue = values(i); % Extract from regular array
                 end
 
-                propertyAlreadyExists = obj.isKey(names{i});
+                currentKey = names{i};
+                
+                keyExists = obj.PropertyManager.existOriginalName(currentKey);
 
-                if options.FailIfKeyExists && propertyAlreadyExists
+                if options.FailIfKeyExists && keyExists
                     error('NWB:Set:KeyExists', ...
-                        'Key `%s` already exists in Set', names{i})
+                        'Key `%s` already exists in Set', currentKey)
                 end
 
                 try
-                    obj.validateEntry(names{i}, currentValue)
+                    obj.validateEntry(currentKey, currentValue)
                 catch ME
                     identifier = 'NWB:Set:FailedValidation';
                     message = 'Failed to add key `%s` to Constrained Set with message:\n  %s';
 
                     if options.FailOnInvalidType
-                        error(identifier, message, names{i}, ME.message)
+                        error(identifier, message, currentKey, ME.message)
                     else % Skip while displaying warning
-                        warning(identifier, message, names{i}, ME.message);
+                        warning(identifier, message, currentKey, ME.message);
                         continue
                     end
                 end
 
-                if propertyAlreadyExists
-                    propertyName = obj.getValidPropertyName(names{i});
+                if keyExists
                     if isempty(currentValue)
-                        obj.remove(propertyName);
+                        obj.remove(currentKey);
                     else
+                        propertyName = obj.getPropertyName(currentKey);
                         obj.(propertyName) = currentValue;
                     end
                 else
-                    obj.addProperty(names{i}, currentValue);
+                    obj.addProperty(currentKey, currentValue);
                     if ~isempty(obj.ItemAddedFunction)
-                        obj.ItemAddedFunction(names{i})
+                        obj.ItemAddedFunction(currentKey)
                     end
                 end
             end
         end
 
-        function o = get(obj, names)
+        function values = get(obj, names)
+
+            % NB: This method assumes the names being passed is the actual
+            % name, not the MATLAB-valid name.
+
             if ischar(names)
                 names = {names};
             end
 
-            o = cell(length(names),1);
-            for i=1:length(names)
-                currentName = obj.getValidPropertyName(names{i});
-                o{i} = obj.(currentName);
+            values = cell(length(names),1);
+            for i = 1:length(names)
+                obj.assertPropertyExists(names{i})
+                currentPropertyName = obj.getPropertyName(names{i});
+                values{i} = obj.(currentPropertyName);
             end
-            if isscalar(o)
-                o = o{1};
+            if isscalar(values)
+                values = values{1};
             end
         end
     end
 
     % Legacy methods mirroring containers.Map interface
-    methods
+    methods (Hidden)
         function cnt = Count(obj)
-            cnt = obj.DynamicPropertiesMap.Count;
+            cnt = numel( obj.PropertyManager.getPropertyNames() );
         end
 
         function keyNames = keys(obj)
-            keyNames = obj.DynamicPropertyToH5Name(:, 2);
-            keyNames = transpose(keyNames); % Return as row vector
+            keyNames = obj.PropertyManager.getOriginalNames();
+            if iscolumn(keyNames)
+                keyNames = transpose(keyNames); % Return as row vector
+            end
         end
 
         function propValues = values(obj)
-            propValues = keys(obj);
-            for iProp = 1:length(propValues)
-                propName = propValues{iProp};
+            allPropNames = keys(obj);
+            propValues = cell(size(allPropNames));
+            for iProp = 1:length(allPropNames)
+                propName = allPropNames{iProp};
                 propValues{iProp} = obj.get(propName);
             end
         end
 
-        function remove(obj, keys)
-            if ischar(keys)
-                keys = {keys};
+        function remove(obj, nameKeys) % todo
+            arguments
+                obj types.untyped.Set
+                nameKeys (1,:) string
             end
-            assert(iscellstr(keys), 'NWB:Set:InvalidArgument', ...
-                'Keys for elements to remove must be a cell array of strings.');
-            for iKey = 1:length(keys)
-                obj.removeProperty(keys{iKey});
-                obj.removeNameFromNameMap(keys{iKey})
-                if ~isempty(obj.ItemRemovedFunction)
-                    obj.ItemRemovedFunction(keys{iKey})
-                end
+
+            for iKey = 1:length(nameKeys)
+                obj.assertPropertyExists(nameKeys(iKey))
+                obj.warnIfDataTypeIsBoundToFile(nameKeys(iKey))
+                obj.removeProperty(nameKeys(iKey))
             end
         end
                 
         function tf = isKey(obj, name)
-            tf = obj.isH5Name(name) || obj.isPropertyName(name);
+            tf = obj.PropertyManager.existOriginalName(name);
+            if ~tf && isprop(obj, name)
+                warning(['"%s" does not exist as a key of this Set, ', ...
+                    'but it exists as the name of the property ', ...
+                    'corresponding to the key %s'], name, ...
+                    obj.PropertyManager.getOriginalName(name))
+            end
         end
 
         function clear(obj)
-            obj.remove(keys(obj.DynamicPropertiesMap));
+            obj.remove( keys(obj) );
         end
     end
 
     % matlab.mixin.CustomDisplay overrides
     methods (Access = protected)
         function displayEmptyObject(obj)
-            hdr = sprintf('  %s with no elements.', ...
+            hdr = sprintf('  %s with no entries.', ...
                 ['<a href="matlab:helpPopup types.untyped.Set" style="font-weight:bold">'...
                 'Set</a>']);
             footer = getFooter(obj);
@@ -298,7 +304,7 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
 
         function displayNonScalarObject(obj)
             hdr = getHeader(obj);
-            hdr = strrep(hdr, 'array with properties:', 'with elements:');
+            hdr = strrep(hdr, 'array with properties:', 'with entries:');
             footer = getFooter(obj);
             
             propertyNames = string( properties(obj) );
@@ -318,104 +324,80 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
 
     % Methods for adding and removing dynamic properties
     methods (Access = private)
+        function assertPropertyExists(obj, nameKey)
+            existsProperty = obj.PropertyManager.existOriginalName(nameKey);
+            assert(existsProperty, ...
+                'NWB:Set:EntryDoesNotExist', ...
+                'Set does not contain an entry with name `%s`', nameKey)
+        end
+        
         function addProperty(obj, name, value)
             arguments
                 obj types.untyped.Set
                 name (1,1) string
                 value
             end
-            name = char(name);
-
-            validName = matlab.lang.makeValidName(name);
-            assert(~obj.isH5Name(name) && ~obj.isPropertyName(validName), ...
-                'NWB:Set:DuplicateName', ...
-                'The provided property name `%s` (converted to `%s`) is a duplicate name.', ...
-                name, validName);
-            height = size(obj.DynamicPropertyToH5Name, 1);
-            obj.DynamicPropertyToH5Name(height+1, 1:2) = {validName, name};
-            obj.DynamicPropertiesMap(validName) = obj.addprop(validName);
+            
+            metaProperty = obj.PropertyManager.addProperty(name);
+            propertyName = metaProperty.Name;
+            
             if ~isempty(obj.ValidationFunction)
-                DynamicProperty = obj.DynamicPropertiesMap(validName);
-                DynamicProperty.SetMethod = getDynamicSetMethodFilterFunction(validName);
+                metaProperty.SetMethod = getDynamicSetMethodFilterFunction(propertyName);
             end
-            obj.(validName) = value;
+            obj.(propertyName) = value;
         end
 
-        function value = removeProperty(obj, name)
-            validateattributes(name, {'char'}, {'scalartext'}, 'removeProperty', 'name', 1);
-
-            assert(obj.isH5Name(name) || obj.isPropertyName(name), ...
-                'NWB:Set:MissingName', ...
-                'Property name or HDF5 identifier `%s` does not exist for this Set.', ...
-                name);
-
-            if obj.isH5Name(name)
-                name = obj.mapH5Name2PropertyName(name);
+        function removeProperty(obj, nameKey)
+            obj.PropertyManager.removeProperty(nameKey)
+            if ~isempty(obj.ItemRemovedFunction)
+                % Let potential Set "owner" know that property was removed
+                obj.ItemRemovedFunction(nameKey)
             end
-            value = obj.(name);
-
-            delete(obj.DynamicPropertiesMap(name));
-            remove(obj.DynamicPropertiesMap, name);
-        end
-    end
-
-    methods (Access = private)
-        function name = getValidPropertyName(obj, name)
-        % validateName - Validate and convert name to a valid property name
-            if obj.isH5Name(name)
-                name = obj.mapH5Name2PropertyName(name);
-            end
-            assert(obj.isPropertyName(name), ...
-                'NWB:Set:MissingName', ...
-                'Could not find property name `%s`', name);
-        end
-    end
-
-    % Utility methods for the "valid name" to "h5 name" map
-    methods (Access = private)
-        function tf = isPropertyName(obj, name)
-        % isPropertyName - Check if given name is present in the name map
-            arguments
-                obj types.untyped.Set
-                name (1,1) string
-            end
-            tf = any(strcmp(obj.DynamicPropertyToH5Name(:,1), name));
-        end
-
-        function tf = isH5Name(obj, name)
-        % isH5Name - Check if given name is present as h5 name in the name map
-            arguments
-                obj types.untyped.Set
-                name (1,1) string
-            end
-            tf = any(strcmp(obj.DynamicPropertyToH5Name(:,2), name));
-        end
-
-        function propName = mapH5Name2PropertyName(obj, h5Name)
-            assert(obj.isH5Name(h5Name));
-            rowIndex = find(strcmp(obj.DynamicPropertyToH5Name(:,2), h5Name), 1);
-            propName = obj.DynamicPropertyToH5Name{rowIndex,1};
-        end
-
-        function h5Name = mapPropertyName2H5Name(obj, propName)
-            assert(obj.isPropertyName(propName));
-            rowIndex = find(strcmp(obj.DynamicPropertyToH5Name(:,1), propName), 1);
-            h5Name = obj.DynamicPropertyToH5Name{rowIndex,2};
         end
     
-        function removeNameFromNameMap(obj, name)
-            if obj.isH5Name(name)
-                name = obj.mapH5Name2PropertyName(name);
-            end
+        function name = getPropertyName(obj, name)
+        % getPropertyName - Get property name given the original name for an entry
             
-            rowIndex = find(strcmp(obj.DynamicPropertyToH5Name(:,1), name), 1);
-            obj.DynamicPropertyToH5Name(rowIndex, :) = [];
+            existsName = obj.PropertyManager.existOriginalName(name);
+            assert(existsName, ...
+                'NWB:Set:MissingName', ...
+                'Could not find property name `%s`', name);
+
+            name = obj.PropertyManager.getPropertyNameFromOriginalName(name);
+        end
+    
+        function warnIfDataTypeIsBoundToFile(obj, nameKey)
+            % propertyName = obj.getPropertyName(nameKey);
+            % Todo: placeholder for future
+        end
+    end
+
+    % Constructor argument handling
+    methods (Access = private)
+        function args = popValidationFunctionFromArgsIfPresent(obj, args)
+        % Pop validation function handle from input arguments if present
+            if isa(args{end}, 'function_handle')
+                obj.ValidationFunction = args{end};
+                args(end) = [];
+            end
+        end
+    
+        function addDynamicPropertiesFromArgsIfPresent(obj, args)
+
+            if isempty(args)
+                return
+            end
+
+            [names, values] = extractNamesAndValuesFromArgs(args{:});
+            for i = 1:length(names)
+                obj.addProperty(names{i}, values{i});
+            end
         end
     end
 end
 
-function [names, values] = extractNamesAndValues(varargin)
-% extractNamesAndValues - Extract names and values from varargin
+function [names, values] = extractNamesAndValuesFromArgs(varargin)
+% extractNamesAndValuesFromArgs - Extract names and values from varargin
     if isscalar(varargin)
         assert(isstruct(varargin{1}) || isa(varargin{1}, 'containers.Map'), ...
             'NWB:Set:InvalidArguments', ...
