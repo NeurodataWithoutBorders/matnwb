@@ -2,21 +2,23 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
 % Set - A (utility) container class for storing neurodata types.
 %
 %   Neurodata types are added to the Set with name keys, forming name-value 
-%   pairs referred to as entries.  
+%   pairs referred to as entries. 
 
-    properties (Access = private)
-        DynamicPropertiesMap % containers.Map (name) -> (meta.DynamicProperty)
-        DynamicPropertyToH5Name (:,2) cell % cell string matrix where first column is (name) and second column is (hdf5 name)
-        
-        ValidationFunction function_handle = function_handle.empty() % validation function
+%   Developer notes:
+%   `name` is used throughout this class to refer to the actual name of a Set 
+%   entry, not the valid MATLAB identifier used for the Set s dynamic property 
+%   names. In legacy methods, `key` is equivalent to `name`.
+
+    properties (Access = private)        
+        ValidationFunction function_handle = function_handle.empty() % validation function for entries
         PropertyManager matnwb.utility.DynamicPropertyManager
     end
 
     properties (Access = ?matnwb.mixin.HasUnnamedGroups)
     % These properties enables the HasUnnamedGroups mixin to react when
-    % items are added or removed from the Set.
-        ItemAddedFunction function_handle
-        ItemRemovedFunction function_handle
+    % entries are added or removed from the Set.
+        EntryAddedFunction function_handle
+        EntryRemovedFunction function_handle
     end
     
     methods
@@ -54,7 +56,7 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
                     obj.ValidationFunction(name, value);
                 catch MECause
                     ME = MException('NWB:Set:InvalidEntry', ...
-                        'Entry of Constrained Set with key `%s` is invalid.\n', name);
+                        'Entry of Constrained Set with name `%s` is invalid.\n', name);
                     ME = ME.addCause(MECause);
                     throw(ME)
                 end
@@ -68,25 +70,26 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
                     {mustBeMember(options.Mode, ["warn", "fail"])} = "warn"
             end
 
-            setKeys = obj.keys();
-            keyFailed = false(size(setKeys));
+            names = obj.keys();
+            isInvalidEntry = false(size(names));
             
-            for i = 1:length(setKeys)
-                currentKey = setKeys{i};
+            for i = 1:length(names)
+                currentName = names{i};
                 try
-                    obj.validateEntry(currentKey, obj.get(currentKey));
+                    obj.validateEntry(currentName, obj.get(currentName));
                 catch ME
-                    keyFailed(i) = true;
+                    isInvalidEntry(i) = true;
                     if options.Mode == "warn"
                         warning('NWB:Set:InvalidEntry', ...
-                            'Failed to validate Constrained Set key `%s` with message:\n%s.\nData will be dropped.', ...
-                            currentKey, ME.message);
+                            ['Failed to validate entry of Constrained Set with ', ...
+                            'name `%s`.\nReason:\n%s.\nData will be dropped.'], ...
+                            currentName, ME.message);
                     else
                         rethrow(ME)
                     end
                 end
             end
-            obj.remove(setKeys(keyFailed))
+            obj.remove(names(isInvalidEntry))
         end
 
         %% Export
@@ -178,40 +181,40 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
                     currentValue = values(i); % Extract from regular array
                 end
 
-                currentKey = names{i};
+                currentName = names{i};
                 
-                keyExists = obj.PropertyManager.existOriginalName(currentKey);
+                existsEntry = obj.PropertyManager.existOriginalName(currentName);
 
-                if options.FailIfKeyExists && keyExists
+                if options.FailIfKeyExists && existsEntry
                     error('NWB:Set:KeyExists', ...
-                        'Key `%s` already exists in Set', currentKey)
+                        'Entry with name `%s` already exists in Set', currentName)
                 end
 
                 try
-                    obj.validateEntry(currentKey, currentValue)
+                    obj.validateEntry(currentName, currentValue)
                 catch ME
                     identifier = 'NWB:Set:FailedValidation';
-                    message = 'Failed to add key `%s` to Constrained Set with message:\n  %s';
+                    message = 'Failed to add entry `%s` to Constrained Set with message:\n  %s';
 
                     if options.FailOnInvalidType
-                        error(identifier, message, currentKey, ME.message)
+                        error(identifier, message, currentName, ME.message)
                     else % Skip while displaying warning
-                        warning(identifier, message, currentKey, ME.message);
+                        warning(identifier, message, currentName, ME.message);
                         continue
                     end
                 end
 
-                if keyExists
+                if existsEntry
                     if isempty(currentValue)
-                        obj.remove(currentKey);
+                        obj.remove(currentName);
                     else
-                        propertyName = obj.getPropertyName(currentKey);
+                        propertyName = obj.getPropertyName(currentName);
                         obj.(propertyName) = currentValue;
                     end
                 else
-                    obj.addProperty(currentKey, currentValue);
-                    if ~isempty(obj.ItemAddedFunction)
-                        obj.ItemAddedFunction(currentKey)
+                    obj.addProperty(currentName, currentValue);
+                    if ~isempty(obj.EntryAddedFunction)
+                        obj.EntryAddedFunction(currentName)
                     end
                 end
             end
@@ -228,7 +231,7 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
 
             values = cell(length(names),1);
             for i = 1:length(names)
-                obj.assertPropertyExists(names{i})
+                obj.assertEntryExists(names{i})
                 currentPropertyName = obj.getPropertyName(names{i});
                 values{i} = obj.(currentPropertyName);
             end
@@ -244,32 +247,32 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
             cnt = numel( obj.PropertyManager.getPropertyNames() );
         end
 
-        function keyNames = keys(obj)
-            keyNames = obj.PropertyManager.getOriginalNames();
-            if iscolumn(keyNames)
-                keyNames = transpose(keyNames); % Return as row vector
+        function keySet = keys(obj)
+            keySet = obj.PropertyManager.getOriginalNames();
+            if iscolumn(keySet)
+                keySet = transpose(keySet); % Return as row vector
             end
         end
 
-        function propValues = values(obj)
-            allPropNames = keys(obj);
-            propValues = cell(size(allPropNames));
-            for iProp = 1:length(allPropNames)
-                propName = allPropNames{iProp};
-                propValues{iProp} = obj.get(propName);
+        function valueSet = values(obj)
+            keySet = keys(obj);
+            valueSet = cell(size(keySet));
+            for iKey = 1:length(keySet)
+                currentKey = keySet{iKey};
+                valueSet{iKey} = obj.get(currentKey);
             end
         end
 
-        function remove(obj, nameKeys) % todo
+        function remove(obj, names) % todo
             arguments
                 obj types.untyped.Set
-                nameKeys (1,:) string
+                names (1,:) string
             end
 
-            for iKey = 1:length(nameKeys)
-                obj.assertPropertyExists(nameKeys(iKey))
-                obj.warnIfDataTypeIsBoundToFile(nameKeys(iKey))
-                obj.removeProperty(nameKeys(iKey))
+            for iEntry = 1:length(names)
+                obj.assertEntryExists(names(iEntry))
+                obj.warnIfDataTypeIsBoundToFile(names(iEntry))
+                obj.removeProperty(names(iEntry))
             end
         end
                 
@@ -278,7 +281,7 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
             if ~tf && isprop(obj, name)
                 warning(['"%s" does not exist as a key of this Set, ', ...
                     'but it exists as the name of the property ', ...
-                    'corresponding to the key %s'], name, ...
+                    'corresponding to the entry with name `%s`'], name, ...
                     obj.PropertyManager.getOriginalName(name))
             end
         end
@@ -324,11 +327,19 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
 
     % Methods for adding and removing dynamic properties
     methods (Access = private)
-        function assertPropertyExists(obj, nameKey)
-            existsProperty = obj.PropertyManager.existOriginalName(nameKey);
-            assert(existsProperty, ...
+        function assertEntryExists(obj, name)
+            existsEntry = obj.PropertyManager.existOriginalName(name);
+            
+            if ~existsEntry && isprop(obj, name)
+                warning(['"%s" is not the name for an entry of this Set, ', ...
+                    'but it exists as the property identifier corresponding ', ...
+                    'to the entry with name `%s`'], name, ...
+                    obj.PropertyManager.getOriginalName(name))
+            end
+
+            assert(existsEntry, ...
                 'NWB:Set:EntryDoesNotExist', ...
-                'Set does not contain an entry with name `%s`', nameKey)
+                'Set does not contain an entry with name `%s`', name)
         end
         
         function addProperty(obj, name, value)
@@ -347,27 +358,27 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
             obj.(propertyName) = value;
         end
 
-        function removeProperty(obj, nameKey)
-            obj.PropertyManager.removeProperty(nameKey)
-            if ~isempty(obj.ItemRemovedFunction)
-                % Let potential Set "owner" know that property was removed
-                obj.ItemRemovedFunction(nameKey)
+        function removeProperty(obj, name)
+            obj.PropertyManager.removeProperty(name)
+            if ~isempty(obj.EntryRemovedFunction)
+                % Let potential Set "owner" know that entry was removed
+                obj.EntryRemovedFunction(name)
             end
         end
     
         function name = getPropertyName(obj, name)
-        % getPropertyName - Get property name given the original name for an entry
+        % getPropertyName - Get property name given the actual name of an entry
             
             existsName = obj.PropertyManager.existOriginalName(name);
             assert(existsName, ...
                 'NWB:Set:MissingName', ...
-                'Could not find property name `%s`', name);
+                'Could not find name `%s` in Set', name);
 
             name = obj.PropertyManager.getPropertyNameFromOriginalName(name);
         end
     
-        function warnIfDataTypeIsBoundToFile(obj, nameKey)
-            % propertyName = obj.getPropertyName(nameKey);
+        function warnIfDataTypeIsBoundToFile(obj, name)
+            % propertyName = obj.getPropertyName(name);
             % Todo: placeholder for future
         end
     end
