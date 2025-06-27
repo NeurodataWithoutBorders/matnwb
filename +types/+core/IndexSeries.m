@@ -52,7 +52,7 @@ methods
         % Output Arguments:
         %  - indexSeries (types.core.IndexSeries) - A IndexSeries object
         
-        varargin = [{'data_unit' 'N/A'} varargin];
+        varargin = [{'data_conversion' types.util.correctType(1, 'single') 'data_offset' types.util.correctType(0, 'single') 'data_resolution' types.util.correctType(-1, 'single') 'data_unit' 'N/A'} varargin];
         obj = obj@types.core.TimeSeries(varargin{:});
         
         
