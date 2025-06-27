@@ -227,20 +227,8 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
         function displayAliasWarning(obj)
         % displayAliasWarning - Display warning if any names have aliases
             T = getTableWithAliasNames(obj);
-
             if ~isempty(T)
-                nameMap = evalc('disp(T)');
-
-                str = sprintf([...
-                    ['Names for some entries of "%s" have been modified to ', ...
-                    'make them valid MATLAB identifiers before adding them as ', ...
-                    'properties of the object. The original names will still ', ...
-                    'be used when data is exported to file:\n'], ...
-                    '\n%s\n'], obj.TypeName, strip(nameMap, 'right'));
-
-                warnState = warning('backtrace', 'off');
-                resetWarningObj = onCleanup(@() warning(warnState));
-                warning(str) %#ok<SPWRN>
+                types.untyped.internal.displayAliasWarning(T, obj.TypeName)
             end
         end
     end

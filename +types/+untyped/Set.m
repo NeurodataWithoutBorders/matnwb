@@ -339,6 +339,15 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
             body = file.addSpaces(strjoin(body, newline), 4);
             disp([hdr newline body newline footer]);
         end
+    
+        function str = getFooter(obj)
+            T = obj.getPropertyMappingTable();
+            if ~isempty(T)
+                T(T.ValidIdentifier==T.OriginalName, :) = [];
+                types.untyped.internal.displayAliasWarning(T, 'Set')
+            end
+            str = '';
+        end
     end
 
     % Methods for adding and removing dynamic properties
