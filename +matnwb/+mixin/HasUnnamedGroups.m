@@ -1,5 +1,5 @@
 classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
-% HasUnnamedGroups - Mixin to simplify access to unnamed subgroup Sets
+% HasUnnamedGroups - Mixin to simplify access to Sets of unnamed subgroups
 %
 % Overview:
 %   Some NWB container types (e.g. ProcessingModule) include unnamed
@@ -10,7 +10,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
 %     module.MyData
 %
 %   To also simplify the adding of new data, this class provides an `add`
-%   method. By default you must use:
+%   method. Using legacy MatNWB syntax, you must use:
 %     module.nwbdatainterface.set('MyData', dataObject)
 %   This mixin lets you write
 %     module.add('MyData', dataObject)
@@ -42,29 +42,22 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
 %   ts = module.timeseries;
 
 % Note: Subclasses for this mixin might include Anon sets. Currently there
-% are no schemas in NWB where Anon sets are used, and this class does not
-% currently support contained Anon sets.
+% are no schemas in NWB where Anon sets are used, and this class therefore 
+% does not support contained Anon sets.
 
     properties (Abstract, Access = protected, Transient)
         GroupPropertyNames (1,:) string % String array of property names that contain Sets
     end
     
     properties (Access = private, Transient)
-        % DynamicPropertyMap - A containers.Map (name) -> (meta.DynamicProperty)
-        % storing the dynamic property objects for each added dynamic
-        % property, accessible by the dynamic property name
-        DynamicPropertyMap
-        
-        % ValidNameMaps - A containers.Map (groupName) -> (containers.Map)
-        % Each group has its own ValidNameMap that maps valid MATLAB names to 
-        % actual NWB names
-        ValidNameMaps
+        % PropertyManager - Manages dynamic properties for this object
+        PropertyManager
     end
 
     methods
         function obj = HasUnnamedGroups()
-            obj.DynamicPropertyMap = containers.Map();
-            obj.ValidNameMaps = containers.Map();
+            % Create the property manager
+            obj.PropertyManager = matnwb.utility.DynamicPropertyManager(obj);
         end
     end
     
@@ -73,7 +66,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
         % add - Add a named data object to an un-named subgroup
 
             if obj.nameExists(name)
-                throwAsCaller( getNameExistsException(name, obj.TypeName) )
+                throwAsCaller(getNameExistsException(name, obj.TypeName))
             end
                       
             wasSuccess = false;
@@ -126,19 +119,34 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
    
         function remove(obj, name)
         % remove - remove data object given it's (matlab-valid) name
+        % todo: name should refer to actual name, not property
+        % identifier...
             for groupName = obj.GroupPropertyNames
                 currentSet = obj.(groupName);
 
                 if isa(currentSet, 'types.untyped.Anon')
                     error('Not implemented yet')
                 end
-               
-                if obj.ValidNameMaps(groupName).isKey(name)
-                    actualName = obj.getActualNameFromValidName(name, groupName);
-                        
-                    if currentSet.isKey(actualName)
-                        currentSet.remove(actualName);
-                        break
+                
+                % Check if the name exists in this set
+                if currentSet.isKey(name)
+                    currentSet.remove(name);
+                    break
+                end
+                
+                % Todo: Should this be a fallback or not? 
+                % If the name is a valid property name, try to find the original name
+                if isprop(obj, name)
+                    % Get the original name from the property manager
+                    try
+                        originalName = obj.PropertyManager.getOriginalName(name);
+                        if currentSet.isKey(originalName)
+                            currentSet.remove(originalName);
+                            break
+                        end
+                    catch
+                        % If we can't get the original name, continue to the next group
+                        continue
                     end
                 end
             end
@@ -147,7 +155,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
 
     methods (Access = protected)
         function setupHasUnnamedGroupsMixin(obj)
-            obj.addDynamicProperties()
+            obj.initialiseDynamicProperties()
             obj.assignContainedSetCallbackFunctions()
         end
     end
@@ -170,7 +178,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             displayPref = getpref('matnwb', 'displaymode', 'groups'); % groups | flat
             
             if strcmp(displayPref, 'groups') % Remove dynamic props
-                dynamicPropNames = obj.DynamicPropertyMap.keys();
+                dynamicPropNames = obj.PropertyManager.getPropertyNames();
                 for i = 1:length(dynamicPropNames)
                     idx = strcmp(standardProps, dynamicPropNames{i});
                     toSkip(idx) = true;
@@ -194,14 +202,14 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                         'Expected property "%s" to contain a Set', groupName)
                     
                     % Get all keys from the Set
-                    keys = setObj.keys();
-                    validNames = obj.getValidNamesFromActualNames(keys, groupName); 
-
+                    keys = setObj.keys(); %todo: property identifiers
+                    propNames = cellfun(@(key) setObj.getPropertyName(key), keys, 'uni', 0);
+                    
                     % Initialize property list
                     propList = string(missing);
 
                     if ~isempty(keys)
-                        propList = cell2struct(setObj.values(), validNames, 2);
+                        propList = cell2struct(setObj.values(), propNames, 2);
                     end
                     
                     % Create a title for this group
@@ -228,7 +236,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
 
                 warnState = warning('backtrace', 'off');
                 resetWarningObj = onCleanup(@() warning(warnState));
-                warning(str)
+                warning(str) %#ok<SPWRN>
             end
         end
     end
@@ -239,10 +247,10 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                 containerObj = obj.(groupName);
                 
                 if isa(containerObj, 'types.untyped.Set')
-                    containerObj.ItemAddedFunction = ...
-                        @(itemName) obj.onSetItemAdded(itemName, groupName);
-                    containerObj.ItemRemovedFunction = ...
-                        @(itemName) obj.onSetItemRemoved(itemName, groupName);
+                    containerObj.EntryAddedFunction = ...
+                        @(itemName) obj.onSetEntryAdded(itemName, groupName);
+                    containerObj.EntryRemovedFunction = ...
+                        @(itemName) obj.onSetEntryRemoved(itemName, groupName);
                 else
                     warning('NWB:HasUnnamedGroupsMixin:NotImplemented', ...
                         'Callback functions are not implemented for Anon types.')
@@ -262,8 +270,19 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             end
         end
 
-        function addDynamicProperties(obj)
-        % addDynamicProperties - Add dynamic properties for set values
+        function nameCount = countInstancesOfName(obj, name)
+            nameCount = 0;
+            
+            for groupName = obj.GroupPropertyNames
+                containerObj = obj.(groupName);
+                if containerObj.isKey(name)
+                    nameCount = nameCount + 1;
+                end
+            end
+        end
+
+        function initialiseDynamicProperties(obj)
+        % initialiseDynamicProperties - Init dynamic properties from set entries
 
             for groupName = obj.GroupPropertyNames
                 containerObj = obj.(groupName);
@@ -284,34 +303,40 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
 
         function createDynamicProperty(obj, name, groupName)
         % createDynamicProperty - Add a single dynamic property to the class
-            matlabValidName = obj.createValidName(name, groupName);
             
-            assert( ~isprop(obj, matlabValidName), ...
-                'NWB:HasUnnamedGroupsMixin:DynamicPropertyExists', ...
-                'Dynamic property with name "%s" already exists', matlabValidName )
+            % Create a valid MATLAB name
+            setObj = obj.(groupName);
+            propertyIdentifier = setObj.getPropertyName(name);
 
-            p = obj.addprop(matlabValidName);
-            p.Dependent = true;
-            p.GetMethod = @(nm, gnm) obj.getDynamicPropertyValueFromSet(matlabValidName, groupName);
-            obj.DynamicPropertyMap(matlabValidName) = p;
-            
-            % Create ValidNameMap for this group if it doesn't exist
-            if ~obj.ValidNameMaps.isKey(groupName)
-                obj.ValidNameMaps(groupName) = containers.Map();
+            % Check if property already exists
+            assert(~isprop(obj, propertyIdentifier), ...
+                'NWB:HasUnnamedGroupsMixin:DynamicPropertyExists', ...
+                'Dynamic property with name "%s" already exists', propertyIdentifier)
+
+            % Verify that name only exists in one group
+            nameCount = obj.countInstancesOfName(name);
+            if nameCount > 1
+                setObj.remove(name)
+                
+                error('NWB:HasUnnamedGroups:DuplicateEntry', ...
+                    ['An entry with name `%s` was detected in multiple ', ...
+                    'contained groups. Removed entry from group `%s`.'], ...
+                    name, groupName)
             end
             
-            % Add mapping to the group's ValidNameMap
-            nameMapForGoup = obj.ValidNameMaps(groupName);
-            nameMapForGoup(matlabValidName) = name; %#ok<NASGU>
+            % Create a getter method that will retrieve the value from the Set
+            getMethod = @(~) obj.getDynamicPropertyValueFromSet(name, groupName);
+            
+            % Add the property using the PropertyManager
+            obj.PropertyManager.addProperty(propertyIdentifier, ...
+                'GetMethod', getMethod, ...
+                'Dependent', true);
         end
 
-        function deleteDynamicProperty(obj, name, groupName)
-            dynamicPropertyMeta = obj.DynamicPropertyMap(name);
-            delete(dynamicPropertyMeta)
-            obj.DynamicPropertyMap.remove(name);
-
-            if obj.ValidNameMaps.isKey(groupName) && obj.ValidNameMaps(groupName).isKey(name)
-                obj.ValidNameMaps(groupName).remove(name);
+        function deleteDynamicProperty(obj, name)
+            % Remove the property using the PropertyManager
+            if obj.PropertyManager.hasProperty(name)
+                obj.PropertyManager.removeProperty(name);
             end
         end
 
@@ -326,122 +351,31 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             isMatch = ismember(lower(typeClassNamesShort), groupPropertyNames);
             result = typeClassNames(isMatch);
         end
-        
-        function validName = createValidName(obj, name, groupName)
-        % createValidName - Create a valid MATLAB name to use for dynamic property.
 
-            % Make sure the valid name is unique across groups
-            if numel(obj.GroupPropertyNames) > 1
-                % Check if the name already exists in any other group
-                existingNames = [];
-                allGroupNames = obj.ValidNameMaps.keys();
-                for i = 1:numel(allGroupNames)
-                    currentGroupName = allGroupNames{i};
-                    if ~strcmp(currentGroupName, groupName) && obj.ValidNameMaps.isKey(currentGroupName)
-                        currentGroupMap = obj.ValidNameMaps(currentGroupName);
-                        if ~isempty(currentGroupMap)
-                            existingNames = [existingNames, currentGroupMap.values()]; %#ok<AGROW>
-                        end
-                    end
-                end
-                
-                % If the name already exists in another group, prepend the group name
-                if any(strcmp(name, existingNames))
-                    name = sprintf('%s_%s', groupName, name);
-                end
-            end
-
-            % Make sure the valid name is unique across all dynamic properties
-            isFinished = false;
-            suggestedName = name;
-            counter = 0;
-            while ~isFinished
-                suggestedName = matlab.lang.makeValidName(suggestedName);
-                if ~isprop(obj, suggestedName)
-                    isFinished = true;
-                else
-                    counter = counter+1;
-                    suggestedName = sprintf('%s_%d', name, counter);
-                end
-            end
-            validName = suggestedName;
-        end
-
-        function validNames = getValidNamesFromActualNames(obj, actualNames, groupName)
-            
-            validNames = cell(size(actualNames));
-            if isempty(actualNames); return; end
-
-            validNameMap = obj.ValidNameMaps(groupName);
-            
-            % Get all valid names and actual names for this group
-            allValidNames = validNameMap.keys();
-            allActualNames = validNameMap.values();
-                        
-            % Check each group's ValidNameMap
-            for i = 1:numel(actualNames)
-
-                % Find the matching valid name
-                isMatch = strcmp(allActualNames, actualNames{i});
-                if any(isMatch)
-                    validNames{i} = allValidNames{isMatch};
-                end
-            end
-        end
-        
-        function actualName = getActualNameFromValidName(obj, validName, groupName)
-        % getActualNameFromValidName - Reverse-map actual name from valid name
-            
-            validNameMap = obj.ValidNameMaps(groupName);
-            
-            assert(validNameMap.isKey(validName), ...
-                'Expected "%s" to be present in group "%s"', ...
-                validName, groupName)
-
-            actualName = validNameMap(validName);
-        end
-    
         function T = getTableWithAliasNames(obj)
-            allValidNames = string.empty;
-            allActualNames = string.empty;
             
-            % Collect all valid and actual names from all groups
-            groupNames = obj.ValidNameMaps.keys();
-            for i = 1:numel(groupNames)
-                groupName = groupNames{i};
+            T = cell(1, numel(obj.GroupPropertyNames));
 
-                validNameMap = obj.ValidNameMaps(groupName);
-                
-                if ~isempty(validNameMap)
-                    allValidNames = [allValidNames, string(validNameMap.keys())]; %#ok<AGROW>
-                    allActualNames = [allActualNames, string(validNameMap.values())]; %#ok<AGROW>
-                end
+            for i = 1:numel(obj.GroupPropertyNames)
+                groupName = obj.GroupPropertyNames(i);
+                currentSet = obj.(groupName);
+                T{i} = currentSet.getPropertyMappingTable();
             end
 
-            if ~isequal(allValidNames, allActualNames)
-                hasAlias = ~strcmp(allValidNames, allActualNames);
-                
-                T = table(allValidNames(hasAlias)', allActualNames(hasAlias)', ...
-                    'VariableNames', {'ValidName', 'ActualName'} ); %#ok<NASGU>
-            else
-                T = table.empty;
+            T(cellfun('isempty', T)) = [];
+            T = cat(1, T{:});
+
+            if ~isempty(T)
+                keep = T.ValidName ~= T.ActualName;
+                T = T(keep, :);
             end
         end
-    
     end
 
     methods % Dynamic property get methods
         function value = getDynamicPropertyValueFromSet(obj, name, groupName)
-            % Get the actual name from the group's ValidNameMap
-            
-            %Assume actual name is the same as the valid name.
-            actualName = name;
-            if obj.ValidNameMaps.isKey(groupName) ...
-                    && obj.ValidNameMaps(groupName).isKey(name)
-                nameMapForGroup = obj.ValidNameMaps(groupName);
-                actualName = nameMapForGroup(name);
-            end
-            value = obj.(groupName).get(actualName);
+            % Get the value from the Set
+            value = obj.(groupName).get(name);
         end
                 
         function value = getDynamicPropertyValueFromAnon(obj, groupName)
@@ -450,14 +384,14 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
     end
 
     methods (Access = private) % types.untyped.Set callback functions
-        function onSetItemAdded(obj, name, groupName)
+        function onSetEntryAdded(obj, name, groupName)
         % onSetItemAdded - Handle items being added to a contained types.untyped.Set
             obj.createDynamicProperty(name, groupName)
         end
 
-        function onSetItemRemoved(obj, name, groupName)
+        function onSetEntryRemoved(obj, name, groupName)
         % onSetItemRemoved - Handle items being removed from a contained types.untyped.Set
-            obj.deleteDynamicProperty(name, groupName)
+            obj.deleteDynamicProperty(name)
         end
     end
     

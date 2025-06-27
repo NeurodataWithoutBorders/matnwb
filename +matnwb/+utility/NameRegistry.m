@@ -107,7 +107,7 @@ classdef NameRegistry < handle
                 T = table.empty;
             else
                 T = table(string(validNames'), string(originalNames'), ...
-                    'VariableNames', {'ValidName', 'OriginalName'});
+                    'VariableNames', {'ValidName', 'ActualName'});
             end
         end
     end

@@ -150,11 +150,26 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
                 'FailIfKeyExists', true, ...
                 'FailOnInvalidType', true);
         end
+
+        function name = getPropertyName(obj, name)
+        % getPropertyName - Get property name given the actual name of an entry
+            
+            existsName = obj.PropertyManager.existOriginalName(name);
+            assert(existsName, ...
+                'NWB:Set:MissingName', ...
+                'Could not find name `%s` in Set', name);
+
+            name = obj.PropertyManager.getPropertyNameFromOriginalName(name);
+        end
     end
 
     methods (Hidden) % Allows setting custom validation function.
         function setValidationFunction(obj, functionHandle)
             obj.ValidationFunction = functionHandle;
+        end
+    
+        function T = getPropertyMappingTable(obj)
+            T = obj.PropertyManager.getPropertyMappingTable();
         end
     end
     
@@ -263,7 +278,7 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
             end
         end
 
-        function remove(obj, names) % todo
+        function remove(obj, names)
             arguments
                 obj types.untyped.Set
                 names (1,:) string
@@ -364,17 +379,6 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
                 % Let potential Set "owner" know that entry was removed
                 obj.EntryRemovedFunction(name)
             end
-        end
-    
-        function name = getPropertyName(obj, name)
-        % getPropertyName - Get property name given the actual name of an entry
-            
-            existsName = obj.PropertyManager.existOriginalName(name);
-            assert(existsName, ...
-                'NWB:Set:MissingName', ...
-                'Could not find name `%s` in Set', name);
-
-            name = obj.PropertyManager.getPropertyNameFromOriginalName(name);
         end
     
         function warnIfDataTypeIsBoundToFile(obj, name)
