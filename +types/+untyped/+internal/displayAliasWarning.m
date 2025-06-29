@@ -1,5 +1,11 @@
 function displayAliasWarning(aliasTable, className)
-% displayAliasWarning - Display warning if any names have aliases
+% displayAliasWarning - Display warning with table of alias names for an object
+%
+%   Utility method that formats and displays a warning given an alias table
+%   and the class name for an object. Will typically be used for an object
+%   with dynamic properties where property identifiers are aliases for an
+%   original name which is not a valid MATLAB identifier.
+
     if ~isempty(aliasTable)
         nameMap = evalc('disp(aliasTable)');
 
