@@ -103,7 +103,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             end
             if ~wasSuccess
                 % If we end up here, the type is invalid.
-                identifier = 'NWB:HasUnnamedGroupsMixin:AddInvalidType';
+                identifier = 'NWB:HasUnnamedGroups:AddInvalidType';
                 message = ['Object with name `%s` was a "%s", but must be ', ...
                     'one of the following type(s):\n%s\n'];
                 allowedTypes = obj.getClassNamesForAllowedGroupTypes();
@@ -181,7 +181,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                     containerObj.EntryRemovedFunction = ...
                         @(itemName) obj.onSetEntryRemoved(itemName, groupName);
                 else
-                    warning('NWB:HasUnnamedGroupsMixin:NotImplemented', ...
+                    warning('NWB:HasUnnamedGroups:NotImplemented', ...
                         'Callback functions are not implemented for Anon types.')
                 end
             end
@@ -245,7 +245,6 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
 
         function createDynamicProperty(obj, name, groupName)
         % createDynamicProperty - Add a single dynamic property to the class
-            
             try
                 obj.assertNameNotReserved(name)
             catch
@@ -260,11 +259,6 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             setObj = obj.(groupName);
             propertyIdentifier = setObj.getPropertyName(name);
 
-            % Check if property already exists
-            assert(~isprop(obj, propertyIdentifier), ...
-                'NWB:HasUnnamedGroupsMixin:DynamicPropertyExists', ...
-                'Property with name "%s" already exists', propertyIdentifier)
-
             % Verify that name only exists in one group
             nameCount = obj.countInstancesOfName(name);
             if nameCount > 1
@@ -276,12 +270,19 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                     name, groupName)
             end
             
+            % Ensure that property does not already exist.
+            assert(~isprop(obj, propertyIdentifier), ...
+                'NWB:HasUnnamedGroups:DynamicPropertyExists', ...
+                'Property with name "%s" already exists', propertyIdentifier)
+            
             % Create a getter method that will retrieve the value from the Set
             getMethod = @(~) obj.getDynamicPropertyValueFromSet(name, groupName);
+            setMethod = @(nm, value, gNnm) obj.setDynamicPropertyValueToSet(name, value, groupName);
             
             % Add the property using the PropertyManager
             obj.PropertyManager.addProperty(propertyIdentifier, ...
                 'GetMethod', getMethod, ...
+                'SetMethod', setMethod, ...
                 'Dependent', true);
         end
 
@@ -343,6 +344,12 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             value = obj.(groupName).get(name);
         end
                 
+        function value = setDynamicPropertyValueToSet(obj, name, value, groupName)
+            % Set the value to the Set of the contained subgroup
+            obj.(groupName).set(name, value);
+        end
+
+
         function value = getDynamicPropertyValueFromAnon(obj, groupName)
             value = obj.(groupName).value;
         end
@@ -442,7 +449,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
 end
 
 function ME = getNameExistsException(name, typeName)
-    ME = MException('NWB:HasUnnamedGroupsMixin:KeyExists', ...
+    ME = MException('NWB:HasUnnamedGroups:KeyExists', ...
         'A neurodata object with name `%s` already exists in this `%s`', ...
         name, typeName);
 end
