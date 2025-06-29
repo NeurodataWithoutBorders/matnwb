@@ -9,19 +9,17 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
     
     methods (Test)
         function testAddRemove(testCase)
-            % Test add and remove methods of HasUnnamedGroups mixin
+            % Test `add` and `remove` methods of HasUnnamedGroups mixin
             
-            % Create a ProcessingModule
+            % Create a ProcessingModule and use the add method
             module = types.core.ProcessingModule();
-            
-            % Add a new type using the mixin's add method
             module.add('TimeSeries', types.core.TimeSeries());
             
             % Verify that the dynamic property was created
             testCase.verifyTrue(isprop(module, 'TimeSeries'), ...
                 'Dynamic property was not created');
             
-            % Verify that the dynamic property returns the correct value
+            % Verify that the dynamic property returns the correct type
             testCase.verifyClass(module.TimeSeries, ...
                 'types.core.TimeSeries', ...
                 'Dynamic property returned incorrect value');
@@ -42,8 +40,6 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
         function testGet(testCase)
             % Create a ProcessingModule
             module = types.core.ProcessingModule();
-            
-            % Add items with the same name to different groups
             module.nwbdatainterface.set('TimeSeries', types.core.TimeSeries());
             module.dynamictable.set('DynamicTable', types.hdmf_common.DynamicTable());
 
@@ -52,7 +48,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
 
             dynamicTable = module.get('DynamicTable');
             testCase.verifyClass(dynamicTable, 'types.hdmf_common.DynamicTable')
-        
+
             testCase.verifyError(...
                 @() module.get('NonExistingName'), ...
                 'NWB:HasUnnamedGroupsMixin:ObjectDoesNotExist')
@@ -210,32 +206,29 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
 
             setpref('matnwb', 'displaymode', 'groups')
             C = evalc('disp(module)');
-            testCase.verifyTrue(contains(C, 'nwbdatainterface elements:'))
-            testCase.verifyTrue(contains(C, 'dynamictable elements:'))
+            testCase.verifyTrue(contains(C, 'nwbdatainterface entries:'))
+            testCase.verifyTrue(contains(C, 'dynamictable entries:'))
         end
 
-        function testObjectWithAliasedNames(testCase)
-            % Create a ProcessingModule
-            module = types.core.ProcessingModule();
-            
-            % Add items with similar names that will evaluate to the same
-            % valid name
+        function testDisplayObjectWithAliasNamesShowsWarning(testCase)
+            % Create a ProcessingModule and add entries with names that
+            % will evaluate to the same valid identifier
+            module = types.core.ProcessingModule('description', 'test');
             module.add('Time_Series', types.core.TimeSeries());
-            % todo: Set needs to support names that will have the same alias
             module.add('Time-Series', types.core.TimeSeries());
 
-            C = evalc('disp(module)');
-
-            % Verify that the displayed object will contain a warning
-            % message informing about "alias" names
-            expectedMessage = 'Warning: The following named elements of "ProcessingModule"'; % ...
-            testCase.verifyTrue( contains(C, expectedMessage)) 
-            % Would use startsWith instead of contains, but C contains some 
-            % hidden "display" characters in the beginning
+            % Display the object to trigger alias warning. Use evalc to hide 
+            % output from test logs
+            C = evalc('disp(module)'); %#ok<NASGU>
+        
+            % Verify that warning was displayed
+            expectedWarningId = 'NWB:DynamicPropertyAliasWarning';
+            [~, lastWarnId] = lastwarn();
+            testCase.verifyTrue( strcmp(lastWarnId, expectedWarningId))
         end
 
         function testListAliasNamesFromFile(testCase)
-
+            
             nwbFile = tests.factory.NWBFile();
             
             ophysModule = types.core.ProcessingModule(...

@@ -3,7 +3,8 @@ function displayAliasWarning(aliasTable, className)
     if ~isempty(aliasTable)
         nameMap = evalc('disp(aliasTable)');
 
-        str = sprintf([...
+        warningIdentifier = 'NWB:DynamicPropertyAliasWarning';
+        warningMessage = sprintf([...
             ['Names for some entries of "%s" have been modified to ', ...
             'make them valid MATLAB identifiers before adding them as ', ...
             'properties of the object. The original names will still ', ...
@@ -12,6 +13,6 @@ function displayAliasWarning(aliasTable, className)
 
         warnState = warning('backtrace', 'off');
         resetWarningObj = onCleanup(@() warning(warnState));
-        warning(str) %#ok<SPWRN>
+        warning(warningIdentifier, warningMessage) %#ok<SPWRN>
     end
 end
