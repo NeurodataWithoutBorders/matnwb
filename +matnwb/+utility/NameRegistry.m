@@ -1,7 +1,7 @@
 classdef NameRegistry < handle
 % NameRegistry - Mapping between original NWB names and MATLAB-valid names
 %
-%   Ensures unique, reversible (bi-directional) mapping from original names 
+%   Ensures unique, reversible (bi-directional) mapping from original names
 %   used for data objects in NWB files to valid MATLAB identifiers.
 
     properties (Access = private)
@@ -11,7 +11,7 @@ classdef NameRegistry < handle
         % Map from original names to valid MATLAB names
         OriginalToValidMap
     end
-    
+
     methods
         function obj = NameRegistry()
             obj.ValidToOriginalMap = containers.Map('KeyType', 'char', 'ValueType', 'char');
@@ -21,17 +21,17 @@ classdef NameRegistry < handle
         function validName = addMapping(obj, originalName, validName)
             % Add a mapping between an original name and a MATLAB-valid name
             % If validName is not provided, it will be generated
-            
+
             arguments
                 obj matnwb.utility.NameRegistry
                 originalName (1,1) string
                 validName (1,1) string = missing
             end
-                        
+            
             if ismissing(validName)
                 validName = obj.createValidName(originalName);
             end
-                       
+
             assert(~obj.existOriginalName(originalName), ...
                 'NWB:NameRegistry:DuplicateOriginalName', ...
                 'The original name "%s" is already mapped', originalName);
@@ -89,35 +89,32 @@ classdef NameRegistry < handle
         end
         
         function validNames = getAllValidNames(obj)
-            % Get all valid MATLAB names
+            % Return all valid MATLAB names as a 1xn cell array
             validNames = obj.ValidToOriginalMap.keys();
         end
-        
+
         function originalNames = getAllOriginalNames(obj)
-            % Get all original names
+            % Return all original names as a 1xn cell array
             originalNames = obj.OriginalToValidMap.keys();
         end
-        
+
         function T = getNameMappingTable(obj)
             % Return a table showing all name mappings
             validNames = obj.ValidToOriginalMap.keys();
             originalNames = obj.ValidToOriginalMap.values();
-            
-            if isempty(validNames)
-                T = table.empty;
-            else
-                T = table(string(validNames'), string(originalNames'), ...
-                    'VariableNames', {'ValidIdentifier', 'OriginalName'});
-            end
+
+            tableVariableNames = {'ValidIdentifier', 'OriginalName'};
+
+            T = table(string(validNames'), string(originalNames'), ...
+                'VariableNames', tableVariableNames);
         end
     end
-
 
     methods (Access = private)
         function validName = createValidName(obj, originalName)
             % Create a valid MATLAB name from an original name
             baseName = matlab.lang.makeValidName(originalName);
-            
+
             % Ensure uniqueness
             if obj.existValidName(baseName)
                 counter = 1;
