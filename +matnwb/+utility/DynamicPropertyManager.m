@@ -1,7 +1,17 @@
 classdef DynamicPropertyManager < handle
 % DynamicPropertyManager - Manages dynamic properties for a target object
-%   This class provides a consistent interface for creating, accessing,
-%   and removing dynamic properties on a target object.
+
+%   - This class provides a consistent interface for creating and removing
+%     dynamic properties on a target object.
+%   - It additionally provides an internal name registry, to keep track of
+%     original names of properties that might not be valid MATLAB
+%     identifiers. When adding a property with a name which is not a valid
+%     MATLAB identifier, a valid alias is registered and used as a name for
+%     the dynamic property.
+%
+%   Used by types.untyped.Set and matnwb.mixin.HasUnnamedGroups to
+%   allow users to access neurodata types stored in object properties of
+%   other neurodata types through dot-syntax.
     
     properties (Access = private)
         TargetObject            % The object to manage dynamic properties for
@@ -9,7 +19,7 @@ classdef DynamicPropertyManager < handle
         NameRegistry            % NameRegistry instance for name mapping
     end
     
-    properties %(SetAccess = private)
+    properties (SetAccess = immutable)
         PropertyAddedFunction   % Function handle called when a property is added
         PropertyRemovedFunction % Function handle called when a property is removed
     end
@@ -28,7 +38,7 @@ classdef DynamicPropertyManager < handle
             obj.DynamicPropertyMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
             obj.NameRegistry = nameRegistry;
             obj.PropertyAddedFunction = propArgs.propertyAddedFunction;
-            obj.PropertyAddedFunction = propArgs.propertyRemovedFunction;
+            obj.PropertyRemovedFunction = propArgs.propertyRemovedFunction;
         end
 
         function metaProperty = addProperty(obj, originalName, options)
@@ -40,7 +50,7 @@ classdef DynamicPropertyManager < handle
                 options.SetMethod function_handle = function_handle.empty
                 options.Dependent (1,1) logical = false
             end
-                        
+            
             % Get or create valid name
             if obj.NameRegistry.existOriginalName(originalName)
                 validName = obj.NameRegistry.getValidName(originalName);
@@ -86,37 +96,34 @@ classdef DynamicPropertyManager < handle
                 obj matnwb.utility.DynamicPropertyManager
                 name (1,1) string
             end
-                        
-            % Determine if this is a valid name or original name
-
-            % Todo: There is an ambiguity here. A name could be added which
-            % is has a valid equivalent, and then the valid equivalent is
-            % added...
-            if obj.NameRegistry.existValidName(name)
-                validName = name;
-                originalName = obj.NameRegistry.getOriginalName(validName);
-            elseif obj.NameRegistry.existOriginalName(name)
+            
+            % Try to remove entry assuming original name is given, fall back 
+            % to removing entry using property name.
+            if obj.existOriginalName(name)
                 originalName = name;
-                validName = obj.NameRegistry.getValidName(originalName);
+                propertyName = obj.getPropertyNameForOriginalName(originalName);
+            elseif obj.existPropertyName(name)
+                propertyName = name;
+                originalName = obj.getOriginalNameForPropertyName(propertyName);
             else
                 error('NWB:DynamicPropertyManager:UnknownProperty', ...
                     'No property with name "%s" exists', name);
             end
             
             % Check if the property exists in our map
-            assert(obj.DynamicPropertyMap.isKey(validName), ...
+            assert(obj.DynamicPropertyMap.isKey(propertyName), ...
                 'NWB:DynamicPropertyManager:PropertyNotManaged', ...
-                'Property "%s" is not managed by this DynamicPropertyManager', validName);
+                'Property "%s" is not managed by this DynamicPropertyManager', propertyName);
             
             % Get the property metadata
-            propMeta = obj.DynamicPropertyMap(validName);
+            propMeta = obj.DynamicPropertyMap(propertyName);
             
             % Delete the property
             delete(propMeta);
             
-            % Remove from our maps
-            obj.DynamicPropertyMap.remove(validName);
-            obj.NameRegistry.removeMapping(validName);
+            % Remove from internal maps
+            obj.DynamicPropertyMap.remove(propertyName);
+            obj.NameRegistry.removeMapping(propertyName);
             
             % Call the callback if set
             if ~isempty(obj.PropertyRemovedFunction)
@@ -124,37 +131,42 @@ classdef DynamicPropertyManager < handle
             end
         end
         
-        function names = getPropertyNames(obj)
+        function originalName = getOriginalNameForPropertyName(obj, propertyName)
+            originalName = obj.NameRegistry.getOriginalName(propertyName);
+        end
+
+        function propertyName = getPropertyNameForOriginalName(obj, originalName)
+            propertyName = obj.NameRegistry.getValidName(originalName);
+        end
+
+        function count = getPropertyCount(obj)
+            count = obj.DynamicPropertyMap.Count;
+        end
+
+        function names = getAllPropertyNames(obj)
             % Get all property names
             names = obj.DynamicPropertyMap.keys();
         end
-                
-        function names = getOriginalNames(obj)
+
+        function names = getAllOriginalNames(obj)
             % Get all property names
             names = obj.NameRegistry.getAllOriginalNames();
         end
-        
-        function tf = hasProperty(obj, name)
-            % Check if a property exists
+
+        function tf = existPropertyName(obj, propertyName)
             arguments
                 obj matnwb.utility.DynamicPropertyManager
-                name (1,1) string
+                propertyName (1,1) string
             end
-            % Todo: should this method also check original names?
-            tf = obj.NameRegistry.existValidName(name) || ...
-                 obj.NameRegistry.existOriginalName(name);
-        end
-
-        function originalName = getOriginalName(obj, validName)
-            originalName = obj.NameRegistry.getOriginalName(validName);
+            tf = obj.NameRegistry.existValidName(propertyName);
         end
 
         function tf = existOriginalName(obj, originalName)
+            arguments
+                obj matnwb.utility.DynamicPropertyManager
+                originalName (1,1) string
+            end
             tf = obj.NameRegistry.existOriginalName(originalName);
-        end
-        
-        function propertyName = getPropertyNameFromOriginalName(obj, originalName)
-            propertyName = obj.NameRegistry.getValidName(originalName);
         end
 
         function T = getPropertyMappingTable(obj)
