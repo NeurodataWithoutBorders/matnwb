@@ -1,4 +1,4 @@
-classdef ImageSegmentation < types.core.NWBDataInterface & types.untyped.GroupClass
+classdef ImageSegmentation < types.core.NWBDataInterface & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups
 % IMAGESEGMENTATION - Stores pixels in an image that represent different regions of interest (ROIs) or masks. All segmentation for a given imaging plane is stored together, with storage for multiple imaging planes (masks) supported. Each ROI is stored in its own subgroup, with the ROI group containing both a 2D mask and a list of pixels that make up this mask. Segments can also be used for masking neuropil. If segmentation is allowed to change with time, a new imaging plane (or module) is required and ROI names should remain consistent between them.
 %
 % Required Properties:
@@ -8,6 +8,9 @@ classdef ImageSegmentation < types.core.NWBDataInterface & types.untyped.GroupCl
 % REQUIRED PROPERTIES
 properties
     planesegmentation; % REQUIRED (PlaneSegmentation) Results from image segmentation of a specific imaging plane.
+end
+properties (Access = protected)
+    GroupPropertyNames = {'planesegmentation'}
 end
 
 methods
@@ -28,6 +31,8 @@ methods
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.planesegmentation, ivarargin] = types.util.parseConstrained(obj,'planesegmentation', 'types.core.PlaneSegmentation', varargin{:});
         varargin(ivarargin) = [];
+        
+        obj.setupHasUnnamedGroupsMixin()
         
         p = inputParser;
         p.KeepUnmatched = true;

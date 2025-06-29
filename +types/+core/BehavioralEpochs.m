@@ -1,4 +1,4 @@
-classdef BehavioralEpochs < types.core.NWBDataInterface & types.untyped.GroupClass
+classdef BehavioralEpochs < types.core.NWBDataInterface & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups
 % BEHAVIORALEPOCHS - TimeSeries for storing behavioral epochs.  The objective of this and the other two Behavioral interfaces (e.g. BehavioralEvents and BehavioralTimeSeries) is to provide generic hooks for software tools/scripts. This allows a tool/script to take the output one specific interface (e.g., UnitTimes) and plot that data relative to another data modality (e.g., behavioral events) without having to define all possible modalities in advance. Declaring one of these interfaces means that one or more TimeSeries of the specified type is published. These TimeSeries should reside in a group having the same name as the interface. For example, if a BehavioralTimeSeries interface is declared, the module will have one or more TimeSeries defined in the module sub-group 'BehavioralTimeSeries'. BehavioralEpochs should use IntervalSeries. BehavioralEvents is used for irregular events. BehavioralTimeSeries is for continuous data.
 %
 % Required Properties:
@@ -8,6 +8,9 @@ classdef BehavioralEpochs < types.core.NWBDataInterface & types.untyped.GroupCla
 % OPTIONAL PROPERTIES
 properties
     intervalseries; %  (IntervalSeries) IntervalSeries object containing start and stop times of epochs.
+end
+properties (Access = protected)
+    GroupPropertyNames = {'intervalseries'}
 end
 
 methods
@@ -28,6 +31,8 @@ methods
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.intervalseries, ivarargin] = types.util.parseConstrained(obj,'intervalseries', 'types.core.IntervalSeries', varargin{:});
         varargin(ivarargin) = [];
+        
+        obj.setupHasUnnamedGroupsMixin()
         
         p = inputParser;
         p.KeepUnmatched = true;
