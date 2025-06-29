@@ -6,22 +6,20 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
     % which is used to simplify access to unnamed subgroup Sets.
     % It uses types.core.ProcessingModule as a test type because it's the only
     % NWB type that has two groups.
-    
+
     methods (Test)
         function testAddRemove(testCase)
-            % Test add and remove methods of HasUnnamedGroups mixin
+            % Test `add` and `remove` methods of HasUnnamedGroups mixin
             
-            % Create a ProcessingModule
+            % Create a ProcessingModule and use the add method
             module = types.core.ProcessingModule();
-            
-            % Add a new type using the mixin's add method
             module.add('TimeSeries', types.core.TimeSeries());
             
             % Verify that the dynamic property was created
             testCase.verifyTrue(isprop(module, 'TimeSeries'), ...
                 'Dynamic property was not created');
             
-            % Verify that the dynamic property returns the correct value
+            % Verify that the dynamic property returns the correct type
             testCase.verifyClass(module.TimeSeries, ...
                 'types.core.TimeSeries', ...
                 'Dynamic property returned incorrect value');
@@ -39,24 +37,32 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             testCase.verifyFalse(module.nwbdatainterface.isKey('TimeSeries'))
         end
         
-        function testGet(testCase)
-            % Create a ProcessingModule
-            module = types.core.ProcessingModule();
-            
-            % Add items with the same name to different groups
-            module.nwbdatainterface.set('TimeSeries', types.core.TimeSeries());
-            module.dynamictable.set('DynamicTable', types.hdmf_common.DynamicTable());
+        function testInitializeWithConstructorArgs(testCase)
+            module = types.core.ProcessingModule(...
+                'description', 'test module', ...
+                'TimeSeries', tests.factory.TimeSeriesWithTimestamps, ...
+                'DynamicTable', types.hdmf_common.DynamicTable() );
 
-            timeSeries = module.get('TimeSeries');
-            testCase.verifyClass(timeSeries, 'types.core.TimeSeries')
-
-            dynamicTable = module.get('DynamicTable');
-            testCase.verifyClass(dynamicTable, 'types.hdmf_common.DynamicTable')
-        
-            testCase.verifyError(...
-                @() module.get('NonExistingName'), ...
-                'NWB:HasUnnamedGroupsMixin:ObjectDoesNotExist')
+            testCase.verifyTrue( isprop(module, 'TimeSeries') )
+            testCase.verifyTrue( isprop(module, 'DynamicTable') )
         end
+
+        % % % function testGet(testCase)
+        % % %     % Create a ProcessingModule
+        % % %     module = types.core.ProcessingModule('description', 'test module');
+        % % %     module.nwbdatainterface.set('TimeSeries', types.core.TimeSeries());
+        % % %     module.dynamictable.set('DynamicTable', types.hdmf_common.DynamicTable());
+        % % % 
+        % % %     timeSeries = module.get('TimeSeries');
+        % % %     testCase.verifyClass(timeSeries, 'types.core.TimeSeries')
+        % % % 
+        % % %     dynamicTable = module.get('DynamicTable');
+        % % %     testCase.verifyClass(dynamicTable, 'types.hdmf_common.DynamicTable')
+        % % % 
+        % % %     testCase.verifyError(...
+        % % %         @() module.get('NonExistingName'), ...
+        % % %         'NWB:HasUnnamedGroups:ObjectDoesNotExist')
+        % % % end
 
         function testLegacySyntax(testCase)
             % Create a ProcessingModule
@@ -68,9 +74,11 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             % Verify that the dynamic property was created
             testCase.verifyTrue(isprop(module, 'TimeSeries'), ...
                 'Dynamic property was not created');
+
+            timeSeries = module.nwbdatainterface.get('TimeSeries');
             
             % Verify that the dynamic property returns the correct value
-            testCase.verifyClass(module.TimeSeries, ...
+            testCase.verifyClass(timeSeries, ...
                 'types.core.TimeSeries', ...
                 'Dynamic property returned incorrect value');
             
@@ -80,33 +88,57 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                 'Dynamic property was not removed');
         end
 
-        function testInvalidMatlabName(testCase)
-            % Create a ProcessingModule
-            module = types.core.ProcessingModule();
+        function testRemoveUsingPropertyName(testCase)
+            module = types.core.ProcessingModule('description', 'test module');
+            module.add('time series', types.core.TimeSeries())
+
+            operationToVerify = @() module.remove('timeSeries');
+
+            testCase.verifyWarning(operationToVerify, ...
+                'NWB:HasUnnamedGroups:UseOriginalName' )
+        end
+
+        function testWithReservedName(testCase)
+            module = types.core.ProcessingModule('description', 'test module');
             
-            % Add items with similar names to nwbdatainterface            
+            operationToVerify = @() module.add(...
+                'nwbdatainterface', types.core.NWBDataInterface());
+            
+            testCase.verifyError(operationToVerify, ...
+                'NWB:HasUnnamedGroups:ReservedName');
+        end
+                
+        function testWithReservedNameAddedToContainedSet(testCase)
+            module = types.core.ProcessingModule('description', 'test module');
+            
+            operationToVerify = @() module.nwbdatainterface.set(...
+                'nwbdatainterface', types.core.NWBDataInterface());
+            
+            testCase.verifyError(operationToVerify, ...
+                'NWB:HasUnnamedGroups:CouldNotAddEntry');
+        end
+
+        function testWithInvalidMatlabName(testCase)
+            % Add object with name which is not a valid matlab identifier
+            module = types.core.ProcessingModule();
             module.add('Time-Series', types.core.TimeSeries())
 
-            % Verify that the dynamic property was created and accessible
+            % Verify that the dynamic property was created and is accessible
             % with a valid MATLAB name
             testCase.verifyTrue(isprop(module, 'Time_Series'), ...
                 'Dynamic property was not created');
 
             testCase.verifyClass(module.Time_Series, ...
                 'types.core.TimeSeries', ...
-                'Dynamic property returned incorrect value');
+                'Dynamic property returned incorrect type');
         end
 
-        function testSimilarNames(testCase)
+        function testWithSimilarNames(testCase)
             % Test handling of similar names that result in the same valid name
 
-            % Create a ProcessingModule
+            % Create module and add items with similar names to it:
             module = types.core.ProcessingModule();
-
-            % Add items with similar names to nwbdatainterface
             module.add('Time_Series', types.core.TimeSeries())
-
-            % todo: Set needs to support names that will have the same alias
             module.add('Time-Series', types.core.TimeSeries())
 
             % Verify that the dynamic property was created
@@ -118,121 +150,103 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                 'Dynamic property was not created');
         end
         
-        function testCrossGroupNameConflicts(testCase)
-            % Test handling of name conflicts across different groups
-            
-            % Create a ProcessingModule
-            module = types.core.ProcessingModule();
-            
-            % Add items with the same name to different groups
-            module.nwbdatainterface.set('Test', types.core.TimeSeries());
-            module.dynamictable.set('Test', types.hdmf_common.DynamicTable());
-            
-            % Verify both properties exist with appropriate names
-            % One should be Test and the other should have the group name prepended
-            testCase.verifyTrue(isprop(module, 'Test'), ...
-                'Dynamic property Test was not created');
-            testCase.verifyTrue(isprop(module, 'dynamictable_Test'), ...
-                'Dynamic property dynamictable_Test was not created');
-            
-            % Verify the properties return the correct values
-            if isa(module.Test, 'types.core.TimeSeries')
-                testCase.verifyClass(module.Test, 'types.core.TimeSeries', ...
-                    'Dynamic property Test returned incorrect value');
-                testCase.verifyClass(module.dynamictable_Test, 'types.hdmf_common.DynamicTable', ...
-                    'Dynamic property dynamictable_Test returned incorrect value');
-            else
-                testCase.verifyClass(module.Test, 'types.hdmf_common.DynamicTable', ...
-                    'Dynamic property Test returned incorrect value');
-                testCase.verifyClass(module.nwbdatainterface_Test, 'types.core.TimeSeries', ...
-                    'Dynamic property nwbdatainterface_Test returned incorrect value');
-            end
+        function testAddWithExistingName(testCase)
+            module = types.core.ProcessingModule('description', 'test module');
+            module.add('TimeSeries', types.core.TimeSeries())
+    
+            % Adding a new object with the same name should fail
+            operationToVerify = @()...
+                module.add('TimeSeries', types.core.TimeSeries());
+
+            testCase.verifyError(operationToVerify, ...
+                'NWB:HasUnnamedGroups:KeyExists')
         end
 
-        function testAddWithExistingName(testCase)
-            % Create a ProcessingModule
-            module = types.core.ProcessingModule();
+        function testAddWithExistingNameToContainedSet(testCase)
+            module =  types.core.ProcessingModule(...
+                'description', 'test module', ...
+                'TimeSeries', types.core.TimeSeries());
 
-            module.add('TimeSeries', types.core.TimeSeries())
-
-            % Adding a new object with the same name should fail
-            testCase.verifyError(...
-                @() module.add('TimeSeries', types.core.TimeSeries()), ...
-                'NWB:HasUnnamedGroupsMixin:KeyExists')
+            % Set a data object using the same name to the dynamic table group 
+            % using legacy syntax. This should be intercepted by the 
+            % ProcessingModule via the mixin.
+            operationToVerify = @()...
+                module.dynamictable.set( ...
+                    'TimeSeries', types.hdmf_common.DynamicTable());
+            
+            testCase.verifyError(operationToVerify, ...
+                'NWB:HasUnnamedGroups:DuplicateEntry')
         end
         
-        function testOverriding(testCase)
-            % Test overriding an existing item
+        function testOverrideExistingEntry(testCase)
+            module = types.core.ProcessingModule(...
+                'description', 'test module', ...
+                'Test', types.core.TimeSeries());
             
-            % Create a ProcessingModule
-            module = types.core.ProcessingModule();
-            
-            % Add an item
-            module.nwbdatainterface.set('Test', types.core.TimeSeries());
-            testCase.verifyTrue(isprop(module, 'Test'), 'Dynamic property Test was not created');
-            testCase.verifyClass(module.Test, 'types.core.TimeSeries', ...
-                'Dynamic property Test did not return expected value');
+            testCase.verifyTrue(isprop(module, 'Test'), ...
+                'Dynamic property Test was not created');
 
             % Override it with a different type
-            module.nwbdatainterface.set('Test', types.core.Fluorescence());
+            module.Test = types.core.Fluorescence();
 
             % Verify the property has the new type
             testCase.verifyClass(module.Test, 'types.core.Fluorescence', ...
                 'Dynamic property Test did not return the overridden value');
         end
 
-        function testInvalidType(testCase)
+        function testAddInvalidType(testCase)
             module = types.core.ProcessingModule();
             
-            testCase.verifyError(...
-                @() module.add('Device', types.core.Device()), ...
-                'NWB:HasUnnamedGroupsMixin:AddInvalidType')
+            operationToVerify = @()...
+                module.add('Device', types.core.Device());
+            
+            testCase.verifyError(operationToVerify, ...
+                'NWB:HasUnnamedGroups:AddInvalidType')
         end
 
         function testObjectDisplay(testCase)
-            % Create a ProcessingModule
+            % Create a ProcessingModule with objects in each subgroup
             module = types.core.ProcessingModule();
-            
-            % Add one object to each of the subgroups
             module.add('TimeSeries', types.core.TimeSeries());
             module.add('DynamicTable', types.hdmf_common.DynamicTable());
 
+            % Verify both display modes
             origPrefValue = getpref('matnwb', 'displaymode', 'flat');
             testCase.addTeardown(@() setpref('matnwb', 'displaymode', origPrefValue))
 
             setpref('matnwb', 'displaymode', 'flat')
             C = evalc('disp(module)');
+            testCase.verifyFalse(contains(C, 'nwbdatainterface entries:'))
+            testCase.verifyFalse(contains(C, 'dynamictable entries:'))
             testCase.verifyTrue(contains(C, 'TimeSeries:'))
             testCase.verifyTrue(contains(C, 'DynamicTable:'))
 
             setpref('matnwb', 'displaymode', 'groups')
             C = evalc('disp(module)');
-            testCase.verifyTrue(contains(C, 'nwbdatainterface elements:'))
-            testCase.verifyTrue(contains(C, 'dynamictable elements:'))
+            testCase.verifyTrue(contains(C, 'nwbdatainterface entries:'))
+            testCase.verifyTrue(contains(C, 'dynamictable entries:'))
+            testCase.verifyTrue(contains(C, 'TimeSeries:'))
         end
 
-        function testObjectWithAliasedNames(testCase)
-            % Create a ProcessingModule
-            module = types.core.ProcessingModule();
-            
-            % Add items with similar names that will evaluate to the same
-            % valid name
+        function testDisplayObjectWithAliasNamesShowsWarning(testCase)
+            % Create a ProcessingModule and add entries with names that
+            % will evaluate to the same valid identifier
+            module = types.core.ProcessingModule('description', 'test module');
             module.add('Time_Series', types.core.TimeSeries());
-            % todo: Set needs to support names that will have the same alias
             module.add('Time-Series', types.core.TimeSeries());
 
-            C = evalc('disp(module)');
-
-            % Verify that the displayed object will contain a warning
-            % message informing about "alias" names
-            expectedMessage = 'Warning: The following named elements of "ProcessingModule"'; % ...
-            testCase.verifyTrue( contains(C, expectedMessage)) 
-            % Would use startsWith instead of contains, but C contains some 
-            % hidden "display" characters in the beginning
+            % Display the object to trigger alias warning. Use evalc to hide 
+            % output from test logs
+            C = evalc('disp(module)'); %#ok<NASGU>
+        
+            % Verify that warning was triggered
+            expectedWarningId = 'NWB:DynamicPropertyAliasWarning';
+            [~, lastWarnId] = lastwarn();
+            testCase.verifyTrue( strcmp(lastWarnId, expectedWarningId))
         end
 
         function testListAliasNamesFromFile(testCase)
-
+            
             nwbFile = tests.factory.NWBFile();
             
             ophysModule = types.core.ProcessingModule(...
@@ -251,7 +265,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             testCase.verifySize(result, [2,4])
             testCase.verifyClass(result, 'table')
 
-            testCase.verifyEqual(result.ActualName, ...
+            testCase.verifyEqual(result.OriginalName, ...
                 ["Raw-Fluorescence"; "Roi-Response-Series"])
         end
     end
