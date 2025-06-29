@@ -2,7 +2,7 @@ classdef SpikeEventSeries < types.core.ElectricalSeries & types.untyped.GroupCla
 % SPIKEEVENTSERIES - Stores snapshots/snippets of recorded spike events (i.e., threshold crossings). This may also be raw data, as reported by ephys hardware. If so, the TimeSeries::description field should describe how events were detected. All events span the same recording channels and store snapshots of equal duration. TimeSeries::data array structure: [num events] [num channels] [num samples] (or [num events] [num samples] for single electrode).
 %
 % Required Properties:
-%  data, electrodes
+%  data, electrodes, timestamps
 
 
 

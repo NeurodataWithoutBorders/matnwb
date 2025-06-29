@@ -2,12 +2,12 @@ classdef EyeTracking < types.core.NWBDataInterface & types.untyped.GroupClass
 % EYETRACKING - Eye-tracking data, representing direction of gaze.
 %
 % Required Properties:
-%  None
+%  spatialseries
 
 
-% OPTIONAL PROPERTIES
+% REQUIRED PROPERTIES
 properties
-    spatialseries; %  (SpatialSeries) SpatialSeries object containing data measuring direction of gaze.
+    spatialseries; % REQUIRED (SpatialSeries) SpatialSeries object containing data measuring direction of gaze.
 end
 
 methods
@@ -56,9 +56,7 @@ methods
         if any(strcmp(refs, fullpath))
             return;
         end
-        if ~isempty(obj.spatialseries)
-            refs = obj.spatialseries.export(fid, fullpath, refs);
-        end
+        refs = obj.spatialseries.export(fid, fullpath, refs);
     end
 end
 

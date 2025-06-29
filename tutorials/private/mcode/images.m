@@ -184,9 +184,9 @@ image_collection = types.core.Images( ...
     'description', 'A collection of logo images presented to the subject.'...
 );
 
-image_collection.image.set('rgba_image', rgba_image);
-image_collection.image.set('rgb_image', rgb_image);
-image_collection.image.set('grayscale_image', grayscale_image);
+image_collection.baseimage.set('rgba_image', rgba_image);
+image_collection.baseimage.set('rgb_image', rgb_image);
+image_collection.baseimage.set('grayscale_image', grayscale_image);
 
 nwb.acquisition.set('image_collection', image_collection);
 %% Index Series for Repeated Images
