@@ -38,7 +38,7 @@ function [set, ivarargin] = parseConstrained(obj, pname, type, varargin)
     end
 
     % append to currently existing set.
-    set.setValidationFcn(validationFunction);
+    set.setValidationFunction(validationFunction);
 
     keyIndices = find(ikeys);
     valIndices = find(ivals);
