@@ -6,7 +6,7 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
 
 %   Developer notes:
 %   `name` is used throughout this class to refer to the actual name of a Set 
-%   entry, not the valid MATLAB identifier used for the Set s dynamic property 
+%   entry, not the valid MATLAB identifier used for the Set's dynamic property 
 %   names. In legacy methods, `key` is equivalent to `name`.
 
     properties (Access = private)

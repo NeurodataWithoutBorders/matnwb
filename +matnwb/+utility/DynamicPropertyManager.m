@@ -28,7 +28,7 @@ classdef DynamicPropertyManager < handle
         function obj = DynamicPropertyManager(targetObject, nameRegistry, propArgs)
             % Create a new DynamicPropertyManager for the target object
             arguments
-                targetObject (1,1) dynamicprops
+                targetObject dynamicprops
                 nameRegistry (1,1) matnwb.utility.NameRegistry = matnwb.utility.NameRegistry
                 propArgs.propertyAddedFunction function_handle = function_handle.empty
                 propArgs.propertyRemovedFunction function_handle = function_handle.empty
