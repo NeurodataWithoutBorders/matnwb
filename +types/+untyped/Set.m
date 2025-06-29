@@ -96,12 +96,12 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
         function refs = export(obj, fid, fullpath, refs)
             io.writeGroup(fid, fullpath);
 
-            allPropertyNames = obj.PropertyManager.getPropertyNames();
+            allPropertyNames = obj.PropertyManager.getAllPropertyNames();
             for iPropName = 1:length(allPropertyNames)
                 propertyName = allPropertyNames{iPropName};
                 propertyValue = obj.(propertyName);
                 
-                originalName = obj.PropertyManager.getOriginalName(propertyName);
+                originalName = obj.PropertyManager.getOriginalNameForPropertyName(propertyName);
                 propertyFullPath = [fullpath '/' originalName];
                 
                 if startsWith(class(propertyValue), 'types.')
@@ -159,7 +159,16 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
                 'NWB:Set:MissingName', ...
                 'Could not find name `%s` in Set', name);
 
-            name = obj.PropertyManager.getPropertyNameFromOriginalName(name);
+            name = obj.PropertyManager.getPropertyNameForOriginalName(name);
+        end
+
+        function name = getOriginalName(obj, propertyName)
+            existsName = obj.PropertyManager.existPropertyName(propertyName);
+            assert(existsName, ...
+                'NWB:Set:MissingName', ...
+                'Could not find property name `%s` in Set', propertyName);
+
+            name = obj.PropertyManager.getOriginalNameForPropertyName(propertyName);
         end
     end
 
@@ -259,11 +268,11 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
     % Legacy methods mirroring containers.Map interface
     methods (Hidden)
         function cnt = Count(obj)
-            cnt = numel( obj.PropertyManager.getPropertyNames() );
+            cnt = obj.PropertyManager.getPropertyCount();
         end
 
         function keySet = keys(obj)
-            keySet = obj.PropertyManager.getOriginalNames();
+            keySet = obj.PropertyManager.getAllOriginalNames();
             if iscolumn(keySet)
                 keySet = transpose(keySet); % Return as row vector
             end
@@ -279,6 +288,11 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
         end
 
         function remove(obj, names)
+        % remove - Remove a set of entries given their names.
+        %
+        % Note: The name should be the original (actual) name of the entry,
+        % not the property identifier.
+        
             arguments
                 obj types.untyped.Set
                 names (1,:) string
@@ -294,10 +308,7 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
         function tf = isKey(obj, name)
             tf = obj.PropertyManager.existOriginalName(name);
             if ~tf && isprop(obj, name)
-                warning(['"%s" does not exist as a key of this Set, ', ...
-                    'but it exists as the name of the property ', ...
-                    'corresponding to the entry with name `%s`'], name, ...
-                    obj.PropertyManager.getOriginalName(name))
+                obj.warnIfPropertyNameExistsButNotOriginalName(name)
             end
         end
 
@@ -356,10 +367,7 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
             existsEntry = obj.PropertyManager.existOriginalName(name);
             
             if ~existsEntry && isprop(obj, name)
-                warning(['"%s" is not the name for an entry of this Set, ', ...
-                    'but it exists as the property identifier corresponding ', ...
-                    'to the entry with name `%s`'], name, ...
-                    obj.PropertyManager.getOriginalName(name))
+                obj.warnIfPropertyNameExistsButNotOriginalName(name)
             end
 
             assert(existsEntry, ...
@@ -394,6 +402,16 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
         function warnIfDataTypeIsBoundToFile(obj, name)
             % propertyName = obj.getPropertyName(name);
             % Todo: placeholder for future
+        end
+
+        function warnIfPropertyNameExistsButNotOriginalName(obj, name)
+            originalName = obj.PropertyManager.getOriginalNameForPropertyName(name);
+            warning('NWB:Set:PropertyNameExistsForEntry' ,...
+                ['"%s" is not the name for an entry of this Set, ', ...
+                'but it exists as the property identifier corresponding ', ...
+                'to the entry with name `%s`'], ...
+                name, ...
+                originalName)
         end
     end
 
