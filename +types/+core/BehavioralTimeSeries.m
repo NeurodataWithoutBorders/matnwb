@@ -1,5 +1,5 @@
 classdef BehavioralTimeSeries < types.core.NWBDataInterface & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups
-% BEHAVIORALTIMESERIES - TimeSeries for storing Behavoioral time series data. See description of <a href="#BehavioralEpochs">BehavioralEpochs</a> for more details.
+% BEHAVIORALTIMESERIES - TimeSeries for storing behavioral time series data. See description of BehavioralEpochs for more details.
 %
 % Required Properties:
 %  timeseries
