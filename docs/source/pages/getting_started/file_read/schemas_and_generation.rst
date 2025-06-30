@@ -3,7 +3,7 @@
 Schemas and Class Generation
 ============================
 
-This page covers the advanced concepts behind how MatNWB works with NWB schemas and generates MATLAB classes. Understanding these concepts can help you troubleshoot issues and work with custom extensions.
+This page covers the advanced concepts behind how MatNWB works with NWB schemas and generates MATLAB classes representing neurodata types. Understanding these concepts can help you troubleshoot issues and work with custom extensions.
 
 What are NWB Schemas?
 ---------------------
@@ -35,16 +35,16 @@ How MatNWB Generates Classes
 When you call ``nwbRead``, MatNWB performs several steps behind the scenes:
 
 1. **Reads the file's embedded schema** information
-2. **Generates MATLAB classes** that correspond to the data types in the file
+2. **Generates MATLAB classes** for neurodata types defined by the schema version used to create the file
 3. **Creates an object hierarchy** that matches the file's structure
 
-This process ensures that the MATLAB objects you work with accurately represent the standardized NWB data types.
+This process ensures that the MATLAB objects you work with accurately reflects the exact schemas used to generate the file.
 
 Embedded vs. External Schemas
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Embedded Schemas** (most common):
-Modern NWB files contain their schema information embedded within the file itself. This makes the files self-contained and ensures compatibility.
+Newer (v2.x.x) NWB files contain their schema information embedded within the file itself. This makes the files self-contained and ensures compatibility.
 
 **External Schemas** (older files):
 Some older NWB files don't contain embedded schemas. For these files, you need to generate the appropriate classes manually before reading.
@@ -57,9 +57,9 @@ For files with embedded schemas, MatNWB handles class generation automatically:
 .. code-block:: MATLAB
 
     % This automatically generates classes as needed
-    nwb = nwbRead('modern_file.nwb');
+    nwb = nwbRead('newer_file.nwb');
 
-The generated classes are saved in the MatNWB installation directory and reused for subsequent reads of files with the same schema.
+The generated classes are saved in the MatNWB installation directory and can be reused for subsequent reads of files with the same schema.
 
 Manual Class Generation
 -----------------------
@@ -127,11 +127,40 @@ By default, MatNWB saves generated classes in its installation directory. You ca
     % Generate classes in a specific directory
     nwb = nwbRead('file.nwb', 'savedir', '/path/to/classes');
 
-This is useful when:
+This is useful for several advanced use cases:
 
-- Working with multiple schema versions simultaneously
+**Isolated Test Environment:**
+Generate classes in a separate directory to test new schema versions or extensions without affecting your main MatNWB installation:
+
+.. code-block:: MATLAB
+
+    % Create isolated test environment
+    test_dir = '/path/to/test_environment';
+    generateCore('2.8.0-dev', 'savedir', test_dir);
+    
+    % Test with experimental schema
+    addpath(test_dir);
+    nwb = nwbRead('experimental_file.nwb', 'ignorecache');
+
+**Parallel MATLAB Sessions:**
+When running multiple MATLAB sessions on the same machine for testing or processing, each session can use its own class directory to avoid conflicts:
+
+.. code-block:: MATLAB
+
+    nwbClearGenerated();  % Clear previously generated classes
+
+    % Session 1: Generate classes in a temporary directory
+    session1_dir = '/tmp/matlab_session_1_classes';
+    generateCore('savedir', session1_dir);
+
+    % Session 2: Use different temporary directory in parallel session 2
+    session2_dir = '/tmp/matlab_session_2_classes';
+    generateCore('savedir', session2_dir);
+
+**Other Use Cases:**
 - You don't have write permissions to the MatNWB installation directory
 - You want to keep different projects' classes separate
+- Working with different schema versions (though not simultaneously)
 
 Understanding Class Files
 --------------------------
@@ -153,21 +182,34 @@ Generated classes are saved as MATLAB .m files in a ``+types`` package directory
 
 These classes define the properties and methods for each NWB data type, enabling the object-oriented interface you use when working with NWB data.
 
-Schema Validation
------------------
-
-MatNWB validates that the embedded schemas in a file match the generated classes. If there's a mismatch, you may see warnings or errors suggesting:
-
-- Regenerating classes for the file's schema version
-- Using ``generateCore`` with the correct version
-- Checking for schema version conflicts
 
 Working with Multiple Schema Versions
 --------------------------------------
 
-When working with files from different NWB versions or with different extensions, consider these strategies:
+.. important::
+    MatNWB currently **cannot work with files of different schema versions simultaneously** in the same MATLAB session. Only one set of schema classes can be active at a time.
 
-**Separate Directories:**
+When you need to work with files from different NWB versions or with different extensions, you must work with them sequentially, not simultaneously:
+
+**Sequential Processing:**
+
+.. code-block:: MATLAB
+
+    % Process files with schema version 2.6.0
+    generateCore('2.6.0');
+    nwb_old = nwbRead('old_file_v2_6.nwb');
+    % ... work with old file ...
+    clear nwb_old;
+    
+    % Clear classes and switch to version 2.7.0
+    nwbClearGenerated();
+    generateCore('2.7.0');
+    nwb_new = nwbRead('new_file_v2_7.nwb');
+    % ... work with new file ...
+
+**Using Custom Save Directories:**
+
+For better organization and to avoid conflicts, generate classes in separate directories:
 
 .. code-block:: MATLAB
 
@@ -175,21 +217,15 @@ When working with files from different NWB versions or with different extensions
     generateCore('2.6.0', 'savedir', 'nwb_2_6_0_classes');
     generateCore('2.7.0', 'savedir', 'nwb_2_7_0_classes');
     
-    % Add the appropriate directory to your path before reading
+    % Work with one version at a time
     addpath('nwb_2_6_0_classes');
     nwb_old = nwbRead('old_file.nwb', 'ignorecache');
-
-**Project-Specific Classes:**
-
-.. code-block:: MATLAB
-
-    % Generate classes in your project directory
-    project_dir = '/path/to/my/project';
-    generateCore('savedir', project_dir);
-    generateExtension('my_extension.yaml', 'savedir', project_dir);
+    % ... process old files ...
+    rmpath('nwb_2_6_0_classes');
     
-    % Read files using project-specific classes
-    nwb = nwbRead('project_file.nwb', 'savedir', project_dir);
+    % Switch to newer version
+    addpath('nwb_2_7_0_classes');
+    nwb_new = nwbRead('new_file.nwb', 'ignorecache');
 
 Troubleshooting Schema Issues
 -----------------------------
@@ -199,6 +235,9 @@ Troubleshooting Schema Issues
 If you see errors about incompatible classes or missing properties:
 
 .. code-block:: MATLAB
+
+    clear all;  % Clear workspace to avoid conflicts
+    nwbClearGenerated();  % Clear previously generated classes
 
     % Check the file's schema version
     file_version = util.getSchemaVersion('problematic_file.nwb');
@@ -243,6 +282,5 @@ Best Practices
 2. **Use 'ignorecache' only when you're sure about schema compatibility**
 3. **Keep different schema versions in separate directories** if working with multiple versions
 4. **Check schema versions** when troubleshooting read errors
-5. **Use custom save directories** for project-specific work
 
 Understanding these schema concepts will help you work more confidently with NWB files and troubleshoot issues when they arise. For most users, the automatic schema handling in ``nwbRead`` will be sufficient, but these advanced features provide flexibility for complex workflows.
