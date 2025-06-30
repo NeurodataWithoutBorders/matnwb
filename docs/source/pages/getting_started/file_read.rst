@@ -1,7 +1,7 @@
 Reading NWB Files
 =================
 
-This section provides an overview of reading and exploring NWB (Neurodata Without Borders) files with MatNWB. It serves as a reference guide to the data objects you’ll encounter when working with NWB files. For detailed code examples and usage demonstrations, please refer to the :doc:`tutorials <../tutorials/index>`.
+This section provides an overview of reading and exploring NWB (Neurodata Without Borders) files with MatNWB. It serves as a reference guide to the functions and data objects you’ll interact with when working with NWB files. For detailed code examples and usage demonstrations, please refer to the :doc:`tutorials <../tutorials/index>`.
 
 To read an NWB file, use the :func:`nwbRead` function:
 

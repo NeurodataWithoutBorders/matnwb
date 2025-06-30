@@ -75,7 +75,7 @@ For illustration, we'll run the ecephys tutorial and read the resulting NWB file
 
 This object contains properties that represent the contents of the NWB file, including metadata about the experiment and data containers for raw and processed data. The object is hierarchical, meaning you can access nested data using dot notation.
 
-For an overview of the NWB file structure, see the `NWB File Structure <https://nwb-overview.readthedocs.io/en/latest/intro_to_nwb/2_file_structure.html>`_ section of the central 
+For an overview of the NWB file structure, see the `NWB File Structure <https://nwb-overview.readthedocs.io/en/latest/intro_to_nwb/2_file_structure.html>`_ section of the 
 `NWB Documentation <https://nwb-overview.readthedocs.io/en/latest/index.html>`_, or for technical details, refer to the `NWB Format Specification <https://nwb-schema.readthedocs.io/en/latest/format_description.html>`_.
 
 One key difference between the :class:`NwbFile` object and the formal NWB structure is that some top-level groups, like ``general``, ``intervals`` and ``stimulus`` are flattened into top level properties of the :class:`NwbFile` object. This is only a convenience for easier access, and does not change the underlying structure of the NWB file.
@@ -108,7 +108,7 @@ Display the raw data of the file:
         SpikeEvents_Shank0: [types.core.SpikeEventSeries]
     >> 
 
-The acquistion property contains a :class:`types.untyped.Set` object, which is a dynamic collection of NWB objects. In this case, it contains two datasets: ``ElectricalSeries`` and ``SpikeEvents_Shank0``. 
+The acquisition property contains a :class:`types.untyped.Set` object, which is a dynamic collection of NWB objects. In this case, it contains two datasets: ``ElectricalSeries`` and ``SpikeEvents_Shank0``. 
 
 To access a specific dataset, we can use the :meth:`Set.get` method:
 
@@ -249,14 +249,14 @@ Once you have a data object (whether found through navigation, search, or resolv
 
     % Most data objects have a .data property
     raw_data = electricalseries_obj.data.load();
-    size(raw_data)
+    raw_data_size = size(raw_data)
     
     % Check for additional metadata
     fprintf('Description: %s\n', electricalseries_obj.description);
 
 .. code-block:: text
 
-    ans =
+    raw_data_size =
 
             12        3000
 
