@@ -7,7 +7,7 @@ classdef NWBFile < types.core.NWBContainer & types.untyped.GroupClass
 
 % READONLY PROPERTIES
 properties(SetAccess = protected)
-    nwb_version = "2.8.0"; %  (char) File version string. Use semantic versioning, e.g. 1.2.1. This will be the name of the format with trailing major, minor and patch numbers.
+    nwb_version = "2.9.0"; %  (char) File version string. Use semantic versioning, e.g. 1.2.1. This will be the name of the format with trailing major, minor and patch numbers.
 end
 % REQUIRED PROPERTIES
 properties
@@ -24,10 +24,11 @@ properties
     general; %  (LabMetaData) Place-holder than can be extended so that lab-specific meta-data can be placed in /general.
     general_data_collection; %  (char) Notes about data collection and analysis.
     general_devices; %  (Device) Data acquisition devices.
+    general_devices_models; %  (DeviceModel) Data acquisition device models.
     general_experiment_description; %  (char) General description of the experiment.
     general_experimenter; %  (char) Name of person(s) who performed the experiment. Can also specify roles of different people involved.
     general_extracellular_ephys; %  (ElectrodeGroup) Physical group of electrodes.
-    general_extracellular_ephys_electrodes; %  (DynamicTable) A table of all electrodes (i.e. channels) used for recording.
+    general_extracellular_ephys_electrodes; %  (ElectrodesTable) A table of all electrodes (i.e. channels) used for recording. Changed in NWB 2.9.0 to use the newly added ElectrodesTable neurodata type instead of a DynamicTable with added columns.
     general_institution; %  (char) Institution(s) where experiment was performed.
     general_intracellular_ephys; %  (IntracellularElectrode) An intracellular electrode.
     general_intracellular_ephys_experimental_conditions; %  (ExperimentalConditionsTable) A table for grouping different intracellular recording repetitions together that belong to the same experimental experimental_conditions.
@@ -87,13 +88,15 @@ methods
         %
         %  - general_devices (Device) - Data acquisition devices.
         %
+        %  - general_devices_models (DeviceModel) - Data acquisition device models.
+        %
         %  - general_experiment_description (char) - General description of the experiment.
         %
         %  - general_experimenter (char) - Name of person(s) who performed the experiment. Can also specify roles of different people involved.
         %
         %  - general_extracellular_ephys (ElectrodeGroup) - Physical group of electrodes.
         %
-        %  - general_extracellular_ephys_electrodes (DynamicTable) - A table of all electrodes (i.e. channels) used for recording.
+        %  - general_extracellular_ephys_electrodes (ElectrodesTable) - A table of all electrodes (i.e. channels) used for recording. Changed in NWB 2.9.0 to use the newly added ElectrodesTable neurodata type instead of a DynamicTable with added columns.
         %
         %  - general_institution (char) - Institution(s) where experiment was performed.
         %
@@ -176,7 +179,7 @@ methods
         % Output Arguments:
         %  - nWBFile (types.core.NWBFile) - A NWBFile object
         
-        varargin = [{'nwb_version' '2.8.0'} varargin];
+        varargin = [{'nwb_version' '2.9.0'} varargin];
         obj = obj@types.core.NWBContainer(varargin{:});
         
         
@@ -190,6 +193,7 @@ methods
         addParameter(p, 'general',types.untyped.Set());
         addParameter(p, 'general_data_collection',[]);
         addParameter(p, 'general_devices',types.untyped.Set());
+        addParameter(p, 'general_devices_models',types.untyped.Set());
         addParameter(p, 'general_experiment_description',[]);
         addParameter(p, 'general_experimenter',[]);
         addParameter(p, 'general_extracellular_ephys',types.untyped.Set());
@@ -241,6 +245,7 @@ methods
         obj.general = p.Results.general;
         obj.general_data_collection = p.Results.general_data_collection;
         obj.general_devices = p.Results.general_devices;
+        obj.general_devices_models = p.Results.general_devices_models;
         obj.general_experiment_description = p.Results.general_experiment_description;
         obj.general_experimenter = p.Results.general_experimenter;
         obj.general_extracellular_ephys = p.Results.general_extracellular_ephys;
@@ -308,6 +313,9 @@ methods
     end
     function set.general_devices(obj, val)
         obj.general_devices = obj.validate_general_devices(val);
+    end
+    function set.general_devices_models(obj, val)
+        obj.general_devices_models = obj.validate_general_devices_models(val);
     end
     function set.general_experiment_description(obj, val)
         obj.general_experiment_description = obj.validate_general_experiment_description(val);
@@ -472,6 +480,11 @@ methods
         constrained = {'types.core.Device'};
         types.util.checkSet('general_devices', namedprops, constrained, val);
     end
+    function val = validate_general_devices_models(obj, val)
+        namedprops = struct();
+        constrained = {'types.core.DeviceModel'};
+        types.util.checkSet('general_devices_models', namedprops, constrained, val);
+    end
     function val = validate_general_experiment_description(obj, val)
         val = types.util.checkDtype('general_experiment_description', 'char', val);
         types.util.validateShape('general_experiment_description', {[1]}, val)
@@ -486,7 +499,7 @@ methods
         types.util.checkSet('general_extracellular_ephys', namedprops, constrained, val);
     end
     function val = validate_general_extracellular_ephys_electrodes(obj, val)
-        val = types.util.checkDtype('general_extracellular_ephys_electrodes', 'types.hdmf_common.DynamicTable', val);
+        val = types.util.checkDtype('general_extracellular_ephys_electrodes', 'types.core.ElectrodesTable', val);
     end
     function val = validate_general_institution(obj, val)
         val = types.util.checkDtype('general_institution', 'char', val);
@@ -664,6 +677,10 @@ methods
         io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_devices)
             refs = obj.general_devices.export(fid, [fullpath '/general/devices'], refs);
+        end
+        io.writeGroup(fid, [fullpath '/general/devices']);
+        if ~isempty(obj.general_devices_models)
+            refs = obj.general_devices_models.export(fid, [fullpath '/general/devices/models'], refs);
         end
         io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_experiment_description)

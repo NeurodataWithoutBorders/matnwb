@@ -2,16 +2,16 @@ classdef DecompositionSeries < types.core.TimeSeries & types.untyped.GroupClass
 % DECOMPOSITIONSERIES - Spectral analysis of a time series, e.g. of an LFP or a speech signal.
 %
 % Required Properties:
-%  bands, data, data_unit, metric
+%  data, data_unit, metric
 
 
 % REQUIRED PROPERTIES
 properties
-    bands; % REQUIRED (DynamicTable) Table for describing the bands that this series was generated from. There should be one row in this table for each band.
     metric; % REQUIRED (char) The metric used, e.g. phase, amplitude, power.
 end
 % OPTIONAL PROPERTIES
 properties
+    bands; %  (FrequencyBandsTable) Table for describing the bands that this series was generated from.
     source_channels; %  (DynamicTableRegion) DynamicTableRegion pointer to the channels that this decomposition series was generated from.
     source_timeseries; %  TimeSeries
 end
@@ -26,7 +26,7 @@ methods
         %  decompositionSeries = types.core.DECOMPOSITIONSERIES(Name, Value) creates a DecompositionSeries object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
-        %  - bands (DynamicTable) - Table for describing the bands that this series was generated from. There should be one row in this table for each band.
+        %  - bands (FrequencyBandsTable) - Table for describing the bands that this series was generated from.
         %
         %  - comments (char) - Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string.
         %
@@ -101,7 +101,7 @@ methods
     %% VALIDATORS
     
     function val = validate_bands(obj, val)
-        val = types.util.checkDtype('bands', 'types.hdmf_common.DynamicTable', val);
+        val = types.util.checkDtype('bands', 'types.core.FrequencyBandsTable', val);
     end
     function val = validate_data(obj, val)
         val = types.util.checkDtype('data', 'numeric', val);
@@ -136,7 +136,9 @@ methods
         if any(strcmp(refs, fullpath))
             return;
         end
-        refs = obj.bands.export(fid, [fullpath '/bands'], refs);
+        if ~isempty(obj.bands)
+            refs = obj.bands.export(fid, [fullpath '/bands'], refs);
+        end
         if startsWith(class(obj.metric), 'types.untyped.')
             refs = obj.metric.export(fid, [fullpath '/metric'], refs);
         elseif ~isempty(obj.metric)

@@ -1,5 +1,5 @@
 classdef PlaneSegmentation < types.hdmf_common.DynamicTable & types.untyped.GroupClass
-% PLANESEGMENTATION - Results from image segmentation of a specific imaging plane.
+% PLANESEGMENTATION - Results from image segmentation of a specific imaging plane. At least one of `image_mask`, `pixel_mask`, or `voxel_mask` is required.
 %
 % Required Properties:
 %  colnames, description, id, imaging_plane
@@ -11,11 +11,11 @@ properties
 end
 % OPTIONAL PROPERTIES
 properties
-    image_mask; %  (VectorData) ROI masks for each ROI. Each image mask is the size of the original imaging plane (or volume) and members of the ROI are finite non-zero.
-    pixel_mask; %  (VectorData) Pixel masks for each ROI: a list of indices and weights for the ROI. Pixel masks are concatenated and parsing of this dataset is maintained by the PlaneSegmentation
+    image_mask; %  (VectorData) ROI masks for each ROI. Each image mask is the size of the original imaging plane (or volume) and members of the ROI are finite non-zero. At least one of `image_mask`, `pixel_mask`, or `voxel_mask` is required.
+    pixel_mask; %  (VectorData) Pixel masks for each ROI: a list of indices and weights for the ROI. Pixel masks are concatenated and parsing of this dataset is maintained by the PlaneSegmentation. At least one of `image_mask`, `pixel_mask`, or `voxel_mask` is required.
     pixel_mask_index; %  (VectorIndex) Index into pixel_mask.
     reference_images; %  (ImageSeries) One or more image stacks that the masks apply to (can be one-element stack).
-    voxel_mask; %  (VectorData) Voxel masks for each ROI: a list of indices and weights for the ROI. Voxel masks are concatenated and parsing of this dataset is maintained by the PlaneSegmentation
+    voxel_mask; %  (VectorData) Voxel masks for each ROI: a list of indices and weights for the ROI. Voxel masks are concatenated and parsing of this dataset is maintained by the PlaneSegmentation. At least one of `image_mask`, `pixel_mask`, or `voxel_mask` is required.
     voxel_mask_index; %  (VectorIndex) Index into voxel_mask.
 end
 
@@ -35,11 +35,11 @@ methods
         %
         %  - id (ElementIdentifiers) - Array of unique identifiers for the rows of this dynamic table.
         %
-        %  - image_mask (VectorData) - ROI masks for each ROI. Each image mask is the size of the original imaging plane (or volume) and members of the ROI are finite non-zero.
+        %  - image_mask (VectorData) - ROI masks for each ROI. Each image mask is the size of the original imaging plane (or volume) and members of the ROI are finite non-zero. At least one of `image_mask`, `pixel_mask`, or `voxel_mask` is required.
         %
         %  - imaging_plane (ImagingPlane) - Link to ImagingPlane object from which this data was generated.
         %
-        %  - pixel_mask (VectorData) - Pixel masks for each ROI: a list of indices and weights for the ROI. Pixel masks are concatenated and parsing of this dataset is maintained by the PlaneSegmentation
+        %  - pixel_mask (VectorData) - Pixel masks for each ROI: a list of indices and weights for the ROI. Pixel masks are concatenated and parsing of this dataset is maintained by the PlaneSegmentation. At least one of `image_mask`, `pixel_mask`, or `voxel_mask` is required.
         %
         %  - pixel_mask_index (VectorIndex) - Index into pixel_mask.
         %
@@ -47,7 +47,7 @@ methods
         %
         %  - vectordata (VectorData) - Vector columns, including index columns, of this dynamic table.
         %
-        %  - voxel_mask (VectorData) - Voxel masks for each ROI: a list of indices and weights for the ROI. Voxel masks are concatenated and parsing of this dataset is maintained by the PlaneSegmentation
+        %  - voxel_mask (VectorData) - Voxel masks for each ROI: a list of indices and weights for the ROI. Voxel masks are concatenated and parsing of this dataset is maintained by the PlaneSegmentation. At least one of `image_mask`, `pixel_mask`, or `voxel_mask` is required.
         %
         %  - voxel_mask_index (VectorIndex) - Index into voxel_mask.
         %
