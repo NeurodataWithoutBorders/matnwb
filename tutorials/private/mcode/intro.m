@@ -113,7 +113,7 @@ annotations = types.core.AnnotationSeries( ...
 );
 
 % Add the AnnotationSeries to the NWBFile's stimulus group
-nwb.stimulus_presentation.set('Airpuffs', annotations)
+nwb.stimulus_presentation.add('Airpuffs', annotations)
 %% Behavior
 % SpatialSeries and Position
 % Many types of data have special data types in NWB. To store the spatial position 
@@ -170,10 +170,10 @@ behavior_module = types.core.ProcessingModule('description', 'contains behaviora
 
 % add the Position object (that holds the SpatialSeries object) to the module 
 % and name the Position object "Position"
-behavior_module.nwbdatainterface.set('Position', position);
+behavior_module.add('Position', position);
 
 % add the processing module to the NWBFile object, and name the processing module "behavior"
-nwb.processing.set('behavior', behavior_module);
+nwb.processing.add('behavior', behavior_module);
 % Trials
 % Trials are stored in a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeIntervals.html 
 % |*TimeIntervals*|> object which is a subclass of <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
@@ -207,7 +207,7 @@ nwb.intervals_trials = trials;
 
 % If you have multiple trials tables, you will need to use custom names for
 % each one:
-nwb.intervals.set('custom_intervals_table_name', trials);
+nwb.intervals.add('custom_intervals_table_name', trials);
 %% Write
 % Now, to write the NWB file that we have built so far:
 
@@ -229,8 +229,7 @@ read_nwbfile = nwbRead('intro_tutorial.nwb', 'ignorecache')
 % |*Position*|> object contains our <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
 % |*SpatialSeries*|> object named |'SpatialSeries'|.
 
-read_spatial_series = read_nwbfile.processing.get('behavior'). ...
-    nwbdatainterface.get('Position').spatialseries.get('SpatialSeries')
+read_spatial_series = read_nwbfile.processing.behavior.Position.SpatialSeries
 % Reading Data
 % Counter to normal MATLAB workflow, data arrays are read passively from the 
 % file. Calling |*read_spatial_series.data*| does not read the data values, but 
