@@ -2,12 +2,12 @@ classdef BehavioralEpochs < types.core.NWBDataInterface & types.untyped.GroupCla
 % BEHAVIORALEPOCHS - TimeSeries for storing behavioral epochs.  The objective of this and the other two Behavioral interfaces (e.g. BehavioralEvents and BehavioralTimeSeries) is to provide generic hooks for software tools/scripts. This allows a tool/script to take the output one specific interface (e.g., UnitTimes) and plot that data relative to another data modality (e.g., behavioral events) without having to define all possible modalities in advance. Declaring one of these interfaces means that one or more TimeSeries of the specified type is published. These TimeSeries should reside in a group having the same name as the interface. For example, if a BehavioralTimeSeries interface is declared, the module will have one or more TimeSeries defined in the module sub-group 'BehavioralTimeSeries'. BehavioralEpochs should use IntervalSeries. BehavioralEvents is used for irregular events. BehavioralTimeSeries is for continuous data.
 %
 % Required Properties:
-%  None
+%  intervalseries
 
 
-% OPTIONAL PROPERTIES
+% REQUIRED PROPERTIES
 properties
-    intervalseries; %  (IntervalSeries) IntervalSeries object containing start and stop times of epochs.
+    intervalseries; % REQUIRED (IntervalSeries) IntervalSeries object containing start and stop times of epochs.
 end
 properties (Access = protected)
     GroupPropertyNames = {'intervalseries'}
@@ -61,9 +61,7 @@ methods
         if any(strcmp(refs, fullpath))
             return;
         end
-        if ~isempty(obj.intervalseries)
-            refs = obj.intervalseries.export(fid, fullpath, refs);
-        end
+        refs = obj.intervalseries.export(fid, fullpath, refs);
     end
 end
 
