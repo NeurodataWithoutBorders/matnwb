@@ -145,7 +145,17 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
         end
 
         function add(obj, name, value)
-        % add - Add an element (name, value pair) to the set
+            % add - Add a named data object to the Set
+            %
+            % Syntax:
+            %   add(obj, name, value) adds the specified name-value pair 
+            %   to the object's set.
+            %
+            % Input Arguments:
+            %   obj     - The object to which the data object is being added.
+            %   name    - The name of the data object to be added.
+            %   value   - The data object corresponding to the given name.
+            
             obj.set(name, value, ...
                 'FailIfKeyExists', true, ...
                 'FailOnInvalidType', true);
