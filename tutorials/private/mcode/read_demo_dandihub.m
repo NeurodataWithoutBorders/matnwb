@@ -14,10 +14,14 @@
 % <https://nwb-overview.readthedocs.io/en/latest/file_read/file_read.html#reading-with-matnwb 
 % NWB Overview Documentation>
 %% Download the Dataset
-% Use the pre-installed |dandi| Python package to download the dataset to the 
-% user-local dandisets folder:
+% Use the |dandi| Python package to download the dataset to the user-local dandisets 
+% folder. If you are running this livescript on DandiHub, the |dandi| package 
+% is already pre-installed. On a local environment, you need to install the |dandi| 
+% package in the python environment returned by running |pyenv()| in MATLAB. For 
+% more details on using Python from MATLAB, please refer to the <https://se.mathworks.com/help/matlab/matlab_external/install-supported-python-implementation.html 
+% MATLAB documentation>.
 
-environment = "Local";
+environment = "Local"; % Local or DandiHub
 switch environment
     case "DandiHub"
         targetFolder = "/home/jovyan/dandisets/000004";
@@ -36,18 +40,19 @@ nwb = nwbRead(fullfile(targetFolder, "sub-P11HMH", "sub-P11HMH_ses-20061101_ecep
 
 nwb.stimulus_presentation
 %% 
-% This results shows us that |nwb.stimulus_presentation| is a |Set| object that 
-% contains a single data object called |StimulusPresentation|, which is an |OpticalSeries| 
-% neurodata type. Use the |get| method to return this |OpticalSeries|. |Set| objects 
-% store a collection of other NWB objects.
+% This result shows that |nwb.stimulus_presentation| is a |Set| object. In MatNWB, 
+% a |Set| object stores a collection of other NWB objects. In this case, the |Set| 
+% contains a single data object named |StimulusPresentation|, which is of the 
+% |OpticalSeries| neurodata type. You can use dot notation of the form |Set.objectName| 
+% to access this |OpticalSeries|:
 
-nwb.stimulus_presentation.get('StimulusPresentation')
+nwb.stimulus_presentation.StimulusPresentation
 %% 
 % |OpticalSeries| is a neurodata type that stores information about visual stimuli 
 % presented to subjects. This print out shows all of the attributes in the |OpticalSeries| 
 % object named |StimulusPresentation|. The images are stored in |StimulusPresentation.data|
 
-StimulusImageData = nwb.stimulus_presentation.get('StimulusPresentation').data
+StimulusImageData = nwb.stimulus_presentation.StimulusPresentation.data
 %% 
 % When calling a data object directly, the data is not read but instead a |DataStub| 
 % is returned. This is because data is read "lazily" in MatNWB. Instead of reading 
@@ -73,7 +78,7 @@ daspect([3, 5, 5]);
 % arguments. We will use this approach to read all of the image display timestamps 
 % into memory.
 
-stimulus_times = nwb.stimulus_presentation.get('StimulusPresentation').timestamps.load();
+stimulus_times = nwb.stimulus_presentation.StimulusPresentation.timestamps.load();
 %% Quick PSTH and raster
 % Here, I will pull out spike times of a particular unit, align them to the 
 % image display times, and finally display the results.
