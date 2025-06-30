@@ -1,21 +1,34 @@
-Reading with MatNWB
-===================
+Reading NWB Files
+=================
 
-For most files, MatNWB only requires the :func:`nwbRead` call:
+This section provides an overview of reading and exploring NWB (Neurodata Without Borders) files with MatNWB. It serves as a reference guide to the data objects you’ll encounter when working with NWB files. For detailed code examples and usage demonstrations, please refer to the :doc:`tutorials <../tutorials/index>`.
+
+To read an NWB file, use the :func:`nwbRead` function:
 
 .. code-block:: MATLAB
 
-    nwb = nwbRead('path/to/filename.nwb');
+    nwb = nwbRead('path/to/file.nwb');
 
-This call will read the file, create the necessary NWB schema class files, as well as any extension schemata that is needed for the file itself. This is because both PyNWB and MatNWB embed a copy of the schema environment into the NWB file when it is written.
+This command performs several important tasks behind the scenes:
 
+1. **Opens the file** and reads its structure  
+2. **Automatically generates MATLAB classes** needed to work with the data  
+3. **Returns an NwbFile object** representing the entire file  
 
-The returned object above is an :class:`NwbFile` object which serves as the root object with which you can use to browse the contents of the file. More detail about the NwbFile class can be found here: :ref:`matnwb-read-nwbfile-intro`.
+The returned `NwbFile` object is the primary access point for all the data in the file. In the :ref:`next section<matnwb-read-nwbfile-intro>`, we will examine the structure of this object in detail, covering how to explore it using standard MATLAB dot notation to access experimental metadata, raw recordings, processed data, and analysis results, as well as how to search for specific data types.
+
+.. note::
+    The :func:`nwbRead` function currently does not support reading NWB files stored in Zarr format.
+
+**Next steps**
+
+The following pages provide detailed information on specific aspects of reading NWB files:
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     file_read/nwbfile
     file_read/dynamictable
     file_read/untyped
+    file_read/schemas_and_generation
     file_read/troubleshooting
