@@ -8,37 +8,38 @@
 addpath(genpath(pwd));
 %}
 %% Set up the NWB File
-% An NWB file represents a single session of an experiment. Each file must have 
-% a session_description, identifier, and session start time. Create a new <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html 
+% An NWB file represents metadata and data from a single session of an experiment. 
+% Each file must have an |*identifier*|, a |*session_description*|, and a |*session_start_time*|. 
+% Create a new <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html 
 % |*NWBFile*|> object with those and additional metadata using the <https://matnwb.readthedocs.io/en/latest/pages/functions/NwbFile.html 
-% |*NwbFile*|> command. For all MatNWB classes and functions, we use the Matlab 
-% method of entering keyword argument pairs, where arguments are entered as name 
-% followed by value. Ellipses are used for clarity.
+% |*NwbFile*|> command. For all MatNWB classes and functions, we use standard 
+% MATLAB syntax for entering name-value (keyword) argument pairs, where arguments 
+% are entered as a name followed by a value.
 
 nwb = NwbFile( ...
-    'session_description', 'mouse in open exploration',...
-    'identifier', 'Mouse5_Day3', ...
-    'session_start_time', datetime(2018, 4, 25, 2, 30, 3, 'TimeZone', 'local'), ...
-    'general_experimenter', 'Last, First', ... % optional
-    'general_session_id', 'session_1234', ... % optional
-    'general_institution', 'University of My Institution', ... % optional
-    'general_related_publications', {'DOI:10.1016/j.neuron.2016.12.011'}); % optional
+    'identifier', 'Mouse5_Day3', ...                                                % required
+    'session_description', 'mouse in open exploration', ...                         % required
+    'session_start_time', datetime(2018, 4, 25, 2, 30, 3, 'TimeZone', 'local'), ... % required
+    'general_experimenter', 'Last, First', ...                                      % optional
+    'general_session_id', 'session_1234', ...                                       % optional
+    'general_institution', 'University of My Institution', ...                      % optional
+    'general_related_publications', {'DOI:10.1016/j.neuron.2016.12.011'});          % optional
 nwb
 %% Subject Information
-% You can also provide information about your subject in the NWB file. Create 
-% a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Subject.html 
-% |*Subject*|> object to store information such as age, species, genotype, sex, 
-% and a freeform description. Then set |*nwb.general_subject*| to the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Subject.html 
-% |*Subject*|> object.
+% Include subject metadata in your NWB file by creating a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Subject.html 
+% |*Subject*|> object with |*age*|, |*species*|, |*genotype*|, |*sex*|, and a 
+% free-form text |*description*|. Then add the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Subject.html 
+% |*Subject*|> object to the |*general_subject*| property of the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html 
+% |*NWBFile*|> object.
 % 
 % 
 % 
-% Each of these fields is free-form, so any values will be valid, but here are 
-% our recommendations:
+% All of these fields accept free-form text, so any value is technically valid, 
+% but here are our recommendations:
 %% 
 % * For |age|, we recommend using the <https://en.wikipedia.org/wiki/ISO_8601#Durations 
 % ISO 8601 Duration format>
-% * For |species|, we recommend using the formal latin binomal name (e.g. mouse 
+% * For |species|, we recommend using the formal latin binomial name (e.g. mouse 
 % -> _Mus musculus_, human -> _Homo sapiens_)
 % * For |sex|, we recommend using F (female), M (male), U (unknown), and O (other)
 
@@ -54,19 +55,20 @@ nwb.general_subject = subject;
 subject
 %% 
 % Note: the DANDI archive requires all NWB files to have a subject object with 
-% subject_id specified, and strongly encourages specifying the other fields.
+% |*subject_id*| specified, and strongly encourages specifying the other fields.
 %% Time Series Data
 % <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
 % |*TimeSeries*|> is a common base class for measurements sampled over time, and 
-% provides fields for |data| and |timestamps| (regularly or irregularly sampled). 
-% You will also need to supply the |name| and |unit| of measurement (<https://en.wikipedia.org/wiki/International_System_of_Units 
+% provides fields for |*data*| and |*timestamps*| (regularly or irregularly sampled). 
+% You will also need to supply the |*unit*| of measurement (<https://en.wikipedia.org/wiki/International_System_of_Units 
 % SI unit>).
 % 
 % 
 % 
-% For instance, we can store a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
-% |*TimeSeries*|> data where recording started |0.0| seconds after |start_time| 
-% and sampled every second (1 Hz):
+% For example, to store a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
+% |*TimeSeries*|> that begins at 0 s relative to |*start_time*| and is sampled 
+% at 1 Hz, set the |*data*|, |*data_unit*|, |*starting_time*|, and |*starting_time_rate*| 
+% fields:
 
 time_series_with_rate = types.core.TimeSeries( ...
     'description', 'an example time series', ...
@@ -75,14 +77,26 @@ time_series_with_rate = types.core.TimeSeries( ...
     'starting_time', 0.0, ...
     'starting_time_rate', 1.0);
 %% 
-% For irregularly sampled recordings, we need to provide the |timestamps| for 
-% the |data|:
+% Add the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
+% |*TimeSeries*|> to the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html 
+% |*NWBFile*|> by inserting it into the file’s |*acquisition*| container (later 
+% in the tutorial we will add data to a container holding processed data). This 
+% container can hold any number of data objects—each stored as a name-value pair 
+% where the name is a user-defined name and the value is the data object itself:
+
+nwb.acquisition.set('RegularTimeseries', time_series_with_rate);
+%% 
+% For irregularly sampled recordings, we need to provide the |*timestamps*| 
+% for the |data|:
 
 time_series_with_timestamps = types.core.TimeSeries( ...
     'description', 'an example time series', ...
     'data', linspace(0, 100, 10), ...
     'data_unit', 'm', ...
-    'timestamps', linspace(0, 1, 10));
+    'timestamps', linspace(0, 9, 10) + 0.2*rand(1,10));
+
+% Add the TimeSeries to the NWB file
+nwb.acquisition.set('IrregularTimeseries', time_series_with_timestamps);
 %% 
 % The <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
 % |*TimeSeries*|> class serves as the foundation for all other time series types 
@@ -101,8 +115,8 @@ time_series_with_timestamps = types.core.TimeSeries( ...
 % to our <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
 % |*TimeSeries*|> example above, we can create an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/AnnotationSeries.html 
 % |*AnnotationSeries*|> object with text information about a stimulus and add 
-% it to the stimulus_presentation group in the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html 
-% |*NWBFile*|>. Below is an example where we create an AnnotationSeries object 
+% it to the |*stimulus_presentation*| group in the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html 
+% |*NWBFile*|>. Below is an example where we create an |AnnotationSeries| object 
 % with annotations for airpuff stimuli and add it to the NWBFile.
 
 % Create an AnnotationSeries object with annotations for airpuff stimuli
@@ -113,7 +127,7 @@ annotations = types.core.AnnotationSeries( ...
 );
 
 % Add the AnnotationSeries to the NWBFile's stimulus group
-nwb.stimulus_presentation.set('Airpuffs', annotations)
+nwb.stimulus_presentation.set('Airpuffs', annotations);
 %% Behavior
 % SpatialSeries and Position
 % Many types of data have special data types in NWB. To store the spatial position 
@@ -133,15 +147,15 @@ nwb.stimulus_presentation.set('Airpuffs', annotations)
 % <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
 % |*SpatialSeries*|> is a subclass of <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
 % |*TimeSeries*|>, a common base class for measurements sampled over time, and 
-% provides fields for data and time (regularly or irregularly sampled). Here, 
+% it provides fields for data and time (regularly or irregularly sampled). Here, 
 % we put a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
 % |*SpatialSeries*|> object called |'SpatialSeries'| in a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Position.html 
 % |*Position*|> object. If the data is sampled at a regular interval, it is recommended 
-% to specify the |starting_time| and the sampling rate (|starting_time_rate|), 
-% although it is still possible to specify |timestamps| as in the |*time_series_with_timestamps*| 
+% to specify the |*starting_time*| and the sampling rate (|*starting_time_rate*|), 
+% although it is still possible to specify |*timestamps*| as in the |time_series_with_timestamps| 
 % example above.
 
-% create SpatialSeries object
+% Create SpatialSeries object
 spatial_series_ts = types.core.SpatialSeries( ...
     'data', [linspace(0,10,100); linspace(0,8,100)], ...
     'reference_frame', '(0,0) is bottom left corner', ...
@@ -149,7 +163,7 @@ spatial_series_ts = types.core.SpatialSeries( ...
     'starting_time_rate', 200 ...
 );
 
-% create Position object and add SpatialSeries
+% Create Position object and add SpatialSeries
 position = types.core.Position('SpatialSeries', spatial_series_ts);
 %% 
 % NWB differentiates between raw, _acquired_ data, which should never change, 
@@ -165,22 +179,23 @@ position = types.core.Position('SpatialSeries', spatial_series_ts);
 % |*NWBFile*|> and add the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Position.html 
 % |*Position*|> object to the module.
 
-% create processing module
+% Create processing module
 behavior_module = types.core.ProcessingModule('description', 'contains behavioral data');
 
-% add the Position object (that holds the SpatialSeries object) to the module 
+% Add the Position object (that holds the SpatialSeries object) to the module 
 % and name the Position object "Position"
 behavior_module.nwbdatainterface.set('Position', position);
 
-% add the processing module to the NWBFile object, and name the processing module "behavior"
+% Finally, add the processing module to the NWBFile object, and name the processing module "behavior"
 nwb.processing.set('behavior', behavior_module);
 % Trials
 % Trials are stored in a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeIntervals.html 
 % |*TimeIntervals*|> object which is a subclass of <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
 % |*DynamicTable*|>. <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
 % |*DynamicTable*|> objects are used to store tabular metadata throughout NWB, 
-% including for trials, electrodes, and sorted units. They offer flexibility for 
-% tabular data by allowing required columns, optional columns, and custom columns.
+% and is often used for storing information about trials, electrodes, and sorted 
+% units. They offer flexibility for tabular data by allowing required columns, 
+% optional columns, and custom columns.
 % 
 % 
 % 
@@ -190,9 +205,9 @@ nwb.processing.set('behavior', behavior_module);
 % 
 % 
 % Trials are stored in a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeIntervals.html 
-% |*TimeIntervals*|> object which subclasses <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
-% |*DynamicTable*|>. Here, we are adding |'correct'|, which will be a logical 
-% array.
+% |*TimeIntervals*|> object, a subclass of <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
+% |*DynamicTable*|>. Here, we are adding a new column, |correct|, which will be 
+% a logical array.
 
 trials = types.core.TimeIntervals( ...
     'colnames', {'start_time', 'stop_time', 'correct'}, ...
@@ -208,6 +223,9 @@ nwb.intervals_trials = trials;
 % If you have multiple trials tables, you will need to use custom names for
 % each one:
 nwb.intervals.set('custom_intervals_table_name', trials);
+%% 
+% For a more detailed tutorial on dynamic tables, see the <./dynamic_tables.mlx 
+% Dynamic tables> tutorial.
 %% Write
 % Now, to write the NWB file that we have built so far:
 
@@ -242,7 +260,7 @@ read_spatial_series.data
 % in RAM all at once. Access all the data in the matrix using the |*load*| method 
 % with no arguments. 
 
-read_spatial_series.data.load
+read_spatial_series.data.load()
 %% 
 % If you only need a section of the data, you can read only that section by 
 % indexing the |*DataStub*| object like a normal array in MATLAB. This will just 
@@ -253,13 +271,11 @@ read_spatial_series.data.load
 read_spatial_series.data(:, 1:10)
 %% Next Steps
 % This concludes the introductory tutorial. Please proceed to one of the specialized 
-% tutorials, which are designed to follow this one.
+% tutorials, which are designed to succeed this one.
 %% 
 % * <./ecephys.mlx Extracellular electrophysiology>
 % * <./icephys.mlx Intracellular electrophysiology>
 % * <./ophys.mlx Optical physiology>
 %% 
-% See the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/index.html 
+% Refer to the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/index.html 
 % API documentation> to learn what data types are available.
-% 
-%
