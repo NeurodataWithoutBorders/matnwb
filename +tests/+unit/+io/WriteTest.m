@@ -16,14 +16,21 @@ classdef WriteTest < matlab.unittest.TestCase
             fileCleanupObj = onCleanup(@(id) H5F.close(fid));
     
             targetPath = '/';
-            io.writeGroup(fid, targetPath)
+            io.writeGroup(fid, targetPath);
 
             % Define target dataset path and create it in the HDF5 file
             io.writeAttribute(fid, '/test', true);  % First write to create the dataset
-            
+
             % Read using h5readatt and confirm value
             value = h5readatt(filename, '/', 'test');
-            testCase.verifyTrue( strcmp(value, 'TRUE'))
+            if ~isempty(value)
+                testCase.verifyTrue( strcmp(value, 'TRUE'))
+            else
+                % Pass this test. h5readatt does not properly read enum
+                % values in Releases <= R2022a. Also, in MatNWB attributes
+                % are parsed using io.parseAttributes, so this verification is 
+                % not critical.
+            end
 
             % Read using io.parseAttributes and confirm value
             blackList = struct(...
@@ -85,6 +92,46 @@ classdef WriteTest < matlab.unittest.TestCase
 
             parsedData = table2struct( struct2table(parsedData) )';
             testCase.verifyEqual(data, parsedData);
+        end
+        
+        function testWriteCompoundMap(testCase)
+            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture)
+            fid = H5F.create('test.h5');
+            data = containers.Map({'a', 'b'}, 1:2);
+            io.writeCompound(fid, '/map_data', data)
+            H5F.close(fid);
+        end
+        
+        function testWriteCompoundEmpty(testCase)
+            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture)
+            fid = H5F.create('test.h5');
+            data = struct;
+            testCase.verifyError(...
+                @(varargin) io.writeCompound(fid, '/map_data', data), ...
+                'MATLAB:imagesci:hdf5lib:libraryError')
+            H5F.close(fid);
+        end
+        
+        function testWriteCompoundScalar(testCase)
+            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture)
+            fid = H5F.create('test.h5');
+            data = struct('a','b');
+            io.writeCompound(fid, '/map_data', data)
+            H5F.close(fid);
+        end
+
+        function testWriteCompoundNonScalar(testCase)
+            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture)
+            
+            numRows = 5;
+            numericVector = rand(numRows, 1);
+            charVector = char(randi([65 90], numRows, 1));
+            %stringVector = string(char(randi([65 90], numRows, 1)));
+            data = table(numericVector, charVector);
+                        
+            fid = H5F.create('test.h5');
+            io.writeCompound(fid, '/map_data', data)
+            H5F.close(fid);
         end
 
         function testWriteCompoundOverWrite(testCase)

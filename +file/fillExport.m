@@ -1,4 +1,4 @@
-function festr = fillExport(propertyNames, RawClass, parentName)
+function festr = fillExport(propertyNames, RawClass, parentName, required)
     exportHeader = 'function refs = export(obj, fid, fullpath, refs)';
     if isa(RawClass, 'file.Dataset')
         propertyNames = propertyNames(~strcmp(propertyNames, 'data'));
@@ -41,7 +41,7 @@ function festr = fillExport(propertyNames, RawClass, parentName)
         elseif strcmp(propertyName, 'resolution') && strcmp(RawClass.type, 'VectorData')
             exportBody{end+1} = fillVectorDataResolutionConditional();
         else
-            exportBody{end+1} = fillDataExport(propertyName, prop, elisions);
+            exportBody{end+1} = fillDataExport(propertyName, prop, elisions, required);
         end
     end
 
@@ -162,7 +162,7 @@ function path = traverseRaw(propertyName, RawClass)
     end
 end
 
-function dataExportString = fillDataExport(name, prop, elisions)
+function dataExportString = fillDataExport(name, prop, elisions, required)
     if isempty(elisions)
         fullpath = ['[fullpath ''/' prop.name ''']'];
         elisionpath = 'fullpath';
@@ -186,6 +186,10 @@ function dataExportString = fillDataExport(name, prop, elisions)
             options = [options {'''forceChunking''', '''forceArray'''}];
         elseif ~prop.scalar
             options = [options {'''forceArray'''}];
+            % If dataset is 2D, need to force matrix-like
+            if numel(prop.shape) == 2 && ~iscell(prop.shape{1})
+                options = [options {'''forceMatrix'''}];
+            end
         end
 
         % untyped compound
@@ -217,6 +221,7 @@ function dataExportString = fillDataExport(name, prop, elisions)
     end
 
     propertyChecks = {};
+    dependencyCheck = {};
 
     if isa(prop, 'file.Attribute') && ~isempty(prop.dependent)
         %if attribute is dependent, check before writing
@@ -239,6 +244,16 @@ function dataExportString = fillDataExport(name, prop, elisions)
             warnIfNotExportedString = sprintf('obj.warnIfPropertyAttributeNotExported(''%s'', ''%s'', fullpath)', name, depPropname);
             warningNeededCheck = sprintf('isempty(obj.%s) && ~isempty(obj.%s)', depPropname, name);
         end
+        
+        % If a property (attribute) is required, and it's parent dataset or
+        % group is not required, we need to issue a warning if the parent
+        % is set and the dependent required property is unset.
+        isParentRequired = any(strcmp(depPropname, required));
+        if prop.required && not(prop.readonly) && not(isParentRequired)
+            dependencyCheck{end+1} = sprintf('~isempty(obj.%s) && isempty(obj.%s)', depPropname, name);
+            warnIfMissingRequiredDependentAttributeStr = ...
+                sprintf('obj.throwErrorIfRequiredDependencyMissing(''%s'', ''%s'', fullpath)', name, depPropname);
+        end
     end
 
     if ~prop.required
@@ -256,5 +271,13 @@ function dataExportString = fillDataExport(name, prop, elisions)
         else
              dataExportString = sprintf('%s\nend', dataExportString);
         end
+    end
+
+    if ~isempty(dependencyCheck)
+        dataExportString = sprintf('%s\nif %s\n%s\nend', ...
+            dataExportString, ...
+            strjoin(dependencyCheck, ' && '), ...
+            file.addSpaces(warnIfMissingRequiredDependentAttributeStr, 4) ...
+            );
     end
 end

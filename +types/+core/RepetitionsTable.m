@@ -1,5 +1,8 @@
 classdef RepetitionsTable < types.hdmf_common.DynamicTable & types.untyped.GroupClass
-% REPETITIONSTABLE A table for grouping different sequential intracellular recordings together. With each SequentialRecording typically representing a particular type of stimulus, the RepetitionsTable table is typically used to group sets of stimuli applied in sequence.
+% REPETITIONSTABLE - A table for grouping different sequential intracellular recordings together. With each SequentialRecording typically representing a particular type of stimulus, the RepetitionsTable table is typically used to group sets of stimuli applied in sequence.
+%
+% Required Properties:
+%  colnames, description, id, sequential_recordings, sequential_recordings_index
 
 
 % REQUIRED PROPERTIES
@@ -10,7 +13,29 @@ end
 
 methods
     function obj = RepetitionsTable(varargin)
-        % REPETITIONSTABLE Constructor for RepetitionsTable
+        % REPETITIONSTABLE - Constructor for RepetitionsTable
+        %
+        % Syntax:
+        %  repetitionsTable = types.core.REPETITIONSTABLE() creates a RepetitionsTable object with unset property values.
+        %
+        %  repetitionsTable = types.core.REPETITIONSTABLE(Name, Value) creates a RepetitionsTable object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - colnames (char) - The names of the columns in this table. This should be used to specify an order to the columns.
+        %
+        %  - description (char) - Description of what is in this dynamic table.
+        %
+        %  - id (ElementIdentifiers) - Array of unique identifiers for the rows of this dynamic table.
+        %
+        %  - sequential_recordings (DynamicTableRegion) - A reference to one or more rows in the SequentialRecordingsTable table.
+        %
+        %  - sequential_recordings_index (VectorIndex) - Index dataset for the sequential_recordings column.
+        %
+        %  - vectordata (VectorData) - Vector columns, including index columns, of this dynamic table.
+        %
+        % Output Arguments:
+        %  - repetitionsTable (types.core.RepetitionsTable) - A RepetitionsTable object
+        
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         
         

@@ -1,5 +1,8 @@
 classdef ExperimentalConditionsTable < types.hdmf_common.DynamicTable & types.untyped.GroupClass
-% EXPERIMENTALCONDITIONSTABLE A table for grouping different intracellular recording repetitions together that belong to the same experimental condition.
+% EXPERIMENTALCONDITIONSTABLE - A table for grouping different intracellular recording repetitions together that belong to the same experimental condition.
+%
+% Required Properties:
+%  colnames, description, id, repetitions, repetitions_index
 
 
 % REQUIRED PROPERTIES
@@ -10,7 +13,29 @@ end
 
 methods
     function obj = ExperimentalConditionsTable(varargin)
-        % EXPERIMENTALCONDITIONSTABLE Constructor for ExperimentalConditionsTable
+        % EXPERIMENTALCONDITIONSTABLE - Constructor for ExperimentalConditionsTable
+        %
+        % Syntax:
+        %  experimentalConditionsTable = types.core.EXPERIMENTALCONDITIONSTABLE() creates a ExperimentalConditionsTable object with unset property values.
+        %
+        %  experimentalConditionsTable = types.core.EXPERIMENTALCONDITIONSTABLE(Name, Value) creates a ExperimentalConditionsTable object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - colnames (char) - The names of the columns in this table. This should be used to specify an order to the columns.
+        %
+        %  - description (char) - Description of what is in this dynamic table.
+        %
+        %  - id (ElementIdentifiers) - Array of unique identifiers for the rows of this dynamic table.
+        %
+        %  - repetitions (DynamicTableRegion) - A reference to one or more rows in the RepetitionsTable table.
+        %
+        %  - repetitions_index (VectorIndex) - Index dataset for the repetitions column.
+        %
+        %  - vectordata (VectorData) - Vector columns, including index columns, of this dynamic table.
+        %
+        % Output Arguments:
+        %  - experimentalConditionsTable (types.core.ExperimentalConditionsTable) - A ExperimentalConditionsTable object
+        
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         
         

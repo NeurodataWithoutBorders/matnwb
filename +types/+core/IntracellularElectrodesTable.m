@@ -1,5 +1,8 @@
 classdef IntracellularElectrodesTable < types.hdmf_common.DynamicTable & types.untyped.GroupClass
-% INTRACELLULARELECTRODESTABLE Table for storing intracellular electrode related metadata.
+% INTRACELLULARELECTRODESTABLE - Table for storing intracellular electrode related metadata.
+%
+% Required Properties:
+%  colnames, electrode, id
 
 
 % REQUIRED PROPERTIES
@@ -9,7 +12,25 @@ end
 
 methods
     function obj = IntracellularElectrodesTable(varargin)
-        % INTRACELLULARELECTRODESTABLE Constructor for IntracellularElectrodesTable
+        % INTRACELLULARELECTRODESTABLE - Constructor for IntracellularElectrodesTable
+        %
+        % Syntax:
+        %  intracellularElectrodesTable = types.core.INTRACELLULARELECTRODESTABLE() creates a IntracellularElectrodesTable object with unset property values.
+        %
+        %  intracellularElectrodesTable = types.core.INTRACELLULARELECTRODESTABLE(Name, Value) creates a IntracellularElectrodesTable object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - colnames (char) - The names of the columns in this table. This should be used to specify an order to the columns.
+        %
+        %  - electrode (VectorData) - Column for storing the reference to the intracellular electrode.
+        %
+        %  - id (ElementIdentifiers) - Array of unique identifiers for the rows of this dynamic table.
+        %
+        %  - vectordata (VectorData) - Vector columns, including index columns, of this dynamic table.
+        %
+        % Output Arguments:
+        %  - intracellularElectrodesTable (types.core.IntracellularElectrodesTable) - A IntracellularElectrodesTable object
+        
         varargin = [{'description' 'Table for storing intracellular electrode related metadata.'} varargin];
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         
@@ -18,10 +39,8 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'description',[]);
         addParameter(p, 'electrode',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.description = p.Results.description;
         obj.electrode = p.Results.electrode;
         if strcmp(class(obj), 'types.core.IntracellularElectrodesTable')
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));

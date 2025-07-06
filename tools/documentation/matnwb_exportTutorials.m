@@ -19,18 +19,22 @@ function matnwb_exportTutorials(options)
         options.RunLivescript (1,1) logical = true
         options.OutputFolder (1,1) string = fullfile("docs", "html", "tutorials")
     end
+
+    EXPORT_FOLDERS = dictionary(...
+        '.m', fullfile(misc.getMatnwbDir, "tutorials", "private", "mcode"), ...
+        '.html', fullfile(misc.getMatnwbDir, "docs", "source", "_static", "html", "tutorials") );
     
     [exportFormat, targetFolderNames] = deal(options.ExportFormat);
 
     targetFolderNames = extractAfter(targetFolderNames, ".");
-    targetFolderNames(strcmp(targetFolderNames, "m")) = fullfile("private", "mcode");
-
     nwbTutorialDir = fullfile(misc.getMatnwbDir, "tutorials");
-    %targetFolderPaths = fullfile(nwbTutorialDir, targetFolderNames);
-    targetFolderPaths = fullfile(misc.getMatnwbDir, options.OutputFolder);
-
-    for folderPath = targetFolderPaths
-        if ~isfolder(folderPath); mkdir(folderPath); end
+    targetFolderPaths = fullfile(nwbTutorialDir, targetFolderNames);
+    
+    for i = 1:numel(exportFormat)
+        if isKey(EXPORT_FOLDERS, exportFormat(i))
+            targetFolderPaths(i) = EXPORT_FOLDERS(exportFormat(i));
+        end
+        if ~isfolder(targetFolderPaths(i)); mkdir(targetFolderPaths(i)); end
     end
     
     if isempty(options.FilePaths)
@@ -80,11 +84,12 @@ function matnwb_exportTutorials(options)
         end
         
         for j = 1:numel(exportFormat)
-            targetPath = fullfile(targetFolderPaths(j), fileNames(i) + exportFormat(j));
+            targetFilePath = fullfile(targetFolderPaths(j), fileNames(i) + exportFormat(j));
             fprintf('Exporting livescript "%s" to "%s"\n', fileNames(i), exportFormat(j))
-            matlab.internal.liveeditor.openAndConvert(char(sourcePath), char(strrep(targetPath, '.mlx', exportFormat(j))))
-            disp('first try passed')
-            export(sourcePath, strrep(targetPath, '.mlx', exportFormat(j)));
+            export(sourcePath, targetFilePath);
+            if strcmp(exportFormat(j), '.html')
+                postProcessLivescriptHtml(targetFilePath)
+            end
         end
     end
 end

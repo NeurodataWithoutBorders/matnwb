@@ -1,5 +1,8 @@
 classdef SimultaneousRecordingsTable < types.hdmf_common.DynamicTable & types.untyped.GroupClass
-% SIMULTANEOUSRECORDINGSTABLE A table for grouping different intracellular recordings from the IntracellularRecordingsTable table together that were recorded simultaneously from different electrodes.
+% SIMULTANEOUSRECORDINGSTABLE - A table for grouping different intracellular recordings from the IntracellularRecordingsTable table together that were recorded simultaneously from different electrodes.
+%
+% Required Properties:
+%  colnames, description, id, recordings, recordings_index
 
 
 % REQUIRED PROPERTIES
@@ -10,7 +13,29 @@ end
 
 methods
     function obj = SimultaneousRecordingsTable(varargin)
-        % SIMULTANEOUSRECORDINGSTABLE Constructor for SimultaneousRecordingsTable
+        % SIMULTANEOUSRECORDINGSTABLE - Constructor for SimultaneousRecordingsTable
+        %
+        % Syntax:
+        %  simultaneousRecordingsTable = types.core.SIMULTANEOUSRECORDINGSTABLE() creates a SimultaneousRecordingsTable object with unset property values.
+        %
+        %  simultaneousRecordingsTable = types.core.SIMULTANEOUSRECORDINGSTABLE(Name, Value) creates a SimultaneousRecordingsTable object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - colnames (char) - The names of the columns in this table. This should be used to specify an order to the columns.
+        %
+        %  - description (char) - Description of what is in this dynamic table.
+        %
+        %  - id (ElementIdentifiers) - Array of unique identifiers for the rows of this dynamic table.
+        %
+        %  - recordings (DynamicTableRegion) - A reference to one or more rows in the IntracellularRecordingsTable table.
+        %
+        %  - recordings_index (VectorIndex) - Index dataset for the recordings column.
+        %
+        %  - vectordata (VectorData) - Vector columns, including index columns, of this dynamic table.
+        %
+        % Output Arguments:
+        %  - simultaneousRecordingsTable (types.core.SimultaneousRecordingsTable) - A SimultaneousRecordingsTable object
+        
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         
         

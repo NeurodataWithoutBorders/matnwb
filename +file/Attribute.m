@@ -7,6 +7,7 @@ classdef Attribute
         readonly; %determines whether value can be changed or not
         dtype; %type of value
         dependent; %set externally.  If the attribute is actually dependent on an untyped dataset/group
+        dependent_fullname; %set externally. This is the full name, including names of potential parent groups separated by underscore. A value will only be present if it would differ from dependent.
         scalar; %if the value is scalar or an array
         dimnames;
         shape;
@@ -22,6 +23,7 @@ classdef Attribute
             obj.readonly = false;
             obj.dtype = '';
             obj.dependent = '';
+            obj.dependent_fullname = '';
             obj.scalar = true;
             obj.shape = {};
             obj.dimnames = {};
@@ -37,18 +39,20 @@ classdef Attribute
                 obj.required = source(requiredKey);
             end
             
+            % Use either 'value' or 'default_value' (not both).
+            % If both are present, 'value' takes precedence.
             valueKey = 'value';
             defaultKey = 'default_value';
-            if isKey(source, defaultKey)
-                obj.value = source(defaultKey);
-                obj.readonly = false;
-            elseif isKey(source, valueKey)
+            if isKey(source, valueKey)
                 obj.value = source(valueKey);
                 obj.readonly = true;
+            elseif isKey(source, defaultKey)
+                obj.value = source(defaultKey);
+                obj.readonly = false;
             else
                 obj.value = [];
                 obj.readonly = false;
-            end            
+            end
 
             if isKey(source, 'dims')
                 obj.dimnames = source('dims');

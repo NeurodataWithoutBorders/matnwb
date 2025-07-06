@@ -1,15 +1,30 @@
 classdef EventWaveform < types.core.NWBDataInterface & types.untyped.GroupClass
-% EVENTWAVEFORM Represents either the waveforms of detected events, as extracted from a raw data trace in /acquisition, or the event waveforms that were stored during experiment acquisition.
+% EVENTWAVEFORM - DEPRECATED. Represents either the waveforms of detected events, as extracted from a raw data trace in /acquisition, or the event waveforms that were stored during experiment acquisition.
+%
+% Required Properties:
+%  spikeeventseries
 
 
-% OPTIONAL PROPERTIES
+% REQUIRED PROPERTIES
 properties
-    spikeeventseries; %  (SpikeEventSeries) SpikeEventSeries object(s) containing detected spike event waveforms.
+    spikeeventseries; % REQUIRED (SpikeEventSeries) SpikeEventSeries object(s) containing detected spike event waveforms.
 end
 
 methods
     function obj = EventWaveform(varargin)
-        % EVENTWAVEFORM Constructor for EventWaveform
+        % EVENTWAVEFORM - Constructor for EventWaveform
+        %
+        % Syntax:
+        %  eventWaveform = types.core.EVENTWAVEFORM() creates a EventWaveform object with unset property values.
+        %
+        %  eventWaveform = types.core.EVENTWAVEFORM(Name, Value) creates a EventWaveform object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - spikeeventseries (SpikeEventSeries) - SpikeEventSeries object(s) containing detected spike event waveforms.
+        %
+        % Output Arguments:
+        %  - eventWaveform (types.core.EventWaveform) - A EventWaveform object
+        
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.spikeeventseries, ivarargin] = types.util.parseConstrained(obj,'spikeeventseries', 'types.core.SpikeEventSeries', varargin{:});
         varargin(ivarargin) = [];
@@ -41,9 +56,7 @@ methods
         if any(strcmp(refs, fullpath))
             return;
         end
-        if ~isempty(obj.spikeeventseries)
-            refs = obj.spikeeventseries.export(fid, fullpath, refs);
-        end
+        refs = obj.spikeeventseries.export(fid, fullpath, refs);
     end
 end
 

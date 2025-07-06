@@ -1,15 +1,32 @@
 classdef ScratchData < types.core.NWBData & types.untyped.DatasetClass
-% SCRATCHDATA Any one-off datasets
+% SCRATCHDATA - Any one-off datasets
+%
+% Required Properties:
+%  data, notes
 
 
-% OPTIONAL PROPERTIES
+% REQUIRED PROPERTIES
 properties
-    notes; %  (char) Any notes the user has about the dataset being stored
+    notes; % REQUIRED (char) Any notes the user has about the dataset being stored
 end
 
 methods
     function obj = ScratchData(varargin)
-        % SCRATCHDATA Constructor for ScratchData
+        % SCRATCHDATA - Constructor for ScratchData
+        %
+        % Syntax:
+        %  scratchData = types.core.SCRATCHDATA() creates a ScratchData object with unset property values.
+        %
+        %  scratchData = types.core.SCRATCHDATA(Name, Value) creates a ScratchData object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - data (any) - No description
+        %
+        %  - notes (char) - Any notes the user has about the dataset being stored
+        %
+        % Output Arguments:
+        %  - scratchData (types.core.ScratchData) - A ScratchData object
+        
         obj = obj@types.core.NWBData(varargin{:});
         
         
@@ -17,10 +34,8 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'data',[]);
         addParameter(p, 'notes',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.data = p.Results.data;
         obj.notes = p.Results.notes;
         if strcmp(class(obj), 'types.core.ScratchData')
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
@@ -37,21 +52,7 @@ methods
     end
     function val = validate_notes(obj, val)
         val = types.util.checkDtype('notes', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('notes', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

@@ -1,0 +1,7 @@
+namespaces:
+- full_name: Quantity specification values test
+  name: quantity
+  schema:
+  - namespace: core
+  - source: quantity.quantities.yaml
+  version: 1.0.0

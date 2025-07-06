@@ -7,7 +7,8 @@ import numpy.testing as npt
 import h5py
 
 from pynwb import get_manager, NWBFile, TimeSeries
-from pynwb.ecephys import ElectricalSeries, Clustering
+from pynwb.ecephys import ElectricalSeries
+from pynwb.behavior import SpatialSeries
 from pynwb.ophys import OpticalChannel, TwoPhotonSeries
 from pynwb.misc import Units
 from hdmf.backends.hdf5 import HDF5IO
@@ -32,11 +33,12 @@ class PyNWBIOTest(unittest.TestCase):
 
     def testInFromMatNWB(self):
         filename = 'MatNWB.' + self.__class__.__name__ + '.testOutToPyNWB.nwb'
-        with HDF5IO(filename, manager=get_manager(), mode='r') as io:
+        with HDF5IO(filename, manager=get_manager(), mode='r+') as io:
             matfile = io.read()
             matcontainer = self.getContainer(matfile)
             pycontainer = self.getContainer(self.file)
-            self.assertContainerEqual(matcontainer, pycontainer)
+            # ignore was_generated_by because it will be specific to matnwb generated file
+            self.assertContainerEqual(matcontainer, pycontainer, ignoreFields=["was_generated_by"])
 
     def testOutToMatNWB(self):
         filename = 'PyNWB.' + self.__class__.__name__ + '.testOutToMatNWB.nwb'
@@ -50,7 +52,7 @@ class PyNWBIOTest(unittest.TestCase):
     def getContainer(self, file):
         raise unittest.SkipTest('Cannot run test unless getContainer is implemented')
 
-    def assertContainerEqual(self, container1, container2):           # noqa: C901
+    def assertContainerEqual(self, container1, container2, ignoreFields=[]):           # noqa: C901
         '''
         container1 is what was read or generated
         container2 is what is hardcoded in the TestCase
@@ -63,6 +65,8 @@ class PyNWBIOTest(unittest.TestCase):
         except AttributeError:
             container_fields = container1.__fields__
         for nwbfield in container_fields:
+            if nwbfield in ignoreFields:
+                continue
             with self.subTest(nwbfield=nwbfield, container_type=type1.__name__):
                 field1 = getattr(container1, nwbfield)
                 field2 = getattr(container2, nwbfield)
@@ -183,7 +187,7 @@ class PhotonSeriesIOTest(PyNWBIOTest):
             indicator = 'GFP',
             location = 'somewhere in the brain',
             imaging_rate = 2.718)
-        data = np.ones((3, 3, 3))
+        data = np.ones((10, 3, 3))
         timestamps = list(range(10))
         fov = [2.0, 2.0, 5.0]
         tps = TwoPhotonSeries('test_2ps', ip, data, 'image_unit', 'raw',
@@ -201,8 +205,10 @@ class NWBFileIOTest(PyNWBIOTest):
                         'SIunit', timestamps=list(range(10)), resolution=0.1)
         self.file.add_acquisition(ts)
         mod = file.create_processing_module('test_module', 'a test module')
-        mod.add_container(Clustering("A fake Clustering interface", [0, 1, 2, 0, 1, 2],
-                                     [100., 101., 102.], list(range(10, 61, 10))))
+        mod.add_container(SpatialSeries("SpatialSeries", list(range(1, 11)),
+                                    description='A test spatial series',
+                                    unit='n/a',
+                                    timestamps=list(range(1, 11))))
 
     def getContainer(self, file):
         return file

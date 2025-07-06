@@ -1,17 +1,10 @@
-classdef CloneNwbTest < matlab.unittest.TestCase
+classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
+    CloneNwbTest < matlab.unittest.TestCase
 
     methods (TestClassSetup)
         function setupClass(testCase)
-            % Get the root path of the matnwb repository
-            rootPath = misc.getMatnwbDir();
-
-            % Use a fixture to add the folder to the search path
-            testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
-
             % Use a fixture to create a temporary working directory
             testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
-
-            generateCore('savedir', '.')
         end
     end
 
@@ -36,7 +29,7 @@ classdef CloneNwbTest < matlab.unittest.TestCase
             file.cloneNwbFileClass(fullfile('NwbFile'), 'MyCustomNwbFile')
 
             testCase.verifyTrue( isfile(fullfile(misc.getMatnwbDir(), 'NwbFile.m')) )
-            
+
             nwbFile = NwbFile();
             nwbFile.general_experimenter = "Mouse McMouse";
             C = evalc('nwbFile.sayHello()');
@@ -47,6 +40,9 @@ end
 
 function restoreNwbFileClass(classDefStr)
     fid = fopen( fullfile(misc.getMatnwbDir(), 'NwbFile.m'), 'wt' );
+    if ispc % Ad hoc fix when saving to file using fwrite on pc
+        classDefStr = strrep(classDefStr, newline, '');
+    end
     fwrite(fid, classDefStr);
     fclose(fid);
 end

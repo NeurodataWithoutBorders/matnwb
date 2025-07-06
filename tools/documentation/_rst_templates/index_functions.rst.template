@@ -1,0 +1,10 @@
+{{ title }}
+{{ title_underline }}
+
+{{ module_description }}
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Functions
+
+{{ function_list }}

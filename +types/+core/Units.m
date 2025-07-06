@@ -1,5 +1,8 @@
 classdef Units < types.hdmf_common.DynamicTable & types.untyped.GroupClass
-% UNITS Data about spiking units. Event times of observed units (e.g. cell, synapse, etc.) should be concatenated and stored in spike_times.
+% UNITS - Data about spiking units. Event times of observed units (e.g. cell, synapse, etc.) should be concatenated and stored in spike_times.
+%
+% Required Properties:
+%  colnames, description, id
 
 
 % OPTIONAL PROPERTIES
@@ -13,14 +16,56 @@ properties
     spike_times_index; %  (VectorIndex) Index into the spike_times dataset.
     waveform_mean; %  (VectorData) Spike waveform mean for each spike unit.
     waveform_sd; %  (VectorData) Spike waveform standard deviation for each spike unit.
-    waveforms; %  (VectorData) Individual waveforms for each spike on each electrode. This is a doubly indexed column. The 'waveforms_index' column indexes which waveforms in this column belong to the same spike event for a given unit, where each waveform was recorded from a different electrode. The 'waveforms_index_index' column indexes the 'waveforms_index' column to indicate which spike events belong to a given unit. For example, if the 'waveforms_index_index' column has values [2, 5, 6], then the first 2 elements of the 'waveforms_index' column correspond to the 2 spike events of the first unit, the next 3 elements of the 'waveforms_index' column correspond to the 3 spike events of the second unit, and the next 1 element of the 'waveforms_index' column corresponds to the 1 spike event of the third unit. If the 'waveforms_index' column has values [3, 6, 8, 10, 12, 13], then the first 3 elements of the 'waveforms' column contain the 3 spike waveforms that were recorded from 3 different electrodes for the first spike time of the first unit. See https://nwb-schema.readthedocs.io/en/stable/format_description.html#doubly-ragged-arrays for a graphical representation of this example. When there is only one electrode for each unit (i.e., each spike time is associated with a single waveform), then the 'waveforms_index' column will have values 1, 2, ..., N, where N is the number of spike events. The number of electrodes for each spike event should be the same within a given unit. The 'electrodes' column should be used to indicate which electrodes are associated with each unit, and the order of the waveforms within a given unit x spike event should be in the same order as the electrodes referenced in the 'electrodes' column of this table. The number of samples for each waveform must be the same.
-    waveforms_index; %  (VectorIndex) Index into the waveforms dataset. One value for every spike event. See 'waveforms' for more detail.
-    waveforms_index_index; %  (VectorIndex) Index into the waveforms_index dataset. One value for every unit (row in the table). See 'waveforms' for more detail.
+    waveforms; %  (VectorData) Individual waveforms for each spike on each electrode. This is a doubly indexed column. The 'waveforms_index' column indexes which waveforms in this column belong to the same spike event for a given unit, where each waveform was recorded from a different electrode. The 'waveforms_index_index' column indexes the 'waveforms_index' column to indicate which spike events belong to a given unit. For example, if the 'waveforms_index_index' column has values [2, 5, 6], then the first 2 elements of the 'waveforms_index' column correspond to the 2 spike events of the first unit, the next 3 elements of the 'waveforms_index' column correspond to the 3 spike events of the second unit, and the next 1 element of the 'waveforms_index' column corresponds to the 1 spike event of the third unit. If the 'waveforms_index' column has values [3, 6, 8, 10, 12, 13], then the first 3 elements of the 'waveforms' column contain the 3 spike waveforms that were recorded from 3 different electrodes for the first spike time of the first unit. See https://nwb-schema.readthedocs.io/en/stable/format_description.html#doubly-ragged-arrays for a graphical representation of this example. When there is only one electrode for each unit (i.e., each spike time is associated with a single waveform), then the 'waveforms_index' column will have values 1, 2, ..., N, where N is the number of spike events. The number of electrodes for each spike event should be the same within a given unit. The 'electrodes' column should be used to indicate which electrodes are associated with each unit, and the order of the waveforms within a given unit x spike event should be the same as the order of the electrodes referenced in the 'electrodes' column of this table. The number of samples for each waveform must be the same.
+    waveforms_index; %  (VectorIndex) Index into the 'waveforms' dataset. One value for every spike event. See 'waveforms' for more detail.
+    waveforms_index_index; %  (VectorIndex) Index into the 'waveforms_index' dataset. One value for every unit (row in the table). See 'waveforms' for more detail.
 end
 
 methods
     function obj = Units(varargin)
-        % UNITS Constructor for Units
+        % UNITS - Constructor for Units
+        %
+        % Syntax:
+        %  units = types.core.UNITS() creates a Units object with unset property values.
+        %
+        %  units = types.core.UNITS(Name, Value) creates a Units object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - colnames (char) - The names of the columns in this table. This should be used to specify an order to the columns.
+        %
+        %  - description (char) - Description of what is in this dynamic table.
+        %
+        %  - electrode_group (VectorData) - Electrode group that each spike unit came from.
+        %
+        %  - electrodes (DynamicTableRegion) - Electrode that each spike unit came from, specified using a DynamicTableRegion.
+        %
+        %  - electrodes_index (VectorIndex) - Index into electrodes.
+        %
+        %  - id (ElementIdentifiers) - Array of unique identifiers for the rows of this dynamic table.
+        %
+        %  - obs_intervals (VectorData) - Observation intervals for each unit.
+        %
+        %  - obs_intervals_index (VectorIndex) - Index into the obs_intervals dataset.
+        %
+        %  - spike_times (VectorData) - Spike times for each unit in seconds.
+        %
+        %  - spike_times_index (VectorIndex) - Index into the spike_times dataset.
+        %
+        %  - vectordata (VectorData) - Vector columns, including index columns, of this dynamic table.
+        %
+        %  - waveform_mean (VectorData) - Spike waveform mean for each spike unit.
+        %
+        %  - waveform_sd (VectorData) - Spike waveform standard deviation for each spike unit.
+        %
+        %  - waveforms (VectorData) - Individual waveforms for each spike on each electrode. This is a doubly indexed column. The 'waveforms_index' column indexes which waveforms in this column belong to the same spike event for a given unit, where each waveform was recorded from a different electrode. The 'waveforms_index_index' column indexes the 'waveforms_index' column to indicate which spike events belong to a given unit. For example, if the 'waveforms_index_index' column has values [2, 5, 6], then the first 2 elements of the 'waveforms_index' column correspond to the 2 spike events of the first unit, the next 3 elements of the 'waveforms_index' column correspond to the 3 spike events of the second unit, and the next 1 element of the 'waveforms_index' column corresponds to the 1 spike event of the third unit. If the 'waveforms_index' column has values [3, 6, 8, 10, 12, 13], then the first 3 elements of the 'waveforms' column contain the 3 spike waveforms that were recorded from 3 different electrodes for the first spike time of the first unit. See https://nwb-schema.readthedocs.io/en/stable/format_description.html#doubly-ragged-arrays for a graphical representation of this example. When there is only one electrode for each unit (i.e., each spike time is associated with a single waveform), then the 'waveforms_index' column will have values 1, 2, ..., N, where N is the number of spike events. The number of electrodes for each spike event should be the same within a given unit. The 'electrodes' column should be used to indicate which electrodes are associated with each unit, and the order of the waveforms within a given unit x spike event should be the same as the order of the electrodes referenced in the 'electrodes' column of this table. The number of samples for each waveform must be the same.
+        %
+        %  - waveforms_index (VectorIndex) - Index into the 'waveforms' dataset. One value for every spike event. See 'waveforms' for more detail.
+        %
+        %  - waveforms_index_index (VectorIndex) - Index into the 'waveforms_index' dataset. One value for every unit (row in the table). See 'waveforms' for more detail.
+        %
+        % Output Arguments:
+        %  - units (types.core.Units) - A Units object
+        
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         
         

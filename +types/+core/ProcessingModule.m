@@ -1,17 +1,39 @@
 classdef ProcessingModule < types.core.NWBContainer & types.untyped.GroupClass
-% PROCESSINGMODULE A collection of processed data.
+% PROCESSINGMODULE - A collection of processed data.
+%
+% Required Properties:
+%  description
 
 
+% REQUIRED PROPERTIES
+properties
+    description; % REQUIRED (char) Description of this collection of processed data.
+end
 % OPTIONAL PROPERTIES
 properties
-    description; %  (char) Description of this collection of processed data.
     dynamictable; %  (DynamicTable) Tables stored in this collection.
     nwbdatainterface; %  (NWBDataInterface) Data objects stored in this collection.
 end
 
 methods
     function obj = ProcessingModule(varargin)
-        % PROCESSINGMODULE Constructor for ProcessingModule
+        % PROCESSINGMODULE - Constructor for ProcessingModule
+        %
+        % Syntax:
+        %  processingModule = types.core.PROCESSINGMODULE() creates a ProcessingModule object with unset property values.
+        %
+        %  processingModule = types.core.PROCESSINGMODULE(Name, Value) creates a ProcessingModule object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - description (char) - Description of this collection of processed data.
+        %
+        %  - dynamictable (DynamicTable) - Tables stored in this collection.
+        %
+        %  - nwbdatainterface (NWBDataInterface) - Data objects stored in this collection.
+        %
+        % Output Arguments:
+        %  - processingModule (types.core.ProcessingModule) - A ProcessingModule object
+        
         obj = obj@types.core.NWBContainer(varargin{:});
         [obj.dynamictable, ivarargin] = types.util.parseConstrained(obj,'dynamictable', 'types.hdmf_common.DynamicTable', varargin{:});
         varargin(ivarargin) = [];
@@ -44,21 +66,7 @@ methods
     
     function val = validate_description(obj, val)
         val = types.util.checkDtype('description', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('description', {[1]}, val)
     end
     function val = validate_dynamictable(obj, val)
         namedprops = struct();

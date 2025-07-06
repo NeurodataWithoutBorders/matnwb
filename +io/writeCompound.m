@@ -92,6 +92,20 @@ function writeCompound(fid, fullpath, data, varargin)
     isReferenceClass = strcmp(classes, 'types.untyped.ObjectView') |...
         strcmp(classes, 'types.untyped.RegionView');
 
+    if verLessThan('matlab', '9.8') % Matlab < 2020a
+    % For MATLAB releases earlier than R2020a, character vectors must be
+    % wrapped in a cell array, otherwise the write operation will fail with
+    % the following error id "MATLAB:imagesci:hdf5dataset:badInputClass"
+    % and message "The class of input data must be cellstring instead of char
+    % when the HDF5 class is VARIABLE LENGTH H5T_STRING."
+        for i = 1:length(names)
+            val = data.(names{i});
+            if ischar(val)
+                data.(names{i}) = {data.(names{i})};
+            end
+        end
+    end
+    
     % convert logical values
     boolNames = names(strcmp(classes, 'logical'));
     for iField = 1:length(boolNames)

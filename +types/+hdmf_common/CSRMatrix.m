@@ -1,5 +1,8 @@
 classdef CSRMatrix < types.hdmf_common.Container & types.untyped.GroupClass
-% CSRMATRIX A compressed sparse row matrix. Data are stored in the standard CSR format, where column indices for row i are stored in indices[indptr[i]:indptr[i+1]] and their corresponding values are stored in data[indptr[i]:indptr[i+1]].
+% CSRMATRIX - A compressed sparse row matrix. Data are stored in the standard CSR format, where column indices for row i are stored in indices[indptr[i]:indptr[i+1]] and their corresponding values are stored in data[indptr[i]:indptr[i+1]].
+%
+% Required Properties:
+%  data, indices, indptr, shape
 
 
 % REQUIRED PROPERTIES
@@ -7,15 +10,30 @@ properties
     data; % REQUIRED (any) The non-zero values in the matrix.
     indices; % REQUIRED (uint) The column indices.
     indptr; % REQUIRED (uint) The row index pointer.
-end
-% OPTIONAL PROPERTIES
-properties
-    shape; %  (uint) The shape (number of rows, number of columns) of this sparse matrix.
+    shape; % REQUIRED (uint) The shape (number of rows, number of columns) of this sparse matrix.
 end
 
 methods
     function obj = CSRMatrix(varargin)
-        % CSRMATRIX Constructor for CSRMatrix
+        % CSRMATRIX - Constructor for CSRMatrix
+        %
+        % Syntax:
+        %  cSRMatrix = types.hdmf_common.CSRMATRIX() creates a CSRMatrix object with unset property values.
+        %
+        %  cSRMatrix = types.hdmf_common.CSRMATRIX(Name, Value) creates a CSRMatrix object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - data (any) - The non-zero values in the matrix.
+        %
+        %  - indices (uint) - The column indices.
+        %
+        %  - indptr (uint) - The row index pointer.
+        %
+        %  - shape (uint) - The shape (number of rows, number of columns) of this sparse matrix.
+        %
+        % Output Arguments:
+        %  - cSRMatrix (types.hdmf_common.CSRMatrix) - A CSRMatrix object
+        
         obj = obj@types.hdmf_common.Container(varargin{:});
         
         
@@ -53,61 +71,19 @@ methods
     %% VALIDATORS
     
     function val = validate_data(obj, val)
-    
+        types.util.validateShape('data', {[Inf]}, val)
     end
     function val = validate_indices(obj, val)
         val = types.util.checkDtype('indices', 'uint', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[Inf]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('indices', {[Inf]}, val)
     end
     function val = validate_indptr(obj, val)
         val = types.util.checkDtype('indptr', 'uint', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[Inf]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('indptr', {[Inf]}, val)
     end
     function val = validate_shape(obj, val)
         val = types.util.checkDtype('shape', 'uint', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[2]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('shape', {[2]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

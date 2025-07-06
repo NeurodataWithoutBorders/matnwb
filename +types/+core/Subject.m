@@ -1,11 +1,14 @@
 classdef Subject < types.core.NWBContainer & types.untyped.GroupClass
-% SUBJECT Information about the animal or person from which the data was measured.
+% SUBJECT - Information about the animal or person from which the data was measured.
+%
+% Required Properties:
+%  None
 
 
 % OPTIONAL PROPERTIES
 properties
     age; %  (char) Age of subject. Can be supplied instead of 'date_of_birth'.
-    age_reference; %  (char) Age is with reference to this event. Can be 'birth' or 'gestational'. If reference is omitted, 'birth' is implied.
+    age_reference = "birth"; %  (char) Age is with reference to this event. Can be 'birth' or 'gestational'. If reference is omitted, 'birth' is implied.
     date_of_birth; %  (datetime) Date of birth of subject. Can be supplied instead of 'age'.
     description; %  (char) Description of subject and where subject came from (e.g., breeder, if animal).
     genotype; %  (char) Genetic strain. If absent, assume Wild Type (WT).
@@ -18,7 +21,37 @@ end
 
 methods
     function obj = Subject(varargin)
-        % SUBJECT Constructor for Subject
+        % SUBJECT - Constructor for Subject
+        %
+        % Syntax:
+        %  subject = types.core.SUBJECT() creates a Subject object with unset property values.
+        %
+        %  subject = types.core.SUBJECT(Name, Value) creates a Subject object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - age (char) - Age of subject. Can be supplied instead of 'date_of_birth'.
+        %
+        %  - age_reference (char) - Age is with reference to this event. Can be 'birth' or 'gestational'. If reference is omitted, 'birth' is implied.
+        %
+        %  - date_of_birth (datetime) - Date of birth of subject. Can be supplied instead of 'age'.
+        %
+        %  - description (char) - Description of subject and where subject came from (e.g., breeder, if animal).
+        %
+        %  - genotype (char) - Genetic strain. If absent, assume Wild Type (WT).
+        %
+        %  - sex (char) - Gender of subject.
+        %
+        %  - species (char) - Species of subject.
+        %
+        %  - strain (char) - Strain of subject.
+        %
+        %  - subject_id (char) - ID of animal/person used/participating in experiment (lab convention).
+        %
+        %  - weight (char) - Weight at time of experiment, at time of surgery and at other important times.
+        %
+        % Output Arguments:
+        %  - subject (types.core.Subject) - A Subject object
+        
         varargin = [{'age_reference' 'birth'} varargin];
         obj = obj@types.core.NWBContainer(varargin{:});
         
@@ -59,6 +92,12 @@ methods
     end
     function set.age_reference(obj, val)
         obj.age_reference = obj.validate_age_reference(val);
+        obj.postset_age_reference()
+    end
+    function postset_age_reference(obj)
+        if isempty(obj.age) && ~isempty(obj.age_reference)
+            obj.warnIfAttributeDependencyMissing('age_reference', 'age')
+        end
     end
     function set.date_of_birth(obj, val)
         obj.date_of_birth = obj.validate_date_of_birth(val);
@@ -88,183 +127,43 @@ methods
     
     function val = validate_age(obj, val)
         val = types.util.checkDtype('age', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('age', {[1]}, val)
     end
     function val = validate_age_reference(obj, val)
         val = types.util.checkDtype('age_reference', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('age_reference', {[1]}, val)
     end
     function val = validate_date_of_birth(obj, val)
         val = types.util.checkDtype('date_of_birth', 'datetime', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('date_of_birth', {[1]}, val)
     end
     function val = validate_description(obj, val)
         val = types.util.checkDtype('description', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('description', {[1]}, val)
     end
     function val = validate_genotype(obj, val)
         val = types.util.checkDtype('genotype', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('genotype', {[1]}, val)
     end
     function val = validate_sex(obj, val)
         val = types.util.checkDtype('sex', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('sex', {[1]}, val)
     end
     function val = validate_species(obj, val)
         val = types.util.checkDtype('species', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('species', {[1]}, val)
     end
     function val = validate_strain(obj, val)
         val = types.util.checkDtype('strain', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('strain', {[1]}, val)
     end
     function val = validate_subject_id(obj, val)
         val = types.util.checkDtype('subject_id', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('subject_id', {[1]}, val)
     end
     function val = validate_weight(obj, val)
         val = types.util.checkDtype('weight', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('weight', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

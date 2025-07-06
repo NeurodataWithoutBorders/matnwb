@@ -1,5 +1,8 @@
 classdef Clustering < types.core.NWBDataInterface & types.untyped.GroupClass
-% CLUSTERING DEPRECATED Clustered spike data, whether from automatic clustering tools (e.g., klustakwik) or as a result of manual sorting.
+% CLUSTERING - DEPRECATED Clustered spike data, whether from automatic clustering tools (e.g., klustakwik) or as a result of manual sorting.
+%
+% Required Properties:
+%  description, num, peak_over_rms, times
 
 
 % REQUIRED PROPERTIES
@@ -12,7 +15,25 @@ end
 
 methods
     function obj = Clustering(varargin)
-        % CLUSTERING Constructor for Clustering
+        % CLUSTERING - Constructor for Clustering
+        %
+        % Syntax:
+        %  clustering = types.core.CLUSTERING() creates a Clustering object with unset property values.
+        %
+        %  clustering = types.core.CLUSTERING(Name, Value) creates a Clustering object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - description (char) - Description of clusters or clustering, (e.g. cluster 0 is noise, clusters curated using Klusters, etc)
+        %
+        %  - num (int32) - Cluster number of each event
+        %
+        %  - peak_over_rms (single) - Maximum ratio of waveform peak to RMS on any channel in the cluster (provides a basic clustering metric).
+        %
+        %  - times (double) - Times of clustered events, in seconds. This may be a link to times field in associated FeatureExtraction module.
+        %
+        % Output Arguments:
+        %  - clustering (types.core.Clustering) - A Clustering object
+        
         obj = obj@types.core.NWBDataInterface(varargin{:});
         
         
@@ -51,75 +72,19 @@ methods
     
     function val = validate_description(obj, val)
         val = types.util.checkDtype('description', 'char', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[1]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('description', {[1]}, val)
     end
     function val = validate_num(obj, val)
         val = types.util.checkDtype('num', 'int32', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[Inf]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('num', {[Inf]}, val)
     end
     function val = validate_peak_over_rms(obj, val)
         val = types.util.checkDtype('peak_over_rms', 'single', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[Inf]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('peak_over_rms', {[Inf]}, val)
     end
     function val = validate_times(obj, val)
         val = types.util.checkDtype('times', 'double', val);
-        if isa(val, 'types.untyped.DataStub')
-            if 1 == val.ndims
-                valsz = [val.dims 1];
-            else
-                valsz = val.dims;
-            end
-        elseif istable(val)
-            valsz = [height(val) 1];
-        elseif ischar(val)
-            valsz = [size(val, 1) 1];
-        else
-            valsz = size(val);
-        end
-        validshapes = {[Inf]};
-        types.util.checkDims(valsz, validshapes);
+        types.util.validateShape('times', {[Inf]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

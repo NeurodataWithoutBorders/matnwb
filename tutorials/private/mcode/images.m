@@ -4,16 +4,16 @@
 % presented stimuli, or other parts related to the experiment. This tutorial focuses 
 % in particular on the usage of:
 %% 
-% * <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/OpticalSeries.html 
-% |*types.core.OpticalSeries*|> and <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/AbstractFeatureSeries.html 
+% * <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OpticalSeries.html 
+% |*types.core.OpticalSeries*|> and <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/AbstractFeatureSeries.html 
 % |*types.core.AbstractFeatureSeries*|> for series of images that were presented 
-% as stimulus
-% * <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/ImageSeries.html 
-% |*types.core.ImageSeries*|>, for series of images (movie segments);
-% * <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/GrayscaleImage.html 
-% |*types.core.GrayscaleImage*|>, <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/RGBImage.html 
-% |*types.core.RGBImage*|>, and <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/RGBAImage.html 
-% |*types.core.RGBAImage*|>, for static images
+% as stimulus.
+% * <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImageSeries.html 
+% |*types.core.ImageSeries*|> for series of images (movie segments).
+% * <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/GrayscaleImage.html 
+% |*types.core.GrayscaleImage*|>, <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RGBImage.html 
+% |*types.core.RGBImage*|> and <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RGBAImage.html 
+% |*types.core.RGBAImage*|> for static images.
 %% Create an NWB File
 
 nwb = NwbFile( ...
@@ -28,25 +28,25 @@ nwb = NwbFile( ...
 );
 nwb
 %% OpticalSeries: Storing series of images as stimuli
-% <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/OpticalSeries.html 
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OpticalSeries.html 
 % |*OpticalSeries*|> is for time series of images that were presented to the subject 
-% as stimuli. We will create an <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/OpticalSeries.html 
+% as stimuli. We will create an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OpticalSeries.html 
 % |*OpticalSeries*|> object with the name |"StimulusPresentation"| representing 
 % what images were shown to the subject and at what times.
 % 
 % Image data can be stored either in the HDF5 file or as an external image file. 
 % For this tutorial, we will use fake image data with shape of |('time', 'x', 
-% 'y', 'RGB') = (200, 50, 50, 3)|. As in all <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/TimeSeries.html 
+% 'y', 'RGB') = (200, 50, 50, 3)|. As in all <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
 % |*TimeSeries*|>, the first dimension is time. The second and third dimensions 
 % represent x and y. The fourth dimension represents the RGB value (length of 
-% 3) for color images. *Please note*: As described in the <https://neurodatawithoutborders.github.io/matnwb/tutorials/html/dimensionMapNoDataPipes.html 
+% 3) for color images. *Please note*: As described in the <./dimensionMapNoDataPipes.mlx 
 % dimensionMapNoDataPipes> tutorial, when a MATLAB array is exported to HDF5, 
 % the array is transposed. Therefore, in order to correctly export the data, we 
 % will need to create a transposed array, where the dimensions are in reverse 
 % order compared to the type specification.
 % 
 % NWB differentiates between acquired data and data that was presented as stimulus. 
-% We can add it to the <https://neurodatawithoutborders.github.io/matnwb/doc/NwbFile.html 
+% We can add it to the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html 
 % |*NWBFile*|> object as stimulus data.
 % 
 % If the sampling rate is constant, use |rate| and |starting_time| to specify 
@@ -67,11 +67,11 @@ optical_series = types.core.OpticalSeries( ...
 
 nwb.stimulus_presentation.set('StimulusPresentation', optical_series);
 %% AbstractFeatureSeries: Storing features of visual stimuli
-% While it is usually recommended to store the entire image data as an <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/OpticalSeries.html 
+% While it is usually recommended to store the entire image data as an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OpticalSeries.html 
 % |*OpticalSeries*|>, sometimes it is useful to store features of the visual stimuli 
 % instead of or in addition to the raw image data. For example, you may want to 
 % store the mean luminance of the image, the contrast, or the spatial frequency. 
-% This can be done using an instance of <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/AbstractFeatureSeries.html 
+% This can be done using an instance of <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/AbstractFeatureSeries.html 
 % |*AbstractFeatureSeries*|>. This class is a general container for storing time 
 % series of features that are derived from the raw image data.
 
@@ -89,7 +89,7 @@ abstract_feature_series = types.core.AbstractFeatureSeries( ...
 % Add the AbstractFeatureSeries to the NWBFile
 nwb.stimulus_presentation.set('StimulusFeatures', abstract_feature_series);
 %% ImageSeries: Storing series of images as acquisition
-% <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/ImageSeries.html 
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImageSeries.html 
 % |*ImageSeries*|> is a general container for time series of images acquired during 
 % the experiment. Image data can be stored either in the HDF5 file or as an external 
 % image file. When color images are stored in the HDF5 file the color channel 
@@ -107,8 +107,8 @@ behavior_images = types.core.ImageSeries( ...
 nwb.acquisition.set('ImageSeries', behavior_images);
 %% External Files
 % External files (e.g. video files of the behaving animal) can be added to the 
-% <https://neurodatawithoutborders.github.io/matnwb/doc/NwbFile.html |*NWBFile*|> 
-% by creating an <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/ImageSeries.html 
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html 
+% |*NWBFile*|> by creating an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImageSeries.html 
 % |*ImageSeries*|> object using the |external_file| attribute that specifies the 
 % path to the external file(s) on disk. The file(s) path must be relative to the 
 % path of the NWB file. Either |external_file| or |data| must be specified, but 
@@ -125,21 +125,21 @@ behavior_external_file = types.core.ImageSeries( ...
     'data_unit', 'n.a.', ...
     'external_file', external_files, ...
     'format', 'external', ...
-    'external_file_starting_frame', [0, 2, 4], ...
+    'external_file_starting_frame', [0, 2], ...
     'timestamps', timestamps ...
 );
 
 nwb.acquisition.set('ExternalVideos', behavior_external_file);
 %% Static Images
-% Static images can be stored in an <https://neurodatawithoutborders.github.io/matnwb/doc/NwbFile.html 
-% |*NWBFile*|> object by creating an <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/RGBAImage.html 
-% |*RGBAImage*|>, <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/RGBImage.html 
-% |*RGBImage*|> or <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/GrayscaleImage.html 
+% Static images can be stored in an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html 
+% |*NWBFile*|> object by creating an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RGBAImage.html 
+% |*RGBAImage*|>, <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RGBImage.html 
+% |*RGBImage*|> or <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/GrayscaleImage.html 
 % |*GrayscaleImage*|> object with the image data. All of these image types provide 
 % an optional |description| parameter to include text description about the image 
 % and the |resolution| parameter to specify the pixels/cm resolution of the image.
 % RGBAImage: for color images with transparency
-% <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/RGBAImage.html 
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RGBAImage.html 
 % |*RGBAImage*|> is for storing data of color image with transparency. |data| 
 % must be 3D where the first and second dimensions represent x and y. The third 
 % dimension has length 4 and represents the RGBA value.
@@ -152,7 +152,7 @@ rgba_image = types.core.RGBAImage( ...
     'description', 'RGBA image' ...
 );
 % RGBImage: for color images
-% <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/RGBImage.html 
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RGBImage.html 
 % |*RGBImage*|> is for storing data of RGB color image. |data| must be 3D where 
 % the first and second dimensions represent x and y. The third dimension has length 
 % 3 and represents the RGB value.
@@ -165,7 +165,7 @@ rgb_image = types.core.RGBImage( ...
     'description', 'RGB image' ...
 );
 % *GrayscaleImage: for grayscale images*
-% <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/GrayscaleImage.html 
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/GrayscaleImage.html 
 % |*GrayscaleImage*|> is for storing grayscale image data. |data| must be 2D where 
 % the first and second dimensions represent x and y.
 
@@ -177,30 +177,30 @@ grayscale_image = types.core.GrayscaleImage( ...
     'description', 'Grayscale image' ...
 );
 % Images: a container for images
-% Add the images to an <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Images.html 
+% Add the images to an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Images.html 
 % |*Images*|> container that accepts any of these image types.
 
 image_collection = types.core.Images( ...
     'description', 'A collection of logo images presented to the subject.'...
 );
 
-image_collection.image.set('rgba_image', rgba_image);
-image_collection.image.set('rgb_image', rgb_image);
-image_collection.image.set('grayscale_image', grayscale_image);
+image_collection.baseimage.set('rgba_image', rgba_image);
+image_collection.baseimage.set('rgb_image', rgb_image);
+image_collection.baseimage.set('grayscale_image', grayscale_image);
 
 nwb.acquisition.set('image_collection', image_collection);
 %% Index Series for Repeated Images
 % You may want to set up a time series of images where some images are repeated 
-% many times. You could create an <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/ImageSeries.html 
-% |ImageSeries|> that repeats the data each time the image is shown, but that 
+% many times. You could create an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImageSeries.html 
+% |*ImageSeries*|> that repeats the data each time the image is shown, but that 
 % would be inefficient, because it would store the same data multiple times. A 
 % better solution would be to store the unique images once and reference those 
-% images. This is how <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/IndexSeries.html 
-% |IndexSeries|> works. First, create an <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Images.html 
-% |Images|> container with the order of images defined using an <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/ImageReferences.html 
-% |ImageReferences|>. Then create an <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/IndexSeries.html 
-% |IndexSeries|> that indexes into the <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/Images.html 
-% |Images|>.
+% images. This is how <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IndexSeries.html 
+% |*IndexSeries*|> works. First, create an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Images.html 
+% |*Images*|> container with the order of images defined using an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImageReferences.html 
+% |*ImageReferences*|>. Then create an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IndexSeries.html 
+% |*IndexSeries*|> that indexes into the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Images.html 
+% |*Images*|>.
 
 rgbImage = imread('street2.jpg');
 grayImage = uint8(sum(double(rgbImage), 3) ./ double(max(max(max(rgbImage)))));
@@ -235,7 +235,7 @@ types.core.IndexSeries(...
 % Here _data_ contains the (0-indexed) index of the displayed image as they 
 % are ordered in the |ImageReference|.
 %% Writing the images to an NWB File
-% Now use <https://neurodatawithoutborders.github.io/matnwb/doc/nwbExport.html 
+% Now use <https://matnwb.readthedocs.io/en/latest/pages/functions/nwbExport.html 
 % |*nwbExport*|> to write the file.
 
 nwbExport(nwb, "images_test.nwb");

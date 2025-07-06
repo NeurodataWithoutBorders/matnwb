@@ -30,50 +30,63 @@ function results = nwbtest(varargin)
     %     nwbtest('ProcedureName', 'testSmoke*')
     %
     %   See also: matlab.unittest.TestSuite.fromPackage
+    
     import matlab.unittest.TestSuite;
     import matlab.unittest.TestRunner;
+
     import matlab.unittest.plugins.XMLPlugin;
-    
     import matlab.unittest.plugins.CodeCoveragePlugin;
     import matlab.unittest.plugins.codecoverage.CoberturaFormat;
+    
     try
         parser = inputParser;
         parser.KeepUnmatched = true;
         parser.addParameter('Verbosity', 1);
         parser.addParameter('Selector', [])
+        parser.addParameter('Namespace', 'tests')
+        parser.addParameter('ProduceCodeCoverage', true)
+        parser.addParameter('ReportOutputFolder', '')
+
         parser.parse(varargin{:});
         
-        ws = pwd;
-        
-        nwbClearGenerated(); % Clear default files if any.
-        cleanupObj = onCleanup(@() generateCore);
-        cleaner = onCleanup(@generateCore); % Regenerate core when finished
+        if isempty(parser.Results.ReportOutputFolder)
+            numReports = 1 + parser.Results.ProduceCodeCoverage;
+            [reportOutputFolder, folderCleanupObject] = createReportsFolder(numReports); %#ok<ASGLU>
+        else
+            reportOutputFolder = parser.Results.ReportOutputFolder;
+        end
 
+        % Create test suite
         pvcell = struct2pvcell(parser.Unmatched);
-        suite = TestSuite.fromPackage('tests', 'IncludingSubpackages', true, pvcell{:});
+        suite = TestSuite.fromPackage(parser.Results.Namespace, ...
+            'IncludingSubpackages', true, pvcell{:});
         if ~isempty(parser.Results.Selector)
             suite = suite.selectIf(parser.Results.Selector);
         end
-        
+        suite = suite.sortByFixtures(); % Todo: Sorting with multiple fixtures does not work great...
+        suite = filterTestsByCompatibility(suite); % local function
+
+        % Configure test runner
         runner = TestRunner.withTextOutput('Verbosity', parser.Results.Verbosity);
         
-        resultsFile = fullfile(ws, 'testResults.xml');
+        resultsFile = fullfile(reportOutputFolder, 'testResults.xml');
         runner.addPlugin(XMLPlugin.producingJUnitFormat(resultsFile));
-        
-        coverageFile = fullfile(ws, 'coverage.xml');
-        [installDir, ~, ~] = fileparts(mfilename('fullpath'));
-        
-        ignoreFolders = {'tutorials', 'tools', '+contrib', '+util', 'external_packages', '+tests'};
-        ignorePaths = {fullfile('+misc', 'generateDocs.m'), [mfilename '.m'], 'nwbClearGenerated.m'};
-        mfilePaths = getMfilePaths(installDir, ignoreFolders, ignorePaths);
-        if ~verLessThan('matlab', '9.3') && ~isempty(mfilePaths)
-            runner.addPlugin(CodeCoveragePlugin.forFile(mfilePaths,...
-                'Producing', CoberturaFormat(coverageFile)));
+                
+        if parser.Results.ProduceCodeCoverage
+            filesForCoverage = getFilesForCoverage();
+            if ~verLessThan('matlab', '9.3') && ~isempty(filesForCoverage)
+                coverageResultFile = fullfile(reportOutputFolder, 'coverage.xml');
+                runner.addPlugin(CodeCoveragePlugin.forFile(filesForCoverage,...
+                    'Producing', CoberturaFormat(coverageResultFile)));
+            end
         end % add cobertura coverage
-        
+
+        % Run tests
         results = runner.run(suite);
         
-        display(results);
+        if ~nargout
+            display(results)
+        end
     catch e
         disp(e.getReport('extended'));
         results = [];
@@ -90,17 +103,72 @@ function pv = struct2pvcell(s)
     pv(2:2:n) = v;
 end
 
-function paths = getMfilePaths(folder, excludeFolders, excludePaths)
-    mfiles = dir(fullfile(folder, '**', '*.m'));
-    excludeFolders = fullfile(folder, excludeFolders);
-    excludePaths = fullfile(folder, excludePaths);
-    paths = {};
-    for i = 1:numel(mfiles)
-        file = mfiles(i);
-        filePath = fullfile(file.folder, file.name);
-        if any(startsWith(file.folder, excludeFolders)) || any(strcmp(filePath, excludePaths))
-            continue;
+function filePaths = getFilesForCoverage()
+    matnwbDir = misc.getMatnwbDir();
+    
+    coverageIgnoreFile = fullfile(matnwbDir, '+tests', '.coverageignore');
+    ignorePatterns = string(splitlines( fileread(coverageIgnoreFile) ));
+    ignorePatterns(ignorePatterns=="") = [];
+
+    mFileListing = dir(fullfile(matnwbDir, '**', '*.m'));
+    absoluteFilePaths = fullfile({mFileListing.folder}, {mFileListing.name});
+    relativePaths = replace(absoluteFilePaths, [matnwbDir filesep], '');
+
+    keep = ~startsWith(relativePaths, ignorePatterns);
+    filePaths = fullfile(matnwbDir, relativePaths(keep));
+end
+
+function [reportOutputFolder, folderCleanupObject] = createReportsFolder(numReports)
+    
+    reportRootFolder = fullfile(misc.getMatnwbDir, 'docs', 'reports');
+    timestamp = string(datetime("now", 'Format', 'uuuu_MM_dd_HHmm'));
+    reportOutputFolder = fullfile(reportRootFolder, timestamp);
+    if ~isfolder(reportOutputFolder); mkdir(reportOutputFolder); end
+
+    folderCleanupObject = onCleanup(...
+        @() deleteFolderIfCanceled(reportOutputFolder, numReports));
+
+    function deleteFolderIfCanceled(folderPath, numReports)
+        L = dir(fullfile(folderPath, '*.xml'));
+        if ~isequal(numel(L), numReports)
+            rmdir(folderPath, 's')
         end
-        paths{end+1} = filePath; %#ok<AGROW>
+    end
+end
+
+function suite = filterTestsByCompatibility(suite)
+    import matlab.unittest.selectors.HasTag
+
+    skipPythonTests = getenv("SKIP_PYNWB_COMPATIBILITY_TEST_FOR_TUTORIALS");
+    skipPythonTests = ~isempty(skipPythonTests) && logical(str2double(skipPythonTests));
+
+    if skipPythonTests
+        suite = suite.selectIf(~HasTag('UsesPython'));
+    end
+
+    % Filter out tests testing dynamically loaded filters. Using
+    % dynamically loaded filters is only supported in MATLAB R2022a and
+    % newer
+    if ~exist("isMATLABReleaseOlderThan", "file") || isMATLABReleaseOlderThan('R2022a')
+        suite = suite.selectIf(~HasTag('UsesDynamicallyLoadedFilters'));
+        % Manually skip test for "dynamically loaded filters" tutorial
+        isDynamicLoadedFiltersTutorial = contains({suite.Name}, "tutorialFile=dynamically_loaded_filters_mlx");
+        suite(isDynamicLoadedFiltersTutorial) = [];
+    end
+
+    if ~isempty(getenv("GITHUB_ACTIONS")) && strcmp(getenv("GITHUB_ACTIONS"), "true")
+        if exist("matlabRelease", "file")
+            releaseInfo = matlabRelease();
+            disp(releaseInfo.Release)
+            % Skip images tutorial when testing on R2022a and R2022b on 
+            % GitHub Actions. The tutorial loads an image which for unknown 
+            % reasons is not available for R2022* releases when using 
+            % matlab-actions on GitHub runners.
+            if contains(releaseInfo.Release, ["R2022a", "R2022b"])
+                isImagesTutorial = contains({suite.Name}, ...
+                    ["tutorialFile=images_mlx", "tutorialFile=images.mlx"]); % "images_mlx" <= R2022a, "images.mlx" >= R2022b
+                suite(isImagesTutorial) = [];
+            end
+        end
     end
 end

@@ -1,11 +1,30 @@
 classdef RGBImage < types.core.Image & types.untyped.DatasetClass
-% RGBIMAGE A color image.
+% RGBIMAGE - A color image.
+%
+% Required Properties:
+%  data
 
 
 
 methods
     function obj = RGBImage(varargin)
-        % RGBIMAGE Constructor for RGBImage
+        % RGBIMAGE - Constructor for RGBImage
+        %
+        % Syntax:
+        %  rGBImage = types.core.RGBIMAGE() creates a RGBImage object with unset property values.
+        %
+        %  rGBImage = types.core.RGBIMAGE(Name, Value) creates a RGBImage object where one or more property values are specified using name-value pairs.
+        %
+        % Input Arguments (Name-Value Arguments):
+        %  - data (numeric) - No description
+        %
+        %  - description (char) - Description of the image.
+        %
+        %  - resolution (single) - Pixel resolution of the image, in pixels per centimeter.
+        %
+        % Output Arguments:
+        %  - rGBImage (types.core.RGBImage) - A RGBImage object
+        
         obj = obj@types.core.Image(varargin{:});
         
         
@@ -13,9 +32,7 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'data',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.data = p.Results.data;
         if strcmp(class(obj), 'types.core.RGBImage')
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));

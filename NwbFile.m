@@ -1,18 +1,23 @@
 classdef NwbFile < types.core.NWBFile
-    % NWBFILE Root object representing data read from an NWB file.
-    %
-    % Requires that core and extension NWB types have been generated
-    % and reside in a 'types' package on the matlab path.
-    %
-    % Example. Construct an object from scratch for export:
-    %    nwb = NwbFile;
-    %    nwb.epochs = types.core.Epochs;
-    %    nwbExport(nwb, 'epoch.nwb');
-    %
-    % See also NWBREAD, GENERATECORE, GENERATEEXTENSION
+% NWBFILE - Root object representing an NWB file.
+%
+% Requires that core and extension NWB types have been generated
+% and reside in a ``+types`` namespace on the MATLAB search path.
+%
+% Usage:
+%  Example 1 - Construct a simple NwbFile object for export::
+%
+%    nwb = NwbFile;
+%    nwb.epochs = types.core.Epochs;
+%    nwbExport(nwb, 'epoch.nwb');
+%
+% See also:
+%   nwbRead, generateCore, generateExtension
 
     methods
         function obj = NwbFile(propValues)
+        % NWBFILE - Create an NWB File object
+
             arguments
                 propValues.?types.core.NWBFile
                 propValues.nwb_version
@@ -26,7 +31,7 @@ classdef NwbFile < types.core.NWBFile
         end
 
         function export(obj, filename, mode)
-        % export - Export NWB file object
+        % EXPORT - Export NWB file object
 
             arguments
                 obj (1,1) NwbFile
@@ -50,6 +55,8 @@ classdef NwbFile < types.core.NWBFile
                 obj.file_create_date(end+1) = current_time;
             end
 
+            obj.addWasGeneratedBy()
+
             %equate reference time to session_start_time if empty
             if isempty(obj.timestamps_reference_time)
                 obj.timestamps_reference_time = obj.session_start_time;
@@ -69,8 +76,7 @@ classdef NwbFile < types.core.NWBFile
             end
 
             try
-                jsonSpecs = schemes.exportJson();
-                io.spec.writeEmbeddedSpecifications(output_file_id, jsonSpecs);
+                obj.embedSpecifications(output_file_id)
                 refs = export@types.core.NWBFile(obj, output_file_id, '/', {});
                 obj.resolveReferences(output_file_id, refs);
                 H5F.close(output_file_id);
@@ -98,10 +104,14 @@ classdef NwbFile < types.core.NWBFile
         end
 
         function objectMap = searchFor(obj, typename, varargin)
-            % Searches this NwbFile object for a given typename
+            % searchFor - Search for for a given typename within the NwbFile object
+            %
             % Including the full namespace is optional.
-            % WARNING: The returned paths are resolvable but do not necessarily
-            % indicate a real HDF5 path. Their only function is to be resolvable.
+            %
+            % .. warning:: 
+            %   The returned paths are resolvable but do not necessarily
+            %   indicate a real HDF5 path. Their only function is to be resolvable.
+
             objectMap = searchProperties(...
                 containers.Map,...
                 obj,...
@@ -109,10 +119,101 @@ classdef NwbFile < types.core.NWBFile
                 typename,...
                 varargin{:});
         end
+
+        function nwbTypeNames = listNwbTypes(obj, options)
+        % listNwbTypes - List all unique NWB (neurodata) types in file
+            arguments
+                obj (1,1) NwbFile
+                options.IncludeParentTypes (1,1) logical = false
+                options.IncludeNwbFile (1,1) logical = false
+            end
+
+            objectMap = searchProperties(containers.Map, obj, '', '');
+
+            objects = objectMap.values();
+            objectClassNames = cellfun(@(c) string(class(c)), objects);
+            objectClassNames = unique(objectClassNames);
+
+            keep = startsWith(objectClassNames, "types.");
+            ignore = startsWith(objectClassNames, "types.untyped");
+
+            nwbTypeNames = objectClassNames(keep & ~ignore);
+
+            if options.IncludeNwbFile
+                % Include class name for NWBFile superclass
+                allSuperclasses = string(superclasses(obj));
+                nwbTypeNames = [...
+                    allSuperclasses(endsWith(allSuperclasses, 'NWBFile')), ...
+                    nwbTypeNames];
+            end
+
+            if options.IncludeParentTypes
+                includedNwbTypesWithParents = string.empty;
+                for i = 1:numel(nwbTypeNames)
+                    typeHierarchy = schemes.utility.listNwbTypeHierarchy(nwbTypeNames{i});
+                    includedNwbTypesWithParents = [includedNwbTypesWithParents, typeHierarchy]; %#ok<AGROW>
+                end
+                nwbTypeNames = includedNwbTypesWithParents;
+            end
+        end
     end
 
     %% PRIVATE
     methods(Access=private)
+        function addWasGeneratedBy(obj)
+            if isprop(obj, 'general_was_generated_by')
+                if isa(obj.general_was_generated_by, 'types.untyped.DataStub')
+                    obj.general_was_generated_by = obj.general_was_generated_by.load();
+                end
+    
+                matnwbInfo = ver('matnwb');
+                wasGeneratedBy = {'matnwb'; matnwbInfo.Version};
+    
+                if isempty(obj.general_was_generated_by)
+                    obj.general_was_generated_by = wasGeneratedBy;
+                else
+                    if ~any(contains(obj.general_was_generated_by(:), 'matnwb'))
+                        obj.general_was_generated_by(:, end+1) = wasGeneratedBy;
+                    end
+                end
+            end
+        end
+
+        function embedSpecifications(obj, output_file_id)
+            jsonSpecs = schemes.exportJson();
+
+            if isempty(jsonSpecs)
+                % Call generateCore to create cached namespaces
+                generateCore(obj.nwb_version)
+                jsonSpecs = schemes.exportJson();
+            end
+
+            % Resolve the name of all types and parent types that are
+            % included in this file. This will be used to filter the specs
+            % to embed, so that only specs with used neurodata types are
+            % embedded.
+            includedNeurodataTypes = obj.listNwbTypes(...
+                "IncludeParentTypes", true, ...
+                "IncludeNwbFile", true);
+
+            % Get the namespace names
+            namespaceNames = getNamespacesForDataTypes(includedNeurodataTypes);
+            
+            % In the specs, the hyphen (-) is used as a word separator, while in
+            % matnwb the underscore (_) is used. Translate names here:
+            allMatlabNamespaceNames = strrep({jsonSpecs.name}, '-', '_');
+            [~, keepIdx] = intersect(allMatlabNamespaceNames, namespaceNames, 'stable');
+            jsonSpecs = jsonSpecs(keepIdx);
+
+            io.spec.writeEmbeddedSpecifications(...
+                output_file_id, ...
+                jsonSpecs);
+
+            io.spec.validateEmbeddedSpecifications(...
+                output_file_id, ...
+                strrep(namespaceNames, '_', '-'))
+        end
+        
         function resolveReferences(obj, fid, references)
             while ~isempty(references)
                 resolved = false(size(references));
@@ -206,4 +307,19 @@ function pathToObjectMap = searchProperties(...
             searchProperties(pathToObjectMap, propValue, fullPath, typename, varargin{:});
         end
     end
+end
+
+function namespaceNames = getNamespacesForDataTypes(nwbTypeNames)
+% getNamespacesOfTypes - Get namespace names for a list of nwb types
+    arguments
+        nwbTypeNames (1,:) string
+    end
+
+    namespaceNames = repmat("", size(nwbTypeNames));
+    pattern = '[types.]+\.(\w+)\.';
+
+    for i = 1:numel(nwbTypeNames)
+        namespaceNames(i) = regexp(nwbTypeNames(i), pattern, 'tokens', 'once');
+    end
+    namespaceNames = unique(namespaceNames);
 end

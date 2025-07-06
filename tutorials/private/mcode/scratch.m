@@ -1,7 +1,7 @@
 %% Scratch Data
-% This tutorial will focus on the basics of working with a <https://neurodatawithoutborders.github.io/matnwb/doc/+types/+core/NWBFile.html 
-% |NWBFile|> for storing non-standardizable data. For example, you may want to 
-% store results from one-off analyses of some temporary utility. NWB provides 
+% This tutorial will focus on the basics of working with a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html 
+% |*NWBFile*|> for storing non-standardizable data. For example, you may want 
+% to store results from one-off analyses of some temporary utility. NWB provides 
 % in-file *scratch space* as a dedicated location where miscellaneous non-standard 
 % data may be written.
 %% Setup

@@ -105,7 +105,31 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
             end
         end
 
+        function warnIfAttributeDependencyMissing(obj, propName, dependencyPropName)
+            % Skip warning if the value is equal to the default value for
+            % the property (value was probably not set by the user).
+            if obj.propertyValueEqualsDefaultValue(propName)
+                return
+            end
+
+            warnState = warning('backtrace', 'off');
+            cleanupObj = onCleanup(@(s) warning(warnState));
+            warningId = 'NWB:AttributeDependencyNotSet';
+            warningMessage = sprintf( [ ...
+                'The property "%s" of type "%s" depends on the property "%s", ' ...
+                'which is unset. If you do not set a value for "%s, the ' ...
+                'value of "%s" will not be exported to file.'], ...
+                propName, class(obj), dependencyPropName, dependencyPropName, propName);
+            warning(warningId, warningMessage) %#ok<SPWRN>
+        end
+
         function warnIfPropertyAttributeNotExported(obj, propName, depPropName, fullpath)
+            % Skip warning if the value is equal to the default value for
+            % the property (value was probably not set by the user).
+            if obj.propertyValueEqualsDefaultValue(propName)
+                return
+            end
+
             warnState = warning('backtrace', 'off');
             cleanupObj = onCleanup(@(s) warning(warnState));
             warningId = 'NWB:DependentAttributeNotExported';
@@ -114,6 +138,29 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
                 'location "%s" because it depends on the property "%s" ', ...
                 'which is unset.' ], propName, class(obj), fullpath, depPropName);
             warning(warningId, warningMessage) %#ok<SPWRN>
+        end
+    end
+    
+    methods (Hidden)
+        % Set of methods that should be publicly available, for example for
+        % testing purposes, or other use cases where type inspection might
+        % be necessary.
+        function requiredProps = getRequiredProperties(obj)
+        % getRequiredProperties - Get the required properties for the neurodata type.
+
+            typeClassName = class(obj);
+            typeNamespaceVersion = getNamespaceVersionForType(typeClassName);
+            typeKey = sprintf('%s_%s', typeClassName, typeNamespaceVersion);
+
+            if isKey(obj.REQUIRED, typeKey)
+                requiredProps = obj.REQUIRED( typeKey );
+            else
+                className = class(obj);
+                % Parse NWB schemas to retrieve required properties for the 
+                % neurodata type and add to persistent cache/map.
+                requiredProps = schemes.internal.getRequiredPropsForClass(className);
+                obj.REQUIRED( typeKey ) = requiredProps;
+            end
         end
     end
 
@@ -158,8 +205,20 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
 
                 propertyListStr = obj.prettyPrintPropertyList(missingRequiredProps);
                 warning('NWB:RequiredPropertyMissing', ...
-                    'The following required properties are missing for instance for type "%s":\n%s', class(obj), propertyListStr)
+                    ['The following required properties are missing for ', ...
+                    'instance for type "%s":\n%s'], class(obj), propertyListStr)
             end
+        end
+
+        function throwErrorIfRequiredDependencyMissing(obj, propName, depPropName, fullpath)
+            if isempty(fullpath); fullpath = 'root'; end
+            errorId = 'NWB:DependentRequiredPropertyMissing';
+            errorMessage = sprintf( [ ...
+                'The property "%s" of type "%s" in file location "%s" is ' ...
+                'required when the property "%s" is set. Please add a value ' ...
+                'for "%s" and re-export.'], ...
+                propName, class(obj), fullpath, depPropName, propName);
+            error(errorId, errorMessage) %#ok<SPERR>
         end
 
         function throwErrorIfMissingRequiredProps(obj, fullpath)
@@ -167,7 +226,9 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
             if ~isempty( missingRequiredProps )
                 propertyListStr = obj.prettyPrintPropertyList(missingRequiredProps);
                 error('NWB:RequiredPropertyMissing', ...
-                    'The following required properties are missing for instance for type "%s" at file location "%s":\n%s', class(obj), fullpath, propertyListStr)
+                    ['The following required properties are missing for ', ...
+                    'instance for type "%s" at file location "%s":\n%s' ], ...
+                    class(obj), fullpath, propertyListStr)
             end
         end
 
@@ -176,7 +237,9 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
                 obj.checkCustomConstraint()
             catch ME
                 error('NWB:CustomConstraintUnfulfilled', ...
-                    'The following error was caught when exporting type "%s" at file location "%s":\n%s', class(obj), fullpath, ME.message)
+                    ['The following error was caught when exporting type ', ...
+                    '"%s" at file location "%s":\n%s'], ...
+                    class(obj), fullpath, ME.message)
             end
         end
     end
@@ -189,19 +252,17 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
     end
 
     methods (Access = private)
-        function requiredProps = getRequiredProperties(obj)
-
-            % Introspectively retrieve required properties and add to
-            % persistent map.
-
-            if isKey(obj.REQUIRED, class(obj) )
-                requiredProps = obj.REQUIRED( class(obj) );
+        function tf = propertyValueEqualsDefaultValue(obj, propName)
+        % propertyValueEqualsDefaultValue - Check if value of property is
+        % equal to the property's default value
+            
+            mc = metaclass(obj);
+            propInfo = mc.PropertyList(strcmp({mc.PropertyList.Name}, propName));
+            if propInfo.HasDefault
+                propValue = obj.(propName);
+                tf = isequal(propValue, propInfo.DefaultValue);
             else
-                mc = metaclass(obj);
-                propertyDescription = {mc.PropertyList.Description};
-                isRequired = startsWith(propertyDescription, 'REQUIRED');
-                requiredProps = {mc.PropertyList(isRequired).Name};
-                obj.REQUIRED( class(obj) ) = requiredProps;
+                tf = false;
             end
         end
     end
@@ -212,4 +273,19 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
             propertyListStr = strjoin(propertyListStr, newline);
         end
     end
+end
+
+function version = getNamespaceVersionForType(typeClassName)
+    if strcmp(typeClassName, 'NwbFile')
+        namespaceName = 'types.core';
+    else
+        classNameParts = strsplit(typeClassName, '.');
+        namespaceName = strjoin(classNameParts(1:end-1), '.');
+    end
+    assert(startsWith(namespaceName, 'types.'), ...
+        'Expected type to belong to namespace.') 
+    
+    version = feval( ...
+        sprintf('%s.%s', namespaceName, matnwb.common.constant.VERSIONFUNCTION) ...
+        );
 end
