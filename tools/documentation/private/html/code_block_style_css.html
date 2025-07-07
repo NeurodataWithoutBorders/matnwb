@@ -10,7 +10,8 @@
   font-family:Consolas,Menlo,monospace;
 }
 .eoOutputWrapper{
-    max-width:85vw;         /* Work around to enable horizontal scrolling in output wrapper of codebox (<100vw) */
+    width: 100vw;                 /* full viewport width … */
+    max-width: calc(100vw - 2*38px - 15px) /* 2*38px (padding) + 15px (add hoc to avoid clipping scrollbars) */ 
 }
 .CodeBlock .copybtn{
   position:absolute;
