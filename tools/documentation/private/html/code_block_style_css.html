@@ -10,23 +10,72 @@
   overflow:auto;
   font-family:Consolas,Menlo,monospace;
 }
-.CodeBlock .copy-btn{
+.CodeBlock .copybtn{
   position:absolute;
   top:5px;
   right:5px;
+  padding:4px;
   border:0;
   background:none;
   cursor:pointer;
   line-height:0;
   z-index:3;
+  color:#000;                  /* icon stroke follows text color */
 }
-.CodeBlock .copy-btn svg{
-  width:18px;
-  height:18px;
-  display:block;
-  overflow:visible;        /* prevents button clipping */
-  fill:#555;
+.CodeBlock .copybtn svg{
+  width:1.25rem;
+  height:1.25rem;
+  stroke-width:1.5;
+  stroke:currentColor;
+  fill:none;
   pointer-events:none;
 }
-.CodeBlock .copy-btn:active svg{ fill:#222; }
-.CodeBlock .copy-btn.copied svg{ fill:#4caf50; }
+.CodeBlock .copybtn:hover       { color:#444; }
+.CodeBlock .copybtn:active svg  { color:#222; }
+.CodeBlock .copybtn.copied svg  { color:#4caf50; }
+
+.copybtn[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  right: 100%;                 /* park it to the left edge */
+  top: 50%;
+  transform: translateY(-50%) translateX(-8px);  /* 8-px gap */
+  white-space: nowrap;
+  background: #333;
+  color: #fff;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  padding: 2px 6px;
+  border-radius: 4px;
+  opacity: 0;
+  pointer-events: none;        /* hover stays on the button */
+  transition: opacity 0.15s ease;
+  z-index: 4;
+}
+/* little arrow */
+.copybtn[data-tooltip]::before {
+  content: '';
+  position: absolute;
+  right: calc(100% - 2px);     /* overlap by 2 px so it looks attached */
+  top: 50%;
+  transform: translateY(-50%);
+  border: 6px solid transparent;
+  border-left-color: #333;     /* arrow colour matches bubble */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 4;
+}
+/* show on hover / focus */
+.copybtn:hover::after,
+.copybtn:hover::before,
+.copybtn:focus-visible::after,
+.copybtn:focus-visible::before {
+  opacity: 1;
+}
+.copybtn.copied[data-tooltip]::after  { content:"Copied!"; }
+.copybtn.copied[data-tooltip]::before { /* arrow shape stays */ }
+.copybtn .icon-check    { display:none; }
+.copybtn.copied .icon-copy  { display:none; }
+.copybtn.copied .icon-check { display:block;  stroke:#4caf50; }
+.copybtn.copied svg         { stroke:#4caf50; }   /* green tint */

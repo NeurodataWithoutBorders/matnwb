@@ -1,21 +1,42 @@
 <script>
 (() => {
+  let uid = 0;                                // unique id for each block
+
   function addCopyButtons(root = document){
     root.querySelectorAll('.CodeBlock').forEach(block=>{
       if (block.dataset.copyReady) return;
       block.dataset.copyReady = 'y';
 
-      /* build the button */
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'copy-btn';
-      btn.setAttribute('aria-label','Copy code');
-      btn.innerHTML = `
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1z"/>
-          <path d="M19 5H8c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 18H8V7h11v16z"/>
-        </svg>`;
-      block.appendChild(btn);
+      /* ▸ unique id so tooltip can target the block */
+      const targetId = `codecell${uid++}`;
+      block.setAttribute('id', targetId);
+
+        const btn = document.createElement('button');
+        btn.type  = 'button';
+        btn.className = 'copybtn o-tooltip--left';
+        btn.dataset.tooltip = 'Copy';          // tooltip text
+        btn.setAttribute('aria-label','Copy code');
+    
+        /*  Two SVGs: copy (default) + check (success)  */
+        btn.innerHTML = `
+          <!-- copy icon -->
+          <svg class="icon-copy icon icon-tabler icon-tabler-copy"
+               viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <rect x="8" y="8" width="12" height="12" rx="2"/>
+            <path d="M16 8v-2a2 2 0 0 0 -2 -2h-8
+                     a2 2 0 0 0 -2 2v8
+                     a2 2 0 0 0 2 2h2"/>
+          </svg>
+    
+          <!-- check icon (hidden until .copied) -->
+          <svg class="icon-check icon icon-tabler icon-tabler-check"
+               viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <path d="M5 12l5 5l10 -10" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>`;
+        block.appendChild(btn);
 
       /* click → copy */
       btn.addEventListener('click', async () => {
