@@ -75,6 +75,9 @@ function matnwb_exportTutorials(options)
     disp(tempDir)
 
     for i = 1:numel(filePaths)
+        % Ensure we are using the latest version of the schemas
+        nwbClearGenerated(); generateCore();
+
         sourcePath = char( fullfile(filePaths(i)) );
         if options.RunLivescript
             fprintf('Running livescript "%s"\n', fileNames(i))
