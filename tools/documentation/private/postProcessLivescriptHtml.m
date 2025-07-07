@@ -37,7 +37,7 @@ function postProcessLivescriptHtml(htmlFile)
     %     '<a target = "top" href = "https://');
 
     scriptFolder = fileparts(mfilename('fullpath'));
-    str = fileread(fullfile(scriptFolder, 'update_link_target_js.html'));
+    str = fileread(fullfile(scriptFolder, 'html', 'update_link_target_js.html'));
     updatedHtmlContent = regexprep(htmlContent, ...
         "</div></body></html>", ...
         sprintf("</div>%s</body></html>", str));
@@ -66,6 +66,7 @@ function postProcessLivescriptHtml(htmlFile)
         'https://neurodatawithoutborders.github.io/matnwb/doc/index.html', ...
         'https://matnwb.readthedocs.io/en/latest/index.html' );
  
+    updatedHtmlContent = addCopyButtonToCodeBlocks(updatedHtmlContent);
 
     % Write the modified content back to the HTML file
     try
