@@ -1,0 +1,32 @@
+<script>
+/*  This runs only inside the embedded file.
+    It turns a click on   foo.html   into a jump to
+    /pages/.../foo.html   *outside* the iframe,
+    and still breaks out for any https:// link.            */
+document.addEventListener("DOMContentLoaded", () => {
+  if (window.self === window.top) return;        // not inside an iframe? do nothing
+
+  const STATIC_PREFIX = "/_static/html/";        // where the raw HTML lives
+  const PAGES_PREFIX  = "/pages/";               // where the real doc pages live
+
+  document.querySelectorAll("a[href]").forEach(a => {
+    const href = a.getAttribute("href");
+
+    /* 1 — always leave the iframe for https:// or *.html links */
+    if (href.startsWith("https:") || href.endsWith(".html")) {
+      a.setAttribute("target", "_top");
+    }
+
+    /* 2 — for a *relative* foo.html       rewrite it so it
+           points at …/pages/… not …/_static/html/…           */
+    const isRelativeHtml = href.endsWith(".html") && !/^[a-z]+:\/\//i.test(href);
+    if (isRelativeHtml) {
+      const here = window.location.pathname;          // /en/_static/html/tutorials/intro.html
+      const base = here
+        .replace(STATIC_PREFIX, PAGES_PREFIX)         // /en/pages/tutorials/intro.html
+        .replace(/[^/]+$/, "");                       // /en/pages/tutorials/
+      a.href = base + href.replace(/^\.\//, "");      // final: /en/pages/tutorials/intro.html
+    }
+  });
+});
+</script>

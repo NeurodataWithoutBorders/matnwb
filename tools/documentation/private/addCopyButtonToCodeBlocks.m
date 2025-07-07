@@ -18,12 +18,12 @@ function updatedHtmlContent = addCopyButtonToCodeBlocks(htmlContent)
     htmlFolder = fullfile(currentFolder, 'html');
 
     % Add updated styles for codeblock and copy button
-    codeblockCSS = fileread(fullfile(htmlFolder, 'copy_button_style_css.html'));
-    CODEBLOCK_CSS = ".CodeBlock { background-color: #F5F5F5; margin: 10px 0 10px 0; }";
-    updatedHtmlContent = regexprep(htmlContent, CODEBLOCK_CSS, codeblockCSS);
+    CODEBLOCK_CSS = ".CodeBlock { background-color: #F5F5F5; margin: 10px 0 10px 0; }"; % Default css
+    customCodeblockCSS = fileread(fullfile(htmlFolder, 'code_block_style_css.html'));
+    customCodeblockCSS = strrep(customCodeblockCSS, newline, ' ');
+    updatedHtmlContent = regexprep(htmlContent, CODEBLOCK_CSS, customCodeblockCSS);
     
     % Add javascript for creating button and handling button click
     jsSnippet = fileread(fullfile(htmlFolder, 'copy_button_js.html'));
-    updatedHtmlContent = strrep(updatedHtmlContent, '</body></html>', [jsSnippet '</body></html>']);
+    updatedHtmlContent = insertBefore(updatedHtmlContent, '</body></html>', jsSnippet);
 end
-
