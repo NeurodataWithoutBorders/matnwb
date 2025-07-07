@@ -42,6 +42,10 @@ function postProcessLivescriptHtml(htmlFile)
         "</div></body></html>", ...
         sprintf("</div>%s</body></html>", str));
 
+    imageNodeCss = fileread(fullfile(scriptFolder, 'html', 'image_node_css.html'));
+    imageNodeCss = strrep(imageNodeCss, newline, ' ');
+    updatedHtmlContent = insertBefore(updatedHtmlContent, '.S1', [imageNodeCss newline]);
+
     % Update links: type classes
     for namespaceName = ["core", "hdmf_common", "hdmf_experimental"]
         updatedHtmlContent = strrep(updatedHtmlContent, ...
