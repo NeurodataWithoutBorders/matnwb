@@ -1,0 +1,32 @@
+.CodeBlock{
+  background:#F5F5F5;
+  margin:10px 0 10px 0;
+  padding:0;
+  display:block;
+  max-width:100%;
+  min-height:28px;
+  box-sizing:border-box;
+  position:relative;       /* anchor for absolute button */
+  overflow:auto;
+  font-family:Consolas,Menlo,monospace;
+}
+.CodeBlock .copy-btn{
+  position:absolute;
+  top:5px;
+  right:5px;
+  border:0;
+  background:none;
+  cursor:pointer;
+  line-height:0;
+  z-index:3;
+}
+.CodeBlock .copy-btn svg{
+  width:18px;
+  height:18px;
+  display:block;
+  overflow:visible;        /* prevents button clipping */
+  fill:#555;
+  pointer-events:none;
+}
+.CodeBlock .copy-btn:active svg{ fill:#222; }
+.CodeBlock .copy-btn.copied svg{ fill:#4caf50; }
