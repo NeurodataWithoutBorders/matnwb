@@ -111,13 +111,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* 2 — for a *relative* foo.html       rewrite it so it
            points at …/pages/… not …/_static/html/…           */
-    const isRelativeHtml = href.endsWith(".html") && !/^[a-z]+:///i.test(href);
+    const isRelativeHtml = href.endsWith(".html") && !/^[a-z]+:\/\//i.test(href);
     if (isRelativeHtml) {
-      const here = window.location.pathname;          // /en/730/_static/html/tutorials/intro.html
+      const here = window.location.pathname;          // /en/_static/html/tutorials/intro.html
       const base = here
-        .replace(STATIC_PREFIX, PAGES_PREFIX)         // /en/730/pages/tutorials/intro.html
-        .replace(/[^/]+$/, "");                       // /en/730/pages/tutorials/
-      a.href = base + href.replace(/^.//, "");      // final: /en/730/pages/tutorials/foo.html
+        .replace(STATIC_PREFIX, PAGES_PREFIX)         // /en/pages/tutorials/intro.html
+        .replace(/[^/]+$/, "");                       // /en/pages/tutorials/
+      a.href = base + href.replace(/^\.\//, "");      // final: /en/pages/tutorials/foo.html
     }
   });
 });
