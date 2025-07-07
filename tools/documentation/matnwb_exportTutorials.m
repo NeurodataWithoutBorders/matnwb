@@ -9,6 +9,19 @@ function matnwb_exportTutorials(options)
 %   To export all livescripts (assuming you have made sure the above-mentioned 
 %   files will run) call the function with IgnoreFiles set to empty, i.e:
 %       matnwb_exportTutorials(..., "IgnoreFiles", string.empty)
+%
+% WARNING: 
+%   This function invokes evalin('base','clearvars')
+%   which removes **all** variables from the MATLAB base workspace.
+%
+% Live Scripts store the variables they create in the base workspace, and
+% their associated class definitions remain in memory. If this function then
+% runs another Live Script that introduces a *different* version of the same
+% classes, MATLAB can raise errors due to schema-version conflicts.
+%
+% Clearing the base workspace before each run prevents these conflicts by
+% unloading the existing class definitions, so the new versions can load
+% cleanly.
 
     arguments
         options.ExportFormat (1,:) string {mustStartWithDot} = [".m", ".html"]
