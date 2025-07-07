@@ -6,7 +6,7 @@
 .S3 { margin: 15px 10px 5px 4px; padding: 0px; line-height: 18px; min-height: 0px; white-space: pre-wrap; color: rgb(33, 33, 33); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 17px; font-weight: 700; text-align: left;  }
 .S4 { margin: 10px 0px 20px; padding-left: 0px; font-family: Helvetica, Arial, sans-serif; font-size: 14px;  }
 .S5 { margin-left: 56px; line-height: 21px; min-height: 0px; text-align: left; white-space: pre-wrap;  }
-.CodeBlock{   background:#F5F5F5;   margin:10px 0 10px 0;   padding:0;   display:block;   width:100%;   max-width: 1200px;   min-height:28px;   box-sizing:border-box;   position:relative;       /* anchor for absolute button */   overflow:auto;   font-family:Consolas,Menlo,monospace; } .CodeBlock .copy-btn{   position:absolute;   top:5px;   right:5px;   border:0;   background:none;   cursor:pointer;   line-height:0;   z-index:3; } .CodeBlock .copy-btn svg{   width:18px;   height:18px;   display:block;   overflow:visible;        /* prevents button clipping */   fill:#555;   pointer-events:none; } .CodeBlock .copy-btn:active svg{ fill:#222; } .CodeBlock .copy-btn.copied svg{ fill:#4caf50; }
+.CodeBlock{   background:#F5F5F5;   margin:10px 0 10px 0;   padding:0;   display:block;   width:100%;   min-height:28px;   box-sizing:border-box;   position:relative;       /* anchor for absolute button */   overflow:auto;   font-family:Consolas,Menlo,monospace; } .CodeBlock .copy-btn{   position:absolute;   top:5px;   right:5px;   border:0;   background:none;   cursor:pointer;   line-height:0;   z-index:3; } .CodeBlock .copy-btn svg{   width:18px;   height:18px;   display:block;   overflow:visible;        /* prevents button clipping */   fill:#555;   pointer-events:none; } .CodeBlock .copy-btn:active svg{ fill:#222; } .CodeBlock .copy-btn.copied svg{ fill:#4caf50; }
 .S6 { border-left: 1px solid rgb(217, 217, 217); border-right: 1px solid rgb(217, 217, 217); border-top: 1px solid rgb(217, 217, 217); border-bottom: 0px none rgb(33, 33, 33); border-radius: 4px 4px 0px 0px; padding: 6px 45px 0px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }
 .S7 { border-left: 1px solid rgb(217, 217, 217); border-right: 1px solid rgb(217, 217, 217); border-top: 0px none rgb(33, 33, 33); border-bottom: 0px none rgb(33, 33, 33); border-radius: 0px; padding: 0px 45px 0px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }
 .S8 { border-left: 1px solid rgb(217, 217, 217); border-right: 1px solid rgb(217, 217, 217); border-top: 0px none rgb(33, 33, 33); border-bottom: 1px solid rgb(217, 217, 217); border-radius: 0px 0px 4px 4px; padding: 0px 45px 4px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }
@@ -166,7 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const base = here
         .replace(STATIC_PREFIX, PAGES_PREFIX)         // /en/pages/tutorials/intro.html
         .replace(/[^/]+$/, "");                       // /en/pages/tutorials/
-      a.href = base + href.replace(/^\.\//, "");      // final: /en/pages/tutorials/foo.html
+      a.href = base + href.replace(/^\.\//, "");      // final: /en/pages/tutorials/intro.html
     }
   });
 });
