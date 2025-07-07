@@ -60,7 +60,7 @@ function htmlContent = updateImageNodeCss(htmlContent)
 end
 
 function htmlContent = addUpdateScriptForLinkInIFrame(htmlContent)
-% This function adds a javscript element that updates all <a> tags that has a 
+% This function adds a javascript element that updates all <a> tags that has a 
 % href attribute starting with "https:" or ending with ".html" by adding or 
 % updating the target attribute to "top".
 %
