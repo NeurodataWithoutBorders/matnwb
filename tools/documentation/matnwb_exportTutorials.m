@@ -74,6 +74,8 @@ function matnwb_exportTutorials(options)
     cleanupDeleteTempFiles = onCleanup(@(fp) rmdir(tempDir, 's'));
     disp(tempDir)
 
+    evalin('base','clearvars')
+
     for i = 1:numel(filePaths)
         % Ensure we are using the latest version of the schemas
         nwbClearGenerated(); generateCore();
@@ -81,8 +83,13 @@ function matnwb_exportTutorials(options)
         sourcePath = char( fullfile(filePaths(i)) );
         if options.RunLivescript
             fprintf('Running livescript "%s"\n', fileNames(i))
-
             matlab.internal.liveeditor.executeAndSave(sourcePath);
+            % Livescripts are run in the base workspace, and will drop created 
+            % NWB types there. We need to clear those because some
+            % livescripts will generate types using different schema
+            % versions, and this can lead to errors in livescript runs due
+            % to schema version conflicts.
+            evalin('base','clearvars')
         end
         
         for j = 1:numel(exportFormat)
