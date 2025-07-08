@@ -76,11 +76,4 @@
   } else {
     addCopyButtons();
   }
-
-  // observe for dynamically added .CodeBlock elements
-  new MutationObserver(muts => {
-    muts.forEach(m => m.addedNodes.forEach(n => {
-      if (n.nodeType === 1) addCopyButtons(n);
-    }));
-  }).observe(document.body, { childList: true, subtree: true });
 })();
