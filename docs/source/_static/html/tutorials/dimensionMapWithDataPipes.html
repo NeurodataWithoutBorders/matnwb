@@ -1,9 +1,9 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge,IE=9,chrome=1"><meta name="generator" content="MATLAB 2023b"><title>MatNWB <-> HDF5 Dimension Mapping</title><style type="text/css">.rtcContent { padding: 30px; } .S0 { margin: 3px 10px 5px 4px; padding: 0px; line-height: 28.8px; min-height: 0px; white-space: pre-wrap; color: rgb(192, 76, 11); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 24px; font-weight: 400; text-align: left;  }
-.imageNode {   /* Responsive scaling */   max-width: 100%;          /* never overflow its parent */   height: auto !important;  /* preserve aspect ratio */    /* Horizontal centring */   display: block;           /* takes the element out of the inline flow */   margin: 0 auto;           /* left & right margins set to “auto” centre it */ }
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge,IE=9,chrome=1"><meta name="generator" content="MATLAB 2023b"><title>MatNWB <-> HDF5 Dimension Mapping</title><link rel="stylesheet" href="css/livescript.css">
+<style type="text/css">.rtcContent { padding: 30px; } .S0 { margin: 3px 10px 5px 4px; padding: 0px; line-height: 28.8px; min-height: 0px; white-space: pre-wrap; color: rgb(192, 76, 11); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 24px; font-weight: 400; text-align: left;  }
 .S1 { margin: 2px 10px 9px 4px; padding: 0px; line-height: 21px; min-height: 0px; white-space: pre-wrap; color: rgb(33, 33, 33); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 14px; font-weight: 400; text-align: left;  }
 .S2 { margin: 20px 10px 5px 4px; padding: 0px; line-height: 20px; min-height: 0px; white-space: pre-wrap; color: rgb(33, 33, 33); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 20px; font-weight: 700; text-align: left;  }
-.CodeBlock{   background:#F5F5F5;   margin:10px 0 10px 0;   padding:0;   display:block;   overflow:auto;   width:100%;   min-height:28px;   box-sizing:border-box;   position:relative;       /* anchor for absolute button */   font-family:Consolas,Menlo,monospace; } .eoOutputWrapper{     width: 100vw;                 /* full viewport width … */     max-width: calc(100vw - 2*38px - 15px) /* 2*38px (padding) + 15px (add hoc to avoid clipping scrollbars) */  } .CodeBlock .copybtn{   position:absolute;   top:1px;   right:2px;   padding:4px;   border:0;   background:none;   cursor:pointer;   line-height:0;   z-index:3;   color:#000;                  /* icon stroke follows text color */ } .CodeBlock .copybtn svg{   width:1.25rem;   height:1.25rem;   stroke-width:1.5;   stroke:currentColor;   fill:none;   pointer-events:none; } .CodeBlock .copybtn:hover       { color:#444; } .CodeBlock .copybtn:active svg  { color:#222; } .CodeBlock .copybtn.copied svg  { color:#4caf50; }  .copybtn[data-tooltip]::after {   content: attr(data-tooltip);   position: absolute;   right: 100%;                 /* park it to the left edge */   top: 50%;   transform: translateY(-50%) translateX(-8px);  /* 8-px gap */   white-space: nowrap;   background: #333;   color: #fff;   font-size: 0.75rem;   line-height: 1.4;   padding: 2px 6px;   border-radius: 4px;   opacity: 0;   pointer-events: none;        /* hover stays on the button */   transition: opacity 0.15s ease;   z-index: 4; } /* little arrow */ .copybtn[data-tooltip]::before {   content: '';   position: absolute;   right: calc(100% - 2px);     /* overlap by 2 px so it looks attached */   top: 50%;   transform: translateY(-50%);   border: 6px solid transparent;   border-left-color: #333;     /* arrow colour matches bubble */   opacity: 0;   pointer-events: none;   transition: opacity 0.15s ease;   z-index: 4; } /* show on hover / focus */ .copybtn:hover::after, .copybtn:hover::before, .copybtn:focus-visible::after, .copybtn:focus-visible::before {   opacity: 1; } .copybtn.copied[data-tooltip]::after  { content:"Copied!"; } .copybtn.copied[data-tooltip]::before { /* arrow shape stays */ } .copybtn .icon-check    { display:none; } .copybtn.copied .icon-copy  { display:none; } .copybtn.copied .icon-check { display:block;  stroke:#4caf50; } .copybtn.copied svg         { stroke:#4caf50; }   /* green tint */ 
+.CodeBlock { background-color: #F5F5F5; margin: 10px 0 10px 0; }
 .S3 { border-left: 1px solid rgb(217, 217, 217); border-right: 1px solid rgb(217, 217, 217); border-top: 1px solid rgb(217, 217, 217); border-bottom: 0px none rgb(33, 33, 33); border-radius: 4px 4px 0px 0px; padding: 6px 45px 0px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }
 .S4 { border-left: 1px solid rgb(217, 217, 217); border-right: 1px solid rgb(217, 217, 217); border-top: 0px none rgb(33, 33, 33); border-bottom: 0px none rgb(33, 33, 33); border-radius: 0px; padding: 0px 45px 0px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }
 .S5 { border-left: 1px solid rgb(217, 217, 217); border-right: 1px solid rgb(217, 217, 217); border-top: 0px none rgb(33, 33, 33); border-bottom: 1px solid rgb(217, 217, 217); border-radius: 0px 0px 4px 4px; padding: 0px 45px 4px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }
@@ -108,133 +108,6 @@ nwbExport(file, 'testFileWithDataPipes.nwb');
 %
 ##### SOURCE END #####
 -->
-</div><script>
-/*  This runs only inside the embedded file.
-    It turns a click on   foo.html   into a jump to
-    /pages/.../foo.html   *outside* the iframe,
-    and still breaks out for any https:// link.            */
-document.addEventListener("DOMContentLoaded", () => {
-  if (window.self === window.top) return;        // not inside an iframe? do nothing
-
-  const STATIC_PREFIX = "/_static/html/";        // where the raw HTML lives
-  const PAGES_PREFIX  = "/pages/";               // where the real doc pages live
-
-  document.querySelectorAll("a[href]").forEach(a => {
-    const href = a.getAttribute("href");
-
-    /* 1 — always leave the iframe for https:// or *.html links */
-    if (href.startsWith("https:") || href.endsWith(".html")) {
-      a.setAttribute("target", "_top");
-    }
-
-    /* 2 — for a *relative* foo.html       rewrite it so it
-           points at …/pages/… not …/_static/html/…           */
-    const isRelativeHtml = href.endsWith(".html") && !/^[a-z]+:\/\//i.test(href);
-    if (isRelativeHtml) {
-      const here = window.location.pathname;          // /en/_static/html/tutorials/intro.html
-      const base = here
-        .replace(STATIC_PREFIX, PAGES_PREFIX)         // /en/pages/tutorials/intro.html
-        .replace(/[^/]+$/, "");                       // /en/pages/tutorials/
-      a.href = base + href.replace(/^\.\//, "");      // final: /en/pages/tutorials/intro.html
-    }
-  });
-});
-</script>
-<script>
-(() => {
-  let uid = 0;                                // unique id for each block
-
-  function addCopyButtons(root = document){
-    root.querySelectorAll('.CodeBlock').forEach(block=>{
-      if (block.dataset.copyReady) return;
-      block.dataset.copyReady = 'y';
-
-      /* ▸ unique id so tooltip can target the block */
-      const targetId = `codecell${uid++}`;
-      block.setAttribute('id', targetId);
-
-        const btn = document.createElement('button');
-        btn.type  = 'button';
-        btn.className = 'copybtn o-tooltip--left';
-        btn.dataset.tooltip = 'Copy';          // tooltip text
-        btn.setAttribute('aria-label','Copy code');
-    
-        /*  Two SVGs: copy (default) + check (success)  */
-        btn.innerHTML = `
-          <!-- copy icon -->
-          <svg class="icon-copy icon icon-tabler icon-tabler-copy"
-               viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-            <rect x="8" y="8" width="12" height="12" rx="2"/>
-            <path d="M16 8v-2a2 2 0 0 0 -2 -2h-8
-                     a2 2 0 0 0 -2 2v8
-                     a2 2 0 0 0 2 2h2"/>
-          </svg>
-    
-          <!-- check icon (hidden until .copied) -->
-          <svg class="icon-check icon icon-tabler icon-tabler-check"
-               viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-            <path d="M5 12l5 5l10 -10" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-          </svg>`;
-        block.appendChild(btn);
-
-        // 1) first position at start
-        btn.style.transform = 'translateX(0)';
-
-        // 2) then keep it locked by counter-translating on every scroll
-        block.addEventListener('scroll', () => {
-          btn.style.transform = `translateX(${block.scrollLeft}px)`;
-        }, { passive: true });
-
-      /* click → copy */
-      btn.addEventListener('click', async () => {
-        const lines = [];
-        let outputsNode = null;
-
-        block.childNodes.forEach(node=>{
-          if (node.nodeType !== 1) return;      // ignore text nodes
-          if (node.classList.contains('outputs')){
-            outputsNode = node;                 // remember outputs block
-            return;                             // stop gathering inputs
-          }
-          if (node !== btn) lines.push(node.innerText || '');
-        });
-
-        /* include FIRST output line */
-        if (outputsNode){
-          const first = outputsNode.innerText
-                       .split(/\r?\n/)          // ← correct regex
-                       .find(Boolean) || '';
-          lines.push(first);
-        }
-
-        const payload = lines.join('').trimEnd();  // no extra blanks
-
-        try {
-          await navigator.clipboard.writeText(payload);
-          btn.classList.add('copied');
-        } finally {
-          setTimeout(()=>btn.classList.remove('copied'), 1200);
-        }
-      });
-    });
-  }
-
-  /* run at DOM ready */
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', ()=>addCopyButtons());
-  } else {
-    addCopyButtons();
-  }
-
-  /* watch for future .CodeBlock nodes */
-  new MutationObserver(muts=>{
-    muts.forEach(m=>m.addedNodes.forEach(n=>{
-      if (n.nodeType === 1) addCopyButtons(n);
-    }));
-  }).observe(document.body, {childList:true, subtree:true});
-})();
-</script>
-</body></html>
+</div>
+<script src="js/iframe-link-handler.js"></script>
+<script src="js/copy-buttons.js"></script></body></html>
