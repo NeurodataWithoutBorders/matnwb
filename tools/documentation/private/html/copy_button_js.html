@@ -38,6 +38,14 @@
           </svg>`;
         block.appendChild(btn);
 
+        // 1) first position at start
+        btn.style.transform = 'translateX(0)';
+
+        // 2) then keep it locked by counter-translating on every scroll
+        block.addEventListener('scroll', () => {
+          btn.style.transform = `translateX(${block.scrollLeft}px)`;
+        }, { passive: true });
+
       /* click → copy */
       btn.addEventListener('click', async () => {
         const lines = [];
