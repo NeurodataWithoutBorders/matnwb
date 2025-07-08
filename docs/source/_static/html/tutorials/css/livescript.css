@@ -1,18 +1,31 @@
+.imageNode {
+  /* Responsive scaling */
+  max-width: 100%;          /* never overflow its parent */
+  height: auto !important;  /* preserve aspect ratio */
+
+  /* Horizontal centring */
+  display: block;           /* takes the element out of the inline flow */
+  margin: 0 auto;           /* left & right margins set to “auto” centre it */
+}
+
 .CodeBlock{
   background:#F5F5F5;
   margin:10px 0 10px 0;
   padding:0;
   display:block;
+  overflow:auto;
   width:100%;
   min-height:28px;
   box-sizing:border-box;
   position:relative;       /* anchor for absolute button */
   font-family:Consolas,Menlo,monospace;
 }
+
 .eoOutputWrapper{
     width: 100vw;                 /* full viewport width … */
     max-width: calc(100vw - 2*38px - 15px) /* 2*38px (padding) + 15px (add hoc to avoid clipping scrollbars) */ 
 }
+
 .CodeBlock .copybtn{
   position:absolute;
   top:1px;
@@ -25,6 +38,7 @@
   z-index:3;
   color:#000;                  /* icon stroke follows text color */
 }
+
 .CodeBlock .copybtn svg{
   width:1.25rem;
   height:1.25rem;
@@ -33,6 +47,7 @@
   fill:none;
   pointer-events:none;
 }
+
 .CodeBlock .copybtn:hover       { color:#444; }
 .CodeBlock .copybtn:active svg  { color:#222; }
 .CodeBlock .copybtn.copied svg  { color:#4caf50; }
@@ -55,6 +70,7 @@
   transition: opacity 0.15s ease;
   z-index: 4;
 }
+
 /* little arrow */
 .copybtn[data-tooltip]::before {
   content: '';
@@ -69,6 +85,7 @@
   transition: opacity 0.15s ease;
   z-index: 4;
 }
+
 /* show on hover / focus */
 .copybtn:hover::after,
 .copybtn:hover::before,
@@ -76,6 +93,7 @@
 .copybtn:focus-visible::before {
   opacity: 1;
 }
+
 .copybtn.copied[data-tooltip]::after  { content:"Copied!"; }
 .copybtn.copied[data-tooltip]::before { /* arrow shape stays */ }
 .copybtn .icon-check    { display:none; }
