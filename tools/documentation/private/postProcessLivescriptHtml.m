@@ -26,16 +26,30 @@ function postProcessLivescriptHtml(htmlFile)
     % Read the content of the HTML file
     htmlContent = fileread(htmlFile);
 
-    % Add javascript to update all https links to have target=_top on
-    % DOMContentLoaded. This is done because tutorial livescripts are
-    % embedded in the documentation as iframes, and the default link
-    % behavior is to open inside the iframe, which gets ugly.
-    htmlContent = addUpdateScriptForLinkInIFrame(htmlContent);
+    htmlStaticDir = fileparts(htmlFile);
 
-    % Add css for imageNodes to improve reactivity in iframes
-    htmlContent = updateImageNodeCss(htmlContent);
-    
-    htmlContent = addCopyButtonToCodeBlocks(htmlContent);
+    % Add custom css for livescripts
+    assert(isfile(fullfile(htmlStaticDir, 'css', 'livescript.css')))
+    cssLinkElement = '<link rel="stylesheet" href="css/livescript.css">';
+    htmlContent = insertAfter(htmlContent, '</title>', [cssLinkElement newline]);
+
+    % Add a javascript function that updates all <a> tags that has a 
+    % href attribute starting with "https:" or ending with ".html" by adding or 
+    % updating the target attribute to "top".
+    %
+    % Additionally, it will update relative tutorial links to point to the main
+    % tutorial pages in the online documentation, instead of pointing to the
+    % static htmls (which are embedded as iframes in the main tutorial pages).
+    %
+    % The purpose of this function is to ensure links open in the top frame
+    % and not an iframe for tutorial/livescript htmls which are embedded in an 
+    % iframe.
+    assert(isfile(fullfile(htmlStaticDir, 'js', 'iframe-link-handler.js')))
+    htmlContent = appendJavascriptElement(htmlContent, 'js/iframe-link-handler.js');
+
+    % Add JavaScript that creates and handles copy buttons for each code block
+    assert(isfile(fullfile(htmlStaticDir, 'js', 'copy-buttons.js')))
+    htmlContent = appendJavascriptElement(htmlContent, 'js/copy-buttons.js');
 
     % Write the modified content back to the HTML file
     try
@@ -50,29 +64,7 @@ function postProcessLivescriptHtml(htmlFile)
     end
 end
 
-function htmlContent = updateImageNodeCss(htmlContent)
-    if contains(htmlContent, 'imageNode')
-        scriptFolder = fileparts(mfilename('fullpath'));
-        imageNodeCss = fileread(fullfile(scriptFolder, 'html', 'image_node_css.html'));
-        imageNodeCss = strrep(imageNodeCss, newline, ' ');
-        htmlContent = insertBefore(htmlContent, '.S1 ', [imageNodeCss newline]);
-    end
-end
-
-function htmlContent = addUpdateScriptForLinkInIFrame(htmlContent)
-% This function adds a javascript element that updates all <a> tags that has a 
-% href attribute starting with "https:" or ending with ".html" by adding or 
-% updating the target attribute to "top".
-%
-% Additionally, it will update relative tutorial links to point to the main
-% tutorial pages in the online documentation, instead of pointing to the
-% static htmls (which are embedded as iframes in the main tutorial pages).
-%
-% The purpose of this function is to ensure links open in the top frame
-% and not an iframe if tutorial htmls are embedded in an iframe.
-
-    scriptFolder = fileparts(mfilename('fullpath'));
-    str = fileread(fullfile(scriptFolder, 'html', 'update_iframe_links_js.html'));
-    
-    htmlContent = insertBefore(htmlContent, '</body></html>', str);
+function htmlContent = appendJavascriptElement(htmlContent, jsFilename)
+    jsElement = [newline, sprintf('<script src="%s"></script>', jsFilename)];
+    htmlContent = insertBefore(htmlContent, '</body></html>', jsElement);
 end
