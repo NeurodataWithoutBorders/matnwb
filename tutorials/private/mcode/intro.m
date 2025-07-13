@@ -1,178 +1,207 @@
 %% Introduction to MatNWB
+% *Goal:* In this tutorial we will create and save an NWB file that holds metadata 
+% and data from a fictional session in which a mouse searches for cookie crumbs 
+% in an open arena. At the end we will read the file back for a quick inspection.
 %% Installing MatNWB
-% Use the code below within the brackets to install MatNWB from source. MatNWB 
-% works by automatically creating API classes based on the schema.
+% If you don't have MatNWB already, let's clone it from GitHub and install into 
+% your current working directory (NB: requires git). 
 
-%{
-!git clone https://github.com/NeurodataWithoutBorders/matnwb.git
-addpath(genpath(pwd));
-%}
+if ~exist('NwbFile', 'class') % Skip if MatNWB is already on path
+    !git clone https://github.com/NeurodataWithoutBorders/matnwb.git
+    addpath(genpath('matnwb'));
+    disp('Success! Cloned MatNWB from Github and added to MATLAB''s search path.')
+end
 %% Set up the NWB File
-% An NWB file represents metadata and data from a single session of an experiment. 
-% Each file must have an |*identifier*|, a |*session_description*|, and a |*session_start_time*|. 
-% Create a new <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html 
-% |*NWBFile*|> object with those and additional metadata using the <https://matnwb.readthedocs.io/en/latest/pages/functions/NwbFile.html 
-% |*NwbFile*|> command. For all MatNWB classes and functions, we use standard 
-% MATLAB syntax for entering name-value (keyword) argument pairs, where arguments 
-% are entered as a name followed by a value.
+% An NWB file must have a unique |*identifier*|, a |*session_description*|, 
+% and a |*session_start_time*|. Let’s start by creating a new <https://matnwb.readthedocs.io/en/latest/pages/functions/NwbFile.html 
+% |*NwbFile*|> object and assigning values to those required fields as well as 
+% some recommended metadata fields:
 
 nwb = NwbFile( ...
-    'identifier', 'Mouse5_Day3', ...                                                % required
-    'session_description', 'mouse in open exploration', ...                         % required
-    'session_start_time', datetime(2018, 4, 25, 2, 30, 3, 'TimeZone', 'local'), ... % required
-    'general_experimenter', 'Last, First', ...                                      % optional
-    'general_session_id', 'session_1234', ...                                       % optional
-    'general_institution', 'University of My Institution', ...                      % optional
-    'general_related_publications', {'DOI:10.1016/j.neuron.2016.12.011'});          % optional
+    'identifier', 'MyLab_20250411_1530_AL', ... % Unique ID
+    'session_description', 'Mouse searching for cookie crumbs in an open arena', ... % What this session is about
+    'session_start_time', datetime(2025,4,11,15,30,0, 'TimeZone', 'local'), ... % When the session started
+    'general_experimenter', 'Doe, Jane', ... % optional
+    'general_session_id', 'session_001', ... % optional
+    'general_institution', 'Dept. of Neurobiology, Cookie Institute', ... % optional
+    'general_related_publications', {'DOI:10.1016/j.neuron.2016.12.011'}); % optional ); 
+
+% Display the nwb object
 nwb
-%% Subject Information
-% Include subject metadata in your NWB file by creating a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Subject.html 
-% |*Subject*|> object with |*age*|, |*species*|, |*genotype*|, |*sex*|, and a 
-% free-form text |*description*|. Then add the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Subject.html 
-% |*Subject*|> object to the |*general_subject*| property of the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html 
-% |*NWBFile*|> object.
+%% 
+% Great! You now have an in-memory <https://matnwb.readthedocs.io/en/latest/pages/functions/NwbFile.html 
+% |*NwbFile*|> object with all the required metadata. In the following sections, 
+% we will populate the file with additional metadata and data from our fictional 
+% session.
+% 
+% *Tip: See the* <https://nwbinspector.readthedocs.io/en/dev/best_practices/nwbfile_metadata.html#file-metadata 
+% *NWBFile Best Practices*> *for detailed recommendations of which metadata to 
+% add to the* <https://matnwb.readthedocs.io/en/latest/pages/functions/NwbFile.html 
+% |*NwbFile*|>
+%% Add Subject Metadata
+% First we will describe the mouse that took part in this session using the 
+% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Subject.html 
+% |*Subject*|> class.
 % 
 % 
 % 
 % All of these fields accept free-form text, so any value is technically valid, 
-% but here are our recommendations:
+% but we will follow the <https://nwbinspector.readthedocs.io/en/dev/best_practices/nwbfile_metadata.html#subject 
+% *Best Practices*> recommendations:
 %% 
-% * For |age|, we recommend using the <https://en.wikipedia.org/wiki/ISO_8601#Durations 
-% ISO 8601 Duration format>
-% * For |species|, we recommend using the formal latin binomial name (e.g. mouse 
-% -> _Mus musculus_, human -> _Homo sapiens_)
-% * For |sex|, we recommend using F (female), M (male), U (unknown), and O (other)
+% * *age* – use an <https://en.wikipedia.org/wiki/ISO_8601#Durations *ISO 8601 
+% Duration format*>, e.g. |P90D| for post-natal day 90
+% * *species* – give the *Latin binomial*, e.g. |Mus musculus|, |Homo sapiens|
+% * *sex* – use a single letter: *F* (female), *M* (male), *U* (unknown), or 
+% *O* (other)
 
 subject = types.core.Subject( ...
-    'subject_id', '001', ...
-    'age', 'P90D', ...
-    'description', 'mouse 5', ...
-    'species', 'Mus musculus', ...
-    'sex', 'M' ...
+    'subject_id', 'MQ01', ...        % Unique animal ID
+    'description', 'Meet Monty Q., our cookie-loving mouse.', ...
+    'age', 'P90D', ...              % ISO-8601 duration (post-natal day 90)
+    'species', 'Mus musculus', ...  % Latin binomial
+    'sex', 'M' ...                  % F | M | U | O
 );
-nwb.general_subject = subject;
 
-subject
-%% 
-% Note: the DANDI archive requires all NWB files to have a subject object with 
-% |*subject_id*| specified, and strongly encourages specifying the other fields.
-%% Time Series Data
-% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
-% |*TimeSeries*|> is a common base class for measurements sampled over time, and 
-% provides fields for |*data*| and |*timestamps*| (regularly or irregularly sampled). 
-% You will also need to supply the |*unit*| of measurement (<https://en.wikipedia.org/wiki/International_System_of_Units 
-% SI unit>).
+nwb.general_subject = subject;      % Subject goes into the `general_subject` property
+disp(nwb.general_subject)           % Confirm the subject is now part of the file
+%% Add TimeSeries Data
+% Many experiments generate signals sampled over time and in NWB you store those 
+% signals in a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
+% |*TimeSeries*|> object. The diagram below highlights the key fields of the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
+% |*TimeSeries*|> class.
 % 
 % 
-% 
-% For example, to store a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
-% |*TimeSeries*|> that begins at 0 s relative to |*start_time*| and is sampled 
-% at 1 Hz, set the |*data*|, |*data_unit*|, |*starting_time*|, and |*starting_time_rate*| 
-% fields:
+% Regularly Sampled Data
+% While our mouse hunted cookie crumbs, an *indoor-positioning sensor* streamed 
+% X/Y coordinates at 10 Hz for 30 s. We’ll store the resulting 2 × N matrix in 
+% a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
+% |*TimeSeries*|> object.
+
+% Synthetic 2-D trajectory  (helper returns a 2×300 array)
+data = matnwb.tutorial.intro.getRandomTrajectory();
 
 time_series_with_rate = types.core.TimeSeries( ...
-    'description', 'an example time series', ...
-    'data', linspace(0, 100, 10), ...
-    'data_unit', 'm', ...
-    'starting_time', 0.0, ...
-    'starting_time_rate', 1.0);
+    'description', ['2D position of mouse in arena. The first column ', ...
+        'represents x coordinates, the second column represents y coordinates'], ... % Optional
+    'data', data, ...                               % Required
+    'data_unit', 'meters', ...                      % Required
+    'starting_time', 0.0, ...                       % Required
+    'starting_time_rate', 10.0);                    % Required
+disp(time_series_with_rate)
 %% 
-% Add the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
+% Next, we add the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
 % |*TimeSeries*|> to the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html 
-% |*NWBFile*|> by inserting it into the file’s |*acquisition*| container (later 
-% in the tutorial we will add data to a container holding processed data). This 
+% |*NWBFile*|> by inserting it into the file’s |*acquisition*| container. This 
 % container can hold any number of data objects—each stored as a name-value pair 
-% where the name is a user-defined name and the value is the data object itself:
+% where the _name_ is a user-defined name and the _value_ is the data object itself:
 
-nwb.acquisition.set('RegularTimeseries', time_series_with_rate);
-%% 
-% For irregularly sampled recordings, we need to provide the |*timestamps*| 
-% for the |data|:
+nwb.acquisition.set('IPSTimeseries', time_series_with_rate);
+% Confirm that the timeseries was added to the file
+disp( size( nwb.acquisition.get('IPSTimeseries').data ) ) % Should show 2, 301
+% Irregularly Sampled Data
+% To illustrate the use of |*timestamps*|, we can pretend that the IPS drops 
+% samples and has an irregular sampling rate. In those cases we should replace 
+% the single |*starting_time* + *rate*| pair with an explicit vector of |*timestamps*|.
+
+[irregularData, timepoints] = matnwb.tutorial.intro.getIrregularRandomTrajectory();
+% Drop frame 120 to create a gap
+irregularData(:,120) = []; timepoints(120) = [];
 
 time_series_with_timestamps = types.core.TimeSeries( ...
-    'description', 'an example time series', ...
-    'data', linspace(0, 100, 10), ...
-    'data_unit', 'm', ...
-    'timestamps', linspace(0, 9, 10) + 0.2*rand(1,10));
+    'description', 'XY position (irregular)', ...
+    'data', irregularData, ...
+    'data_unit', 'meters', ...
+    'timestamps', timepoints);
 
 % Add the TimeSeries to the NWB file
-nwb.acquisition.set('IrregularTimeseries', time_series_with_timestamps);
+nwb.acquisition.set('IPSTimeseriesWithJitterAndMissingSamples', time_series_with_timestamps);
+
+% Quick sanity check: are the first three Δt uneven?
+disp(diff(time_series_with_timestamps.timestamps(1:4)))       % should NOT all be 0.1 s
 %% 
-% The <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
-% |*TimeSeries*|> class serves as the foundation for all other time series types 
-% in the NWB format. Several specialized subclasses extend the functionality of 
-% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
-% |*TimeSeries*|>, each tailored to handle specific kinds of data. In the next 
-% section, we’ll explore one of these specialized types. For a full overview, 
-% please check out the <https://nwb-schema.readthedocs.io/en/latest/format.html#type-hierarchy 
-% type hierarchy> in the NWB schema documentation.
+% *Key difference:* |*timestamps*| takes the place of |*starting_time*| and 
+% |*starting_time_rate*.| Everything else—adding the series to |*acquisition*|, 
+% slicing, plotting—works exactly the same. 
+% 
+% With both a *rate-based* and an *irregular* |TimeSeries| in your file, you’ve 
+% now covered the two most common clocking scenarios you’ll meet in real experiments.
 %% Other Types of Time Series 
-% As mentioned previously, there are many subtypes of <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
-% |*TimeSeries*|> in MatNWB that are used to store different kinds of data. One 
-% example is <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/AnnotationSeries.html 
-% |*AnnotationSeries*|>, a subclass of <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
-% |*TimeSeries*|> that stores text-based records about the experiment. Similar 
-% to our <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
-% |*TimeSeries*|> example above, we can create an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/AnnotationSeries.html 
-% |*AnnotationSeries*|> object with text information about a stimulus and add 
-% it to the |*stimulus_presentation*| group in the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html 
-% |*NWBFile*|>. Below is an example where we create an |AnnotationSeries| object 
-% with annotations for airpuff stimuli and add it to the NWBFile.
+% The <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
+% |*TimeSeries*|> class has a family of specialized subclasses—each adding or 
+% tweaking fields to suit a particular kind of data. One example is <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/AnnotationSeries.html 
+% |*AnnotationSeries*|> → plain-text labels tied to timestamps (cues, notes, rewards, 
+% etc.).
+% 
+% *Tip*: For a full overview of <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
+% |*TimeSeries*|> subtypes, please check out the <https://nwb-schema.readthedocs.io/en/latest/format.html#type-hierarchy 
+% type hierarchy> in the NWB schema documentation.
+% 
+% A crumb dispenser _dings_ at random times and drops different types of cookie 
+% crumbs. We’ll record the drop events in an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/AnnotationSeries.html 
+% |*AnnotationSeries*|> and store it under |*stimulus_presentation*|.
 
 % Create an AnnotationSeries object with annotations for airpuff stimuli
 annotations = types.core.AnnotationSeries( ...
-    'description', 'Airpuff events delivered to the animal', ...
-    'data', {'Left Airpuff', 'Right Airpuff', 'Right Airpuff'}, ...
-    'timestamps', [1.0, 3.0, 8.0] ...
+    'description', 'Log time and flavour for cookie crumb drops', ...
+    'data', {'Snickerdoodles', 'Chocolate Chip Cookies', 'Peanut Butter Cookies'}, ...
+    'timestamps', [3.0, 12.0, 25.0] ...
 );
 
 % Add the AnnotationSeries to the NWBFile's stimulus group
-nwb.stimulus_presentation.set('Airpuffs', annotations);
-%% Behavior
+nwb.stimulus_presentation.set('FoodDrops', annotations);
+%% 
+% *What to remember*
+%% 
+% * |AnnotationSeries| is still a |TimeSeries|, but |data| is *text*, not numbers.
+% * Put cue / reward / comment streams in |*stimulus_presentation*| (or another 
+% container that fits your experiment).
+%% 
+% That’s it! You now have both continuous data (position) *and* discrete event 
+% markers logged in your NWB file. In the next section we’ll look at storing processed 
+% behavioral data such as the mouse’s X/Y path in arena coordinates.
+%% Add Behavioral Data
+% So far we’ve stored *raw, acquired* data—the IPS sensor’s 10 Hz position stream. 
+% Now suppose a lab-mate is testing her new video-based deep-learning tracker 
+% and hands you a _processed_ XY path.
 % SpatialSeries and Position
-% Many types of data have special data types in NWB. To store the spatial position 
-% of a subject, we will use the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
-% |*SpatialSeries*|> and <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Position.html 
-% |*Position*|> classes. 
+% To store the processed XY path, we can use another subclass of the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
+% |*TimeSeries*|>: the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
+% |*SpatialSeries*|>. This class adds a |*reference_frame*| property that defines 
+% what the coordinates are relative to. We will create the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
+% |*SpatialSeries*|> and add it to a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Position.html 
+% |*Position*|> object as a way to inform data analysis and visualization tools 
+% that this <https://pynwb.readthedocs.io/en/latest/pynwb.behavior.html#pynwb.behavior.SpatialSeries 
+% |*SpatialSeries*|> object represents the position of the subject. 
+% 
+% The relationship of the three classes just mentioned is shown in the UML diagram 
+% below. For our purposes, all you need to know is that an open triangle means 
+% "extends" (i.e., is a specialized subtype of), and an open diamond means "is 
+% contained within" (Learn more about class diagrams on <https://en.wikipedia.org/wiki/Class_diagram 
+% the wikipedia page>).
 % 
 % 
-% 
-% Note: These diagrams follow a standard convention called "UML class diagram" 
-% to express the object-oriented relationships between NWB classes. For our purposes, 
-% all you need to know is that an open triangle means "extends" (i.e., is a specialized 
-% subtype of), and an open diamond means "is contained within." Learn more about 
-% class diagrams on <https://en.wikipedia.org/wiki/Class_diagram the wikipedia 
-% page>.
-% 
-% <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
-% |*SpatialSeries*|> is a subclass of <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
-% |*TimeSeries*|>, a common base class for measurements sampled over time, and 
-% it provides fields for data and time (regularly or irregularly sampled). Here, 
-% we put a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
-% |*SpatialSeries*|> object called |'SpatialSeries'| in a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Position.html 
-% |*Position*|> object. If the data is sampled at a regular interval, it is recommended 
-% to specify the |*starting_time*| and the sampling rate (|*starting_time_rate*|), 
-% although it is still possible to specify |*timestamps*| as in the |time_series_with_timestamps| 
-% example above.
+
+positionData = matnwb.tutorial.intro.getVideoTrackerData();
 
 % Create SpatialSeries object
 spatial_series_ts = types.core.SpatialSeries( ...
-    'data', [linspace(0,10,100); linspace(0,8,100)], ...
-    'reference_frame', '(0,0) is bottom left corner', ...
+    'data', positionData, ...
+    'reference_frame', '(0,0) is bottom left corner of arena', ...
     'starting_time', 0, ...
-    'starting_time_rate', 200 ...
+    'starting_time_rate', 30 ...
 );
 
 % Create Position object and add SpatialSeries
 position = types.core.Position('SpatialSeries', spatial_series_ts);
 %% 
-% NWB differentiates between raw, _acquired_ data, which should never change, 
-% and _processed_ data, which are the results of preprocessing algorithms and 
-% could change. Let's assume that the animal's position was computed from a video 
-% tracking algorithm, so it would be classified as processed data. Since processed 
-% data can be very diverse, NWB allows us to create processing modules, which 
-% are like folders, to store related processed data or data that comes from a 
-% single algorithm. 
+% In NWB, results produced *after* the experiment belong in a *processing module*, 
+% separate from the immutable acquisition data. The difference is that the processed 
+% data could change later if the video-tracking software was improved, whereas 
+% the raw data is streamed directly from a sensor, and should never change. Because 
+% processed data can be very diverse, NWB allows us to create processing modules, 
+% which are like folders, to store related processed data or data that comes from 
+% a single algorithm. 
 % 
 % Create a processing module called "behavior" for storing behavioral data in 
 % the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html 
@@ -180,11 +209,12 @@ position = types.core.Position('SpatialSeries', spatial_series_ts);
 % |*Position*|> object to the module.
 
 % Create processing module
-behavior_module = types.core.ProcessingModule('description', 'contains behavioral data');
+behavior_module = types.core.ProcessingModule(...
+    'description', 'Contains behavioral data');
 
 % Add the Position object (that holds the SpatialSeries object) to the module 
-% and name the Position object "Position"
-behavior_module.nwbdatainterface.set('Position', position);
+% and name the Position object MousePosition
+behavior_module.nwbdatainterface.set('MousePosition', position);
 
 % Finally, add the processing module to the NWBFile object, and name the processing module "behavior"
 nwb.processing.set('behavior', behavior_module);
@@ -206,23 +236,24 @@ nwb.processing.set('behavior', behavior_module);
 % 
 % Trials are stored in a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeIntervals.html 
 % |*TimeIntervals*|> object, a subclass of <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
-% |*DynamicTable*|>. Here, we are adding a new column, |correct|, which will be 
-% a logical array.
+% |*DynamicTable*|>. Here, we are adding a new column, |*time_to_find*|, which 
+% will be the time it took out mouse to find the treats after the cookie ding 
+% was played.
 
 trials = types.core.TimeIntervals( ...
-    'colnames', {'start_time', 'stop_time', 'correct'}, ...
+    'colnames', {'start_time', 'stop_time', 'time_to_find'}, ...
     'description', 'trial data and properties');
 
-trials.addRow('start_time', 0.1, 'stop_time', 1.0, 'correct', false)
-trials.addRow('start_time', 1.5, 'stop_time', 2.0, 'correct', true)
-trials.addRow('start_time', 2.5, 'stop_time', 3.0, 'correct', false)
+trials.addRow('start_time', 0, 'stop_time', 10, 'time_to_find', 3.2)
+trials.addRow('start_time', 10.0, 'stop_time', 20.0, 'time_to_find', 4.7)
+trials.addRow('start_time', 20.0, 'stop_time', 30.0, 'time_to_find', 3.9)
 
 trials.toTable() % visualize the table
 nwb.intervals_trials = trials;
 
 % If you have multiple trials tables, you will need to use custom names for
 % each one:
-nwb.intervals.set('custom_intervals_table_name', trials);
+nwb.intervals.set('CookieSearchTrials', trials);
 %% 
 % For a more detailed tutorial on dynamic tables, see the <./dynamic_tables.mlx 
 % Dynamic tables> tutorial.
@@ -243,13 +274,13 @@ read_nwbfile = nwbRead('intro_tutorial.nwb', 'ignorecache')
 % We can print the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
 % |*SpatialSeries*|> data traversing the hierarchy of objects. The processing 
 % module called |'behavior'| contains our <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Position.html 
-% |*Position*|> object named |'Position'|. The <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Position.html 
+% |*Position*|> object named |'MousePosition'|. The <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Position.html 
 % |*Position*|> object contains our <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
 % |*SpatialSeries*|> object named |'SpatialSeries'|.
 
 read_spatial_series = read_nwbfile.processing.get('behavior'). ...
-    nwbdatainterface.get('Position').spatialseries.get('SpatialSeries')
-% Reading Data
+    nwbdatainterface.get('MousePosition').spatialseries.get('SpatialSeries')
+% Loading Data
 % Counter to normal MATLAB workflow, data arrays are read passively from the 
 % file. Calling |*read_spatial_series.data*| does not read the data values, but 
 % presents a |*DataStub*| object that can be indexed to read data. 
