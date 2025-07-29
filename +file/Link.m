@@ -15,9 +15,15 @@ classdef Link < file.interface.HasQuantity
             if nargin < 1
                 return;
             end
+
+            % If the name is missing, we use the target type for the name
+            if isKey(source, 'name')
+                obj.name = source('name');
+            else
+                obj.name = lower(source('target_type'));
+            end
             
             obj.doc = source('doc');
-            obj.name = source('name');
             obj.type = source('target_type');
             obj.required = obj.isRequired(source);
         end
