@@ -50,7 +50,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             fileName = 'external_link_export_import.nwb';
             nwbExport(nwb, fileName)
             
-            nwbIn = nwbRead(fileName);
+            nwbIn = nwbRead(fileName, 'ignorecache');
             tsIn = nwbIn.acquisition.get('timeseries_with_external_data');
             testCase.assertClass(tsIn.data, 'types.untyped.ExternalLink')
         end
@@ -156,7 +156,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                 'Hard link should appear as a group reference' )
             
             % Read the file back with nwbRead and verify it works
-            nwbReadResult = nwbRead(fileName);
+            nwbReadResult = nwbRead(fileName, 'ignorecache');
             testCase.verifyClass(nwbReadResult, 'NwbFile', ...
                 'Should be able to read the file as an NWB file');
             
