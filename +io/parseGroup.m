@@ -8,8 +8,6 @@ if nargin < 3
         'groups', {{}});
 end
 
-links = containers.Map;
-refs = containers.Map;
 [~, root] = io.pathParts(info.Name);
 [attributeProperties, Type] =...
     io.parseAttributes(filename, info.Attributes, info.Name, Blacklist);
