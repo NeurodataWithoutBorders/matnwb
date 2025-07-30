@@ -1,4 +1,4 @@
-function parsed = parseGroup(filename, info, Blacklist)
+function parsed = parseGroup(filename, info, blacklist)
 % NOTE, group name is in path format so we need to parse that out.
 % parsed is either a containers.Map containing properties mapped to values OR a
 % typed value
@@ -6,19 +6,19 @@ function parsed = parseGroup(filename, info, Blacklist)
     arguments
         filename (1,1) string
         info
-        Blacklist (1,1) struct = io.constant.DEFAULT_BLACKLIST
+        blacklist (1,1) struct = io.constant.DEFAULT_BLACKLIST
     end
     
     [~, root] = io.pathParts(info.Name);
-    [attributeProperties, Type] =...
-        io.parseAttributes(filename, info.Attributes, info.Name, Blacklist);
+    [attributeProperties, typeInfo] =...
+        io.parseAttributes(filename, info.Attributes, info.Name, blacklist);
     
     %parse datasets
     datasetProperties = containers.Map;
     for i=1:length(info.Datasets)
         datasetInfo = info.Datasets(i);
         fullPath = [info.Name '/' datasetInfo.Name];
-        dataset = io.parseDataset(filename, datasetInfo, fullPath, Blacklist);
+        dataset = io.parseDataset(filename, datasetInfo, fullPath, blacklist);
         if isa(dataset, 'containers.Map')
             datasetProperties = [datasetProperties; dataset];
         else
@@ -30,11 +30,11 @@ function parsed = parseGroup(filename, info, Blacklist)
     groupProperties = containers.Map;
     for i=1:length(info.Groups)
         group = info.Groups(i);
-        if any(strcmp(group.Name, Blacklist.groups))
+        if any(strcmp(group.Name, blacklist.groups))
             continue;
         end
         [~, gname] = io.pathParts(group.Name);
-        subg = io.parseGroup(filename, group, Blacklist);
+        subg = io.parseGroup(filename, group, blacklist);
         groupProperties(gname) = subg;
     end
     
@@ -51,13 +51,13 @@ function parsed = parseGroup(filename, info, Blacklist)
         linkProperties(link.Name) = lnk;
     end
     
-    if isempty(Type.typename)
+    if isempty(typeInfo.typename)
         parsed = types.untyped.Set(...
             [attributeProperties; datasetProperties; groupProperties; linkProperties]);
     else
         if groupProperties.Count > 0
             %elide group properties
-            elided_gprops = elide(groupProperties, properties(Type.typename));
+            elided_gprops = elide(groupProperties, properties(typeInfo.typename));
             groupProperties = [groupProperties; elided_gprops];
         end
         %construct as kwargs and instantiate object
@@ -65,16 +65,16 @@ function parsed = parseGroup(filename, info, Blacklist)
             [attributeProperties; datasetProperties; groupProperties; linkProperties]);
         if isempty(root)
             %we are root
-            if strcmp(Type.name, 'NWBFile')
+            if strcmp(typeInfo.name, 'NWBFile')
                 parsed = NwbFile(kwargs{:});
             else
-                file.cloneNwbFileClass(Type.name, Type.typename);
-                parsed = io.createParsedType(info.Name, Type.typename, kwargs{:});
+                file.cloneNwbFileClass(typeInfo.name, typeInfo.typename);
+                parsed = io.createParsedType(info.Name, typeInfo.typename, kwargs{:});
             end
             
             return;
         end
-        parsed = io.createParsedType(info.Name, Type.typename, kwargs{:});
+        parsed = io.createParsedType(info.Name, typeInfo.typename, kwargs{:});
     end
 end
     
