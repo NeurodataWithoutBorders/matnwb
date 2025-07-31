@@ -57,7 +57,7 @@ classdef NwbFile < types.core.NWBFile
 
             obj.addWasGeneratedBy()
 
-            %equate reference time to session_start_time if empty
+            % equate reference time to session_start_time if empty
             if isempty(obj.timestamps_reference_time)
                 obj.timestamps_reference_time = obj.session_start_time;
             end
