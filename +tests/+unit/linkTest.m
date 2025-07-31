@@ -14,7 +14,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             testCase.verifyEqual(l.path, '/mypath');
             testCase.verifyEqual(l.filename, 'myfile.nwb');
         end
-        
+
         function testSoftLinkConstructor(testCase)
             l = types.untyped.SoftLink('/mypath');
             testCase.verifyEqual(l.path, '/mypath');
@@ -42,6 +42,19 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             testCase.verifyEqual(info.Links.Value, {'extern.nwb';'/mypath'});
         end
         
+        function testExternalLinkExportImport(testCase)
+            nwb = tests.factory.NWBFile();
+            ts = tests.factory.TimeSeriesWithTimestamps();
+            ts.data = types.untyped.ExternalLink('myfile.nwb', '/mypath');
+            nwb.acquisition.set('timeseries_with_external_data', ts);
+            fileName = 'external_link_export_import.nwb';
+            nwbExport(nwb, fileName)
+            
+            nwbIn = nwbRead(fileName, 'ignorecache');
+            tsIn = nwbIn.acquisition.get('timeseries_with_external_data');
+            testCase.assertClass(tsIn.data, 'types.untyped.ExternalLink')
+        end
+
         function testSoftResolution(testCase)
             nwb = NwbFile;
             dev = types.core.Device;
@@ -106,5 +119,80 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             testCase.verifyError(@createElectrodeGroupWithWrongDeviceType, ...
                 'NWB:CheckDType:InvalidNeurodataType')
         end
+        
+        function testHardLinkCreationAndRead(testCase)
+            % Test creating a hard link by converting a soft link using low-level H5 functions
+            fileName = 'test_hardlink.nwb';
+            
+            % Create NWB file with a device and electrode group using soft link
+            nwb = tests.factory.NWBFile();
+            dev = types.core.Device('description', 'device for hard link test');
+            nwb.general_devices.set('testDevice', dev);
+            nwb.general_extracellular_ephys.set('testEphys',...
+                types.core.ElectrodeGroup(...
+                    'device', types.untyped.SoftLink(dev), ...
+                    'description', 'test with hard link', ...
+                    'location', 'n/a') ...
+            );
+            
+            % Export the NWB file
+            nwbExport(nwb, fileName);
+            
+            % Use helper method to replace the soft link with a hard link
+            softLinkPath = '/general/extracellular_ephys/testEphys/device';
+            targetPath = '/general/devices/testDevice';
+            testCase.replaceSoftLinkWithHardLink(fileName, softLinkPath, targetPath)
+
+            % Verify the hard link was created correctly using h5info
+            fileInfoAfter = h5info(fileName, "/general"); 
+            isEphysGroup = strcmp({fileInfoAfter.Groups.Name}, '/general/extracellular_ephys');
+            ephysInfo = fileInfoAfter.Groups(isEphysGroup);
+            testCase.verifyTrue( strcmp(ephysInfo.Groups.Links.Type, 'hard link') )
+
+            % Verify it behaves like a hard link by reading it directly 
+            % (it should appear as a group, not a link);
+            info = h5info(fileName, '/general/extracellular_ephys/testEphys');
+            testCase.verifyTrue( endsWith(info.Groups.Name, 'device'), ...
+                'Hard link should appear as a group reference' )
+            
+            % Read the file back with nwbRead and verify it works
+            nwbReadResult = nwbRead(fileName, 'ignorecache');
+            testCase.verifyClass(nwbReadResult, 'NwbFile', ...
+                'Should be able to read the file as an NWB file');
+            
+            % Verify the electrode group is still accessible
+            readEphys = nwbReadResult.general_extracellular_ephys.get('testEphys');
+            testCase.verifyClass(readEphys, 'types.core.ElectrodeGroup', ...
+                'ElectrodeGroup should be readable');
+            
+            % Verify the device reference still works (hard link should be transparent)
+            readDevice = readEphys.device;
+            testCase.verifyClass(readDevice, 'types.untyped.SoftLink', ...
+                'Hard links will be treated using SoftLink type')
+            
+            % Verify it can be dereferenced
+            actualDevice = readDevice.deref(nwbReadResult);
+            testCase.verifyClass(actualDevice, 'types.core.Device', ...
+                'Device should be accessible through hard link');
+        end
+    end
+
+    methods (Static, Access=private)
+        function replaceSoftLinkWithHardLink(fileName, softLinkPath, targetPath)
+            % Use low-level H5 functions to replace a soft link with a hard link
+            fid = H5F.open(fileName, 'H5F_ACC_RDWR', 'H5P_DEFAULT');
+            closeFile = onCleanup(@()H5F.close(fid));
+            
+            % Delete the existing soft link
+            H5L.delete(fid, softLinkPath, 'H5P_DEFAULT');
+            
+            % Create a hard link to replace it
+            H5L.create_hard(fid, targetPath, fid, softLinkPath, ...
+                'H5P_DEFAULT', 'H5P_DEFAULT');
+            
+            % Close the file
+            clear closeFile;
+        end
     end
 end
+
