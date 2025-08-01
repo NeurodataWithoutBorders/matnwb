@@ -43,10 +43,15 @@ end
 linkProperties = containers.Map;
 for i=1:length(info.Links)
     link = info.Links(i);
+    fullPath = [info.Name '/' link.Name];
+    assert( io.internal.h5.isValidLinkType(link.Type), ...
+        'NWB:ParseGroup:UnsupportedLinkType', ...
+        ['An unsupported link type ("%s") is present at the location: %s. ', ...
+        'Please report!'], link.Type, fullPath)
     switch link.Type
-        case 'soft link'
+        case {'soft link', 'hard link'}
             lnk = types.untyped.SoftLink(link.Value{1});
-        otherwise %todo assuming external link here
+        case 'external link'
             lnk = types.untyped.ExternalLink(link.Value{:});
     end
     linkProperties(link.Name) = lnk;
