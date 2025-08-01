@@ -1,6 +1,6 @@
 // iframe-link-handler.js
 (() => {
-  //if (window.self === window.top) return;
+  if (window.self === window.top) return;
 
   const STATIC_PREFIX = "/_static/html/";
   const PAGES_PREFIX  = "/pages/";
