@@ -20,7 +20,7 @@
 % to this expression: |s3 = 's3://dandiarchive/blobs/<blob_id>'|. In this case, 
 % you would have:
 
-s3 = 's3://dandiarchive/blobs/7ee/415/7ee41580-9b0b-44ca-8675-6959ddd8dc33';
+s3 = "s3://dandiarchive/blobs/3fb/2c8/3fb2c8b9-26db-47c0-86c2-9594678a8263";  % 380KiB file from dandiset 001199
 %% 
 % * Read from that s3 path directly with:
 
