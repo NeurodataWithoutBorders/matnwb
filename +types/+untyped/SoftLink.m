@@ -10,20 +10,21 @@ classdef SoftLink < handle
     
     methods
         function obj = SoftLink(target)
-            %SOFTLINK HDF5 soft link.
-            % obj = SOFTLINK(path) make soft link given a HDF5 full path.
-            % path = HDF5-friendly path e.g. '/acquisition/es1'
-            % obj = SOFTLINK(target) make soft link from pre-existant
-            % object.
-            % target = pre-generated NWB object.
+        % SOFTLINK - Create a SoftLink utility object.
+        %
+        % obj = types.untyped.SOFTLINK(target) creates a SoftLink using an 
+        % existing NWB object as a target.
             
             if ischar(target) || isstring(target)
-                validateattributes(target, {'char', 'string'}, {'scalartext'} ...
-                    , 'types.untyped.SoftLink', 'target string', 1);
+                validateattributes(target, {'char', 'string'}, {'scalartext'}, ...
+                    'types.untyped.SoftLink', 'target string', 1);
                 obj.path = char(target);
+                warning('NWB:SoftLink:DeprecatedPath', ...
+                    ['Creating a SoftLink using a string path is deprecated.\n' ...
+                     'Please provide a valid NWB object as the target instead.']);
             else
-                validateattributes(target, {'types.untyped.MetaClass'}, {'scalar'} ...
-                    , 'types.untyped.SoftLink', 'target object', 2);
+                validateattributes(target, {'types.untyped.MetaClass'}, {'scalar'}, ...
+                    'types.untyped.SoftLink', 'target object', 2);
                 obj.target = target;
             end
         end
