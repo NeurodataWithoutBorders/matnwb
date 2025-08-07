@@ -47,6 +47,10 @@ function validateShape(propertyName, validShapes, value)
     if isa(value, 'types.untyped.DataPipe')
         try
             valueShape = size(value);
+            % If the maxSize validation passed, this will internally force
+            % vectors to a scalar shape (i.e 1D) on export, so we want to
+            % use `enforceScalarShape=false` here to avoid unnecessary warnings
+            enforceScalarShape = false;
             types.util.checkDims(valueShape, validShapes, enforceScalarShape);
         catch ME
             warning(...
