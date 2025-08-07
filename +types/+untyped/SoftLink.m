@@ -1,10 +1,10 @@
 classdef SoftLink < handle
     
-    properties (Hidden, SetAccess = private)
+    properties (SetAccess = private)
         target = [];
     end
     
-    properties (SetAccess = private)
+    properties (Hidden, SetAccess = private)
         path = '';
     end
     
@@ -53,6 +53,10 @@ classdef SoftLink < handle
                 'Argument `nwb` must be a valid `NwbFile`');
             
             refobj = nwb.resolve({obj.path});
+            obj.target = refobj;
+            if ~nargout
+                clear refobj
+            end
         end
         
         function refs = export(obj, fid, fullpath, refs)
@@ -81,6 +85,13 @@ classdef SoftLink < handle
                     rethrow(ME);
                 end
             end
+        end
+    end
+
+    methods (Static)
+        function warningResetObj = disablePathDeprecationWarning()
+            warnState = warning('off', 'NWB:SoftLink:DeprecatedPath');
+            warningResetObj = onCleanup(@() warning(warnState));
         end
     end
 end
