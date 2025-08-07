@@ -123,7 +123,7 @@ end
 function resultTable = convertJsonReportToTable(reportFilePath)
     S = jsondecode(fileread(reportFilePath));
     varNames = fieldnames(S.messages);
-    T = struct2table(S.messages);
+    T = struct2table(S.messages, 'AsArray', true);
 
     for i = 1:numel(varNames)
         try
