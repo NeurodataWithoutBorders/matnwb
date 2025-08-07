@@ -152,29 +152,35 @@ function unitValidationStr = fillGroupValidation(name, prop, namespaceReg)
 end
 
 function unitValidationStr = fillDatasetValidation(name, prop, namespaceReg)
+    
     unitValidationStr = '';
-    if isempty(prop.type)
-        unitValidationStr = strjoin({unitValidationStr...
-            fillDtypeValidation(name, prop.dtype, namespaceReg)...
-            fillDimensionValidation(name, prop.shape)...
-            }, newline);
-    elseif prop.isConstrainedSet
+    validationLines = {};
+
+    if prop.isConstrainedSet
         fullname = getFullClassName(namespaceReg, prop.type, name);
         if isempty(fullname)
             return
         end
 
-        unitValidationStr = strjoin({unitValidationStr...
-            ['constrained = { ''' fullname ''' };']...
-            ['types.util.checkSet(''' name ''', struct(), constrained, val);']...
-            }, newline);
+        validationLines = [validationLines ...
+            {['constrained = { ''' fullname ''' };']} ...
+            {['types.util.checkSet(''' name ''', struct(), constrained, val);']} ...
+            ];
     else
-        fullname = getFullClassName(namespaceReg, prop.type, name);
-        if isempty(fullname)
-            return
+        if ~isempty(prop.type)
+            fullname = getFullClassName(namespaceReg, prop.type, name);
+            if isempty(fullname)
+                return
+            end
+            validationLines = [validationLines ...
+                {fillTypeValidation(name, fullname)}];
         end
-        unitValidationStr = [unitValidationStr newline fillDtypeValidation(name, fullname, namespaceReg)];
+        validationLines = [validationLines ...
+            {fillDtypeValidation(name, prop.dtype, namespaceReg)} ...
+            {fillDimensionValidation(name, prop.shape)} ];   
     end
+    validationLines(cellfun('isempty', validationLines)) = [];
+    unitValidationStr = strjoin(validationLines, newline);
 end
 
 function validationStr = fillLinkValidation(name, prop, namespacereg)
@@ -215,6 +221,10 @@ function fdvstr = fillDimensionValidation(name, shape)
     end
 
     fdvstr = sprintf('types.util.validateShape(''%s'', %s, val)', name, validShapeStr);
+end
+
+function validationStr = fillTypeValidation(name, type)
+    validationStr = ['types.util.validateType(''' name ''', ''' type ''', val);'];
 end
 
 %NOTE: can return empty strings
