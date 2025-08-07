@@ -158,6 +158,16 @@ classdef NwbFile < types.core.NWBFile
         end
     end
 
+    methods (Hidden)
+        function resolveSoftLinks(obj)
+            softLinkMap = obj.searchFor('types.untyped.SoftLink');
+            softLinks = softLinkMap.values;
+            for i = 1:numel(softLinks)
+                softLinks{i}.deref(obj);
+            end
+        end
+    end
+
     %% PRIVATE
     methods(Access=private)
         function addWasGeneratedBy(obj)
