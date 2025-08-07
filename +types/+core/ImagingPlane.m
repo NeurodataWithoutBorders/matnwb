@@ -190,7 +190,7 @@ methods
         types.util.validateShape('description', {[1]}, val)
     end
     function val = validate_device(obj, val)
-        val = types.validator.validateSoftLink('device', val, 'types.core.Device');
+        val = types.util.validateSoftLink('device', val, 'types.core.Device');
     end
     function val = validate_excitation_lambda(obj, val)
         val = types.util.checkDtype('excitation_lambda', 'single', val);

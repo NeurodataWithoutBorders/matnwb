@@ -122,16 +122,7 @@ methods
         types.util.validateShape('description', {[1]}, val)
     end
     function val = validate_device(obj, val)
-        if isa(val, 'types.untyped.SoftLink')
-            if isprop(val, 'target')
-                types.util.checkDtype('device', 'types.core.Device', val.target);
-            end
-        else
-            val = types.util.checkDtype('device', 'types.core.Device', val);
-            if ~isempty(val)
-                val = types.untyped.SoftLink(val);
-            end
-        end
+        val = types.util.validateSoftLink('device', val, 'types.core.Device');
     end
     function val = validate_filtering(obj, val)
         val = types.util.checkDtype('filtering', 'char', val);
