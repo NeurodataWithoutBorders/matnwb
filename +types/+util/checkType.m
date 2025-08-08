@@ -7,6 +7,11 @@ function checkType(propertyName, expectedType, value)
         return  % Skip validation for empty values.
     end
 
+    if isa(value, 'types.untyped.SoftLink')
+        % Softlinks cannot be validated at this level.
+        return;
+    end
+
     assert(matnwb.utility.isNeurodataType(expectedType), ...
         'NWB:CheckType:UnknownNeurodataType', ...
         'Expected `%s` to be a recognized neurodata type.', expectedType);
