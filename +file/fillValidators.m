@@ -172,12 +172,32 @@ function unitValidationStr = fillDatasetValidation(name, prop, namespaceReg)
             if isempty(fullname)
                 return
             end
+
             validationLines = [validationLines ...
                 {fillTypeValidation(name, fullname)}];
+
+            datasetValidationLines = [...
+                {fillDtypeValidation(name, prop.dtype, namespaceReg)} ...
+                {fillDimensionValidation(name, prop.shape)} ];
+
+            datasetValidationLines(cellfun('isempty', datasetValidationLines)) = [];
+            datasetValidationLines = indentLines(datasetValidationLines, 4);
+
+            if ~isempty(datasetValidationLines)
+                validationLines{end+1} = 'if ~isempty(val) && ~isempty(val.data)';
+                validationLines{end+1} = '    origVal = val;';
+                validationLines{end+1} = '    val = val.data;';
+                validationLines = [validationLines, datasetValidationLines];
+                validationLines{end+1} = '    origVal.data = val;';
+                validationLines{end+1} = '    val = origVal;';
+                validationLines{end+1} = 'end';
+            end
+        else
+            validationLines = [validationLines ...
+                {fillDtypeValidation(name, prop.dtype, namespaceReg)} ...
+                {fillDimensionValidation(name, prop.shape)} ];
         end
-        validationLines = [validationLines ...
-            {fillDtypeValidation(name, prop.dtype, namespaceReg)} ...
-            {fillDimensionValidation(name, prop.shape)} ];   
+
     end
     validationLines(cellfun('isempty', validationLines)) = [];
     unitValidationStr = strjoin(validationLines, newline);
@@ -192,6 +212,10 @@ function validationStr = fillLinkValidation(name, prop, namespaceReg)
 end
 
 function fdvstr = fillDimensionValidation(name, shape)
+    
+    if isnumeric(shape) && isnan(shape)
+        fdvstr = ''; return
+    end
 
     if iscell(shape)
         if ~isempty(shape) && iscell(shape{1})
@@ -342,4 +366,18 @@ function fullReferenceClassName = getReferenceTypeClassName(typeSpec)
             referenceClassName = 'ObjectView';
     end
     fullReferenceClassName = ['types.untyped.' referenceClassName];
+end
+
+function indentedLines = indentLines(lines, numIndents)
+    if iscell(lines)
+        indentedLines = cellfun(@(c) indentSingle(c, numIndents), lines);
+    else
+        indentedLines = indentSingle(lines, numIndents);
+    end
+
+    function indentedLine = indentSingle(line, numIndents)
+        splitLine = split(line, newline);
+        splitLine = strcat({repmat(' ', 1, numIndents)}, splitLine);
+        indentedLine = join(splitLine, newline);
+    end
 end
