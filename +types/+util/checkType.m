@@ -9,7 +9,7 @@ function checkType(propertyName, expectedType, value)
 
     assert(matnwb.utility.isNeurodataType(expectedType), ...
         'NWB:CheckType:UnknownNeurodataType', ...
-        'Expected `%s` to be a recognized neurodata type.', expec1AtedType);
+        'Expected `%s` to be a recognized neurodata type.', expectedType);
 
     if isWrapped(value, expectedType)
         value = unwrapValue(value);
