@@ -12,7 +12,7 @@ function validationStr = fillValidators(propnames, props, namespaceReg, classNam
             % attributes of a property from public (in a superclass) to 
             % protected (in a subclass).
             if any(strcmp(nm, inherited))
-                validationBody = fillReadOnlyValidator(nm, prop.value, className);
+                validationBody = fillReadOnlyValidation(nm, prop.value, className);
             else
                 continue
             end
@@ -185,23 +185,6 @@ function validationStr = fillLinkValidation(name, prop, namespaceReg)
         name, fullName);
 end
 
-function validationStr = fillReferenceTypeValidation(name, typeSpec, namespaceReg)
-
-    fullReferenceClassName = getReferenceTypeClassName(typeSpec);
-
-    % Get full class name for target type
-    targetType = typeSpec('target_type');
-    fullTargetTypeName = namespaceReg.getFullClassName(targetType);
-
-    validationLines = {...
-        sprintf('%% Reference to type `%s`', targetType), ...
-        sprintf('val = types.util.validateReferenceType(''%s'', val, ''%s'', ''%s'');', ...
-        name, fullTargetTypeName, fullReferenceClassName)
-        };
-
-    validationStr = strjoin(validationLines, newline);
-end
-
 function fdvstr = fillDimensionValidation(name, shape)
 
     if iscell(shape)
@@ -266,7 +249,24 @@ function fdvstr = fillDtypeValidation(name, type, namespaceReg)
     end
 end
 
-function fdvstr = fillReadOnlyValidator(name, value, className)
+function validationStr = fillReferenceTypeValidation(name, typeSpec, namespaceReg)
+
+    fullReferenceClassName = getReferenceTypeClassName(typeSpec);
+
+    % Get full class name for target type
+    targetType = typeSpec('target_type');
+    fullTargetTypeName = namespaceReg.getFullClassName(targetType);
+
+    validationLines = {...
+        sprintf('%% Reference to type `%s`', targetType), ...
+        sprintf('val = types.util.validateReferenceType(''%s'', val, ''%s'', ''%s'');', ...
+        name, fullTargetTypeName, fullReferenceClassName)
+        };
+
+    validationStr = strjoin(validationLines, newline);
+end
+
+function fdvstr = fillReadOnlyValidation(name, value, className)
 
     classNameSplit = strsplit(className, '.');
     shortName = classNameSplit{end};
@@ -325,7 +325,6 @@ end
 
 function fullReferenceClassName = getReferenceTypeClassName(typeSpec)
     assert(isKey(typeSpec, 'reftype'), 'Expected reftype key')
-    
     switch typeSpec('reftype')
         case 'region'
             referenceClassName = 'RegionView';
