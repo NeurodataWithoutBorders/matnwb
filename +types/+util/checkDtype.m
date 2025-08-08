@@ -94,6 +94,10 @@ end
 if isa(value, 'types.untyped.SoftLink')
     % Softlinks cannot be validated at this level.
     return;
+elseif isa(value, 'types.untyped.DatasetClass') && ~isempty(value) && ~matnwb.utility.isNeurodataType(typeDescriptor)
+    % If the value is itself a dataset class, we need to validate its data.
+    value.data = types.util.checkDtype(name, typeDescriptor, value.data);
+    return
 end
 
 if isempty(value)
