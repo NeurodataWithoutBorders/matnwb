@@ -17,7 +17,11 @@ function value = validateReferenceType(propertyName, value, targetType, referenc
             ["types.untyped.ObjectView", "types.untyped.RegionView"])}
     end
 
-    if iscell(value)
+    if isempty(value)
+        % Skip validation if value is empty, but ensure value is empty
+        % double (i.e a "null" value).
+        value = [];
+    elseif iscell(value)
         value = cellfun(@validateScalar, value, 'UniformOutput', false);
     elseif numel(value) > 1
         value = arrayfun(@validateScalar, value);
