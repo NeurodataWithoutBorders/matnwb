@@ -1,4 +1,4 @@
-function checkType(propertyName, typeName, value)
+function checkType(propertyName, expectedType, value)
 % checkType - Validate that a value is of the specified neurodata type.
 %
 % Skips validation if the value is empty.
@@ -7,13 +7,17 @@ function checkType(propertyName, typeName, value)
         return  % Skip validation for empty values.
     end
 
-    assert(matnwb.utility.isNeurodataType(typeName), ...
+    assert(matnwb.utility.isNeurodataType(expectedType), ...
         'NWB:CheckType:UnknownNeurodataType', ...
-        'Expected `%s` to be a recognized neurodata type.', typeName);
+        'Expected `%s` to be a recognized neurodata type.', expec1AtedType);
 
-    if ~isa(value, typeName)
+    if isWrapped(value, expectedType)
+        value = unwrapValue(value);
+    end
+
+    if ~isa(value, expectedType)
         error('NWB:CheckType:InvalidNeurodataType', ...
             'Expected value for property `%s` to be of type `%s`, but got `%s` instead.', ...
-            propertyName, typeName, class(value));
+            propertyName, expectedType, class(value));
     end
 end

@@ -120,10 +120,7 @@ end
 
 % retrieve comparable value
 valueWrapper = [];
-if isa(value, 'types.untyped.DataStub') ...
-    || isa(value, 'types.untyped.DataPipe') ...
-    || isa(value, 'types.untyped.Anon') ...
-    || (isa(value, 'types.untyped.ExternalLink') && ~strcmp(typeDescriptor, 'types.untyped.ExternalLink'))
+if isWrapped(value, typeDescriptor)
     valueWrapper = value;
     value = unwrapValue(value);
 end
@@ -155,34 +152,4 @@ end
 if ~isempty(valueWrapper)
     value = valueWrapper;
 end
-end
-
-function unwrapped = unwrapValue(wrapped, history)
-    if nargin < 2
-        history = {};
-    end
-    for iHistory = 1:length(history)
-        assert(wrapped ~= history{iHistory}, ...
-            'NWB:CheckDataType:InfiniteLoop' ...
-            , ['Infinite loop of a previously defined wrapped value detected. ' ...
-            'Please ensure infinite loops do not occur with reference types like Links.']);
-    end
-    if isa(wrapped, 'types.untyped.DataStub')
-        %grab first element and check
-        if any(wrapped.dims == 0)
-            unwrapped = [];
-        else
-            unwrapped = wrapped.load(1);
-        end
-    elseif isa(wrapped, 'types.untyped.DataPipe')
-        unwrapped = cast([], wrapped.dataType);
-    elseif isa(wrapped, 'types.untyped.Anon')
-        history{end+1} = wrapped;
-        unwrapped = unwrapValue(wrapped.value, history);
-    elseif isa(wrapped, 'types.untyped.ExternalLink')
-        history{end+1} = wrapped;
-        unwrapped = unwrapValue(wrapped.deref(), history);
-    else
-        unwrapped = wrapped;
-    end
 end
