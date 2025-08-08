@@ -16,7 +16,7 @@ methods
         %  imageReferences = types.core.IMAGEREFERENCES(Name, Value) creates a ImageReferences object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
-        %  - data (Object reference to BaseImage) - No description
+        %  - data (Object reference to BaseImage) - Data property for dataset class (ImageReferences)
         %
         % Output Arguments:
         %  - imageReferences (types.core.ImageReferences) - A ImageReferences object
@@ -41,6 +41,7 @@ methods
     function val = validate_data(obj, val)
         % Reference to type `BaseImage`
         val = types.util.checkDtype('data', 'types.untyped.ObjectView', val);
+        types.util.validateShape('data', {[Inf]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

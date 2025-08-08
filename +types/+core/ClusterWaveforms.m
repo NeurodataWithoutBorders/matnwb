@@ -75,7 +75,6 @@ methods
     end
     function val = validate_waveform_filtering(obj, val)
         val = types.util.checkDtype('waveform_filtering', 'char', val);
-        types.util.validateShape('waveform_filtering', {[1]}, val)
     end
     function val = validate_waveform_mean(obj, val)
         val = types.util.checkDtype('waveform_mean', 'single', val);

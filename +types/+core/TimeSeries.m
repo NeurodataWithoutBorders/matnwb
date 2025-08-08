@@ -235,7 +235,6 @@ methods
     end
     function val = validate_starting_time(obj, val)
         val = types.util.checkDtype('starting_time', 'double', val);
-        types.util.validateShape('starting_time', {[1]}, val)
     end
     function val = validate_starting_time_rate(obj, val)
         val = types.util.checkDtype('starting_time_rate', 'single', val);

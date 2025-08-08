@@ -131,7 +131,6 @@ methods
     end
     function val = validate_format(obj, val)
         val = types.util.checkDtype('format', 'char', val);
-        types.util.validateShape('format', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

@@ -96,7 +96,6 @@ methods
         vprops.y = 'single';
         vprops.z = 'single';
         val = types.util.checkDtype('position', vprops, val);
-        types.util.validateShape('position', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

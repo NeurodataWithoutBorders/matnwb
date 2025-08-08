@@ -113,7 +113,6 @@ methods
     end
     function val = validate_metric(obj, val)
         val = types.util.checkDtype('metric', 'char', val);
-        types.util.validateShape('metric', {[1]}, val)
     end
     function val = validate_source_channels(obj, val)
         val = types.util.checkDtype('source_channels', 'types.hdmf_common.DynamicTableRegion', val);

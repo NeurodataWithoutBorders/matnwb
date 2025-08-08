@@ -7,7 +7,7 @@ classdef Data < types.untyped.MetaClass & types.untyped.DatasetClass
 
 % REQUIRED PROPERTIES
 properties
-    data; % REQUIRED any
+    data; % REQUIRED (any) Data property for dataset class (Data)
 end
 
 methods
@@ -20,7 +20,7 @@ methods
         %  data = types.hdmf_common.DATA(Name, Value) creates a Data object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
-        %  - data (any) - No description
+        %  - data (any) - Data property for dataset class (Data)
         %
         % Output Arguments:
         %  - data (types.hdmf_common.Data) - A Data object
@@ -47,6 +47,7 @@ methods
     %% VALIDATORS
     
     function val = validate_data(obj, val)
+    
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

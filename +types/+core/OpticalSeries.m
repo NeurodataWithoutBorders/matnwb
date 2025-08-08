@@ -104,7 +104,6 @@ methods
     end
     function val = validate_distance(obj, val)
         val = types.util.checkDtype('distance', 'single', val);
-        types.util.validateShape('distance', {[1]}, val)
     end
     function val = validate_field_of_view(obj, val)
         val = types.util.checkDtype('field_of_view', 'single', val);
@@ -112,7 +111,6 @@ methods
     end
     function val = validate_orientation(obj, val)
         val = types.util.checkDtype('orientation', 'char', val);
-        types.util.validateShape('orientation', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

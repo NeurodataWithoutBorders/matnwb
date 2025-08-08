@@ -101,7 +101,7 @@ classdef Dataset < file.interface.HasProps & file.interface.HasQuantity
                 obj.shape = file.formatShape(source('shape'));
                 obj.scalar = file.isShapeScalar(obj.shape);
             else
-                obj.shape = 1;
+                obj.shape = nan;
             end
             
             attributeKey = 'attributes';
@@ -150,7 +150,13 @@ classdef Dataset < file.interface.HasProps & file.interface.HasQuantity
                 );
 
             if ~isempty(obj.dtype)
-                props('data') = obj.dtype;
+                % Create a modified version of the dataset  
+                objCopy = obj;
+                objCopy.name = 'data';
+                objCopy.type = '';
+                objCopy.doc = sprintf('Data property for dataset class (%s)', obj.type);
+                props('data') = objCopy;
+                %props('data') = obj.dtype;
             end
             
             if ~isempty(obj.attributes)

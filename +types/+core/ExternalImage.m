@@ -24,7 +24,7 @@ methods
         %  externalImage = types.core.EXTERNALIMAGE(Name, Value) creates a ExternalImage object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
-        %  - data (char) - No description
+        %  - data (char) - Data property for dataset class (ExternalImage)
         %
         %  - description (char) - Description of the image.
         %

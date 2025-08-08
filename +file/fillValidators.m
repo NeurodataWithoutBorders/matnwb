@@ -187,6 +187,10 @@ end
 
 function fdvstr = fillDimensionValidation(name, shape)
 
+    if isnumeric(shape) && isnan(shape)
+        fdvstr = ''; return
+    end
+
     if iscell(shape)
         if ~isempty(shape) && iscell(shape{1})
             for i = 1:length(shape)

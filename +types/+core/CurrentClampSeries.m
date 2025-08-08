@@ -97,15 +97,12 @@ methods
     
     function val = validate_bias_current(obj, val)
         val = types.util.checkDtype('bias_current', 'single', val);
-        types.util.validateShape('bias_current', {[1]}, val)
     end
     function val = validate_bridge_balance(obj, val)
         val = types.util.checkDtype('bridge_balance', 'single', val);
-        types.util.validateShape('bridge_balance', {[1]}, val)
     end
     function val = validate_capacitance_compensation(obj, val)
         val = types.util.checkDtype('capacitance_compensation', 'single', val);
-        types.util.validateShape('capacitance_compensation', {[1]}, val)
     end
     function val = validate_data(obj, val)
         val = types.util.checkDtype('data', 'numeric', val);

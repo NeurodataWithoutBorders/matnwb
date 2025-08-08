@@ -82,7 +82,6 @@ methods
     
     function val = validate_detection_method(obj, val)
         val = types.util.checkDtype('detection_method', 'char', val);
-        types.util.validateShape('detection_method', {[1]}, val)
     end
     function val = validate_source_electricalseries(obj, val)
         val = types.util.validateSoftLink('source_electricalseries', val, 'types.core.ElectricalSeries');

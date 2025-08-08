@@ -16,7 +16,7 @@ methods
         %  elementIdentifiers = types.hdmf_common.ELEMENTIDENTIFIERS(Name, Value) creates a ElementIdentifiers object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
-        %  - data (int8) - No description
+        %  - data (int8) - Data property for dataset class (ElementIdentifiers)
         %
         % Output Arguments:
         %  - elementIdentifiers (types.hdmf_common.ElementIdentifiers) - A ElementIdentifiers object
@@ -40,6 +40,7 @@ methods
     
     function val = validate_data(obj, val)
         val = types.util.checkDtype('data', 'int8', val);
+        types.util.validateShape('data', {[Inf]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

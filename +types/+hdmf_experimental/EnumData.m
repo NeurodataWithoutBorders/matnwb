@@ -20,7 +20,7 @@ methods
         %  enumData = types.hdmf_experimental.ENUMDATA(Name, Value) creates a EnumData object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
-        %  - data (uint8) - No description
+        %  - data (uint8) - Data property for dataset class (EnumData)
         %
         %  - description (char) - Description of what these vectors represent.
         %
