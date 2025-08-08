@@ -101,22 +101,31 @@ methods
     %% VALIDATORS
     
     function val = validate_start_time(obj, val)
-        val = types.util.checkDtype('start_time', 'types.hdmf_common.VectorData', val);
+        types.util.validateType('start_time', 'types.hdmf_common.VectorData', val);
+        val = types.util.checkDtype('start_time', 'single', val);
+        types.util.validateShape('start_time', {[1]}, val)
     end
     function val = validate_stop_time(obj, val)
-        val = types.util.checkDtype('stop_time', 'types.hdmf_common.VectorData', val);
+        types.util.validateType('stop_time', 'types.hdmf_common.VectorData', val);
+        val = types.util.checkDtype('stop_time', 'single', val);
+        types.util.validateShape('stop_time', {[1]}, val)
     end
     function val = validate_tags(obj, val)
-        val = types.util.checkDtype('tags', 'types.hdmf_common.VectorData', val);
+        types.util.validateType('tags', 'types.hdmf_common.VectorData', val);
+        val = types.util.checkDtype('tags', 'char', val);
+        types.util.validateShape('tags', {[1]}, val)
     end
     function val = validate_tags_index(obj, val)
-        val = types.util.checkDtype('tags_index', 'types.hdmf_common.VectorIndex', val);
+        types.util.validateType('tags_index', 'types.hdmf_common.VectorIndex', val);
+        types.util.validateShape('tags_index', {[1]}, val)
     end
     function val = validate_timeseries(obj, val)
-        val = types.util.checkDtype('timeseries', 'types.core.TimeSeriesReferenceVectorData', val);
+        types.util.validateType('timeseries', 'types.core.TimeSeriesReferenceVectorData', val);
+        types.util.validateShape('timeseries', {[1]}, val)
     end
     function val = validate_timeseries_index(obj, val)
-        val = types.util.checkDtype('timeseries_index', 'types.hdmf_common.VectorIndex', val);
+        types.util.validateType('timeseries_index', 'types.hdmf_common.VectorIndex', val);
+        types.util.validateShape('timeseries_index', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

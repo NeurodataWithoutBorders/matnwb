@@ -109,16 +109,30 @@ methods
     %% VALIDATORS
     
     function val = validate_image_mask(obj, val)
-        val = types.util.checkDtype('image_mask', 'types.hdmf_common.VectorData', val);
+        types.util.validateType('image_mask', 'types.hdmf_common.VectorData', val);
+        types.util.validateShape('image_mask', {[Inf,Inf,Inf,Inf], [Inf,Inf,Inf]}, val)
     end
     function val = validate_imaging_plane(obj, val)
         val = types.util.validateSoftLink('imaging_plane', val, 'types.core.ImagingPlane');
     end
     function val = validate_pixel_mask(obj, val)
-        val = types.util.checkDtype('pixel_mask', 'types.hdmf_common.VectorData', val);
+        types.util.validateType('pixel_mask', 'types.hdmf_common.VectorData', val);
+        if isempty(val) || isa(val, 'types.untyped.DataStub')
+            return;
+        end
+        if ~istable(val) && ~isstruct(val) && ~isa(val, 'containers.Map')
+            error('NWB:Type:InvalidPropertyType', 'Property `pixel_mask` must be a table, struct, or containers.Map.');
+        end
+        vprops = struct();
+        vprops.x = 'uint32';
+        vprops.y = 'uint32';
+        vprops.weight = 'single';
+        val = types.util.checkDtype('pixel_mask', vprops, val);
+        types.util.validateShape('pixel_mask', {[1]}, val)
     end
     function val = validate_pixel_mask_index(obj, val)
-        val = types.util.checkDtype('pixel_mask_index', 'types.hdmf_common.VectorIndex', val);
+        types.util.validateType('pixel_mask_index', 'types.hdmf_common.VectorIndex', val);
+        types.util.validateShape('pixel_mask_index', {[1]}, val)
     end
     function val = validate_reference_images(obj, val)
         namedprops = struct();
@@ -126,10 +140,24 @@ methods
         types.util.checkSet('reference_images', namedprops, constrained, val);
     end
     function val = validate_voxel_mask(obj, val)
-        val = types.util.checkDtype('voxel_mask', 'types.hdmf_common.VectorData', val);
+        types.util.validateType('voxel_mask', 'types.hdmf_common.VectorData', val);
+        if isempty(val) || isa(val, 'types.untyped.DataStub')
+            return;
+        end
+        if ~istable(val) && ~isstruct(val) && ~isa(val, 'containers.Map')
+            error('NWB:Type:InvalidPropertyType', 'Property `voxel_mask` must be a table, struct, or containers.Map.');
+        end
+        vprops = struct();
+        vprops.x = 'uint32';
+        vprops.y = 'uint32';
+        vprops.z = 'uint32';
+        vprops.weight = 'single';
+        val = types.util.checkDtype('voxel_mask', vprops, val);
+        types.util.validateShape('voxel_mask', {[1]}, val)
     end
     function val = validate_voxel_mask_index(obj, val)
-        val = types.util.checkDtype('voxel_mask_index', 'types.hdmf_common.VectorIndex', val);
+        types.util.validateType('voxel_mask_index', 'types.hdmf_common.VectorIndex', val);
+        types.util.validateShape('voxel_mask_index', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

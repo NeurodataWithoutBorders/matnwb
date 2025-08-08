@@ -85,16 +85,24 @@ methods
     %% VALIDATORS
     
     function val = validate_band_limits(obj, val)
-        val = types.util.checkDtype('band_limits', 'types.hdmf_common.VectorData', val);
+        types.util.validateType('band_limits', 'types.hdmf_common.VectorData', val);
+        val = types.util.checkDtype('band_limits', 'single', val);
+        types.util.validateShape('band_limits', {[2,Inf]}, val)
     end
     function val = validate_band_mean(obj, val)
-        val = types.util.checkDtype('band_mean', 'types.hdmf_common.VectorData', val);
+        types.util.validateType('band_mean', 'types.hdmf_common.VectorData', val);
+        val = types.util.checkDtype('band_mean', 'single', val);
+        types.util.validateShape('band_mean', {[Inf]}, val)
     end
     function val = validate_band_name(obj, val)
-        val = types.util.checkDtype('band_name', 'types.hdmf_common.VectorData', val);
+        types.util.validateType('band_name', 'types.hdmf_common.VectorData', val);
+        val = types.util.checkDtype('band_name', 'char', val);
+        types.util.validateShape('band_name', {[1]}, val)
     end
     function val = validate_band_stdev(obj, val)
-        val = types.util.checkDtype('band_stdev', 'types.hdmf_common.VectorData', val);
+        types.util.validateType('band_stdev', 'types.hdmf_common.VectorData', val);
+        val = types.util.checkDtype('band_stdev', 'single', val);
+        types.util.validateShape('band_stdev', {[Inf]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

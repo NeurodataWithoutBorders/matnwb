@@ -77,7 +77,8 @@ methods
         types.util.validateShape('data', {[Inf,Inf], [Inf]}, val)
     end
     function val = validate_rois(obj, val)
-        val = types.util.checkDtype('rois', 'types.hdmf_common.DynamicTableRegion', val);
+        types.util.validateType('rois', 'types.hdmf_common.DynamicTableRegion', val);
+        types.util.validateShape('rois', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

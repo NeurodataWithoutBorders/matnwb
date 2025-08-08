@@ -64,7 +64,8 @@ methods
         end
     end
     function val = validate_response(obj, val)
-        val = types.util.checkDtype('response', 'types.core.TimeSeriesReferenceVectorData', val);
+        types.util.validateType('response', 'types.core.TimeSeriesReferenceVectorData', val);
+        types.util.validateShape('response', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

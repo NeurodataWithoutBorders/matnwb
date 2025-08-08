@@ -66,10 +66,12 @@ methods
     %% VALIDATORS
     
     function val = validate_sequential_recordings(obj, val)
-        val = types.util.checkDtype('sequential_recordings', 'types.hdmf_common.DynamicTableRegion', val);
+        types.util.validateType('sequential_recordings', 'types.hdmf_common.DynamicTableRegion', val);
+        types.util.validateShape('sequential_recordings', {[1]}, val)
     end
     function val = validate_sequential_recordings_index(obj, val)
-        val = types.util.checkDtype('sequential_recordings_index', 'types.hdmf_common.VectorIndex', val);
+        types.util.validateType('sequential_recordings_index', 'types.hdmf_common.VectorIndex', val);
+        types.util.validateShape('sequential_recordings_index', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

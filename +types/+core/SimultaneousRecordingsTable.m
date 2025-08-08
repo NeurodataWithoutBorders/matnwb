@@ -66,10 +66,12 @@ methods
     %% VALIDATORS
     
     function val = validate_recordings(obj, val)
-        val = types.util.checkDtype('recordings', 'types.hdmf_common.DynamicTableRegion', val);
+        types.util.validateType('recordings', 'types.hdmf_common.DynamicTableRegion', val);
+        types.util.validateShape('recordings', {[1]}, val)
     end
     function val = validate_recordings_index(obj, val)
-        val = types.util.checkDtype('recordings_index', 'types.hdmf_common.VectorIndex', val);
+        types.util.validateType('recordings_index', 'types.hdmf_common.VectorIndex', val);
+        types.util.validateShape('recordings_index', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)
