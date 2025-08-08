@@ -86,7 +86,7 @@ methods
     
     function val = validate_band_limits(obj, val)
         types.util.checkType('band_limits', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('band_limits', 'single', val);
@@ -97,7 +97,7 @@ methods
     end
     function val = validate_band_mean(obj, val)
         types.util.checkType('band_mean', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('band_mean', 'single', val);
@@ -108,7 +108,7 @@ methods
     end
     function val = validate_band_name(obj, val)
         types.util.checkType('band_name', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('band_name', 'char', val);
@@ -118,7 +118,7 @@ methods
     end
     function val = validate_band_stdev(obj, val)
         types.util.checkType('band_stdev', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('band_stdev', 'single', val);

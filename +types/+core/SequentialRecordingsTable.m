@@ -81,7 +81,7 @@ methods
     end
     function val = validate_stimulus_type(obj, val)
         types.util.checkType('stimulus_type', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('stimulus_type', 'char', val);

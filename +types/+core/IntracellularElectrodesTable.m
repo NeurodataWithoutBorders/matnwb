@@ -65,7 +65,7 @@ methods
     end
     function val = validate_electrode(obj, val)
         types.util.checkType('electrode', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             % Reference to type `IntracellularElectrode`

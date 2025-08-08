@@ -110,7 +110,7 @@ methods
     
     function val = validate_image_mask(obj, val)
         types.util.checkType('image_mask', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             types.util.validateShape('image_mask', {[Inf,Inf,Inf,Inf], [Inf,Inf,Inf]}, val)
@@ -123,7 +123,7 @@ methods
     end
     function val = validate_pixel_mask(obj, val)
         types.util.checkType('pixel_mask', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             if isempty(val) || isa(val, 'types.untyped.DataStub')
@@ -151,7 +151,7 @@ methods
     end
     function val = validate_voxel_mask(obj, val)
         types.util.checkType('voxel_mask', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             if isempty(val) || isa(val, 'types.untyped.DataStub')

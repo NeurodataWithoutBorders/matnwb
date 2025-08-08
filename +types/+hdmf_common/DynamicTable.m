@@ -82,7 +82,7 @@ methods
     end
     function val = validate_id(obj, val)
         types.util.checkType('id', 'types.hdmf_common.ElementIdentifiers', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('id', 'int8', val);

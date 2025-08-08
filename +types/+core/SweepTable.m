@@ -75,7 +75,7 @@ methods
     
     function val = validate_series(obj, val)
         types.util.checkType('series', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             % Reference to type `PatchClampSeries`
@@ -89,7 +89,7 @@ methods
     end
     function val = validate_sweep_number(obj, val)
         types.util.checkType('sweep_number', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('sweep_number', 'uint32', val);

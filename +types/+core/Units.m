@@ -147,7 +147,7 @@ methods
     
     function val = validate_electrode_group(obj, val)
         types.util.checkType('electrode_group', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             % Reference to type `ElectrodeGroup`
@@ -164,7 +164,7 @@ methods
     end
     function val = validate_obs_intervals(obj, val)
         types.util.checkType('obs_intervals', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('obs_intervals', 'double', val);
@@ -178,7 +178,7 @@ methods
     end
     function val = validate_spike_times(obj, val)
         types.util.checkType('spike_times', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('spike_times', 'double', val);
@@ -191,7 +191,7 @@ methods
     end
     function val = validate_waveform_mean(obj, val)
         types.util.checkType('waveform_mean', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('waveform_mean', 'single', val);
@@ -202,7 +202,7 @@ methods
     end
     function val = validate_waveform_sd(obj, val)
         types.util.checkType('waveform_sd', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('waveform_sd', 'single', val);
@@ -213,7 +213,7 @@ methods
     end
     function val = validate_waveforms(obj, val)
         types.util.checkType('waveforms', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('waveforms', 'numeric', val);

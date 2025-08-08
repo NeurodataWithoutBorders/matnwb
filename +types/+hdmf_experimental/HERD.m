@@ -88,7 +88,7 @@ methods
     
     function val = validate_entities(obj, val)
         types.util.checkType('entities', 'types.hdmf_common.Data', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             if isempty(val) || isa(val, 'types.untyped.DataStub')
@@ -108,7 +108,7 @@ methods
     end
     function val = validate_entity_keys(obj, val)
         types.util.checkType('entity_keys', 'types.hdmf_common.Data', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             if isempty(val) || isa(val, 'types.untyped.DataStub')
@@ -128,7 +128,7 @@ methods
     end
     function val = validate_files(obj, val)
         types.util.checkType('files', 'types.hdmf_common.Data', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             if isempty(val) || isa(val, 'types.untyped.DataStub')
@@ -147,7 +147,7 @@ methods
     end
     function val = validate_keys(obj, val)
         types.util.checkType('keys', 'types.hdmf_common.Data', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             if isempty(val) || isa(val, 'types.untyped.DataStub')
@@ -166,7 +166,7 @@ methods
     end
     function val = validate_object_keys(obj, val)
         types.util.checkType('object_keys', 'types.hdmf_common.Data', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             if isempty(val) || isa(val, 'types.untyped.DataStub')
@@ -186,7 +186,7 @@ methods
     end
     function val = validate_objects(obj, val)
         types.util.checkType('objects', 'types.hdmf_common.Data', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             if isempty(val) || isa(val, 'types.untyped.DataStub')

@@ -150,7 +150,7 @@ methods
     
     function val = validate_filtering(obj, val)
         types.util.checkType('filtering', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('filtering', 'char', val);
@@ -160,7 +160,7 @@ methods
     end
     function val = validate_group(obj, val)
         types.util.checkType('group', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             % Reference to type `ElectrodeGroup`
@@ -171,7 +171,7 @@ methods
     end
     function val = validate_group_name(obj, val)
         types.util.checkType('group_name', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('group_name', 'char', val);
@@ -181,7 +181,7 @@ methods
     end
     function val = validate_imp(obj, val)
         types.util.checkType('imp', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('imp', 'single', val);
@@ -191,7 +191,7 @@ methods
     end
     function val = validate_location(obj, val)
         types.util.checkType('location', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('location', 'char', val);
@@ -201,7 +201,7 @@ methods
     end
     function val = validate_reference(obj, val)
         types.util.checkType('reference', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('reference', 'char', val);
@@ -211,7 +211,7 @@ methods
     end
     function val = validate_rel_x(obj, val)
         types.util.checkType('rel_x', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('rel_x', 'single', val);
@@ -221,7 +221,7 @@ methods
     end
     function val = validate_rel_y(obj, val)
         types.util.checkType('rel_y', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('rel_y', 'single', val);
@@ -231,7 +231,7 @@ methods
     end
     function val = validate_rel_z(obj, val)
         types.util.checkType('rel_z', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('rel_z', 'single', val);
@@ -241,7 +241,7 @@ methods
     end
     function val = validate_x(obj, val)
         types.util.checkType('x', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('x', 'single', val);
@@ -251,7 +251,7 @@ methods
     end
     function val = validate_y(obj, val)
         types.util.checkType('y', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('y', 'single', val);
@@ -261,7 +261,7 @@ methods
     end
     function val = validate_z(obj, val)
         types.util.checkType('z', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('z', 'single', val);

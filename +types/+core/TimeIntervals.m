@@ -102,7 +102,7 @@ methods
     
     function val = validate_start_time(obj, val)
         types.util.checkType('start_time', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('start_time', 'single', val);
@@ -112,7 +112,7 @@ methods
     end
     function val = validate_stop_time(obj, val)
         types.util.checkType('stop_time', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('stop_time', 'single', val);
@@ -122,7 +122,7 @@ methods
     end
     function val = validate_tags(obj, val)
         types.util.checkType('tags', 'types.hdmf_common.VectorData', val);
-        if ~isempty(val) && ~isempty(val.data)
+        if ~isempty(val)
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('tags', 'char', val);
