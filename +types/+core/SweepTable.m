@@ -74,19 +74,28 @@ methods
     %% VALIDATORS
     
     function val = validate_series(obj, val)
-        types.util.validateType('series', 'types.hdmf_common.VectorData', val);
-        % Reference to type `PatchClampSeries`
-        val = types.util.validateReferenceType('series', val, 'types.core.PatchClampSeries', 'types.untyped.ObjectView');
-        types.util.validateShape('series', {[1]}, val)
+        types.util.checkType('series', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val) && ~isempty(val.data)
+            origVal = val;
+            val = val.data;
+            % Reference to type `PatchClampSeries`
+            val = types.util.validateReferenceType('series', val, 'types.core.PatchClampSeries', 'types.untyped.ObjectView');
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_series_index(obj, val)
-        types.util.validateType('series_index', 'types.hdmf_common.VectorIndex', val);
-        types.util.validateShape('series_index', {[1]}, val)
+        types.util.checkType('series_index', 'types.hdmf_common.VectorIndex', val);
     end
     function val = validate_sweep_number(obj, val)
-        types.util.validateType('sweep_number', 'types.hdmf_common.VectorData', val);
-        val = types.util.checkDtype('sweep_number', 'uint32', val);
-        types.util.validateShape('sweep_number', {[1]}, val)
+        types.util.checkType('sweep_number', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val) && ~isempty(val.data)
+            origVal = val;
+            val = val.data;
+            val = types.util.checkDtype('sweep_number', 'uint32', val);
+            origVal.data = val;
+            val = origVal;
+        end
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

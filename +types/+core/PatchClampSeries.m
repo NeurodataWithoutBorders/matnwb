@@ -112,7 +112,6 @@ methods
     end
     function val = validate_gain(obj, val)
         val = types.util.checkDtype('gain', 'single', val);
-        types.util.validateShape('gain', {[1]}, val)
     end
     function val = validate_stimulus_description(obj, val)
         val = types.util.checkDtype('stimulus_description', 'char', val);

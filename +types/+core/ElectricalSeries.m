@@ -112,8 +112,7 @@ methods
         end
     end
     function val = validate_electrodes(obj, val)
-        types.util.validateType('electrodes', 'types.hdmf_common.DynamicTableRegion', val);
-        types.util.validateShape('electrodes', {[1]}, val)
+        types.util.checkType('electrodes', 'types.hdmf_common.DynamicTableRegion', val);
     end
     function val = validate_filtering(obj, val)
         val = types.util.checkDtype('filtering', 'char', val);

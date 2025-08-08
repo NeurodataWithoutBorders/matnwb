@@ -473,7 +473,6 @@ methods
     end
     function val = validate_general_data_collection(obj, val)
         val = types.util.checkDtype('general_data_collection', 'char', val);
-        types.util.validateShape('general_data_collection', {[1]}, val)
     end
     function val = validate_general_devices(obj, val)
         namedprops = struct();
@@ -487,7 +486,6 @@ methods
     end
     function val = validate_general_experiment_description(obj, val)
         val = types.util.checkDtype('general_experiment_description', 'char', val);
-        types.util.validateShape('general_experiment_description', {[1]}, val)
     end
     function val = validate_general_experimenter(obj, val)
         val = types.util.checkDtype('general_experimenter', 'char', val);
@@ -503,7 +501,6 @@ methods
     end
     function val = validate_general_institution(obj, val)
         val = types.util.checkDtype('general_institution', 'char', val);
-        types.util.validateShape('general_institution', {[1]}, val)
     end
     function val = validate_general_intracellular_ephys(obj, val)
         namedprops = struct();
@@ -515,7 +512,6 @@ methods
     end
     function val = validate_general_intracellular_ephys_filtering(obj, val)
         val = types.util.checkDtype('general_intracellular_ephys_filtering', 'char', val);
-        types.util.validateShape('general_intracellular_ephys_filtering', {[1]}, val)
     end
     function val = validate_general_intracellular_ephys_intracellular_recordings(obj, val)
         val = types.util.checkDtype('general_intracellular_ephys_intracellular_recordings', 'types.core.IntracellularRecordingsTable', val);
@@ -538,11 +534,9 @@ methods
     end
     function val = validate_general_lab(obj, val)
         val = types.util.checkDtype('general_lab', 'char', val);
-        types.util.validateShape('general_lab', {[1]}, val)
     end
     function val = validate_general_notes(obj, val)
         val = types.util.checkDtype('general_notes', 'char', val);
-        types.util.validateShape('general_notes', {[1]}, val)
     end
     function val = validate_general_optogenetics(obj, val)
         namedprops = struct();
@@ -556,11 +550,9 @@ methods
     end
     function val = validate_general_pharmacology(obj, val)
         val = types.util.checkDtype('general_pharmacology', 'char', val);
-        types.util.validateShape('general_pharmacology', {[1]}, val)
     end
     function val = validate_general_protocol(obj, val)
         val = types.util.checkDtype('general_protocol', 'char', val);
-        types.util.validateShape('general_protocol', {[1]}, val)
     end
     function val = validate_general_related_publications(obj, val)
         val = types.util.checkDtype('general_related_publications', 'char', val);
@@ -568,15 +560,12 @@ methods
     end
     function val = validate_general_session_id(obj, val)
         val = types.util.checkDtype('general_session_id', 'char', val);
-        types.util.validateShape('general_session_id', {[1]}, val)
     end
     function val = validate_general_slices(obj, val)
         val = types.util.checkDtype('general_slices', 'char', val);
-        types.util.validateShape('general_slices', {[1]}, val)
     end
     function val = validate_general_source_script(obj, val)
         val = types.util.checkDtype('general_source_script', 'char', val);
-        types.util.validateShape('general_source_script', {[1]}, val)
     end
     function val = validate_general_source_script_file_name(obj, val)
         val = types.util.checkDtype('general_source_script_file_name', 'char', val);
@@ -584,18 +573,15 @@ methods
     end
     function val = validate_general_stimulus(obj, val)
         val = types.util.checkDtype('general_stimulus', 'char', val);
-        types.util.validateShape('general_stimulus', {[1]}, val)
     end
     function val = validate_general_subject(obj, val)
         val = types.util.checkDtype('general_subject', 'types.core.Subject', val);
     end
     function val = validate_general_surgery(obj, val)
         val = types.util.checkDtype('general_surgery', 'char', val);
-        types.util.validateShape('general_surgery', {[1]}, val)
     end
     function val = validate_general_virus(obj, val)
         val = types.util.checkDtype('general_virus', 'char', val);
-        types.util.validateShape('general_virus', {[1]}, val)
     end
     function val = validate_general_was_generated_by(obj, val)
         val = types.util.checkDtype('general_was_generated_by', 'char', val);
@@ -603,7 +589,6 @@ methods
     end
     function val = validate_identifier(obj, val)
         val = types.util.checkDtype('identifier', 'char', val);
-        types.util.validateShape('identifier', {[1]}, val)
     end
     function val = validate_intervals(obj, val)
         namedprops = struct();
@@ -630,11 +615,9 @@ methods
     end
     function val = validate_session_description(obj, val)
         val = types.util.checkDtype('session_description', 'char', val);
-        types.util.validateShape('session_description', {[1]}, val)
     end
     function val = validate_session_start_time(obj, val)
         val = types.util.checkDtype('session_start_time', 'datetime', val);
-        types.util.validateShape('session_start_time', {[1]}, val)
     end
     function val = validate_stimulus_presentation(obj, val)
         constrained = {'types.hdmf_common.DynamicTable', 'types.core.NWBDataInterface', 'types.core.TimeSeries'};
@@ -646,7 +629,6 @@ methods
     end
     function val = validate_timestamps_reference_time(obj, val)
         val = types.util.checkDtype('timestamps_reference_time', 'datetime', val);
-        types.util.validateShape('timestamps_reference_time', {[1]}, val)
     end
     function val = validate_units(obj, val)
         val = types.util.checkDtype('units', 'types.core.Units', val);

@@ -81,9 +81,15 @@ methods
         types.util.validateShape('description', {[1]}, val)
     end
     function val = validate_id(obj, val)
-        types.util.validateType('id', 'types.hdmf_common.ElementIdentifiers', val);
-        val = types.util.checkDtype('id', 'int8', val);
-        types.util.validateShape('id', {[Inf]}, val)
+        types.util.checkType('id', 'types.hdmf_common.ElementIdentifiers', val);
+        if ~isempty(val) && ~isempty(val.data)
+            origVal = val;
+            val = val.data;
+            val = types.util.checkDtype('id', 'int8', val);
+            types.util.validateShape('id', {[Inf]}, val)
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_vectordata(obj, val)
         constrained = { 'types.hdmf_common.VectorData' };

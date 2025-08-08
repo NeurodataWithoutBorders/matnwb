@@ -73,8 +73,7 @@ methods
         types.util.validateShape('description', {[1]}, val)
     end
     function val = validate_order_of_images(obj, val)
-        types.util.validateType('order_of_images', 'types.core.ImageReferences', val);
-        types.util.validateShape('order_of_images', {[1]}, val)
+        types.util.checkType('order_of_images', 'types.core.ImageReferences', val);
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

@@ -72,18 +72,15 @@ methods
     
     function val = validate_description(obj, val)
         val = types.util.checkDtype('description', 'char', val);
-        types.util.validateShape('description', {[1]}, val)
     end
     function val = validate_device(obj, val)
         val = types.util.validateSoftLink('device', val, 'types.core.Device');
     end
     function val = validate_excitation_lambda(obj, val)
         val = types.util.checkDtype('excitation_lambda', 'single', val);
-        types.util.validateShape('excitation_lambda', {[1]}, val)
     end
     function val = validate_location(obj, val)
         val = types.util.checkDtype('location', 'char', val);
-        types.util.validateShape('location', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

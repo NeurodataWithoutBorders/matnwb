@@ -113,11 +113,9 @@ methods
     end
     function val = validate_metric(obj, val)
         val = types.util.checkDtype('metric', 'char', val);
-        types.util.validateShape('metric', {[1]}, val)
     end
     function val = validate_source_channels(obj, val)
-        types.util.validateType('source_channels', 'types.hdmf_common.DynamicTableRegion', val);
-        types.util.validateShape('source_channels', {[1]}, val)
+        types.util.checkType('source_channels', 'types.hdmf_common.DynamicTableRegion', val);
     end
     function val = validate_source_timeseries(obj, val)
         val = types.util.validateSoftLink('source_timeseries', val, 'types.core.TimeSeries');

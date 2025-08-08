@@ -146,59 +146,87 @@ methods
     %% VALIDATORS
     
     function val = validate_electrode_group(obj, val)
-        types.util.validateType('electrode_group', 'types.hdmf_common.VectorData', val);
-        % Reference to type `ElectrodeGroup`
-        val = types.util.validateReferenceType('electrode_group', val, 'types.core.ElectrodeGroup', 'types.untyped.ObjectView');
-        types.util.validateShape('electrode_group', {[1]}, val)
+        types.util.checkType('electrode_group', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val) && ~isempty(val.data)
+            origVal = val;
+            val = val.data;
+            % Reference to type `ElectrodeGroup`
+            val = types.util.validateReferenceType('electrode_group', val, 'types.core.ElectrodeGroup', 'types.untyped.ObjectView');
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_electrodes(obj, val)
-        types.util.validateType('electrodes', 'types.hdmf_common.DynamicTableRegion', val);
-        types.util.validateShape('electrodes', {[1]}, val)
+        types.util.checkType('electrodes', 'types.hdmf_common.DynamicTableRegion', val);
     end
     function val = validate_electrodes_index(obj, val)
-        types.util.validateType('electrodes_index', 'types.hdmf_common.VectorIndex', val);
-        types.util.validateShape('electrodes_index', {[1]}, val)
+        types.util.checkType('electrodes_index', 'types.hdmf_common.VectorIndex', val);
     end
     function val = validate_obs_intervals(obj, val)
-        types.util.validateType('obs_intervals', 'types.hdmf_common.VectorData', val);
-        val = types.util.checkDtype('obs_intervals', 'double', val);
-        types.util.validateShape('obs_intervals', {[2,Inf]}, val)
+        types.util.checkType('obs_intervals', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val) && ~isempty(val.data)
+            origVal = val;
+            val = val.data;
+            val = types.util.checkDtype('obs_intervals', 'double', val);
+            types.util.validateShape('obs_intervals', {[2,Inf]}, val)
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_obs_intervals_index(obj, val)
-        types.util.validateType('obs_intervals_index', 'types.hdmf_common.VectorIndex', val);
-        types.util.validateShape('obs_intervals_index', {[1]}, val)
+        types.util.checkType('obs_intervals_index', 'types.hdmf_common.VectorIndex', val);
     end
     function val = validate_spike_times(obj, val)
-        types.util.validateType('spike_times', 'types.hdmf_common.VectorData', val);
-        val = types.util.checkDtype('spike_times', 'double', val);
-        types.util.validateShape('spike_times', {[1]}, val)
+        types.util.checkType('spike_times', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val) && ~isempty(val.data)
+            origVal = val;
+            val = val.data;
+            val = types.util.checkDtype('spike_times', 'double', val);
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_spike_times_index(obj, val)
-        types.util.validateType('spike_times_index', 'types.hdmf_common.VectorIndex', val);
-        types.util.validateShape('spike_times_index', {[1]}, val)
+        types.util.checkType('spike_times_index', 'types.hdmf_common.VectorIndex', val);
     end
     function val = validate_waveform_mean(obj, val)
-        types.util.validateType('waveform_mean', 'types.hdmf_common.VectorData', val);
-        val = types.util.checkDtype('waveform_mean', 'single', val);
-        types.util.validateShape('waveform_mean', {[Inf,Inf,Inf], [Inf,Inf]}, val)
+        types.util.checkType('waveform_mean', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val) && ~isempty(val.data)
+            origVal = val;
+            val = val.data;
+            val = types.util.checkDtype('waveform_mean', 'single', val);
+            types.util.validateShape('waveform_mean', {[Inf,Inf,Inf], [Inf,Inf]}, val)
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_waveform_sd(obj, val)
-        types.util.validateType('waveform_sd', 'types.hdmf_common.VectorData', val);
-        val = types.util.checkDtype('waveform_sd', 'single', val);
-        types.util.validateShape('waveform_sd', {[Inf,Inf,Inf], [Inf,Inf]}, val)
+        types.util.checkType('waveform_sd', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val) && ~isempty(val.data)
+            origVal = val;
+            val = val.data;
+            val = types.util.checkDtype('waveform_sd', 'single', val);
+            types.util.validateShape('waveform_sd', {[Inf,Inf,Inf], [Inf,Inf]}, val)
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_waveforms(obj, val)
-        types.util.validateType('waveforms', 'types.hdmf_common.VectorData', val);
-        val = types.util.checkDtype('waveforms', 'numeric', val);
-        types.util.validateShape('waveforms', {[Inf,Inf]}, val)
+        types.util.checkType('waveforms', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val) && ~isempty(val.data)
+            origVal = val;
+            val = val.data;
+            val = types.util.checkDtype('waveforms', 'numeric', val);
+            types.util.validateShape('waveforms', {[Inf,Inf]}, val)
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_waveforms_index(obj, val)
-        types.util.validateType('waveforms_index', 'types.hdmf_common.VectorIndex', val);
-        types.util.validateShape('waveforms_index', {[1]}, val)
+        types.util.checkType('waveforms_index', 'types.hdmf_common.VectorIndex', val);
     end
     function val = validate_waveforms_index_index(obj, val)
-        types.util.validateType('waveforms_index_index', 'types.hdmf_common.VectorIndex', val);
-        types.util.validateShape('waveforms_index_index', {[1]}, val)
+        types.util.checkType('waveforms_index_index', 'types.hdmf_common.VectorIndex', val);
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

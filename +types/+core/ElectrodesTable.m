@@ -149,65 +149,125 @@ methods
     %% VALIDATORS
     
     function val = validate_filtering(obj, val)
-        types.util.validateType('filtering', 'types.hdmf_common.VectorData', val);
-        val = types.util.checkDtype('filtering', 'char', val);
-        types.util.validateShape('filtering', {[1]}, val)
+        types.util.checkType('filtering', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val) && ~isempty(val.data)
+            origVal = val;
+            val = val.data;
+            val = types.util.checkDtype('filtering', 'char', val);
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_group(obj, val)
-        types.util.validateType('group', 'types.hdmf_common.VectorData', val);
-        % Reference to type `ElectrodeGroup`
-        val = types.util.validateReferenceType('group', val, 'types.core.ElectrodeGroup', 'types.untyped.ObjectView');
-        types.util.validateShape('group', {[1]}, val)
+        types.util.checkType('group', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val) && ~isempty(val.data)
+            origVal = val;
+            val = val.data;
+            % Reference to type `ElectrodeGroup`
+            val = types.util.validateReferenceType('group', val, 'types.core.ElectrodeGroup', 'types.untyped.ObjectView');
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_group_name(obj, val)
-        types.util.validateType('group_name', 'types.hdmf_common.VectorData', val);
-        val = types.util.checkDtype('group_name', 'char', val);
-        types.util.validateShape('group_name', {[1]}, val)
+        types.util.checkType('group_name', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val) && ~isempty(val.data)
+            origVal = val;
+            val = val.data;
+            val = types.util.checkDtype('group_name', 'char', val);
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_imp(obj, val)
-        types.util.validateType('imp', 'types.hdmf_common.VectorData', val);
-        val = types.util.checkDtype('imp', 'single', val);
-        types.util.validateShape('imp', {[1]}, val)
+        types.util.checkType('imp', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val) && ~isempty(val.data)
+            origVal = val;
+            val = val.data;
+            val = types.util.checkDtype('imp', 'single', val);
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_location(obj, val)
-        types.util.validateType('location', 'types.hdmf_common.VectorData', val);
-        val = types.util.checkDtype('location', 'char', val);
-        types.util.validateShape('location', {[1]}, val)
+        types.util.checkType('location', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val) && ~isempty(val.data)
+            origVal = val;
+            val = val.data;
+            val = types.util.checkDtype('location', 'char', val);
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_reference(obj, val)
-        types.util.validateType('reference', 'types.hdmf_common.VectorData', val);
-        val = types.util.checkDtype('reference', 'char', val);
-        types.util.validateShape('reference', {[1]}, val)
+        types.util.checkType('reference', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val) && ~isempty(val.data)
+            origVal = val;
+            val = val.data;
+            val = types.util.checkDtype('reference', 'char', val);
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_rel_x(obj, val)
-        types.util.validateType('rel_x', 'types.hdmf_common.VectorData', val);
-        val = types.util.checkDtype('rel_x', 'single', val);
-        types.util.validateShape('rel_x', {[1]}, val)
+        types.util.checkType('rel_x', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val) && ~isempty(val.data)
+            origVal = val;
+            val = val.data;
+            val = types.util.checkDtype('rel_x', 'single', val);
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_rel_y(obj, val)
-        types.util.validateType('rel_y', 'types.hdmf_common.VectorData', val);
-        val = types.util.checkDtype('rel_y', 'single', val);
-        types.util.validateShape('rel_y', {[1]}, val)
+        types.util.checkType('rel_y', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val) && ~isempty(val.data)
+            origVal = val;
+            val = val.data;
+            val = types.util.checkDtype('rel_y', 'single', val);
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_rel_z(obj, val)
-        types.util.validateType('rel_z', 'types.hdmf_common.VectorData', val);
-        val = types.util.checkDtype('rel_z', 'single', val);
-        types.util.validateShape('rel_z', {[1]}, val)
+        types.util.checkType('rel_z', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val) && ~isempty(val.data)
+            origVal = val;
+            val = val.data;
+            val = types.util.checkDtype('rel_z', 'single', val);
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_x(obj, val)
-        types.util.validateType('x', 'types.hdmf_common.VectorData', val);
-        val = types.util.checkDtype('x', 'single', val);
-        types.util.validateShape('x', {[1]}, val)
+        types.util.checkType('x', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val) && ~isempty(val.data)
+            origVal = val;
+            val = val.data;
+            val = types.util.checkDtype('x', 'single', val);
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_y(obj, val)
-        types.util.validateType('y', 'types.hdmf_common.VectorData', val);
-        val = types.util.checkDtype('y', 'single', val);
-        types.util.validateShape('y', {[1]}, val)
+        types.util.checkType('y', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val) && ~isempty(val.data)
+            origVal = val;
+            val = val.data;
+            val = types.util.checkDtype('y', 'single', val);
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_z(obj, val)
-        types.util.validateType('z', 'types.hdmf_common.VectorData', val);
-        val = types.util.checkDtype('z', 'single', val);
-        types.util.validateShape('z', {[1]}, val)
+        types.util.checkType('z', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val) && ~isempty(val.data)
+            origVal = val;
+            val = val.data;
+            val = types.util.checkDtype('z', 'single', val);
+            origVal.data = val;
+            val = origVal;
+        end
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

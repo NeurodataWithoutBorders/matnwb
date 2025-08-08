@@ -101,31 +101,43 @@ methods
     %% VALIDATORS
     
     function val = validate_start_time(obj, val)
-        types.util.validateType('start_time', 'types.hdmf_common.VectorData', val);
-        val = types.util.checkDtype('start_time', 'single', val);
-        types.util.validateShape('start_time', {[1]}, val)
+        types.util.checkType('start_time', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val) && ~isempty(val.data)
+            origVal = val;
+            val = val.data;
+            val = types.util.checkDtype('start_time', 'single', val);
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_stop_time(obj, val)
-        types.util.validateType('stop_time', 'types.hdmf_common.VectorData', val);
-        val = types.util.checkDtype('stop_time', 'single', val);
-        types.util.validateShape('stop_time', {[1]}, val)
+        types.util.checkType('stop_time', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val) && ~isempty(val.data)
+            origVal = val;
+            val = val.data;
+            val = types.util.checkDtype('stop_time', 'single', val);
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_tags(obj, val)
-        types.util.validateType('tags', 'types.hdmf_common.VectorData', val);
-        val = types.util.checkDtype('tags', 'char', val);
-        types.util.validateShape('tags', {[1]}, val)
+        types.util.checkType('tags', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val) && ~isempty(val.data)
+            origVal = val;
+            val = val.data;
+            val = types.util.checkDtype('tags', 'char', val);
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_tags_index(obj, val)
-        types.util.validateType('tags_index', 'types.hdmf_common.VectorIndex', val);
-        types.util.validateShape('tags_index', {[1]}, val)
+        types.util.checkType('tags_index', 'types.hdmf_common.VectorIndex', val);
     end
     function val = validate_timeseries(obj, val)
-        types.util.validateType('timeseries', 'types.core.TimeSeriesReferenceVectorData', val);
-        types.util.validateShape('timeseries', {[1]}, val)
+        types.util.checkType('timeseries', 'types.core.TimeSeriesReferenceVectorData', val);
     end
     function val = validate_timeseries_index(obj, val)
-        types.util.validateType('timeseries_index', 'types.hdmf_common.VectorIndex', val);
-        types.util.validateShape('timeseries_index', {[1]}, val)
+        types.util.checkType('timeseries_index', 'types.hdmf_common.VectorIndex', val);
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)
