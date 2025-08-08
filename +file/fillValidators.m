@@ -216,7 +216,7 @@ function fdvstr = fillDimensionValidation(name, shape)
 end
 
 function validationStr = fillTypeValidation(name, type)
-    validationStr = ['types.util.validateType(''' name ''', ''' type ''', val);'];
+    validationStr = ['types.util.checkType(''' name ''', ''' type ''', val);'];
 end
 
 %NOTE: can return empty strings
