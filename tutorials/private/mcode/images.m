@@ -34,26 +34,23 @@ nwb
 % |*OpticalSeries*|> object with the name |"StimulusPresentation"| representing 
 % what images were shown to the subject and at what times.
 % 
-% Image data can be stored either in the HDF5 file or as an external image file. 
+% Image data can be stored either in the NWB file or as an external image file. 
 % For this tutorial, we will use fake image data with shape of |('time', 'x', 
 % 'y', 'RGB') = (200, 50, 50, 3)|. As in all <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
 % |*TimeSeries*|>, the first dimension is time. The second and third dimensions 
 % represent x and y. The fourth dimension represents the RGB value (length of 
-% 3) for color images. *Please note*: As described in the <./dimensionMapNoDataPipes.mlx 
-% dimensionMapNoDataPipes> tutorial, when a MATLAB array is exported to HDF5, 
-% the array is transposed. Therefore, in order to correctly export the data, we 
-% will need to create a transposed array, where the dimensions are in reverse 
-% order compared to the type specification.
+% 3) for color images. 
 % 
 % NWB differentiates between acquired data and data that was presented as stimulus. 
-% We can add it to the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html 
+% We can add this <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OpticalSeries.html 
+% |*OpticalSeries*|> to the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html 
 % |*NWBFile*|> object as stimulus data.
 % 
 % If the sampling rate is constant, use |rate| and |starting_time| to specify 
 % time. For irregularly sampled recordings, use |timestamps| to specify time for 
 % each sample image.
 
-image_data = randi(255, [3, 50, 50, 200]); % NB: Array is transposed
+image_data = randi(255, [3, 50, 50, 200]); % NB: Dimensions are permuted (**)
 optical_series = types.core.OpticalSeries( ...
     'distance', 0.7, ...  % required
     'field_of_view', [0.2, 0.3, 0.7], ...  % required
@@ -66,6 +63,12 @@ optical_series = types.core.OpticalSeries( ...
 );
 
 nwb.stimulus_presentation.set('StimulusPresentation', optical_series);
+%% 
+% ***Please note*: As described in the <./dimensionMapNoDataPipes.mlx dimensionMapNoDataPipes> 
+% tutorial, when a MATLAB array is exported to HDF5, the dimensions of the array 
+% are reversed. Therefore, in order to correctly export the data, we will need 
+% to create a permuted array, where the dimensions are in reverse order compared 
+% to the NWB type specification.
 %% AbstractFeatureSeries: Storing features of visual stimuli
 % While it is usually recommended to store the entire image data as an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OpticalSeries.html 
 % |*OpticalSeries*|>, sometimes it is useful to store features of the visual stimuli 
@@ -95,7 +98,7 @@ nwb.stimulus_presentation.set('StimulusFeatures', abstract_feature_series);
 % image file. When color images are stored in the HDF5 file the color channel 
 % order is expected to be RGB.
 
-image_data = randi(255, [3, 50, 50, 200]);
+image_data = randi(255, [3, 50, 50, 200]); % NB: Dimensions are permuted (**)
 behavior_images = types.core.ImageSeries( ...
     'data', image_data, ...
     'description', 'Image data of an animal in environment', ...
@@ -105,6 +108,8 @@ behavior_images = types.core.ImageSeries( ...
 );
 
 nwb.acquisition.set('ImageSeries', behavior_images);
+%% 
+% **Note on permuted image data
 %% External Files
 % External files (e.g. video files of the behaving animal) can be added to the 
 % <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html 
@@ -144,26 +149,30 @@ nwb.acquisition.set('ExternalVideos', behavior_external_file);
 % must be 3D where the first and second dimensions represent x and y. The third 
 % dimension has length 4 and represents the RGBA value.
 
-image_data = randi(255, [4, 200, 200]);
+image_data = randi(255, [4, 200, 200]); % NB: Dimensions are permuted (**)
 
 rgba_image = types.core.RGBAImage( ...
     'data', image_data, ...  % required
     'resolution', 70.0, ...
     'description', 'RGBA image' ...
 );
+%% 
+% **Note on permuted image data
 % RGBImage: for color images
 % <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RGBImage.html 
 % |*RGBImage*|> is for storing data of RGB color image. |data| must be 3D where 
 % the first and second dimensions represent x and y. The third dimension has length 
 % 3 and represents the RGB value.
 
-image_data = randi(255, [3, 200, 200]);
+image_data = randi(255, [3, 200, 200]); % NB: Dimensions are permuted (**)
 
 rgb_image = types.core.RGBImage( ...
     'data', image_data, ...  % required
     'resolution', 70.0, ...
     'description', 'RGB image' ...
 );
+%% 
+% **Note on permuted image data
 % *GrayscaleImage: for grayscale images*
 % <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/GrayscaleImage.html 
 % |*GrayscaleImage*|> is for storing grayscale image data. |data| must be 2D where 
@@ -189,48 +198,54 @@ image_collection.baseimage.set('rgb_image', rgb_image);
 image_collection.baseimage.set('grayscale_image', grayscale_image);
 
 nwb.acquisition.set('image_collection', image_collection);
-%% Index Series for Repeated Images
+%% IndexSeries for repeated images
 % You may want to set up a time series of images where some images are repeated 
 % many times. You could create an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImageSeries.html 
 % |*ImageSeries*|> that repeats the data each time the image is shown, but that 
 % would be inefficient, because it would store the same data multiple times. A 
 % better solution would be to store the unique images once and reference those 
-% images. This is how <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IndexSeries.html 
+% images. This is how the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IndexSeries.html 
 % |*IndexSeries*|> works. First, create an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Images.html 
 % |*Images*|> container with the order of images defined using an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImageReferences.html 
 % |*ImageReferences*|>. Then create an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IndexSeries.html 
 % |*IndexSeries*|> that indexes into the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Images.html 
 % |*Images*|>.
 
-rgbImage = imread('street2.jpg');
-grayImage = uint8(sum(double(rgbImage), 3) ./ double(max(max(max(rgbImage)))));
-GsStreet = types.core.GrayscaleImage(...
-    'data', grayImage, ...
+% Define images that were used for repeated presentations
+rgb_image = imread('street2.jpg');
+gray_image = uint8(sum(double(rgb_image), 3) ./ double(max(max(max(rgb_image)))));
+gs_street = types.core.GrayscaleImage(...
+    'data', gray_image, ...
     'description', 'grayscale image of a street.', ...
     'resolution', 28 ...
 );
-
-RgbStreet = types.core.RGBImage( ...
-    'data', rgbImage, ...
+rgb_street = types.core.RGBImage( ...
+    'data', permute(rgb_image, [3,2,1]), ... % NB: Dimensions are permuted (**)
     'resolution', 28, ...
     'description', 'RGB Street' ...
 );
 
-ImageOrder = types.core.ImageReferences(...
-    'data', [types.untyped.ObjectView(RgbStreet), types.untyped.ObjectView(GsStreet)] ...
+% Create an image collection with ordered images
+image_order = types.core.ImageReferences(...
+    'data', [types.untyped.ObjectView(rgb_street), types.untyped.ObjectView(gs_street)] ...
 );
-Images = types.core.Images( ...
-    'gs_face', GsStreet, ...
-    'rgb_face', RgbStreet, ...
+template_image_collection = types.core.Images( ...
+    'gs_face', gs_street, ...
+    'rgb_face', rgb_street, ...
     'description', 'A collection of streets.', ...
-    'order_of_images', ImageOrder ...
+    'order_of_images', image_order ...
 );
 
-types.core.IndexSeries(...
+% The image collection is added to the stimulus_templates group
+nwb.stimulus_templates.set('StreetImages', template_image_collection);
+
+street_image_presentation = types.core.IndexSeries(...
     'data', [0, 1, 0, 1], ... % NOTE: 0-indexed
-    'indexed_images', Images, ...
+    'indexed_images', template_image_collection, ...
     'timestamps', [0.1, 0.2, 0.3, 0.4] ...
-)
+);
+
+nwb.stimulus_presentation.set('StreetImagePresentation', street_image_presentation);
 %% 
 % Here _data_ contains the (0-indexed) index of the displayed image as they 
 % are ordered in the |ImageReference|.
