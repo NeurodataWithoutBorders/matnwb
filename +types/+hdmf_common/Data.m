@@ -47,7 +47,7 @@ methods
     %% VALIDATORS
     
     function val = validate_data(obj, val)
-    
+        types.util.validateShape('data', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

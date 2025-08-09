@@ -56,9 +56,11 @@ methods
     
     function val = validate_description(obj, val)
         val = types.util.checkDtype('description', 'char', val);
+        types.util.validateShape('description', {[1]}, val)
     end
     function val = validate_emission_lambda(obj, val)
         val = types.util.checkDtype('emission_lambda', 'single', val);
+        types.util.validateShape('emission_lambda', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

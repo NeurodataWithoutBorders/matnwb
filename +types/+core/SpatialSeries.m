@@ -83,6 +83,7 @@ methods
     end
     function val = validate_reference_frame(obj, val)
         val = types.util.checkDtype('reference_frame', 'char', val);
+        types.util.validateShape('reference_frame', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

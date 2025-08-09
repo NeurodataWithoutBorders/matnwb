@@ -52,6 +52,7 @@ methods
         vprops.count = 'int32';
         vprops.timeseries = 'types.untyped.ObjectView';
         val = types.util.checkDtype('data', vprops, val);
+        types.util.validateShape('data', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

@@ -63,6 +63,7 @@ methods
     
     function val = validate_data(obj, val)
         val = types.util.checkDtype('data', 'char', val);
+        types.util.validateShape('data', {[1]}, val)
     end
     function val = validate_image_format(obj, val)
         val = types.util.checkDtype('image_format', 'char', val);
