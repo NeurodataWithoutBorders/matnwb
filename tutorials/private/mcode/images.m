@@ -7,7 +7,7 @@
 % |*types.core.ImageSeries*|> to store acquired image series (movie segments).
 % * Use <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OpticalSeries.html 
 % |*types.core.OpticalSeries*|> and <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/AbstractFeatureSeries.html 
-% |*types.core.AbstractFeatureSeries*| >for series of images or image features 
+% |*types.core.AbstractFeatureSeries*| t>o store series of images or image features 
 % that were presented as stimulus.
 % * Use <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/GrayscaleImage.html 
 % |*types.core.GrayscaleImage*|>, <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RGBImage.html 
@@ -18,7 +18,7 @@
 % tutorial, when a MATLAB array is exported to HDF5, the dimensions of the array 
 % are reversed. Therefore, in order to correctly export the data, we will need 
 % to reverse the order of dimensions in image and timeseries data before adding 
-% to the NWB objects. The function below will be used for this purpose throughout 
+% these to NWB objects. The function below will be used for this purpose throughout 
 % the tutorial:
 
 % Anonymous function for reversing data dimensions for NWB compliance
