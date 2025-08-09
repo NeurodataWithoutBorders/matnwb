@@ -52,7 +52,7 @@ methods
     
     function val = validate_data(obj, val)
         val = types.util.checkDtype('data', 'uint8', val);
-        types.util.validateShape('data', {[1]}, val)
+        types.util.validateShape('data', {[Inf,Inf,Inf,Inf], [Inf,Inf,Inf], [Inf,Inf], [Inf]}, val)
     end
     function val = validate_elements(obj, val)
         % Reference to type `VectorData`
