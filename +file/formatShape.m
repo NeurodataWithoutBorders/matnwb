@@ -1,8 +1,8 @@
 function sz = formatShape(shape)
 %check for optional dims
 
-if ischar(shape) && strcmp(shape, 'any')
-    sz = nan; return
+if ~iscell(shape) && isnumeric(shape) && isnan(shape)
+    sz = shape; return
 end
 
 assert(iscell(shape), '`shape` must be a cell.');
