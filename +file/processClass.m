@@ -32,8 +32,8 @@ function [Processed, classprops, inherited] = processClass(name, namespace, preg
             end
             props = class.getProps();
 
-            % Add some exceptions due to schema inconsistencies
-            fixSchemaInconsistencies(name, props, namespace)
+            % Fix some inconsistencies between specs and intended behavior
+            class = fixSchemaInconsistencies(nodename, class, props, namespace);
 
             pregen(nodename) = struct('class', class, 'props', props);
         end
