@@ -40,6 +40,17 @@ classdef MultipleShapesTest < tests.unit.abstract.SchemaTest
             nid.data = 'Inherited Dtype Dataset';
             testCase.roundabout(nid);
         end
+
+        function testInheritedDatasetWithWrongShape(testCase)
+
+            % Should not fail for parent type that accepts data with shape 3
+            types.mss.NullShapeDataset('data', {'A'; 'B'; 'C'});
+    
+            % Should fail for inherited type that accepts data with shape 1
+            testCase.verifyError(...
+                @() types.mss.NarrowInheritedDataset('data', {'A'; 'B'; 'C'}'), ...
+                'NWB:CheckDims:InvalidDimensions');
+        end
     end
 
     methods (Access = private)
