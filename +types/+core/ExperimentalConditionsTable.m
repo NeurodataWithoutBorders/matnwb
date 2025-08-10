@@ -67,23 +67,9 @@ methods
     
     function val = validate_repetitions(obj, val)
         types.util.checkType('repetitions', 'types.hdmf_common.DynamicTableRegion', val);
-        if ~isempty(val)
-            origVal = val;
-            val = val.data;
-            types.util.validateShape('repetitions', {[1]}, val)
-            origVal.data = val;
-            val = origVal;
-        end
     end
     function val = validate_repetitions_index(obj, val)
         types.util.checkType('repetitions_index', 'types.hdmf_common.VectorIndex', val);
-        if ~isempty(val)
-            origVal = val;
-            val = val.data;
-            types.util.validateShape('repetitions_index', {[1]}, val)
-            origVal.data = val;
-            val = origVal;
-        end
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

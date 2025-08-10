@@ -154,7 +154,6 @@ methods
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('filtering', 'char', val);
-            types.util.validateShape('filtering', {[1]}, val)
             origVal.data = val;
             val = origVal;
         end
@@ -166,7 +165,6 @@ methods
             val = val.data;
             % Reference to type `ElectrodeGroup`
             val = types.util.validateReferenceType('group', val, 'types.core.ElectrodeGroup', 'types.untyped.ObjectView');
-            types.util.validateShape('group', {[1]}, val)
             origVal.data = val;
             val = origVal;
         end
@@ -177,7 +175,6 @@ methods
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('group_name', 'char', val);
-            types.util.validateShape('group_name', {[1]}, val)
             origVal.data = val;
             val = origVal;
         end
@@ -188,7 +185,6 @@ methods
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('imp', 'single', val);
-            types.util.validateShape('imp', {[1]}, val)
             origVal.data = val;
             val = origVal;
         end
@@ -199,7 +195,6 @@ methods
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('location', 'char', val);
-            types.util.validateShape('location', {[1]}, val)
             origVal.data = val;
             val = origVal;
         end
@@ -210,7 +205,6 @@ methods
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('reference', 'char', val);
-            types.util.validateShape('reference', {[1]}, val)
             origVal.data = val;
             val = origVal;
         end
@@ -221,7 +215,6 @@ methods
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('rel_x', 'single', val);
-            types.util.validateShape('rel_x', {[1]}, val)
             origVal.data = val;
             val = origVal;
         end
@@ -232,7 +225,6 @@ methods
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('rel_y', 'single', val);
-            types.util.validateShape('rel_y', {[1]}, val)
             origVal.data = val;
             val = origVal;
         end
@@ -243,7 +235,6 @@ methods
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('rel_z', 'single', val);
-            types.util.validateShape('rel_z', {[1]}, val)
             origVal.data = val;
             val = origVal;
         end
@@ -254,7 +245,6 @@ methods
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('x', 'single', val);
-            types.util.validateShape('x', {[1]}, val)
             origVal.data = val;
             val = origVal;
         end
@@ -265,7 +255,6 @@ methods
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('y', 'single', val);
-            types.util.validateShape('y', {[1]}, val)
             origVal.data = val;
             val = origVal;
         end
@@ -276,7 +265,6 @@ methods
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('z', 'single', val);
-            types.util.validateShape('z', {[1]}, val)
             origVal.data = val;
             val = origVal;
         end

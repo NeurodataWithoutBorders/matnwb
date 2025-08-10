@@ -75,23 +75,9 @@ methods
     
     function val = validate_simultaneous_recordings(obj, val)
         types.util.checkType('simultaneous_recordings', 'types.hdmf_common.DynamicTableRegion', val);
-        if ~isempty(val)
-            origVal = val;
-            val = val.data;
-            types.util.validateShape('simultaneous_recordings', {[1]}, val)
-            origVal.data = val;
-            val = origVal;
-        end
     end
     function val = validate_simultaneous_recordings_index(obj, val)
         types.util.checkType('simultaneous_recordings_index', 'types.hdmf_common.VectorIndex', val);
-        if ~isempty(val)
-            origVal = val;
-            val = val.data;
-            types.util.validateShape('simultaneous_recordings_index', {[1]}, val)
-            origVal.data = val;
-            val = origVal;
-        end
     end
     function val = validate_stimulus_type(obj, val)
         types.util.checkType('stimulus_type', 'types.hdmf_common.VectorData', val);
@@ -99,7 +85,6 @@ methods
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('stimulus_type', 'char', val);
-            types.util.validateShape('stimulus_type', {[1]}, val)
             origVal.data = val;
             val = origVal;
         end

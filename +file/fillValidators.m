@@ -173,7 +173,7 @@ function unitValidationStr = fillDatasetValidation(name, prop, namespaceReg)
                 {fillTypeValidation(name, fullname)}];
 
             datasetValidationLines = [...
-                {fillDtypeValidation(name, prop.dtype, namespaceReg)} ...
+                {fillDtypeValidation(name, prop.dtype, namespaceReg)}, ...
                 {fillDimensionValidation(name, prop.shape)} ];
 
             datasetValidationLines(cellfun('isempty', datasetValidationLines)) = [];
@@ -209,10 +209,6 @@ end
 
 function fdvstr = fillDimensionValidation(name, shape)
     
-    if isnumeric(shape) && isnan(shape)
-        fdvstr = ''; return
-    end
-
     if isnumeric(shape) && isnan(shape) % Any shape is allowed
         fdvstr = ''; return
     end

@@ -137,20 +137,12 @@ methods
             vprops.y = 'uint32';
             vprops.weight = 'single';
             val = types.util.checkDtype('pixel_mask', vprops, val);
-            types.util.validateShape('pixel_mask', {[1]}, val)
             origVal.data = val;
             val = origVal;
         end
     end
     function val = validate_pixel_mask_index(obj, val)
         types.util.checkType('pixel_mask_index', 'types.hdmf_common.VectorIndex', val);
-        if ~isempty(val)
-            origVal = val;
-            val = val.data;
-            types.util.validateShape('pixel_mask_index', {[1]}, val)
-            origVal.data = val;
-            val = origVal;
-        end
     end
     function val = validate_reference_images(obj, val)
         namedprops = struct();
@@ -174,20 +166,12 @@ methods
             vprops.z = 'uint32';
             vprops.weight = 'single';
             val = types.util.checkDtype('voxel_mask', vprops, val);
-            types.util.validateShape('voxel_mask', {[1]}, val)
             origVal.data = val;
             val = origVal;
         end
     end
     function val = validate_voxel_mask_index(obj, val)
         types.util.checkType('voxel_mask_index', 'types.hdmf_common.VectorIndex', val);
-        if ~isempty(val)
-            origVal = val;
-            val = val.data;
-            types.util.validateShape('voxel_mask_index', {[1]}, val)
-            origVal.data = val;
-            val = origVal;
-        end
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

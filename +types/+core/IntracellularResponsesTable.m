@@ -65,13 +65,6 @@ methods
     end
     function val = validate_response(obj, val)
         types.util.checkType('response', 'types.core.TimeSeriesReferenceVectorData', val);
-        if ~isempty(val)
-            origVal = val;
-            val = val.data;
-            types.util.validateShape('response', {[1]}, val)
-            origVal.data = val;
-            val = origVal;
-        end
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

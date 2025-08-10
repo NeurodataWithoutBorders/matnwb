@@ -70,7 +70,6 @@ methods
             val = val.data;
             % Reference to type `IntracellularElectrode`
             val = types.util.validateReferenceType('electrode', val, 'types.core.IntracellularElectrode', 'types.untyped.ObjectView');
-            types.util.validateShape('electrode', {[1]}, val)
             origVal.data = val;
             val = origVal;
         end

@@ -117,13 +117,6 @@ methods
     end
     function val = validate_source_channels(obj, val)
         types.util.checkType('source_channels', 'types.hdmf_common.DynamicTableRegion', val);
-        if ~isempty(val)
-            origVal = val;
-            val = val.data;
-            types.util.validateShape('source_channels', {[1]}, val)
-            origVal.data = val;
-            val = origVal;
-        end
     end
     function val = validate_source_timeseries(obj, val)
         val = types.util.validateSoftLink('source_timeseries', val, 'types.core.TimeSeries');

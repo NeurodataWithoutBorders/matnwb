@@ -15,4 +15,14 @@ function matchingAncestorSpec = findMatchingAncestorSpec(spec, ancestorSpecs)
             end
         end
     end
+    if (isKey(spec, 'neurodata_type_inc') || isKey(spec, 'data_type_inc')) && ...
+            ~(isKey(spec, 'neurodata_type_def') || isKey(spec, 'data_type_def'))
+        % "inheritance" by inclusion
+        if ~isKey(spec, 'dtype')
+            spec('dtype') = 'any';
+        end
+        if ~isKey(spec, 'shape')
+            spec('shape') = nan; %#ok<NASGU>
+        end
+    end
 end
