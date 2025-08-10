@@ -43,7 +43,7 @@ switch dtype
     case 'long'
         matlabType = 'int64';
     case 'int'
-        matlabType = 'int8';
+        matlabType = 'int32';
     case 'short'
         matlabType = 'int16';
     otherwise
