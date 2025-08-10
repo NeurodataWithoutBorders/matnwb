@@ -1,5 +1,7 @@
 groups:
-- attributes:
+- neurodata_type_def: MultiShapeWrapper
+  neurodata_type_inc: NWBDataInterface
+  attributes:
   - name: help
     dtype: text
     doc: Value is 'Arbitrary shapes'
@@ -7,10 +9,11 @@ groups:
   datasets:
   - name: shaped_data
     neurodata_type_inc: ShapeDataset
-  neurodata_type_def: MultiShapeWrapper
-  neurodata_type_inc: NWBDataInterface
+
 datasets:
-- attributes:
+- neurodata_type_def: ShapeDataset
+  neurodata_type_inc: NWBData
+  attributes:
   - name: help
     dtype: text
     doc: Value is 'Shape Data'
@@ -18,29 +21,34 @@ datasets:
   dtype: any
   shape:
   - null
-  neurodata_type_def: ShapeDataset
-  neurodata_type_inc: NWBData
-- dtype: any
+
+- neurodata_type_def: MultiShapeDataset
+  neurodata_type_inc: ShapeDataset
+  dtype: any
   shape:
   - - 3
   - - 1
     - 5
     - 7
-  neurodata_type_def: MultiShapeDataset
+
+- neurodata_type_def: NullShapeDataset
   neurodata_type_inc: ShapeDataset
-- dtype: any
+  dtype: any
   shape:
   - null
   - 3
-  neurodata_type_def: NullShapeDataset
+
+- neurodata_type_def: MultiNullShapeDataset
   neurodata_type_inc: ShapeDataset
-- dtype: any
+  dtype: any
   shape:
   - - null
   - - null
     - null
-  neurodata_type_def: MultiNullShapeDataset
-  neurodata_type_inc: ShapeDataset
-- dtype: text
-  neurodata_type_def: NarrowInheritedDataset
+
+- neurodata_type_def: NarrowInheritedDataset
   neurodata_type_inc: NullShapeDataset
+  dtype: text
+  shape:
+  - 1
+  
