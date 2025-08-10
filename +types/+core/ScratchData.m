@@ -49,7 +49,7 @@ methods
     %% VALIDATORS
     
     function val = validate_data(obj, val)
-        types.util.validateShape('data', {[1]}, val)
+    
     end
     function val = validate_notes(obj, val)
         val = types.util.checkDtype('notes', 'char', val);

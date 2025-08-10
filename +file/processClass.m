@@ -15,7 +15,7 @@ function [Processed, classprops, inherited] = processClass(name, namespace, preg
         nodename = node(TYPEDEF_KEYS{hasTypeDefs});
 
         if ~isKey(pregen, nodename)
-            
+
             spec.internal.resolveInheritedFields(node, branch(iAncestor+1:end))
             
             switch node('class_type')
@@ -31,6 +31,9 @@ function [Processed, classprops, inherited] = processClass(name, namespace, preg
                 class = patchVectorData(class);
             end
             props = class.getProps();
+
+            % Add some exceptions due to schema inconsistencies
+            fixSchemaInconsistencies(name, props, namespace)
 
             pregen(nodename) = struct('class', class, 'props', props);
         end
