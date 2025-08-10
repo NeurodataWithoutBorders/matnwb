@@ -187,7 +187,7 @@ end
 
 function fdvstr = fillDimensionValidation(name, shape)
 
-    if isnumeric(shape) && isnan(shape)
+    if isnumeric(shape) && isnan(shape) % Any shape is allowed
         fdvstr = ''; return
     end
 
