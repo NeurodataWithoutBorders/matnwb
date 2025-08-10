@@ -4,8 +4,7 @@ function validationStr = fillValidators(propnames, props, namespaceReg, classNam
         nm = propnames{i};
         prop = props(nm);
 
-        if (isa(prop, 'file.Attribute') || isa(prop, 'file.Dataset')) ...
-                && prop.readonly && ~isempty(prop.value)
+        if file.internal.isPropertyReadonly(prop) && ~isempty(prop.value)
             % Need to add a validator for inherited and readonly properties. In 
             % the superclass these properties might not be read-only and due to
             % inheritance rules in MATLAB it is not possible to change property 
@@ -16,14 +15,10 @@ function validationStr = fillValidators(propnames, props, namespaceReg, classNam
             else
                 continue
             end
-        elseif isa(prop, 'file.Link')
-            validationBody = fillLinkValidation(nm, prop, namespaceReg);
-        else
-            if startsWith(class(prop), 'file.')
-                validationBody = fillUnitValidation(nm, prop, namespaceReg);
-            else % primitive type
-                validationBody = fillDtypeValidation(nm, prop, namespaceReg);
-            end
+        elseif startsWith(class(prop), 'file.') % HDMF primitive type
+            validationBody = fillUnitValidation(nm, prop, namespaceReg);
+        else % MATLAB primitive type
+            validationBody = fillDtypeValidation(nm, prop, namespaceReg);
         end
 
         headerStr = ['function val = validate_' nm '(obj, val)'];
@@ -33,7 +28,7 @@ function validationStr = fillValidators(propnames, props, namespaceReg, classNam
             functionStr = strjoin({headerStr ...
                 file.addSpaces(strtrim(validationBody), 4) 'end'}, newline);
         end
-        validationStr = [validationStr newline functionStr];
+        validationStr = strcat(validationStr, [newline, functionStr]);
     end
 end
 
@@ -61,9 +56,10 @@ function unitValidationStr = fillUnitValidation(name, prop, namespaceReg)
             fillDtypeValidation(name, prop.dtype, namespaceReg)...
             fillDimensionValidation(name, prop.shape)...
             }, newline);
-    else % Link
-        fullTypeName = namespaceReg.getFullClassName(prop.type);
-        unitValidationStr = fillDtypeValidation(name, fullTypeName, namespaceReg);
+    elseif isa(prop, 'file.Link') % Link
+        unitValidationStr = fillLinkValidation(name, prop, namespaceReg);
+    else
+        error('NWB:InternalError', 'Unexpected property specification')
     end
 end
 
@@ -184,7 +180,7 @@ function unitValidationStr = fillDatasetValidation(name, prop, namespaceReg)
             datasetValidationLines = indentLines(datasetValidationLines, 4);
 
             if ~isempty(datasetValidationLines)
-                validationLines{end+1} = 'if ~isempty(val) && ~isempty(val.data)';
+                validationLines{end+1} = 'if ~isempty(val)';
                 validationLines{end+1} = '    origVal = val;';
                 validationLines{end+1} = '    val = val.data;';
                 validationLines = [validationLines, datasetValidationLines];
