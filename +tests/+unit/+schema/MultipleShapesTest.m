@@ -8,7 +8,7 @@ classdef MultipleShapesTest < tests.unit.abstract.SchemaTest
     methods (Test)
         function testMultipleShapesDataset(testCase)
             msd = types.mss.MultiShapeDataset('data', rand(3, 1));
-            msd.data = rand(1, 5, 7);
+            msd.data = rand(7, 5, 1); % NB: Reverse dimensions relative to schema due to MATLAB F-ordering
             testCase.roundabout(msd);
         end
         
@@ -17,7 +17,7 @@ classdef MultipleShapesTest < tests.unit.abstract.SchemaTest
             randiMax = intmax('int8') - 1;
             for i=1:100
                 %test validation
-                nsd.data = rand(randi(randiMax) + 1, 3);
+                nsd.data = rand(3, randi(randiMax) + 1); % NB: Reverse dimensions relative to schema due to MATLAB F-ordering
             end
             testCase.roundabout(nsd);
         end

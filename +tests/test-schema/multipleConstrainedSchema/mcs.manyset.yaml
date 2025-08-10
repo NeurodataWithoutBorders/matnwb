@@ -22,3 +22,5 @@ datasets:
 - neurodata_type_def: DatasetType
   neurodata_type_inc: NWBData
   doc: one-off dataset type
+  dims: any
+  shape: any

@@ -1,6 +1,9 @@
 datasets:
 - neurodata_type_def: RefData
   neurodata_type_inc: NWBData
+  dims: any
+  shape: any
+
 groups:
 - neurodata_type_def: RefContainer
   neurodata_type_inc: NWBDataInterface
