@@ -57,7 +57,8 @@ nwb.acquisition.set('ImageSeries', behavior_images);
 % We will use the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OpticalSeries.html 
 % |*OpticalSeries*|> class to store time series of images presented to the subject 
 % as stimuli. The <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OpticalSeries.html 
-% |*OpticalSeries*|> class extends the ImageSeries with additional fields such 
+% |*OpticalSeries*|> class extends the ImageSeries with additional fields that 
+% describe the spatial relationship between the subject and the stimuli, such 
 % as: 
 %% 
 % * |*field_of_view*| – physical extent of the image in the visual field or 
