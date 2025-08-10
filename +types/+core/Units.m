@@ -152,15 +152,30 @@ methods
             val = val.data;
             % Reference to type `ElectrodeGroup`
             val = types.util.validateReferenceType('electrode_group', val, 'types.core.ElectrodeGroup', 'types.untyped.ObjectView');
+            types.util.validateShape('electrode_group', {[1]}, val)
             origVal.data = val;
             val = origVal;
         end
     end
     function val = validate_electrodes(obj, val)
         types.util.checkType('electrodes', 'types.hdmf_common.DynamicTableRegion', val);
+        if ~isempty(val)
+            origVal = val;
+            val = val.data;
+            types.util.validateShape('electrodes', {[1]}, val)
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_electrodes_index(obj, val)
         types.util.checkType('electrodes_index', 'types.hdmf_common.VectorIndex', val);
+        if ~isempty(val)
+            origVal = val;
+            val = val.data;
+            types.util.validateShape('electrodes_index', {[1]}, val)
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_obs_intervals(obj, val)
         types.util.checkType('obs_intervals', 'types.hdmf_common.VectorData', val);
@@ -175,6 +190,13 @@ methods
     end
     function val = validate_obs_intervals_index(obj, val)
         types.util.checkType('obs_intervals_index', 'types.hdmf_common.VectorIndex', val);
+        if ~isempty(val)
+            origVal = val;
+            val = val.data;
+            types.util.validateShape('obs_intervals_index', {[1]}, val)
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_spike_times(obj, val)
         types.util.checkType('spike_times', 'types.hdmf_common.VectorData', val);
@@ -182,12 +204,20 @@ methods
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('spike_times', 'double', val);
+            types.util.validateShape('spike_times', {[1]}, val)
             origVal.data = val;
             val = origVal;
         end
     end
     function val = validate_spike_times_index(obj, val)
         types.util.checkType('spike_times_index', 'types.hdmf_common.VectorIndex', val);
+        if ~isempty(val)
+            origVal = val;
+            val = val.data;
+            types.util.validateShape('spike_times_index', {[1]}, val)
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_waveform_mean(obj, val)
         types.util.checkType('waveform_mean', 'types.hdmf_common.VectorData', val);
@@ -224,9 +254,23 @@ methods
     end
     function val = validate_waveforms_index(obj, val)
         types.util.checkType('waveforms_index', 'types.hdmf_common.VectorIndex', val);
+        if ~isempty(val)
+            origVal = val;
+            val = val.data;
+            types.util.validateShape('waveforms_index', {[1]}, val)
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_waveforms_index_index(obj, val)
         types.util.checkType('waveforms_index_index', 'types.hdmf_common.VectorIndex', val);
+        if ~isempty(val)
+            origVal = val;
+            val = val.data;
+            types.util.validateShape('waveforms_index_index', {[1]}, val)
+            origVal.data = val;
+            val = origVal;
+        end
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

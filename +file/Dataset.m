@@ -101,7 +101,7 @@ classdef Dataset < file.interface.HasProps & file.interface.HasQuantity
                 obj.shape = file.formatShape(source('shape'));
                 obj.scalar = file.isShapeScalar(obj.shape);
             else
-                obj.shape = nan;
+                obj.shape = 1;
             end
             
             attributeKey = 'attributes';

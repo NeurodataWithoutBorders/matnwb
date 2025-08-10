@@ -67,9 +67,23 @@ methods
     
     function val = validate_sequential_recordings(obj, val)
         types.util.checkType('sequential_recordings', 'types.hdmf_common.DynamicTableRegion', val);
+        if ~isempty(val)
+            origVal = val;
+            val = val.data;
+            types.util.validateShape('sequential_recordings', {[1]}, val)
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_sequential_recordings_index(obj, val)
         types.util.checkType('sequential_recordings_index', 'types.hdmf_common.VectorIndex', val);
+        if ~isempty(val)
+            origVal = val;
+            val = val.data;
+            types.util.validateShape('sequential_recordings_index', {[1]}, val)
+            origVal.data = val;
+            val = origVal;
+        end
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

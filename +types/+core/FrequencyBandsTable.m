@@ -112,6 +112,7 @@ methods
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('band_name', 'char', val);
+            types.util.validateShape('band_name', {[1]}, val)
             origVal.data = val;
             val = origVal;
         end

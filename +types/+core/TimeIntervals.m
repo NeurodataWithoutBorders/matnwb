@@ -106,6 +106,7 @@ methods
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('start_time', 'single', val);
+            types.util.validateShape('start_time', {[1]}, val)
             origVal.data = val;
             val = origVal;
         end
@@ -116,6 +117,7 @@ methods
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('stop_time', 'single', val);
+            types.util.validateShape('stop_time', {[1]}, val)
             origVal.data = val;
             val = origVal;
         end
@@ -126,18 +128,40 @@ methods
             origVal = val;
             val = val.data;
             val = types.util.checkDtype('tags', 'char', val);
+            types.util.validateShape('tags', {[1]}, val)
             origVal.data = val;
             val = origVal;
         end
     end
     function val = validate_tags_index(obj, val)
         types.util.checkType('tags_index', 'types.hdmf_common.VectorIndex', val);
+        if ~isempty(val)
+            origVal = val;
+            val = val.data;
+            types.util.validateShape('tags_index', {[1]}, val)
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_timeseries(obj, val)
         types.util.checkType('timeseries', 'types.core.TimeSeriesReferenceVectorData', val);
+        if ~isempty(val)
+            origVal = val;
+            val = val.data;
+            types.util.validateShape('timeseries', {[1]}, val)
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_timeseries_index(obj, val)
         types.util.checkType('timeseries_index', 'types.hdmf_common.VectorIndex', val);
+        if ~isempty(val)
+            origVal = val;
+            val = val.data;
+            types.util.validateShape('timeseries_index', {[1]}, val)
+            origVal.data = val;
+            val = origVal;
+        end
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

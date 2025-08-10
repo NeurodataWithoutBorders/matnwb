@@ -115,30 +115,38 @@ methods
     
     function val = validate_cell_id(obj, val)
         val = types.util.checkDtype('cell_id', 'char', val);
+        types.util.validateShape('cell_id', {[1]}, val)
     end
     function val = validate_description(obj, val)
         val = types.util.checkDtype('description', 'char', val);
+        types.util.validateShape('description', {[1]}, val)
     end
     function val = validate_device(obj, val)
         val = types.util.validateSoftLink('device', val, 'types.core.Device');
     end
     function val = validate_filtering(obj, val)
         val = types.util.checkDtype('filtering', 'char', val);
+        types.util.validateShape('filtering', {[1]}, val)
     end
     function val = validate_initial_access_resistance(obj, val)
         val = types.util.checkDtype('initial_access_resistance', 'char', val);
+        types.util.validateShape('initial_access_resistance', {[1]}, val)
     end
     function val = validate_location(obj, val)
         val = types.util.checkDtype('location', 'char', val);
+        types.util.validateShape('location', {[1]}, val)
     end
     function val = validate_resistance(obj, val)
         val = types.util.checkDtype('resistance', 'char', val);
+        types.util.validateShape('resistance', {[1]}, val)
     end
     function val = validate_seal(obj, val)
         val = types.util.checkDtype('seal', 'char', val);
+        types.util.validateShape('seal', {[1]}, val)
     end
     function val = validate_slice(obj, val)
         val = types.util.checkDtype('slice', 'char', val);
+        types.util.validateShape('slice', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

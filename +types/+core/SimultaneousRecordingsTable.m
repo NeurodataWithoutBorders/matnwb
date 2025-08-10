@@ -67,9 +67,23 @@ methods
     
     function val = validate_recordings(obj, val)
         types.util.checkType('recordings', 'types.hdmf_common.DynamicTableRegion', val);
+        if ~isempty(val)
+            origVal = val;
+            val = val.data;
+            types.util.validateShape('recordings', {[1]}, val)
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_recordings_index(obj, val)
         types.util.checkType('recordings_index', 'types.hdmf_common.VectorIndex', val);
+        if ~isempty(val)
+            origVal = val;
+            val = val.data;
+            types.util.validateShape('recordings_index', {[1]}, val)
+            origVal.data = val;
+            val = origVal;
+        end
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

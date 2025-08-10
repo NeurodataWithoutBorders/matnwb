@@ -72,6 +72,7 @@ methods
     
     function val = validate_description(obj, val)
         val = types.util.checkDtype('description', 'char', val);
+        types.util.validateShape('description', {[1]}, val)
     end
     function val = validate_num(obj, val)
         val = types.util.checkDtype('num', 'int32', val);

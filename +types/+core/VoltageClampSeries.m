@@ -153,9 +153,11 @@ methods
     
     function val = validate_capacitance_fast(obj, val)
         val = types.util.checkDtype('capacitance_fast', 'single', val);
+        types.util.validateShape('capacitance_fast', {[1]}, val)
     end
     function val = validate_capacitance_slow(obj, val)
         val = types.util.checkDtype('capacitance_slow', 'single', val);
+        types.util.validateShape('capacitance_slow', {[1]}, val)
     end
     function val = validate_data(obj, val)
         val = types.util.checkDtype('data', 'numeric', val);
@@ -170,18 +172,23 @@ methods
     end
     function val = validate_resistance_comp_bandwidth(obj, val)
         val = types.util.checkDtype('resistance_comp_bandwidth', 'single', val);
+        types.util.validateShape('resistance_comp_bandwidth', {[1]}, val)
     end
     function val = validate_resistance_comp_correction(obj, val)
         val = types.util.checkDtype('resistance_comp_correction', 'single', val);
+        types.util.validateShape('resistance_comp_correction', {[1]}, val)
     end
     function val = validate_resistance_comp_prediction(obj, val)
         val = types.util.checkDtype('resistance_comp_prediction', 'single', val);
+        types.util.validateShape('resistance_comp_prediction', {[1]}, val)
     end
     function val = validate_whole_cell_capacitance_comp(obj, val)
         val = types.util.checkDtype('whole_cell_capacitance_comp', 'single', val);
+        types.util.validateShape('whole_cell_capacitance_comp', {[1]}, val)
     end
     function val = validate_whole_cell_series_resistance_comp(obj, val)
         val = types.util.checkDtype('whole_cell_series_resistance_comp', 'single', val);
+        types.util.validateShape('whole_cell_series_resistance_comp', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

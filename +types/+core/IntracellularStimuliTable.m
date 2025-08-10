@@ -76,9 +76,23 @@ methods
     end
     function val = validate_stimulus(obj, val)
         types.util.checkType('stimulus', 'types.core.TimeSeriesReferenceVectorData', val);
+        if ~isempty(val)
+            origVal = val;
+            val = val.data;
+            types.util.validateShape('stimulus', {[1]}, val)
+            origVal.data = val;
+            val = origVal;
+        end
     end
     function val = validate_stimulus_template(obj, val)
         types.util.checkType('stimulus_template', 'types.core.TimeSeriesReferenceVectorData', val);
+        if ~isempty(val)
+            origVal = val;
+            val = val.data;
+            types.util.validateShape('stimulus_template', {[1]}, val)
+            origVal.data = val;
+            val = origVal;
+        end
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

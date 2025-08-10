@@ -85,7 +85,7 @@ methods
         if ~isempty(val)
             origVal = val;
             val = val.data;
-            val = types.util.checkDtype('id', 'int8', val);
+            val = types.util.checkDtype('id', 'int32', val);
             types.util.validateShape('id', {[Inf]}, val)
             origVal.data = val;
             val = origVal;

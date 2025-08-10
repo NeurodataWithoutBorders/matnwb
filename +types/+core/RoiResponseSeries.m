@@ -78,6 +78,13 @@ methods
     end
     function val = validate_rois(obj, val)
         types.util.checkType('rois', 'types.hdmf_common.DynamicTableRegion', val);
+        if ~isempty(val)
+            origVal = val;
+            val = val.data;
+            types.util.validateShape('rois', {[1]}, val)
+            origVal.data = val;
+            val = origVal;
+        end
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)
