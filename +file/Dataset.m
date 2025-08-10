@@ -150,7 +150,14 @@ classdef Dataset < file.interface.HasProps & file.interface.HasQuantity
                 );
 
             if ~isempty(obj.dtype)
-                props('data') = obj.dtype;
+                % Add a value to the props map representing the dataset
+                % itself. The prop name of a dataset class is always data,
+                % the type should be empty, and we add a custom doc.
+                objCopy = obj;
+                objCopy.name = 'data';
+                objCopy.type = ''; % Reset type, as this now represents a property
+                objCopy.doc = sprintf('Data property for dataset class (%s)', obj.type);
+                props('data') = objCopy;
             end
             
             if ~isempty(obj.attributes)

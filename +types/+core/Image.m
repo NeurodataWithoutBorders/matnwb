@@ -20,7 +20,7 @@ methods
         %  image = types.core.IMAGE(Name, Value) creates a Image object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
-        %  - data (numeric) - No description
+        %  - data (numeric) - Data property for dataset class (Image)
         %
         %  - description (char) - Description of the image.
         %
@@ -52,6 +52,7 @@ methods
     
     function val = validate_data(obj, val)
         val = types.util.checkDtype('data', 'numeric', val);
+        types.util.validateShape('data', {[4,Inf,Inf], [3,Inf,Inf], [Inf,Inf]}, val)
     end
     function val = validate_resolution(obj, val)
         val = types.util.checkDtype('resolution', 'single', val);
