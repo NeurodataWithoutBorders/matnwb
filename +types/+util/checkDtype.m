@@ -132,7 +132,14 @@ if matnwb.utility.isNeurodataType(typeDescriptor)
     assert(isa(value, typeDescriptor), errorId, errorMessage)
     correctedValue = value;
 else
-    correctedValue = types.util.correctType(value, typeDescriptor);
+    try
+        correctedValue = types.util.correctType(value, typeDescriptor);
+    catch MECause
+        ME = MException('NWB:CheckDataType:InvalidType', ...
+            'Error setting property ''%s'' because value is wrong type.', name);
+        ME = ME.addCause(MECause);
+        throw(ME);
+    end
 end
 % this specific conversion is fine as HDF5 doesn't have a representative
 % datetime type. Thus we suppress the warning for this case.
