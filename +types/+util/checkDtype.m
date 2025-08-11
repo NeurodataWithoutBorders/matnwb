@@ -135,8 +135,9 @@ else
     try
         correctedValue = types.util.correctType(value, typeDescriptor);
     catch MECause
-        ME = MException('NWB:CheckDataType:InvalidType', ...
-            'Error setting property ''%s'' because value is wrong type.', name);
+        ME = MException('NWB:CheckDataType:InvalidConversion', ...
+            ['Error setting property ''%s'' because value can not be ', ...
+            'converted to ''%s''.'], name, typeDescriptor);
         ME = ME.addCause(MECause);
         throw(ME);
     end
