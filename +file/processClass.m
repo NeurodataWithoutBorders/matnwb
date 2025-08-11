@@ -15,8 +15,9 @@ function [Processed, classprops, inherited] = processClass(name, namespace, preg
         nodename = node(TYPEDEF_KEYS{hasTypeDefs});
 
         if ~isKey(pregen, nodename)
-
+            
             spec.internal.resolveInheritedFields(node, branch(iAncestor+1:end))
+            spec.internal.resolveFieldsInheritedByInclusion(node)
             
             switch node('class_type')
                 case 'groups'
