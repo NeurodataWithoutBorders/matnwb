@@ -19,6 +19,44 @@ groups:
   - name: compound_data
     neurodata_type_inc: CompoundDataset
 
+- neurodata_type_def: NestedDataTypeContainer
+  neurodata_type_inc: NWBDataInterface
+  doc: Container with subgroup for testing data type validation
+  groups:
+  - name: subgroup
+    doc: a subgroup with datasets and attributes
+    groups:
+    - name: nested_subgroup
+      neurodata_type_inc: DynamicTable
+    - neurodata_type_inc: NWBDataInterface
+      doc: a nested and constrained subgroup
+      quantity: +
+    datasets:
+    - name: basic_data
+      neurodata_type_inc: BasicDataset
+    - name: reused_data_constrained
+      neurodata_type_inc: ExtendedTextDataset
+      quantity: +
+    - name: untyped_numeric_data
+      dtype: double
+      shape:
+      - null
+    - name: untyped_text_data
+      dtype: text
+    attributes:
+    - name: description
+      dtype: text
+      doc: A description of the data
+      default_value: no description
+    - name: number
+      dtype: double
+      doc: A number
+      default_value: 1
+    links:
+    - name: subgroup_link
+      target_type: BasicDataset
+      doc: link in subgroup pointing to a basic dataset
+
 datasets:
 - neurodata_type_def: BasicDataset
   neurodata_type_inc: NWBData
