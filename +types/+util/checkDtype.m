@@ -51,7 +51,11 @@ if isstruct(typeDescriptor)
                 ['struct of arrays as a compound type ',...
                 'cannot have multidimensional data in their fields. ',...
                 'Field data shape must be scalar or vector to be valid.']);
-            fieldSizes(iField) = length(subValue);
+            if ischar(subValue)
+                fieldSizes(iField) = size(subValue, 1);
+            else
+                fieldSizes(iField) = length(subValue);
+            end
         end
         fieldSizes = unique(fieldSizes);
         assert(isscalar(fieldSizes),...
