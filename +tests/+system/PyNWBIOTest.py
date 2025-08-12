@@ -217,7 +217,7 @@ class NWBFileIOTest(PyNWBIOTest):
 class UnitTimesIOTest(PyNWBIOTest):
     def addContainer(self, file):
         self.file.units = Units('units', waveform_rate=1., resolution=3.)
-        self.file.units.add_unit(waveform_mean=[5], waveform_sd=[7], waveforms=np.full((1, 1), 9),
+        self.file.units.add_unit(waveform_mean=[np.float32(5)], waveform_sd=[np.float32(7)], waveforms=np.full((1, 1), 9),
                                  spike_times=[11])
     def getContainer(self, file):
         return file.units
