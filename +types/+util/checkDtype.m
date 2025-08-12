@@ -1,13 +1,17 @@
 function value = checkDtype(name, typeDescriptor, value)
 %ref
 %any, double, int/uint, char
-persistent WHITELIST;
+
+validateTypeDescriptor(typeDescriptor)
+
+persistent WHITELIST; % Not used
 if isempty(WHITELIST)
     WHITELIST = {...
         'types.untyped.ExternalLink'...
         'types.untyped.SoftLink'...
         };
 end
+
 %% compound type processing
 if isstruct(typeDescriptor)
     expectedFields = fieldnames(typeDescriptor);
@@ -160,4 +164,11 @@ end
 if ~isempty(valueWrapper)
     value = valueWrapper;
 end
+end
+
+function validateTypeDescriptor(typeDescriptor)
+    isValid = isstruct(typeDescriptor) || ischar(typeDescriptor) || isstring(typeDescriptor);
+    assert( isValid, ...
+        'NWB:CheckDataType:InvalidTypeDescriptor', ...
+        'Type descriptor must be a struct, character vector or a string.');
 end
