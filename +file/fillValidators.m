@@ -73,6 +73,11 @@ function unitValidationStr = fillGroupValidation(name, prop, namespaceReg)
     namedprops = struct();
     constraints = {};
     if isempty(prop.type)
+        warning('NWB:FillValidators:ValidationNotImplemented', ...
+            ['Detected a group-based data type (''%s'') with an untyped ', ...
+            'subgroup. Validation logic for checking shape or quantity ', ...
+            'of nested elements is not implemented '], prop.name)
+
         %% process datasets
         % if type, check if constrained
         %   if constrained, add to constr

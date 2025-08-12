@@ -5,8 +5,14 @@ classdef DataTypesTest < tests.unit.abstract.SchemaTest
         SchemaNamespaceFileName = "dt.namespace.yaml"
     end
 
+    methods (TestClassSetup)
+        function testSetup(testCase)
+            import matlab.unittest.fixtures.SuppressedWarningsFixture
+            testCase.applyFixture(SuppressedWarningsFixture('NWB:FillValidators:ValidationNotImplemented'))
+        end
+    end
+
     methods (Test)
-        
         function testExtendedDataTypeValidation(testCase)
             % Test direct data type specification
             textData = types.dt.ExtendedTextDataset('data', 'hello world');
