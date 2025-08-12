@@ -181,11 +181,9 @@ function unitValidationStr = fillDatasetValidation(name, prop, namespaceReg)
 
             if ~isempty(datasetValidationLines)
                 validationLines{end+1} = 'if ~isempty(val)';
-                validationLines{end+1} = '    origVal = val;';
-                validationLines{end+1} = '    val = val.data;';
+                validationLines{end+1} = '    [val, originalVal] = types.util.unwrapValue(val);';
                 validationLines = [validationLines, datasetValidationLines];
-                validationLines{end+1} = '    origVal.data = val;';
-                validationLines{end+1} = '    val = origVal;';
+                validationLines{end+1} = '    val = types.util.rewrapValue(val, originalVal);';
                 validationLines{end+1} = 'end';
             end
         else

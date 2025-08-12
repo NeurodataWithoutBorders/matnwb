@@ -82,11 +82,9 @@ methods
     function val = validate_stimulus_type(obj, val)
         types.util.checkType('stimulus_type', 'types.hdmf_common.VectorData', val);
         if ~isempty(val)
-            origVal = val;
-            val = val.data;
+            [val, originalVal] = types.util.unwrapValue(val);
             val = types.util.checkDtype('stimulus_type', 'char', val);
-            origVal.data = val;
-            val = origVal;
+            val = types.util.rewrapValue(val, originalVal);
         end
     end
     %% EXPORT

@@ -111,11 +111,9 @@ methods
     function val = validate_image_mask(obj, val)
         types.util.checkType('image_mask', 'types.hdmf_common.VectorData', val);
         if ~isempty(val)
-            origVal = val;
-            val = val.data;
+            [val, originalVal] = types.util.unwrapValue(val);
             types.util.validateShape('image_mask', {[Inf,Inf,Inf,Inf], [Inf,Inf,Inf]}, val)
-            origVal.data = val;
-            val = origVal;
+            val = types.util.rewrapValue(val, originalVal);
         end
     end
     function val = validate_imaging_plane(obj, val)
@@ -124,8 +122,7 @@ methods
     function val = validate_pixel_mask(obj, val)
         types.util.checkType('pixel_mask', 'types.hdmf_common.VectorData', val);
         if ~isempty(val)
-            origVal = val;
-            val = val.data;
+            [val, originalVal] = types.util.unwrapValue(val);
             if isempty(val) || isa(val, 'types.untyped.DataStub')
                 return;
             end
@@ -137,8 +134,7 @@ methods
             vprops.y = 'uint32';
             vprops.weight = 'single';
             val = types.util.checkDtype('pixel_mask', vprops, val);
-            origVal.data = val;
-            val = origVal;
+            val = types.util.rewrapValue(val, originalVal);
         end
     end
     function val = validate_pixel_mask_index(obj, val)
@@ -152,8 +148,7 @@ methods
     function val = validate_voxel_mask(obj, val)
         types.util.checkType('voxel_mask', 'types.hdmf_common.VectorData', val);
         if ~isempty(val)
-            origVal = val;
-            val = val.data;
+            [val, originalVal] = types.util.unwrapValue(val);
             if isempty(val) || isa(val, 'types.untyped.DataStub')
                 return;
             end
@@ -166,8 +161,7 @@ methods
             vprops.z = 'uint32';
             vprops.weight = 'single';
             val = types.util.checkDtype('voxel_mask', vprops, val);
-            origVal.data = val;
-            val = origVal;
+            val = types.util.rewrapValue(val, originalVal);
         end
     end
     function val = validate_voxel_mask_index(obj, val)

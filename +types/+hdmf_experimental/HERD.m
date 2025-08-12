@@ -89,8 +89,7 @@ methods
     function val = validate_entities(obj, val)
         types.util.checkType('entities', 'types.hdmf_common.Data', val);
         if ~isempty(val)
-            origVal = val;
-            val = val.data;
+            [val, originalVal] = types.util.unwrapValue(val);
             if isempty(val) || isa(val, 'types.untyped.DataStub')
                 return;
             end
@@ -102,15 +101,13 @@ methods
             vprops.entity_uri = 'char';
             val = types.util.checkDtype('entities', vprops, val);
             types.util.validateShape('entities', {[Inf]}, val)
-            origVal.data = val;
-            val = origVal;
+            val = types.util.rewrapValue(val, originalVal);
         end
     end
     function val = validate_entity_keys(obj, val)
         types.util.checkType('entity_keys', 'types.hdmf_common.Data', val);
         if ~isempty(val)
-            origVal = val;
-            val = val.data;
+            [val, originalVal] = types.util.unwrapValue(val);
             if isempty(val) || isa(val, 'types.untyped.DataStub')
                 return;
             end
@@ -122,15 +119,13 @@ methods
             vprops.keys_idx = 'uint';
             val = types.util.checkDtype('entity_keys', vprops, val);
             types.util.validateShape('entity_keys', {[Inf]}, val)
-            origVal.data = val;
-            val = origVal;
+            val = types.util.rewrapValue(val, originalVal);
         end
     end
     function val = validate_files(obj, val)
         types.util.checkType('files', 'types.hdmf_common.Data', val);
         if ~isempty(val)
-            origVal = val;
-            val = val.data;
+            [val, originalVal] = types.util.unwrapValue(val);
             if isempty(val) || isa(val, 'types.untyped.DataStub')
                 return;
             end
@@ -141,15 +136,13 @@ methods
             vprops.file_object_id = 'char';
             val = types.util.checkDtype('files', vprops, val);
             types.util.validateShape('files', {[Inf]}, val)
-            origVal.data = val;
-            val = origVal;
+            val = types.util.rewrapValue(val, originalVal);
         end
     end
     function val = validate_keys(obj, val)
         types.util.checkType('keys', 'types.hdmf_common.Data', val);
         if ~isempty(val)
-            origVal = val;
-            val = val.data;
+            [val, originalVal] = types.util.unwrapValue(val);
             if isempty(val) || isa(val, 'types.untyped.DataStub')
                 return;
             end
@@ -160,15 +153,13 @@ methods
             vprops.key = 'char';
             val = types.util.checkDtype('keys', vprops, val);
             types.util.validateShape('keys', {[Inf]}, val)
-            origVal.data = val;
-            val = origVal;
+            val = types.util.rewrapValue(val, originalVal);
         end
     end
     function val = validate_object_keys(obj, val)
         types.util.checkType('object_keys', 'types.hdmf_common.Data', val);
         if ~isempty(val)
-            origVal = val;
-            val = val.data;
+            [val, originalVal] = types.util.unwrapValue(val);
             if isempty(val) || isa(val, 'types.untyped.DataStub')
                 return;
             end
@@ -180,15 +171,13 @@ methods
             vprops.keys_idx = 'uint';
             val = types.util.checkDtype('object_keys', vprops, val);
             types.util.validateShape('object_keys', {[Inf]}, val)
-            origVal.data = val;
-            val = origVal;
+            val = types.util.rewrapValue(val, originalVal);
         end
     end
     function val = validate_objects(obj, val)
         types.util.checkType('objects', 'types.hdmf_common.Data', val);
         if ~isempty(val)
-            origVal = val;
-            val = val.data;
+            [val, originalVal] = types.util.unwrapValue(val);
             if isempty(val) || isa(val, 'types.untyped.DataStub')
                 return;
             end
@@ -203,8 +192,7 @@ methods
             vprops.field = 'char';
             val = types.util.checkDtype('objects', vprops, val);
             types.util.validateShape('objects', {[Inf]}, val)
-            origVal.data = val;
-            val = origVal;
+            val = types.util.rewrapValue(val, originalVal);
         end
     end
     %% EXPORT

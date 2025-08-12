@@ -148,12 +148,10 @@ methods
     function val = validate_electrode_group(obj, val)
         types.util.checkType('electrode_group', 'types.hdmf_common.VectorData', val);
         if ~isempty(val)
-            origVal = val;
-            val = val.data;
+            [val, originalVal] = types.util.unwrapValue(val);
             % Reference to type `ElectrodeGroup`
             val = types.util.validateReferenceType('electrode_group', val, 'types.core.ElectrodeGroup', 'types.untyped.ObjectView');
-            origVal.data = val;
-            val = origVal;
+            val = types.util.rewrapValue(val, originalVal);
         end
     end
     function val = validate_electrodes(obj, val)
@@ -165,12 +163,10 @@ methods
     function val = validate_obs_intervals(obj, val)
         types.util.checkType('obs_intervals', 'types.hdmf_common.VectorData', val);
         if ~isempty(val)
-            origVal = val;
-            val = val.data;
+            [val, originalVal] = types.util.unwrapValue(val);
             val = types.util.checkDtype('obs_intervals', 'double', val);
             types.util.validateShape('obs_intervals', {[2,Inf]}, val)
-            origVal.data = val;
-            val = origVal;
+            val = types.util.rewrapValue(val, originalVal);
         end
     end
     function val = validate_obs_intervals_index(obj, val)
@@ -179,11 +175,9 @@ methods
     function val = validate_spike_times(obj, val)
         types.util.checkType('spike_times', 'types.hdmf_common.VectorData', val);
         if ~isempty(val)
-            origVal = val;
-            val = val.data;
+            [val, originalVal] = types.util.unwrapValue(val);
             val = types.util.checkDtype('spike_times', 'double', val);
-            origVal.data = val;
-            val = origVal;
+            val = types.util.rewrapValue(val, originalVal);
         end
     end
     function val = validate_spike_times_index(obj, val)
@@ -192,34 +186,28 @@ methods
     function val = validate_waveform_mean(obj, val)
         types.util.checkType('waveform_mean', 'types.hdmf_common.VectorData', val);
         if ~isempty(val)
-            origVal = val;
-            val = val.data;
+            [val, originalVal] = types.util.unwrapValue(val);
             val = types.util.checkDtype('waveform_mean', 'single', val);
             types.util.validateShape('waveform_mean', {[Inf,Inf,Inf], [Inf,Inf]}, val)
-            origVal.data = val;
-            val = origVal;
+            val = types.util.rewrapValue(val, originalVal);
         end
     end
     function val = validate_waveform_sd(obj, val)
         types.util.checkType('waveform_sd', 'types.hdmf_common.VectorData', val);
         if ~isempty(val)
-            origVal = val;
-            val = val.data;
+            [val, originalVal] = types.util.unwrapValue(val);
             val = types.util.checkDtype('waveform_sd', 'single', val);
             types.util.validateShape('waveform_sd', {[Inf,Inf,Inf], [Inf,Inf]}, val)
-            origVal.data = val;
-            val = origVal;
+            val = types.util.rewrapValue(val, originalVal);
         end
     end
     function val = validate_waveforms(obj, val)
         types.util.checkType('waveforms', 'types.hdmf_common.VectorData', val);
         if ~isempty(val)
-            origVal = val;
-            val = val.data;
+            [val, originalVal] = types.util.unwrapValue(val);
             val = types.util.checkDtype('waveforms', 'numeric', val);
             types.util.validateShape('waveforms', {[Inf,Inf]}, val)
-            origVal.data = val;
-            val = origVal;
+            val = types.util.rewrapValue(val, originalVal);
         end
     end
     function val = validate_waveforms_index(obj, val)

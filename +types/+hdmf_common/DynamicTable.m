@@ -83,12 +83,10 @@ methods
     function val = validate_id(obj, val)
         types.util.checkType('id', 'types.hdmf_common.ElementIdentifiers', val);
         if ~isempty(val)
-            origVal = val;
-            val = val.data;
+            [val, originalVal] = types.util.unwrapValue(val);
             val = types.util.checkDtype('id', 'int32', val);
             types.util.validateShape('id', {[Inf]}, val)
-            origVal.data = val;
-            val = origVal;
+            val = types.util.rewrapValue(val, originalVal);
         end
     end
     function val = validate_vectordata(obj, val)

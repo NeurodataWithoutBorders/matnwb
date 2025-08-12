@@ -87,44 +87,36 @@ methods
     function val = validate_band_limits(obj, val)
         types.util.checkType('band_limits', 'types.hdmf_common.VectorData', val);
         if ~isempty(val)
-            origVal = val;
-            val = val.data;
+            [val, originalVal] = types.util.unwrapValue(val);
             val = types.util.checkDtype('band_limits', 'single', val);
             types.util.validateShape('band_limits', {[2,Inf]}, val)
-            origVal.data = val;
-            val = origVal;
+            val = types.util.rewrapValue(val, originalVal);
         end
     end
     function val = validate_band_mean(obj, val)
         types.util.checkType('band_mean', 'types.hdmf_common.VectorData', val);
         if ~isempty(val)
-            origVal = val;
-            val = val.data;
+            [val, originalVal] = types.util.unwrapValue(val);
             val = types.util.checkDtype('band_mean', 'single', val);
             types.util.validateShape('band_mean', {[Inf]}, val)
-            origVal.data = val;
-            val = origVal;
+            val = types.util.rewrapValue(val, originalVal);
         end
     end
     function val = validate_band_name(obj, val)
         types.util.checkType('band_name', 'types.hdmf_common.VectorData', val);
         if ~isempty(val)
-            origVal = val;
-            val = val.data;
+            [val, originalVal] = types.util.unwrapValue(val);
             val = types.util.checkDtype('band_name', 'char', val);
-            origVal.data = val;
-            val = origVal;
+            val = types.util.rewrapValue(val, originalVal);
         end
     end
     function val = validate_band_stdev(obj, val)
         types.util.checkType('band_stdev', 'types.hdmf_common.VectorData', val);
         if ~isempty(val)
-            origVal = val;
-            val = val.data;
+            [val, originalVal] = types.util.unwrapValue(val);
             val = types.util.checkDtype('band_stdev', 'single', val);
             types.util.validateShape('band_stdev', {[Inf]}, val)
-            origVal.data = val;
-            val = origVal;
+            val = types.util.rewrapValue(val, originalVal);
         end
     end
     %% EXPORT
