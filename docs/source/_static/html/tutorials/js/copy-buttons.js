@@ -49,17 +49,22 @@
             outputsNode = node;
             return;
           }
-          if (node !== btn) lines.push(node.innerText || '');
+          if (node !== btn) {
+            // use textContent to keep line breaks exactly as in the DOM
+            lines.push(node.textContent || '');
+          }
         });
 
         if (outputsNode) {
-          const firstOut = outputsNode.innerText
+          const firstOut = (outputsNode.textContent || '')
             .split(/\r?\n/)
             .find(Boolean) || '';
           lines.push(firstOut);
         }
 
-        const payload = lines.join('').trimEnd();
+        // join with \n to preserve multi-node breaks
+        const payload = lines.join('\n').replace(/\s+$/, '');
+
         try {
           await navigator.clipboard.writeText(payload);
           btn.classList.add('copied');
