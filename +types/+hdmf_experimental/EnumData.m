@@ -55,7 +55,7 @@ methods
     end
     function val = validate_elements(obj, val)
         % Reference to type `VectorData`
-        val = types.util.checkDtype('elements', 'types.untyped.ObjectView', val);
+        val = types.util.validateReferenceType('elements', val, 'types.hdmf_common.VectorData', 'types.untyped.ObjectView');
         types.util.validateShape('elements', {[1]}, val)
     end
     %% EXPORT

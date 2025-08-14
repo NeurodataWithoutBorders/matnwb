@@ -63,7 +63,7 @@ methods
     end
     function val = validate_table(obj, val)
         % Reference to type `DynamicTable`
-        val = types.util.checkDtype('table', 'types.untyped.ObjectView', val);
+        val = types.util.validateReferenceType('table', val, 'types.hdmf_common.DynamicTable', 'types.untyped.ObjectView');
         types.util.validateShape('table', {[1]}, val)
     end
     %% EXPORT
