@@ -85,16 +85,39 @@ methods
     %% VALIDATORS
     
     function val = validate_band_limits(obj, val)
-        val = types.util.checkDtype('band_limits', 'types.hdmf_common.VectorData', val);
+        types.util.checkType('band_limits', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val)
+            [val, originalVal] = types.util.unwrapValue(val);
+            val = types.util.checkDtype('band_limits', 'single', val);
+            types.util.validateShape('band_limits', {[2,Inf]}, val)
+            val = types.util.rewrapValue(val, originalVal);
+        end
     end
     function val = validate_band_mean(obj, val)
-        val = types.util.checkDtype('band_mean', 'types.hdmf_common.VectorData', val);
+        types.util.checkType('band_mean', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val)
+            [val, originalVal] = types.util.unwrapValue(val);
+            val = types.util.checkDtype('band_mean', 'single', val);
+            types.util.validateShape('band_mean', {[Inf]}, val)
+            val = types.util.rewrapValue(val, originalVal);
+        end
     end
     function val = validate_band_name(obj, val)
-        val = types.util.checkDtype('band_name', 'types.hdmf_common.VectorData', val);
+        types.util.checkType('band_name', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val)
+            [val, originalVal] = types.util.unwrapValue(val);
+            val = types.util.checkDtype('band_name', 'char', val);
+            val = types.util.rewrapValue(val, originalVal);
+        end
     end
     function val = validate_band_stdev(obj, val)
-        val = types.util.checkDtype('band_stdev', 'types.hdmf_common.VectorData', val);
+        types.util.checkType('band_stdev', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val)
+            [val, originalVal] = types.util.unwrapValue(val);
+            val = types.util.checkDtype('band_stdev', 'single', val);
+            types.util.validateShape('band_stdev', {[Inf]}, val)
+            val = types.util.rewrapValue(val, originalVal);
+        end
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)
