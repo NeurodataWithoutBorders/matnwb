@@ -119,6 +119,56 @@ classdef NwbFile < types.core.NWBFile
                 typename,...
                 varargin{:});
         end
+        
+        function nwbObjects = getTypeObjects(obj, typeName, options)
+        % getTypeObjects - Retrieve NWB objects of a specified type.
+        % 
+        % Syntax:
+        %   nwbObjects = getTypeObjects(obj, typeName) Retrieves NWB 
+        %   objects of the specified type from the NwbFile.
+        % 
+        % Input Arguments:
+        %   obj          - The NwbFile object from which to retrieve NWB objects.
+        %   typeName (1,1) string - The name of the type to search for.
+        %   options      - Structure containing options for the function.
+        %       IncludeSubTypes (1,1) logical - Optional; set to true to include 
+        %       subclasses in the search. Default is false.
+        % 
+        % Output Arguments:
+        %   nwbObjects    - A cell array of NWB objects of the specified type.
+        %
+        % Examples:
+        %
+        %   nwbFile.getTypeObjects('TimeSeries')
+        %
+        %   nwbFile.getTypeObjects('TimeSeries')
+        %
+        
+            arguments
+                obj
+                typeName (1,1) string
+                options.IncludeSubTypes (1,1) logical = false
+            end
+            flags = {};
+            if options.IncludeSubTypes
+                flags{end+1} = 'includeSubClasses';
+            end
+        
+            typeName = extractTypeNameWithoutNamespace(typeName); % local function
+        
+            objectMap = searchProperties(...
+                containers.Map,...
+                obj,...
+                '',...
+                char(typeName),...
+                flags{:});
+        
+            % Filter to return exact types.
+            allTypeNames = cellfun(@(c) class(c), objectMap.values, 'uni', false);
+            toRemove = isEmptyCell( regexp(allTypeNames, sprintf('.%s$', typeName)) );
+            nwbObjects = objectMap.values;
+            nwbObjects(toRemove) = [];
+        end
 
         function nwbTypeNames = listNwbTypes(obj, options)
         % listNwbTypes - List all unique NWB (neurodata) types in file
@@ -332,4 +382,15 @@ function namespaceNames = getNamespacesForDataTypes(nwbTypeNames)
         namespaceNames(i) = regexp(nwbTypeNames(i), pattern, 'tokens', 'once');
     end
     namespaceNames = unique(namespaceNames);
+end
+
+function typeName = extractTypeNameWithoutNamespace(typeName)
+    if contains(typeName, '.')
+        splitName = split(typeName, '.');
+        typeName = splitName{end};
+    end
+end
+
+function tf = isEmptyCell(cellArray)
+    tf = cellfun('isempty', cellArray);
 end
