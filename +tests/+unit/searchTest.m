@@ -100,12 +100,12 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
 
             nwb = NwbFile();
             nwb.acquisition.set('im1', types.core.Images());
-            nwb.acquisition.set('im2', types.dupliname.Images());
+            nwb.acquisition.set('im2', types.dn.Images());
 
             testCase.verifyLength( nwb.getTypeObjects('Images'), 2 );
 
             testCase.verifyLength( nwb.getTypeObjects('types.core.Images'), 1 );
-            testCase.verifyLength( nwb.getTypeObjects('types.dupliname.Images'), 1 );
+            testCase.verifyLength( nwb.getTypeObjects('types.dn.Images'), 1 );
         end
     end
 end
