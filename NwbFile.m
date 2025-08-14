@@ -320,29 +320,7 @@ classdef NwbFile < types.core.NWBFile
     end
 end
 
-function tf = metaHasType(mc, typeSuffix, options)
-
-    arguments
-        mc meta.class
-        typeSuffix (1,1) string
-        options.ExactMatch (1,1) logical = false
-    end
-
-    tf = false;
-    if isMatchedType(mc.Name, typeSuffix, 'ExactMatch', options.ExactMatch)
-        tf = true;
-        return;
-    end
-
-    for i = 1:length(mc.SuperclassList)
-        sc = mc.SuperclassList(i);
-        if metaHasType(sc, typeSuffix, 'ExactMatch', options.ExactMatch)
-            tf = true;
-            return;
-        end
-    end
-end
-
+% Local functions
 function pathToObjectMap = searchProperties(...
         pathToObjectMap,...
         obj,...
@@ -391,23 +369,29 @@ function pathToObjectMap = searchProperties(...
     end
 end
 
-function namespaceNames = getNamespacesForDataTypes(nwbTypeNames)
-% getNamespacesOfTypes - Get namespace names for a list of nwb types
+function tf = metaHasType(mc, typeSuffix, options)
     arguments
-        nwbTypeNames (1,:) string
+        mc meta.class
+        typeSuffix (1,1) string
+        options.ExactMatch (1,1) logical = false
     end
 
-    namespaceNames = repmat("", size(nwbTypeNames));
-    pattern = '[types.]+\.(\w+)\.';
-
-    for i = 1:numel(nwbTypeNames)
-        namespaceNames(i) = regexp(nwbTypeNames(i), pattern, 'tokens', 'once');
+    tf = false;
+    if isMatchedType(mc.Name, typeSuffix, 'ExactMatch', options.ExactMatch)
+        tf = true;
+        return;
     end
-    namespaceNames = unique(namespaceNames);
+
+    for i = 1:length(mc.SuperclassList)
+        sc = mc.SuperclassList(i);
+        if metaHasType(sc, typeSuffix, 'ExactMatch', options.ExactMatch)
+            tf = true;
+            return;
+        end
+    end
 end
 
 function tf = isMatchedType(typeNameA, typeNameB, options)
-
     arguments
         typeNameA (1,1) string
         typeNameB (1,1) string
@@ -430,6 +414,17 @@ function typeName = extractTypeNameWithoutNamespace(typeName)
     end
 end
 
-function tf = isEmptyCell(cellArray)
-    tf = cellfun('isempty', cellArray);
+function namespaceNames = getNamespacesForDataTypes(nwbTypeNames)
+% getNamespacesOfTypes - Get namespace names for a list of nwb types
+    arguments
+        nwbTypeNames (1,:) string
+    end
+
+    namespaceNames = repmat("", size(nwbTypeNames));
+    pattern = '[types.]+\.(\w+)\.';
+
+    for i = 1:numel(nwbTypeNames)
+        namespaceNames(i) = regexp(nwbTypeNames(i), pattern, 'tokens', 'once');
+    end
+    namespaceNames = unique(namespaceNames);
 end
