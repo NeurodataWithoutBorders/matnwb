@@ -16,10 +16,10 @@ groups:
   - name: attribute_regref
     doc: "region reference attribute"
     dtype:
-      target_type: RefContainer
+      target_type: RefData
       reftype: region
   datasets:
   - name: data_regref
     dtype:
-      target_type: RefContainer
+      target_type: RefData
       reftype: region

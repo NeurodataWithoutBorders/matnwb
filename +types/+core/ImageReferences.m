@@ -40,7 +40,7 @@ methods
     
     function val = validate_data(obj, val)
         % Reference to type `BaseImage`
-        val = types.util.checkDtype('data', 'types.untyped.ObjectView', val);
+        val = types.util.validateReferenceType('data', val, 'types.core.BaseImage', 'types.untyped.ObjectView');
         types.util.validateShape('data', {[Inf]}, val)
     end
     %% EXPORT
