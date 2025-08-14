@@ -171,9 +171,7 @@ classdef NwbFile < types.core.NWBFile
             if options.IncludeSubTypes
                 flags{end+1} = 'includeSubClasses';
             end
-        
-            typeName = extractTypeNameWithoutNamespace(typeName); % local function
-        
+
             objectMap = searchProperties(...
                 containers.Map,...
                 obj,...
@@ -399,9 +397,14 @@ function tf = isMatchedType(typeNameA, typeNameB, options)
     end
 
     if options.ExactMatch
-        tf = strcmpi(...
+        if contains(typeNameB, '.')
+            % If namespace is provided, need to match on namespace and type.
+            tf = strcmpi(typeNameA, typeNameB);
+        else        
+            tf = strcmpi(...
             extractTypeNameWithoutNamespace(typeNameA), ...
             extractTypeNameWithoutNamespace(typeNameB));
+        end
     else
         tf = contains(typeNameA, typeNameB, 'IgnoreCase', true);
     end

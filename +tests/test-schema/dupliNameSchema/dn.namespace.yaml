@@ -1,0 +1,8 @@
+namespaces:
+- full_name: Duplicate Type Names Schema Test
+  name: dupliname
+  schema:
+  - namespace: core
+  - source: dn.dupliname.yaml
+  version: 1.0.0
+  

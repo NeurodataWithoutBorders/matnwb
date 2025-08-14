@@ -79,5 +79,33 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             testCase.verifyLength(...
                 nwb.searchFor('Images', 'includeSubClasses'), 3);
         end
+
+        function testSameNameDifferentNamespace(testCase)
+
+            schemaRootDirectory = fullfile(misc.getMatnwbDir(), '+tests', 'test-schema');
+
+            import tests.fixtures.ExtensionGenerationFixture
+
+            F = testCase.getSharedTestFixtures();
+            isMatch = arrayfun(@(x) isa(x, 'tests.fixtures.GenerateCoreFixture'), F);
+            F = F(isMatch);
+            
+            typesOutputFolder = F.TypesOutputFolder;
+
+            namespaceFilePath = fullfile( ...
+                schemaRootDirectory, 'dupliNameSchema', 'dn.namespace.yaml');
+
+            testCase.applyFixture( ...
+                ExtensionGenerationFixture(namespaceFilePath, typesOutputFolder) )
+
+            nwb = NwbFile();
+            nwb.acquisition.set('im1', types.core.Images());
+            nwb.acquisition.set('im2', types.dupliname.Images());
+
+            testCase.verifyLength( nwb.getTypeObjects('Images'), 2 );
+
+            testCase.verifyLength( nwb.getTypeObjects('types.core.Images'), 1 );
+            testCase.verifyLength( nwb.getTypeObjects('types.dupliname.Images'), 1 );
+        end
     end
 end
