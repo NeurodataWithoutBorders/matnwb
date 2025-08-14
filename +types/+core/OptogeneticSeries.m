@@ -83,16 +83,7 @@ methods
         end
     end
     function val = validate_site(obj, val)
-        if isa(val, 'types.untyped.SoftLink')
-            if isprop(val, 'target')
-                types.util.checkDtype('site', 'types.core.OptogeneticStimulusSite', val.target);
-            end
-        else
-            val = types.util.checkDtype('site', 'types.core.OptogeneticStimulusSite', val);
-            if ~isempty(val)
-                val = types.untyped.SoftLink(val);
-            end
-        end
+        val = types.util.validateSoftLink('site', val, 'types.core.OptogeneticStimulusSite');
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

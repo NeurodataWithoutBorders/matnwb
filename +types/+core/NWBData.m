@@ -16,7 +16,7 @@ methods
         %  nWBData = types.core.NWBDATA(Name, Value) creates a NWBData object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
-        %  - data (any) - No description
+        %  - data (any) - Data property for dataset class (NWBData)
         %
         % Output Arguments:
         %  - nWBData (types.core.NWBData) - A NWBData object
@@ -39,6 +39,7 @@ methods
     %% VALIDATORS
     
     function val = validate_data(obj, val)
+        types.util.validateShape('data', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

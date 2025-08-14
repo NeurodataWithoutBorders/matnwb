@@ -16,11 +16,23 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
         end
 
         function testSoftLinkConstructor(testCase)
+            import matlab.unittest.fixtures.SuppressedWarningsFixture
+            testCase.applyFixture(SuppressedWarningsFixture('NWB:SoftLink:DeprecatedPath'));
+            
             l = types.untyped.SoftLink('/mypath');
             testCase.verifyEqual(l.path, '/mypath');
         end
-        
+
+        function testSoftLinkPathDeprecated(testCase)
+            testCase.verifyWarning(...
+                @() types.untyped.SoftLink('/mypath'), ...
+                'NWB:SoftLink:DeprecatedPath')
+        end
+
         function testLinkExportSoft(testCase)
+            import matlab.unittest.fixtures.SuppressedWarningsFixture
+            testCase.applyFixture(SuppressedWarningsFixture('NWB:SoftLink:DeprecatedPath'));
+
             fid = H5F.create('test.nwb');
             close = onCleanup(@()H5F.close(fid));
             l = types.untyped.SoftLink('/mypath');
@@ -56,6 +68,9 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
         end
 
         function testSoftResolution(testCase)
+            import matlab.unittest.fixtures.SuppressedWarningsFixture
+            testCase.applyFixture(SuppressedWarningsFixture('NWB:SoftLink:DeprecatedPath'));
+            
             nwb = NwbFile;
             dev = types.core.Device;
             nwb.general_devices.set('testDevice', dev);
@@ -117,7 +132,19 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                     'device', not_a_device); %#ok<NASGU>
             end
             testCase.verifyError(@createElectrodeGroupWithWrongDeviceType, ...
-                'NWB:CheckDType:InvalidNeurodataType')
+                'NWB:CheckType:InvalidNeurodataType')
+        end
+                
+        function testWrongTypeInSoftLinkTarget(testCase)
+            % Adding an OpticalChannel as device for ElectrodeGroup should fail.
+            function createElectrodeGroupWithWrongDeviceType()
+                not_a_device = types.core.OpticalChannel('description', 'test_channel');
+                electrodeGroup = types.core.ElectrodeGroup(...
+                    'description', 'test_group', ...
+                    'device', types.untyped.SoftLink(not_a_device)); %#ok<NASGU>
+            end
+            testCase.verifyError(@createElectrodeGroupWithWrongDeviceType, ...
+                'NWB:CheckType:InvalidNeurodataType')
         end
         
         function testHardLinkCreationAndRead(testCase)

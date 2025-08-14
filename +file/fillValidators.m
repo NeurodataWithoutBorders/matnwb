@@ -1,4 +1,4 @@
-function validationStr = fillValidators(propnames, props, namespacereg, className, inherited)
+function validationStr = fillValidators(propnames, props, namespaceReg, className, inherited)
     validationStr = '';
     for i=1:length(propnames)
         nm = propnames{i};
@@ -12,28 +12,28 @@ function validationStr = fillValidators(propnames, props, namespacereg, classNam
             % attributes of a property from public (in a superclass) to 
             % protected (in a subclass).
             if any(strcmp(nm, inherited))
-                validationBody = fillReadOnlyValidator(nm, prop.value, className);
+                validationBody = fillReadOnlyValidation(nm, prop.value, className);
             else
                 continue
             end
         elseif isa(prop, 'file.Link')
-            validationBody = fillLinkValidation(nm, prop, namespacereg);
+            validationBody = fillLinkValidation(nm, prop, namespaceReg);
         else
             if startsWith(class(prop), 'file.')
-                validationBody = fillUnitValidation(nm, prop, namespacereg);
+                validationBody = fillUnitValidation(nm, prop, namespaceReg);
             else % primitive type
-                validationBody = fillDtypeValidation(nm, prop);
+                validationBody = fillDtypeValidation(nm, prop, namespaceReg);
             end
         end
 
         headerStr = ['function val = validate_' nm '(obj, val)'];
         if isempty(validationBody)
-            funcstionStr = [headerStr newline 'end'];
+            functionStr = [headerStr newline 'end'];
         else
-            funcstionStr = strjoin({headerStr ...
+            functionStr = strjoin({headerStr ...
                 file.addSpaces(strtrim(validationBody), 4) 'end'}, newline);
         end
-        validationStr = [validationStr newline funcstionStr];
+        validationStr = [validationStr newline functionStr];
     end
 end
 
@@ -58,19 +58,19 @@ function unitValidationStr = fillUnitValidation(name, prop, namespaceReg)
         unitValidationStr = fillGroupValidation(name, prop, namespaceReg);
     elseif isa(prop, 'file.Attribute')
         unitValidationStr = strjoin({unitValidationStr...
-            fillDtypeValidation(name, prop.dtype)...
+            fillDtypeValidation(name, prop.dtype, namespaceReg)...
             fillDimensionValidation(name, prop.shape)...
             }, newline);
     else % Link
-        fullname = namespaceReg.getFullClassName(prop.type);
-        unitValidationStr = fillDtypeValidation(name, fullname);
+        fullTypeName = namespaceReg.getFullClassName(prop.type);
+        unitValidationStr = fillDtypeValidation(name, fullTypeName, namespaceReg);
     end
 end
 
 function unitValidationStr = fillGroupValidation(name, prop, namespaceReg)
     if ~isempty(prop.type) && ~prop.isConstrainedSet
-        fulltypename = namespaceReg.getFullClassName(prop.type);
-        unitValidationStr = fillDtypeValidation(name, fulltypename);
+        fullTypeName = namespaceReg.getFullClassName(prop.type);
+        unitValidationStr = fillDtypeValidation(name, fullTypeName, namespaceReg);
         return;
     end
 
@@ -155,7 +155,7 @@ function unitValidationStr = fillDatasetValidation(name, prop, namespaceReg)
     unitValidationStr = '';
     if isempty(prop.type)
         unitValidationStr = strjoin({unitValidationStr...
-            fillDtypeValidation(name, prop.dtype)...
+            fillDtypeValidation(name, prop.dtype, namespaceReg)...
             fillDimensionValidation(name, prop.shape)...
             }, newline);
     elseif prop.isConstrainedSet
@@ -173,36 +173,23 @@ function unitValidationStr = fillDatasetValidation(name, prop, namespaceReg)
         if isempty(fullname)
             return
         end
-        unitValidationStr = [unitValidationStr newline fillDtypeValidation(name, fullname)];
+        unitValidationStr = [unitValidationStr newline fillDtypeValidation(name, fullname, namespaceReg)];
     end
 end
 
-function validationStr = fillLinkValidation(name, prop, namespacereg)
-    fullName = namespacereg.getFullClassName(prop.type);
+function validationStr = fillLinkValidation(name, prop, namespaceReg)
+    fullName = namespaceReg.getFullClassName(prop.type);
     
-    % Create a validation function body that 1) checks (validates) the
-    % target if the input is a SoftLink type, otherwise 2) checks (validates) 
-    % if the expected (target) type is provided. If the validation passes
-    % and the value is not empty, it is wrapped in a SoftLink.
-
-    validationStr = sprintf([ ...
-        'if isa(val, ''types.untyped.SoftLink'')\n', ...
-        '    if isprop(val, ''target'')\n', ...
-        '        types.util.checkDtype(''%s'', ''%s'', val.target);\n', ...
-        '    end\n', ...
-        'else\n', ...
-        '    %s\n', ...
-        '    if ~isempty(val)\n', ...
-        '        val = types.untyped.SoftLink(val);\n', ...
-        '    end\n', ...
-        'end' ...
-        ], ...
-        name, fullName, ...
-        fillDtypeValidation(name, fullName) ...
-    );
+    validationStr = sprintf(...
+        'val = types.util.validateSoftLink(''%s'', val, ''%s'');', ...
+        name, fullName);
 end
 
 function fdvstr = fillDimensionValidation(name, shape)
+
+    if isnumeric(shape) && isnan(shape) % Any shape is allowed
+        fdvstr = ''; return
+    end
 
     if iscell(shape)
         if ~isempty(shape) && iscell(shape{1})
@@ -227,7 +214,7 @@ function fdvstr = fillDimensionValidation(name, shape)
 end
 
 %NOTE: can return empty strings
-function fdvstr = fillDtypeValidation(name, type)
+function fdvstr = fillDtypeValidation(name, type, namespaceReg)
     if isstruct(type)
         fnames = fieldnames(type);
         fdvstr = strjoin({...
@@ -242,15 +229,8 @@ function fdvstr = fillDtypeValidation(name, type)
         vprops = cell(length(fnames),1);
         for i=1:length(fnames)
             nm = fnames{i};
-            if isa(type.(nm), 'containers.Map')
-                %ref
-                switch type.(nm)('reftype')
-                    case 'region'
-                        rt = 'RegionView';
-                    case 'object'
-                        rt = 'ObjectView';
-                end
-                typeval = ['types.untyped.' rt];
+            if isReferenceType(type.(nm))
+                typeval = getReferenceTypeClassName(type.(nm));
             else
                 typeval = type.(nm);
             end
@@ -258,23 +238,11 @@ function fdvstr = fillDtypeValidation(name, type)
         end
         fdvstr = [fdvstr, newline, strjoin(vprops, newline), newline, ...
             'val = types.util.checkDtype(''' name ''', vprops, val);'];
+    elseif isReferenceType(type)
+        fdvstr = fillReferenceTypeValidation(name, type, namespaceReg);
     else
         fdvstr = '';
-        if isa(type, 'containers.Map')
-            %ref
-            ref_t = type('reftype');
-            switch ref_t
-                case 'region'
-                    rt = 'RegionView';
-                case 'object'
-                    rt = 'ObjectView';
-            end
-            ts = ['types.untyped.' rt];
-            %there is no objective way to guarantee a reference refers to the
-            %correct target type
-            tt = type('target_type');
-            fdvstr = ['% Reference to type `' tt '`' newline];
-        elseif strcmp(type, 'any')
+        if strcmp(type, 'any')
             fdvstr = '';
             return;
         else
@@ -285,7 +253,24 @@ function fdvstr = fillDtypeValidation(name, type)
     end
 end
 
-function fdvstr = fillReadOnlyValidator(name, value, className)
+function validationStr = fillReferenceTypeValidation(name, typeSpec, namespaceReg)
+
+    fullReferenceClassName = getReferenceTypeClassName(typeSpec);
+
+    % Get full class name for target type
+    targetType = typeSpec('target_type');
+    fullTargetTypeName = namespaceReg.getFullClassName(targetType);
+
+    validationLines = {...
+        sprintf('%% Reference to type `%s`', targetType), ...
+        sprintf('val = types.util.validateReferenceType(''%s'', val, ''%s'', ''%s'');', ...
+        name, fullTargetTypeName, fullReferenceClassName)
+        };
+
+    validationStr = strjoin(validationLines, newline);
+end
+
+function fdvstr = fillReadOnlyValidation(name, value, className)
 
     classNameSplit = strsplit(className, '.');
     shortName = classNameSplit{end};
@@ -328,4 +313,27 @@ function fullname = getFullClassName(namespaceReg, propType, name)
             ['Namespace could not be found for type `%s`.' ...
             '  Skipping Validation for property `%s`.'], propType, name);
     end
+end
+
+function tf = isReferenceType(typeSpec)
+    % If the type specification is a containers.Map type, the type will be
+    % a reference type, i.e an object view or region view.
+    tf = isa(typeSpec, 'containers.Map');
+    if tf
+        assert(isKey(typeSpec, 'target_type'), ...
+            'Expected type specification to have the `target_type` key')
+        assert(isKey(typeSpec, 'reftype'), ...
+            'Expected type specification to have the reftype key')
+    end
+end
+
+function fullReferenceClassName = getReferenceTypeClassName(typeSpec)
+    assert(isKey(typeSpec, 'reftype'), 'Expected reftype key')
+    switch typeSpec('reftype')
+        case 'region'
+            referenceClassName = 'RegionView';
+        case 'object'
+            referenceClassName = 'ObjectView';
+    end
+    fullReferenceClassName = ['types.untyped.' referenceClassName];
 end

@@ -108,16 +108,7 @@ methods
         types.util.validateShape('data_unit', {[1]}, val)
     end
     function val = validate_electrode(obj, val)
-        if isa(val, 'types.untyped.SoftLink')
-            if isprop(val, 'target')
-                types.util.checkDtype('electrode', 'types.core.IntracellularElectrode', val.target);
-            end
-        else
-            val = types.util.checkDtype('electrode', 'types.core.IntracellularElectrode', val);
-            if ~isempty(val)
-                val = types.untyped.SoftLink(val);
-            end
-        end
+        val = types.util.validateSoftLink('electrode', val, 'types.core.IntracellularElectrode');
     end
     function val = validate_gain(obj, val)
         val = types.util.checkDtype('gain', 'single', val);

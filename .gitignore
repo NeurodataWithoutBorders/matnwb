@@ -20,15 +20,5 @@ nwbtest.env
 !+types/+untyped/
 !+types/+util/
 
-# Ignore everything in the +types/ folder
-+types/*
-
-# Explicitly include these subdirectories
-!+types/+core/
-!+types/+hdmf_common/
-!+types/+hdmf_experimental/
-!+types/+untyped/
-!+types/+util/
-
 docs/build
 docs/reports
