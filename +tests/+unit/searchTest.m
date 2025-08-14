@@ -75,7 +75,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                 nwb.getTypeObjects('Images', 'IncludeSubTypes', true), 1);
 
             % searchFor with subclasses will also match OpticalSeries as it
-            % is a subclass og ImageSeries.
+            % is a subclass of ImageSeries.
             testCase.verifyLength(...
                 nwb.searchFor('Images', 'includeSubClasses'), 3);
         end

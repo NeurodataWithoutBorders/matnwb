@@ -121,21 +121,35 @@ classdef NwbFile < types.core.NWBFile
         end
         
         function nwbObjects = getTypeObjects(obj, typeName, options)
-        % getTypeObjects - Retrieve NWB objects of a specified type.
+        % GETTYPEOBJECTS - Retrieve NWB objects of a specified type.
         % 
         % Syntax:
-        %   nwbObjects = getTypeObjects(obj, typeName) Retrieves NWB 
-        %   objects of the specified type from the NwbFile.
+        %   nwbObjects = GETTYPEOBJECTS(obj, typeName) Retrieves NWB 
+        %   objects of the specified type from the NwbFile object.
         % 
+        %   nwbObjects = GETTYPEOBJECTS(obj, typeName, Name, Value) Retrieves NWB 
+        %   objects of the specified type from the NwbFile object using provided
+        %   name-value pairs controlling options.
+        %
         % Input Arguments:
-        %   obj          - The NwbFile object from which to retrieve NWB objects.
-        %   typeName (1,1) string - The name of the type to search for.
-        %   options      - Structure containing options for the function.
-        %       IncludeSubTypes (1,1) logical - Optional; set to true to include 
-        %       subclasses in the search. Default is false.
+        %  - obj (NwbFile) - 
+        %    The NwbFile object from which to retrieve NWB objects.
+        %   
+        %  - typeName (1,1) string - 
+        %    The name of the type to search for. Can include namespace, but 
+        %    does not have to, i.e types.core.TimeSeries and TimeSeries is
+        %    supported.
+        %   
+        %  - options (name-value pairs) -
+        %    Optional name-value pairs. Available options:
+        %       
+        %    - IncludeSubTypes logical - 
+        %      Optional: set to true to include subclasses in the search. 
+        %      Default is false.
         % 
         % Output Arguments:
-        %   nwbObjects    - A cell array of NWB objects of the specified type.
+        %   - nwbObjects (cell) -  
+        %     A cell array of NWB objects of the specified type.
         %
         % Usage:
         %  Example 1 - Get all ElectricalSeries objects from NwbFile::
@@ -147,7 +161,6 @@ classdef NwbFile < types.core.NWBFile
         %
         %    evalc('run("ecephys.mlx")')
         %    nwb.getTypeObjects('ElectricalSeries', 'IncludeSubTypes', true)
-        %
         
             arguments
                 obj
