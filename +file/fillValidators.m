@@ -191,7 +191,6 @@ function unitValidationStr = fillDatasetValidation(name, prop, namespaceReg)
                 {fillDtypeValidation(name, prop.dtype, namespaceReg)} ...
                 {fillDimensionValidation(name, prop.shape)} ];
         end
-
     end
     validationLines(cellfun('isempty', validationLines)) = [];
     unitValidationStr = strjoin(validationLines, newline);
