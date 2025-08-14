@@ -20,7 +20,7 @@ methods
         %  enumData = types.hdmf_experimental.ENUMDATA(Name, Value) creates a EnumData object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
-        %  - data (uint8) - No description
+        %  - data (uint8) - Data property for dataset class (EnumData)
         %
         %  - description (char) - Description of what these vectors represent.
         %
@@ -52,6 +52,7 @@ methods
     
     function val = validate_data(obj, val)
         val = types.util.checkDtype('data', 'uint8', val);
+        types.util.validateShape('data', {[Inf,Inf,Inf,Inf], [Inf,Inf,Inf], [Inf,Inf], [Inf]}, val)
     end
     function val = validate_elements(obj, val)
         % Reference to type `VectorData`
