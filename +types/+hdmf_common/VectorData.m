@@ -29,7 +29,7 @@ methods
         %  vectorData = types.hdmf_common.VECTORDATA(Name, Value) creates a VectorData object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
-        %  - data (any) - No description
+        %  - data (any) - Data property for dataset class (VectorData)
         %
         %  - description (char) - Description of what these vectors represent.
         %
@@ -75,6 +75,7 @@ methods
     %% VALIDATORS
     
     function val = validate_data(obj, val)
+        types.util.validateShape('data', {[Inf,Inf,Inf,Inf], [Inf,Inf,Inf], [Inf,Inf], [Inf]}, val)
     end
     function val = validate_description(obj, val)
         val = types.util.checkDtype('description', 'char', val);

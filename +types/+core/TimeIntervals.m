@@ -101,22 +101,37 @@ methods
     %% VALIDATORS
     
     function val = validate_start_time(obj, val)
-        val = types.util.checkDtype('start_time', 'types.hdmf_common.VectorData', val);
+        types.util.checkType('start_time', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val)
+            [val, originalVal] = types.util.unwrapValue(val);
+            val = types.util.checkDtype('start_time', 'single', val);
+            val = types.util.rewrapValue(val, originalVal);
+        end
     end
     function val = validate_stop_time(obj, val)
-        val = types.util.checkDtype('stop_time', 'types.hdmf_common.VectorData', val);
+        types.util.checkType('stop_time', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val)
+            [val, originalVal] = types.util.unwrapValue(val);
+            val = types.util.checkDtype('stop_time', 'single', val);
+            val = types.util.rewrapValue(val, originalVal);
+        end
     end
     function val = validate_tags(obj, val)
-        val = types.util.checkDtype('tags', 'types.hdmf_common.VectorData', val);
+        types.util.checkType('tags', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val)
+            [val, originalVal] = types.util.unwrapValue(val);
+            val = types.util.checkDtype('tags', 'char', val);
+            val = types.util.rewrapValue(val, originalVal);
+        end
     end
     function val = validate_tags_index(obj, val)
-        val = types.util.checkDtype('tags_index', 'types.hdmf_common.VectorIndex', val);
+        types.util.checkType('tags_index', 'types.hdmf_common.VectorIndex', val);
     end
     function val = validate_timeseries(obj, val)
-        val = types.util.checkDtype('timeseries', 'types.core.TimeSeriesReferenceVectorData', val);
+        types.util.checkType('timeseries', 'types.core.TimeSeriesReferenceVectorData', val);
     end
     function val = validate_timeseries_index(obj, val)
-        val = types.util.checkDtype('timeseries_index', 'types.hdmf_common.VectorIndex', val);
+        types.util.checkType('timeseries_index', 'types.hdmf_common.VectorIndex', val);
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

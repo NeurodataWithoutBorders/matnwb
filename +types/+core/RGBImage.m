@@ -16,7 +16,7 @@ methods
         %  rGBImage = types.core.RGBIMAGE(Name, Value) creates a RGBImage object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
-        %  - data (numeric) - No description
+        %  - data (numeric) - Data property for dataset class (RGBImage)
         %
         %  - description (char) - Description of the image.
         %
@@ -44,6 +44,7 @@ methods
     
     function val = validate_data(obj, val)
         val = types.util.checkDtype('data', 'numeric', val);
+        types.util.validateShape('data', {[3,Inf,Inf]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

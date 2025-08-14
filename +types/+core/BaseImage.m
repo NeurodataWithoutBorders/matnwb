@@ -20,7 +20,7 @@ methods
         %  baseImage = types.core.BASEIMAGE(Name, Value) creates a BaseImage object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
-        %  - data (any) - No description
+        %  - data (any) - Data property for dataset class (BaseImage)
         %
         %  - description (char) - Description of the image.
         %
@@ -49,6 +49,7 @@ methods
     %% VALIDATORS
     
     function val = validate_data(obj, val)
+        types.util.validateShape('data', {[1]}, val)
     end
     function val = validate_description(obj, val)
         val = types.util.checkDtype('description', 'char', val);

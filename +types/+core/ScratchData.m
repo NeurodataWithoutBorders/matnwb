@@ -20,7 +20,7 @@ methods
         %  scratchData = types.core.SCRATCHDATA(Name, Value) creates a ScratchData object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
-        %  - data (any) - No description
+        %  - data (any) - Data property for dataset class (ScratchData)
         %
         %  - notes (char) - Any notes the user has about the dataset being stored
         %

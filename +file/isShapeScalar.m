@@ -1,4 +1,5 @@
 function isScalar = isShapeScalar(shape)
+if isnumeric(shape) && isnan(shape); isScalar = false; return; end
 if ~iscell(shape)
     shape = {shape};
 elseif iscell(shape{1})
