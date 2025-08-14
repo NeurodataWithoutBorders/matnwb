@@ -137,7 +137,7 @@ classdef NwbFile < types.core.NWBFile
         %   
         %  - typeName (1,1) string - 
         %    The name of the type to search for. Can include namespace, but 
-        %    does not have to, i.e types.core.TimeSeries and TimeSeries is
+        %    does not have to, i.e types.core.TimeSeries and TimeSeries are
         %    supported.
         %   
         %  - options (name-value pairs) -
