@@ -7,8 +7,8 @@
 % |*types.core.ImageSeries*|> to store acquired image series (movie segments).
 % * Use <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OpticalSeries.html 
 % |*types.core.OpticalSeries*|> and <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/AbstractFeatureSeries.html 
-% |*types.core.AbstractFeatureSeries*| t>o store series of images or image features 
-% that were presented as stimulus.
+% |*types.core.AbstractFeatureSeries*|> to store series of images or image features 
+% that were presented as stimuli.
 % * Use <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/GrayscaleImage.html 
 % |*types.core.GrayscaleImage*|>, <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RGBImage.html 
 % |*types.core.RGBImage*|> and <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RGBAImage.html 
@@ -22,7 +22,7 @@
 % the tutorial:
 
 % Anonymous function for reversing data dimensions for NWB compliance
-reverseDims = @(data) permute(data, fliplr(1:ndims(data)));
+reverseDims = @(data) permute(data, ndims(data):-1:1);
 %% Create an NWB File
 
 nwb = NwbFile( ...
@@ -117,8 +117,8 @@ nwb.stimulus_presentation.set('StimulusFeatures', abstract_feature_series);
 % 
 % The |starting_frame| attribute is a zero-based index into the full |ImageSeries| 
 % that indicates the first frame contained in each file listed in |external_file|. 
-% For example, if three files contain 5, 10, and 20 frames respectively, |starting_frame|would 
-% be |[0, 5, 15]|. If one file contains all frames, it is |[0]|. This indexing 
+% For example, if three files contain 5, 10, and 20 frames respectively, |starting_frame| 
+% would be |[0, 5, 15]|. If one file contains all frames, it is |[0]|. This indexing 
 % allows random access to frames without loading all preceding files.
 
 external_files = {'video1.pmp4', 'video2.pmp4'};
@@ -203,7 +203,7 @@ nwb.acquisition.set('ImageCollection', image_collection);
 % |*Images*|> container holds the unique images, and an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImageReferences.html 
 % |*ImageReferences*|> object defines their order. The |data| field of <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IndexSeries.html 
 % |*IndexSeries*|> is a zero-based index into that order, indicating which image 
-% is shown at each time point. |Timestamps| define when each indexed image was 
+% is shown at each time point. |timestamps| define when each indexed image was 
 % presented.
 % 
 % For example, if <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IndexSeries.html 
