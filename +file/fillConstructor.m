@@ -62,14 +62,19 @@ function bodystr = fillBody(parentName, defaults, props, namespace, inherited)
     dynamicConstrained = false(size(names));
     isAnonymousType = false(size(names));
     isAttribute = false(size(names));
+    isNonScalarLink = false(size(names));
     typenames = repmat({''}, size(names));
-    varnames = repmat({''}, size(names));
+    varnames = repmat({''}, size(names)); % necessary? same as names?
     for i = 1:length(names)
         nm = names{i};
         prop = props(nm);
 
         if isa(prop, 'file.Attribute')
             isAttribute(i) = true;
+        elseif isa(prop, 'file.Link')
+            isNonScalarLink(i) = ~prop.scalar;
+            varnames{i} = nm;
+            typenames{i} = namespace.getFullClassName(prop.type);
             continue;
         end
 
@@ -119,8 +124,26 @@ function bodystr = fillBody(parentName, defaults, props, namespace, inherited)
     end
     varnames = lower(varnames);
 
-    %we delete the entry in varargin such that any conflicts do not show up in inputParser
+    % We delete parsed elements from varargin such that any conflicts do not 
+    % show up in inputParser
     deleteFromVars = 'varargin(ivarargin) = [];';
+
+    % Fill parseLink call for non-scalar links
+    % !! Important: Need this before potential calls to parseConstrained,
+    % as parseConstrained will filter softlinks...
+    if any(isNonScalarLink)
+        nonScalarLinkTypes = typenames(isNonScalarLink & ~invalid);
+        nonScalarLinkVars = varnames(isNonScalarLink & ~invalid);
+        methodCalls = strcat('[obj.', nonScalarLinkVars, ', ivarargin] = ',...
+            ' types.util.parseLink(obj, ''', nonScalarLinkVars, ''', ''',...
+            nonScalarLinkTypes, ''', varargin{:});');
+        fullBody = cell(length(methodCalls) * 2,1);
+        fullBody(1:2:end) = methodCalls;
+        fullBody(2:2:end) = {deleteFromVars};
+        fullBody = strjoin(fullBody, newline);
+        bodystr(end+1:end+length(fullBody)+1) = [newline fullBody];
+    end
+
     %if constrained/anon sets exist, then check for nonstandard parameters and add as
     %container.map
     constrainedTypes = typenames(dynamicConstrained & ~invalid);
@@ -136,7 +159,6 @@ function bodystr = fillBody(parentName, defaults, props, namespace, inherited)
 
     %if anonymous values exist, then check for nonstandard parameters and add
     %as Anon
-
     anonTypes = typenames(isAnonymousType & ~invalid);
     anonVars = varnames(isAnonymousType & ~invalid);
     methodCalls = strcat('[obj.', anonVars, ',ivarargin] = ',...
@@ -153,7 +175,7 @@ function bodystr = fillBody(parentName, defaults, props, namespace, inherited)
         'p.PartialMatching = false;',...
         'p.StructExpand = false;'};
 
-    names = names(~dynamicConstrained & ~isAnonymousType);
+    names = names(~dynamicConstrained & ~isNonScalarLink & ~isAnonymousType);
     names = setdiff(names, inherited, 'stable');
     
     defaults = cell(size(names));
