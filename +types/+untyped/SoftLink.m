@@ -66,7 +66,7 @@ classdef SoftLink < handle
         
         function refs = export(obj, fid, fullpath, refs)
             for i = 1:numel(obj)
-                refs{end+1} = obj(i).exportScalar(fid, fullpath, refs); %#ok<AGROW>
+                refs = obj(i).exportScalar(fid, fullpath, refs); %#ok<AGROW>
             end
         end
     end
@@ -74,7 +74,7 @@ classdef SoftLink < handle
     methods (Access = private)
         function refs = exportScalar(obj, fid, fullpath, refs)
             if isempty(obj.path)
-                refs = fullpath;
+                refs{end+1} = fullpath;
                 return;
             end
             
