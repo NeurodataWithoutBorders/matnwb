@@ -4,6 +4,7 @@ classdef Link < file.interface.HasQuantity
         name;
         required;
         type;
+        scalar;
     end
     
     methods
@@ -12,6 +13,8 @@ classdef Link < file.interface.HasQuantity
             obj.name = [];
             obj.required = true;
             obj.type = [];
+            obj.scalar = true;
+
             if nargin < 1
                 return;
             end
@@ -26,6 +29,7 @@ classdef Link < file.interface.HasQuantity
             obj.doc = source('doc');
             obj.type = source('target_type');
             obj.required = obj.isRequired(source);
+            obj.scalar = obj.isScalar(source);
         end
     end
 end
