@@ -1,4 +1,4 @@
-function [set, ivarargin] = parseConstrained(obj, pname, type, varargin)
+function [set, ivarargin] = parseConstrainedLink(obj, pname, type, varargin)
     assert(mod(length(varargin),2) == 0, 'Malformed varargin.  Should be even');
     ikeys = false(size(varargin));
     defprops = properties(obj);
@@ -28,20 +28,22 @@ function [set, ivarargin] = parseConstrained(obj, pname, type, varargin)
     if isa(obj.(pname), 'types.untyped.Set')
         set = obj.(pname);
     else
-        set = types.untyped.Set();
+        set = types.untyped.LinkSet();
     end
 
     if ~any(ikeys)
         return;
     end
 
-    validationFunction = @(nm, val)types.util.checkConstraint(pname, nm, struct(), {type}, val);
+    %validationFunction = @(nm, val)types.util.checkConstraint(pname, nm, struct(), {type}, val);
+    validationFunction = @(nm, val)types.util.validateSoftLink(pname, val, type);
 
-    if 0 == set.Count
-        % construct set from empty with generated map.
-        set = types.untyped.Set(containers.Map(varargin(ikeys), varargin(ivals)), validationFunction);
-        return;
-    end
+    % if 0 == set.Count
+    %     % construct set from empty with generated map.
+    %     set = types.untyped.LinkSet(containers.Map(varargin(ikeys), varargin(ivals)), validationFunction);
+    %     return;
+    % end
+    set = types.untyped.LinkSet();
 
     % append to currently existing set.
     set.setValidationFcn(validationFunction);
