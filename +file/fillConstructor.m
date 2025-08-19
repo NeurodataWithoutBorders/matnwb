@@ -71,11 +71,12 @@ function bodystr = fillBody(parentName, defaults, props, namespace, inherited)
 
         if isa(prop, 'file.Attribute')
             isAttribute(i) = true;
+            continue
         elseif isa(prop, 'file.Link')
             isNonScalarLink(i) = ~prop.scalar;
             varnames{i} = nm;
             typenames{i} = namespace.getFullClassName(prop.type);
-            continue;
+            continue
         end
 
         if isa(prop, 'file.interface.HasProps')
