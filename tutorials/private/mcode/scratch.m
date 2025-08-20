@@ -15,7 +15,8 @@ ContextFile = NwbFile(...
     'general_experimenter', 'Niu, Lawrence', ...
     'general_institution', 'NWB' ...
 );
-% simulate some data
+
+% Simulate some data
 timestamps = 0:100:1024;
 data = sin(0.333 .* timestamps) ...
     + cos(0.1 .* timestamps) ...
@@ -29,13 +30,16 @@ RawTs = types.core.TimeSeries(...
 );
 ContextFile.acquisition.set('raw_timeseries', RawTs);
 
-% "analyze" the simulated data
-% we provide a re-implementation of scipy.signal.correlate(..., mode='same')
-% Ideally, you should use MATLAB-native code though using its equivalent function (xcorr) requires
-% the Signal Processing Toolbox
+% "Analyze" the simulated data
+
+% We provide a re-implementation of scipy.signal.correlate(..., mode='same')
+% Ideally, you should use MATLAB-native code though using its equivalent 
+% function (xcorr) requires the Signal Processing Toolbox
 correlatedData = sameCorr(RawTs.data, ones(128, 1)) ./ 128;
-% If you are unsure of how HDF5 paths map to MatNWB property structures, we suggest using HDFView to
-% verify. In most cases, MatNWB properties map directly to HDF5 paths.
+
+% If you are unsure of how HDF5 paths map to MatNWB property structures, we 
+% suggest using HDFView to verify. In most cases, MatNWB properties map 
+% directly to HDF5 paths.
 FilteredTs = types.core.TimeSeries( ...
     'data', correlatedData, ...
     'data_unit', 'm', ...
@@ -66,9 +70,9 @@ ScratchFile.session_start_time = ContextFile.session_start_time;
 % We can now do an analysis lacking specification but that we still wish to 
 % store results for.
 
-% ProcessingModule stores its timeseries inside of the "nwbdatainterface" property which is a Set of
-% NWBDataInterface objects. This is not directly mapped to the NWB file but is used to distinguish
-% it and DynamicTable objects which it stores under the "dynamictable" property.
+% ProcessingModule stores its timeseries inside of the "nwbdatainterface" property which is a 
+% Set of NWBDataInterface objects. This is not directly mapped to the NWB file but is used to 
+% distinguish it and DynamicTable objects which it stores under the "dynamictable" property.
 FilteredTs = ContextFile.processing.get('core').nwbdatainterface.get('filtered_timeseries');
 % note: MatNWB does not currently support complex numbers. If you wish to store the data, consider
 % storing each number as a struct which will write the data to HDF5 using compound types.

@@ -9,6 +9,11 @@ function mustBeFile(filePath)
     arguments
         filePath (1,1) string
     end
+
+    % Skip check for s3 uris to support reading remote files
+    if startsWith(filePath, "s3://")
+        return
+    end
     
     if verLessThan('matlab', '9.9') %#ok<VERLESSMATLAB>
         % Custom implementation (MATLAB < R2020b)
