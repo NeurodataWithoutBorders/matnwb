@@ -11,6 +11,7 @@ classdef Attribute
         scalar; %if the value is scalar or an array
         dimnames;
         shape;
+        isConstrainedSet;
     end
     
     methods
@@ -27,6 +28,8 @@ classdef Attribute
             obj.scalar = true;
             obj.shape = {};
             obj.dimnames = {};
+            obj.isConstrainedSet = false;
+
             
             if nargin < 1
                 return;

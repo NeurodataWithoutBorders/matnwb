@@ -1,5 +1,6 @@
 function o = resolvePath(nwb, h5Path)
 tokens = split(h5Path, '/');
+lastToken = tokens{end};
 %skip first `/` if it exists
 if isempty(tokens{1})
     tokens(1) = [];
@@ -18,6 +19,9 @@ while ~isempty(tokens)
     if isempty(o)
         error('NWB:IO:UnresolvedPath', 'Could not resolve path `%s`.', h5Path);
     end
+end
+if isa(o, 'types.untyped.LinkSet')
+    o = o.get(lastToken);
 end
 end
 

@@ -16,7 +16,7 @@ function validationStr = fillValidators(propnames, props, namespaceReg, classNam
             else
                 continue
             end
-        elseif isa(prop, 'file.Link')
+        elseif isa(prop, 'file.Link') && ~prop.isConstrainedSet
             validationBody = fillLinkValidation(nm, prop, namespaceReg);
         else
             if startsWith(class(prop), 'file.')
@@ -39,7 +39,7 @@ end
 
 function unitValidationStr = fillUnitValidation(name, prop, namespaceReg)
     unitValidationStr = '';
-    if ~isscalar(prop)
+    if ~isscalar(prop) || (isa(prop, 'file.Link') && prop.isConstrainedSet)
         constrained = cell(size(prop));
         for iProp = 1:length(prop)
             p = prop(iProp);

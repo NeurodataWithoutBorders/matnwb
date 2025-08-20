@@ -171,7 +171,7 @@ function dataExportString = fillDataExport(name, prop, elisions, required)
         elisionpath = ['[fullpath ''/' elisions ''']'];
     end
 
-    if (isa(prop, 'file.Group') || isa(prop, 'file.Dataset')) && prop.isConstrainedSet
+    if (isa(prop, 'file.Group') || isa(prop, 'file.Dataset') || isa(prop, 'file.Link')) && prop.isConstrainedSet
         % is a sub-object (with an export function)
         dataExportString = ['refs = obj.' name '.export(fid, ' elisionpath ', refs);'];
     elseif isa(prop, 'file.Link') || isa(prop, 'file.Group') ||...
