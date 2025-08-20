@@ -66,10 +66,10 @@ methods
     %% VALIDATORS
     
     function val = validate_repetitions(obj, val)
-        val = types.util.checkDtype('repetitions', 'types.hdmf_common.DynamicTableRegion', val);
+        types.util.checkType('repetitions', 'types.hdmf_common.DynamicTableRegion', val);
     end
     function val = validate_repetitions_index(obj, val)
-        val = types.util.checkDtype('repetitions_index', 'types.hdmf_common.VectorIndex', val);
+        types.util.checkType('repetitions_index', 'types.hdmf_common.VectorIndex', val);
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

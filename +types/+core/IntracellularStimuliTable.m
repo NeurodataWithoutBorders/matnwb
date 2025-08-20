@@ -75,10 +75,10 @@ methods
         end
     end
     function val = validate_stimulus(obj, val)
-        val = types.util.checkDtype('stimulus', 'types.core.TimeSeriesReferenceVectorData', val);
+        types.util.checkType('stimulus', 'types.core.TimeSeriesReferenceVectorData', val);
     end
     function val = validate_stimulus_template(obj, val)
-        val = types.util.checkDtype('stimulus_template', 'types.core.TimeSeriesReferenceVectorData', val);
+        types.util.checkType('stimulus_template', 'types.core.TimeSeriesReferenceVectorData', val);
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

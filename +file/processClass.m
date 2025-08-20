@@ -17,6 +17,7 @@ function [Processed, classprops, inherited] = processClass(name, namespace, preg
         if ~isKey(pregen, nodename)
 
             spec.internal.resolveInheritedFields(node, branch(iAncestor+1:end))
+            spec.internal.expandFieldsInheritedByInclusion(node)
             
             switch node('class_type')
                 case 'groups'
