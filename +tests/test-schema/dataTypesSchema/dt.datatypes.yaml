@@ -1,0 +1,66 @@
+# HDMF 2.2.0
+groups:
+- neurodata_type_def: DataTypeContainer
+  neurodata_type_inc: NWBDataInterface
+  doc: Container for testing data type validation
+  attributes:
+  - name: help
+    dtype: text
+    doc: Value is 'Data type validation test container'
+    value: Data type validation test container
+  datasets:
+  - name: basic_data
+    neurodata_type_inc: BasicDataset
+  - name: extended_text_data
+    neurodata_type_inc: ExtendedTextDataset
+  - name: reused_data
+    neurodata_type_inc: BasicDataset
+    dtype: text
+  - name: compound_data
+    neurodata_type_inc: CompoundDataset
+
+datasets:
+- neurodata_type_def: BasicDataset
+  neurodata_type_inc: NWBData
+  doc: Basic dataset with any dtype allowed
+  dtype: any
+  shape: null
+  attributes:
+  - name: description
+    dtype: text
+    doc: A description of the data
+    default_value: no description
+
+# Dataset that inherits from BasicDataset but constrains dtype to text
+- neurodata_type_def: ExtendedTextDataset
+  neurodata_type_inc: BasicDataset
+  doc: Dataset that inherits from BasicDataset but overrides dtype to text
+  dtype: text
+
+# Dataset that inherits from BasicDataset but constrains dtype to integers
+- neurodata_type_def: ExtendedIntegerDataset
+  neurodata_type_inc: BasicDataset
+  doc: Dataset that inherits from BasicDataset but overrides dtype to int32
+  dtype: int32
+
+# Dataset with compound data type
+- neurodata_type_def: CompoundDataset
+  neurodata_type_inc: NWBData
+  doc: Dataset with compound data type for testing struct validation
+  dtype:
+  - name: x
+    dtype: int32
+    doc: X coordinate
+  - name: y
+    dtype: int32
+    doc: Y coordinate
+  - name: label
+    dtype: text
+    doc: Text label
+  - name: reference
+    dtype:
+      target_type: BasicDataset
+      reftype: object
+    doc: Reference to a BasicDataset
+  shape:
+  - null

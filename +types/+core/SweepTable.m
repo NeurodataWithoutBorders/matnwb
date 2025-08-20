@@ -74,13 +74,24 @@ methods
     %% VALIDATORS
     
     function val = validate_series(obj, val)
-        val = types.util.checkDtype('series', 'types.hdmf_common.VectorData', val);
+        types.util.checkType('series', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val)
+            [val, originalVal] = types.util.unwrapValue(val);
+            % Reference to type `PatchClampSeries`
+            val = types.util.validateReferenceType('series', val, 'types.core.PatchClampSeries', 'types.untyped.ObjectView');
+            val = types.util.rewrapValue(val, originalVal);
+        end
     end
     function val = validate_series_index(obj, val)
-        val = types.util.checkDtype('series_index', 'types.hdmf_common.VectorIndex', val);
+        types.util.checkType('series_index', 'types.hdmf_common.VectorIndex', val);
     end
     function val = validate_sweep_number(obj, val)
-        val = types.util.checkDtype('sweep_number', 'types.hdmf_common.VectorData', val);
+        types.util.checkType('sweep_number', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val)
+            [val, originalVal] = types.util.unwrapValue(val);
+            val = types.util.checkDtype('sweep_number', 'uint32', val);
+            val = types.util.rewrapValue(val, originalVal);
+        end
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

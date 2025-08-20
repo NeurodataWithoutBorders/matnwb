@@ -6,6 +6,22 @@ classdef MultipleShapesTest < tests.unit.abstract.SchemaTest
     end
 
     methods (Test)
+        function testShapeDatasetWithCorrectShape(testCase)
+            numElements = 3;
+            msd = types.mss.ShapeDataset('data', rand(numElements, 1));
+            testCase.verifyClass(msd, 'types.mss.ShapeDataset');
+            testCase.verifyEqual(size(msd.data), [numElements, 1]);
+        end
+
+        function testShapeDatasetWithWrongShape(testCase)
+            numElements = 3;
+            matrixData = rand(numElements, numElements);
+
+            testCase.verifyError(...
+                @() types.mss.ShapeDataset('data', matrixData), ...
+                'NWB:CheckDims:InvalidDimensions');
+        end
+
         function testMultipleShapesDataset(testCase)
             msd = types.mss.MultiShapeDataset('data', rand(3, 1));
             msd.data = rand(7, 5, 1); % NB: Reverse dimensions relative to schema due to MATLAB F-ordering
@@ -42,7 +58,6 @@ classdef MultipleShapesTest < tests.unit.abstract.SchemaTest
         end
 
         function testInheritedDatasetWithWrongShape(testCase)
-
             % Should not fail for parent type that accepts data with shape 3
             types.mss.NullShapeDataset('data', {'A'; 'B'; 'C'});
     

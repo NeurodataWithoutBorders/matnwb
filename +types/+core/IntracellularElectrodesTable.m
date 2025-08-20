@@ -64,7 +64,13 @@ methods
         end
     end
     function val = validate_electrode(obj, val)
-        val = types.util.checkDtype('electrode', 'types.hdmf_common.VectorData', val);
+        types.util.checkType('electrode', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val)
+            [val, originalVal] = types.util.unwrapValue(val);
+            % Reference to type `IntracellularElectrode`
+            val = types.util.validateReferenceType('electrode', val, 'types.core.IntracellularElectrode', 'types.untyped.ObjectView');
+            val = types.util.rewrapValue(val, originalVal);
+        end
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

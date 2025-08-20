@@ -74,13 +74,18 @@ methods
     %% VALIDATORS
     
     function val = validate_simultaneous_recordings(obj, val)
-        val = types.util.checkDtype('simultaneous_recordings', 'types.hdmf_common.DynamicTableRegion', val);
+        types.util.checkType('simultaneous_recordings', 'types.hdmf_common.DynamicTableRegion', val);
     end
     function val = validate_simultaneous_recordings_index(obj, val)
-        val = types.util.checkDtype('simultaneous_recordings_index', 'types.hdmf_common.VectorIndex', val);
+        types.util.checkType('simultaneous_recordings_index', 'types.hdmf_common.VectorIndex', val);
     end
     function val = validate_stimulus_type(obj, val)
-        val = types.util.checkDtype('stimulus_type', 'types.hdmf_common.VectorData', val);
+        types.util.checkType('stimulus_type', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val)
+            [val, originalVal] = types.util.unwrapValue(val);
+            val = types.util.checkDtype('stimulus_type', 'char', val);
+            val = types.util.rewrapValue(val, originalVal);
+        end
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

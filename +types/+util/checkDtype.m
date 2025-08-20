@@ -1,13 +1,17 @@
 function value = checkDtype(name, typeDescriptor, value)
 %ref
 %any, double, int/uint, char
-persistent WHITELIST;
+
+validateTypeDescriptor(typeDescriptor)
+
+persistent WHITELIST; % Not used
 if isempty(WHITELIST)
     WHITELIST = {...
         'types.untyped.ExternalLink'...
         'types.untyped.SoftLink'...
         };
 end
+
 %% compound type processing
 if isstruct(typeDescriptor)
     expectedFields = fieldnames(typeDescriptor);
@@ -47,7 +51,11 @@ if isstruct(typeDescriptor)
                 ['struct of arrays as a compound type ',...
                 'cannot have multidimensional data in their fields. ',...
                 'Field data shape must be scalar or vector to be valid.']);
-            fieldSizes(iField) = length(subValue);
+            if ischar(subValue)
+                fieldSizes(iField) = size(subValue, 1);
+            else
+                fieldSizes(iField) = length(subValue);
+            end
         end
         fieldSizes = unique(fieldSizes);
         assert(isscalar(fieldSizes),...
@@ -94,6 +102,10 @@ end
 if isa(value, 'types.untyped.SoftLink')
     % Softlinks cannot be validated at this level.
     return;
+elseif isa(value, 'types.untyped.DatasetClass') && ~isempty(value) && ~matnwb.utility.isNeurodataType(typeDescriptor)
+    % If the value is itself a dataset class, we need to validate its data.
+    value.data = types.util.checkDtype(name, typeDescriptor, value.data);
+    return
 end
 
 if isempty(value)
@@ -116,10 +128,7 @@ end
 
 % retrieve comparable value
 valueWrapper = [];
-if isa(value, 'types.untyped.DataStub') ...
-    || isa(value, 'types.untyped.DataPipe') ...
-    || isa(value, 'types.untyped.Anon') ...
-    || (isa(value, 'types.untyped.ExternalLink') && ~strcmp(typeDescriptor, 'types.untyped.ExternalLink'))
+if isWrapped(value, typeDescriptor)
     valueWrapper = value;
     value = unwrapValue(value);
 end
@@ -131,7 +140,15 @@ if matnwb.utility.isNeurodataType(typeDescriptor)
     assert(isa(value, typeDescriptor), errorId, errorMessage)
     correctedValue = value;
 else
-    correctedValue = types.util.correctType(value, typeDescriptor);
+    try
+        correctedValue = types.util.correctType(value, typeDescriptor);
+    catch MECause
+        ME = MException('NWB:CheckDataType:InvalidConversion', ...
+            ['Error setting property ''%s'' because value can not be ', ...
+            'converted to ''%s''.'], name, typeDescriptor);
+        ME = ME.addCause(MECause);
+        throw(ME);
+    end
 end
 % this specific conversion is fine as HDF5 doesn't have a representative
 % datetime type. Thus we suppress the warning for this case.
@@ -153,32 +170,9 @@ if ~isempty(valueWrapper)
 end
 end
 
-function unwrapped = unwrapValue(wrapped, history)
-    if nargin < 2
-        history = {};
-    end
-    for iHistory = 1:length(history)
-        assert(wrapped ~= history{iHistory}, ...
-            'NWB:CheckDataType:InfiniteLoop' ...
-            , ['Infinite loop of a previously defined wrapped value detected. ' ...
-            'Please ensure infinite loops do not occur with reference types like Links.']);
-    end
-    if isa(wrapped, 'types.untyped.DataStub')
-        %grab first element and check
-        if any(wrapped.dims == 0)
-            unwrapped = [];
-        else
-            unwrapped = wrapped.load(1);
-        end
-    elseif isa(wrapped, 'types.untyped.DataPipe')
-        unwrapped = cast([], wrapped.dataType);
-    elseif isa(wrapped, 'types.untyped.Anon')
-        history{end+1} = wrapped;
-        unwrapped = unwrapValue(wrapped.value, history);
-    elseif isa(wrapped, 'types.untyped.ExternalLink')
-        history{end+1} = wrapped;
-        unwrapped = unwrapValue(wrapped.deref(), history);
-    else
-        unwrapped = wrapped;
-    end
+function validateTypeDescriptor(typeDescriptor)
+    isValid = isstruct(typeDescriptor) || ischar(typeDescriptor) || isstring(typeDescriptor);
+    assert( isValid, ...
+        'NWB:CheckDataType:InvalidTypeDescriptor', ...
+        'Type descriptor must be a struct, character vector or a string.');
 end
