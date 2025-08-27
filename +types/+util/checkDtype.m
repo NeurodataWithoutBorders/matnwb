@@ -44,7 +44,7 @@ function value = checkDtype(name, typeDescriptor, value)
             end
         end
     else
-        % retrieve comparable value
+        % Retrieve wrapped value for comparison with type descriptor (if wrapped)
         valueWrapper = [];
         if isWrapped(value, typeDescriptor)
             valueWrapper = value;
@@ -79,15 +79,9 @@ function value = checkDtype(name, typeDescriptor, value)
                 
                 if ~skipWarning
                     warning('NWB:CheckDataType:NeedsManualConversion',...
-                        ['Property `%s` is not of type `%s` and should be ', ...
-                        'corrected by the user.'], name, class(correctedValue));
-                
-                
-                    % warning('NWB:CheckDataType:NeedsManualConversion', ...
-                    %     ['Property `%s` was `%s` and was converted to `%s`. ', ...
-                    %     'Please provide the correct type.'], ...
-                    %         name, class(value), class(correctedValue));
-                
+                        ['The value for property `%s` should be of type `%s`, ', ...
+                        'but was `%s`. Please provide the correct type.'], ...
+                        name, class(correctedValue), class(value));
                 end
             end
             % Return the original data type. The wrapped value might just
