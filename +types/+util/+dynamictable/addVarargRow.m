@@ -67,6 +67,5 @@ function rv = validateType(TypeStruct, rv, rowName)
         end
     else
         rv = types.util.checkDtype(rowName, TypeStruct.type, rv);
-        %types.util.validateShape(rowName, {TypeStruct.dims}, val)
     end
 end
