@@ -67,7 +67,7 @@ classdef CheckDtypeTest < matlab.unittest.TestCase
         
         function checkEmptyValues(testCase)
             % Test various combinations of typeDescriptors and values. 
-            % The typeDescriptor specifies the minimum byte-size tpye to use for
+            % The typeDescriptor specifies the minimum byte-size type to use for
             % a value, but if the value is using a larger byte-size value,
             % that type should be returned.
 
@@ -96,7 +96,7 @@ classdef CheckDtypeTest < matlab.unittest.TestCase
             % loss, value will be uint64
             value = types.util.checkDtype('shouldBeUint64', 'uint8', uint64([]));
             testCase.verifyClass(value, 'uint64')
-            
+
             value = types.util.checkDtype('shouldBeChar', 'char', []);
             testCase.verifyClass(value, 'char')
 
