@@ -1,13 +1,13 @@
 classdef BehavioralEvents < types.core.NWBDataInterface & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups
-% BEHAVIORALEVENTS - TimeSeries for storing behavioral events. See description of <a href="#BehavioralEpochs">BehavioralEpochs</a> for more details.
+% BEHAVIORALEVENTS - TimeSeries for storing behavioral events. See description of BehavioralEpochs for more details.
 %
 % Required Properties:
-%  None
+%  timeseries
 
 
-% OPTIONAL PROPERTIES
+% REQUIRED PROPERTIES
 properties
-    timeseries; %  (TimeSeries) TimeSeries object containing behavioral events.
+    timeseries; % REQUIRED (TimeSeries) TimeSeries object containing behavioral events.
 end
 properties (Access = protected)
     GroupPropertyNames = {'timeseries'}
@@ -61,9 +61,7 @@ methods
         if any(strcmp(refs, fullpath))
             return;
         end
-        if ~isempty(obj.timeseries)
-            refs = obj.timeseries.export(fid, fullpath, refs);
-        end
+        refs = obj.timeseries.export(fid, fullpath, refs);
     end
 end
 

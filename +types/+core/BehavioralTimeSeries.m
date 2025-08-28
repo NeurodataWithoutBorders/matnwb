@@ -1,13 +1,13 @@
 classdef BehavioralTimeSeries < types.core.NWBDataInterface & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups
-% BEHAVIORALTIMESERIES - TimeSeries for storing Behavoioral time series data. See description of <a href="#BehavioralEpochs">BehavioralEpochs</a> for more details.
+% BEHAVIORALTIMESERIES - TimeSeries for storing behavioral time series data. See description of BehavioralEpochs for more details.
 %
 % Required Properties:
-%  None
+%  timeseries
 
 
-% OPTIONAL PROPERTIES
+% REQUIRED PROPERTIES
 properties
-    timeseries; %  (TimeSeries) TimeSeries object containing continuous behavioral data.
+    timeseries; % REQUIRED (TimeSeries) TimeSeries object containing continuous behavioral data.
 end
 properties (Access = protected)
     GroupPropertyNames = {'timeseries'}
@@ -61,9 +61,7 @@ methods
         if any(strcmp(refs, fullpath))
             return;
         end
-        if ~isempty(obj.timeseries)
-            refs = obj.timeseries.export(fid, fullpath, refs);
-        end
+        refs = obj.timeseries.export(fid, fullpath, refs);
     end
 end
 
