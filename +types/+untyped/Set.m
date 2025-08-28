@@ -113,7 +113,7 @@ classdef Set < handle & matlab.mixin.CustomDisplay
             for i=1:length(mapkeys)
                 mk = mapkeys{i};
                 try
-                    obj.ValidationFcn(mk, obj.Map(mk));
+                    obj.Map(mk) = obj.ValidationFcn(mk, obj.Map(mk));
                 catch ME
                     warning('NWB:Set:FailedValidation' ...
                         , 'Failed to validate Constrained Set key `%s` with message:\n%s' ...
@@ -143,7 +143,7 @@ classdef Set < handle & matlab.mixin.CustomDisplay
                     elem = val(i);
                 end
                 try
-                    obj.ValidationFcn(name{i}, elem);
+                    elem = obj.ValidationFcn(name{i}, elem);
                     obj.Map(name{i}) = elem;
                 catch ME
                     warning('NWB:Set:FailedValidation' ...
