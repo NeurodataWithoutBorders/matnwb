@@ -4,6 +4,10 @@ function [set, ivarargin] = parseConstrained(obj, pname, type, varargin)
     defprops = properties(obj);
 
     isLink = false;
+
+    % Detect and normalize link types.
+    % If the typename is prefixed with 'Link:', mark it as a link
+    % and strip the prefix so the typename is the name of a data type.
     if startsWith(type, 'Link:')
         isLink = true;
         type = extractAfter(type, 'Link:');

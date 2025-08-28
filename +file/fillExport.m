@@ -171,14 +171,14 @@ function dataExportString = fillDataExport(name, prop, elisions, required)
         elisionpath = ['[fullpath ''/' elisions ''']'];
     end
 
-    if (isa(prop, 'file.Group') || isa(prop, 'file.Dataset') || isa(prop, 'file.Link')) && prop.isConstrainedSet
+    if isprop(prop, 'isConstrainedSet') && prop.isConstrainedSet
         % is a sub-object (with an export function)
         dataExportString = ['refs = obj.' name '.export(fid, ' elisionpath ', refs);'];
     elseif isa(prop, 'file.Link') || isa(prop, 'file.Group') ||...
             (isa(prop, 'file.Dataset') && ~isempty(prop.type))
         % obj, loc_id, path, refs
         dataExportString = ['refs = obj.' name '.export(fid, ' fullpath ', refs);'];
-    elseif isa(prop, 'file.Dataset') %untyped dataset
+    elseif isa(prop, 'file.Dataset') % untyped dataset
         options = {};
 
         % special case due to unique behavior of file_create_date
@@ -210,7 +210,7 @@ function dataExportString = fillDataExport(name, prop, elisions, required)
             [sprintf('    %s(fid, %s, %s);', writerStr, fullpath, nameArgs)]...
             'end'...
             }, newline);
-    else
+    else % Attribute
         if prop.scalar
             forceArrayFlag = '';
         else

@@ -127,12 +127,14 @@ function bodystr = fillBody(parentName, defaults, props, namespace, inherited)
     % show up in inputParser
     deleteFromVars = 'varargin(ivarargin) = [];';
 
-    % Fill parseLink call for non-scalar links
-    % !! Important: Need this before potential calls to parseConstrained,
-    % as parseConstrained will filter softlinks...
-    if any(dynamicConstrained & isLink)
-        constrainedLinkTypes = strcat('Link:', typenames(dynamicConstrained & isLink & ~invalid));
-        constrainedLinkVars = varnames(dynamicConstrained & isLink & ~invalid);
+    % Add parsing logic for dynamic constrained links.
+    % A dynamic constrained link is a subset of dynamic constrained types.
+    % Their type names are prefixed with 'Link:' to mark them for link-specific 
+    % validation during parsing.
+    isDynamicConstrainedLink = dynamicConstrained & isLink;
+    if any(isDynamicConstrainedLink)
+        constrainedLinkTypes = strcat('Link:', typenames(isDynamicConstrainedLink & ~invalid));
+        constrainedLinkVars = varnames(isDynamicConstrainedLink & ~invalid);
         methodCalls = strcat('[obj.', constrainedLinkVars, ', ivarargin] = ',...
             ' types.util.parseConstrained(obj, ''', constrainedLinkVars, ''', ''',...
             constrainedLinkTypes, ''', varargin{:});');

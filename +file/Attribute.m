@@ -28,7 +28,7 @@ classdef Attribute
             obj.scalar = true;
             obj.shape = {};
             obj.dimnames = {};
-            obj.isConstrainedSet = false;
+            obj.isConstrainedSet = false; % Always false for attributes
 
             
             if nargin < 1
