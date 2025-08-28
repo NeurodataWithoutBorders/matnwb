@@ -7,9 +7,11 @@ classdef LinkSpecTest < tests.unit.abstract.SchemaTest
 %  - an unnamed multi-link (quantity: '*') with target_type set to TypeC
 %
 %  Each of the items above are tested both with the exact target type as
-%  well as a sub type of the target type.
+%  well as a sub-type of the target_type.
 %
-%  
+%  Verifies that the different link types listed below (with exact type and 
+%  subtype for target_type) can be exported and imported with nwbExport and 
+%  nwbRead. 
 
     properties (Constant)
         SchemaFolder = "linkSchema"
