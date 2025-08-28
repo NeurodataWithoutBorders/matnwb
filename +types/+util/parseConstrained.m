@@ -2,6 +2,13 @@ function [set, ivarargin] = parseConstrained(obj, pname, type, varargin)
     assert(mod(length(varargin),2) == 0, 'Malformed varargin.  Should be even');
     ikeys = false(size(varargin));
     defprops = properties(obj);
+
+    isLink = false;
+    if startsWith(type, 'Link:')
+        isLink = true;
+        type = extractAfter(type, 'Link:');
+    end
+
     for i=1:2:length(varargin)
         if any(strcmp(varargin{i}, defprops)) && ~strcmp(varargin{i}, pname)
             continue;
@@ -35,7 +42,11 @@ function [set, ivarargin] = parseConstrained(obj, pname, type, varargin)
         return;
     end
 
-    validationFunction = @(nm, val)types.util.checkConstraint(pname, nm, struct(), {type}, val);
+    if isLink
+        validationFunction = @(nm, val)types.util.validateSoftLink(pname, val, type);
+    else
+        validationFunction = @(nm, val)types.util.checkConstraint(pname, nm, struct(), {type}, val);
+    end
 
     if 0 == set.Count
         % construct set from empty with generated map.
