@@ -65,6 +65,7 @@ classdef SoftLink < handle
         end
         
         function refs = export(obj, fid, fullpath, refs)
+            if nargin < 4; refs = {}; end
             for i = 1:numel(obj)
                 refs = obj(i).exportScalar(fid, fullpath, refs); %#ok<AGROW>
             end
