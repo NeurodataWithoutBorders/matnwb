@@ -5,6 +5,7 @@ function fullClassName = composeFullClassName(namespaceName, neurodataType)
     end
 
     if contains(namespaceName, '-')
+        % MATLAB does not support "-" in namespace names
         namespaceName = strrep(namespaceName, '-', '_');
     end
 
