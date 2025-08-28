@@ -51,9 +51,9 @@ for i=1:length(info.Links)
     switch link.Type
         case {'soft link', 'hard link'}
             S = h5info(filename, link.Value{1});
-            % Todo: Use info structure if Link is located in the group (or
+            % Suggested improvement: Use info structure if Link is located in the group (or
             % subgroup) which is currently being parsed.
-            if ismember('neurodata_type', {S.Attributes.Name}) % Todo: also check data_type attribute (for hdmf types)
+            if ismember('neurodata_type', {S.Attributes.Name})
                 namespace = h5readatt(filename, link.Value{1}, 'namespace');
                 neurodataType = h5readatt(filename, link.Value{1}, 'neurodata_type');
                 fullTargetTypeName = matnwb.common.composeFullClassName(namespace, neurodataType);

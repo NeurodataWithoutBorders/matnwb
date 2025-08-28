@@ -26,7 +26,7 @@ function [set, ivarargin] = parseConstrained(obj, pname, type, varargin)
             if ~isempty(arg.target)
                 ikeys(i) = isa(arg.target, type);
             elseif ~isempty(arg.target_type)
-                ikeys(i) = strcmp(arg.target_type, type);
+                ikeys(i) = types.util.internal.isNameOfA(arg.target_type, type);
             end
         else
             ikeys(i) = isa(arg, type);
