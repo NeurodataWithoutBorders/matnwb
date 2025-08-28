@@ -5,6 +5,7 @@ classdef Link < file.interface.HasQuantity
         required;
         type;
         scalar;
+        isConstrainedSet
     end
     
     methods
@@ -14,6 +15,7 @@ classdef Link < file.interface.HasQuantity
             obj.required = true;
             obj.type = [];
             obj.scalar = true;
+            obj.isConstrainedSet = false;
 
             if nargin < 1
                 return;
@@ -24,6 +26,7 @@ classdef Link < file.interface.HasQuantity
                 obj.name = source('name');
             else
                 obj.name = lower(source('target_type'));
+                obj.isConstrainedSet = true;
             end
             
             obj.doc = source('doc');

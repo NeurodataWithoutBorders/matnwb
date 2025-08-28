@@ -2,8 +2,19 @@ function [set, ivarargin] = parseConstrained(obj, pname, type, varargin)
     assert(mod(length(varargin),2) == 0, 'Malformed varargin.  Should be even');
     ikeys = false(size(varargin));
     defprops = properties(obj);
+
+    isLink = false;
+
+    % Detect and normalize link types.
+    % If the typename is prefixed with 'Link:', mark it as a link
+    % and strip the prefix so the typename is the name of a data type.
+    if startsWith(type, 'Link:')
+        isLink = true;
+        type = extractAfter(type, 'Link:');
+    end
+
     for i=1:2:length(varargin)
-        if any(strcmp(varargin{i}, defprops))
+        if any(strcmp(varargin{i}, defprops)) && ~strcmp(varargin{i}, pname)
             continue;
         end
 
@@ -11,9 +22,15 @@ function [set, ivarargin] = parseConstrained(obj, pname, type, varargin)
         if isa(arg, 'types.untyped.ExternalLink')
             ikeys(i) = isa(arg.deref(), type);
             continue;
+        elseif isa(arg, 'types.untyped.SoftLink')
+            if ~isempty(arg.target)
+                ikeys(i) = isa(arg.target, type);
+            elseif ~isempty(arg.target_type)
+                ikeys(i) = strcmp(arg.target_type, type);
+            end
+        else
+            ikeys(i) = isa(arg, type);
         end
-
-        ikeys(i) = isa(arg, type) || isa(arg, 'types.untyped.SoftLink');
     end
     ivals = circshift(ikeys,1);
 
@@ -29,7 +46,11 @@ function [set, ivarargin] = parseConstrained(obj, pname, type, varargin)
         return;
     end
 
-    validationFunction = @(nm, val)types.util.checkConstraint(pname, nm, struct(), {type}, val);
+    if isLink
+        validationFunction = @(nm, val)types.util.validateSoftLink(pname, val, type);
+    else
+        validationFunction = @(nm, val)types.util.checkConstraint(pname, nm, struct(), {type}, val);
+    end
 
     if 0 == set.Count
         % construct set from empty with generated map.
