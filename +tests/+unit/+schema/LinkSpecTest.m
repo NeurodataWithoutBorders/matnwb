@@ -9,7 +9,7 @@ classdef LinkSpecTest < tests.unit.abstract.SchemaTest
 %  Each of the items above are tested both with the exact target type as
 %  well as a sub-type of the target_type.
 %
-%  Verifies that the different link types listed below (with exact type and 
+%  Verifies that the different link types listed above (with exact type and 
 %  subtype for target_type) can be exported and imported with nwbExport and 
 %  nwbRead. 
 
