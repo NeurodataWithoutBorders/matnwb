@@ -20,6 +20,10 @@ classdef Set < handle & matlab.mixin.CustomDisplay
                 obj.ValidationFcn = varargin{end};
                 varargin(end) = [];
             end
+                       
+            if numel(varargin) == 0
+                return;
+            end
             
             switch class(varargin{1})
                 case 'function_handle'
