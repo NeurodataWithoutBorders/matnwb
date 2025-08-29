@@ -64,7 +64,7 @@ classdef LinkSpecTest < tests.unit.abstract.SchemaTest
         end
     end
 
-    methods (Test, ParameterCombination="sequential")
+    methods (Test, ParameterCombination='sequential')
         function testLinkContainerRoundTrip(testCase, TypeA, TypeB, TypeC)
             % Create NWB file with objects that will be linked
             nwb = tests.factory.NWBFile();
