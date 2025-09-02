@@ -19,12 +19,12 @@ end
 
 nwb = NwbFile( ...
     'identifier', 'MyLab_20250411_1530_AL', ... % Unique ID
-    'session_description', 'Mouse searching for cookie crumbs in an open arena', ... % What this session is about
-    'session_start_time', datetime(2025,4,11,15,30,0, 'TimeZone', 'local'), ... % When the session started
+    'session_description', 'Mouse searching for cookie crumbs in an open arena', ...
+    'session_start_time', datetime(2025,4,11,15,30,0, 'TimeZone', 'local'), ...
     'general_experimenter', 'Doe, Jane', ... % optional
     'general_session_id', 'session_001', ... % optional
     'general_institution', 'Dept. of Neurobiology, Cookie Institute', ... % optional
-    'general_related_publications', {'DOI:10.1016/j.neuron.2016.12.011'}); % optional ); 
+    'general_related_publications', {'DOI:10.1016/j.neuron.2016.12.011'}); % optional
 
 % Display the nwb object
 nwb
@@ -216,7 +216,8 @@ behavior_module = types.core.ProcessingModule(...
 % and name the Position object MousePosition
 behavior_module.nwbdatainterface.set('MousePosition', position);
 
-% Finally, add the processing module to the NWBFile object, and name the processing module "behavior"
+% Finally, add the processing module to the NWBFile object, and name the 
+% processing module "behavior"
 nwb.processing.set('behavior', behavior_module);
 % Trials
 % Our experiment follows a trial structure where each trials lasts for 10 seconds, 
