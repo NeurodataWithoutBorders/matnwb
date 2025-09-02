@@ -1,7 +1,18 @@
 function result = getVideoTrackerData()
+    % Get some 2D trajectory
     data = matnwb.tutorial.intro.getRandomTrajectory();
 
-    result = zeros(2, length(data)*3);
-    result(1,:) = interp(data(1,:), 3);
-    result(2,:) = interp(data(2,:), 3);
+    % Number of original points
+    n = length(data);
+
+    % Define original and new sample positions
+    xOriginal = 1:n;
+    xNew = linspace(1, n, n*3);
+
+    % Preallocate result
+    result = zeros(2, numel(xNew));
+
+    % Interpolate each row separately
+    result(1,:) = interp1(xOriginal, data(1,:), xNew, 'linear');
+    result(2,:) = interp1(xOriginal, data(2,:), xNew, 'linear');
 end
