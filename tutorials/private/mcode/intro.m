@@ -73,9 +73,9 @@ disp(nwb.general_subject)           % Confirm the subject is now part of the fil
 % 
 % 
 % Regularly Sampled Data
-% While our mouse hunted cookie crumbs, an *indoor-positioning sensor* streamed 
-% X/Y coordinates at 10 Hz for 30 s. We’ll store the resulting 2 × N matrix in 
-% a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
+% While our mouse hunted cookie crumbs, an *indoor-positioning sensor* (IPS) 
+% streamed X/Y coordinates at 10 Hz for 30 s. We’ll store the resulting 2 × N 
+% matrix in a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
 % |*TimeSeries*|> object.
 
 % Synthetic 2-D trajectory  (helper returns a 2×300 array)
@@ -98,11 +98,11 @@ disp(time_series_with_rate)
 
 nwb.acquisition.set('IPSTimeseries', time_series_with_rate);
 % Confirm that the timeseries was added to the file
-disp( size( nwb.acquisition.get('IPSTimeseries').data ) ) % Should show 2, 301
+disp( size( nwb.acquisition.get('IPSTimeseries').data ) ) % Should show 2, 300
 % Irregularly Sampled Data
-% To illustrate the use of |*timestamps*|, we can pretend that the IPS drops 
-% samples and has an irregular sampling rate. In those cases we should replace 
-% the single |*starting_time* + *rate*| pair with an explicit vector of |*timestamps*|.
+% To save irregularly sampled data, we should replace the single |*starting_time* 
+% + *rate*| pair with an explicit vector of |*timestamps*|. Let's pretend that 
+% the IPS drops samples and has an irregular sampling rate:
 
 [irregularData, timepoints] = matnwb.tutorial.intro.getIrregularRandomTrajectory();
 % Drop frame 120 to create a gap
@@ -129,7 +129,7 @@ disp(diff(time_series_with_timestamps.timestamps(1:4)))       % should NOT all b
 %% Other Types of Time Series 
 % The <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
 % |*TimeSeries*|> class has a family of specialized subclasses—each adding or 
-% tweaking fields to suit a particular kind of data. One example is <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/AnnotationSeries.html 
+% tweaking fields to suit a particular kind of data. One example is the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/AnnotationSeries.html 
 % |*AnnotationSeries*|> → plain-text labels tied to timestamps (cues, notes, rewards, 
 % etc.).
 % 
@@ -168,7 +168,7 @@ nwb.stimulus_presentation.set('FoodDrops', annotations);
 % To store the processed XY path, we can use another subclass of the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
 % |*TimeSeries*|>: the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
 % |*SpatialSeries*|>. This class adds a |*reference_frame*| property that defines 
-% what the coordinates are relative to. We will create the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
+% what the data coordinates are measured relative to. We will create the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
 % |*SpatialSeries*|> and add it to a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Position.html 
 % |*Position*|> object as a way to inform data analysis and visualization tools 
 % that this <https://pynwb.readthedocs.io/en/latest/pynwb.behavior.html#pynwb.behavior.SpatialSeries 
@@ -219,26 +219,21 @@ behavior_module.nwbdatainterface.set('MousePosition', position);
 % Finally, add the processing module to the NWBFile object, and name the processing module "behavior"
 nwb.processing.set('behavior', behavior_module);
 % Trials
-% Trials are stored in a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeIntervals.html 
-% |*TimeIntervals*|> object which is a subclass of <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
-% |*DynamicTable*|>. <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
+% Our experiment follows a trial structure where each trials lasts for 10 seconds, 
+% and we are recording how long it takes the mouse to find the cookie crumb. Trials 
+% are stored using the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeIntervals.html 
+% |*TimeIntervals*|> type, a subclass of the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
+% |*DynamicTable*|> type. <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
 % |*DynamicTable*|> objects are used to store tabular metadata throughout NWB, 
 % and is often used for storing information about trials, electrodes, and sorted 
 % units. They offer flexibility for tabular data by allowing required columns, 
-% optional columns, and custom columns.
+% optional columns, and custom columns. The <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeIntervals.html 
+% |*TimeIntervals*|> trials table can be thought of as a table with this structure:
 % 
 % 
 % 
-% The trials <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
-% |*DynamicTable*|> can be thought of as a table with this structure:
-% 
-% 
-% 
-% Trials are stored in a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeIntervals.html 
-% |*TimeIntervals*|> object, a subclass of <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
-% |*DynamicTable*|>. Here, we are adding a new column, |*time_to_find*|, which 
-% will be the time it took out mouse to find the treats after the cookie ding 
-% was played.
+% Here, we are adding a custom column, |*time_to_find*|, which will be the time 
+% it took out mouse to find the treats after the cookie ding was played.
 
 trials = types.core.TimeIntervals( ...
     'colnames', {'start_time', 'stop_time', 'time_to_find'}, ...
@@ -249,9 +244,14 @@ trials.addRow('start_time', 10.0, 'stop_time', 20.0, 'time_to_find', 4.7)
 trials.addRow('start_time', 20.0, 'stop_time', 30.0, 'time_to_find', 3.9)
 
 trials.toTable() % visualize the table
+%% 
+% When adding trials to the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html 
+% |*NWBFile*|> object, there are two ways to do it:
+
+% Alternative A - There is only one trials table:
 nwb.intervals_trials = trials;
 
-% If you have multiple trials tables, you will need to use custom names for
+% Alternative B - There are multiple trials tables, you will need to use custom names for
 % each one:
 nwb.intervals.set('CookieSearchTrials', trials);
 %% 
@@ -267,7 +267,7 @@ nwbExport(nwb, 'intro_tutorial.nwb')
 % 
 % 
 %% Read
-% We can then read the file back in using MatNWB and inspect its contents. 
+% We can also read the file back using MatNWB and inspect its contents. 
 
 read_nwbfile = nwbRead('intro_tutorial.nwb', 'ignorecache')
 %% 
