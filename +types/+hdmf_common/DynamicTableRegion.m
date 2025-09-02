@@ -20,7 +20,7 @@ methods
         %  dynamicTableRegion = types.hdmf_common.DYNAMICTABLEREGION(Name, Value) creates a DynamicTableRegion object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
-        %  - data (int8) - No description
+        %  - data (int8) - Data property for dataset class (DynamicTableRegion)
         %
         %  - description (char) - Description of what this table region points to.
         %
@@ -56,6 +56,7 @@ methods
     
     function val = validate_data(obj, val)
         val = types.util.checkDtype('data', 'int8', val);
+        types.util.validateShape('data', {[Inf]}, val)
     end
     function val = validate_description(obj, val)
         val = types.util.checkDtype('description', 'char', val);
@@ -63,7 +64,7 @@ methods
     end
     function val = validate_table(obj, val)
         % Reference to type `DynamicTable`
-        val = types.util.checkDtype('table', 'types.untyped.ObjectView', val);
+        val = types.util.validateReferenceType('table', val, 'types.hdmf_common.DynamicTable', 'types.untyped.ObjectView');
         types.util.validateShape('table', {[1]}, val)
     end
     %% EXPORT

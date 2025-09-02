@@ -85,16 +85,7 @@ methods
         types.util.validateShape('detection_method', {[1]}, val)
     end
     function val = validate_source_electricalseries(obj, val)
-        if isa(val, 'types.untyped.SoftLink')
-            if isprop(val, 'target')
-                types.util.checkDtype('source_electricalseries', 'types.core.ElectricalSeries', val.target);
-            end
-        else
-            val = types.util.checkDtype('source_electricalseries', 'types.core.ElectricalSeries', val);
-            if ~isempty(val)
-                val = types.untyped.SoftLink(val);
-            end
-        end
+        val = types.util.validateSoftLink('source_electricalseries', val, 'types.core.ElectricalSeries');
     end
     function val = validate_source_idx(obj, val)
         val = types.util.checkDtype('source_idx', 'int32', val);
