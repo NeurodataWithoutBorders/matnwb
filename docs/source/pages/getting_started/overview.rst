@@ -1,4 +1,4 @@
-.. include:: _links.rst
+.. include:: /_links.rst
 
 .. _matnwb-overview:
 
@@ -8,7 +8,7 @@ Overview
 What is MatNWB?
 ---------------
 
-MatNWB is a MATLAB package for reading, writing, and validating NWB files. It provides simple functions like :func:`nwbRead` and :func:`nwbExport` for file I/O, as well as a complete set of core neurodata and helper types represented using MATLAB classes.
+MatNWB_ is a MATLAB package for reading, writing, and validating NWB files. It provides simple functions like :func:`nwbRead` and :func:`nwbExport` for file I/O, as well as a complete set of core neurodata and helper types represented using MATLAB classes.
 
 
 Who is it for?
