@@ -1,60 +1,38 @@
 Creating NWB Files
 ==================
 
-This section provides a guide to creating NWB (Neurodata Without Borders) files with MatNWB. It covers the fundamental concepts, step-by-step workflow, and important considerations when building NWB files from scratch. For detailed code examples and usage demonstrations, please refer to the :doc:`tutorials <../tutorials/index>`.
+When creating an NWB file, you're translating your experimental data and metadata into a structure that follows the NWB schema. MatNWB provides MATLAB classes that represent the different components (neurodata types) of an NWB file, allowing you to build up the file piece by piece.
 
-Creating an NWB file involves three main steps:
+To understand the structure of an NWB file, the NWB Overview documentation has a 
+:nwb-overview:`great introduction <intro_to_nwb/2_file_structure.html>`.
 
-1. **Create an NwbFile object** with required metadata
-2. **Add neurodata types** (time series, processed data, etc.)
-3. **Export the file** using the :func:`nwbExport` function
-
-**Example:**
-
-.. code-block:: MATLAB
-
-    % Step 1: Create NwbFile object
-    nwb = NwbFile( ...
-        'session_start_time', datetime('now', 'TimeZone', 'local'), ...
-        'identifier', 'unique_session_id', ...
-        'session_description', 'Description of your experiment');
-    
-    % Step 2: Add data (example: time series data)
-    data = randn(1000, 10); % Example neural data
-    timeseries = types.core.TimeSeries( ...
-        'data', data, ...
-        'data_unit', 'volts', ...
-        'starting_time', 0.0, ...
-        'starting_time_rate', 30000.0);
-    nwb.acquisition.set('neural_data', timeseries);
-    
-    % Step 3: Export to file
-    nwbExport(nwb, 'my_experiment.nwb');
+As demonstrated in the quickstart tutorial, you start by creating an :class:`NwbFile` object.
 
 .. note::
-    After export the file, it is recommended to use the NWBInspector for comprehensive validation of both structural compliance with the NWB schema and compliance of data with NWB best practices. See :func:`inspectNwbFile`.
+    An "object" is an instance of a class. Objects are similar to MATLAB structs, but with additional functionality. The fields (called properties) are defined by the class, and the class can enforce rules about what values are allowed. This helps ensure that your data conforms to the NWB schema.
 
-When creating an NWB file, it is useful to understand both its structure and the underlying HDF5 format. The :ref:`next section<matnwb-create-nwbfile-intro>` covers the NwbFile object and its configuration; later sections address data organization, performance, and important caveats about the HDF5 format.
+When you create an :class:`NwbFile` object, you get a container whose properties are derived directly from the NWB schema. Some properties are required, others are optional. Some need specific MATLAB types like `char` or `datetime`, while others need specific neurodata types defined in the schema.
 
-.. warning::
-    **Important HDF5 Limitations**
-    
-    NWB files are stored in HDF5 format, which has important limitations:
-    
-    - **To modify datasets** after creation - a DataPipe must be configured for the dataset on creation.
-    - **Datasets should not be deleted** once created - the space will not be reclaimed.
-    - **Schema consistency** must be maintained throughout the file creation process.
+The Assembly Process
+--------------------
 
-    See :doc:`file_create/hdf5_considerations` for detailed information on working within these constraints.
+Building an NWB file follows a logical pattern:
 
-**Next steps**
+**Data Objects**: You create objects for your data (like :class:`types.core.TimeSeries` for time-based measurements)
 
-The following pages provide detailed information on specific aspects of creating NWB files:
+**Container Object**: You add these data objects to your :class:`NwbFile` object in appropriate locations
 
-.. toctree::
-    :maxdepth: 1
+**File Export**: You save everything to disk using :func:`nwbExport`, which translates your objects into NWB/HDF5 format
 
-    file_create/nwbfile
-    file_create/data_organization
-    file_create/hdf5_considerations
-    file_create/performance_optimization
+This approach ensures your data is properly organized and validated before it becomes a file.
+
+Schema Validation
+-----------------
+
+The NWB schema acts as a blueprint that defines what makes a valid neuroscience data file. When you export your file, MatNWB checks that:
+
+- All required properties are present
+- Data types match what the schema expects  
+- Relationships between different parts of the file are correct
+
+If anything is missing or incorrect, you'll get an error message explaining what needs to be fixed. This validation helps ensure your files will work with other NWB tools and can be understood by other researchers.
