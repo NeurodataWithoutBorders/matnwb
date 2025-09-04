@@ -8,10 +8,12 @@ Understanding DataPipe
 
 The :class:`types.untyped.DataPipe` class is the key to efficient data handling in MatNWB. It provides:
 
-- **Lazy loading** - Data isn't loaded into memory until needed
 - **Compression** - Reduces file size significantly  
 - **Chunking** - Optimizes access patterns
+- **Pre-allocation** - Reserve space for datasets that will grow over time
 - **Iterative writing** - Enables processing datasets larger than RAM
+- **Lazy loading** - Data isn't loaded into memory until needed
+
 
 Basic DataPipe Usage
 ~~~~~~~~~~~~~~~~~~~~
@@ -395,5 +397,3 @@ Best Practices Summary
         % Validate performance
         validate_file_performance(output_file);
     end
-
-The next section covers best practices that tie together all these performance considerations with robust file creation workflows.

@@ -78,8 +78,10 @@ This object contains properties that represent the contents of the NWB file, inc
 For an overview of the NWB file structure, see the `NWB File Structure <https://nwb-overview.readthedocs.io/en/latest/intro_to_nwb/2_file_structure.html>`_ section of the 
 `NWB Documentation <https://nwb-overview.readthedocs.io/en/latest/index.html>`_, or for technical details, refer to the `NWB Format Specification <https://nwb-schema.readthedocs.io/en/latest/format_description.html>`_.
 
-One key difference between the :class:`NwbFile` object and the formal NWB structure is that some top-level groups, like ``general``, ``intervals`` and ``stimulus`` are flattened into top level properties of the :class:`NwbFile` object. This is only a convenience for easier access, and does not change the underlying structure of the NWB file.
+.. note::
 
+   One key difference between the :class:`NwbFile` object and the NWB schema is that some top-level groups (e.g. ``general``, ``intervals`` and ``stimulus``) and their subgroups are flattened into top level properties of the :class:`NwbFile` object. This flattening enables easier upfront property access in the MATLAB API, but does not change the on‑disk layout of the NWB file.
+   
 Basic Navigation
 ----------------
 

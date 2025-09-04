@@ -5,7 +5,7 @@ NWB for MATLAB
 ##############
 
 MatNWB_ is a MATLAB package for working with |NWB|_ (NWB) files. 
-It provides a high‑level, efficient interface for reading and writing neurophysiology data in the NWB format and includes tutorial Live Scripts that show you how to read existing NWB files or convert your own data to NWB.
+It provides a high‑level, efficient interface for reading and writing neurophysiology data in the NWB format and includes tutorial Live Scripts that show you how to read NWB files or convert your own data to NWB.
 
 This documentation focuses on MatNWB. If you are new to NWB or want to learn more about the format itself, these resources are a great starting point:
 
@@ -32,11 +32,15 @@ more of the domain-focused tutorials:
 - :ref:`ophys-tutorial`
 
 To explore the growing world of open-source neuroscience data stored in the 
-NWB format, check out the :ref:`Read from Dandihub<read_demo_dandihub-tutorial>` how-to-guide.
+NWB format, check out the :ref:`Read from Dandihub<read_demo_dandihub-tutorial>` tutorial.
 
-This documentation is based on the `diataxis <https://diataxis.fr>`_ framework. 
-When you browse the table of contents below, look for tutorials, how-to-guides, 
-concepts (explanation) and reference sections to help orient yourself.
+..
+   This documentation is based on the `diataxis <https://diataxis.fr>`_ framework. 
+   When you browse the table of contents below, look for tutorials, how-to-guides, 
+   concepts (explanation) and reference sections to help orient yourself.
+   <This is only aspirational at the moment. We will refactor the documentation to be more diataxis-compliant over time:>
+   
+Looking for a specific topic which has not been mentioned? Check out the full table of contents below:
 
 .. toctree::
    :maxdepth: 1

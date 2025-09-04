@@ -79,7 +79,7 @@ Common questions you may encounter (and where to find answers)
 
 - How do I add lab‑specific data?
   
-  - Use :doc:`Neurodata Extensions </pages/concepts/using_extensions>` to install published NDX or to generate classes from your own namespace.
+  - See :doc:`Neurodata Extensions </pages/concepts/using_extensions>` for guides to install published NDX or to generate classes from your own namespace specification.
 
 
 Important considerations when working with MatNWB:
