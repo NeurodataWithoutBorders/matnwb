@@ -5,7 +5,7 @@ NWB for MATLAB
 ##############
 
 MatNWB_ is a MATLAB package for working with |NWB|_ (NWB) files. 
-It provides a high‑level, efficient interface for reading and writing neurophysiology data in the NWB format and includes tutorial Live Scripts that guide you through converting and organizing your own data.
+It provides a high‑level, efficient interface for reading and writing neurophysiology data in the NWB format and includes tutorial Live Scripts that show you how to read existing NWB files or convert your own data to NWB.
 
 This documentation focuses on MatNWB. If you are new to NWB or want to learn more about the format itself, these resources are a great starting point:
 

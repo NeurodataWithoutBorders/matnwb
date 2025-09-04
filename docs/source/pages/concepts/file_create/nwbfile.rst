@@ -123,6 +123,8 @@ NWB files store all timestamps in a standardized format. Always specify the time
 
 The ``timestamps_reference_time`` field defines "time zero" for all timestamps in the file. This is typically set to match ``session_start_time``, but can be different if needed for your experimental design.
 
+See also the :nwbinspector:`Best Practices <best_practices/nwbfile_metadata.html#best-practice-global-time-reference>` section of the NWB Inspector documentation for details on setting the ``session_start_time``.
+
 Validation
 ----------
 
