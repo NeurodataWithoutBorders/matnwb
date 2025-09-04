@@ -12,8 +12,7 @@ As demonstrated in the :doc:`Quickstart </pages/getting_started/quickstart>` tut
 .. note::
     An "object" is an instance of a class. Objects are similar to MATLAB structs, but with additional functionality. The fields (called properties) are defined by the class definition (a .m file), and the class can enforce rules about what values are allowed. This helps ensure that your data conforms to the NWB schema.
 
-The Assembly Process
---------------------
+**The Assembly Process**
 
 Building an NWB file follows a logical pattern:
 
@@ -25,8 +24,7 @@ Building an NWB file follows a logical pattern:
 
 This approach ensures your data is properly organized and validated before it becomes a file.
 
-Schema Validation
------------------
+**Schema Validation**
 
 The NWB schema acts as a blueprint that defines what makes a valid neuroscience data file. When you export your file, MatNWB checks that:
 
@@ -38,8 +36,9 @@ If anything is missing or incorrect, you'll get an error message explaining what
 
 .. toctree::
     :maxdepth: 1
+    :titlesonly:
 
-    file_create/nwbfile
-    file_create/data_organization
-    file_create/hdf5_considerations
-    file_create/performance_optimization
+    Understanding the NwbFile Object <file_create/nwbfile>
+    Understanding Neurodata Types <file_create/neurodata_types>
+    HDF5 Considerations <file_create/hdf5_considerations>
+    Performance Optimization <file_create/performance_optimization>
