@@ -207,32 +207,12 @@ When you need to work with files from different NWB versions or with different e
     nwb_new = nwbRead('new_file_v2_7.nwb');
     % ... work with new file ...
 
-**Using Custom Save Directories:**
-
-For better organization and to avoid conflicts, generate classes in separate directories:
-
-.. code-block:: MATLAB
-
-    % Generate classes for different versions in separate directories
-    generateCore('2.6.0', 'savedir', 'nwb_2_6_0_classes');
-    generateCore('2.7.0', 'savedir', 'nwb_2_7_0_classes');
-    
-    % Work with one version at a time
-    addpath('nwb_2_6_0_classes');
-    nwb_old = nwbRead('old_file.nwb', 'ignorecache');
-    % ... process old files ...
-    rmpath('nwb_2_6_0_classes');
-    
-    % Switch to newer version
-    addpath('nwb_2_7_0_classes');
-    nwb_new = nwbRead('new_file.nwb', 'ignorecache');
-
 Troubleshooting Schema Issues
 -----------------------------
 
 **Version Conflicts:**
 
-If you see errors about incompatible classes or missing properties:
+If you see errors about incompatible classes or missing properties, clear the workspace variables and try to read the file again:
 
 .. code-block:: MATLAB
 
@@ -259,21 +239,6 @@ If a file uses custom extensions you don't have:
     
     % Or generate the extension manually if you have the schema file
     generateExtension('/path/to/extension.namespace.yaml');
-
-**Class Path Issues:**
-
-If MATLAB can't find the generated classes:
-
-.. code-block:: MATLAB
-
-    % Check if the types directory is on your path
-    which types.core.TimeSeries
-    
-    % Add the directory containing +types to your path
-    addpath('/path/to/directory/containing/types');
-    
-    % Refresh MATLAB's function cache
-    rehash;
 
 Best Practices
 --------------

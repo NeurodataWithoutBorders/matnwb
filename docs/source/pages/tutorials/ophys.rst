@@ -1,3 +1,5 @@
+.. _ophys-tutorial:
+
 Calcium Imaging 🎬
 ==================
 

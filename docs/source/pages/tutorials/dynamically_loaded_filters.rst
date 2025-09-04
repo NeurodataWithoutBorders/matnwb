@@ -1,3 +1,5 @@
+.. _dynamically_loaded_filters-tutorial:
+
 Implementing Dynamically Loaded Filters
 =======================================
 

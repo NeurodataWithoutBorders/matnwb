@@ -1,3 +1,5 @@
+.. _read_demo_dandihub-tutorial:
+
 Reading NWB Files with MatNWB on DandiHub
 =========================================
 

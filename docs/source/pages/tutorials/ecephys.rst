@@ -1,3 +1,5 @@
+.. _ecephys-tutorial:
+
 Extracellular Electrophysiology 🎬
 ==================================
 

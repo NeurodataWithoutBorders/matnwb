@@ -104,7 +104,8 @@ html_logo = os.path.join(matlab_src_dir, 'logo', 'logo_matnwb_small.png')
 html_favicon = os.path.join(matlab_src_dir, 'logo', 'logo_favicon_32.png')
 
 html_theme_options = {
-    "style_nav_header_background": "#000000",    
+    "style_nav_header_background": "#000000",
+    "navigation_depth": 2,
     "collapse_navigation": False,
     "sticky_navigation": True
 }

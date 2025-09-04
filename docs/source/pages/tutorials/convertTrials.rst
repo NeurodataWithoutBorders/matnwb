@@ -1,3 +1,5 @@
+.. _convertTrials-tutorial:
+
 Converting Trials to NWB Format
 ===============================
 
