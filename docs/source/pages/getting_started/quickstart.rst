@@ -17,6 +17,16 @@ Prerequisites
 - MatNWB :ref:`installed<installation>` and added to your MATLAB path  
 
 
+Introduction
+------------
+
+Creating an NWB file involves three main steps:
+
+1. **Create an NwbFile object** with required metadata
+2. **Add neurodata types** (time series, processed data, etc.)
+3. **Export the file** using the :func:`nwbExport` function
+
+
 Step 1 — Create a minimal NWB file
 ----------------------------------
 
@@ -65,7 +75,7 @@ Step 3 — Write the File
 
 This writes the NWB file to your current working directory.
 
-Step 4 — Read the File Back
+Verify — Read the File Back
 ---------------------------
 
 .. code-block:: matlab
