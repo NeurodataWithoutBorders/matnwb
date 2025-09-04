@@ -123,12 +123,13 @@ Update or uninstall
      cd path/to/matnwb
      !git pull
 
-- Uninstall (Remove the MatNWB folder and remove it from the MATLAB path):
+- Uninstall (Remove the MatNWB folder from the MATLAB path and delete it):
 
   .. code-block:: matlab
 
      rmpath("path/to/matnwb")
-     savepath() % optional
+     savepath()
+     rmdir("path/to/matnwb", "s") % delete folder and contents
 
 
 Troubleshooting
