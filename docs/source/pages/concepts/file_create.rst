@@ -58,4 +58,3 @@ The following pages provide detailed information on specific aspects of creating
     file_create/data_organization
     file_create/hdf5_considerations
     file_create/performance_optimization
-    file_create/troubleshooting
