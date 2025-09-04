@@ -1,5 +1,5 @@
-.. _MatNWB: https://www.python.org/
-.. _PyNWB: https://numpy.org/
+.. _MatNWB: https://github.com/NeurodataWithoutBorders/matnwb
+.. _PyNWB: https://github.com/NeurodataWithoutBorders/pynwb
 .. _NWB: https://nwb.org
 
 .. |NWB| replace:: Neurodata Without Borders
