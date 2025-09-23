@@ -25,7 +25,7 @@
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", rewriteLinks);
+    document.addEventListener("DOMContentLoaded", rewriteLinks());
   } else {
     rewriteLinks();
   }

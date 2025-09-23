@@ -40,32 +40,50 @@
 
       // copy click handler
       btn.addEventListener('click', async () => {
-        const lines = [];
-        let outputsNode = null;
+        const normalize = s => s
+          .replace(/\u00A0/g, ' ')   // NBSP → space
+          .replace(/\u202F/g, ' ')   // narrow NBSP → space
+          .replace(/[\u200B\uFEFF]/g, '') // ZWSP/BOM → remove
+          .replace(/\s+$/, '');      // trim end (preserve blank lines)
 
-        block.childNodes.forEach(node => {
-          if (node.nodeType !== 1) return;
-          if (node.classList.contains('outputs')) {
-            outputsNode = node;
+        const lines = [];
+
+        Array.from(block.children).forEach(el => {
+          if (!el.classList || !el.classList.contains('inlineWrapper')) return;
+
+          if (!el.classList.contains('outputs')) {
+            // normal code line
+            lines.push(normalize(el.textContent || ''));
             return;
           }
-          if (node !== btn) lines.push(node.innerText || '');
+
+          // outputs wrapper: include ONLY the first child (echo) and skip the rest
+          const firstChild = el.firstElementChild;
+          if (firstChild) {
+            const t = normalize(firstChild.textContent || '');
+            if (t.length) lines.push(t);
+          }
+          // do not process remaining children of .outputs
         });
 
-        if (outputsNode) {
-          const firstOut = outputsNode.innerText
-            .split(/\r?\n/)
-            .find(Boolean) || '';
-          lines.push(firstOut);
-        }
+        const payload = lines.join('\n').replace(/\s+$/, '');
 
-        const payload = lines.join('').trimEnd();
         try {
           await navigator.clipboard.writeText(payload);
-          btn.classList.add('copied');
-        } finally {
-          setTimeout(() => btn.classList.remove('copied'), 1200);
+        } catch {
+          // minimal fallback for non-secure contexts / older browsers
+          const ta = document.createElement('textarea');
+          ta.value = payload;
+          ta.style.position = 'fixed';
+          ta.style.top = '-1000px';
+          document.body.appendChild(ta);
+          ta.focus(); ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
         }
+
+        btn.classList.add('copied');
+        setTimeout(() => btn.classList.remove('copied'), 1200);
       });
     });
   }
