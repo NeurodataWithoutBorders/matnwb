@@ -223,10 +223,13 @@ classdef NwbFile < types.core.NWBFile
 
     methods (Hidden)
         function resolveSoftLinks(obj)
+            % Note: Will not find/resolve soft links that are nested within dynamic tables
             softLinkMap = obj.searchFor('types.untyped.SoftLink');
             softLinks = softLinkMap.values;
             for i = 1:numel(softLinks)
-                softLinks{i}.deref(obj);
+                for j = 1:numel(softLinks{i}) % each SoftLink can be a list
+                    softLinks{i}(j).deref(obj);
+                end
             end
         end
     end
