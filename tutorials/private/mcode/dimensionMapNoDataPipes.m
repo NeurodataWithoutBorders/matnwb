@@ -42,7 +42,8 @@ randomval_col = types.hdmf_common.VectorData( ...
 );
 
 % 1D column
-id_col = types.hdmf_common.ElementIdentifiers('data', int64(0:9)'); % maps onto HDF5 dataset of size (10,)
+id_col = types.hdmf_common.ElementIdentifiers(...
+                'data', int64(0:9)'); % maps onto HDF5 dataset of size (10,)
 
 % Create table
 trials_table = types.core.TimeIntervals(...
