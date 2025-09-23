@@ -57,10 +57,10 @@ classdef DataTypesTest < tests.unit.abstract.SchemaTest
             if ismember( class(value), {'char', 'uint32', 'double'} )
                 % Conversion could cause data loss, int64 is used
                 expectedValue = int64(1);
-            elseif isa( class(value), 'int8')
-                % minimum
+            elseif isa(value, 'int8')
+                % Minimum allowed type for int.
                 expectedValue = int8(1);
-            else 
+            else % int32, single
                 expectedValue = int32(1);
             end
 
@@ -116,7 +116,10 @@ classdef DataTypesTest < tests.unit.abstract.SchemaTest
             if ismember( class(value), {'char', 'uint32', 'double'} )
                 % Conversion could cause data loss, int64 is used
                 expectedValue = int64(1);
-            else % int8, int32, single
+            elseif isa(value, 'int8') % int8
+                % Minimum allowed type for int.
+                expectedValue = int8(1);
+            else % int32, single
                 expectedValue = int32(1);
             end
 
