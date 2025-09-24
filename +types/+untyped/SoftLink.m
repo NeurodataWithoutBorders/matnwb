@@ -6,10 +6,11 @@ classdef SoftLink < handle
     
     properties (Hidden, SetAccess = private)
         path = '';
+        target_type = ''
     end
     
     methods
-        function obj = SoftLink(target)
+        function obj = SoftLink(target, target_type)
         % SOFTLINK - Create a SoftLink utility object.
         %
         % obj = types.untyped.SOFTLINK(target) creates a SoftLink using an 
@@ -26,6 +27,10 @@ classdef SoftLink < handle
                 validateattributes(target, {'types.untyped.MetaClass'}, {'scalar'}, ...
                     'types.untyped.SoftLink', 'target object', 2);
                 obj.target = target;
+            end
+
+            if nargin >= 2 && ~isempty(target_type)
+                obj.target_type = target_type;
             end
         end
         
@@ -60,6 +65,15 @@ classdef SoftLink < handle
         end
         
         function refs = export(obj, fid, fullpath, refs)
+            if nargin < 4; refs = {}; end
+            for i = 1:numel(obj)
+                refs = obj(i).exportScalar(fid, fullpath, refs); %#ok<AGROW>
+            end
+        end
+    end
+
+    methods (Access = private)
+        function refs = exportScalar(obj, fid, fullpath, refs)
             if isempty(obj.path)
                 refs{end+1} = fullpath;
                 return;

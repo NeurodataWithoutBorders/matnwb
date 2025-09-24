@@ -84,7 +84,7 @@ methods
         types.util.checkType('id', 'types.hdmf_common.ElementIdentifiers', val);
         if ~isempty(val)
             [val, originalVal] = types.util.unwrapValue(val);
-            val = types.util.checkDtype('id', 'int32', val);
+            val = types.util.checkDtype('id', 'int8', val);
             types.util.validateShape('id', {[Inf]}, val)
             val = types.util.rewrapValue(val, originalVal);
         end

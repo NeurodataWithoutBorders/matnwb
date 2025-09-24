@@ -34,7 +34,7 @@ end
 
 function unitValidationStr = fillUnitValidation(name, prop, namespaceReg)
     unitValidationStr = '';
-    if ~isscalar(prop)
+    if ~isscalar(prop) || (isa(prop, 'file.Link') && prop.isConstrainedSet)
         constrained = cell(size(prop));
         for iProp = 1:length(prop)
             p = prop(iProp);

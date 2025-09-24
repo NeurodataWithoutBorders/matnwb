@@ -17,10 +17,10 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             val = [];
             
             % Should pass with no error
-            types.util.checkConstraint(pname, name, namedprops, constrained, val)
+            types.util.checkConstraint(pname, name, namedprops, constrained, val);
             
             val = 10;
-            types.util.checkConstraint(pname, name, namedprops, constrained, val)
+            types.util.checkConstraint(pname, name, namedprops, constrained, val);
 
             val = {10};
             testCase.verifyError(...
@@ -98,7 +98,6 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                             'data', rand(10,1) ...
             );
             
-                    
             [vectordata, ~] = types.util.parseConstrained(dynamicTable, ...
                 'vectordata', 'types.hdmf_common.VectorData', ...
                 'colB', columnB );

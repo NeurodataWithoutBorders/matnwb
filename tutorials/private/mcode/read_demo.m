@@ -38,7 +38,11 @@
 % Use the code below to install MatNWB from source using |git|. Ensure |git| 
 % is on your path before running this line. 
 
-!git clone https://github.com/NeurodataWithoutBorders/matnwb.git
+if ~exist('nwbRead', 'file') % Skip if MatNWB is on MATLAB's search path
+    !git clone https://github.com/NeurodataWithoutBorders/matnwb.git
+    % add the path to matnwb and generate the core classes
+    addpath('matnwb');
+end
 %% 
 % MatNWB works by automatically creating API classes based on the schema. For 
 % most NWB files, the classes are generated automatically by calling |nwbRead| 
@@ -46,19 +50,16 @@
 % so we must ensure that these classes for the correct schema versions are properly 
 % generated before attempting to read from the file.
 
-% add the path to matnwb and generate the core classes
-addpath('matnwb');
-
-% Reminder: YOU DO NOT NORMALLY NEED TO CALL THIS FUNCTION. Only attempt this method if you
-% encounter read errors.
+% Reminder: YOU DO NOT NORMALLY NEED TO CALL THIS FUNCTION. Only attempt this 
+% method if you encounter read errors.
 generateCore(util.getSchemaVersion('sub-P11HMH_ses-20061101_ecephys+image.nwb'));
 %% Read the NWB file
 % You can read any NWB file using |nwbRead|. You will find that the print out 
 % for this shows a summary of the data within.
 
-% ignorecache informs the `nwbRead` call to not generate files by default. Since we have already
-% done this, we can skip this automated step when reading. If you are reading the file before
-% generating, you can omit this argument flag.
+% ignorecache informs the `nwbRead` call to not generate files by default. Since 
+% we have already done this, we can skip this automated step when reading. If 
+% you are reading the file before generating, you can omit this argument flag.
 nwb = nwbRead('sub-P11HMH_ses-20061101_ecephys+image.nwb', 'ignorecache')
 %% 
 % You can also use |util.nwbTree| to actively explore the NWB file.
