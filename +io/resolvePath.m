@@ -1,6 +1,5 @@
-function o = resolvePath(nwb, path)
-dotTok = split(path, '.');
-tokens = split(dotTok{1}, '/');
+function o = resolvePath(nwb, h5Path)
+tokens = split(h5Path, '/');
 %skip first `/` if it exists
 if isempty(tokens{1})
     tokens(1) = [];
@@ -17,7 +16,7 @@ while ~isempty(tokens)
         [o, tokens] = resolveObj(o, tokens);
     end
     if isempty(o)
-        error('NWB:IO:UnresolvedPath', 'Could not resolve path `%s`.', path);
+        error('NWB:IO:UnresolvedPath', 'Could not resolve path `%s`.', h5Path);
     end
 end
 end

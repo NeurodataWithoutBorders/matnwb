@@ -1,7 +1,7 @@
 classdef Set < handle & matlab.mixin.CustomDisplay
     properties(SetAccess=protected)
         Map; % containers.Map
-        ValidationFcn = @(key, value)[];
+        ValidationFcn function_handle;
     end
     
     methods
@@ -13,6 +13,15 @@ classdef Set < handle & matlab.mixin.CustomDisplay
             obj.Map = containers.Map;
             
             if nargin == 0
+                return;
+            end
+
+            if isa(varargin{end}, 'function_handle')
+                obj.ValidationFcn = varargin{end};
+                varargin(end) = [];
+            end
+                       
+            if numel(varargin) == 0
                 return;
             end
             
@@ -31,7 +40,7 @@ classdef Set < handle & matlab.mixin.CustomDisplay
                         obj.set(srcKeys, values(src, srcKeys));
                     end
                     
-                    if nargin > 1
+                    if numel(varargin) > 1
                         assert(isa(varargin{2}, 'function_handle'),...
                             '`fcn` Expected a function_handle type');
                         obj.ValidationFcn = varargin{2};
@@ -108,12 +117,15 @@ classdef Set < handle & matlab.mixin.CustomDisplay
         end
         
         function validateAll(obj)
+            if isempty(obj.ValidationFcn)
+                return
+            end
             mapkeys = keys(obj.Map);
             keyFailed = false(size(mapkeys));
             for i=1:length(mapkeys)
                 mk = mapkeys{i};
                 try
-                    obj.ValidationFcn(mk, obj.Map(mk));
+                    obj.Map(mk) = obj.ValidationFcn(mk, obj.Map(mk));
                 catch ME
                     warning('NWB:Set:FailedValidation' ...
                         , 'Failed to validate Constrained Set key `%s` with message:\n%s' ...
@@ -143,7 +155,9 @@ classdef Set < handle & matlab.mixin.CustomDisplay
                     elem = val(i);
                 end
                 try
-                    obj.ValidationFcn(name{i}, elem);
+                    if ~isempty(obj.ValidationFcn)
+                        elem = obj.ValidationFcn(name{i}, elem);
+                    end
                     obj.Map(name{i}) = elem;
                 catch ME
                     warning('NWB:Set:FailedValidation' ...

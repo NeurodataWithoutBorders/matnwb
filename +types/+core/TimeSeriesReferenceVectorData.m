@@ -16,7 +16,7 @@ methods
         %  timeSeriesReferenceVectorData = types.core.TIMESERIESREFERENCEVECTORDATA(Name, Value) creates a TimeSeriesReferenceVectorData object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
-        %  - data (Table with columns: (int32, int32, Object reference to TimeSeries)) - No description
+        %  - data (Table with columns: (int32, int32, Object reference to TimeSeries)) - Data property for dataset class (TimeSeriesReferenceVectorData)
         %
         %  - description (char) - Description of what these vectors represent.
         %
@@ -52,6 +52,7 @@ methods
         vprops.count = 'int32';
         vprops.timeseries = 'types.untyped.ObjectView';
         val = types.util.checkDtype('data', vprops, val);
+        types.util.validateShape('data', {[Inf,Inf,Inf,Inf], [Inf,Inf,Inf], [Inf,Inf], [Inf]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

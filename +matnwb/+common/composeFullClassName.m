@@ -4,6 +4,11 @@ function fullClassName = composeFullClassName(namespaceName, neurodataType)
         neurodataType (:, 1) string
     end
 
+    if contains(namespaceName, '-')
+        % MATLAB does not support "-" in namespace names
+        namespaceName = strrep(namespaceName, '-', '_');
+    end
+
     fullClassName = compose("types.%s.%s", namespaceName, neurodataType);
     fullClassName = transpose(fullClassName); % Return as row vector
 end
