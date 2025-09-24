@@ -205,7 +205,10 @@ function value = checkDtypeForCompoundDataset(name, typeDescriptor, value)
                 ['struct of arrays as a compound type ',...
                 'cannot have multidimensional data in their fields. ',...
                 'Field data shape must be scalar or vector to be valid.']);
-            if ischar(subValue) 
+            if ischar(subValue)
+                % Use size(subValue, 1) for character arrays to count rows 
+                % (strings) correctly, since length() would return the total 
+                % number of characters rather than the number of rows.
                 fieldLengths(i) = size(subValue, 1);
             else
                 fieldLengths(i) = length(subValue);
