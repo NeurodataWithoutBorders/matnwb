@@ -75,7 +75,7 @@ methods
         types.util.validateShape('description', {[Inf]}, val)
     end
     function val = validate_electrodes(obj, val)
-        val = types.util.checkDtype('electrodes', 'types.hdmf_common.DynamicTableRegion', val);
+        types.util.checkType('electrodes', 'types.hdmf_common.DynamicTableRegion', val);
     end
     function val = validate_features(obj, val)
         val = types.util.checkDtype('features', 'single', val);

@@ -4,8 +4,7 @@ function validationStr = fillValidators(propnames, props, namespaceReg, classNam
         nm = propnames{i};
         prop = props(nm);
 
-        if (isa(prop, 'file.Attribute') || isa(prop, 'file.Dataset')) ...
-                && prop.readonly && ~isempty(prop.value)
+        if file.internal.isPropertyReadonly(prop) && ~isempty(prop.value)
             % Need to add a validator for inherited and readonly properties. In 
             % the superclass these properties might not be read-only and due to
             % inheritance rules in MATLAB it is not possible to change property 
@@ -16,14 +15,10 @@ function validationStr = fillValidators(propnames, props, namespaceReg, classNam
             else
                 continue
             end
-        elseif isa(prop, 'file.Link') && ~prop.isConstrainedSet
-            validationBody = fillLinkValidation(nm, prop, namespaceReg);
-        else
-            if startsWith(class(prop), 'file.')
-                validationBody = fillUnitValidation(nm, prop, namespaceReg);
-            else % primitive type
-                validationBody = fillDtypeValidation(nm, prop, namespaceReg);
-            end
+        elseif startsWith(class(prop), 'file.') % HDMF primitive type
+            validationBody = fillUnitValidation(nm, prop, namespaceReg);
+        else % MATLAB primitive type
+            validationBody = fillDtypeValidation(nm, prop, namespaceReg);
         end
 
         headerStr = ['function val = validate_' nm '(obj, val)'];
@@ -33,7 +28,7 @@ function validationStr = fillValidators(propnames, props, namespaceReg, classNam
             functionStr = strjoin({headerStr ...
                 file.addSpaces(strtrim(validationBody), 4) 'end'}, newline);
         end
-        validationStr = [validationStr newline functionStr];
+        validationStr = strcat(validationStr, [newline, functionStr]);
     end
 end
 
@@ -61,9 +56,10 @@ function unitValidationStr = fillUnitValidation(name, prop, namespaceReg)
             fillDtypeValidation(name, prop.dtype, namespaceReg)...
             fillDimensionValidation(name, prop.shape)...
             }, newline);
-    else % Link
-        fullTypeName = namespaceReg.getFullClassName(prop.type);
-        unitValidationStr = fillDtypeValidation(name, fullTypeName, namespaceReg);
+    elseif isa(prop, 'file.Link') % Link
+        unitValidationStr = fillLinkValidation(name, prop, namespaceReg);
+    else
+        error('NWB:InternalError', 'Unexpected property specification')
     end
 end
 
@@ -152,29 +148,52 @@ function unitValidationStr = fillGroupValidation(name, prop, namespaceReg)
 end
 
 function unitValidationStr = fillDatasetValidation(name, prop, namespaceReg)
+    
     unitValidationStr = '';
-    if isempty(prop.type)
-        unitValidationStr = strjoin({unitValidationStr...
-            fillDtypeValidation(name, prop.dtype, namespaceReg)...
-            fillDimensionValidation(name, prop.shape)...
-            }, newline);
-    elseif prop.isConstrainedSet
+    validationLines = {};
+
+    if prop.isConstrainedSet
         fullname = getFullClassName(namespaceReg, prop.type, name);
         if isempty(fullname)
             return
         end
 
-        unitValidationStr = strjoin({unitValidationStr...
-            ['constrained = { ''' fullname ''' };']...
-            ['types.util.checkSet(''' name ''', struct(), constrained, val);']...
-            }, newline);
+        validationLines = [validationLines ...
+            {['constrained = { ''' fullname ''' };']} ...
+            {['types.util.checkSet(''' name ''', struct(), constrained, val);']} ...
+            ];
     else
-        fullname = getFullClassName(namespaceReg, prop.type, name);
-        if isempty(fullname)
-            return
+        if ~isempty(prop.type)
+            fullname = getFullClassName(namespaceReg, prop.type, name);
+            if isempty(fullname)
+                return
+            end
+
+            validationLines = [validationLines ...
+                {fillTypeValidation(name, fullname)}];
+
+            datasetValidationLines = [...
+                {fillDtypeValidation(name, prop.dtype, namespaceReg)}, ...
+                {fillDimensionValidation(name, prop.shape)} ];
+
+            datasetValidationLines(cellfun('isempty', datasetValidationLines)) = [];
+            datasetValidationLines = indentLines(datasetValidationLines, 4);
+
+            if ~isempty(datasetValidationLines)
+                validationLines{end+1} = 'if ~isempty(val)';
+                validationLines{end+1} = '    [val, originalVal] = types.util.unwrapValue(val);';
+                validationLines = [validationLines, datasetValidationLines];
+                validationLines{end+1} = '    val = types.util.rewrapValue(val, originalVal);';
+                validationLines{end+1} = 'end';
+            end
+        else
+            validationLines = [validationLines ...
+                {fillDtypeValidation(name, prop.dtype, namespaceReg)} ...
+                {fillDimensionValidation(name, prop.shape)} ];
         end
-        unitValidationStr = [unitValidationStr newline fillDtypeValidation(name, fullname, namespaceReg)];
     end
+    validationLines(cellfun('isempty', validationLines)) = [];
+    unitValidationStr = strjoin(validationLines, newline);
 end
 
 function validationStr = fillLinkValidation(name, prop, namespaceReg)
@@ -186,6 +205,10 @@ function validationStr = fillLinkValidation(name, prop, namespaceReg)
 end
 
 function fdvstr = fillDimensionValidation(name, shape)
+    
+    if isnumeric(shape) && isnan(shape) % Any shape is allowed
+        fdvstr = ''; return
+    end
 
     if isnumeric(shape) && isnan(shape) % Any shape is allowed
         fdvstr = ''; return
@@ -211,6 +234,10 @@ function fdvstr = fillDimensionValidation(name, shape)
     end
 
     fdvstr = sprintf('types.util.validateShape(''%s'', %s, val)', name, validShapeStr);
+end
+
+function validationStr = fillTypeValidation(name, type)
+    validationStr = ['types.util.checkType(''' name ''', ''' type ''', val);'];
 end
 
 %NOTE: can return empty strings
@@ -336,4 +363,18 @@ function fullReferenceClassName = getReferenceTypeClassName(typeSpec)
             referenceClassName = 'ObjectView';
     end
     fullReferenceClassName = ['types.untyped.' referenceClassName];
+end
+
+function indentedLines = indentLines(lines, numIndents)
+    if iscell(lines)
+        indentedLines = cellfun(@(c) indentSingle(c, numIndents), lines);
+    else
+        indentedLines = indentSingle(lines, numIndents);
+    end
+
+    function indentedLine = indentSingle(line, numIndents)
+        splitLine = split(line, newline);
+        splitLine = strcat({repmat(' ', 1, numIndents)}, splitLine);
+        indentedLine = join(splitLine, newline);
+    end
 end

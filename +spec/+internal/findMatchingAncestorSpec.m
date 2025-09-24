@@ -2,7 +2,7 @@ function matchingAncestorSpec = findMatchingAncestorSpec(spec, ancestorSpecs)
 % findMatchingAncestorSpec - Find a spec from a set of ancestor specs matching on name
 
     matchingAncestorSpec = [];
-
+    
     if isKey(spec, 'name')
         specId = spec('name');
         
