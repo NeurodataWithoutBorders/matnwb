@@ -73,13 +73,18 @@ function unitValidationStr = fillGroupValidation(name, prop, namespaceReg)
     namedprops = struct();
     constraints = {};
     if isempty(prop.type)
+        warning('NWB:FillValidators:ValidationNotImplemented', ...
+            ['Detected a group-based data type (''%s'') with an untyped ', ...
+            'subgroup. Validation logic for checking shape or quantity ', ...
+            'of nested elements is not implemented '], prop.name)
+
         %% process datasets
         % if type, check if constrained
         %   if constrained, add to constr
         %   otherwise, check type once
         % otherwise, check dtype
         for iDataset = 1:length(prop.datasets)
-            dataset = p.datasets(iDataset);
+            dataset = prop.datasets(iDataset);
 
             if isempty(dataset.type)
                 namedprops.(dataset.name) = dataset.dtype;
@@ -100,8 +105,8 @@ function unitValidationStr = fillGroupValidation(name, prop, namespaceReg)
         % otherwise, error.  This shouldn't happen.
         for iSubGroup = 1:length(prop.subgroups)
             subGroup = prop.subgroups(iSubGroup);
+            assert(~isempty(subGroup.type), 'Unsupported case with two nested untyped groups');
             subGroupFullName = namespaceReg.getFullClassName(subGroup.type);
-            assert(~isempty(subGroup.type), 'Weird case with two untyped groups');
 
             if isempty(subGroup.name)
                 constraints{end+1} = subGroupFullName;
@@ -120,7 +125,7 @@ function unitValidationStr = fillGroupValidation(name, prop, namespaceReg)
         for iLink = 1:length(prop.links)
             Link = prop.links(iLink);
             namespace = namespaceReg.getNamespace(Link.type);
-            namedprops.(Link.name) = ['types.', namespace, '.', Link.type];
+            namedprops.(Link.name) = char(matnwb.common.composeFullClassName(namespace.name, Link.type));
         end
     else
         constraints{end+1} = namespaceReg.getFullClassName(prop.type);
