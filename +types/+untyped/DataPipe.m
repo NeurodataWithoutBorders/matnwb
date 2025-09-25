@@ -3,51 +3,80 @@ classdef (Sealed) DataPipe < handle
 %            (chunking, compression, incremental writes)
 %
 % Description:
-%   DATAPIPE directs HDF5 to use chunking and GZIP compression when
-%   saving the dataset. The chunk size is automatically determined and
-%   the compression level is 3 by default.
+%  DATAPIPE directs HDF5 to use chunking and GZIP compression when
+%  saving the dataset. The chunk size is automatically determined and
+%  the compression level is 3 by default.
 %
 % Syntax:
-%  dataPipe = types.untyped.DATAPIPE(..., 'data', DATA) creates a data pipe 
-%  object with already existing DATA. This can be omitted if the DATA will be 
-%  appended later
+%  dataPipe = types.untyped.DATAPIPE(Name, Value) creates a DataPipe object
+%  using one or more name-value pairs to control the configuration of the
+%  DataPipe. NB: One of data or maxSize is required.
+% 
+% Input Arguments:
+%  - options (name-value pairs) -
+%    Optional name-value pairs for DataPipe configuration. Available options:
 %
-%  dataPipe = types.untyped.DATAPIPE(..., 'maxSize', MAXSIZE) sets the maximum 
-%  size of the HDF5 Dataset. MAXSIZE is a row vector whose elements are the 
-%  max lengths of the corresponding dimensions of the dataset. To append data 
-%  later, use the MAXSIZE of the final dataset. Inf on any dimension will allow 
-%  the Dataset to grow without limit in that dimension. If not provided, 
-%  MAXSIZE is inferred from the DATA. An error is thrown if neither MAXSIZE nor 
-%  DATA is provided.
+%    - data (numeric) -
+%      Existing data to initialize a DataPipe with. Optional if data will
+%      be appended later.
 %
-%  dataPipe = types.untyped.DATAPIPE(..., 'axis', AXIS) sets which dimension 
-%  axis to increment when appending more data. Default is 1. Analogous to
-%  MATLAB's builtin `cat(dim, ...)`
+%    - maxSize (numeric) -
+%      Row vector whose elements specify the max length for each dimension of
+%      a dataset. Use `Inf` for unlimited growth along any dimension. Required 
+%      if DATA is not provided. If you plan to append data later, maxSize
+%      should be the final size of the dataset. If not provided, MAXSIZE is 
+%      inferred from the DATA.
 %
-%  dataPipe = types.untyped.DATAPIPE(..., 'dataType', DATATYPE) sets the 
-%  numerical data type. This should be set if DATA is omitted. If DATA is 
-%  provided and DATATYPE is not, the data type is inferred from the provided 
-%  DATA.
+%    - axis (integer) -
+%      Dimension to extend if appending data. Default is 1.
 %
-%  dataPipe = types.untyped.DATAPIPE(..., 'chunkSize', CHUNKSIZE) sets chunk 
-%  size. Must be less than MAXSIZE. If not provided, the CHUNKSIZE will be 
-%  automatically determined.
+%    - dataType (string) -
+%      Numerical data type for the dataset. Required if DATA is omitted. If 
+%      DATA is provided and DATATYPE is not, the data type is inferred from the 
+%      provided DATA.
 %
-%  dataPipe = types.untyped.DATAPIPE(..., 'compressionLevel', COMPRESSIONLEVEL) 
-%  sets a GZIP compression level. Default is 3.
+%    - chunkSize (row vector) -
+%      Size of chunks for HDF5 storage. Must be smaller than MAXSIZE.
 %
-%  dataPipe = types.untyped.DATAPIPE(..., 'offset', OFFSET) Axis offset of 
-%  dataset to append. May be used to overwrite data.
+%    - compressionLevel (integer) -
+%      GZIP compression level. Default is 3.
 %
-%  dataPipe = types.untyped.DATAPIPE(..., 'hasShuffle', HASSHUFFLE) controls 
-%  whether bit shuffling is turned on during compression. This is lossless and
-%  tends to save space without much cost to performance. Default is False
+%    - offset (row vector) -
+%      Offset along dimensions where new data is appended. May be used to 
+%      overwrite data.
 %
-%  dataPipe = types.untyped.DATAPIPE('filename', FILENAME, 'path', PATH) load a 
-%  pre-existing HDF5 Dataset directly using the FILENAME of the file and the 
-%  PATH of the dataset within that file. These arguments cannot be used
-%  with any of the above arguments, which are for setting up a new DataPipe.
-
+%    - hasShuffle (logical) -
+%      Whether to enable bit shuffling during compression. Default is false.
+%      This is lossless and tends to save space without much cost to 
+%      performance.
+%
+%    - filename (string) -
+%      Path to an existing HDF5 file (for loading an existing dataset).
+%      Requires path to be set (see below). filename and path should not be
+%      used with any of the above options, which are for setting up a new 
+%      DataPipe.
+%
+%    - path (string) -
+%      Path within the HDF5 file to the existing dataset. Requires filename
+%      to be set
+%
+% Output Arguments:
+%  - dataPipe (types.untyped.DataPipe) - 
+%    A DataPipe object configured for chunked, compressed HDF5 writing and
+%    incremental data appending.
+%
+% Usage:
+%  Example 1 - Create a data pipe with existing data::
+%
+%    dataPipe = types.untyped.DataPipe('data', myData);
+%
+%  Example 2 - Create a data pipe with unlimited growth along the first dimension::
+%
+%    dataPipe = types.untyped.DATAPIPE('maxSize', [Inf, 100], 'axis', 1);
+%
+%  Example 3 - Load a pre-existing dataset from an HDF5 file::
+%
+%    dataPipe = types.untyped.DATAPIPE('filename', 'data.h5', 'path', '/dataset1');
 
     properties (SetAccess = private)
         internal;
