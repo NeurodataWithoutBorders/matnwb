@@ -9,6 +9,93 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
     end
 
     methods (Test)
+        function testConstructorRequiresDataOrMaxSize(testCase)
+            % Should work if providing data
+            dataPipe = types.untyped.DataPipe('data', rand(10,10));
+            testCase.verifyClass(dataPipe, 'types.untyped.DataPipe')
+
+            % Should work if providing maxSize (and dataType)
+            dataPipe = types.untyped.DataPipe('maxSize', [10,10], 'dataType', 'double');
+            testCase.verifyClass(dataPipe, 'types.untyped.DataPipe')
+
+            % Should throw error if neither data or maxSize is provided 
+            testCase.verifyError(...
+                @() types.untyped.DataPipe(), ...
+                'NWB:DataPipe:MissingArguments')
+        end
+
+        function testConstructorRequiresDataOrDataType(testCase)
+            % Should throw error if neither data or dataType is provided 
+            testCase.verifyError(...
+                @() types.untyped.DataPipe('maxSize', [5,100]), ...
+                'NWB:DataPipe:MissingArguments')
+        end
+
+        function testConstructorAppliesDefaultOptions(testCase)
+            dataPipe = types.untyped.DataPipe('data', rand(10,10));
+            
+            % Test that default values are set correctly
+            testCase.verifyEqual(dataPipe.compressionLevel, 3) % Default is 3
+            testCase.verifyEqual(dataPipe.axis, 1) % Default is 1
+            testCase.verifyEqual(dataPipe.offset, 0) % Default is 0
+            testCase.verifyEqual(dataPipe.hasShuffle, false) % Default is false
+        end
+
+        function testInvalidOptions(testCase)
+            data = rand(10,10);
+            
+            % Compression level must be >= -1
+            dataPipe = types.untyped.DataPipe('data', data, 'compressionLevel', -1);
+            testCase.verifyEqual(dataPipe.compressionLevel, -1)
+            
+            % Should throw error if less than -1
+            testCase.verifyError(...
+                @() types.untyped.DataPipe('data', data, 'compressionLevel', -2), ...
+                'MATLAB:validators:mustBeGreaterThanOrEqual')
+
+            % Axis must be a positive integer
+            dataPipe = types.untyped.DataPipe('data', data, 'axis', 2);
+            testCase.verifyEqual(dataPipe.axis, 2)
+
+            % Negative value for axis should fail
+            testCase.verifyError(...
+                @() types.untyped.DataPipe('data', data, 'axis', -2), ...
+                 'MATLAB:validators:mustBePositive')
+            
+            % axis = 0 should fail
+            testCase.verifyError(...
+                @() types.untyped.DataPipe('data', data, 'axis', 0), ...
+                 'MATLAB:validators:mustBePositive')
+           
+            % non-integer should fail
+            testCase.verifyError(...
+                @() types.untyped.DataPipe('data', data, 'axis', 2.5), ...
+                 'MATLAB:validators:mustBeInteger')
+            
+            % Offset must be a non-negative integer
+            dataPipe = types.untyped.DataPipe('data', data, 'offset', 5);
+            testCase.verifyEqual(dataPipe.offset, 5)
+
+            % 0 should work
+            dataPipe = types.untyped.DataPipe('data', data, 'offset', 0);
+            testCase.verifyEqual(dataPipe.offset, 0)
+
+            % Negative value for offset should fail
+            testCase.verifyError(...
+                @() types.untyped.DataPipe('data', data, 'offset', -5), ...
+                 'MATLAB:validators:mustBeNonnegative')
+           
+            % non-integer for offset should fail
+            testCase.verifyError(...
+                @() types.untyped.DataPipe('data', data, 'offset', 2.5), ...
+                 'MATLAB:validators:mustBeInteger')
+
+            % Test invalid opition name
+            testCase.verifyError(...
+                @() types.untyped.DataPipe('data', data, 'notAnOption', 1), ...
+                 'MATLAB:TooManyInputs')
+        end
+        
         function testInit(testCase)
             import types.untyped.datapipe.*;
             import matlab.unittest.fixtures.SuppressedWarningsFixture
@@ -16,7 +103,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             %% Providing data and dataType should issue warning
             data = rand(100, 1);
             pipe = testCase.verifyWarning(...
-                @(varargin) types.untyped.DataPipe('data', data, 'dataType', 'double'), ...
+                @() types.untyped.DataPipe('data', data, 'dataType', 'double'), ...
                 'NWB:DataPipe:RedundantDataType');
                 
             pipe.compressionLevel = 2;
@@ -33,7 +120,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                 @(varargin) types.untyped.DataPipe('filename', filename, 'path', datasetName, 'dataType', 'double'), ...
                 'NWB:DataPipe:UnusedArguments');
         
-            % Verify that proprerty values from file are present in object.
+            % Verify that property values from file are present in object.
             testCase.verifyEqual(pipe.compressionLevel, 2);
             testCase.verifyTrue(pipe.hasShuffle);
         end
