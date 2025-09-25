@@ -4,6 +4,7 @@
 - All MATLAB code is located in namespaces (folders prefixed by +) or the root directory
 - MatNWB builds nwb type classes from schemas using generateCore/generateExtension
 - The main user-facing code is located in the +types namespace and the root directory
+- Although MatNWB is MATLAB-first, a few helper utilities rely on Python. `hdf5plugin` supplies the HDF5 compression codecs needed by NWB sample files, and `nwbinspector` validates the NWB files that MatNWB produces. CI install these packages so MATLAB-driven tests can call the inspector and read plugin-backed datasets.
 
 ## Ignore
 - do not use the namespaces folder if it exists

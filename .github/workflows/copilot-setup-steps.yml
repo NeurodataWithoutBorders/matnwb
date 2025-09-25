@@ -44,4 +44,3 @@ jobs:
           python -m pip install -r +tests/requirements.txt
           python -m pip list
           echo "HDF5_PLUGIN_PATH=$(python -c "import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)")" >> "$GITHUB_ENV"
-          echo $( python -m pip show nwbinspector | grep ^Location: | awk '{print $2}' )
