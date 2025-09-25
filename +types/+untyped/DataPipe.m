@@ -98,126 +98,109 @@ classdef (Sealed) DataPipe < handle
     
     methods
         %% Lifecycle
-        function obj = DataPipe(varargin)
+        function obj = DataPipe(options)
+            arguments
+                options.data
+                options.maxSize
+                options.dataType char
+                options.axis (1,1) double {mustBeInteger, mustBePositive}
+                options.offset (1,1) double {mustBeInteger, mustBeNonnegative}
+                options.chunkSize
+                options.compressionLevel (1,1) double {mustBeGreaterThanOrEqual(options.compressionLevel, -1)}
+                options.hasShuffle (1,1) logical
+                options.filters (1,:) types.untyped.datapipe.Property
+                options.filename char
+                options.path char
+            end
+
+            % Note: compression level is defaulted to ON. This is primarily 
+            % for legacy support as we move into other filters.
+
+            DEFAULTS = struct();
+            DEFAULTS.axis = 1;
+            DEFAULTS.offset = 0;
+            DEFAULTS.compressionLevel = 3;
+            DEFAULTS.hasShuffle = false;
+            
             import types.untyped.datapipe.BoundPipe;
             import types.untyped.datapipe.BlueprintPipe;
             import types.untyped.datapipe.Configuration;
             import types.untyped.datapipe.properties.*;
             import types.untyped.datapipe.guessChunkSize;
             
-            p = inputParser;
-            p.addParameter('maxSize', []);
-            p.addParameter('axis', 1, @(x) isnumeric(x) && isscalar(x) && x > 0);
-            p.addParameter('offset', 0, @(x) isnumeric(x) && isscalar(x) && x >= 0);
-            p.addParameter('chunkSize', []);
-            % note that compression level is defaulted to ON
-            % This is primarily for legacy support as we move into other
-            % filters.
-            p.addParameter('compressionLevel', 3, @(x) isnumeric(x)...
-                && isscalar(x)...
-                && x >= -1);
-            p.addParameter('dataType', '');
-            p.addParameter('data', []);
-            p.addParameter('filename', '');
-            p.addParameter('path', '');
-            p.addParameter('hasShuffle', false, ...
-                @(b) isscalar(b) && (islogical(b) || isnumeric(b)));
-            p.addParameter('filters', DynamicFilter.empty(), ...
-                @(x) isa(x, 'types.untyped.datapipe.Property'));
-            p.KeepUnmatched = true;
-            p.parse(varargin{:});
-            
-            hasFilename = ~isempty(p.Results.filename);
-            hasPath = ~isempty(p.Results.path);
-            assert(~xor(hasFilename, hasPath),...
-                'NWB:DataPipe:MismatchedArguments',...
-                ['A non-empty filename and path are '...
-                'required to create a bound DataPipe.  Only one of the above were '...
-                'specified.']);
+            [hasFilename, hasPath] = obj.validateFilenameAndPath(options);
+
             if hasFilename && hasPath
-                obj.internal = BoundPipe(p.Results.filename, p.Results.path);
-                meta = metaclass(obj.internal);
-                proplist = meta.PropertyList;
-                propnames = {proplist.Name};
-                dependents = setdiff(propnames([proplist.Dependent]), {'filename', 'path'});
-                
-                extras = setdiff(intersect(p.Parameters, dependents), p.UsingDefaults);
-                if ~isempty(extras)
-                    formatted = cell(size(dependents));
-                    for i = 1:length(dependents)
-                        formatted{i} = ['    ', dependents{i}];
-                    end
-                    warning('NWB:DataPipe:UnusedArguments',...
-                        ['Other keyword arguments were added along with a valid '...
-                        'filename and path.  Since the filename and path are valid, the '...
-                        'following extra properties will be superseded by the '...
-                        'configuration on file:\n%s'],...
-                        strjoin(formatted, newline));
-                end
-                return;
+                obj.internal = BoundPipe(options.filename, options.path);
+                obj.showWarningIfOtherOptionsProvidedOnRead(options)
+                return
+            end
+
+            % Validate/check provided options for missing or redundant fields
+            obj.assertDataOrMaxSizeWasProvided(options)
+            obj.showWarningForRedundantFilterOptions(options)
+
+            % Add any default values to options if they were not provided
+            options = obj.updateOptionsWithDefaultsIfMissing(options, DEFAULTS);
+
+            % Infer maxSize if not provided.
+            if ~isfield(options, 'maxSize')
+                maxSize = size(options.data);
+                maxSize(options.axis) = Inf;
+            else
+                maxSize = options.maxSize;
             end
             
-            if isempty(p.Results.maxSize)
-                assert(~isempty(p.Results.data),...
-                    'NWB:DataPipe:MissingArguments',...
-                    'Missing required argument `maxSize` or dependent argument `data`')
-                maxSize = size(p.Results.data);
-                maxSize(p.Results.axis) = Inf;
+            % Resolve dataType
+            if ~isfield(options, 'data')
+                assert(isfield(options, 'dataType'), ...
+                    'NWB:DataPipe:MissingArguments', ...
+                    '`dataType` must be provided if `data` is unset.')
+                dataType = options.dataType;
             else
-                maxSize = p.Results.maxSize;
-            end
-            config = Configuration(maxSize);
-            config.axis = p.Results.axis;
-            config.offset = p.Results.offset;
-            
-            if isempty(p.Results.data)
-                config.dataType = p.Results.dataType;
-            else
-                if ~isempty(p.Results.dataType)
+                if isfield(options, 'dataType')
                     warning('NWB:DataPipe:RedundantDataType',...
                         ['`datatype` parameter will be ignored in lieu of '...
                         'provided `data` value type.']);
                 end
-                config.dataType = class(p.Results.data);
+                dataType = class(options.data);
             end
-            
+
+            % Configure BlueprintPipe
+            config = Configuration(maxSize);
+            config.axis = options.axis;
+            config.offset = options.offset;
+            config.dataType = dataType;
+
             obj.internal = BlueprintPipe(config);
-            if isempty(p.Results.chunkSize)
+
+            % Configure chunking and compression
+            if ~isfield(options, 'chunkSize')
                 chunkSize = guessChunkSize(config.dataType, config.maxSize);
             else
-                chunkSize = p.Results.chunkSize;
+                chunkSize = options.chunkSize;
             end
             obj.internal.setPipeProperties(Chunking(chunkSize));
             
-            hasFilters = ~isempty(p.Results.filters);
-            usingHasCompressionLevel = ~any(strcmp(p.UsingDefaults, 'compressionLevel'));
-            usingHasShuffle = ~any(strcmp(p.UsingDefaults, 'hasShuffle'));
-            if hasFilters && (usingHasCompressionLevel || usingHasShuffle)
-                warning('NWB:DataPipe:FilterOverride' ...
-                    , ['`filters` keyword argument detected. This will ' ...
-                    'override `compressionLevel` and `hasShuffle` keyword ' ...
-                    'arguments. If you wish to use either `compressionLevel` ' ...
-                    'or `hasShuffle`, please add their respective filter ' ...
-                    'properties `types.untyped.datapipe.properties.Compression` ' ...
-                    'and `types.untyped.datapipe.properties.Shuffle` to the ' ...
-                    '`filters` properties array.']);
-            end
+            hasFilters = isfield(options, 'filters') && ~isempty(options.filters);
             
             if hasFilters
-                filterCell = num2cell(p.Results.filters);
+                filterCell = num2cell(options.filters);
                 obj.internal.setPipeProperties(filterCell{:});
             else
-                if -1 < p.Results.compressionLevel
+                if -1 < options.compressionLevel
                     obj.internal.setPipeProperties(Compression(...
-                        p.Results.compressionLevel));
+                        options.compressionLevel));
                 end
                 
-                if logical(p.Results.hasShuffle)
+                if logical(options.hasShuffle)
                     obj.internal.setPipeProperties(Shuffle());
                 end
             end
             
-            obj.internal.data = p.Results.data;
+            if isfield(options, 'data')
+                obj.internal.data = options.data;
+            end
         end
         
         %% SET/GET
@@ -341,6 +324,84 @@ classdef (Sealed) DataPipe < handle
                 B = data;
             else
                 B = subsref(data, S(2:end));
+            end
+        end
+    end
+
+    methods (Access = private) % Constructor helpers
+        function [hasFilename, hasPath] = validateFilenameAndPath(~, options)
+            hasFilename = isfield(options, 'filename');
+            hasPath = isfield(options, 'path');
+
+            ME = MException(...
+                'NWB:DataPipe:MismatchedArguments', ...
+                ['Both filename and path are required to create a bound ' ...
+                'DataPipe. Only one of the above were specified.']);
+
+            if xor(hasFilename, hasPath)
+                throwAsCaller(ME)
+            end
+
+            assert(~xor(hasFilename, hasPath),...
+                'NWB:DataPipe:MismatchedArguments',...
+                ['Both filename and path are required to create a bound ' ...
+                'DataPipe. Only one of the above were specified.']);
+        end
+
+        function showWarningIfOtherOptionsProvidedOnRead(~, options)
+            providedOptions = string( fieldnames(options) );
+            extraOptions = setdiff(providedOptions, {'filename', 'path'});
+
+            if ~isempty(extraOptions)
+                formatted = strjoin("    " + extraOptions, newline);
+                warning('NWB:DataPipe:UnusedArguments',...
+                    ['Other keyword arguments were added along with a valid '...
+                    'filename and path.  Since the filename and path are valid, the '...
+                    'following extra properties will be superseded by the '...
+                    'configuration on file:\n%s'], formatted);
+            end
+        end
+
+        function assertDataOrMaxSizeWasProvided(~, options)
+            if ~isfield(options, 'maxSize') && ~isfield(options, 'data')
+                ME = MException( ...
+                    'NWB:DataPipe:MissingArguments', ...
+                    ['Missing required input: either `maxSize` or `data` ', ...
+                    'must be specified as a name-value pair.']);
+                throwAsCaller(ME)
+            end
+        end
+
+        function showWarningForRedundantFilterOptions(~, options)
+        % showWarningForRedundantFilterOptions -
+        %
+        %   If 'filters' is provided, any values that are provided for 
+        %   'compressionLevel' and/or 'hasShuffle' options will be ignored.
+
+            hasFilters = isfield(options, 'filters') && ~isempty(options.filters);
+            
+            compressionLevelWasProvided = isfield(options, 'compressionLevel');
+            shuffleWasProvided = isfield(options, 'hasShuffle');
+            
+            if hasFilters && (compressionLevelWasProvided || shuffleWasProvided)
+                warning('NWB:DataPipe:FilterOverride', ...
+                    ['`filters` keyword argument detected. This will ' ...
+                    'override `compressionLevel` and `hasShuffle` keyword ' ...
+                    'arguments. If you wish to use either `compressionLevel` ' ...
+                    'or `hasShuffle`, please add their respective filter ' ...
+                    'properties `types.untyped.datapipe.properties.Compression` ' ...
+                    'and `types.untyped.datapipe.properties.Shuffle` to the ' ...
+                    '`filters` properties array.']);
+            end
+        end
+
+        function options = updateOptionsWithDefaultsIfMissing(~, options, defaults)
+            defaultFields = fieldnames(defaults);
+            for i = 1:numel(defaultFields)
+                currentField = defaultFields{i};
+                if ~isfield(options, currentField)
+                    options.(currentField) = defaults.(currentField);
+                end
             end
         end
     end
