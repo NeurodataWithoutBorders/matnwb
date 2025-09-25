@@ -26,7 +26,11 @@ function value = checkDtype(name, typeDescriptor, value)
         value = checkDtypeForCompoundDataset(name, typeDescriptor, value);
     
     elseif isa(value, 'types.untyped.SoftLink')
-        % Softlinks cannot be validated at this level.
+        if ~isempty(value.target)
+            value = types.util.validateSoftLink(name, value, typeDescriptor);
+        else
+            % Softlinks cannot be validated at this level.
+        end
     
     elseif isValueContainedInHDMFDatasetType(typeDescriptor, value) 
         % If the value is itself a dataset class, we need to unpack and 

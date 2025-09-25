@@ -13,7 +13,7 @@ classdef DataTypesTest < tests.unit.abstract.SchemaTest
 %     - inclusion:              SET               NOT SET
 %
 %   - Test correct validation of compound types
-
+%   - Test correct validation of datasets and attributes in subgroups
 
     properties (Constant)
         SchemaFolder = "dataTypesSchema"
@@ -25,6 +25,16 @@ classdef DataTypesTest < tests.unit.abstract.SchemaTest
         value = {'1', uint32(1), int8(1), int32(1), single(1.0), 1.0}
     end
 
+    methods (TestClassSetup)
+        function setup(testCase)
+            import matlab.unittest.fixtures.SuppressedWarningsFixture
+            testCase.applyFixture(SuppressedWarningsFixture(...
+                'NWB:FillValidators:ValidationNotImplemented'))
+
+            setup@tests.unit.abstract.SchemaTest(testCase)
+        end
+    end
+
     methods (Test)
         function testValidationOfAnyData(testCase, value)
         % testValidationOfAnyData - Any dtype should be allowed
@@ -33,7 +43,7 @@ classdef DataTypesTest < tests.unit.abstract.SchemaTest
             testCase.verifyEqual(anyData.data, value)
         end
 
-        % The following tests tests that dtype validation / correction is 
+        % The following tests test that dtype validation / correction is
         % handled correctly under the inheritance mechanism.
 
         function testValidationOfTextData(testCase, value)
@@ -150,6 +160,7 @@ classdef DataTypesTest < tests.unit.abstract.SchemaTest
             % dtype.
 
             % Test a valid compound value
+
             validCompoundStruct = struct(...
                 'integer', 1, ...
                 'float', 1, ...
@@ -169,7 +180,6 @@ classdef DataTypesTest < tests.unit.abstract.SchemaTest
                 'b', 1, ...
                 'c', '1');
             invalidCompoundData = types.dt.AnyData('data', invalidCompoundStruct);
-
             testCase.verifyError(...
                 @() types.dt.InclusionContainer('included_data_must_be_compound', invalidCompoundData), ...
                 'NWB:CheckDType:InvalidValue')
@@ -259,8 +269,7 @@ classdef DataTypesTest < tests.unit.abstract.SchemaTest
                 'NWB:CheckDataType:InvalidConversion');
         end
         
-        % Test round trip
-
+        % Test round trip validation
         function testRoundtripValidation(testCase)
             % Test full roundtrip: create, export, read, validate
 
@@ -338,6 +347,121 @@ classdef DataTypesTest < tests.unit.abstract.SchemaTest
             nanData = types.dt.AnyData('data', single(NaN));
             testCase.verifyTrue(isnan(nanData.data));
             testCase.verifyClass(nanData.data, 'single');
+        end
+
+        % The following tests test that dtype validation works in deeply nested structures
+        function testSubgroupUntypedDatasetWithCorrectType(testCase)
+            subGroup = types.untyped.Set();
+            subGroup.set('untyped_text_data', 'hello world');
+            container = types.dt.NestedDataTypeContainer('subgroup', subGroup);
+            testCase.verifyClass(container.subgroup.get('untyped_text_data'), 'char')
+        end
+
+        function testSubgroupUntypedDatasetWithWrongType(testCase)
+            % Add value with wrong dtype to untyped_text_data (should be text)
+            subGroup = types.untyped.Set();
+            subGroup.set('untyped_text_data', 2);
+            testCase.verifyWarning(...
+                @() types.dt.NestedDataTypeContainer('subgroup', subGroup), ...
+                'NWB:Set:FailedValidation')
+        end
+                
+        function testSubgroupTypedDatasetWithCorrectType(testCase)
+            subGroup = types.untyped.Set();
+            subGroup.set('any_data', types.dt.AnyData('data', 1));
+            container = types.dt.NestedDataTypeContainer('subgroup', subGroup);
+            testCase.verifyClass(container.subgroup.get('any_data'), 'types.dt.AnyData')
+        end
+
+        function testSubgroupTypedDatasetWithWrongType(testCase)
+            % Add dataset of wrong type to basic_data (should be types.dt.AnyData)
+            subGroup = types.untyped.Set();
+            subGroup.set('any_data', types.hdmf_common.VectorData('data', 1)); 
+            testCase.verifyWarning(...
+                @() types.dt.NestedDataTypeContainer('subgroup', subGroup), ...
+                'NWB:Set:FailedValidation')
+        end
+
+        function testSubgroupConstrainedDatasetWithCorrectType(testCase)
+            subGroup = types.untyped.Set();
+            subGroup.set('constrained_a', types.dt.TextData('data', 'hello'));
+            subGroup.set('constrained_b', types.dt.TextData('data', 'world'));
+            container = types.dt.NestedDataTypeContainer('subgroup', subGroup);
+            testCase.verifyClass(container.subgroup.get('constrained_a'), 'types.dt.TextData')
+            testCase.verifyClass(container.subgroup.get('constrained_b'), 'types.dt.TextData')
+        end
+
+        function testSubgroupConstrainedDatasetWithWrongType(testCase)
+            % Add dataset of wrong type to constrained dataset (should be types.dt.TextData)
+            subGroup = types.untyped.Set();
+            subGroup.set('constrained', types.dt.AnyData('data', 1)); 
+            testCase.verifyWarning(...
+                @() types.dt.NestedDataTypeContainer('subgroup', subGroup), ...
+                'NWB:Set:FailedValidation')
+        end
+
+        function testSubgroupAttributeWithCorrectType(testCase)
+            subGroup = types.untyped.Set();
+            subGroup.set('description', 'a description');
+            container = types.dt.NestedDataTypeContainer('subgroup', subGroup);
+            testCase.verifyClass(container.subgroup.get('description'), 'char')
+        end
+
+        function testSubgroupAttributeWithWrongType(testCase)
+            % Set attribute with wrong type
+            subGroup = types.untyped.Set();
+            subGroup.set('description', 1); 
+            testCase.verifyWarning(...
+                @() types.dt.NestedDataTypeContainer('subgroup', subGroup), ...
+                'NWB:Set:FailedValidation')
+        end
+
+        function testSubgroupLinkWithCorrectType(testCase)
+            linkedData = types.dt.AnyData('data', single([1.0, 2.0, 3.0]));
+            subGroup = types.untyped.Set();
+            subGroup.set('subgroup_link', types.untyped.SoftLink(linkedData));
+            nestedContainer = types.dt.NestedDataTypeContainer('subgroup', subGroup);
+            
+            testCase.verifyClass(nestedContainer.subgroup.get('subgroup_link'), 'types.untyped.SoftLink')
+        end
+
+        function testSubgroupLinkWithWrongType(testCase)
+            invalidLinkedDataset = types.hdmf_common.VectorData('data', 1);
+            subGroup = types.untyped.Set();
+            subGroup.set('subgroup_link', types.untyped.SoftLink(invalidLinkedDataset));
+            testCase.verifyWarning(...
+                @() types.dt.NestedDataTypeContainer('subgroup', subGroup), ...
+                'NWB:Set:FailedValidation')
+        end
+
+        function testNestedSubgroupWithCorrectType(testCase)
+            subGroup = types.untyped.Set();
+            subGroup.set('nested_subgroup', types.hdmf_common.DynamicTable());
+            nestedContainer = types.dt.NestedDataTypeContainer('subgroup', subGroup);
+            testCase.verifyClass(nestedContainer.subgroup.get('nested_subgroup'), 'types.hdmf_common.DynamicTable')
+        end
+
+        function testNestedSubgroupWithWrongType(testCase)
+            subGroup = types.untyped.Set();
+            subGroup.set('nested_subgroup', types.core.TimeSeries);
+            testCase.verifyWarning(...
+                @() types.dt.NestedDataTypeContainer('subgroup', subGroup), ...
+                'NWB:Set:FailedValidation')
+        end
+
+        function testNestedConstrainedSubgroupWithCorrectType(testCase)
+            subGroup = types.untyped.Set();
+            subGroup.set('nested_constrained_subgroup', types.core.TimeSeries);
+            nestedContainer = types.dt.NestedDataTypeContainer('subgroup', subGroup);
+            testCase.verifyClass(nestedContainer.subgroup.get('nested_constrained_subgroup'), 'types.core.TimeSeries')
+        end
+
+        function testNestedConstrainedSubgroupWithWrongType(testCase)
+            subGroup = types.untyped.Set();
+            subGroup.set('nested_constrained_subgroup', types.hdmf_common.DynamicTable()); 
+            testCase.verifyWarning(...
+                @() types.dt.NestedDataTypeContainer('subgroup', subGroup), ...
+                'NWB:Set:FailedValidation')
         end
     end
 end
