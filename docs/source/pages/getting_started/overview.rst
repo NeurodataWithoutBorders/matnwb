@@ -32,8 +32,10 @@ What you can do with MatNWB
 
 - Scale to large data
 
-  - Stream/append and compress data with the DataPipe interface [Todo: DataPipe reference].
-  - Use predefined or custom configuration profiles to optimize files for local storage, cloud storage or archiving. [Todo: How-to guide]
+  - Stream/append and compress data with the DataPipe interface.
+  - Use predefined or custom configuration profiles to optimize files for local storage, cloud storage or archiving.
+
+.. Todo: Add links to DataPipe reference and configuration profiles guide when these are added.
 
 - Use and create extensions
 
@@ -53,7 +55,8 @@ The main categories of types you will work with
 - Containers/wrappers: organize related data (e.g., :doc:`ProcessingModule </pages/neurodata_types/core/ProcessingModule>`).
 - Time series: sampled data over time (e.g., :doc:`TimeSeries </pages/neurodata_types/core/TimeSeries>`, :doc:`ElectricalSeries </pages/neurodata_types/core/ElectricalSeries>`).
 - Tables: columnar metadata or data (e.g., :doc:`DynamicTable </pages/neurodata_types/hdmf_common/DynamicTable>`).
-- Helpers: Helper types [Todo: expand, and link to helper types concept page].
+- Helpers: Helper types 
+.. [Todo: expand, and link to helper types reference and concept pages when these are added].
 
 Common questions you may encounter (and where to find answers)
 --------------------------------------------------------------
@@ -108,7 +111,3 @@ Related resources
 - :nwb_overview:`NWB Overview <>` documentation
 - Python API (PyNWB_)
 - Share/discover data: :dandi:`DANDI Archive <>`
-
-.. note::
-
-   This page is an overview (explanation). A separate quickstart covers first read/write steps; see the :doc:`tutorials </pages/tutorials/index>` and Getting Started pages for hands‑on material.
