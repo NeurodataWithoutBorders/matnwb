@@ -7,7 +7,7 @@
 
 ## Ignore
 - do not use the namespaces folder if it exists
-- do not use the the +contrib namespace if it exists
+- do not use the +contrib namespace if it exists
 - Only consider schema files for the latest version in nwb-schema/
 
 ## Testing
