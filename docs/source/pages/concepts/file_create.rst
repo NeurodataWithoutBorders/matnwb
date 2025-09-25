@@ -18,7 +18,7 @@ Building an NWB file follows a logical pattern:
 
 - **Create neurodata objects**: You create objects for your data (like :class:`types.core.TimeSeries` for time-based measurements)
 
-- **Add to containers**: You add these data objects to your :class:`NwbFile` object (or other objects) in appropriate locations
+- **Add to containers**: You add these data objects to your :class:`NwbFile` object (or other NWB container objects) in appropriate locations
 
 - **File export**: You save everything to disk using :func:`nwbExport`, which translates your objects into NWB/HDF5 format
 

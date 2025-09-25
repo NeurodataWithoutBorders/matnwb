@@ -6,7 +6,7 @@ Installation
 Quick install
 -------------
 
-If you want the shortest path and have ``git`` available, run the following snippet in MATLAB. This clones into your current working directory, adds MatNWB to the path, and optionally persists the change:
+If you want the quickest installation option, and you have ``git`` available, run the following snippet in MATLAB. This clones into your current working directory, adds MatNWB to the path, and optionally persists the change:
 
 .. code-block:: matlab
 
