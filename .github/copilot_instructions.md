@@ -22,9 +22,11 @@
 - Documentation instructions are located in docs/README.md
 - Documentation should follow the Diátaxis framework (https://diataxis.fr)
 - Documentation source is located in docs/source/pages
-- Reference documentation is built automatically from MATLAB function docstrings
-- nwbRead provides an example docstring that renders well with rst/html
+- Reference documentation is built automatically from MATLAB function docstrings.
+- All reference documentation should be added to function docstrings, not rst.
+- nwbRead provides an example docstring that renders well with rst/html. Make sure to use identical indenting, list syntax and structure of newlines when creating docstrings
 - tools/documentation/matnwb_generateRstFilesFromCode builds the structure for the reference documentation
+- When adding new functions that should go in the reference documentation, make appropriate changes to matnwb_generateRstFilesFromCode
 - All tutorials are in the tutorials folder. .m versions of the .mlx files are located in tutorials/private/mcode
 
 ## Coding conventions
