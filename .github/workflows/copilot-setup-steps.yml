@@ -32,3 +32,16 @@ jobs:
         uses: matlab-actions/setup-matlab@v2
         with:
           cache: true
+
+      - name: Install python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Configure python env
+        run: |
+          python -m pip install -U pip
+          pip install -r +tests/requirements.txt
+          python -m pip list
+          echo "HDF5_PLUGIN_PATH=$(python -c "import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)")" >> "$GITHUB_ENV"
+          echo $( python -m pip show nwbinspector | grep ^Location: | awk '{print $2}' )
