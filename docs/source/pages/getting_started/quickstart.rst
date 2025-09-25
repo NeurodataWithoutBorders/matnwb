@@ -71,7 +71,7 @@ Step 3 — Write the File
 
 .. code-block:: matlab
 
-   nwbExport(nwb, 'quickstart_demo.nwb', 'owerwrite');
+   nwbExport(nwb, 'quickstart_demo.nwb', 'overwrite');
 
 This writes the NWB file to your current working directory.
 
