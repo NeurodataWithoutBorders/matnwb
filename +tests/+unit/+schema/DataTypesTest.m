@@ -13,7 +13,6 @@ classdef DataTypesTest < tests.unit.abstract.SchemaTest
 %     - inclusion:              SET               NOT SET
 %
 %   - Test correct validation of compound types
-%
 %   - Test correct validation of datasets and attributes in subgroups
 
     properties (Constant)
@@ -44,7 +43,7 @@ classdef DataTypesTest < tests.unit.abstract.SchemaTest
             testCase.verifyEqual(anyData.data, value)
         end
 
-        % The following tests test that dtype validation / correction is 
+        % The following tests test that dtype validation / correction is
         % handled correctly under the inheritance mechanism.
 
         function testValidationOfTextData(testCase, value)
@@ -156,6 +155,12 @@ classdef DataTypesTest < tests.unit.abstract.SchemaTest
         end
 
         function testValidationOfCompoundDataByInclusion(testCase)
+            % Test that dtype validation works when a datatype is reused via
+            % inclusion, and the dtype spec is redefined as a compound
+            % dtype.
+
+            % Test a valid compound value
+
             validCompoundStruct = struct(...
                 'integer', 1, ...
                 'float', 1, ...
@@ -169,20 +174,25 @@ classdef DataTypesTest < tests.unit.abstract.SchemaTest
             testCase.verifyEqual(includedCompound.data.float, double(1))
             testCase.verifyEqual(includedCompound.data.text, '1')
 
+            % Verify that a compound with wrong fieldnames trigger an error
             invalidCompoundStruct = struct(...
                 'a', 1, ...
                 'b', 1, ...
                 'c', '1');
             invalidCompoundData = types.dt.AnyData('data', invalidCompoundStruct);
-            incContainer = types.dt.InclusionContainer('included_data_must_be_compound', compoundData);
+            testCase.verifyError(...
+                @() types.dt.InclusionContainer('included_data_must_be_compound', invalidCompoundData), ...
+                'NWB:CheckDType:InvalidValue')
 
+            % Verify that a compound with wrong datatype trigger an error
             invalidCompoundStruct = struct(...
                 'integer', 1, ...
                 'float', 1, ...
-                'text', 1);
+                'text', 1); % Should be text/char
             invalidCompoundData = types.dt.AnyData('data', invalidCompoundStruct);
-            incContainer = types.dt.InclusionContainer('included_data_must_be_compound', compoundData);
-
+            testCase.verifyError(...
+                @() types.dt.InclusionContainer('included_data_must_be_compound', invalidCompoundData), ...
+                'NWB:CheckDataType:InvalidConversion')
         end
 
         % The following tests test validation of compound data types
@@ -259,7 +269,7 @@ classdef DataTypesTest < tests.unit.abstract.SchemaTest
                 'NWB:CheckDataType:InvalidConversion');
         end
         
-        % Test round trip
+        % Test round trip validation
         function testRoundtripValidation(testCase)
             % Test full roundtrip: create, export, read, validate
 

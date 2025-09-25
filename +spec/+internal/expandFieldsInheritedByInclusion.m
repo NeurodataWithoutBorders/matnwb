@@ -26,7 +26,7 @@ function lockKeysInheritedThroughInclusion(spec)
             spec('dtype') = 'any';
         end
         if ~isKey(spec, 'shape')
-            spec('shape') = nan; %#ok<NASGU>
+            spec('shape') = nan; %#ok<NASGU> spec is a handle object (containers.Map), so this assignment persists even if the variable is not returned.
         end
     end
 end

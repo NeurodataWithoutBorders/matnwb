@@ -5,7 +5,7 @@ function originalValue = rewrapValue(value, originalValue)
     elseif isa(originalValue, 'types.untyped.DatasetClass') && isprop(originalValue, 'data')
         originalValue.data = value;
     else
-        error('NWB:UnwrapValue:UnsupportedType', ...
+        error('NWB:RewrapValue:UnsupportedType', ...
             'Can not unwrap value of type %s. Please report', class(originalValue))
     end
 end
