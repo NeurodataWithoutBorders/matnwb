@@ -2,7 +2,7 @@
 - MatNWB is a MATLAB interface for reading and writing Neurodata Without Borders (NWB) 2.x files and targets MATLAB R2019b or newer; surface APIs include nwbRead for loading and nwbExport for writing NWB files.
 - This project is developed and maintained primarily in MATLAB. All scripts and functions with the .m extension are MATLAB code and are intended to be executed by the MATLAB interpreter.
 - All MATLAB code is located in namespaces (folders prefixed by +) or the root directory
-- MatNWB build nwb type classes from schemas using generateCore/generateExtension
+- MatNWB builds nwb type classes from schemas using generateCore/generateExtension
 - The main user-facing code is located in the +types namespace and the root directory
 
 ## Ignore
