@@ -116,11 +116,11 @@ classdef (Sealed) DataPipe < handle
             % Note: compression level is defaulted to ON. This is primarily 
             % for legacy support as we move into other filters.
 
-            DEFAULTS = struct();
-            DEFAULTS.axis = 1;
-            DEFAULTS.offset = 0;
-            DEFAULTS.compressionLevel = 3;
-            DEFAULTS.hasShuffle = false;
+            DEFAULT_OPTIONS = struct();
+            DEFAULT_OPTIONS.axis = 1;
+            DEFAULT_OPTIONS.offset = 0;
+            DEFAULT_OPTIONS.compressionLevel = 3;
+            DEFAULT_OPTIONS.hasShuffle = false;
             
             import types.untyped.datapipe.BoundPipe;
             import types.untyped.datapipe.BlueprintPipe;
@@ -140,8 +140,10 @@ classdef (Sealed) DataPipe < handle
             obj.assertDataOrMaxSizeWasProvided(options)
             obj.showWarningForRedundantFilterOptions(options)
 
-            % Add any default values to options if they were not provided
-            options = obj.updateOptionsWithDefaultsIfMissing(options, DEFAULTS);
+            % Add any default values to options if they were not provided.
+            % Important that this is done after the validation/check step as
+            % those steps need to inspect whether options were provided or not.
+            options = obj.updateOptionsWithDefaultsIfMissing(options, DEFAULT_OPTIONS);
 
             % Infer maxSize if not provided.
             if ~isfield(options, 'maxSize')
