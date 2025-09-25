@@ -19,6 +19,7 @@
 ## Documentation style
 - Documentation is built using sphinx
 - Documentation instructions are located in docs/README.md
+- Documentation should follow the Diátaxis framework (https://diataxis.fr)
 - Documentation source is located in docs/source/pages
 - Reference documentation is built automatically from MATLAB function docstrings
 - nwbRead provides an example docstring that renders well with rst/html
