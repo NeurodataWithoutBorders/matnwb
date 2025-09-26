@@ -64,17 +64,6 @@ The :class:`NwbFile` object provides specific properties for organizing differen
   Various ``general_*`` properties for experimenter, institution, lab, etc.
 
 
-Working with MATLAB Data Types
-------------------------------
-
-The :class:`NwbFile` object is designed to work naturally with MATLAB data types:
-
-- **Datetime handling**: Uses MATLAB's ``datetime`` class with timezone support
-- **String/char compatibility**: Accepts both ``char`` arrays and ``string`` objects  
-- **Numeric arrays**: Works with standard MATLAB matrices and arrays
-- **Cell arrays**: Can handle MATLAB cell arrays for text data
-
-MatNWB automatically converts these MATLAB types to appropriate NWB format during export.
 
 Validation and Error Handling
 -----------------------------
