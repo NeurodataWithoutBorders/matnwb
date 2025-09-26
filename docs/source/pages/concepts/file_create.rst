@@ -26,7 +26,7 @@ This approach ensures your data is properly organized and validated before it be
 
 **Schema Validation**
 
-The NWB schema acts as a blueprint that defines what makes a valid neuroscience data file. When you export your file, MatNWB checks that:
+The NWB schema acts as a blueprint that defines what makes a valid NWB data file. When you export your file, MatNWB checks that:
 
 - All required properties are present
 - Data types match what the schema expects  
