@@ -1,0 +1,6 @@
+namespaces:
+- full_name: Link Type Test Schema
+  name: link
+  schema:
+  - namespace: core
+  - source: link.links.yaml

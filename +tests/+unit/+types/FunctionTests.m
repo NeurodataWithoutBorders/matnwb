@@ -17,15 +17,15 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             val = [];
             
             % Should pass with no error
-            types.util.checkConstraint(pname, name, namedprops, constrained, val)
+            types.util.checkConstraint(pname, name, namedprops, constrained, val);
             
             val = 10;
-            types.util.checkConstraint(pname, name, namedprops, constrained, val)
+            types.util.checkConstraint(pname, name, namedprops, constrained, val);
 
             val = {10};
             testCase.verifyError(...
                 @(varargin) types.util.checkConstraint(pname, name, namedprops, constrained, val), ...
-                'NWB:TypeCorrection:InvalidConversion')
+                'NWB:CheckDataType:InvalidConversion')
 
             % Verify that checkConstraint fails if constrained is not a
             % char describing a type (test unexpected error)
@@ -33,7 +33,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             namedprops = struct.empty;
             testCase.verifyError(...
                 @(varargin) types.util.checkConstraint(pname, name, namedprops, constrained, val), ...
-                'MATLAB:string:MustBeStringScalarOrCharacterVector')
+                'NWB:CheckDataType:InvalidTypeDescriptor')
         end
 
         function testCheckDimsWithValidSize(testCase)
@@ -98,7 +98,6 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                             'data', rand(10,1) ...
             );
             
-                    
             [vectordata, ~] = types.util.parseConstrained(dynamicTable, ...
                 'vectordata', 'types.hdmf_common.VectorData', ...
                 'colB', columnB );

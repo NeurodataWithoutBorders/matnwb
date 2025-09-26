@@ -1,0 +1,31 @@
+groups:
+- neurodata_type_def: LinkContainer
+  neurodata_type_inc: NWBDataInterface
+  links:
+  - name: named_link
+    doc: a named link with target_type set to TypeA
+    quantity: '?'
+    target_type: TypeA
+  - target_type: TypeB
+    doc: an unnamed scalar link with target_type set to TypeB
+  - target_type: TypeC
+    doc: an unnamed non-scalar link with target_type set to TypeC
+    quantity: '*'
+
+- neurodata_type_def: TypeA
+  neurodata_type_inc: NWBDataInterface
+
+- neurodata_type_def: TypeB
+  neurodata_type_inc: NWBDataInterface
+
+- neurodata_type_def: TypeC
+  neurodata_type_inc: NWBDataInterface
+
+- neurodata_type_def: SubTypeA
+  neurodata_type_inc: TypeA
+
+- neurodata_type_def: SubTypeB
+  neurodata_type_inc: TypeB
+
+- neurodata_type_def: SubTypeC
+  neurodata_type_inc: TypeC

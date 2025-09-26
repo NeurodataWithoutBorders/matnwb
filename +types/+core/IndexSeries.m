@@ -103,28 +103,10 @@ methods
         end
     end
     function val = validate_indexed_images(obj, val)
-        if isa(val, 'types.untyped.SoftLink')
-            if isprop(val, 'target')
-                types.util.checkDtype('indexed_images', 'types.core.Images', val.target);
-            end
-        else
-            val = types.util.checkDtype('indexed_images', 'types.core.Images', val);
-            if ~isempty(val)
-                val = types.untyped.SoftLink(val);
-            end
-        end
+        val = types.util.validateSoftLink('indexed_images', val, 'types.core.Images');
     end
     function val = validate_indexed_timeseries(obj, val)
-        if isa(val, 'types.untyped.SoftLink')
-            if isprop(val, 'target')
-                types.util.checkDtype('indexed_timeseries', 'types.core.ImageSeries', val.target);
-            end
-        else
-            val = types.util.checkDtype('indexed_timeseries', 'types.core.ImageSeries', val);
-            if ~isempty(val)
-                val = types.untyped.SoftLink(val);
-            end
-        end
+        val = types.util.validateSoftLink('indexed_timeseries', val, 'types.core.ImageSeries');
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

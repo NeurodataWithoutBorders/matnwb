@@ -116,19 +116,10 @@ methods
         types.util.validateShape('metric', {[1]}, val)
     end
     function val = validate_source_channels(obj, val)
-        val = types.util.checkDtype('source_channels', 'types.hdmf_common.DynamicTableRegion', val);
+        types.util.checkType('source_channels', 'types.hdmf_common.DynamicTableRegion', val);
     end
     function val = validate_source_timeseries(obj, val)
-        if isa(val, 'types.untyped.SoftLink')
-            if isprop(val, 'target')
-                types.util.checkDtype('source_timeseries', 'types.core.TimeSeries', val.target);
-            end
-        else
-            val = types.util.checkDtype('source_timeseries', 'types.core.TimeSeries', val);
-            if ~isempty(val)
-                val = types.untyped.SoftLink(val);
-            end
-        end
+        val = types.util.validateSoftLink('source_timeseries', val, 'types.core.TimeSeries');
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

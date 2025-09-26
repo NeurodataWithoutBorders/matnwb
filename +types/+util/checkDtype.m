@@ -1,66 +1,133 @@
 function value = checkDtype(name, typeDescriptor, value)
-%ref
-%any, double, int/uint, char
-persistent WHITELIST;
-if isempty(WHITELIST)
-    WHITELIST = {...
-        'types.untyped.ExternalLink'...
-        'types.untyped.SoftLink'...
-        };
-end
-%% compound type processing
-if isstruct(typeDescriptor)
-    expectedFields = fieldnames(typeDescriptor);
-    assert(isstruct(value) || istable(value) || isa(value, 'containers.Map') ...
-        , 'NWB:CheckDType:InvalidValue' ...
-        , 'Compound Type must be a struct, table, or a containers.Map' ...
-        );
+% checkDtype - Validates and corrects the data type of a given value
+% 
+% Syntax:
+%   value = types.util.checkDtype(name, typeDescriptor, value) validates the
+%   data type of the input value based on the provided type descriptor. If the 
+%   value does not match the expected type, the function attempts to convert it 
+%   to the correct type.
+% 
+% Input Arguments:
+%   name - A string representing the name of the property being validated.
+%   typeDescriptor - A structure describing the expected type of the value.
+%   value - The value to be validated and potentially converted.
+% 
+% Output Arguments:
+%   value - The validated or corrected value, which may have been converted 
+%   to match the expected type.
 
-    % assert field names and order of fields is correct.
-    if isstruct(value)
-        valueFields = fieldnames(value);
-    else % table
-        valueFields = value.Properties.VariableNames;
+    arguments
+        name {mustBeTextScalar}
+        typeDescriptor {mustBeValidTypeDescriptor}
+        value
     end
-    assert(isempty(setdiff(expectedFields, valueFields)) ...
-        , 'NWB:CheckDType:InvalidValue' ...
-        , 'Compound type must only contain fields (%s)', strjoin(expectedFields, ', ') ...
-        );
-    for iField = 1:length(expectedFields)
-        assert(strcmp(expectedFields{iField}, valueFields{iField}) ...
-            , 'NWB:CheckDType:InvalidValue' ...
-            , 'Compound fields are out of order.\nExpected (%s) Got (%s)' ...
-            , strjoin(expectedFields, ', '), strjoin(valueFields, ', '));
-    end
+
+    if isstruct(typeDescriptor) % Compound type processing
+        value = checkDtypeForCompoundDataset(name, typeDescriptor, value);
     
-    if (isstruct(value) && isscalar(value)) || isa(value, 'containers.Map')
-        % check for correct array shape
-        fieldSizes = zeros(length(expectedFields),1);
-        for iField = 1:length(expectedFields)
-            if isstruct(value)
-                subValue = value.(expectedFields{iField});
-            else
-                subValue = value(expectedFields{iField});
-            end
-            assert(isvector(subValue),...
-                'NWB:CheckDType:InvalidShape',...
-                ['struct of arrays as a compound type ',...
-                'cannot have multidimensional data in their fields. ',...
-                'Field data shape must be scalar or vector to be valid.']);
-            fieldSizes(iField) = length(subValue);
+    elseif isa(value, 'types.untyped.SoftLink')
+        if ~isempty(value.target)
+            value = types.util.validateSoftLink(name, value, typeDescriptor);
+        else
+            % Softlinks cannot be validated at this level.
         end
-        fieldSizes = unique(fieldSizes);
-        assert(isscalar(fieldSizes),...
-            'NWB:CheckDType:InvalidShape',...
-            ['struct of arrays as a compound type ',...
-            'contains mismatched number of elements with unique sizes: [%s].  ',...
-            'Number of elements for each struct field must match to be valid.'], ...
-            num2str(fieldSizes));
+    
+    elseif isValueContainedInHDMFDatasetType(typeDescriptor, value) 
+        % If the value is itself a dataset class, we need to unpack and 
+        % validate its contained data property.
+        value.data = types.util.checkDtype(name, typeDescriptor, value.data);
+    
+    elseif isempty(value) % Handle empty values
+        % For certain types (numeric, logical, char), we replace [] with a typed 
+        % empty value.
+        if canWeCast(typeDescriptor)
+            if isNumericType(typeDescriptor)
+                value = types.util.correctType(value, typeDescriptor);
+            else
+                value = cast(value, typeDescriptor);
+            end
+        end
+    else
+        % Retrieve wrapped value for comparison with type descriptor (if wrapped)
+        valueWrapper = [];
+        if isWrapped(value, typeDescriptor)
+            valueWrapper = value;
+            value = unwrapValue(value);
+        end
+        
+        if matnwb.utility.isNeurodataType(typeDescriptor)
+            validateNeurodataType(name, value, typeDescriptor)
+            correctedValue = value;
+        else
+            try
+                correctedValue = types.util.correctType(value, typeDescriptor);
+            catch MECause
+                ME = MException('NWB:CheckDataType:InvalidConversion', ...
+                    ['Error setting property ''%s'' because value cannot be ', ...
+                    'converted to ''%s''.'], name, typeDescriptor);
+                ME = ME.addCause(MECause);
+                throw(ME);
+            end
+        end
+
+        wasTypeCorrected = ~strcmp(class(correctedValue), class(value));
+        if ~isempty(valueWrapper)
+            if wasTypeCorrected
+       
+                % Special case: converting text (char/string) into MATLAB datetime.
+                % HDF5 does not provide a native datetime type, so NWB stores times as
+                % strings or numbers. Converting these values into datetime is expected
+                % behavior and not an error. We therefore skip issuing a warning for this
+                % conversion, even though the MATLAB class changes.
+                skipWarning = isDatetimeConversion(correctedValue, value);
+                
+                if ~skipWarning
+                    warning('NWB:CheckDataType:NeedsManualConversion',...
+                        ['The value for property `%s` should be of type `%s`, ', ...
+                        'but was `%s`. Please provide the correct type.'], ...
+                        name, class(correctedValue), class(value));
+                end
+            end
+            % Return the original data type. The wrapped value might just
+            % be a sample and not the entire data set (i.e for DataStubs or
+            % Datapipes)
+            value = valueWrapper; % re-wrap value
+        else
+            value = correctedValue;
+        end
+    end
+end
+
+%% Local functions
+
+function mustBeValidTypeDescriptor(typeDescriptor)
+    isValid = isstruct(typeDescriptor) || ischar(typeDescriptor) || isstring(typeDescriptor);
+    assert( isValid, ...
+        'NWB:CheckDataType:InvalidTypeDescriptor', ...
+        'Type descriptor must be a struct, character vector or a string.');
+end
+
+function tf = isValueContainedInHDMFDatasetType(typeDescriptor, value)
+    tf = ~isempty(value) ...
+        && ~matnwb.utility.isNeurodataType(typeDescriptor) ...
+        && isa(value, 'types.untyped.DatasetClass') ...
+        && isprop(value, 'data');
+end
+
+function value = checkDtypeForCompoundDataset(name, typeDescriptor, value)
+
+    validateCompoundValue(value)
+
+    expectedFields = fieldnames(typeDescriptor);
+    validateCompoundFields(expectedFields, value)
+
+    if isScalarCompoundValue(value)
+        assertFieldDataSameLength(expectedFields, value)
     end
         
+    % Validate subfield types.
     parentName = name;
     for iField = 1:length(expectedFields)
-        % validate subfield types.
         name = expectedFields{iField};
         subName = [parentName '.' name];
         subType = typeDescriptor.(name);
@@ -85,100 +152,115 @@ if isstruct(typeDescriptor)
                 subName, subType, value(expectedFields{iField}));
         end
     end
-    return;
-end
 
-
-%% primitives
-
-if isa(value, 'types.untyped.SoftLink')
-    % Softlinks cannot be validated at this level.
-    return;
-end
-
-if isempty(value)
-    % MATLAB's "null" operator. Even if it's numeric, you can replace it with any class.
-    % we can replace empty values with their equivalents, however.
-    replaceableNullTypes = {...
-        'char' ...
-        , 'logical' ...
-        , 'single', 'double' ...
-        , 'int8', 'uint8' ...
-        , 'int16', 'uint16' ...
-        , 'int32', 'uint32' ...
-        , 'int64', 'uint64' ...
-        };
-    if ischar(typeDescriptor) && any(strcmp(typeDescriptor, replaceableNullTypes))
-        value = cast(value, typeDescriptor);
+    function validateCompoundValue(value)
+        assert(isstruct(value) || istable(value) || isa(value, 'containers.Map'), ...
+            'NWB:CheckDType:InvalidValue', ...
+            ['Value of compound type must be a struct, table, or a ', ...
+            'containers.Map but was a "%s"'], class(value) )
     end
-    return;
-end
 
-% retrieve comparable value
-valueWrapper = [];
-if isa(value, 'types.untyped.DataStub') ...
-    || isa(value, 'types.untyped.DataPipe') ...
-    || isa(value, 'types.untyped.Anon') ...
-    || (isa(value, 'types.untyped.ExternalLink') && ~strcmp(typeDescriptor, 'types.untyped.ExternalLink'))
-    valueWrapper = value;
-    value = unwrapValue(value);
-end
-
-if matnwb.utility.isNeurodataType(typeDescriptor)
-    errorId = 'NWB:CheckDType:InvalidNeurodataType';
-    errorMessage = sprintf(['Expected value for `%s` to be of ', ...
-        'type `%s`. Instead it was `%s`'], name, typeDescriptor, class(value));
-    assert(isa(value, typeDescriptor), errorId, errorMessage)
-    correctedValue = value;
-else
-    correctedValue = types.util.correctType(value, typeDescriptor);
-end
-% this specific conversion is fine as HDF5 doesn't have a representative
-% datetime type. Thus we suppress the warning for this case.
-isDatetimeConversion = isa(correctedValue, 'datetime')...
-    && (ischar(value) || isstring(value) || iscellstr(value));
-if ~isempty(valueWrapper) ...
-        && ~strcmp(class(correctedValue), class(value)) ...
-        && ~isDatetimeConversion
-    warning('NWB:CheckDataType:NeedsManualConversion',...
-            'Property `%s` is not of type `%s` and should be corrected by the user.', ...
-            name, class(correctedValue));
-else
-    value = correctedValue;
-end
-
-% re-wrap value
-if ~isempty(valueWrapper)
-    value = valueWrapper;
-end
-end
-
-function unwrapped = unwrapValue(wrapped, history)
-    if nargin < 2
-        history = {};
-    end
-    for iHistory = 1:length(history)
-        assert(wrapped ~= history{iHistory}, ...
-            'NWB:CheckDataType:InfiniteLoop' ...
-            , ['Infinite loop of a previously defined wrapped value detected. ' ...
-            'Please ensure infinite loops do not occur with reference types like Links.']);
-    end
-    if isa(wrapped, 'types.untyped.DataStub')
-        %grab first element and check
-        if any(wrapped.dims == 0)
-            unwrapped = [];
-        else
-            unwrapped = wrapped.load(1);
+    function validateCompoundFields(expectedFields, value)
+        % Assert field names and order of fields are correct.
+        if isstruct(value)
+            valueFields = fieldnames(value);
+        elseif isa(value, 'table') % table
+            valueFields = value.Properties.VariableNames;
+        else % Containers.Map
+            valueFields = value.keys();
         end
-    elseif isa(wrapped, 'types.untyped.DataPipe')
-        unwrapped = cast([], wrapped.dataType);
-    elseif isa(wrapped, 'types.untyped.Anon')
-        history{end+1} = wrapped;
-        unwrapped = unwrapValue(wrapped.value, history);
-    elseif isa(wrapped, 'types.untyped.ExternalLink')
-        history{end+1} = wrapped;
-        unwrapped = unwrapValue(wrapped.deref(), history);
-    else
-        unwrapped = wrapped;
+
+        % Ensure the same fields are given as are defined in the
+        % typedescriptor
+        isValid = isempty(setdiff(expectedFields, valueFields)) ...
+            && isempty(setdiff(valueFields, expectedFields)); 
+
+        assert(isValid, ...
+            'NWB:CheckDType:InvalidValue', ...
+            'Compound type must only contain fields (%s)', strjoin(expectedFields, ', ') ...
+            );
+        
+        if ~isa(value, 'containers.Map') % Map keys are unordered.
+            for i = 1:length(expectedFields)
+                assert(strcmp(expectedFields{i}, valueFields{i}), ...
+                    'NWB:CheckDType:InvalidValue', ...
+                    'Compound fields are out of order.\nExpected (%s) Got (%s)', ...
+                    strjoin(expectedFields, ', '), strjoin(valueFields, ', '));
+            end
+        end
     end
+
+    function tf = isScalarCompoundValue(value)
+        tf = (isstruct(value) && isscalar(value)) || ...
+            isa(value, 'containers.Map');
+    end
+
+    function assertFieldDataSameLength(expectedFields, value)
+        % check for correct array shape
+        fieldLengths = zeros(length(expectedFields), 1);
+        for i = 1:length(expectedFields)
+            if isstruct(value)
+                subValue = value.(expectedFields{i});
+            else
+                subValue = value(expectedFields{i});
+            end
+            assert(isvector(subValue),...
+                'NWB:CheckDType:InvalidShape',...
+                ['struct of arrays as a compound type ',...
+                'cannot have multidimensional data in their fields. ',...
+                'Field data shape must be scalar or vector to be valid.']);
+            if ischar(subValue)
+                % Use size(subValue, 1) for character arrays to count rows 
+                % (strings) correctly, since length() would return the total 
+                % number of characters rather than the number of rows.
+                fieldLengths(i) = size(subValue, 1);
+            else
+                fieldLengths(i) = length(subValue);
+            end
+        end
+        uniqueFieldLengths = unique(fieldLengths);
+        assert(isscalar(uniqueFieldLengths),...
+            'NWB:CheckDType:InvalidShape',...
+            ['struct of arrays as a compound type ',...
+            'contains mismatched number of elements with unique sizes: [%s].  ',...
+            'Number of elements for each struct field must match to be valid.'], ...
+            num2str(uniqueFieldLengths));
+    end
+end
+
+function tf = canWeCast(typeDescriptor)
+    replaceableNullTypes = getReplaceableNullTypes();
+    tf = ischar(typeDescriptor) && ...
+        any(strcmp(typeDescriptor, replaceableNullTypes));
+end
+
+function tf = isNumericType(typeDescriptor)
+    tf = any(strcmp(typeDescriptor, getNumericTypes()));
+end
+
+function replaceableNullTypes = getReplaceableNullTypes()
+    replaceableNullTypes = [{'char', 'logical'}, getNumericTypes()];
+end
+
+function numericTypes = getNumericTypes()
+    numericTypes = { ...
+        'single', 'double', ...
+        'int8', 'uint8', ...
+        'int16', 'uint16', ...
+        'int32', 'uint32', ...
+        'int64', 'uint64'};
+end
+
+function validateNeurodataType(name, value, typeDescriptor)
+    isValid = isa(value, typeDescriptor);
+
+    assert( isValid, ...
+        'NWB:CheckDType:InvalidNeurodataType', ...
+        ['Expected value for `%s` to be of type `%s`. ', ...
+         'Instead it was `%s`'], name, typeDescriptor, class(value))
+end
+
+function tf = isDatetimeConversion(correctedValue, value)
+    tf = isa(correctedValue, 'datetime') ...
+        && (ischar(value) || isstring(value) || iscellstr(value));
 end

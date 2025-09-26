@@ -95,16 +95,7 @@ methods
         types.util.validateShape('manufacturer', {[1]}, val)
     end
     function val = validate_model(obj, val)
-        if isa(val, 'types.untyped.SoftLink')
-            if isprop(val, 'target')
-                types.util.checkDtype('model', 'types.core.DeviceModel', val.target);
-            end
-        else
-            val = types.util.checkDtype('model', 'types.core.DeviceModel', val);
-            if ~isempty(val)
-                val = types.untyped.SoftLink(val);
-            end
-        end
+        val = types.util.validateSoftLink('model', val, 'types.core.DeviceModel');
     end
     function val = validate_model_name(obj, val)
         val = types.util.checkDtype('model_name', 'char', val);

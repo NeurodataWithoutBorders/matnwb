@@ -1,30 +1,36 @@
 classdef SoftLink < handle
     
-    properties (Hidden, SetAccess = private)
+    properties (SetAccess = private)
         target = [];
     end
     
-    properties (SetAccess = private)
+    properties (Hidden, SetAccess = private)
         path = '';
+        target_type = ''
     end
     
     methods
-        function obj = SoftLink(target)
-            %SOFTLINK HDF5 soft link.
-            % obj = SOFTLINK(path) make soft link given a HDF5 full path.
-            % path = HDF5-friendly path e.g. '/acquisition/es1'
-            % obj = SOFTLINK(target) make soft link from pre-existant
-            % object.
-            % target = pre-generated NWB object.
+        function obj = SoftLink(target, target_type)
+        % SOFTLINK - Create a SoftLink utility object.
+        %
+        % obj = types.untyped.SOFTLINK(target) creates a SoftLink using an 
+        % existing NWB object as a target.
             
             if ischar(target) || isstring(target)
-                validateattributes(target, {'char', 'string'}, {'scalartext'} ...
-                    , 'types.untyped.SoftLink', 'target string', 1);
+                validateattributes(target, {'char', 'string'}, {'scalartext'}, ...
+                    'types.untyped.SoftLink', 'target string', 1);
                 obj.path = char(target);
+                warning('NWB:SoftLink:DeprecatedPath', ...
+                    ['Creating a SoftLink using a string path is deprecated.\n' ...
+                     'Please provide a valid NWB object as the target instead.']);
             else
-                validateattributes(target, {'types.untyped.MetaClass'}, {'scalar'} ...
-                    , 'types.untyped.SoftLink', 'target object', 2);
+                validateattributes(target, {'types.untyped.MetaClass'}, {'scalar'}, ...
+                    'types.untyped.SoftLink', 'target object', 2);
                 obj.target = target;
+            end
+
+            if nargin >= 2 && ~isempty(target_type)
+                obj.target_type = target_type;
             end
         end
         
@@ -52,9 +58,22 @@ classdef SoftLink < handle
                 'Argument `nwb` must be a valid `NwbFile`');
             
             refobj = nwb.resolve({obj.path});
+            obj.target = refobj;
+            if ~nargout
+                clear refobj
+            end
         end
         
         function refs = export(obj, fid, fullpath, refs)
+            if nargin < 4; refs = {}; end
+            for i = 1:numel(obj)
+                refs = obj(i).exportScalar(fid, fullpath, refs); %#ok<AGROW>
+            end
+        end
+    end
+
+    methods (Access = private)
+        function refs = exportScalar(obj, fid, fullpath, refs)
             if isempty(obj.path)
                 refs{end+1} = fullpath;
                 return;
@@ -80,6 +99,13 @@ classdef SoftLink < handle
                     rethrow(ME);
                 end
             end
+        end
+    end
+
+    methods (Static)
+        function warningResetObj = disablePathDeprecationWarning()
+            warnState = warning('off', 'NWB:SoftLink:DeprecatedPath');
+            warningResetObj = onCleanup(@() warning(warnState));
         end
     end
 end

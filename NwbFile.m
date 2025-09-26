@@ -57,7 +57,7 @@ classdef NwbFile < types.core.NWBFile
 
             obj.addWasGeneratedBy()
 
-            %equate reference time to session_start_time if empty
+            % equate reference time to session_start_time if empty
             if isempty(obj.timestamps_reference_time)
                 obj.timestamps_reference_time = obj.session_start_time;
             end
@@ -119,6 +119,69 @@ classdef NwbFile < types.core.NWBFile
                 typename,...
                 varargin{:});
         end
+        
+        function nwbObjects = getTypeObjects(obj, typeName, options)
+        % GETTYPEOBJECTS - Retrieve NWB objects of a specified type.
+        % 
+        % Syntax:
+        %   nwbObjects = GETTYPEOBJECTS(obj, typeName) Retrieves NWB 
+        %   objects of the specified type from the NwbFile object.
+        % 
+        %   nwbObjects = GETTYPEOBJECTS(obj, typeName, Name, Value) Retrieves NWB 
+        %   objects of the specified type from the NwbFile object using provided
+        %   name-value pairs controlling options.
+        %
+        % Input Arguments:
+        %  - obj (NwbFile) - 
+        %    The NwbFile object from which to retrieve NWB objects.
+        %   
+        %  - typeName (1,1) string - 
+        %    The name of the type to search for. Can include namespace, but 
+        %    does not have to, i.e types.core.TimeSeries and TimeSeries are
+        %    supported.
+        %   
+        %  - options (name-value pairs) -
+        %    Optional name-value pairs. Available options:
+        %       
+        %    - IncludeSubTypes logical - 
+        %      Optional: set to true to include subclasses in the search. 
+        %      Default is false.
+        % 
+        % Output Arguments:
+        %   - nwbObjects (cell) -  
+        %     A cell array of NWB objects of the specified type.
+        %
+        % Usage:
+        %  Example 1 - Get all ElectricalSeries objects from NwbFile::
+        %
+        %    evalc('run("ecephys.mlx")');
+        %    nwb.getTypeObjects('ElectricalSeries')
+        %
+        %  Example 2 - Get all ElectricalSeries and subtype objects from NwbFile::
+        %
+        %    evalc('run("ecephys.mlx")')
+        %    nwb.getTypeObjects('ElectricalSeries', 'IncludeSubTypes', true)
+        
+            arguments
+                obj
+                typeName (1,1) string
+                options.IncludeSubTypes (1,1) logical = false
+            end
+            flags = {};
+            if options.IncludeSubTypes
+                flags{end+1} = 'includeSubClasses';
+            end
+
+            objectMap = searchProperties(...
+                containers.Map,...
+                obj,...
+                '',...
+                char(typeName),...
+                flags{:}, 'exactTypeMatch');
+        
+            % Filter to return exact types.
+            nwbObjects = objectMap.values;
+        end
 
         function nwbTypeNames = listNwbTypes(obj, options)
         % listNwbTypes - List all unique NWB (neurodata) types in file
@@ -176,6 +239,19 @@ classdef NwbFile < types.core.NWBFile
                 end
             end
             result = cat(1, result{:});
+        end
+    end
+
+    methods (Hidden)
+        function resolveSoftLinks(obj)
+            % Note: Will not find/resolve soft links that are nested within dynamic tables
+            softLinkMap = obj.searchFor('types.untyped.SoftLink');
+            softLinks = softLinkMap.values;
+            for i = 1:numel(softLinks)
+                for j = 1:numel(softLinks{i}) % each SoftLink can be a list
+                    softLinks{i}(j).deref(obj);
+                end
+            end
         end
     end
 
@@ -266,23 +342,7 @@ classdef NwbFile < types.core.NWBFile
     end
 end
 
-function tf = metaHasType(mc, typeSuffix)
-    assert(isa(mc, 'meta.class'));
-    tf = false;
-    if contains(mc.Name, typeSuffix, 'IgnoreCase', true)
-        tf = true;
-        return;
-    end
-
-    for i = 1:length(mc.SuperclassList)
-        sc = mc.SuperclassList(i);
-        if metaHasType(sc, typeSuffix)
-            tf = true;
-            return;
-        end
-    end
-end
-
+% Local functions
 function pathToObjectMap = searchProperties(...
         pathToObjectMap,...
         obj,...
@@ -293,6 +353,7 @@ function pathToObjectMap = searchProperties(...
         'NWB:NwbFile:SearchProperties:InvalidVariableArguments',...
         'Optional keywords for searchFor must be char arrays.');
     shouldSearchSuperClasses = any(strcmpi(varargin, 'includeSubClasses'));
+    exactTypeMatch = any(strcmpi(varargin, 'exactTypeMatch'));
 
     if isa(obj, 'types.untyped.MetaClass')
         propertyNames = properties(obj);
@@ -308,9 +369,9 @@ function pathToObjectMap = searchProperties(...
             'Invalid object type passed %s', class(obj));
     end
 
-    searchTypename = @(obj, typename) contains(class(obj), typename, 'IgnoreCase', true);
+    searchTypename = @(obj, typename) isMatchedType(class(obj), typename, 'ExactMatch', exactTypeMatch);
     if shouldSearchSuperClasses
-        searchTypename = @(obj, typename) metaHasType(metaclass(obj), typename);
+        searchTypename = @(obj, typename) metaHasType(metaclass(obj), typename, 'ExactMatch', exactTypeMatch);
     end
 
     for i = 1:length(propertyNames)
@@ -331,6 +392,56 @@ function pathToObjectMap = searchProperties(...
             end
             searchProperties(pathToObjectMap, propValue, fullPath, typename, varargin{:});
         end
+    end
+end
+
+function tf = metaHasType(mc, typeSuffix, options)
+    arguments
+        mc meta.class
+        typeSuffix (1,1) string
+        options.ExactMatch (1,1) logical = false
+    end
+
+    tf = false;
+    if isMatchedType(mc.Name, typeSuffix, 'ExactMatch', options.ExactMatch)
+        tf = true;
+        return;
+    end
+
+    for i = 1:length(mc.SuperclassList)
+        sc = mc.SuperclassList(i);
+        if metaHasType(sc, typeSuffix, 'ExactMatch', options.ExactMatch)
+            tf = true;
+            return;
+        end
+    end
+end
+
+function tf = isMatchedType(typeNameA, typeNameB, options)
+    arguments
+        typeNameA (1,1) string
+        typeNameB (1,1) string
+        options.ExactMatch (1,1) logical = false
+    end
+
+    if options.ExactMatch
+        if contains(typeNameB, '.')
+            % If namespace is provided, need to match on namespace and type.
+            tf = strcmpi(typeNameA, typeNameB);
+        else        
+            tf = strcmpi(...
+            extractTypeNameWithoutNamespace(typeNameA), ...
+            extractTypeNameWithoutNamespace(typeNameB));
+        end
+    else
+        tf = contains(typeNameA, typeNameB, 'IgnoreCase', true);
+    end
+end
+
+function typeName = extractTypeNameWithoutNamespace(typeName)
+    if contains(typeName, '.')
+        splitName = split(typeName, '.');
+        typeName = splitName{end};
     end
 end
 

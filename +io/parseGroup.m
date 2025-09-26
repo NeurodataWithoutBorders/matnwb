@@ -43,10 +43,26 @@ end
 linkProperties = containers.Map;
 for i=1:length(info.Links)
     link = info.Links(i);
+    fullPath = [info.Name '/' link.Name];
+    assert( io.internal.h5.isValidLinkType(link.Type), ...
+        'NWB:ParseGroup:UnsupportedLinkType', ...
+        ['An unsupported link type ("%s") is present at the location: %s. ', ...
+        'Please report!'], link.Type, fullPath)
     switch link.Type
-        case 'soft link'
-            lnk = types.untyped.SoftLink(link.Value{1});
-        otherwise %todo assuming external link here
+        case {'soft link', 'hard link'}
+            S = h5info(filename, link.Value{1});
+            % Suggested improvement: Use info structure if Link is located in the group (or
+            % subgroup) which is currently being parsed.
+            if ismember('neurodata_type', {S.Attributes.Name})
+                namespace = h5readatt(filename, link.Value{1}, 'namespace');
+                neurodataType = h5readatt(filename, link.Value{1}, 'neurodata_type');
+                fullTargetTypeName = matnwb.common.composeFullClassName(namespace, neurodataType);
+            else
+                fullTargetTypeName = '';
+            end
+
+            lnk = types.untyped.SoftLink(link.Value{1}, fullTargetTypeName);
+        case 'external link'
             lnk = types.untyped.ExternalLink(link.Value{:});
     end
     linkProperties(link.Name) = lnk;

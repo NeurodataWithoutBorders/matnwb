@@ -24,7 +24,7 @@ methods
         %  externalImage = types.core.EXTERNALIMAGE(Name, Value) creates a ExternalImage object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
-        %  - data (char) - No description
+        %  - data (char) - Data property for dataset class (ExternalImage)
         %
         %  - description (char) - Description of the image.
         %
@@ -63,6 +63,7 @@ methods
     
     function val = validate_data(obj, val)
         val = types.util.checkDtype('data', 'char', val);
+        types.util.validateShape('data', {[1]}, val)
     end
     function val = validate_image_format(obj, val)
         val = types.util.checkDtype('image_format', 'char', val);
