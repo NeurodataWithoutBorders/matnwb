@@ -5,7 +5,10 @@ function validateShape(propertyName, validShapes, value)
 
     enforceScalarShape = false;
 
-    if isa(value, 'types.untyped.DataStub')
+    if isa(value, 'types.untyped.DatasetClass')
+        types.util.validateShape(propertyName, validShapes, value.data)
+        return
+    elseif isa(value, 'types.untyped.DataStub')
         if value.ndims == 1
             valueShape = [value.dims 1];
         else

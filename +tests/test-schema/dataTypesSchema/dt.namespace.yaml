@@ -1,0 +1,7 @@
+namespaces:
+- full_name: Data Types
+  name: dt
+  schema:
+  - namespace: core
+  - source: dt.datatypes.yaml
+  version: 1.0.0

@@ -87,22 +87,113 @@ methods
     %% VALIDATORS
     
     function val = validate_entities(obj, val)
-        val = types.util.checkDtype('entities', 'types.hdmf_common.Data', val);
+        types.util.checkType('entities', 'types.hdmf_common.Data', val);
+        if ~isempty(val)
+            [val, originalVal] = types.util.unwrapValue(val);
+            if isempty(val) || isa(val, 'types.untyped.DataStub')
+                return;
+            end
+            if ~istable(val) && ~isstruct(val) && ~isa(val, 'containers.Map')
+                error('NWB:Type:InvalidPropertyType', 'Property `entities` must be a table, struct, or containers.Map.');
+            end
+            vprops = struct();
+            vprops.entity_id = 'char';
+            vprops.entity_uri = 'char';
+            val = types.util.checkDtype('entities', vprops, val);
+            types.util.validateShape('entities', {[Inf]}, val)
+            val = types.util.rewrapValue(val, originalVal);
+        end
     end
     function val = validate_entity_keys(obj, val)
-        val = types.util.checkDtype('entity_keys', 'types.hdmf_common.Data', val);
+        types.util.checkType('entity_keys', 'types.hdmf_common.Data', val);
+        if ~isempty(val)
+            [val, originalVal] = types.util.unwrapValue(val);
+            if isempty(val) || isa(val, 'types.untyped.DataStub')
+                return;
+            end
+            if ~istable(val) && ~isstruct(val) && ~isa(val, 'containers.Map')
+                error('NWB:Type:InvalidPropertyType', 'Property `entity_keys` must be a table, struct, or containers.Map.');
+            end
+            vprops = struct();
+            vprops.entities_idx = 'uint';
+            vprops.keys_idx = 'uint';
+            val = types.util.checkDtype('entity_keys', vprops, val);
+            types.util.validateShape('entity_keys', {[Inf]}, val)
+            val = types.util.rewrapValue(val, originalVal);
+        end
     end
     function val = validate_files(obj, val)
-        val = types.util.checkDtype('files', 'types.hdmf_common.Data', val);
+        types.util.checkType('files', 'types.hdmf_common.Data', val);
+        if ~isempty(val)
+            [val, originalVal] = types.util.unwrapValue(val);
+            if isempty(val) || isa(val, 'types.untyped.DataStub')
+                return;
+            end
+            if ~istable(val) && ~isstruct(val) && ~isa(val, 'containers.Map')
+                error('NWB:Type:InvalidPropertyType', 'Property `files` must be a table, struct, or containers.Map.');
+            end
+            vprops = struct();
+            vprops.file_object_id = 'char';
+            val = types.util.checkDtype('files', vprops, val);
+            types.util.validateShape('files', {[Inf]}, val)
+            val = types.util.rewrapValue(val, originalVal);
+        end
     end
     function val = validate_keys(obj, val)
-        val = types.util.checkDtype('keys', 'types.hdmf_common.Data', val);
+        types.util.checkType('keys', 'types.hdmf_common.Data', val);
+        if ~isempty(val)
+            [val, originalVal] = types.util.unwrapValue(val);
+            if isempty(val) || isa(val, 'types.untyped.DataStub')
+                return;
+            end
+            if ~istable(val) && ~isstruct(val) && ~isa(val, 'containers.Map')
+                error('NWB:Type:InvalidPropertyType', 'Property `keys` must be a table, struct, or containers.Map.');
+            end
+            vprops = struct();
+            vprops.key = 'char';
+            val = types.util.checkDtype('keys', vprops, val);
+            types.util.validateShape('keys', {[Inf]}, val)
+            val = types.util.rewrapValue(val, originalVal);
+        end
     end
     function val = validate_object_keys(obj, val)
-        val = types.util.checkDtype('object_keys', 'types.hdmf_common.Data', val);
+        types.util.checkType('object_keys', 'types.hdmf_common.Data', val);
+        if ~isempty(val)
+            [val, originalVal] = types.util.unwrapValue(val);
+            if isempty(val) || isa(val, 'types.untyped.DataStub')
+                return;
+            end
+            if ~istable(val) && ~isstruct(val) && ~isa(val, 'containers.Map')
+                error('NWB:Type:InvalidPropertyType', 'Property `object_keys` must be a table, struct, or containers.Map.');
+            end
+            vprops = struct();
+            vprops.objects_idx = 'uint';
+            vprops.keys_idx = 'uint';
+            val = types.util.checkDtype('object_keys', vprops, val);
+            types.util.validateShape('object_keys', {[Inf]}, val)
+            val = types.util.rewrapValue(val, originalVal);
+        end
     end
     function val = validate_objects(obj, val)
-        val = types.util.checkDtype('objects', 'types.hdmf_common.Data', val);
+        types.util.checkType('objects', 'types.hdmf_common.Data', val);
+        if ~isempty(val)
+            [val, originalVal] = types.util.unwrapValue(val);
+            if isempty(val) || isa(val, 'types.untyped.DataStub')
+                return;
+            end
+            if ~istable(val) && ~isstruct(val) && ~isa(val, 'containers.Map')
+                error('NWB:Type:InvalidPropertyType', 'Property `objects` must be a table, struct, or containers.Map.');
+            end
+            vprops = struct();
+            vprops.files_idx = 'uint';
+            vprops.object_id = 'char';
+            vprops.object_type = 'char';
+            vprops.relative_path = 'char';
+            vprops.field = 'char';
+            val = types.util.checkDtype('objects', vprops, val);
+            types.util.validateShape('objects', {[Inf]}, val)
+            val = types.util.rewrapValue(val, originalVal);
+        end
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

@@ -1,5 +1,5 @@
 classdef Device < types.core.NWBContainer & types.untyped.GroupClass
-% DEVICE - Metadata about a data acquisition device, e.g., recording system, electrode, microscope.
+% DEVICE - Metadata about a specific instance of a data acquisition device, e.g., recording system, electrode, microscope. Link to a DeviceModel.model to represent information about the model of the device.
 %
 % Required Properties:
 %  None
@@ -8,9 +8,10 @@ classdef Device < types.core.NWBContainer & types.untyped.GroupClass
 % OPTIONAL PROPERTIES
 properties
     description; %  (char) Description of the device as free-form text. If there is any software/firmware associated with the device, the names and versions of those can be added to NWBFile.was_generated_by.
-    manufacturer; %  (char) The name of the manufacturer of the device, e.g., Imec, Plexon, Thorlabs.
-    model_name; %  (char) The model name of the device, e.g., Neuropixels 1.0, V-Probe, Bergamo III.
-    model_number; %  (char) The model number (or part/product number) of the device, e.g., PRB_1_4_0480_1, PLX-VP-32-15SE(75)-(260-80)(460-10)-300-(1)CON/32m-V, BERGAMO.
+    manufacturer; %  (char) DEPRECATED. The name of the manufacturer of the device, e.g., Imec, Plexon, Thorlabs. Instead of using this field, store the value in DeviceModel.manufacturer and link to that DeviceModel from this Device.
+    model; %  DeviceModel
+    model_name; %  (char) DEPRECATED. The model name of the device, e.g., Neuropixels 1.0, V-Probe, Bergamo III. Instead of using this field, create and add a new DeviceModel named the model name and link to that DeviceModel from this Device.
+    model_number; %  (char) DEPRECATED. The model number (or part/product number) of the device, e.g., PRB_1_4_0480_1, PLX-VP-32-15SE(75)-(260-80)(460-10)-300-(1)CON/32m-V, BERGAMO. Instead of using this field, store the value in DeviceModel.model_number and link to that DeviceModel from this Device.
     serial_number; %  (char) The serial number of the device.
 end
 
@@ -26,11 +27,13 @@ methods
         % Input Arguments (Name-Value Arguments):
         %  - description (char) - Description of the device as free-form text. If there is any software/firmware associated with the device, the names and versions of those can be added to NWBFile.was_generated_by.
         %
-        %  - manufacturer (char) - The name of the manufacturer of the device, e.g., Imec, Plexon, Thorlabs.
+        %  - manufacturer (char) - DEPRECATED. The name of the manufacturer of the device, e.g., Imec, Plexon, Thorlabs. Instead of using this field, store the value in DeviceModel.manufacturer and link to that DeviceModel from this Device.
         %
-        %  - model_name (char) - The model name of the device, e.g., Neuropixels 1.0, V-Probe, Bergamo III.
+        %  - model (DeviceModel) - The model of the device.
         %
-        %  - model_number (char) - The model number (or part/product number) of the device, e.g., PRB_1_4_0480_1, PLX-VP-32-15SE(75)-(260-80)(460-10)-300-(1)CON/32m-V, BERGAMO.
+        %  - model_name (char) - DEPRECATED. The model name of the device, e.g., Neuropixels 1.0, V-Probe, Bergamo III. Instead of using this field, create and add a new DeviceModel named the model name and link to that DeviceModel from this Device.
+        %
+        %  - model_number (char) - DEPRECATED. The model number (or part/product number) of the device, e.g., PRB_1_4_0480_1, PLX-VP-32-15SE(75)-(260-80)(460-10)-300-(1)CON/32m-V, BERGAMO. Instead of using this field, store the value in DeviceModel.model_number and link to that DeviceModel from this Device.
         %
         %  - serial_number (char) - The serial number of the device.
         %
@@ -46,12 +49,14 @@ methods
         p.StructExpand = false;
         addParameter(p, 'description',[]);
         addParameter(p, 'manufacturer',[]);
+        addParameter(p, 'model',[]);
         addParameter(p, 'model_name',[]);
         addParameter(p, 'model_number',[]);
         addParameter(p, 'serial_number',[]);
         misc.parseSkipInvalidName(p, varargin);
         obj.description = p.Results.description;
         obj.manufacturer = p.Results.manufacturer;
+        obj.model = p.Results.model;
         obj.model_name = p.Results.model_name;
         obj.model_number = p.Results.model_number;
         obj.serial_number = p.Results.serial_number;
@@ -66,6 +71,9 @@ methods
     end
     function set.manufacturer(obj, val)
         obj.manufacturer = obj.validate_manufacturer(val);
+    end
+    function set.model(obj, val)
+        obj.model = obj.validate_model(val);
     end
     function set.model_name(obj, val)
         obj.model_name = obj.validate_model_name(val);
@@ -85,6 +93,9 @@ methods
     function val = validate_manufacturer(obj, val)
         val = types.util.checkDtype('manufacturer', 'char', val);
         types.util.validateShape('manufacturer', {[1]}, val)
+    end
+    function val = validate_model(obj, val)
+        val = types.util.validateSoftLink('model', val, 'types.core.DeviceModel');
     end
     function val = validate_model_name(obj, val)
         val = types.util.checkDtype('model_name', 'char', val);
@@ -109,6 +120,9 @@ methods
         end
         if ~isempty(obj.manufacturer)
             io.writeAttribute(fid, [fullpath '/manufacturer'], obj.manufacturer);
+        end
+        if ~isempty(obj.model)
+            refs = obj.model.export(fid, [fullpath '/model'], refs);
         end
         if ~isempty(obj.model_name)
             io.writeAttribute(fid, [fullpath '/model_name'], obj.model_name);

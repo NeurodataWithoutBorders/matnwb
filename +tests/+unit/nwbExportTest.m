@@ -183,7 +183,7 @@ classdef nwbExportTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(sort(embeddedNamespaces), {'core', 'hdmf-common'})
 
             % Add type for extension.
-            testDevice = types.ndx_photostim.Laser('model', 'Spectra-Physics');
+            testDevice = types.ndx_photostim.Laser('description', 'Spectra-Physics');
             nwb.general_devices.set('TestDevice', testDevice);
             
             nwbExport(nwb, nwbFilePath);
@@ -234,7 +234,7 @@ classdef nwbExportTest < tests.abstract.NwbTestCase
             nwb.acquisition.set('test', ts);
             
             % Add type from ndx-photostim extension.
-            testDevice = types.ndx_photostim.Laser('model', 'Spectra-Physics');
+            testDevice = types.ndx_photostim.Laser('description', 'Spectra-Physics');
             nwb.general_devices.set('TestDevice', testDevice);
 
             % Simulate the rare case where a user might delete the cached

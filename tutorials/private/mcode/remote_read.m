@@ -19,12 +19,18 @@
 % * In your MATLAB session, take the end of that url (the blob id) and add it 
 % to this expression: |s3 = 's3://dandiarchive/blobs/<blob_id>'|. In this case, 
 % you would have:
+% * Use |setenv| to specify AWS region. The DandiArchive datasets are located 
+% on |us-east-2|
 
-s3 = 's3://dandiarchive/blobs/7ee/415/7ee41580-9b0b-44ca-8675-6959ddd8dc33';
+% Example S3 path for a 380KiB file from dandiset 001199:
+s3 = "s3://dandiarchive/blobs/3fb/2c8/3fb2c8b9-26db-47c0-86c2-9594678a8263";
+
+% Set AWS region (NB: Changes environment variable)
+setenv('AWS_DEFAULT_REGION', 'us-east-2') 
 %% 
 % * Read from that s3 path directly with:
 
-nwbfile = nwbRead(s3);
+nwbfile = nwbRead(s3) % this may take a minute
 %% 
 % That's it! MATLAB will automatically detect that this is an S3 path instead 
 % of a local filepath and will set up a remote read interface for that NWB file. 

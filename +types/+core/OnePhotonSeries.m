@@ -142,16 +142,7 @@ methods
         types.util.validateShape('exposure_time', {[1]}, val)
     end
     function val = validate_imaging_plane(obj, val)
-        if isa(val, 'types.untyped.SoftLink')
-            if isprop(val, 'target')
-                types.util.checkDtype('imaging_plane', 'types.core.ImagingPlane', val.target);
-            end
-        else
-            val = types.util.checkDtype('imaging_plane', 'types.core.ImagingPlane', val);
-            if ~isempty(val)
-                val = types.untyped.SoftLink(val);
-            end
-        end
+        val = types.util.validateSoftLink('imaging_plane', val, 'types.core.ImagingPlane');
     end
     function val = validate_intensity(obj, val)
         val = types.util.checkDtype('intensity', 'single', val);

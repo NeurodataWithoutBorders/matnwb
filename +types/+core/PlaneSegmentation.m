@@ -1,5 +1,5 @@
 classdef PlaneSegmentation < types.hdmf_common.DynamicTable & types.untyped.GroupClass
-% PLANESEGMENTATION - Results from image segmentation of a specific imaging plane.
+% PLANESEGMENTATION - Results from image segmentation of a specific imaging plane. At least one of `image_mask`, `pixel_mask`, or `voxel_mask` is required.
 %
 % Required Properties:
 %  colnames, description, id, imaging_plane
@@ -11,11 +11,11 @@ properties
 end
 % OPTIONAL PROPERTIES
 properties
-    image_mask; %  (VectorData) ROI masks for each ROI. Each image mask is the size of the original imaging plane (or volume) and members of the ROI are finite non-zero.
-    pixel_mask; %  (VectorData) Pixel masks for each ROI: a list of indices and weights for the ROI. Pixel masks are concatenated and parsing of this dataset is maintained by the PlaneSegmentation
+    image_mask; %  (VectorData) ROI masks for each ROI. Each image mask is the size of the original imaging plane (or volume) and members of the ROI are finite non-zero. At least one of `image_mask`, `pixel_mask`, or `voxel_mask` is required.
+    pixel_mask; %  (VectorData) Pixel masks for each ROI: a list of indices and weights for the ROI. Pixel masks are concatenated and parsing of this dataset is maintained by the PlaneSegmentation. At least one of `image_mask`, `pixel_mask`, or `voxel_mask` is required.
     pixel_mask_index; %  (VectorIndex) Index into pixel_mask.
     reference_images; %  (ImageSeries) One or more image stacks that the masks apply to (can be one-element stack).
-    voxel_mask; %  (VectorData) Voxel masks for each ROI: a list of indices and weights for the ROI. Voxel masks are concatenated and parsing of this dataset is maintained by the PlaneSegmentation
+    voxel_mask; %  (VectorData) Voxel masks for each ROI: a list of indices and weights for the ROI. Voxel masks are concatenated and parsing of this dataset is maintained by the PlaneSegmentation. At least one of `image_mask`, `pixel_mask`, or `voxel_mask` is required.
     voxel_mask_index; %  (VectorIndex) Index into voxel_mask.
 end
 
@@ -35,11 +35,11 @@ methods
         %
         %  - id (ElementIdentifiers) - Array of unique identifiers for the rows of this dynamic table.
         %
-        %  - image_mask (VectorData) - ROI masks for each ROI. Each image mask is the size of the original imaging plane (or volume) and members of the ROI are finite non-zero.
+        %  - image_mask (VectorData) - ROI masks for each ROI. Each image mask is the size of the original imaging plane (or volume) and members of the ROI are finite non-zero. At least one of `image_mask`, `pixel_mask`, or `voxel_mask` is required.
         %
         %  - imaging_plane (ImagingPlane) - Link to ImagingPlane object from which this data was generated.
         %
-        %  - pixel_mask (VectorData) - Pixel masks for each ROI: a list of indices and weights for the ROI. Pixel masks are concatenated and parsing of this dataset is maintained by the PlaneSegmentation
+        %  - pixel_mask (VectorData) - Pixel masks for each ROI: a list of indices and weights for the ROI. Pixel masks are concatenated and parsing of this dataset is maintained by the PlaneSegmentation. At least one of `image_mask`, `pixel_mask`, or `voxel_mask` is required.
         %
         %  - pixel_mask_index (VectorIndex) - Index into pixel_mask.
         %
@@ -47,7 +47,7 @@ methods
         %
         %  - vectordata (VectorData) - Vector columns, including index columns, of this dynamic table.
         %
-        %  - voxel_mask (VectorData) - Voxel masks for each ROI: a list of indices and weights for the ROI. Voxel masks are concatenated and parsing of this dataset is maintained by the PlaneSegmentation
+        %  - voxel_mask (VectorData) - Voxel masks for each ROI: a list of indices and weights for the ROI. Voxel masks are concatenated and parsing of this dataset is maintained by the PlaneSegmentation. At least one of `image_mask`, `pixel_mask`, or `voxel_mask` is required.
         %
         %  - voxel_mask_index (VectorIndex) - Index into voxel_mask.
         %
@@ -109,25 +109,36 @@ methods
     %% VALIDATORS
     
     function val = validate_image_mask(obj, val)
-        val = types.util.checkDtype('image_mask', 'types.hdmf_common.VectorData', val);
-    end
-    function val = validate_imaging_plane(obj, val)
-        if isa(val, 'types.untyped.SoftLink')
-            if isprop(val, 'target')
-                types.util.checkDtype('imaging_plane', 'types.core.ImagingPlane', val.target);
-            end
-        else
-            val = types.util.checkDtype('imaging_plane', 'types.core.ImagingPlane', val);
-            if ~isempty(val)
-                val = types.untyped.SoftLink(val);
-            end
+        types.util.checkType('image_mask', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val)
+            [val, originalVal] = types.util.unwrapValue(val);
+            types.util.validateShape('image_mask', {[Inf,Inf,Inf,Inf], [Inf,Inf,Inf]}, val)
+            val = types.util.rewrapValue(val, originalVal);
         end
     end
+    function val = validate_imaging_plane(obj, val)
+        val = types.util.validateSoftLink('imaging_plane', val, 'types.core.ImagingPlane');
+    end
     function val = validate_pixel_mask(obj, val)
-        val = types.util.checkDtype('pixel_mask', 'types.hdmf_common.VectorData', val);
+        types.util.checkType('pixel_mask', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val)
+            [val, originalVal] = types.util.unwrapValue(val);
+            if isempty(val) || isa(val, 'types.untyped.DataStub')
+                return;
+            end
+            if ~istable(val) && ~isstruct(val) && ~isa(val, 'containers.Map')
+                error('NWB:Type:InvalidPropertyType', 'Property `pixel_mask` must be a table, struct, or containers.Map.');
+            end
+            vprops = struct();
+            vprops.x = 'uint32';
+            vprops.y = 'uint32';
+            vprops.weight = 'single';
+            val = types.util.checkDtype('pixel_mask', vprops, val);
+            val = types.util.rewrapValue(val, originalVal);
+        end
     end
     function val = validate_pixel_mask_index(obj, val)
-        val = types.util.checkDtype('pixel_mask_index', 'types.hdmf_common.VectorIndex', val);
+        types.util.checkType('pixel_mask_index', 'types.hdmf_common.VectorIndex', val);
     end
     function val = validate_reference_images(obj, val)
         namedprops = struct();
@@ -135,10 +146,26 @@ methods
         types.util.checkSet('reference_images', namedprops, constrained, val);
     end
     function val = validate_voxel_mask(obj, val)
-        val = types.util.checkDtype('voxel_mask', 'types.hdmf_common.VectorData', val);
+        types.util.checkType('voxel_mask', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val)
+            [val, originalVal] = types.util.unwrapValue(val);
+            if isempty(val) || isa(val, 'types.untyped.DataStub')
+                return;
+            end
+            if ~istable(val) && ~isstruct(val) && ~isa(val, 'containers.Map')
+                error('NWB:Type:InvalidPropertyType', 'Property `voxel_mask` must be a table, struct, or containers.Map.');
+            end
+            vprops = struct();
+            vprops.x = 'uint32';
+            vprops.y = 'uint32';
+            vprops.z = 'uint32';
+            vprops.weight = 'single';
+            val = types.util.checkDtype('voxel_mask', vprops, val);
+            val = types.util.rewrapValue(val, originalVal);
+        end
     end
     function val = validate_voxel_mask_index(obj, val)
-        val = types.util.checkDtype('voxel_mask_index', 'types.hdmf_common.VectorIndex', val);
+        types.util.checkType('voxel_mask_index', 'types.hdmf_common.VectorIndex', val);
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)
