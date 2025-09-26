@@ -154,7 +154,7 @@ There are 3 primary data types you will encounter when working with NWB files:
 - NWB schema-defined types (e.g., :class:`types.core.TimeSeries`, :class:`types.core.ElectricalSeries`, :class:`types.hdmf_common.DynamicTable`)
 - :ref:`Utility types<matnwb-read-untyped-intro>` (e.g., ``types.untyped.Set``, ``types.untyped.DataStub``)
 
-TODO: Briefly discuss schema and utility types.
+.. TODO: Briefly discuss schema and utility types.
 
 .. _matnwb-read-nwbfile-searchfor:
 
