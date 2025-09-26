@@ -63,7 +63,7 @@ Specify a maximum when growth is monotonic and bounded (e.g., number of samples 
 Iterative writing
 ~~~~~~~~~~~~~~~~~
 
-For datasets exceeding RAM, ``DataPipe`` supports appending or writing slices progressively—processing each batch then discarding it from memory.
+``DataPipe`` supports appending or writing slices progressively—processing each batch then discarding it from memory. This is particularly useful for datasets that do not fit in RAM.
 
 **Typical use cases:**
 
