@@ -37,7 +37,7 @@ What you can do with MatNWB
 
 .. Todo: Add links to DataPipe reference and configuration profiles guide when these are added.
 
-- Use and create extensions
+- Use NWB extensions
 
   - Install published Neurodata Extensions (NDX) with :doc:`nwbInstallExtension </pages/functions/nwbInstallExtension>` 
   - Generate classes from any namespace specification with :doc:`generateExtension </pages/functions/generateExtension>`.
