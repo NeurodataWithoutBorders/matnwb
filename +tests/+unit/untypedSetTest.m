@@ -14,7 +14,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             % Verify a function that validates the input
             set = types.untyped.Set(@(key, value) assert(strcmp(key, 'test')));
             try
-                set.validateEntry('test', 1)
+                set.validateEntry('test', 1);
             catch
                 testCase.verifyFail('Expected validation to pass')
             end

@@ -52,10 +52,23 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
         
         function value = validateEntry(obj, name, value)
             if ~isempty(obj.ValidationFunction)
+                MECause = [];
                 try
                     value = obj.ValidationFunction(name, value);
                 catch MECause
-                    ME = MException('NWB:Set:InvalidEntry', ...
+                    if strcmp(MECause.identifier, 'MATLAB:maxlhs')
+                        MECause = []; % Reset MECause
+                        % Validation function does not provide output. Call
+                        % again expecting no output
+                        try
+                            obj.ValidationFunction(name, value);
+                        catch MECause
+                            % pass, handled below
+                        end
+                    end
+                end
+                if ~isempty(MECause)
+                   ME = MException('NWB:Set:InvalidEntry', ...
                         'Entry of Constrained Set with name `%s` is invalid.\n', name);
                     ME = ME.addCause(MECause);
                     throw(ME)

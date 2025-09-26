@@ -363,7 +363,7 @@ classdef DataTypesTest < tests.unit.abstract.SchemaTest
             subGroup.set('untyped_text_data', 2);
             testCase.verifyWarning(...
                 @() types.dt.NestedDataTypeContainer('subgroup', subGroup), ...
-                'NWB:Set:FailedValidation')
+                'NWB:Set:InvalidEntry')
         end
                 
         function testSubgroupTypedDatasetWithCorrectType(testCase)
@@ -379,7 +379,7 @@ classdef DataTypesTest < tests.unit.abstract.SchemaTest
             subGroup.set('any_data', types.hdmf_common.VectorData('data', 1)); 
             testCase.verifyWarning(...
                 @() types.dt.NestedDataTypeContainer('subgroup', subGroup), ...
-                'NWB:Set:FailedValidation')
+                'NWB:Set:InvalidEntry')
         end
 
         function testSubgroupConstrainedDatasetWithCorrectType(testCase)
@@ -397,7 +397,7 @@ classdef DataTypesTest < tests.unit.abstract.SchemaTest
             subGroup.set('constrained', types.dt.AnyData('data', 1)); 
             testCase.verifyWarning(...
                 @() types.dt.NestedDataTypeContainer('subgroup', subGroup), ...
-                'NWB:Set:FailedValidation')
+                'NWB:Set:InvalidEntry')
         end
 
         function testSubgroupAttributeWithCorrectType(testCase)
@@ -413,7 +413,7 @@ classdef DataTypesTest < tests.unit.abstract.SchemaTest
             subGroup.set('description', 1); 
             testCase.verifyWarning(...
                 @() types.dt.NestedDataTypeContainer('subgroup', subGroup), ...
-                'NWB:Set:FailedValidation')
+                'NWB:Set:InvalidEntry')
         end
 
         function testSubgroupLinkWithCorrectType(testCase)
@@ -431,7 +431,7 @@ classdef DataTypesTest < tests.unit.abstract.SchemaTest
             subGroup.set('subgroup_link', types.untyped.SoftLink(invalidLinkedDataset));
             testCase.verifyWarning(...
                 @() types.dt.NestedDataTypeContainer('subgroup', subGroup), ...
-                'NWB:Set:FailedValidation')
+                'NWB:Set:InvalidEntry')
         end
 
         function testNestedSubgroupWithCorrectType(testCase)
@@ -446,7 +446,7 @@ classdef DataTypesTest < tests.unit.abstract.SchemaTest
             subGroup.set('nested_subgroup', types.core.TimeSeries);
             testCase.verifyWarning(...
                 @() types.dt.NestedDataTypeContainer('subgroup', subGroup), ...
-                'NWB:Set:FailedValidation')
+                'NWB:Set:InvalidEntry')
         end
 
         function testNestedConstrainedSubgroupWithCorrectType(testCase)
@@ -461,7 +461,7 @@ classdef DataTypesTest < tests.unit.abstract.SchemaTest
             subGroup.set('nested_constrained_subgroup', types.hdmf_common.DynamicTable()); 
             testCase.verifyWarning(...
                 @() types.dt.NestedDataTypeContainer('subgroup', subGroup), ...
-                'NWB:Set:FailedValidation')
+                'NWB:Set:InvalidEntry')
         end
     end
 end
