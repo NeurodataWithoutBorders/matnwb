@@ -34,7 +34,7 @@ Data and attributes cannot be removed — and deletion does not reduce file size
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 HDF5 does not support in-place removal of datasets or attributes in the way a database might.  
-While it is possible at a low level to "unlink" objects from the file, space is not reclaimed.  
+While it is possible at a low level to "unlink" objects from the file, this often does not reduce the size of the file.
 If you need to significantly restructure a file, the standard approach is to **create a new NWB file** and copy the desired data into it.
 
 **Implication:**  
