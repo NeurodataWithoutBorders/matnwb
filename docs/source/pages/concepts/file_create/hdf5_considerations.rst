@@ -40,17 +40,6 @@ If you need to significantly restructure a file, the standard approach is to **c
 **Implication:**  
 Plan carefully which datasets and metadata to include before writing. Making changes later often means recreating the file from scratch.
 
-Multiple-writer access is not supported
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-HDF5 files are not designed for concurrent writes.  
-If multiple processes or threads attempt to write to the same file at the same time, the result can be **file corruption**.  
-In most workflows, this means ensuring that **only one process writes to an NWB file** at any time.
-
-**Best practice:**
-
-- Use a single writer process and close the file before reading it elsewhere.
-- If multiple processes need access, coordinate reads and writes through a shared queue or write data separately and merge later.
 
 Takeaway
 --------
