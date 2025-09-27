@@ -88,7 +88,7 @@ Common questions you may encounter (and where to find answers)
 Important considerations when working with MatNWB:
 --------------------------------------------------
 
-- **MATLAB vs. NWB dimension order** : The dimensions of datasets (arrays) in MatNWB are represented in the opposite order relative to the NWB specification. For example, in NWB the time dimension of a TimeSeries is the first dimension of a dataset, whereas in MatNWB, it will be the last dimension of the dataset. See the mappings and examples in the :doc:`Data dimensions </pages/concepts/considerations>` section for a detailed explanation.
+- **MATLAB vs. NWB dimension order** : The dimensions of datasets (arrays) in MatNWB are represented in the opposite order relative to the NWB specification. For example, in NWB the time dimension of a TimeSeries is the first dimension of a dataset, whereas in MatNWB, it will be the last dimension of the dataset. See the mappings and examples in the :doc:`Data dimensions </pages/concepts/dimension_ordering>` section for a detailed explanation.
 
 - **NWB schema versions**: When reading NWB files, MatNWB will dynamically build classes for neurodata types from schemas that are embedded in the file. This ensures that the file is always represented correctly according to the schema version (and extensions) that was used when creating the file. However, the generated types will take the place of previously existing types (i.e from different versions), and therefore it is not recommended to work with NWB files of different versions simultaneously.
 

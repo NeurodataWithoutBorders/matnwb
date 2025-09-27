@@ -1,5 +1,5 @@
-Important considerations (MatNWB)
-=================================
+Dimension Ordering in MatNWB
+============================
 
 When using MatNWB, it is important to understand the differences in how array 
 dimensions are ordered in MATLAB versus HDF5. While the NWB documentation and 

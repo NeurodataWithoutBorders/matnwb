@@ -66,7 +66,7 @@ Looking for a specific topic which has not been mentioned? Check out the full ta
    :maxdepth: 2
    :caption: Concepts
   
-   pages/concepts/considerations
+   pages/concepts/dimension_ordering
    pages/concepts/file_read
    pages/concepts/file_create
    pages/concepts/using_extensions

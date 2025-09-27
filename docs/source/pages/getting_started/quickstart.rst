@@ -63,7 +63,7 @@ We’ll add a short synthetic signal sampled at 10 Hz for 1 second using the :cl
    nwb.acquisition.set('DemoSignal', ts);
 
 .. note::
-   MatNWB uses MATLAB array ordering when writing to HDF5. For multi-dimensional time series, the time dimension should be the last dimension of the MATLAB array. See the :doc:`Data Dimensions </pages/concepts/considerations>` section in the "MatNWB important considerations" page.
+   MatNWB uses MATLAB array ordering when writing to HDF5. For multi-dimensional time series, the time dimension should be the last dimension of the MATLAB array. See the :doc:`Data Dimensions </pages/concepts/dimension_ordering>` section in the "MatNWB important considerations" page.
 
 
 Step 3 — Write the File

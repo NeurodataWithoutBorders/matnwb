@@ -157,5 +157,5 @@ Next steps
 ----------
 
 - Read data with :func:`nwbRead` (see :doc:`/pages/concepts/file_read`).
-- Review important data dimension notes: :doc:`/pages/concepts/considerations`.
+- Review important data dimension notes: :doc:`/pages/concepts/dimension_ordering`.
 - Explore tutorials: :doc:`../tutorials/index`.
