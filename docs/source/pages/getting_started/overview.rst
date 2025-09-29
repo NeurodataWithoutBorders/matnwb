@@ -97,7 +97,7 @@ Important caveats when working with MatNWB:
 
 - **NWB schema versions**: When reading an NWB file, MatNWB will dynamically build class definitions for neurodata types from schemas that are embedded in the file. This ensures that the file is always represented correctly according to the schema version (and extensions) that was used when creating the file. However, the generated type classes will take the place of previously existing classes (i.e generated from different NWB versions), and therefore it is not recommended to work with NWB files of different NWB versions simultaneously.
 
-- **Editing NWB files**: If you need to edit NWB files after creation, note that MatNWB currently has certain limitations. See the section on :ref:`HDF5 considerations <hdf5-considerations>` for more details.
+- **Editing NWB files**: If you need to edit NWB files after creation, note that MatNWB currently has certain limitations. See the section on :ref:`Editing NWB files <edit-nwb-files>` for more details.
 
 
 Related resources

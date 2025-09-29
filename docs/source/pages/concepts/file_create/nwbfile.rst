@@ -45,7 +45,8 @@ MatNWB automatically handles some required NWB properties so you don't have to:
 
 Object Structure and Organization
 ---------------------------------
-
+.. todo:: Link to NWB overview section on file structure here
+  
 The :class:`NwbFile` object provides specific properties for organizing different types of data:
 
 - **acquisition** - 
