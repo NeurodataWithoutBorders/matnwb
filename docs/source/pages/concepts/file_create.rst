@@ -40,5 +40,5 @@ If anything is missing or incorrect, you'll get an error message explaining what
 
     Understanding the NwbFile Object <file_create/nwbfile>
     Understanding Neurodata Types <file_create/neurodata_types>
-    HDF5 Considerations <file_create/hdf5_considerations>
+    What is HDF5? <file_create/about_hdf5>
     Performance Optimization <file_create/performance_optimization>
