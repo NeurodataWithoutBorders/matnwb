@@ -6,7 +6,7 @@ How to apply compression & chunking profiles when writing NWB files
 This how-to shows you, step by step, how to apply a predefined (or custom) dataset
 configuration profile (chunking + compression) to the datasets in an ``NwbFile``
 before exporting with :func:`nwbExport`. It focuses on the practical steps – *what to do* –
-and assumes you already know in general why chunking and compression matter (see the
+and assumes you already know in general why chunking and compression matter (see
 :doc:`performance optimization </pages/concepts/file_create/performance_optimization>`).
 
 .. contents:: On this page
@@ -83,14 +83,6 @@ What happens under the hood?
   - Optional ``prefilters`` like ``shuffle`` improve compression on integer / low‑entropy columns.
 * Replaces the raw numeric array with a ``types.untyped.DataPipe`` configured with ``chunkSize``, compression filters, and (for vectors) a columnar representation (``maxSize = Inf`` ensures 1‑D write layout).
 
-Selecting a profile
--------------------
-Profile comparison (conceptual):
-
-* ``default``: Balanced; small (1 MB) target chunks, gzip level 3.
-* ``cloud``: Slightly larger chunks (10 MB) + shuffle for better remote object store streaming; dataset‑specific override for ``ElectricalSeries/data`` to bound one dimension (e.g. 64 samples per chunk row) aiding partial reads.
-* ``archive``: Large target (100 MB) to improve compression ratio, Zstandard level 5 (faster decompression than high‑level gzip for similar ratios). Good for cold storage.
-
 Overriding an existing DataPipe
 -------------------------------
 If you already created a ``DataPipe`` manually (or ran a profile once) and want to re‑apply with a different profile:
@@ -133,7 +125,7 @@ Edge cases & tips
 -----------------
 * Small datasets: If the whole dataset fits within the target chunk size threshold, no ``DataPipe`` is created (stored contiguous by default); this avoids unnecessary chunking overhead.
 * Non‑numeric datasets: Currently ignored by the automatic wrapper (e.g. ragged arrays, DataStubs, Sets). You can still wrap them manually.
-* Reading existing NWB (``nwbRead``): Re‑chunking or re‑compressing existing datasets into a new output file is planned but not yet implemented for ``DataStub`` sources.
+* Reading existing NWB (``nwbRead``): Re‑chunking or re‑compressing existing datasets into a new output file is not implemented for ``DataStub`` sources.
 * Vectors: Are represented as true 1‑D in HDF5 (MatNWB sets ``maxSize = Inf`` to maintain extendability / column layout).
 * Warnings: If actual computed chunk size bytes exceed the requested target, a warning is raised – adjust strategy or target size.
 
@@ -161,11 +153,3 @@ Next steps
 Summary
 -------
 You load a profile JSON, apply it, and export. MatNWB computes chunk sizes from simple declarative rules (``flex`` / ``max`` / numeric) and attaches compression filters. This yields consistent, reproducible storage characteristics across NWB files without hand‑tuning each dataset.
-
-See also
---------
-* :func:`io.config.readDatasetConfiguration`
-* :func:`io.config.applyDatasetConfiguration`
-* :func:`nwbExport`
-* HDF5 chunking & compression guidelines (HDF Group docs)
-
