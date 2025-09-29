@@ -131,4 +131,4 @@ You load a profile JSON, apply it, and export. MatNWB computes chunk sizes from 
 
 See also:
 ---------
-:ref:`Storage optimization <pages/concepts/file_create/storage_optimization>`.
+:doc:`Storage optimization </pages/concepts/file_create/storage_optimization>`.
