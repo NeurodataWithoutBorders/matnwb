@@ -88,8 +88,8 @@ Customizing a profile
    ``"ElectricalSeries/data"``
        Targets the ``data`` dataset inside any ``ElectricalSeries``.
 
-   ``"TwoPhotonSeries/data"`` *(illustrative)*
-       Keys are matched to MATLAB property / spec paths.
+   ``"TwoPhotonSeries/data"``
+       Targets the ``data`` dataset inside any ``TwoPhotonSeries``.
 
 
 4. Load it:
@@ -127,4 +127,5 @@ You load a profile JSON, apply it, and export. MatNWB computes chunk sizes from 
 
 
 See also:
-:ref:`Storage optimization </pages/concepts/file_create/performance_optimization>`.
+---------
+:ref:`Storage optimization <pages/concepts/file_create/performance_optimization>`.
