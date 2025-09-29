@@ -8,4 +8,7 @@ Use Extensions
 
 Optimize Storage
 ================
+.. toctree::
+   :maxdepth: 1
+
    compression/compression_profiles
