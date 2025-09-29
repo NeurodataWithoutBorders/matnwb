@@ -1,115 +1,94 @@
 Understanding MatNWB Neurodata Types
 ====================================
 
-MatNWB neurodata types are specialized MATLAB classes that represent different kinds of neuroscience data. These types provide structured containers that hold your data along with the metadata and organizational information needed to interpret it correctly.
+MatNWB neurodata types are MATLAB classes designed to represent different kinds of neuroscience data in a structured and interoperable way. They combine data, metadata, and contextual information, enabling consistent organization, interpretation, and sharing across tools and research environments.
 
-Why Specialized Types Instead of Standard Data Types?
------------------------------------------------------
+Why Use Specialized Neurodata Types?
+------------------------------------
 
-MatNWB's neurodata types have several advantages compared to using generic MATLAB arrays or structs for storing data:
+Standard MATLAB data structures like arrays or structs are flexible but lack domain-specific constraints. MatNWB types provide additional structure and semantics that are essential for reliable data handling in neuroscience:
 
-**They encode domain knowledge**: Each type includes the specific requirements for neuroscience data. A :class:`types.core.ElectricalSeries` requires electrode information, sampling rates, and data units - enforcing these requirements automatically rather than relying on you to remember them.
+- **Domain-specific structure**: Each type encodes the metadata and relationships required for a particular data modality. For example, a :class:`types.core.ElectricalSeries` requires electrode metadata, sampling information, and data units.
+- **Built-in validation**: Types enforce the presence of essential information, reducing the likelihood of common errors. For instance, :class:`types.core.TwoPhotonSeries` cannot be created without specifying the imaging plane.
+- **Interoperability**: Data stored using these types is compatible with NWB-compliant tools and workflows, making it easier to share and reuse across different software ecosystems.
 
-**They prevent common mistakes**: The types guide you toward correct data organization. For example, you cannot store imaging data without specifying the imaging plane when using :class:`types.core.TwoPhotonSeries`.
+The Central Concept: TimeSeries
+-------------------------------
 
-**They ensure compatibility**: Data stored in these types will work with other NWB tools and can be shared with collaborators who use different analysis software.
+Many experimental signals in neuroscience change over time. The :class:`types.core.TimeSeries` type provides a standardized structure for representing these signals together with their temporal context.
 
-The Foundation: TimeSeries
----------------------------
+A TimeSeries object combines:
 
-Most neuroscience data varies over time, so MatNWB builds around a fundamental concept: :class:`types.core.TimeSeries`. This isn't just a MATLAB array with timestamps - it's a structured way to represent any measurement that changes over time.
+- **Data and meaning**: The recorded measurements alongside descriptions of what they represent.
+- **Temporal information**: Flexible handling of regular or irregular sampling, timestamps, and time references.
+- **Metadata**: Units, descriptions, and experiment-specific context stored together with the data.
+- **Relationships**: References to other objects, such as stimulus definitions or behavioral events.
 
-**What TimeSeries provides:**
+Use a basic TimeSeries when the data varies over time but does not require the additional structure of a specialized type. Examples include custom behavioral metrics, environmental sensor data, or novel measurement modalities.
 
-- **Data with context**: Your measurements plus information about what they represent
-- **Time handling**: Flexible ways to represent regular or irregular sampling
-- **Metadata storage**: Data units, descriptions, and experimental details stay attached to the data
-- **Relationship tracking**: Connections to other parts of your experiment
+Specialized TimeSeries Variants
+-------------------------------
 
-**When to use basic TimeSeries**: For any time-varying measurement that doesn't fit a more specific type - like custom behavioral metrics, environmental sensors, or novel measurement techniques.
+MatNWB builds on the TimeSeries concept with specialized types tailored to common experimental data. These types capture modality-specific metadata, constraints, and relationships.
 
-Specialized TimeSeries Types
-----------------------------
+**ElectricalSeries: Electrical Recordings**
 
-MatNWB provides specialized versions of TimeSeries for common neuroscience data types. These aren't just conveniences - they capture the specific requirements and relationships of different experimental approaches.
+Electrophysiological recordings require metadata about the electrodes, their positions, and acquisition parameters. :class:`types.core.ElectricalSeries` links time-varying voltage data with this contextual information, allowing downstream tools to interpret the signals accurately.
 
-**ElectricalSeries: For Electrical Recordings**
+**TwoPhotonSeries and OnePhotonSeries: Optical Recordings**
 
-Understanding electrical recordings requires knowing which electrodes recorded the data, their locations, and recording parameters. :class:`types.core.ElectricalSeries` handles these relationships automatically.
+Optical recordings, such as calcium imaging, differ fundamentally from electrical recordings. These types include metadata about imaging planes, indicators, and acquisition parameters (e.g., excitation wavelength), reflecting the experimental conditions required to interpret fluorescence-based signals.
 
-The key insight: electrical data isn't just voltages over time - it's voltages from specific spatial locations in the brain, recorded with particular methods and settings.
+**SpatialSeries: Positional and Movement Data**
 
-**TwoPhotonSeries and OnePhotonSeries: For Optical Data**  
-
-Calcium imaging data has fundamentally different characteristics than electrical recordings. These types understand that optical data comes from specific imaging planes, uses particular indicators, and has unique technical parameters like excitation wavelengths.
-
-The key insight: optical data represents neural activity indirectly through fluorescence changes, requiring different metadata and processing considerations.
-
-**SpatialSeries: For Position and Movement**
-
-Behavioral tracking data represents the subject's position or movement through space. :class:`types.core.SpatialSeries` understands spatial coordinates, reference frames, and the relationship between position and time.
-
-The key insight: spatial data requires coordinate system information to be meaningful - the same X,Y coordinates mean different things in different reference frames.
+Behavioral tracking data records spatial coordinates over time. :class:`types.core.SpatialSeries` includes information about reference frames, coordinate systems, and spatial dimensions, which are necessary for interpreting positional measurements correctly.
 
 Container Types: Organizing Related Data
 ----------------------------------------
 
-Some neurodata types don't hold data directly - they organize other types into meaningful groups.
+Some MatNWB types act as containers for other data objects, structuring them into logical groupings.
 
-**ProcessingModule: Grouping Related Analyses**
+**ProcessingModule: Analysis Grouping**
 
-Experiments often involve multiple processing steps that belong together. :class:`types.core.ProcessingModule` lets you group related processed data, maintaining the logical flow of your analysis pipeline.
+Experiments often produce multiple derived datasets from different processing steps. :class:`types.core.ProcessingModule` groups these results, preserving their relationships to raw data and to each other within an analysis workflow.
 
-The key insight: processed data gains meaning through its relationship to the raw data and processing steps that created it.
+**Behavioral Containers: Position, CompassDirection, BehavioralEvents**
 
-**Position, CompassDirection, BehavioralEvents: Behavioral Organization**
-
-These container types organize different aspects of behavioral data. Rather than scattering behavioral measurements throughout your file, they provide structured locations that other researchers will recognize.
-
-The key insight: behavioral experiments often involve multiple simultaneous measurements that need to be understood as a coordinated whole.
-
+Behavioral experiments frequently generate multiple types of measurements. Container types provide a consistent organizational structure for these related datasets, making it easier for collaborators and tools to understand their relationships.
 
 Table-Based Types: Structured Metadata
 --------------------------------------
 
-Some experimental information is naturally tabular rather than time-series based.
+Not all experimental information is time-series based. Some metadata is better represented in tabular form, particularly when it describes static properties or discrete events.
 
-**Units Table: Spike Data Organization**
+**Units Table: Discrete Spike Data**
 
-Sorted spike data doesn't fit well into TimeSeries because each unit has different spike times. The :class:`types.core.Units` table provides a structured way to store spike times, waveforms, and unit metadata together.
+Sorted spike data consists of discrete events (spikes) that occur at variable times. The :class:`types.core.Units` table organizes spike times, waveforms, and unit metadata in a structured and queryable way.
 
-The key insight: spike sorting creates discrete events (spikes) rather than continuous measurements, requiring different organizational principles.
+**Electrode Tables: Recording Site Metadata**
 
-**Electrode Tables: Recording Site Information**
+Metadata describing recording sites—such as electrode position, impedance, and brain region—is typically static during an experiment. Electrode tables store this information once and allow it to be referenced by multiple data types.
 
-Information about recording electrodes (location, impedance, brain region) is relatively static but essential for interpreting electrical data. Electrode tables store this information once and allow multiple data types to reference it.
+Working with MatNWB Types
+-------------------------
 
-The key insight: experimental metadata often has different temporal characteristics than the data itself - electrode properties don't change during recording, but voltage measurements do.
+MatNWB neurodata types use object-oriented design principles to integrate structure, validation, and relationships directly into the data model:
 
+- **Object properties**: Each type defines a fixed set of properties, ensuring required metadata is always present and validated when objects are created.
+- **Automatic linking**: References between related objects (e.g., an ElectricalSeries referencing an electrode table) are handled automatically.
+- **Extensibility**: While core properties are fixed, additional metadata can be attached as needed to capture experiment-specific details.
+- **Error prevention**: Structural validation reduces errors by detecting missing information, type mismatches, or inconsistent shapes early.
 
-How MatNWB Types Work in Practice
----------------------------------
+Selecting the Appropriate Type
+------------------------------
 
-- **Object-Oriented Organization**: Each neurodata type is a MATLAB class with specific properties. When you create an object, MATLAB ensures you provide the required information and validates the data types.
+Choosing the right type depends on the nature of the data and how it fits into the broader experimental context. Consider the following questions:
 
-- **Automatic Relationships**: Types understand their relationships to other types. When you reference an electrode table from an ElectricalSeries, MatNWB maintains that connection automatically.
+- What is being measured? (e.g., electrical activity, fluorescence, position)
+- How is it related to other parts of the experiment?
+- What metadata is required to interpret the measurement?
+- Would another researcher understand the data structure without additional explanation?
 
-- **Flexible Extension**: While types have required properties, you can add additional information as needed. This lets you capture experiment-specific details while maintaining compatibility.
+A practical approach is to begin with the general :class:`types.core.TimeSeries` for any time-varying data. As familiarity increases, adopt more specialized types that better capture the semantics and constraints of specific experimental modalities.
 
-- **Validation and Error Prevention**: Types catch common errors before they become problems. Missing required properties, incorrect data shapes, or type mismatches generate helpful error messages.
-
-Choosing the Right Type
------------------------
-
-The goal isn't to memorize every available type, but to understand the principle: **match your data to the type that best represents its experimental meaning**.
-
-**Ask yourself:**
-
-- What kind of measurement is this? (electrical, optical, behavioral, etc.)
-- How does it relate to other parts of my experiment?
-- What contextual information is needed to interpret it?
-- Would another researcher understand this data organization?
-
-**Start simple**: When in doubt, basic TimeSeries can represent any time-varying data. You can always use more specific types as you become familiar with them.
-
-**Follow the data flow**: Raw measurements go in acquisition, processed results go in processing modules, final analyses go in analysis. This mirrors your experimental workflow.
+Organize data to reflect the experimental workflow: raw measurements in acquisition, processed results in processing modules, and analysis outputs in analysis groups. This structure aligns the data model with the scientific process and supports reproducibility and interoperability.
