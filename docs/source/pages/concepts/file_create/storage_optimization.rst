@@ -40,8 +40,8 @@ See the :doc:`compression profiles </pages/how_to/compression/compression_profil
 MatNWB tutorials & references
 -----------------------------
 
-- Tutorial: :ref:`DataPipe <pages/tutorials/dataPipe>` (practical usage patterns)
-- Tutorial: :ref:`dynamically loaded filters <pages/tutorials/dynamically_loaded_filters>` (advanced compression filters)
+- Tutorial: :doc:`DataPipe </pages/tutorials/dataPipe>` (practical usage patterns)
+- Tutorial: :doc:`dynamically loaded filters </pages/tutorials/dynamically_loaded_filters>` (advanced compression filters)
 - API: :class:`types.untyped.DataPipe`
 
 External references

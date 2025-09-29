@@ -42,4 +42,4 @@ If anything is missing or incorrect, you'll get an error message explaining what
     Understanding Neurodata Types <file_create/neurodata_types>
     Storage Backends <file_create/storage_backends>
     Editing NWB Files <file_create/editing_nwb_files>
-    Performance Optimization <file_create/performance_optimization>
+    Performance Optimization <file_create/storage_optimization>
