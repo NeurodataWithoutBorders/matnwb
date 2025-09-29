@@ -5,6 +5,7 @@
 Overview
 ========
 
+
 What is MatNWB?
 ---------------
 
@@ -14,8 +15,9 @@ MatNWB_ is a MATLAB package for reading, writing, and validating NWB files. It p
 Who is it for?
 --------------
 
-- MATLAB users working with neurophysiology and related data (extracellular and intracellular electrophysiology, optical physiology, behavior, images, and derived analyses)
-- Labs that want a reproducible, self-describing data format that travels well across tools, languages, and archives (e.g., DANDI)
+- MATLAB users working with neurophysiology data (extracellular and intracellular electrophysiology, optical physiology, behavior, images, and derived analyses)
+- Labs seeking a reproducible, self-describing data format that works seamlessly across platforms and is supported by an expanding ecosystem of tools and archives (e.g., DANDI).
+
 
 What you can do with MatNWB
 ---------------------------
@@ -42,8 +44,9 @@ What you can do with MatNWB
   - Install published Neurodata Extensions (NDX) with :doc:`nwbInstallExtension </pages/functions/nwbInstallExtension>` 
   - Generate classes from any namespace specification with :doc:`generateExtension </pages/functions/generateExtension>`.
 
-How it works (the mental model)
--------------------------------
+
+How it works
+------------
 
 NWB files are containers for storing data and metadata in a hierarchical manner using groups and datasets. In this sense, an NWB file can be thought of as a tree of folders and files representing all the data associated with neurophysiological recording sessions. The data and metadata is represented through a set of neurodata types defined by the NWB schema. These neurodata types are the building blocks for NWB files and are often used together in specific configurations (see the :doc:`tutorials </pages/tutorials/index>` for concrete patterns)
 
@@ -57,6 +60,8 @@ The main categories of types you will work with
 - Tables: columnar metadata or data (e.g., :doc:`DynamicTable </pages/neurodata_types/hdmf_common/DynamicTable>`).
 - Helpers: Helper types 
 .. [Todo: expand, and link to helper types reference and concept pages when these are added].
+.. [Todo: For tables: TimeIntervals, Units, ElectrodesTable]
+
 
 Common questions you may encounter (and where to find answers)
 --------------------------------------------------------------
@@ -85,29 +90,26 @@ Common questions you may encounter (and where to find answers)
   - See :doc:`Neurodata Extensions </pages/concepts/using_extensions>` for guides to install published NDX or to generate classes from your own namespace specification.
 
 
-Important considerations when working with MatNWB:
---------------------------------------------------
+Important caveats when working with MatNWB:
+-------------------------------------------
 
 - **MATLAB vs. NWB dimension order** : The dimensions of datasets (arrays) in MatNWB are represented in the opposite order relative to the NWB specification. For example, in NWB the time dimension of a TimeSeries is the first dimension of a dataset, whereas in MatNWB, it will be the last dimension of the dataset. See the mappings and examples in the :doc:`Data dimensions </pages/concepts/dimension_ordering>` section for a detailed explanation.
 
-- **NWB schema versions**: When reading NWB files, MatNWB will dynamically build classes for neurodata types from schemas that are embedded in the file. This ensures that the file is always represented correctly according to the schema version (and extensions) that was used when creating the file. However, the generated types will take the place of previously existing types (i.e from different versions), and therefore it is not recommended to work with NWB files of different versions simultaneously.
+- **NWB schema versions**: When reading an NWB file, MatNWB will dynamically build class definitions for neurodata types from schemas that are embedded in the file. This ensures that the file is always represented correctly according to the schema version (and extensions) that was used when creating the file. However, the generated type classes will take the place of previously existing classes (i.e generated from different NWB versions), and therefore it is not recommended to work with NWB files of different NWB versions simultaneously.
 
-- **Editing NWB files**: NWB files are stored using the HDF5 standard. This presents some difficulties in editing or appending data to files. See the section on :ref:`HDF5 considerations <hdf5-considerations>` for more details.
+- **Editing NWB files**: If you need to edit NWB files after creation, note that MatNWB currently has certain limitations. See the section on :ref:`HDF5 considerations <hdf5-considerations>` for more details.
 
-
-Learn more (no steps here—just pointers)
-----------------------------------------
-
-- Object‑oriented programming refresher (MATLAB): https://www.mathworks.com/help/matlab/object-oriented-programming.html
-
-Cite MatNWB
------------
-
-If MatNWB contributes to your work, please see :doc:`Citing MatNWB </pages/getting_started/how_to_cite>`.
 
 Related resources
 -----------------
 
 - :nwb_overview:`NWB Overview <>` documentation
 - Python API (PyNWB_)
+- Object‑oriented programming refresher (MATLAB): https://www.mathworks.com/help/matlab/object-oriented-programming.html
 - Share/discover data: :dandi:`DANDI Archive <>`
+
+
+Cite MatNWB
+-----------
+
+If MatNWB contributes to your work, please see :doc:`Citing MatNWB </pages/getting_started/how_to_cite>`.
