@@ -12,15 +12,15 @@ As demonstrated in the :doc:`Quickstart </pages/getting_started/quickstart>` tut
 .. note::
     An "object" is an instance of a class. Objects are similar to MATLAB structs, but with additional functionality. The fields (called properties) are defined by the class definition (a .m file), and the class can enforce rules about what values are allowed. This helps ensure that your data conforms to the NWB schema.
 
-**The Assembly Process**
+**General steps to create an NWB file**
 
-Building an NWB file follows a logical pattern:
+Building an NWB file follows a few general steps:
 
-- **Create neurodata objects**: You create objects for your data (like :class:`types.core.TimeSeries` for time-based measurements)
+- **Create neurodata objects**: Create neurodata type objects and add your relevant data and metadata (like :class:`types.core.TimeSeries` for time-based measurements)
 
-- **Add to containers**: You add these data objects to your :class:`NwbFile` object (or other NWB container objects) in appropriate locations
+- **Add to containers**: Add these neurodata type objects to your :class:`NwbFile` object (or other NWB container objects) in appropriate locations
 
-- **File export**: You save everything to disk using :func:`nwbExport`, which translates your objects into NWB/HDF5 format
+- **File export**: Save everything to disk using :func:`nwbExport`, which translates your objects into NWB/HDF5 format
 
 This approach ensures your data is properly organized and validated before it becomes a file.
 
