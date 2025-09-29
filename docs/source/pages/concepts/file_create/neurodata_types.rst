@@ -69,6 +69,10 @@ Sorted spike data consists of discrete events (spikes) that occur at variable ti
 
 Metadata describing recording sites—such as electrode position, impedance, and brain region—is typically static during an experiment. Electrode tables store this information once and allow it to be referenced by multiple data types.
 
+**Trials Table: Time-Indexed Experimental Structure**
+
+Many experiments are organized into discrete trials or epochs. The NWB ``trials`` table (a :class:`types.core.TimeIntervals` object) captures these segments using required ``start_time`` and ``stop_time`` columns and any number of user-defined per-trial metadata columns (e.g., stimulus identity, condition, response correctness).
+
 Working with MatNWB Types
 -------------------------
 
