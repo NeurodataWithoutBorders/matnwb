@@ -1,13 +1,14 @@
 .. _howto-compression-profiles:
 
-How to apply compression & chunking profiles when writing NWB files
-===================================================================
+Use compression profiles
+========================
 
-This how-to shows you, step by step, how to apply a predefined (or custom) dataset
-configuration profile (chunking + compression) to the datasets in an ``NwbFile``
-before exporting with :func:`nwbExport`. It focuses on the practical steps – *what to do* –
-and assumes you already know in general why chunking and compression matter (see
-:doc:`performance optimization </pages/concepts/file_create/performance_optimization>`).
+How to optimize storage in NWB files using predefined or custom dataset configuration profiles for compression and chunking.
+
+Prerequisites
+-------------
+* MatNWB installed and on the MATLAB path.
+* Basic familiarity with creating NWB objects (see the MatNWB tutorials if needed).
 
 .. contents:: On this page
 	:local:
@@ -20,42 +21,20 @@ At a glance
 3. Apply it with :func:`io.config.applyDatasetConfiguration`.
 4. Export.
 
-When to use this
-----------------
-Use this whenever you have medium/large numeric datasets and you want:
 
-* Reasonable default gzip (deflate) compression and adaptive chunk sizes (``default``).
-* Cloud‑optimized access patterns (smaller per-chunk footprint + shuffle) (``cloud``).
-* Higher compression ratio for long‑term storage (larger chunk targets + Zstandard) (``archive``).
-
-Prerequisites
--------------
-* MatNWB installed and on the MATLAB path.
-* Basic familiarity with creating NWB objects (see the MatNWB tutorials if needed).
-
-Key functions & files
----------------------
-* ``io.config.readDatasetConfiguration(profile)`` – loads JSON from ``configuration/*_dataset_configuration.json``.
-* ``io.config.applyDatasetConfiguration(nwb, config, "OverrideExisting", false)`` – wraps qualifying numeric arrays in ``types.untyped.DataPipe`` with computed ``chunkSize`` and compression filters.
-* Configuration JSON examples (shipped):
-
-  - ``configuration/default_dataset_configuration.json``
-  - ``configuration/cloud_dataset_configuration.json``
-  - ``configuration/archive_dataset_configuration.json``
-
-Quick start example
--------------------
+Creating and exporting an NWB file with a profile
+-------------------------------------------------
 .. code-block:: matlab
 
 	% 1. Create and populate an NWB file
 	nwb = NwbFile();  % (set identifiers, session start time, etc.)
-	data = rand(1e6,1,'single');  % Example large vector
+	data = rand(1e6, 1, 'single');  % Example large vector
 	es = types.core.ElectricalSeries(...
 		 'data', data, ...
 		 'data_unit', 'volts', ...
 		 'starting_time', 0, ...
 		 'starting_time_rate', 30000);
-	nwb.acquisition.set('example_eSeries', es);
+	nwb.acquisition.set('ExampleSeries', es);
 
 	% 2. Load a profile (choose "default", "cloud", or "archive")
 	cfg = io.config.readDatasetConfiguration("cloud");
@@ -66,22 +45,6 @@ Quick start example
 	% 4. Export
 	nwbExport(nwb, 'example_cloud_profile.nwb');
 
-What happens under the hood?
-----------------------------
-``applyDatasetConfiguration`` walks every neurodata object in the file tree and, for each numeric dataset:
-
-* Resolves the most specific matching entry in the configuration (dataset‑level override beats ``Default``).
-* Computes a target ``chunkSize`` given:
-  - ``chunking.target_chunk_size`` + ``target_chunk_size_unit`` (e.g. 1,000,000 bytes)
-  - ``chunking.strategy_by_rank`` list for the dataset’s rank (e.g. ["flex", "max"]).
-	 * ``flex`` → dimension is sized so total bytes per chunk ≈ target.
-	 * ``max`` → take full length of that dimension.
-	 * Numeric value → upper bound (capped by actual size).
-* Chooses compression:
-  - ``method = deflate`` (gzip) → uses ``compressionLevel`` (default 3 if absent).
-  - Other methods (e.g. ``ZStandard``) → inserted as a custom filter.
-  - Optional ``prefilters`` like ``shuffle`` improve compression on integer / low‑entropy columns.
-* Replaces the raw numeric array with a ``types.untyped.DataPipe`` configured with ``chunkSize``, compression filters, and (for vectors) a columnar representation (``maxSize = Inf`` ensures 1‑D write layout).
 
 Overriding an existing DataPipe
 -------------------------------
@@ -94,21 +57,40 @@ If you already created a ``DataPipe`` manually (or ran a profile once) and want 
 
 Customizing a profile
 ---------------------
+
 1. Copy one of the shipped JSON files (e.g. ``default_dataset_configuration.json``) to a new file in ``configuration/`` (e.g. ``myprofile_dataset_configuration.json``).
+
 2. Adjust fields:
 
-	* ``chunking.target_chunk_size`` / ``_unit``: Overall chunk byte target.
-	* ``chunking.strategy_by_rank``: For each rank (key is the number of dimensions). Each list position corresponds to a dimension (slowest → fastest in MATLAB order). Use:
-	  - ``"flex"``
-	  - ``"max"``
-	  - an integer (upper bound)
-	* ``compression.method``: ``deflate`` (gzip), ``ZStandard`` (if filter available), or a custom filter ID.
-	* ``compression.parameters.level``: Integer compression level (method‑dependent).
-	* ``compression.prefilters``: e.g. ``["shuffle"]``.
-3. Add any dataset‑specific overrides. Key format examples:
+   ``chunking.target_chunk_size``
+       Overall byte target size for each chunk.
 
-	* ``"ElectricalSeries/data"`` – targets the ``data`` dataset inside any ``ElectricalSeries``.
-	* ``"ProcessingModule_TimeIntervals_start_time"`` (illustrative) – keys are matched to MATLAB property / spec paths (see comments below).
+   ``chunking.strategy_by_rank``
+       Strategy per dataset rank (key = number of dimensions).
+       Each list element corresponds to a dimension axis.
+       Possible values:
+
+       - ``"flex"``
+       - ``"max"``
+       - *integer* (upper bound)
+
+   ``compression.method``
+       Compression algorithm: ``deflate`` (gzip), ``ZStandard`` (if available), or a custom filter ID.
+
+   ``compression.parameters.level``
+       Integer compression level (method-dependent).
+
+   ``compression.prefilters``
+       Optional prefilters, e.g. ``["shuffle"]``.
+
+3. Add any neurodata type/dataset-specific overrides. Key format examples:
+
+   ``"ElectricalSeries/data"``
+       Targets the ``data`` dataset inside any ``ElectricalSeries``.
+
+   ``"TwoPhotonSeries/data"`` *(illustrative)*
+       Keys are matched to MATLAB property / spec paths.
+
 
 4. Load it:
 
@@ -117,17 +99,6 @@ Customizing a profile
 	cfg = io.config.readDatasetConfiguration("myprofile");
 	io.config.applyDatasetConfiguration(nwb, cfg);
 
-Dataset override resolution
----------------------------
-The resolver looks for the most specific key that matches the dataset’s path/type; if no specific key matches, it falls back to ``Default``. You can safely omit fields you don’t change in an override; only provided subfields (e.g. updating ``chunking.strategy_by_rank``) are merged.
-
-Edge cases & tips
------------------
-* Small datasets: If the whole dataset fits within the target chunk size threshold, no ``DataPipe`` is created (stored contiguous by default); this avoids unnecessary chunking overhead.
-* Non‑numeric datasets: Currently ignored by the automatic wrapper (e.g. ragged arrays, DataStubs, Sets). You can still wrap them manually.
-* Reading existing NWB (``nwbRead``): Re‑chunking or re‑compressing existing datasets into a new output file is not implemented for ``DataStub`` sources.
-* Vectors: Are represented as true 1‑D in HDF5 (MatNWB sets ``maxSize = Inf`` to maintain extendability / column layout).
-* Warnings: If actual computed chunk size bytes exceed the requested target, a warning is raised – adjust strategy or target size.
 
 Verifying the applied configuration
 ----------------------------------
@@ -135,7 +106,7 @@ After export, you can inspect chunking and compression with ``h5info``:
 
 .. code-block:: matlab
 
-	info = h5info('example_cloud_profile.nwb', '/acquisition/example_eSeries/data');
+	info = h5info('example_cloud_profile.nwb', '/acquisition/ExampleSeries/data');
 	info.ChunkSize   % should reflect computed chunkSize
 	info.Filters     % lists compression + shuffle if present
 
@@ -153,3 +124,7 @@ Next steps
 Summary
 -------
 You load a profile JSON, apply it, and export. MatNWB computes chunk sizes from simple declarative rules (``flex`` / ``max`` / numeric) and attaches compression filters. This yields consistent, reproducible storage characteristics across NWB files without hand‑tuning each dataset.
+
+
+See also:
+:ref:`Storage optimization </pages/concepts/file_create/performance_optimization>`.
