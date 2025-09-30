@@ -124,6 +124,7 @@ methods
         if ~isempty(val)
             [val, originalVal] = types.util.unwrapValue(val);
             if isempty(val) || isa(val, 'types.untyped.DataStub')
+                val = types.util.rewrapValue(val, originalVal)
                 return;
             end
             if ~istable(val) && ~isstruct(val) && ~isa(val, 'containers.Map')
@@ -150,6 +151,7 @@ methods
         if ~isempty(val)
             [val, originalVal] = types.util.unwrapValue(val);
             if isempty(val) || isa(val, 'types.untyped.DataStub')
+                val = types.util.rewrapValue(val, originalVal)
                 return;
             end
             if ~istable(val) && ~isstruct(val) && ~isa(val, 'containers.Map')
