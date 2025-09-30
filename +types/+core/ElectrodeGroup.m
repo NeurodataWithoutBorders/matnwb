@@ -86,8 +86,7 @@ methods
     end
     function val = validate_position(obj, val)
         if isempty(val) || isa(val, 'types.untyped.DataStub')
-            val = types.util.rewrapValue(val, originalVal)
-            return;
+            return
         end
         if ~istable(val) && ~isstruct(val) && ~isa(val, 'containers.Map')
             error('NWB:Type:InvalidPropertyType', 'Property `position` must be a table, struct, or containers.Map.');

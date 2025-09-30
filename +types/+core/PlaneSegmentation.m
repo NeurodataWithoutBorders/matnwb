@@ -124,8 +124,8 @@ methods
         if ~isempty(val)
             [val, originalVal] = types.util.unwrapValue(val);
             if isempty(val) || isa(val, 'types.untyped.DataStub')
-                val = types.util.rewrapValue(val, originalVal)
-                return;
+                val = types.util.rewrapValue(val, originalVal);
+                return
             end
             if ~istable(val) && ~isstruct(val) && ~isa(val, 'containers.Map')
                 error('NWB:Type:InvalidPropertyType', 'Property `pixel_mask` must be a table, struct, or containers.Map.');
@@ -151,8 +151,8 @@ methods
         if ~isempty(val)
             [val, originalVal] = types.util.unwrapValue(val);
             if isempty(val) || isa(val, 'types.untyped.DataStub')
-                val = types.util.rewrapValue(val, originalVal)
-                return;
+                val = types.util.rewrapValue(val, originalVal);
+                return
             end
             if ~istable(val) && ~isstruct(val) && ~isa(val, 'containers.Map')
                 error('NWB:Type:InvalidPropertyType', 'Property `voxel_mask` must be a table, struct, or containers.Map.');

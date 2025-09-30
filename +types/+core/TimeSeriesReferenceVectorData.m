@@ -42,8 +42,7 @@ methods
     
     function val = validate_data(obj, val)
         if isempty(val) || isa(val, 'types.untyped.DataStub')
-            val = types.util.rewrapValue(val, originalVal)
-            return;
+            return
         end
         if ~istable(val) && ~isstruct(val) && ~isa(val, 'containers.Map')
             error('NWB:Type:InvalidPropertyType', 'Property `data` must be a table, struct, or containers.Map.');
