@@ -41,17 +41,15 @@ methods
     %% VALIDATORS
     
     function val = validate_data(obj, val)
-        if isempty(val) || isa(val, 'types.untyped.DataStub')
-            return
+        if isempty(val)
+            % skip validation for empty values
+        else
+            vprops = struct();
+            vprops.idx_start = 'int32';
+            vprops.count = 'int32';
+            vprops.timeseries = 'types.untyped.ObjectView';
+            val = types.util.checkDtype('data', vprops, val);
         end
-        if ~istable(val) && ~isstruct(val) && ~isa(val, 'containers.Map')
-            error('NWB:Type:InvalidPropertyType', 'Property `data` must be a table, struct, or containers.Map.');
-        end
-        vprops = struct();
-        vprops.idx_start = 'int32';
-        vprops.count = 'int32';
-        vprops.timeseries = 'types.untyped.ObjectView';
-        val = types.util.checkDtype('data', vprops, val);
         types.util.validateShape('data', {[Inf,Inf,Inf,Inf], [Inf,Inf,Inf], [Inf,Inf], [Inf]}, val)
     end
     %% EXPORT
