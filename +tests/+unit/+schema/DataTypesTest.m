@@ -321,7 +321,7 @@ classdef DataTypesTest < tests.unit.abstract.SchemaTest
             testCase.verifyEqual(incContainerIn.included_data_must_be_text.data.load(), '1');
             testCase.verifyEqual(incContainerIn.included_data_must_be_integer.data.load(), int32(1));
             testCase.verifyEqual(incContainerIn.included_data_must_be_float.data.load(), single(1));
-            testCase.verifyClass(incContainerIn.included_data_must_be_compound.data, 'types.dt.AnyData'); % Sanity check
+            testCase.verifyClass(incContainerIn.included_data_must_be_compound, 'types.dt.AnyData'); % Sanity check
             testCase.verifyClass(incContainerIn.included_data_must_be_compound.data.load(), 'struct');
 
             testCase.verifyEqual(inheritanceContainerIn.any_data.data.load(), uint8(1));
