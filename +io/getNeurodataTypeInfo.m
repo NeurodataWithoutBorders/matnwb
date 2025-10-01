@@ -5,8 +5,8 @@ function typeInfo = getNeurodataTypeInfo(attributeInfo)
 %   typeInfo = io.getNeurodataTypeInfo(attributeInfo) 
 %
 % Input Arguments:
-%   attributeInfo - A struct containing attributes information to extract
-%                   neurodata type details.
+%   attributeInfo - A struct containing attributes information from which to 
+%                   extract neurodata type information.
 %
 % Output Arguments:
 %   typeInfo - A struct containing 'namespace', 'name', and 'typename'
