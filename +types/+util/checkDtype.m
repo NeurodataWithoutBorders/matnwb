@@ -115,6 +115,12 @@ function tf = isValueContainedInHDMFDatasetType(typeDescriptor, value)
 end
 
 function value = checkDtypeForCompoundDataset(name, typeDescriptor, value)
+    
+    valueWrapper = [];
+    if isWrapped(value, typeDescriptor)
+        valueWrapper = value;
+        value = unwrapValue(value);
+    end
 
     validateCompoundValue(value)
 
@@ -151,6 +157,10 @@ function value = checkDtypeForCompoundDataset(name, typeDescriptor, value)
             value(expectedFields{iField}) = types.util.checkDtype( ...
                 subName, subType, value(expectedFields{iField}));
         end
+    end
+
+    if ~isempty(valueWrapper)
+        value = valueWrapper; % re-wrap value
     end
 
     function validateCompoundValue(value)
