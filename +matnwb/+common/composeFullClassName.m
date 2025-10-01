@@ -8,6 +8,8 @@ function fullClassName = composeFullClassName(namespaceName, neurodataType)
         % MATLAB does not support "-" in namespace names
         namespaceName = strrep(namespaceName, '-', '_');
     end
+    %validNamespace = misc.str2validName(namespaceName);
+    %validName = misc.str2validName(neurodataType);
 
     fullClassName = compose("types.%s.%s", namespaceName, neurodataType);
     fullClassName = transpose(fullClassName); % Return as row vector

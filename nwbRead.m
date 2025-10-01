@@ -61,15 +61,18 @@ function nwb = nwbRead(filename, flags, options)
 
     shouldRegenerateSchemaClasses = not( any(strcmpi(string(flags), 'ignorecache')) );
 
+    % Create backend based on file format
+    backend = io.backend.BackendFactory.createBackend(filename);
+
     schemaVersionActive = matnwb.common.getActiveSchemaVersion();
-    schemaVersionOfFile = util.getSchemaVersion(filename);
+    schemaVersionOfFile = backend.getSchemaVersion();
     isSchemaVersionMismatch = ~strcmp(schemaVersionOfFile, schemaVersionActive);
 
     if isSchemaVersionMismatch
         warnIfUnsupportedSchemaVersion(schemaVersionOfFile)
     end
 
-    specLocation = io.spec.getEmbeddedSpecLocation(filename);
+    specLocation = backend.getEmbeddedSpecLocation();
     if shouldRegenerateSchemaClasses
         if isempty(specLocation) % No embedded specifications
             try
@@ -92,19 +95,24 @@ function nwb = nwbRead(filename, flags, options)
     if ~isempty(specLocation)
         blackList.groups{end+1} = specLocation;
     end
-    
+        
+    if isa(backend, 'io.backend.ZarrBackend')
+        blackList.attributes = [blackList.attributes, {'zarr_dtype', 'zarr_link'}];
+    end
+
     softLinkWarningResetObj = types.untyped.SoftLink.disablePathDeprecationWarning(); %#ok<NASGU>
 
-    try
-        nwb = io.parseGroup(filename, h5info(filename), blackList);
-    catch ME
-        if isSchemaVersionMismatch ...
-                && strcmp(ME.identifier, 'MATLAB:class:RequireSuperClass')
-            throwExceptionWithCauseOnVersionMismatch(ME)
-        else
-            rethrow(ME)
-        end
-    end
+    %try
+        fileInfo = backend.getFileInfo();
+        nwb = io.parseGroup(filename, fileInfo, blackList, backend);
+    % catch ME
+    %     if isSchemaVersionMismatch ...
+    %             && strcmp(ME.identifier, 'MATLAB:class:RequireSuperClass')
+    %         throwExceptionWithCauseOnVersionMismatch(ME)
+    %     else
+    %         rethrow(ME)
+    %     end
+    % end
 
     nwb.resolveSoftLinks()
 end
