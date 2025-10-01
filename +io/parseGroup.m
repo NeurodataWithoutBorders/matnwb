@@ -53,13 +53,9 @@ for i=1:length(info.Links)
             S = h5info(filename, link.Value{1});
             % Suggested improvement: Use info structure if Link is located in the group (or
             % subgroup) which is currently being parsed.
-            if ismember('neurodata_type', {S.Attributes.Name})
-                namespace = h5readatt(filename, link.Value{1}, 'namespace');
-                neurodataType = h5readatt(filename, link.Value{1}, 'neurodata_type');
-                fullTargetTypeName = matnwb.common.composeFullClassName(namespace, neurodataType);
-            else
-                fullTargetTypeName = '';
-            end
+
+            typeInfo = io.getNeurodataTypeInfo(S.Attributes);
+            fullTargetTypeName = typeInfo.typename;
 
             lnk = types.untyped.SoftLink(link.Value{1}, fullTargetTypeName);
         case 'external link'
