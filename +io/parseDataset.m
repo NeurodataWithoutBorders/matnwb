@@ -98,6 +98,8 @@ function matlabDataType = datatypeInfoToMatlabType(datatype)
             else
                 keyboard
             end
+        elseif strcmp(datatype.Class, 'H5T_COMPOUND')
+            matlabDataType = 'table';
         else
             keyboard
         end
