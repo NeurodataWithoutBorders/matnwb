@@ -65,7 +65,7 @@ function parsed = parseDataset(filename, info, fullpath, Blacklist)
         elseif any(dataspace.Size == 0)
             data = [];
         else
-            matlabDataType = datatypeInfoToMatlabType(datatype);
+            matlabDataType = datatypeInfoToMatlabType(datatype, info);
             data = types.untyped.DataStub(filename, fullpath, dataspace.Size, matlabDataType);
         end
         H5T.close(tid);
@@ -85,7 +85,7 @@ function parsed = parseDataset(filename, info, fullpath, Blacklist)
     H5F.close(fid);
 end
 
-function matlabDataType = datatypeInfoToMatlabType(datatype)
+function matlabDataType = datatypeInfoToMatlabType(datatype, info)
     if ischar(datatype.Type)
         matlabDataType = io.getMatType(datatype.Type);
 
@@ -100,6 +100,15 @@ function matlabDataType = datatypeInfoToMatlabType(datatype)
             end
         elseif strcmp(datatype.Class, 'H5T_COMPOUND')
             matlabDataType = 'table';
+        elseif strcmp(datatype.Class, 'H5T_ENUM')
+            if io.isBool(datatype.Type)
+                matlabDataType = 'logical';
+            else
+                warning('NWB:Dataset:UnknownEnum', ...
+                    ['Encountered unknown enum under field `%s` with %d members. ' ...
+                    'Will be saved as cell array of characters.'], ...
+                    info.Name, length(datatype.Type.Member));
+            end
         else
             keyboard
         end
