@@ -92,8 +92,8 @@ function matlabDataType = datatypeInfoToMatlabType(datatype, info)
     elseif isstruct(datatype.Type)
         if strcmp(datatype.Class, 'H5T_STRING')
             if strcmp(datatype.Type.Length, 'H5T_VARIABLE') && ...
-                  strcmp(datatype.Type.CharacterSet, 'H5T_CSET_UTF8') && ...
-                  strcmp(datatype.Type.CharacterType, 'H5T_C_S1')
+                strcmp(datatype.Type.CharacterType, 'H5T_C_S1') && ...
+                ismember(datatype.Type.CharacterSet, {'H5T_CSET_UTF8', 'H5T_CSET_ASCII'}) 
                 matlabDataType = 'char';
             else
                 keyboard
