@@ -13,18 +13,27 @@ classdef (Sealed) DataStub < handle
         ndims;
         dataType;
     end
+
+    properties (Access = private)
+        dims_ double
+        dataType_ char
+    end
     
     methods
-        function obj = DataStub(filename, path)
-            validateattributes(filename, {'char', 'string'}, {'scalartext'} ...
-                , 'types.untyped.DataStub', 'filename', 1);
-            validateattributes(path, {'char', 'string'}, {'scalartext'} ...
-                , 'types.untyped.DataStub', 'path', 2);
+        function obj = DataStub(filename, path, dims, dataType)
+            arguments
+                filename (1,1) string
+                path (1,1) string
+                dims double = []
+                dataType string = string.empty
+            end
             obj.filename = char(filename);
             obj.path = char(path);
+            obj.dims_ = dims;
+            obj.dataType_ = dataType;
         end
         
-        function sid = get_space(obj)
+        function sid = get_space(obj) % Todo: private method
             fid = H5F.open(obj.filename);
             did = H5D.open(fid, obj.path);
             sid = H5D.get_space(did);
@@ -33,10 +42,13 @@ classdef (Sealed) DataStub < handle
         end
         
         function dims = get.dims(obj)
-            sid = obj.get_space();
-            [~, h5_dims, ~] = H5S.get_simple_extent_dims(sid);
-            dims = fliplr(h5_dims);
-            H5S.close(sid);
+            if isempty(obj.dims_)
+                sid = obj.get_space();
+                [~, h5_dims, ~] = H5S.get_simple_extent_dims(sid);
+                obj.dims_ = fliplr(h5_dims);
+                H5S.close(sid);
+            end
+            dims = obj.dims_;
         end
         
         function nd = get.ndims(obj)
@@ -44,12 +56,15 @@ classdef (Sealed) DataStub < handle
         end
 
         function matType = get.dataType(obj)
-            fid = H5F.open(obj.filename);
-            did = H5D.open(fid, obj.path);
-            tid = H5D.get_type(did);
-            matType = io.getMatType(tid);
-            H5D.close(did);
-            H5F.close(fid);
+            if isempty(obj.dataType_)
+                fid = H5F.open(obj.filename);
+                did = H5D.open(fid, obj.path);
+                tid = H5D.get_type(did);
+                obj.dataType_ = io.getMatType(tid);
+                H5D.close(did);
+                H5F.close(fid);
+            end
+            matType = obj.dataType_;
         end
         
         %can be called without arg, with H5ML.id, or (dims, offset, stride)
