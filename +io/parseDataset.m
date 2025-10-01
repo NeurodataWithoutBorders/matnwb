@@ -65,7 +65,8 @@ function parsed = parseDataset(filename, info, fullpath, Blacklist)
         elseif any(dataspace.Size == 0)
             data = [];
         else
-            data = types.untyped.DataStub(filename, fullpath);
+            matlabDataType = datatypeInfoToMatlabType(datatype);
+            data = types.untyped.DataStub(filename, fullpath, dataspace.Size, matlabDataType);
         end
         H5T.close(tid);
         H5P.close(pid);
@@ -82,4 +83,23 @@ function parsed = parseDataset(filename, info, fullpath, Blacklist)
     end
     H5D.close(did);
     H5F.close(fid);
+end
+
+function matlabDataType = datatypeInfoToMatlabType(datatype)
+    if ischar(datatype.Type)
+        matlabDataType = io.getMatType(datatype.Type);
+
+    elseif isstruct(datatype.Type)
+        if strcmp(datatype.Class, 'H5T_STRING')
+            if strcmp(datatype.Type.Length, 'H5T_VARIABLE') && ...
+                  strcmp(datatype.Type.CharacterSet, 'H5T_CSET_UTF8') && ...
+                  strcmp(datatype.Type.CharacterType, 'H5T_C_S1')
+                matlabDataType = 'char';
+            else
+                keyboard
+            end
+        else
+            keyboard
+        end
+    end
 end
