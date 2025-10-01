@@ -86,6 +86,12 @@ function parsed = parseDataset(filename, info, fullpath, Blacklist)
 end
 
 function matlabDataType = datatypeInfoToMatlabType(datatype, info)
+    
+    % This function is not exhaustive, and might not be able to resolve
+    % every type. If type is not detected, output will be an empty char.
+
+    matlabDataType = '';
+
     if ischar(datatype.Type)
         matlabDataType = io.getMatType(datatype.Type);
 
@@ -95,8 +101,6 @@ function matlabDataType = datatypeInfoToMatlabType(datatype, info)
                 strcmp(datatype.Type.CharacterType, 'H5T_C_S1') && ...
                 ismember(datatype.Type.CharacterSet, {'H5T_CSET_UTF8', 'H5T_CSET_ASCII'}) 
                 matlabDataType = 'char';
-            else
-                keyboard
             end
         elseif strcmp(datatype.Class, 'H5T_COMPOUND')
             matlabDataType = 'table';
@@ -109,8 +113,6 @@ function matlabDataType = datatypeInfoToMatlabType(datatype, info)
                     'Will be saved as cell array of characters.'], ...
                     info.Name, length(datatype.Type.Member));
             end
-        else
-            keyboard
         end
     end
 end
