@@ -156,6 +156,25 @@ classdef nwbExportTest < tests.abstract.NwbTestCase
                 'NWB:CustomConstraintUnfulfilled')
         end
 
+        function testExportAppliesDatasetSettingsOption(testCase)
+            nwb = tests.factory.NWBFile();
+            largeSeries = types.core.TimeSeries( ...
+                'data', rand(64, 100000), ...
+                'data_unit', 'n/a', ...
+                'timestamps', 1:100000);
+
+            nwb.acquisition.set('export_data', largeSeries);
+
+            nwbFilePath = testCase.getRandomFilename();
+            nwbExport(nwb, nwbFilePath, 'DatasetSettingsProfile', 'cloud');
+
+            configuredData = nwb.acquisition.get('export_data').data;
+            testCase.verifyTrue(isa(configuredData, 'types.untyped.DataPipe'), ...
+                'nwbExport should configure datasets when DatasetSettings option is provided');
+            testCase.verifyTrue(isfile(nwbFilePath), ...
+                'nwbExport should still write the requested file');
+        end
+
         function testEmbeddedSpecs(testCase)
             
             % Install extensions, one will be used, the other will not. 
