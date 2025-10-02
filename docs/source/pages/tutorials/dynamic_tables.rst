@@ -1,3 +1,5 @@
+.. _dynamic_tables-tutorial:
+
 Using Dynamic Tables in MatNWB
 ==============================
 
