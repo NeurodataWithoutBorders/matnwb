@@ -1,42 +1,39 @@
 function [args, type] = parseAttributes(filename, attributes, context, Blacklist)
-%typename is the type of name if it exists.  Empty string otherwise
-%args is a containers.Map of all valid attributes
+% parseAttributes - Parse an attribute info structure
+%
+% Syntax:
+%   [args, type] = io.parseAttributes(filename, attributes, context, Blacklist)
+%   This function parses a given attribute info structure and returns a 
+%   containers.Map of valid attributes along with neurodata type info if it 
+%   exists.
+%
+% Input Arguments:
+%   filename   - The name of the file containing attributes.
+%   attributes - The attributes to be parsed.
+%   context    - The context (h5 location) in which the attributes are located.
+%   Blacklist  - A list of attributes to be excluded from the parsing.
+%
+% Output Arguments:
+%   args - A containers.Map of all valid attributes.
+%   type - A structure with type information (see io.getNeurodataTypeInfo)
+%
+% See also: io.getNeurodataTypeInfo
+
 args = containers.Map;
-type = struct('namespace', '', 'name', '', 'typename', '');
+type = io.getNeurodataTypeInfo(attributes);
+
 if isempty(attributes)
     return;
 end
+
 names = {attributes.Name};
 
-typeDefMask = strcmp(names, 'neurodata_type');
-hasTypeDef = any(typeDefMask);
-if hasTypeDef
-    typeDef = attributes(typeDefMask).Value;
-    if iscellstr(typeDef)
-        typeDef = typeDef{1};
-    end
-    type.name = typeDef;
-end
-
-namespaceMask = strcmp(names, 'namespace');
-hasNamespace = any(namespaceMask);
-if hasNamespace
-    namespace = attributes(namespaceMask).Value;
-    if iscellstr(namespace)
-        namespace = namespace{1};
-    end
-    type.namespace = namespace;
-end
-
-if hasTypeDef && hasNamespace
-    validNamespace = misc.str2validName(type.namespace);
-    validName = misc.str2validName(type.name);
-    type.typename = ['types.' validNamespace '.' validName];
-end
+% We already got type information (if present), so we add type-specific 
+% attributes to the blacklist before parsing the rest of the attribute list
+Blacklist.attributes = [Blacklist.attributes, {'neurodata_type', 'namespace'}];
 
 blacklistMask = ismember(names, Blacklist.attributes);
-deleteMask = typeDefMask | namespaceMask | blacklistMask;
-attributes(deleteMask) = [];
+attributes(blacklistMask) = [];
 for i=1:length(attributes)
     attr = attributes(i);
 

@@ -1,0 +1,133 @@
+datasets:
+- neurodata_type_def: AnyData
+  neurodata_type_inc: NWBData
+  doc: Basic dataset with any dtype allowed
+  dtype: any
+  shape:
+  - null
+
+# Dataset that inherits from AnyData but constrains dtype to text
+- neurodata_type_def: TextData
+  neurodata_type_inc: AnyData
+  doc: Dataset that inherits from AnyData but overrides dtype to text
+  dtype: text
+
+# Dataset that inherits from AnyData but constrains dtype to integers
+- neurodata_type_def: IntegerData
+  neurodata_type_inc: AnyData
+  doc: Dataset that inherits from AnyData but overrides dtype to int (int32)
+  dtype: int
+
+# Dataset that inherits from AnyData but constrains dtype to floats
+- neurodata_type_def: FloatData
+  neurodata_type_inc: AnyData
+  doc: Dataset that inherits from AnyData but overrides dtype to float (float32)
+  dtype: float
+
+# Dataset that inherits from AnyData but constrains dtype to datetime
+- neurodata_type_def: DatetimeData
+  neurodata_type_inc: AnyData
+  doc: Dataset that inherits from AnyData but overrides dtype to datetime
+  dtype: datetime
+
+# Dataset with compound data type
+- neurodata_type_def: CompoundData
+  neurodata_type_inc: AnyData
+  doc: Dataset with compound data type for testing struct validation
+  dtype:
+  - name: integer
+    dtype: int
+    doc: An integer value.
+  - name: float
+    dtype: float
+    doc: A float value.
+  - name: text
+    dtype: text
+    doc: A text value.
+  - name: reference
+    dtype:
+      target_type: AnyData
+      reftype: object
+    doc: Reference to a AnyData
+
+groups:
+- neurodata_type_def: InclusionContainer
+  neurodata_type_inc: NWBDataInterface
+  doc: Container for testing dtype validation for dataset types that are reused by inclusion
+  datasets:
+  - name: any_data
+    neurodata_type_inc: AnyData
+  - name: included_data_must_be_text
+    neurodata_type_inc: AnyData
+    dtype: text
+  - name: included_data_must_be_integer
+    neurodata_type_inc: AnyData
+    dtype: int
+  - name: included_data_must_be_float
+    neurodata_type_inc: AnyData
+    dtype: float
+  - name: included_data_must_be_compound
+    neurodata_type_inc: AnyData
+    dtype: 
+    - name: integer
+      dtype: int
+      doc: An integer value.
+    - name: float
+      dtype: float
+      doc: A float value.
+    - name: text
+      dtype: text
+      doc: A text value.
+
+- neurodata_type_def: InheritanceContainer
+  neurodata_type_inc: NWBDataInterface
+  doc: Container for testing dtype validation for dataset types that are reused by inheritance
+  datasets:
+  - name: any_data
+    neurodata_type_inc: AnyData
+  - name: text_data
+    neurodata_type_inc: TextData
+  - name: integer_data
+    neurodata_type_inc: IntegerData
+  - name: float_data
+    neurodata_type_inc: FloatData
+  - name: compound_data
+    neurodata_type_inc: CompoundData
+
+- neurodata_type_def: NestedDataTypeContainer
+  neurodata_type_inc: NWBDataInterface
+  doc: Container with untyped subgroup for testing data type validation in nested type hierarchies
+  groups:
+  - name: subgroup
+    doc: a subgroup with datasets and attributes
+    groups:
+    - name: nested_subgroup
+      neurodata_type_inc: DynamicTable
+    - neurodata_type_inc: NWBDataInterface
+      doc: a nested and constrained subgroup
+      quantity: +
+    datasets:
+    - name: any_data
+      neurodata_type_inc: AnyData
+    - name: reused_data_constrained
+      neurodata_type_inc: TextData
+      quantity: +
+    - name: untyped_numeric_data
+      dtype: double
+      shape:
+      - null
+    - name: untyped_text_data
+      dtype: text
+    attributes:
+    - name: description
+      dtype: text
+      doc: A description of the data
+      default_value: no description
+    - name: number
+      dtype: double
+      doc: A number
+      default_value: 1
+    links:
+    - name: subgroup_link
+      target_type: AnyData
+      doc: link in subgroup pointing to a basic dataset (AnyData)
