@@ -106,7 +106,6 @@ classdef NwbFile < types.core.NWBFile
             end
         end
 
-
         function datasetConfig = applyDatasetSettings(obj, datasetSettings, options)
         % APPLYDATASETSETTINGS - Configure datasets using NWB dataset settings
 
