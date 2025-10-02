@@ -17,13 +17,13 @@ Prerequisites
 At a glance
 -----------
 1. Create or load your ``NwbFile`` and populate data.
-2. Read a dataset configuration profile (``default``, ``cloud``, or ``archive`` – or your own).
-3. Apply it with :func:`io.config.applyDatasetConfiguration`.
+2. Choose dataset settings: a built-in profile, a custom JSON file, or a struct already in memory.
+3. Apply them with :meth:`NwbFile.applyDatasetSettings` (or let :func:`nwbExport` do it for you).
 4. Export.
 
 
-Creating and exporting an NWB file with a profile
--------------------------------------------------
+Creating and exporting an NWB file with a configuration profile
+---------------------------------------------------------------
 .. code-block:: matlab
 
 	% 1. Create and populate an NWB file
@@ -39,14 +39,16 @@ Creating and exporting an NWB file with a profile
 		 'starting_time_rate', 30000);
 	nwb.acquisition.set('ExampleSeries', es);
 
-	% 2. Load a profile (choose "default", "cloud", or "archive")
-	cfg = io.config.readDatasetConfiguration("cloud");
+	% 2. Apply the cloud profile (convenience method accepts profile name,
+	%    JSON file path, or a configuration struct)
+	nwb.applyDatasetSettingsProfile('cloud');
 
-	% 3. Apply it (wraps large numeric datasets in DataPipe objects)
-	io.config.applyDatasetConfiguration(nwb, cfg);
-
-	% 4. Export
+	% 3. Export (settings already applied in-place)
 	nwbExport(nwb, 'example_cloud_profile.nwb');
+
+	% -- OR -- apply settings on the fly when exporting
+	% nwbExport(nwb, 'example_cloud_profile.nwb', ...
+	%     'DatasetSettingsProfile', 'cloud');
 
 
 Overriding an existing DataPipe
@@ -55,13 +57,12 @@ If you already created a ``DataPipe`` manually (or ran a profile once) and want 
 
 .. code-block:: matlab
 
-	newCfg = io.config.readDatasetConfiguration("archive");
-	io.config.applyDatasetConfiguration(nwb, newCfg, "OverrideExisting", true);
+	nwb.applyDatasetSettings('archive', "OverrideExisting", true);
 
 Customizing a profile
 ---------------------
 
-1. Copy one of the shipped JSON files (e.g. ``default_dataset_configuration.json``) to a new file in ``configuration/`` (e.g. ``myprofile_dataset_configuration.json``).
+1. Copy one of the shipped JSON files (e.g. ``default_dataset_configuration.json``) to a new file (e.g. ``configuration/myprofile_dataset_configuration.json``).
 
 2. Adjust fields:
 
@@ -95,12 +96,13 @@ Customizing a profile
        Targets the ``data`` dataset inside any ``TwoPhotonSeries``.
 
 
-4. Load it:
+4. Load it (either via the helper or by passing the file path directly):
 
 .. code-block:: matlab
 
-	cfg = io.config.readDatasetConfiguration("myprofile");
-	io.config.applyDatasetConfiguration(nwb, cfg);
+
+	% Apply configuration from file to the NwbFile object
+	nwb.applyDatasetSettings('configuration/myprofile_dataset_configuration.json');
 
 
 Verifying the applied configuration
