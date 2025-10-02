@@ -9,13 +9,19 @@ function nwbExport(nwbFileObjects, filePaths, mode, options)
 %   - filename (string) - Filepath pointing to an NWB file.
 %
 % Name-Value Arguments:
-%   - DatasetSettings (string | struct) - Apply dataset configuration prior to
-%       export. Provide a profile name accepted by
-%       io.config.readDatasetConfiguration (e.g. "default", "cloud",
-%       "archive") or a configuration struct matching the format returned by
-%       that function.
-%   - OverrideDatasetSettings (logical) - When true, existing DataPipe objects
-%       found in the file are reconfigured using the provided dataset settings.
+%  - DatasetSettingsProfile (string) -
+%    Name of a predefined configuration profile. Available options:
+%    "default", "cloud", "archive".
+%       
+%  - DatasetSettings (string | struct) - 
+%    Apply dataset configuration prior to export. Provide a profile name 
+%    accepted by io.config.readDatasetConfiguration (e.g. "default", "cloud",
+%    "archive"), a filepath to a custom configuration profile or a configuration 
+%    struct matching the format returned by that io.config.readDatasetConfiguration.
+%
+%  - OverrideDatasetSettings (logical) - 
+%    When true, existing DataPipe objects found in the file are reconfigured 
+%    using the provided dataset settings.
 %
 % Usage:
 %  Example 1 - Export an NWB file::
@@ -45,7 +51,7 @@ function nwbExport(nwbFileObjects, filePaths, mode, options)
 %
 %  Example 3 - Export an NWB file using dataset settings tuned for cloud storage::
 %
-%    nwbExport(nwb, 'empty.nwb', 'DatasetSettings', 'cloud');
+%    nwbExport(nwb, 'empty.nwb', 'DatasetSettingsProfile', 'cloud');
 %
 % See also:
 %   generateCore, generateExtension, NwbFile, nwbRead
