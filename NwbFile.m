@@ -118,7 +118,7 @@ classdef NwbFile < types.core.NWBFile
         %
         % See also:
         %   io.config.enum.ConfigurationProfile
-        %   NwbFile/applyDatasetSettings
+        %   NwbFile.applyDatasetSettings
 
             arguments
                 obj (1,1) NwbFile
@@ -164,7 +164,7 @@ classdef NwbFile < types.core.NWBFile
         %
         % See also:
         %   io.config.enum.ConfigurationProfile
-        %   NwbFile/applyDatasetSettingsProfile
+        %   NwbFile.applyDatasetSettingsProfile
 
             arguments
                 obj (1,1) NwbFile
