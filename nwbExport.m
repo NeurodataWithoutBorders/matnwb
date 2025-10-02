@@ -13,7 +13,8 @@ function nwbExport(nwbFileObjects, filePaths, mode, options)
 %
 % Name-Value Arguments (options):
 %  Specify options using name-value arguments as Name1=Value1,...,NameN=ValueN, 
-%  where Name is the argument name and Value is the corresponding value. 
+%  where Name is the argument name and Value is the corresponding value.
+%  
 %  - DatasetSettingsProfile (string) -
 %    Default: "none". Name of a predefined configuration profile for dataset 
 %    chunking and compression. Available options: "default", "cloud" or 
