@@ -11,20 +11,22 @@ function nwbExport(nwbFileObjects, filePaths, mode, options)
 %   - nwb (NwbFile) - Nwb file object
 %   - filename (string) - Filepath pointing to an NWB file.
 %
-% Name-Value Arguments:
+% Name-Value Arguments (options):
+%  Specify options using name-value arguments as Name1=Value1,...,NameN=ValueN, 
+%  where Name is the argument name and Value is the corresponding value. 
 %  - DatasetSettingsProfile (string) -
-%    Name of a predefined configuration profile for dataset chunking and 
-%    compression. Available options: "default", "cloud" or "archive". If
-%    this argument is specified, all datasets in the file larger than a
-%    threshold specified in the profile will be configured for chunking and
-%    compression.
+%    Default: "none". Name of a predefined configuration profile for dataset 
+%    chunking and compression. Available options: "default", "cloud" or 
+%    "archive". If this argument is specified, all datasets in the file larger 
+%    than a threshold specified in the profile will be configured for chunking 
+%    and compression.
 %       
 %  - DatasetSettings (string | struct) - 
-%    Provide the filename of a custom configuration profile or an in-memory
-%    structure representing a configuration profile.
+%    Default: empty struct. Provide the filename of a custom configuration 
+%    profile or an in-memory structure representing a configuration profile.
 %
 %  - OverrideDatasetSettings (logical) - 
-%    When true, existing DataPipe objects found in the file are reconfigured 
+%    Default: false. When true, existing DataPipe objects found in the file are reconfigured 
 %    using the provided dataset settings.
 %
 % Usage:
