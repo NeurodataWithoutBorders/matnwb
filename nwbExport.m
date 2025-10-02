@@ -4,20 +4,24 @@ function nwbExport(nwbFileObjects, filePaths, mode, options)
 % Syntax:
 %  NWBEXPORT(nwb, filename) Writes the nwb object to a file at filename.
 %
+%  NWBEXPORT(nwb, filename, Name, Value) Writes the nwb object using additional
+%  options provided as name-value pairs.
+%
 % Input Arguments:
 %   - nwb (NwbFile) - Nwb file object
 %   - filename (string) - Filepath pointing to an NWB file.
 %
 % Name-Value Arguments:
 %  - DatasetSettingsProfile (string) -
-%    Name of a predefined configuration profile. Available options:
-%    "default", "cloud", "archive".
+%    Name of a predefined configuration profile for dataset chunking and 
+%    compression. Available options: "default", "cloud" or "archive". If
+%    this argument is specified, all datasets in the file larger than a
+%    threshold specified in the profile will be configured for chunking and
+%    compression.
 %       
 %  - DatasetSettings (string | struct) - 
-%    Apply dataset configuration prior to export. Provide a profile name 
-%    accepted by io.config.readDatasetConfiguration (e.g. "default", "cloud",
-%    "archive"), a filepath to a custom configuration profile or a configuration 
-%    struct matching the format returned by that io.config.readDatasetConfiguration.
+%    Provide the filename of a custom configuration profile or an in-memory
+%    structure representing a configuration profile.
 %
 %  - OverrideDatasetSettings (logical) - 
 %    When true, existing DataPipe objects found in the file are reconfigured 

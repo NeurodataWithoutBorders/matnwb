@@ -92,6 +92,34 @@ classdef NwbFile < types.core.NWBFile
 
         function datasetConfig = applyDatasetSettingsProfile(obj, profile, options)
         % APPLYDATASETSETTINGSPROFILE - Configure datasets using predefined settings profile
+        %
+        % Syntax:
+        %  nwb.applyDatasetSettingsProfile(profile) applies a dataset
+        %  configuration profile to the nwb-file ``nwb``. Available profiles:
+        %  "default", "cloud", "archive". This will configure datasets in
+        %  the NwbFile object for chunking and compression.
+        % 
+        % Input Arguments:
+        %  - obj (NwbFile) - An instance of the NwbFile class.
+        % 
+        %  - profile (ConfigurationProfile) - 
+        %   Specifies the settings profile to use. Default is "none".
+        %
+        % Name-Value Arguments:
+        %  - OverrideExisting (logical) - 
+        %   This boolean determines if existing DataPipe objects in the
+        %   file will be reconfigured with the provided options. Default is
+        %   false. **Important**: This does not work for DataPipes that has
+        %   previously been exported to file.
+        % 
+        % Output Arguments:
+        %  - datasetConfig - 
+        %   (Optional) The configuration settings applied to the dataset.
+        %
+        % See also:
+        %   io.config.enum.ConfigurationProfile
+        %   NwbFile/applyDatasetSettings
+
             arguments
                 obj (1,1) NwbFile
                 profile (1,1) io.config.enum.ConfigurationProfile = "none"
@@ -106,16 +134,45 @@ classdef NwbFile < types.core.NWBFile
             end
         end
 
-        function datasetConfig = applyDatasetSettings(obj, datasetSettings, options)
+
+        function datasetConfig = applyDatasetSettings(obj, settingsReference, options)
         % APPLYDATASETSETTINGS - Configure datasets using NWB dataset settings
+        %
+        % Syntax:
+        %  nwb.applyDatasetSettings(settingsReference) applies a dataset
+        %  configuration profile to the nwb-file ``nwb``. This method
+        %  accepts the filename of a custom configuration profile or a
+        %  structure representing a configuration profile.
+        % 
+        % Input Arguments:
+        %  - obj (NwbFile) - An instance of the NwbFile class.
+        % 
+        %  - settingsReference (string | struct) - 
+        %   The filename of a custom configuration profile or an in-memory
+        %   structure representing a configuration profile.
+        %
+        % Name-Value Arguments:
+        %  - OverrideExisting (logical) - 
+        %   This boolean determines if existing DataPipe objects in the
+        %   file will be reconfigured with the provided options. Default is
+        %   false. **Important**: This does not work for DataPipes that has
+        %   previously been exported to file.
+        % 
+        % Output Arguments:
+        %  - datasetConfig - 
+        %   (Optional) The configuration settings applied to the dataset.
+        %
+        % See also:
+        %   io.config.enum.ConfigurationProfile
+        %   NwbFile/applyDatasetSettingsProfile
 
             arguments
                 obj (1,1) NwbFile
-                datasetSettings = []
+                settingsReference = []
                 options.OverrideExisting (1,1) logical = false
             end
 
-            datasetConfig = io.config.resolveDatasetConfiguration(datasetSettings);
+            datasetConfig = io.config.resolveDatasetConfiguration(settingsReference);
 
             nvPairs = namedargs2cell(options);
             io.config.applyDatasetConfiguration(obj, datasetConfig, nvPairs{:});
