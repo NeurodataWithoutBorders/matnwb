@@ -1,4 +1,4 @@
-classdef ProcessingModule < types.core.NWBContainer & types.untyped.GroupClass
+classdef ProcessingModule < types.core.NWBContainer & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups
 % PROCESSINGMODULE - A collection of processed data.
 %
 % Required Properties:
@@ -13,6 +13,9 @@ end
 properties
     dynamictable; %  (DynamicTable) Tables stored in this collection.
     nwbdatainterface; %  (NWBDataInterface) Data objects stored in this collection.
+end
+properties (Access = protected)
+    GroupPropertyNames = {'nwbdatainterface', 'dynamictable'}
 end
 
 methods
@@ -39,6 +42,8 @@ methods
         varargin(ivarargin) = [];
         [obj.nwbdatainterface, ivarargin] = types.util.parseConstrained(obj,'nwbdatainterface', 'types.core.NWBDataInterface', varargin{:});
         varargin(ivarargin) = [];
+        
+        obj.setupHasUnnamedGroupsMixin()
         
         p = inputParser;
         p.KeepUnmatched = true;
