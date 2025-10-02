@@ -123,17 +123,15 @@ methods
         types.util.checkType('pixel_mask', 'types.hdmf_common.VectorData', val);
         if ~isempty(val)
             [val, originalVal] = types.util.unwrapValue(val);
-            if isempty(val) || isa(val, 'types.untyped.DataStub')
-                return;
+            if isempty(val)
+                % skip validation for empty values
+            else
+                vprops = struct();
+                vprops.x = 'uint32';
+                vprops.y = 'uint32';
+                vprops.weight = 'single';
+                val = types.util.checkDtype('pixel_mask', vprops, val);
             end
-            if ~istable(val) && ~isstruct(val) && ~isa(val, 'containers.Map')
-                error('NWB:Type:InvalidPropertyType', 'Property `pixel_mask` must be a table, struct, or containers.Map.');
-            end
-            vprops = struct();
-            vprops.x = 'uint32';
-            vprops.y = 'uint32';
-            vprops.weight = 'single';
-            val = types.util.checkDtype('pixel_mask', vprops, val);
             val = types.util.rewrapValue(val, originalVal);
         end
     end
@@ -149,18 +147,16 @@ methods
         types.util.checkType('voxel_mask', 'types.hdmf_common.VectorData', val);
         if ~isempty(val)
             [val, originalVal] = types.util.unwrapValue(val);
-            if isempty(val) || isa(val, 'types.untyped.DataStub')
-                return;
+            if isempty(val)
+                % skip validation for empty values
+            else
+                vprops = struct();
+                vprops.x = 'uint32';
+                vprops.y = 'uint32';
+                vprops.z = 'uint32';
+                vprops.weight = 'single';
+                val = types.util.checkDtype('voxel_mask', vprops, val);
             end
-            if ~istable(val) && ~isstruct(val) && ~isa(val, 'containers.Map')
-                error('NWB:Type:InvalidPropertyType', 'Property `voxel_mask` must be a table, struct, or containers.Map.');
-            end
-            vprops = struct();
-            vprops.x = 'uint32';
-            vprops.y = 'uint32';
-            vprops.z = 'uint32';
-            vprops.weight = 'single';
-            val = types.util.checkDtype('voxel_mask', vprops, val);
             val = types.util.rewrapValue(val, originalVal);
         end
     end
