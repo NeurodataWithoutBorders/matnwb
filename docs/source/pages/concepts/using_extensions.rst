@@ -1,5 +1,5 @@
-Using Neurodata Extensions
-==========================
+Neurodata Extensions
+====================
 
 The `NWB Specification Language <https://schema-language.readthedocs.io/en/latest/index.html>`_ 
 can be used to create Neurodata Extensions (NDX), which extend the core NWB schemas 
@@ -8,10 +8,10 @@ that has specific metadata or data requirements not covered by the core NWB sche
 To learn more about extending NWB, see the :nwb_overview:`NWB Overview Documentation<extensions_tutorial/extensions_tutorial_home.html>`, 
 and for a list of published extensions, visit the `Neurodata Extension Catalog <https://nwb-extensions.github.io>`_.
 
-The following sections describe how to use extensions in MatNWB:
+The following guides describe how to use extensions in MatNWB:
 
 .. toctree::
     :maxdepth: 2
 
-    using_extensions/generating_extension_api
-    using_extensions/installing_extensions
+    /pages/how_to/using_extensions/generating_extension_api
+    /pages/how_to/using_extensions/installing_extensions

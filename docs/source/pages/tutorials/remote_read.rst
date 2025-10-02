@@ -1,3 +1,5 @@
+.. _remote_read-tutorial:
+
 Reading NWB Files from Remote Locations
 =======================================
 
