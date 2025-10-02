@@ -2,7 +2,6 @@ classdef FunctionsTest < matlab.unittest.TestCase
 % FunctionsTest - Test inputs and outputs of functions in io.config namespace
 
     methods (Test)
-
         function testReadDatasetConfiguration(testCase)
             % Test with no inputs:
             defaultDatasetConfig = io.config.readDatasetConfiguration();
