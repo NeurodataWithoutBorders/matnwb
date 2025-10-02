@@ -90,6 +90,41 @@ classdef NwbFile < types.core.NWBFile
             end
         end
 
+        function datasetConfig = applyDatasetSettingsProfile(obj, profile, options)
+        % APPLYDATASETSETTINGSPROFILE - Configure datasets using predefined settings profile
+            arguments
+                obj (1,1) NwbFile
+                profile (1,1) io.config.enum.ConfigurationProfile = "none"
+                options.OverrideExisting (1,1) logical = false
+            end
+            
+            datasetConfig = io.config.readDatasetConfiguration(profile);
+            nvPairs = namedargs2cell(options);
+            obj.applyDatasetSettings(datasetConfig, nvPairs{:});
+            if ~nargout
+                clear datasetConfig
+            end
+        end
+
+
+        function datasetConfig = applyDatasetSettings(obj, datasetSettings, options)
+        % APPLYDATASETSETTINGS - Configure datasets using NWB dataset settings
+
+            arguments
+                obj (1,1) NwbFile
+                datasetSettings = []
+                options.OverrideExisting (1,1) logical = false
+            end
+
+            datasetConfig = io.config.resolveDatasetConfiguration(datasetSettings);
+
+            nvPairs = namedargs2cell(options);
+            io.config.applyDatasetConfiguration(obj, datasetConfig, nvPairs{:});
+            if ~nargout
+                clear datasetConfig
+            end
+        end
+
         function o = resolve(obj, path)
             if ischar(path)
                 path = {path};
