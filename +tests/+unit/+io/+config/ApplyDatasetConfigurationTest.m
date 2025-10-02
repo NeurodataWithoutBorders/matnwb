@@ -275,7 +275,7 @@ classdef ApplyDatasetConfigurationTest < tests.abstract.NwbTestCase
             testCase.verifyTrue( isfield(updatedConfig, 'GrayscaleImage_data') );
         end
 
-        function testNwbFileApplyDatasetSettings(testCase)
+        function testNwbFileApplyDatasetSettingsProfile(testCase)
             nwbFile = tests.factory.NWBFile();
 
             largeSeries = types.core.TimeSeries( ...
@@ -285,7 +285,7 @@ classdef ApplyDatasetConfigurationTest < tests.abstract.NwbTestCase
 
             nwbFile.acquisition.set('data', largeSeries);
 
-            datasetConfig = nwbFile.applyDatasetSettings('cloud');
+            datasetConfig = nwbFile.applyDatasetSettingsProfile('cloud');
 
             resultPipe = nwbFile.acquisition.get('data').data;
             testCase.verifyTrue(isa(resultPipe, 'types.untyped.DataPipe'), ...
