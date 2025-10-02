@@ -122,7 +122,7 @@ classdef NwbFile < types.core.NWBFile
 
             arguments
                 obj (1,1) NwbFile
-                profile (1,1) io.config.enum.ConfigurationProfile = "none"
+                profile (1,1) io.config.enum.ConfigurationProfile
                 options.OverrideExisting (1,1) logical = false
             end
             
@@ -168,7 +168,7 @@ classdef NwbFile < types.core.NWBFile
 
             arguments
                 obj (1,1) NwbFile
-                settingsReference = []
+                settingsReference
                 options.OverrideExisting (1,1) logical = false
             end
 
