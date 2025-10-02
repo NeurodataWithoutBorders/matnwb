@@ -1,9 +1,9 @@
 coverage:
-  range: "90...100"
+  range: "85...95"
   status:
     project:
       default:
-        target: 90 # Set the desired coverage target as 90%
+        target: 95 # Set the desired coverage target as 90%
         threshold: 1 # Allowable drop in coverage
     patch:
       default:
