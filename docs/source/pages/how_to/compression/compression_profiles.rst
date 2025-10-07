@@ -27,7 +27,7 @@ Built-in profiles (quick reference)
 - ``cloud`` — chunking tuned for remote/cloud reads; moderate compression.
 - ``archive`` — stronger compression for long-term storage.
 
-Use with either :func:`nwbExport(..., 'DatasetSettingsProfile', '<name>')` or :meth:`NwbFile.applyDatasetSettingsProfile('<name>')`.
+Use with either ``nwbExport(..., 'DatasetSettingsProfile', '<name>')`` or ``NwbFile.applyDatasetSettingsProfile('<name>')``.
 
 
 Creating and exporting an NWB file with a dataset configuration profile
@@ -100,7 +100,7 @@ If you already created a ``DataPipe`` manually (or ran a profile once) and want 
 
 .. code-block:: matlab
 
-    nwb.applyDatasetSettingsProfile('archive', "OverrideExisting", true);
+    nwb.applyDatasetSettingsProfile('archive', 'OverrideExisting', true);
 
 Customizing a profile
 ---------------------
@@ -148,34 +148,12 @@ Customizing a profile
     nwb.applyDatasetSettings('configuration/myprofile_dataset_configuration.json');
 
 
-Minimal JSON template
----------------------
-.. code-block:: json
-
-        {
-            "chunking": {
-                "target_chunk_size": 4,
-                "target_chunk_size_unit": "MiB",
-                "strategy_by_rank": { "1": ["max"], "2": ["flex", "max"] }
-            },
-            "compression": {
-                "method": "deflate",
-                "parameters": { "level": 4 },
-                "prefilters": ["shuffle"]
-            }
-        }
-
-
 Troubleshooting
 ---------------
 * ``No matching rank strategy`` error: Add a list for that rank (e.g. key ``"5"``) in ``strategy_by_rank``.
 * ``TargetSizeExceeded`` warning: Reduce dimensions marked ``max`` or lower numeric bounds; lower ``target_chunk_size``.
 * ``Unsupported target_chunk_size_unit``: Ensure unit is one of ``bytes``, ``kiB``, ``MiB``, ``GiB``.
 
-Next steps
-----------
-* Combine with streaming writes using ``DataPipe.append`` for very large, incremental acquisitions.
-* Profile read performance with different chunk strategies to tune domain‑specific workloads.
 
 Summary
 -------
