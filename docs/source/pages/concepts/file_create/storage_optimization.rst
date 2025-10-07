@@ -2,8 +2,7 @@
 Storage optimization
 ====================
 
-Neuroscience data can be very large, and compression helps reduce file size, improving both storage efficiency and data transfer time.
-
+When storing large datasets, much of the information is often redundant — and compression is an obvious way to save space. Neuroscience data, in particular, can be extremely large, and compression reduces file size, saving storage space and reducing data transfer time. However, compressing the entire file as one block creates a new problem: you lose the ability to quickly access specific parts of the data without first decompressing everything. Chunking with compression solves this by dividing the dataset into smaller pieces (“chunks”) and compressing each one individually. This preserves most of the storage benefits of compression while still allowing efficient, random access to the data you need.
 
 Compression
 -----------
@@ -20,7 +19,7 @@ A prerequisite for compression is chunking. Chunking is the partitioning of data
 
 For example, if you frequently read time series data in segments (e.g., 1-second windows), chunking along the time axis with a size that matches your typical read length can improve performance. Similarly, for image data, chunking in spatial blocks that align with common access patterns (e.g., tiles or frames) can be beneficial.
 
-Further, the chunk size can impact compression efficiency. Larger chunks may yield better compression ratios, but can also increase memory usage during read/write operations. Conversely, smaller chunks may reduce memory overhead but could lead to less effective compression. For archival purposes, larger chunks are often preferred to maximize compression, while for interactive analysis, smaller chunks may be more suitable to optimize access speed. For online/cloud access, chunk sizes in the range of 2MB to 10MB are often recommended, but this can vary based on specific use cases and data characteristics.
+Further, the chunk size can impact compression efficiency. Larger chunks may yield better compression ratios, but can also increase memory usage during read/write operations. Conversely, smaller chunks may reduce memory overhead but could lead to less effective compression. For archival purposes, larger chunks are often preferred to maximize compression, while for interactive analysis, smaller chunks may be more suitable to optimize access speed. For online/cloud access, chunk sizes in the range of 2MB to 10MB are often recommended, as they balance the overhead of multiple HTTP requests with the latency of transferring large chunks. (HTTP requests have significantly higher overhead compared to local file access.)
 
 
 MatNWB configuration profiles
