@@ -26,11 +26,13 @@ Creating and exporting an NWB file with a dataset configuration profile
 -----------------------------------------------------------------------
 .. code-block:: matlab
 
-    % 1. Create and populate an NWB file
+    % 1. Create an NWB file
     nwb = NwbFile( ...
         'identifier', 'compression-howto-20250411T153000Z', ...
         'session_description', 'Compression profile how-to guide', ...
         'session_start_time', datetime(2025,4,11,15,30,0,'TimeZone','UTC'));
+    
+    % 2. Add a large TimeSeries
     data = rand(32, 1e6, 'single');  % Example large matrix
     es = types.core.TimeSeries(...
         'data', data, ...
@@ -39,16 +41,50 @@ Creating and exporting an NWB file with a dataset configuration profile
         'starting_time_rate', 30000);
     nwb.acquisition.set('ExampleSeries', es);
 
-    % 2. Apply the cloud profile (convenience method accepts profile name)
+    % 3. Use a builtin profile on export (here: "cloud" profile)
+    nwbExport(nwb, 'example_cloud_profile.nwb', ...
+        'DatasetSettingsProfile', 'cloud');
+
+The file will be created with chunking and compression settings optimized for cloud access patterns and storage.
+
+Verifying the applied configuration
+----------------------------------
+After export, you can inspect chunking and compression with ``h5info``:
+
+.. code-block:: matlab
+
+    info = h5info('example_cloud_profile.nwb', '/acquisition/ExampleSeries/data');
+    info.ChunkSize   % should reflect computed chunkSize
+    info.Filters     % lists compression + shuffle if present
+
+Inspecting the applied configuration before export
+--------------------------------------------------
+You can inspect the applied configuration before export:
+
+.. code-block:: matlab
+
+    % 1. Create an NWB file
+    nwb = NwbFile( ...
+        'identifier', 'compression-howto-20250411T153000Z', ...
+        'session_description', 'Compression profile how-to guide', ...
+        'session_start_time', datetime(2025,4,11,15,30,0,'TimeZone','UTC'));
+    
+    % 2. Add a large TimeSeries
+    data = rand(32, 1e6, 'single');  % Example large matrix
+    es = types.core.TimeSeries(...
+        'data', data, ...
+        'data_unit', 'volts', ...
+        'starting_time', 0, ...
+        'starting_time_rate', 30000);
+    nwb.acquisition.set('ExampleSeries', es);
+
+    % 3. Apply the cloud profile (convenience method accepts profile name)
     nwb.applyDatasetSettingsProfile('cloud');
 
-    % 3. Export (settings already applied in-place)
-    nwbExport(nwb, 'example_cloud_profile.nwb');
+    % 4. Inspect resulting DataPipe
+    dataPipe = nwb.acquisition.get('ExampleSeries').data
 
-    % -- OR -- apply settings on the fly when exporting
-    % nwbExport(nwb, 'example_cloud_profile.nwb', ...
-    %     'DatasetSettingsProfile', 'cloud');
-
+You can now inspect ``dataPipe`` properties like ``chunkSize``, ``compressionLevel`` or ``filters`` before export, and modify them if needed.
 
 Overriding an existing DataPipe
 -------------------------------
@@ -102,16 +138,6 @@ Customizing a profile
     % Apply configuration from file to the NwbFile object
     nwb.applyDatasetSettings('configuration/myprofile_dataset_configuration.json');
 
-
-Verifying the applied configuration
-----------------------------------
-After export, you can inspect chunking and compression with ``h5info``:
-
-.. code-block:: matlab
-
-    info = h5info('example_cloud_profile.nwb', '/acquisition/ExampleSeries/data');
-    info.ChunkSize   % should reflect computed chunkSize
-    info.Filters     % lists compression + shuffle if present
 
 Troubleshooting
 ---------------
