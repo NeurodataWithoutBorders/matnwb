@@ -2,8 +2,7 @@
 Storage optimization
 ====================
 
-Neuroscience data can be very large, and compression helps reduce file size, improving both storage efficiency and data transfer time.
-
+When storing large datasets, much of the information is often redundant — and compression is an obvious way to save space. Neuroscience data, in particular, can be extremely large, and compression reduces file size, saving storage space and reducing data transfer time. However, compressing the entire file as one block creates a new problem: you lose the ability to quickly access specific parts of the data without first decompressing everything. Chunking with compression solves this by dividing the dataset into smaller pieces (“chunks”) and compressing each one individually. This preserves most of the storage benefits of compression while still allowing efficient, random access to the data you need.
 
 Compression
 -----------
