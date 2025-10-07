@@ -18,8 +18,16 @@ At a glance
 -----------
 1. Create or load your ``NwbFile`` and populate data.
 2. Choose dataset settings: a built-in profile, a custom JSON file, or a struct already in memory.
-3. Apply them with :meth:`NwbFile.applyDatasetSettingsProfile` / :meth:`NwbFile.applyDatasetSettings` (or let :func:`nwbExport` do it for you).
-4. Export.
+3. Apply them directly on export with :func:`nwbExport` or before export with :meth:`NwbFile.applyDatasetSettingsProfile` / :meth:`NwbFile.applyDatasetSettings`.
+
+
+Built-in profiles (quick reference)
+-----------------------------------
+- ``default`` — general-purpose settings.
+- ``cloud`` — chunking tuned for remote/cloud reads; moderate compression.
+- ``archive`` — stronger compression for long-term storage.
+
+Use with either :func:`nwbExport(..., 'DatasetSettingsProfile', '<name>')` or :meth:`NwbFile.applyDatasetSettingsProfile('<name>')`.
 
 
 Creating and exporting an NWB file with a dataset configuration profile
@@ -41,7 +49,7 @@ Creating and exporting an NWB file with a dataset configuration profile
         'starting_time_rate', 30000);
     nwb.acquisition.set('ExampleSeries', es);
 
-    % 3. Use a builtin profile on export
+    % 3. Use a built-in profile on export
     nwbExport(nwb, 'example_cloud_profile.nwb', ...
         'DatasetSettingsProfile', 'cloud');
 
@@ -107,6 +115,7 @@ Customizing a profile
    ``chunking.strategy_by_rank``
        Strategy per dataset rank (key = number of dimensions).
        Each list element corresponds to a dimension axis.
+    The list length must equal the dataset rank; order matches dataset dimensions.
        Possible values:
 
        - ``"flex"``
@@ -137,6 +146,24 @@ Customizing a profile
 
     % Apply configuration from file to the NwbFile object
     nwb.applyDatasetSettings('configuration/myprofile_dataset_configuration.json');
+
+
+Minimal JSON template
+---------------------
+.. code-block:: json
+
+        {
+            "chunking": {
+                "target_chunk_size": 4,
+                "target_chunk_size_unit": "MiB",
+                "strategy_by_rank": { "1": ["max"], "2": ["flex", "max"] }
+            },
+            "compression": {
+                "method": "deflate",
+                "parameters": { "level": 4 },
+                "prefilters": ["shuffle"]
+            }
+        }
 
 
 Troubleshooting
