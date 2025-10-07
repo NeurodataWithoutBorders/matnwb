@@ -41,7 +41,7 @@ Creating and exporting an NWB file with a dataset configuration profile
         'starting_time_rate', 30000);
     nwb.acquisition.set('ExampleSeries', es);
 
-    % 3. Use a builtin profile on export (here: "cloud" profile)
+    % 3. Use a builtin profile on export
     nwbExport(nwb, 'example_cloud_profile.nwb', ...
         'DatasetSettingsProfile', 'cloud');
 
@@ -131,7 +131,7 @@ Customizing a profile
        Targets the ``data`` dataset inside any ``TwoPhotonSeries``.
 
 
-4. Apply it (passing the file path directly to ):
+4. Apply it (passing the file path directly to :meth:`NwbFile.applyDatasetSettings`):
 
 .. code-block:: matlab
 
