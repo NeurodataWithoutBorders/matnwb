@@ -316,6 +316,10 @@ function validateCompoundStructureFromStub(name, expectedTypeDesc, actualTypeDes
         % Recursively validate if both are structs (nested compound types)
         if isstruct(expectedType) && isstruct(actualType)
             validateNestedCompoundType([name '.' expectedName], expectedType, actualType);
+        elseif isNumericType(expectedType)
+            dummyValue = cast(0, actualType);
+            types.util.correctType(dummyValue, expectedType);
+
         elseif ~areTypesCompatible(expectedType, actualType)
             warning('NWB:CheckDType:TypeMismatch', ...
                 'Field ''%s.%s'' has type mismatch: expected ''%s'' but DataStub has ''%s''', ...
