@@ -129,9 +129,9 @@ Customizing a profile
     The list length must equal the dataset rank; order matches dataset dimensions.
        Possible values:
 
-       - ``"flex"``
-       - ``"max"``
-       - *integer* (upper bound)
+       - ``"flex"`` - The size of the chunk in this dimension is adjusted to comply with the target_chunk_size
+       - ``"max"`` - The size of the chunk in this dimension will be the actual size of that dimension
+       - *integer* (upper bound) - The size of the chunk in this dimension will be fixed 
 
    ``compression.method``
        Compression algorithm: ``deflate`` (gzip), ``ZStandard`` (if available), or a custom filter ID.
