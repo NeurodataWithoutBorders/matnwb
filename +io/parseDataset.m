@@ -94,8 +94,28 @@ function matlabDataType = datatypeInfoToMatlabType(datatype, info)
     matlabDataType = '';
 
     if ischar(datatype.Type)
-        matlabDataType = io.getMatType(datatype.Type);
-
+        if strcmp(datatype.Class, 'H5T_REFERENCE')
+            % Distinguish between ObjectView and RegionView reference types
+            % h5info provides a Type field that indicates the specific reference type:
+            %   'H5R_OBJECT' → ObjectView (object reference)
+            %   'H5R_DATASET_REGION' → RegionView (region reference)
+            if strcmp(datatype.Type, 'H5R_OBJECT')
+                matlabDataType = 'types.untyped.ObjectView';
+            elseif strcmp(datatype.Type, 'H5R_DATASET_REGION')
+                matlabDataType = 'types.untyped.RegionView';
+            else
+                % Unknown reference type
+                error('NWB:ParseDataset:UnknownReferenceType', ...
+                    'Unknown reference type ''%s'' in field ''%s''.', ...
+                    datatype.Type, info.Name);
+            end
+        else
+            try
+                matlabDataType = io.getMatType(datatype.Type);
+            catch
+                keyboard
+            end
+        end
     elseif isstruct(datatype.Type)
         if strcmp(datatype.Class, 'H5T_STRING')
             if strcmp(datatype.Type.Length, 'H5T_VARIABLE') && ...
@@ -105,7 +125,7 @@ function matlabDataType = datatypeInfoToMatlabType(datatype, info)
             end
         elseif strcmp(datatype.Class, 'H5T_COMPOUND')
             % Extract compound type descriptor from h5info structure
-            matlabDataType = extractCompoundTypeDescriptor(datatype, info);
+            matlabDataType = extractCompoundTypeDescriptor(datatype);
         elseif strcmp(datatype.Class, 'H5T_ENUM')
             if io.isBool(datatype.Type)
                 matlabDataType = 'logical';
@@ -115,14 +135,32 @@ function matlabDataType = datatypeInfoToMatlabType(datatype, info)
                     'Will be saved as cell array of characters.'], ...
                     info.Name, length(datatype.Type.Member));
             end
+        elseif strcmp(datatype.Class, 'H5T_REFERENCE')
+            % Distinguish between ObjectView and RegionView reference types
+            % h5info provides a Type field that indicates the specific reference type:
+            %   'H5R_OBJECT' → ObjectView (object reference)
+            %   'H5R_DATASET_REGION' → RegionView (region reference)
+            if strcmp(datatype.Type, 'H5R_OBJECT')
+                matlabDataType = 'types.untyped.ObjectView';
+            elseif strcmp(datatype.Type, 'H5R_DATASET_REGION')
+                matlabDataType = 'types.untyped.RegionView';
+            else
+                % Unknown reference type
+                error('NWB:ParseDataset:UnknownReferenceType', ...
+                    'Unknown reference type ''%s'' in field ''%s''.', ...
+                    datatype.Type, info.Name);
+            end
         end
     end
 end
 
-function typeDescriptor = extractCompoundTypeDescriptor(datatype, info)
+function typeDescriptor = extractCompoundTypeDescriptor(datatype)
 %EXTRACTCOMPOUNDTYPEDESCRIPTOR Extract type descriptor from h5info datatype struct
 %   Creates a struct where each field corresponds to a compound member
 %   and the value is the MATLAB type string for that member.
+%
+%   This function recursively calls datatypeInfoToMatlabType for each member,
+%   ensuring consistent type detection logic throughout.
 
     typeDescriptor = struct();
     
@@ -132,49 +170,18 @@ function typeDescriptor = extractCompoundTypeDescriptor(datatype, info)
         for i = 1:length(members)
             memberName = members(i).Name;
             
-            % Determine MATLAB type for this member
-            if ischar(members(i).Datatype)
-                memberType = io.getMatType(members(i).Datatype);
-            elseif isstruct(members(i).Datatype)
-                % Handle nested or complex types
-                if strcmp(members(i).Datatype.Class, 'H5T_COMPOUND')
-                    % Recursively handle nested compound types
-                    memberType = extractCompoundTypeDescriptor(members(i), info);
-                elseif strcmp(members(i).Datatype.Class, 'H5T_STRING')
-                    memberType = 'char';
-                elseif strcmp(members(i).Datatype.Class, 'H5T_ENUM')
-                    if isfield(members(i).Datatype, 'Type') && io.isBool(members(i).Datatype.Type)
-                        memberType = 'logical';
-                    else
-                        memberType = 'char';  % Unknown enum as char
-                    end
-                elseif strcmp(members(i).Datatype.Class, 'H5T_REFERENCE')
-                    % Distinguish between ObjectView and RegionView reference types
-                    % h5info provides a Type field that indicates the specific reference type:
-                    %   'H5R_OBJECT' → ObjectView (object reference)
-                    %   'H5R_DATASET_REGION' → RegionView (region reference)
-                    if isfield(members(i).Datatype, 'Type')
-                        if strcmp(members(i).Datatype.Type, 'H5R_OBJECT')
-                            memberType = 'types.untyped.ObjectView';
-                        elseif strcmp(members(i).Datatype.Type, 'H5R_DATASET_REGION')
-                            memberType = 'types.untyped.RegionView';
-                        else
-                            % Unknown reference type - default to ObjectView
-                            error('NWB:ParseDataset:UnknownReferenceType', ...
-                                'Unknown reference type ''%s'' in field ''%s''.', ...
-                                members(i).Datatype.Type, memberName);
-                        end
-                    else
-                        % No type information available - default to ObjectView
-                        error('NWB:ParseDataset:MissingReferenceType', ...
-                            'Reference type information missing for field ''%s''.', ...
-                            memberName);
-                    end
-                else
-                    memberType = 'unknown';
-                end
-            else
-                memberType = 'unknown';
+            % Create a pseudo-info structure for the member to pass to datatypeInfoToMatlabType
+            % This allows us to reuse all the type detection logic recursively
+            memberInfo = struct('Name', memberName, 'Datatype', members(i).Datatype);
+            
+            % Recursively determine the MATLAB type for this member
+            memberType = datatypeInfoToMatlabType(members(i).Datatype, memberInfo);
+            
+            % If type detection failed, throw an error
+            if isempty(memberType)
+                error('NWB:ParseDataset:UnknownMemberType', ...
+                    'Could not determine MATLAB type for compound member ''%s'' with HDF5 class ''%s''', ...
+                    memberName, members(i).Datatype.Class);
             end
             
             % Build type descriptor
