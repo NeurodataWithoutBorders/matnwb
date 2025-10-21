@@ -155,6 +155,7 @@ classdef Dataset < file.interface.HasProps & file.interface.HasQuantity
                 % the type should be empty, and we add a custom doc.
                 objCopy = obj;
                 objCopy.name = 'data';
+                objCopy.isConstrainedSet = false;
                 objCopy.type = ''; % Reset type, as this now represents a property
                 objCopy.doc = sprintf('Data property for dataset class (%s)', obj.type);
                 props('data') = objCopy;

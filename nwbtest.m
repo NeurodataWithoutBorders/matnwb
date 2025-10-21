@@ -41,6 +41,7 @@ function results = nwbtest(varargin)
     try
         parser = inputParser;
         parser.KeepUnmatched = true;
+        parser.PartialMatching = false;
         parser.addParameter('Verbosity', 1);
         parser.addParameter('Selector', [])
         parser.addParameter('Namespace', 'tests')
