@@ -15,7 +15,7 @@ classdef (Sealed) DataStub < handle
     end
     properties (Access = private)
         dims_ double
-        dataType_  {mustBeA(dataType_, ["char", "string", "struct"])} % Can be char (simple type) or struct (compound type descriptor)
+        dataType_  {mustBeA(dataType_, ["char", "string", "struct"])} = string.empty % Can be char (simple type) or struct (compound type descriptor)
     end
     
     methods
