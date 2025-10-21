@@ -13,10 +13,9 @@ classdef (Sealed) DataStub < handle
         ndims;
         dataType;
     end
-
     properties (Access = private)
         dims_ double
-        dataType_ char
+        dataType_  {mustBeA(dataType_, ["char", "string", "struct"])} % Can be char (simple type) or struct (compound type descriptor)
     end
     
     methods
@@ -25,12 +24,18 @@ classdef (Sealed) DataStub < handle
                 filename (1,1) string
                 path (1,1) string
                 dims double = []
-                dataType string = string.empty
+                dataType = string.empty  % Can be string/char or struct
             end
             obj.filename = char(filename);
             obj.path = char(path);
             obj.dims_ = dims;
-            obj.dataType_ = dataType;
+            
+            % Store dataType as-is: char for simple types, struct for compound types
+            if isstring(dataType) || ischar(dataType)
+                obj.dataType_ = char(dataType);
+            else
+                obj.dataType_ = dataType;  % Keep as struct for compound types
+            end
         end
         
         function sid = get_space(obj) % Todo: private method
@@ -60,7 +65,10 @@ classdef (Sealed) DataStub < handle
                 fid = H5F.open(obj.filename);
                 did = H5D.open(fid, obj.path);
                 tid = H5D.get_type(did);
+                
                 obj.dataType_ = io.getMatType(tid);
+                
+                H5T.close(tid);
                 H5D.close(did);
                 H5F.close(fid);
             end
@@ -87,6 +95,7 @@ classdef (Sealed) DataStub < handle
             data = h5read(obj.filename, obj.path, varargin{:});
                         
             if isstruct(data)
+                % Compound type - data loaded as struct by h5read
                 fid = H5F.open(obj.filename);
                 did = H5D.open(fid, obj.path);
                 fsid = H5D.get_space(did);
@@ -97,6 +106,17 @@ classdef (Sealed) DataStub < handle
                 H5D.close(did);
                 H5F.close(fid);
             else
+                % Non-compound types - apply type-specific post-processing
+                
+                % Validate: if dataType is struct, data must also be struct
+                if isstruct(obj.dataType)
+                    error('NWB:DataStub:InconsistentCompoundType', ...
+                        ['DataStub has compound type descriptor, but loaded data is not a struct. '...
+                        'This indicates a file corruption or type mismatch. '...
+                        'Expected compound data for path: %s'], obj.path);
+                end
+                
+                % Apply type-specific transformations for simple types
                 switch obj.dataType
                     case 'char'
                         % dataset strings are defaulted to cell arrays regardless of size
@@ -106,8 +126,7 @@ classdef (Sealed) DataStub < handle
                             data = convertStringsToChars(data);
                         end
                     case 'logical'
-                        % data assumed to be cell array of enum string
-                        % values.
+                        % data assumed to be cell array of enum string values
                         data = strcmp('TRUE', data);
                 end
             end
@@ -173,8 +192,7 @@ classdef (Sealed) DataStub < handle
                 return;
             end
             
-            dims = obj.dims;
-            rank = length(dims);
+            rank = length(obj.dims);
             selectionRank = length(CurrentSubRef.subs);
             assert(rank >= selectionRank,...
                 'NWB:DataStub:InvalidDimIndex',...
@@ -195,11 +213,16 @@ classdef (Sealed) DataStub < handle
                 ind = builtin('end', obj, expressionIndex, numTotalIndices);
                 return;
             end
-            dims = obj.dims;
-            rank = length(dims);
+            rank = length(obj.dims);
             assert(rank >= expressionIndex, 'NWB:DataStub:InvalidEndIndex',...
                 'Cannot index into index %d when max rank is %d', expressionIndex, rank);
-            ind = dims(expressionIndex);
+            ind = obj.dims(expressionIndex);
+        end
+        
+        function tf = isCompoundType(obj)
+            %ISCOMPOUNDTYPE Returns true if this DataStub represents a compound type
+            dt = obj.dataType;  % Trigger lazy loading if needed
+            tf = isstruct(dt);
         end
     end
 end

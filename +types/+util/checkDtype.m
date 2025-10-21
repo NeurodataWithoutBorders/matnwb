@@ -119,6 +119,13 @@ function value = checkDtypeForCompoundDataset(name, typeDescriptor, value)
     valueWrapper = [];
     if isWrapped(value, typeDescriptor)
         valueWrapper = value;
+        
+        if isa(value, 'types.untyped.DataStub') && value.isCompoundType()
+            validateCompoundStructureFromStub(name, typeDescriptor, value.dataType);
+            % Return the stub - no need to unwrap and load data
+            return;
+        end
+        
         value = unwrapValue(value);
     end
 
@@ -273,4 +280,112 @@ end
 function tf = isDatetimeConversion(correctedValue, value)
     tf = isa(correctedValue, 'datetime') ...
         && (ischar(value) || isstring(value) || iscellstr(value));
+end
+
+function validateCompoundStructureFromStub(name, expectedTypeDesc, actualTypeDesc)
+    %VALIDATECOMPOUNDSTRUCTUREFROMSTUB Validate compound type using DataStub metadata
+    %   Validates that the compound type structure in the DataStub matches
+    %   the expected type descriptor without loading data from disk.
+        
+    % Get field names from both type descriptors
+    expectedFields = fieldnames(expectedTypeDesc);
+    actualFields = fieldnames(actualTypeDesc);
+    
+    % Check field count
+    if length(expectedFields) ~= length(actualFields)
+        error('NWB:CheckDType:FieldCountMismatch', ...
+            'Expected %d fields but DataStub has %d fields for ''%s''', ...
+            length(expectedFields), length(actualFields), name);
+    end
+    
+    % Validate each field name, order, and type
+    for i = 1:length(expectedFields)
+        expectedName = expectedFields{i};
+        actualName = actualFields{i};
+        
+        % Check field order (important for compound types)
+        if ~strcmp(expectedName, actualName)
+            error('NWB:CheckDType:FieldOrderMismatch', ...
+                'Field order mismatch in ''%s'': expected ''%s'' at position %d but got ''%s''', ...
+                name, expectedName, i, actualName);
+        end
+        
+        expectedType = expectedTypeDesc.(expectedName);
+        actualType = actualTypeDesc.(expectedName);
+        
+        % Recursively validate if both are structs (nested compound types)
+        if isstruct(expectedType) && isstruct(actualType)
+            validateNestedCompoundType([name '.' expectedName], expectedType, actualType);
+        elseif ~areTypesCompatible(expectedType, actualType)
+            warning('NWB:CheckDType:TypeMismatch', ...
+                'Field ''%s.%s'' has type mismatch: expected ''%s'' but DataStub has ''%s''', ...
+                name, expectedName, convertTypeToString(expectedType), convertTypeToString(actualType));
+        end
+    end
+end
+
+function validateNestedCompoundType(fullName, expectedType, actualType)
+    %VALIDATENESTEDCOMPOUNDTYPE Recursively validate nested compound types
+    
+    expectedSubFields = fieldnames(expectedType);
+    actualSubFields = fieldnames(actualType);
+    
+    if length(expectedSubFields) ~= length(actualSubFields)
+        error('NWB:CheckDType:NestedFieldCountMismatch', ...
+            'Nested compound ''%s'' has %d fields but expected %d', ...
+            fullName, length(actualSubFields), length(expectedSubFields));
+    end
+    
+    % Recursively check each nested field
+    for i = 1:length(expectedSubFields)
+        subFieldName = expectedSubFields{i};
+        
+        if ~strcmp(subFieldName, actualSubFields{i})
+            error('NWB:CheckDType:NestedFieldOrderMismatch', ...
+                'Field order mismatch in nested compound ''%s'': expected ''%s'' at position %d but got ''%s''', ...
+                fullName, subFieldName, i, actualSubFields{i});
+        end
+        
+        expectedSubType = expectedType.(subFieldName);
+        actualSubType = actualType.(subFieldName);
+        
+        if isstruct(expectedSubType) && isstruct(actualSubType)
+            % Further nesting
+            validateNestedCompoundType([fullName '.' subFieldName], expectedSubType, actualSubType);
+        elseif ~areTypesCompatible(expectedSubType, actualSubType)
+            warning('NWB:CheckDType:NestedTypeMismatch', ...
+                'Nested field ''%s.%s'' has type mismatch: expected ''%s'' but got ''%s''', ...
+                fullName, subFieldName, convertTypeToString(expectedSubType), convertTypeToString(actualSubType));
+        end
+    end
+end
+
+function tf = areTypesCompatible(expectedType, actualType)
+    %ARETYPESCOMPATIBLE Check if two types are compatible
+    %   Both expected and actual can be char (type strings) or structs (compound types)
+    
+    if isstruct(expectedType) && isstruct(actualType)
+        % Both are compound types - consider compatible if both are structs
+        % (detailed validation happens in recursive calls)
+        tf = true;
+    elseif ischar(expectedType) && ischar(actualType)
+        % Both are simple types - must match exactly
+        tf = strcmp(expectedType, actualType);
+    else
+        % One is compound, other is simple - not compatible
+        tf = false;
+    end
+end
+
+function str = convertTypeToString(typeDesc)
+    %CONVERTTYPETOSTRING Convert type descriptor to string for display
+    
+    if isstruct(typeDesc)
+        fields = fieldnames(typeDesc);
+        str = sprintf('struct(%s)', strjoin(fields, ', '));
+    elseif ischar(typeDesc)
+        str = typeDesc;
+    else
+        str = class(typeDesc);
+    end
 end
