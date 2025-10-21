@@ -72,7 +72,7 @@ function typeDescriptor = extractCompoundTypeDescriptor(datatype)
             memberName = members(i).Name;
 
             % Recursively determine the MATLAB type for this member
-            memberType = datatypeInfoToMatlabType(members(i).Datatype, memberName);
+            memberType = io.internal.h5.datatype.datatypeInfoToMatlabType(members(i).Datatype, memberName);
             
             % If type detection failed, throw an error
             assert(~isempty(memberType), ...
