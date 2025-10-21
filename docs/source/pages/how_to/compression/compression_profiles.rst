@@ -55,6 +55,7 @@ Creating and exporting an NWB file with a dataset configuration profile
 
 The file will be created with chunking and compression settings optimized for cloud access patterns and storage.
 
+
 Verifying the applied configuration
 ----------------------------------
 After export, you can inspect chunking and compression with ``h5info``:
@@ -64,6 +65,7 @@ After export, you can inspect chunking and compression with ``h5info``:
     info = h5info('example_cloud_profile.nwb', '/acquisition/ExampleSeries/data');
     info.ChunkSize   % should reflect computed chunkSize
     info.Filters     % lists compression + shuffle if present
+
 
 Inspecting the applied configuration before export
 --------------------------------------------------
@@ -94,6 +96,7 @@ You can inspect the applied configuration before export:
 
 You can now inspect ``dataPipe`` properties like ``chunkSize``, ``compressionLevel`` or ``filters`` before export, and modify them if needed.
 
+
 Overriding an existing DataPipe
 -------------------------------
 If you already created a ``DataPipe`` manually (or ran a profile once) and want to re‑apply with a different profile:
@@ -102,10 +105,18 @@ If you already created a ``DataPipe`` manually (or ran a profile once) and want 
 
     nwb.applyDatasetSettingsProfile('archive', 'OverrideExisting', true);
 
+
 Customizing a profile
 ---------------------
 
 1. Copy one of the shipped JSON files (e.g. ``default_dataset_configuration.json``) to a new file (e.g. ``configuration/myprofile_dataset_configuration.json``).
+
+.. code-block:: matlab
+
+    sourceFile = fullfile(misc.getMatnwbDir, 'configuration', 'default_dataset_configuration.json');
+    targetFile = fullfile(misc.getMatnwbDir, 'configuration', 'myprofile_dataset_configuration.json');
+    copyfile(sourceFile, targetFile)
+    edit(targetFile)
 
 2. Adjust fields:
 
