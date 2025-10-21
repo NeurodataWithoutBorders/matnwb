@@ -162,7 +162,7 @@ Customizing a profile
 Troubleshooting
 ---------------
 * ``No matching rank strategy`` error: Add a list for that rank (e.g. key ``"5"``) in ``strategy_by_rank``.
-* ``TargetSizeExceeded`` warning: Reduce dimensions marked ``max`` or lower numeric bounds; lower ``target_chunk_size``.
+* ``TargetSizeExceeded`` warning: Reduce dimensions marked ``max`` or lower numeric bounds; increase ``target_chunk_size``.
 * ``Unsupported target_chunk_size_unit``: Ensure unit is one of ``bytes``, ``kiB``, ``MiB``, ``GiB``.
 
 
