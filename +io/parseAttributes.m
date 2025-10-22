@@ -64,9 +64,7 @@ for i=1:length(attributes)
             H5F.close(fid);
         case 'H5T_ENUM'
             if io.isBool(attr.Datatype.Type)
-                % attr.Value should be cell array of strings here since
-                % MATLAB can't have arbitrary enum values.
-                attributeValue = strcmp('TRUE', attr.Value);
+                attributeValue = io.internal.h5.cast.toLogical(attr.Value);
             else
                 warning('NWB:Attribute:UnknownEnum', ...
                     ['Encountered unknown enum under field `%s` with %d members. ' ...
