@@ -26,6 +26,7 @@ function data = parseCompound(datasetId, data)
                 %do nothing
         end
     end
+    H5T.close(typeId)
 
     fieldName = fieldnames(data);
 
@@ -37,6 +38,11 @@ function data = parseCompound(datasetId, data)
         rawReference = data.(name);
         rawTypeId = referenceTypeId{iFieldName};
         data.(name) = io.parseReference(datasetId, rawTypeId, rawReference);
+    end
+
+    % Close type ids
+    for i = 1:numel(subTypeId)
+        H5T.close(subTypeId{i})
     end
 
     % transpose character arrays because they are column-ordered
@@ -51,12 +57,6 @@ function data = parseCompound(datasetId, data)
     logicalFieldName = fieldName(isLogicalType);
     for iFieldName = 1:length(logicalFieldName)
         name = logicalFieldName{iFieldName};
-        if isa(data.(name), 'int8')
-            data.(name) = logical(data.(name));
-        elseif isa(data.(name), 'cell') && ismember(string(data.(name){1}), ["TRUE", "FALSE"])
-            data.(name) = strcmp('TRUE', data.(name));
-        else
-            error('NWB:ParseCompound:UnknownLogicalFormat', 'Could not resolve data of logical type')
-        end
+        data.(name) = io.internal.h5.cast.toLogical(data.(name));
     end
 end
