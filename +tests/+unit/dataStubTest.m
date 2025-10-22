@@ -71,18 +71,8 @@ classdef dataStubTest < tests.abstract.NwbTestCase
         function testObjectCopy(testCase)
             import tests.fixtures.ExtensionGenerationFixture
 
-            rootDir = misc.getMatnwbDir();
-
-            testSchemaLocation = fullfile(rootDir, '+tests', 'test-schema');
-            typesOutputFolder = testCase.getTypesOutputFolder();
-
-            extensionNamespaceFile = fullfile(testSchemaLocation, 'regionReferenceSchema', 'rrs.namespace.yaml');
-            testCase.applyFixture(...
-                ExtensionGenerationFixture(extensionNamespaceFile, typesOutputFolder))
-            
-            extensionNamespaceFile = fullfile(testSchemaLocation, 'compoundSchema', 'cs.namespace.yaml');
-            testCase.applyFixture(...
-                ExtensionGenerationFixture(extensionNamespaceFile, typesOutputFolder))
+            testCase.applyTestSchemaFixture('rrs');
+            testCase.applyTestSchemaFixture('cs');
 
             nwb = NwbFile(...
                 'identifier', 'DATASTUB',...
