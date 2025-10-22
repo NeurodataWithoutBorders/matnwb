@@ -48,7 +48,7 @@ function parsed = parseDataset(filename, info, fullpath, Blacklist)
                     warning('NWB:Dataset:UnknownEnum', ...
                         ['Encountered unknown enum under field `%s` with %d members. ' ...
                         'Will be saved as cell array of characters.'], ...
-                        info.Name, length(datatype.Type.Member));
+                        name, length(datatype.Type.Member));
                 end
         end
     else
@@ -65,7 +65,8 @@ function parsed = parseDataset(filename, info, fullpath, Blacklist)
         elseif any(dataspace.Size == 0)
             data = [];
         else
-            data = types.untyped.DataStub(filename, fullpath);
+            matlabDataType = io.internal.h5.datatype.datatypeInfoToMatlabType(datatype, name);
+            data = types.untyped.DataStub(filename, fullpath, dataspace.Size, matlabDataType);
         end
         H5T.close(tid);
         H5P.close(pid);
