@@ -5,9 +5,16 @@ Editing NWB files
 
 After an NWB-file has been exported to disk, it can be re-imported and edited. Generally, adding new data and metadata is straightforward. However, due to the way MatNWB and HDF5 work, there are some limitations when modifying or removing datasets from an existing NWB file. This section outlines these limitations and provides guidance on how to work with existing NWB files in MatNWB.
 
-1. **Appending** data to a dataset requires the dataset to have been created as extendable. This is typically done when initially creating a dataset, using the :class:`~types.untyped.DataPipe` class. If the dataset was not created as extendable, it cannot be resized or appended to.
+1. **Editing** data of datasets in place is currently not supported
 
-2. **Removing** property values or neurodata objects from the file object does not free up space in the file itself. If you need to significantly restructure a file, the standard approach is to create a new NWB file and copy the desired data into it.
+2. **Appending** data to a dataset requires the dataset to have been created as extendable. This is typically done when initially creating a dataset, using the :class:`~types.untyped.DataPipe` class. If the dataset was not created as extendable, it cannot be resized or appended to.
+
+3. **Removing** property values or neurodata objects from the file object does not free up space in the file itself. If you need to significantly restructure a file, the standard approach is to create a new NWB file and copy the desired data into it.
+
+
+Editing/modifying data of existing datasets is not supported
+------------------------------------------------------------
+This is a current limitation in MatNWB. If this is something you have a need for, please check out `this MatNWB issue <https://github.com/NeurodataWithoutBorders/matnwb/issues/760>`_.
 
 Appending data to existing datasets
 -----------------------------------
@@ -29,5 +36,6 @@ Removing data from existing files
 
 At the moment, MatNWB does not provide built-in functionality to copy data from one NWB file to another. However, you can achieve this by manually reading the desired data from the existing file and writing it to a new file using the appropriate MatNWB classes and methods.
 
-The following issue on GitHub tracks some of the limitations and potential improvements related to editing NWB files in MatNWB:
-`MatNWB - Issue 751 <https://github.com/NeurodataWithoutBorders/matnwb/issues/751>`_
+The following issues on GitHub track some of the limitations and potential improvements related to editing NWB files in MatNWB:
+`MatNWB - Issue 751 <https://github.com/NeurodataWithoutBorders/matnwb/issues/751>`_ - Reexport datasets to another file
+`MatNWB - Issue 760 <https://github.com/NeurodataWithoutBorders/matnwb/issues/760>`_ - Edit data in place
