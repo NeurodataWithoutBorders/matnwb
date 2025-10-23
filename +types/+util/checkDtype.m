@@ -119,6 +119,13 @@ function value = checkDtypeForCompoundDataset(name, typeDescriptor, value)
     valueWrapper = [];
     if isWrapped(value, typeDescriptor)
         valueWrapper = value;
+        
+        if isa(value, 'types.untyped.DataStub') && value.isCompoundType()
+            validateCompoundTypeDescriptor(name, typeDescriptor, value.dataType);
+            % Return the stub - no need to unwrap and load data
+            return;
+        end
+        
         value = unwrapValue(value);
     end
 
@@ -273,4 +280,51 @@ end
 function tf = isDatetimeConversion(correctedValue, value)
     tf = isa(correctedValue, 'datetime') ...
         && (ischar(value) || isstring(value) || iscellstr(value));
+end
+
+function validateCompoundTypeDescriptor(name, expectedTypeDesc, actualTypeDesc)
+%validateCompoundTypeDescriptor - Validate compound type descriptor
+%   Validates that the compound type descriptor (of a DataStub) matches
+%   the expected type descriptor without loading data from disk.
+        
+    % Get field names from both type descriptors
+    expectedFields = fieldnames(expectedTypeDesc);
+    actualFields = fieldnames(actualTypeDesc);
+    
+    % Check field count
+    assert( length(expectedFields) == length(actualFields), ...
+        'NWB:CheckDType:FieldCountMismatch', ...
+        'Expected %d fields but DataStub has %d fields for ''%s''', ...
+        length(expectedFields), length(actualFields), name);
+    
+    % Validate each field name, order, and type
+    for i = 1:length(expectedFields)
+        expectedName = expectedFields{i};
+        actualName = actualFields{i};
+        
+        % Check field order (important for compound types)
+        assert( strcmp(expectedName, actualName), ...
+            'NWB:CheckDType:FieldOrderMismatch', ...
+            ['Field order mismatch in ''%s'': expected ''%s'' at position ', ...
+            '%d but got ''%s'''], ...
+            name, expectedName, i, actualName);
+        
+        expectedType = expectedTypeDesc.(expectedName);
+        actualType = actualTypeDesc.(expectedName);
+        
+        if isstruct(expectedType) && isstruct(actualType)
+            error('NWB:CheckDType:NestedCompoundNotSupported', ...
+                'Nested compound values are not supported')
+        elseif isNumericType(expectedType)
+            dummyValue = cast(0, actualType);
+            % If this does not error, the numeric is valid:
+            types.util.correctType(dummyValue, expectedType);
+
+        else
+            assert(strcmp(expectedType, actualType), ...
+                'NWB:CheckDType:TypeMismatch', ...
+                'Field ''%s.%s'' has type mismatch: expected ''%s'' but DataStub has ''%s''', ...
+                name, expectedName, expectedType, actualType);
+        end
+    end
 end

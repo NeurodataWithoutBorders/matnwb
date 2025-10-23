@@ -12,6 +12,17 @@ classdef (Abstract, SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) .
             typesOutputFolder = F.TypesOutputFolder;
         end
 
+        function applyTestSchemaFixture(testCase, schemaName)
+        % Generate a test schema extension using fixture for cleanup
+            import tests.fixtures.ExtensionGenerationFixture
+            
+            typesOutputFolder = testCase.getTypesOutputFolder();
+            namespaceFilePath = tests.util.getTestSchemaFilepath(schemaName);
+            
+            testCase.applyFixture( ...
+                ExtensionGenerationFixture(namespaceFilePath, typesOutputFolder) )
+        end
+
         function installExtension(testCase, extensionName)
             typesOutputFolder = testCase.getTypesOutputFolder();
             
