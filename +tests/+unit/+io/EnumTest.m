@@ -141,7 +141,9 @@ classdef EnumTest < matlab.unittest.TestCase
                 'NWB:Dataset:UnknownEnum');
             data = parsed('color_data');
             
-            %testCase.verifyClass(data, 'cell'); % Todo: should be cell, is int8
+            % Should be cell array of strings
+            testCase.verifyClass(data, 'cell');
+            testCase.verifyEqual(data, {'GREEN'});
         end
         
         function testParseUnknownEnumArray(testCase)
@@ -193,9 +195,11 @@ classdef EnumTest < matlab.unittest.TestCase
             
             % Should return cell array of strings
             testCase.verifyClass(loadedData, 'cell');
+            testCase.verifyEqual(loadedData, {'RED'; 'GREEN'; 'BLUE'});
 
             loadedDataMatStyle = data.load(':'); % load_mat_style
-            %testCase.verifyClass(loadedDataMatStyle, 'cell'); % Todo: should be cell, is int8
+            testCase.verifyClass(loadedDataMatStyle, 'cell');
+            testCase.verifyEqual(loadedDataMatStyle, {'RED'; 'GREEN'; 'BLUE'});
         end
         
         function testParseBooleanWithFalseValue(testCase)

@@ -22,6 +22,9 @@ function data = parseCompound(datasetId, data)
                 isCharacterType(iField) = ~H5T.is_variable_str(fieldTypeId);
             case H5ML.get_constant_value('H5T_ENUM')
                 isLogicalType(iField) = io.isBool(fieldTypeId);
+                % Note: There is currently no postprocessing applied for
+                % other ENUMs when parsing compound data types. 
+                % Should be fine as NWB only uses the ENUM class for booleans.
             otherwise
                 %do nothing
         end

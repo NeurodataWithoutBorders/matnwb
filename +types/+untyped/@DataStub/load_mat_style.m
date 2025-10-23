@@ -118,11 +118,15 @@ function data = hdf2mat(datasetId, data)
     % Check if compound type
     if H5T.get_class(typeId) == H5ML.get_constant_value('H5T_COMPOUND')
         data = io.parseCompound(datasetId, data);
+    elseif H5T.get_class(typeId) == H5ML.get_constant_value('H5T_ENUM')
+        if io.isBool(typeId)
+            data = io.internal.h5.cast.toLogical(data);
+        else
+            data = io.internal.h5.cast.toEnumCellStr(data, typeId);
+        end
     else
         matlabType = io.getMatType(typeId);
         switch matlabType
-            case 'logical'
-                data = logical(data);
             case {'types.untyped.ObjectView', 'types.untyped.RegionView'}
                 data = io.parseReference(datasetId, typeId, data);
             otherwise

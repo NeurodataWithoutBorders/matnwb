@@ -52,7 +52,7 @@ function cellValue = toEnumCellStr(value, dataType)
     end
 end
 
-function enumMapFromTypeStruct(dataType)
+function enumMap = enumMapFromTypeStruct(dataType)
 % Build a lookup map from enum values to names from h5info Datatype struct
     enumMap = containers.Map('KeyType', 'int32', 'ValueType', 'char');
     for i = 1:length(dataType.Member)
