@@ -10,22 +10,36 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
     
     methods (Test)
         function testCreateSetWithFunctionInput(testCase)
-            set = types.untyped.Set(@(key, value) true);
-            testCase.verifyNotEmpty(set.ValidationFcn)
+            
+            % Verify a function that validates the input
+            set = types.untyped.Set(@(key, value) assert(strcmp(key, 'test')));
+            try
+                set.validateEntry('test', 1);
+            catch
+                testCase.verifyFail('Expected validation to pass')
+            end
+        
+            % Verify a function that does not validate the input
+            set = types.untyped.Set(...
+                @(key, value) error('NWB:SetTest:ValidationError', 'Invalid value for `%s`', key));
+
+            testCase.verifyError( ...
+                @() set.validateEntry('test', 1), ...
+                'NWB:Set:InvalidEntry')
         end
         
         function testCreateSetFromStruct(testCase)
-            untypedSet = types.untyped.Set( struct('a',1, 'b', 2) );
+            untypedSet = types.untyped.Set( struct('a', 1, 'b', 2) );
             testCase.verifyEqual(untypedSet.get('a'), 1)
         end
         
         function testCreateSetFromNvPairs(testCase)
-            untypedSet = types.untyped.Set( 'a',1, 'b', 2 );
+            untypedSet = types.untyped.Set('a', 1, 'b', 2 );
             testCase.verifyEqual(untypedSet.get('a'), 1)
         end
         
         function testCreateSetFromNvPairsPlusFunctionHandle(testCase)
-            untypedSet = types.untyped.Set( 'a',1, 'b', 2, @(key, value) disp('Hello World'));
+            untypedSet = types.untyped.Set('a', 1, 'b', 2, @(key, value) assert(ischar(key)));
             testCase.verifyEqual(untypedSet.get('a'), 1)
         end
         
@@ -42,7 +56,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
         end
         
         function testGetSetSize(testCase)
-            untypedSet = types.untyped.Set( 'a',1, 'b', 2 );
+            untypedSet = types.untyped.Set('a', 1, 'b', 2 );
             
             [nRowsA, nColsA] = size(untypedSet);
         
@@ -71,6 +85,27 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             untypedSet = types.untyped.Set( struct('a', 'a', 'b', 'b') );
             untypedSet.set('c', 'c');
             testCase.verifyEqual(untypedSet.get('c'), 'c')
+        end
+
+        function testAddToSet(testCase)
+            nwbFile = tests.factory.NWBFile();
+            ts = tests.factory.TimeSeriesWithTimestamps;
+            nwbFile.acquisition.add('ts', ts)
+            
+            testCase.verifyTrue(...
+                 nwbFile.acquisition.isKey('ts'), ...
+                'Object set with `add` not present in types.untyped.Set');
+            
+            testCase.verifyClass(...
+                 nwbFile.acquisition.get('ts'), ...
+                'types.core.TimeSeries', ...
+                'Object set with `add` is incorrect value');
+
+            % Verify that the same name/key can not be used twice
+            newTs = tests.factory.TimeSeriesWithTimestamps();
+            testCase.verifyError(...
+                @() nwbFile.acquisition.add('ts', newTs), ...
+                'NWB:Set:KeyExists')
         end
     end
 end

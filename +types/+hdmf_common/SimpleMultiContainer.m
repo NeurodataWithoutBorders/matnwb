@@ -1,4 +1,4 @@
-classdef SimpleMultiContainer < types.hdmf_common.Container & types.untyped.GroupClass
+classdef SimpleMultiContainer < types.hdmf_common.Container & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups
 % SIMPLEMULTICONTAINER - A simple Container for holding onto multiple containers.
 %
 % Required Properties:
@@ -9,6 +9,9 @@ classdef SimpleMultiContainer < types.hdmf_common.Container & types.untyped.Grou
 properties
     container; %  (Container) Container objects held within this SimpleMultiContainer.
     data; %  (Data) Data objects held within this SimpleMultiContainer.
+end
+properties (Access = protected)
+    GroupPropertyNames = {'container'}
 end
 
 methods
@@ -33,6 +36,8 @@ methods
         varargin(ivarargin) = [];
         [obj.data, ivarargin] = types.util.parseConstrained(obj,'data', 'types.hdmf_common.Data', varargin{:});
         varargin(ivarargin) = [];
+        
+        obj.setupHasUnnamedGroupsMixin()
         
         p = inputParser;
         p.KeepUnmatched = true;

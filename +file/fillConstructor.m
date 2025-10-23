@@ -1,4 +1,4 @@
-function functionString = fillConstructor(name, parentname, defaults, props, namespace, superClassProps, inherited)
+function functionString = fillConstructor(name, parentname, defaults, props, namespace, superClassProps, class, inherited)
     caps = upper(name);
     functionBody = ['% ' caps ' - Constructor for ' name];
 
@@ -7,7 +7,7 @@ function functionString = fillConstructor(name, parentname, defaults, props, nam
         functionBody = [functionBody newline() docString];
     end
 
-    bodyString = fillBody(parentname, defaults, props, namespace, inherited);
+    bodyString = fillBody(parentname, defaults, props, namespace, class, inherited);
     if ~isempty(bodyString)
         functionBody = [functionBody newline() bodyString];
     end
@@ -30,8 +30,7 @@ function functionString = fillConstructor(name, parentname, defaults, props, nam
         'end'}, newline());
 end
 
-function bodystr = fillBody(parentName, defaults, props, namespace, inherited)
-
+function bodystr = fillBody(parentName, defaults, props, namespace, class, inherited)
     if isempty(defaults)
         bodystr = '';
     else
@@ -169,6 +168,11 @@ function bodystr = fillBody(parentName, defaults, props, namespace, inherited)
     fullBody(2:2:end) = {deleteFromVars};
     fullBody = strjoin(fullBody, newline);
     bodystr(end+1:end+length(fullBody)+1) = [newline fullBody];
+
+    if isa(class, 'file.Group') && class.hasAnonGroups
+        % Include the setup function for the HasUnnamedGroups mixin
+        bodystr = [bodystr, newline, 'obj.setupHasUnnamedGroupsMixin()', newline];
+    end
 
     parser = {...
         'p = inputParser;',...
