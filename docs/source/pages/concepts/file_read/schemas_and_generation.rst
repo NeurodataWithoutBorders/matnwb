@@ -13,7 +13,6 @@ What are NWB Schemas?
 - **Data types** and their properties
 - **Relationships** between different data types  
 - **Validation rules** for data integrity
-- **File organization** standards
 
 Think of schemas as blueprints that ensure all NWB files follow the same organizational principles, regardless of who created them or what software was used.
 
