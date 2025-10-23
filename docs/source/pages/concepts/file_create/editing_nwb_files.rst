@@ -20,7 +20,7 @@ Appending data to existing datasets
 -----------------------------------
 :ref:`HDF5 <about-hdf5>` datasets can be created with fixed dimensions or as extendable datasets. By default, MatNWB creates datasets with fixed dimensions. Datasets that were created with fixed dimensions cannot be resized or appended to after they have been written to disk. This means that if you want to append data to a dataset in an existing NWB file, the dataset must have been created as extendable from the start. This is done using the :class:`~types.untyped.DataPipe` class when initially creating the dataset.
 
-The :class:`~types.untyped.DataPipe` class provides a way to create extendable datasets by specifying the ``chunkSize`` and ``maxSize`` properties. The ``chunkSize`` property determines the size of the chunks that will be written to the dataset, while the ``maxSize`` property determines the maximum size of the dataset. By setting these properties appropriately, you can create a dataset that can be resized and appended to as needed.
+The :class:`~types.untyped.DataPipe` class provides a way to create extendable datasets by specifying the ``chunkSize`` and ``maxSize`` properties. The ``chunkSize`` property determines the size of the chunks that will be written to the dataset, while the ``maxSize`` property determines the maximum size of the dataset. By adjusting these properties, you can create a dataset that can be resized and appended to as needed.
 
 If you know the final size of a dataset, ``maxSize`` can be set to this value to optimize storage allocation. If the final size is unknown, the ``maxSize`` can be set to ``Inf`` along one or more dimensions to allow unlimited growth.
 

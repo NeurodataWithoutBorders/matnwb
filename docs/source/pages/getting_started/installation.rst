@@ -138,7 +138,7 @@ Troubleshooting
 MATLAB cannot find MatNWB functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Ensure the MatNWB folder is on the path (see “Verify your installation”).
+- Ensure the MatNWB folder is on the path (see `Verify your installation`_).
 - If needed, restart MATLAB after calling ``savepath()``.
 - Use ``which nwbRead -all`` to diagnose duplicate or shadowed installs.
 

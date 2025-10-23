@@ -58,7 +58,8 @@ The main categories of types you will work with
 - Containers/wrappers: organize related data (e.g., :doc:`ProcessingModule </pages/neurodata_types/core/ProcessingModule>`).
 - Time series: sampled data over time (e.g., :doc:`TimeSeries </pages/neurodata_types/core/TimeSeries>`, :doc:`ElectricalSeries </pages/neurodata_types/core/ElectricalSeries>`).
 - Tables: columnar metadata or data (e.g., :doc:`DynamicTable </pages/neurodata_types/hdmf_common/DynamicTable>`).
-- Helpers: :ref:`Helper types <pages/concepts/file_read/untyped>` for common patterns like references, links, and data I/O.
+- Helpers: :doc:`Helper types </pages/concepts/file_read/untyped>` for common patterns like references, links, and data I/O.
+
 .. [Todo: expand, and link to helper types reference and concept pages when these are added].
 .. [Todo: For tables: TimeIntervals, Units, ElectrodesTable]
 

@@ -100,21 +100,22 @@ classdef NwbFile < types.core.NWBFile
         %  the NwbFile object for chunking and compression.
         % 
         % Input Arguments:
-        %  - obj (NwbFile) - An instance of the NwbFile class.
+        %  - obj (NwbFile) - 
+        %    An instance of the NwbFile class.
         % 
         %  - profile (ConfigurationProfile) - 
-        %   Specifies the settings profile to use. Default is "none".
+        %    Specifies the settings profile to use. Default is "none".
         %
         % Name-Value Arguments:
         %  - OverrideExisting (logical) - 
-        %   This boolean determines if existing DataPipe objects in the
-        %   file will be reconfigured with the provided options. Default is
-        %   false. **Important**: This does not work for DataPipes that has
-        %   previously been exported to file.
+        %    This boolean determines if existing DataPipe objects in the
+        %    file will be reconfigured with the provided options. Default is
+        %    false. **Important**: This does not work for DataPipes that has
+        %    previously been exported to file.
         % 
         % Output Arguments:
         %  - datasetConfig - 
-        %   (Optional) The configuration settings applied to the dataset.
+        %    (Optional) The configuration settings applied to the dataset.
         %
         % See also:
         %   io.config.enum.ConfigurationProfile
@@ -145,22 +146,23 @@ classdef NwbFile < types.core.NWBFile
         %  structure representing a configuration profile.
         % 
         % Input Arguments:
-        %  - obj (NwbFile) - An instance of the NwbFile class.
+        %  - obj (NwbFile) - 
+        %    An instance of the NwbFile class.
         % 
         %  - settingsReference (string | struct) - 
-        %   The filename of a custom configuration profile or an in-memory
-        %   structure representing a configuration profile.
+        %    The filename of a custom configuration profile or an in-memory
+        %    structure representing a configuration profile.
         %
         % Name-Value Arguments:
         %  - OverrideExisting (logical) - 
-        %   This boolean determines if existing DataPipe objects in the
-        %   file will be reconfigured with the provided options. Default is
-        %   false. **Important**: This does not work for DataPipes that has
-        %   previously been exported to file.
+        %    This boolean determines if existing DataPipe objects in the
+        %    file will be reconfigured with the provided options. Default is
+        %    false. **Important**: This does not work for DataPipes that has
+        %    previously been exported to file.
         % 
         % Output Arguments:
         %  - datasetConfig - 
-        %   (Optional) The configuration settings applied to the dataset.
+        %    (Optional) The configuration settings applied to the dataset.
         %
         % See also:
         %   io.config.enum.ConfigurationProfile

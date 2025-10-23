@@ -57,7 +57,7 @@ The file will be created with chunking and compression settings optimized for cl
 
 
 Verifying the applied configuration
-----------------------------------
+-----------------------------------
 After export, you can inspect chunking and compression with ``h5info``:
 
 .. code-block:: matlab
@@ -126,6 +126,7 @@ Customizing a profile
    ``chunking.strategy_by_rank``
        Strategy per dataset rank (key = number of dimensions).
        Each list element corresponds to a dimension axis.
+
     The list length must equal the dataset rank; order matches dataset dimensions.
        Possible values:
 

@@ -33,7 +33,8 @@ Without DataPipes
 ^^^^^^^^^^^^^^^^^
 
 See the documentation at the following link: 
-`without DataPipes <../tutorials/dimensionMapNoDataPipes.html>`_
+:doc:`without DataPipes </pages/tutorials/dimensionMapNoDataPipes>`
+
 
 **Writing to File**
 
@@ -69,7 +70,7 @@ With DataPipes
 ^^^^^^^^^^^^^^
 
 See the documentation at the following link: 
-`with DataPipes <../tutorials/dimensionMapWithDataPipes.html>`_
+:doc:`with DataPipes </pages/tutorials/dimensionMapWithDataPipes>`
 
 **Writing to File**
 
