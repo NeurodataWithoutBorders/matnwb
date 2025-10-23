@@ -79,7 +79,7 @@ Common questions you may encounter (and where to find answers)
 
 - How do I name neurodata types when adding to sets?
 
-  - Refer to the :nwbinspector:`Naming Conventions <best_practices/best_practices_index.html>` section of the NWB Inspector docs.
+  - Refer to the :nwbinspector:`Naming Conventions <best_practices/general.html#naming-conventions>` section of the NWB Inspector docs.
 
 - What properties are required and how do I set them?
 
