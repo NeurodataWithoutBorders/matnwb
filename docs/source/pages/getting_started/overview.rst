@@ -25,7 +25,7 @@ What you can do with MatNWB
 - Read NWB files
 
   - One call to :doc:`nwbRead </pages/functions/nwbRead>` opens a file and presents a hierarchical representation of the complete file and its contents.
-  - Lazy I/O via DataStub lets you slice large datasets without loading them into RAM.
+  - Lazy I/O via ``DataStub`` lets you slice large datasets without loading them into RAM.
 
 - Write NWB files
 
@@ -34,8 +34,8 @@ What you can do with MatNWB
 
 - Scale to large data
 
-  - Stream/append and compress data with the DataPipe interface.
-  - Use predefined or custom configuration profiles to optimize files for local storage, cloud storage or archiving.
+  - Stream/append and compress data with the ``DataPipe`` interface.
+  - Use predefined or custom :doc:`configuration profiles </pages/how_to/compression/compression_profiles>` to optimize files for local storage, cloud storage or archiving.
 
 .. Todo: Add links to DataPipe reference and configuration profiles guide when these are added.
 

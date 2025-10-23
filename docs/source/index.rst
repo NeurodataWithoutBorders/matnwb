@@ -88,3 +88,8 @@ Looking for a specific topic which has not been mentioned? Check out the full ta
    pages/developer/documentation
    pages/developer/releases
 
+
+Cite MatNWB
+===========
+
+If MatNWB contributes to your work, please see :doc:`Citing MatNWB </pages/getting_started/how_to_cite>`.
