@@ -1,3 +1,10 @@
+Work with Data
+==============
+.. toctree::
+   :maxdepth: 1
+
+   working_with_data/working_with_sets
+
 Use Extensions
 ==============
 .. toctree::
