@@ -122,7 +122,7 @@ function data = hdf2mat(datasetId, data)
         if io.isBool(typeId)
             data = io.internal.h5.cast.toLogical(data);
         else
-            data = io.internal.h5.cast.toEnumCellStr(data, typeId);
+            data = io.internal.h5.postprocess.toEnumCellStr(data, typeId);
         end
     else
         matlabType = io.getMatType(typeId);

@@ -2,7 +2,7 @@ function cellValue = toEnumCellStr(value, dataType)
 % toEnumCellStr - Convert enum integer values to cell array of strings.
 %
 % Syntax:
-%   cellValue = io.internal.h5.cast.toEnumCellStr(value, dataType) 
+%   cellValue = io.internal.h5.postprocess.toEnumCellStr(value, dataType) 
 %   Converts the given enum integer values to their corresponding string 
 %   representations based on the datatype definition.
 %

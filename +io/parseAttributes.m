@@ -70,7 +70,7 @@ for i=1:length(attributes)
                     ['Encountered unknown enum under field `%s` with %d members. ' ...
                     'Will be read as cell array of characters.'], ...
                     attr.Name, length(attr.Datatype.Type.Member));
-                attributeValue = io.internal.h5.cast.toEnumCellStr(attr.Value, attr.Datatype.Type);
+                attributeValue = io.internal.h5.postprocess.toEnumCellStr(attr.Value, attr.Datatype.Type);
             end
         otherwise
             attributeValue = attr.Value;

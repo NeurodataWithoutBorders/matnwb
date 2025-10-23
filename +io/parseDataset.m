@@ -49,7 +49,7 @@ function parsed = parseDataset(filename, info, fullpath, Blacklist)
                         ['Encountered unknown enum under field `%s` with %d members. ' ...
                         'Will be read as cell array of characters.'], ...
                         name, length(datatype.Type.Member));
-                    data = io.internal.h5.cast.toEnumCellStr(data, datatype.Type);
+                    data = io.internal.h5.postprocess.toEnumCellStr(data, datatype.Type);
                 end
         end
     else
