@@ -50,6 +50,8 @@ function parsed = parseDataset(filename, info, fullpath, Blacklist)
                         'Will be saved as cell array of characters.'], ...
                         name, length(datatype.Type.Member));
                 end
+            case 'H5T_COMPOUND'
+                data = io.parseCompound(did, data);
         end
     else
         sid = H5D.get_space(did);
