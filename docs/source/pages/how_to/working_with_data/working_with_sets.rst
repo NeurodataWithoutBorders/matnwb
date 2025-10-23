@@ -16,16 +16,16 @@ Prerequisites
 
 At a glance
 -----------
-Sets are containers used throughout NWB to store named collections of data objects. Common examples include:
+Sets are internal containers used throughout NWB to store named collections of data objects. While Sets work behind the scenes, you interact with their entries as dynamic properties on parent containers. Common containers that use Sets include:
 
 - ``acquisition`` - stores raw data acquisition objects (e.g., ``TimeSeries``, ``ImageSeries``)
-- ``processing`` modules - contain ``nwbdatainterface`` and ``dynamictable`` Sets
+- ``processing`` modules - organizes processed data interfaces and tables
 - ``stimulus`` - stores stimulus presentation and template data
 
 **Key operations:**
 
-1. **Add entries** with the ``.add()`` method (recommended for new entries)
-2. **Access entries** using dot syntax or the ``.get()`` method  
+1. **Add entries** with the ``.add()`` method
+2. **Access entries** using dot syntax (entries become dynamic properties)
 3. **Update entries** by reassigning via dot syntax
 4. **List entries** with the ``.keys()`` method
 
@@ -70,7 +70,7 @@ The ``.add()`` method will raise an error if you try to add an entry with a name
 Accessing entries from a Set
 ----------------------------
 
-Once entries are added to a Set, you can access them using dot syntax with the entry name:
+Once entries are added to a Set, they become dynamic properties that you can access using dot syntax:
 
 .. code-block:: matlab
 
@@ -79,13 +79,6 @@ Once entries are added to a Set, you can access them using dot syntax with the e
     
     % Access the data within the TimeSeries
     data = retrievedTimeseries.data;
-
-Alternatively, you can use the ``.get()`` method:
-
-.. code-block:: matlab
-
-    % Access using the get method
-    retrievedTimeseries = nwb.acquisition.get('SpatialSeries');
 
 
 Checking if an entry exists
@@ -153,7 +146,7 @@ Use the ``.remove()`` method to delete entries from a Set:
 Working with processing modules
 -------------------------------
 
-Processing modules are a common use case for Sets. They contain two Sets: ``nwbdatainterface`` and ``dynamictable``.
+Processing modules are a common container type that use Sets internally. You can add data objects directly to the module using the ``.add()`` method, and they become accessible as dynamic properties.
 
 .. code-block:: matlab
 
@@ -175,8 +168,12 @@ Processing modules are a common use case for Sets. They contain two Sets: ``nwbd
     % Add the SpatialSeries to the Position object
     position.spatialseries.add('Position', positionSeries);
     
-    % Add the Position object to the processing module's nwbdatainterface Set
-    behaviorModule.nwbdatainterface.add('Position', position);
+    % Add the Position object to the processing module
+    % The entry becomes a dynamic property
+    behaviorModule.add('Position', position);
+    
+    % Access the Position object using dot syntax
+    retrievedPosition = behaviorModule.Position;
     
     % Add the processing module to the NWB file
     nwb.processing.set('behavior', behaviorModule);
@@ -201,7 +198,7 @@ Following consistent naming conventions helps ensure that your NWB files are int
 
     nwb.acquisition.add('LeverPosition', leverTimeseries);
     nwb.acquisition.add('PupilDiameter', pupilTimeseries);
-    behaviorModule.nwbdatainterface.add('EyeTracking', eyeTrackingData);
+    behaviorModule.add('EyeTracking', eyeTrackingData);
 
 **Examples of poor naming:**
 
@@ -224,13 +221,13 @@ MATLAB requires that property names be valid identifiers (start with a letter, c
 .. code-block:: matlab
 
     % Add an entry with a hyphen (not valid in MATLAB identifiers)
-    behaviorModule.nwbdatainterface.add('Eye-Tracking', eyeData);
+    behaviorModule.add('Eye-Tracking', eyeData);
     
     % Access using the modified property name (hyphen replaced with underscore)
-    retrievedData = behaviorModule.nwbdatainterface.Eye_Tracking;
+    retrievedData = behaviorModule.Eye_Tracking;
     
     % The original name is preserved for export and can be retrieved
-    originalName = behaviorModule.nwbdatainterface.keys();  % Returns 'Eye-Tracking'
+    originalName = behaviorModule.keys();  % Returns 'Eye-Tracking'
 
 **Name collision handling:**
 
@@ -239,12 +236,12 @@ If two entries would result in the same valid MATLAB identifier, MatNWB appends 
 .. code-block:: matlab
 
     % Add entries with names that become identical when converted
-    behaviorModule.nwbdatainterface.add('Time_Series', ts1);
-    behaviorModule.nwbdatainterface.add('Time-Series', ts2);
+    behaviorModule.add('Time_Series', ts1);
+    behaviorModule.add('Time-Series', ts2);
     
     % MatNWB creates unique property names
-    data1 = behaviorModule.nwbdatainterface.Time_Series;    % First entry
-    data2 = behaviorModule.nwbdatainterface.Time_Series_1;  % Second entry with suffix
+    data1 = behaviorModule.Time_Series;    % First entry
+    data2 = behaviorModule.Time_Series_1;  % Second entry with suffix
 
 **Alias warning:**
 
@@ -254,8 +251,11 @@ When you display an object with modified property names, MatNWB shows a warning 
 
     >> disp(behaviorModule)
     
-    ProcessingModule with entries:
-        Eye_Tracking: types.core.EyeTracking
+    ProcessingModule with properties:
+      description: 'Contains behavioral data'
+    
+    <strong>nwbdatainterface entries:</strong>
+      Eye_Tracking: [1×1 types.core.EyeTracking]
     
     Warning: Names for some entries of "ProcessingModule" have been modified to 
     make them valid MATLAB identifiers before adding them as properties of the 
@@ -301,7 +301,7 @@ Here's a complete example demonstrating the workflow of working with Sets:
         'starting_time', 0.0, ...
         'starting_time_rate', 30000.0);
     
-    ecephysModule.nwbdatainterface.add('FilteredElectricalSeries', filteredData);
+    ecephysModule.add('FilteredElectricalSeries', filteredData);
     
     % Add the processing module to the NWB file
     nwb.processing.set('ecephys', ecephysModule);
