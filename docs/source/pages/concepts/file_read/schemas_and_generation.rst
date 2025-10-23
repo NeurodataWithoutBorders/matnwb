@@ -8,7 +8,7 @@ This page covers the advanced concepts behind how MatNWB works with NWB schemas 
 What are NWB Schemas?
 ---------------------
 
-NWB schemas are formal specifications that define:
+`NWB schemas <https://nwb-schema.readthedocs.io/en/latest/format_description.html#>`_: are formal specifications that define:
 
 - **Data types** and their properties
 - **Relationships** between different data types  
@@ -98,7 +98,7 @@ If a file uses custom extensions, use :func:`generateExtension`:
 Reading Files Without Regeneration
 -----------------------------------
 
-If you're reading multiple files with the same schema, you can skip class regeneration for faster loading:
+If you're reading multiple files created with the same schema version, you can skip class regeneration for faster loading:
 
 .. code-block:: MATLAB
 
@@ -108,7 +108,7 @@ If you're reading multiple files with the same schema, you can skip class regene
 This is useful when:
 
 - Reading many files from the same experiment
-- You know the classes are already generated and current
+- You know the NWB type classes are already generated and current
 - You want faster file loading
 
 .. warning::
@@ -156,11 +156,6 @@ When running multiple MATLAB sessions on the same machine for testing or process
     % Session 2: Use different temporary directory in parallel session 2
     session2_dir = '/tmp/matlab_session_2_classes';
     generateCore('savedir', session2_dir);
-
-**Other Use Cases:**
-- You don't have write permissions to the MatNWB installation directory
-- You want to keep different projects' classes separate
-- Working with different schema versions (though not simultaneously)
 
 Understanding Class Files
 --------------------------
