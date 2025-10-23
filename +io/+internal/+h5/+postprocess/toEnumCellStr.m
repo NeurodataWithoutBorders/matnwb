@@ -34,10 +34,7 @@ function cellValue = toEnumCellStr(value, dataType)
         enumMap = enumMapFromTypeId(dataType);
     end
 
-    % Convert values to cell array of strings
-    valueSize = size(value);
-    cellValue = cell(valueSize);
-
+    % Validate values, ensuring complete representation by enum members
     enumValues = enumMap.keys();
     enumValues = cast([enumValues{:}], 'like', value);
 
@@ -45,7 +42,11 @@ function cellValue = toEnumCellStr(value, dataType)
         'NWB:CastH5ToEnumCellStr:UnknownValue', ...
         ['Enum data values do not match the enum member values in the ', ...
         'enum type definition'])
-    
+       
+    % Convert values to cell array of strings
+    valueSize = size(value);
+    cellValue = cell(valueSize);
+
     for i = 1:numel(enumValues)
         IND = value == enumValues(i);
         cellValue(IND) = deal({enumMap(enumValues(i))});
