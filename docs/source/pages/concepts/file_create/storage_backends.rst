@@ -5,6 +5,9 @@ Storage Backends
 
 MatNWB currently uses the HDF5 file format for storing NWB files on disk. Please note that NWB is designed to be storage backend agnostic, and future versions of MatNWB may support additional storage backends.
 
+.. TIP::
+   For more information about NWB storage, see the `NWB Storage Documentation <https://nwb-storage.readthedocs.io/en/latest/index.html>`_.
+
 .. _about-hdf5:
 
 What is HDF5?
