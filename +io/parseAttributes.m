@@ -64,7 +64,7 @@ for i=1:length(attributes)
             H5F.close(fid);
         case 'H5T_ENUM'
             if io.isBool(attr.Datatype.Type)
-                attributeValue = io.internal.h5.cast.toLogical(attr.Value);
+                attributeValue = io.internal.h5.postprocess.toLogical(attr.Value);
             else
                 warning('NWB:Attribute:UnknownEnum', ...
                     ['Encountered unknown enum under field `%s` with %d members. ' ...

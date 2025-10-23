@@ -60,6 +60,6 @@ function data = parseCompound(datasetId, data)
     logicalFieldName = fieldName(isLogicalType);
     for iFieldName = 1:length(logicalFieldName)
         name = logicalFieldName{iFieldName};
-        data.(name) = io.internal.h5.cast.toLogical(data.(name));
+        data.(name) = io.internal.h5.postprocess.toLogical(data.(name));
     end
 end

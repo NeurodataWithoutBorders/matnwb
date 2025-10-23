@@ -120,7 +120,7 @@ function data = hdf2mat(datasetId, data)
         data = io.parseCompound(datasetId, data);
     elseif H5T.get_class(typeId) == H5ML.get_constant_value('H5T_ENUM')
         if io.isBool(typeId)
-            data = io.internal.h5.cast.toLogical(data);
+            data = io.internal.h5.postprocess.toLogical(data);
         else
             data = io.internal.h5.postprocess.toEnumCellStr(data, typeId);
         end

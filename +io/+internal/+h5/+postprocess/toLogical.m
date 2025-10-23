@@ -2,7 +2,7 @@ function logicalValue = toLogical(value)
 % toLogical - Convert input value to logical.
 %
 % Syntax:
-%   logicalValue = io.internal.h5.cast.toLogical(value) Converts the given 
+%   logicalValue = io.internal.h5.postprocess.toLogical(value) Converts the given 
 %   h5 value to a logical value based on its type.
 %
 % Input Arguments:

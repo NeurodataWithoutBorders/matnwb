@@ -127,7 +127,7 @@ classdef (Sealed) DataStub < handle
                         end
                     case 'logical'
                         % data assumed to be cell array of enum string values
-                        data = io.internal.h5.cast.toLogical(data);
+                        data = io.internal.h5.postprocess.toLogical(data);
                 end
             end
         end

@@ -43,7 +43,7 @@ function parsed = parseDataset(filename, info, fullpath, Blacklist)
                 end
             case 'H5T_ENUM'
                 if io.isBool(datatype.Type)
-                    data = io.internal.h5.cast.toLogical(data);
+                    data = io.internal.h5.postprocess.toLogical(data);
                 else
                     warning('NWB:Dataset:UnknownEnum', ...
                         ['Encountered unknown enum under field `%s` with %d members. ' ...
