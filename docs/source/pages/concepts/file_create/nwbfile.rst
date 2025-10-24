@@ -45,7 +45,6 @@ MatNWB automatically handles some required NWB properties so you don't have to:
 
 Object Structure and Organization
 ---------------------------------
-.. todo:: Link to NWB overview section on file structure here
   
 The :class:`NwbFile` object provides specific properties for organizing different types of data:
 
@@ -64,7 +63,8 @@ The :class:`NwbFile` object provides specific properties for organizing differen
 **Additional metadata properties**
   Various ``general_*`` properties for experimenter, institution, lab, etc.
 
-
+.. TIP::
+   For more details on where to place specific data types within the :class:`NwbFile` structure, refer to the :nwb_overview:`Anatomy of an NWB file <intro_to_nwb/2_file_structure.html>` section in the NWB Overview Docs.
 
 Validation and Error Handling
 -----------------------------
