@@ -4,17 +4,16 @@
 NWB for MATLAB
 ##############
 
-MatNWB_ is a MATLAB package for working with |NWB|_ (NWB) files. 
-It provides a high‑level, efficient interface for reading and writing neurophysiology data in the NWB format and includes tutorial Live Scripts that show you how to read NWB files or convert your own data to NWB.
+MatNWB_ is a MATLAB package for working with |NWB|_ (NWB) files—a standardized format for neurophysiology data. The package provides a high‑level interface for reading and writing NWB files in MATLAB and includes tutorial Live Scripts that show you how to read existing NWB files or convert your own data to NWB.
 
-This documentation focuses on MatNWB. If you are new to NWB or want to learn more about the format itself, these resources are a great starting point:
+New to NWB? Learn more about the format itself from these resources:
 
 ..
   - :nwb_overview:`NWB Overview` | Placeholder
 
 - `NWB Overview Introduction <https://nwb-overview.readthedocs.io/en/latest/intro_to_nwb/1_intro_to_nwb.html>`_: Entry point providing a high-level and general overview of the NWB format
 
-- `NWB Format Specification <https://nwb-schema.readthedocs.io/en/latest/index.html#>`_: Detailed overview of the NWB Format and the neurodata type specifications that make up the format. 
+- `NWB Format Specification <https://nwb-schema.readthedocs.io/en/latest/index.html#>`_: Detailed overview of the NWB format and the neurodata type specifications that make up the format.
 
 For a quick introduction to MatNWB, go to the :ref:`Overview <matnwb-overview>`
 page. If you immediately want to see how to read or write files, take a look at the 
