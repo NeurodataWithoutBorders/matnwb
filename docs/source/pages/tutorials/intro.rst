@@ -1,3 +1,5 @@
+.. _intro-tutorial:
+
 Getting Started with MatNWB
 ===========================
 
