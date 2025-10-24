@@ -99,6 +99,7 @@ classdef (Sealed) DataStub < handle
                 fid = H5F.open(obj.filename);
                 did = H5D.open(fid, obj.path);
                 fsid = H5D.get_space(did);
+                % Bug: This will read all the data
                 data = H5D.read(did, 'H5ML_DEFAULT', fsid, fsid,...
                     'H5P_DEFAULT');
                 data = io.parseCompound(did, data);
@@ -126,7 +127,7 @@ classdef (Sealed) DataStub < handle
                         end
                     case 'logical'
                         % data assumed to be cell array of enum string values
-                        data = strcmp('TRUE', data);
+                        data = io.internal.h5.postprocess.toLogical(data);
                 end
             end
         end
