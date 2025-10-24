@@ -40,5 +40,8 @@ If anything is missing or incorrect, you'll get an error message explaining what
 
     Understanding the NwbFile Object <file_create/nwbfile>
     Storage Backends <file_create/storage_backends>
-    Editing NWB Files <file_create/editing_nwb_files>
     Performance Optimization <file_create/storage_optimization>
+
+..
+  Todo: include after creating a how-to guide for editing NWB files in MATLAB
+  Editing NWB Files <file_create/editing_nwb_files>
