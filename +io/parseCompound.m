@@ -1,6 +1,7 @@
-function data = parseCompound(datasetId, data)
+function data = parseCompound(datasetId, data, isScalar)
     %did is the dataset_id for the containing dataset
     %data should be a scalar struct with fields as columns
+    if nargin < 3; isScalar = false; end
     if isempty(data)
         return;
     end
@@ -10,6 +11,7 @@ function data = parseCompound(datasetId, data)
     isReferenceType = false(1, numFields);
     isCharacterType = false(1, numFields);
     isLogicalType = false(1,numFields);
+    isScalarCellStr = false(1,numFields);
     for iField = 1:numFields
         fieldTypeId = H5T.get_member_type(typeId, iField-1);
         subTypeId{iField} = fieldTypeId;
@@ -20,6 +22,7 @@ function data = parseCompound(datasetId, data)
                 %if not variable len (which would make it a cell array)
                 %then mark for transpose
                 isCharacterType(iField) = ~H5T.is_variable_str(fieldTypeId);
+                isScalarCellStr(iField) = isScalar && ~isCharacterType(iField);
             case H5ML.get_constant_value('H5T_ENUM')
                 isLogicalType(iField) = io.isBool(fieldTypeId);
             otherwise
@@ -58,5 +61,12 @@ function data = parseCompound(datasetId, data)
         else
             error('NWB:ParseCompound:UnknownLogicalFormat', 'Could not resolve data of logical type')
         end
+    end
+
+    % unpack scalar cellstr
+    scalarCellstrFieldName = fieldName(isScalarCellStr);
+    for iFieldName = 1:length(scalarCellstrFieldName)
+        name = scalarCellstrFieldName{iFieldName};
+        data.(name) = data.(name){1};
     end
 end

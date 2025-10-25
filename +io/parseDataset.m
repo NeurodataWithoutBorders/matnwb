@@ -51,7 +51,8 @@ function parsed = parseDataset(filename, info, fullpath, Blacklist)
                         name, length(datatype.Type.Member));
                 end
             case 'H5T_COMPOUND'
-                data = io.parseCompound(did, data);
+                isScalar = true;
+                data = io.parseCompound(did, data, isScalar);
         end
     else
         sid = H5D.get_space(did);
