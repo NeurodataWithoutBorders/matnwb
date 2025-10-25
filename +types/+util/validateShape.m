@@ -16,11 +16,13 @@ function validateShape(propertyName, validShapes, value)
         end
     elseif isa(value, 'types.untyped.DataPipe')
         valueShape = value.internal.maxSize;
-        % For data pipes, vectors can be exported to HDF5 files as 2D arrays
-        % (columnar (n,1) or row (1,n)). The types.util.checkDims function allows
-        % this, even if the valid shape specifies that the data should be 1D.
-        % Use 'enforceScalarShape' to ensure that 2D-like vectors do not
-        % pass validation when the valid shape specifies 1D data.
+        % For DataPipe objects, vectors can be exported to HDF5 files as 2D arrays
+        % with shape [n,1] (column) or [1,n] (row). By default, types.util.checkDims 
+        % allows these 2D shapes to pass validation even when the valid shape 
+        % specifies 1D data (e.g., [Inf]). However, for DataPipe, the maxSize 
+        % property determines the actual shape in the exported file, so we need 
+        % stricter validation. Set 'enforceScalarShape' to true to ensure that 
+        % shapes like [n,1] or [1,n] are not accepted when [Inf] is specified.
         enforceScalarShape = true;
     elseif istable(value)
         valueShape = [height(value) 1];
@@ -49,11 +51,17 @@ function validateShape(propertyName, validShapes, value)
     % Check actual size of DataPipe and warn if it is not valid
     if isa(value, 'types.untyped.DataPipe')
         try
+            if enforceScalarShape
+                % Reset enforceScalarShape to false when validating the current 
+                % data size. Strict validation is only needed for maxSize, which 
+                % determines the final shape of the dataset in the exported file. 
+                % The current data size is allowed to be more flexible (e.g., 
+                % [n,1] can match [Inf]).
+                enforceScalarShape = false;
+            end
+
             valueShape = size(value);
-            % If the maxSize validation passed, this will internally force
-            % vectors to a scalar shape (i.e 1D) on export, so we want to
-            % use `enforceScalarShape=false` here to avoid unnecessary warnings
-            enforceScalarShape = false;
+
             types.util.checkDims(valueShape, validShapes, enforceScalarShape);
         catch ME
             warning(...
