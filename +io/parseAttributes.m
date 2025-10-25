@@ -37,7 +37,7 @@ attributes(blacklistMask) = [];
 for i=1:length(attributes)
     attr = attributes(i);
 
-    switch attr.Datatype.Class
+    switch attr.Datatype.Class % Normalize/postprocess some HDF5 classes
         case 'H5T_STRING'
             % H5 String type attributes are loaded differently in releases 
             % prior to MATLAB R2020a. For details, see:
@@ -64,14 +64,13 @@ for i=1:length(attributes)
             H5F.close(fid);
         case 'H5T_ENUM'
             if io.isBool(attr.Datatype.Type)
-                % attr.Value should be cell array of strings here since
-                % MATLAB can't have arbitrary enum values.
-                attributeValue = strcmp('TRUE', attr.Value);
+                attributeValue = io.internal.h5.postprocess.toLogical(attr.Value);
             else
                 warning('NWB:Attribute:UnknownEnum', ...
                     ['Encountered unknown enum under field `%s` with %d members. ' ...
-                    'Will be saved as cell array of characters.'], ...
+                    'Will be read as cell array of characters.'], ...
                     attr.Name, length(attr.Datatype.Type.Member));
+                attributeValue = io.internal.h5.postprocess.toEnumCellStr(attr.Value, attr.Datatype.Type);
             end
         otherwise
             attributeValue = attr.Value;

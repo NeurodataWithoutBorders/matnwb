@@ -26,8 +26,12 @@ elseif H5T.equal(tid, 'H5T_STD_REF_OBJ')
     type = 'types.untyped.ObjectView';
 elseif H5T.equal(tid, 'H5T_STD_REF_DSETREG')
     type = 'types.untyped.RegionView';
-elseif io.isBool(tid)
-    type = 'logical';
+elseif H5T.get_class(tid) == H5ML.get_constant_value('H5T_ENUM')
+    if io.isBool(tid)
+        type = 'logical';
+    else
+        type = 'cell';
+    end
 elseif H5ML.get_constant_value('H5T_COMPOUND') == H5T.get_class(tid)
     type = extractCompoundTypeDescriptor(tid);
 else
