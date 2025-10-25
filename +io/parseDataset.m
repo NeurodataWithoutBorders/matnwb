@@ -51,6 +51,9 @@ function parsed = parseDataset(filename, info, fullpath, Blacklist)
                         name, length(datatype.Type.Member));
                     data = io.internal.h5.postprocess.toEnumCellStr(data, datatype.Type);
                 end
+            case 'H5T_COMPOUND'
+                isScalar = true;
+                data = io.parseCompound(did, data, isScalar);
         end
     else
         sid = H5D.get_space(did);
