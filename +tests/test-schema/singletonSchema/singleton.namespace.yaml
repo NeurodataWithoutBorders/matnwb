@@ -1,0 +1,7 @@
+namespaces:
+- full_name: Singleton Dataspace Schema Test
+  name: singleton
+  schema:
+  - namespace: core
+  - source: singleton.shapes.yaml
+  version: 1.0.0

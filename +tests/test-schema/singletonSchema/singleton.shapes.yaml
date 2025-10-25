@@ -1,0 +1,23 @@
+groups:
+- neurodata_type_def: NonScalarData
+  neurodata_type_inc: NWBContainer
+  datasets:
+  - name: data
+    dtype: float64
+    shape:
+    - null
+
+- neurodata_type_def: ScalarDataInherited
+  neurodata_type_inc: NonScalarData
+  datasets:
+  - name: data
+    shape: 
+    - 1
+
+- neurodata_type_def: ScalarData
+  neurodata_type_inc: NWBContainer
+  datasets:
+  - name: data
+    dtype: float64
+    shape:
+    - 1
