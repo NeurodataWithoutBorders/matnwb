@@ -2,15 +2,10 @@
 % *Goal:* In this tutorial we will create and save an NWB file that holds metadata 
 % and data from a fictional session in which a mouse searches for cookie crumbs 
 % in an open arena. At the end we will read the file back for a quick inspection.
-%% Installing MatNWB
-% If you don't have MatNWB already, let's clone it from GitHub and install into 
-% your current working directory (NB: requires git). 
-
-if ~exist('NwbFile', 'class') % Skip if MatNWB is already on path
-    !git clone https://github.com/NeurodataWithoutBorders/matnwb.git
-    addpath(genpath('matnwb'));
-    disp('Success! Cloned MatNWB from Github and added to MATLAB''s search path.')
-end
+% 
+% *Prerequisites*: MATLAB R2019b or later with <https://matnwb--749.org.readthedocs.build/en/749/pages/getting_started/installation_users.html 
+% MatNWB installed>
+%% 
 %% Set up the NWB File
 % An NWB file must have a unique |*identifier*|, a |*session_description*|, 
 % and a |*session_start_time*|. Let’s start by creating a new <https://matnwb.readthedocs.io/en/latest/pages/functions/NwbFile.html 
