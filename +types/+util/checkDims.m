@@ -5,11 +5,21 @@ function checkDims(valueSize, validSizes, enforceScalarSize)
 % of valid sizes, validates that the value size matches at least one of them.
 %
 % types.util.CHECKDIMS(valsize, validSizes, enforceScalarSize) optionally
-% enforces stricter validation for vectors. By default, MATLAB vectors 
-% (column: [n,1], row: [1,n]) pass validation against a 1D size (Inf), 
-% because vector data is typically treated as 1D when written to file. 
-% However, DataPipe may write vector data as 2D. To prevent 2D sizes from 
-% being accepted as 1D, use the enforceScalarSize flag.
+% enforces stricter validation for scalar/1D shapes. By default, MATLAB 
+% vectors with shape [n,1] (column) or [1,n] (row) will pass validation 
+% against a 1D size specification of [Inf], because vector data is typically 
+% treated as 1D when written to file. However, in some cases (e.g., DataPipe 
+% maxSize), the 2D shape [n,1] or [1,n] determines the actual shape in the 
+% exported file. Set enforceScalarSize to true to reject 2D vector shapes 
+% when a 1D shape like [Inf] is specified for validSize.
+%
+% Example:
+%   % Without strict enforcement, [5,1] matches [Inf]:
+%   types.util.checkDims([5,1], {Inf}, false);  % OK
+%   
+%   % With strict enforcement, [5,1] does NOT match [Inf]:
+%   types.util.checkDims([5,1], {Inf}, true);   % Error
+%   types.util.checkDims(5, {Inf}, true);       % OK
 
 if nargin < 3 % Set default value for enforceScalarSize if not provided
     enforceScalarSize = false;
