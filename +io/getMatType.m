@@ -26,10 +26,14 @@ elseif H5T.equal(tid, 'H5T_STD_REF_OBJ')
     type = 'types.untyped.ObjectView';
 elseif H5T.equal(tid, 'H5T_STD_REF_DSETREG')
     type = 'types.untyped.RegionView';
-elseif io.isBool(tid)
-    type = 'logical';
+elseif H5T.get_class(tid) == H5ML.get_constant_value('H5T_ENUM')
+    if io.isBool(tid)
+        type = 'logical';
+    else
+        type = 'cell';
+    end
 elseif H5ML.get_constant_value('H5T_COMPOUND') == H5T.get_class(tid)
-    type = 'table';
+    type = extractCompoundTypeDescriptor(tid);
 else
     if isa(tid, 'H5ML.id')
         identifier = tid.identifier;
@@ -44,3 +48,26 @@ else
 end
 end
 
+function typeDescriptor = extractCompoundTypeDescriptor(typeId)
+%EXTRACTCOMPOUNDTYPEDESCRIPTOR Extract type descriptor from HDF5 compound type
+%   typeDescriptor = extractCompoundTypeDescriptor(typeId) creates a
+%   struct where each field name corresponds to a compound member and
+%   the value is the MATLAB type string for that member.
+    
+    typeDescriptor = struct();
+    numMembers = H5T.get_nmembers(typeId);
+    
+    for iMember = 0:(numMembers-1)
+        memberName = H5T.get_member_name(typeId, iMember);
+        memberTypeId = H5T.get_member_type(typeId, iMember);
+
+        % Recursively get MATLAB type for this member
+        % This handles nested compound types automatically
+        memberType = io.getMatType(memberTypeId);
+        
+        H5T.close(memberTypeId);
+        
+        % Build type descriptor: typeDescriptor.fieldName = type
+        typeDescriptor.(memberName) = memberType;
+    end
+end
