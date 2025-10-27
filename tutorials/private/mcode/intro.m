@@ -79,7 +79,7 @@ disp(nwb.general_subject)           % Confirm the subject is now part of the fil
 % |*TimeSeries*|> object.
 
 % Synthetic 2-D trajectory  (helper returns a 2×300 array)
-data = matnwb.tutorial.intro.getRandomTrajectory();
+data = getRandomTrajectory();
 
 time_series_with_rate = types.core.TimeSeries( ...
     'description', ['2D position of mouse in arena. The first column ', ...
@@ -104,7 +104,7 @@ disp( size( nwb.acquisition.get('IPSTimeseries').data ) ) % Should show 2, 300
 % + *rate*| pair with an explicit vector of |*timestamps*|. Let's pretend that 
 % the IPS drops samples and has an irregular sampling rate:
 
-[irregularData, timepoints] = matnwb.tutorial.intro.getIrregularRandomTrajectory();
+[irregularData, timepoints] = getIrregularRandomTrajectory();
 % Drop frame 120 to create a gap
 irregularData(:,120) = []; timepoints(120) = [];
 
@@ -184,7 +184,7 @@ nwb.stimulus_presentation.set('FoodDrops', annotations);
 % 
 % 
 
-positionData = matnwb.tutorial.intro.getVideoTrackerData();
+positionData = getVideoTrackerData();
 
 % Create SpatialSeries object
 spatial_series_ts = types.core.SpatialSeries( ...
@@ -235,16 +235,19 @@ nwb.processing.set('behavior', behavior_module);
 % 
 % 
 % 
-% Here, we are adding a custom column, |*time_to_find*|, which will be the time 
-% it took out mouse to find the treats after the cookie ding was played.
+% Here, we are adding two custom columns:
+%% 
+% * |*time_to_find*| (float) - which will be the time it took out mouse to find 
+% the treats after the cookie ding was played.
+% * *was_found* (boolean) - whether cookie crumb was found on time.
 
 trials = types.core.TimeIntervals( ...
-    'colnames', {'start_time', 'stop_time', 'time_to_find'}, ...
+    'colnames', {'start_time', 'stop_time', 'time_to_find', 'was_found'}, ...
     'description', 'trial data and properties');
 
-trials.addRow('start_time', 0, 'stop_time', 10, 'time_to_find', 3.2)
-trials.addRow('start_time', 10.0, 'stop_time', 20.0, 'time_to_find', 4.7)
-trials.addRow('start_time', 20.0, 'stop_time', 30.0, 'time_to_find', 3.9)
+trials.addRow('start_time', 0, 'stop_time', 10, 'time_to_find', 3.2, 'was_found', true)
+trials.addRow('start_time', 10.0, 'stop_time', 20.0, 'time_to_find', 4.7, 'was_found', false)
+trials.addRow('start_time', 20.0, 'stop_time', 30.0, 'time_to_find', 3.9, 'was_found', true)
 
 trials.toTable() % visualize the table
 %% 
@@ -313,3 +316,46 @@ read_spatial_series.data(:, 1:10)
 %% 
 % Refer to the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/index.html 
 % API documentation> to learn what data types are available.
+% 
+% 
+%% Local Functions
+
+function result = getRandomTrajectory()
+    samplingRate        = 10;                       % 10 Hz sampling
+    experimentDuration  = 30; 
+    t = 0 : 1/samplingRate : experimentDuration;    % continuous timeline
+    t = t(1:300);
+
+    % random walk in metres
+    rng(42);
+    step      = 0.02 * randn(2, numel(t));
+    result    = cumsum(step,2);
+
+    rng('default')
+end
+
+function [data, timepoints] = getIrregularRandomTrajectory()
+    data = getRandomTrajectory();
+    samplingRate = 10;                                          % 10 Hz sampling    
+    jitter = 0.02 * randn(1, size(data, 2));                    % ±20 ms
+    timepoints = (0:size(data, 2) - 1) / samplingRate + jitter; % Irregular sampling
+end
+
+function result = getVideoTrackerData()
+    % Get some 2D trajectory
+    data = getRandomTrajectory();
+
+    % Number of original points
+    n = length(data);
+
+    % Define original and new sample positions
+    xOriginal = 1:n;
+    xNew = linspace(1, n, n*3);
+
+    % Preallocate result
+    result = zeros(2, numel(xNew));
+
+    % Interpolate each row separately
+    result(1,:) = interp1(xOriginal, data(1,:), xNew, 'linear');
+    result(2,:) = interp1(xOriginal, data(2,:), xNew, 'linear');
+end
