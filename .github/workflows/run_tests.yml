@@ -1,4 +1,5 @@
 # Run and publish MATLAB tests with coverage across multiple MATLAB versions
+
 name: Run tests
 on:
   pull_request:
