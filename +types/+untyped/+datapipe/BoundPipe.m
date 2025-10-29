@@ -4,7 +4,7 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
     properties (SetAccess = private)
         config = types.untyped.datapipe.Configuration.empty;
         pipeProperties = {};
-        stub = types.untyped.DataStub.empty;
+        stub types.untyped.Datastub = types.untyped.DataStub.empty;
     end
     
     properties (SetAccess = private, Dependent)
@@ -24,14 +24,8 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
             
             obj.stub = types.untyped.DataStub(filename, path);
             
-            sid = obj.stub.get_space();
-            [~, h5_dims, h5_maxdims] = H5S.get_simple_extent_dims(sid);
-            H5S.close(sid);
-            
-            current_size = fliplr(h5_dims);
-            max_size = fliplr(h5_maxdims);
-            h5_unlimited = H5ML.get_constant_value('H5S_UNLIMITED');
-            max_size(max_size == h5_unlimited) = Inf;
+            current_size = obj.stub.dims;
+            max_size = obj.stub.maxDims;
             
             did = obj.getDataset();
             
@@ -224,6 +218,7 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
             H5F.close(fid);
             
             obj.config.offset = obj.config.offset + data_size(obj.config.axis);
+            obj.stub.updateSize()
         end
         
         function property = getPipeProperty(obj, type)
