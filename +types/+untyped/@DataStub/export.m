@@ -27,7 +27,8 @@ function refs = export(obj, fid, fullpath, refs)
         % dataset data, this is unfortunately required.
         data = H5D.read(src_did);
 
-        % Reuse io.parseCompound to ensure data types are properly postprocessed
+        % Use io.parseCompound to consistently handle references, character arrays, and logical types,
+        % ensuring all data types are properly postprocessed in line with the rest of the codebase.
         data = io.parseCompound(src_did, data);
         io.writeCompound(fid, fullpath, data);
 
