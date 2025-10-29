@@ -9,7 +9,7 @@ on:
       - "*.md"
       - "*.codespellrc"
       - ".github/**"
-      - !.github/workflows/run_tests.yml
+      - "!.github/workflows/run_tests.yml"
       - "docs/**"
   push:
     branches:
