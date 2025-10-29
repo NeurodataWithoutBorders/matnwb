@@ -1,7 +1,7 @@
 function refs = export(obj, fid, fullpath, refs)
-    %Check for compound data type refs
+    
+    % If exporting to the same file this DataStub originates from, skip export.
     src_fid = H5F.open(obj.filename);
-    % if filenames are the same, then do nothing
     src_filename = H5F.get_name(src_fid);
     dest_filename = H5F.get_name(fid);
     if strcmp(src_filename, dest_filename)
@@ -10,53 +10,27 @@ function refs = export(obj, fid, fullpath, refs)
     
     src_did = H5D.open(src_fid, obj.path);
     src_tid = H5D.get_type(src_did);
-    src_sid = H5D.get_space(src_did);
-    ref_i = false;
-    char_i = false;
-    member_name = {};
-    ref_tid = {};
+
+    % Check for compound data type refs
     if H5T.get_class(src_tid) == H5ML.get_constant_value('H5T_COMPOUND')
-        ncol = H5T.get_nmembers(src_tid);
-        ref_i = false(ncol, 1);
-        member_name = cell(ncol, 1);
-        char_i = false(ncol, 1);
-        ref_tid = cell(ncol, 1);
-        refTypeConst = H5ML.get_constant_value('H5T_REFERENCE');
-        strTypeConst = H5ML.get_constant_value('H5T_STRING');
-        for i = 1:ncol
-            member_name{i} = H5T.get_member_name(src_tid, i-1);
-            subclass = H5T.get_member_class(src_tid, i-1);
-            subtid = H5T.get_member_type(src_tid, i-1);
-            char_i(i) = subclass == strTypeConst && ...
-                ~H5T.is_variable_str(subtid);
-            if subclass == refTypeConst
-                ref_i(i) = true;
-                ref_tid{i} = subtid;
-            end
-        end
+        isCompoundDatasetWithReference = isCompoundWithReference(src_tid);
+    else
+        isCompoundDatasetWithReference = false;
     end
-    
-    %manually load the data struct
-    if any(ref_i)
-        %This requires loading the entire table.
-        %Due to this HDF5 library's inability to delete/update
-        %dataset data, this is unfortunately required.
-        ref_tid = ref_tid(~cellfun('isempty', ref_tid));
+
+    % If dataset is compound and contains reference types, data needs to be 
+    % manually read and written to the new file. This is due to a bug in
+    % the hdf5 library (see e.g. https://github.com/HDFGroup/hdf5/issues/3429)
+    if isCompoundDatasetWithReference
+        % This requires loading the entire table.
+        % Due to this HDF5 library's inability to delete/update
+        % dataset data, this is unfortunately required.
         data = H5D.read(src_did);
-        
-        refNames = member_name(ref_i);
-        for i=1:length(refNames)
-            data.(refNames{i}) = io.parseReference(src_did, ref_tid{i}, ...
-                data.(refNames{i}));
-        end
-        
-        strNames = member_name(char_i);
-        for i=1:length(strNames)
-            s = data.(strNames{i}) .';
-            data.(strNames{i}) = mat2cell(s, ones(size(s,1),1));
-        end
-        
+
+        % Reuse io.parseCompound to ensure data types are properly postprocessed
+        data = io.parseCompound(src_did, data);
         io.writeCompound(fid, fullpath, data);
+
     elseif ~H5L.exists(fid, fullpath, 'H5P_DEFAULT')
         % copy data over and return destination.
         ocpl = H5P.create('H5P_OBJECT_COPY');
@@ -66,7 +40,21 @@ function refs = export(obj, fid, fullpath, refs)
         H5P.close(lcpl);
     end
     H5T.close(src_tid);
-    H5S.close(src_sid);
     H5D.close(src_did);
     H5F.close(src_fid);
+end
+
+function hasReference = isCompoundWithReference(src_tid)
+    hasReference = false;
+
+    ncol = H5T.get_nmembers(src_tid);
+    refTypeConst = H5ML.get_constant_value('H5T_REFERENCE');
+    
+    for i = 1:ncol
+        subclass = H5T.get_member_class(src_tid, i-1);
+        if subclass == refTypeConst
+            hasReference = true;
+            return
+        end
+    end
 end
