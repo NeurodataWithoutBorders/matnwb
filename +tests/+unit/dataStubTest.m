@@ -1,5 +1,14 @@
 classdef dataStubTest < tests.abstract.NwbTestCase
     
+    methods (TestClassSetup)
+        function generateTestSchemas(testCase)
+            % Generate the rrs and cs test extensions for use in all tests
+            % of this test suite, using fixture for proper cleanup
+            testCase.applyTestSchemaFixture('rrs');
+            testCase.applyTestSchemaFixture('cs');
+        end
+    end
+
     methods (TestMethodSetup)
         function setupMethod(testCase)
             % Use a fixture to create a temporary working directory
@@ -70,9 +79,6 @@ classdef dataStubTest < tests.abstract.NwbTestCase
         
         function testObjectCopy(testCase)
 
-            testCase.applyTestSchemaFixture('rrs');
-            testCase.applyTestSchemaFixture('cs');
-
             nwb = NwbFile(...
                 'identifier', 'DATASTUB',...
                 'session_description', 'test datastub object copy',...
@@ -91,6 +97,7 @@ classdef dataStubTest < tests.abstract.NwbTestCase
             nwb.analysis.set('rcRef', rcRef);
             nwbExport(nwb, 'original.nwb');
             nwbNew = nwbRead('original.nwb', 'ignorecache');
+            
             tests.util.verifyContainerEqual(testCase, nwbNew, nwb);
             nwbExport(nwbNew, 'new.nwb');
         end
@@ -134,11 +141,6 @@ classdef dataStubTest < tests.abstract.NwbTestCase
         end
     
         function testResolveCompoundDataType(testCase)
-            
-            % Generate the compound test schema using fixture
-            testCase.applyTestSchemaFixture('rrs');
-            testCase.applyTestSchemaFixture('cs');
-            
             % Set up file with compound dataset
             nwb = tests.factory.NWBFile();
 
@@ -172,6 +174,37 @@ classdef dataStubTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(...
                 compoundRefInDirectRead.dims, ...
                 compoundRefIn.data.dims )
+        end
+    
+        function testNestedDataIndexing(testCase)
+            % Set up file with compound dataset
+            
+            testCase.applyTestSchemaFixture('rrs');
+            testCase.applyTestSchemaFixture('cs');
+            nwb = tests.factory.NWBFile();
+
+            ts = tests.factory.TimeSeriesWithTimestamps();
+            nwb.acquisition.set('timeseries', ts);
+
+            tsPath = '/acquisition/timeseries';
+            tsDataPath = [tsPath '/data'];
+
+            compoundRef = types.cs.CompoundRefData('data', table(...
+                rand(2, 1),...
+                rand(2, 1),...
+                [types.untyped.ObjectView(tsPath); types.untyped.ObjectView(tsPath)],...
+                [types.untyped.RegionView(tsDataPath, 1:2); types.untyped.RegionView(tsDataPath, 2:3)],...
+                'VariableNames', {'a', 'b', 'objref', 'regref'}));
+                        
+            nwb.analysis.set('compoundRef', compoundRef);
+            nwbExport(nwb, 'test.nwb');
+            
+            % Read in data
+            nwbIn = nwbRead('test.nwb', 'ignorecache');
+            compoundRefIn = nwbIn.analysis.get('compoundRef');
+
+            testCase.verifyClass(compoundRefIn.data(1:2).a, 'double');
+            testCase.verifyLength(compoundRefIn.data(1:2).a, 2);
         end
     end
 end
