@@ -179,8 +179,6 @@ classdef dataStubTest < tests.abstract.NwbTestCase
         function testNestedDataIndexing(testCase)
             % Set up file with compound dataset
             
-            testCase.applyTestSchemaFixture('rrs');
-            testCase.applyTestSchemaFixture('cs');
             nwb = tests.factory.NWBFile();
 
             ts = tests.factory.TimeSeriesWithTimestamps();
