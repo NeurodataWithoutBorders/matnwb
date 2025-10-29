@@ -4,7 +4,7 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
     properties (SetAccess = private)
         config = types.untyped.datapipe.Configuration.empty;
         pipeProperties = {};
-        stub types.untyped.Datastub = types.untyped.DataStub.empty;
+        stub types.untyped.DataStub = types.untyped.DataStub.empty;
     end
     
     properties (SetAccess = private, Dependent)
