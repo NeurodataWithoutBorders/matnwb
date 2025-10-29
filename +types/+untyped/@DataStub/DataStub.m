@@ -46,18 +46,14 @@ classdef (Sealed) DataStub < handle
 
         function dims = get.dims(obj)
             if isempty(obj.dims_)
-                sid = get_space(obj);
-                [obj.dims_, obj.maxDims_] = io.space.getSize(sid);
-                H5S.close(sid);
+                obj.updateSize()
             end
             dims = obj.dims_;
         end
 
         function maxDims = get.maxDims(obj)
             if isempty(obj.maxDims_)
-                sid = get_space(obj);
-                [obj.dims_, obj.maxDims_] = io.space.getSize(sid);
-                H5S.close(sid);
+                obj.updateSize()
             end
             maxDims = obj.maxDims_;
         end
@@ -244,9 +240,10 @@ classdef (Sealed) DataStub < handle
         end
     end
 
-    methods % (Access = ?types.untyped.datapipe.BoundPipe)
+    methods (Access = {?types.untyped.DataStub, ?types.untyped.datapipe.BoundPipe})
         function updateSize(obj)
-        % updateSize - Should be called when dataset space is expanded
+        % updateSize - Should be called to initialize values or when dataset 
+        % space is expanded
             sid = get_space(obj);
             [obj.dims_, obj.maxDims_] = io.space.getSize(sid);
             H5S.close(sid);
