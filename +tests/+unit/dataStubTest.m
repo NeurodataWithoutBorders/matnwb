@@ -97,12 +97,12 @@ classdef dataStubTest < tests.abstract.NwbTestCase
             nwb.acquisition.set('rc', rc);
             nwb.analysis.set('rcRef', rcRef);
             nwbExport(nwb, 'original.nwb');
-            
+
             nwbOriginalIn = nwbRead('original.nwb', 'ignorecache');
             tests.util.verifyContainerEqual(testCase, nwbOriginalIn, nwb);
             
             nwbExport(nwbOriginalIn, 'copy.nwb');
-            
+
             nwbCopyIn = nwbRead('copy.nwb', 'ignorecache');
             tests.util.verifyContainerEqual(testCase, nwbCopyIn, nwb);
         end
