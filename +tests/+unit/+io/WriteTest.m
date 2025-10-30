@@ -144,7 +144,7 @@ classdef WriteTest < matlab.unittest.TestCase
             
             % Initial data to write (e.g., 10x10)
             initialData = struct('a', 1, 'b', true, 'c', 'test');
-            io.writeCompound(fid, fullPath, initialData);  % First write to create the dataset
+            io.writeCompound(fid, fullPath, initialData, 'forceArray');  % First write to create the dataset
             
             % Attempt to write data of a different size (e.g., 5x5)
             newData = cat(1, initialData, struct('a', 2, 'b', false, 'c', 'new test'));

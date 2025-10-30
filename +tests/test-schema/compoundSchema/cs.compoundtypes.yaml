@@ -25,3 +25,29 @@ groups:
         reftype: region
     shape:
     - null
+
+- neurodata_type_def: ScalarCompoundMixedData
+  neurodata_type_inc: NWBContainer
+  doc: Data type with scalar compound data type
+  datasets:
+  - name: data
+    shape: 
+    - 1
+    dtype:
+    - name: integer
+      dtype: int
+      doc: An integer value.
+    - name: float
+      dtype: float
+      doc: A float value.
+    - name: text
+      dtype: text
+      doc: A text value.
+    - name: boolean
+      dtype: bool
+      doc: A bolean value.
+    - name: reference
+      doc: Reference to a NWBDataInterface
+      dtype:
+        target_type: NWBDataInterface
+        reftype: object
