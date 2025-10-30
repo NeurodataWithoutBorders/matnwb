@@ -13,9 +13,15 @@ classdef (Sealed) DataStub < handle
         ndims;
         dataType;
     end
+
+    properties (Dependent, SetAccess = private, GetAccess = ?types.untyped.datapipe.BoundPipe)
+        maxDims
+    end
+
     properties (Access = private)
         dims_ double
-        dataType_  {mustBeA(dataType_, ["char", "string", "struct"])} = string.empty % Can be char (simple type) or struct (compound type descriptor)
+        dataType_  {matnwb.common.compatibility.mustBeA(dataType_, ["char", "string", "struct"])} = string.empty % Can be char (simple type) or struct (compound type descriptor)
+        maxDims_ double
     end
     
     methods
@@ -37,25 +43,21 @@ classdef (Sealed) DataStub < handle
                 obj.dataType_ = dataType;  % Keep as struct for compound types
             end
         end
-        
-        function sid = get_space(obj) % Todo: private method
-            fid = H5F.open(obj.filename);
-            did = H5D.open(fid, obj.path);
-            sid = H5D.get_space(did);
-            H5D.close(did);
-            H5F.close(fid);
-        end
-        
+
         function dims = get.dims(obj)
             if isempty(obj.dims_)
-                sid = obj.get_space();
-                [~, h5_dims, ~] = H5S.get_simple_extent_dims(sid);
-                obj.dims_ = fliplr(h5_dims);
-                H5S.close(sid);
+                obj.updateSize()
             end
             dims = obj.dims_;
         end
-        
+
+        function maxDims = get.maxDims(obj)
+            if isempty(obj.maxDims_)
+                obj.updateSize()
+            end
+            maxDims = obj.maxDims_;
+        end
+
         function nd = get.ndims(obj)
             nd = length(obj.dims);
         end
@@ -185,10 +187,10 @@ classdef (Sealed) DataStub < handle
         
         refs = export(obj, fid, fullpath, refs);
         
-        function B = subsref(obj, S)
+        function varargout = subsref(obj, S)
             CurrentSubRef = S(1);
             if ~isscalar(obj) || strcmp(CurrentSubRef.type, '.')
-                B = builtin('subsref', obj, S);
+                [varargout{1:nargout}] = builtin('subsref', obj, S);
                 return;
             end
             
@@ -200,9 +202,9 @@ classdef (Sealed) DataStub < handle
                 selectionRank, rank);
             data = obj.load_mat_style(CurrentSubRef.subs{:});
             if isscalar(S)
-                B = data;
+                varargout = {data};
             else
-                B = subsref(data, S(2:end));
+                [varargout{1:nargout}] = subsref(data, S(2:end));
             end
         end
         
@@ -223,6 +225,38 @@ classdef (Sealed) DataStub < handle
             %ISCOMPOUNDTYPE Returns true if this DataStub represents a compound type
             dt = obj.dataType;  % Trigger lazy loading if needed
             tf = isstruct(dt);
+        end
+    end
+
+    methods % Custom indexing
+        function n = numArgumentsFromSubscript(obj, subs, indexingContext)
+            if ~isscalar(subs) && strcmp(subs(1).type, '()')
+                % Typical indexing pattern into compound data type, i.e
+                % data(1:3).fieldName. Assume/expect one output.
+                n = 1;
+            else
+                n = builtin('numArgumentsFromSubscript', obj, subs, indexingContext);
+            end
+        end
+    end
+
+    methods (Access = {?types.untyped.DataStub, ?types.untyped.datapipe.BoundPipe})
+        function updateSize(obj)
+        % updateSize - Should be called to initialize values or when dataset 
+        % space is expanded
+            sid = get_space(obj);
+            [obj.dims_, obj.maxDims_] = io.space.getSize(sid);
+            H5S.close(sid);
+        end
+    end
+
+    methods (Access = private) 
+        function sid = get_space(obj)
+            fid = H5F.open(obj.filename);
+            did = H5D.open(fid, obj.path);
+            sid = H5D.get_space(did);
+            H5D.close(did);
+            H5F.close(fid);
         end
     end
 end
