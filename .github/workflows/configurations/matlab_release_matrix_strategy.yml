@@ -22,3 +22,9 @@
 - matlab-version: R2024b
   python-version: '3.11'
   skip-pynwb-compatibilty-test-for-tutorial: '0'
+- matlab-version: R2025a
+  python-version: '3.12'
+  skip-pynwb-compatibilty-test-for-tutorial: '0'
+- matlab-version: R2025b
+  python-version: '3.13'
+  skip-pynwb-compatibilty-test-for-tutorial: '0'
