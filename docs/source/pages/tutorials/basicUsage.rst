@@ -1,3 +1,5 @@
+.. _basicUsage-tutorial:
+
 Basic Usage of MatNWB
 =====================
 

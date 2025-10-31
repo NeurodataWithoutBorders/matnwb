@@ -1,3 +1,5 @@
+.. _dimensionMapNoDataPipes-tutorial:
+
 Mapping Dimensions without DataPipes
 ====================================
 

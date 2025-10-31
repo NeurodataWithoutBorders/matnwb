@@ -1,3 +1,5 @@
+.. _behavior-tutorial:
+
 Behavior Data
 =============
 
