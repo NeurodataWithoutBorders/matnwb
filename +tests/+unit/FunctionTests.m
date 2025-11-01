@@ -26,5 +26,10 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             dataPipe = types.untyped.DataPipe('data', rand(10,10));
             testCase.verifyFalse(matnwb.utility.isNeurodataType(dataPipe))
         end
+
+        function testListGeneratedTypesWithShortNames(testCase)
+            typeNames = schemes.utility.listGeneratedTypes("OutputType", "short name");
+            testCase.verifyTrue(contains('NWBFile', typeNames))
+        end
     end 
 end

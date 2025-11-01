@@ -1,4 +1,4 @@
-classdef Fluorescence < types.core.NWBDataInterface & types.untyped.GroupClass
+classdef Fluorescence < types.core.NWBDataInterface & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups
 % FLUORESCENCE - Fluorescence information about a region of interest (ROI). Storage hierarchy of fluorescence should be the same as for segmentation (ie, same names for ROIs and for image planes).
 %
 % Required Properties:
@@ -8,6 +8,9 @@ classdef Fluorescence < types.core.NWBDataInterface & types.untyped.GroupClass
 % REQUIRED PROPERTIES
 properties
     roiresponseseries; % REQUIRED (RoiResponseSeries) RoiResponseSeries object(s) containing fluorescence data for a ROI.
+end
+properties (Access = protected)
+    GroupPropertyNames = {'roiresponseseries'}
 end
 
 methods
@@ -28,6 +31,8 @@ methods
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.roiresponseseries, ivarargin] = types.util.parseConstrained(obj,'roiresponseseries', 'types.core.RoiResponseSeries', varargin{:});
         varargin(ivarargin) = [];
+        
+        obj.setupHasUnnamedGroupsMixin()
         
         p = inputParser;
         p.KeepUnmatched = true;

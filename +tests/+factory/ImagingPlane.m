@@ -1,7 +1,7 @@
 function imaging_plane = ImagingPlane(device)
 % ImagingPlane - Create imaging plane with values for all required properties
     arguments
-        device (1,1) types.core.Device % A device is required
+        device (1,1) types.core.Device = types.core.Device % A device is required
     end
     imaging_plane = types.core.ImagingPlane( ...
         'device', types.untyped.SoftLink(device), ...
