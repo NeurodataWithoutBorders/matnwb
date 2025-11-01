@@ -26,7 +26,7 @@ function parsed = parseDataset(filename, info, fullpath, Blacklist)
         tid = H5D.get_type(did);
         data = io.parseReference(did, tid, H5D.read(did));
         H5T.close(tid);
-    elseif ~strcmp(dataspace.Type, 'simple')
+    elseif ~strcmp(dataspace.Type, 'simple') % i.e scalar
         data = H5D.read(did);
 
         switch datatype.Class
@@ -43,13 +43,17 @@ function parsed = parseDataset(filename, info, fullpath, Blacklist)
                 end
             case 'H5T_ENUM'
                 if io.isBool(datatype.Type)
-                    data = strcmp('TRUE', data);
+                    data = io.internal.h5.postprocess.toLogical(data);
                 else
                     warning('NWB:Dataset:UnknownEnum', ...
                         ['Encountered unknown enum under field `%s` with %d members. ' ...
-                        'Will be saved as cell array of characters.'], ...
+                        'Will be read as cell array of characters.'], ...
                         name, length(datatype.Type.Member));
+                    data = io.internal.h5.postprocess.toEnumCellStr(data, datatype.Type);
                 end
+            case 'H5T_COMPOUND'
+                isScalar = true;
+                data = io.parseCompound(did, data, isScalar);
         end
     else
         sid = H5D.get_space(did);
