@@ -31,7 +31,7 @@ You can check a file's schema version:
 How MatNWB Generates Classes
 ----------------------------
 
-When you call ``nwbRead``, MatNWB performs several steps behind the scenes:
+When you call :func:`nwbRead`, MatNWB performs several steps behind the scenes:
 
 1. **Reads the file's embedded schema** information
 2. **Generates MATLAB classes** for neurodata types defined by the schema version used to create the file
