@@ -1,5 +1,5 @@
-Important
-=========
+Dimension Ordering in MatNWB
+============================
 
 When using MatNWB, it is important to understand the differences in how array 
 dimensions are ordered in MATLAB versus HDF5. While the NWB documentation and 
@@ -33,7 +33,8 @@ Without DataPipes
 ^^^^^^^^^^^^^^^^^
 
 See the documentation at the following link: 
-`without DataPipes <../tutorials/dimensionMapNoDataPipes.html>`_
+:doc:`without DataPipes </pages/tutorials/dimensionMapNoDataPipes>`
+
 
 **Writing to File**
 
@@ -69,7 +70,7 @@ With DataPipes
 ^^^^^^^^^^^^^^
 
 See the documentation at the following link: 
-`with DataPipes <../tutorials/dimensionMapWithDataPipes.html>`_
+:doc:`with DataPipes </pages/tutorials/dimensionMapWithDataPipes>`
 
 **Writing to File**
 

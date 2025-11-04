@@ -88,7 +88,8 @@ DataStubs and DataPipes
 .. image:: https://github.com/NeurodataWithoutBorders/nwb-overview/blob/main/docs/source/img/matnwb_datastub.png?raw=true
 
 
-**DataPipes** are similar to DataStubs in that they allow you to load data from disk; however, they also provide a wide array of features that allow the user to write data to disk, either by streaming parts of data in at a time or by compressing the data before writing. The DataPipe is an advanced type and users looking to leverage DataPipe's capabilities to stream/iteratively write or compress data should read the `Advanced Data Write Tutorial <../../tutorials/dataPipe.html>`_.
+**DataPipes** are similar to DataStubs in that they allow you to load data from disk; however, they also provide a wide array of features that allow the user to write data to disk, either by streaming parts of data in at a time or by compressing the data before writing. The DataPipe is an advanced type and users looking to leverage DataPipe's capabilities to stream/iteratively write or compress data should read the :doc:`Advanced Data Write Tutorial </pages/tutorials/dataPipe>`
+
 
 .. _matnwb-read-untyped-links-views:
 

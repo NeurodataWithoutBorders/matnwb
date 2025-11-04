@@ -1,3 +1,5 @@
+.. _dimensionMapWithDataPipes-tutorial:
+
 Mapping Dimensions with DataPipes
 =================================
 
