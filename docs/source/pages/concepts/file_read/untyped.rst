@@ -40,7 +40,7 @@ When working with NWB files, datasets can be very large (gigabytes or more). Loa
 DataStubs (Read only)
 ^^^^^^^^^^^^^^^^^^^^^
 
-A **DataStub** (``types.untyped.DataStub``) represents a read-only reference to data stored in an NWB file. When you read an NWB file, large datasets are automatically represented as DataStubs rather than loaded into memory.
+A **DataStub** (``types.untyped.DataStub``) represents a read-only reference to data stored in an NWB file. When you read an NWB file, non-scalar and multi-dimensional datasets are automatically represented as DataStubs rather than loaded into memory.
 
 .. image:: https://github.com/NeurodataWithoutBorders/nwb-overview/blob/main/docs/source/img/matnwb_datastub.png?raw=true
 
