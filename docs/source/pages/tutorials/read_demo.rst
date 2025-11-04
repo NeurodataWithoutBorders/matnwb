@@ -1,3 +1,5 @@
+.. _read_demo-tutorial:
+
 Reading NWB Files with MatNWB
 =============================
 
