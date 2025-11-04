@@ -107,5 +107,20 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                 @() nwbFile.acquisition.add('ts', newTs), ...
                 'NWB:Set:KeyExists')
         end
+    
+        function testSetMethodWithMismatchedNameValuePairs(testCase)
+            testSet = types.untyped.Set();
+            testCase.verifyError(...
+                @() testSet.set({'a', 'b'}, {1}), ...
+                'NWB:Set:NameValueLengthMismatch')
+        end
+
+        function testRemoveUsingSetWithEmptyValue(testCase)
+            testSet = types.untyped.Set('a', 1);
+            testCase.verifyTrue(testSet.isKey('a'), 'Expected set to have key "a".')
+
+            testSet.set('a', {[]})
+            testCase.verifyFalse(testSet.isKey('a'), 'Expected key "a" to have been removed.')
+        end
     end
 end
