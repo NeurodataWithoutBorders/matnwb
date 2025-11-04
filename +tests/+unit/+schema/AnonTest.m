@@ -7,6 +7,10 @@ classdef AnonTest < tests.unit.abstract.SchemaTest
 
     methods (Test)
         function testAnonDataset(testCase)
+            import matlab.unittest.fixtures.SuppressedWarningsFixture
+            warningIdentifier = 'NWB:HasUnnamedGroups:NotImplemented';
+            testCase.applyFixture(SuppressedWarningsFixture(warningIdentifier))
+            
             ag = types.anon.AnonGroup('ad', types.anon.AnonData('data', 0));
             nwbExpected = NwbFile(...
                 'identifier', 'ANON',...
@@ -22,6 +26,12 @@ classdef AnonTest < tests.unit.abstract.SchemaTest
             anon = types.untyped.Anon('a', 1);
             testCase.verifyEqual(anon.name, 'a')
             testCase.verifyEqual(anon.value, 1)
+        end
+
+        function testIsKeyMethod(testCase)
+            testAnon = types.untyped.Anon('a', 1);
+            testCase.verifyTrue(isKey(testAnon, 'a'))
+            testCase.verifyFalse(isKey(testAnon, 'b'))
         end
     end
 end
