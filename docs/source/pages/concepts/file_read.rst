@@ -15,7 +15,7 @@ This command performs several important tasks behind the scenes:
 2. **Automatically generates MATLAB classes** needed to work with the data  
 3. **Returns an NwbFile object** representing the entire file  
 
-The returned `NwbFile` object is the primary access point for all the data in the file. In the :ref:`next section<matnwb-read-nwbfile-intro>`, we will examine the structure of this object in detail, covering how to explore it using standard MATLAB dot notation to access experimental metadata, raw recordings, processed data, and analysis results, as well as how to search for specific data types.
+The returned :class:`NwbFile` object is the primary access point for all the data in the file. In the :ref:`next section<matnwb-read-nwbfile-intro>`, we will examine the structure of this object in detail, covering how to explore it using standard MATLAB dot notation to access experimental metadata, raw recordings, processed data, and analysis results, as well as how to search for specific data types.
 
 .. important::
     **Lazy Loading:** MatNWB uses lazy reading to efficiently work with large datasets. When you access a dataset through the `NwbFile` object, MatNWB returns a :class:`types.untyped.DataStub` object instead of loading the entire dataset into memory. This allows you to:
