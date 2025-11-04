@@ -18,14 +18,9 @@ This command performs several important tasks behind the scenes:
 The returned :class:`NwbFile` object is the primary access point for all the data in the file. In the :ref:`next section<matnwb-read-nwbfile-intro>`, we will examine the structure of this object in detail, covering how to explore it using standard MATLAB dot notation to access experimental metadata, raw recordings, processed data, and analysis results, as well as how to search for specific data types.
 
 .. important::
-    **Lazy Loading:** MatNWB uses lazy reading to efficiently work with large datasets. When you access a dataset through the `NwbFile` object, MatNWB returns a :class:`types.untyped.DataStub` object instead of loading the entire dataset into memory. This allows you to:
-    
-    - Work with files larger than available RAM
-    - Read only the portions of data you need
-    - Index into datasets using standard MATLAB array syntax
-    - Load the full dataset explicitly using the ``.load()`` method
-    
-    For more details, see :ref:`DataStubs and DataPipes<matnwb-read-untyped-datastub-datapipe>`.
+    **Lazy Loading:** MatNWB uses lazy reading to efficiently handle large files. When you read an NWB file using :func:`nwbRead`, only the file structure and metadata are initially loaded into memory. This approach enables quick access to the file’s contents and makes it possible to work with files larger than the system’s available RAM.
+
+    To learn how to load data from non-scalar or multidimensional datasets into memory, see :ref:`DataStubs and DataPipes<matnwb-read-untyped-datastub-datapipe>`.
 
 .. note::
     The :func:`nwbRead` function currently does not support reading NWB files stored in Zarr format.
