@@ -69,10 +69,10 @@ DataPipes solve the problem of writing datasets that are too large to fit in mem
 
 .. seealso::
 
-   - For detailed guidance on creating and configuring DataPipes, see :ref:`Advanced Data Write Tutorial </pages/tutorials/dataPipe>`
+   - For detailed guidance on creating and configuring DataPipes, see :doc:`Advanced Data Write Tutorial </pages/tutorials/dataPipe>`
 
-   .. todo
-   - For practical examples of reading data via DataStubs, see :ref:`How to Read Data </pages/how-to/read-on-demand>`
+.. todo
+    - For practical examples of reading data via DataStubs, see :ref:`How to Read Data </pages/how-to/read-on-demand>`
 
 .. _matnwb-read-untyped-links-views:
 
