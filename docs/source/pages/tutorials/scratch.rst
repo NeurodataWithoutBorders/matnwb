@@ -1,3 +1,5 @@
+.. _scratch-tutorial:
+
 Working with Scratch Space in MatNWB
 ====================================
 

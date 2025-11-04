@@ -34,4 +34,4 @@ Finally, if you prefer to select using your custom ``id`` column, you can specif
 
     tableData = dynamicTable.getRow(<idValue>, 'useId', true);
 
-For more information regarding Dynamic Tables in MatNWB as well as information regarding writing data to them, please see the `MatNWB DynamicTables Tutorial <../../tutorials/dynamic_tables.html>`_.
+For more information regarding Dynamic Tables in MatNWB as well as information regarding writing data to them, please see the :doc:`DynamicTables Tutorial </pages/tutorials/dynamic_tables>`.
