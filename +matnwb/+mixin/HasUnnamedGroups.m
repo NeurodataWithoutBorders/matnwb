@@ -242,7 +242,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             setObj = obj.(groupName);
             validName = setObj.getPropertyName(name);
 
-            if obj.isReservedName(name) % Force non-reserved name
+            if obj.isReservedName(validName) % Force non-reserved name
                 validName = sprintf('%s_', name);
             end
 
