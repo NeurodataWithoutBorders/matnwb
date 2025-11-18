@@ -101,21 +101,25 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
         function testWithReservedName(testCase)
             module = types.core.ProcessingModule('description', 'test module');
             
-            operationToVerify = @() module.add(...
-                'nwbdatainterface', types.core.NWBDataInterface());
+            module.add('nwbdatainterface', types.core.NWBDataInterface());
             
-            testCase.verifyError(operationToVerify, ...
-                'NWB:HasUnnamedGroups:ReservedName');
+            testCase.verifyTrue(isprop(module, 'nwbdatainterface'))
+            testCase.verifyClass(module.nwbdatainterface, 'types.untyped.Set');
+
+            testCase.verifyTrue(isprop(module, 'nwbdatainterface_'))
+            testCase.verifyClass(module.nwbdatainterface_, 'types.core.NWBDataInterface');
         end
-                
+        
         function testWithReservedNameAddedToContainedSet(testCase)
             module = types.core.ProcessingModule('description', 'test module');
             
-            operationToVerify = @() module.nwbdatainterface.set(...
-                'nwbdatainterface', types.core.NWBDataInterface());
+            module.nwbdatainterface.set('nwbdatainterface', types.core.NWBDataInterface());
             
-            testCase.verifyError(operationToVerify, ...
-                'NWB:HasUnnamedGroups:CouldNotAddEntry');
+            testCase.verifyTrue(isprop(module, 'nwbdatainterface'))
+            testCase.verifyClass(module.nwbdatainterface, 'types.untyped.Set');
+
+            testCase.verifyTrue(isprop(module, 'nwbdatainterface_'))
+            testCase.verifyClass(module.nwbdatainterface_, 'types.core.NWBDataInterface');
         end
 
         function testWithInvalidMatlabName(testCase)

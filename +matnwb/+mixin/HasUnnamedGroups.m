@@ -78,8 +78,6 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                 throwAsCaller(getNameExistsException(name, obj.TypeName))
             end
 
-            obj.assertNameNotReserved(name)
-                      
             wasSuccess = false;
             for groupName = obj.GroupPropertyNames
                 currentSet = obj.(groupName);
@@ -202,16 +200,9 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                 end
             end
         end
-        
-        function assertNameNotReserved(obj, name)
-            % Property names for groups are reserved
-            if any( strcmp(obj.GroupPropertyNames, name) )
-                ME = MException(...
-                    'NWB:HasUnnamedGroups:ReservedName', ...
-                    ['`%s` is a reserved name for a %s object. Please use ', ...
-                    'another name.'], name, class(obj));
-                throwAsCaller(ME)
-            end
+
+        function tf = isReservedName(obj, name)
+            tf = any( strcmp(obj.GroupPropertyNames, name) );
         end
 
         function warnIfNameIsPropertyName(obj, name)
@@ -245,19 +236,15 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
 
         function createDynamicProperty(obj, name, groupName)
         % createDynamicProperty - Add a single dynamic property to the class
-            try
-                obj.assertNameNotReserved(name)
-            catch
-                error('NWB:HasUnnamedGroups:CouldNotAddEntry', ...
-                    ['Failed to add an entry with the name "%s" as a property ', ...
-                    'of this object because "%s" is a reserved name in ', ...
-                    '"%s".'], name, name, class(obj))
-            end
 
             % Get the specified group's Set and a valid MATLAB identifier for
             % the property to create
             setObj = obj.(groupName);
-            propertyIdentifier = setObj.getPropertyName(name);
+            validName = setObj.getPropertyName(name);
+
+            if obj.isReservedName(name) % Force non-reserved name
+                validName = sprintf('%s_', name);
+            end
 
             % Verify that name only exists in one group
             nameCount = obj.countInstancesOfName(name);
@@ -271,19 +258,20 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             end
             
             % Ensure that property does not already exist.
-            assert(~isprop(obj, propertyIdentifier), ...
+            assert(~isprop(obj, validName), ...
                 'NWB:HasUnnamedGroups:DynamicPropertyExists', ...
-                'Property with name "%s" already exists', propertyIdentifier)
+                'Property with name "%s" already exists', validName)
             
             % Create a getter method that will retrieve the value from the Set
             getMethod = @(~) obj.getDynamicPropertyValueFromSet(name, groupName);
             setMethod = @(nm, value, gNnm) obj.setDynamicPropertyValueToSet(name, value, groupName);
             
             % Add the property using the PropertyManager
-            obj.PropertyManager.addProperty(propertyIdentifier, ...
+            obj.PropertyManager.addProperty(name, ...
                 'GetMethod', getMethod, ...
                 'SetMethod', setMethod, ...
-                'Dependent', true);
+                'Dependent', true, ...
+                'ValidName', validName);
         end
 
         function deleteDynamicProperty(obj, name)
@@ -319,13 +307,16 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
 
         function T = getTableWithAliasNames(obj)
             
-            T = cell(1, numel(obj.GroupPropertyNames));
+            T = cell(1, numel(obj.GroupPropertyNames) + 1);
 
             for i = 1:numel(obj.GroupPropertyNames)
                 groupName = obj.GroupPropertyNames(i);
                 currentSet = obj.(groupName);
                 T{i} = currentSet.getPropertyMappingTable();
             end
+            
+            T{end} = obj.PropertyManager.getPropertyMappingTable();
+
 
             T(cellfun('isempty', T)) = [];
             T = cat(1, T{:});
@@ -333,6 +324,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             if ~isempty(T)
                 keep = T.ValidIdentifier ~= T.OriginalName;
                 T = T(keep, :);
+                T = unique(T, "rows");
             end
         end
     end
