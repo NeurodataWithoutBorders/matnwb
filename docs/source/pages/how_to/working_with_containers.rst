@@ -22,7 +22,7 @@ Some NWB container types (like ``ProcessingModule``) are designed to hold multip
     module.nwbdatainterface.set('MyTimeSeries', timeSeriesObject);
     
     % Retrieving data
-    ts = module.nwbdatainterface.get('MyTimeSeries');
+    timeSeries = module.nwbdatainterface.get('MyTimeSeries');
 
 **Modern approach:**
 
@@ -32,7 +32,7 @@ Some NWB container types (like ``ProcessingModule``) are designed to hold multip
     module.add('MyTimeSeries', timeSeriesObject);
     
     % Retrieving data
-    ts = module.MyTimeSeries;
+    timeSeries = module.MyTimeSeries;
 
 Adding Data Objects
 -------------------
@@ -57,8 +57,8 @@ The ``add()`` method is the recommended way to add data objects to container typ
         'description', 'My data table');
     
     % Add them to the module
-    module.add('neural_activity', timeSeries);
-    module.add('results_table', dataTable);
+    module.add('NeuralActivity', timeSeries);
+    module.add('ResultsTable', dataTable);
 
 During construction
 ~~~~~~~~~~~~~~~~~~~
@@ -69,8 +69,8 @@ You can also add data objects when creating the container:
 
     module = types.core.ProcessingModule( ...
         'description', 'My analysis module', ...
-        'neural_activity', timeSeries, ...
-        'results_table', dataTable);
+        'NeuralActivity', timeSeries, ...
+        'ResultsTable', dataTable);
 
 Accessing Data Objects
 -----------------------
@@ -83,12 +83,12 @@ Once added, data objects are accessible as properties of the container:
 .. code-block:: MATLAB
 
     % Retrieve by property name
-    ts = module.neural_activity;
-    table = module.results_table;
+    timeSeries = module.NeuralActivity;
+    resultsTable = module.ResultsTable;
     
     % You can then access their properties
-    data = ts.data;
-    timestamps = ts.timestamps;
+    data = timeSeries.data;
+    timestamps = timeSeries.timestamps;
 
 This works exactly like accessing any other MATLAB object property, making your code more readable and intuitive.
 
@@ -99,8 +99,8 @@ Use ``isprop()`` to check if a data object exists:
 
 .. code-block:: MATLAB
 
-    if isprop(module, 'neural_activity')
-        ts = module.neural_activity;
+    if isprop(module, 'NeuralActivity')
+        timeSeries = module.NeuralActivity;
     end
 
 Removing Data Objects
@@ -111,10 +111,14 @@ Use the ``remove()`` method to remove data objects:
 .. code-block:: MATLAB
 
     % Remove a data object by its name
-    module.remove('neural_activity');
+    module.remove('NeuralActivity');
     
     % Verify it's gone
-    hasProperty = isprop(module, 'neural_activity');  % Returns false
+    hasProperty = isprop(module, 'NeuralActivity');  % Returns false
+
+.. note::
+
+    The ``remove()`` method only removes objects from memory. It does not remove neurodata objects from files that have been read from disk. To modify the contents of an existing NWB file, you need to create a new file with the desired changes.
 
 Working with Names
 ------------------
@@ -131,8 +135,8 @@ MATLAB property names must follow specific rules (no spaces, special characters,
     module.add('Raw-Fluorescence', fluorescence);
     
     % Access using valid MATLAB identifiers
-    ts = module.myTimeSeries;        % Spaces removed, camelCase
-    fluor = module.RawFluorescence;  % Hyphen replaced with uppercase
+    timeSeries = module.myTimeSeries;        % Spaces removed, camelCase
+    fluorescence = module.RawFluorescence;  % Hyphen replaced with uppercase
 
 .. important::
 
@@ -173,14 +177,14 @@ The most common container type is ``ProcessingModule``, which can hold:
 
 .. code-block:: MATLAB
 
-    module = types.core.ProcessingModule('description', 'Ophys module');
+    module = types.core.ProcessingModule('description', 'Optical physiology module');
     
     % Add a NWBDataInterface subclass
     module.add('Fluorescence', types.core.Fluorescence());
     
     % Add a DynamicTable
-    module.add('ROITable', types.hdmf_common.DynamicTable( ...
-        'description', 'ROI properties'));
+    module.add('RegionOfInterestTable', types.hdmf_common.DynamicTable( ...
+        'description', 'Region of interest properties'));
 
 The ``add()`` method automatically determines which internal Set (``nwbdatainterface`` or ``dynamictable``) to use based on the object's type.
 
@@ -196,10 +200,10 @@ For advanced use cases, you can still access the underlying ``types.untyped.Set`
     
     % Legacy methods still work
     dataSet.set('MyData', dataObject);
-    obj = dataSet.get('MyData');
+    dataObject = dataSet.get('MyData');
     
     % Set also supports direct property access
-    obj = dataSet.MyData;
+    dataObject = dataSet.MyData;
     
     % Check what's in the Set
     allKeys = dataSet.keys();
@@ -224,10 +228,10 @@ All legacy syntax is still supported for backward compatibility:
     module.add('MyData', dataObject);
     
     % Legacy: get from Set
-    obj = module.nwbdatainterface.get('MyData');
+    dataObject = module.nwbdatainterface.get('MyData');
     
     % Modern: direct property access
-    obj = module.MyData;
+    dataObject = module.MyData;
 
 Complete Example
 ----------------
@@ -237,35 +241,35 @@ Here's a complete workflow showing modern syntax:
 .. code-block:: MATLAB
 
     % Create NWB file
-    nwb = NwbFile( ...
+    nwbFile = NwbFile( ...
         'session_description', 'My experiment', ...
         'identifier', 'exp001', ...
         'session_start_time', datetime());
     
     % Create a processing module
-    ophysModule = types.core.ProcessingModule( ...
+    opticalPhysiologyModule = types.core.ProcessingModule( ...
         'description', 'Optical physiology data');
     
     % Create and add data objects
     fluorescence = types.core.Fluorescence();
-    roiResponse = types.core.RoiResponseSeries( ...
+    roiResponseSeries = types.core.RoiResponseSeries( ...
         'data', rand(100, 10), ...
         'data_unit', 'lumens', ...
         'timestamps', linspace(0, 10, 100));
     
-    fluorescence.add('RoiResponseSeries', roiResponse);
-    ophysModule.add('Fluorescence', fluorescence);
+    fluorescence.add('RoiResponseSeries', roiResponseSeries);
+    opticalPhysiologyModule.add('Fluorescence', fluorescence);
     
     % Add module to NWB file
-    nwb.processing.set('ophys', ophysModule);
+    nwbFile.processing.set('ophys', opticalPhysiologyModule);
     
     % Later, retrieve your data using dot-indexing
-    fluor = ophysModule.Fluorescence;
-    roiData = fluor.RoiResponseSeries;
-    traces = roiData.data;
+    fluorescence = opticalPhysiologyModule.Fluorescence;
+    roiResponseSeries = fluorescence.RoiResponseSeries;
+    traces = roiResponseSeries.data;
     
     % Export the file
-    nwbExport(nwb, 'my_experiment.nwb');
+    nwbExport(nwbFile, 'my_experiment.nwb');
 
 Troubleshooting
 ---------------
@@ -273,15 +277,15 @@ Troubleshooting
 Property name conflicts
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-If you try to add an object with a name that conflicts with an existing property (like ``'nwbdatainterface'`` or ``'dynamictable'``), MatNWB will automatically append an underscore:
+If you try to add an object with a name that conflicts with an internal container property (like ``'nwbdatainterface'`` or ``'dynamictable'``), MatNWB will automatically append an underscore:
 
 .. code-block:: MATLAB
 
-    % This name conflicts with a reserved property
+    % This name conflicts with an internal container property
     module.add('nwbdatainterface', someObject);
     
     % Access it with an underscore appended
-    obj = module.nwbdatainterface_;
+    someObject = module.nwbdatainterface_;
 
 Name not found error
 ~~~~~~~~~~~~~~~~~~~~
@@ -292,7 +296,7 @@ If you try to access a property that doesn't exist, you'll get an error. Always 
 
     % Check before accessing
     if isprop(module, 'MyData')
-        obj = module.MyData;
+        dataObject = module.MyData;
     else
         warning('MyData not found in module');
     end
