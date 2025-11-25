@@ -8,6 +8,8 @@
 
 import os
 import sys
+import re
+from datetime import datetime
 
 sys.path.append('sphinx_extensions')
 from docstring_processors import process_matlab_docstring
@@ -24,10 +26,30 @@ def setup(app):
     app.add_role('matclass', MatClassRole())
 
 project = 'MatNWB'
-copyright = '2024, Neurodata Without Borders' # Todo: compute year
+copyright = f'{datetime.now().year}, Neurodata Without Borders'
 author = 'Neurodata Without Borders'
 
-release = '2.7.0' # Todo: read from Contents.m
+# Read version from Contents.m
+def get_version_from_contents():
+    """Extract version number from Contents.m file."""
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    contents_path = os.path.abspath(os.path.join(script_dir, '..', '..', 'Contents.m'))
+    
+    try:
+        with open(contents_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                # Look for line with "% Version X.Y.Z"
+                match = re.search(r'%\s*Version\s+(\d+\.\d+\.\d+)', line)
+                if match:
+                    return match.group(1)
+    except FileNotFoundError:
+        print(f"Warning: Contents.m not found at {contents_path}")
+        return 'unknown'  # fallback when file is missing
+    
+    print("Warning: Version not found in Contents.m")
+    return 'unknown'  # fallback when version cannot be parsed
+
+release = get_version_from_contents()
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -78,11 +100,14 @@ templates_path = [os.path.abspath(os.path.join(script_dir,'_templates'))]
 html_theme = "sphinx_rtd_theme"
 
 html_static_path = ['_static']
+html_js_files = ['js/iframe-autoheight.js']
 html_logo = os.path.join(matlab_src_dir, 'logo', 'logo_matnwb_small.png')
 html_favicon = os.path.join(matlab_src_dir, 'logo', 'logo_favicon_32.png')
-
 html_theme_options = {
-    "style_nav_header_background": "#000000"
+    "style_nav_header_background": "#000000",
+    "navigation_depth": 2,
+    "collapse_navigation": False,
+    "sticky_navigation": True
 }
 
 html_context = {

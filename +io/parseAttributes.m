@@ -1,46 +1,43 @@
 function [args, type] = parseAttributes(filename, attributes, context, Blacklist)
-%typename is the type of name if it exists.  Empty string otherwise
-%args is a containers.Map of all valid attributes
+% parseAttributes - Parse an attribute info structure
+%
+% Syntax:
+%   [args, type] = io.parseAttributes(filename, attributes, context, Blacklist)
+%   This function parses a given attribute info structure and returns a 
+%   containers.Map of valid attributes along with neurodata type info if it 
+%   exists.
+%
+% Input Arguments:
+%   filename   - The name of the file containing attributes.
+%   attributes - The attributes to be parsed.
+%   context    - The context (h5 location) in which the attributes are located.
+%   Blacklist  - A list of attributes to be excluded from the parsing.
+%
+% Output Arguments:
+%   args - A containers.Map of all valid attributes.
+%   type - A structure with type information (see io.getNeurodataTypeInfo)
+%
+% See also: io.getNeurodataTypeInfo
+
 args = containers.Map;
-type = struct('namespace', '', 'name', '', 'typename', '');
+type = io.getNeurodataTypeInfo(attributes);
+
 if isempty(attributes)
     return;
 end
+
 names = {attributes.Name};
 
-typeDefMask = strcmp(names, 'neurodata_type');
-hasTypeDef = any(typeDefMask);
-if hasTypeDef
-    typeDef = attributes(typeDefMask).Value;
-    if iscellstr(typeDef)
-        typeDef = typeDef{1};
-    end
-    type.name = typeDef;
-end
-
-namespaceMask = strcmp(names, 'namespace');
-hasNamespace = any(namespaceMask);
-if hasNamespace
-    namespace = attributes(namespaceMask).Value;
-    if iscellstr(namespace)
-        namespace = namespace{1};
-    end
-    type.namespace = namespace;
-end
-
-if hasTypeDef && hasNamespace
-    validNamespace = misc.str2validName(type.namespace);
-    validName = misc.str2validName(type.name);
-    type.typename = ['types.' validNamespace '.' validName];
-end
+% We already got type information (if present), so we add type-specific 
+% attributes to the blacklist before parsing the rest of the attribute list
+Blacklist.attributes = [Blacklist.attributes, {'neurodata_type', 'namespace'}];
 
 blacklistMask = ismember(names, Blacklist.attributes);
-deleteMask = typeDefMask | namespaceMask | blacklistMask;
-attributes(deleteMask) = [];
+attributes(blacklistMask) = [];
 for i=1:length(attributes)
     attr = attributes(i);
 
-    switch attr.Datatype.Class
+    switch attr.Datatype.Class % Normalize/postprocess some HDF5 classes
         case 'H5T_STRING'
             % H5 String type attributes are loaded differently in releases 
             % prior to MATLAB R2020a. For details, see:
@@ -67,14 +64,13 @@ for i=1:length(attributes)
             H5F.close(fid);
         case 'H5T_ENUM'
             if io.isBool(attr.Datatype.Type)
-                % attr.Value should be cell array of strings here since
-                % MATLAB can't have arbitrary enum values.
-                attributeValue = strcmp('TRUE', attr.Value);
+                attributeValue = io.internal.h5.postprocess.toLogical(attr.Value);
             else
                 warning('NWB:Attribute:UnknownEnum', ...
                     ['Encountered unknown enum under field `%s` with %d members. ' ...
-                    'Will be saved as cell array of characters.'], ...
+                    'Will be read as cell array of characters.'], ...
                     attr.Name, length(attr.Datatype.Type.Member));
+                attributeValue = io.internal.h5.postprocess.toEnumCellStr(attr.Value, attr.Datatype.Type);
             end
         otherwise
             attributeValue = attr.Value;

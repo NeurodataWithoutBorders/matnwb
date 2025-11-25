@@ -29,7 +29,7 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
                     refs = obj.data.export(fid, fullpath, refs);
                 elseif istable(obj.data) || isstruct(obj.data) ||...
                         isa(obj.data, 'containers.Map')
-                    io.writeCompound(fid, fullpath, obj.data);
+                    io.writeCompound(fid, fullpath, obj.data, 'forceArray');
                 else
                     io.writeDataset(fid, fullpath, obj.data, 'forceArray');
                 end
@@ -198,10 +198,12 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
         function displayWarningIfMissingRequiredProps(obj)
             missingRequiredProps = obj.checkRequiredProps();
 
-            % Exception: 'file_create_date' is automatically added by the 
-            % matnwb API on export,  so no need to warn if it is missing.
+            % Exception: 'file_create_date' & 'timestamps_reference_time' is 
+            % automatically added by the matnwb API on export,  so no need to 
+            % warn if they are missing.
             if isa(obj, 'types.core.NWBFile')
-                missingRequiredProps = setdiff(missingRequiredProps, 'file_create_date', 'stable');
+                missingRequiredProps = setdiff(missingRequiredProps, ...
+                    {'file_create_date', 'timestamps_reference_time'}, 'stable');
             end
             
             % Exception: 'id' of DynamicTable is automatically assigned if not 

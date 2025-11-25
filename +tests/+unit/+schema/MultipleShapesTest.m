@@ -6,9 +6,25 @@ classdef MultipleShapesTest < tests.unit.abstract.SchemaTest
     end
 
     methods (Test)
+        function testShapeDatasetWithCorrectShape(testCase)
+            numElements = 3;
+            msd = types.mss.ShapeDataset('data', rand(numElements, 1));
+            testCase.verifyClass(msd, 'types.mss.ShapeDataset');
+            testCase.verifyEqual(size(msd.data), [numElements, 1]);
+        end
+
+        function testShapeDatasetWithWrongShape(testCase)
+            numElements = 3;
+            matrixData = rand(numElements, numElements);
+
+            testCase.verifyError(...
+                @() types.mss.ShapeDataset('data', matrixData), ...
+                'NWB:CheckDims:InvalidDimensions');
+        end
+
         function testMultipleShapesDataset(testCase)
             msd = types.mss.MultiShapeDataset('data', rand(3, 1));
-            msd.data = rand(1, 5, 7);
+            msd.data = rand(7, 5, 1); % NB: Reverse dimensions relative to schema due to MATLAB F-ordering
             testCase.roundabout(msd);
         end
         
@@ -17,7 +33,7 @@ classdef MultipleShapesTest < tests.unit.abstract.SchemaTest
             randiMax = intmax('int8') - 1;
             for i=1:100
                 %test validation
-                nsd.data = rand(randi(randiMax) + 1, 3);
+                nsd.data = rand(3, randi(randiMax) + 1); % NB: Reverse dimensions relative to schema due to MATLAB F-ordering
             end
             testCase.roundabout(nsd);
         end
@@ -39,6 +55,16 @@ classdef MultipleShapesTest < tests.unit.abstract.SchemaTest
             nid = types.mss.NarrowInheritedDataset;
             nid.data = 'Inherited Dtype Dataset';
             testCase.roundabout(nid);
+        end
+
+        function testInheritedDatasetWithWrongShape(testCase)
+            % Should not fail for parent type that accepts data with shape 3
+            types.mss.NullShapeDataset('data', {'A'; 'B'; 'C'});
+    
+            % Should fail for inherited type that accepts data with shape 1
+            testCase.verifyError(...
+                @() types.mss.NarrowInheritedDataset('data', {'A'; 'B'; 'C'}'), ...
+                'NWB:CheckDims:InvalidDimensions');
         end
     end
 

@@ -1,3 +1,5 @@
+.. _{{tutorial_name}}-tutorial:
+
 {{tutorial_title}}
 {{tutorial_title_underline}}
 
@@ -11,10 +13,7 @@
 
 .. raw:: html
 
-   <iframe id="tutorialIframe" src="{{static_html_path}}" style="width: 100%; overflow: hidden; border: none;"></iframe>
-   <script>
-       const iframe = document.getElementById('tutorialIframe');
-       iframe.onload = () => {
-           iframe.style.height = iframe.contentWindow.document.body.scrollHeight + 'px';
-       };
-   </script>
+   <iframe class="autoresize"
+           src="{{static_html_path}}"
+           style="width:100%; border:none; display:block;">
+   </iframe>

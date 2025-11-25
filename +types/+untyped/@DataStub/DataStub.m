@@ -13,43 +13,68 @@ classdef (Sealed) DataStub < handle
         ndims;
         dataType;
     end
+
+    properties (Dependent, SetAccess = private, GetAccess = ?types.untyped.datapipe.BoundPipe)
+        maxDims
+    end
+
+    properties (Access = private)
+        dims_ double
+        dataType_  {matnwb.common.compatibility.mustBeA(dataType_, ["char", "string", "struct"])} = string.empty % Can be char (simple type) or struct (compound type descriptor)
+        maxDims_ double
+    end
     
     methods
-        function obj = DataStub(filename, path)
-            validateattributes(filename, {'char', 'string'}, {'scalartext'} ...
-                , 'types.untyped.DataStub', 'filename', 1);
-            validateattributes(path, {'char', 'string'}, {'scalartext'} ...
-                , 'types.untyped.DataStub', 'path', 2);
+        function obj = DataStub(filename, path, dims, dataType)
+            arguments
+                filename (1,1) string
+                path (1,1) string
+                dims double = []
+                dataType = string.empty  % Can be string/char or struct
+            end
             obj.filename = char(filename);
             obj.path = char(path);
+            obj.dims_ = dims;
+            
+            % Store dataType as-is: char for simple types, struct for compound types
+            if isstring(dataType) || ischar(dataType)
+                obj.dataType_ = char(dataType);
+            else
+                obj.dataType_ = dataType;  % Keep as struct for compound types
+            end
         end
-        
-        function sid = get_space(obj)
-            fid = H5F.open(obj.filename);
-            did = H5D.open(fid, obj.path);
-            sid = H5D.get_space(did);
-            H5D.close(did);
-            H5F.close(fid);
-        end
-        
+
         function dims = get.dims(obj)
-            sid = obj.get_space();
-            [~, h5_dims, ~] = H5S.get_simple_extent_dims(sid);
-            dims = fliplr(h5_dims);
-            H5S.close(sid);
+            if isempty(obj.dims_)
+                obj.updateSize()
+            end
+            dims = obj.dims_;
         end
-        
+
+        function maxDims = get.maxDims(obj)
+            if isempty(obj.maxDims_)
+                obj.updateSize()
+            end
+            maxDims = obj.maxDims_;
+        end
+
         function nd = get.ndims(obj)
             nd = length(obj.dims);
         end
 
         function matType = get.dataType(obj)
-            fid = H5F.open(obj.filename);
-            did = H5D.open(fid, obj.path);
-            tid = H5D.get_type(did);
-            matType = io.getMatType(tid);
-            H5D.close(did);
-            H5F.close(fid);
+            if isempty(obj.dataType_)
+                fid = H5F.open(obj.filename);
+                did = H5D.open(fid, obj.path);
+                tid = H5D.get_type(did);
+                
+                obj.dataType_ = io.getMatType(tid);
+                
+                H5T.close(tid);
+                H5D.close(did);
+                H5F.close(fid);
+            end
+            matType = obj.dataType_;
         end
         
         %can be called without arg, with H5ML.id, or (dims, offset, stride)
@@ -72,9 +97,11 @@ classdef (Sealed) DataStub < handle
             data = h5read(obj.filename, obj.path, varargin{:});
                         
             if isstruct(data)
+                % Compound type - data loaded as struct by h5read
                 fid = H5F.open(obj.filename);
                 did = H5D.open(fid, obj.path);
                 fsid = H5D.get_space(did);
+                % Bug: This will read all the data
                 data = H5D.read(did, 'H5ML_DEFAULT', fsid, fsid,...
                     'H5P_DEFAULT');
                 data = io.parseCompound(did, data);
@@ -82,6 +109,16 @@ classdef (Sealed) DataStub < handle
                 H5D.close(did);
                 H5F.close(fid);
             else
+                % Non-compound types - apply type-specific post-processing
+                
+                % Validate: if dataType is struct, data must also be struct
+                assert( ~isstruct(obj.dataType), ...
+                    'NWB:DataStub:InconsistentCompoundType', ...
+                    ['DataStub has compound type descriptor, but loaded data is '...
+                    'not a struct. This indicates a file corruption or type '...
+                    'mismatch. Expected compound data for path: %s'], obj.path);
+                
+                % Apply type-specific transformations for simple types
                 switch obj.dataType
                     case 'char'
                         % dataset strings are defaulted to cell arrays regardless of size
@@ -91,9 +128,8 @@ classdef (Sealed) DataStub < handle
                             data = convertStringsToChars(data);
                         end
                     case 'logical'
-                        % data assumed to be cell array of enum string
-                        % values.
-                        data = strcmp('TRUE', data);
+                        % data assumed to be cell array of enum string values
+                        data = io.internal.h5.postprocess.toLogical(data);
                 end
             end
         end
@@ -151,15 +187,14 @@ classdef (Sealed) DataStub < handle
         
         refs = export(obj, fid, fullpath, refs);
         
-        function B = subsref(obj, S)
+        function varargout = subsref(obj, S)
             CurrentSubRef = S(1);
             if ~isscalar(obj) || strcmp(CurrentSubRef.type, '.')
-                B = builtin('subsref', obj, S);
+                [varargout{1:nargout}] = builtin('subsref', obj, S);
                 return;
             end
             
-            dims = obj.dims;
-            rank = length(dims);
+            rank = length(obj.dims);
             selectionRank = length(CurrentSubRef.subs);
             assert(rank >= selectionRank,...
                 'NWB:DataStub:InvalidDimIndex',...
@@ -167,9 +202,9 @@ classdef (Sealed) DataStub < handle
                 selectionRank, rank);
             data = obj.load_mat_style(CurrentSubRef.subs{:});
             if isscalar(S)
-                B = data;
+                varargout = {data};
             else
-                B = subsref(data, S(2:end));
+                [varargout{1:nargout}] = subsref(data, S(2:end));
             end
         end
         
@@ -180,11 +215,48 @@ classdef (Sealed) DataStub < handle
                 ind = builtin('end', obj, expressionIndex, numTotalIndices);
                 return;
             end
-            dims = obj.dims;
-            rank = length(dims);
+            rank = length(obj.dims);
             assert(rank >= expressionIndex, 'NWB:DataStub:InvalidEndIndex',...
                 'Cannot index into index %d when max rank is %d', expressionIndex, rank);
-            ind = dims(expressionIndex);
+            ind = obj.dims(expressionIndex);
+        end
+        
+        function tf = isCompoundType(obj)
+            %ISCOMPOUNDTYPE Returns true if this DataStub represents a compound type
+            dt = obj.dataType;  % Trigger lazy loading if needed
+            tf = isstruct(dt);
+        end
+    end
+
+    methods % Custom indexing
+        function n = numArgumentsFromSubscript(obj, subs, indexingContext)
+            if ~isscalar(subs) && strcmp(subs(1).type, '()')
+                % Typical indexing pattern into compound data type, i.e
+                % data(1:3).fieldName. Assume/expect one output.
+                n = 1;
+            else
+                n = builtin('numArgumentsFromSubscript', obj, subs, indexingContext);
+            end
+        end
+    end
+
+    methods (Access = {?types.untyped.DataStub, ?types.untyped.datapipe.BoundPipe})
+        function updateSize(obj)
+        % updateSize - Should be called to initialize values or when dataset 
+        % space is expanded
+            sid = get_space(obj);
+            [obj.dims_, obj.maxDims_] = io.space.getSize(sid);
+            H5S.close(sid);
+        end
+    end
+
+    methods (Access = private) 
+        function sid = get_space(obj)
+            fid = H5F.open(obj.filename);
+            did = H5D.open(fid, obj.path);
+            sid = H5D.get_space(did);
+            H5D.close(did);
+            H5F.close(fid);
         end
     end
 end

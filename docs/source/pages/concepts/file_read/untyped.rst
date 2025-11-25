@@ -83,12 +83,44 @@ MatNWB also supports legacy syntax for setting and retrieving items in a **Set**
 DataStubs and DataPipes
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-**DataStubs** serves as a read-only link to your data. It allows for MATLAB-style indexing to retrieve the data stored on disk.
+When working with NWB files, datasets can be very large (gigabytes or more). Loading all this data into memory at once would be impractical or impossible. MatNWB uses two types to handle on-disk data efficiently: **DataStubs** and **DataPipes**.
+
+DataStubs (Read only)
+^^^^^^^^^^^^^^^^^^^^^
+
+A **DataStub** (``types.untyped.DataStub``) represents a read-only reference to data stored in an NWB file. When you read an NWB file, non-scalar and multi-dimensional datasets are automatically represented as DataStubs rather than loaded into memory.
 
 .. image:: https://github.com/NeurodataWithoutBorders/nwb-overview/blob/main/docs/source/img/matnwb_datastub.png?raw=true
 
+Key characteristics:
 
-**DataPipes** are similar to DataStubs in that they allow you to load data from disk; however, they also provide a wide array of features that allow the user to write data to disk, either by streaming parts of data in at a time or by compressing the data before writing. The DataPipe is an advanced type and users looking to leverage DataPipe's capabilities to stream/iteratively write or compress data should read the `Advanced Data Write Tutorial <../../tutorials/dataPipe.html>`_.
+- **Lazy loading**: Data remains on disk until you explicitly access it
+- **Memory efficient**: Only the portions you request are loaded
+- **MATLAB-style indexing**: Access data using familiar syntax like ``dataStub(1:100, :)``
+- **Read-only**: Cannot be used to modify or write data
+
+You'll encounter DataStubs whenever you read existing NWB files containing non-scalar or multi-dimensional datasets.
+
+DataPipes (read and write)
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A **DataPipe** (``types.untyped.DataPipe``) extends the concept of lazy data access to support **writing** as well as reading. While DataStubs are created automatically when reading files, you create DataPipes explicitly when writing data.
+
+Key characteristics:
+
+- **Bidirectional**: Supports both reading and writing operations
+- **Incremental writing**: Stream data to disk in chunks rather than all at once
+- **Compression support**: Apply HDF5 compression and chunking strategies
+- **Write optimization**: Configure how data is stored on disk for better performance
+
+DataPipes solve the problem of writing datasets that are too large to fit in memory, or when you want fine-grained control over how data is stored in the HDF5 file.
+
+.. seealso::
+
+   - For detailed guidance on creating and configuring DataPipes, see :doc:`Advanced Data Write Tutorial </pages/tutorials/dataPipe>`
+
+.. todo
+    - For practical examples of reading data via DataStubs, see :ref:`How to Read Data </pages/how-to/read-on-demand>`
 
 .. _matnwb-read-untyped-links-views:
 

@@ -61,18 +61,22 @@ function bodystr = fillBody(parentName, defaults, props, namespace, class, inher
     dynamicConstrained = false(size(names));
     isAnonymousType = false(size(names));
     isAttribute = false(size(names));
+    isLink = false(size(names));
+
     typenames = repmat({''}, size(names));
-    varnames = repmat({''}, size(names));
+    varnames = repmat({''}, size(names)); % necessary? same as names?
     for i = 1:length(names)
         nm = names{i};
         prop = props(nm);
 
         if isa(prop, 'file.Attribute')
             isAttribute(i) = true;
-            continue;
+            continue
+        elseif isa(prop, 'file.Link')
+            isLink(i) = true;
         end
 
-        if isa(prop, 'file.interface.HasProps')
+        if isa(prop, 'file.interface.HasProps') || isa(prop, 'file.Link')
             isDynamicConstrained = false(size(prop));
             isAnon = false(size(prop));
             hasType = false(size(prop));
@@ -118,12 +122,32 @@ function bodystr = fillBody(parentName, defaults, props, namespace, class, inher
     end
     varnames = lower(varnames);
 
-    %we delete the entry in varargin such that any conflicts do not show up in inputParser
+    % We delete parsed elements from varargin such that any conflicts do not 
+    % show up in inputParser
     deleteFromVars = 'varargin(ivarargin) = [];';
+
+    % Add parsing logic for dynamic constrained links.
+    % A dynamic constrained link is a subset of dynamic constrained types.
+    % Their type names are prefixed with 'Link:' to mark them for link-specific 
+    % validation during parsing.
+    isDynamicConstrainedLink = dynamicConstrained & isLink;
+    if any(isDynamicConstrainedLink)
+        constrainedLinkTypes = strcat('Link:', typenames(isDynamicConstrainedLink & ~invalid));
+        constrainedLinkVars = varnames(isDynamicConstrainedLink & ~invalid);
+        methodCalls = strcat('[obj.', constrainedLinkVars, ', ivarargin] = ',...
+            ' types.util.parseConstrained(obj, ''', constrainedLinkVars, ''', ''',...
+            constrainedLinkTypes, ''', varargin{:});');
+        fullBody = cell(length(methodCalls) * 2,1);
+        fullBody(1:2:end) = methodCalls;
+        fullBody(2:2:end) = {deleteFromVars};
+        fullBody = strjoin(fullBody, newline);
+        bodystr(end+1:end+length(fullBody)+1) = [newline fullBody];
+    end
+
     %if constrained/anon sets exist, then check for nonstandard parameters and add as
     %container.map
-    constrainedTypes = typenames(dynamicConstrained & ~invalid);
-    constrainedVars = varnames(dynamicConstrained & ~invalid);
+    constrainedTypes = typenames(dynamicConstrained & ~isLink & ~invalid);
+    constrainedVars = varnames(dynamicConstrained & ~isLink & ~invalid);
     methodCalls = strcat('[obj.', constrainedVars, ', ivarargin] = ',...
         ' types.util.parseConstrained(obj,''', constrainedVars, ''', ''',...
         constrainedTypes, ''', varargin{:});');
@@ -135,7 +159,6 @@ function bodystr = fillBody(parentName, defaults, props, namespace, class, inher
 
     %if anonymous values exist, then check for nonstandard parameters and add
     %as Anon
-
     anonTypes = typenames(isAnonymousType & ~invalid);
     anonVars = varnames(isAnonymousType & ~invalid);
     methodCalls = strcat('[obj.', anonVars, ',ivarargin] = ',...

@@ -49,15 +49,21 @@ classdef DynamicPropertyManager < handle
                 options.GetMethod function_handle = function_handle.empty
                 options.SetMethod function_handle = function_handle.empty
                 options.Dependent (1,1) logical = false
+                options.ValidName (1,1) string = missing
             end
             
             % Get or create valid name
-            if obj.NameRegistry.existOriginalName(originalName)
-                validName = obj.NameRegistry.getValidName(originalName);
+            if ~ismissing(options.ValidName)
+                validName = options.ValidName;
+                obj.NameRegistry.addMapping(originalName, validName);
             else
-                validName = obj.NameRegistry.addMapping(originalName);
+                if obj.NameRegistry.existOriginalName(originalName)
+                    validName = obj.NameRegistry.getValidName(originalName);
+                else
+                    validName = obj.NameRegistry.addMapping(originalName);
+                end
             end
-            
+
             % Check if property already exists
             assert(~isprop(obj.TargetObject, validName), ...
                 'NWB:DynamicPropertyManager:PropertyExists', ...

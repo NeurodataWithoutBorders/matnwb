@@ -1,4 +1,4 @@
-classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...        
+classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
     untypedSetTest < matlab.unittest.TestCase
     
     methods (TestMethodSetup)
@@ -14,7 +14,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             % Verify a function that validates the input
             set = types.untyped.Set(@(key, value) assert(strcmp(key, 'test')));
             try
-                set.validateEntry('test', 1)
+                set.validateEntry('test', 1);
             catch
                 testCase.verifyFail('Expected validation to pass')
             end
@@ -106,6 +106,21 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             testCase.verifyError(...
                 @() nwbFile.acquisition.add('ts', newTs), ...
                 'NWB:Set:KeyExists')
+        end
+    
+        function testSetMethodWithMismatchedNameValuePairs(testCase)
+            testSet = types.untyped.Set();
+            testCase.verifyError(...
+                @() testSet.set({'a', 'b'}, {1}), ...
+                'NWB:Set:NameValueLengthMismatch')
+        end
+
+        function testRemoveUsingSetWithEmptyValue(testCase)
+            testSet = types.untyped.Set('a', 1);
+            testCase.verifyTrue(testSet.isKey('a'), 'Expected set to have key "a".')
+
+            testSet.set('a', {[]})
+            testCase.verifyFalse(testSet.isKey('a'), 'Expected key "a" to have been removed.')
         end
     end
 end

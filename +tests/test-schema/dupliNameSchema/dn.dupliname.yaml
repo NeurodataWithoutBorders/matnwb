@@ -1,0 +1,13 @@
+groups:
+- neurodata_type_def: Images
+  neurodata_type_inc: NWBDataInterface
+  default_name: Images
+  doc: A type with same name as Images in core namespace
+  attributes:
+  - name: description
+    dtype: text
+    doc: A description
+  datasets:
+  - neurodata_type_inc: BaseImage
+    doc: Images stored in this collection.
+    quantity: '+'

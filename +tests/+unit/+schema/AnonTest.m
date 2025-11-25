@@ -27,5 +27,11 @@ classdef AnonTest < tests.unit.abstract.SchemaTest
             testCase.verifyEqual(anon.name, 'a')
             testCase.verifyEqual(anon.value, 1)
         end
+
+        function testIsKeyMethod(testCase)
+            testAnon = types.untyped.Anon('a', 1);
+            testCase.verifyTrue(isKey(testAnon, 'a'))
+            testCase.verifyFalse(isKey(testAnon, 'b'))
+        end
     end
 end

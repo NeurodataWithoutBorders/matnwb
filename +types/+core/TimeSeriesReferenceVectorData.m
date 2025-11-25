@@ -16,7 +16,7 @@ methods
         %  timeSeriesReferenceVectorData = types.core.TIMESERIESREFERENCEVECTORDATA(Name, Value) creates a TimeSeriesReferenceVectorData object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
-        %  - data (Table with columns: (int32, int32, Object reference to TimeSeries)) - No description
+        %  - data (Table with columns: (int32, int32, Object reference to TimeSeries)) - Data property for dataset class (TimeSeriesReferenceVectorData)
         %
         %  - description (char) - Description of what these vectors represent.
         %
@@ -41,17 +41,16 @@ methods
     %% VALIDATORS
     
     function val = validate_data(obj, val)
-        if isempty(val) || isa(val, 'types.untyped.DataStub')
-            return;
+        if isempty(val)
+            % skip validation for empty values
+        else
+            vprops = struct();
+            vprops.idx_start = 'int32';
+            vprops.count = 'int32';
+            vprops.timeseries = 'types.untyped.ObjectView';
+            val = types.util.checkDtype('data', vprops, val);
         end
-        if ~istable(val) && ~isstruct(val) && ~isa(val, 'containers.Map')
-            error('NWB:Type:InvalidPropertyType', 'Property `data` must be a table, struct, or containers.Map.');
-        end
-        vprops = struct();
-        vprops.idx_start = 'int32';
-        vprops.count = 'int32';
-        vprops.timeseries = 'types.untyped.ObjectView';
-        val = types.util.checkDtype('data', vprops, val);
+        types.util.validateShape('data', {[Inf,Inf,Inf,Inf], [Inf,Inf,Inf], [Inf,Inf], [Inf]}, val)
     end
     %% EXPORT
     function refs = export(obj, fid, fullpath, refs)

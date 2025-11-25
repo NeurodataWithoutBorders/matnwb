@@ -1,5 +1,14 @@
 classdef dataStubTest < tests.abstract.NwbTestCase
     
+    methods (TestClassSetup)
+        function generateTestSchemas(testCase)
+            % Generate the rrs and cs test extensions for use in all tests
+            % of this test suite, using fixture for proper cleanup
+            testCase.applyTestSchemaFixture('rrs');
+            testCase.applyTestSchemaFixture('cs');
+        end
+    end
+
     methods (TestMethodSetup)
         function setupMethod(testCase)
             % Use a fixture to create a temporary working directory
@@ -69,20 +78,6 @@ classdef dataStubTest < tests.abstract.NwbTestCase
         end
         
         function testObjectCopy(testCase)
-            import tests.fixtures.ExtensionGenerationFixture
-
-            rootDir = misc.getMatnwbDir();
-
-            testSchemaLocation = fullfile(rootDir, '+tests', 'test-schema');
-            typesOutputFolder = testCase.getTypesOutputFolder();
-
-            extensionNamespaceFile = fullfile(testSchemaLocation, 'regionReferenceSchema', 'rrs.namespace.yaml');
-            testCase.applyFixture(...
-                ExtensionGenerationFixture(extensionNamespaceFile, typesOutputFolder))
-            
-            extensionNamespaceFile = fullfile(testSchemaLocation, 'compoundSchema', 'cs.namespace.yaml');
-            testCase.applyFixture(...
-                ExtensionGenerationFixture(extensionNamespaceFile, typesOutputFolder))
 
             nwb = NwbFile(...
                 'identifier', 'DATASTUB',...
@@ -94,16 +89,22 @@ classdef dataStubTest < tests.abstract.NwbTestCase
             rcRef = types.cs.CompoundRefData('data', table(...
                 rand(2, 1),...
                 rand(2, 1),...
+                [true; false],...
                 [types.untyped.ObjectView(rcPath); types.untyped.ObjectView(rcPath)],...
                 [types.untyped.RegionView(rcDataPath, 1:2, 99:100); types.untyped.RegionView(rcDataPath, 5:6, 88:89)],...
-                'VariableNames', {'a', 'b', 'objref', 'regref'}));
+                'VariableNames', {'a', 'b', 'c', 'objref', 'regref'}));
             
             nwb.acquisition.set('rc', rc);
             nwb.analysis.set('rcRef', rcRef);
             nwbExport(nwb, 'original.nwb');
-            nwbNew = nwbRead('original.nwb', 'ignorecache');
-            tests.util.verifyContainerEqual(testCase, nwbNew, nwb);
-            nwbExport(nwbNew, 'new.nwb');
+
+            nwbOriginalIn = nwbRead('original.nwb', 'ignorecache');
+            tests.util.verifyContainerEqual(testCase, nwbOriginalIn, nwb);
+            
+            nwbExport(nwbOriginalIn, 'copy.nwb');
+
+            nwbCopyIn = nwbRead('copy.nwb', 'ignorecache');
+            tests.util.verifyContainerEqual(testCase, nwbCopyIn, nwb);
         end
     
         function testLoadWithEmptyIndices(testCase)
@@ -142,6 +143,73 @@ classdef dataStubTest < tests.abstract.NwbTestCase
                 end
                 testCase.assertClass(value, expectedClass)
             end
+        end
+    
+        function testResolveCompoundDataType(testCase)
+            % Set up file with compound dataset
+            nwb = tests.factory.NWBFile();
+
+            ts = tests.factory.TimeSeriesWithTimestamps();
+            nwb.acquisition.set('timeseries', ts);
+
+            tsPath = '/acquisition/timeseries';
+            tsDataPath = [tsPath '/data'];
+
+            compoundRef = types.cs.CompoundRefData('data', table(...
+                rand(2, 1),...
+                rand(2, 1),...
+                [true; false],...
+                [types.untyped.ObjectView(tsPath); types.untyped.ObjectView(tsPath)],...
+                [types.untyped.RegionView(tsDataPath, 1:2); types.untyped.RegionView(tsDataPath, 2:3)],...
+                'VariableNames', {'a', 'b', 'c', 'objref', 'regref'}));
+                        
+            nwb.analysis.set('compoundRef', compoundRef);
+            
+            nwbExport(nwb, 'test.nwb');
+            nwbIn = nwbRead('test.nwb', 'ignorecache');
+            
+            % Verify that creating a DataStub without preset dims and type
+            % will have the same type and dims when resolved.
+            compoundRefIn = nwbIn.analysis.get('compoundRef');
+            compoundRefInDirectRead = types.untyped.DataStub('test.nwb', 'analysis/compoundRef/data');
+                        
+            testCase.verifyEqual(...
+                compoundRefInDirectRead.dataType, ...
+                compoundRefIn.data.dataType )
+                      
+            testCase.verifyEqual(...
+                compoundRefInDirectRead.dims, ...
+                compoundRefIn.data.dims )
+        end
+    
+        function testNestedDataIndexing(testCase)
+            % Set up file with compound dataset
+            
+            nwb = tests.factory.NWBFile();
+
+            ts = tests.factory.TimeSeriesWithTimestamps();
+            nwb.acquisition.set('timeseries', ts);
+
+            tsPath = '/acquisition/timeseries';
+            tsDataPath = [tsPath '/data'];
+
+            compoundRef = types.cs.CompoundRefData('data', table(...
+                rand(2, 1),...
+                rand(2, 1),...
+                [true; false],...
+                [types.untyped.ObjectView(tsPath); types.untyped.ObjectView(tsPath)],...
+                [types.untyped.RegionView(tsDataPath, 1:2); types.untyped.RegionView(tsDataPath, 2:3)],...
+                'VariableNames', {'a', 'b', 'c', 'objref', 'regref'}));
+                        
+            nwb.analysis.set('compoundRef', compoundRef);
+            nwbExport(nwb, 'test.nwb');
+            
+            % Read in data
+            nwbIn = nwbRead('test.nwb', 'ignorecache');
+            compoundRefIn = nwbIn.analysis.get('compoundRef');
+
+            testCase.verifyClass(compoundRefIn.data(1:2).a, 'double');
+            testCase.verifyLength(compoundRefIn.data(1:2).a, 2);
         end
     end
 end

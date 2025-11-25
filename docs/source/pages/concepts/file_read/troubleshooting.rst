@@ -31,8 +31,8 @@ To do this, you can use the optional ``savedir`` keyword argument with ``nwbRead
 
 .. _matnwb-read-troubleshooting-missing-schema:
 
-Missing Embedded Schemata
-~~~~~~~~~~~~~~~~~~~~~~~~~
+Missing Embedded Schemas
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 Some older NWB files do not have an embedded schema. To read from these files you will need the API generation functions ``generateCore`` and ``generateExtension`` to generate the class files before calling ``nwbRead`` on them. You can also use the utility function ``util.getSchemaVersion`` to retrieve the correct Core schema for the file you are trying to read:
 

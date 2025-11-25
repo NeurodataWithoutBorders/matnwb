@@ -5,14 +5,15 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
     branches:
       - main
+  push:
+    branches:
+      - main
     paths-ignore:
       - "*.md"
       - "*.codespellrc"
       - ".github/**"
+      - "!.github/workflows/run_tests.yml"
       - "docs/**"
-  push:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       test_all_matlab_releases:
