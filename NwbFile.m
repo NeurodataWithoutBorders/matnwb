@@ -356,8 +356,8 @@ classdef NwbFile < types.core.NWBFile
                     obj.general_was_generated_by = obj.general_was_generated_by.load();
                 end
     
-                matnwbInfo = ver('matnwb');
-                wasGeneratedBy = {'matnwb'; matnwbInfo.Version};
+                matnwbVersion = misc.getMatnwbVersion();
+                wasGeneratedBy = {'matnwb'; matnwbVersion};
     
                 if isempty(obj.general_was_generated_by)
                     obj.general_was_generated_by = wasGeneratedBy;

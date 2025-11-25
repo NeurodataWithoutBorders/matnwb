@@ -100,7 +100,7 @@ Run this quick check in MATLAB to verify that MatNWB is installed:
 
    versionInfo = ver("matnwb")
    
-You should see a structure with MatNWB version information.
+You should see a structure with MatNWB version information. NB. If your matnwb folder has a different name, replace "matnwb" with the actual name of your matnwb folder
 
 
 Update or uninstall
