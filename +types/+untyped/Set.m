@@ -199,6 +199,10 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
         function setValidationFunction(obj, functionHandle)
             obj.ValidationFunction = functionHandle;
         end
+
+        function T = getAliasMap(obj)
+            T = obj.PropertyManager.getAliasMap();
+        end
     
         function T = getPropertyMappingTable(obj)
             T = obj.PropertyManager.getPropertyMappingTable();

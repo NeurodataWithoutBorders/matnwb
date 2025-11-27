@@ -139,6 +139,10 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
 
             obj.warnIfNameIsPropertyName(name)
         end
+
+        function T = getAliasMap(obj)
+            T = obj.getTableWithAliasNames();
+        end
     end
     
     % Method for subclass to initialize the mixin
@@ -312,18 +316,16 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             for i = 1:numel(obj.GroupPropertyNames)
                 groupName = obj.GroupPropertyNames(i);
                 currentSet = obj.(groupName);
-                T{i} = currentSet.getPropertyMappingTable();
+                T{i} = currentSet.getAliasMap();
             end
             
-            T{end} = obj.PropertyManager.getPropertyMappingTable();
+            T{end} = obj.PropertyManager.getAliasMap();
 
 
             T(cellfun('isempty', T)) = [];
             T = cat(1, T{:});
 
             if ~isempty(T)
-                keep = T.ValidIdentifier ~= T.OriginalName;
-                T = T(keep, :);
                 T = unique(T, "rows");
             end
         end
