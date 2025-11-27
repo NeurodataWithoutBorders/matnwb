@@ -2,7 +2,8 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
 % Set - A (utility) container class for storing neurodata types.
 %
 %   Neurodata types are added to the Set with name keys, forming name-value 
-%   pairs referred to as entries. 
+%   pairs referred to as entries. A validation function will ensure that
+%   only supported neurodata types are added to the set.
 
 %   Developer notes:
 %   `name` is used throughout this class to refer to the actual name of a Set 
