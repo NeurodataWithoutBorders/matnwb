@@ -11,7 +11,7 @@ This guide shows you how to work with NWB properties and types that is designed 
 
 Overview
 --------
-Some neurodata types and properties of neurodata types in NWB are designed to hold one or more data objects of specific types. We will refer to these neurodata types and properties as "containers". For example, both the ``acquisition`` property of a :class:`types.core.NWBFile` and the :class:`types.core.ProcessingModule` neurodata type can contain multiple data objects of :class:`types.core.NWBDataInterface` or :class:`types.hdmf_common.DynamicTable` types (including subtypes). A container is represented internally using the :class:`types.untyped.Set` and MatNWB provides convenient syntax that mimics standard MATLAB property access for working with these containers.
+Some neurodata types and properties of neurodata types in NWB are designed to hold one or more data objects of specific types. We will refer to these neurodata types and properties as "containers". For example, both the ``acquisition`` property of a :class:`types.core.NWBFile` and the :class:`types.core.ProcessingModule` neurodata type can contain multiple data objects of :class:`types.core.NWBDataInterface` or :class:`types.hdmf_common.DynamicTable` types (including subtypes). A container is represented internally using the :class:`types.untyped.Set` class and MatNWB provides convenient syntax that mimics standard MATLAB property access for working with these containers.
 
 **Adding data objects:**
 
@@ -139,7 +139,7 @@ MATLAB property names must follow specific rules (no spaces, special characters,
 
 .. tip::
 
-    **Best practice:** Use names that are valid MATLAB identifiers from the start (e.g., PascalCase, camelCase or snake_case) to avoid confusion:
+    **Best practice:** Use names that are valid MATLAB identifiers from the start (e.g., PascalCase, camelCase or snake_case) and stick to one style:
     
     .. code-block:: MATLAB
     
@@ -147,12 +147,12 @@ MATLAB property names must follow specific rules (no spaces, special characters,
         processingModule.add('myTimeSeries', timeSeries);
         processingModule.add('my_time_series', timeSeries);
 
-If you read files created by other tools with names that are not valid MATLAB identifiers, MatNWB will automatically create appropriate aliases when loading the data.
+If you read files created by other tools with names that are not valid MATLAB identifiers, MatNWB will automatically create valid MATLAB identifers (aliases) when loading the data.
 
 Viewing name mappings (aliases)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If MatNWB creates aliases, a warning will display showing the mapping between original names and property names when the container type is displayed in MATLAB's command window. 
+If a container contains entries with names that are not valid MATLAB identifiers, a warning will display showing the mapping between original names and property names (aliases) when the container type is displayed in MATLAB's command window.
 
 .. code-block:: MATLAB
 
@@ -166,7 +166,7 @@ If MatNWB creates aliases, a warning will display showing the mapping between or
 
 **Output:**
 
-.. code-block:: MATLAB
+.. code-block:: matlabsession
 
     Warning: Names for some entries of "ProcessingModule" have been modified to make them valid 
     MATLAB identifiers (the original names will still be used when data is exported to file):
@@ -187,11 +187,13 @@ You can also use the ``getAliasMap()`` method to retrieve a table showing the na
 
 .. code-block:: MATLAB
 
-    nameMap = processingModule.getAliasMap()
+    nameMap = processingModule.getAliasMap();
 
 **Output:**
 
-.. code-block:: MATLAB
+.. code-block:: matlabsession
+
+    >> nameMap
 
     nameMap =
 
@@ -200,8 +202,8 @@ You can also use the ``getAliasMap()`` method to retrieve a table showing the na
         ValidIdentifier      OriginalName  
         _______________    ________________
 
+        "data_table"       "data-table"    
         "myTimeSeries"     "my time series"
-        "data_table"       "data-table" 
 
 .. note::
 
