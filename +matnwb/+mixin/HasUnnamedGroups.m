@@ -1,5 +1,6 @@
 classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
 % HasUnnamedGroups - Mixin to simplify access to Sets of unnamed subgroups
+% of a neurodata type
 %
 % Overview:
 %   Some NWB container types (e.g. ProcessingModule) include unnamed
@@ -53,6 +54,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
     properties (Access = private, Transient)
         % PropertyManager - Manages dynamic properties for this object
         PropertyManager
+        PropertyManager matnwb.utility.DynamicPropertyManager
     end
 
     % Constructor
@@ -190,6 +192,68 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
         end
     end
 
+    % Internal utility methods
+    methods (Access = private)
+        
+        function tf = isContainerLike(obj)
+        % isContainerLike - Whether neurodata type is purely a container
+        % for other data objects
+
+        % Note: A neurodata type is considered a container if it only has
+        % properties for storing other neurodata types, i.e properties
+        % containing types.untyped.Set objects
+            
+            staticProperties = obj.getStaticProperties();
+            groupProperties = obj.GroupPropertyNames;
+
+            tf = isempty(setdiff(staticProperties, groupProperties));
+        end
+
+        function T = getTableWithAliasNames(obj)
+            
+            T = cell(1, numel(obj.GroupPropertyNames) + 1);
+
+            for i = 1:numel(obj.GroupPropertyNames)
+                groupName = obj.GroupPropertyNames(i);
+                currentSet = obj.(groupName);
+                T{i} = currentSet.getAliasMap();
+            end
+
+            T{end} = obj.PropertyManager.getAliasMap();
+
+            T(cellfun('isempty', T)) = [];
+            T = cat(1, T{:});
+
+            if ~isempty(T)
+                T = unique(T, "rows");
+            end
+        end
+    
+        function n = numEntries(obj)
+            nPerGroup = zeros(1, numel(obj.GroupPropertyNames));
+
+            for i = 1:numel(obj.GroupPropertyNames)
+                groupName = obj.GroupPropertyNames(i);
+                nPerGroup(i) = obj.(groupName).Count;
+            end
+            n = sum(nPerGroup);
+        end
+        
+        function staticProperties = getStaticProperties(obj)
+            allProperties = properties(obj);
+            dynamicPropNames = obj.PropertyManager.getAllPropertyNames();
+
+            staticProperties = setdiff(allProperties, dynamicPropNames);
+        end
+    end
+
+    methods (Hidden, Sealed)
+        function p = addprop(obj, name)
+        % No reimplementation - just hide method
+            p = addprop@dynamicprops(obj, name);
+        end
+    end
+
     % Internal methods for managing properties
     methods (Access = private)
 
@@ -308,27 +372,6 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             isMatch = ismember(lower(typeClassNamesShort), groupPropertyNames);
             result = typeClassNames(isMatch);
         end
-
-        function T = getTableWithAliasNames(obj)
-            
-            T = cell(1, numel(obj.GroupPropertyNames) + 1);
-
-            for i = 1:numel(obj.GroupPropertyNames)
-                groupName = obj.GroupPropertyNames(i);
-                currentSet = obj.(groupName);
-                T{i} = currentSet.getAliasMap();
-            end
-            
-            T{end} = obj.PropertyManager.getAliasMap();
-
-
-            T(cellfun('isempty', T)) = [];
-            T = cat(1, T{:});
-
-            if ~isempty(T)
-                T = unique(T, "rows");
-            end
-        end
     end
 
     % Dynamic property getter methods
@@ -371,10 +414,28 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
 
     % matlab.mixin.CustomDisplay override
     methods (Access = protected)
+        function str = getHeader(obj)
+            str = getHeader@matlab.mixin.CustomDisplay(obj);
+
+            if obj.isContainerLike()
+                % Change header format for container type
+                numEntries = obj.numEntries;
+    
+                if numEntries == 1
+                    replacement = sprintf('with %d entry', obj.numEntries);
+                else
+                    replacement = sprintf('with %d entries', obj.numEntries);
+                end
+    
+                str = strrep(str, 'with properties:', replacement);
+            end
+        end
+
         function groups = getPropertyGroups(obj)
         % getPropertyGroups - Create property groups for display
 
             standardProps = properties(obj);
+            standardProps = reshape(standardProps, 1, []); % Ensure row
             
             % Remove the Set properties that we'll display separately
             toSkip = false(1, length(obj.GroupPropertyNames));
