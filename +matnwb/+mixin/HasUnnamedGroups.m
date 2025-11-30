@@ -53,7 +53,6 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
     
     properties (Access = private, Transient)
         % PropertyManager - Manages dynamic properties for this object
-        PropertyManager
         PropertyManager matnwb.utility.DynamicPropertyManager
     end
 
@@ -446,9 +445,10 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             end
            
             % Todo: Use a nwbPreferences object
-            displayPref = getpref('matnwb', 'displaymode', 'groups'); % groups | flat
+            displayPref = getpref('matnwb', 'displaymode', 'groups'); % groups | flat | legacy
+            %displayPref = 'groups';
             
-            if strcmp(displayPref, 'groups') % Remove dynamic props
+            if strcmp(displayPref, 'groups') ||  strcmp(displayPref, 'legacy') % Remove dynamic props
                 dynamicPropNames = obj.PropertyManager.getAllPropertyNames();
                 for i = 1:length(dynamicPropNames)
                     idx = strcmp(standardProps, dynamicPropNames{i});
@@ -469,7 +469,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                     
                     % Get the Set property
                     setObj = obj.(groupName);
-                    assert(~isempty(setObj) && isa(setObj, 'types.untyped.Set'), ...
+                    assert(~isempty(setObj) && (isa(setObj, 'types.untyped.Set') || isa(setObj, 'types.untyped.Anon')), ...
                         'Expected property "%s" to contain a Set', groupName)
                     
                     % Get all keys from the Set
@@ -484,12 +484,27 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                     end
                     
                     % Create a title for this group
-                    title = "<strong>" + groupName + " entries:</strong>";
+                    if ~isempty(keys)
+                        if isscalar(keys)
+                            title = "<strong>" + groupName + " group" + "</strong>" + sprintf(" with %d entry:", numel(keys));
+                        else
+                            title = "<strong>" + groupName + " group" + "</strong>" + sprintf(" with %d entries:", numel(keys));
+                        end
+                    else
+                        title = "<strong>" + groupName + ":</strong> (no entries)" + ...
+                            sprintf('\n    Tip: Use the ''add'' method to add data objects to this group.');
+                    end
                     
                     % Add this group to the property groups
                     groups(end+1) = matlab.mixin.util.PropertyGroup(propList, title); %#ok<AGROW>
                 end
+
+            elseif strcmp(displayPref, 'legacy')
+                standardProps = [standardProps, obj.GroupPropertyNames];
+                groups = matlab.mixin.util.PropertyGroup(standardProps);
+                return
             end
+
             obj.displayAliasWarning()
         end
     
