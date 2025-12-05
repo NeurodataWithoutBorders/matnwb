@@ -217,8 +217,8 @@ You can also use the ``getAliasMap()`` method to retrieve a table showing the na
 Troubleshooting
 ---------------
 
-My property name conflicts with an internal name
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Name of entry conflicts with an internal name
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you add an entry with a name that conflicts with an internal container property—e.g., ``nwbdatainterface`` or ``dynamictable`` from :class:`types.core.ProcessingModule`—MatNWB will automatically append an underscore. Note that using such names is not recommended.
 
