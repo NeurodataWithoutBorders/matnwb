@@ -214,8 +214,8 @@ You can also use the ``getAliasMap()`` method to retrieve a table showing the na
 Troubleshooting
 ---------------
 
-Property name conflicts
-~~~~~~~~~~~~~~~~~~~~~~~
+My property name conflicts with an internal name
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you add an entry with a name that conflicts with an internal container property—e.g., ``nwbdatainterface`` or ``dynamictable`` from :class:`types.core.ProcessingModule`—MatNWB will automatically append an underscore. Note that using such names is not recommended.
 
@@ -229,9 +229,10 @@ If you add an entry with a name that conflicts with an internal container proper
     % Access it with an underscore appended
     someObject = processingModule.nwbdatainterface_;
 
-Duplicate names
-~~~~~~~~~~~~~~~
-If you add multiple objects with the same name (case-insensitive), MatNWB will append numeric suffixes to create unique property names:
+Entries have the same name after conversion
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you add multiple objects with the same name (alias), MatNWB will append numeric suffixes to create unique property names:
 
 .. code-block:: MATLAB
 
@@ -246,8 +247,8 @@ If you add multiple objects with the same name (case-insensitive), MatNWB will a
     data2 = processingModule.My_Data_1;     % First duplicate
     data3 = processingModule.My_Data_2;     % Second duplicate
 
-Name not found error
-~~~~~~~~~~~~~~~~~~~~
+I get an error when accessing a property
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you try to access a property that doesn't exist, you'll get an error. Always check first or handle the error:
 
