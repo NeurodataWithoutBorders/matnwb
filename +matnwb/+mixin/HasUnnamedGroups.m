@@ -444,9 +444,8 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                 toSkip(idx) = true;
             end
            
-            % Todo: Use a nwbPreferences object
-            displayPref = getpref('matnwb', 'displaymode', 'groups'); % groups | flat | legacy
-            %displayPref = 'groups';
+            % Todo: Introduce/use an nwbPreferences object
+            displayPref = getpref('matnwb', 'ContainerDisplayMode', 'groups'); % groups | flat | legacy
             
             if strcmp(displayPref, 'groups') ||  strcmp(displayPref, 'legacy') % Remove dynamic props
                 dynamicPropNames = obj.PropertyManager.getAllPropertyNames();

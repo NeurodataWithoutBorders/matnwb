@@ -11,7 +11,9 @@ This guide shows you how to work with NWB properties and types that is designed 
 
 Overview
 --------
-Some neurodata types and properties of neurodata types in NWB are designed to hold one or more data objects of specific types. We will refer to these neurodata types and properties as "containers". For example, both the ``acquisition`` property of a :class:`types.core.NWBFile` and the :class:`types.core.ProcessingModule` neurodata type can contain multiple data objects of :class:`types.core.NWBDataInterface` or :class:`types.hdmf_common.DynamicTable` types (including subtypes). A container is represented internally using the :class:`types.untyped.Set` class and MatNWB provides convenient syntax that mimics standard MATLAB property access for working with these containers.
+Some neurodata types and properties of neurodata types in NWB are designed to hold one or more data objects of specific types. We will refer to these neurodata types and properties as **containers**. For example, both the ``acquisition`` property of a :class:`types.core.NWBFile` and the :class:`types.core.ProcessingModule` neurodata type can contain multiple data objects of :class:`types.core.NWBDataInterface` or :class:`types.hdmf_common.DynamicTable` types (including subtypes). 
+
+Each data object stored in a container is called an **entry**. Entries are identified by unique names that you assign when adding them to the container. A container is represented internally using the :class:`types.untyped.Set` class and MatNWB provides convenient syntax that mimics standard MATLAB property access for working with these containers and their entries.
 
 **Adding data objects:**
 
@@ -215,7 +217,7 @@ Troubleshooting
 Property name conflicts
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-If you try to add an object with a name that conflicts with an internal container property (like ``'nwbdatainterface'`` or ``'dynamictable'`` from :class:`types.core.ProcessingModule`, not recommended), MatNWB will automatically append an underscore:
+If you add an entry with a name that conflicts with an internal container property—e.g., 'nwbdatainterface' or 'dynamictable' from :class:types.core.ProcessingModule—MatNWB will automatically append an underscore. Note that using such names is not recommended.
 
 .. code-block:: MATLAB
 
@@ -268,25 +270,13 @@ Advanced Topics
 Working with Sets directly
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Containers are represented internally using ``types.untyped.Set`` objects. While the recommended approach is to use the ``add()`` method and dot-indexing for accessing container entries, you can also work with the underlying Set objects directly.
+Containers are represented internally using ``types.untyped.Set`` objects. While the recommended approach is to use the ``add()`` method and dot-indexing for accessing container entries, you can also work with the underlying ``types.untyped.Set`` objects directly.
 
-Accessing the Set object
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-You can access the Set object directly by accessing the container property:
-
-.. code-block:: MATLAB
-
-    % Access the Set directly
-    dataSet = processingModule.nwbdatainterface;
-    
-    % Set supports direct property access
-    dataObject = dataSet.MyData;
 
 Using Set methods
 ^^^^^^^^^^^^^^^^^
 
-The Set object provides additional methods for managing entries:
+The ``types.untyped.Set`` object provides ``set`` and ``get`` methods for managing entries of a container:
 
 .. code-block:: MATLAB
 
@@ -298,21 +288,25 @@ The Set object provides additional methods for managing entries:
     % Get from Set using get() method
     dataObject = processingModule.nwbdatainterface.get('MyData');
     
+.. note::
+
+    While working with ``types.untyped.Set`` objects directly is fully supported, using the ``add()`` method and dot-indexing provides a more intuitive and MATLAB-like syntax for most use cases.
+
+The ``types.untyped.Set`` class also provides additional methods for inspecting entries, such as ``keys()``, ``values()``, and ``isKey()``:
+
+.. code-block:: MATLAB
+
     % Check what's in the Set
     allKeys = processingModule.nwbdatainterface.keys();
     allValues = processingModule.nwbdatainterface.values();
     hasKey = processingModule.nwbdatainterface.isKey('MyData');
-
-.. note::
-
-    While working with Set objects directly is fully supported, using the ``add()`` method and dot-indexing provides a more intuitive and MATLAB-like syntax for most use cases.
 
 .. _set-methods-with-invalid-names:
 
 Using Set methods with invalid MATLAB names
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-One advantage of using Set methods is that you can use the **original names** directly, even if they are not valid MATLAB identifiers:
+One advantage of using ``types.untyped.Set`` methods is that you can use the **original names** directly, even if they are not valid MATLAB identifiers:
 
 .. code-block:: MATLAB
 
@@ -334,22 +328,21 @@ One advantage of using Set methods is that you can use the **original names** di
     % Retrieve using original names
     timeSeries = processingModule.nwbdatainterface.get('my time series');
     dataTable = processingModule.dynamictable.get('data-table');
-    
 
 .. seealso::
 
-    For more information about the underlying Set implementation, see :ref:`matnwb-read-untyped-sets-anons`.
+    For more information about the underlying ``types.untyped.Set`` implementation, see :ref:`matnwb-read-untyped-sets-anons`.
 
 Container Display Modes
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-MatNWB provides different display modes for container properties to control how entries are shown in the MATLAB command window:
+MatNWB provides different display modes for container types to control how entries are shown in the MATLAB command window:
 
     - ``'groups'`` (default): Displays container entries in nested groups.
     - ``'flat'``: Displays all entries directly without nesting.
     - ``'legacy'``: Mimics the behavior of older MatNWB versions.
 
-You can change the display mode using MATLAB's ``setpref`` function with the preference group ``'matnwb'`` and preference name ``'displaymode'``.
+You can change the display mode using MATLAB's ``setpref`` function with the preference group ``'matnwb'`` and preference name ``'ContainerDisplayMode'``.
 
 Create a processing module with some entries and see the different display modes:
     
@@ -401,26 +394,28 @@ To see all entries directly without nesting, use the ``'flat'`` display mode:
 .. code-block:: MATLAB
 
     % Set flat display mode
-    setpref('matnwb', 'displaymode', 'flat');
+    setpref('matnwb', 'ContainerDisplayMode', 'flat');
     disp(processingModule);
 
 **Output:**
 
 .. code-block:: matlabsession
 
-    ProcessingModule with properties:
+  ProcessingModule with properties:
 
-        description: 'My processing module'
-            DataTable: [1×1 types.hdmf_common.DynamicTable]
-        NeuralActivity: [1×1 types.core.TimeSeries]
+       description: 'My processing module'
+         DataTable: [1×1 types.hdmf_common.DynamicTable]
+    NeuralActivity: [1×1 types.core.TimeSeries]
 
+Legacy display mode
+^^^^^^^^^^^^^^^^^^^
 
 It is also possible to set the display mode to ``'legacy'``, which mimics the behavior of older MatNWB versions:
         
 .. code-block:: MATLAB
 
     % Set legacy display mode
-    setpref('matnwb', 'displaymode', 'legacy');
+    setpref('matnwb', 'ContainerDisplayMode', 'legacy');
     disp(processingModule);
 
 **Output:**
