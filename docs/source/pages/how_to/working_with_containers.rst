@@ -147,7 +147,7 @@ MATLAB property names must follow specific rules (no spaces, special characters,
         processingModule.add('myTimeSeries', timeSeries);
         processingModule.add('my_time_series', timeSeries);
 
-If you read files created by other tools with names that are not valid MATLAB identifiers, MatNWB will automatically create valid MATLAB identifers (aliases) when loading the data.
+If you read files created by other tools with names that are not valid MATLAB identifiers, MatNWB will automatically create valid MATLAB identifiers (aliases) when loading the data.
 
 Viewing name mappings (aliases)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
