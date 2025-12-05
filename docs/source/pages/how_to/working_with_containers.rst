@@ -3,7 +3,7 @@
 Working with Container Properties and Types
 ===========================================
 
-This guide shows you how to work with NWB properties and types that is designed to hold other data objects (containers).
+This guide shows you how to work with NWB properties and types that are designed to hold other data objects (containers).
 
 .. contents::
    :local:
@@ -181,7 +181,7 @@ If a container contains entries with names that are not valid MATLAB identifiers
     
     ProcessingModule with properties:
 
-        description: 'My analysis module'
+        description: 'My processing module'
         myTimeSeries: [1×1 types.core.TimeSeries]
         data_table: [1×1 types.hdmf_common.DynamicTable]
 
@@ -217,7 +217,7 @@ Troubleshooting
 Property name conflicts
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-If you add an entry with a name that conflicts with an internal container property—e.g., 'nwbdatainterface' or 'dynamictable' from :class:types.core.ProcessingModule—MatNWB will automatically append an underscore. Note that using such names is not recommended.
+If you add an entry with a name that conflicts with an internal container property—e.g., ``nwbdatainterface`` or ``dynamictable`` from :class:`types.core.ProcessingModule`—MatNWB will automatically append an underscore. Note that using such names is not recommended.
 
 .. code-block:: MATLAB
 
@@ -344,7 +344,7 @@ MatNWB provides different display modes for container types to control how entri
 
 You can change the display mode using MATLAB's ``setpref`` function with the preference group ``'matnwb'`` and preference name ``'ContainerDisplayMode'``.
 
-Create a processing module with some entries and see the different display modes:
+The following example creates a processing module with some entries to demonstrate the different display modes:
     
 .. code-block:: MATLAB
 
