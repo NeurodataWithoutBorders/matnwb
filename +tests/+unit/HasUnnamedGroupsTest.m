@@ -220,15 +220,15 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
 
             setpref('matnwb', 'displaymode', 'flat')
             C = evalc('disp(module)');
-            testCase.verifyFalse(contains(C, 'nwbdatainterface entries:'))
-            testCase.verifyFalse(contains(C, 'dynamictable entries:'))
+            testCase.verifyFalse(contains(C, 'nwbdatainterface group'))
+            testCase.verifyFalse(contains(C, 'dynamictable group'))
             testCase.verifyTrue(contains(C, 'TimeSeries:'))
             testCase.verifyTrue(contains(C, 'DynamicTable:'))
 
             setpref('matnwb', 'displaymode', 'groups')
             C = evalc('disp(module)');
-            testCase.verifyTrue(contains(C, 'nwbdatainterface entries:'))
-            testCase.verifyTrue(contains(C, 'dynamictable entries:'))
+            testCase.verifyTrue(contains(C, 'nwbdatainterface group'))
+            testCase.verifyTrue(contains(C, 'dynamictable group'))
             testCase.verifyTrue(contains(C, 'TimeSeries:'))
         end
 
