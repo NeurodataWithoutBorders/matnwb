@@ -207,7 +207,7 @@ You can also use the ``getAliasMap()`` method to retrieve a table showing the na
 
 .. note::
 
-    In addition to using alias names for property access, you can also use legacy ``.get()`` and ``.set()`` methods on the underlying ``types.untyped.Set`` objects if needed (see Advanced Topics below).
+    In addition to using alias names for property access, you can also use ``.get()`` and ``.set()`` methods (legacy syntax) on the underlying ``types.untyped.Set`` objects with the original names (see :ref:`set-methods-with-invalid-names`).
 
 Troubleshooting
 ---------------
@@ -265,36 +265,15 @@ If you try to access a property that doesn't exist, you'll get an error. Always 
 Advanced Topics
 ---------------
 
-Legacy Syntax (Deprecated)
---------------------------
-
-.. note:: 
-
-    The legacy ``.set()`` and ``.get()`` methods are deprecated. Use ``add()`` and dot-indexing instead.
-
-For users familiar with older versions of MatNWB, the legacy syntax is still supported for backward compatibility:
-
-.. code-block:: MATLAB
-
-    dataObject = types.core.TimeSeries();
-
-    % Deprecated: add to Set directly
-    processingModule.nwbdatainterface.set('MyData', dataObject);
-    
-    % Recommended: use add() method
-    processingModule.add('MyData', dataObject);
-    
-    % Deprecated: get from Set
-    dataObject = processingModule.nwbdatainterface.get('MyData');
-    
-    % Recommended: direct property access
-    dataObject = processingModule.MyData;
-
-
 Working with Sets directly
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can still access the underlying ``types.untyped.Set`` objects directly:
+Containers are represented internally using ``types.untyped.Set`` objects. While the recommended approach is to use the ``add()`` method and dot-indexing for accessing container entries, you can also work with the underlying Set objects directly.
+
+Accessing the Set object
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can access the Set object directly by accessing the container property:
 
 .. code-block:: MATLAB
 
@@ -303,12 +282,153 @@ You can still access the underlying ``types.untyped.Set`` objects directly:
     
     % Set supports direct property access
     dataObject = dataSet.MyData;
+
+Using Set methods
+^^^^^^^^^^^^^^^^^
+
+The Set object provides additional methods for managing entries:
+
+.. code-block:: MATLAB
+
+    dataObject = types.core.TimeSeries();
+    
+    % Add to Set using set() method
+    processingModule.nwbdatainterface.set('MyData', dataObject);
+    
+    % Get from Set using get() method
+    dataObject = processingModule.nwbdatainterface.get('MyData');
     
     % Check what's in the Set
-    allKeys = dataSet.keys();
-    allValues = dataSet.values();
-    hasKey = dataSet.isKey('MyData');
+    allKeys = processingModule.nwbdatainterface.keys();
+    allValues = processingModule.nwbdatainterface.values();
+    hasKey = processingModule.nwbdatainterface.isKey('MyData');
+
+.. note::
+
+    While working with Set objects directly is fully supported, using the ``add()`` method and dot-indexing provides a more intuitive and MATLAB-like syntax for most use cases.
+
+.. _set-methods-with-invalid-names:
+
+Using Set methods with invalid MATLAB names
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+One advantage of using Set methods is that you can use the **original names** directly, even if they are not valid MATLAB identifiers:
+
+.. code-block:: MATLAB
+
+    % Create a processing module
+    processingModule = types.core.ProcessingModule('description', 'My processing module');
+    
+    % Add objects using original names with spaces and special characters
+    timeSeries = types.core.TimeSeries( ... 
+        'data', rand(100, 1), ...
+        'data_unit', 'volts', ...
+        'timestamps', linspace(0, 1, 100));
+    
+    dataTable = types.hdmf_common.DynamicTable( ...
+        'description', 'My data table');
+
+    processingModule.nwbdatainterface.set('my time series', timeSeries);
+    processingModule.dynamictable.set('data-table', dataTable);
+    
+    % Retrieve using original names
+    timeSeries = processingModule.nwbdatainterface.get('my time series');
+    dataTable = processingModule.dynamictable.get('data-table');
+    
 
 .. seealso::
 
     For more information about the underlying Set implementation, see :ref:`matnwb-read-untyped-sets-anons`.
+
+Container Display Modes
+~~~~~~~~~~~~~~~~~~~~~~~
+
+MatNWB provides different display modes for container properties to control how entries are shown in the MATLAB command window:
+
+    - ``'groups'`` (default): Displays container entries in nested groups.
+    - ``'flat'``: Displays all entries directly without nesting.
+    - ``'legacy'``: Mimics the behavior of older MatNWB versions.
+
+You can change the display mode using MATLAB's ``setpref`` function with the preference group ``'matnwb'`` and preference name ``'displaymode'``.
+
+Create a processing module with some entries and see the different display modes:
+    
+.. code-block:: MATLAB
+
+    % Create a processing module
+    processingModule = types.core.ProcessingModule('description', 'My processing module');
+    
+    % Create some data objects
+    timeSeries = types.core.TimeSeries( ...
+        'data', rand(100, 1), ...
+        'data_unit', 'volts', ...
+        'timestamps', linspace(0, 1, 100));
+    
+    dataTable = types.hdmf_common.DynamicTable( ...
+        'description', 'My data table');
+    
+    % Add them to the module
+    processingModule.add('NeuralActivity', timeSeries);
+    processingModule.add('DataTable', dataTable);
+
+Groups display mode (default)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+By default, MatNWB displays container properties (Sets) in a nested (``'groups'``) form:
+
+.. code-block:: matlabsession
+
+    >> processingModule
+
+    processingModule = 
+
+    ProcessingModule with properties:
+
+        description: 'My processing module'
+
+    nwbdatainterface group with 1 entry:
+        NeuralActivity: [1×1 types.core.TimeSeries]
+
+    dynamictable group with 1 entry:
+            DataTable: [1×1 types.hdmf_common.DynamicTable]
+
+
+Flat display mode
+^^^^^^^^^^^^^^^^^
+
+To see all entries directly without nesting, use the ``'flat'`` display mode:
+        
+.. code-block:: MATLAB
+
+    % Set flat display mode
+    setpref('matnwb', 'displaymode', 'flat');
+    disp(processingModule);
+
+**Output:**
+
+.. code-block:: matlabsession
+
+    ProcessingModule with properties:
+
+        description: 'My processing module'
+            DataTable: [1×1 types.hdmf_common.DynamicTable]
+        NeuralActivity: [1×1 types.core.TimeSeries]
+
+
+It is also possible to set the display mode to ``'legacy'``, which mimics the behavior of older MatNWB versions:
+        
+.. code-block:: MATLAB
+
+    % Set legacy display mode
+    setpref('matnwb', 'displaymode', 'legacy');
+    disp(processingModule);
+
+**Output:**
+
+.. code-block:: matlabsession
+
+    ProcessingModule with properties:
+
+            description: 'My processing module'
+        nwbdatainterface: [1×1 types.untyped.Set]
+            dynamictable: [1×1 types.untyped.Set]
