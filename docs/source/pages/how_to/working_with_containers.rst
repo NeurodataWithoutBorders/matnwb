@@ -9,6 +9,9 @@ This guide shows you how to work with NWB properties and types that are designed
    :local:
    :depth: 2
 
+.. 
+    todo: Move overview to a concepts page
+
 Overview
 --------
 Some neurodata types and properties of neurodata types in NWB are designed to hold one or more data objects of specific types. We will refer to these neurodata types and properties as **containers**. For example, both the ``acquisition`` property of a :class:`types.core.NWBFile` and the :class:`types.core.ProcessingModule` neurodata type can contain multiple data objects of :class:`types.core.NWBDataInterface` or :class:`types.hdmf_common.DynamicTable` types (including subtypes). 
