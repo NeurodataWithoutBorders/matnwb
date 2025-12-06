@@ -3,4 +3,6 @@ matplotlib
 hdf5plugin
 dataframe_image
 git+https://github.com/NeurodataWithoutBorders/pynwb.git@dev
-git+https://github.com/NeurodataWithoutBorders/nwbinspector.git@dev
+nwbinspector
+# older matlab releases requires python 3.9, which is not supported by nwbinspector
+# git+https://github.com/NeurodataWithoutBorders/nwbinspector.git@dev
