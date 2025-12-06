@@ -209,6 +209,13 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
             T = obj.PropertyManager.getPropertyMappingTable();
         end
     end
+        
+    methods (Hidden, Sealed)
+        function p = addprop(obj, name)
+        % No reimplementation - just hide method
+            p = addprop@dynamicprops(obj, name);
+        end
+    end
     
     methods (Hidden) % Legacy set/get methods
         function obj = set(obj, names, values, options)
