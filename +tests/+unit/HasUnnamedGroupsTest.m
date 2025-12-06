@@ -215,20 +215,20 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             module.add('DynamicTable', types.hdmf_common.DynamicTable());
 
             % Verify both display modes
-            origPrefValue = getpref('matnwb', 'displaymode', 'flat');
-            testCase.addTeardown(@() setpref('matnwb', 'displaymode', origPrefValue))
+            origPrefValue = getpref('matnwb', 'ContainerDisplayMode', 'flat');
+            testCase.addTeardown(@() setpref('matnwb', 'ContainerDisplayMode', origPrefValue))
 
-            setpref('matnwb', 'displaymode', 'flat')
+            setpref('matnwb', 'ContainerDisplayMode', 'flat')
             C = evalc('disp(module)');
-            testCase.verifyFalse(contains(C, 'nwbdatainterface entries:'))
-            testCase.verifyFalse(contains(C, 'dynamictable entries:'))
+            testCase.verifyFalse(contains(C, 'nwbdatainterface group'))
+            testCase.verifyFalse(contains(C, 'dynamictable group'))
             testCase.verifyTrue(contains(C, 'TimeSeries:'))
             testCase.verifyTrue(contains(C, 'DynamicTable:'))
 
-            setpref('matnwb', 'displaymode', 'groups')
+            setpref('matnwb', 'ContainerDisplayMode', 'groups')
             C = evalc('disp(module)');
-            testCase.verifyTrue(contains(C, 'nwbdatainterface entries:'))
-            testCase.verifyTrue(contains(C, 'dynamictable entries:'))
+            testCase.verifyTrue(contains(C, 'nwbdatainterface group'))
+            testCase.verifyTrue(contains(C, 'dynamictable group'))
             testCase.verifyTrue(contains(C, 'TimeSeries:'))
         end
 

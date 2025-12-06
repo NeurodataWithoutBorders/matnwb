@@ -2,7 +2,8 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
 % Set - A (utility) container class for storing neurodata types.
 %
 %   Neurodata types are added to the Set with name keys, forming name-value 
-%   pairs referred to as entries. 
+%   pairs referred to as entries. A validation function will ensure that
+%   only supported neurodata types are added to the set.
 
 %   Developer notes:
 %   `name` is used throughout this class to refer to the actual name of a Set 
@@ -199,9 +200,20 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
         function setValidationFunction(obj, functionHandle)
             obj.ValidationFunction = functionHandle;
         end
+
+        function T = getAliasMap(obj)
+            T = obj.PropertyManager.getAliasMap();
+        end
     
         function T = getPropertyMappingTable(obj)
             T = obj.PropertyManager.getPropertyMappingTable();
+        end
+    end
+        
+    methods (Hidden, Sealed)
+        function p = addprop(obj, name)
+        % No reimplementation - just hide method
+            p = addprop@dynamicprops(obj, name);
         end
     end
     

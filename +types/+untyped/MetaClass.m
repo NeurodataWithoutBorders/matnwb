@@ -219,7 +219,7 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
                 propertyListStr = obj.prettyPrintPropertyList(missingRequiredProps);
                 warning('NWB:RequiredPropertyMissing', ...
                     ['The following required properties are missing for ', ...
-                    'instance for type "%s":\n%s'], class(obj), propertyListStr)
+                    'instance of type "%s":\n%s'], class(obj), propertyListStr)
             end
         end
 

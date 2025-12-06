@@ -179,5 +179,14 @@ classdef DynamicPropertyManager < handle
             % Get a table showing property mappings
             T = obj.NameRegistry.getNameMappingTable();
         end
+
+        function T = getAliasMap(obj)
+            T = obj.getPropertyMappingTable();
+           
+            % Only keep entries with an alias (i.e where the property name /
+            % valid matlab identifier is different than the original name)
+            keep = T.ValidIdentifier ~= T.OriginalName;
+            T = T(keep, :);
+        end
     end
 end
