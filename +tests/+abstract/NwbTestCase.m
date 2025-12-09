@@ -54,4 +54,17 @@ classdef (Abstract, SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) .
             nwbFilename = sprintf('%s_%05d.nwb', testName, randi(9999));
         end
     end
+
+    methods (Access = protected)
+        function skipIfNwbInspectorTestSkipped(testCase)
+        % Skip test if SKIP_NWBINSPECTOR_TEST environment variable is set
+        % This is used in CI for MATLAB releases that don't support Python 3.10+
+        % (nwbinspector requires Python 3.10+)
+            skipNwbInspector = getenv("SKIP_NWBINSPECTOR_TEST");
+            if ~isempty(skipNwbInspector) && logical(str2double(skipNwbInspector))
+                testCase.assumeFail(...
+                    'Skipping nwbinspector test (Python version does not support nwbinspector)');
+            end
+        end
+    end
 end

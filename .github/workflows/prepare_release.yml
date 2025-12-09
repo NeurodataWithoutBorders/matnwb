@@ -30,38 +30,50 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest, macos-13]
-        matlab-version: [R2021a, R2021b, R2022a, R2022b, R2023a, R2023b, R2024a, R2024b, R2025a, R2025b]
+        # Note: When updating MATLAB versions, also update:
+        #   - .github/workflows/configurations/matlab_release_matrix_strategy.yml
+        #   - The badge text in the 'Generate tested with badge' step below
         include:
           - matlab-version: R2021a
             python-version: '3.9'
             skip-pynwb-compatibilty-test-for-tutorial: '1'
+            skip-nwbinspector-test: '1'
           - matlab-version: R2021b
             python-version: '3.9'
             skip-pynwb-compatibilty-test-for-tutorial: '1'
+            skip-nwbinspector-test: '1'
           - matlab-version: R2022a
             python-version: '3.9'
             skip-pynwb-compatibilty-test-for-tutorial: '0'
+            skip-nwbinspector-test: '1'
           - matlab-version: R2022b
             python-version: '3.9'
             skip-pynwb-compatibilty-test-for-tutorial: '0'
+            skip-nwbinspector-test: '1'
           - matlab-version: R2023a
             python-version: '3.10'
             skip-pynwb-compatibilty-test-for-tutorial: '0'
+            skip-nwbinspector-test: '0'
           - matlab-version: R2023b
             python-version: '3.10'
             skip-pynwb-compatibilty-test-for-tutorial: '0'
+            skip-nwbinspector-test: '0'
           - matlab-version: R2024a
             python-version: '3.11'
             skip-pynwb-compatibilty-test-for-tutorial: '0'
+            skip-nwbinspector-test: '0'
           - matlab-version: R2024b
             python-version: '3.11'
             skip-pynwb-compatibilty-test-for-tutorial: '0'
+            skip-nwbinspector-test: '0'
           - matlab-version: R2025a
             python-version: '3.12'
             skip-pynwb-compatibilty-test-for-tutorial: '0'
+            skip-nwbinspector-test: '0'
           - matlab-version: R2025b
             python-version: '3.13'
             skip-pynwb-compatibilty-test-for-tutorial: '0'
+            skip-nwbinspector-test: '0'
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -72,9 +84,14 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install python dependencies
+        shell: bash
         run: |
           python -m pip install -U pip
           pip install -r +tests/requirements.txt
+          # Install nwbinspector only for Python 3.10+ (nwbinspector dropped Python 3.9 support)
+          if [[ "${{ matrix.skip-nwbinspector-test }}" == "0" ]]; then
+            pip install "git+https://github.com/NeurodataWithoutBorders/nwbinspector.git@dev"
+          fi
           python -m pip list
 
       - name: Configure python env (macOS, ubuntu)
@@ -102,6 +119,8 @@ jobs:
           command: |
             setenv("SKIP_PYNWB_COMPATIBILITY_TEST_FOR_TUTORIALS", ...
                 num2str(${{ matrix.skip-pynwb-compatibilty-test-for-tutorial }}))
+            setenv("SKIP_NWBINSPECTOR_TEST", ...
+                num2str(${{ matrix.skip-nwbinspector-test }}))
             pyenv("ExecutionMode", "OutOfProcess");
             results = assertSuccess(nwbtest('ReportOutputFolder', '.')); 
             assert(~isempty(results), 'No tests ran');
@@ -183,6 +202,7 @@ jobs:
           python-version: '3.12' # Pinned to 3.12 because of pybadges dependencies
 
       - name: Generate tested with badge
+        # Note: Update this list when MATLAB versions change in the matrix above
         run: |
           pip install --upgrade setuptools
           pip install pybadges
@@ -192,7 +212,7 @@ jobs:
           with open('.github/badges/v${{ inputs.version }}/tested_with.svg', 'w') as f:
               f.write(badge(
                   left_text='tested with',
-                  right_text='R2021a | R2021b | R2022a | R2022b | R2023a | R2023b | R2024 | R2024b',
+                  right_text='R2021a | R2021b | R2022a | R2022b | R2023a | R2023b | R2024a | R2024b | R2025a | R2025b',
                   right_color='green'
               ))
           "
