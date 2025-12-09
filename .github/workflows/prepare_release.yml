@@ -30,7 +30,9 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest, macos-13]
-        matlab-version: [R2021a, R2021b, R2022a, R2022b, R2023a, R2023b, R2024a, R2024b, R2025a, R2025b]
+        # Note: When updating MATLAB versions, also update:
+        #   - .github/workflows/configurations/matlab_release_matrix_strategy.yml
+        #   - The badge text in the 'Generate tested with badge' step below
         include:
           - matlab-version: R2021a
             python-version: '3.9'
@@ -200,6 +202,7 @@ jobs:
           python-version: '3.12' # Pinned to 3.12 because of pybadges dependencies
 
       - name: Generate tested with badge
+        # Note: Update this list when MATLAB versions change in the matrix above
         run: |
           pip install --upgrade setuptools
           pip install pybadges
@@ -209,7 +212,7 @@ jobs:
           with open('.github/badges/v${{ inputs.version }}/tested_with.svg', 'w') as f:
               f.write(badge(
                   left_text='tested with',
-                  right_text='R2021a | R2021b | R2022a | R2022b | R2023a | R2023b | R2024 | R2024b',
+                  right_text='R2021a | R2021b | R2022a | R2022b | R2023a | R2023b | R2024a | R2024b | R2025a | R2025b',
                   right_color='green'
               ))
           "
