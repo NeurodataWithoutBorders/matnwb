@@ -11,6 +11,7 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
 
     methods (Test, TestTags={'UsesPython'})
         function testNwbInspector(testCase)
+            testCase.skipIfNwbInspectorTestSkipped()
             nwbFile = tests.factory.NWBFile();
             nwbExport(nwbFile, 'temp.nwb');
                 
@@ -31,6 +32,7 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
         end
 
         function testRareExceptionWithMissingLocation(testCase)
+            testCase.skipIfNwbInspectorTestSkipped()
             % Test special case where location is a NoneType (for bands table of ecephys tutorial)
             tutorialFolder = fullfile(misc.getMatnwbDir, 'tutorials');            
             % Use a fixture to add the folder to the search path
