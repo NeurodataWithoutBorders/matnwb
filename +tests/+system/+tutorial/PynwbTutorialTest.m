@@ -32,7 +32,7 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
         SkippedFiles = {'family_nwb_file_0.nwb'} % requires family driver from h5py
         
         % PythonDependencies - Package dependencies for running pynwb tutorials
-        PythonDependencies = {'dataframe-image', 'matplotlib'}
+        PythonDependencies = {'dataframe-image', 'matplotlib', 'numcodecs'}
     end
 
     properties (Access = private)
