@@ -51,4 +51,18 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
             testCase.verifyClass(report, 'table')
         end
     end
+
+    methods (Static, Access = private)
+        function tf = skipIfNwbInspectorTest()
+        % Skip test if SKIP_NWBINSPECTOR_TEST environment variable is set
+        % This is used in CI for MATLAB releases that don't support Python 3.10+
+        % (nwbinspector requires Python 3.10+)
+            skipNwbInspector = getenv("SKIP_NWBINSPECTOR_TEST");
+            if ~isempty(skipNwbInspector) && logical(str2double(skipNwbInspector))
+                tf = true;
+            else
+                tf = false;
+            end
+        end
+    end
 end
