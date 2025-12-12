@@ -37,13 +37,7 @@ if isFirstColumn && ~isempty(newColNames)
         newTableHeight = matnwb.common.compatibility.height(newVectorData.(indexName).data);
     end
     
-    % Create id with 0-indexed values
-    idData = int64((0:(newTableHeight-1))');
-    if 8 == exist('types.hdmf_common.ElementIdentifiers', 'class')
-        DynamicTable.id = types.hdmf_common.ElementIdentifiers('data', idData);
-    else % legacy Element Identifiers
-        DynamicTable.id = types.core.ElementIdentifiers('data', idData);
-    end
+    types.util.dynamictable.internal.initDynamicTableId(DynamicTable, newTableHeight)
     tableHeight = newTableHeight;
 end
 

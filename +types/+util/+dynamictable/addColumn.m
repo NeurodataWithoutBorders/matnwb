@@ -21,12 +21,9 @@ validateattributes(DynamicTable,...
 
 assert(nargin > 1, 'NWB:DynamicTable:AddColumn:NoData', 'Not enough arguments');
 
+
 if isempty(DynamicTable.id)
-    if 8 == exist('types.hdmf_common.ElementIdentifiers', 'class')
-        DynamicTable.id = types.hdmf_common.ElementIdentifiers();
-    else % legacy Element Identifiers
-        DynamicTable.id = types.core.ElementIdentifiers();
-    end
+    types.util.dynamictable.internal.initDynamicTableId(DynamicTable)
 end
 
 assert(~isa(DynamicTable.id.data, 'types.untyped.DataStub'),...
