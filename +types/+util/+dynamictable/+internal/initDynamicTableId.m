@@ -1,5 +1,5 @@
 function initDynamicTableId(dynamicTable, tableHeight)
-% Initialize elementidentifiers (0-indexed) for a dynamic table.
+% Initialize ElementIdentifiers (0-indexed) for a dynamic table.
 %
 %   This utility method uses the correct namespace for ElementIdentifiers,
 %   supporting older NWB versions where ElementIdentifiers were part of the
