@@ -11,7 +11,7 @@ function initDynamicTableId(dynamicTable, tableHeight)
     end
 
     if ~isempty(tableHeight)
-        idData = int64(1:tableHeight) .';
+        idData = int64(1:tableHeight) .' - 1;
     else
         idData = [];
     end
