@@ -23,7 +23,7 @@ assert(nargin > 1, 'NWB:DynamicTable:AddColumn:NoData', 'Not enough arguments');
 
 
 if isempty(DynamicTable.id)
-    types.util.dynamictable.internal.initDynamicTableId(DynamicTable)
+    types.util.dynamictable.internal.initDynamicTableId(DynamicTable);
 end
 
 assert(~isa(DynamicTable.id.data, 'types.untyped.DataStub'),...
