@@ -52,7 +52,7 @@ function checkConfig(DynamicTable, ignoreList)
         'column heights (vector lengths or number of matrix columns) must be the same.']);
 
     if isempty(DynamicTable.id)
-        types.util.dynamictable.internal.initDynamicTableId(DynamicTable, tableHeight)
+        types.util.dynamictable.internal.initDynamicTableId(DynamicTable, tableHeight);
         return;
     end
 
