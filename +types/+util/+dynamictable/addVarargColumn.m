@@ -37,7 +37,7 @@ if isFirstColumn && ~isempty(newColNames)
         newTableHeight = matnwb.common.compatibility.height(newVectorData.(indexName).data);
     end
     
-    types.util.dynamictable.internal.initDynamicTableId(DynamicTable, newTableHeight)
+    types.util.dynamictable.internal.initDynamicTableId(DynamicTable, newTableHeight);
     tableHeight = newTableHeight;
 end
 
