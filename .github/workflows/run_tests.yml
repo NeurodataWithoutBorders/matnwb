@@ -94,9 +94,12 @@ jobs:
         run: |
           python -m pip install -U pip
           pip install -r +tests/requirements.txt
+          # Install nwbinspector only for Python 3.10+ (nwbinspector dropped Python 3.9 support)
+          if [[ "${{ matrix.skip-nwbinspector-test }}" == "0" ]]; then
+            pip install "git+https://github.com/NeurodataWithoutBorders/nwbinspector.git@dev"
+          fi
           python -m pip list
           echo "HDF5_PLUGIN_PATH=$(python -c "import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)")" >> "$GITHUB_ENV"
-          echo $( python -m pip show nwbinspector | grep ^Location: | awk '{print $2}' )
 
       - name: Install MATLAB
         uses: matlab-actions/setup-matlab@v2
@@ -111,6 +114,8 @@ jobs:
           command: |
             setenv("SKIP_PYNWB_COMPATIBILITY_TEST_FOR_TUTORIALS", ...
                 num2str(${{ matrix.skip-pynwb-compatibilty-test-for-tutorial }}))
+            setenv("SKIP_NWBINSPECTOR_TEST", ...
+                num2str(${{ matrix.skip-nwbinspector-test }}))
             pyenv("ExecutionMode", "OutOfProcess");
             results = assertSuccess(nwbtest('ReportOutputFolder', '.')); 
             assert(~isempty(results), 'No tests ran');
