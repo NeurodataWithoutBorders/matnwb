@@ -304,8 +304,8 @@ function fdvstr = fillReadOnlyValidation(name, value, className)
 
     classNameSplit = strsplit(className, '.');
     shortName = classNameSplit{end};
-    errorStr = sprintf( 'error(''NWB:Type:ReadOnlyProperty'', ''Unable to set the ''''%s'''' property of class ''''<a href="matlab:doc %s">%s</a>'''' because it is read-only.'')', name, className, shortName);  
-
+    %errorStr = sprintf( 'error(''NWB:Type:ReadOnlyProperty'', ''Unable to set the ''''%s'''' property of class ''''<a href="matlab:doc %s">%s</a>'''' because it is read-only.'')', name, className, shortName);  
+    errorStr = sprintf( 'warning(''NWB:Type:ReadOnlyProperty'', ''The ''''%s'''' property of class ''''<a href="matlab:doc %s">%s</a>'''' is invalid according to the NWB schema.'')', name, className, shortName); 
     if ischar(value)
         condition = strjoin({ ...
             sprintf('if isequal(val, ''%s'')', value), ...

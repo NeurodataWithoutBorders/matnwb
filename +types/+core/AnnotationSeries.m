@@ -67,14 +67,14 @@ methods
         if isequal(val, -1)
             val = -1;
         else
-            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''data_resolution'' property of class ''<a href="matlab:doc types.core.AnnotationSeries">AnnotationSeries</a>'' because it is read-only.')
+            warning('NWB:Type:ReadOnlyProperty', 'The ''data_resolution'' property of class ''<a href="matlab:doc types.core.AnnotationSeries">AnnotationSeries</a>'' is invalid according to the NWB schema.')
         end
     end
     function val = validate_data_unit(obj, val)
         if isequal(val, 'n/a')
             val = 'n/a';
         else
-            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''data_unit'' property of class ''<a href="matlab:doc types.core.AnnotationSeries">AnnotationSeries</a>'' because it is read-only.')
+            warning('NWB:Type:ReadOnlyProperty', 'The ''data_unit'' property of class ''<a href="matlab:doc types.core.AnnotationSeries">AnnotationSeries</a>'' is invalid according to the NWB schema.')
         end
     end
     %% EXPORT

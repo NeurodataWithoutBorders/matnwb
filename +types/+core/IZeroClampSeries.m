@@ -71,28 +71,28 @@ methods
         if isequal(val, 0)
             val = 0;
         else
-            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''bias_current'' property of class ''<a href="matlab:doc types.core.IZeroClampSeries">IZeroClampSeries</a>'' because it is read-only.')
+            warning('NWB:Type:ReadOnlyProperty', 'The ''bias_current'' property of class ''<a href="matlab:doc types.core.IZeroClampSeries">IZeroClampSeries</a>'' is invalid according to the NWB schema.')
         end
     end
     function val = validate_bridge_balance(obj, val)
         if isequal(val, 0)
             val = 0;
         else
-            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''bridge_balance'' property of class ''<a href="matlab:doc types.core.IZeroClampSeries">IZeroClampSeries</a>'' because it is read-only.')
+            warning('NWB:Type:ReadOnlyProperty', 'The ''bridge_balance'' property of class ''<a href="matlab:doc types.core.IZeroClampSeries">IZeroClampSeries</a>'' is invalid according to the NWB schema.')
         end
     end
     function val = validate_capacitance_compensation(obj, val)
         if isequal(val, 0)
             val = 0;
         else
-            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''capacitance_compensation'' property of class ''<a href="matlab:doc types.core.IZeroClampSeries">IZeroClampSeries</a>'' because it is read-only.')
+            warning('NWB:Type:ReadOnlyProperty', 'The ''capacitance_compensation'' property of class ''<a href="matlab:doc types.core.IZeroClampSeries">IZeroClampSeries</a>'' is invalid according to the NWB schema.')
         end
     end
     function val = validate_stimulus_description(obj, val)
         if isequal(val, 'N/A')
             val = 'N/A';
         else
-            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''stimulus_description'' property of class ''<a href="matlab:doc types.core.IZeroClampSeries">IZeroClampSeries</a>'' because it is read-only.')
+            warning('NWB:Type:ReadOnlyProperty', 'The ''stimulus_description'' property of class ''<a href="matlab:doc types.core.IZeroClampSeries">IZeroClampSeries</a>'' is invalid according to the NWB schema.')
         end
     end
     %% EXPORT

@@ -77,7 +77,7 @@ methods
         if isequal(val, 'volts')
             val = 'volts';
         else
-            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''data_unit'' property of class ''<a href="matlab:doc types.core.VoltageClampStimulusSeries">VoltageClampStimulusSeries</a>'' because it is read-only.')
+            warning('NWB:Type:ReadOnlyProperty', 'The ''data_unit'' property of class ''<a href="matlab:doc types.core.VoltageClampStimulusSeries">VoltageClampStimulusSeries</a>'' is invalid according to the NWB schema.')
         end
     end
     %% EXPORT

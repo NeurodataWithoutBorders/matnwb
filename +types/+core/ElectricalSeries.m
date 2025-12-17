@@ -108,7 +108,7 @@ methods
         if isequal(val, 'volts')
             val = 'volts';
         else
-            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''data_unit'' property of class ''<a href="matlab:doc types.core.ElectricalSeries">ElectricalSeries</a>'' because it is read-only.')
+            warning('NWB:Type:ReadOnlyProperty', 'The ''data_unit'' property of class ''<a href="matlab:doc types.core.ElectricalSeries">ElectricalSeries</a>'' is invalid according to the NWB schema.')
         end
     end
     function val = validate_electrodes(obj, val)

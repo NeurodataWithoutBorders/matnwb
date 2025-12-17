@@ -60,7 +60,7 @@ methods
         if isequal(val, 'Table for storing intracellular response related metadata.')
             val = 'Table for storing intracellular response related metadata.';
         else
-            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''description'' property of class ''<a href="matlab:doc types.core.IntracellularResponsesTable">IntracellularResponsesTable</a>'' because it is read-only.')
+            warning('NWB:Type:ReadOnlyProperty', 'The ''description'' property of class ''<a href="matlab:doc types.core.IntracellularResponsesTable">IntracellularResponsesTable</a>'' is invalid according to the NWB schema.')
         end
     end
     function val = validate_response(obj, val)

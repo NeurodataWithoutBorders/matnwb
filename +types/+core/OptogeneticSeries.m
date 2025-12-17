@@ -79,7 +79,7 @@ methods
         if isequal(val, 'watts')
             val = 'watts';
         else
-            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''data_unit'' property of class ''<a href="matlab:doc types.core.OptogeneticSeries">OptogeneticSeries</a>'' because it is read-only.')
+            warning('NWB:Type:ReadOnlyProperty', 'The ''data_unit'' property of class ''<a href="matlab:doc types.core.OptogeneticSeries">OptogeneticSeries</a>'' is invalid according to the NWB schema.')
         end
     end
     function val = validate_site(obj, val)
