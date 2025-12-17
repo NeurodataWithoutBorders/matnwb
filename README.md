@@ -21,6 +21,9 @@
    <a href="https://github.com/NeurodataWithoutBorders/matnwb/actions/workflows/run_codespell.yml?query=event%3Apush+branch%3Amain">
    <img src="https://github.com/NeurodataWithoutBorders/matnwb/actions/workflows/run_codespell.yml/badge.svg?branch=main" alt="Codespell">
   </a>
+  <a href="https://github.com/NeurodataWithoutBorders/matnwb/tree/main/nwb-schema">
+    <img src="https://raw.githubusercontent.com/NeurodataWithoutBorders/matnwb/refs/heads/gh-badges/.github/badges/latest/supported_nwb_schema.svg" alt="NWB Schema Version">
+  </a>
 </h4>
 
 <p align="center">
