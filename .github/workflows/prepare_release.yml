@@ -273,3 +273,4 @@ jobs:
           body: |
             ![Tested On Platforms](https://raw.githubusercontent.com/NeurodataWithoutBorders/matnwb/refs/heads/gh-badges/.github/badges/tested_on.svg)
             ![MATLAB Versions Tested](https://raw.githubusercontent.com/NeurodataWithoutBorders/matnwb/refs/heads/gh-badges/.github/badges/v${{ inputs.version }}/tested_with.svg)
+            ![Supported NWB Schema](https://raw.githubusercontent.com/NeurodataWithoutBorders/matnwb/refs/heads/gh-badges/.github/badges/v${{ inputs.version }}/supported_nwb_schema.svg)
