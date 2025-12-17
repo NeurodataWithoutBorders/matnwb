@@ -230,10 +230,10 @@ jobs:
           git config user.email "<>"
 
           # Create the tag with a message
-          git tag -a "${{ inputs.version }}" -m "Release ${{ inputs.version }}" 
+          git tag -a "v${{ inputs.version }}" -m "Release v${{ inputs.version }}" 
 
           # Push the new tag to the remote repository
-          git push origin "${{ inputs.version }}"
+          git push origin "v${{ inputs.version }}"
       
       # Commit the SVG for the MATLAB releases test badge to gh-badges branch
       - name: Checkout gh-badges branch
