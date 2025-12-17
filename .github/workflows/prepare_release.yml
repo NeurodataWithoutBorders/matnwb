@@ -217,6 +217,10 @@ jobs:
               ))
           "
 
+      - name: Generate NWB schema version badge
+        run: |
+          python .github/workflows/scripts/create_nwb_schema_version_badge.py ${{ inputs.version }}
+
       - name: Tag repository with version tag
         if: always()
         run: |
@@ -241,7 +245,10 @@ jobs:
       - name: Push to gh-badges
         run: |
           mkdir -p gh-badges/.github/badges/v${{ inputs.version }}
+          mkdir -p gh-badges/.github/badges/latest
           cp .github/badges/v${{ inputs.version }}/tested_with.svg gh-badges/.github/badges/v${{ inputs.version }}/tested_with.svg
+          cp .github/badges/v${{ inputs.version }}/supported_nwb_schema.svg gh-badges/.github/badges/v${{ inputs.version }}/supported_nwb_schema.svg
+          cp .github/badges/latest/supported_nwb_schema.svg gh-badges/.github/badges/latest/supported_nwb_schema.svg
           cd gh-badges
 
           git config user.name "${{ github.workflow }} by ${{ github.actor }}"
@@ -250,7 +257,7 @@ jobs:
           # Only proceed with commit and push if changes are detected
           if [[ $(git add .github/badges/* --dry-run | wc -l) -gt 0 ]]; then
             git add .github/badges/*
-            git commit -m "Update 'tested_with' badge for release v${{ inputs.version }}"
+            git commit -m "Update badges for release v${{ inputs.version }}"
             git push -f
           else
             echo "Nothing to commit"
