@@ -1,30 +1,40 @@
 - matlab-version: R2021a
   python-version: '3.9'
   skip-pynwb-compatibilty-test-for-tutorial: '1'
+  skip-nwbinspector-test: '1'
 - matlab-version: R2021b
   python-version: '3.9'
   skip-pynwb-compatibilty-test-for-tutorial: '1'
+  skip-nwbinspector-test: '1'
 - matlab-version: R2022a
   python-version: '3.9'
   skip-pynwb-compatibilty-test-for-tutorial: '0'
+  skip-nwbinspector-test: '1'
 - matlab-version: R2022b
   python-version: '3.9'
   skip-pynwb-compatibilty-test-for-tutorial: '0'
+  skip-nwbinspector-test: '1'
 - matlab-version: R2023a
   python-version: '3.10'
   skip-pynwb-compatibilty-test-for-tutorial: '0'
+  skip-nwbinspector-test: '0'
 - matlab-version: R2023b
   python-version: '3.10'
   skip-pynwb-compatibilty-test-for-tutorial: '0'
+  skip-nwbinspector-test: '0'
 - matlab-version: R2024a
   python-version: '3.11'
   skip-pynwb-compatibilty-test-for-tutorial: '0'
+  skip-nwbinspector-test: '0'
 - matlab-version: R2024b
   python-version: '3.11'
   skip-pynwb-compatibilty-test-for-tutorial: '0'
+  skip-nwbinspector-test: '0'
 - matlab-version: R2025a
   python-version: '3.12'
   skip-pynwb-compatibilty-test-for-tutorial: '0'
+  skip-nwbinspector-test: '0'
 - matlab-version: R2025b
   python-version: '3.13'
   skip-pynwb-compatibilty-test-for-tutorial: '0'
+  skip-nwbinspector-test: '0'
