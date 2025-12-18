@@ -1,4 +1,4 @@
-classdef PupilTracking < types.core.NWBDataInterface & types.untyped.GroupClass
+classdef PupilTracking < types.core.NWBDataInterface & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups
 % PUPILTRACKING - Eye-tracking data, representing pupil size.
 %
 % Required Properties:
@@ -8,6 +8,9 @@ classdef PupilTracking < types.core.NWBDataInterface & types.untyped.GroupClass
 % REQUIRED PROPERTIES
 properties
     timeseries; % REQUIRED (TimeSeries) TimeSeries object containing time series data on pupil size.
+end
+properties (Access = protected)
+    GroupPropertyNames = {'timeseries'}
 end
 
 methods
@@ -28,6 +31,8 @@ methods
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.timeseries, ivarargin] = types.util.parseConstrained(obj,'timeseries', 'types.core.TimeSeries', varargin{:});
         varargin(ivarargin) = [];
+        
+        obj.setupHasUnnamedGroupsMixin()
         
         p = inputParser;
         p.KeepUnmatched = true;
