@@ -67,7 +67,7 @@ function typeInfo = correctNamespaceIfShouldBeHdmfCommon(typeInfo)
 % the namespace is changed from hdmf-experimental to hdmf-common.
 %
 % The bug is described in this issue: 
-% https://github.com/hdmf-dev/hdmf/issues/1347#issuecomment-3662210800
+% https://github.com/hdmf-dev/hdmf/issues/1347
 
     if strcmp(typeInfo.namespace, 'hdmf-experimental') && ~exist(typeInfo.typename, 'class')
         correctedTypename = replace(typeInfo.typename, 'hdmf_experimental', 'hdmf_common');
