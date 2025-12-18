@@ -48,5 +48,32 @@ function typeInfo = getNeurodataTypeInfo(attributeInfo)
     if hasTypeDef && hasNamespace
         typeInfo.typename = matnwb.common.composeFullClassName(...
             typeInfo.namespace, typeInfo.name);
+
+        if strcmp(typeInfo.namespace, 'hdmf-experimental') && ~exist(typeInfo.typename, 'class')
+            typeInfo = correctNamespaceIfShouldBeHdmfCommon(typeInfo);
+        end 
+    end
+end
+
+function typeInfo = correctNamespaceIfShouldBeHdmfCommon(typeInfo)
+% correctNamespaceIfShouldBeHdmfCommon - Correct namespace if value in file is wrong.
+%
+% This function provides a workaround for a bug where the namespace of a 
+% neurodata type was wrongly written to file as hdmf-experimental instead
+% of hdmf-common.
+% 
+% If the namespace of a type is hdmf-experimental, and the corresponding type 
+% class does not exist in MATLAB, but the equivalent hdmf_common class exists, 
+% the namespace is changed from hdmf-experimental to hdmf-common.
+%
+% The bug is described in this issue: 
+% https://github.com/hdmf-dev/hdmf/issues/1347#issuecomment-3662210800
+
+    if strcmp(typeInfo.namespace, 'hdmf-experimental') && ~exist(typeInfo.typename, 'class')
+        correctedTypename = replace(typeInfo.typename, 'hdmf_experimental', 'hdmf_common');
+        if exist(correctedTypename, 'class') == 8
+            typeInfo.typename = correctedTypename;
+            typeInfo.namespace = 'hdmf-common';
+        end
     end
 end
