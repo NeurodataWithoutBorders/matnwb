@@ -1,4 +1,4 @@
-classdef LFP < types.core.NWBDataInterface & types.untyped.GroupClass
+classdef LFP < types.core.NWBDataInterface & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups
 % LFP - LFP data from one or more channels. The electrode map in each published ElectricalSeries will identify which channels are providing LFP data. Filter properties should be noted in the ElectricalSeries 'filtering' attribute.
 %
 % Required Properties:
@@ -8,6 +8,9 @@ classdef LFP < types.core.NWBDataInterface & types.untyped.GroupClass
 % REQUIRED PROPERTIES
 properties
     electricalseries; % REQUIRED (ElectricalSeries) ElectricalSeries object(s) containing LFP data for one or more channels.
+end
+properties (Access = protected)
+    GroupPropertyNames = {'electricalseries'}
 end
 
 methods
@@ -28,6 +31,8 @@ methods
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.electricalseries, ivarargin] = types.util.parseConstrained(obj,'electricalseries', 'types.core.ElectricalSeries', varargin{:});
         varargin(ivarargin) = [];
+        
+        obj.setupHasUnnamedGroupsMixin()
         
         p = inputParser;
         p.KeepUnmatched = true;

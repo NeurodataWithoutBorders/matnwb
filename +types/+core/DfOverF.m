@@ -1,4 +1,4 @@
-classdef DfOverF < types.core.NWBDataInterface & types.untyped.GroupClass
+classdef DfOverF < types.core.NWBDataInterface & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups
 % DFOVERF - dF/F information about a region of interest (ROI). Storage hierarchy of dF/F should be the same as for segmentation (i.e., same names for ROIs and for image planes).
 %
 % Required Properties:
@@ -8,6 +8,9 @@ classdef DfOverF < types.core.NWBDataInterface & types.untyped.GroupClass
 % REQUIRED PROPERTIES
 properties
     roiresponseseries; % REQUIRED (RoiResponseSeries) RoiResponseSeries object(s) containing dF/F for a ROI.
+end
+properties (Access = protected)
+    GroupPropertyNames = {'roiresponseseries'}
 end
 
 methods
@@ -28,6 +31,8 @@ methods
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.roiresponseseries, ivarargin] = types.util.parseConstrained(obj,'roiresponseseries', 'types.core.RoiResponseSeries', varargin{:});
         varargin(ivarargin) = [];
+        
+        obj.setupHasUnnamedGroupsMixin()
         
         p = inputParser;
         p.KeepUnmatched = true;

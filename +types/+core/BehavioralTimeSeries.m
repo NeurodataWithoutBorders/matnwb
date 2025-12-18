@@ -1,4 +1,4 @@
-classdef BehavioralTimeSeries < types.core.NWBDataInterface & types.untyped.GroupClass
+classdef BehavioralTimeSeries < types.core.NWBDataInterface & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups
 % BEHAVIORALTIMESERIES - TimeSeries for storing behavioral time series data. See description of BehavioralEpochs for more details.
 %
 % Required Properties:
@@ -8,6 +8,9 @@ classdef BehavioralTimeSeries < types.core.NWBDataInterface & types.untyped.Grou
 % REQUIRED PROPERTIES
 properties
     timeseries; % REQUIRED (TimeSeries) TimeSeries object containing continuous behavioral data.
+end
+properties (Access = protected)
+    GroupPropertyNames = {'timeseries'}
 end
 
 methods
@@ -28,6 +31,8 @@ methods
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.timeseries, ivarargin] = types.util.parseConstrained(obj,'timeseries', 'types.core.TimeSeries', varargin{:});
         varargin(ivarargin) = [];
+        
+        obj.setupHasUnnamedGroupsMixin()
         
         p = inputParser;
         p.KeepUnmatched = true;

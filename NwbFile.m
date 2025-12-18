@@ -312,6 +312,27 @@ classdef NwbFile < types.core.NWBFile
                 nwbTypeNames = includedNwbTypesWithParents;
             end
         end
+    
+        function result = listRemappedNames(obj)
+            objectMap = searchProperties(containers.Map, obj, '', '');
+            
+            result = {};
+
+            allKeys = objectMap.keys();
+            for i = 1:objectMap.Count
+                currentKey = allKeys{i};
+                currentValue = objectMap(currentKey);
+                if isa(currentValue, 'matnwb.mixin.HasUnnamedGroups')
+                    T = currentValue.getRemappedNames();
+                    if ~isempty(T)
+                        T.ContainerType = repmat(string(class(currentValue)), 1, height(T));
+                        T.Location = repmat(string(currentKey), 1, height(T));
+                        result{end+1} = T; %#ok<AGROW>
+                    end
+                end
+            end
+            result = cat(1, result{:});
+        end
     end
 
     methods (Hidden)
@@ -335,8 +356,8 @@ classdef NwbFile < types.core.NWBFile
                     obj.general_was_generated_by = obj.general_was_generated_by.load();
                 end
     
-                matnwbInfo = ver('matnwb');
-                wasGeneratedBy = {'matnwb'; matnwbInfo.Version};
+                matnwbVersion = misc.getMatnwbVersion();
+                wasGeneratedBy = {'matnwb'; matnwbVersion};
     
                 if isempty(obj.general_was_generated_by)
                     obj.general_was_generated_by = wasGeneratedBy;
@@ -458,6 +479,10 @@ function pathToObjectMap = searchProperties(...
                 || isa(propValue, 'types.untyped.Set')...
                 || isa(propValue, 'types.untyped.Anon')
             % recursible (even if there is a match!)
+            if isa(obj, 'matnwb.mixin.HasUnnamedGroups')
+                % Recursive search on this object would yield duplicate objects
+                continue
+            end
             searchProperties(pathToObjectMap, propValue, fullPath, typename, varargin{:});
         end
     end
