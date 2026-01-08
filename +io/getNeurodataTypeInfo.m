@@ -46,8 +46,8 @@ function typeInfo = getNeurodataTypeInfo(attributeInfo)
     
     % Get full classname given a namespace and a neurodata type
     if hasTypeDef && hasNamespace
-        typeInfo.typename = matnwb.common.composeFullClassName(...
-            typeInfo.namespace, typeInfo.name);
+        typeInfo.typename = char( matnwb.common.composeFullClassName(...
+            typeInfo.namespace, typeInfo.name) );
 
         if strcmp(typeInfo.namespace, 'hdmf-experimental') && ~exist(typeInfo.typename, 'class')
             typeInfo = correctNamespaceIfShouldBeHdmfCommon(typeInfo);
