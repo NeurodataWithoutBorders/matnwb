@@ -49,46 +49,38 @@ function typeInfo = getNeurodataTypeInfo(attributeInfo)
         typeInfo.typename = char( matnwb.common.composeFullClassName(...
             typeInfo.namespace, typeInfo.name) );
 
-        if strcmp(typeInfo.namespace, 'hdmf-experimental') && ~exist(typeInfo.typename, 'class')
-            typeInfo = correctNamespaceIfShouldBeHdmfCommon(typeInfo);
-        elseif strcmp(typeInfo.namespace, 'core') && ~exist(typeInfo.typename, 'class')
-            typeInfo = correctCoreNamespaceIfShouldBeHdmfCommon(typeInfo);
+        if ~exist(typeInfo.typename, 'class')
+            typeInfo = tryCorrectNamespace(typeInfo);
         end
     end
 end
 
-function typeInfo = correctNamespaceIfShouldBeHdmfCommon(typeInfo)
-% correctNamespaceIfShouldBeHdmfCommon - Correct namespace if value in file is wrong.
+function typeInfo = tryCorrectNamespace(typeInfo)
+% tryCorrectNamespace - Try to correct namespace if type class doesn't exist
 %
-% This function provides a workaround for a bug where the namespace of a 
-% neurodata type was wrongly written to file as hdmf-experimental instead
-% of hdmf-common.
-% 
-% If the namespace of a type is hdmf-experimental, and the corresponding type 
-% class does not exist in MATLAB, but the equivalent hdmf_common class exists, 
-% the namespace is changed from hdmf-experimental to hdmf-common.
+% Some NWB files have incorrect namespace values written to them.
+% This function attempts to find the correct namespace by checking
+% if an equivalent class exists in hdmf_common.
 %
-% The bug is described in this issue: 
-% https://github.com/hdmf-dev/hdmf/issues/1347
+% Known issues:
+%   - hdmf-experimental instead of hdmf-common (https://github.com/hdmf-dev/hdmf/issues/1347)
+%   - core instead of hdmf-common (https://github.com/NeurodataWithoutBorders/helpdesk/discussions/104)
 
-    if strcmp(typeInfo.namespace, 'hdmf-experimental') && ~exist(typeInfo.typename, 'class')
-        correctedTypename = replace(typeInfo.typename, 'hdmf_experimental', 'hdmf_common');
-        if exist(correctedTypename, 'class') == 8
-            typeInfo.typename = correctedTypename;
-            typeInfo.namespace = 'hdmf-common';
-        end
+    % Map of namespace values that might be incorrectly used instead of hdmf-common
+    namespaceNames = {'hdmf-experimental', 'core'};
+    packageNames = {'hdmf_experimental', 'core'}; % Corresponding MATLAB package names
+    namespaceToPackage = containers.Map(namespaceNames, packageNames);
+    
+    if ~isKey(namespaceToPackage, typeInfo.namespace)
+        return
     end
-end
-
-function typeInfo = correctCoreNamespaceIfShouldBeHdmfCommon(typeInfo)
-% correctCoreNamespaceIfShouldBeHdmfCommon - Correct namespace if value in file is wrong.
-
-
-    if strcmp(typeInfo.namespace, 'core') && ~exist(typeInfo.typename, 'class')
-        correctedTypename = replace(typeInfo.typename, 'core', 'hdmf_common');
-        if exist(correctedTypename, 'class') == 8
-            typeInfo.typename = correctedTypename;
-            typeInfo.namespace = 'hdmf-common';
-        end
+    
+    currentPackage = namespaceToPackage(typeInfo.namespace);
+    correctedTypename = strrep(typeInfo.typename, ...
+        [currentPackage '.'], 'hdmf_common.');
+    
+    if exist(correctedTypename, 'class') == 8
+        typeInfo.typename = correctedTypename;
+        typeInfo.namespace = 'hdmf-common';
     end
 end
