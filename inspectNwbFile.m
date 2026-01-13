@@ -111,11 +111,11 @@ function resultTable = convertNwbInspectorResultsToTable(resultsIn)
         catch
             resultTable(i).location = "N/A";
         end
-        resultTable(i).message = string(C{i}.message);
-        resultTable(i).object_name = string(C{i}.object_name);
-        resultTable(i).object_type = string(C{i}.object_type);
-        resultTable(i).file_path = string(C{i}.file_path);
-        resultTable(i).check_function_name = string(C{i}.check_function_name);
+        resultTable(i).message = pyValueToString(C{i}.message);
+        resultTable(i).object_name = pyValueToString(C{i}.object_name);
+        resultTable(i).object_type = pyValueToString(C{i}.object_type);
+        resultTable(i).file_path = pyValueToString(C{i}.file_path);
+        resultTable(i).check_function_name = pyValueToString(C{i}.check_function_name);
     end
     resultTable = struct2table(resultTable);
 end
@@ -209,4 +209,12 @@ function [isNwbInspectorInstalled, nwbInspectorExecutable] = isCliNwbInspectorAv
     [status, ~] = system(systemCommand);
     
     isNwbInspectorInstalled = status == 0;
+end
+
+function strValue = pyValueToString(pyValue)
+    if isa(pyValue, 'py.NoneType')
+        strValue = string(missing);
+    else
+        strValue = string(pyValue);
+    end
 end
