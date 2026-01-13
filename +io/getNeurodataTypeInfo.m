@@ -51,7 +51,9 @@ function typeInfo = getNeurodataTypeInfo(attributeInfo)
 
         if strcmp(typeInfo.namespace, 'hdmf-experimental') && ~exist(typeInfo.typename, 'class')
             typeInfo = correctNamespaceIfShouldBeHdmfCommon(typeInfo);
-        end 
+        elseif strcmp(typeInfo.namespace, 'core') && ~exist(typeInfo.typename, 'class')
+            typeInfo = correctCoreNamespaceIfShouldBeHdmfCommon(typeInfo);
+        end
     end
 end
 
@@ -71,6 +73,19 @@ function typeInfo = correctNamespaceIfShouldBeHdmfCommon(typeInfo)
 
     if strcmp(typeInfo.namespace, 'hdmf-experimental') && ~exist(typeInfo.typename, 'class')
         correctedTypename = replace(typeInfo.typename, 'hdmf_experimental', 'hdmf_common');
+        if exist(correctedTypename, 'class') == 8
+            typeInfo.typename = correctedTypename;
+            typeInfo.namespace = 'hdmf-common';
+        end
+    end
+end
+
+function typeInfo = correctCoreNamespaceIfShouldBeHdmfCommon(typeInfo)
+% correctCoreNamespaceIfShouldBeHdmfCommon - Correct namespace if value in file is wrong.
+
+
+    if strcmp(typeInfo.namespace, 'core') && ~exist(typeInfo.typename, 'class')
+        correctedTypename = replace(typeInfo.typename, 'core', 'hdmf_common');
         if exist(correctedTypename, 'class') == 8
             typeInfo.typename = correctedTypename;
             typeInfo.namespace = 'hdmf-common';
