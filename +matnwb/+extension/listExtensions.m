@@ -39,7 +39,8 @@ function extensionTable = listExtensions(options)
         catalogUrl = "https://raw.githubusercontent.com/nwb-extensions/nwb-extensions.github.io/refs/heads/main/data/records.json";
         extensionRecords = jsondecode(webread(catalogUrl));
         extensionRecords = consolidateStruct(extensionRecords);
-                    
+        extensionRecords = removeUnnamedExtensions(extensionRecords);
+        
         extensionRecords = struct2table(extensionRecords);
 
         fieldsKeep = ["name", "version", "last_updated", "src", "license", "maintainers", "readme"];
@@ -80,4 +81,15 @@ function structArray = consolidateStruct(S)
             structArray(i).(missingFields{j}) = [];
         end
     end
+end
+
+function extensionRecords = removeUnnamedExtensions(extensionRecords)
+    % Only keep extensions that have a name
+    keep = false(1, numel(extensionRecords));
+    for i = 1:numel(extensionRecords)
+        if ~isempty(extensionRecords(i).name)
+            keep(i) = true;
+        end
+    end
+    extensionRecords = extensionRecords(keep);
 end
