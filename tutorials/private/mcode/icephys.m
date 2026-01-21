@@ -47,7 +47,7 @@ electrode = types.core.IntracellularElectrode( ...
     'device', types.untyped.SoftLink(device), ...
     'cell_id', 'a very interesting cell' ...
 );
-nwbfile.general_intracellular_ephys.set('elec0', electrode);
+nwbfile.general_intracellular_ephys.set('IntracellularElectrode', electrode);
 %% *Stimulus and response data*
 % Intracellular stimulus and response data are represented with subclasses of 
 % <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/PatchClampSeries.html 
@@ -83,7 +83,7 @@ vcss = types.core.VoltageClampStimulusSeries( ...
     'sweep_number', uint64(15), ...
     'stimulus_description', 'N/A' ...
 );
-nwbfile.stimulus_presentation.set('vcss',  vcss);
+nwbfile.stimulus_presentation.set('VoltageClampStimulusSeries',  vcss);
 
 vcs = types.core.VoltageClampSeries( ...
     'data', [0.1, 0.2, 0.3, 0.4, 0.5], ...
@@ -98,7 +98,7 @@ vcs = types.core.VoltageClampSeries( ...
     'stimulus_description', 'N/A', ...
     'sweep_number', uint64(15) ...
 );
-nwbfile.acquisition.set('vcs',  vcs);
+nwbfile.acquisition.set('VoltageClampSeries',  vcs);
 %% 
 % You can add stimulus/response recording data pair from a current clamp recording 
 % in the same way:
@@ -113,7 +113,7 @@ ccss = types.core.CurrentClampStimulusSeries(...
     'sweep_number', uint64(16), ...
     'stimulus_description', 'N/A' ...
 );
-nwbfile.stimulus_presentation.set('ccss',  ccss);
+nwbfile.stimulus_presentation.set('CurrentClampStimulusSeries',  ccss);
 
 % Create a CurrentClampSeries object
 ccs = types.core.CurrentClampSeries(...
@@ -130,7 +130,7 @@ ccs = types.core.CurrentClampSeries(...
     'stimulus_description', 'N/A', ...
     'sweep_number', uint64(16) ...
 );
-nwbfile.acquisition.set('ccs',  ccs);
+nwbfile.acquisition.set('CurrentClampSeries',  ccs);
 %% 
 % <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IZeroClampSeries.html 
 % |*IZeroClampSeries*|> is used when the current is clamped to 0.
@@ -146,7 +146,7 @@ izcs = types.core.IZeroClampSeries(...
     'starting_time_rate', 20e3, ...
     'sweep_number', uint64(17) ...
 );
-nwbfile.acquisition.set('izcs',  izcs);
+nwbfile.acquisition.set('IZeroClampSeries',  izcs);
 % Adding an intracellular recording
 % The <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IntracellularRecordingsTable.html 
 % |*IntracellularRecordingsTable*|> relates electrode, stimulus and response pairs 
@@ -208,7 +208,7 @@ ic_rec_table.stimuli = types.core.IntracellularStimuliTable( ...
             'timeseries', [ ...
                 types.untyped.ObjectView(vcss), ... % Voltage clamp stimulus
                 types.untyped.ObjectView(ccss), ... % Current clamp stimulus
-                types.untyped.ObjectView(izcs) ...  % Current clamp response when current is off (no stimulus)
+                types.untyped.ObjectView(izcs) ...  % Current clamp response when current is off
             ] ...
         )...
     )...
@@ -285,7 +285,7 @@ ic_rec_table.electrodes.addColumn('voltage_threshold', voltage_threshold_data)
 % The <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IntracellularRecordingsTable.html 
 % |*IntracellularRecordingsTable*|> is added to the |general_intracellular_ephys_intracellular_recordings| 
 % property of the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html 
-% |*NWBFile*|>:
+% |*NWBFile*|> object:
 
 nwbfile.general_intracellular_ephys_intracellular_recordings = ic_rec_table;
 %% Hierarchical organization of recordings
@@ -354,7 +354,7 @@ ic_sim_recs_table.toTable()
 % The <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SimultaneousRecordingsTable.html 
 % |*SimultaneousRecordingsTable*|> is added to the |general_intracellular_ephys_simultaneous_recordings| 
 % property of the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html 
-% |*NWBFile*|>:
+% |*NWBFile*|> object:
 
 nwbfile.general_intracellular_ephys_simultaneous_recordings = ic_sim_recs_table;
 % Add a sequential recording
@@ -398,7 +398,7 @@ sequential_recordings = types.core.SequentialRecordingsTable( ...
 % The <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SequentialRecordingsTable.html 
 % |*SequentialRecordingsTable*|> is added to the |general_intracellular_ephys_sequential_recordings| 
 % property of the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html 
-% |*NWBFile*|>:
+% |*NWBFile*|> object:
 
 nwbfile.general_intracellular_ephys_sequential_recordings = sequential_recordings;
 % Add repetitions table
