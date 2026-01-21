@@ -5,9 +5,9 @@
 % and response, information about the electrode and device used, as well as metadata 
 % about the organization of the experiment.
 % 
-% *Tip*: This tutorial introduces many subtypes of the DynamicTable type. For 
-% a detailed tutorial demonstrating how to work with the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
-% |*DynamicTable*|> type, see the <./dynamic_tables.mlx *DynamicTables*> tutorial.
+% *Tip*: This tutorial introduces many subtypes of the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
+% |*DynamicTable*|> type. For a detailed tutorial demonstrating how to work with 
+% dynamic tables, see the <./dynamic_tables.mlx *DynamicTables*> tutorial.
 % 
 % 
 % 
@@ -19,7 +19,6 @@
 % |*NwbFile*|> command.
 
 session_start_time = datetime(2018, 3, 1, 12, 0, 0, 'TimeZone', 'local');
-
 
 nwbfile = NwbFile( ...
     'session_description', 'my first synthetic recording', ...
@@ -33,14 +32,15 @@ nwbfile = NwbFile( ...
     'general_session_id', 'LONELYMTN' ...
 );
 % Device metadata
-% Device metadata is represented by |*Device*| objects.
+% Device metadata is represented by <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Device.html 
+% |*Device*|> objects.
 
 device = types.core.Device();
 nwbfile.general_devices.set('Heka ITC-1600', device);
 % *Electrode metadata*
-% Intracellular electrode metadata is represented by |*IntracellularElectrode*| 
-% objects. Create an electrode object, which requires a link to the device of 
-% the previous step. Then add it to the NWB file.
+% Intracellular electrode metadata is represented by <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IntracellularElectrode.html 
+% |*IntracellularElectrode*|> objects. Create an electrode object, which requires 
+% a link to the device of the previous step. Then add it to the NWB file.
 
 electrode = types.core.IntracellularElectrode( ...
     'description', 'a mock intracellular electrode', ...
@@ -456,9 +456,9 @@ nwbfile.general_intracellular_ephys_experimental_conditions = ...
 );
 %% Write the NWB file
 
-nwbExport(nwbfile, 'test_new_icephys.nwb');
+nwbExport(nwbfile, 'icephys_tutorial.nwb');
 %% Read the NWB file
 
-nwbfile2 = nwbRead('test_new_icephys.nwb', 'ignorecache')
+nwbfile2 = nwbRead('icephys_tutorial.nwb', 'ignorecache')
 %% 
 %
