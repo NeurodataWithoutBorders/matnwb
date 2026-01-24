@@ -93,9 +93,7 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
         superclassNames{end+1} = 'types.untyped.DatasetClass';
     end
 
-    if isa(class, 'file.Group') && class.hasAnonGroups
-        superclassNames{end+1} = 'matnwb.mixin.HasUnnamedGroups';
-    elseif isa(class, 'file.Group') && class.hasAnonData
+    if isa(class, 'file.Group') && (class.hasAnonGroups || class.hasAnonData)
         superclassNames{end+1} = 'matnwb.mixin.HasUnnamedGroups';
     end
 
