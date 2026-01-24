@@ -61,13 +61,6 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
         PropertyManager matnwb.utility.DynamicPropertyManager
     end
 
-    methods (Static, Access = protected)
-        % Subclasses should override this method
-        function propertyNames = getGroupPropertyNames()
-            propertyNames = string.empty;
-        end
-    end
-
     % Constructor
     methods
         function obj = HasUnnamedGroups()
@@ -169,7 +162,8 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
     methods
         function value = get.GroupPropertyNames(obj)
             if isempty(obj.GroupPropertyNames_)
-                obj.GroupPropertyNames_ = obj.getGroupPropertyNames();
+                className = class(obj);
+                obj.GroupPropertyNames_ = obj.getGroupPropertyNamesAcrossTypeHierarchy(className);
             end
             value = obj.GroupPropertyNames_;
         end
