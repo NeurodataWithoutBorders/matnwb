@@ -13,7 +13,7 @@ end
 properties
     dynamictable; %  (DynamicTable) A DynamicTable representing a particular category for columns in the AlignedDynamicTable parent container. The table MUST be aligned with (i.e., have the same number of rows) as all other DynamicTables stored in the AlignedDynamicTable parent container. The name of the category is given by the name of the DynamicTable and its description by the description attribute of the DynamicTable.
 end
-properties (Access = protected)
+properties (Constant, Access = private)
     GroupPropertyNames = {'dynamictable'}
 end
 
