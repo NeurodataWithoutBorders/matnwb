@@ -46,14 +46,26 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
 % are no schemas in NWB where Anon sets are used, and this class therefore 
 % does not support contained Anon sets.
 
-    properties (Abstract, Access = protected, Transient)
+    properties (Access = private, Dependent, Transient)
         % GroupPropertyNames - String array of property names that contain Sets
         GroupPropertyNames (1,:) string
+    end   
+    
+    properties (Access = private)
+        % GroupPropertyNames_ - Cached value backing the dependent property GroupPropertyNames
+        GroupPropertyNames_ (1,:) string
     end
     
     properties (Access = private, Transient)
         % PropertyManager - Manages dynamic properties for this object
         PropertyManager matnwb.utility.DynamicPropertyManager
+    end
+
+    methods (Static, Access = protected)
+        % Subclasses should override this method
+        function propertyNames = getGroupPropertyNames()
+            propertyNames = string.empty;
+        end
     end
 
     % Constructor
@@ -153,6 +165,16 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             obj.assignContainedSetCallbackFunctions()
         end
     end
+
+    methods
+        function value = get.GroupPropertyNames(obj)
+            if isempty(obj.GroupPropertyNames_)
+                obj.GroupPropertyNames_ = obj.getGroupPropertyNames();
+            end
+            value = obj.GroupPropertyNames_;
+        end
+    end
+
     methods (Access = private)
         function initializeDynamicProperties(obj)
         % initializeDynamicProperties - Init dynamic properties from set entries
@@ -513,6 +535,59 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             if ~isempty(T)
                 types.untyped.internal.displayAliasWarning(T, obj.TypeName)
             end
+        end
+    end
+
+    methods (Static, Access = protected)
+        function groupPropertyNames = getGroupPropertyNamesAcrossTypeHierarchy(nwbTypeName)
+        % getGroupPropertyNamesAcrossTypeHierarchy - Retrieve property names of unnamed groups for a specific NWB type
+        %
+        % Syntax:
+        %   groupTypes = getGroupPropertyNamesAcrossTypeHierarchy(nwbTypeName) 
+        %   This function retrieves property names of unnamed groups associated with 
+        %   the specified NWB type name, traversing the class hierarchy to also include
+        %   property names of unnamed groups for parent types.
+        %
+        % Input Arguments:
+        %   nwbTypeName (1,1) string - The name of the NWB type for which property 
+        %   names of unnamed groups are to be retrieved.
+        %
+        % Output Arguments:
+        %   groupPropertyNames - An array of property names of unnamed groups 
+        %   associated with the specified NWB type.
+        
+            arguments
+                nwbTypeName (1,1) string
+            end
+        
+            groupPropertyNames = string.empty; % Initialize an empty cell array
+            currentType = nwbTypeName; % Start with the specific type
+        
+            % Iterate over class and superclasses to detect property names for 
+            % unnamed groups across the type hierarchy.
+            while ~strcmp(currentType, 'types.untyped.MetaClass')
+                
+                % Use MetaClass information to get class information
+                metaClass = meta.class.fromName(currentType);
+                
+                % Get value of GroupPropertyNames if this class is a subclass of
+                % the HasUnnamedGroups subclass.
+                if any(strcmp({metaClass.SuperclassList.Name}, 'matnwb.mixin.HasUnnamedGroups'))
+                    isProp = strcmp({metaClass.PropertyList.Name}, 'GroupPropertyNames');
+                    if any(isProp)
+                        groupPropertyNames = [groupPropertyNames, ...
+                            string(metaClass.PropertyList(isProp).DefaultValue)]; %#ok<AGROW>
+                    end
+                end
+                
+                if isempty(metaClass.SuperclassList)
+                    break; % Reached the base type
+                end
+        
+                % Get superclass for next iteration. NWB parent type should 
+                % always be the first superclass in the list
+                currentType = metaClass.SuperclassList(1).Name;
+            end    
         end
     end
 end
