@@ -165,6 +165,12 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
         fullPropertyDefinition = strjoin(...
             {fullPropertyDefinition, schemaNameMappingBlock}, newline);
     end
+    schemaCategoryPropertyBlock = createPropertyBlockForAlignedDynamicTableCategories( ...
+        classprops, nonInherited, name, namespace);
+    if ~isempty(schemaCategoryPropertyBlock)
+        fullPropertyDefinition = strjoin(...
+            {fullPropertyDefinition, schemaCategoryPropertyBlock}, newline);
+    end
 
     constructorBody = file.fillConstructor(...
         name,...
@@ -194,14 +200,10 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
 
     fullMethodBody = strjoin({'methods' ...
         file.addSpaces(methodBody, 4) 'end'}, newline);
-    schemaCategoryPropertyBlock = createPropertyBlockForAlignedDynamicTableCategories( ...
-        classprops, nonInherited, name, namespace);
+
+    classSections = {classDefinitionHeader, fullPropertyDefinition, fullMethodBody};
+    
     readPolicyMethodBlock = fillReadPolicy(class, classprops);
-    classSections = {classDefinitionHeader, fullPropertyDefinition};
-    if ~isempty(schemaCategoryPropertyBlock)
-        classSections{end+1} = schemaCategoryPropertyBlock;
-    end
-    classSections{end+1} = fullMethodBody;
     if ~isempty(readPolicyMethodBlock)
         classSections{end+1} = readPolicyMethodBlock;
     end
@@ -256,7 +258,7 @@ function propertyBlockStr = createPropertyBlockForHasUnnamedGroupMixin(classInfo
         keyboard
     end
     propertyBlockStr = strjoin({...
-        'properties (Access = protected)', ...
+        'properties (Constant, Access = private)', ...
         sprintf('    GroupPropertyNames = {%s}', strjoin(strcat('''', anonNames, ''''), ', ') ), ...
         'end'}, newline);
 end
