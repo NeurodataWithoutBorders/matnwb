@@ -99,6 +99,8 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
 
     if isa(class, 'file.Group') && class.hasAnonGroups
         superclassNames{end+1} = 'matnwb.mixin.HasUnnamedGroups';
+    elseif isa(class, 'file.Group') && class.hasAnonData
+        superclassNames{end+1} = 'matnwb.mixin.HasUnnamedGroups';
     end
 
     if isfield(customBaseClasses, name)
@@ -148,7 +150,7 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
             , propertyDefinitionBody ...
             }, newline);
     end
-    if isa(class, 'file.Group') && class.hasAnonGroups
+    if isa(class, 'file.Group') && (class.hasAnonGroups || class.hasAnonData)
         mixinPropertyBlock = createPropertyBlockForHasUnnamedGroupMixin(class);
 
         fullPropertyDefinition = strjoin(...
@@ -244,8 +246,15 @@ end
 
 function propertyBlockStr = createPropertyBlockForHasUnnamedGroupMixin(classInfo)
     isAnonGroup = arrayfun(@(x) isempty(x.name), classInfo.subgroups, 'uni', true);
-    anonNames = arrayfun(@(x) lower(x.type), classInfo.subgroups(isAnonGroup), 'uni', false);
+    isAnonDataset = arrayfun(@(x) isempty(x.name), classInfo.datasets, 'uni', true);
 
+    anonNames = [...
+        arrayfun(@(x) lower(x.type), classInfo.subgroups(isAnonGroup), 'uni', false), ...
+        arrayfun(@(x) lower(x.type), classInfo.datasets(isAnonDataset), 'uni', false), ...
+        ];
+    if isempty(anonNames)
+        keyboard
+    end
     propertyBlockStr = strjoin({...
         'properties (Access = protected)', ...
         sprintf('    GroupPropertyNames = {%s}', strjoin(strcat('''', anonNames, ''''), ', ') ), ...
