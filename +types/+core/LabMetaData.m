@@ -17,7 +17,10 @@ methods
         %  - labMetaData (types.core.LabMetaData) - A LabMetaData object
         
         obj = obj@types.core.NWBContainer(varargin{:});
-        if strcmp(class(obj), 'types.core.LabMetaData')
+        
+        % Only execute validation/setup code when called directly in this class'
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.core.LabMetaData') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
         end

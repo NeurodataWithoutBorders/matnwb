@@ -43,7 +43,10 @@ methods
         addParameter(p, 'target',[]);
         misc.parseSkipInvalidName(p, varargin);
         obj.target = p.Results.target;
-        if strcmp(class(obj), 'types.hdmf_common.VectorIndex')
+        
+        % Only execute validation/setup code when called directly in this class'
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.hdmf_common.VectorIndex') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
         end

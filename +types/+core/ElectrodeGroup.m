@@ -53,7 +53,10 @@ methods
         obj.device = p.Results.device;
         obj.location = p.Results.location;
         obj.position = p.Results.position;
-        if strcmp(class(obj), 'types.core.ElectrodeGroup')
+        
+        % Only execute validation/setup code when called directly in this class'
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.core.ElectrodeGroup') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
         end

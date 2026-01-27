@@ -40,7 +40,10 @@ methods
         misc.parseSkipInvalidName(p, varargin);
         obj.description = p.Results.description;
         obj.emission_lambda = p.Results.emission_lambda;
-        if strcmp(class(obj), 'types.core.OpticalChannel')
+        
+        % Only execute validation/setup code when called directly in this class'
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.core.OpticalChannel') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
         end
