@@ -81,7 +81,10 @@ methods
         obj.external_file = p.Results.external_file;
         obj.external_file_starting_frame = p.Results.external_file_starting_frame;
         obj.format = p.Results.format;
-        if strcmp(class(obj), 'types.core.ImageSeries')
+        
+        % Only execute validation/setup code when called directly in this class'
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.core.ImageSeries') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
         end

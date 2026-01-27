@@ -48,11 +48,12 @@ methods
         misc.parseSkipInvalidName(p, varargin);
         obj.repetitions = p.Results.repetitions;
         obj.repetitions_index = p.Results.repetitions_index;
-        if strcmp(class(obj), 'types.core.ExperimentalConditionsTable')
+        
+        % Only execute validation/setup code when called directly in this class'
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.core.ExperimentalConditionsTable') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
-        end
-        if strcmp(class(obj), 'types.core.ExperimentalConditionsTable')
             types.util.dynamictable.checkConfig(obj);
         end
     end

@@ -53,11 +53,12 @@ methods
         obj.series = p.Results.series;
         obj.series_index = p.Results.series_index;
         obj.sweep_number = p.Results.sweep_number;
-        if strcmp(class(obj), 'types.core.SweepTable')
+        
+        % Only execute validation/setup code when called directly in this class'
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.core.SweepTable') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
-        end
-        if strcmp(class(obj), 'types.core.SweepTable')
             types.util.dynamictable.checkConfig(obj);
         end
     end

@@ -50,7 +50,10 @@ methods
         obj.electrodes = p.Results.electrodes;
         obj.features = p.Results.features;
         obj.times = p.Results.times;
-        if strcmp(class(obj), 'types.core.FeatureExtraction')
+        
+        % Only execute validation/setup code when called directly in this class'
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.core.FeatureExtraction') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
         end

@@ -60,7 +60,10 @@ methods
         addParameter(p, 'site',[]);
         misc.parseSkipInvalidName(p, varargin);
         obj.site = p.Results.site;
-        if strcmp(class(obj), 'types.core.OptogeneticSeries')
+        
+        % Only execute validation/setup code when called directly in this class'
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.core.OptogeneticSeries') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
         end

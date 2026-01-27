@@ -60,7 +60,10 @@ methods
         obj.keys = p.Results.keys;
         obj.object_keys = p.Results.object_keys;
         obj.objects = p.Results.objects;
-        if strcmp(class(obj), 'types.hdmf_experimental.HERD')
+        
+        % Only execute validation/setup code when called directly in this class'
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.hdmf_experimental.HERD') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
         end

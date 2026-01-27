@@ -111,7 +111,10 @@ methods
         obj.timestamps = p.Results.timestamps;
         obj.timestamps_interval = p.Results.timestamps_interval;
         obj.timestamps_unit = p.Results.timestamps_unit;
-        if strcmp(class(obj), 'types.core.TimeSeries')
+        
+        % Only execute validation/setup code when called directly in this class'
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.core.TimeSeries') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
         end

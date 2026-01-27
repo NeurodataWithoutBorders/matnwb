@@ -37,7 +37,10 @@ methods
         addParameter(p, 'notes',[]);
         misc.parseSkipInvalidName(p, varargin);
         obj.notes = p.Results.notes;
-        if strcmp(class(obj), 'types.core.ScratchData')
+        
+        % Only execute validation/setup code when called directly in this class'
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.core.ScratchData') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
         end

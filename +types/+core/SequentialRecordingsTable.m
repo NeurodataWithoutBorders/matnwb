@@ -53,11 +53,12 @@ methods
         obj.simultaneous_recordings = p.Results.simultaneous_recordings;
         obj.simultaneous_recordings_index = p.Results.simultaneous_recordings_index;
         obj.stimulus_type = p.Results.stimulus_type;
-        if strcmp(class(obj), 'types.core.SequentialRecordingsTable')
+        
+        % Only execute validation/setup code when called directly in this class'
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.core.SequentialRecordingsTable') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
-        end
-        if strcmp(class(obj), 'types.core.SequentialRecordingsTable')
             types.util.dynamictable.checkConfig(obj);
         end
     end

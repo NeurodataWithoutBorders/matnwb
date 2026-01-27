@@ -50,7 +50,10 @@ methods
         obj.waveform_filtering = p.Results.waveform_filtering;
         obj.waveform_mean = p.Results.waveform_mean;
         obj.waveform_sd = p.Results.waveform_sd;
-        if strcmp(class(obj), 'types.core.ClusterWaveforms')
+        
+        % Only execute validation/setup code when called directly in this class'
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.core.ClusterWaveforms') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
         end

@@ -50,7 +50,10 @@ methods
         obj.num = p.Results.num;
         obj.peak_over_rms = p.Results.peak_over_rms;
         obj.times = p.Results.times;
-        if strcmp(class(obj), 'types.core.Clustering')
+        
+        % Only execute validation/setup code when called directly in this class'
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.core.Clustering') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
         end
