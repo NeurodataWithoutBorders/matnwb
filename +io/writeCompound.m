@@ -27,6 +27,10 @@ function writeCompound(fid, fullpath, data, varargin)
 %   Example:
 %     io.writeCompound(fid, '/group/dataset', data);
 
+
+    forceArray = any(strcmp('forceArray', varargin));
+    forceMatrix = any(strcmp('forceMatrix', varargin));
+
     %convert to a struct
     if istable(data)
         data = table2struct(data);
@@ -129,7 +133,11 @@ function writeCompound(fid, fullpath, data, varargin)
     end
 
     try
-        sid = H5S.create_simple(1, numrows, []);
+        if numrows == 1 && ~(forceArray || forceMatrix)
+            sid = H5S.create('H5S_SCALAR');
+        else
+            sid = H5S.create_simple(1, numrows, []);
+        end
         did = H5D.create(fid, fullpath, tid, sid, 'H5P_DEFAULT');
     catch ME
         if contains(ME.message, 'name already exists')

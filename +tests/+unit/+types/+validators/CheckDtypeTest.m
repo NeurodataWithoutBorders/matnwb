@@ -19,7 +19,7 @@ classdef CheckDtypeTest < matlab.unittest.TestCase
             val = types.util.checkDtype('table', typeDescriptor, testValueTable);
             testCase.verifyClass(val, 'table');
 
-            val = types.util.checkDtype('table', typeDescriptor, testValueMap);
+            val = types.util.checkDtype('map', typeDescriptor, testValueMap);
             testCase.verifyClass(val, 'containers.Map');
         end
 

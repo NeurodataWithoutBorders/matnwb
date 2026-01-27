@@ -52,12 +52,7 @@ function checkConfig(DynamicTable, ignoreList)
         'column heights (vector lengths or number of matrix columns) must be the same.']);
 
     if isempty(DynamicTable.id)
-        idData = int64(1:tableHeight) .';
-        if exist(fullfile('+types', '+core', 'ElementIdentifiers'), 'file')
-            DynamicTable.id = types.core.ElementIdentifiers('data', idData);
-        else
-            DynamicTable.id = types.hdmf_common.ElementIdentifiers('data', idData);
-        end
+        types.util.dynamictable.internal.initDynamicTableId(DynamicTable, tableHeight);
         return;
     end
 

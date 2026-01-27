@@ -108,6 +108,80 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
             T = nwbIn.acquisition.get('DynamicTable').toTable();
             testCase.verifyClass(T, 'table')
         end
+
+        function testAddColumnToEmptyTableInitializesId(testCase)
+            % Test that adding the first column to an empty table 
+            % automatically initializes the id column with 0-indexed values
+            numRows = 5;
+            
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'empty test table');
+            
+            columnA = types.hdmf_common.VectorData(...
+                'description', 'first column', ...
+                'data', (1:numRows)');
+            
+            dynamicTable.addColumn('columnA', columnA);
+            
+            % Verify id was created with correct values
+            testCase.verifyNotEmpty(dynamicTable.id);
+            testCase.verifyNotEmpty(dynamicTable.id.data);
+            testCase.verifyEqual(dynamicTable.id.data, int64((0:numRows-1)'));
+            
+            % Verify the column was added
+            testCase.verifyEqual(dynamicTable.colnames, {'columnA'});
+            testCase.verifyTrue(dynamicTable.vectordata.isKey('columnA'));
+        end
+
+        function testAddColumnToEmptyTableWithRaggedColumnInitializesId(testCase)
+            % Test that adding the first ragged column to an empty table 
+            % automatically initializes the id column based on index length
+            numRows = 4;
+            
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'empty test table');
+            
+            % Create ragged column data
+            raggedData = {[1,2,3], [4,5], [6,7,8,9], [10]};
+            [vectorData, vectorIndex] = util.create_indexed_column(raggedData);
+            
+            dynamicTable.addColumn('raggedCol', vectorData, 'raggedCol_index', vectorIndex);
+            
+            % Verify id was created with correct values based on index length
+            testCase.verifyNotEmpty(dynamicTable.id);
+            testCase.verifyNotEmpty(dynamicTable.id.data);
+            testCase.verifyEqual(dynamicTable.id.data, int64((0:numRows-1)'));
+        end
+
+        function testAddColumnThrowsErrorForExistingColumn(testCase)
+            % Test that adding a column that already exists throws an error
+            dynamicTable = testCase.createDynamicTable();
+            
+            % Try to add a column with an existing name
+            duplicateColumn = types.hdmf_common.VectorData(...
+                'description', 'duplicate column', ...
+                'data', (1:10)');
+            
+            testCase.verifyError(...
+                @() dynamicTable.addColumn('columnA', duplicateColumn), ...
+                'NWB:DynamicTable:AddColumn:ColumnExists');
+        end
+
+        function testAddMultipleColumnsThrowsErrorIfAnyExists(testCase)
+            % Test that adding multiple columns throws an error if any column already exists
+            dynamicTable = testCase.createDynamicTable();
+            
+            newColumn = types.hdmf_common.VectorData(...
+                'description', 'new column', ...
+                'data', (1:10)');
+            duplicateColumn = types.hdmf_common.VectorData(...
+                'description', 'duplicate column', ...
+                'data', (1:10)');
+            
+            testCase.verifyError(...
+                @() dynamicTable.addColumn('newColumn', newColumn, 'columnA', duplicateColumn), ...
+                'NWB:DynamicTable:AddColumn:ColumnExists');
+        end
     end
 
     methods (Static, Access=private)

@@ -33,5 +33,9 @@ classdef Anon < handle
         function refs = export(obj, fid, fullpath, refs)
             refs = obj.value.export(fid, [fullpath obj.name '/'], refs);
         end
+
+        function tf = isKey(obj, name)
+            tf = strcmp(obj.name, name);
+        end
     end
 end

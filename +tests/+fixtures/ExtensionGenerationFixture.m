@@ -46,10 +46,13 @@ classdef ExtensionGenerationFixture < matlab.unittest.fixtures.Fixture
             namespaceName = extractBefore(namespaceFilename, '.');
 
             generatedTypesDirectory = fullfile(fixture.TypesOutputFolder, "+types", "+"+namespaceName);
-            rmdir(generatedTypesDirectory, 's');
-
+            if isfolder(generatedTypesDirectory)
+                rmdir(generatedTypesDirectory, 's');
+            end
             cacheFile = fullfile(fixture.TypesOutputFolder, "namespaces", namespaceName+".mat");
-            delete(cacheFile)
+            if isfile(cacheFile)
+                delete(cacheFile)
+            end
         end
     end
 end

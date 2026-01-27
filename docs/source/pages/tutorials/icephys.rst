@@ -1,3 +1,5 @@
+.. _icephys-tutorial:
+
 Intracellular Electrophysiology
 ===============================
 

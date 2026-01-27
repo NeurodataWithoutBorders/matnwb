@@ -85,17 +85,15 @@ methods
         types.util.validateShape('location', {[1]}, val)
     end
     function val = validate_position(obj, val)
-        if isempty(val) || isa(val, 'types.untyped.DataStub')
-            return;
+        if isempty(val)
+            % skip validation for empty values
+        else
+            vprops = struct();
+            vprops.x = 'single';
+            vprops.y = 'single';
+            vprops.z = 'single';
+            val = types.util.checkDtype('position', vprops, val);
         end
-        if ~istable(val) && ~isstruct(val) && ~isa(val, 'containers.Map')
-            error('NWB:Type:InvalidPropertyType', 'Property `position` must be a table, struct, or containers.Map.');
-        end
-        vprops = struct();
-        vprops.x = 'single';
-        vprops.y = 'single';
-        vprops.z = 'single';
-        val = types.util.checkDtype('position', vprops, val);
         types.util.validateShape('position', {[1]}, val)
     end
     %% EXPORT

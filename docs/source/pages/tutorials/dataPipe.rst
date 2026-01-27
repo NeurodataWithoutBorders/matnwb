@@ -1,3 +1,5 @@
+.. _dataPipe-tutorial:
+
 Advanced Writing Using DataPipes 🎬
 ===================================
 

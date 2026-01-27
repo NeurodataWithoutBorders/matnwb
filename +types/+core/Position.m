@@ -1,4 +1,4 @@
-classdef Position < types.core.NWBDataInterface & types.untyped.GroupClass
+classdef Position < types.core.NWBDataInterface & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups
 % POSITION - Position data, whether along the x, x/y or x/y/z axis.
 %
 % Required Properties:
@@ -8,6 +8,9 @@ classdef Position < types.core.NWBDataInterface & types.untyped.GroupClass
 % REQUIRED PROPERTIES
 properties
     spatialseries; % REQUIRED (SpatialSeries) SpatialSeries object containing position data.
+end
+properties (Access = protected)
+    GroupPropertyNames = {'spatialseries'}
 end
 
 methods
@@ -28,6 +31,8 @@ methods
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.spatialseries, ivarargin] = types.util.parseConstrained(obj,'spatialseries', 'types.core.SpatialSeries', varargin{:});
         varargin(ivarargin) = [];
+        
+        obj.setupHasUnnamedGroupsMixin()
         
         p = inputParser;
         p.KeepUnmatched = true;
