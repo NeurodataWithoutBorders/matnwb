@@ -32,16 +32,18 @@ methods
         [obj.spikeeventseries, ivarargin] = types.util.parseConstrained(obj,'spikeeventseries', 'types.core.SpikeEventSeries', varargin{:});
         varargin(ivarargin) = [];
         
-        obj.setupHasUnnamedGroupsMixin()
-        
         p = inputParser;
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
         misc.parseSkipInvalidName(p, varargin);
-        if strcmp(class(obj), 'types.core.EventWaveform')
+        
+        % Only execute validation/setup code when called directly in this class'
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.core.EventWaveform') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
+            obj.setupHasUnnamedGroupsMixin();
         end
     end
     %% SETTERS

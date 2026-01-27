@@ -32,16 +32,18 @@ methods
         [obj.correctedimagestack, ivarargin] = types.util.parseConstrained(obj,'correctedimagestack', 'types.core.CorrectedImageStack', varargin{:});
         varargin(ivarargin) = [];
         
-        obj.setupHasUnnamedGroupsMixin()
-        
         p = inputParser;
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
         misc.parseSkipInvalidName(p, varargin);
-        if strcmp(class(obj), 'types.core.MotionCorrection')
+        
+        % Only execute validation/setup code when called directly in this class'
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.core.MotionCorrection') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
+            obj.setupHasUnnamedGroupsMixin();
         end
     end
     %% SETTERS

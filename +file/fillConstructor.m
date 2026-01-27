@@ -12,17 +12,28 @@ function functionString = fillConstructor(name, parentname, defaults, props, nam
         functionBody = [functionBody newline() bodyString];
     end
 
-    functionBody = strjoin({functionBody, ...
-        sprintf('if strcmp(class(obj), ''%s'')', namespace.getFullClassName(name)), ...
+    % Build final validation/setup block that executes only for the target class,
+    % with conditional inclusion of mixin setup and dynamic table validation
+    constructorElements = {functionBody, ...
+        '', ...
+        '% Only execute validation/setup code when called directly in this class''', ...
+        '% constructor, not when invoked through superclass constructor chain', ...
+        sprintf('if strcmp(class(obj), ''%s'') %%#ok<STISA>', namespace.getFullClassName(name)), ...
         '    cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));', ...
-        '    types.util.checkUnset(obj, unique(cellStringArguments));', ...
-        'end'}, newline());
-
-    % insert check for DynamicTable class and child classes
-    bodyString = fillCheck(name, namespace);
-    if ~isempty(bodyString)
-        functionBody = [functionBody newline() bodyString];
+        '    types.util.checkUnset(obj, unique(cellStringArguments));'};
+    
+    % Include the setup function for the HasUnnamedGroups mixin if applicable
+    if isa(class, 'file.Group') && (class.hasAnonGroups || class.hasAnonData)
+        constructorElements{end+1} = '    obj.setupHasUnnamedGroupsMixin();';
     end
+
+    % Add custom validation for DynamicTable and its descendant classes
+    if isDynamicTableDescendant(name, namespace)
+        constructorElements{end+1} = '    types.util.dynamictable.checkConfig(obj);';
+    end
+    
+    constructorElements{end+1} = 'end';
+    functionBody = strjoin(constructorElements, newline());
 
     functionString = strjoin({...
         ['function obj = ' name '(varargin)']...
@@ -169,11 +180,6 @@ function bodystr = fillBody(parentName, defaults, props, namespace, class, inher
     fullBody = strjoin(fullBody, newline);
     bodystr(end+1:end+length(fullBody)+1) = [newline fullBody];
 
-    if isa(class, 'file.Group') && (class.hasAnonGroups || class.hasAnonData)
-        % Include the setup function for the HasUnnamedGroups mixin
-        bodystr = [bodystr, newline, 'obj.setupHasUnnamedGroupsMixin()', newline];
-    end
-
     parser = {...
         'p = inputParser;',...
         'p.KeepUnmatched = true;',...
@@ -207,31 +213,6 @@ function bodystr = fillBody(parentName, defaults, props, namespace, class, inher
     parser = [parser, strcat('obj.', names, ' = p.Results.', names, ';')];
     parser = strjoin(parser, newline);
     bodystr(end+1:end+length(parser)+1) = [newline parser];
-end
-
-function checkTxt = fillCheck(name, namespace)
-    checkTxt = [];
-
-    % find if a dynamic table ancestry exists
-    ancestry = namespace.getRootBranch(name);
-    isDynamicTableDescendent = false;
-    for iAncestor = 1:length(ancestry)
-        ParentRaw = ancestry{iAncestor};
-        % this is always true, we just use the proper index as typedefs may vary.
-        typeDefInd = isKey(ParentRaw, namespace.TYPEDEF_KEYS);
-        isDynamicTableDescendent = isDynamicTableDescendent ...
-            || strcmp('DynamicTable', ParentRaw(namespace.TYPEDEF_KEYS{typeDefInd}));
-    end
-
-    if ~isDynamicTableDescendent
-        return;
-    end
-
-    checkTxt = strjoin({ ...
-        sprintf('if strcmp(class(obj), ''%s'')', namespace.getFullClassName(name)), ...
-        '    types.util.dynamictable.checkConfig(obj);', ...
-        'end',...
-        }, newline);
 end
 
 function docString = fillConstructorDocString(name, props, namespace, superClassProps)
@@ -287,6 +268,26 @@ function docString = fillConstructorDocString(name, props, namespace, superClass
     ];
 
     docString = char( strjoin(docString, newline) );
+end
+
+function tf = isDynamicTableDescendant(name, namespace)
+% Check if name is DynamicTable or if name is for a type that inherits from DynamicTable
+
+    tf = false;
+
+    if strcmp(name, 'DynamicTable')
+        tf = true;
+        return
+    end
+
+    ancestry = namespace.getRootBranch(name);
+    for iAncestor = 1:length(ancestry)
+        ParentRaw = ancestry{iAncestor};
+        % this is always true, we just use the proper index as typedefs may vary.
+        typeDefInd = isKey(ParentRaw, namespace.TYPEDEF_KEYS);
+        ancestorName = ParentRaw(namespace.TYPEDEF_KEYS{typeDefInd});
+        tf = tf || strcmp(ancestorName, 'DynamicTable');
+    end
 end
 
 % Todo: Mostly duplicate code from file.fillProps. Should consolidate
