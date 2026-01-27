@@ -63,7 +63,7 @@ methods
         misc.parseSkipInvalidName(p, varargin);
         obj.reference_frame = p.Results.reference_frame;
         
-        % Only execute validation/setup code when called directly in this class'
+        % Only execute validation/setup code when called directly in this class's
         % constructor, not when invoked through superclass constructor chain
         if strcmp(class(obj), 'types.core.SpatialSeries') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));

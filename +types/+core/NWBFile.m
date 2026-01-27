@@ -291,7 +291,7 @@ methods
         obj.timestamps_reference_time = p.Results.timestamps_reference_time;
         obj.units = p.Results.units;
         
-        % Only execute validation/setup code when called directly in this class'
+        % Only execute validation/setup code when called directly in this class's
         % constructor, not when invoked through superclass constructor chain
         if strcmp(class(obj), 'types.core.NWBFile') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));

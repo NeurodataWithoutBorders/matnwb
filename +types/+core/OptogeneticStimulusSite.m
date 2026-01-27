@@ -51,7 +51,7 @@ methods
         obj.excitation_lambda = p.Results.excitation_lambda;
         obj.location = p.Results.location;
         
-        % Only execute validation/setup code when called directly in this class'
+        % Only execute validation/setup code when called directly in this class's
         % constructor, not when invoked through superclass constructor chain
         if strcmp(class(obj), 'types.core.OptogeneticStimulusSite') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
