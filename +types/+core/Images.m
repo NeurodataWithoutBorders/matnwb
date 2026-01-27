@@ -41,8 +41,6 @@ methods
         [obj.baseimage, ivarargin] = types.util.parseConstrained(obj,'baseimage', 'types.core.BaseImage', varargin{:});
         varargin(ivarargin) = [];
         
-        obj.setupHasUnnamedGroupsMixin()
-        
         p = inputParser;
         p.KeepUnmatched = true;
         p.PartialMatching = false;
@@ -58,6 +56,7 @@ methods
         if strcmp(class(obj), 'types.core.Images') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
+            obj.setupHasUnnamedGroupsMixin();
         end
     end
     %% SETTERS
