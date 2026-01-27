@@ -68,6 +68,21 @@ classdef GetNeurodataTypeInfoTest < matlab.unittest.TestCase
             testCase.verifyEqual(typeInfo.name, HDMFCommonType);
             testCase.verifyEqual(typeInfo.typename, sprintf('types.hdmf_common.%s', HDMFCommonType));
         end
+
+        function testCoreFallbackToHdmfCommon(testCase, HDMFCommonType)
+            % Test fallback correction for hdmf-common types with incorrect 
+            % core namespace (should be hdmf-common)
+            attributeInfo = struct(...
+                'Name', {'neurodata_type', 'namespace'}, ...
+                'Value', {HDMFCommonType, 'core'});
+            
+            typeInfo = io.getNeurodataTypeInfo(attributeInfo);
+            
+            % Should be corrected to hdmf-common
+            testCase.verifyEqual(typeInfo.namespace, 'hdmf-common');
+            testCase.verifyEqual(typeInfo.name, HDMFCommonType);
+            testCase.verifyEqual(typeInfo.typename, sprintf('types.hdmf_common.%s', HDMFCommonType));
+        end
         
         function testCellStringValueHandling(testCase)
             % Test that cell string values are handled correctly
