@@ -475,15 +475,23 @@ function pathToObjectMap = searchProperties(...
             pathToObjectMap(fullPath) = propValue;
         end
 
-        if isa(propValue, 'types.untyped.GroupClass')...
-                || isa(propValue, 'types.untyped.Set')...
-                || isa(propValue, 'types.untyped.Anon')
-            % recursible (even if there is a match!)
-            if isa(obj, 'matnwb.mixin.HasUnnamedGroups')
-                % Recursive search on this object would yield duplicate objects
-                continue
-            end
+        % Recursive search when a type is a group class
+        if isa(propValue, 'types.untyped.GroupClass')
             searchProperties(pathToObjectMap, propValue, fullPath, typename, varargin{:});
+        end
+
+        if isa(propValue, 'types.untyped.Set')...
+            || isa(propValue, 'types.untyped.Anon')
+           
+            if isa(obj, 'matnwb.mixin.HasUnnamedGroups')
+                % If the current property value is a Set of a type that inherits 
+                % from the HasUnnamedGroups mixin, a recursive search would yield 
+                % duplicate objects because the Set members are also exposed as 
+                % dynamic properties of the type via the mixin.
+            else
+                % Recursive (even if there is a match!)
+                searchProperties(pathToObjectMap, propValue, fullPath, typename, varargin{:});
+            end
         end
     end
 end
