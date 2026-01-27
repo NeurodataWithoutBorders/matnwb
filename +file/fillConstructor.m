@@ -18,7 +18,7 @@ function functionString = fillConstructor(name, parentname, defaults, props, nam
         '', ...
         '% Only execute validation/setup code when called directly in this class''s', ...
         '% constructor, not when invoked through superclass constructor chain', ...
-        sprintf('if strcmp(class(obj), ''%s'') %%#ok<STISA>', namespace.getFullClassName(name)), ...
+        sprintf('if strcmp(class(obj), ''%s'') %#ok<STISA>', namespace.getFullClassName(name)), ...
         '    cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));', ...
         '    types.util.checkUnset(obj, unique(cellStringArguments));'};
     
@@ -294,6 +294,26 @@ function docString = fillConstructorDocString(name, props, namespace, superClass
     ];
 
     docString = char( strjoin(docString, newline) );
+end
+
+function tf = isDynamicTableDescendent(name, namespace)
+% Check if name is DynamicTable or if name is for a type that inherits from DynamicTable
+
+    tf = false;
+
+    if strcmp(name, 'DynamicTable')
+        tf = true;
+        return
+    end
+
+    ancestry = namespace.getRootBranch(name);
+    for iAncestor = 1:length(ancestry)
+        ParentRaw = ancestry{iAncestor};
+        % this is always true, we just use the proper index as typedefs may vary.
+        typeDefInd = isKey(ParentRaw, namespace.TYPEDEF_KEYS);
+        ancestorName = ParentRaw(namespace.TYPEDEF_KEYS{typeDefInd});
+        tf = tf || strcmp(ancestorName, 'DynamicTable');
+    end
 end
 
 % Todo: Mostly duplicate code from file.fillProps. Should consolidate
