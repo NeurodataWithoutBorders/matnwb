@@ -48,6 +48,9 @@ function value = checkDtype(name, typeDescriptor, value)
             end
         end
     else
+        if isa(value, 'types.untyped.DataStub')
+            return % Skip validation
+        end
         % Retrieve wrapped value for comparison with type descriptor (if wrapped)
         valueWrapper = [];
         if isWrapped(value, typeDescriptor)

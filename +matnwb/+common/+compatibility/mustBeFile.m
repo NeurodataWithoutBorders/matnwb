@@ -22,7 +22,7 @@ function mustBeFile(filePath)
         catch ME
             throwAsCaller(ME)
         end
-        isValid = isfile(filePath);
+        isValid = isfile(filePath) || isfolder(filePath);
 
         if ~isValid
             ME = MException(...
@@ -32,7 +32,11 @@ function mustBeFile(filePath)
         end
     else % Use available builtin
         try
-            mustBeFile(filePath)
+            if endsWith(filePath, '.zarr')
+                mustBeFolder(filePath)
+            else
+                mustBeFile(filePath)
+            end
         catch ME
             throwAsCaller(ME)
         end

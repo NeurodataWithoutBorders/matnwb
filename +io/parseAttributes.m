@@ -1,4 +1,4 @@
-function [args, type] = parseAttributes(filename, attributes, context, Blacklist)
+function [args, type] = parseAttributes(filename, attributes, context, Blacklist, backend)
 % parseAttributes - Parse an attribute info structure
 %
 % Syntax:
@@ -19,62 +19,39 @@ function [args, type] = parseAttributes(filename, attributes, context, Blacklist
 %
 % See also: io.getNeurodataTypeInfo
 
-args = containers.Map;
-type = io.getNeurodataTypeInfo(attributes);
-
-if isempty(attributes)
-    return;
-end
-
-names = {attributes.Name};
-
-% We already got type information (if present), so we add type-specific 
-% attributes to the blacklist before parsing the rest of the attribute list
-Blacklist.attributes = [Blacklist.attributes, {'neurodata_type', 'namespace'}];
-
-blacklistMask = ismember(names, Blacklist.attributes);
-attributes(blacklistMask) = [];
-for i=1:length(attributes)
-    attr = attributes(i);
-
-    switch attr.Datatype.Class % Normalize/postprocess some HDF5 classes
-        case 'H5T_STRING'
-            % H5 String type attributes are loaded differently in releases 
-            % prior to MATLAB R2020a. For details, see:
-            % https://se.mathworks.com/help/matlab/ref/h5readatt.html
-            attributeValue = attr.Value;
-            if verLessThan('matlab', '9.8') % MATLAB < R2020a
-                if iscell(attr.Value)
-                    if isempty(attr.Value)
-                        attributeValue = '';
-                    elseif isscalar(attr.Value)
-                        attributeValue = attr.Value{1};
-                    else
-                        attributeValue = attr.Value;
-                    end
-                end
-            end
-        case 'H5T_REFERENCE'
-            fid = H5F.open(filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
-            aid = H5A.open_by_name(fid, context, attr.Name);
-            tid = H5A.get_type(aid);
-            attributeValue = io.parseReference(aid, tid, attr.Value);
-            H5T.close(tid);
-            H5A.close(aid);
-            H5F.close(fid);
-        case 'H5T_ENUM'
-            if io.isBool(attr.Datatype.Type)
-                attributeValue = io.internal.h5.postprocess.toLogical(attr.Value);
-            else
-                warning('NWB:Attribute:UnknownEnum', ...
-                    ['Encountered unknown enum under field `%s` with %d members. ' ...
-                    'Will be read as cell array of characters.'], ...
-                    attr.Name, length(attr.Datatype.Type.Member));
-                attributeValue = io.internal.h5.postprocess.toEnumCellStr(attr.Value, attr.Datatype.Type);
-            end
-        otherwise
-            attributeValue = attr.Value;
+    arguments
+        filename
+        attributes
+        context
+        Blacklist
+        backend = []
     end
-    args(attr.Name) = attributeValue;
-end
+
+    args = containers.Map;
+    type = io.getNeurodataTypeInfo(attributes);
+
+    if isempty(attributes)
+        return;
+    end
+
+    % Create backend if not provided (for backward compatibility)
+    if isempty(backend)
+        backend = io.backend.BackendFactory.createBackend(filename);
+    end
+
+    names = {attributes.Name};
+
+    % We already got type information (if present), so we add type-specific 
+    % attributes to the blacklist before parsing the rest of the attribute list
+    Blacklist.attributes = [Blacklist.attributes, {'neurodata_type', 'namespace'}];
+
+    blacklistMask = ismember(names, Blacklist.attributes);
+    attributes(blacklistMask) = [];
+
+    % Retrieve attribute values
+    for i=1:length(attributes)
+        attributeInfo = attributes(i);
+        attributeValue = backend.processAttributeInfo(attributeInfo, context);
+        args(attributeInfo.Name) = attributeValue;
+    end
 end

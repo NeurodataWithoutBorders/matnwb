@@ -9,6 +9,7 @@ function validateShape(propertyName, validShapes, value)
         types.util.validateShape(propertyName, validShapes, value.data)
         return
     elseif isa(value, 'types.untyped.DataStub')
+        return
         if value.ndims == 1
             valueShape = [value.dims 1];
         else

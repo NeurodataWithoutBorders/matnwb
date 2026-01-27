@@ -1,0 +1,3691 @@
+{
+  "Filename": "/Users/Eivind/Code/MATLAB/Neuroscience/Repositories/NeurodataWithoutBorders/matnwb/ophys_tutorial.nwb",
+  "Name": "/",
+  "Groups": [
+    {
+      "Name": "/acquisition",
+      "Groups": [
+        {
+          "Name": "/acquisition/1pInternal",
+          "Groups": [],
+          "Datasets": [
+            {
+              "Name": "data",
+              "Datatype": {
+                "Name": "",
+                "Class": "H5T_FLOAT",
+                "Type": "H5T_IEEE_F64LE",
+                "Size": 8,
+                "Attributes": []
+              },
+              "Dataspace": {
+                "Size": [
+                  100,
+                  100,
+                  1000
+                ],
+                "MaxSize": [
+                  100,
+                  100,
+                  1000
+                ],
+                "Type": "simple"
+              },
+              "ChunkSize": [],
+              "FillValue": 0,
+              "Filters": [],
+              "Attributes": [
+                {
+                  "Name": "conversion",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_FLOAT",
+                    "Type": "H5T_IEEE_F64LE",
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "Value": 1
+                },
+                {
+                  "Name": "resolution",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_FLOAT",
+                    "Type": "H5T_IEEE_F64LE",
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "Value": -1
+                },
+                {
+                  "Name": "unit",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_STRING",
+                    "Type": {
+                      "Length": "H5T_VARIABLE",
+                      "Padding": "H5T_STR_NULLTERM",
+                      "CharacterSet": "H5T_CSET_UTF8",
+                      "CharacterType": "H5T_C_S1"
+                    },
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "Value": "normalized amplitude"
+                },
+                {
+                  "Name": "offset",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_FLOAT",
+                    "Type": "H5T_IEEE_F64LE",
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "Value": 0
+                }
+              ]
+            },
+            {
+              "Name": "starting_time",
+              "Datatype": {
+                "Name": "",
+                "Class": "H5T_FLOAT",
+                "Type": "H5T_IEEE_F64LE",
+                "Size": 8,
+                "Attributes": []
+              },
+              "Dataspace": {
+                "Size": [],
+                "MaxSize": [],
+                "Type": "scalar"
+              },
+              "ChunkSize": [],
+              "FillValue": 0,
+              "Filters": [],
+              "Attributes": [
+                {
+                  "Name": "rate",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_FLOAT",
+                    "Type": "H5T_IEEE_F64LE",
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "Value": 1
+                },
+                {
+                  "Name": "unit",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_STRING",
+                    "Type": {
+                      "Length": "H5T_VARIABLE",
+                      "Padding": "H5T_STR_NULLTERM",
+                      "CharacterSet": "H5T_CSET_UTF8",
+                      "CharacterType": "H5T_C_S1"
+                    },
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "Value": "seconds"
+                }
+              ]
+            }
+          ],
+          "Datatypes": [],
+          "Links": {
+            "Name": "imaging_plane",
+            "Type": "soft link",
+            "Value": [
+              "/general/optophysiology/imaging_plane"
+            ]
+          },
+          "Attributes": [
+            {
+              "Name": "namespace",
+              "Datatype": {
+                "Name": "",
+                "Class": "H5T_STRING",
+                "Type": {
+                  "Length": "H5T_VARIABLE",
+                  "Padding": "H5T_STR_NULLTERM",
+                  "CharacterSet": "H5T_CSET_UTF8",
+                  "CharacterType": "H5T_C_S1"
+                },
+                "Size": 8,
+                "Attributes": []
+              },
+              "Dataspace": {
+                "Size": [],
+                "MaxSize": [],
+                "Type": "scalar"
+              },
+              "Value": "core"
+            },
+            {
+              "Name": "neurodata_type",
+              "Datatype": {
+                "Name": "",
+                "Class": "H5T_STRING",
+                "Type": {
+                  "Length": "H5T_VARIABLE",
+                  "Padding": "H5T_STR_NULLTERM",
+                  "CharacterSet": "H5T_CSET_UTF8",
+                  "CharacterType": "H5T_C_S1"
+                },
+                "Size": 8,
+                "Attributes": []
+              },
+              "Dataspace": {
+                "Size": [],
+                "MaxSize": [],
+                "Type": "scalar"
+              },
+              "Value": "OnePhotonSeries"
+            },
+            {
+              "Name": "object_id",
+              "Datatype": {
+                "Name": "",
+                "Class": "H5T_STRING",
+                "Type": {
+                  "Length": "H5T_VARIABLE",
+                  "Padding": "H5T_STR_NULLTERM",
+                  "CharacterSet": "H5T_CSET_UTF8",
+                  "CharacterType": "H5T_C_S1"
+                },
+                "Size": 8,
+                "Attributes": []
+              },
+              "Dataspace": {
+                "Size": [],
+                "MaxSize": [],
+                "Type": "scalar"
+              },
+              "Value": "a63a560a-ba11-4341-92da-8f477a66c51f"
+            },
+            {
+              "Name": "comments",
+              "Datatype": {
+                "Name": "",
+                "Class": "H5T_STRING",
+                "Type": {
+                  "Length": "H5T_VARIABLE",
+                  "Padding": "H5T_STR_NULLTERM",
+                  "CharacterSet": "H5T_CSET_UTF8",
+                  "CharacterType": "H5T_C_S1"
+                },
+                "Size": 8,
+                "Attributes": []
+              },
+              "Dataspace": {
+                "Size": [],
+                "MaxSize": [],
+                "Type": "scalar"
+              },
+              "Value": "no comments"
+            },
+            {
+              "Name": "description",
+              "Datatype": {
+                "Name": "",
+                "Class": "H5T_STRING",
+                "Type": {
+                  "Length": "H5T_VARIABLE",
+                  "Padding": "H5T_STR_NULLTERM",
+                  "CharacterSet": "H5T_CSET_UTF8",
+                  "CharacterType": "H5T_C_S1"
+                },
+                "Size": 8,
+                "Attributes": []
+              },
+              "Dataspace": {
+                "Size": [],
+                "MaxSize": [],
+                "Type": "scalar"
+              },
+              "Value": "no description"
+            }
+          ]
+        },
+        {
+          "Name": "/acquisition/2pInternal",
+          "Groups": [],
+          "Datasets": [
+            {
+              "Name": "data",
+              "Datatype": {
+                "Name": "",
+                "Class": "H5T_FLOAT",
+                "Type": "H5T_IEEE_F64LE",
+                "Size": 8,
+                "Attributes": []
+              },
+              "Dataspace": {
+                "Size": [
+                  200,
+                  100,
+                  1000
+                ],
+                "MaxSize": [
+                  200,
+                  100,
+                  1000
+                ],
+                "Type": "simple"
+              },
+              "ChunkSize": [],
+              "FillValue": 0,
+              "Filters": [],
+              "Attributes": [
+                {
+                  "Name": "conversion",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_FLOAT",
+                    "Type": "H5T_IEEE_F64LE",
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "Value": 1
+                },
+                {
+                  "Name": "offset",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_FLOAT",
+                    "Type": "H5T_IEEE_F64LE",
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "Value": 0
+                },
+                {
+                  "Name": "resolution",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_FLOAT",
+                    "Type": "H5T_IEEE_F64LE",
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "Value": -1
+                },
+                {
+                  "Name": "unit",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_STRING",
+                    "Type": {
+                      "Length": "H5T_VARIABLE",
+                      "Padding": "H5T_STR_NULLTERM",
+                      "CharacterSet": "H5T_CSET_UTF8",
+                      "CharacterType": "H5T_C_S1"
+                    },
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "Value": "lumens"
+                }
+              ]
+            },
+            {
+              "Name": "starting_time",
+              "Datatype": {
+                "Name": "",
+                "Class": "H5T_FLOAT",
+                "Type": "H5T_IEEE_F64LE",
+                "Size": 8,
+                "Attributes": []
+              },
+              "Dataspace": {
+                "Size": [],
+                "MaxSize": [],
+                "Type": "scalar"
+              },
+              "ChunkSize": [],
+              "FillValue": 0,
+              "Filters": [],
+              "Attributes": [
+                {
+                  "Name": "rate",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_FLOAT",
+                    "Type": "H5T_IEEE_F64LE",
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "Value": 3
+                },
+                {
+                  "Name": "unit",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_STRING",
+                    "Type": {
+                      "Length": "H5T_VARIABLE",
+                      "Padding": "H5T_STR_NULLTERM",
+                      "CharacterSet": "H5T_CSET_UTF8",
+                      "CharacterType": "H5T_C_S1"
+                    },
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "Value": "seconds"
+                }
+              ]
+            }
+          ],
+          "Datatypes": [],
+          "Links": {
+            "Name": "imaging_plane",
+            "Type": "soft link",
+            "Value": [
+              "/general/optophysiology/imaging_plane"
+            ]
+          },
+          "Attributes": [
+            {
+              "Name": "namespace",
+              "Datatype": {
+                "Name": "",
+                "Class": "H5T_STRING",
+                "Type": {
+                  "Length": "H5T_VARIABLE",
+                  "Padding": "H5T_STR_NULLTERM",
+                  "CharacterSet": "H5T_CSET_UTF8",
+                  "CharacterType": "H5T_C_S1"
+                },
+                "Size": 8,
+                "Attributes": []
+              },
+              "Dataspace": {
+                "Size": [],
+                "MaxSize": [],
+                "Type": "scalar"
+              },
+              "Value": "core"
+            },
+            {
+              "Name": "neurodata_type",
+              "Datatype": {
+                "Name": "",
+                "Class": "H5T_STRING",
+                "Type": {
+                  "Length": "H5T_VARIABLE",
+                  "Padding": "H5T_STR_NULLTERM",
+                  "CharacterSet": "H5T_CSET_UTF8",
+                  "CharacterType": "H5T_C_S1"
+                },
+                "Size": 8,
+                "Attributes": []
+              },
+              "Dataspace": {
+                "Size": [],
+                "MaxSize": [],
+                "Type": "scalar"
+              },
+              "Value": "TwoPhotonSeries"
+            },
+            {
+              "Name": "object_id",
+              "Datatype": {
+                "Name": "",
+                "Class": "H5T_STRING",
+                "Type": {
+                  "Length": "H5T_VARIABLE",
+                  "Padding": "H5T_STR_NULLTERM",
+                  "CharacterSet": "H5T_CSET_UTF8",
+                  "CharacterType": "H5T_C_S1"
+                },
+                "Size": 8,
+                "Attributes": []
+              },
+              "Dataspace": {
+                "Size": [],
+                "MaxSize": [],
+                "Type": "scalar"
+              },
+              "Value": "aec498a4-2cd7-4250-9fe3-1f8d8405b3fe"
+            },
+            {
+              "Name": "comments",
+              "Datatype": {
+                "Name": "",
+                "Class": "H5T_STRING",
+                "Type": {
+                  "Length": "H5T_VARIABLE",
+                  "Padding": "H5T_STR_NULLTERM",
+                  "CharacterSet": "H5T_CSET_UTF8",
+                  "CharacterType": "H5T_C_S1"
+                },
+                "Size": 8,
+                "Attributes": []
+              },
+              "Dataspace": {
+                "Size": [],
+                "MaxSize": [],
+                "Type": "scalar"
+              },
+              "Value": "no comments"
+            },
+            {
+              "Name": "description",
+              "Datatype": {
+                "Name": "",
+                "Class": "H5T_STRING",
+                "Type": {
+                  "Length": "H5T_VARIABLE",
+                  "Padding": "H5T_STR_NULLTERM",
+                  "CharacterSet": "H5T_CSET_UTF8",
+                  "CharacterType": "H5T_C_S1"
+                },
+                "Size": 8,
+                "Attributes": []
+              },
+              "Dataspace": {
+                "Size": [],
+                "MaxSize": [],
+                "Type": "scalar"
+              },
+              "Value": "no description"
+            }
+          ]
+        }
+      ],
+      "Datasets": [],
+      "Datatypes": [],
+      "Links": [],
+      "Attributes": []
+    },
+    {
+      "Name": "/analysis",
+      "Groups": [],
+      "Datasets": [],
+      "Datatypes": [],
+      "Links": [],
+      "Attributes": []
+    },
+    {
+      "Name": "/general",
+      "Groups": [
+        {
+          "Name": "/general/devices",
+          "Groups": {
+            "Name": "/general/devices/Device",
+            "Groups": [],
+            "Datasets": [],
+            "Datatypes": [],
+            "Links": [],
+            "Attributes": [
+              {
+                "Name": "namespace",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "Value": "core"
+              },
+              {
+                "Name": "neurodata_type",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "Value": "Device"
+              },
+              {
+                "Name": "object_id",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "Value": "39568dd7-6108-4040-acc2-a4860ea49399"
+              },
+              {
+                "Name": "description",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "Value": "My two-photon microscope"
+              },
+              {
+                "Name": "manufacturer",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "Value": "Loki Labs"
+              },
+              {
+                "Name": "model_name",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "Value": "Loki 1.0"
+              },
+              {
+                "Name": "model_number",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "Value": "ABC-123"
+              },
+              {
+                "Name": "serial_number",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "Value": "1234567890"
+              }
+            ]
+          },
+          "Datasets": [],
+          "Datatypes": [],
+          "Links": [],
+          "Attributes": []
+        },
+        {
+          "Name": "/general/extracellular_ephys",
+          "Groups": [],
+          "Datasets": [],
+          "Datatypes": [],
+          "Links": [],
+          "Attributes": []
+        },
+        {
+          "Name": "/general/intracellular_ephys",
+          "Groups": [],
+          "Datasets": [],
+          "Datatypes": [],
+          "Links": [],
+          "Attributes": []
+        },
+        {
+          "Name": "/general/optogenetics",
+          "Groups": [],
+          "Datasets": [],
+          "Datatypes": [],
+          "Links": [],
+          "Attributes": []
+        },
+        {
+          "Name": "/general/optophysiology",
+          "Groups": {
+            "Name": "/general/optophysiology/imaging_plane",
+            "Groups": {
+              "Name": "/general/optophysiology/imaging_plane/optical_channel",
+              "Groups": [],
+              "Datasets": [
+                {
+                  "Name": "description",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_STRING",
+                    "Type": {
+                      "Length": "H5T_VARIABLE",
+                      "Padding": "H5T_STR_NULLTERM",
+                      "CharacterSet": "H5T_CSET_UTF8",
+                      "CharacterType": "H5T_C_S1"
+                    },
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "ChunkSize": [],
+                  "FillValue": [
+                    ""
+                  ],
+                  "Filters": [],
+                  "Attributes": []
+                },
+                {
+                  "Name": "emission_lambda",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_FLOAT",
+                    "Type": "H5T_IEEE_F64LE",
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "ChunkSize": [],
+                  "FillValue": 0,
+                  "Filters": [],
+                  "Attributes": []
+                }
+              ],
+              "Datatypes": [],
+              "Links": [],
+              "Attributes": [
+                {
+                  "Name": "namespace",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_STRING",
+                    "Type": {
+                      "Length": "H5T_VARIABLE",
+                      "Padding": "H5T_STR_NULLTERM",
+                      "CharacterSet": "H5T_CSET_UTF8",
+                      "CharacterType": "H5T_C_S1"
+                    },
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "Value": "core"
+                },
+                {
+                  "Name": "neurodata_type",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_STRING",
+                    "Type": {
+                      "Length": "H5T_VARIABLE",
+                      "Padding": "H5T_STR_NULLTERM",
+                      "CharacterSet": "H5T_CSET_UTF8",
+                      "CharacterType": "H5T_C_S1"
+                    },
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "Value": "OpticalChannel"
+                },
+                {
+                  "Name": "object_id",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_STRING",
+                    "Type": {
+                      "Length": "H5T_VARIABLE",
+                      "Padding": "H5T_STR_NULLTERM",
+                      "CharacterSet": "H5T_CSET_UTF8",
+                      "CharacterType": "H5T_C_S1"
+                    },
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "Value": "a39e9e82-a429-4c2d-bf50-6d4d961a1355"
+                }
+              ]
+            },
+            "Datasets": [
+              {
+                "Name": "description",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "ChunkSize": [],
+                "FillValue": [
+                  ""
+                ],
+                "Filters": [],
+                "Attributes": []
+              },
+              {
+                "Name": "excitation_lambda",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_FLOAT",
+                  "Type": "H5T_IEEE_F64LE",
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "ChunkSize": [],
+                "FillValue": 0,
+                "Filters": [],
+                "Attributes": []
+              },
+              {
+                "Name": "imaging_rate",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_FLOAT",
+                  "Type": "H5T_IEEE_F64LE",
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "ChunkSize": [],
+                "FillValue": 0,
+                "Filters": [],
+                "Attributes": []
+              },
+              {
+                "Name": "indicator",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "ChunkSize": [],
+                "FillValue": [
+                  ""
+                ],
+                "Filters": [],
+                "Attributes": []
+              },
+              {
+                "Name": "location",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "ChunkSize": [],
+                "FillValue": [
+                  ""
+                ],
+                "Filters": [],
+                "Attributes": []
+              }
+            ],
+            "Datatypes": [],
+            "Links": {
+              "Name": "device",
+              "Type": "soft link",
+              "Value": [
+                "/general/devices/Device"
+              ]
+            },
+            "Attributes": [
+              {
+                "Name": "namespace",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "Value": "core"
+              },
+              {
+                "Name": "neurodata_type",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "Value": "ImagingPlane"
+              },
+              {
+                "Name": "object_id",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "Value": "68a83b5d-59e9-4452-97ab-a7bc67ec2bcb"
+              }
+            ]
+          },
+          "Datasets": [],
+          "Datatypes": [],
+          "Links": [],
+          "Attributes": []
+        }
+      ],
+      "Datasets": [
+        {
+          "Name": "experimenter",
+          "Datatype": {
+            "Name": "",
+            "Class": "H5T_STRING",
+            "Type": {
+              "Length": "H5T_VARIABLE",
+              "Padding": "H5T_STR_NULLTERM",
+              "CharacterSet": "H5T_CSET_UTF8",
+              "CharacterType": "H5T_C_S1"
+            },
+            "Size": 8,
+            "Attributes": []
+          },
+          "Dataspace": {
+            "Size": 1,
+            "MaxSize": 1,
+            "Type": "simple"
+          },
+          "ChunkSize": [],
+          "FillValue": [
+            ""
+          ],
+          "Filters": [],
+          "Attributes": []
+        },
+        {
+          "Name": "institution",
+          "Datatype": {
+            "Name": "",
+            "Class": "H5T_STRING",
+            "Type": {
+              "Length": "H5T_VARIABLE",
+              "Padding": "H5T_STR_NULLTERM",
+              "CharacterSet": "H5T_CSET_UTF8",
+              "CharacterType": "H5T_C_S1"
+            },
+            "Size": 8,
+            "Attributes": []
+          },
+          "Dataspace": {
+            "Size": [],
+            "MaxSize": [],
+            "Type": "scalar"
+          },
+          "ChunkSize": [],
+          "FillValue": [
+            ""
+          ],
+          "Filters": [],
+          "Attributes": []
+        },
+        {
+          "Name": "related_publications",
+          "Datatype": {
+            "Name": "",
+            "Class": "H5T_STRING",
+            "Type": {
+              "Length": "H5T_VARIABLE",
+              "Padding": "H5T_STR_NULLTERM",
+              "CharacterSet": "H5T_CSET_UTF8",
+              "CharacterType": "H5T_C_S1"
+            },
+            "Size": 8,
+            "Attributes": []
+          },
+          "Dataspace": {
+            "Size": 1,
+            "MaxSize": 1,
+            "Type": "simple"
+          },
+          "ChunkSize": [],
+          "FillValue": [
+            ""
+          ],
+          "Filters": [],
+          "Attributes": []
+        },
+        {
+          "Name": "session_id",
+          "Datatype": {
+            "Name": "",
+            "Class": "H5T_STRING",
+            "Type": {
+              "Length": "H5T_VARIABLE",
+              "Padding": "H5T_STR_NULLTERM",
+              "CharacterSet": "H5T_CSET_UTF8",
+              "CharacterType": "H5T_C_S1"
+            },
+            "Size": 8,
+            "Attributes": []
+          },
+          "Dataspace": {
+            "Size": [],
+            "MaxSize": [],
+            "Type": "scalar"
+          },
+          "ChunkSize": [],
+          "FillValue": [
+            ""
+          ],
+          "Filters": [],
+          "Attributes": []
+        },
+        {
+          "Name": "was_generated_by",
+          "Datatype": {
+            "Name": "",
+            "Class": "H5T_STRING",
+            "Type": {
+              "Length": "H5T_VARIABLE",
+              "Padding": "H5T_STR_NULLTERM",
+              "CharacterSet": "H5T_CSET_UTF8",
+              "CharacterType": "H5T_C_S1"
+            },
+            "Size": 8,
+            "Attributes": []
+          },
+          "Dataspace": {
+            "Size": [
+              2,
+              1
+            ],
+            "MaxSize": [
+              2,
+              1
+            ],
+            "Type": "simple"
+          },
+          "ChunkSize": [],
+          "FillValue": [
+            ""
+          ],
+          "Filters": [],
+          "Attributes": []
+        }
+      ],
+      "Datatypes": [],
+      "Links": [],
+      "Attributes": []
+    },
+    {
+      "Name": "/intervals",
+      "Groups": [],
+      "Datasets": [],
+      "Datatypes": [],
+      "Links": [],
+      "Attributes": []
+    },
+    {
+      "Name": "/processing",
+      "Groups": {
+        "Name": "/processing/ophys",
+        "Groups": [
+          {
+            "Name": "/processing/ophys/Fluorescence",
+            "Groups": {
+              "Name": "/processing/ophys/Fluorescence/RoiResponseSeries",
+              "Groups": [],
+              "Datasets": [
+                {
+                  "Name": "data",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_FLOAT",
+                    "Type": "H5T_IEEE_F64LE",
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [
+                      20,
+                      100
+                    ],
+                    "MaxSize": [
+                      20,
+                      100
+                    ],
+                    "Type": "simple"
+                  },
+                  "ChunkSize": [],
+                  "FillValue": 0,
+                  "Filters": [],
+                  "Attributes": [
+                    {
+                      "Name": "conversion",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_FLOAT",
+                        "Type": "H5T_IEEE_F64LE",
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "Value": 1
+                    },
+                    {
+                      "Name": "offset",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_FLOAT",
+                        "Type": "H5T_IEEE_F64LE",
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "Value": 0
+                    },
+                    {
+                      "Name": "resolution",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_FLOAT",
+                        "Type": "H5T_IEEE_F64LE",
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "Value": -1
+                    },
+                    {
+                      "Name": "unit",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_STRING",
+                        "Type": {
+                          "Length": "H5T_VARIABLE",
+                          "Padding": "H5T_STR_NULLTERM",
+                          "CharacterSet": "H5T_CSET_UTF8",
+                          "CharacterType": "H5T_C_S1"
+                        },
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "Value": "lumens"
+                    }
+                  ]
+                },
+                {
+                  "Name": "rois",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_INTEGER",
+                    "Type": "H5T_STD_I64LE",
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": 20,
+                    "MaxSize": 20,
+                    "Type": "simple"
+                  },
+                  "ChunkSize": [],
+                  "FillValue": 0,
+                  "Filters": [],
+                  "Attributes": [
+                    {
+                      "Name": "namespace",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_STRING",
+                        "Type": {
+                          "Length": "H5T_VARIABLE",
+                          "Padding": "H5T_STR_NULLTERM",
+                          "CharacterSet": "H5T_CSET_UTF8",
+                          "CharacterType": "H5T_C_S1"
+                        },
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "Value": "hdmf-common"
+                    },
+                    {
+                      "Name": "neurodata_type",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_STRING",
+                        "Type": {
+                          "Length": "H5T_VARIABLE",
+                          "Padding": "H5T_STR_NULLTERM",
+                          "CharacterSet": "H5T_CSET_UTF8",
+                          "CharacterType": "H5T_C_S1"
+                        },
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "Value": "DynamicTableRegion"
+                    },
+                    {
+                      "Name": "object_id",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_STRING",
+                        "Type": {
+                          "Length": "H5T_VARIABLE",
+                          "Padding": "H5T_STR_NULLTERM",
+                          "CharacterSet": "H5T_CSET_UTF8",
+                          "CharacterType": "H5T_C_S1"
+                        },
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "Value": "bbb9f13e-7d7d-42d9-bfd8-699e06f0175f"
+                    },
+                    {
+                      "Name": "description",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_STRING",
+                        "Type": {
+                          "Length": "H5T_VARIABLE",
+                          "Padding": "H5T_STR_NULLTERM",
+                          "CharacterSet": "H5T_CSET_UTF8",
+                          "CharacterType": "H5T_C_S1"
+                        },
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "Value": "all_rois"
+                    },
+                    {
+                      "Name": "table",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_REFERENCE",
+                        "Type": "H5R_OBJECT",
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "Value": [
+                        32,
+                        202,
+                        80,
+                        14,
+                        0,
+                        0,
+                        0,
+                        0
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Name": "starting_time",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_FLOAT",
+                    "Type": "H5T_IEEE_F64LE",
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "ChunkSize": [],
+                  "FillValue": 0,
+                  "Filters": [],
+                  "Attributes": [
+                    {
+                      "Name": "rate",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_FLOAT",
+                        "Type": "H5T_IEEE_F64LE",
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "Value": 3
+                    },
+                    {
+                      "Name": "unit",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_STRING",
+                        "Type": {
+                          "Length": "H5T_VARIABLE",
+                          "Padding": "H5T_STR_NULLTERM",
+                          "CharacterSet": "H5T_CSET_UTF8",
+                          "CharacterType": "H5T_C_S1"
+                        },
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "Value": "seconds"
+                    }
+                  ]
+                }
+              ],
+              "Datatypes": [],
+              "Links": [],
+              "Attributes": [
+                {
+                  "Name": "namespace",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_STRING",
+                    "Type": {
+                      "Length": "H5T_VARIABLE",
+                      "Padding": "H5T_STR_NULLTERM",
+                      "CharacterSet": "H5T_CSET_UTF8",
+                      "CharacterType": "H5T_C_S1"
+                    },
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "Value": "core"
+                },
+                {
+                  "Name": "neurodata_type",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_STRING",
+                    "Type": {
+                      "Length": "H5T_VARIABLE",
+                      "Padding": "H5T_STR_NULLTERM",
+                      "CharacterSet": "H5T_CSET_UTF8",
+                      "CharacterType": "H5T_C_S1"
+                    },
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "Value": "RoiResponseSeries"
+                },
+                {
+                  "Name": "object_id",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_STRING",
+                    "Type": {
+                      "Length": "H5T_VARIABLE",
+                      "Padding": "H5T_STR_NULLTERM",
+                      "CharacterSet": "H5T_CSET_UTF8",
+                      "CharacterType": "H5T_C_S1"
+                    },
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "Value": "c4aeba72-d3d2-47e6-b882-8cb819424bc2"
+                },
+                {
+                  "Name": "comments",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_STRING",
+                    "Type": {
+                      "Length": "H5T_VARIABLE",
+                      "Padding": "H5T_STR_NULLTERM",
+                      "CharacterSet": "H5T_CSET_UTF8",
+                      "CharacterType": "H5T_C_S1"
+                    },
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "Value": "no comments"
+                },
+                {
+                  "Name": "description",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_STRING",
+                    "Type": {
+                      "Length": "H5T_VARIABLE",
+                      "Padding": "H5T_STR_NULLTERM",
+                      "CharacterSet": "H5T_CSET_UTF8",
+                      "CharacterType": "H5T_C_S1"
+                    },
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "Value": "no description"
+                }
+              ]
+            },
+            "Datasets": [],
+            "Datatypes": [],
+            "Links": [],
+            "Attributes": [
+              {
+                "Name": "namespace",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "Value": "core"
+              },
+              {
+                "Name": "neurodata_type",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "Value": "Fluorescence"
+              },
+              {
+                "Name": "object_id",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "Value": "a665641d-d4af-4fc1-b2f3-ad3db58b7c3d"
+              }
+            ]
+          },
+          {
+            "Name": "/processing/ophys/ImageSegmentation",
+            "Groups": {
+              "Name": "/processing/ophys/ImageSegmentation/PlaneSegmentation",
+              "Groups": {
+                "Name": "/processing/ophys/ImageSegmentation/PlaneSegmentation/reference_images",
+                "Groups": [],
+                "Datasets": [],
+                "Datatypes": [],
+                "Links": [],
+                "Attributes": []
+              },
+              "Datasets": [
+                {
+                  "Name": "id",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_INTEGER",
+                    "Type": "H5T_STD_I64LE",
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": 20,
+                    "MaxSize": 20,
+                    "Type": "simple"
+                  },
+                  "ChunkSize": [],
+                  "FillValue": 0,
+                  "Filters": [],
+                  "Attributes": [
+                    {
+                      "Name": "namespace",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_STRING",
+                        "Type": {
+                          "Length": "H5T_VARIABLE",
+                          "Padding": "H5T_STR_NULLTERM",
+                          "CharacterSet": "H5T_CSET_UTF8",
+                          "CharacterType": "H5T_C_S1"
+                        },
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "Value": "hdmf-common"
+                    },
+                    {
+                      "Name": "neurodata_type",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_STRING",
+                        "Type": {
+                          "Length": "H5T_VARIABLE",
+                          "Padding": "H5T_STR_NULLTERM",
+                          "CharacterSet": "H5T_CSET_UTF8",
+                          "CharacterType": "H5T_C_S1"
+                        },
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "Value": "ElementIdentifiers"
+                    },
+                    {
+                      "Name": "object_id",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_STRING",
+                        "Type": {
+                          "Length": "H5T_VARIABLE",
+                          "Padding": "H5T_STR_NULLTERM",
+                          "CharacterSet": "H5T_CSET_UTF8",
+                          "CharacterType": "H5T_C_S1"
+                        },
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "Value": "8b2cd573-bf4a-4b34-a0cd-2f315047a452"
+                    }
+                  ]
+                },
+                {
+                  "Name": "image_mask",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_FLOAT",
+                    "Type": "H5T_IEEE_F64LE",
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [
+                      100,
+                      100,
+                      20
+                    ],
+                    "MaxSize": [
+                      100,
+                      100,
+                      20
+                    ],
+                    "Type": "simple"
+                  },
+                  "ChunkSize": [],
+                  "FillValue": 0,
+                  "Filters": [],
+                  "Attributes": [
+                    {
+                      "Name": "namespace",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_STRING",
+                        "Type": {
+                          "Length": "H5T_VARIABLE",
+                          "Padding": "H5T_STR_NULLTERM",
+                          "CharacterSet": "H5T_CSET_UTF8",
+                          "CharacterType": "H5T_C_S1"
+                        },
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "Value": "hdmf-common"
+                    },
+                    {
+                      "Name": "neurodata_type",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_STRING",
+                        "Type": {
+                          "Length": "H5T_VARIABLE",
+                          "Padding": "H5T_STR_NULLTERM",
+                          "CharacterSet": "H5T_CSET_UTF8",
+                          "CharacterType": "H5T_C_S1"
+                        },
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "Value": "VectorData"
+                    },
+                    {
+                      "Name": "object_id",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_STRING",
+                        "Type": {
+                          "Length": "H5T_VARIABLE",
+                          "Padding": "H5T_STR_NULLTERM",
+                          "CharacterSet": "H5T_CSET_UTF8",
+                          "CharacterType": "H5T_C_S1"
+                        },
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "Value": "25a74c76-8bd0-4520-b089-7b702e4463ef"
+                    },
+                    {
+                      "Name": "description",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_STRING",
+                        "Type": {
+                          "Length": "H5T_VARIABLE",
+                          "Padding": "H5T_STR_NULLTERM",
+                          "CharacterSet": "H5T_CSET_UTF8",
+                          "CharacterType": "H5T_C_S1"
+                        },
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "Value": "image masks"
+                    }
+                  ]
+                }
+              ],
+              "Datatypes": [],
+              "Links": {
+                "Name": "imaging_plane",
+                "Type": "soft link",
+                "Value": [
+                  "/general/optophysiology/imaging_plane"
+                ]
+              },
+              "Attributes": [
+                {
+                  "Name": "namespace",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_STRING",
+                    "Type": {
+                      "Length": "H5T_VARIABLE",
+                      "Padding": "H5T_STR_NULLTERM",
+                      "CharacterSet": "H5T_CSET_UTF8",
+                      "CharacterType": "H5T_C_S1"
+                    },
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "Value": "core"
+                },
+                {
+                  "Name": "neurodata_type",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_STRING",
+                    "Type": {
+                      "Length": "H5T_VARIABLE",
+                      "Padding": "H5T_STR_NULLTERM",
+                      "CharacterSet": "H5T_CSET_UTF8",
+                      "CharacterType": "H5T_C_S1"
+                    },
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "Value": "PlaneSegmentation"
+                },
+                {
+                  "Name": "object_id",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_STRING",
+                    "Type": {
+                      "Length": "H5T_VARIABLE",
+                      "Padding": "H5T_STR_NULLTERM",
+                      "CharacterSet": "H5T_CSET_UTF8",
+                      "CharacterType": "H5T_C_S1"
+                    },
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "Value": "3da14a5e-39d7-44fc-9fa8-d473c3b098a2"
+                },
+                {
+                  "Name": "colnames",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_STRING",
+                    "Type": {
+                      "Length": "H5T_VARIABLE",
+                      "Padding": "H5T_STR_NULLTERM",
+                      "CharacterSet": "H5T_CSET_UTF8",
+                      "CharacterType": "H5T_C_S1"
+                    },
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": 1,
+                    "MaxSize": 1,
+                    "Type": "simple"
+                  },
+                  "Value": [
+                    "image_mask"
+                  ]
+                },
+                {
+                  "Name": "description",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_STRING",
+                    "Type": {
+                      "Length": "H5T_VARIABLE",
+                      "Padding": "H5T_STR_NULLTERM",
+                      "CharacterSet": "H5T_CSET_UTF8",
+                      "CharacterType": "H5T_C_S1"
+                    },
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "Value": "output from segmenting my favorite imaging plane"
+                }
+              ]
+            },
+            "Datasets": [],
+            "Datatypes": [],
+            "Links": [],
+            "Attributes": [
+              {
+                "Name": "namespace",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "Value": "core"
+              },
+              {
+                "Name": "neurodata_type",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "Value": "ImageSegmentation"
+              },
+              {
+                "Name": "object_id",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "Value": "79bb79a9-00e9-4d37-a02f-8199be9f39c7"
+              }
+            ]
+          },
+          {
+            "Name": "/processing/ophys/MotionCorrection",
+            "Groups": {
+              "Name": "/processing/ophys/MotionCorrection/CorrectedImageStack",
+              "Groups": [
+                {
+                  "Name": "/processing/ophys/MotionCorrection/CorrectedImageStack/corrected",
+                  "Groups": [],
+                  "Datasets": [
+                    {
+                      "Name": "data",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_FLOAT",
+                        "Type": "H5T_IEEE_F64LE",
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [
+                          100,
+                          100,
+                          1000
+                        ],
+                        "MaxSize": [
+                          100,
+                          100,
+                          1000
+                        ],
+                        "Type": "simple"
+                      },
+                      "ChunkSize": [],
+                      "FillValue": 0,
+                      "Filters": [],
+                      "Attributes": [
+                        {
+                          "Name": "conversion",
+                          "Datatype": {
+                            "Name": "",
+                            "Class": "H5T_FLOAT",
+                            "Type": "H5T_IEEE_F64LE",
+                            "Size": 8,
+                            "Attributes": []
+                          },
+                          "Dataspace": {
+                            "Size": [],
+                            "MaxSize": [],
+                            "Type": "scalar"
+                          },
+                          "Value": 1
+                        },
+                        {
+                          "Name": "offset",
+                          "Datatype": {
+                            "Name": "",
+                            "Class": "H5T_FLOAT",
+                            "Type": "H5T_IEEE_F64LE",
+                            "Size": 8,
+                            "Attributes": []
+                          },
+                          "Dataspace": {
+                            "Size": [],
+                            "MaxSize": [],
+                            "Type": "scalar"
+                          },
+                          "Value": 0
+                        },
+                        {
+                          "Name": "resolution",
+                          "Datatype": {
+                            "Name": "",
+                            "Class": "H5T_FLOAT",
+                            "Type": "H5T_IEEE_F64LE",
+                            "Size": 8,
+                            "Attributes": []
+                          },
+                          "Dataspace": {
+                            "Size": [],
+                            "MaxSize": [],
+                            "Type": "scalar"
+                          },
+                          "Value": -1
+                        },
+                        {
+                          "Name": "unit",
+                          "Datatype": {
+                            "Name": "",
+                            "Class": "H5T_STRING",
+                            "Type": {
+                              "Length": "H5T_VARIABLE",
+                              "Padding": "H5T_STR_NULLTERM",
+                              "CharacterSet": "H5T_CSET_UTF8",
+                              "CharacterType": "H5T_C_S1"
+                            },
+                            "Size": 8,
+                            "Attributes": []
+                          },
+                          "Dataspace": {
+                            "Size": [],
+                            "MaxSize": [],
+                            "Type": "scalar"
+                          },
+                          "Value": "n/a"
+                        }
+                      ]
+                    },
+                    {
+                      "Name": "format",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_STRING",
+                        "Type": {
+                          "Length": "H5T_VARIABLE",
+                          "Padding": "H5T_STR_NULLTERM",
+                          "CharacterSet": "H5T_CSET_UTF8",
+                          "CharacterType": "H5T_C_S1"
+                        },
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "ChunkSize": [],
+                      "FillValue": [
+                        ""
+                      ],
+                      "Filters": [],
+                      "Attributes": []
+                    },
+                    {
+                      "Name": "starting_time",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_FLOAT",
+                        "Type": "H5T_IEEE_F64LE",
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "ChunkSize": [],
+                      "FillValue": 0,
+                      "Filters": [],
+                      "Attributes": [
+                        {
+                          "Name": "rate",
+                          "Datatype": {
+                            "Name": "",
+                            "Class": "H5T_FLOAT",
+                            "Type": "H5T_IEEE_F64LE",
+                            "Size": 8,
+                            "Attributes": []
+                          },
+                          "Dataspace": {
+                            "Size": [],
+                            "MaxSize": [],
+                            "Type": "scalar"
+                          },
+                          "Value": 1
+                        },
+                        {
+                          "Name": "unit",
+                          "Datatype": {
+                            "Name": "",
+                            "Class": "H5T_STRING",
+                            "Type": {
+                              "Length": "H5T_VARIABLE",
+                              "Padding": "H5T_STR_NULLTERM",
+                              "CharacterSet": "H5T_CSET_UTF8",
+                              "CharacterType": "H5T_C_S1"
+                            },
+                            "Size": 8,
+                            "Attributes": []
+                          },
+                          "Dataspace": {
+                            "Size": [],
+                            "MaxSize": [],
+                            "Type": "scalar"
+                          },
+                          "Value": "seconds"
+                        }
+                      ]
+                    }
+                  ],
+                  "Datatypes": [],
+                  "Links": [],
+                  "Attributes": [
+                    {
+                      "Name": "namespace",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_STRING",
+                        "Type": {
+                          "Length": "H5T_VARIABLE",
+                          "Padding": "H5T_STR_NULLTERM",
+                          "CharacterSet": "H5T_CSET_UTF8",
+                          "CharacterType": "H5T_C_S1"
+                        },
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "Value": "core"
+                    },
+                    {
+                      "Name": "neurodata_type",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_STRING",
+                        "Type": {
+                          "Length": "H5T_VARIABLE",
+                          "Padding": "H5T_STR_NULLTERM",
+                          "CharacterSet": "H5T_CSET_UTF8",
+                          "CharacterType": "H5T_C_S1"
+                        },
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "Value": "ImageSeries"
+                    },
+                    {
+                      "Name": "object_id",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_STRING",
+                        "Type": {
+                          "Length": "H5T_VARIABLE",
+                          "Padding": "H5T_STR_NULLTERM",
+                          "CharacterSet": "H5T_CSET_UTF8",
+                          "CharacterType": "H5T_C_S1"
+                        },
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "Value": "e1e085d9-3293-49e1-a455-0c28b10ec0f7"
+                    },
+                    {
+                      "Name": "comments",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_STRING",
+                        "Type": {
+                          "Length": "H5T_VARIABLE",
+                          "Padding": "H5T_STR_NULLTERM",
+                          "CharacterSet": "H5T_CSET_UTF8",
+                          "CharacterType": "H5T_C_S1"
+                        },
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "Value": "no comments"
+                    },
+                    {
+                      "Name": "description",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_STRING",
+                        "Type": {
+                          "Length": "H5T_VARIABLE",
+                          "Padding": "H5T_STR_NULLTERM",
+                          "CharacterSet": "H5T_CSET_UTF8",
+                          "CharacterType": "H5T_C_S1"
+                        },
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "Value": "A motion corrected image stack"
+                    }
+                  ]
+                },
+                {
+                  "Name": "/processing/ophys/MotionCorrection/CorrectedImageStack/xy_translation",
+                  "Groups": [],
+                  "Datasets": [
+                    {
+                      "Name": "data",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_FLOAT",
+                        "Type": "H5T_IEEE_F64LE",
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [
+                          2,
+                          1000
+                        ],
+                        "MaxSize": [
+                          2,
+                          1000
+                        ],
+                        "Type": "simple"
+                      },
+                      "ChunkSize": [],
+                      "FillValue": 0,
+                      "Filters": [],
+                      "Attributes": [
+                        {
+                          "Name": "conversion",
+                          "Datatype": {
+                            "Name": "",
+                            "Class": "H5T_FLOAT",
+                            "Type": "H5T_IEEE_F64LE",
+                            "Size": 8,
+                            "Attributes": []
+                          },
+                          "Dataspace": {
+                            "Size": [],
+                            "MaxSize": [],
+                            "Type": "scalar"
+                          },
+                          "Value": 1
+                        },
+                        {
+                          "Name": "resolution",
+                          "Datatype": {
+                            "Name": "",
+                            "Class": "H5T_FLOAT",
+                            "Type": "H5T_IEEE_F64LE",
+                            "Size": 8,
+                            "Attributes": []
+                          },
+                          "Dataspace": {
+                            "Size": [],
+                            "MaxSize": [],
+                            "Type": "scalar"
+                          },
+                          "Value": -1
+                        },
+                        {
+                          "Name": "unit",
+                          "Datatype": {
+                            "Name": "",
+                            "Class": "H5T_STRING",
+                            "Type": {
+                              "Length": "H5T_VARIABLE",
+                              "Padding": "H5T_STR_NULLTERM",
+                              "CharacterSet": "H5T_CSET_UTF8",
+                              "CharacterType": "H5T_C_S1"
+                            },
+                            "Size": 8,
+                            "Attributes": []
+                          },
+                          "Dataspace": {
+                            "Size": [],
+                            "MaxSize": [],
+                            "Type": "scalar"
+                          },
+                          "Value": "pixels"
+                        },
+                        {
+                          "Name": "offset",
+                          "Datatype": {
+                            "Name": "",
+                            "Class": "H5T_FLOAT",
+                            "Type": "H5T_IEEE_F64LE",
+                            "Size": 8,
+                            "Attributes": []
+                          },
+                          "Dataspace": {
+                            "Size": [],
+                            "MaxSize": [],
+                            "Type": "scalar"
+                          },
+                          "Value": 0
+                        }
+                      ]
+                    },
+                    {
+                      "Name": "starting_time",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_FLOAT",
+                        "Type": "H5T_IEEE_F64LE",
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "ChunkSize": [],
+                      "FillValue": 0,
+                      "Filters": [],
+                      "Attributes": [
+                        {
+                          "Name": "rate",
+                          "Datatype": {
+                            "Name": "",
+                            "Class": "H5T_FLOAT",
+                            "Type": "H5T_IEEE_F64LE",
+                            "Size": 8,
+                            "Attributes": []
+                          },
+                          "Dataspace": {
+                            "Size": [],
+                            "MaxSize": [],
+                            "Type": "scalar"
+                          },
+                          "Value": 1
+                        },
+                        {
+                          "Name": "unit",
+                          "Datatype": {
+                            "Name": "",
+                            "Class": "H5T_STRING",
+                            "Type": {
+                              "Length": "H5T_VARIABLE",
+                              "Padding": "H5T_STR_NULLTERM",
+                              "CharacterSet": "H5T_CSET_UTF8",
+                              "CharacterType": "H5T_C_S1"
+                            },
+                            "Size": 8,
+                            "Attributes": []
+                          },
+                          "Dataspace": {
+                            "Size": [],
+                            "MaxSize": [],
+                            "Type": "scalar"
+                          },
+                          "Value": "seconds"
+                        }
+                      ]
+                    }
+                  ],
+                  "Datatypes": [],
+                  "Links": [],
+                  "Attributes": [
+                    {
+                      "Name": "namespace",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_STRING",
+                        "Type": {
+                          "Length": "H5T_VARIABLE",
+                          "Padding": "H5T_STR_NULLTERM",
+                          "CharacterSet": "H5T_CSET_UTF8",
+                          "CharacterType": "H5T_C_S1"
+                        },
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "Value": "core"
+                    },
+                    {
+                      "Name": "neurodata_type",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_STRING",
+                        "Type": {
+                          "Length": "H5T_VARIABLE",
+                          "Padding": "H5T_STR_NULLTERM",
+                          "CharacterSet": "H5T_CSET_UTF8",
+                          "CharacterType": "H5T_C_S1"
+                        },
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "Value": "TimeSeries"
+                    },
+                    {
+                      "Name": "object_id",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_STRING",
+                        "Type": {
+                          "Length": "H5T_VARIABLE",
+                          "Padding": "H5T_STR_NULLTERM",
+                          "CharacterSet": "H5T_CSET_UTF8",
+                          "CharacterType": "H5T_C_S1"
+                        },
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "Value": "f0d78f8d-722c-4a8d-b529-2f114761352b"
+                    },
+                    {
+                      "Name": "comments",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_STRING",
+                        "Type": {
+                          "Length": "H5T_VARIABLE",
+                          "Padding": "H5T_STR_NULLTERM",
+                          "CharacterSet": "H5T_CSET_UTF8",
+                          "CharacterType": "H5T_C_S1"
+                        },
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "Value": "no comments"
+                    },
+                    {
+                      "Name": "description",
+                      "Datatype": {
+                        "Name": "",
+                        "Class": "H5T_STRING",
+                        "Type": {
+                          "Length": "H5T_VARIABLE",
+                          "Padding": "H5T_STR_NULLTERM",
+                          "CharacterSet": "H5T_CSET_UTF8",
+                          "CharacterType": "H5T_C_S1"
+                        },
+                        "Size": 8,
+                        "Attributes": []
+                      },
+                      "Dataspace": {
+                        "Size": [],
+                        "MaxSize": [],
+                        "Type": "scalar"
+                      },
+                      "Value": "x,y translation in pixels"
+                    }
+                  ]
+                }
+              ],
+              "Datasets": [],
+              "Datatypes": [],
+              "Links": {
+                "Name": "original",
+                "Type": "soft link",
+                "Value": [
+                  "/acquisition/1pInternal"
+                ]
+              },
+              "Attributes": [
+                {
+                  "Name": "namespace",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_STRING",
+                    "Type": {
+                      "Length": "H5T_VARIABLE",
+                      "Padding": "H5T_STR_NULLTERM",
+                      "CharacterSet": "H5T_CSET_UTF8",
+                      "CharacterType": "H5T_C_S1"
+                    },
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "Value": "core"
+                },
+                {
+                  "Name": "neurodata_type",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_STRING",
+                    "Type": {
+                      "Length": "H5T_VARIABLE",
+                      "Padding": "H5T_STR_NULLTERM",
+                      "CharacterSet": "H5T_CSET_UTF8",
+                      "CharacterType": "H5T_C_S1"
+                    },
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "Value": "CorrectedImageStack"
+                },
+                {
+                  "Name": "object_id",
+                  "Datatype": {
+                    "Name": "",
+                    "Class": "H5T_STRING",
+                    "Type": {
+                      "Length": "H5T_VARIABLE",
+                      "Padding": "H5T_STR_NULLTERM",
+                      "CharacterSet": "H5T_CSET_UTF8",
+                      "CharacterType": "H5T_C_S1"
+                    },
+                    "Size": 8,
+                    "Attributes": []
+                  },
+                  "Dataspace": {
+                    "Size": [],
+                    "MaxSize": [],
+                    "Type": "scalar"
+                  },
+                  "Value": "483ed33a-f750-4495-add8-60bc33b99537"
+                }
+              ]
+            },
+            "Datasets": [],
+            "Datatypes": [],
+            "Links": [],
+            "Attributes": [
+              {
+                "Name": "namespace",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "Value": "core"
+              },
+              {
+                "Name": "neurodata_type",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "Value": "MotionCorrection"
+              },
+              {
+                "Name": "object_id",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "Value": "add851ba-e0ae-4f1a-9034-e1612cc22ec4"
+              }
+            ]
+          }
+        ],
+        "Datasets": [],
+        "Datatypes": [],
+        "Links": [],
+        "Attributes": [
+          {
+            "Name": "namespace",
+            "Datatype": {
+              "Name": "",
+              "Class": "H5T_STRING",
+              "Type": {
+                "Length": "H5T_VARIABLE",
+                "Padding": "H5T_STR_NULLTERM",
+                "CharacterSet": "H5T_CSET_UTF8",
+                "CharacterType": "H5T_C_S1"
+              },
+              "Size": 8,
+              "Attributes": []
+            },
+            "Dataspace": {
+              "Size": [],
+              "MaxSize": [],
+              "Type": "scalar"
+            },
+            "Value": "core"
+          },
+          {
+            "Name": "neurodata_type",
+            "Datatype": {
+              "Name": "",
+              "Class": "H5T_STRING",
+              "Type": {
+                "Length": "H5T_VARIABLE",
+                "Padding": "H5T_STR_NULLTERM",
+                "CharacterSet": "H5T_CSET_UTF8",
+                "CharacterType": "H5T_C_S1"
+              },
+              "Size": 8,
+              "Attributes": []
+            },
+            "Dataspace": {
+              "Size": [],
+              "MaxSize": [],
+              "Type": "scalar"
+            },
+            "Value": "ProcessingModule"
+          },
+          {
+            "Name": "object_id",
+            "Datatype": {
+              "Name": "",
+              "Class": "H5T_STRING",
+              "Type": {
+                "Length": "H5T_VARIABLE",
+                "Padding": "H5T_STR_NULLTERM",
+                "CharacterSet": "H5T_CSET_UTF8",
+                "CharacterType": "H5T_C_S1"
+              },
+              "Size": 8,
+              "Attributes": []
+            },
+            "Dataspace": {
+              "Size": [],
+              "MaxSize": [],
+              "Type": "scalar"
+            },
+            "Value": "88f8f723-d139-4e5c-af04-71ed98a3845f"
+          },
+          {
+            "Name": "description",
+            "Datatype": {
+              "Name": "",
+              "Class": "H5T_STRING",
+              "Type": {
+                "Length": "H5T_VARIABLE",
+                "Padding": "H5T_STR_NULLTERM",
+                "CharacterSet": "H5T_CSET_UTF8",
+                "CharacterType": "H5T_C_S1"
+              },
+              "Size": 8,
+              "Attributes": []
+            },
+            "Dataspace": {
+              "Size": [],
+              "MaxSize": [],
+              "Type": "scalar"
+            },
+            "Value": "Contains optical physiology data"
+          }
+        ]
+      },
+      "Datasets": [],
+      "Datatypes": [],
+      "Links": [],
+      "Attributes": []
+    },
+    {
+      "Name": "/scratch",
+      "Groups": [],
+      "Datasets": [],
+      "Datatypes": [],
+      "Links": [],
+      "Attributes": []
+    },
+    {
+      "Name": "/specifications",
+      "Groups": [
+        {
+          "Name": "/specifications/core",
+          "Groups": {
+            "Name": "/specifications/core/2.8.0",
+            "Groups": [],
+            "Datasets": [
+              {
+                "Name": "namespace",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "ChunkSize": [],
+                "FillValue": [
+                  ""
+                ],
+                "Filters": [],
+                "Attributes": []
+              },
+              {
+                "Name": "nwb.base",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "ChunkSize": [],
+                "FillValue": [
+                  ""
+                ],
+                "Filters": [],
+                "Attributes": []
+              },
+              {
+                "Name": "nwb.behavior",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "ChunkSize": [],
+                "FillValue": [
+                  ""
+                ],
+                "Filters": [],
+                "Attributes": []
+              },
+              {
+                "Name": "nwb.device",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "ChunkSize": [],
+                "FillValue": [
+                  ""
+                ],
+                "Filters": [],
+                "Attributes": []
+              },
+              {
+                "Name": "nwb.ecephys",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "ChunkSize": [],
+                "FillValue": [
+                  ""
+                ],
+                "Filters": [],
+                "Attributes": []
+              },
+              {
+                "Name": "nwb.epoch",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "ChunkSize": [],
+                "FillValue": [
+                  ""
+                ],
+                "Filters": [],
+                "Attributes": []
+              },
+              {
+                "Name": "nwb.file",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "ChunkSize": [],
+                "FillValue": [
+                  ""
+                ],
+                "Filters": [],
+                "Attributes": []
+              },
+              {
+                "Name": "nwb.icephys",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "ChunkSize": [],
+                "FillValue": [
+                  ""
+                ],
+                "Filters": [],
+                "Attributes": []
+              },
+              {
+                "Name": "nwb.image",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "ChunkSize": [],
+                "FillValue": [
+                  ""
+                ],
+                "Filters": [],
+                "Attributes": []
+              },
+              {
+                "Name": "nwb.misc",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "ChunkSize": [],
+                "FillValue": [
+                  ""
+                ],
+                "Filters": [],
+                "Attributes": []
+              },
+              {
+                "Name": "nwb.ogen",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "ChunkSize": [],
+                "FillValue": [
+                  ""
+                ],
+                "Filters": [],
+                "Attributes": []
+              },
+              {
+                "Name": "nwb.ophys",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "ChunkSize": [],
+                "FillValue": [
+                  ""
+                ],
+                "Filters": [],
+                "Attributes": []
+              },
+              {
+                "Name": "nwb.retinotopy",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "ChunkSize": [],
+                "FillValue": [
+                  ""
+                ],
+                "Filters": [],
+                "Attributes": []
+              }
+            ],
+            "Datatypes": [],
+            "Links": [],
+            "Attributes": []
+          },
+          "Datasets": [],
+          "Datatypes": [],
+          "Links": [],
+          "Attributes": []
+        },
+        {
+          "Name": "/specifications/hdmf-common",
+          "Groups": {
+            "Name": "/specifications/hdmf-common/1.8.0",
+            "Groups": [],
+            "Datasets": [
+              {
+                "Name": "base",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "ChunkSize": [],
+                "FillValue": [
+                  ""
+                ],
+                "Filters": [],
+                "Attributes": []
+              },
+              {
+                "Name": "namespace",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "ChunkSize": [],
+                "FillValue": [
+                  ""
+                ],
+                "Filters": [],
+                "Attributes": []
+              },
+              {
+                "Name": "sparse",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "ChunkSize": [],
+                "FillValue": [
+                  ""
+                ],
+                "Filters": [],
+                "Attributes": []
+              },
+              {
+                "Name": "table",
+                "Datatype": {
+                  "Name": "",
+                  "Class": "H5T_STRING",
+                  "Type": {
+                    "Length": "H5T_VARIABLE",
+                    "Padding": "H5T_STR_NULLTERM",
+                    "CharacterSet": "H5T_CSET_UTF8",
+                    "CharacterType": "H5T_C_S1"
+                  },
+                  "Size": 8,
+                  "Attributes": []
+                },
+                "Dataspace": {
+                  "Size": [],
+                  "MaxSize": [],
+                  "Type": "scalar"
+                },
+                "ChunkSize": [],
+                "FillValue": [
+                  ""
+                ],
+                "Filters": [],
+                "Attributes": []
+              }
+            ],
+            "Datatypes": [],
+            "Links": [],
+            "Attributes": []
+          },
+          "Datasets": [],
+          "Datatypes": [],
+          "Links": [],
+          "Attributes": []
+        }
+      ],
+      "Datasets": [],
+      "Datatypes": [],
+      "Links": [],
+      "Attributes": []
+    },
+    {
+      "Name": "/stimulus",
+      "Groups": [
+        {
+          "Name": "/stimulus/presentation",
+          "Groups": [],
+          "Datasets": [],
+          "Datatypes": [],
+          "Links": [],
+          "Attributes": []
+        },
+        {
+          "Name": "/stimulus/templates",
+          "Groups": [],
+          "Datasets": [],
+          "Datatypes": [],
+          "Links": [],
+          "Attributes": []
+        }
+      ],
+      "Datasets": [],
+      "Datatypes": [],
+      "Links": [],
+      "Attributes": []
+    }
+  ],
+  "Datasets": [
+    {
+      "Name": "file_create_date",
+      "Datatype": {
+        "Name": "",
+        "Class": "H5T_STRING",
+        "Type": {
+          "Length": "H5T_VARIABLE",
+          "Padding": "H5T_STR_NULLTERM",
+          "CharacterSet": "H5T_CSET_UTF8",
+          "CharacterType": "H5T_C_S1"
+        },
+        "Size": 8,
+        "Attributes": []
+      },
+      "Dataspace": {
+        "Size": 1,
+        "MaxSize": null,
+        "Type": "simple"
+      },
+      "ChunkSize": 1,
+      "FillValue": [
+        ""
+      ],
+      "Filters": [],
+      "Attributes": []
+    },
+    {
+      "Name": "identifier",
+      "Datatype": {
+        "Name": "",
+        "Class": "H5T_STRING",
+        "Type": {
+          "Length": "H5T_VARIABLE",
+          "Padding": "H5T_STR_NULLTERM",
+          "CharacterSet": "H5T_CSET_UTF8",
+          "CharacterType": "H5T_C_S1"
+        },
+        "Size": 8,
+        "Attributes": []
+      },
+      "Dataspace": {
+        "Size": [],
+        "MaxSize": [],
+        "Type": "scalar"
+      },
+      "ChunkSize": [],
+      "FillValue": [
+        ""
+      ],
+      "Filters": [],
+      "Attributes": []
+    },
+    {
+      "Name": "session_description",
+      "Datatype": {
+        "Name": "",
+        "Class": "H5T_STRING",
+        "Type": {
+          "Length": "H5T_VARIABLE",
+          "Padding": "H5T_STR_NULLTERM",
+          "CharacterSet": "H5T_CSET_UTF8",
+          "CharacterType": "H5T_C_S1"
+        },
+        "Size": 8,
+        "Attributes": []
+      },
+      "Dataspace": {
+        "Size": [],
+        "MaxSize": [],
+        "Type": "scalar"
+      },
+      "ChunkSize": [],
+      "FillValue": [
+        ""
+      ],
+      "Filters": [],
+      "Attributes": []
+    },
+    {
+      "Name": "session_start_time",
+      "Datatype": {
+        "Name": "",
+        "Class": "H5T_STRING",
+        "Type": {
+          "Length": "H5T_VARIABLE",
+          "Padding": "H5T_STR_NULLTERM",
+          "CharacterSet": "H5T_CSET_UTF8",
+          "CharacterType": "H5T_C_S1"
+        },
+        "Size": 8,
+        "Attributes": []
+      },
+      "Dataspace": {
+        "Size": 1,
+        "MaxSize": 1,
+        "Type": "simple"
+      },
+      "ChunkSize": [],
+      "FillValue": [
+        ""
+      ],
+      "Filters": [],
+      "Attributes": []
+    },
+    {
+      "Name": "timestamps_reference_time",
+      "Datatype": {
+        "Name": "",
+        "Class": "H5T_STRING",
+        "Type": {
+          "Length": "H5T_VARIABLE",
+          "Padding": "H5T_STR_NULLTERM",
+          "CharacterSet": "H5T_CSET_UTF8",
+          "CharacterType": "H5T_C_S1"
+        },
+        "Size": 8,
+        "Attributes": []
+      },
+      "Dataspace": {
+        "Size": 1,
+        "MaxSize": 1,
+        "Type": "simple"
+      },
+      "ChunkSize": [],
+      "FillValue": [
+        ""
+      ],
+      "Filters": [],
+      "Attributes": []
+    }
+  ],
+  "Datatypes": [],
+  "Links": [],
+  "Attributes": [
+    {
+      "Name": ".specloc",
+      "Datatype": {
+        "Name": "",
+        "Class": "H5T_REFERENCE",
+        "Type": "H5R_OBJECT",
+        "Size": 8,
+        "Attributes": []
+      },
+      "Dataspace": {
+        "Size": [],
+        "MaxSize": [],
+        "Type": "scalar"
+      },
+      "Value": [
+        32,
+        3,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Name": "namespace",
+      "Datatype": {
+        "Name": "",
+        "Class": "H5T_STRING",
+        "Type": {
+          "Length": "H5T_VARIABLE",
+          "Padding": "H5T_STR_NULLTERM",
+          "CharacterSet": "H5T_CSET_UTF8",
+          "CharacterType": "H5T_C_S1"
+        },
+        "Size": 8,
+        "Attributes": []
+      },
+      "Dataspace": {
+        "Size": [],
+        "MaxSize": [],
+        "Type": "scalar"
+      },
+      "Value": "core"
+    },
+    {
+      "Name": "neurodata_type",
+      "Datatype": {
+        "Name": "",
+        "Class": "H5T_STRING",
+        "Type": {
+          "Length": "H5T_VARIABLE",
+          "Padding": "H5T_STR_NULLTERM",
+          "CharacterSet": "H5T_CSET_UTF8",
+          "CharacterType": "H5T_C_S1"
+        },
+        "Size": 8,
+        "Attributes": []
+      },
+      "Dataspace": {
+        "Size": [],
+        "MaxSize": [],
+        "Type": "scalar"
+      },
+      "Value": "NWBFile"
+    },
+    {
+      "Name": "object_id",
+      "Datatype": {
+        "Name": "",
+        "Class": "H5T_STRING",
+        "Type": {
+          "Length": "H5T_VARIABLE",
+          "Padding": "H5T_STR_NULLTERM",
+          "CharacterSet": "H5T_CSET_UTF8",
+          "CharacterType": "H5T_C_S1"
+        },
+        "Size": 8,
+        "Attributes": []
+      },
+      "Dataspace": {
+        "Size": [],
+        "MaxSize": [],
+        "Type": "scalar"
+      },
+      "Value": "cd38af12-f901-4c5b-818e-3076347b6463"
+    },
+    {
+      "Name": "nwb_version",
+      "Datatype": {
+        "Name": "",
+        "Class": "H5T_STRING",
+        "Type": {
+          "Length": "H5T_VARIABLE",
+          "Padding": "H5T_STR_NULLTERM",
+          "CharacterSet": "H5T_CSET_UTF8",
+          "CharacterType": "H5T_C_S1"
+        },
+        "Size": 8,
+        "Attributes": []
+      },
+      "Dataspace": {
+        "Size": [],
+        "MaxSize": [],
+        "Type": "scalar"
+      },
+      "Value": "2.8.0"
+    }
+  ]
+}

@@ -1,82 +1,38 @@
-function parsed = parseDataset(filename, info, fullpath, Blacklist)
+function parsed = parseDataset(filename, info, fullpath, Blacklist, backend)
     %typed and untyped being container maps containing type and untyped datasets
     % the maps store information regarding information and stored data
     % NOTE, dataset name is in path format so we need to parse that out.
+    arguments
+        filename
+        info
+        fullpath
+        Blacklist
+        backend = []
+    end
+    
+    % Create backend if not provided (for backward compatibility)
+    if isempty(backend)
+        backend = io.backend.BackendFactory.createBackend(filename);
+    end
+    
     name = info.Name;
 
     %check if typed and parse attributes
-    [attrargs, Type] = io.parseAttributes(filename, info.Attributes, fullpath, Blacklist);
+    [attrargs, Type] = io.parseAttributes(filename, info.Attributes, fullpath, Blacklist, backend);
 
-    fid = H5F.open(filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
-    did = H5D.open(fid, fullpath);
+
     props = attrargs;
-    datatype = info.Datatype;
-    dataspace = info.Dataspace;
 
     parsed = containers.Map;
     afields = keys(attrargs);
+
     if ~isempty(afields)
         anames = strcat(name, '_', afields);
         parsed = [parsed; containers.Map(anames, attrargs.values(afields))];
     end
 
-    % loading h5t references are required
-    % unfortunately also a bottleneck
-    if strcmp(datatype.Class, 'H5T_REFERENCE')
-        tid = H5D.get_type(did);
-        data = io.parseReference(did, tid, H5D.read(did));
-        H5T.close(tid);
-    elseif ~strcmp(dataspace.Type, 'simple') % i.e scalar
-        data = H5D.read(did);
-
-        switch datatype.Class
-            case 'H5T_STRING'
-                if verLessThan('MATLAB', '9.8')
-                    % MATLAB 2020a fixed string support for HDF5, making
-                    % reading strings "consistent" with regular use.
-                    data = data .';
-                end
-                datadim = size(data);
-                if datadim(1) > 1
-                    %multidimensional strings should become cellstr
-                    data = strtrim(mat2cell(data, ones(datadim(1), 1), datadim(2)));
-                end
-            case 'H5T_ENUM'
-                if io.isBool(datatype.Type)
-                    data = io.internal.h5.postprocess.toLogical(data);
-                else
-                    warning('NWB:Dataset:UnknownEnum', ...
-                        ['Encountered unknown enum under field `%s` with %d members. ' ...
-                        'Will be read as cell array of characters.'], ...
-                        name, length(datatype.Type.Member));
-                    data = io.internal.h5.postprocess.toEnumCellStr(data, datatype.Type);
-                end
-            case 'H5T_COMPOUND'
-                isScalar = true;
-                data = io.parseCompound(did, data, isScalar);
-        end
-    else
-        sid = H5D.get_space(did);
-        pid = H5D.get_create_plist(did);
-        isChunked = H5P.get_layout(pid) == H5ML.get_constant_value('H5D_CHUNKED');
-
-        tid = H5D.get_type(did);
-        class_id = H5T.get_class(tid);
-        isNumeric = class_id == H5ML.get_constant_value('H5T_INTEGER')...
-            || class_id == H5ML.get_constant_value('H5T_FLOAT');
-        if isChunked && isNumeric
-            data = types.untyped.DataPipe('filename', filename, 'path', fullpath);
-        elseif any(dataspace.Size == 0)
-            data = [];
-        else
-            matlabDataType = io.internal.h5.datatype.datatypeInfoToMatlabType(datatype, name);
-            data = types.untyped.DataStub(filename, fullpath, dataspace.Size, matlabDataType);
-        end
-        H5T.close(tid);
-        H5P.close(pid);
-        H5S.close(sid);
-    end
-
+    data = backend.processDatasetInfo(info, fullpath);
+   
     if isempty(Type.typename)
         %untyped group
         parsed(name) = data;
@@ -85,6 +41,4 @@ function parsed = parseDataset(filename, info, fullpath, Blacklist)
         kwargs = io.map2kwargs(props);
         parsed = io.createParsedType(fullpath, Type.typename, kwargs{:});
     end
-    H5D.close(did);
-    H5F.close(fid);
 end

@@ -103,7 +103,9 @@ function nwb = nwbRead(filename, flags, options)
     softLinkWarningResetObj = types.untyped.SoftLink.disablePathDeprecationWarning(); %#ok<NASGU>
 
     %try
+        tic
         fileInfo = backend.getFileInfo();
+        toc
         nwb = io.parseGroup(filename, fileInfo, blackList, backend);
     % catch ME
     %     if isSchemaVersionMismatch ...
