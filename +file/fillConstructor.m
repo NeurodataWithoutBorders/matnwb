@@ -296,7 +296,7 @@ function docString = fillConstructorDocString(name, props, namespace, superClass
     docString = char( strjoin(docString, newline) );
 end
 
-function tf = isDynamicTableDescendent(name, namespace)
+function tf = isDynamicTableDescendant(name, namespace)
 % Check if name is DynamicTable or if name is for a type that inherits from DynamicTable
 
     tf = false;
