@@ -41,6 +41,8 @@ methods
         [obj.baseimage, ivarargin] = types.util.parseConstrained(obj,'baseimage', 'types.core.BaseImage', varargin{:});
         varargin(ivarargin) = [];
         
+        obj.setupHasUnnamedGroupsMixin()
+        
         p = inputParser;
         p.KeepUnmatched = true;
         p.PartialMatching = false;

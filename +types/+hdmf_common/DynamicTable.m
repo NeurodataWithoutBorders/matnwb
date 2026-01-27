@@ -44,6 +44,8 @@ methods
         [obj.vectordata, ivarargin] = types.util.parseConstrained(obj,'vectordata', 'types.hdmf_common.VectorData', varargin{:});
         varargin(ivarargin) = [];
         
+        obj.setupHasUnnamedGroupsMixin()
+        
         p = inputParser;
         p.KeepUnmatched = true;
         p.PartialMatching = false;
