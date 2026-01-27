@@ -53,7 +53,7 @@ methods
         obj.description = p.Results.description;
         obj.id = p.Results.id;
         
-        % Only execute validation/setup code when called directly in this class'
+        % Only execute validation/setup code when called directly in this class's
         % constructor, not when invoked through superclass constructor chain
         if strcmp(class(obj), 'types.hdmf_common.DynamicTable') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));

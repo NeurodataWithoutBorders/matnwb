@@ -48,7 +48,7 @@ methods
         obj.image_format = p.Results.image_format;
         obj.image_mode = p.Results.image_mode;
         
-        % Only execute validation/setup code when called directly in this class'
+        % Only execute validation/setup code when called directly in this class's
         % constructor, not when invoked through superclass constructor chain
         if strcmp(class(obj), 'types.core.ExternalImage') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));

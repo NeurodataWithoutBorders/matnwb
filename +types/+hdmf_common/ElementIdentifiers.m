@@ -30,7 +30,7 @@ methods
         p.StructExpand = false;
         misc.parseSkipInvalidName(p, varargin);
         
-        % Only execute validation/setup code when called directly in this class'
+        % Only execute validation/setup code when called directly in this class's
         % constructor, not when invoked through superclass constructor chain
         if strcmp(class(obj), 'types.hdmf_common.ElementIdentifiers') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));

@@ -51,7 +51,7 @@ methods
         misc.parseSkipInvalidName(p, varargin);
         obj.description = p.Results.description;
         
-        % Only execute validation/setup code when called directly in this class'
+        % Only execute validation/setup code when called directly in this class's
         % constructor, not when invoked through superclass constructor chain
         if strcmp(class(obj), 'types.core.ProcessingModule') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));

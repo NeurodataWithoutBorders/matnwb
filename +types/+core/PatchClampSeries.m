@@ -80,7 +80,7 @@ methods
         obj.stimulus_description = p.Results.stimulus_description;
         obj.sweep_number = p.Results.sweep_number;
         
-        % Only execute validation/setup code when called directly in this class'
+        % Only execute validation/setup code when called directly in this class's
         % constructor, not when invoked through superclass constructor chain
         if strcmp(class(obj), 'types.core.PatchClampSeries') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
