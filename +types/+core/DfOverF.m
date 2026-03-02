@@ -9,7 +9,7 @@ classdef DfOverF < types.core.NWBDataInterface & types.untyped.GroupClass & matn
 properties
     roiresponseseries; % REQUIRED (RoiResponseSeries) RoiResponseSeries object(s) containing dF/F for a ROI.
 end
-properties (Access = protected)
+properties (Constant, Access = private)
     GroupPropertyNames = {'roiresponseseries'}
 end
 

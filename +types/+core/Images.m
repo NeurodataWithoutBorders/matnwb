@@ -1,4 +1,4 @@
-classdef Images < types.core.NWBDataInterface & types.untyped.GroupClass
+classdef Images < types.core.NWBDataInterface & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups
 % IMAGES - A collection of images with an optional way to specify the order of the images using the "order_of_images" dataset. An order must be specified if the images are referenced by index, e.g., from an IndexSeries.
 %
 % Required Properties:
@@ -13,6 +13,9 @@ end
 % OPTIONAL PROPERTIES
 properties
     order_of_images; %  (ImageReferences) Ordered dataset of references to BaseImage objects stored in the parent group. Each object in the Images group should be stored once and only once, so the dataset should have the same length as the number of images.
+end
+properties (Constant, Access = private)
+    GroupPropertyNames = {'baseimage'}
 end
 
 methods
@@ -37,6 +40,8 @@ methods
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.baseimage, ivarargin] = types.util.parseConstrained(obj,'baseimage', 'types.core.BaseImage', varargin{:});
         varargin(ivarargin) = [];
+        
+        obj.setupHasUnnamedGroupsMixin()
         
         p = inputParser;
         p.KeepUnmatched = true;

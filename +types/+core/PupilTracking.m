@@ -9,7 +9,7 @@ classdef PupilTracking < types.core.NWBDataInterface & types.untyped.GroupClass 
 properties
     timeseries; % REQUIRED (TimeSeries) TimeSeries object containing time series data on pupil size.
 end
-properties (Access = protected)
+properties (Constant, Access = private)
     GroupPropertyNames = {'timeseries'}
 end
 

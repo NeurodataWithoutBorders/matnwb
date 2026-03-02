@@ -10,8 +10,8 @@ properties
     container; %  (Container) Container objects held within this SimpleMultiContainer.
     data; %  (Data) Data objects held within this SimpleMultiContainer.
 end
-properties (Access = protected)
-    GroupPropertyNames = {'container'}
+properties (Constant, Access = private)
+    GroupPropertyNames = {'container', 'data'}
 end
 
 methods

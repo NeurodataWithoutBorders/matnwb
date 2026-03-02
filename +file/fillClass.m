@@ -93,7 +93,7 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
         superclassNames{end+1} = 'types.untyped.DatasetClass';
     end
 
-    if isa(class, 'file.Group') && class.hasAnonGroups
+    if isa(class, 'file.Group') && (class.hasAnonGroups || class.hasAnonData)
         superclassNames{end+1} = 'matnwb.mixin.HasUnnamedGroups';
     end
 
@@ -147,7 +147,7 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
             , propertyDefinitionBody ...
             }, newline);
     end
-    if isa(class, 'file.Group') && class.hasAnonGroups
+    if isa(class, 'file.Group') && (class.hasAnonGroups || class.hasAnonData)
         mixinPropertyBlock = createPropertyBlockForHasUnnamedGroupMixin(class);
         
         fullPropertyDefinition = strjoin(...
@@ -182,6 +182,7 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
 
     fullMethodBody = strjoin({'methods' ...
         file.addSpaces(methodBody, 4) 'end'}, newline);
+
     template = strjoin({classDefinitionHeader fullPropertyDefinition fullMethodBody 'end'}, ...
         [newline newline]);
 end
@@ -201,10 +202,15 @@ end
 
 function propertyBlockStr = createPropertyBlockForHasUnnamedGroupMixin(classInfo)
     isAnonGroup = arrayfun(@(x) isempty(x.name), classInfo.subgroups, 'uni', true);
-    anonNames = arrayfun(@(x) lower(x.type), classInfo.subgroups(isAnonGroup), 'uni', false);
-    
+    isAnonDataset = arrayfun(@(x) isempty(x.name), classInfo.datasets, 'uni', true);
+
+    anonNames = [...
+        arrayfun(@(x) lower(x.type), classInfo.subgroups(isAnonGroup), 'uni', false), ...
+        arrayfun(@(x) lower(x.type), classInfo.datasets(isAnonDataset), 'uni', false), ...
+        ];
+
     propertyBlockStr = strjoin({...
-        'properties (Access = protected)', ...
+        'properties (Constant, Access = private)', ...
         sprintf('    GroupPropertyNames = {%s}', strjoin(strcat('''', anonNames, ''''), ', ') ), ...
         'end'}, newline);
 end

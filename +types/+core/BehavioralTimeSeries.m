@@ -9,7 +9,7 @@ classdef BehavioralTimeSeries < types.core.NWBDataInterface & types.untyped.Grou
 properties
     timeseries; % REQUIRED (TimeSeries) TimeSeries object containing continuous behavioral data.
 end
-properties (Access = protected)
+properties (Constant, Access = private)
     GroupPropertyNames = {'timeseries'}
 end
 

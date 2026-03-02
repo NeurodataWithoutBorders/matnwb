@@ -169,7 +169,7 @@ function bodystr = fillBody(parentName, defaults, props, namespace, class, inher
     fullBody = strjoin(fullBody, newline);
     bodystr(end+1:end+length(fullBody)+1) = [newline fullBody];
 
-    if isa(class, 'file.Group') && class.hasAnonGroups
+    if isa(class, 'file.Group') && (class.hasAnonGroups || class.hasAnonData)
         % Include the setup function for the HasUnnamedGroups mixin
         bodystr = [bodystr, newline, 'obj.setupHasUnnamedGroupsMixin()', newline];
     end
