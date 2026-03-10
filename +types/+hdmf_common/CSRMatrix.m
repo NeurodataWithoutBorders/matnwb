@@ -50,7 +50,10 @@ methods
         obj.indices = p.Results.indices;
         obj.indptr = p.Results.indptr;
         obj.shape = p.Results.shape;
-        if strcmp(class(obj), 'types.hdmf_common.CSRMatrix')
+        
+        % Only execute validation/setup code when called directly in this class's
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.hdmf_common.CSRMatrix') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
         end
