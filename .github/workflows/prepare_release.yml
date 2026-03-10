@@ -36,43 +36,43 @@ jobs:
         include:
           - matlab-version: R2021a
             python-version: '3.9'
-            skip-pynwb-compatibilty-test-for-tutorial: '1'
+            skip-pynwb-tests: '1'
             skip-nwbinspector-test: '1'
           - matlab-version: R2021b
             python-version: '3.9'
-            skip-pynwb-compatibilty-test-for-tutorial: '1'
+            skip-pynwb-tests: '1'
             skip-nwbinspector-test: '1'
           - matlab-version: R2022a
             python-version: '3.9'
-            skip-pynwb-compatibilty-test-for-tutorial: '0'
+            skip-pynwb-tests: '1'
             skip-nwbinspector-test: '1'
           - matlab-version: R2022b
             python-version: '3.9'
-            skip-pynwb-compatibilty-test-for-tutorial: '0'
+            skip-pynwb-tests: '1'
             skip-nwbinspector-test: '1'
           - matlab-version: R2023a
             python-version: '3.10'
-            skip-pynwb-compatibilty-test-for-tutorial: '0'
+            skip-pynwb-tests: '0'
             skip-nwbinspector-test: '0'
           - matlab-version: R2023b
             python-version: '3.10'
-            skip-pynwb-compatibilty-test-for-tutorial: '0'
+            skip-pynwb-tests: '0'
             skip-nwbinspector-test: '0'
           - matlab-version: R2024a
             python-version: '3.11'
-            skip-pynwb-compatibilty-test-for-tutorial: '0'
+            skip-pynwb-tests: '0'
             skip-nwbinspector-test: '0'
           - matlab-version: R2024b
             python-version: '3.11'
-            skip-pynwb-compatibilty-test-for-tutorial: '0'
+            skip-pynwb-tests: '0'
             skip-nwbinspector-test: '0'
           - matlab-version: R2025a
             python-version: '3.12'
-            skip-pynwb-compatibilty-test-for-tutorial: '0'
+            skip-pynwb-tests: '0'
             skip-nwbinspector-test: '0'
           - matlab-version: R2025b
             python-version: '3.13'
-            skip-pynwb-compatibilty-test-for-tutorial: '0'
+            skip-pynwb-tests: '0'
             skip-nwbinspector-test: '0'
     steps:
       - name: Check out repository
@@ -88,7 +88,10 @@ jobs:
         run: |
           python -m pip install -U pip
           pip install -r +tests/requirements.txt
-          # Install nwbinspector only for Python 3.10+ (nwbinspector dropped Python 3.9 support)
+          # Install pynwb and nwbinspector only for Python 3.10+ (both dropped Python 3.9 support)
+          if [[ "${{ matrix.skip-pynwb-tests }}" == "0" ]]; then
+            pip install "git+https://github.com/NeurodataWithoutBorders/pynwb.git@dev"
+          fi
           if [[ "${{ matrix.skip-nwbinspector-test }}" == "0" ]]; then
             pip install "git+https://github.com/NeurodataWithoutBorders/nwbinspector.git@dev"
           fi
@@ -117,8 +120,8 @@ jobs:
           HDF5_PLUGIN_PATH: ${{ env.HDF5_PLUGIN_PATH }}
         with:
           command: |
-            setenv("SKIP_PYNWB_COMPATIBILITY_TEST_FOR_TUTORIALS", ...
-                num2str(${{ matrix.skip-pynwb-compatibilty-test-for-tutorial }}))
+            setenv("SKIP_PYNWB_TESTS", ...
+                num2str(${{ matrix.skip-pynwb-tests }}))
             setenv("SKIP_NWBINSPECTOR_TEST", ...
                 num2str(${{ matrix.skip-nwbinspector-test }}))
             pyenv("ExecutionMode", "OutOfProcess");
