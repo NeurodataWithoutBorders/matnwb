@@ -2,6 +2,5 @@ scipy
 matplotlib
 hdf5plugin
 dataframe_image
-git+https://github.com/NeurodataWithoutBorders/pynwb.git@dev
-# Note: nwbinspector is installed conditionally in run_tests.yml 
-# (only for Python 3.10+, as nwbinspector dropped Python 3.9 support)
+# Note: pynwb and nwbinspector are installed conditionally in the workflow files
+# (only for Python 3.10+, as both packages dropped Python 3.9 support)

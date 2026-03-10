@@ -72,7 +72,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture, tests.fixtur
             % code which overloads display methods for nwb types/objects.
             C = evalc( 'run(tutorialFile)' ); %#ok<NASGU>
             
-            skipPynwbChecks = getenv("SKIP_PYNWB_COMPATIBILITY_TEST_FOR_TUTORIALS");
+            skipPynwbChecks = getenv("SKIP_PYNWB_TESTS");
             skipPynwbChecks = ~isempty(skipPynwbChecks) && logical(str2double(skipPynwbChecks));
 
             skipNwbInspector = getenv("SKIP_NWBINSPECTOR_TEST");

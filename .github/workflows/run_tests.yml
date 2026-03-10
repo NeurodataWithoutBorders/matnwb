@@ -94,7 +94,10 @@ jobs:
         run: |
           python -m pip install -U pip
           pip install -r +tests/requirements.txt
-          # Install nwbinspector only for Python 3.10+ (nwbinspector dropped Python 3.9 support)
+          # Install pynwb and nwbinspector only for Python 3.10+ (both dropped Python 3.9 support)
+          if [[ "${{ matrix.skip-pynwb-tests }}" == "0" ]]; then
+            pip install "git+https://github.com/NeurodataWithoutBorders/pynwb.git@dev"
+          fi
           if [[ "${{ matrix.skip-nwbinspector-test }}" == "0" ]]; then
             pip install "git+https://github.com/NeurodataWithoutBorders/nwbinspector.git@dev"
           fi
@@ -112,8 +115,8 @@ jobs:
         uses: matlab-actions/run-command@v2
         with:
           command: |
-            setenv("SKIP_PYNWB_COMPATIBILITY_TEST_FOR_TUTORIALS", ...
-                num2str(${{ matrix.skip-pynwb-compatibilty-test-for-tutorial }}))
+            setenv("SKIP_PYNWB_TESTS", ...
+                num2str(${{ matrix.skip-pynwb-tests }}))
             setenv("SKIP_NWBINSPECTOR_TEST", ...
                 num2str(${{ matrix.skip-nwbinspector-test }}))
             pyenv("ExecutionMode", "OutOfProcess");
