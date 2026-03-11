@@ -1,4 +1,4 @@
-classdef (TestTags = {'UsesPython'}, SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) ...
+classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) ...
         PyNWBIOTest < tests.system.RoundTripTest
     % Assumes PyNWB and unittest2 has been installed on the system.
     %
@@ -7,7 +7,7 @@ classdef (TestTags = {'UsesPython'}, SharedTestFixtures = {tests.fixtures.SetEnv
     %
     % To install unittest2, execute:
     % $ pip install unittest2
-    methods(Test)
+    methods(Test, TestTags={'UsesPython'})
         function testOutToPyNWB(testCase)
             filename = ['MatNWB.' testCase.className() '.testOutToPyNWB.nwb'];
             nwbExport(testCase.file, filename);
