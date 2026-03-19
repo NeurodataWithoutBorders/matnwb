@@ -140,7 +140,7 @@ end
 function suite = filterTestsByCompatibility(suite)
     import matlab.unittest.selectors.HasTag
 
-    skipPythonTests = getenv("SKIP_PYNWB_COMPATIBILITY_TEST_FOR_TUTORIALS");
+    skipPythonTests = getenv("SKIP_PYNWB_TESTS");
     skipPythonTests = ~isempty(skipPythonTests) && logical(str2double(skipPythonTests));
 
     if skipPythonTests
