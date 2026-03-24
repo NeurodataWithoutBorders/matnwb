@@ -7,7 +7,7 @@ classdef NWBFile < types.core.NWBContainer & types.untyped.GroupClass
 
 % READONLY PROPERTIES
 properties(SetAccess = protected)
-    nwb_version = "2.9.0"; %  (char) File version string. Use semantic versioning, e.g. 1.2.1. This will be the name of the format with trailing major, minor and patch numbers.
+    nwb_version = "2.10.0-alpha"; %  (char) File version string. Use semantic versioning, e.g. 1.2.1. This will be the name of the format with trailing major, minor and patch numbers.
 end
 % REQUIRED PROPERTIES
 properties
@@ -27,6 +27,7 @@ properties
     general_devices_models; %  (DeviceModel) Data acquisition device models.
     general_experiment_description; %  (char) General description of the experiment.
     general_experimenter; %  (char) Name of person(s) who performed the experiment. Can also specify roles of different people involved.
+    general_external_resources; %  (HERD) This is the HERD structure for this specific NWBFile, storing the mapped external resources.
     general_extracellular_ephys; %  (ElectrodeGroup) Physical group of electrodes.
     general_extracellular_ephys_electrodes; %  (ElectrodesTable) A table of all electrodes (i.e. channels) used for recording. Changed in NWB 2.9.0 to use the newly added ElectrodesTable neurodata type instead of a DynamicTable with added columns.
     general_institution; %  (char) Institution(s) where experiment was performed.
@@ -93,6 +94,8 @@ methods
         %  - general_experiment_description (char) - General description of the experiment.
         %
         %  - general_experimenter (char) - Name of person(s) who performed the experiment. Can also specify roles of different people involved.
+        %
+        %  - general_external_resources (HERD) - This is the HERD structure for this specific NWBFile, storing the mapped external resources.
         %
         %  - general_extracellular_ephys (ElectrodeGroup) - Physical group of electrodes.
         %
@@ -179,7 +182,7 @@ methods
         % Output Arguments:
         %  - nWBFile (types.core.NWBFile) - A NWBFile object
         
-        varargin = [{'nwb_version' '2.9.0'} varargin];
+        varargin = [{'nwb_version' '2.10.0-alpha'} varargin];
         obj = obj@types.core.NWBContainer(varargin{:});
         
         
@@ -196,6 +199,7 @@ methods
         addParameter(p, 'general_devices_models',types.untyped.Set());
         addParameter(p, 'general_experiment_description',[]);
         addParameter(p, 'general_experimenter',[]);
+        addParameter(p, 'general_external_resources',[]);
         addParameter(p, 'general_extracellular_ephys',types.untyped.Set());
         addParameter(p, 'general_extracellular_ephys_electrodes',[]);
         addParameter(p, 'general_institution',[]);
@@ -248,6 +252,7 @@ methods
         obj.general_devices_models = p.Results.general_devices_models;
         obj.general_experiment_description = p.Results.general_experiment_description;
         obj.general_experimenter = p.Results.general_experimenter;
+        obj.general_external_resources = p.Results.general_external_resources;
         obj.general_extracellular_ephys = p.Results.general_extracellular_ephys;
         obj.general_extracellular_ephys_electrodes = p.Results.general_extracellular_ephys_electrodes;
         obj.general_institution = p.Results.general_institution;
@@ -325,6 +330,9 @@ methods
     end
     function set.general_experimenter(obj, val)
         obj.general_experimenter = obj.validate_general_experimenter(val);
+    end
+    function set.general_external_resources(obj, val)
+        obj.general_external_resources = obj.validate_general_external_resources(val);
     end
     function set.general_extracellular_ephys(obj, val)
         obj.general_extracellular_ephys = obj.validate_general_extracellular_ephys(val);
@@ -495,6 +503,9 @@ methods
     function val = validate_general_experimenter(obj, val)
         val = types.util.checkDtype('general_experimenter', 'char', val);
         types.util.validateShape('general_experimenter', {[Inf]}, val)
+    end
+    function val = validate_general_external_resources(obj, val)
+        val = types.util.checkDtype('general_external_resources', 'types.hdmf_common.HERD', val);
     end
     function val = validate_general_extracellular_ephys(obj, val)
         namedprops = struct();
@@ -700,6 +711,10 @@ methods
             elseif ~isempty(obj.general_experimenter)
                 io.writeDataset(fid, [fullpath '/general/experimenter'], obj.general_experimenter, 'forceArray');
             end
+        end
+        io.writeGroup(fid, [fullpath '/general']);
+        if ~isempty(obj.general_external_resources)
+            refs = obj.general_external_resources.export(fid, [fullpath '/general/external_resources'], refs);
         end
         io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_extracellular_ephys)

@@ -1,5 +1,5 @@
 classdef DynamicTable < types.hdmf_common.Container & types.untyped.GroupClass
-% DYNAMICTABLE - A group containing multiple datasets that are aligned on the first dimension (Currently, this requirement if left up to APIs to check and enforce). These datasets represent different columns in the table. Apart from a column that contains unique identifiers for each row, there are no other required datasets. Users are free to add any number of custom VectorData objects (columns) here. DynamicTable also supports ragged array columns, where each element can be of a different size. To add a ragged array column, use a VectorIndex type to index the corresponding VectorData type. See documentation for VectorData and VectorIndex for more details. Unlike a compound data type, which is analogous to storing an array-of-structs, a DynamicTable can be thought of as a struct-of-arrays. This provides an alternative structure to choose from when optimizing storage for anticipated access patterns. Additionally, this type provides a way of creating a table without having to define a compound type up front. Although this convenience may be attractive, users should think carefully about how data will be accessed. DynamicTable is more appropriate for column-centric access, whereas a dataset with a compound type would be more appropriate for row-centric access. Finally, data size should also be taken into account. For small tables, performance loss may be an acceptable trade-off for the flexibility of a DynamicTable.
+% DYNAMICTABLE - A group containing multiple datasets that are aligned on the first dimension (Currently, this requirement is left up to APIs to check and enforce). These datasets represent different columns in the table. Apart from a column that contains unique identifiers for each row, there are no other required datasets. Users are free to add any number of custom VectorData objects (columns) here. DynamicTable also supports ragged array columns, where each element can be of a different size. To add a ragged array column, use a VectorIndex type to index the corresponding VectorData type. See documentation for VectorData and VectorIndex for more details. Unlike a compound data type, which is analogous to storing an array-of-structs, a DynamicTable can be thought of as a struct-of-arrays. This provides an alternative structure to choose from when optimizing storage for anticipated access patterns. Additionally, this type provides a way of creating a table without having to define a compound type up front. Although this convenience may be attractive, users should think carefully about how data will be accessed. DynamicTable is more appropriate for column-centric access, whereas a dataset with a compound type would be more appropriate for row-centric access. Finally, data size should also be taken into account. For small tables, performance loss may be an acceptable trade-off for the flexibility of a DynamicTable.
 %
 % Required Properties:
 %  colnames, description, id
@@ -13,6 +13,7 @@ properties
 end
 % OPTIONAL PROPERTIES
 properties
+    meanings_tables; %  (MeaningsTable) MeaningsTable objects that provide meanings for values in VectorData columns within this DynamicTable. Tables should be named according to the column they provide meanings for with a "_meanings" suffix. e.g., if a VectorData column is named "stimulus_type", the corresponding MeaningsTable should be named "stimulus_type_meanings".
     vectordata; %  (VectorData) Vector columns, including index columns, of this dynamic table.
 end
 
@@ -32,6 +33,8 @@ methods
         %
         %  - id (ElementIdentifiers) - Array of unique identifiers for the rows of this dynamic table.
         %
+        %  - meanings_tables (MeaningsTable) - MeaningsTable objects that provide meanings for values in VectorData columns within this DynamicTable. Tables should be named according to the column they provide meanings for with a "_meanings" suffix. e.g., if a VectorData column is named "stimulus_type", the corresponding MeaningsTable should be named "stimulus_type_meanings".
+        %
         %  - vectordata (VectorData) - Vector columns, including index columns, of this dynamic table.
         %
         % Output Arguments:
@@ -48,10 +51,12 @@ methods
         addParameter(p, 'colnames',[]);
         addParameter(p, 'description',[]);
         addParameter(p, 'id',[]);
+        addParameter(p, 'meanings_tables',types.untyped.Set());
         misc.parseSkipInvalidName(p, varargin);
         obj.colnames = p.Results.colnames;
         obj.description = p.Results.description;
         obj.id = p.Results.id;
+        obj.meanings_tables = p.Results.meanings_tables;
         
         % Only execute validation/setup code when called directly in this class's
         % constructor, not when invoked through superclass constructor chain
@@ -71,6 +76,9 @@ methods
     function set.id(obj, val)
         obj.id = obj.validate_id(val);
     end
+    function set.meanings_tables(obj, val)
+        obj.meanings_tables = obj.validate_meanings_tables(val);
+    end
     function set.vectordata(obj, val)
         obj.vectordata = obj.validate_vectordata(val);
     end
@@ -88,10 +96,14 @@ methods
         types.util.checkType('id', 'types.hdmf_common.ElementIdentifiers', val);
         if ~isempty(val)
             [val, originalVal] = types.util.unwrapValue(val);
-            val = types.util.checkDtype('id', 'int8', val);
             types.util.validateShape('id', {[Inf]}, val)
             val = types.util.rewrapValue(val, originalVal);
         end
+    end
+    function val = validate_meanings_tables(obj, val)
+        namedprops = struct();
+        constrained = {'types.hdmf_common.MeaningsTable'};
+        types.util.checkSet('meanings_tables', namedprops, constrained, val);
     end
     function val = validate_vectordata(obj, val)
         constrained = { 'types.hdmf_common.VectorData' };
@@ -106,6 +118,9 @@ methods
         io.writeAttribute(fid, [fullpath '/colnames'], obj.colnames, 'forceArray');
         io.writeAttribute(fid, [fullpath '/description'], obj.description);
         refs = obj.id.export(fid, [fullpath '/id'], refs);
+        if ~isempty(obj.meanings_tables)
+            refs = obj.meanings_tables.export(fid, [fullpath '/meanings_tables'], refs);
+        end
         if ~isempty(obj.vectordata)
             refs = obj.vectordata.export(fid, fullpath, refs);
         end

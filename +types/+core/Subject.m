@@ -7,7 +7,7 @@ classdef Subject < types.core.NWBContainer & types.untyped.GroupClass
 
 % OPTIONAL PROPERTIES
 properties
-    age; %  (char) Age of subject. Can be supplied instead of 'date_of_birth'.
+    age; %  (char) Age of subject. Can be supplied instead of 'date_of_birth'. The ISO 8601 Duration format is recommended, e.g., 'P90D' for 90 days old. If the precise age is unknown, an age range can be given by '[lower bound]/[upper bound]' e.g. 'P10D/P20D' would mean that the age is in between 10 and 20 days. If only the lower bound is known, then including only the slash after that lower bound can be used to indicate a missing bound. For instance, 'P90Y/' would indicate that the age is 90 years or older.
     age_reference = "birth"; %  (char) Age is with reference to this event. Can be 'birth' or 'gestational'. If reference is omitted, 'birth' is implied.
     date_of_birth; %  (datetime) Date of birth of subject. Can be supplied instead of 'age'.
     description; %  (char) Description of subject and where subject came from (e.g., breeder, if animal).
@@ -29,7 +29,7 @@ methods
         %  subject = types.core.SUBJECT(Name, Value) creates a Subject object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
-        %  - age (char) - Age of subject. Can be supplied instead of 'date_of_birth'.
+        %  - age (char) - Age of subject. Can be supplied instead of 'date_of_birth'. The ISO 8601 Duration format is recommended, e.g., 'P90D' for 90 days old. If the precise age is unknown, an age range can be given by '[lower bound]/[upper bound]' e.g. 'P10D/P20D' would mean that the age is in between 10 and 20 days. If only the lower bound is known, then including only the slash after that lower bound can be used to indicate a missing bound. For instance, 'P90Y/' would indicate that the age is 90 years or older.
         %
         %  - age_reference (char) - Age is with reference to this event. Can be 'birth' or 'gestational'. If reference is omitted, 'birth' is implied.
         %
