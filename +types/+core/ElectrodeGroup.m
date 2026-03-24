@@ -1,5 +1,5 @@
 classdef ElectrodeGroup < types.core.NWBContainer & types.untyped.GroupClass
-% ELECTRODEGROUP - A physical grouping of electrodes, e.g. a shank of an array.
+% ELECTRODEGROUP - A physical grouping of electrodes, e.g., a shank of an array. An electrode group is typically used to describe electrodes that are physically connected on a single device and are often (but not always) used together for analysis, such as for spike sorting. Note that this is descriptive metadata; electrodes from different groups can still be spike-sorted together if needed.
 %
 % Required Properties:
 %  description, device, location
