@@ -117,7 +117,7 @@ function resultTable = convertNwbInspectorResultsToTable(resultsIn)
         resultTable(i).file_path = pyValueToString(C{i}.file_path);
         resultTable(i).check_function_name = pyValueToString(C{i}.check_function_name);
     end
-    resultTable = struct2table(resultTable);
+    resultTable = struct2table(resultTable, 'AsArray', true);
 end
 
 function resultTable = convertJsonReportToTable(reportFilePath)
