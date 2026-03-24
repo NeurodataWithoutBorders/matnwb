@@ -1,0 +1,31 @@
+groups:
+- neurodata_type_def: TimeIntervals
+  neurodata_type_inc: DynamicTable
+  doc: A container for aggregating epoch data and the TimeSeries that each epoch applies
+    to.
+  datasets:
+  - name: start_time
+    neurodata_type_inc: VectorData
+    dtype: float32
+    doc: Start time of epoch, in seconds.
+  - name: stop_time
+    neurodata_type_inc: VectorData
+    dtype: float32
+    doc: Stop time of epoch, in seconds.
+  - name: tags
+    neurodata_type_inc: VectorData
+    dtype: text
+    doc: User-defined tags that identify or categorize events.
+    quantity: '?'
+  - name: tags_index
+    neurodata_type_inc: VectorIndex
+    doc: Index for tags.
+    quantity: '?'
+  - name: timeseries
+    neurodata_type_inc: TimeSeriesReferenceVectorData
+    doc: An index into a TimeSeries object.
+    quantity: '?'
+  - name: timeseries_index
+    neurodata_type_inc: VectorIndex
+    doc: Index for timeseries.
+    quantity: '?'
