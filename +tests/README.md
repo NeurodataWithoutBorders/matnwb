@@ -170,6 +170,27 @@ _System Properties > Advanced > Environment Variables_ and restart MATLAB.
 - Python-dependent tests are tagged `UsesPython`
 - Tests requiring dynamically loaded HDF5 filters are tagged `UsesDynamicallyLoadedFilters` (MATLAB R2022a+)
 
+### Placing `TestTags` on the `methods` block, not the classdef
+
+Tags must be declared on the `methods (Test, TestTags = {...})` block rather
+than on the `classdef` line. Placing tags on the classdef causes a parsing
+issue with the MATLAB domain for Sphinx documentation generation
+([sphinx-contrib/matlabdomain#281](https://github.com/sphinx-contrib/matlabdomain/issues/281)).
+
+```matlab
+% Correct
+methods (Test, TestTags = {'UsesPython'})
+    function testSomething(testCase)
+        ...
+    end
+end
+
+% Avoid
+classdef (TestTags = {'UsesPython'}) MyTest < matlab.unittest.TestCase
+    ...
+end
+```
+
 ### Using `nwbRead` in tests
 
 When calling `nwbRead` in a test, you **must** do one of the following:
