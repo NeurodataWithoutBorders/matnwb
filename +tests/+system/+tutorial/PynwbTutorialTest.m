@@ -5,8 +5,7 @@
 %   of the pynwb repository. If the tutorial creates nwb file(s), the test
 %   will also try to open these with matnwb.
 
-classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}, ...
-        TestTags = {'UsesPython'}) ...
+classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) ...
         PynwbTutorialTest < matlab.unittest.TestCase
 
     properties (TestParameter)
@@ -56,7 +55,7 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}, .
         end
     end
 
-    methods (Test)
+    methods (Test, TestTags = {'UsesPython'})
         function testTutorial(testCase, TutorialFile)
             galleryFolder = fullfile(pwd, 'docs', 'gallery');
             tutorialFilePath = fullfile(galleryFolder, TutorialFile);
