@@ -91,18 +91,33 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Configure python env
+        id: configure-python
         run: |
           python -m pip install -U pip
           pip install -r +tests/requirements.txt
           # Install pynwb and nwbinspector only for Python 3.10+ (both dropped Python 3.9 support)
           if [[ "${{ matrix.skip-pynwb-tests }}" == "0" ]]; then
             pip install pynwb
+            pynwb_version=$(pip show pynwb | grep "^Version:" | awk '{print $2}')
+            echo "pynwb_version=$pynwb_version" >> "$GITHUB_OUTPUT"
           fi
           if [[ "${{ matrix.skip-nwbinspector-test }}" == "0" ]]; then
             pip install nwbinspector
           fi
           python -m pip list
           echo "HDF5_PLUGIN_PATH=$(python -c "import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)")" >> "$GITHUB_ENV"
+
+      - name: Check out PyNWB repository (for testing PyNWB tutorials)
+        if: ${{ matrix.skip-pynwb-tests == '0' }}
+        uses: actions/checkout@v4
+        with:
+          repository: NeurodataWithoutBorders/pynwb
+          ref: ${{ steps.configure-python.outputs.pynwb_version }}
+          path: ../pynwb-repo
+
+      - name: Set PyNWB repo path
+        if: ${{ matrix.skip-pynwb-tests == '0' }}
+        run: echo "PYNWB_REPO_DIR=$GITHUB_WORKSPACE/../pynwb-repo" >> "$GITHUB_ENV"
 
       - name: Install MATLAB
         uses: matlab-actions/setup-matlab@v2
