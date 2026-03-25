@@ -120,7 +120,17 @@ jobs:
             setenv("SKIP_NWBINSPECTOR_TEST", ...
                 num2str(${{ matrix.skip-nwbinspector-test }}))
             pyenv("ExecutionMode", "OutOfProcess");
-            results = assertSuccess(nwbtest('ReportOutputFolder', '.')); 
+            results = assertSuccess(nwbtest('ReportOutputFolder', '.'));
+            fprintf('\n=== Test Results (%d tests) ===\n', numel(results));
+            for i = 1:numel(results)
+              status = 'PASS';
+              if results(i).Failed, status = 'FAIL'; elseif results(i).Incomplete, status = 'SKIP'; end
+              fprintf('[%s] %s\n', status, results(i).Name);
+            end
+            numPassed = sum([results.Passed]);
+            numFailed = sum([results.Failed]);
+            numSkipped = sum([results.Incomplete]);
+            fprintf('\nPassed: %d  Failed: %d  Skipped: %d\n', numPassed, numFailed, numSkipped);
             assert(~isempty(results), 'No tests ran');
 
       - name: Upload JUnit results
