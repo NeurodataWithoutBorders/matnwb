@@ -4,9 +4,13 @@
 name: PyNWB dev branch compatibility
 
 on:
+
   schedule:
     - cron: '0 6 * * 1'  # Every Monday at 06:00 UTC
   workflow_dispatch:
+  push:
+    branches:
+      - temp-test-pynwb-dev-test-workflow
 
 jobs:
   run_pynwb_dev_tests:
