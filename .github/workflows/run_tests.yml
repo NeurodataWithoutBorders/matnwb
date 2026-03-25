@@ -96,10 +96,10 @@ jobs:
           pip install -r +tests/requirements.txt
           # Install pynwb and nwbinspector only for Python 3.10+ (both dropped Python 3.9 support)
           if [[ "${{ matrix.skip-pynwb-tests }}" == "0" ]]; then
-            pip install "git+https://github.com/NeurodataWithoutBorders/pynwb.git@dev"
+            pip install pynwb
           fi
           if [[ "${{ matrix.skip-nwbinspector-test }}" == "0" ]]; then
-            pip install "git+https://github.com/NeurodataWithoutBorders/nwbinspector.git@dev"
+            pip install nwbinspector
           fi
           python -m pip list
           echo "HDF5_PLUGIN_PATH=$(python -c "import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)")" >> "$GITHUB_ENV"
