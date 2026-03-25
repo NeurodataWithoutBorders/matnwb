@@ -132,6 +132,37 @@ nwbtest()
 
 Or set `SKIP_PYNWB_TESTS=1` in your `nwbtest.env` file.
 
+## Setting up dynamically loaded HDF5 filter tests
+
+Tests tagged `UsesDynamicallyLoadedFilters` require MATLAB R2022a or newer and
+HDF5 filter plugins to be available. The easiest way to set this up is via the
+`hdf5plugin` Python package.
+
+`hdf5plugin` must be installed into the same Python environment that MATLAB
+uses. Check the executable with `pyenv` in MATLAB first, then use it for all
+commands below.
+
+### macOS / Linux
+
+```bash
+/path/to/python -m pip install hdf5plugin
+export HDF5_PLUGIN_PATH=$(/path/to/python -c "import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)")
+```
+
+Then launch MATLAB **from that same terminal session** so it inherits the
+`HDF5_PLUGIN_PATH` environment variable.
+
+### Windows
+
+```bat
+C:\path\to\python.exe -m pip install hdf5plugin
+C:\path\to\python.exe -c "import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)"
+```
+
+Copy the printed path, then set `HDF5_PLUGIN_PATH` via
+_System Properties > Advanced > Environment Variables_ and restart MATLAB.
+
+
 ## Test conventions
 
 - Test classes inherit from `matlab.unittest.TestCase` (or `tests.abstract.NwbTestCase` for tests that need generated NWB types)
