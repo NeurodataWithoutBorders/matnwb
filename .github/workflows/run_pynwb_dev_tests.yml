@@ -56,6 +56,16 @@ jobs:
             pyenv("ExecutionMode", "OutOfProcess");
             results = nwbtest('ReportOutputFolder', '.', 'Tag', 'UsesPython');
             assert(~isempty(results), 'No tests ran');
+            fprintf('\n=== Test Results (%d tests) ===\n', numel(results));
+            for i = 1:numel(results)
+              status = 'PASS';
+              if results(i).Failed, status = 'FAIL'; elseif results(i).Incomplete, status = 'SKIP'; end
+              fprintf('[%s] %s\n', status, results(i).Name);
+            end
+            numPassed = sum([results.Passed]);
+            numFailed = sum([results.Failed]);
+            numSkipped = sum([results.Incomplete]);
+            fprintf('\nPassed: %d  Failed: %d  Skipped: %d\n', numPassed, numFailed, numSkipped);
             assertSuccess(results);
 
       - name: Upload JUnit results
