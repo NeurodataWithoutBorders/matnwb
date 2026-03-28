@@ -61,15 +61,17 @@ function nwb = nwbRead(filename, flags, options)
 
     shouldRegenerateSchemaClasses = not( any(strcmpi(string(flags), 'ignorecache')) );
 
+    reader = io.backend.BackendFactory.createReader(filename);
+
     schemaVersionActive = matnwb.common.getActiveSchemaVersion();
-    schemaVersionOfFile = util.getSchemaVersion(filename);
+    schemaVersionOfFile = reader.getSchemaVersion();
     isSchemaVersionMismatch = ~strcmp(schemaVersionOfFile, schemaVersionActive);
 
     if isSchemaVersionMismatch
         warnIfUnsupportedSchemaVersion(schemaVersionOfFile)
     end
 
-    specLocation = io.spec.getEmbeddedSpecLocation(filename);
+    specLocation = reader.getEmbeddedSpecLocation();
     if shouldRegenerateSchemaClasses
         if isempty(specLocation) % No embedded specifications
             try
@@ -96,7 +98,7 @@ function nwb = nwbRead(filename, flags, options)
     softLinkWarningResetObj = types.untyped.SoftLink.disablePathDeprecationWarning(); %#ok<NASGU>
 
     try
-        nwb = io.parseGroup(filename, h5info(filename), blackList);
+        nwb = io.parseGroup(filename, reader.readRoot(), blackList, reader);
     catch ME
         if isSchemaVersionMismatch ...
                 && strcmp(ME.identifier, 'MATLAB:class:RequireSuperClass')
