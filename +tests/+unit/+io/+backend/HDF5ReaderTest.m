@@ -15,7 +15,7 @@ classdef HDF5ReaderTest < matlab.unittest.TestCase
             reader = io.backend.hdf5.HDF5Reader(filename);
             rootInfo = reader.readRoot();
 
-            testCase.verifyEqual(rootInfo.Name, "/");
+            testCase.verifyEqual(rootInfo.Name, '/');
             testCase.verifyEqual(reader.getSchemaVersion(), util.getSchemaVersion(filename));
         end
 
