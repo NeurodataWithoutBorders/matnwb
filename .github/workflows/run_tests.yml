@@ -78,6 +78,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       USE_CACHE: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft == true }}
+      SKIP_COVERAGE: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft == true }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.set_matrix.outputs.matrix) }}
@@ -135,7 +136,7 @@ jobs:
             setenv("SKIP_NWBINSPECTOR_TEST", ...
                 num2str(${{ matrix.skip-nwbinspector-test }}))
             pyenv("ExecutionMode", "OutOfProcess");
-            results = assertSuccess(nwbtest('ReportOutputFolder', '.')); 
+            results = assertSuccess(nwbtest('ReportOutputFolder', '.', 'ProduceCodeCoverage', ~${{ env.SKIP_COVERAGE }} )); 
             assert(~isempty(results), 'No tests ran');
 
       - name: Upload JUnit results
