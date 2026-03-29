@@ -293,6 +293,7 @@ spike_times
 % 
 
 [spike_times_vector, spike_times_index] = util.create_indexed_column(spike_times);
+spike_times_vector.resolution = 1/20000; % If original sampling rate was 20 kHz 
 
 nwb.units = types.core.Units( ...
     'colnames', {'spike_times'}, ...
