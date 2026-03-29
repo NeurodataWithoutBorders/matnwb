@@ -67,6 +67,10 @@ methods
     
     function val = validate_sequential_recordings(obj, val)
         types.util.checkType('sequential_recordings', 'types.hdmf_common.DynamicTableRegion', val);
+        if ~isempty(val)
+            types.util.validateReferenceType('sequential_recordings.table', val.table, 'types.core.SequentialRecordingsTable', 'types.untyped.ObjectView');
+            types.util.validateShape('sequential_recordings.table', {[1]}, val.table)
+        end
     end
     function val = validate_sequential_recordings_index(obj, val)
         types.util.checkType('sequential_recordings_index', 'types.hdmf_common.VectorIndex', val);

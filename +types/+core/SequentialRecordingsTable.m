@@ -75,6 +75,10 @@ methods
     
     function val = validate_simultaneous_recordings(obj, val)
         types.util.checkType('simultaneous_recordings', 'types.hdmf_common.DynamicTableRegion', val);
+        if ~isempty(val)
+            types.util.validateReferenceType('simultaneous_recordings.table', val.table, 'types.core.SimultaneousRecordingsTable', 'types.untyped.ObjectView');
+            types.util.validateShape('simultaneous_recordings.table', {[1]}, val.table)
+        end
     end
     function val = validate_simultaneous_recordings_index(obj, val)
         types.util.checkType('simultaneous_recordings_index', 'types.hdmf_common.VectorIndex', val);
