@@ -1,7 +1,10 @@
-function parsed = parseDataset(filename, info, fullpath, Blacklist)
+function parsed = parseDataset(filename, info, fullpath, Blacklist, parentTypeName)
     %typed and untyped being container maps containing type and untyped datasets
     % the maps store information regarding information and stored data
     % NOTE, dataset name is in path format so we need to parse that out.
+    if nargin < 5
+        parentTypeName = '';
+    end
     name = info.Name;
 
     %check if typed and parse attributes
@@ -16,8 +19,15 @@ function parsed = parseDataset(filename, info, fullpath, Blacklist)
     parsed = containers.Map;
     afields = keys(attrargs);
     if ~isempty(afields)
-        anames = strcat(name, '_', afields);
-        parsed = [parsed; containers.Map(anames, attrargs.values(afields))];
+        hoistedFields = afields;
+        if ~isempty(Type.typename) && ~isempty(parentTypeName)
+            hoistedFields = filterHoistedFieldsForParent(parentTypeName, name, afields);
+        end
+
+        if ~isempty(hoistedFields)
+            anames = strcat(name, '_', hoistedFields);
+            parsed = [parsed; containers.Map(anames, attrargs.values(hoistedFields))];
+        end
     end
 
     % loading h5t references are required
@@ -83,8 +93,20 @@ function parsed = parseDataset(filename, info, fullpath, Blacklist)
     else
         props('data') = data;
         kwargs = io.map2kwargs(props);
-        parsed = io.createParsedType(fullpath, Type.typename, kwargs{:});
+        parsed(name) = io.createParsedType(fullpath, Type.typename, kwargs{:});
     end
     H5D.close(did);
     H5F.close(fid);
+end
+
+function hoistedFields = filterHoistedFieldsForParent(parentTypeName, datasetName, availableFields)
+    metaClass = meta.class.fromName(parentTypeName);
+    if isempty(metaClass)
+        hoistedFields = availableFields;
+        return;
+    end
+
+    parentPropertyNames = {metaClass.PropertyList.Name};
+    prefixedFieldNames = strcat(datasetName, '_', availableFields);
+    hoistedFields = availableFields(ismember(prefixedFieldNames, parentPropertyNames));
 end

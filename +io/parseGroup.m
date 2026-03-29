@@ -19,7 +19,7 @@ datasetProperties = containers.Map;
 for i=1:length(info.Datasets)
     datasetInfo = info.Datasets(i);
     fullPath = [info.Name '/' datasetInfo.Name];
-    dataset = io.parseDataset(filename, datasetInfo, fullPath, Blacklist);
+    dataset = io.parseDataset(filename, datasetInfo, fullPath, Blacklist, Type.typename);
     if isa(dataset, 'containers.Map')
         datasetProperties = [datasetProperties; dataset];
     else

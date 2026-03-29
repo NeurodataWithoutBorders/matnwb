@@ -1,4 +1,4 @@
-function festr = fillExport(propertyNames, RawClass, parentName, required)
+function festr = fillExport(propertyNames, RawClass, parentName, required, classprops)
     exportHeader = 'function refs = export(obj, fid, fullpath, refs)';
     if isa(RawClass, 'file.Dataset')
         propertyNames = propertyNames(~strcmp(propertyNames, 'data'));
@@ -22,6 +22,11 @@ function festr = fillExport(propertyNames, RawClass, parentName, required)
         propertyName = propertyNames{i};
         pathProps = traverseRaw(propertyName, RawClass);
         prop = pathProps{end};
+        if nargin >= 5 && isa(prop, 'file.Attribute') ...
+                && isKey(classprops, propertyName) ...
+                && isa(classprops(propertyName), 'file.Attribute')
+            prop = classprops(propertyName);
+        end
         elideProps = pathProps(1:end-1);
         elisions = cell(length(elideProps),1);
         % Construct elisions
@@ -222,6 +227,7 @@ function dataExportString = fillDataExport(name, prop, elisions, required)
 
     propertyChecks = {};
     dependencyCheck = {};
+    preExportString = '';
 
     if isa(prop, 'file.Attribute') && ~isempty(prop.dependent)
         %if attribute is dependent, check before writing
@@ -254,6 +260,13 @@ function dataExportString = fillDataExport(name, prop, elisions, required)
             warnIfMissingRequiredDependentAttributeStr = ...
                 sprintf('obj.throwErrorIfRequiredDependencyMissing(''%s'', ''%s'', fullpath)', name, depPropname);
         end
+
+        if prop.dependent_typed
+            preExportString = sprintf([ ...
+                'if isempty(obj.%1$s) && ~isempty(obj.%2$s) && isobject(obj.%2$s) && isprop(obj.%2$s, ''%3$s'') && ~isempty(obj.%2$s.%3$s)\n' ...
+                '    obj.%1$s = obj.%2$s.%3$s;\n' ...
+                'end'], name, depPropname, prop.name);
+        end
     end
 
     if ~prop.required
@@ -271,6 +284,10 @@ function dataExportString = fillDataExport(name, prop, elisions, required)
         else
              dataExportString = sprintf('%s\nend', dataExportString);
         end
+    end
+
+    if ~isempty(preExportString)
+        dataExportString = sprintf('%s\n%s', preExportString, dataExportString);
     end
 
     if ~isempty(dependencyCheck)

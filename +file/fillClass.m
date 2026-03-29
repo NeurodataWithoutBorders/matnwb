@@ -4,6 +4,7 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
 
     %% PROCESSING
     class = processed(1);
+    classprops = file.internal.filterClassPropsForCodegen(classprops, namespace);
 
     allProperties = keys(classprops);
     required = {};
@@ -165,7 +166,7 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
         inherited);
     setterFcns = file.fillSetters(setdiff(nonInherited, union(readonly, hiddenAndReadonly)), classprops);
     validatorFcns = file.fillValidators(allProperties, classprops, namespace, namespace.getFullClassName(name), inherited);
-    exporterFcns = file.fillExport(nonInherited, class, superclassNames{1}, required);
+    exporterFcns = file.fillExport(nonInherited, class, superclassNames{1}, required, classprops);
     methodBody = strjoin({constructorBody...
         '%% SETTERS' setterFcns...
         '%% VALIDATORS' validatorFcns...

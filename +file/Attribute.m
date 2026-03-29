@@ -8,6 +8,7 @@ classdef Attribute
         dtype; %type of value
         dependent; %set externally.  If the attribute is actually dependent on an untyped dataset/group
         dependent_fullname; %set externally. This is the full name, including names of potential parent groups separated by underscore. A value will only be present if it would differ from dependent.
+        dependent_typed = false; % set externally when hoisted from a typed dataset
         scalar; %if the value is scalar or an array
         dimnames;
         shape;
@@ -25,6 +26,7 @@ classdef Attribute
             obj.dtype = '';
             obj.dependent = '';
             obj.dependent_fullname = '';
+            obj.dependent_typed = false;
             obj.scalar = true;
             obj.shape = {};
             obj.dimnames = {};

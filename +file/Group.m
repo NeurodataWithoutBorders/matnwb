@@ -162,6 +162,13 @@ classdef Group < file.interface.HasProps & file.interface.HasQuantity
                     end
                     PropertyMap(SubData.name) = SubData;
                 else
+                    hoistedAttributes = getHoistedTypedDatasetAttributes(obj, SubData);
+                    if ~isempty(hoistedAttributes)
+                        attrNames = {hoistedAttributes.name};
+                        attrNames = strcat(SubData.name, '_', attrNames);
+                        PropertyMap = [PropertyMap; ...
+                            containers.Map(attrNames, num2cell(hoistedAttributes))];
+                    end
                     if isempty(SubData.name)
                         PropertyMap(lower(SubData.type)) = SubData;
                     else
@@ -251,5 +258,19 @@ classdef Group < file.interface.HasProps & file.interface.HasQuantity
                 end
             end
         end
+    end
+end
+
+function hoistedAttributes = getHoistedTypedDatasetAttributes(GroupObj, datasetObj)
+    hoistedAttributes = file.Attribute.empty;
+    if isempty(GroupObj.type) || isempty(datasetObj.name) || isempty(datasetObj.attributes)
+        return;
+    end
+
+    for iAttr = 1:length(datasetObj.attributes)
+        attribute = datasetObj.attributes(iAttr);
+        attribute.dependent = datasetObj.name;
+        attribute.dependent_typed = true;
+        hoistedAttributes(end+1) = attribute; %#ok<AGROW>
     end
 end
