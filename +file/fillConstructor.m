@@ -57,7 +57,7 @@ function bodystr = fillBody(parentName, defaults, props, namespace, class, inher
     if isempty(names)
         return;
     end
-    % if there's a root object that is a constrained set, let it be hoistable from dynamic arguments
+    % if there's a root object that is a constrained set, let it be reachable from dynamic arguments
     dynamicConstrained = false(size(names));
     isAnonymousType = false(size(names));
     isAttribute = false(size(names));

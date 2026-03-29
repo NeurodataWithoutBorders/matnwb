@@ -44,9 +44,9 @@ function postsetFunctionStr = resolvePostsetFunction(propname, prop)
                 'obj.warnIfAttributeDependencyMissing(''%s'', ''%s'')', ...
                 propname, parentname);
 
-            syncTypedDatasetAttributeString = '';
-            if prop.dependent_typed
-                syncTypedDatasetAttributeString = sprintf([ ...
+            syncPromotedDatasetAttributeString = '';
+            if prop.promoted_to_container
+                syncPromotedDatasetAttributeString = sprintf([ ...
                     'if ~isempty(obj.%1$s) && isobject(obj.%1$s) && isprop(obj.%1$s, ''%2$s'')\n' ...
                     '    obj.%1$s.%2$s = obj.%3$s;\n' ...
                     'end'], parentname, prop.name, propname);
@@ -58,8 +58,8 @@ function postsetFunctionStr = resolvePostsetFunction(propname, prop)
                 file.addSpaces(warnIfDependencyMissingString, 8), ...
                 file.addSpaces('end', 4), ...
                 'end'};
-            if ~isempty(syncTypedDatasetAttributeString)
-                postsetLines = [postsetLines(1:end-1), {file.addSpaces(syncTypedDatasetAttributeString, 4)}, postsetLines(end)];
+            if ~isempty(syncPromotedDatasetAttributeString)
+                postsetLines = [postsetLines(1:end-1), {file.addSpaces(syncPromotedDatasetAttributeString, 4)}, postsetLines(end)];
             end
             postsetFunctionStr = strjoin(postsetLines, newline);
         end

@@ -4,7 +4,6 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
 
     %% PROCESSING
     class = processed(1);
-    classprops = file.internal.filterClassPropsForCodegen(classprops, namespace);
 
     allProperties = keys(classprops);
     required = {};
@@ -13,6 +12,7 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
     defaults = {};
     dependent = {};
     hidden = {}; % special hidden properties for hard-coded workarounds
+    
     %separate into readonly, required, and optional properties
     for iGroup = 1:length(allProperties)
         propertyName = allProperties{iGroup};

@@ -33,8 +33,6 @@ function requiredPropertyNames = getRequiredPropsForClass(fullClassName, namespa
         end
         classprops = file.internal.mergeProps(classprops, superClassProps);
     end
-    classprops = file.internal.filterClassPropsForCodegen(classprops, namespace);
-    
     % Resolve the required properties. For the final list of required properties,
     % we ignore both hidden and read-only properties.
     allPropertieNames = keys(classprops);

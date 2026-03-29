@@ -1,9 +1,9 @@
-function parsed = parseDataset(filename, info, fullpath, Blacklist, parentTypeName)
+function parsed = parseDataset(filename, info, fullpath, Blacklist, containerTypeName)
     %typed and untyped being container maps containing type and untyped datasets
     % the maps store information regarding information and stored data
     % NOTE, dataset name is in path format so we need to parse that out.
     if nargin < 5
-        parentTypeName = '';
+        containerTypeName = '';
     end
     name = info.Name;
 
@@ -19,14 +19,14 @@ function parsed = parseDataset(filename, info, fullpath, Blacklist, parentTypeNa
     parsed = containers.Map;
     afields = keys(attrargs);
     if ~isempty(afields)
-        hoistedFields = afields;
-        if ~isempty(Type.typename) && ~isempty(parentTypeName)
-            hoistedFields = filterHoistedFieldsForParent(parentTypeName, name, afields);
+        promotedFields = afields;
+        if ~isempty(Type.typename) && ~isempty(containerTypeName)
+            promotedFields = filterPromotedFieldsForContainer(containerTypeName, name, afields);
         end
 
-        if ~isempty(hoistedFields)
-            anames = strcat(name, '_', hoistedFields);
-            parsed = [parsed; containers.Map(anames, attrargs.values(hoistedFields))];
+        if ~isempty(promotedFields)
+            anames = strcat(name, '_', promotedFields);
+            parsed = [parsed; containers.Map(anames, attrargs.values(promotedFields))];
         end
     end
 
@@ -99,14 +99,14 @@ function parsed = parseDataset(filename, info, fullpath, Blacklist, parentTypeNa
     H5F.close(fid);
 end
 
-function hoistedFields = filterHoistedFieldsForParent(parentTypeName, datasetName, availableFields)
-    metaClass = meta.class.fromName(parentTypeName);
+function promotedFields = filterPromotedFieldsForContainer(containerTypeName, datasetName, availableFields)
+    metaClass = meta.class.fromName(containerTypeName);
     if isempty(metaClass)
-        hoistedFields = availableFields;
+        promotedFields = availableFields;
         return;
     end
 
-    parentPropertyNames = {metaClass.PropertyList.Name};
+    containerPropertyNames = {metaClass.PropertyList.Name};
     prefixedFieldNames = strcat(datasetName, '_', availableFields);
-    hoistedFields = availableFields(ismember(prefixedFieldNames, parentPropertyNames));
+    promotedFields = availableFields(ismember(prefixedFieldNames, containerPropertyNames));
 end
