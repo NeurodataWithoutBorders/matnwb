@@ -35,12 +35,6 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
     datatype = info.Datatype;
     dataspace = info.Dataspace;
 
-    afields = keys(datasetAttributes);
-    if ~isempty(afields)
-        anames = strcat(name, '_', afields);
-        parsed = [parsed; containers.Map(anames, datasetAttributes.values(afields))];
-    end
-
     % loading h5t references are required
     % unfortunately also a bottleneck
     if strcmp(datatype.Class, 'H5T_REFERENCE')
@@ -104,6 +98,11 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
         kwargs = io.map2kwargs(datasetPropertyMap);
         parsed(name) = io.createParsedType(fullpath, datasetType, kwargs{:});
     else
+        afields = keys(datasetAttributes);
+        if ~isempty(afields)
+            anames = strcat(name, '_', afields);
+            parsed = [parsed; containers.Map(anames, datasetAttributes.values(afields))];
+        end
         parsed(name) = data;
     end
     H5D.close(did);
