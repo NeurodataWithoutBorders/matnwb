@@ -32,7 +32,6 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
 
     fid = H5F.open(filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
     did = H5D.open(fid, fullpath);
-    props = datasetAttributes;
     datatype = info.Datatype;
     dataspace = info.Dataspace;
 
@@ -100,8 +99,9 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
     end
 
     if isTypedDataset
-        props('data') = data;
-        kwargs = io.map2kwargs(props);
+        datasetPropertyMap = datasetAttributes;
+        datasetPropertyMap('data') = data;
+        kwargs = io.map2kwargs(datasetPropertyMap);
         parsed(name) = io.createParsedType(fullpath, datasetType, kwargs{:});
     else
         parsed(name) = data;
