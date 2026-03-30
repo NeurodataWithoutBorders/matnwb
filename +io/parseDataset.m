@@ -24,18 +24,18 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
     name = info.Name;
 
     %check if typed and parse attributes
-    [attrargs, Type] = io.parseAttributes(filename, info.Attributes, fullpath, blacklist);
+    [datasetAttributes, Type] = io.parseAttributes(filename, info.Attributes, fullpath, blacklist);
 
     fid = H5F.open(filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
     did = H5D.open(fid, fullpath);
-    props = attrargs;
+    props = datasetAttributes;
     datatype = info.Datatype;
     dataspace = info.Dataspace;
 
-    afields = keys(attrargs);
+    afields = keys(datasetAttributes);
     if ~isempty(afields)
         anames = strcat(name, '_', afields);
-        parsed = [parsed; containers.Map(anames, attrargs.values(afields))];
+        parsed = [parsed; containers.Map(anames, datasetAttributes.values(afields))];
     end
 
     % loading h5t references are required
