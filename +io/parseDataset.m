@@ -1,21 +1,47 @@
 function parsed = parseDataset(filename, info, fullpath, blacklist)
-
-    %typed and untyped being container maps containing type and untyped datasets
-    % the maps store information regarding information and stored data
-
-    % Output arguments:
-    %   parsed - containers.Map containing parsed representations of the
-    %       dataset and its attributes.
-    %
-    %       Keys:
-    %         - <dataset name> for the parsed dataset value
-    %         - <dataset name>_<attribute name> for each parsed attribute
-    %
-    %       Values:
-    %         - The parsed dataset value for untyped datasets
-    %         - A parsed typed object for typed datasets
-    %         - The parsed attribute values for promoted attributes
-
+% parseDataset - Parse an HDF5 dataset into a containers.Map representation.
+%
+% Syntax:
+%  parsed = io.parseDataset(filename, info, fullpath, blacklist) parses the
+%  dataset identified by FULLPATH in the HDF5 file FILENAME using metadata
+%  from INFO.
+%
+% Input arguments: 
+%  - filename  - Path to the HDF5 file.
+%  - info      - Dataset metadata structure, typically obtained from h5info.
+%  - fullpath  - Full HDF5 path to the dataset.
+%  - blacklist - Attribute names or rules to exclude when parsing attributes.
+%
+% Output argument:
+%  - parsed    - containers.Map containing the parsed dataset representation.
+%
+%      Keys:
+%        <dataset name>
+%            Always present. Maps to the parsed dataset value.
+%
+%        <dataset name>_<attribute name>
+%            Present only for untyped datasets when dataset
+%            attributes are promoted into the output map.
+%
+%      Values:
+%        For untyped datasets:
+%            parsed(<dataset name>) contains the parsed dataset
+%            value, and parsed(<dataset name>_<attribute name>)
+%            contains each promoted attribute value.
+%
+%        For typed datasets:
+%            parsed(<dataset name>) contains the typed parsed
+%            object created from the parsed dataset attributes and
+%            the dataset value stored under the 'data' property.
+%
+% Notes:
+%  - HDF5 reference datasets are fully read and resolved.
+%  - Scalar datasets are read eagerly and postprocessed according to their
+%    datatype.
+%  - Non-scalar datasets may be represented lazily using DataPipe or
+%    DataStub when appropriate.
+%  - For typed datasets, attributes are incorporated into the typed object
+%    and are not separately promoted into the output map.
 
     % Initialize output
     parsed = containers.Map;
