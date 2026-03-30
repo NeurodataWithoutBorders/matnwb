@@ -2,7 +2,24 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
 
     %typed and untyped being container maps containing type and untyped datasets
     % the maps store information regarding information and stored data
-    
+
+    % Output arguments:
+    %   parsed - containers.Map containing parsed representations of the
+    %       dataset and its attributes.
+    %
+    %       Keys:
+    %         - <dataset name> for the parsed dataset value
+    %         - <dataset name>_<attribute name> for each parsed attribute
+    %
+    %       Values:
+    %         - The parsed dataset value for untyped datasets
+    %         - A parsed typed object for typed datasets
+    %         - The parsed attribute values for promoted attributes
+
+
+    % Initialize output
+    parsed = containers.Map;
+
     % NOTE, dataset name is in path format so we need to parse that out.
     name = info.Name;
 
@@ -15,7 +32,6 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
     datatype = info.Datatype;
     dataspace = info.Dataspace;
 
-    parsed = containers.Map;
     afields = keys(attrargs);
     if ~isempty(afields)
         anames = strcat(name, '_', afields);
@@ -85,7 +101,7 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
     else
         props('data') = data;
         kwargs = io.map2kwargs(props);
-        parsed = io.createParsedType(fullpath, Type.typename, kwargs{:});
+        parsed(name) = io.createParsedType(fullpath, Type.typename, kwargs{:});
     end
     H5D.close(did);
     H5F.close(fid);

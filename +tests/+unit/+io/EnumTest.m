@@ -90,7 +90,6 @@ classdef EnumTest < matlab.unittest.TestCase
             info = h5info(filename, datasetPath);
             blacklist = struct('attributes', {{}}, 'groups', {{}});
             parsed = io.parseDataset(filename, info, datasetPath, blacklist);
-            
             data = parsed('boolean_array');
 
             % Verify the data is converted to logical array
@@ -135,7 +134,6 @@ classdef EnumTest < matlab.unittest.TestCase
             info = h5info(filename, datasetPath);
             blacklist = struct('attributes', {{}}, 'groups', {{}});
             
-            % Verify that a warning is issued
             parsed = testCase.verifyWarning(...
                 @() io.parseDataset(filename, info, datasetPath, blacklist), ...
                 'NWB:Dataset:UnknownEnum');

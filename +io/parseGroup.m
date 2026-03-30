@@ -19,12 +19,8 @@ datasetProperties = containers.Map;
 for i=1:length(info.Datasets)
     datasetInfo = info.Datasets(i);
     fullPath = [info.Name '/' datasetInfo.Name];
-    dataset = io.parseDataset(filename, datasetInfo, fullPath, Blacklist);
-    if isa(dataset, 'containers.Map')
-        datasetProperties = [datasetProperties; dataset];
-    else
-        datasetProperties(datasetInfo.Name) = dataset;
-    end
+    parsed = io.parseDataset(filename, datasetInfo, fullPath, Blacklist);
+    datasetProperties = [datasetProperties; parsed]; %#ok<AGROW>
 end
 
 %parse subgroups

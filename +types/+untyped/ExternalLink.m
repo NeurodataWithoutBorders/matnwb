@@ -67,10 +67,11 @@ classdef ExternalLink < handle
                     'Externally linked HDF type is ambiguous! (cannot discern between group, dataset, or link!)');
                 
                 if is_dataset
-                    % typed objects and references are handled by
-                    % io.parseDataset
-                    if is_typed || strcmp(LinkedInfo.Datatype.Class, 'H5T_REFERENCE')
-                        data = io.parseDataset(Link.filename, LinkedInfo, Link.path);
+                    % typed objects and references are handled by io.parseDataset
+                    is_reference = strcmp(LinkedInfo.Datatype.Class, 'H5T_REFERENCE');
+                    if is_typed || is_reference
+                        parsed = io.parseDataset(Link.filename, LinkedInfo, Link.path);
+                        data = parsed(LinkedInfo.name);
                     else
                         data = types.untyped.DataStub(Link.filename, Link.path);
                     end
