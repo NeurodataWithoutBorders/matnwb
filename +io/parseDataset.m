@@ -24,7 +24,7 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
     name = info.Name;
 
     %check if typed and parse attributes
-    [datasetAttributes, Type] = io.parseAttributes(filename, info.Attributes, fullpath, blacklist);
+    [datasetAttributes, typeInfo] = io.parseAttributes(filename, info.Attributes, fullpath, blacklist);
 
     fid = H5F.open(filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
     did = H5D.open(fid, fullpath);
@@ -95,13 +95,13 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
         H5S.close(sid);
     end
 
-    if isempty(Type.typename)
+    if isempty(typeInfo.typename)
         %untyped group
         parsed(name) = data;
     else
         props('data') = data;
         kwargs = io.map2kwargs(props);
-        parsed(name) = io.createParsedType(fullpath, Type.typename, kwargs{:});
+        parsed(name) = io.createParsedType(fullpath, typeInfo.typename, kwargs{:});
     end
     H5D.close(did);
     H5F.close(fid);
