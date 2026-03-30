@@ -31,7 +31,12 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
 
     % Open an HDF5 dataset handle for reading the dataset value
     fid = H5F.open(filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
+    fileCleanupTask = {@H5F.close, fid};
+    
     did = H5D.open(fid, fullpath);
+    datasetCleanupTask = {@H5D.close, did};
+
+    h5CleanupObj = onCleanup(cellfun(@(c)feval(c{:}), {datasetCleanupTask, fileCleanupTask}));
 
     % Read and postprocess the dataset value, or create a lazy data proxy 
     % when appropriate
@@ -93,8 +98,7 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
         H5P.close(pid);
         H5S.close(sid);
     end
-    H5D.close(did);
-    H5F.close(fid);
+    clear h5CleanupObj
 
     if isTypedDataset
         datasetPropertyMap = datasetAttributes;
