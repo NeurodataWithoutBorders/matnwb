@@ -44,7 +44,7 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
         tid = H5D.get_type(did);
         data = io.parseReference(did, tid, H5D.read(did));
         H5T.close(tid);
-    elseif ~strcmp(dataspace.Type, 'simple') % i.e scalar
+    elseif strcmp(dataspace.Type, 'scalar')
         data = H5D.read(did);
 
         switch datatype.Class
