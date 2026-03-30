@@ -20,8 +20,7 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
     % Initialize output
     parsed = containers.Map;
 
-    % NOTE, dataset name is in path format so we need to parse that out.
-    name = info.Name;
+    datasetName = info.Name;
 
     % Parse dataset attributes
     [datasetAttributes, typeInfo] = io.parseAttributes(filename, info.Attributes, fullpath, blacklist);
@@ -66,7 +65,7 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
                     warning('NWB:Dataset:UnknownEnum', ...
                         ['Encountered unknown enum under field `%s` with %d members. ' ...
                         'Will be read as cell array of characters.'], ...
-                        name, length(datatype.Type.Member));
+                        datasetName, length(datatype.Type.Member));
                     data = io.internal.h5.postprocess.toEnumCellStr(data, datatype.Type);
                 end
             case 'H5T_COMPOUND'
@@ -87,7 +86,7 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
         elseif any(dataspace.Size == 0)
             data = [];
         else
-            matlabDataType = io.internal.h5.datatype.datatypeInfoToMatlabType(datatype, name);
+            matlabDataType = io.internal.h5.datatype.datatypeInfoToMatlabType(datatype, datasetName);
             data = types.untyped.DataStub(filename, fullpath, dataspace.Size, matlabDataType);
         end
         H5T.close(tid);
@@ -101,13 +100,13 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
         datasetPropertyMap = datasetAttributes;
         datasetPropertyMap('data') = data;
         kwargs = io.map2kwargs(datasetPropertyMap);
-        parsed(name) = io.createParsedType(fullpath, datasetType, kwargs{:});
+        parsed(datasetName) = io.createParsedType(fullpath, datasetType, kwargs{:});
     else
         afields = keys(datasetAttributes);
         if ~isempty(afields)
-            anames = strcat(name, '_', afields);
+            anames = strcat(datasetName, '_', afields);
             parsed = [parsed; containers.Map(anames, datasetAttributes.values(afields))];
         end
-        parsed(name) = data;
+        parsed(datasetName) = data;
     end
 end
