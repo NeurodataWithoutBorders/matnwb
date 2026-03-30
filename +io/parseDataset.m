@@ -26,17 +26,14 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
     [datasetAttributes, typeInfo] = io.parseAttributes(filename, info.Attributes, fullpath, blacklist);
 
     % Check if dataset is typed
-    datasetType = typeInfo.typename;
-    isTypedDataset = ~isempty(datasetType);
+    datasetTypeName = typeInfo.typename;
+    isTypedDataset = ~isempty(datasetTypeName);
 
     % Open an HDF5 dataset handle for reading the dataset value
     fid = H5F.open(filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
-    fileCleanupTask = {@H5F.close, fid};
-    
     did = H5D.open(fid, fullpath);
-    datasetCleanupTask = {@H5D.close, did};
-
-    h5CleanupObj = onCleanup(cellfun(@(c)feval(c{:}), {datasetCleanupTask, fileCleanupTask}));
+    h5CleanupObj = onCleanup(...
+        @() runOrderedCleanup({@() H5D.close(did), @()H5F.close(fid)}));
 
     % Read and postprocess the dataset value, or create a lazy data proxy 
     % when appropriate
@@ -104,13 +101,23 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
         datasetPropertyMap = datasetAttributes;
         datasetPropertyMap('data') = data;
         kwargs = io.map2kwargs(datasetPropertyMap);
-        parsed(datasetName) = io.createParsedType(fullpath, datasetType, kwargs{:});
+        parsed(datasetName) = io.createParsedType(fullpath, datasetTypeName, kwargs{:});
     else
-        afields = keys(datasetAttributes);
-        if ~isempty(afields)
-            anames = strcat(datasetName, '_', afields);
-            parsed = [parsed; containers.Map(anames, datasetAttributes.values(afields))];
+        attributeNames = keys(datasetAttributes);
+        if ~isempty(attributeNames)
+            promotedAttributeNames = strcat(datasetName, '_', attributeNames);
+            parsed = [parsed; containers.Map(promotedAttributeNames, datasetAttributes.values(attributeNames))];
         end
         parsed(datasetName) = data;
+    end
+end
+
+function runOrderedCleanup(cleanupFns)
+    for i = 1:numel(cleanupFns)
+        try
+            cleanupFns{i}();
+        catch
+            % silently pass
+        end
     end
 end
