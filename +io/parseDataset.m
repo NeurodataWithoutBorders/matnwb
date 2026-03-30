@@ -30,14 +30,17 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
     datasetType = typeInfo.typename;
     isTypedDataset = ~isempty(datasetType);
 
+    % Open an HDF5 dataset handle for reading the dataset value
     fid = H5F.open(filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
     did = H5D.open(fid, fullpath);
+
+    % Read and postprocess the dataset value, or create a lazy data proxy 
+    % when appropriate
     datatype = info.Datatype;
     dataspace = info.Dataspace;
-
-    % loading h5t references are required
-    % unfortunately also a bottleneck
     if strcmp(datatype.Class, 'H5T_REFERENCE')
+        % Load all H5T references. This is required unfortunately also a 
+        % bottleneck
         tid = H5D.get_type(did);
         data = io.parseReference(did, tid, H5D.read(did));
         H5T.close(tid);
@@ -70,7 +73,7 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
                 isScalar = true;
                 data = io.parseCompound(did, data, isScalar);
         end
-    else
+    else % non scalar
         sid = H5D.get_space(did);
         pid = H5D.get_create_plist(did);
         isChunked = H5P.get_layout(pid) == H5ML.get_constant_value('H5D_CHUNKED');
@@ -91,6 +94,8 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
         H5P.close(pid);
         H5S.close(sid);
     end
+    H5D.close(did);
+    H5F.close(fid);
 
     if isTypedDataset
         datasetPropertyMap = datasetAttributes;
@@ -105,6 +110,4 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
         end
         parsed(name) = data;
     end
-    H5D.close(did);
-    H5F.close(fid);
 end
