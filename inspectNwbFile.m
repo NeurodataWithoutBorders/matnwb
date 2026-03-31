@@ -117,13 +117,13 @@ function resultTable = convertNwbInspectorResultsToTable(resultsIn)
         resultTable(i).file_path = pyValueToString(C{i}.file_path);
         resultTable(i).check_function_name = pyValueToString(C{i}.check_function_name);
     end
-    resultTable = struct2table(resultTable);
+    resultTable = struct2table(resultTable, 'AsArray', true);
 end
 
 function resultTable = convertJsonReportToTable(reportFilePath)
     S = jsondecode(fileread(reportFilePath));
     varNames = fieldnames(S.messages);
-    T = struct2table(S.messages);
+    T = struct2table(S.messages, 'AsArray', true);
 
     for i = 1:numel(varNames)
         try

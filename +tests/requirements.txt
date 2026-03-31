@@ -1,6 +1,9 @@
 scipy
 matplotlib
 hdf5plugin
-dataframe_image
+dataframe_image     # Used by PyNWB "Icepys pandas" tutorial
+Pillow              # Used by PyNWB "Images" tutorial
+
 # Note: pynwb and nwbinspector are installed conditionally in the workflow files
 # (only for Python 3.10+, as both packages dropped Python 3.9 support)
+# For local testing, install manually

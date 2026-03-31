@@ -119,7 +119,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             testSet = types.untyped.Set('a', 1);
             testCase.verifyTrue(testSet.isKey('a'), 'Expected set to have key "a".')
 
-            testSet.set('a', {[]})
+            testSet.set('a', {[]});
             testCase.verifyFalse(testSet.isKey('a'), 'Expected key "a" to have been removed.')
         end
     end

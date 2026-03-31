@@ -1,42 +1,72 @@
-function parsed = parseDataset(filename, info, fullpath, Blacklist, containerTypeName)
-    %typed and untyped being container maps containing type and untyped datasets
-    % the maps store information regarding information and stored data
-    % NOTE, dataset name is in path format so we need to parse that out.
-    if nargin < 5
-        containerTypeName = '';
+function parsed = parseDataset(filename, info, fullpath, blacklist)
+% parseDataset - Read an HDF5 dataset and return it as named map entries.
+%
+% Syntax:
+%  parsed = io.parseDataset(filename, info, fullpath, blacklist) parses the
+%  dataset identified by FULLPATH in the HDF5 file FILENAME using metadata
+%  from INFO.
+%
+% Input arguments:
+%  - filename  - Path to the HDF5 file.
+%  - info      - Dataset metadata structure, typically obtained from h5info.
+%  - fullpath  - Full HDF5 path to the dataset.
+%  - blacklist - Attribute names or rules to exclude when parsing attributes.
+%
+% Output argument:
+%  - parsed - containers.Map with the following entries:
+%
+%      parsed('datasetName')
+%          The parsed dataset value (untyped) or typed object (typed).
+%
+%      parsed('datasetName_attrName')
+%          Dataset attributes not consumed during typed object creation,
+%          or all attributes for untyped datasets.
+%
+% Notes:
+%  - The primary map key is the dataset leaf name from INFO.Name, not
+%    FULLPATH.
+%  - For typed datasets, attributes are considered consumable if their
+%    names match public properties of the neurodata type class. Consumed
+%    attributes are used to construct the typed object and are not
+%    promoted into the output map.
+%  - HDF5 reference datasets are fully read and resolved.
+%  - Scalar datasets are read eagerly and postprocessed according to their
+%    datatype.
+%  - For non-scalar datasets, chunked numeric datasets are represented as
+%    DataPipe, other non-empty datasets as DataStub, and empty datasets as
+%    [].
+
+    arguments
+        filename (1,:) char
+        info struct
+        fullpath (1,:) char
+        blacklist struct = struct('attributes', {{}}, 'groups', {{}})
     end
-    name = info.Name;
 
-    %check if typed and parse attributes
-    [attrargs, Type] = io.parseAttributes(filename, info.Attributes, fullpath, Blacklist);
+    [parsedAttributes, typeInfo] = ...
+        io.parseAttributes(filename, info.Attributes, fullpath, blacklist);
 
+    datasetTypeName = typeInfo.typename;
+    isTypedDataset = ~isempty(datasetTypeName);
+
+    % Open an HDF5 dataset handle for reading the dataset value
     fid = H5F.open(filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
+    fidCleanup = onCleanup(@() H5F.close(fid));
+    
     did = H5D.open(fid, fullpath);
-    props = attrargs;
+    didCleanup = onCleanup(@() H5D.close(did));
+    
+    % Read and postprocess the dataset value, or create a lazy data proxy 
+    % when appropriate
     datatype = info.Datatype;
     dataspace = info.Dataspace;
-
-    parsed = containers.Map;
-    afields = keys(attrargs);
-    if ~isempty(afields)
-        promotedFields = afields;
-        if ~isempty(Type.typename) && ~isempty(containerTypeName)
-            promotedFields = filterPromotedFieldsForContainer(containerTypeName, name, afields);
-        end
-
-        if ~isempty(promotedFields)
-            anames = strcat(name, '_', promotedFields);
-            parsed = [parsed; containers.Map(anames, attrargs.values(promotedFields))];
-        end
-    end
-
-    % loading h5t references are required
-    % unfortunately also a bottleneck
     if strcmp(datatype.Class, 'H5T_REFERENCE')
+        % Load all H5T references. This is required, unfortunately also a 
+        % bottleneck
         tid = H5D.get_type(did);
         data = io.parseReference(did, tid, H5D.read(did));
         H5T.close(tid);
-    elseif ~strcmp(dataspace.Type, 'simple') % i.e scalar
+    elseif strcmp(dataspace.Type, 'scalar')
         data = H5D.read(did);
 
         switch datatype.Class
@@ -58,14 +88,14 @@ function parsed = parseDataset(filename, info, fullpath, Blacklist, containerTyp
                     warning('NWB:Dataset:UnknownEnum', ...
                         ['Encountered unknown enum under field `%s` with %d members. ' ...
                         'Will be read as cell array of characters.'], ...
-                        name, length(datatype.Type.Member));
+                        info.Name, length(datatype.Type.Member));
                     data = io.internal.h5.postprocess.toEnumCellStr(data, datatype.Type);
                 end
             case 'H5T_COMPOUND'
                 isScalar = true;
                 data = io.parseCompound(did, data, isScalar);
         end
-    else
+    else % non scalar
         sid = H5D.get_space(did);
         pid = H5D.get_create_plist(did);
         isChunked = H5P.get_layout(pid) == H5ML.get_constant_value('H5D_CHUNKED');
@@ -79,7 +109,7 @@ function parsed = parseDataset(filename, info, fullpath, Blacklist, containerTyp
         elseif any(dataspace.Size == 0)
             data = [];
         else
-            matlabDataType = io.internal.h5.datatype.datatypeInfoToMatlabType(datatype, name);
+            matlabDataType = io.internal.h5.datatype.datatypeInfoToMatlabType(datatype, info.Name);
             data = types.untyped.DataStub(filename, fullpath, dataspace.Size, matlabDataType);
         end
         H5T.close(tid);
@@ -87,16 +117,50 @@ function parsed = parseDataset(filename, info, fullpath, Blacklist, containerTyp
         H5S.close(sid);
     end
 
-    if isempty(Type.typename)
-        %untyped group
-        parsed(name) = data;
+    % Prepare output
+    datasetName = info.Name;
+    parsed = containers.Map;
+
+    if isTypedDataset
+        [typeProperties, unconsumedAttributes] = ...
+            splitAttributes(parsedAttributes, properties(datasetTypeName));
+        typeProperties('data') = data;
+        kwargs = io.map2kwargs(typeProperties);
+        parsed(datasetName) = io.createParsedType(fullpath, datasetTypeName, kwargs{:});
+        parsed = [parsed; promoteDatasetAttributes(datasetName, unconsumedAttributes)];
     else
-        props('data') = data;
-        kwargs = io.map2kwargs(props);
-        parsed(name) = io.createParsedType(fullpath, Type.typename, kwargs{:});
+        parsed(datasetName) = data;
+        parsed = [parsed; promoteDatasetAttributes(datasetName, parsedAttributes)];
     end
-    H5D.close(did);
-    H5F.close(fid);
+end
+
+function [consumable, nonConsumable] = splitAttributes(attributes, consumableNames)
+    attributeNames = keys(attributes);
+    isConsumable = ismember(attributeNames, consumableNames);
+    
+    consumable = buildSubmap(attributes, attributeNames(isConsumable));
+    nonConsumable = buildSubmap(attributes, attributeNames(~isConsumable));
+    
+    function submap = buildSubmap(sourceMap, selectedKeys)
+        if isempty(selectedKeys)
+            submap = containers.Map();
+        else
+            submap = containers.Map(selectedKeys, values(sourceMap, selectedKeys), 'UniformValues', false);
+        end
+    end
+end
+
+function promotedAttributes = promoteDatasetAttributes(datasetName, attributes)
+    promotedAttributes = containers.Map;
+
+    attributeNames = keys(attributes);
+    if isempty(attributeNames)
+        return;
+    end
+
+    promotedAttributeNames = strcat(datasetName, '_', attributeNames);
+    attributeValues = values(attributes, attributeNames);
+    promotedAttributes = containers.Map(promotedAttributeNames, attributeValues);
 end
 
 function promotedFields = filterPromotedFieldsForContainer(containerTypeName, datasetName, availableFields)
