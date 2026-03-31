@@ -2,9 +2,9 @@ function parsed = parseDataset(filename, datasetInfo, datasetPath, blacklist)
 % parseDataset - Read an HDF5 dataset and return it as named map entries.
 %
 % Syntax:
-%  parsed = io.parseDataset(filename, datasetInfo, datasetPath, blacklist) parses the
-%  dataset identified by FULLPATH in the HDF5 file FILENAME using metadata
-%  from INFO.
+%  parsed = io.parseDataset(filename, datasetInfo, datasetPath, blacklist) 
+%  parses the dataset identified by datasetPath in the HDF5 file filename using 
+%  metadata from datasetInfo.
 %
 % Input arguments:
 %  - filename  - Path to the HDF5 file.
@@ -23,8 +23,8 @@ function parsed = parseDataset(filename, datasetInfo, datasetPath, blacklist)
 %          or all attributes for untyped datasets.
 %
 % Notes:
-%  - The primary map key is the dataset leaf name from INFO.Name, not
-%    FULLPATH.
+%  - The primary map key is the dataset leaf name from datasetInfo.Name, not
+%    datasetPath.
 %  - For typed datasets, attributes are considered consumable if their
 %    names match public properties of the neurodata type class. Consumed
 %    attributes are used to construct the typed object and are not
