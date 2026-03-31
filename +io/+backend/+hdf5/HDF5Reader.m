@@ -30,15 +30,20 @@ classdef HDF5Reader < io.backend.base.Reader
         end
 
         function attributeValue = readAttributeValue(obj, attributeInfo, context)
-            switch attributeInfo.Datatype.Class
+            switch attributeInfo.Datatype.Class % Normalize/postprocess some HDF5 classes
                 case 'H5T_STRING'
+                    % H5 String type attributes are loaded differently in releases 
+                    % prior to MATLAB R2020a. For details, see:
+                    % https://se.mathworks.com/help/matlab/ref/h5readatt.html
                     attributeValue = attributeInfo.Value;
-                    if verLessThan('matlab', '9.8')
+                    if verLessThan('matlab', '9.8') % MATLAB < R2020a
                         if iscell(attributeValue)
                             if isempty(attributeValue)
                                 attributeValue = '';
                             elseif isscalar(attributeValue)
                                 attributeValue = attributeValue{1};
+                            else
+                                % keep attributeValue as is
                             end
                         end
                     end
