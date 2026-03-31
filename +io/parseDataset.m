@@ -23,11 +23,18 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
 %          or all attributes for untyped datasets.
 %
 % Notes:
+%  - The primary map key is the dataset leaf name from INFO.Name, not
+%    FULLPATH.
+%  - For typed datasets, attributes are considered consumable if their
+%    names match public properties of the neurodata type class. Consumed
+%    attributes are used to construct the typed object and are not
+%    promoted into the output map.
 %  - HDF5 reference datasets are fully read and resolved.
 %  - Scalar datasets are read eagerly and postprocessed according to their
 %    datatype.
-%  - Non-scalar datasets may be represented lazily using DataPipe or
-%    DataStub when appropriate.
+%  - For non-scalar datasets, chunked numeric datasets are represented as
+%    DataPipe, other non-empty datasets as DataStub, and empty datasets as
+%    [].
 
     arguments
         filename (1,:) char
