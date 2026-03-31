@@ -29,8 +29,6 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
 %  - Non-scalar datasets may be represented lazily using DataPipe or
 %    DataStub when appropriate.
 
-    % Parse dataset attributes
-
     arguments
         filename (1,:) char
         info struct
@@ -41,7 +39,6 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
     [parsedAttributes, typeInfo] = ...
         io.parseAttributes(filename, info.Attributes, fullpath, blacklist);
 
-    % Check if dataset is typed
     datasetTypeName = typeInfo.typename;
     isTypedDataset = ~isempty(datasetTypeName);
 
