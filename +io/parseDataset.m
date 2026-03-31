@@ -1,15 +1,15 @@
-function parsed = parseDataset(filename, info, fullpath, blacklist)
+function parsed = parseDataset(filename, datasetInfo, datasetPath, blacklist)
 % parseDataset - Read an HDF5 dataset and return it as named map entries.
 %
 % Syntax:
-%  parsed = io.parseDataset(filename, info, fullpath, blacklist) parses the
+%  parsed = io.parseDataset(filename, datasetInfo, datasetPath, blacklist) parses the
 %  dataset identified by FULLPATH in the HDF5 file FILENAME using metadata
 %  from INFO.
 %
 % Input arguments:
 %  - filename  - Path to the HDF5 file.
-%  - info      - Dataset metadata structure, typically obtained from h5info.
-%  - fullpath  - Full HDF5 path to the dataset.
+%  - datasetInfo - Dataset metadata structure, typically obtained from h5info.
+%  - datasetPath - Full HDF5 path to the dataset.
 %  - blacklist - Attribute names or rules to exclude when parsing attributes.
 %
 % Output argument:
@@ -38,13 +38,13 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
 
     arguments
         filename (1,:) char
-        info struct
-        fullpath (1,:) char
+        datasetInfo struct
+        datasetPath (1,:) char
         blacklist struct = struct('attributes', {{}}, 'groups', {{}})
     end
 
     [parsedAttributes, typeInfo] = ...
-        io.parseAttributes(filename, info.Attributes, fullpath, blacklist);
+        io.parseAttributes(filename, datasetInfo.Attributes, datasetPath, blacklist);
 
     datasetTypeName = typeInfo.typename;
     isTypedDataset = ~isempty(datasetTypeName);
@@ -53,47 +53,47 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
     fid = H5F.open(filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
     fidCleanup = onCleanup(@() H5F.close(fid));
     
-    did = H5D.open(fid, fullpath);
+    did = H5D.open(fid, datasetPath);
     didCleanup = onCleanup(@() H5D.close(did));
     
     % Read and postprocess the dataset value, or create a lazy data proxy 
     % when appropriate
-    datatype = info.Datatype;
-    dataspace = info.Dataspace;
+    datatype = datasetInfo.Datatype;
+    dataspace = datasetInfo.Dataspace;
     if strcmp(datatype.Class, 'H5T_REFERENCE')
         % Load all H5T references. This is required, unfortunately also a 
         % bottleneck
         tid = H5D.get_type(did);
-        data = io.parseReference(did, tid, H5D.read(did));
+        datasetValue = io.parseReference(did, tid, H5D.read(did));
         H5T.close(tid);
     elseif strcmp(dataspace.Type, 'scalar')
-        data = H5D.read(did);
+        datasetValue = H5D.read(did);
 
         switch datatype.Class
             case 'H5T_STRING'
                 if verLessThan('MATLAB', '9.8')
                     % MATLAB 2020a fixed string support for HDF5, making
                     % reading strings "consistent" with regular use.
-                    data = data .';
+                    datasetValue = datasetValue .';
                 end
-                datadim = size(data);
-                if datadim(1) > 1
+                dataDims = size(datasetValue);
+                if dataDims(1) > 1
                     %multidimensional strings should become cellstr
-                    data = strtrim(mat2cell(data, ones(datadim(1), 1), datadim(2)));
+                    datasetValue = strtrim(mat2cell(datasetValue, ones(dataDims(1), 1), dataDims(2)));
                 end
             case 'H5T_ENUM'
                 if io.isBool(datatype.Type)
-                    data = io.internal.h5.postprocess.toLogical(data);
+                    datasetValue = io.internal.h5.postprocess.toLogical(datasetValue);
                 else
                     warning('NWB:Dataset:UnknownEnum', ...
                         ['Encountered unknown enum under field `%s` with %d members. ' ...
                         'Will be read as cell array of characters.'], ...
-                        info.Name, length(datatype.Type.Member));
-                    data = io.internal.h5.postprocess.toEnumCellStr(data, datatype.Type);
+                        datasetInfo.Name, length(datatype.Type.Member));
+                    datasetValue = io.internal.h5.postprocess.toEnumCellStr(datasetValue, datatype.Type);
                 end
             case 'H5T_COMPOUND'
                 isScalar = true;
-                data = io.parseCompound(did, data, isScalar);
+                datasetValue = io.parseCompound(did, datasetValue, isScalar);
         end
     else % non scalar
         sid = H5D.get_space(did);
@@ -101,16 +101,16 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
         isChunked = H5P.get_layout(pid) == H5ML.get_constant_value('H5D_CHUNKED');
 
         tid = H5D.get_type(did);
-        class_id = H5T.get_class(tid);
-        isNumeric = class_id == H5ML.get_constant_value('H5T_INTEGER')...
-            || class_id == H5ML.get_constant_value('H5T_FLOAT');
+        classId = H5T.get_class(tid);
+        isNumeric = classId == H5ML.get_constant_value('H5T_INTEGER')...
+            || classId == H5ML.get_constant_value('H5T_FLOAT');
         if isChunked && isNumeric
-            data = types.untyped.DataPipe('filename', filename, 'path', fullpath);
+            datasetValue = types.untyped.DataPipe('filename', filename, 'path', datasetPath);
         elseif any(dataspace.Size == 0)
-            data = [];
+            datasetValue = [];
         else
-            matlabDataType = io.internal.h5.datatype.datatypeInfoToMatlabType(datatype, info.Name);
-            data = types.untyped.DataStub(filename, fullpath, dataspace.Size, matlabDataType);
+            matlabDataType = io.internal.h5.datatype.datatypeInfoToMatlabType(datatype, datasetInfo.Name);
+            datasetValue = types.untyped.DataStub(filename, datasetPath, dataspace.Size, matlabDataType);
         end
         H5T.close(tid);
         H5P.close(pid);
@@ -118,18 +118,18 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
     end
 
     % Prepare output
-    datasetName = info.Name;
+    datasetName = datasetInfo.Name;
     parsed = containers.Map;
 
     if isTypedDataset
         [typeProperties, unconsumedAttributes] = ...
             splitAttributes(parsedAttributes, properties(datasetTypeName));
-        typeProperties('data') = data;
+        typeProperties('data') = datasetValue;
         kwargs = io.map2kwargs(typeProperties);
-        parsed(datasetName) = io.createParsedType(fullpath, datasetTypeName, kwargs{:});
+        parsed(datasetName) = io.createParsedType(datasetPath, datasetTypeName, kwargs{:});
         parsed = [parsed; promoteDatasetAttributes(datasetName, unconsumedAttributes)];
     else
-        parsed(datasetName) = data;
+        parsed(datasetName) = datasetValue;
         parsed = [parsed; promoteDatasetAttributes(datasetName, parsedAttributes)];
     end
 end
