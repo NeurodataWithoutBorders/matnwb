@@ -59,13 +59,13 @@ methods
         types.util.validateShape('resolution', {[1]}, val)
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.BaseImage(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.core.BaseImage(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
         if ~isempty(obj.resolution)
-            io.writeAttribute(fid, [fullpath '/resolution'], obj.resolution);
+            writer.writeAttribute([fullpath '/resolution'], obj.resolution);
         end
     end
 end

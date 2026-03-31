@@ -166,75 +166,75 @@ methods
         types.util.validateShape('weight', {[1]}, val)
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.NWBContainer(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.core.NWBContainer(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
         if ~isempty(obj.age)
             if startsWith(class(obj.age), 'types.untyped.')
-                refs = obj.age.export(fid, [fullpath '/age'], refs);
+                refs = obj.age.export(writer, [fullpath '/age'], refs);
             elseif ~isempty(obj.age)
-                io.writeDataset(fid, [fullpath '/age'], obj.age);
+                writer.writeValue([fullpath '/age'], obj.age);
             end
         end
         if ~isempty(obj.age) && ~isa(obj.age, 'types.untyped.SoftLink') && ~isa(obj.age, 'types.untyped.ExternalLink') && ~isempty(obj.age_reference)
-            io.writeAttribute(fid, [fullpath '/age/reference'], obj.age_reference);
+            writer.writeAttribute([fullpath '/age/reference'], obj.age_reference);
         end
         if ~isempty(obj.date_of_birth)
             if startsWith(class(obj.date_of_birth), 'types.untyped.')
-                refs = obj.date_of_birth.export(fid, [fullpath '/date_of_birth'], refs);
+                refs = obj.date_of_birth.export(writer, [fullpath '/date_of_birth'], refs);
             elseif ~isempty(obj.date_of_birth)
-                io.writeDataset(fid, [fullpath '/date_of_birth'], obj.date_of_birth);
+                writer.writeValue([fullpath '/date_of_birth'], obj.date_of_birth);
             end
         end
         if ~isempty(obj.description)
             if startsWith(class(obj.description), 'types.untyped.')
-                refs = obj.description.export(fid, [fullpath '/description'], refs);
+                refs = obj.description.export(writer, [fullpath '/description'], refs);
             elseif ~isempty(obj.description)
-                io.writeDataset(fid, [fullpath '/description'], obj.description);
+                writer.writeValue([fullpath '/description'], obj.description);
             end
         end
         if ~isempty(obj.genotype)
             if startsWith(class(obj.genotype), 'types.untyped.')
-                refs = obj.genotype.export(fid, [fullpath '/genotype'], refs);
+                refs = obj.genotype.export(writer, [fullpath '/genotype'], refs);
             elseif ~isempty(obj.genotype)
-                io.writeDataset(fid, [fullpath '/genotype'], obj.genotype);
+                writer.writeValue([fullpath '/genotype'], obj.genotype);
             end
         end
         if ~isempty(obj.sex)
             if startsWith(class(obj.sex), 'types.untyped.')
-                refs = obj.sex.export(fid, [fullpath '/sex'], refs);
+                refs = obj.sex.export(writer, [fullpath '/sex'], refs);
             elseif ~isempty(obj.sex)
-                io.writeDataset(fid, [fullpath '/sex'], obj.sex);
+                writer.writeValue([fullpath '/sex'], obj.sex);
             end
         end
         if ~isempty(obj.species)
             if startsWith(class(obj.species), 'types.untyped.')
-                refs = obj.species.export(fid, [fullpath '/species'], refs);
+                refs = obj.species.export(writer, [fullpath '/species'], refs);
             elseif ~isempty(obj.species)
-                io.writeDataset(fid, [fullpath '/species'], obj.species);
+                writer.writeValue([fullpath '/species'], obj.species);
             end
         end
         if ~isempty(obj.strain)
             if startsWith(class(obj.strain), 'types.untyped.')
-                refs = obj.strain.export(fid, [fullpath '/strain'], refs);
+                refs = obj.strain.export(writer, [fullpath '/strain'], refs);
             elseif ~isempty(obj.strain)
-                io.writeDataset(fid, [fullpath '/strain'], obj.strain);
+                writer.writeValue([fullpath '/strain'], obj.strain);
             end
         end
         if ~isempty(obj.subject_id)
             if startsWith(class(obj.subject_id), 'types.untyped.')
-                refs = obj.subject_id.export(fid, [fullpath '/subject_id'], refs);
+                refs = obj.subject_id.export(writer, [fullpath '/subject_id'], refs);
             elseif ~isempty(obj.subject_id)
-                io.writeDataset(fid, [fullpath '/subject_id'], obj.subject_id);
+                writer.writeValue([fullpath '/subject_id'], obj.subject_id);
             end
         end
         if ~isempty(obj.weight)
             if startsWith(class(obj.weight), 'types.untyped.')
-                refs = obj.weight.export(fid, [fullpath '/weight'], refs);
+                refs = obj.weight.export(writer, [fullpath '/weight'], refs);
             elseif ~isempty(obj.weight)
-                io.writeDataset(fid, [fullpath '/weight'], obj.weight);
+                writer.writeValue([fullpath '/weight'], obj.weight);
             end
         end
     end

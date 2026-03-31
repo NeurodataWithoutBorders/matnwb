@@ -110,28 +110,28 @@ methods
         types.util.validateShape('serial_number', {[1]}, val)
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.NWBContainer(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.core.NWBContainer(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
         if ~isempty(obj.description)
-            io.writeAttribute(fid, [fullpath '/description'], obj.description);
+            writer.writeAttribute([fullpath '/description'], obj.description);
         end
         if ~isempty(obj.manufacturer)
-            io.writeAttribute(fid, [fullpath '/manufacturer'], obj.manufacturer);
+            writer.writeAttribute([fullpath '/manufacturer'], obj.manufacturer);
         end
         if ~isempty(obj.model)
-            refs = obj.model.export(fid, [fullpath '/model'], refs);
+            refs = obj.model.export(writer, [fullpath '/model'], refs);
         end
         if ~isempty(obj.model_name)
-            io.writeAttribute(fid, [fullpath '/model_name'], obj.model_name);
+            writer.writeAttribute([fullpath '/model_name'], obj.model_name);
         end
         if ~isempty(obj.model_number)
-            io.writeAttribute(fid, [fullpath '/model_number'], obj.model_number);
+            writer.writeAttribute([fullpath '/model_number'], obj.model_number);
         end
         if ~isempty(obj.serial_number)
-            io.writeAttribute(fid, [fullpath '/serial_number'], obj.serial_number);
+            writer.writeAttribute([fullpath '/serial_number'], obj.serial_number);
         end
     end
 end

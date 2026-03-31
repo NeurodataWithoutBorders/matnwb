@@ -96,31 +96,31 @@ methods
         types.util.validateShape('times', {[Inf]}, val)
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.NWBDataInterface(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.core.NWBDataInterface(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
         if startsWith(class(obj.detection_method), 'types.untyped.')
-            refs = obj.detection_method.export(fid, [fullpath '/detection_method'], refs);
+            refs = obj.detection_method.export(writer, [fullpath '/detection_method'], refs);
         elseif ~isempty(obj.detection_method)
-            io.writeDataset(fid, [fullpath '/detection_method'], obj.detection_method);
+            writer.writeValue([fullpath '/detection_method'], obj.detection_method);
         end
-        refs = obj.source_electricalseries.export(fid, [fullpath '/source_electricalseries'], refs);
+        refs = obj.source_electricalseries.export(writer, [fullpath '/source_electricalseries'], refs);
         if startsWith(class(obj.source_idx), 'types.untyped.')
-            refs = obj.source_idx.export(fid, [fullpath '/source_idx'], refs);
+            refs = obj.source_idx.export(writer, [fullpath '/source_idx'], refs);
         elseif ~isempty(obj.source_idx)
-            io.writeDataset(fid, [fullpath '/source_idx'], obj.source_idx, 'forceArray');
+            writer.writeValue([fullpath '/source_idx'], obj.source_idx, 'forceArray');
         end
         if ~isempty(obj.times)
             if startsWith(class(obj.times), 'types.untyped.')
-                refs = obj.times.export(fid, [fullpath '/times'], refs);
+                refs = obj.times.export(writer, [fullpath '/times'], refs);
             elseif ~isempty(obj.times)
-                io.writeDataset(fid, [fullpath '/times'], obj.times, 'forceArray');
+                writer.writeValue([fullpath '/times'], obj.times, 'forceArray');
             end
         end
         if ~isempty(obj.times) && ~isa(obj.times, 'types.untyped.SoftLink') && ~isa(obj.times, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/times/unit'], obj.times_unit);
+            writer.writeAttribute([fullpath '/times/unit'], obj.times_unit);
         end
     end
 end

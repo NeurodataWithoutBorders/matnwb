@@ -17,21 +17,21 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
     end
     
     methods (Access = private)
-        function refs = write_base(obj, fid, fullpath, refs)
+        function refs = write_base(obj, writer, fullpath, refs)
             if isa(obj, 'types.untyped.GroupClass')
-                io.writeGroup(fid, fullpath);
+                writer.writeGroup(fullpath);
                 return;
             end
             
             try
                 if isa(obj.data, 'types.untyped.DataStub')...
                         || isa(obj.data, 'types.untyped.DataPipe')
-                    refs = obj.data.export(fid, fullpath, refs);
+                    refs = obj.data.export(writer, fullpath, refs);
                 elseif istable(obj.data) || isstruct(obj.data) ||...
                         isa(obj.data, 'containers.Map')
-                    io.writeCompound(fid, fullpath, obj.data, 'forceArray');
+                    writer.writeValue(fullpath, obj.data, 'forceArray');
                 else
-                    io.writeDataset(fid, fullpath, obj.data, 'forceArray');
+                    writer.writeValue(fullpath, obj.data, 'forceArray');
                 end
             catch ME
                 refs = obj.captureReferenceErrors(ME, fullpath, refs);
@@ -50,10 +50,11 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
     end
     
     methods
-        function refs = export(obj, fid, fullpath, refs)
+        function refs = export(obj, writer, fullpath, refs)
             % throwErrorIfCustomConstraintUnfulfilled is intentionally placed 
             % before throwErrorIfMissingRequiredProps. 
             % See file.fillCustomConstraint
+            writer = io.backend.base.Writer.ensure(writer);
             obj.throwErrorIfCustomConstraintUnfulfilled(fullpath)
             obj.throwErrorIfMissingRequiredProps(fullpath)
             obj.metaClass_fullPath = fullpath;
@@ -69,23 +70,23 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
             props = props(refProps);
             for i=1:length(props)
                 try
-                    io.getRefData(fid, props{i});
+                    io.getRefData(writer.fileId, props{i});
                 catch ME
                     refs = obj.captureReferenceErrors(ME, fullpath, refs);
                 end
             end
             
             refLen = length(refs);
-            refs = obj.write_base(fid, fullpath, refs);
+            refs = obj.write_base(writer, fullpath, refs);
             if refLen ~= length(refs)
                 return;
             end
             
             uuid = char(java.util.UUID.randomUUID().toString());
             if isa(obj, 'NwbFile')
-                io.writeAttribute(fid, '/namespace', 'core');
-                io.writeAttribute(fid, '/neurodata_type', 'NWBFile');
-                io.writeAttribute(fid, '/object_id', uuid);
+                writer.writeAttribute('/namespace', 'core');
+                writer.writeAttribute('/neurodata_type', 'NWBFile');
+                writer.writeAttribute('/object_id', uuid);
             else
                 namespacePath = [fullpath '/namespace'];
                 neuroTypePath = [fullpath '/neurodata_type'];
@@ -93,9 +94,9 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
                 dotparts = split(class(obj), '.');
                 namespace = strrep(dotparts{2}, '_', '-');
                 classtype = dotparts{3};
-                io.writeAttribute(fid, namespacePath, namespace);
-                io.writeAttribute(fid, neuroTypePath, classtype);
-                io.writeAttribute(fid, uuidPath, uuid);
+                writer.writeAttribute(namespacePath, namespace);
+                writer.writeAttribute(neuroTypePath, classtype);
+                writer.writeAttribute(uuidPath, uuid);
             end
         end
         

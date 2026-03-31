@@ -76,15 +76,15 @@ methods
         types.util.checkType('order_of_images', 'types.core.ImageReferences', val);
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.NWBDataInterface(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.core.NWBDataInterface(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
-        refs = obj.baseimage.export(fid, fullpath, refs);
-        io.writeAttribute(fid, [fullpath '/description'], obj.description);
+        refs = obj.baseimage.export(writer, fullpath, refs);
+        writer.writeAttribute([fullpath '/description'], obj.description);
         if ~isempty(obj.order_of_images)
-            refs = obj.order_of_images.export(fid, [fullpath '/order_of_images'], refs);
+            refs = obj.order_of_images.export(writer, [fullpath '/order_of_images'], refs);
         end
     end
 end

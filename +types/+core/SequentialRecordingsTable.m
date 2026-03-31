@@ -88,14 +88,14 @@ methods
         end
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.hdmf_common.DynamicTable(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.hdmf_common.DynamicTable(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
-        refs = obj.simultaneous_recordings.export(fid, [fullpath '/simultaneous_recordings'], refs);
-        refs = obj.simultaneous_recordings_index.export(fid, [fullpath '/simultaneous_recordings_index'], refs);
-        refs = obj.stimulus_type.export(fid, [fullpath '/stimulus_type'], refs);
+        refs = obj.simultaneous_recordings.export(writer, [fullpath '/simultaneous_recordings'], refs);
+        refs = obj.simultaneous_recordings_index.export(writer, [fullpath '/simultaneous_recordings_index'], refs);
+        refs = obj.stimulus_type.export(writer, [fullpath '/stimulus_type'], refs);
     end
 end
 

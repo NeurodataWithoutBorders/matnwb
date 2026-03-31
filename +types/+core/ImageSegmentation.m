@@ -56,12 +56,12 @@ methods
         types.util.checkSet('planesegmentation', namedprops, constrained, val);
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.NWBDataInterface(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.core.NWBDataInterface(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
-        refs = obj.planesegmentation.export(fid, fullpath, refs);
+        refs = obj.planesegmentation.export(writer, fullpath, refs);
     end
 end
 

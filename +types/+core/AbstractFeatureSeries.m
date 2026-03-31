@@ -101,22 +101,22 @@ methods
         types.util.validateShape('features', {[Inf]}, val)
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.TimeSeries(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.core.TimeSeries(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
         if ~isempty(obj.feature_units)
             if startsWith(class(obj.feature_units), 'types.untyped.')
-                refs = obj.feature_units.export(fid, [fullpath '/feature_units'], refs);
+                refs = obj.feature_units.export(writer, [fullpath '/feature_units'], refs);
             elseif ~isempty(obj.feature_units)
-                io.writeDataset(fid, [fullpath '/feature_units'], obj.feature_units, 'forceArray');
+                writer.writeValue([fullpath '/feature_units'], obj.feature_units, 'forceArray');
             end
         end
         if startsWith(class(obj.features), 'types.untyped.')
-            refs = obj.features.export(fid, [fullpath '/features'], refs);
+            refs = obj.features.export(writer, [fullpath '/features'], refs);
         elseif ~isempty(obj.features)
-            io.writeDataset(fid, [fullpath '/features'], obj.features, 'forceArray');
+            writer.writeValue([fullpath '/features'], obj.features, 'forceArray');
         end
     end
 end

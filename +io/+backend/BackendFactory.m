@@ -2,6 +2,25 @@ classdef BackendFactory
     % BackendFactory - Factory for creating storage backend components.
 
     methods (Static)
+        function writer = createWriter(fileId, backendName)
+            arguments
+                fileId
+                backendName (1,1) string = "hdf5"
+            end
+
+            backendName = io.backend.BackendFactory.normalizeBackendName(backendName);
+
+            switch backendName
+                case "auto"
+                    writer = io.backend.hdf5.HDF5Writer(fileId);
+                case "hdf5"
+                    writer = io.backend.hdf5.HDF5Writer(fileId);
+                otherwise
+                    error("NWB:BackendFactory:UnsupportedBackend", ...
+                        "Unsupported backend `%s`.", backendName)
+            end
+        end
+
         function reader = createReader(filename, backendName)
             arguments
                 filename (1,1) string

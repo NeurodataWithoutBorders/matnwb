@@ -72,14 +72,14 @@ methods
         val = types.util.checkDtype('xy_translation', 'types.core.TimeSeries', val);
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.NWBDataInterface(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.core.NWBDataInterface(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
-        refs = obj.corrected.export(fid, [fullpath '/corrected'], refs);
-        refs = obj.original.export(fid, [fullpath '/original'], refs);
-        refs = obj.xy_translation.export(fid, [fullpath '/xy_translation'], refs);
+        refs = obj.corrected.export(writer, [fullpath '/corrected'], refs);
+        refs = obj.original.export(writer, [fullpath '/original'], refs);
+        refs = obj.xy_translation.export(writer, [fullpath '/xy_translation'], refs);
     end
 end
 

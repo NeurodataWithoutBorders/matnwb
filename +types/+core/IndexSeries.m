@@ -109,16 +109,16 @@ methods
         val = types.util.validateSoftLink('indexed_timeseries', val, 'types.core.ImageSeries');
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.TimeSeries(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.core.TimeSeries(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
         if ~isempty(obj.indexed_images)
-            refs = obj.indexed_images.export(fid, [fullpath '/indexed_images'], refs);
+            refs = obj.indexed_images.export(writer, [fullpath '/indexed_images'], refs);
         end
         if ~isempty(obj.indexed_timeseries)
-            refs = obj.indexed_timeseries.export(fid, [fullpath '/indexed_timeseries'], refs);
+            refs = obj.indexed_timeseries.export(writer, [fullpath '/indexed_timeseries'], refs);
         end
     end
 end

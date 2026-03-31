@@ -552,40 +552,40 @@ methods
         types.util.validateShape('vasculature_image_format', {[1]}, val)
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.NWBDataInterface(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.core.NWBDataInterface(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
         if startsWith(class(obj.axis_1_phase_map), 'types.untyped.')
-            refs = obj.axis_1_phase_map.export(fid, [fullpath '/axis_1_phase_map'], refs);
+            refs = obj.axis_1_phase_map.export(writer, [fullpath '/axis_1_phase_map'], refs);
         elseif ~isempty(obj.axis_1_phase_map)
-            io.writeDataset(fid, [fullpath '/axis_1_phase_map'], obj.axis_1_phase_map, 'forceArray', 'forceMatrix');
+            writer.writeValue([fullpath '/axis_1_phase_map'], obj.axis_1_phase_map, 'forceArray', 'forceMatrix');
         end
         if ~isempty(obj.axis_1_phase_map) && ~isa(obj.axis_1_phase_map, 'types.untyped.SoftLink') && ~isa(obj.axis_1_phase_map, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/axis_1_phase_map/dimension'], obj.axis_1_phase_map_dimension, 'forceArray');
+            writer.writeAttribute([fullpath '/axis_1_phase_map/dimension'], obj.axis_1_phase_map_dimension, 'forceArray');
         elseif isempty(obj.axis_1_phase_map) && ~isempty(obj.axis_1_phase_map_dimension)
             obj.warnIfPropertyAttributeNotExported('axis_1_phase_map_dimension', 'axis_1_phase_map', fullpath)
         end
         if ~isempty(obj.axis_1_phase_map) && ~isa(obj.axis_1_phase_map, 'types.untyped.SoftLink') && ~isa(obj.axis_1_phase_map, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/axis_1_phase_map/field_of_view'], obj.axis_1_phase_map_field_of_view, 'forceArray');
+            writer.writeAttribute([fullpath '/axis_1_phase_map/field_of_view'], obj.axis_1_phase_map_field_of_view, 'forceArray');
         elseif isempty(obj.axis_1_phase_map) && ~isempty(obj.axis_1_phase_map_field_of_view)
             obj.warnIfPropertyAttributeNotExported('axis_1_phase_map_field_of_view', 'axis_1_phase_map', fullpath)
         end
         if ~isempty(obj.axis_1_phase_map) && ~isa(obj.axis_1_phase_map, 'types.untyped.SoftLink') && ~isa(obj.axis_1_phase_map, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/axis_1_phase_map/unit'], obj.axis_1_phase_map_unit);
+            writer.writeAttribute([fullpath '/axis_1_phase_map/unit'], obj.axis_1_phase_map_unit);
         elseif isempty(obj.axis_1_phase_map) && ~isempty(obj.axis_1_phase_map_unit)
             obj.warnIfPropertyAttributeNotExported('axis_1_phase_map_unit', 'axis_1_phase_map', fullpath)
         end
         if ~isempty(obj.axis_1_power_map)
             if startsWith(class(obj.axis_1_power_map), 'types.untyped.')
-                refs = obj.axis_1_power_map.export(fid, [fullpath '/axis_1_power_map'], refs);
+                refs = obj.axis_1_power_map.export(writer, [fullpath '/axis_1_power_map'], refs);
             elseif ~isempty(obj.axis_1_power_map)
-                io.writeDataset(fid, [fullpath '/axis_1_power_map'], obj.axis_1_power_map, 'forceArray', 'forceMatrix');
+                writer.writeValue([fullpath '/axis_1_power_map'], obj.axis_1_power_map, 'forceArray', 'forceMatrix');
             end
         end
         if ~isempty(obj.axis_1_power_map) && ~isa(obj.axis_1_power_map, 'types.untyped.SoftLink') && ~isa(obj.axis_1_power_map, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/axis_1_power_map/dimension'], obj.axis_1_power_map_dimension, 'forceArray');
+            writer.writeAttribute([fullpath '/axis_1_power_map/dimension'], obj.axis_1_power_map_dimension, 'forceArray');
         elseif isempty(obj.axis_1_power_map) && ~isempty(obj.axis_1_power_map_dimension)
             obj.warnIfPropertyAttributeNotExported('axis_1_power_map_dimension', 'axis_1_power_map', fullpath)
         end
@@ -593,7 +593,7 @@ methods
             obj.throwErrorIfRequiredDependencyMissing('axis_1_power_map_dimension', 'axis_1_power_map', fullpath)
         end
         if ~isempty(obj.axis_1_power_map) && ~isa(obj.axis_1_power_map, 'types.untyped.SoftLink') && ~isa(obj.axis_1_power_map, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/axis_1_power_map/field_of_view'], obj.axis_1_power_map_field_of_view, 'forceArray');
+            writer.writeAttribute([fullpath '/axis_1_power_map/field_of_view'], obj.axis_1_power_map_field_of_view, 'forceArray');
         elseif isempty(obj.axis_1_power_map) && ~isempty(obj.axis_1_power_map_field_of_view)
             obj.warnIfPropertyAttributeNotExported('axis_1_power_map_field_of_view', 'axis_1_power_map', fullpath)
         end
@@ -601,7 +601,7 @@ methods
             obj.throwErrorIfRequiredDependencyMissing('axis_1_power_map_field_of_view', 'axis_1_power_map', fullpath)
         end
         if ~isempty(obj.axis_1_power_map) && ~isa(obj.axis_1_power_map, 'types.untyped.SoftLink') && ~isa(obj.axis_1_power_map, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/axis_1_power_map/unit'], obj.axis_1_power_map_unit);
+            writer.writeAttribute([fullpath '/axis_1_power_map/unit'], obj.axis_1_power_map_unit);
         elseif isempty(obj.axis_1_power_map) && ~isempty(obj.axis_1_power_map_unit)
             obj.warnIfPropertyAttributeNotExported('axis_1_power_map_unit', 'axis_1_power_map', fullpath)
         end
@@ -609,34 +609,34 @@ methods
             obj.throwErrorIfRequiredDependencyMissing('axis_1_power_map_unit', 'axis_1_power_map', fullpath)
         end
         if startsWith(class(obj.axis_2_phase_map), 'types.untyped.')
-            refs = obj.axis_2_phase_map.export(fid, [fullpath '/axis_2_phase_map'], refs);
+            refs = obj.axis_2_phase_map.export(writer, [fullpath '/axis_2_phase_map'], refs);
         elseif ~isempty(obj.axis_2_phase_map)
-            io.writeDataset(fid, [fullpath '/axis_2_phase_map'], obj.axis_2_phase_map, 'forceArray', 'forceMatrix');
+            writer.writeValue([fullpath '/axis_2_phase_map'], obj.axis_2_phase_map, 'forceArray', 'forceMatrix');
         end
         if ~isempty(obj.axis_2_phase_map) && ~isa(obj.axis_2_phase_map, 'types.untyped.SoftLink') && ~isa(obj.axis_2_phase_map, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/axis_2_phase_map/dimension'], obj.axis_2_phase_map_dimension, 'forceArray');
+            writer.writeAttribute([fullpath '/axis_2_phase_map/dimension'], obj.axis_2_phase_map_dimension, 'forceArray');
         elseif isempty(obj.axis_2_phase_map) && ~isempty(obj.axis_2_phase_map_dimension)
             obj.warnIfPropertyAttributeNotExported('axis_2_phase_map_dimension', 'axis_2_phase_map', fullpath)
         end
         if ~isempty(obj.axis_2_phase_map) && ~isa(obj.axis_2_phase_map, 'types.untyped.SoftLink') && ~isa(obj.axis_2_phase_map, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/axis_2_phase_map/field_of_view'], obj.axis_2_phase_map_field_of_view, 'forceArray');
+            writer.writeAttribute([fullpath '/axis_2_phase_map/field_of_view'], obj.axis_2_phase_map_field_of_view, 'forceArray');
         elseif isempty(obj.axis_2_phase_map) && ~isempty(obj.axis_2_phase_map_field_of_view)
             obj.warnIfPropertyAttributeNotExported('axis_2_phase_map_field_of_view', 'axis_2_phase_map', fullpath)
         end
         if ~isempty(obj.axis_2_phase_map) && ~isa(obj.axis_2_phase_map, 'types.untyped.SoftLink') && ~isa(obj.axis_2_phase_map, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/axis_2_phase_map/unit'], obj.axis_2_phase_map_unit);
+            writer.writeAttribute([fullpath '/axis_2_phase_map/unit'], obj.axis_2_phase_map_unit);
         elseif isempty(obj.axis_2_phase_map) && ~isempty(obj.axis_2_phase_map_unit)
             obj.warnIfPropertyAttributeNotExported('axis_2_phase_map_unit', 'axis_2_phase_map', fullpath)
         end
         if ~isempty(obj.axis_2_power_map)
             if startsWith(class(obj.axis_2_power_map), 'types.untyped.')
-                refs = obj.axis_2_power_map.export(fid, [fullpath '/axis_2_power_map'], refs);
+                refs = obj.axis_2_power_map.export(writer, [fullpath '/axis_2_power_map'], refs);
             elseif ~isempty(obj.axis_2_power_map)
-                io.writeDataset(fid, [fullpath '/axis_2_power_map'], obj.axis_2_power_map, 'forceArray', 'forceMatrix');
+                writer.writeValue([fullpath '/axis_2_power_map'], obj.axis_2_power_map, 'forceArray', 'forceMatrix');
             end
         end
         if ~isempty(obj.axis_2_power_map) && ~isa(obj.axis_2_power_map, 'types.untyped.SoftLink') && ~isa(obj.axis_2_power_map, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/axis_2_power_map/dimension'], obj.axis_2_power_map_dimension, 'forceArray');
+            writer.writeAttribute([fullpath '/axis_2_power_map/dimension'], obj.axis_2_power_map_dimension, 'forceArray');
         elseif isempty(obj.axis_2_power_map) && ~isempty(obj.axis_2_power_map_dimension)
             obj.warnIfPropertyAttributeNotExported('axis_2_power_map_dimension', 'axis_2_power_map', fullpath)
         end
@@ -644,7 +644,7 @@ methods
             obj.throwErrorIfRequiredDependencyMissing('axis_2_power_map_dimension', 'axis_2_power_map', fullpath)
         end
         if ~isempty(obj.axis_2_power_map) && ~isa(obj.axis_2_power_map, 'types.untyped.SoftLink') && ~isa(obj.axis_2_power_map, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/axis_2_power_map/field_of_view'], obj.axis_2_power_map_field_of_view, 'forceArray');
+            writer.writeAttribute([fullpath '/axis_2_power_map/field_of_view'], obj.axis_2_power_map_field_of_view, 'forceArray');
         elseif isempty(obj.axis_2_power_map) && ~isempty(obj.axis_2_power_map_field_of_view)
             obj.warnIfPropertyAttributeNotExported('axis_2_power_map_field_of_view', 'axis_2_power_map', fullpath)
         end
@@ -652,7 +652,7 @@ methods
             obj.throwErrorIfRequiredDependencyMissing('axis_2_power_map_field_of_view', 'axis_2_power_map', fullpath)
         end
         if ~isempty(obj.axis_2_power_map) && ~isa(obj.axis_2_power_map, 'types.untyped.SoftLink') && ~isa(obj.axis_2_power_map, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/axis_2_power_map/unit'], obj.axis_2_power_map_unit);
+            writer.writeAttribute([fullpath '/axis_2_power_map/unit'], obj.axis_2_power_map_unit);
         elseif isempty(obj.axis_2_power_map) && ~isempty(obj.axis_2_power_map_unit)
             obj.warnIfPropertyAttributeNotExported('axis_2_power_map_unit', 'axis_2_power_map', fullpath)
         end
@@ -660,19 +660,19 @@ methods
             obj.throwErrorIfRequiredDependencyMissing('axis_2_power_map_unit', 'axis_2_power_map', fullpath)
         end
         if startsWith(class(obj.axis_descriptions), 'types.untyped.')
-            refs = obj.axis_descriptions.export(fid, [fullpath '/axis_descriptions'], refs);
+            refs = obj.axis_descriptions.export(writer, [fullpath '/axis_descriptions'], refs);
         elseif ~isempty(obj.axis_descriptions)
-            io.writeDataset(fid, [fullpath '/axis_descriptions'], obj.axis_descriptions, 'forceArray');
+            writer.writeValue([fullpath '/axis_descriptions'], obj.axis_descriptions, 'forceArray');
         end
         if ~isempty(obj.focal_depth_image)
             if startsWith(class(obj.focal_depth_image), 'types.untyped.')
-                refs = obj.focal_depth_image.export(fid, [fullpath '/focal_depth_image'], refs);
+                refs = obj.focal_depth_image.export(writer, [fullpath '/focal_depth_image'], refs);
             elseif ~isempty(obj.focal_depth_image)
-                io.writeDataset(fid, [fullpath '/focal_depth_image'], obj.focal_depth_image, 'forceArray', 'forceMatrix');
+                writer.writeValue([fullpath '/focal_depth_image'], obj.focal_depth_image, 'forceArray', 'forceMatrix');
             end
         end
         if ~isempty(obj.focal_depth_image) && ~isa(obj.focal_depth_image, 'types.untyped.SoftLink') && ~isa(obj.focal_depth_image, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/focal_depth_image/bits_per_pixel'], obj.focal_depth_image_bits_per_pixel);
+            writer.writeAttribute([fullpath '/focal_depth_image/bits_per_pixel'], obj.focal_depth_image_bits_per_pixel);
         elseif isempty(obj.focal_depth_image) && ~isempty(obj.focal_depth_image_bits_per_pixel)
             obj.warnIfPropertyAttributeNotExported('focal_depth_image_bits_per_pixel', 'focal_depth_image', fullpath)
         end
@@ -680,7 +680,7 @@ methods
             obj.throwErrorIfRequiredDependencyMissing('focal_depth_image_bits_per_pixel', 'focal_depth_image', fullpath)
         end
         if ~isempty(obj.focal_depth_image) && ~isa(obj.focal_depth_image, 'types.untyped.SoftLink') && ~isa(obj.focal_depth_image, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/focal_depth_image/dimension'], obj.focal_depth_image_dimension, 'forceArray');
+            writer.writeAttribute([fullpath '/focal_depth_image/dimension'], obj.focal_depth_image_dimension, 'forceArray');
         elseif isempty(obj.focal_depth_image) && ~isempty(obj.focal_depth_image_dimension)
             obj.warnIfPropertyAttributeNotExported('focal_depth_image_dimension', 'focal_depth_image', fullpath)
         end
@@ -688,7 +688,7 @@ methods
             obj.throwErrorIfRequiredDependencyMissing('focal_depth_image_dimension', 'focal_depth_image', fullpath)
         end
         if ~isempty(obj.focal_depth_image) && ~isa(obj.focal_depth_image, 'types.untyped.SoftLink') && ~isa(obj.focal_depth_image, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/focal_depth_image/field_of_view'], obj.focal_depth_image_field_of_view, 'forceArray');
+            writer.writeAttribute([fullpath '/focal_depth_image/field_of_view'], obj.focal_depth_image_field_of_view, 'forceArray');
         elseif isempty(obj.focal_depth_image) && ~isempty(obj.focal_depth_image_field_of_view)
             obj.warnIfPropertyAttributeNotExported('focal_depth_image_field_of_view', 'focal_depth_image', fullpath)
         end
@@ -696,7 +696,7 @@ methods
             obj.throwErrorIfRequiredDependencyMissing('focal_depth_image_field_of_view', 'focal_depth_image', fullpath)
         end
         if ~isempty(obj.focal_depth_image) && ~isa(obj.focal_depth_image, 'types.untyped.SoftLink') && ~isa(obj.focal_depth_image, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/focal_depth_image/focal_depth'], obj.focal_depth_image_focal_depth);
+            writer.writeAttribute([fullpath '/focal_depth_image/focal_depth'], obj.focal_depth_image_focal_depth);
         elseif isempty(obj.focal_depth_image) && ~isempty(obj.focal_depth_image_focal_depth)
             obj.warnIfPropertyAttributeNotExported('focal_depth_image_focal_depth', 'focal_depth_image', fullpath)
         end
@@ -704,7 +704,7 @@ methods
             obj.throwErrorIfRequiredDependencyMissing('focal_depth_image_focal_depth', 'focal_depth_image', fullpath)
         end
         if ~isempty(obj.focal_depth_image) && ~isa(obj.focal_depth_image, 'types.untyped.SoftLink') && ~isa(obj.focal_depth_image, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/focal_depth_image/format'], obj.focal_depth_image_format);
+            writer.writeAttribute([fullpath '/focal_depth_image/format'], obj.focal_depth_image_format);
         elseif isempty(obj.focal_depth_image) && ~isempty(obj.focal_depth_image_format)
             obj.warnIfPropertyAttributeNotExported('focal_depth_image_format', 'focal_depth_image', fullpath)
         end
@@ -713,13 +713,13 @@ methods
         end
         if ~isempty(obj.sign_map)
             if startsWith(class(obj.sign_map), 'types.untyped.')
-                refs = obj.sign_map.export(fid, [fullpath '/sign_map'], refs);
+                refs = obj.sign_map.export(writer, [fullpath '/sign_map'], refs);
             elseif ~isempty(obj.sign_map)
-                io.writeDataset(fid, [fullpath '/sign_map'], obj.sign_map, 'forceArray', 'forceMatrix');
+                writer.writeValue([fullpath '/sign_map'], obj.sign_map, 'forceArray', 'forceMatrix');
             end
         end
         if ~isempty(obj.sign_map) && ~isa(obj.sign_map, 'types.untyped.SoftLink') && ~isa(obj.sign_map, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/sign_map/dimension'], obj.sign_map_dimension, 'forceArray');
+            writer.writeAttribute([fullpath '/sign_map/dimension'], obj.sign_map_dimension, 'forceArray');
         elseif isempty(obj.sign_map) && ~isempty(obj.sign_map_dimension)
             obj.warnIfPropertyAttributeNotExported('sign_map_dimension', 'sign_map', fullpath)
         end
@@ -727,7 +727,7 @@ methods
             obj.throwErrorIfRequiredDependencyMissing('sign_map_dimension', 'sign_map', fullpath)
         end
         if ~isempty(obj.sign_map) && ~isa(obj.sign_map, 'types.untyped.SoftLink') && ~isa(obj.sign_map, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/sign_map/field_of_view'], obj.sign_map_field_of_view, 'forceArray');
+            writer.writeAttribute([fullpath '/sign_map/field_of_view'], obj.sign_map_field_of_view, 'forceArray');
         elseif isempty(obj.sign_map) && ~isempty(obj.sign_map_field_of_view)
             obj.warnIfPropertyAttributeNotExported('sign_map_field_of_view', 'sign_map', fullpath)
         end
@@ -735,27 +735,27 @@ methods
             obj.throwErrorIfRequiredDependencyMissing('sign_map_field_of_view', 'sign_map', fullpath)
         end
         if startsWith(class(obj.vasculature_image), 'types.untyped.')
-            refs = obj.vasculature_image.export(fid, [fullpath '/vasculature_image'], refs);
+            refs = obj.vasculature_image.export(writer, [fullpath '/vasculature_image'], refs);
         elseif ~isempty(obj.vasculature_image)
-            io.writeDataset(fid, [fullpath '/vasculature_image'], obj.vasculature_image, 'forceArray', 'forceMatrix');
+            writer.writeValue([fullpath '/vasculature_image'], obj.vasculature_image, 'forceArray', 'forceMatrix');
         end
         if ~isempty(obj.vasculature_image) && ~isa(obj.vasculature_image, 'types.untyped.SoftLink') && ~isa(obj.vasculature_image, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/vasculature_image/bits_per_pixel'], obj.vasculature_image_bits_per_pixel);
+            writer.writeAttribute([fullpath '/vasculature_image/bits_per_pixel'], obj.vasculature_image_bits_per_pixel);
         elseif isempty(obj.vasculature_image) && ~isempty(obj.vasculature_image_bits_per_pixel)
             obj.warnIfPropertyAttributeNotExported('vasculature_image_bits_per_pixel', 'vasculature_image', fullpath)
         end
         if ~isempty(obj.vasculature_image) && ~isa(obj.vasculature_image, 'types.untyped.SoftLink') && ~isa(obj.vasculature_image, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/vasculature_image/dimension'], obj.vasculature_image_dimension, 'forceArray');
+            writer.writeAttribute([fullpath '/vasculature_image/dimension'], obj.vasculature_image_dimension, 'forceArray');
         elseif isempty(obj.vasculature_image) && ~isempty(obj.vasculature_image_dimension)
             obj.warnIfPropertyAttributeNotExported('vasculature_image_dimension', 'vasculature_image', fullpath)
         end
         if ~isempty(obj.vasculature_image) && ~isa(obj.vasculature_image, 'types.untyped.SoftLink') && ~isa(obj.vasculature_image, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/vasculature_image/field_of_view'], obj.vasculature_image_field_of_view, 'forceArray');
+            writer.writeAttribute([fullpath '/vasculature_image/field_of_view'], obj.vasculature_image_field_of_view, 'forceArray');
         elseif isempty(obj.vasculature_image) && ~isempty(obj.vasculature_image_field_of_view)
             obj.warnIfPropertyAttributeNotExported('vasculature_image_field_of_view', 'vasculature_image', fullpath)
         end
         if ~isempty(obj.vasculature_image) && ~isa(obj.vasculature_image, 'types.untyped.SoftLink') && ~isa(obj.vasculature_image, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/vasculature_image/format'], obj.vasculature_image_format);
+            writer.writeAttribute([fullpath '/vasculature_image/format'], obj.vasculature_image_format);
         elseif isempty(obj.vasculature_image) && ~isempty(obj.vasculature_image_format)
             obj.warnIfPropertyAttributeNotExported('vasculature_image_format', 'vasculature_image', fullpath)
         end

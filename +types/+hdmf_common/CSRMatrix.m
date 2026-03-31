@@ -86,27 +86,27 @@ methods
         types.util.validateShape('shape', {[2]}, val)
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.hdmf_common.Container(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.hdmf_common.Container(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
         if startsWith(class(obj.data), 'types.untyped.')
-            refs = obj.data.export(fid, [fullpath '/data'], refs);
+            refs = obj.data.export(writer, [fullpath '/data'], refs);
         elseif ~isempty(obj.data)
-            io.writeDataset(fid, [fullpath '/data'], obj.data, 'forceArray');
+            writer.writeValue([fullpath '/data'], obj.data, 'forceArray');
         end
         if startsWith(class(obj.indices), 'types.untyped.')
-            refs = obj.indices.export(fid, [fullpath '/indices'], refs);
+            refs = obj.indices.export(writer, [fullpath '/indices'], refs);
         elseif ~isempty(obj.indices)
-            io.writeDataset(fid, [fullpath '/indices'], obj.indices, 'forceArray');
+            writer.writeValue([fullpath '/indices'], obj.indices, 'forceArray');
         end
         if startsWith(class(obj.indptr), 'types.untyped.')
-            refs = obj.indptr.export(fid, [fullpath '/indptr'], refs);
+            refs = obj.indptr.export(writer, [fullpath '/indptr'], refs);
         elseif ~isempty(obj.indptr)
-            io.writeDataset(fid, [fullpath '/indptr'], obj.indptr, 'forceArray');
+            writer.writeValue([fullpath '/indptr'], obj.indptr, 'forceArray');
         end
-        io.writeAttribute(fid, [fullpath '/shape'], obj.shape, 'forceArray');
+        writer.writeAttribute([fullpath '/shape'], obj.shape, 'forceArray');
     end
 end
 

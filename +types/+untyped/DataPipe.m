@@ -268,8 +268,9 @@ classdef (Sealed) DataPipe < handle
             obj.internal.append(data);
         end
         
-        function refs = export(obj, fid, fullpath, refs)
-            obj.internal = obj.internal.write(fid, fullpath);
+        function refs = export(obj, writer, fullpath, refs)
+            writer = io.backend.base.Writer.ensure(writer);
+            obj.internal = obj.internal.write(writer.fileId, fullpath);
         end
         
         %% Display

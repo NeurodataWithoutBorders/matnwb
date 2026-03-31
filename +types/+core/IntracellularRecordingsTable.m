@@ -93,14 +93,14 @@ methods
         val = types.util.checkDtype('stimuli', 'types.core.IntracellularStimuliTable', val);
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.hdmf_common.AlignedDynamicTable(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.hdmf_common.AlignedDynamicTable(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
-        refs = obj.electrodes.export(fid, [fullpath '/electrodes'], refs);
-        refs = obj.responses.export(fid, [fullpath '/responses'], refs);
-        refs = obj.stimuli.export(fid, [fullpath '/stimuli'], refs);
+        refs = obj.electrodes.export(writer, [fullpath '/electrodes'], refs);
+        refs = obj.responses.export(writer, [fullpath '/responses'], refs);
+        refs = obj.stimuli.export(writer, [fullpath '/stimuli'], refs);
     end
 end
 

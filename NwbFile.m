@@ -75,10 +75,12 @@ classdef NwbFile < types.core.NWBFile
                 output_file_id = H5F.create(filename);
             end
 
+            writer = io.backend.BackendFactory.createWriter(output_file_id);
+
             try
                 obj.embedSpecifications(output_file_id)
-                refs = export@types.core.NWBFile(obj, output_file_id, '/', {});
-                obj.resolveReferences(output_file_id, refs);
+                refs = export@types.core.NWBFile(obj, writer, '/', {});
+                obj.resolveReferences(writer, refs);
                 H5F.close(output_file_id);
             catch ME
                 obj.file_create_date(end) = [];
@@ -404,13 +406,14 @@ classdef NwbFile < types.core.NWBFile
                 strrep(namespaceNames, '_', '-'))
         end
         
-        function resolveReferences(obj, fid, references)
+        function resolveReferences(obj, writer, references)
+            writer = io.backend.base.Writer.ensure(writer);
             while ~isempty(references)
                 resolved = false(size(references));
                 for iRef = 1:length(references)
                     refSource = references{iRef};
                     sourceObj = obj.resolve(refSource);
-                    unresolvedRefs = sourceObj.export(fid, refSource, {});
+                    unresolvedRefs = sourceObj.export(writer, refSource, {});
                     exportSuccess = isempty(unresolvedRefs);
                     resolved(iRef) = exportSuccess;
                 end

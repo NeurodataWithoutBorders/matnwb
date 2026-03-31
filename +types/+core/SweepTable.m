@@ -94,14 +94,14 @@ methods
         end
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.hdmf_common.DynamicTable(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.hdmf_common.DynamicTable(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
-        refs = obj.series.export(fid, [fullpath '/series'], refs);
-        refs = obj.series_index.export(fid, [fullpath '/series_index'], refs);
-        refs = obj.sweep_number.export(fid, [fullpath '/sweep_number'], refs);
+        refs = obj.series.export(writer, [fullpath '/series'], refs);
+        refs = obj.series_index.export(writer, [fullpath '/series_index'], refs);
+        refs = obj.sweep_number.export(writer, [fullpath '/sweep_number'], refs);
     end
 end
 

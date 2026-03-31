@@ -246,62 +246,62 @@ methods
         types.util.validateShape('timestamps', {[Inf]}, val)
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.NWBDataInterface(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.core.NWBDataInterface(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
         if ~isempty(obj.comments)
-            io.writeAttribute(fid, [fullpath '/comments'], obj.comments);
+            writer.writeAttribute([fullpath '/comments'], obj.comments);
         end
         if ~isempty(obj.control)
             if startsWith(class(obj.control), 'types.untyped.')
-                refs = obj.control.export(fid, [fullpath '/control'], refs);
+                refs = obj.control.export(writer, [fullpath '/control'], refs);
             elseif ~isempty(obj.control)
-                io.writeDataset(fid, [fullpath '/control'], obj.control, 'forceArray');
+                writer.writeValue([fullpath '/control'], obj.control, 'forceArray');
             end
         end
         if ~isempty(obj.control_description)
             if startsWith(class(obj.control_description), 'types.untyped.')
-                refs = obj.control_description.export(fid, [fullpath '/control_description'], refs);
+                refs = obj.control_description.export(writer, [fullpath '/control_description'], refs);
             elseif ~isempty(obj.control_description)
-                io.writeDataset(fid, [fullpath '/control_description'], obj.control_description, 'forceArray');
+                writer.writeValue([fullpath '/control_description'], obj.control_description, 'forceArray');
             end
         end
         if startsWith(class(obj.data), 'types.untyped.')
-            refs = obj.data.export(fid, [fullpath '/data'], refs);
+            refs = obj.data.export(writer, [fullpath '/data'], refs);
         elseif ~isempty(obj.data)
-            io.writeDataset(fid, [fullpath '/data'], obj.data, 'forceArray');
+            writer.writeValue([fullpath '/data'], obj.data, 'forceArray');
         end
         if ~isempty(obj.data) && ~isa(obj.data, 'types.untyped.SoftLink') && ~isa(obj.data, 'types.untyped.ExternalLink') && ~isempty(obj.data_continuity)
-            io.writeAttribute(fid, [fullpath '/data/continuity'], obj.data_continuity);
+            writer.writeAttribute([fullpath '/data/continuity'], obj.data_continuity);
         end
         if ~isempty(obj.data) && ~isa(obj.data, 'types.untyped.SoftLink') && ~isa(obj.data, 'types.untyped.ExternalLink') && ~isempty(obj.data_conversion)
-            io.writeAttribute(fid, [fullpath '/data/conversion'], obj.data_conversion);
+            writer.writeAttribute([fullpath '/data/conversion'], obj.data_conversion);
         end
         if ~isempty(obj.data) && ~isa(obj.data, 'types.untyped.SoftLink') && ~isa(obj.data, 'types.untyped.ExternalLink') && ~isempty(obj.data_offset)
-            io.writeAttribute(fid, [fullpath '/data/offset'], obj.data_offset);
+            writer.writeAttribute([fullpath '/data/offset'], obj.data_offset);
         end
         if ~isempty(obj.data) && ~isa(obj.data, 'types.untyped.SoftLink') && ~isa(obj.data, 'types.untyped.ExternalLink') && ~isempty(obj.data_resolution)
-            io.writeAttribute(fid, [fullpath '/data/resolution'], obj.data_resolution);
+            writer.writeAttribute([fullpath '/data/resolution'], obj.data_resolution);
         end
         if ~isempty(obj.data) && ~isa(obj.data, 'types.untyped.SoftLink') && ~isa(obj.data, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/data/unit'], obj.data_unit);
+            writer.writeAttribute([fullpath '/data/unit'], obj.data_unit);
         elseif isempty(obj.data) && ~isempty(obj.data_unit)
             obj.warnIfPropertyAttributeNotExported('data_unit', 'data', fullpath)
         end
         if ~isempty(obj.description)
-            io.writeAttribute(fid, [fullpath '/description'], obj.description);
+            writer.writeAttribute([fullpath '/description'], obj.description);
         end
         if ~isempty(obj.starting_time)
             if startsWith(class(obj.starting_time), 'types.untyped.')
-                refs = obj.starting_time.export(fid, [fullpath '/starting_time'], refs);
+                refs = obj.starting_time.export(writer, [fullpath '/starting_time'], refs);
             elseif ~isempty(obj.starting_time)
-                io.writeDataset(fid, [fullpath '/starting_time'], obj.starting_time);
+                writer.writeValue([fullpath '/starting_time'], obj.starting_time);
             end
         end
         if ~isempty(obj.starting_time) && ~isa(obj.starting_time, 'types.untyped.SoftLink') && ~isa(obj.starting_time, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/starting_time/rate'], obj.starting_time_rate);
+            writer.writeAttribute([fullpath '/starting_time/rate'], obj.starting_time_rate);
         elseif isempty(obj.starting_time) && ~isempty(obj.starting_time_rate)
             obj.warnIfPropertyAttributeNotExported('starting_time_rate', 'starting_time', fullpath)
         end
@@ -309,20 +309,20 @@ methods
             obj.throwErrorIfRequiredDependencyMissing('starting_time_rate', 'starting_time', fullpath)
         end
         if ~isempty(obj.starting_time) && ~isa(obj.starting_time, 'types.untyped.SoftLink') && ~isa(obj.starting_time, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/starting_time/unit'], obj.starting_time_unit);
+            writer.writeAttribute([fullpath '/starting_time/unit'], obj.starting_time_unit);
         end
         if ~isempty(obj.timestamps)
             if startsWith(class(obj.timestamps), 'types.untyped.')
-                refs = obj.timestamps.export(fid, [fullpath '/timestamps'], refs);
+                refs = obj.timestamps.export(writer, [fullpath '/timestamps'], refs);
             elseif ~isempty(obj.timestamps)
-                io.writeDataset(fid, [fullpath '/timestamps'], obj.timestamps, 'forceArray');
+                writer.writeValue([fullpath '/timestamps'], obj.timestamps, 'forceArray');
             end
         end
         if ~isempty(obj.timestamps) && ~isa(obj.timestamps, 'types.untyped.SoftLink') && ~isa(obj.timestamps, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/timestamps/interval'], obj.timestamps_interval);
+            writer.writeAttribute([fullpath '/timestamps/interval'], obj.timestamps_interval);
         end
         if ~isempty(obj.timestamps) && ~isa(obj.timestamps, 'types.untyped.SoftLink') && ~isa(obj.timestamps, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/timestamps/unit'], obj.timestamps_unit);
+            writer.writeAttribute([fullpath '/timestamps/unit'], obj.timestamps_unit);
         end
     end
     %% CUSTOM CONSTRAINTS

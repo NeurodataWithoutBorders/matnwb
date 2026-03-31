@@ -105,12 +105,14 @@ classdef ExternalLink < handle
             end
         end
         
-        function refs = export(obj, fid, fullpath, refs)
+        function refs = export(obj, writer, fullpath, refs)
+            writer = io.backend.base.Writer.ensure(writer);
+            fileId = writer.fileId;
             plist = 'H5P_DEFAULT';
-            if H5L.exists(fid, fullpath, plist)
-                H5L.delete(fid, fullpath, plist);
+            if H5L.exists(fileId, fullpath, plist)
+                H5L.delete(fileId, fullpath, plist);
             end
-            H5L.create_external(obj.filename, obj.path, fid, fullpath, plist, plist);
+            H5L.create_external(obj.filename, obj.path, fileId, fullpath, plist, plist);
         end
     end
 end

@@ -68,16 +68,16 @@ methods
         types.util.checkSet('data', struct(), constrained, val);
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.hdmf_common.Container(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.hdmf_common.Container(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
         if ~isempty(obj.container)
-            refs = obj.container.export(fid, fullpath, refs);
+            refs = obj.container.export(writer, fullpath, refs);
         end
         if ~isempty(obj.data)
-            refs = obj.data.export(fid, fullpath, refs);
+            refs = obj.data.export(writer, fullpath, refs);
         end
     end
 end

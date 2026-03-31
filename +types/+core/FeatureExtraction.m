@@ -86,26 +86,26 @@ methods
         types.util.validateShape('times', {[Inf]}, val)
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.NWBDataInterface(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.core.NWBDataInterface(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
         if startsWith(class(obj.description), 'types.untyped.')
-            refs = obj.description.export(fid, [fullpath '/description'], refs);
+            refs = obj.description.export(writer, [fullpath '/description'], refs);
         elseif ~isempty(obj.description)
-            io.writeDataset(fid, [fullpath '/description'], obj.description, 'forceArray');
+            writer.writeValue([fullpath '/description'], obj.description, 'forceArray');
         end
-        refs = obj.electrodes.export(fid, [fullpath '/electrodes'], refs);
+        refs = obj.electrodes.export(writer, [fullpath '/electrodes'], refs);
         if startsWith(class(obj.features), 'types.untyped.')
-            refs = obj.features.export(fid, [fullpath '/features'], refs);
+            refs = obj.features.export(writer, [fullpath '/features'], refs);
         elseif ~isempty(obj.features)
-            io.writeDataset(fid, [fullpath '/features'], obj.features, 'forceArray');
+            writer.writeValue([fullpath '/features'], obj.features, 'forceArray');
         end
         if startsWith(class(obj.times), 'types.untyped.')
-            refs = obj.times.export(fid, [fullpath '/times'], refs);
+            refs = obj.times.export(writer, [fullpath '/times'], refs);
         elseif ~isempty(obj.times)
-            io.writeDataset(fid, [fullpath '/times'], obj.times, 'forceArray');
+            writer.writeValue([fullpath '/times'], obj.times, 'forceArray');
         end
     end
 end

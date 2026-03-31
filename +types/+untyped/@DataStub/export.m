@@ -1,9 +1,11 @@
-function refs = export(obj, fid, fullpath, refs)
+function refs = export(obj, writer, fullpath, refs)
+    writer = io.backend.base.Writer.ensure(writer);
+    fileId = writer.fileId;
     
     % If exporting to the same file this DataStub originates from, skip export.
     src_fid = H5F.open(obj.filename);
     src_filename = H5F.get_name(src_fid);
-    dest_filename = H5F.get_name(fid);
+    dest_filename = H5F.get_name(fileId);
     if strcmp(src_filename, dest_filename)
         return;
     end
@@ -30,13 +32,13 @@ function refs = export(obj, fid, fullpath, refs)
         % Use io.parseCompound to consistently handle references, character arrays, and logical types,
         % ensuring all data types are properly postprocessed in line with the rest of the codebase.
         data = io.parseCompound(src_did, data);
-        io.writeCompound(fid, fullpath, data);
+        writer.writeValue(fullpath, data);
 
-    elseif ~H5L.exists(fid, fullpath, 'H5P_DEFAULT')
+    elseif ~H5L.exists(fileId, fullpath, 'H5P_DEFAULT')
         % copy data over and return destination.
         ocpl = H5P.create('H5P_OBJECT_COPY');
         lcpl = H5P.create('H5P_LINK_CREATE');
-        H5O.copy(src_fid, obj.path, fid, fullpath, ocpl, lcpl);
+        H5O.copy(src_fid, obj.path, fileId, fullpath, ocpl, lcpl);
         H5P.close(ocpl);
         H5P.close(lcpl);
     end

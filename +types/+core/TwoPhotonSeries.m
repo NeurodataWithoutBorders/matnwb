@@ -125,24 +125,24 @@ methods
         types.util.validateShape('scan_line_rate', {[1]}, val)
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.ImageSeries(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.core.ImageSeries(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
         if ~isempty(obj.field_of_view)
             if startsWith(class(obj.field_of_view), 'types.untyped.')
-                refs = obj.field_of_view.export(fid, [fullpath '/field_of_view'], refs);
+                refs = obj.field_of_view.export(writer, [fullpath '/field_of_view'], refs);
             elseif ~isempty(obj.field_of_view)
-                io.writeDataset(fid, [fullpath '/field_of_view'], obj.field_of_view, 'forceArray');
+                writer.writeValue([fullpath '/field_of_view'], obj.field_of_view, 'forceArray');
             end
         end
-        refs = obj.imaging_plane.export(fid, [fullpath '/imaging_plane'], refs);
+        refs = obj.imaging_plane.export(writer, [fullpath '/imaging_plane'], refs);
         if ~isempty(obj.pmt_gain)
-            io.writeAttribute(fid, [fullpath '/pmt_gain'], obj.pmt_gain);
+            writer.writeAttribute([fullpath '/pmt_gain'], obj.pmt_gain);
         end
         if ~isempty(obj.scan_line_rate)
-            io.writeAttribute(fid, [fullpath '/scan_line_rate'], obj.scan_line_rate);
+            writer.writeAttribute([fullpath '/scan_line_rate'], obj.scan_line_rate);
         end
     end
 end

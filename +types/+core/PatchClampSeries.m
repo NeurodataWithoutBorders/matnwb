@@ -123,22 +123,22 @@ methods
         types.util.validateShape('sweep_number', {[1]}, val)
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.TimeSeries(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.core.TimeSeries(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
-        refs = obj.electrode.export(fid, [fullpath '/electrode'], refs);
+        refs = obj.electrode.export(writer, [fullpath '/electrode'], refs);
         if ~isempty(obj.gain)
             if startsWith(class(obj.gain), 'types.untyped.')
-                refs = obj.gain.export(fid, [fullpath '/gain'], refs);
+                refs = obj.gain.export(writer, [fullpath '/gain'], refs);
             elseif ~isempty(obj.gain)
-                io.writeDataset(fid, [fullpath '/gain'], obj.gain);
+                writer.writeValue([fullpath '/gain'], obj.gain);
             end
         end
-        io.writeAttribute(fid, [fullpath '/stimulus_description'], obj.stimulus_description);
+        writer.writeAttribute([fullpath '/stimulus_description'], obj.stimulus_description);
         if ~isempty(obj.sweep_number)
-            io.writeAttribute(fid, [fullpath '/sweep_number'], obj.sweep_number);
+            writer.writeAttribute([fullpath '/sweep_number'], obj.sweep_number);
         end
     end
 end

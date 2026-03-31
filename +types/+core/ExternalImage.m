@@ -74,14 +74,14 @@ methods
         types.util.validateShape('image_mode', {[1]}, val)
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.BaseImage(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.core.BaseImage(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
-        io.writeAttribute(fid, [fullpath '/image_format'], obj.image_format);
+        writer.writeAttribute([fullpath '/image_format'], obj.image_format);
         if ~isempty(obj.image_mode)
-            io.writeAttribute(fid, [fullpath '/image_mode'], obj.image_mode);
+            writer.writeAttribute([fullpath '/image_mode'], obj.image_mode);
         end
     end
 end

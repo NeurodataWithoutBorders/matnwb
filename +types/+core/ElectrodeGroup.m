@@ -97,19 +97,19 @@ methods
         types.util.validateShape('position', {[1]}, val)
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.NWBContainer(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.core.NWBContainer(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
-        io.writeAttribute(fid, [fullpath '/description'], obj.description);
-        refs = obj.device.export(fid, [fullpath '/device'], refs);
-        io.writeAttribute(fid, [fullpath '/location'], obj.location);
+        writer.writeAttribute([fullpath '/description'], obj.description);
+        refs = obj.device.export(writer, [fullpath '/device'], refs);
+        writer.writeAttribute([fullpath '/location'], obj.location);
         if ~isempty(obj.position)
             if startsWith(class(obj.position), 'types.untyped.')
-                refs = obj.position.export(fid, [fullpath '/position'], refs);
+                refs = obj.position.export(writer, [fullpath '/position'], refs);
             elseif ~isempty(obj.position)
-                io.writeCompound(fid, [fullpath '/position'], obj.position);
+                writer.writeValue([fullpath '/position'], obj.position);
             end
         end
     end

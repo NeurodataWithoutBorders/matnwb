@@ -72,13 +72,13 @@ methods
         types.util.checkType('repetitions_index', 'types.hdmf_common.VectorIndex', val);
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.hdmf_common.DynamicTable(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.hdmf_common.DynamicTable(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
-        refs = obj.repetitions.export(fid, [fullpath '/repetitions'], refs);
-        refs = obj.repetitions_index.export(fid, [fullpath '/repetitions_index'], refs);
+        refs = obj.repetitions.export(writer, [fullpath '/repetitions'], refs);
+        refs = obj.repetitions_index.export(writer, [fullpath '/repetitions_index'], refs);
     end
 end
 

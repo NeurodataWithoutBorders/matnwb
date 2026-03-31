@@ -120,18 +120,18 @@ methods
         end
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.hdmf_common.DynamicTable(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.hdmf_common.DynamicTable(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
-        refs = obj.band_limits.export(fid, [fullpath '/band_limits'], refs);
+        refs = obj.band_limits.export(writer, [fullpath '/band_limits'], refs);
         if ~isempty(obj.band_mean)
-            refs = obj.band_mean.export(fid, [fullpath '/band_mean'], refs);
+            refs = obj.band_mean.export(writer, [fullpath '/band_mean'], refs);
         end
-        refs = obj.band_name.export(fid, [fullpath '/band_name'], refs);
+        refs = obj.band_name.export(writer, [fullpath '/band_name'], refs);
         if ~isempty(obj.band_stdev)
-            refs = obj.band_stdev.export(fid, [fullpath '/band_stdev'], refs);
+            refs = obj.band_stdev.export(writer, [fullpath '/band_stdev'], refs);
         end
     end
 end
