@@ -298,3 +298,4 @@ function emptyInstance = getEmptyRepresentation(nonEmptyInstance)
             class(nonEmptyInstance), ME.message)
     end
 end
+
