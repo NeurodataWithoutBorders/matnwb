@@ -179,7 +179,7 @@ jobs:
   publish_coverage:
     name: Publish Cobertura test coverage
     runs-on: ubuntu-latest
-    if: ${{ always() && !fromJSON(env.SKIP_COVERAGE) }}
+    if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.draft != true) }}
     needs: [run_tests, set_matrix]
     steps:
       - name: Check out repository
