@@ -12,7 +12,7 @@ classdef Reader < handle
     methods
         function obj = Reader(filename)
             arguments
-                filename (1,1) string
+                filename (1,1) string = missing
             end
             obj.filename = filename;
         end
@@ -27,23 +27,23 @@ classdef Reader < handle
             specLocation = string.empty;
         end
 
-        function node = readRoot(obj) %#ok<MANU>
-            io.backend.base.Reader.throwNotImplemented("readRoot")
+        function node = readRootInfo(obj) %#ok<MANU>
+            io.backend.base.Reader.throwNotImplemented("readRootInfo")
             node = struct();
         end
 
-        function node = readNode(obj, nodePath) %#ok<INUSD,MANU>
-            io.backend.base.Reader.throwNotImplemented("readNode")
+        function node = readNodeInfo(obj, nodePath) %#ok<INUSD,MANU>
+            io.backend.base.Reader.throwNotImplemented("readNodeInfo")
             node = struct();
         end
 
-        function attributeValue = processAttributeInfo(obj, attributeInfo, context) %#ok<INUSD,MANU>
-            io.backend.base.Reader.throwNotImplemented("processAttributeInfo")
+        function attributeValue = readAttributeValue(obj, attributeInfo, context) %#ok<INUSD,MANU>
+            io.backend.base.Reader.throwNotImplemented("readAttributeValue")
             attributeValue = [];
         end
 
-        function datasetValue = processDatasetInfo(obj, datasetInfo, datasetPath) %#ok<INUSD,MANU>
-            io.backend.base.Reader.throwNotImplemented("processDatasetInfo")
+        function datasetValue = readDatasetValue(obj, datasetInfo, datasetPath) %#ok<INUSD,MANU>
+            io.backend.base.Reader.throwNotImplemented("readDatasetValue")
             datasetValue = [];
         end
     end

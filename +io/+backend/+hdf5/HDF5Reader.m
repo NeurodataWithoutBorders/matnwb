@@ -17,11 +17,11 @@ classdef HDF5Reader < io.backend.base.Reader
             specLocation = io.spec.getEmbeddedSpecLocation(obj.filename);
         end
 
-        function node = readRoot(obj)
+        function node = readRootInfo(obj)
             node = h5info(obj.filename);
         end
 
-        function node = readNode(obj, nodePath)
+        function node = readNodeInfo(obj, nodePath)
             arguments
                 obj
                 nodePath (1,1) string
@@ -29,7 +29,7 @@ classdef HDF5Reader < io.backend.base.Reader
             node = h5info(obj.filename, char(nodePath));
         end
 
-        function attributeValue = processAttributeInfo(obj, attributeInfo, context)
+        function attributeValue = readAttributeValue(obj, attributeInfo, context)
             switch attributeInfo.Datatype.Class
                 case 'H5T_STRING'
                     attributeValue = attributeInfo.Value;
@@ -66,7 +66,7 @@ classdef HDF5Reader < io.backend.base.Reader
             end
         end
 
-        function datasetValue = processDatasetInfo(obj, datasetInfo, datasetPath)
+        function datasetValue = readDatasetValue(obj, datasetInfo, datasetPath)
             fid = H5F.open(obj.filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
             did = H5D.open(fid, datasetPath);
             datatype = datasetInfo.Datatype;

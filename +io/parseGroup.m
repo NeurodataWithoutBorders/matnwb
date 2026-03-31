@@ -49,7 +49,7 @@ for i=1:length(info.Links)
         'Please report!'], link.Type, fullPath)
     switch link.Type
         case {'soft link', 'hard link'}
-            S = reader.readNode(string(link.Value{1}));
+            S = reader.readNodeInfo(string(link.Value{1}));
             % Suggested improvement: Use info structure if Link is located in the group (or
             % subgroup) which is currently being parsed.
 

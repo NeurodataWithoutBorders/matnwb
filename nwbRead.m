@@ -98,7 +98,7 @@ function nwb = nwbRead(filename, flags, options)
     softLinkWarningResetObj = types.untyped.SoftLink.disablePathDeprecationWarning(); %#ok<NASGU>
 
     try
-        nwb = io.parseGroup(filename, reader.readRoot(), blackList, reader);
+        nwb = io.parseGroup(filename, reader.readRootInfo(), blackList, reader);
     catch ME
         if isSchemaVersionMismatch ...
                 && strcmp(ME.identifier, 'MATLAB:class:RequireSuperClass')

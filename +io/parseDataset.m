@@ -46,12 +46,12 @@ function parsed = parseDataset(filename, datasetInfo, datasetPath, blacklist, re
     end
 
     [parsedAttributes, typeInfo] = ...
-        io.parseAttributes(filename, datasetInfo.Attributes, datasetPath, blacklist);
+        io.parseAttributes(filename, datasetInfo.Attributes, datasetPath, blacklist, reader);
 
     datasetTypeName = typeInfo.typename;
     isTypedDataset = ~isempty(datasetTypeName);
 
-    datasetValue = reader.processDatasetInfo(datasetInfo, datasetPath);
+    datasetValue = reader.readDatasetValue(datasetInfo, datasetPath);
 
     % Prepare output
     datasetName = datasetInfo.Name;

@@ -40,6 +40,6 @@ blacklistMask = ismember(names, Blacklist.attributes);
 attributes(blacklistMask) = [];
 for i=1:length(attributes)
     attr = attributes(i);
-    args(attr.Name) = reader.processAttributeInfo(attr, context);
+    args(attr.Name) = reader.readAttributeValue(attr, context);
 end
 end
