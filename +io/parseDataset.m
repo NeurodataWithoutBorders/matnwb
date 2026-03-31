@@ -162,15 +162,3 @@ function promotedAttributes = promoteDatasetAttributes(datasetName, attributes)
     attributeValues = values(attributes, attributeNames);
     promotedAttributes = containers.Map(promotedAttributeNames, attributeValues);
 end
-
-function promotedFields = filterPromotedFieldsForContainer(containerTypeName, datasetName, availableFields)
-    metaClass = meta.class.fromName(containerTypeName);
-    if isempty(metaClass)
-        promotedFields = availableFields;
-        return;
-    end
-
-    containerPropertyNames = {metaClass.PropertyList.Name};
-    prefixedFieldNames = strcat(datasetName, '_', availableFields);
-    promotedFields = availableFields(ismember(prefixedFieldNames, containerPropertyNames));
-end
