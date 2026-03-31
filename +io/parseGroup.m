@@ -16,6 +16,7 @@ refs = containers.Map;
 [~, root] = io.pathParts(info.Name);
 [attributeProperties, Type] =...
     io.parseAttributes(filename, info.Attributes, info.Name, blacklist, reader);
+Type = io.resolveNeurodataTypeInfo(Type, info.Name);
 
 %parse datasets
 datasetProperties = containers.Map;
@@ -30,7 +31,7 @@ end
 groupProperties = containers.Map;
 for i=1:length(info.Groups)
     group = info.Groups(i);
-    if any(strcmp(group.Name, blacklist.groups))
+    if any(strcmp(string(group.Name), string(blacklist.groups)))
         continue;
     end
     [~, gname] = io.pathParts(group.Name);

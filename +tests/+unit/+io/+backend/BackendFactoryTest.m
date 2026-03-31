@@ -27,6 +27,19 @@ classdef BackendFactoryTest < matlab.unittest.TestCase
             testCase.verifyClass(lazyArray, "io.backend.hdf5.HDF5LazyArray");
         end
 
+        function createZarrReaderForZarrDirectory(testCase)
+            wrapperPath = "/Users/eivind/Code/MATLAB/General/Repositories/mathworks/MATLAB-support-for-Zarr-files";
+            fixturePath = "/Users/eivind/Code/MATLAB/Sandbox/CN/zarr_matlab/test_data/test_zarr_sub_anm00239123_ses_20170627T093549_ecephys_and_ogen.nwb.zarr";
+
+            testCase.assumeTrue(isfolder(wrapperPath) && isfolder(fixturePath));
+            addpath(wrapperPath)
+            testCase.addTeardown(@() rmpath(wrapperPath))
+
+            reader = io.backend.BackendFactory.createReader(fixturePath);
+
+            testCase.verifyClass(reader, "io.backend.zarr2.Zarr2Reader");
+        end
+
         function unsupportedBackendThrowsError(testCase)
             nwb = tests.factory.NWBFile();
             filename = "factory-test.nwb";
@@ -34,7 +47,7 @@ classdef BackendFactoryTest < matlab.unittest.TestCase
 
             testCase.verifyError( ...
                 @() io.backend.BackendFactory.createReader(filename, "zarr"), ...
-                "NWB:BackendFactory:UnsupportedBackend");
+                "NWB:BackendFactory:InvalidZarr");
         end
     end
 end

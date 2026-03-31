@@ -1,4 +1,4 @@
-function specs = readEmbeddedSpecifications(filename, specLocation)
+function specs = readEmbeddedSpecifications(filename, specLocation, reader)
 % readEmbeddedSpecifications - Read embedded specs from an NWB file
 %
 %   specs = io.spec.readEmbeddedSpecifications(filename, specLocation) read 
@@ -19,13 +19,11 @@ function specs = readEmbeddedSpecifications(filename, specLocation)
     arguments
         filename (1,1) string {matnwb.common.mustBeNwbFile}
         specLocation (1,1) string
+        reader io.backend.base.Reader = io.backend.BackendFactory.createReader(filename)
     end
 
-    specInfo = h5info(filename, specLocation);
+    specInfo = reader.readNodeInfo(specLocation);
     specs = deal( cell(size(specInfo.Groups)) );
-    
-    fid = H5F.open(filename);
-    fileCleanup = onCleanup(@(id) H5F.close(fid) );
 
     for iGroup = 1:length(specInfo.Groups)
         location = specInfo.Groups(iGroup).Groups(1);
@@ -44,17 +42,27 @@ function specs = readEmbeddedSpecifications(filename, specLocation)
         fileLocation = strcat(location.Name, '/', sourceNames);
         schemaMap = containers.Map;
         for iFileLocation = 1:length(fileLocation)
-            did = H5D.open(fid, fileLocation{iFileLocation});
             if strcmp('namespace', sourceNames{iFileLocation})
-                namespaceText = H5D.read(did);
+                namespaceText = readEmbeddedSpecDatasetValue( ...
+                    reader, location.Datasets(iFileLocation), fileLocation{iFileLocation});
             else
-                schemaMap(sourceNames{iFileLocation}) = H5D.read(did);
+                schemaMap(sourceNames{iFileLocation}) = readEmbeddedSpecDatasetValue( ...
+                    reader, location.Datasets(iFileLocation), fileLocation{iFileLocation});
             end
-            H5D.close(did);
         end
 
         specs{iGroup}.namespaceName = namespaceName;
         specs{iGroup}.namespaceText = namespaceText;
         specs{iGroup}.schemaMap = schemaMap;
+    end
+end
+
+function datasetValue = readEmbeddedSpecDatasetValue(reader, datasetInfo, datasetPath)
+    datasetValue = reader.readDatasetValue(datasetInfo, datasetPath);
+    if isa(datasetValue, "types.untyped.DataStub")
+        datasetValue = datasetValue.load();
+    end
+    if iscell(datasetValue) && isscalar(datasetValue)
+        datasetValue = datasetValue{1};
     end
 end
