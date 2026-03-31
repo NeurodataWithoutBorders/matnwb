@@ -72,12 +72,12 @@ classdef LazyArray < handle
             dataType = [];
         end
 
-        function data = load_h5_style(obj, varargin) %#ok<INUSD,MANU>
+        function data = load_h5_style(obj, varargin) %#ok<INUSD>
             io.backend.base.LazyArray.throwNotImplemented("load_h5_style")
             data = [];
         end
 
-        function data = load_mat_style(obj, varargin) %#ok<INUSD,MANU>
+        function data = load_mat_style(obj, varargin) %#ok<INUSD>
             io.backend.base.LazyArray.throwNotImplemented("load_mat_style")
             data = [];
         end
