@@ -30,7 +30,7 @@ classdef HDF5LazyArray < io.backend.base.LazyArray
             H5D.close(datasetId);
             H5F.close(fileId);
         end
-    
+
         data = load_h5_style(obj, varargin)
 
         data = load_mat_style(obj, varargin)
@@ -46,4 +46,3 @@ classdef HDF5LazyArray < io.backend.base.LazyArray
         end
     end
 end
-
