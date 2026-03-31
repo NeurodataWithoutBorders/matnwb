@@ -31,9 +31,7 @@ classdef ParseDatasetTest < matlab.unittest.TestCase
             h5writeatt(filename, datasetPath, 'unit', 'a.u.');
 
             info = h5info(filename, datasetPath);
-            blacklist = struct('attributes', {{}}, 'groups', {{}});
-
-            parsed = io.parseDataset(filename, info, datasetPath, blacklist);
+            parsed = io.parseDataset(filename, info, datasetPath);
 
             testCase.verifyEqual(parsed('plain_data'), int32(42));
             testCase.verifyEqual(parsed.Count, uint64(3));
@@ -62,9 +60,7 @@ classdef ParseDatasetTest < matlab.unittest.TestCase
             h5writeatt(filename, datasetPath, 'extra_attribute', 'keep me');
 
             info = h5info(filename, datasetPath);
-            blacklist = struct('attributes', {{}}, 'groups', {{}});
-
-            parsed = io.parseDataset(filename, info, datasetPath, blacklist);
+            parsed = io.parseDataset(filename, info, datasetPath);
             parsedDataset = parsed('typed_data');
 
             testCase.verifyClass(parsedDataset, 'types.hdmf_common.VectorData');
@@ -113,8 +109,7 @@ classdef ParseDatasetTest < matlab.unittest.TestCase
             
             % Parse the dataset
             info = h5info(filename, datasetPath);
-            blacklist = struct('attributes', {{}}, 'groups', {{}});
-            parsed = io.parseDataset(filename, info, datasetPath, blacklist);
+            parsed = io.parseDataset(filename, info, datasetPath);
             data = parsed('boolean_data');
 
             % Verify the data is converted to logical
@@ -157,8 +152,7 @@ classdef ParseDatasetTest < matlab.unittest.TestCase
             
             % Parse the dataset
             info = h5info(filename, datasetPath);
-            blacklist = struct('attributes', {{}}, 'groups', {{}});
-            parsed = io.parseDataset(filename, info, datasetPath, blacklist);
+            parsed = io.parseDataset(filename, info, datasetPath);
             data = parsed('boolean_array');
 
             % Verify the data is converted to logical array
@@ -202,10 +196,9 @@ classdef ParseDatasetTest < matlab.unittest.TestCase
             
             % Parse the dataset and verify warning is issued
             info = h5info(filename, datasetPath);
-            blacklist = struct('attributes', {{}}, 'groups', {{}});
-            
+
             parsed = testCase.verifyWarning(...
-                @() io.parseDataset(filename, info, datasetPath, blacklist), ...
+                @() io.parseDataset(filename, info, datasetPath), ...
                 'NWB:Dataset:UnknownEnum');
             data = parsed('color_data');
             
@@ -249,14 +242,13 @@ classdef ParseDatasetTest < matlab.unittest.TestCase
             
             % Parse the dataset and verify warning
             info = h5info(filename, datasetPath);
-            blacklist = struct('attributes', {{}}, 'groups', {{}});
             
             testCase.verifyWarning(...
-                @() io.parseDataset(filename, info, datasetPath, blacklist), ...
+                @() io.parseDataset(filename, info, datasetPath), ...
                 'NWB:Dataset:UnknownEnum');
             
             parsed = testCase.verifyWarning(...
-                @() io.parseDataset(filename, info, datasetPath, blacklist), ...
+                @() io.parseDataset(filename, info, datasetPath), ...
                 'NWB:Dataset:UnknownEnum');
             data = parsed('color_array');
             loadedData = data.load();
@@ -303,8 +295,7 @@ classdef ParseDatasetTest < matlab.unittest.TestCase
             
             % Parse the dataset
             info = h5info(filename, datasetPath);
-            blacklist = struct('attributes', {{}}, 'groups', {{}});
-            parsed = io.parseDataset(filename, info, datasetPath, blacklist);
+            parsed = io.parseDataset(filename, info, datasetPath);
             data = parsed('false_data');
 
             % Verify the data is false
@@ -353,7 +344,7 @@ classdef ParseDatasetTest < matlab.unittest.TestCase
             % Parse attributes and verify warning is issued
             info = h5info(filename, datasetPath);
             blacklist = struct('attributes', {{}}, 'groups', {{}});
-            
+
             % Verify that a warning is issued when parsing attributes
             [attrProps, ~] = testCase.verifyWarning(...
                 @() io.parseAttributes(filename, info.Attributes, datasetPath, blacklist), ...

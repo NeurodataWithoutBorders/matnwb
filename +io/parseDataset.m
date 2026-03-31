@@ -30,6 +30,14 @@ function parsed = parseDataset(filename, info, fullpath, blacklist)
 %    DataStub when appropriate.
 
     % Parse dataset attributes
+
+    arguments
+        filename (1,:) char
+        info struct
+        fullpath (1,:) char
+        blacklist struct = struct('attributes', {{}}, 'groups', {{}})
+    end
+
     [parsedAttributes, typeInfo] = ...
         io.parseAttributes(filename, info.Attributes, fullpath, blacklist);
 
