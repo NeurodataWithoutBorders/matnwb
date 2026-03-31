@@ -226,7 +226,7 @@ classdef Group < file.interface.HasProps & file.interface.HasQuantity
                 for iSubGroup = 1:length(descendantNames)
                     descendantName = descendantNames{iSubGroup};
                     Descendant = DescendantMap(descendantName);
-                    % hoist constrained sets up to the current
+                    % hoist constrained sets to the current
                     % subname.
                     isPossiblyConstrained =...
                         isa(Descendant, 'file.Group')...
