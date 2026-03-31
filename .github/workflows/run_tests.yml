@@ -26,6 +26,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  SKIP_COVERAGE: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft == true }}
+
 jobs:
   set_matrix:
     name: Set test matrix
@@ -78,7 +81,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       USE_CACHE: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft == true }}
-      SKIP_COVERAGE: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft == true }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.set_matrix.outputs.matrix) }}
@@ -177,6 +179,7 @@ jobs:
   publish_coverage:
     name: Publish Cobertura test coverage
     runs-on: ubuntu-latest
+    if: ${{ always() && !fromJSON(env.SKIP_COVERAGE) }}
     needs: [run_tests, set_matrix]
     steps:
       - name: Check out repository
