@@ -52,6 +52,7 @@ classdef EnumTest < matlab.unittest.TestCase
             % Verify the data is converted to logical
             testCase.verifyClass(data, 'logical');
             testCase.verifyEqual(data, true);
+            testCase.verifyEqual(parsed.Count, uint64(1));
         end
         
         function testParseBooleanEnumArrayDataset(testCase)
@@ -97,6 +98,7 @@ classdef EnumTest < matlab.unittest.TestCase
             testCase.verifyEqual(data.load(), logical([1, 0, 1, 1, 0]'));
 
             testCase.verifyEqual(data.load(':'), logical([1, 0, 1, 1, 0]'));
+            testCase.verifyEqual(parsed.Count, uint64(1));
         end
         
         function testParseUnknownEnumScalarDataset(testCase)
@@ -240,6 +242,72 @@ classdef EnumTest < matlab.unittest.TestCase
             % Verify the data is false
             testCase.verifyEqual(data.dataType, 'logical');
             testCase.verifyEqual(data.load(), false);
+            testCase.verifyEqual(parsed.Count, uint64(1));
+        end
+
+        function testParseUntypedDatasetReturnsUnconsumedAttributes(testCase)
+            filename = 'test_untyped_dataset_attributes.h5';
+            datasetPath = '/plain_data';
+
+            fid = H5F.create(filename, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
+            fileCleanup = onCleanup(@() H5F.close(fid));
+
+            sid = H5S.create('H5S_SCALAR');
+            did = H5D.create(fid, datasetPath, 'H5T_NATIVE_INT', sid, 'H5P_DEFAULT');
+            H5D.write(did, 'H5ML_DEFAULT', 'H5S_ALL', 'H5S_ALL', 'H5P_DEFAULT', int32(42));
+            H5D.close(did);
+            H5S.close(sid);
+            clear fileCleanup;
+
+            h5writeatt(filename, datasetPath, 'description', 'left for caller');
+            h5writeatt(filename, datasetPath, 'unit', 'a.u.');
+
+            info = h5info(filename, datasetPath);
+            blacklist = struct('attributes', {{}}, 'groups', {{}});
+
+            parsed = io.parseDataset(filename, info, datasetPath, blacklist);
+
+            testCase.verifyEqual(parsed('plain_data'), int32(42));
+            testCase.verifyEqual(parsed.Count, uint64(3));
+            testCase.verifyEqual(parsed('plain_data_description'), 'left for caller');
+            testCase.verifyEqual(parsed('plain_data_unit'), 'a.u.');
+        end
+
+        function testParseTypedDatasetConsumesKnownAttributes(testCase)
+            filename = 'test_typed_dataset_attributes.h5';
+            datasetPath = '/typed_data';
+
+            fid = H5F.create(filename, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
+            fileCleanup = onCleanup(@() H5F.close(fid));
+
+            dims = 3;
+            sid = H5S.create_simple(1, dims, dims);
+            did = H5D.create(fid, datasetPath, 'H5T_NATIVE_INT8', sid, 'H5P_DEFAULT');
+            H5D.write(did, 'H5ML_DEFAULT', 'H5S_ALL', 'H5S_ALL', 'H5P_DEFAULT', int8([1 2 3]));
+            H5D.close(did);
+            H5S.close(sid);
+            clear fileCleanup;
+
+            h5writeatt(filename, datasetPath, 'neurodata_type', 'VectorData');
+            h5writeatt(filename, datasetPath, 'namespace', 'hdmf-common');
+            h5writeatt(filename, datasetPath, 'description', 'typed dataset');
+            h5writeatt(filename, datasetPath, 'extra_attribute', 'keep me');
+
+            info = h5info(filename, datasetPath);
+            blacklist = struct('attributes', {{}}, 'groups', {{}});
+
+            parsed = io.parseDataset(filename, info, datasetPath, blacklist);
+            parsedDataset = parsed('typed_data');
+
+            testCase.verifyClass(parsedDataset, 'types.hdmf_common.VectorData');
+            testCase.verifyEqual(parsedDataset.description, 'typed dataset');
+            testCase.verifyClass(parsedDataset.data, 'types.untyped.DataStub');
+            testCase.verifyEqual(parsedDataset.data.load(), int8([1; 2; 3]));
+
+            testCase.verifyEqual(parsed.Count, uint64(2));
+            testCase.verifyTrue(isKey(parsed, 'typed_data_extra_attribute'));
+            testCase.verifyEqual(parsed('typed_data_extra_attribute'), 'keep me');
+            testCase.verifyFalse(isKey(parsed, 'typed_data_description'));
         end
 
 

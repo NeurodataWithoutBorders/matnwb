@@ -71,7 +71,7 @@ classdef ExternalLink < handle
                     is_reference = strcmp(LinkedInfo.Datatype.Class, 'H5T_REFERENCE');
                     if is_typed || is_reference
                         parsed = io.parseDataset(Link.filename, LinkedInfo, Link.path);
-                        data = parsed(LinkedInfo.name);
+                        data = parsed(LinkedInfo.Name);
                     else
                         data = types.untyped.DataStub(Link.filename, Link.path);
                     end
