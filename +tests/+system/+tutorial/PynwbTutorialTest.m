@@ -1,20 +1,17 @@
+% PynwbTutorialTest - Unit test for testing the PyNWB tutorials.
+%
+%   This test reads tutorial files from the directory specified by the
+%   PYNWB_REPO_DIR environment variable, which should point to a local clone
+%   of the pynwb repository. If the tutorial creates nwb file(s), the test
+%   will also try to open these with matnwb.
+
 classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) ...
         PynwbTutorialTest < matlab.unittest.TestCase
-% PynwbTutorialTest - Unit test for testing the pynwb tutorials.
-%
-%   This test will test most pynwb tutorial files (while skipping tutorials with 
-%   dependencies) If the tutorial creates nwb file(s), the test will also try 
-%   to open these with matnwb.
-
-    properties
-        MatNwbDirectory
-        PyNwbDirectory
-    end
 
     properties (TestParameter)
-        % TutorialFile - A cell array where each cell is the name of a
-        % tutorial file. testTutorial will run on each file individually
-        tutorialFile = listTutorialFiles();
+        % tutorialFile - A cell array where each cell is the name of a
+        % tutorial file. testTutorial will run on each file individually.
+        TutorialFile = listTutorialFiles();
     end
 
     properties (Constant)
@@ -30,123 +27,62 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
 
         % SkippedFiles - Name of exported nwb files to skip reading with matnwb
         SkippedFiles = {'family_nwb_file_0.nwb'} % requires family driver from h5py
-        
-        % PythonDependencies - Package dependencies for running pynwb tutorials
-        PythonDependencies = {'dataframe-image', 'matplotlib', 'hdmf-zarr'}
-    end
 
-    properties (Access = private)
-        PythonEnvironment % Stores the value of the environment variable 
-        % "PYTHONPATH" to restore when test is finished.
-
-        Debug (1,1) logical
+        % FileDependencies - Additional repo-relative files needed by tutorials
+        FileDependencies = {'docs/source/figures/logo_pynwb.png'}
     end
 
     methods (TestClassSetup)
         function setupClass(testCase)
-
-            import tests.fixtures.NwbClearGeneratedFixture
-            
-            testCase.Debug = strcmp(getenv('NWB_TEST_DEBUG'), '1');
-
-            % Get the root path of the matnwb repository
-            rootPath = getMatNwbRootDirectory();
-            testCase.MatNwbDirectory = rootPath;
-
-            % Use a fixture to add the folder to the search path
-            testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
-            
-            % Clear the generated schema classes
-            testCase.applyFixture(NwbClearGeneratedFixture) 
-
-            % Use a fixture to create a temporary working directory
             testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
-           
-            % Download pynwb in the current (temp) directory and cd into pynwb
-            testCase.PyNwbDirectory = downloadPynwb();
-            cd( testCase.PyNwbDirectory )
-            
-            testCase.createVirtualPythonEnvironment()
-            testCase.installPythonDependencies()
 
-            % Add site-packages to python path
-            testCase.PythonEnvironment = getenv('PYTHONPATH');
-            if isunix
-                L = dir('temp_venv/lib/python*/site-*'); % Find the site-packages folder
-            elseif ispc
-                L = dir('temp_venv/Lib/site-*'); % Find the site-packages folder
-            end
-            pythonPath = fullfile(L.folder, L.name);
-            setenv('PYTHONPATH', pythonPath)
-            
-            if testCase.Debug
-                pythonExecutable = getenv("PYTHON_EXECUTABLE");
-                [~, m] = system(sprintf('%s -m pip list', pythonExecutable)); disp(m)
-            end
-        end
-    end
+            pynwbRepoDir = getenv('PYNWB_REPO_DIR');
+            testCase.assumeNotEmpty(pynwbRepoDir, ...
+                'PYNWB_REPO_DIR is not set, skipping PyNWB tutorial tests');
 
-    methods (TestClassTeardown)
-        function tearDownClass(testCase)
-            % Restore environment variable
-            setenv('PYTHONPATH', testCase.PythonEnvironment);
-        end
-    end
-
-    methods (TestMethodSetup)
-        function setupMethod(testCase) %#ok<MANU>
-            % pass
+            testCase.copyTutorialFilesToWorkingFolder(pynwbRepoDir)
+            testCase.copyTutorialDependenciesToWorkingFolder(pynwbRepoDir)
         end
     end
 
     methods (TestMethodTeardown)
         function teardownMethod(testCase) %#ok<MANU>
             % Clear/delete all nwb files
-            L = dir('*.nwb');
-            for i = 1:numel(L)
-                delete(fullfile(L(i).folder, L(i).name))
+            nwbListing = dir('*.nwb');
+            for i = 1:numel(nwbListing)
+                delete(fullfile(nwbListing(i).folder, nwbListing(i).name))
             end
-
-            % Consider whether to also run nwbClearGenerated here
         end
     end
-    
-    methods (Test)
-        function testTutorial(testCase, tutorialFile)
 
+    methods (Test, TestTags = {'UsesPython'})
+        function testTutorial(testCase, TutorialFile)
+            galleryFolder = fullfile(pwd, 'docs', 'gallery');
+            tutorialFilePath = fullfile(galleryFolder, TutorialFile);
             pythonExecutable = getenv("PYTHON_EXECUTABLE");
-            cmd = sprintf('%s %s', pythonExecutable, tutorialFile);
-            [status, cmdout] = system(cmd);
-
-            if status == 1
-                if contains( cmdout, "ModuleNotFoundError: No module named 'hdf5plugin'" )
-                    % pass
-                    %keyboard
+            [status, cmdout] = system(sprintf('"%s" "%s"', pythonExecutable, tutorialFilePath));
+            if status ~= 0
+                if contains(cmdout, "ModuleNotFoundError: No module named 'hdf5plugin'")
+                    % pass - hdf5plugin not required
                 else
-                    [~, tutorialName] = fileparts(tutorialFile);
-                    error('Failed to run python tutorial named "%s" with error:\n %s', tutorialName, cmdout)
+                    [~, tutorialName] = fileparts(TutorialFile);
+                    error('Failed to run python tutorial "%s":\n%s', tutorialName, cmdout)
                 end
             end
-
             testCase.testReadTutorialNwbFileWithMatNwb()
         end
     end
 
     methods
         function testReadTutorialNwbFileWithMatNwb(testCase)
-
             % Retrieve all files generated by the tutorial
             nwbListing = dir('*.nwb');
-            
             for i = 1:numel(nwbListing)
                 nwbFilename = nwbListing(i).name;
                 if any(strcmp(nwbFilename, tests.system.tutorial.PynwbTutorialTest.SkippedFiles))
                     continue
                 end
-
                 try
-                    %schemaVersion = util.getSchemaVersion(nwbFilename); %Debug
-
                     % NB: Need to specify savedir to current directory (.) in
                     % order to generate schema in working directory for test
                     nwbFile = nwbRead(nwbFilename, 'savedir', '.'); %#ok<NASGU>
@@ -156,157 +92,60 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
             end
         end
     end
-
-    methods (Access = private) % Utility functions
-        function createVirtualPythonEnvironment(testCase) %#ok<MANU>
-
-            pythonExecutable = getenv("PYTHON_EXECUTABLE");
-
-            cmd = sprintf("%s -m venv ./temp_venv", pythonExecutable );
-            [status, cmdout] = system(cmd);
-
-            if ~status == 0
-                error("Failed to create virtual python environment with error:\n%s", cmdout)
-            end
-
-            % Activate virtual python environment
-            if isunix
-                system('source ./temp_venv/bin/activate'); 
-            elseif ispc
-                system('temp_venv\Scripts\activate')
-            end
+    
+    methods(Access = private)
+        function copyTutorialFilesToWorkingFolder(testCase, pynwbRepoDir)
+        % copyTutorialFilesToWorkingFolder - Copy the pynwb tutorial files
+        % to the temporary working folder used by this test suite.
+            sourceGalleryFolder = fullfile(pynwbRepoDir, 'docs', 'gallery');
+            targetGalleryFolder = fullfile(pwd, 'docs', 'gallery');
+            [status, msg] = copyfile(sourceGalleryFolder, targetGalleryFolder, 'f');
+            testCase.assertTrue(status, ...
+                sprintf('Failed to copy docs/gallery into test working folder: %s', msg));
         end
-
-        function installPythonDependencies(testCase)
-            % Install python dependencies
-            pipExecutable = './temp_venv/bin/pip3';
-            for i = 1:numel(testCase.PythonDependencies)
-                iName = testCase.PythonDependencies{i};
-                installCmdStr = sprintf('%s install %s', pipExecutable, iName);
-
-                if testCase.Debug
-                    [~, m] = system(installCmdStr); disp(m)
-                else
-                    evalc( "system(installCmdStr)" ); % Install without command window output
+        
+        function copyTutorialDependenciesToWorkingFolder(testCase, pynwbRepoDir)
+            for i = 1:numel(testCase.FileDependencies)
+                relativePath = testCase.FileDependencies{i};
+                sourcePath = fullfile(pynwbRepoDir, relativePath);
+                targetPath = fullfile(pwd, relativePath);
+                targetDir = fileparts(targetPath);
+                if ~isfolder(targetDir)
+                    mkdir(targetDir);
                 end
+                [status, msg] = copyfile(sourcePath, targetPath, 'f');
+                testCase.assertTrue(status, ...
+                    sprintf('Failed to copy tutorial dependency "%s": %s', relativePath, msg));
             end
         end
     end
 end
 
-function tutorialNames = listTutorialFiles()
-% listTutorialFiles - List names of all tutorial files (exclude skipped files)
-
-    % Note: Without a token, github api requests are limited to 60 per
-    % hour. The listFilesInRepo will make 4 requests per call
-    token = getenv('GITHUB_TOKEN'); % If not present, defaults to empty char
+function tutorialFiles = listTutorialFiles()
+% listTutorialFiles - List gallery-relative paths of tutorial files (exclude skipped files)
+%
+%   Returns paths relative to the gallery folder, e.g. "general/ecephys.py",
+%   so that test names are readable. The full path is reconstructed in testTutorial.
     
-    allFilePaths = listFilesInRepo(...
-        'NeurodataWithoutBorders', 'pynwb', 'docs/gallery/', token);
-
-    % Exclude files that are not .py files.
-    try
-        [~, fileNames, fileExt] = fileparts(allFilePaths);
-    catch % Support MATLAB R2019b:
-        [fileNames, fileExt] = deal(cell(size(allFilePaths)));
-        for i = 1:numel(allFilePaths)
-            [~, fileNames{i}, fileExt{i}] = fileparts(allFilePaths{i});
-        end
+    pynwbRepoDir = getenv('PYNWB_REPO_DIR');
+    if isempty(pynwbRepoDir)
+        tutorialFiles = {''};
+        return
     end
-    keep = strcmp(fileExt, '.py');
-    allFilePaths = allFilePaths(keep);
 
-    % Exclude skipped files.
-    fileNames = strcat(fileNames(keep), '.py');
-    [~, iA] = setdiff(fileNames, tests.system.tutorial.PynwbTutorialTest.SkippedTutorials, 'stable');
-    tutorialNames = allFilePaths(iA);
+    galleryFolder = fullfile(pynwbRepoDir, 'docs', 'gallery');
+    
+    pyFileListing = dir(fullfile(galleryFolder, '**', '*.py'));
+    pyFileListing = excludeSkippedFiles(pyFileListing);
+
+    absolutePaths = fullfile({pyFileListing.folder}, {pyFileListing.name});
+    tutorialFiles = replace(absolutePaths, [galleryFolder, filesep], '');
 end
 
-function folderPath = getMatNwbRootDirectory()
-    folderPath = fileparts(fileparts(fileparts(fileparts(mfilename('fullpath')))));
-end
-
-function pynwbFolder = downloadPynwb()
-    githubUrl = 'https://github.com/NeurodataWithoutBorders/pynwb/archive/refs/heads/dev.zip';
-    pynwbFolder = downloadZippedGithubRepo(githubUrl, '.'); % Download in current directory
-end
-
-function repoFolder = downloadZippedGithubRepo(githubUrl, targetFolder)
-%downloadZippedGithubRepo Download addon to a specified addon folder
-    
-    % Create a temporary path for storing the downloaded file.
-    [~, ~, fileType] = fileparts(githubUrl);
-    tempFilepath = [tempname, fileType];
-    
-    % Download the file containing the repository
-    try
-        tempFilepath = websave(tempFilepath, githubUrl);
-        fileCleanupObj = onCleanup( @(fname) delete(tempFilepath) );
-    catch ME
-        if throwErrorIfFails
-            rethrow(ME)
-        end
-    end
-    
-    fileNames = unzip(tempFilepath, targetFolder);
-    
-    % Delete the temp zip file
-    clear fileCleanupObj
-
-    repoFolder = fullfile(targetFolder, fileNames{1});
-end
-
-function allFiles = listFilesInRepo(owner, repo, path, token)
-    % This function lists all files in a GitHub repository, including subfolders.
-    % Inputs:
-    %   - owner: GitHub username or organization name
-    %   - repo: Repository name
-    %   - path: Folder path in the repository (use '' for root)
-    %   - token: Personal Access Token for GitHub API (use '' for public repos)
-    % Outputs:
-    %   - allFiles: Cell array of file paths
-    
-    if nargin < 3
-        path = '';
-    end
-    if nargin < 4
-        token = '';
-    end
-
-    % Construct the API URL
-    url = ['https://api.github.com/repos/' owner '/' repo '/contents/' path];
-
-    % Set up HTTP headers, including authentication if provided
-    headers = matlab.net.http.HeaderField.empty;
-    if ~isempty(token)
-        headers(end+1) = matlab.net.http.HeaderField('Authorization', ['token ' token]);
-    end
-    headers(end+1) = matlab.net.http.HeaderField('Accept', 'application/vnd.github.v3+json');
-
-    % Send the HTTP GET request
-    request = matlab.net.http.RequestMessage('GET', headers);
-    response = request.send(url);
-
-    % Check if the request was successful
-    if response.StatusCode == matlab.net.http.StatusCode.OK
-        contents = response.Body.Data;
-    else
-        error('Failed to fetch data: %s', response.StatusLine);
-    end
-
-    % Initialize the output
-    allFiles = {};
-
-    % Process the contents
-    for i = 1:numel(contents)
-        item = contents(i);
-        if strcmp(item.type, 'file')
-            % If it's a file, add its path to the list
-            allFiles{end+1} = item.path; %#ok<AGROW>
-        elseif strcmp(item.type, 'dir')
-            % If it's a directory, recursively fetch its contents
-            subfolderFiles = listFilesInRepo(owner, repo, item.path, token);
-            allFiles = [allFiles, subfolderFiles]; %#ok<AGROW>
-        end
-    end
+function tutorialFileListing = excludeSkippedFiles(pyFileListing)
+% excludeSkippedFiles - Exclude tutorial files to skip from tests
+    allNames = {pyFileListing.name};
+    namesToSkip = tests.system.tutorial.PynwbTutorialTest.SkippedTutorials;
+    keep = ~ismember(allNames, namesToSkip);
+    tutorialFileListing = pyFileListing(keep);
 end
