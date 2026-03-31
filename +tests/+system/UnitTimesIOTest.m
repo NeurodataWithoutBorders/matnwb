@@ -53,4 +53,21 @@ classdef UnitTimesIOTest < tests.system.PyNWBIOTest
             c = file.units;
         end
     end
+
+    methods (Test)
+        function testLegacyNestedSpikeTimesResolutionIsPreserved(testCase)
+            spikeTimes = types.hdmf_common.VectorData( ...
+                'data', 11, ...
+                'description', 'the spike times for each unit in seconds');
+            spikeTimes.resolution = 1/20000;
+
+            units = types.core.Units( ...
+                'colnames', {'spike_times'}, ...
+                'description', 'data on spiking units', ...
+                'spike_times', spikeTimes);
+
+            testCase.verifyEqual(units.spike_times.resolution, 1/20000);
+            testCase.verifyEqual(units.spike_times_resolution, 1/20000);
+        end
+    end
 end

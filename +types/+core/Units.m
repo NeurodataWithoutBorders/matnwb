@@ -170,7 +170,11 @@ methods
             obj.warnIfAttributeDependencyMissing('spike_times_resolution', 'spike_times')
         end
         if ~isempty(obj.spike_times) && isobject(obj.spike_times) && isprop(obj.spike_times, 'resolution')
-            obj.spike_times.resolution = obj.spike_times_resolution;
+            if ~isempty(obj.spike_times_resolution)
+                obj.spike_times.resolution = obj.spike_times_resolution;
+            elseif ~isempty(obj.spike_times.resolution)
+                obj.spike_times_resolution = obj.spike_times.resolution;
+            end
         end
     end
     function set.waveform_mean(obj, val)
@@ -185,7 +189,11 @@ methods
             obj.warnIfAttributeDependencyMissing('waveform_mean_sampling_rate', 'waveform_mean')
         end
         if ~isempty(obj.waveform_mean) && isobject(obj.waveform_mean) && isprop(obj.waveform_mean, 'sampling_rate')
-            obj.waveform_mean.sampling_rate = obj.waveform_mean_sampling_rate;
+            if ~isempty(obj.waveform_mean_sampling_rate)
+                obj.waveform_mean.sampling_rate = obj.waveform_mean_sampling_rate;
+            elseif ~isempty(obj.waveform_mean.sampling_rate)
+                obj.waveform_mean_sampling_rate = obj.waveform_mean.sampling_rate;
+            end
         end
     end
     function set.waveform_sd(obj, val)
@@ -200,7 +208,11 @@ methods
             obj.warnIfAttributeDependencyMissing('waveform_sd_sampling_rate', 'waveform_sd')
         end
         if ~isempty(obj.waveform_sd) && isobject(obj.waveform_sd) && isprop(obj.waveform_sd, 'sampling_rate')
-            obj.waveform_sd.sampling_rate = obj.waveform_sd_sampling_rate;
+            if ~isempty(obj.waveform_sd_sampling_rate)
+                obj.waveform_sd.sampling_rate = obj.waveform_sd_sampling_rate;
+            elseif ~isempty(obj.waveform_sd.sampling_rate)
+                obj.waveform_sd_sampling_rate = obj.waveform_sd.sampling_rate;
+            end
         end
     end
     function set.waveforms(obj, val)
@@ -221,7 +233,11 @@ methods
             obj.warnIfAttributeDependencyMissing('waveforms_sampling_rate', 'waveforms')
         end
         if ~isempty(obj.waveforms) && isobject(obj.waveforms) && isprop(obj.waveforms, 'sampling_rate')
-            obj.waveforms.sampling_rate = obj.waveforms_sampling_rate;
+            if ~isempty(obj.waveforms_sampling_rate)
+                obj.waveforms.sampling_rate = obj.waveforms_sampling_rate;
+            elseif ~isempty(obj.waveforms.sampling_rate)
+                obj.waveforms_sampling_rate = obj.waveforms.sampling_rate;
+            end
         end
     end
     %% VALIDATORS
