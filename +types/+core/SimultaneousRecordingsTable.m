@@ -68,6 +68,10 @@ methods
     
     function val = validate_recordings(obj, val)
         types.util.checkType('recordings', 'types.hdmf_common.DynamicTableRegion', val);
+        if ~isempty(val)
+            types.util.validateReferenceType('recordings.table', val.table, 'types.core.IntracellularRecordingsTable', 'types.untyped.ObjectView');
+            types.util.validateShape('recordings.table', {[1]}, val.table)
+        end
     end
     function val = validate_recordings_index(obj, val)
         types.util.checkType('recordings_index', 'types.hdmf_common.VectorIndex', val);

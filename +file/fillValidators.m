@@ -177,18 +177,29 @@ function unitValidationStr = fillDatasetValidation(name, prop, namespaceReg)
             validationLines = [validationLines ...
                 {fillTypeValidation(name, fullname)}];
 
+            datasetAttributeValidationLines = ...
+                fillTypedDatasetAttributeReferenceValidation(name, prop, namespaceReg);
             datasetValidationLines = [...
                 {fillDtypeValidation(name, prop.dtype, namespaceReg)}, ...
                 {fillDimensionValidation(name, prop.shape)} ];
 
+            datasetAttributeValidationLines(cellfun('isempty', datasetAttributeValidationLines)) = [];
             datasetValidationLines(cellfun('isempty', datasetValidationLines)) = [];
-            datasetValidationLines = indentLines(datasetValidationLines, 4);
 
-            if ~isempty(datasetValidationLines)
+            if ~isempty(datasetAttributeValidationLines) || ~isempty(datasetValidationLines)
                 validationLines{end+1} = 'if ~isempty(val)';
-                validationLines{end+1} = '    [val, originalVal] = types.util.unwrapValue(val);';
-                validationLines = [validationLines, datasetValidationLines];
-                validationLines{end+1} = '    val = types.util.rewrapValue(val, originalVal);';
+
+                if ~isempty(datasetAttributeValidationLines)
+                    validationLines = [validationLines, indentLines(datasetAttributeValidationLines, 4)];
+                end
+
+                if ~isempty(datasetValidationLines)
+                    datasetValidationLines = indentLines(datasetValidationLines, 4);
+                    validationLines{end+1} = '    [val, originalVal] = types.util.unwrapValue(val);';
+                    validationLines = [validationLines, datasetValidationLines];
+                    validationLines{end+1} = '    val = types.util.rewrapValue(val, originalVal);';
+                end
+
                 validationLines{end+1} = 'end';
             end
         else
@@ -199,6 +210,40 @@ function unitValidationStr = fillDatasetValidation(name, prop, namespaceReg)
     end
     validationLines(cellfun('isempty', validationLines)) = [];
     unitValidationStr = strjoin(validationLines, newline);
+end
+
+function validationLines = fillTypedDatasetAttributeReferenceValidation(name, prop, namespaceReg)
+    validationLines = {};
+
+    if isempty(prop.attributes)
+        return
+    end
+
+    for iAttribute = 1:length(prop.attributes)
+        Attribute = prop.attributes(iAttribute);
+        if ~isReferenceType(Attribute.dtype)
+            continue
+        end
+
+        propertyName = sprintf('%s.%s', name, Attribute.name);
+        fullReferenceClassName = getReferenceTypeClassName(Attribute.dtype);
+        fullTargetTypeName = getFullClassName(...
+            namespaceReg, Attribute.dtype('target_type'), propertyName);
+        if isempty(fullTargetTypeName)
+            continue
+        end
+
+        validationLines{end+1} = sprintf(...
+            'types.util.validateReferenceType(''%s'', val.%s, ''%s'', ''%s'');', ...
+            propertyName, Attribute.name, fullTargetTypeName, fullReferenceClassName);
+
+        shapeValidationLine = fillDimensionValidation(propertyName, Attribute.shape);
+        if ~isempty(shapeValidationLine)
+            shapeValidationLine = regexprep(...
+                shapeValidationLine, '\<val\>', ['val.' Attribute.name]);
+            validationLines{end+1} = shapeValidationLine;
+        end
+    end
 end
 
 function validationStr = fillLinkValidation(name, prop, namespaceReg)
