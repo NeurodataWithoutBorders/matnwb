@@ -81,7 +81,10 @@ methods
         obj.distance = p.Results.distance;
         obj.field_of_view = p.Results.field_of_view;
         obj.orientation = p.Results.orientation;
-        if strcmp(class(obj), 'types.core.OpticalSeries')
+        
+        % Only execute validation/setup code when called directly in this class's
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.core.OpticalSeries') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
         end
