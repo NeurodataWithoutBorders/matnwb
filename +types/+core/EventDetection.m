@@ -60,7 +60,10 @@ methods
         obj.source_idx = p.Results.source_idx;
         obj.times = p.Results.times;
         obj.times_unit = p.Results.times_unit;
-        if strcmp(class(obj), 'types.core.EventDetection')
+        
+        % Only execute validation/setup code when called directly in this class's
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.core.EventDetection') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
         end
