@@ -62,7 +62,7 @@ methods
         misc.parseSkipInvalidName(p, varargin);
         obj.rois = p.Results.rois;
         
-        % Only execute validation/setup code when called directly in this class'
+        % Only execute validation/setup code when called directly in this class's
         % constructor, not when invoked through superclass constructor chain
         if strcmp(class(obj), 'types.core.RoiResponseSeries') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));

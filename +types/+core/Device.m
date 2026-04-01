@@ -61,7 +61,7 @@ methods
         obj.model_number = p.Results.model_number;
         obj.serial_number = p.Results.serial_number;
         
-        % Only execute validation/setup code when called directly in this class'
+        % Only execute validation/setup code when called directly in this class's
         % constructor, not when invoked through superclass constructor chain
         if strcmp(class(obj), 'types.core.Device') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));

@@ -51,7 +51,7 @@ methods
         obj.waveform_mean = p.Results.waveform_mean;
         obj.waveform_sd = p.Results.waveform_sd;
         
-        % Only execute validation/setup code when called directly in this class'
+        % Only execute validation/setup code when called directly in this class's
         % constructor, not when invoked through superclass constructor chain
         if strcmp(class(obj), 'types.core.ClusterWaveforms') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));

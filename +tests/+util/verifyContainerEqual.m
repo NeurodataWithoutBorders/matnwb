@@ -15,7 +15,7 @@ function verifyContainerEqual(testCase, actual, expected, ignoreList)
         expectedValue = expected.(prop);
         failureMessage = ['Values for property ''' prop ''' are not equal'];
 
-        if isa(actualValue, 'types.untyped.DataStub')
+        if isa(actualValue, 'types.untyped.DataStub') || isa(actualValue, 'types.untyped.DataPipe')
             actualValue = actualValue.load();
         end
 
