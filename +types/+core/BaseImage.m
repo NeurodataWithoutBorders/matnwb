@@ -37,7 +37,10 @@ methods
         addParameter(p, 'description',[]);
         misc.parseSkipInvalidName(p, varargin);
         obj.description = p.Results.description;
-        if strcmp(class(obj), 'types.core.BaseImage')
+        
+        % Only execute validation/setup code when called directly in this class's
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.core.BaseImage') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
         end
