@@ -29,10 +29,20 @@ classdef GenerationTest < matlab.unittest.TestCase
     
     methods (Test)
         function roundtripTest(testCase)
+            import matlab.unittest.fixtures.SuppressedWarningsFixture
+            
+            % Ignore a warning about version mismatch that occurs due to wrong
+            % values of file's version attribute in the released source schemas.
+            if any(ismember({'2.2.0', '2.6.0-alpha'}, types.core.Version))
+                warningId = 'NWB:Read:AttemptReadWithVersionMismatch';
+                testCase.applyFixture(SuppressedWarningsFixture(warningId))
+            end
+
             expected = NwbFile('identifier', 'TEST',...
                 'session_description', 'test nwbfile',...
                 'session_start_time', datetime());
             nwbExport(expected, 'empty.nwb');
+
             tests.util.verifyContainerEqual(testCase, ...
                 nwbRead('empty.nwb', 'ignorecache'), ...
                 expected);
