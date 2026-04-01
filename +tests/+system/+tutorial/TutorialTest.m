@@ -116,8 +116,8 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture, tests.fixtur
 
                 for j = 1:numel(results)
                     testCase.verifyLessThan(results(j).importance, testCase.NwbInspectorSeverityLevel, ...
-                        sprintf('Message: %s\nLocation: %s\n File: %s\n', ...
-                        string(results(j).message), results(j).location, results(j).file_path))
+                        sprintf('NWBInspector check failed.\n - Check name: %s\n - Message: %s\n - Object name: %s\n - Location: %s\n', ...
+                        string(results(j).check_function_name), string(results(j).message), results(j).object_name, results(j).location))
                 end
             end
         end

@@ -80,7 +80,10 @@ methods
         obj.metric = p.Results.metric;
         obj.source_channels = p.Results.source_channels;
         obj.source_timeseries = p.Results.source_timeseries;
-        if strcmp(class(obj), 'types.core.DecompositionSeries')
+        
+        % Only execute validation/setup code when called directly in this class's
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.core.DecompositionSeries') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
         end

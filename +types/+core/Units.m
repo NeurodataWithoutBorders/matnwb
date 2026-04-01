@@ -98,11 +98,12 @@ methods
         obj.waveforms = p.Results.waveforms;
         obj.waveforms_index = p.Results.waveforms_index;
         obj.waveforms_index_index = p.Results.waveforms_index_index;
-        if strcmp(class(obj), 'types.core.Units')
+        
+        % Only execute validation/setup code when called directly in this class's
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.core.Units') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
-        end
-        if strcmp(class(obj), 'types.core.Units')
             types.util.dynamictable.checkConfig(obj);
         end
     end

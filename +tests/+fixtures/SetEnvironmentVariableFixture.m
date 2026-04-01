@@ -17,71 +17,7 @@ classdef SetEnvironmentVariableFixture < matlab.unittest.fixtures.Fixture
 
     methods
         function setup(fixture) %#ok<MANU>
-            
-            applyFromFile = true;
-            envFilePath = fullfile(misc.getMatnwbDir, '+tests', 'nwbtest.env');
-            
-            if ~isfile(envFilePath)
-                envFilePath = fullfile(misc.getMatnwbDir, '+tests', 'nwbtest.default.env');
-                applyFromFile = false;
-            end
-
-            if exist("loadenv", "file") == 2 
-                envVariables = loadenv(envFilePath);
-            else
-                envVariables = readEnvFile(envFilePath);
-            end
-
-            envVariableNames = string( envVariables.keys() );
-            if ~isrow(envVariableNames); envVariableNames = envVariableNames'; end
-            
-            for varName = envVariableNames
-                varValue = envVariables(varName);
-                if ~isenv(varName)
-                    setenv(varName, varValue)
-                elseif applyFromFile && ~isempty(char(varValue))
-                    setenv(varName, varValue)
-                end
-            end
+            tests.util.setTestEnvironmentVariables()
         end
     end
-end
-
-function envMap = readEnvFile(filename)
-% readEnvFile Reads an environment file into a containers.Map.
-%
-%   envMap = readEnvFile(filename) reads the file specified by 'filename'
-%   and returns a containers.Map where each key is a variable name and each
-%   value is the corresponding value from the file.
-%
-%   Lines starting with '#' or empty lines are ignored.
-
-    envMap = containers.Map;
-    
-    fileContent = fileread(filename);
-    lines = strsplit(fileContent, newline);
-    
-    for i = 1:numel(lines)
-        line = lines{i};
-        if isempty(line) || startsWith(line, '#')
-            continue;
-        end
-        
-        % Find the first occurrence of '='
-        idx = strfind(line, '=');
-        if isempty(idx)
-            continue; % ignore line
-        end
-        
-        % Use the first '=' as the delimiter
-        key = strtrim(line(1:idx(1)-1));
-        value = strtrim(line(idx(1)+1:end));
-        
-        % Insert the key-value pair into the map
-        envMap(key) = value;
-    end
-end
-
-function tf = isenv(varName)
-    tf = ~isempty( getenv(varName) ); 
 end

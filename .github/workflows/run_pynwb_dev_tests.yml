@@ -1,0 +1,74 @@
+# Test pynwb/nwbinspector compatibility against their dev branches.
+# Runs on a weekly schedule and can be triggered manually.
+# Failures here indicate upstream incompatibilities, not matnwb regressions.
+name: PyNWB dev branch compatibility
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # Every Monday at 06:00 UTC
+  workflow_dispatch:
+
+jobs:
+  run_pynwb_dev_tests:
+    name: Run PyNWB dev tests (latest MATLAB)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set latest MATLAB and Python versions
+        id: set-versions
+        run: |
+          latest_matlab_version=$(yq '.[-1].matlab-version' .github/workflows/configurations/matlab_release_matrix_strategy.yml)
+          latest_python_version=$(yq '.[-1].python-version' .github/workflows/configurations/matlab_release_matrix_strategy.yml)
+          echo "matlab_version=$latest_matlab_version" >> $GITHUB_OUTPUT
+          echo "python_version=$latest_python_version" >> $GITHUB_OUTPUT
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ steps.set-versions.outputs.python_version }}
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install -U pip
+          pip install -r +tests/requirements.txt
+          pip install "git+https://github.com/NeurodataWithoutBorders/pynwb.git@dev"
+          pip install "git+https://github.com/NeurodataWithoutBorders/nwbinspector.git@dev"
+          python -m pip list
+          echo "HDF5_PLUGIN_PATH=$(python -c "import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)")" >> "$GITHUB_ENV"
+
+      - name: Check out PyNWB dev repository  (for testing PyNWB tutorials)
+        uses: actions/checkout@v4
+        with:
+          repository: NeurodataWithoutBorders/pynwb
+          ref: dev
+          path: pynwb-repo
+
+      - name: Set PyNWB repo path
+        run: echo "PYNWB_REPO_DIR=$GITHUB_WORKSPACE/pynwb-repo" >> "$GITHUB_ENV"
+
+      - name: Install MATLAB
+        uses: matlab-actions/setup-matlab@v2
+        with:
+          release: ${{ steps.set-versions.outputs.matlab_version }}
+
+      - name: Run PyNWB-dependent tests
+        uses: matlab-actions/run-command@v2
+        with:
+          command: |
+            setenv("SKIP_PYNWB_TESTS", "0")
+            setenv("SKIP_NWBINSPECTOR_TEST", "0")
+            pyenv("ExecutionMode", "OutOfProcess");
+            results = nwbtest('ReportOutputFolder', '.', 'Tag', 'UsesPython');
+            assert(~isempty(results), 'No tests ran');
+            assertSuccess(results);
+
+      - name: Upload JUnit results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pynwb-dev-test-results
+          path: testResults.xml
+          retention-days: 7
+
