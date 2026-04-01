@@ -46,8 +46,6 @@ methods
         [obj.dynamictable, ivarargin] = types.util.parseConstrained(obj,'dynamictable', 'types.hdmf_common.DynamicTable', varargin{:});
         varargin(ivarargin) = [];
         
-        obj.setupHasUnnamedGroupsMixin()
-        
         p = inputParser;
         p.KeepUnmatched = true;
         p.PartialMatching = false;
@@ -55,11 +53,13 @@ methods
         addParameter(p, 'categories',[]);
         misc.parseSkipInvalidName(p, varargin);
         obj.categories = p.Results.categories;
-        if strcmp(class(obj), 'types.hdmf_common.AlignedDynamicTable')
+        
+        % Only execute validation/setup code when called directly in this class's
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.hdmf_common.AlignedDynamicTable') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
-        end
-        if strcmp(class(obj), 'types.hdmf_common.AlignedDynamicTable')
+            obj.setupHasUnnamedGroupsMixin();
             types.util.dynamictable.checkConfig(obj);
         end
     end

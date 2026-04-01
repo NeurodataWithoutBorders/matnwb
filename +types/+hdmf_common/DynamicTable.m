@@ -57,9 +57,13 @@ methods
         obj.colnames = p.Results.colnames;
         obj.description = p.Results.description;
         obj.id = p.Results.id;
-        if strcmp(class(obj), 'types.hdmf_common.DynamicTable')
+        
+        % Only execute validation/setup code when called directly in this class's
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.hdmf_common.DynamicTable') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
+            types.util.dynamictable.checkConfig(obj);
         end
     end
     %% SETTERS

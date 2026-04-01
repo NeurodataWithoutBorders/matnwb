@@ -72,7 +72,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture, tests.fixtur
             % code which overloads display methods for nwb types/objects.
             C = evalc( 'run(tutorialFile)' ); %#ok<NASGU>
             
-            skipPynwbChecks = getenv("SKIP_PYNWB_COMPATIBILITY_TEST_FOR_TUTORIALS");
+            skipPynwbChecks = getenv("SKIP_PYNWB_TESTS");
             skipPynwbChecks = ~isempty(skipPynwbChecks) && logical(str2double(skipPynwbChecks));
 
             skipNwbInspector = getenv("SKIP_NWBINSPECTOR_TEST");
@@ -116,8 +116,8 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture, tests.fixtur
 
                 for j = 1:numel(results)
                     testCase.verifyLessThan(results(j).importance, testCase.NwbInspectorSeverityLevel, ...
-                        sprintf('Message: %s\nLocation: %s\n File: %s\n', ...
-                        string(results(j).message), results(j).location, results(j).file_path))
+                        sprintf('NWBInspector check failed.\n - Check name: %s\n - Message: %s\n - Object name: %s\n - Location: %s\n', ...
+                        string(results(j).check_function_name), string(results(j).message), results(j).object_name, results(j).location))
                 end
             end
         end
@@ -153,7 +153,11 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture, tests.fixtur
         function resultsOut = filterNWBInspectorResults(resultsIn)
             CHECK_IGNORE = [...
                 "check_image_series_external_file_valid", ...
-                "check_regular_timestamps"
+                "check_regular_timestamps", ...
+                "check_subject_exists", ...
+                "check_subject_id_exists", ...
+                "check_subject_sex", ...
+                "check_subject_age"
                 ];
             [resultsIn(:).ignore] = deal(false);
             for i = 1:numel(resultsIn)

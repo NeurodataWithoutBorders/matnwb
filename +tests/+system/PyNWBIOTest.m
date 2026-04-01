@@ -7,7 +7,7 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
     %
     % To install unittest2, execute:
     % $ pip install unittest2
-    methods(Test)
+    methods(Test, TestTags={'UsesPython'})
         function testOutToPyNWB(testCase)
             filename = ['MatNWB.' testCase.className() '.testOutToPyNWB.nwb'];
             nwbExport(testCase.file, filename);
