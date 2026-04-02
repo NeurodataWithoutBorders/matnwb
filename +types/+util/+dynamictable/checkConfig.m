@@ -112,7 +112,11 @@ function vecHeight = getDataHeight(data)
         vecHeight = 0;
     elseif isa(data, 'types.untyped.DataPipe')
         if data.isBound
-            vecHeight = data.offset;
+            % Bound DataPipes can have an ambiguous inferred axis when a dataset
+            % is extendable in multiple dimensions. Use the loaded MATLAB shape
+            % instead, where DynamicTable row dimension maps to the last axis.
+            dataDims = size(data);
+            vecHeight = dataDims(end);
         elseif ~isscalar(data.internal.data) && isvector(data.internal.data)
             vecHeight = length(data.internal.data); % datapipe axis can be misleading if vector.
         else
