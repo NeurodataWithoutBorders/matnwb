@@ -49,21 +49,12 @@ function checkConfig(DynamicTable, ignoreList)
         tableHeight = 0;
     end
 
-    if ~isscalar(tableHeight)
-        if isempty(columnNames)
-            maxNameLen = 0;
-        else
-            maxNameLen = max(strlength(columnNames));
-        end
-        formatSpec = sprintf('  %%-%ds %%d\n', maxNameLen);
-        heightLines = '';
-        for iName = 1:numel(columnNames)
-            heightLines = [heightLines, sprintf(formatSpec, columnNames(iName), columnHeights(iName))]; %#ok<AGROW>
-        end
-        error('NWB:DynamicTable:CheckConfig:InvalidShape', ...
-            'Invalid table: all columns must have the same height (number of rows).\n\nDetected column heights:\n%s', ...
-            heightLines);
-    end
+    formatSpec = sprintf('  %%-%ds %%d', max(strlength(columnNames)));
+    assert(isscalar(tableHeight), ...
+        'NWB:DynamicTable:CheckConfig:InvalidShape', ...
+        ['Invalid table: all columns must have the same height (number of rows).\n\n' ...
+        'Detected column heights:\n' ...
+        strjoin( compose(formatSpec, columnNames, columnHeights), newline) ]);
 
     if isempty(DynamicTable.id)
         types.util.dynamictable.internal.initDynamicTableId(DynamicTable, tableHeight);
