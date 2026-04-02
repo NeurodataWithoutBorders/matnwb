@@ -31,6 +31,10 @@ function checkConfig(DynamicTable, ignoreList)
     % do not check specified columns - useful for classes that build on DynamicTable class
     columns = setdiff(DynamicTable.colnames, ignoreList);
 
+    if isempty(columns)
+        return
+    end
+
     columnHeights = zeros(length(columns), 1);
     columnNames = strings(length(columns), 1);
     for iCol = 1:length(columns)
