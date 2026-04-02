@@ -32,5 +32,15 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
 
             testCase.verifyClass(type, testType)
         end
+
+        function testCreateTypeWithInvalidPropertyValue(testCase)
+            testPath = 'some/dataset/path';
+            testType = 'types.hdmf_common.VectorIndex';
+            kwargs = {'data', 'text is not numeric indices'};
+            io.createParsedType(testPath, testType, kwargs{:})
+            testCase.verifyError(...
+                @(varargin) io.createParsedType(testPath, testType, kwargs{:}), ...
+                'NWB:createParsedType:TypeCreationFailed');
+        end
     end
 end
