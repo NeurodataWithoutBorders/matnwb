@@ -40,7 +40,11 @@ function typeInstance = createParsedType(typePath, typeName, varargin)
         extendedCause = MException(exception.identifier, ...
             getReport(exception, "extended"));
         newException = newException.addCause(extendedCause);
-
+        if ~isempty(exception.cause)
+            for i = 1:numel(exception.cause)
+                newException = newException.addCause(exception.cause{i});
+            end
+        end
         throw(newException)
     end
 
