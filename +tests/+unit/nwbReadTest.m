@@ -116,6 +116,26 @@ classdef nwbReadTest < tests.abstract.NwbTestCase
             % Todo: Acquisition (But, loadAll is currently not recursive.)
         end
 
+        function readFileWithInvalidTimeSeriesTimestampsShape(testCase)
+            fileName = 'invalid_timeseries_timestamps_shape.nwb';
+            createInvalidTimeSeriesFile(fileName)
+
+            try
+                nwbRead(fileName, "ignorecache");
+                testCase.assertFail('Expected nwbRead to fail when timestamps are 2-D.')
+            catch exception
+                testCase.verifyEqual(exception.identifier, ...
+                    'NWB:createParsedType:TypeCreationFailed')
+                testCase.verifySubstring(exception.message, ...
+                    'Failed to create object of type "types.core.TimeSeries"')
+                testCase.verifySubstring(exception.message, ...
+                    'file location "/acquisition/bad_ts"')
+                testCase.verifyNotEmpty(exception.cause)
+                testCase.verifySubstring(exception.cause{1}.message, ...
+                    'Invalid shape for property "timestamps".')
+            end
+        end
+
         function readWithStringFilenameArg(testCase)
             fileName = "testReadWithStringArg.nwb";
             nwbExport(tests.factory.NWBFile(), fileName)
@@ -197,4 +217,26 @@ classdef nwbReadTest < tests.abstract.NwbTestCase
             io.writeAttribute(fileId, '/nwb_version', newVersionNumber)
         end
     end
+end
+
+function createInvalidTimeSeriesFile(fileName)
+    
+    nwbExport(tests.factory.NWBFile, fileName)
+
+    fileId = H5F.open(fileName, 'H5F_ACC_RDWR', 'H5P_DEFAULT');
+    fileCleanup = onCleanup(@() H5F.close(fileId));
+
+    % Create an invalid time series in file
+    H5G.create(fileId, '/acquisition/bad_ts', 'H5P_DEFAULT', 'H5P_DEFAULT', 'H5P_DEFAULT');
+
+    h5writeatt(fileName, '/acquisition/bad_ts', 'neurodata_type', 'TimeSeries');
+    h5writeatt(fileName, '/acquisition/bad_ts', 'namespace', 'core');
+    h5writeatt(fileName, '/acquisition/bad_ts', 'description', 'invalid timestamps shape');
+
+    h5create(fileName, '/acquisition/bad_ts/data', [4 1], 'Datatype', 'double');
+    h5write(fileName, '/acquisition/bad_ts/data', (1:4)');
+    h5writeatt(fileName, '/acquisition/bad_ts/data', 'unit', 'a.u.');
+
+    h5create(fileName, '/acquisition/bad_ts/timestamps', [2 2], 'Datatype', 'double');
+    h5write(fileName, '/acquisition/bad_ts/timestamps', reshape(1:4, 2, 2));
 end
