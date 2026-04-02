@@ -117,6 +117,8 @@ function vecHeight = getDataHeight(data)
             % instead, where DynamicTable row dimension maps to the last axis.
             dataDims = size(data);
             vecHeight = dataDims(end);
+        elseif isempty(data.internal.data)
+            vecHeight = 0;
         elseif ~isscalar(data.internal.data) && isvector(data.internal.data)
             vecHeight = length(data.internal.data); % datapipe axis can be misleading if vector.
         else
