@@ -32,6 +32,7 @@ function checkConfig(DynamicTable, ignoreList)
     columns = setdiff(DynamicTable.colnames, ignoreList);
 
     columnHeights = zeros(length(columns), 1);
+    columnNames = strings(length(columns), 1);
     for iCol = 1:length(columns)
         columnName = retrieveHighestIndex(DynamicTable, columns{iCol});
         columnHeight = unique(getVectorHeight(getVector(DynamicTable, columnName)));
@@ -40,16 +41,20 @@ function checkConfig(DynamicTable, ignoreList)
             'NWB:DynamicTable:CheckConfig:InvalidShape', ...
             'Invalid compound column detected: compound column heights must all be the same.');
         columnHeights(iCol) = columnHeight;
+        columnNames(iCol) = columnName;
     end
 
     tableHeight = unique(columnHeights);
     if isempty(tableHeight)
         tableHeight = 0;
     end
+
+    formatSpec = sprintf('  %%-%ds %%d', max(strlength(columnNames)));
     assert(isscalar(tableHeight), ...
         'NWB:DynamicTable:CheckConfig:InvalidShape', ...
-        ['Invalid table detected: ' ...
-        'column heights (vector lengths or number of matrix columns) must be the same.']);
+        ['Invalid table: all columns must have the same height.\n\n' ...
+        'Detected column heights:\n' ...
+        strjoin( compose(formatSpec, columnNames, columnHeights), newline) ]);
 
     if isempty(DynamicTable.id)
         types.util.dynamictable.internal.initDynamicTableId(DynamicTable, tableHeight);
