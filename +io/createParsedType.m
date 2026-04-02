@@ -25,8 +25,15 @@ function typeInstance = createParsedType(typePath, typeName, varargin)
 
     [lastWarningMessage, lastWarningID] = lastwarn('', ''); % Clear last warning
 
-    typeInstance = feval(typeName, varargin{:}); % Create the type.
-
+    try
+        typeInstance = feval(typeName, varargin{:}); % Create the type.
+    catch MECause
+        ME = MException('NWB:CreateType:TypeCreationFailed', ...
+            'Failed to create object of type "%s" in file location "%s".', ...
+            typeName, typePath);
+        ME = ME.addCause(MECause);
+        throw(ME)
+    end
     [warningMessage, warningID] = lastwarn();
 
     % Handle any warnings if they occurred.
