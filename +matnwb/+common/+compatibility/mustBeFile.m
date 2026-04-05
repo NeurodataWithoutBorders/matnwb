@@ -14,6 +14,11 @@ function mustBeFile(filePath)
     if startsWith(filePath, "s3://")
         return
     end
+    if isfolder(filePath)
+        if endsWith(filePath, 'nwb.zarr')
+            return
+        end
+    end
     
     if verLessThan('matlab', '9.9') %#ok<VERLESSMATLAB>
         % Custom implementation (MATLAB < R2020b)

@@ -51,7 +51,16 @@ function parsed = parseDataset(filename, datasetInfo, datasetPath, blacklist, re
     datasetTypeName = typeInfo.typename;
     isTypedDataset = ~isempty(datasetTypeName);
 
-    datasetValue = reader.readDatasetValue(datasetInfo, datasetPath);
+    try
+        datasetValue = reader.readDatasetValue(datasetInfo, datasetPath);
+    catch exception
+        newException = MException('NWB:parseDataset:ReadFailed', ...
+            'Failed to read dataset at location "%s" in file.', datasetPath);
+        newException = newException.addCause(exception);
+        %throw(newException)
+        warning(newException.identifier, "%s", newException.message)
+        datasetValue = missing;
+    end
 
     % Prepare output
     datasetName = datasetInfo.Name;

@@ -19,6 +19,9 @@ function typeInstance = createParsedType(typePath, typeName, varargin)
 %   Outputs:
 %       typeInstance - The generated neurodata type instance.
 
+    if contains(typePath, 'pixel_mask')
+        %keyboard
+    end
 
     warnState = warning('off', 'NWB:CheckUnset:InvalidProperties');
     cleanupObj = onCleanup(@(s) warning(warnState)); % Make sure warning state is reset later

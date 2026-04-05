@@ -73,8 +73,7 @@ classdef BackendFactory
                     if io.backend.BackendFactory.isHDF5File(filename)
                         lazyArray = io.backend.hdf5.HDF5LazyArray(filename, path, dims, dataType);
                     elseif io.backend.BackendFactory.isZarrDirectory(filename)
-                        error("NWB:BackendFactory:UnsupportedLazyArray", ...
-                            "Lazy Zarr arrays are not implemented yet for `%s`.", filename)
+                        lazyArray = io.backend.zarr2.Zarr2LazyArray(filename, path, dims, dataType);
                     else
                         error("NWB:BackendFactory:UnsupportedFormat", ...
                             "No supported lazy array backend found for `%s`.", filename)
@@ -86,8 +85,11 @@ classdef BackendFactory
                     end
                     lazyArray = io.backend.hdf5.HDF5LazyArray(filename, path, dims, dataType);
                 case "zarr"
-                    error("NWB:BackendFactory:UnsupportedLazyArray", ...
-                        "Lazy Zarr arrays are not implemented yet for `%s`.", filename)
+                    if ~io.backend.BackendFactory.isZarrDirectory(filename)
+                        error("NWB:BackendFactory:InvalidZarr", ...
+                            "`%s` is not a supported local Zarr directory store.", filename)
+                    end
+                    lazyArray = io.backend.zarr2.Zarr2LazyArray(filename, path, dims, dataType);
                 otherwise
                     error("NWB:BackendFactory:UnsupportedBackend", ...
                         "Unsupported backend `%s`.", backendName)

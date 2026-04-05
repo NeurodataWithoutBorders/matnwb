@@ -1,9 +1,20 @@
-function data = readArray(filepath)
+function data = readArray(filepath, start, count, stride)
 % readArray - Read a Zarr array through the MathWorks wrapper.
+
+    if nargin < 2
+        start = [];
+        count = [];
+        stride = [];
+    end
 
     io.backend.zarr2.mw.ensureAvailable()
     try
-        data = zarrread(char(filepath));
+        if isempty(start) && isempty(count) && isempty(stride)
+            data = zarrread(char(filepath));
+        else
+            data = zarrread(char(filepath), ...
+                Start=start, Count=count, Stride=stride);
+        end
     catch ME
         if strcmp(ME.identifier, 'MATLAB:Python:PyException') ...
                 && contains(ME.message, 'tensorstore')

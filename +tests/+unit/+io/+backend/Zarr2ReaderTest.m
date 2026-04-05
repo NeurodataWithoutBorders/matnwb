@@ -69,6 +69,15 @@ classdef Zarr2ReaderTest < matlab.unittest.TestCase
             testCase.verifyClass(datasetValue{1}, "types.untyped.ObjectView");
         end
 
+        function readNonScalarDatasetValueReturnsDataStub(testCase)
+            reader = io.backend.zarr2.Zarr2Reader(testCase.fixturePath);
+            datasetInfo = reader.readNodeInfo("/units/waveform_mean");
+            datasetValue = reader.readDatasetValue(datasetInfo, "/units/waveform_mean");
+
+            testCase.verifyClass(datasetValue, "types.untyped.DataStub");
+            testCase.verifyEqual(datasetValue.dims, [29 4]);
+        end
+
         function readEmbeddedSpecificationsFromZarr(testCase)
             reader = io.backend.zarr2.Zarr2Reader(testCase.fixturePath);
             specs = io.spec.readEmbeddedSpecifications( ...

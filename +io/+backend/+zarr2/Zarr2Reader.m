@@ -66,18 +66,21 @@ classdef Zarr2Reader < io.backend.base.Reader
         end
 
         function datasetValue = readDatasetValue(obj, datasetInfo, datasetPath)
-            datasetDirectory = obj.resolveDatasetDirectory(datasetPath);
-            rawDatasetInfo = io.backend.zarr2.mw.readInfo(datasetDirectory);
-            semanticType = obj.getDatasetSemanticType(datasetInfo);
-
-            if isfield(rawDatasetInfo, "dtype") && strcmp(string(rawDatasetInfo.dtype), "|O")
-                datasetValue = io.internal.zarr2.readObjectArray(datasetDirectory);
-                datasetValue = obj.postprocessObjectDatasetValue(datasetValue, semanticType);
+            dataDimensions = obj.getDatasetDims(datasetInfo);
+            semanticType = obj.getSemanticType(datasetInfo);
+            if isempty(dataDimensions) || prod(dataDimensions) == 1 || semanticType == "object"
+                datasetDirectory = obj.resolveDatasetDirectory(datasetPath);
+                datasetValue = io.internal.zarr2.readDataset(datasetDirectory, datasetInfo);
+            elseif any(dataDimensions == 0)
+                datasetValue = [];
             else
-                datasetValue = io.backend.zarr2.mw.readArray(datasetDirectory);
+                datasetDirectory = obj.resolveDatasetDirectory(datasetPath);
+                matlabDataType = io.internal.zarr2.getMatlabDataType(datasetDirectory, datasetInfo);
+                lazyArray = io.backend.zarr2.Zarr2LazyArray(...
+                    obj.filename, datasetPath, dataDimensions, matlabDataType);
+                datasetValue = types.untyped.DataStub(...
+                    obj.filename, datasetPath, [], [], lazyArray);
             end
-
-            datasetValue = obj.normalizeDatasetDimensions(datasetValue);
         end
     end
 
@@ -102,58 +105,26 @@ classdef Zarr2Reader < io.backend.base.Reader
             end
         end
 
-        function semanticType = getDatasetSemanticType(~, datasetInfo)
+        function semanticType = getSemanticType(~, datasetInfo)
             semanticType = "";
-            if isfield(datasetInfo, 'Datatype') ...
+            if isfield(datasetInfo, "Datatype") ...
                     && (ischar(datasetInfo.Datatype) || isstring(datasetInfo.Datatype))
-                semanticType = string(datasetInfo.Datatype);
-                return
-            end
-
-            attributes = datasetInfo.Attributes;
-            if isempty(attributes)
-                return
-            end
-
-            attributeNames = {attributes.Name};
-            zarrTypeMask = strcmp(attributeNames, "zarr_dtype");
-            if any(zarrTypeMask)
-                semanticType = string(attributes(find(zarrTypeMask, 1, "first")).Value);
+                semanticType = lower(string(datasetInfo.Datatype));
             end
         end
 
-        function datasetValue = postprocessObjectDatasetValue(~, datasetValue, semanticType)
-            if iscell(datasetValue) && isscalar(datasetValue)
-                datasetValue = datasetValue{1};
-            end
-
-            if semanticType == "object"
-                if isstruct(datasetValue) && isfield(datasetValue, "path")
-                    datasetValue = types.untyped.ObjectView(datasetValue.path);
-                elseif iscell(datasetValue)
-                    datasetValue = cellfun(@(item) types.untyped.ObjectView(item.path), ...
-                        datasetValue, 'UniformOutput', false);
-                end
-            end
-        end
-
-        function datasetValue = normalizeDatasetDimensions(~, datasetValue)
-            if ischar(datasetValue) || (isstring(datasetValue) && isscalar(datasetValue))
-                return
-            end
-
-            if iscell(datasetValue) && isscalar(datasetValue)
-                datasetValue = datasetValue{1};
-                return
-            end
-
-            if ndims(datasetValue) <= 1
-                return
-            elseif ismatrix(datasetValue)
-                datasetValue = datasetValue.';
+        function dataDimensions = getDatasetDims(~, datasetInfo)
+            if isfield(datasetInfo, "Dataspace") && isfield(datasetInfo.Dataspace, "Size")
+                dataDimensions = double(datasetInfo.Dataspace.Size);
             else
-                datasetValue = permute(datasetValue, ndims(datasetValue):-1:1);
+                dataDimensions = [];
             end
+
+            if isempty(dataDimensions) || isscalar(dataDimensions)
+                return
+            end
+
+            dataDimensions = fliplr(dataDimensions);
         end
     end
 end

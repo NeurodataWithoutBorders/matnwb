@@ -40,6 +40,20 @@ classdef BackendFactoryTest < matlab.unittest.TestCase
             testCase.verifyClass(reader, "io.backend.zarr2.Zarr2Reader");
         end
 
+        function createZarrLazyArrayForZarrDirectory(testCase)
+            wrapperPath = "/Users/eivind/Code/MATLAB/General/Repositories/mathworks/MATLAB-support-for-Zarr-files";
+            fixturePath = "/Users/eivind/Code/MATLAB/Sandbox/CN/zarr_matlab/test_data/test_zarr_sub_anm00239123_ses_20170627T093549_ecephys_and_ogen.nwb.zarr";
+
+            testCase.assumeTrue(isfolder(wrapperPath) && isfolder(fixturePath));
+            addpath(wrapperPath)
+            testCase.addTeardown(@() rmpath(wrapperPath))
+
+            lazyArray = io.backend.BackendFactory.createLazyArray( ...
+                fixturePath, "/units/waveform_mean", [], [], "zarr");
+
+            testCase.verifyClass(lazyArray, "io.backend.zarr2.Zarr2LazyArray");
+        end
+
         function unsupportedBackendThrowsError(testCase)
             nwb = tests.factory.NWBFile();
             filename = "factory-test.nwb";
