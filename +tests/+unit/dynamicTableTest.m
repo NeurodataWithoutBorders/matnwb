@@ -187,7 +187,7 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
                 'NWB:DynamicTable:AddColumn:ColumnExists');
         end
     
-        function testAddDataPipeColumnVectorToDynamicTable(testCase)
+        function testAddDataPipeWithWrongHeightToDynamicTable(testCase)
             
             % Create an expandable table where height equals 2.
             dynamicTable = types.hdmf_common.DynamicTable( ...
