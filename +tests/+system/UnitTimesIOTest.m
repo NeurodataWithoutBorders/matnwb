@@ -40,13 +40,14 @@ classdef UnitTimesIOTest < tests.system.PyNWBIOTest
                 , 'data', 1 ...
                 );
 
-            % set optional Units table dataset attributes via promoted container API
+            % Set optional Units table dataset attributes via promoted container
+            % API
             file.units.spike_times_resolution = 3;
-            Units = file.units;
-            [Units.waveform_mean_sampling_rate ...
-                , Units.waveform_sd_sampling_rate ...
-                , Units.waveforms_sampling_rate ...
-                ] = deal(1);
+            file.units.waveform_mean_sampling_rate = 1;
+            file.units.waveform_sd_sampling_rate = 1;
+
+            % Skip waveforms_sampling_rate because PyNWB does not export it.
+            % Units.waveforms_sampling_rate = 1
         end
         
         function c = getContainer(~, file)
