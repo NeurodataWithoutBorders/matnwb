@@ -1,73 +1,73 @@
 function addVarargColumn(DynamicTable, varargin)
 
-% parse inputs
-p = inputParser();
-p.KeepUnmatched = true;
-p.StructExpand = false;
-parse(p, varargin{:});
-newColNames = DynamicTable.validate_colnames(fieldnames(p.Unmatched));
-newVectorData = p.Unmatched;
+    % parse inputs
+    p = inputParser();
+    p.KeepUnmatched = true;
+    p.StructExpand = false;
+    parse(p, varargin{:});
+    newColNames = DynamicTable.validate_colnames(fieldnames(p.Unmatched));
+    newVectorData = p.Unmatched;
 
-% Check if any of the new columns already exist in the table
-if ~isempty(DynamicTable.colnames)
-    existingCols = intersect(newColNames, DynamicTable.colnames);
-    assert(isempty(existingCols), ...
-        'NWB:DynamicTable:AddColumn:ColumnExists', ...
-        'Column(s) { %s } already exist in the table', strjoin(existingCols, ', '));
-end
-
-% Check if this is the first column being added (no existing columns and no id data)
-isFirstColumn = isempty(DynamicTable.colnames) && ...
-    (isempty(DynamicTable.id) || isempty(DynamicTable.id.data));
-
-% get current table height - assume id length reflects table height
-if ~isempty(DynamicTable.colnames)
-    tableHeight = types.util.dynamictable.internal.getColumnHeight(DynamicTable.id);
-end
-
-% If adding the first column, initialize the id with 0-indexed values
-if isFirstColumn && ~isempty(newColNames)
-    % Determine the height of the first column
-    firstColName = newColNames{1};
-    indexName = getIndexInSet(newVectorData, firstColName);
-    if isempty(indexName)
-        firstColData = newVectorData.(firstColName);
-    else
-        firstColData = newVectorData.(indexName);
-    end
-
-    newTableHeight = types.util.dynamictable.internal.getColumnHeight(firstColData);
-    types.util.dynamictable.internal.initDynamicTableId(DynamicTable, newTableHeight);
-    tableHeight = newTableHeight;
-end
-
-for i = 1:length(newColNames)
-    new_cn = newColNames{i};
-    new_cv = newVectorData.(new_cn);
-    % check height match before adding column
+    % Check if any of the new columns already exist in the table
     if ~isempty(DynamicTable.colnames)
-        indexName = getIndexInSet(newVectorData,new_cn);
+        existingCols = intersect(newColNames, DynamicTable.colnames);
+        assert(isempty(existingCols), ...
+            'NWB:DynamicTable:AddColumn:ColumnExists', ...
+            'Column(s) { %s } already exist in the table', strjoin(existingCols, ', '));
+    end
 
+    % Check if this is the first column being added (no existing columns and no id data)
+    isFirstColumn = isempty(DynamicTable.colnames) && ...
+        (isempty(DynamicTable.id) || isempty(DynamicTable.id.data));
+
+    % get current table height - assume id length reflects table height
+    if ~isempty(DynamicTable.colnames)
+        tableHeight = types.util.dynamictable.internal.getColumnHeight(DynamicTable.id);
+    end
+
+    % If adding the first column, initialize the id with 0-indexed values
+    if isFirstColumn && ~isempty(newColNames)
+        % Determine the height of the first column
+        firstColName = newColNames{1};
+        indexName = getIndexInSet(newVectorData, firstColName);
         if isempty(indexName)
-            heightColumn = new_cv;
+            firstColData = newVectorData.(firstColName);
         else
-            heightColumn = newVectorData.(indexName);
+            firstColData = newVectorData.(indexName);
         end
-        currentColumnHeight = types.util.dynamictable.internal.getColumnHeight(heightColumn);
 
-        validateColumnHeight(new_cn, currentColumnHeight, tableHeight)
+        newTableHeight = types.util.dynamictable.internal.getColumnHeight(firstColData);
+        types.util.dynamictable.internal.initDynamicTableId(DynamicTable, newTableHeight);
+        tableHeight = newTableHeight;
     end
-    if 8 == exist('types.hdmf_common.VectorIndex', 'class')
-        if ~isa(new_cv, 'types.hdmf_common.VectorIndex')
-            DynamicTable.colnames{end+1} = new_cn;
+
+    for i = 1:length(newColNames)
+        new_cn = newColNames{i};
+        new_cv = newVectorData.(new_cn);
+        % check height match before adding column
+        if ~isempty(DynamicTable.colnames)
+            indexName = getIndexInSet(newVectorData,new_cn);
+
+            if isempty(indexName)
+                heightColumn = new_cv;
+            else
+                heightColumn = newVectorData.(indexName);
+            end
+            currentColumnHeight = types.util.dynamictable.internal.getColumnHeight(heightColumn);
+
+            validateColumnHeight(new_cn, currentColumnHeight, tableHeight)
         end
-    else %legacy case
-        if ~isa(new_cv, 'types.core.VectorIndex')
-            DynamicTable.colnames{end+1} = new_cn;
+        if 8 == exist('types.hdmf_common.VectorIndex', 'class')
+            if ~isa(new_cv, 'types.hdmf_common.VectorIndex')
+                DynamicTable.colnames{end+1} = new_cn;
+            end
+        else %legacy case
+            if ~isa(new_cv, 'types.core.VectorIndex')
+                DynamicTable.colnames{end+1} = new_cn;
+            end
         end
+        DynamicTable.vectordata.set(new_cn, new_cv);
     end
-    DynamicTable.vectordata.set(new_cn, new_cv);   
-end
 end
 
 function indexName = getIndexInSet(inputStruct, inputName)
@@ -86,6 +86,6 @@ function validateColumnHeight(columnName, currentColumnHeight, tableHeight)
     if currentColumnHeight ~= tableHeight
         error('NWB:DynamicTable:AddColumn:MissingRows', ...
             'Column `%s` has detected height %d, but the table height is %d.', ...
-            columnName, currentColumnHeight, tableHeight)       
+            columnName, currentColumnHeight, tableHeight)
     end
 end

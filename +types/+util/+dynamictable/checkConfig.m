@@ -105,7 +105,6 @@ function names = getDetectedColumnNames(DynamicTable)
             end
         end
     end
-
 end
 
 function colnames = cleanColumnNames(colnames)
