@@ -221,7 +221,7 @@ end
 
 function createInvalidTimeSeriesFile(fileName)
     
-    nwbExport(tests.factory.NWBFile, fileName)
+    nwbExport(tests.factory.NWBFile(), fileName)
 
     fileId = H5F.open(fileName, 'H5F_ACC_RDWR', 'H5P_DEFAULT');
     fileCleanup = onCleanup(@() H5F.close(fileId));
