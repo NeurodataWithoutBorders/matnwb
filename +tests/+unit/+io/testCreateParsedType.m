@@ -38,9 +38,16 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             testType = 'types.hdmf_common.VectorIndex';
             kwargs = {'data', 'text is not numeric indices'};
 
-            testCase.verifyError(...
-                @(varargin) io.createParsedType(testPath, testType, kwargs{:}), ...
-                'NWB:createParsedType:TypeCreationFailed');
+            try
+                io.createParsedType(testPath, testType, kwargs{:});
+                testCase.verifyFail('Expected io.createParsedType to throw an error.');
+            catch exception
+                testCase.verifyEqual(...
+                    exception.identifier, ...
+                    'NWB:createParsedType:TypeCreationFailed');
+                testCase.verifyNotEmpty(strfind(exception.message, testType));
+                testCase.verifyNotEmpty(strfind(exception.message, testPath));
+            end
         end
     end
 end
