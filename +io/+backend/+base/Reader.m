@@ -1,12 +1,12 @@
 classdef Reader < handle
-    % Reader - Base class for storage backend readers.
-    %
-    % This class defines the minimal read-side interface used by nwbRead
-    % and the parse helpers. Concrete backends should override the methods
-    % below.
+% Reader - Base class for storage backend readers.
+%
+% This class defines the minimal read-side interface used by nwbRead
+% and the parse helpers. Concrete backends should override the methods
+% below.
 
     properties (SetAccess = protected)
-        filename (1,1) string
+        Filename (1,1) string
     end
 
     methods
@@ -14,7 +14,7 @@ classdef Reader < handle
             arguments
                 filename (1,1) string = missing
             end
-            obj.filename = filename;
+            obj.Filename = filename;
         end
 
         function version = getSchemaVersion(obj) %#ok<MANU>
