@@ -227,7 +227,8 @@ function createInvalidTimeSeriesFile(fileName)
     fileCleanup = onCleanup(@() H5F.close(fileId));
 
     % Create an invalid time series in file
-    H5G.create(fileId, '/acquisition/bad_ts', 'H5P_DEFAULT', 'H5P_DEFAULT', 'H5P_DEFAULT');
+    groupId = H5G.create(fileId, '/acquisition/bad_ts', 'H5P_DEFAULT', 'H5P_DEFAULT', 'H5P_DEFAULT');
+    groupCleanup = onCleanup(@() H5G.close(groupId)); %#ok<NASGU>
 
     h5writeatt(fileName, '/acquisition/bad_ts', 'neurodata_type', 'TimeSeries');
     h5writeatt(fileName, '/acquisition/bad_ts', 'namespace', 'core');
