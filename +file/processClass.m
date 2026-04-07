@@ -32,6 +32,7 @@ function [Processed, classprops, inherited] = processClass(name, namespace, preg
                 class = patchVectorData(class);
             end
             props = class.getProps();
+            props = markPromotedAttributesForIncludedTypedDatasets(class, props, namespace);
 
             % Apply patches for special cases of schema/specification errors
             class = applySchemaVersionPatches(nodename, class, props, namespace);
@@ -51,6 +52,81 @@ function [Processed, classprops, inherited] = processClass(name, namespace, preg
         parentPropNames = keys(pregen(pname).props);
         inherited = union(inherited, intersect(names, parentPropNames));
     end
+end
+
+function props = markPromotedAttributesForIncludedTypedDatasets(classObj, props, namespace)
+    if ~isa(classObj, 'file.Group') || isempty(classObj.datasets)
+        return;
+    end
+
+    for iDataset = 1:length(classObj.datasets)
+        datasetObj = classObj.datasets(iDataset);
+        if isempty(datasetObj.type) || isempty(datasetObj.name) || isempty(datasetObj.attributes)
+            continue;
+        end
+
+        datasetNamespace = namespace.getNamespace(datasetObj.type);
+        if isempty(datasetNamespace)
+            continue;
+        end
+
+        schemaAttributeNames = getSchemaDefinedAttributeNames(datasetObj.type, datasetNamespace);
+        for iAttr = 1:length(datasetObj.attributes)
+            attribute = datasetObj.attributes(iAttr);
+            propertyName = [datasetObj.name '_' attribute.name];
+            if ~isKey(props, propertyName)
+                continue;
+            end
+
+            if any(strcmp(attribute.name, schemaAttributeNames))
+                remove(props, propertyName);
+            else
+                promotedAttribute = props(propertyName);
+                promotedAttribute.promoted_to_container = true;
+                props(propertyName) = promotedAttribute;
+            end
+        end
+    end
+end
+
+function attributeNames = getSchemaDefinedAttributeNames(typeName, namespace)
+    persistent schemaAttributeNameCache
+
+    if isempty(schemaAttributeNameCache)
+        schemaAttributeNameCache = containers.Map('KeyType', 'char', 'ValueType', 'any');
+    end
+
+    cacheKey = strjoin({namespace.name, namespace.version, typeName}, '::');
+    if isKey(schemaAttributeNameCache, cacheKey)
+        attributeNames = schemaAttributeNameCache(cacheKey);
+        return;
+    end
+
+    typeSpec = namespace.getClass(typeName);
+    if isempty(typeSpec)
+        attributeNames = {};
+        return;
+    end
+
+    branch = [{typeSpec} namespace.getRootBranch(typeName)];
+    spec.internal.resolveInheritedFields(typeSpec, branch(2:end))
+    spec.internal.expandFieldsInheritedByInclusion(typeSpec)
+
+    switch typeSpec('class_type')
+        case 'groups'
+            classObj = file.Group(typeSpec);
+        case 'datasets'
+            classObj = file.Dataset(typeSpec);
+        otherwise
+            attributeNames = {};
+            return;
+    end
+
+    typeProps = classObj.getProps();
+    propNames = keys(typeProps);
+    isAttribute = cellfun(@(name) isa(typeProps(name), 'file.Attribute'), propNames);
+    attributeNames = propNames(isAttribute);
+    schemaAttributeNameCache(cacheKey) = attributeNames;
 end
 
 function class = patchVectorData(class)
