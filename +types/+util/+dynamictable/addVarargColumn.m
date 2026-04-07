@@ -1,6 +1,6 @@
 function addVarargColumn(DynamicTable, varargin)
 
-%parse inputs
+% parse inputs
 p = inputParser();
 p.KeepUnmatched = true;
 p.StructExpand = false;
@@ -22,40 +22,40 @@ isFirstColumn = isempty(DynamicTable.colnames) && ...
 
 % get current table height - assume id length reflects table height
 if ~isempty(DynamicTable.colnames)
-    tableHeight = length(DynamicTable.id.data);
+    tableHeight = types.util.dynamictable.getColumnHeight(DynamicTable.id);
 end
 
 % If adding the first column, initialize the id with 0-indexed values
 if isFirstColumn && ~isempty(newColNames)
-    % Determine the height from the first non-index column
+    % Determine the height of the first column
     firstColName = newColNames{1};
-    firstColData = newVectorData.(firstColName);
     indexName = getIndexInSet(newVectorData, firstColName);
     if isempty(indexName)
-        newTableHeight = matnwb.common.compatibility.height(firstColData.data);
+        firstColData = newVectorData.(firstColName);
     else
-        newTableHeight = matnwb.common.compatibility.height(newVectorData.(indexName).data);
+        firstColData = newVectorData.(indexName);
     end
-    
+
+    newTableHeight = types.util.dynamictable.getColumnHeight(firstColData);
     types.util.dynamictable.internal.initDynamicTableId(DynamicTable, newTableHeight);
     tableHeight = newTableHeight;
 end
 
 for i = 1:length(newColNames)
     new_cn = newColNames{i};
-    new_cv = newVectorData.(new_cn);    
+    new_cv = newVectorData.(new_cn);
     % check height match before adding column
     if ~isempty(DynamicTable.colnames)
         indexName = getIndexInSet(newVectorData,new_cn);
+
         if isempty(indexName)
-            assert(matnwb.common.compatibility.height(new_cv.data) == tableHeight,...
-                'NWB:DynamicTable:AddColumn:MissingRows',...
-                'New column length must match length of existing columns ') 
+            heightColumn = new_cv;
         else
-            assert(matnwb.common.compatibility.height(newVectorData.(indexName).data) == tableHeight,...
-                'NWB:DynamicTable:AddColumn:MissingRows',...
-                'New column length must match length of existing columns ') 
+            heightColumn = newVectorData.(indexName);
         end
+        currentColumnHeight = types.util.dynamictable.getColumnHeight(heightColumn);
+
+        validateColumnHeight(new_cn, currentColumnHeight, tableHeight)
     end
     if 8 == exist('types.hdmf_common.VectorIndex', 'class')
         if ~isa(new_cv, 'types.hdmf_common.VectorIndex')
@@ -82,3 +82,10 @@ function indexName = getIndexInSet(inputStruct, inputName)
     indexName = types.util.dynamictable.getIndex(T, inputName);
 end
 
+function validateColumnHeight(columnName, currentColumnHeight, tableHeight)
+    if currentColumnHeight ~= tableHeight
+        error('NWB:DynamicTable:AddColumn:MissingRows', ...
+            'Column `%s` has detected height %d, but the table height is %d.', ...
+            columnName, currentColumnHeight, tableHeight)       
+    end
+end
