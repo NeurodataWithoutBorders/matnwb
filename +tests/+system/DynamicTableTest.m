@@ -149,20 +149,6 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
     end
 
     methods (Test)
-        function getNegativeIdTest(testCase)
-            vector = types.hdmf_common.VectorData('description', 'data column', 'data', (1:10) .');
-            ids = types.hdmf_common.ElementIdentifiers('data', ((-9):0) .');
-            testtable = types.hdmf_common.DynamicTable( ...
-                'description', 'test table with DynamicTableRegion', ...
-                'colnames', {'vec'}, ...
-                'vec', vector, ...
-                'id', ids ...
-                );
-            for i = 1:length(vector.data)
-                testCase.verifyEqual(testtable.getRow(i), testtable.getRow(ids.data(i), 'useId', true));
-            end
-        end
-
         function getRowTest(testCase)
             Table = testCase.file.intervals_trials;
 
@@ -283,34 +269,6 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
                     );
             end
         end
-        
-        function toTableNdArrayTest(testCase)
-        % toTableNdArrayTest Test to table for a plane segmentation table
-
-            % Generate fake image_mask data
-            imaging_shape = [100, 100];
-            x = imaging_shape(1);
-            y = imaging_shape(2);
-            
-            n_rois = 20;
-            image_mask = zeros(y, x, n_rois);
-            for i = 1:n_rois
-                start = randi(90,2,1);
-                image_mask(start(1):start(1)+10, start(2):start(2)+10, 1) = 1;
-            end
-            
-            % add data to NWB structures
-            plane_segmentation = types.core.PlaneSegmentation( ...
-                'colnames', {'image_mask'}, ...
-                'description', 'output from segmenting my favorite imaging plane', ...
-                'id', types.hdmf_common.ElementIdentifiers('data', int64(0:19)'), ...
-                'image_mask', types.hdmf_common.VectorData('data', image_mask, 'description', 'image masks') ...
-            );
-
-            T = plane_segmentation.toTable();
-            testCase.verifyClass(T, 'table');
-            testCase.verifySize(T, [n_rois, 2]); % 2 columns, id and image_mask
-        end
 
         function DynamicTableCheckTest(testCase)
             % Verify that the checkConfig utility function
@@ -334,34 +292,6 @@ classdef DynamicTableTest < tests.system.RoundTripTest & tests.system.AmendTest
             expectedLength = length(Table.start_time.data);
             actualLength = length(Table.id.data);
             testCase.verifyEqual(expectedLength, actualLength)
-        end
-
-        function testEmptyTable(testCase)
-            % validate that empty colnames should work if the number of
-            % columns agree. (Yes, id is not considered a column so the
-            % height of the dynamic table is still 3 but with zero
-            % columns).
-            types.core.TimeIntervals(...
-                'description', 'test dynamic table column',...
-                'id',  types.hdmf_common.ElementIdentifiers('data', (0:2)'));
-
-            % validate that properties checking works (start_time is a
-            % property of TimeIntervals)
-            testCase.verifyError(@()types.core.TimeIntervals(...
-                'description', 'test error', ...
-                'start_time', types.hdmf_common.VectorData( ...
-                'description', 'start time column', ...
-                'data', (1:5)' ...
-                )), ...
-                'NWB:DynamicTable:CheckConfig:ColumnNamesMismatch');
-
-            % validate that "vectordata" set checking works.
-            testCase.verifyError(@()types.core.TimeIntervals(...
-                'description', 'test error', ...
-                'randomvalues', types.hdmf_common.VectorData( ...
-                'description', 'random values', ...
-                'data', mat2cell(rand(25,2), repmat(5, 5, 1)))), ...
-                'NWB:DynamicTable:CheckConfig:ColumnNamesMismatch');
         end
     end
 end

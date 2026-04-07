@@ -319,11 +319,11 @@ read_file.intervals_trials.addRow( ...
 nwbExport(read_file, 'expandableTableTestFile.nwb');
 %% 
 % *Note: DataPipe* objects change how the dimension of the datasets for each 
-% column map onto the shape of HDF5 datasets. See the <https://matnwb.readthedocs.io/en/latest/pages/getting_started/important.html#data-dimensions 
+% column map onto the shape of HDF5 datasets. See the <https://matnwb.readthedocs.io/en/latest/pages/concepts/dimension_ordering.html 
 % documentation> for more details.
 %% Multidimensional columns
 % The order of dimensions of multidimensional columns in MatNWB is reversed 
-% relative to the Python HDMF package (see <https://matnwb.readthedocs.io/en/latest/pages/getting_started/important.html#data-dimensions 
+% relative to the Python HDMF package (see <https://matnwb.readthedocs.io/en/latest/pages/concepts/dimension_ordering.html 
 % documentation> for detailed explanation). Therefore, the height of a multidimensional 
 % column belonging to a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html 
 % *DynamicTable*> object is defined by the shape of its last dimension. A valid 

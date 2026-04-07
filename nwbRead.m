@@ -101,6 +101,9 @@ function nwb = nwbRead(filename, flags, options)
         if isSchemaVersionMismatch ...
                 && strcmp(ME.identifier, 'MATLAB:class:RequireSuperClass')
             throwExceptionWithCauseOnVersionMismatch(ME)
+        elseif strcmp(ME.identifier, 'NWB:createParsedType:TypeCreationFailed')
+            % Throw here for cleaner error trace.
+            throw(ME)
         else
             rethrow(ME)
         end
