@@ -5,6 +5,12 @@ classdef Reader < handle
 % and the parse helpers. Concrete backends should override the methods
 % below.
 
+% Note: This class is intended to be abstract. However, it is implemented as a
+% concrete class so it can be used for property and argument validation across 
+% its subclasses. The methods defined here establish the shared interface and 
+% throw not-implemented errors by default.
+
+
     properties (SetAccess = protected)
         Filename (1,1) string
     end
