@@ -42,17 +42,15 @@ classdef BackendFactory
                 filename (1,1) string
             end
 
-            tf = false;
-            if ~isfile(filename)
-                return
-            end
-
-            try
-                fid = H5F.open(filename, "H5F_ACC_RDONLY", "H5P_DEFAULT");
-                H5F.close(fid);
-                tf = true;
-            catch
-                tf = false;
+            tf = false; 
+            if isfile(filename)
+                try
+                    fid = H5F.open(filename, "H5F_ACC_RDONLY", "H5P_DEFAULT");
+                    H5F.close(fid);
+                    tf = true;
+                catch
+                    tf = false;
+                end
             end
         end
     end
