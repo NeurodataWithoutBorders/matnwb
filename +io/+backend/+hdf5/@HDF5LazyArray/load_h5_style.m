@@ -15,12 +15,12 @@ function data = load_h5_style(obj, varargin)
     assert(length(varargin) ~= 1, 'NWB:DataStub:InvalidNumArguments',...
         'calling load_h5_style with a single space id is no longer supported.');
 
-    data = h5read(obj.filename, obj.path, varargin{:});
+    data = h5read(obj.Filename, obj.DatasetPath, varargin{:});
 
     if isstruct(data)
         % Compound type - data loaded as struct by h5read
-        fid = H5F.open(obj.filename);
-        did = H5D.open(fid, obj.path);
+        fid = H5F.open(obj.Filename);
+        did = H5D.open(fid, obj.DatasetPath);
         fsid = H5D.get_space(did);
         % Bug: This will read all the data
         data = H5D.read(did, 'H5ML_DEFAULT', fsid, fsid,...
@@ -37,7 +37,7 @@ function data = load_h5_style(obj, varargin)
             'NWB:DataStub:InconsistentCompoundType', ...
             ['DataStub has compound type descriptor, but loaded data is '...
             'not a struct. This indicates a file corruption or type '...
-            'mismatch. Expected compound data for path: %s'], obj.path);
+            'mismatch. Expected compound data for path: %s'], obj.DatasetPath);
 
         % Apply type-specific transformations for simple types
         switch obj.dataType

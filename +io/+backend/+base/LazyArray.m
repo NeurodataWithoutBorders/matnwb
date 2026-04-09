@@ -1,13 +1,18 @@
 classdef LazyArray < handle
-    % LazyArray - Base class for backend-specific lazy dataset access.
-    %
-    % DataStub owns the public lazy dataset API exposed by matnwb, while
-    % LazyArray implementations encapsulate storage-specific metadata
-    % discovery and indexed reads.
+% LazyArray - Base class for backend-specific lazy dataset access.
+%
+% DataStub owns the public lazy dataset API exposed by MatNWB, while
+% LazyArray implementations encapsulate storage-specific metadata
+% discovery and indexed reads.
 
     properties (SetAccess = protected)
-        filename (1,1) string
-        path (1,1) string
+        % Filename - The path name of a file containing the dataset
+        % wrapped by this LazyArray object.
+        Filename (1,1) string
+
+        % DatasetPath - The path name of the dataset wrapped by this LazyArray 
+        % object relative to the root of the file.
+        DatasetPath (1,1) string
     end
 
     properties (Dependent, SetAccess = private)
@@ -22,7 +27,7 @@ classdef LazyArray < handle
         dataType_ = []
     end
 
-    methods
+    methods % Constructor and property getters.
         function obj = LazyArray(filename, path, dims, dataType)
             arguments
                 filename (1,1) string
@@ -31,8 +36,8 @@ classdef LazyArray < handle
                 dataType = []
             end
 
-            obj.filename = filename;
-            obj.path = path;
+            obj.Filename = filename;
+            obj.DatasetPath = path;
 
             if ~isempty(dims)
                 obj.setSizeInfo(dims, obj.maxDims_);
@@ -62,24 +67,26 @@ classdef LazyArray < handle
             end
             dataType = obj.dataType_;
         end
+    end
 
+    methods % Should be implemented by subclasses
         function refreshSizeInfo(obj) %#ok<MANU>
             io.backend.base.LazyArray.throwNotImplemented("refreshSizeInfo")
         end
 
         function dataType = resolveDataType(obj) %#ok<MANU>
-            io.backend.base.LazyArray.throwNotImplemented("resolveDataType")
             dataType = [];
+            io.backend.base.LazyArray.throwNotImplemented("resolveDataType")
         end
 
         function data = load_h5_style(obj, varargin) %#ok<INUSD>
-            io.backend.base.LazyArray.throwNotImplemented("load_h5_style")
             data = [];
+            io.backend.base.LazyArray.throwNotImplemented("load_h5_style")
         end
 
         function data = load_mat_style(obj, varargin) %#ok<INUSD>
-            io.backend.base.LazyArray.throwNotImplemented("load_mat_style")
             data = [];
+            io.backend.base.LazyArray.throwNotImplemented("load_mat_style")
         end
     end
 
