@@ -30,8 +30,8 @@ classdef LazyArray < handle
     methods % Constructor and property getters.
         function obj = LazyArray(filename, path, dims, dataType)
             arguments
-                filename (1,1) string
-                path (1,1) string
+                filename (1,1) string = missing
+                path (1,1) string = missing
                 dims double = []
                 dataType = []
             end
