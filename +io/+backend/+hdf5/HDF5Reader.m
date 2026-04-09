@@ -10,15 +10,15 @@ classdef HDF5Reader < io.backend.base.Reader
         end
 
         function version = getSchemaVersion(obj)
-            version = util.getSchemaVersion(obj.filename);
+            version = util.getSchemaVersion(obj.Filename);
         end
 
         function specLocation = getEmbeddedSpecLocation(obj)
-            specLocation = io.spec.getEmbeddedSpecLocation(obj.filename);
+            specLocation = io.spec.getEmbeddedSpecLocation(obj.Filename);
         end
 
         function node = readRootInfo(obj)
-            node = h5info(obj.filename);
+            node = h5info(obj.Filename);
         end
 
         function node = readNodeInfo(obj, nodePath)
@@ -26,7 +26,7 @@ classdef HDF5Reader < io.backend.base.Reader
                 obj
                 nodePath (1,1) string
             end
-            node = h5info(obj.filename, char(nodePath));
+            node = h5info(obj.Filename, char(nodePath));
         end
 
         function attributeValue = readAttributeValue(obj, attributeInfo, context)
@@ -48,7 +48,7 @@ classdef HDF5Reader < io.backend.base.Reader
                         end
                     end
                 case 'H5T_REFERENCE'
-                    fid = H5F.open(obj.filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
+                    fid = H5F.open(obj.Filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
                     aid = H5A.open_by_name(fid, context, attributeInfo.Name);
                     tid = H5A.get_type(aid);
                     attributeValue = io.parseReference(aid, tid, attributeInfo.Value);
@@ -73,7 +73,7 @@ classdef HDF5Reader < io.backend.base.Reader
 
         function datasetValue = readDatasetValue(obj, datasetInfo, datasetPath)
             % Open an HDF5 dataset handle for reading the dataset value
-            fid = H5F.open(obj.filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
+            fid = H5F.open(obj.Filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
             fidCleanup = onCleanup(@() H5F.close(fid));
 
             did = H5D.open(fid, datasetPath);
@@ -128,15 +128,15 @@ classdef HDF5Reader < io.backend.base.Reader
                 isNumeric = classId == H5ML.get_constant_value('H5T_INTEGER') ...
                     || classId == H5ML.get_constant_value('H5T_FLOAT');
                 if isChunked && isNumeric
-                    datasetValue = types.untyped.DataPipe('filename', obj.filename, 'path', datasetPath);
+                    datasetValue = types.untyped.DataPipe('filename', obj.Filename, 'path', datasetPath);
                 elseif any(dataspace.Size == 0)
                     datasetValue = [];
                 else
                     matlabDataType = io.internal.h5.datatype.datatypeInfoToMatlabType(datatype, datasetInfo.Name);
                     lazyArray = io.backend.hdf5.HDF5LazyArray(...
-                        obj.filename, datasetPath, dataspace.Size, matlabDataType);
+                        obj.Filename, datasetPath, dataspace.Size, matlabDataType);
                     datasetValue = types.untyped.DataStub(...
-                        obj.filename, datasetPath, [], [], lazyArray);
+                        obj.Filename, datasetPath, [], [], lazyArray);
                 end
                 H5T.close(tid);
                 H5P.close(pid);
