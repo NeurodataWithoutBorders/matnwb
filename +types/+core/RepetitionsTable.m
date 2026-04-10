@@ -48,11 +48,12 @@ methods
         misc.parseSkipInvalidName(p, varargin);
         obj.sequential_recordings = p.Results.sequential_recordings;
         obj.sequential_recordings_index = p.Results.sequential_recordings_index;
-        if strcmp(class(obj), 'types.core.RepetitionsTable')
+        
+        % Only execute validation/setup code when called directly in this class's
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.core.RepetitionsTable') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
-        end
-        if strcmp(class(obj), 'types.core.RepetitionsTable')
             types.util.dynamictable.checkConfig(obj);
         end
     end
@@ -67,6 +68,10 @@ methods
     
     function val = validate_sequential_recordings(obj, val)
         types.util.checkType('sequential_recordings', 'types.hdmf_common.DynamicTableRegion', val);
+        if ~isempty(val)
+            types.util.validateReferenceType('sequential_recordings.table', val.table, 'types.core.SequentialRecordingsTable', 'types.untyped.ObjectView');
+            types.util.validateShape('sequential_recordings.table', {[1]}, val.table)
+        end
     end
     function val = validate_sequential_recordings_index(obj, val)
         types.util.checkType('sequential_recordings_index', 'types.hdmf_common.VectorIndex', val);

@@ -31,32 +31,41 @@ function checkConfig(DynamicTable, ignoreList)
     % do not check specified columns - useful for classes that build on DynamicTable class
     columns = setdiff(DynamicTable.colnames, ignoreList);
 
+    if isempty(columns)
+        return
+    end
+
     columnHeights = zeros(length(columns), 1);
+    columnNames = strings(length(columns), 1);
     for iCol = 1:length(columns)
         columnName = retrieveHighestIndex(DynamicTable, columns{iCol});
-        columnHeight = unique(getVectorHeight(getVector(DynamicTable, columnName)));
+        columnHeight = unique(types.util.dynamictable.getColumnHeight(getVector(DynamicTable, columnName)));
 
         assert(isscalar(columnHeight), ...
             'NWB:DynamicTable:CheckConfig:InvalidShape', ...
             'Invalid compound column detected: compound column heights must all be the same.');
         columnHeights(iCol) = columnHeight;
+        columnNames(iCol) = columnName;
     end
 
     tableHeight = unique(columnHeights);
     if isempty(tableHeight)
         tableHeight = 0;
     end
+
+    formatSpec = sprintf('  %%-%ds %%d', max(strlength(columnNames)));
     assert(isscalar(tableHeight), ...
         'NWB:DynamicTable:CheckConfig:InvalidShape', ...
-        ['Invalid table detected: ' ...
-        'column heights (vector lengths or number of matrix columns) must be the same.']);
+        ['Invalid table: all columns must have the same height (number of rows).\n\n' ...
+        'Detected column heights:\n' ...
+        strjoin( compose(formatSpec, columnNames, columnHeights), newline) ]);
 
     if isempty(DynamicTable.id)
         types.util.dynamictable.internal.initDynamicTableId(DynamicTable, tableHeight);
         return;
     end
 
-    numIds = getVectorHeight(DynamicTable.id);
+    numIds = types.util.dynamictable.getColumnHeight(DynamicTable.id);
     assert(tableHeight == numIds, ...
         'NWB:DynamicTable:CheckConfig:InvalidId', ...
         'Special column `id` of DynamicTable needs to match the detected height of %d. Found %d IDs.', ...
@@ -96,48 +105,6 @@ function names = getDetectedColumnNames(DynamicTable)
         end
     end
 
-end
-
-function vecHeight = getVectorHeight(VectorData)
-    if isempty(VectorData)
-        vecHeight = 0;
-    else
-        vecHeight = getDataHeight(VectorData.data);
-    end
-
-end
-
-function vecHeight = getDataHeight(data)
-    if isempty(data)
-        vecHeight = 0;
-    elseif isa(data, 'types.untyped.DataPipe')
-        if data.isBound
-            vecHeight = data.offset;
-        elseif ~isscalar(data.internal.data) && isvector(data.internal.data)
-            vecHeight = length(data.internal.data); % datapipe axis can be misleading if vector.
-        else
-            vecHeight = size(data.internal.data, data.axis);
-        end
-    elseif isa(data, 'types.untyped.DataStub')
-        vecHeight = data.dims(end);
-    elseif isscalar(data) && isstruct(data) % compound type (struct)
-        dataFieldNames = fieldnames(data);
-        if isempty(dataFieldNames)
-            vecHeight = 0;
-        else
-            vecHeight = zeros(size(dataFieldNames));
-            for iField = 1:length(dataFieldNames)
-                field = dataFieldNames{iField};
-                vecHeight(iField) = getDataHeight(data.(field));
-            end
-        end
-    elseif istable(data) % compound type (table)
-        vecHeight = height(data);
-    elseif isscalar(data) || ~isvector(data)
-        vecHeight = size(data, ndims(data));
-    else
-        vecHeight = size(data, find(1 < size(data)));
-    end
 end
 
 function Vector = getVector(DynamicTable, column)

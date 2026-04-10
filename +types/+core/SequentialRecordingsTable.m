@@ -53,11 +53,12 @@ methods
         obj.simultaneous_recordings = p.Results.simultaneous_recordings;
         obj.simultaneous_recordings_index = p.Results.simultaneous_recordings_index;
         obj.stimulus_type = p.Results.stimulus_type;
-        if strcmp(class(obj), 'types.core.SequentialRecordingsTable')
+        
+        % Only execute validation/setup code when called directly in this class's
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.core.SequentialRecordingsTable') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
-        end
-        if strcmp(class(obj), 'types.core.SequentialRecordingsTable')
             types.util.dynamictable.checkConfig(obj);
         end
     end
@@ -75,6 +76,10 @@ methods
     
     function val = validate_simultaneous_recordings(obj, val)
         types.util.checkType('simultaneous_recordings', 'types.hdmf_common.DynamicTableRegion', val);
+        if ~isempty(val)
+            types.util.validateReferenceType('simultaneous_recordings.table', val.table, 'types.core.SimultaneousRecordingsTable', 'types.untyped.ObjectView');
+            types.util.validateShape('simultaneous_recordings.table', {[1]}, val.table)
+        end
     end
     function val = validate_simultaneous_recordings_index(obj, val)
         types.util.checkType('simultaneous_recordings_index', 'types.hdmf_common.VectorIndex', val);

@@ -188,7 +188,10 @@ methods
         obj.vasculature_image_dimension = p.Results.vasculature_image_dimension;
         obj.vasculature_image_field_of_view = p.Results.vasculature_image_field_of_view;
         obj.vasculature_image_format = p.Results.vasculature_image_format;
-        if strcmp(class(obj), 'types.core.ImagingRetinotopy')
+        
+        % Only execute validation/setup code when called directly in this class's
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.core.ImagingRetinotopy') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
         end

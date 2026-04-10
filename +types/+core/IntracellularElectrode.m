@@ -78,7 +78,10 @@ methods
         obj.resistance = p.Results.resistance;
         obj.seal = p.Results.seal;
         obj.slice = p.Results.slice;
-        if strcmp(class(obj), 'types.core.IntracellularElectrode')
+        
+        % Only execute validation/setup code when called directly in this class's
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.core.IntracellularElectrode') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
         end

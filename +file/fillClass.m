@@ -12,6 +12,7 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
     defaults = {};
     dependent = {};
     hidden = {}; % special hidden properties for hard-coded workarounds
+    
     %separate into readonly, required, and optional properties
     for iGroup = 1:length(allProperties)
         propertyName = allProperties{iGroup};
@@ -165,7 +166,7 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
         inherited);
     setterFcns = file.fillSetters(setdiff(nonInherited, union(readonly, hiddenAndReadonly)), classprops);
     validatorFcns = file.fillValidators(allProperties, classprops, namespace, namespace.getFullClassName(name), inherited);
-    exporterFcns = file.fillExport(nonInherited, class, superclassNames{1}, required);
+    exporterFcns = file.fillExport(nonInherited, class, superclassNames{1}, required, classprops);
     methodBody = strjoin({constructorBody...
         '%% SETTERS' setterFcns...
         '%% VALIDATORS' validatorFcns...

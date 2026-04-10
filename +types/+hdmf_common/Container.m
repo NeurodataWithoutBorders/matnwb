@@ -17,7 +17,10 @@ methods
         %  - container (types.hdmf_common.Container) - A Container object
         
         obj = obj@types.untyped.MetaClass(varargin{:});
-        if strcmp(class(obj), 'types.hdmf_common.Container')
+        
+        % Only execute validation/setup code when called directly in this class's
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.hdmf_common.Container') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
         end

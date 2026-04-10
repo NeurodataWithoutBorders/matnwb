@@ -161,7 +161,14 @@ classdef Group < file.interface.HasProps & file.interface.HasQuantity
                         PropertyMap = [PropertyMap; Sub_Attribute_Map];
                     end
                     PropertyMap(SubData.name) = SubData;
-                else
+                else % Typed dataset
+                    includedAttributes = getIncludedTypedDatasetAttributes(obj, SubData);
+                    if ~isempty(includedAttributes)
+                        attrNames = {includedAttributes.name};
+                        attrNames = strcat(SubData.name, '_', attrNames);
+                        PropertyMap = [PropertyMap; ...
+                            containers.Map(attrNames, num2cell(includedAttributes))];
+                    end
                     if isempty(SubData.name)
                         PropertyMap(lower(SubData.type)) = SubData;
                     else
@@ -251,5 +258,28 @@ classdef Group < file.interface.HasProps & file.interface.HasQuantity
                 end
             end
         end
+    end
+end
+
+function includedAttributes = getIncludedTypedDatasetAttributes(GroupObj, datasetObj)
+% getIncludedTypedDatasetAttributes - Return attributes declared on a named
+% included typed dataset instance.
+%
+% This is used for reuse by inclusion (`neurodata_type_inc` without
+% `neurodata_type_def`), where an existing typed dataset is embedded as a
+% named component of another type. Promotion decisions are resolved later,
+% once namespace context is available, so we can distinguish newly added
+% attributes from modifications of attributes already defined on the
+% included dataset type.
+
+    includedAttributes = file.Attribute.empty;
+    if isempty(GroupObj.type) || isempty(datasetObj.name) || isempty(datasetObj.attributes)
+        return;
+    end
+
+    for iAttr = 1:length(datasetObj.attributes)
+        attribute = datasetObj.attributes(iAttr);
+        attribute.dependent = datasetObj.name;
+        includedAttributes(end+1) = attribute; %#ok<AGROW>
     end
 end

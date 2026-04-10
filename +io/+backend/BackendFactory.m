@@ -49,10 +49,10 @@ classdef BackendFactory
             end
         end
 
-        function lazyArray = createLazyArray(filename, path, dims, dataType, backendName)
+        function lazyArray = createLazyArray(filename, datasetPath, dims, dataType, backendName)
             arguments
                 filename (1,1) string
-                path (1,1) string
+                datasetPath (1,1) string
                 dims double = []
                 dataType = []
                 backendName (1,1) string = "auto"
@@ -63,7 +63,7 @@ classdef BackendFactory
             switch backendName
                 case "auto"
                     if io.backend.BackendFactory.isHDF5File(filename)
-                        lazyArray = io.backend.hdf5.HDF5LazyArray(filename, path, dims, dataType);
+                        lazyArray = io.backend.hdf5.HDF5LazyArray(filename, datasetPath, dims, dataType);
                     else
                         error("NWB:BackendFactory:UnsupportedFormat", ...
                             "No supported lazy array backend found for `%s`.", filename)
@@ -73,7 +73,7 @@ classdef BackendFactory
                         error("NWB:BackendFactory:InvalidHDF5", ...
                             "`%s` is not a valid HDF5 file.", filename)
                     end
-                    lazyArray = io.backend.hdf5.HDF5LazyArray(filename, path, dims, dataType);
+                    lazyArray = io.backend.hdf5.HDF5LazyArray(filename, datasetPath, dims, dataType);
                 otherwise
                     error("NWB:BackendFactory:UnsupportedBackend", ...
                         "Unsupported backend `%s`.", backendName)
@@ -92,17 +92,15 @@ classdef BackendFactory
                 filename (1,1) string
             end
 
-            tf = false;
-            if ~isfile(filename)
-                return
-            end
-
-            try
-                fid = H5F.open(filename, "H5F_ACC_RDONLY", "H5P_DEFAULT");
-                H5F.close(fid);
-                tf = true;
-            catch
-                tf = false;
+            tf = false; 
+            if isfile(filename)
+                try
+                    fid = H5F.open(filename, "H5F_ACC_RDONLY", "H5P_DEFAULT");
+                    H5F.close(fid);
+                    tf = true;
+                catch
+                    tf = false;
+                end
             end
         end
     end

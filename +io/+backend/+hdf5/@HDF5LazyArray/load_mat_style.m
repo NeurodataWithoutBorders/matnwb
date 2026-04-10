@@ -81,8 +81,8 @@ function data = load_mat_style(obj, varargin)
     H5S.close(spaceId);
 
     %% Read Data
-    fileId = H5F.open(obj.filename);
-    datasetId = H5D.open(fileId, obj.path);
+    fileId = H5F.open(obj.Filename);
+    datasetId = H5D.open(fileId, obj.DatasetPath);
     data = H5D.read(datasetId, 'H5ML_DEFAULT', memorySpaceId, readSpaceId, 'H5P_DEFAULT');
 
     %% Retype Data

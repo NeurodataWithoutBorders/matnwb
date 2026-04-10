@@ -48,11 +48,12 @@ methods
         misc.parseSkipInvalidName(p, varargin);
         obj.recordings = p.Results.recordings;
         obj.recordings_index = p.Results.recordings_index;
-        if strcmp(class(obj), 'types.core.SimultaneousRecordingsTable')
+        
+        % Only execute validation/setup code when called directly in this class's
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.core.SimultaneousRecordingsTable') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
-        end
-        if strcmp(class(obj), 'types.core.SimultaneousRecordingsTable')
             types.util.dynamictable.checkConfig(obj);
         end
     end
@@ -67,6 +68,10 @@ methods
     
     function val = validate_recordings(obj, val)
         types.util.checkType('recordings', 'types.hdmf_common.DynamicTableRegion', val);
+        if ~isempty(val)
+            types.util.validateReferenceType('recordings.table', val.table, 'types.core.IntracellularRecordingsTable', 'types.untyped.ObjectView');
+            types.util.validateShape('recordings.table', {[1]}, val.table)
+        end
     end
     function val = validate_recordings_index(obj, val)
         types.util.checkType('recordings_index', 'types.hdmf_common.VectorIndex', val);

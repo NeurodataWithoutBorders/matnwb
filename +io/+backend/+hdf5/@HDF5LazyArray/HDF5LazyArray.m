@@ -20,8 +20,8 @@ classdef HDF5LazyArray < io.backend.base.LazyArray
         end
 
         function dataType = resolveDataType(obj)
-            fileId = H5F.open(obj.filename);
-            datasetId = H5D.open(fileId, obj.path);
+            fileId = H5F.open(obj.Filename);
+            datasetId = H5D.open(fileId, obj.DatasetPath);
             typeId = H5D.get_type(datasetId);
 
             dataType = io.getMatType(typeId);
@@ -38,8 +38,8 @@ classdef HDF5LazyArray < io.backend.base.LazyArray
 
     methods (Access = private)
         function spaceId = getSpace(obj)
-            fileId = H5F.open(obj.filename);
-            datasetId = H5D.open(fileId, obj.path);
+            fileId = H5F.open(obj.Filename);
+            datasetId = H5D.open(fileId, obj.DatasetPath);
             spaceId = H5D.get_space(datasetId);
             H5D.close(datasetId);
             H5F.close(fileId);

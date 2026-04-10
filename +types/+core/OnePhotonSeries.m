@@ -104,7 +104,10 @@ methods
         obj.pmt_gain = p.Results.pmt_gain;
         obj.power = p.Results.power;
         obj.scan_line_rate = p.Results.scan_line_rate;
-        if strcmp(class(obj), 'types.core.OnePhotonSeries')
+        
+        % Only execute validation/setup code when called directly in this class's
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.core.OnePhotonSeries') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
         end

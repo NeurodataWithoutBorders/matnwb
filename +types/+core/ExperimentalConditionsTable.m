@@ -48,11 +48,12 @@ methods
         misc.parseSkipInvalidName(p, varargin);
         obj.repetitions = p.Results.repetitions;
         obj.repetitions_index = p.Results.repetitions_index;
-        if strcmp(class(obj), 'types.core.ExperimentalConditionsTable')
+        
+        % Only execute validation/setup code when called directly in this class's
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.core.ExperimentalConditionsTable') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
-        end
-        if strcmp(class(obj), 'types.core.ExperimentalConditionsTable')
             types.util.dynamictable.checkConfig(obj);
         end
     end
@@ -67,6 +68,10 @@ methods
     
     function val = validate_repetitions(obj, val)
         types.util.checkType('repetitions', 'types.hdmf_common.DynamicTableRegion', val);
+        if ~isempty(val)
+            types.util.validateReferenceType('repetitions.table', val.table, 'types.core.RepetitionsTable', 'types.untyped.ObjectView');
+            types.util.validateShape('repetitions.table', {[1]}, val.table)
+        end
     end
     function val = validate_repetitions_index(obj, val)
         types.util.checkType('repetitions_index', 'types.hdmf_common.VectorIndex', val);
