@@ -131,7 +131,7 @@ methods
         obj.waveforms_index_index = p.Results.waveforms_index_index;
         obj.waveforms_sampling_rate = p.Results.waveforms_sampling_rate;
         obj.waveforms_unit = p.Results.waveforms_unit;
-
+        
         % Only execute validation/setup code when called directly in this class's
         % constructor, not when invoked through superclass constructor chain
         if strcmp(class(obj), 'types.core.Units') %#ok<STISA>
