@@ -30,13 +30,14 @@ classdef NwbFile < types.core.NWBFile
             end
         end
 
-        function export(obj, filename, mode)
+        function export(obj, filename, mode, options)
         % EXPORT - Export NWB file object
 
             arguments
                 obj (1,1) NwbFile
                 filename (1,1) string
                 mode (1,1) string {mustBeMember(mode, ["edit", "overwrite"])} = "edit"
+                options.StorageBackend (1,1) string = "hdf5"
             end
 
             % add to file create date
@@ -62,7 +63,8 @@ classdef NwbFile < types.core.NWBFile
                 obj.timestamps_reference_time = obj.session_start_time;
             end
 
-            writer = io.backend.BackendFactory.createWriter(filename, mode);
+            writer = io.backend.BackendFactory.createWriter(filename, ...
+                Mode=mode, StorageBackend=options.StorageBackend);
 
             try
                 obj.embedSpecifications(writer)

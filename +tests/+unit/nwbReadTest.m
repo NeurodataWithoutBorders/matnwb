@@ -145,6 +145,15 @@ classdef nwbReadTest < tests.abstract.NwbTestCase
             testCase.verifyClass(nwb, 'NwbFile');
         end
 
+        function readWithExplicitStorageBackend(testCase)
+            fileName = "testReadWithStorageBackendArg.nwb";
+            nwbExport(tests.factory.NWBFile(), fileName, StorageBackend="hdf5")
+
+            nwb = nwbRead(fileName, "ignorecache", StorageBackend="h5");
+
+            testCase.verifyClass(nwb, 'NwbFile');
+        end
+
         function testIgnoreCacheFlagForFileWithOtherNWBVersion(testCase)
             
             % Temporarily remove the generated types from path.
