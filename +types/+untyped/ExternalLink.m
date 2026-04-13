@@ -107,7 +107,7 @@ classdef ExternalLink < handle
         
         function refs = export(obj, writer, fullpath, refs)
             writer = io.backend.base.Writer.ensure(writer);
-            fileId = writer.fileId;
+            fileId = writer.FileId;
             plist = 'H5P_DEFAULT';
             if H5L.exists(fileId, fullpath, plist)
                 H5L.delete(fileId, fullpath, plist);

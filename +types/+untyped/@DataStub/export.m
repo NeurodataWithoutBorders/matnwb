@@ -1,6 +1,6 @@
 function refs = export(obj, writer, fullpath, refs)
     writer = io.backend.base.Writer.ensure(writer);
-    fileId = writer.fileId;
+    fileId = writer.FileId;
     
     % If exporting to the same file this DataStub originates from, skip export.
     src_fid = H5F.open(obj.filename);

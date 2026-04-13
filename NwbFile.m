@@ -62,32 +62,16 @@ classdef NwbFile < types.core.NWBFile
                 obj.timestamps_reference_time = obj.session_start_time;
             end
 
-            isEditingFile = false;
-
-            if isfile(filename)
-                if mode == "edit"
-                    output_file_id = H5F.open(filename, 'H5F_ACC_RDWR', 'H5P_DEFAULT');
-                    isEditingFile = true;
-                elseif mode == "overwrite"
-                    output_file_id = H5F.create(filename, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
-                end
-            else
-                output_file_id = H5F.create(filename);
-            end
-
-            writer = io.backend.BackendFactory.createWriter(output_file_id);
+            writer = io.backend.BackendFactory.createWriter(filename, mode);
 
             try
-                obj.embedSpecifications(output_file_id)
+                obj.embedSpecifications(writer)
                 refs = export@types.core.NWBFile(obj, writer, '/', {});
                 obj.resolveReferences(writer, refs);
-                H5F.close(output_file_id);
+                writer.close();
             catch ME
                 obj.file_create_date(end) = [];
-                H5F.close(output_file_id);
-                if ~isEditingFile
-                    delete(filename);
-                end
+                writer.abort();
                 rethrow(ME);
             end
         end
@@ -371,7 +355,7 @@ classdef NwbFile < types.core.NWBFile
             end
         end
 
-        function embedSpecifications(obj, output_file_id)
+        function embedSpecifications(obj, writer)
             jsonSpecs = schemes.exportJson();
 
             if isempty(jsonSpecs)
@@ -398,11 +382,11 @@ classdef NwbFile < types.core.NWBFile
             jsonSpecs = jsonSpecs(keepIdx);
 
             io.spec.writeEmbeddedSpecifications(...
-                output_file_id, ...
+                writer, ...
                 jsonSpecs);
 
             io.spec.validateEmbeddedSpecifications(...
-                output_file_id, ...
+                writer.FileId, ...
                 strrep(namespaceNames, '_', '-'))
         end
         

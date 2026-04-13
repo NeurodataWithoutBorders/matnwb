@@ -70,7 +70,7 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
             props = props(refProps);
             for i=1:length(props)
                 try
-                    io.getRefData(writer.fileId, props{i});
+                    io.getRefData(writer.FileId, props{i});
                 catch ME
                     refs = obj.captureReferenceErrors(ME, fullpath, refs);
                 end
