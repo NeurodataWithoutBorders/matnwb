@@ -40,17 +40,35 @@ classdef UnitTimesIOTest < tests.system.PyNWBIOTest
                 , 'data', 1 ...
                 );
 
-            % set optional hidden vector data attributes
-            file.units.spike_times.resolution = 3;
-            Units = file.units;
-            [Units.waveform_mean.sampling_rate ...
-                , Units.waveform_sd.sampling_rate ...
-                , Units.waveforms.sampling_rate ... 
-                ] = deal(1);
+            % Set optional Units table dataset attributes via promoted container
+            % API
+            file.units.spike_times_resolution = 3;
+            file.units.waveform_mean_sampling_rate = 1;
+            file.units.waveform_sd_sampling_rate = 1;
+
+            % Skip waveforms_sampling_rate because PyNWB does not export it.
+            % Units.waveforms_sampling_rate = 1
         end
         
         function c = getContainer(~, file)
             c = file.units;
+        end
+    end
+
+    methods (Test)
+        function testLegacyNestedSpikeTimesResolutionIsPreserved(testCase)
+            spikeTimes = types.hdmf_common.VectorData( ...
+                'data', 11, ...
+                'description', 'the spike times for each unit in seconds');
+            spikeTimes.resolution = 1/20000;
+
+            units = types.core.Units( ...
+                'colnames', {'spike_times'}, ...
+                'description', 'data on spiking units', ...
+                'spike_times', spikeTimes);
+
+            testCase.verifyEqual(units.spike_times.resolution, 1/20000);
+            testCase.verifyEqual(units.spike_times_resolution, 1/20000);
         end
     end
 end

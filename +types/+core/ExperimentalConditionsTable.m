@@ -68,6 +68,10 @@ methods
     
     function val = validate_repetitions(obj, val)
         types.util.checkType('repetitions', 'types.hdmf_common.DynamicTableRegion', val);
+        if ~isempty(val)
+            types.util.validateReferenceType('repetitions.table', val.table, 'types.core.RepetitionsTable', 'types.untyped.ObjectView');
+            types.util.validateShape('repetitions.table', {[1]}, val.table)
+        end
     end
     function val = validate_repetitions_index(obj, val)
         types.util.checkType('repetitions_index', 'types.hdmf_common.VectorIndex', val);
