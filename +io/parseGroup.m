@@ -1,4 +1,4 @@
-function parsed = parseGroup(filename, info, blacklist)
+function parsed = parseGroup(filename, info, blacklist, reader)
 % NOTE, group name is in path format so we need to parse that out.
 % parsed is either a containers.Map containing properties mapped to values OR a
 % typed value
@@ -7,12 +7,15 @@ if nargin < 3
         'attributes', {{'.specloc', 'object_id'}},...
         'groups', {{}});
 end
+if nargin < 4
+    reader = io.backend.BackendFactory.createReader(filename);
+end
 
 links = containers.Map;
 refs = containers.Map;
 [~, root] = io.pathParts(info.Name);
 [attributeProperties, Type] =...
-    io.parseAttributes(filename, info.Attributes, info.Name, blacklist);
+    io.parseAttributes(filename, info.Attributes, info.Name, blacklist, reader);
 
 %parse datasets
 datasetProperties = containers.Map;
@@ -20,7 +23,7 @@ for i=1:length(info.Datasets)
     datasetInfo = info.Datasets(i);
     fullPath = [info.Name '/' datasetInfo.Name];
     datasetProperties = [datasetProperties; ...
-        io.parseDataset(filename, datasetInfo, fullPath, blacklist)]; %#ok<AGROW>
+        io.parseDataset(filename, datasetInfo, fullPath, blacklist, reader)]; %#ok<AGROW>
 end
 
 %parse subgroups
@@ -31,7 +34,7 @@ for i=1:length(info.Groups)
         continue;
     end
     [~, gname] = io.pathParts(group.Name);
-    subg = io.parseGroup(filename, group, blacklist);
+    subg = io.parseGroup(filename, group, blacklist, reader);
     groupProperties(gname) = subg;
 end
 
@@ -46,7 +49,7 @@ for i=1:length(info.Links)
         'Please report!'], link.Type, fullPath)
     switch link.Type
         case {'soft link', 'hard link'}
-            S = h5info(filename, link.Value{1});
+            S = reader.readNodeInfo(string(link.Value{1}));
             % Suggested improvement: Use info structure if Link is located in the group (or
             % subgroup) which is currently being parsed.
 
