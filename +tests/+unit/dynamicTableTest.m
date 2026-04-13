@@ -183,6 +183,39 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
             testCase.verifyClass(T, 'table')
         end
 
+        function testCheckConfigUsesLastDimForBoundDataPipe(testCase)
+            fileName = strrep(testCase.getRandomFilename(), '.nwb', '.h5');
+            datasetName = "/image_mask";
+            imageMaskData = rand(100, 100, 30);
+
+            dataPipe = types.untyped.DataPipe( ...
+                'data', imageMaskData, ...
+                'maxSize', [Inf, Inf, Inf], ...
+                'chunkSize', [25, 25, 4]);
+
+            fileId = H5F.create(fileName);
+            dataPipe.export(fileId, datasetName, {});
+            H5F.close(fileId);
+
+            boundPipe = testCase.verifyWarning( ...
+                @() types.untyped.DataPipe('filename', fileName, 'path', datasetName), ...
+                'NWB:BoundPipe:InvalidPipeShape');
+
+            imageMaskColumn = types.hdmf_common.VectorData( ...
+                'description', 'Image masks for each ROI', ...
+                'data', boundPipe);
+            idColumn = types.hdmf_common.ElementIdentifiers('data', int64((0:29)'));
+
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'test table with bound image mask column', ...
+                'colnames', {'image_mask'}, ...
+                'image_mask', imageMaskColumn, ...
+                'id', idColumn);
+
+            testCase.verifyEqual(size(boundPipe), [100, 100, 30]);
+            testCase.verifyEqual(dynamicTable.id.data, idColumn.data);
+        end
+
         function testAddColumnToEmptyTableInitializesId(testCase)
             % Test that adding the first column to an empty table 
             % automatically initializes the id column with 0-indexed values
