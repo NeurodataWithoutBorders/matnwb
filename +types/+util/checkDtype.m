@@ -32,11 +32,6 @@ function value = checkDtype(name, typeDescriptor, value)
             % Softlinks cannot be validated at this level.
         end
     
-    elseif isValueContainedInHDMFDatasetType(typeDescriptor, value) 
-        % If the value is itself a dataset class, we need to unpack and 
-        % validate its contained data property.
-        value.data = types.util.checkDtype(name, typeDescriptor, value.data);
-    
     elseif isempty(value) % Handle empty values
         % For certain types (numeric, logical, char), we replace [] with a typed 
         % empty value.
@@ -105,13 +100,6 @@ function mustBeValidTypeDescriptor(typeDescriptor)
     assert( isValid, ...
         'NWB:CheckDataType:InvalidTypeDescriptor', ...
         'Type descriptor must be a struct, character vector or a string.');
-end
-
-function tf = isValueContainedInHDMFDatasetType(typeDescriptor, value)
-    tf = ~isempty(value) ...
-        && ~matnwb.utility.isNeurodataType(typeDescriptor) ...
-        && isa(value, 'types.untyped.DatasetClass') ...
-        && isprop(value, 'data');
 end
 
 function value = checkDtypeForCompoundDataset(name, typeDescriptor, value)
