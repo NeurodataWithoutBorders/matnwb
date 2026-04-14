@@ -5,7 +5,7 @@ function [columnRowHeight, resolvedColumnName] = getColumnRowHeight(dynamicTable
 % column, whose height corresponds to the number of table rows.
 
     arguments
-        dynamicTable
+        dynamicTable {matnwb.common.validation.mustBeDynamicTable}
         columnName {mustBeTextScalar}
     end
 

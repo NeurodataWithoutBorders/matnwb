@@ -19,7 +19,7 @@ function checkConfig(DynamicTable, ignoreList)
 %   5) No infinite VectorIndex reference loops exist.
     
     arguments
-        DynamicTable
+        DynamicTable (1,1) {matnwb.common.validation.mustBeDynamicTable}
         ignoreList (1,:) cell = {};
     end
 
