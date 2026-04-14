@@ -223,44 +223,11 @@ assert(all(idMatch), 'NWB:DynamicTable:GetRow:InvalidId',...
 end
 
 function validateRowIndices(dynamicTable, rowIndices)
-    tableHeight = getTableHeight(dynamicTable);
+    tableHeight = types.util.dynamictable.internal.getTableHeight(dynamicTable);
 
     assert(all(rowIndices <= tableHeight), ...
         'NWB:DynamicTable:GetRow:RowOutOfBounds', ...
         'Requested row index exceeds the DynamicTable height of %d.', tableHeight);
-end
-
-function tableHeight = getTableHeight(dynamicTable)
-    if ~isempty(dynamicTable.id)
-        tableHeight = types.util.dynamictable.getColumnHeight(dynamicTable.id);
-        return;
-    end
-
-    if isempty(dynamicTable.colnames)
-        tableHeight = 0;
-        return;
-    end
-
-    highestColumnName = dynamicTable.colnames{1};
-    while true
-        indexName = types.util.dynamictable.getIndex(dynamicTable, highestColumnName);
-        if isempty(indexName)
-            break;
-        end
-        highestColumnName = indexName;
-    end
-
-    if isprop(dynamicTable, highestColumnName)
-        tableHeight = types.util.dynamictable.getColumnHeight(dynamicTable.(highestColumnName));
-    elseif isprop(dynamicTable, 'vectorindex') && dynamicTable.vectorindex.isKey(highestColumnName)
-        tableHeight = types.util.dynamictable.getColumnHeight( ...
-            dynamicTable.vectorindex.get(highestColumnName));
-    elseif dynamicTable.vectordata.isKey(highestColumnName)
-        tableHeight = types.util.dynamictable.getColumnHeight( ...
-            dynamicTable.vectordata.get(highestColumnName));
-    else
-        tableHeight = 0;
-    end
 end
 
 function ME = InvalidVectorDataShapeError(column_name)
