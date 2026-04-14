@@ -6,7 +6,7 @@ function initDynamicTableId(dynamicTable, tableHeight)
 %   core namespace.
 
     arguments
-        dynamicTable
+        dynamicTable {matnwb.common.validation.mustBeDynamicTable}
         tableHeight = []
     end
 
