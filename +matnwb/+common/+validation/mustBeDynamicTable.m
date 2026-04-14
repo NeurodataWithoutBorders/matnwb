@@ -1,12 +1,13 @@
 function mustBeDynamicTable(value)
+% mustBeDynamicTable - Validate that value is a DynamicTable object
+    
+    import matnwb.common.validation.internal.mustBeCompatibleType
 
-    isValid = isa(value, 'types.hdmf_common.DynamicTable') || ...
-        isa(value, 'types.core.DynamicTable');
-
-    if ~isValid
-        ME = MException(...
+    try
+        mustBeCompatibleType(value, "DynamicTable")
+    catch exception
+        error(...
             'NWB:validators:mustBeDynamicTable', ...
-            'Value must be a DynamicTable but was: %s.', class(value));
-        throwAsCaller(ME)
+            exception.message);
     end
 end

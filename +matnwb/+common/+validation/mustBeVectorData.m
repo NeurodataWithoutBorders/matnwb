@@ -1,12 +1,13 @@
 function mustBeVectorData(value)
+% mustBeVectorData - Validate that value is a VectorData object
+    
+    import matnwb.common.validation.internal.mustBeCompatibleType
 
-    isValid = isa(value, 'types.hdmf_common.VectorData') || ...
-        isa(value, 'types.core.VectorData');
-
-    if ~isValid
-        ME = MException(...
+    try
+        mustBeCompatibleType(value, "VectorData")
+    catch exception
+        error(...
             'NWB:validators:mustBeVectorData', ...
-            'Value must be a VectorData but was: %s.', class(value));
-        throwAsCaller(ME)
+            exception.message);
     end
 end
