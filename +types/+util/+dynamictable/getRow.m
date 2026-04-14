@@ -227,7 +227,8 @@ function validateRowIndices(dynamicTable, rowIndices)
 
     assert(all(rowIndices <= tableHeight), ...
         'NWB:DynamicTable:GetRow:RowOutOfBounds', ...
-        'Requested row index exceeds the DynamicTable height of %d.', tableHeight);
+        'Requested row index (%s) exceeds the DynamicTable height of %d.', ...
+        strjoin(compose('%d', rowIndices(rowIndices > tableHeight) ), ', '), tableHeight);
 end
 
 function ME = InvalidVectorDataShapeError(column_name)
