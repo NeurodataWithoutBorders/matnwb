@@ -20,12 +20,10 @@ parse(p, varargin{:});
 columns = p.Results.columns;
 row = cell(1, length(columns));
 
-if isempty(DynamicTable.id)
-    DynamicTable.id = types.hdmf_common.ElementIdentifiers();
-    return;
-end
-
 if p.Results.useId
+    assert(~isempty(DynamicTable.id), ...
+        'NWB:DynamicTable:GetRow:MissingId', ...
+        'Cannot retrieve rows by `id` because the DynamicTable has no `id` column.');
     ind = getIndById(DynamicTable, ind);
 else
     validateattributes(ind, {'numeric'}, {'positive', 'vector'});
