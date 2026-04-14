@@ -4,7 +4,7 @@ function outermostIndexColumnName = getOutermostIndexColumnName(dynamicTable, co
 % Note: Relevant for ragged array columns
 
     arguments
-        dynamicTable
+        dynamicTable {matnwb.common.validation.mustBeDynamicTable}
         columnName {mustBeTextScalar}
     end
 
