@@ -27,6 +27,7 @@ if p.Results.useId
     ind = getIndById(DynamicTable, ind);
 else
     validateattributes(ind, {'numeric'}, {'positive', 'vector'});
+    validateRowIndices(DynamicTable, ind);
 end
 
 for i = 1:length(columns)
@@ -101,7 +102,11 @@ for i = 1:length(columns)
         row{i} = rowStruct .';
     end
 end
-subTable = table(row{:}, 'VariableNames', columns);
+if isempty(columns)
+    subTable = table('Size', [numel(ind), 0], 'VariableTypes', {}, 'VariableNames', {});
+else
+    subTable = table(row{:}, 'VariableNames', columns);
+end
 end
 
 function selected = select(DynamicTable, colIndStack, matInd)
@@ -215,6 +220,47 @@ end
 [idMatch, ind] = ismember(id, ids);
 assert(all(idMatch), 'NWB:DynamicTable:GetRow:InvalidId',...
     'Invalid ids found. If you wish to use row indices directly, remove the `useId` flag.');
+end
+
+function validateRowIndices(dynamicTable, rowIndices)
+    tableHeight = getTableHeight(dynamicTable);
+
+    assert(all(rowIndices <= tableHeight), ...
+        'NWB:DynamicTable:GetRow:RowOutOfBounds', ...
+        'Requested row index exceeds the DynamicTable height of %d.', tableHeight);
+end
+
+function tableHeight = getTableHeight(dynamicTable)
+    if ~isempty(dynamicTable.id)
+        tableHeight = types.util.dynamictable.getColumnHeight(dynamicTable.id);
+        return;
+    end
+
+    if isempty(dynamicTable.colnames)
+        tableHeight = 0;
+        return;
+    end
+
+    highestColumnName = dynamicTable.colnames{1};
+    while true
+        indexName = types.util.dynamictable.getIndex(dynamicTable, highestColumnName);
+        if isempty(indexName)
+            break;
+        end
+        highestColumnName = indexName;
+    end
+
+    if isprop(dynamicTable, highestColumnName)
+        tableHeight = types.util.dynamictable.getColumnHeight(dynamicTable.(highestColumnName));
+    elseif isprop(dynamicTable, 'vectorindex') && dynamicTable.vectorindex.isKey(highestColumnName)
+        tableHeight = types.util.dynamictable.getColumnHeight( ...
+            dynamicTable.vectorindex.get(highestColumnName));
+    elseif dynamicTable.vectordata.isKey(highestColumnName)
+        tableHeight = types.util.dynamictable.getColumnHeight( ...
+            dynamicTable.vectordata.get(highestColumnName));
+    else
+        tableHeight = 0;
+    end
 end
 
 function ME = InvalidVectorDataShapeError(column_name)
