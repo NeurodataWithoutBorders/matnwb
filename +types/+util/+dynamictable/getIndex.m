@@ -1,35 +1,37 @@
-function indexName = getIndex(DynamicTable, column)
+function indexName = getIndex(dynamicTable, columnName)
 %GETINDEX Given a dynamic table and its column name, get its VectorIndex column name
-    validateattributes(DynamicTable,...
-        {'types.core.DynamicTable', 'types.hdmf_common.DynamicTable'},...
-        {'scalar'});
-    validateattributes(column, {'char'}, {'scalartext'});
+    arguments
+        dynamicTable (1,1) {matnwb.common.validation.mustBeDynamicTable}
+        columnName {mustBeTextScalar}
+    end
+
+    columnName = char(columnName);
     indexName = '';
-    if strcmp(column, 'id')
+    if strcmp(columnName, 'id')
         return;
     end
     
     % after Schema version 2.3.0, VectorIndex objects subclass VectorData which
     % meant that vectorindex and vectordata sets could be combined.
-    isLegacyDynamicTable = isprop(DynamicTable, 'vectorindex');
+    isLegacyDynamicTable = isprop(dynamicTable, 'vectorindex');
     if isLegacyDynamicTable
-        vecKeys = keys(DynamicTable.vectorindex);
+        vectorKeys = keys(dynamicTable.vectorindex);
     else
-        vecKeys = keys(DynamicTable.vectordata);
+        vectorKeys = keys(dynamicTable.vectordata);
     end
-    for i = 1:length(vecKeys)
-        vk = vecKeys{i};
+    for iKey = 1:length(vectorKeys)
+        vectorKey = vectorKeys{iKey};
         if isLegacyDynamicTable
-            vecData = DynamicTable.vectorindex.get(vk);
+            vectorData = dynamicTable.vectorindex.get(vectorKey);
         else
-            vecData = DynamicTable.vectordata.get(vk);
+            vectorData = dynamicTable.vectordata.get(vectorKey);
         end
-        if ~isa(vecData, 'types.hdmf_common.VectorIndex')...
-                && ~isa(vecData, 'types.core.VectorIndex')
+        if ~isa(vectorData, 'types.hdmf_common.VectorIndex')...
+                && ~isa(vectorData, 'types.core.VectorIndex')
             continue;
         end
-        if isVecIndColumn(DynamicTable, vecData, column)
-            indexName = vk;
+        if isVecIndColumn(dynamicTable, vectorData, columnName)
+            indexName = vectorKey;
             return;
         end
     end
@@ -37,36 +39,42 @@ function indexName = getIndex(DynamicTable, column)
     % check if dynamic table object has extended properties which point to
     % vector indices. These are specifically defined by the schema to be
     % properties.
-    DynamicTableProps = properties(DynamicTable);
-    isPropVecInd = false(size(DynamicTableProps));
-    for i = 1:length(DynamicTableProps)
-        PropVec = DynamicTable.(DynamicTableProps{i});
-        isPropVecInd(i) = isa(PropVec, 'types.hdmf_common.VectorIndex')...
-            || isa(PropVec, 'types.core.VectorIndex');
+    dynamicTableProps = properties(dynamicTable);
+    isPropertyVectorIndex = false(size(dynamicTableProps));
+    for iProp = 1:length(dynamicTableProps)
+        propertyValue = dynamicTable.(dynamicTableProps{iProp});
+        isPropertyVectorIndex(iProp) = isa(propertyValue, 'types.hdmf_common.VectorIndex')...
+            || isa(propertyValue, 'types.core.VectorIndex');
     end
     
-    DynamicTableProps = DynamicTableProps(isPropVecInd);
-    for i = 1:length(DynamicTableProps)
-        vk = DynamicTableProps{i};
-        VecInd = DynamicTable.(vk);
-        if isVecIndColumn(DynamicTable, VecInd, column)
-            indexName = vk;
+    dynamicTableProps = dynamicTableProps(isPropertyVectorIndex);
+    for iProp = 1:length(dynamicTableProps)
+        vectorKey = dynamicTableProps{iProp};
+        vectorIndex = dynamicTable.(vectorKey);
+        if isVecIndColumn(dynamicTable, vectorIndex, columnName)
+            indexName = vectorKey;
             return;
         end
     end
 end
 
-function tf = isVecIndColumn(DynamicTable, VectorIndex, column)
-    if VectorIndex.target.has_path()
-        tf = endsWith(VectorIndex.target.path, ['/' column]);
-    elseif isprop(DynamicTable, column)
-        tf = VectorIndex.target.target == DynamicTable.(column);
+function tf = isVecIndColumn(dynamicTable, vectorIndex, columnName)
+    arguments
+        dynamicTable (1,1) {matnwb.common.validation.mustBeDynamicTable}
+        vectorIndex
+        columnName (1,:) char
+    end
+
+    if vectorIndex.target.has_path()
+        tf = endsWith(vectorIndex.target.path, ['/' columnName]);
+    elseif isprop(dynamicTable, columnName)
+        tf = vectorIndex.target.target == dynamicTable.(columnName);
     else
-        if isprop(DynamicTable, 'vectorindex') && DynamicTable.vectorindex.isKey(column)
-            Vec = DynamicTable.vectorindex.get(column);
+        if isprop(dynamicTable, 'vectorindex') && dynamicTable.vectorindex.isKey(columnName)
+            vectorData = dynamicTable.vectorindex.get(columnName);
         else
-            Vec = DynamicTable.vectordata.get(column);
+            vectorData = dynamicTable.vectordata.get(columnName);
         end
-        tf = VectorIndex.target.target == Vec;
+        tf = vectorIndex.target.target == vectorData;
     end
 end

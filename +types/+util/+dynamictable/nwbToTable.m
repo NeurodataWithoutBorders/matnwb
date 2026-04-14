@@ -1,4 +1,4 @@
-function matlabTable = nwbToTable(DynamicTable, index)
+function matlabTable = nwbToTable(dynamicTable, index)
 %NWBTOTABLE converts from a NWB DynamicTable to a MATLAB table
 %
 %   MATLABTABLE = NWBTOTABLE(T) converts object T of class types.core.DynamicTable
@@ -23,26 +23,22 @@ function matlabTable = nwbToTable(DynamicTable, index)
 % );
 % MATLABTABLE = nwb2table(MYTABLE);
 
-    % make sure input is dynamic table
-    validateattributes(DynamicTable,...
-        {'types.core.DynamicTable', 'types.hdmf_common.DynamicTable'},...
-        {'scalar'});
-    
-    if nargin < 2
-        index = true;
+    arguments
+        dynamicTable (1,1) {matnwb.common.validation.mustBeDynamicTable}
+        index (1,1) logical = true
     end
     
-    if isempty(DynamicTable.id)
-        matlabTable = table({}, 'VariableNames', [{'id'} DynamicTable.colnames]);
+    if isempty(dynamicTable.id)
+        matlabTable = table({}, 'VariableNames', [{'id'} dynamicTable.colnames]);
         return;
     end
     
     % initialize table with id column
-    if isa(DynamicTable.id.data, 'types.untyped.DataStub')...
-            || isa(DynamicTable.id.data, 'types.untyped.DataPipe')
-        ids = DynamicTable.id.data.load();
+    if isa(dynamicTable.id.data, 'types.untyped.DataStub')...
+            || isa(dynamicTable.id.data, 'types.untyped.DataPipe')
+        ids = dynamicTable.id.data.load();
     else
-        ids = DynamicTable.id.data;
+        ids = dynamicTable.id.data;
     end
     matlabTable = table( ...
         ids, ...
@@ -50,37 +46,37 @@ function matlabTable = nwbToTable(DynamicTable, index)
     );
     
     % deal with DynamicTableRegion columns when index is false
-    [columns, remainingColumns] = deal(DynamicTable.colnames);
+    [columns, remainingColumns] = deal(dynamicTable.colnames);
     columnDescriptions = repmat({''}, 1, length(columns));
     
-    for i = 1:length(columns)
-        cn = columns{i};
-        if isprop(DynamicTable, cn)
-            cv = DynamicTable.(cn);
-        elseif isprop(DynamicTable, 'vectorindex') && DynamicTable.vectorindex.isKey(cn) % Schema version < 2.3.0
-            cv = DynamicTable.vectorindex.get(cn);
+    for iColumn = 1:length(columns)
+        columnName = columns{iColumn};
+        if isprop(dynamicTable, columnName)
+            columnVector = dynamicTable.(columnName);
+        elseif isprop(dynamicTable, 'vectorindex') && dynamicTable.vectorindex.isKey(columnName) % Schema version < 2.3.0
+            columnVector = dynamicTable.vectorindex.get(columnName);
         else
-            cv = DynamicTable.vectordata.get(cn);
+            columnVector = dynamicTable.vectordata.get(columnName);
         end
-        columnDescriptions{i} = cv.description;
+        columnDescriptions{iColumn} = columnVector.description;
         if ~index && ...
-                (isa(cv,'types.hdmf_common.DynamicTableRegion') ||...
-                isa(cv,'types.core.DynamicTableRegion'))
-            row_idxs = cv.data;
-            ref_table = cv.table.target;
-            cv = cell(length(row_idxs),1);
-            for r = 1:length(row_idxs)
-                cv{r,1} = ref_table.getRow(row_idxs(r)+1);
+                (isa(columnVector,'types.hdmf_common.DynamicTableRegion') ||...
+                isa(columnVector,'types.core.DynamicTableRegion'))
+            rowIndices = columnVector.data;
+            referencedTable = columnVector.table.target;
+            columnValue = cell(length(rowIndices),1);
+            for iRow = 1:length(rowIndices)
+                columnValue{iRow,1} = referencedTable.getRow(rowIndices(iRow)+1);
             end
-            matlabTable.(cn) = cv;
-            remainingColumns = setdiff(remainingColumns, cn, 'stable');
+            matlabTable.(columnName) = columnValue;
+            remainingColumns = setdiff(remainingColumns, columnName, 'stable');
         else
             % pass
         end
     end
     % append remaining columns to table
     % making the assumption that length of ids reflects table height
-    matlabTable = [matlabTable DynamicTable.getRow( ...
+    matlabTable = [matlabTable dynamicTable.getRow( ...
         1:length(ids), ...
         'columns', remainingColumns ...
     )];

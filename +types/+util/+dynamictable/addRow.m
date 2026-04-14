@@ -1,4 +1,4 @@
-function addRow(DynamicTable, varargin)
+function addRow(dynamicTable, varargin)
 % ADDROW Given a dynamic table and a set of keyword arguments for the row,
 % add a single row to the dynamic table if using keywords, or multiple rows
 % if using a table.
@@ -23,18 +23,24 @@ function addRow(DynamicTable, varargin)
 %    keyword arguments. For table appending mode, this is how ragged arrays
 %    are represented.
     
-    validateattributes(DynamicTable,...
-        {'types.core.DynamicTable', 'types.hdmf_common.DynamicTable'},...
-        {'scalar'});
-    assert(~isempty(DynamicTable.colnames),...
+    arguments
+        dynamicTable (1,1) {matnwb.common.validation.mustBeDynamicTable}
+    end
+    arguments (Repeating)
+        varargin
+    end
+
+    assert(nargin > 1, 'NWB:DynamicTable:AddRow:NoData', ...
+        'Not enough arguments');
+
+    assert(~isempty(dynamicTable.colnames),...
         'NWB:DynamicTable:AddRow:NoColumns',...
-        ['The `colnames` property of the Dynamic Table needs to be populated with a cell array '...
-        'of column names before being able to add row data.']);
-    assert(nargin > 1, 'NWB:DynamicTable:AddRow:NoData', 'Not enough arguments');
+        ['The `colnames` property of the Dynamic Table needs to be populated '...
+        'with a cell array of column names before being able to add row data.']);
     
-    types.util.dynamictable.checkConfig(DynamicTable);
+    types.util.dynamictable.checkConfig(dynamicTable);
     
-    assert(~isa(DynamicTable.id.data, 'types.untyped.DataStub'),...
+    assert(~isa(dynamicTable.id.data, 'types.untyped.DataStub'),...
         'NWB:DynamicTable:AddRow:Uneditable',...
         ['Cannot write to on-file Dynamic Tables without enabling data pipes. '...
         'If this was produced with pynwb, please enable chunking for this table.']);
@@ -44,6 +50,6 @@ function addRow(DynamicTable, varargin)
         ['Using MATLAB tables as input to the addRow DynamicTable method has '...
         'been deprecated. Please, use key-value pairs instead']);
     else
-        types.util.dynamictable.addVarargRow(DynamicTable, varargin{:});
+        types.util.dynamictable.addVarargRow(dynamicTable, varargin{:});
     end
 end

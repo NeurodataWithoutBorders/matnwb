@@ -1,41 +1,45 @@
-function TypeMap = getTypeMap(DynamicTable)
+function typeMap = getTypeMap(dynamicTable)
 % GETTYPEMAP returns containers.Map mapping column name to struct
 % containing type name and size.
-    TypeMap = containers.Map;
-    if isempty(DynamicTable.id.data)...
-            || (isa(DynamicTable.id.data, 'types.untyped.DataPipe')...
-                && 0 == DynamicTable.id.data.offset)
+    arguments
+        dynamicTable (1,1) {matnwb.common.validation.mustBeDynamicTable}
+    end
+
+    typeMap = containers.Map;
+    if isempty(dynamicTable.id.data)...
+            || (isa(dynamicTable.id.data, 'types.untyped.DataPipe')...
+                && 0 == dynamicTable.id.data.offset)
         return;
     end
-    TypeStruct = struct('type', '', 'dims', [0, 0]);
-    for i = 1:length(DynamicTable.colnames)
-        colnm = DynamicTable.colnames{i};
-        if isprop(DynamicTable, colnm)
-            colVecData = DynamicTable.(colnm);
+    typeInfo = struct('type', '', 'dims', [0, 0]);
+    for iColumn = 1:length(dynamicTable.colnames)
+        columnName = dynamicTable.colnames{iColumn};
+        if isprop(dynamicTable, columnName)
+            columnVectorData = dynamicTable.(columnName);
         else
-            colVecData = DynamicTable.vectordata.get(colnm);
+            columnVectorData = dynamicTable.vectordata.get(columnName);
         end
     
-        if isa(colVecData.data, 'types.untyped.DataPipe')
-            colval = colVecData.data.load(1);
-        elseif istable(colVecData.data)
-            colval = colVecData.data;
+        if isa(columnVectorData.data, 'types.untyped.DataPipe')
+            columnValue = columnVectorData.data.load(1);
+        elseif istable(columnVectorData.data)
+            columnValue = columnVectorData.data;
         else
-            colval = colVecData.data(1);
+            columnValue = columnVectorData.data(1);
         end
     
-        if iscellstr(colval)
-            TypeStruct.type = 'cellstr';
+        if iscellstr(columnValue)
+            typeInfo.type = 'cellstr';
         else
-            TypeStruct.type = class(colval);
+            typeInfo.type = class(columnValue);
         end
     
-        if isa(colVecData.data, 'types.untyped.DataPipe')
-            TypeStruct.dims = colVecData.data.internal.maxSize;
+        if isa(columnVectorData.data, 'types.untyped.DataPipe')
+            typeInfo.dims = columnVectorData.data.internal.maxSize;
         else
-            TypeStruct.dims = size(colVecData.data);
+            typeInfo.dims = size(columnVectorData.data);
         end
     
-        TypeMap(colnm) = TypeStruct;
+        typeMap(columnName) = typeInfo;
     end
 end
