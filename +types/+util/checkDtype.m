@@ -22,7 +22,10 @@ function value = checkDtype(name, typeDescriptor, value)
         value
     end
 
-    if isstruct(typeDescriptor) % Compound type processing
+    if canBeAnyType(typeDescriptor)
+        value = validateAnyType(value);
+
+    elseif isstruct(typeDescriptor) % Compound type processing
         value = checkDtypeForCompoundDataset(name, typeDescriptor, value);
     
     elseif isa(value, 'types.untyped.SoftLink')
@@ -158,13 +161,6 @@ function value = checkDtypeForCompoundDataset(name, typeDescriptor, value)
         value = valueWrapper; % re-wrap value
     end
 
-    function validateCompoundValue(value)
-        assert(isstruct(value) || istable(value) || isa(value, 'containers.Map'), ...
-            'NWB:CheckDType:InvalidValue', ...
-            ['Value of compound type must be a struct, table, or a ', ...
-            'containers.Map but was a "%s"'], class(value) )
-    end
-
     function validateCompoundFields(expectedFields, value)
         % Assert field names and order of fields are correct.
         if isstruct(value)
@@ -231,6 +227,13 @@ function value = checkDtypeForCompoundDataset(name, typeDescriptor, value)
             'Number of elements for each struct field must match to be valid.'], ...
             num2str(uniqueFieldLengths));
     end
+end
+
+function validateCompoundValue(value)
+    assert(isstruct(value) || istable(value) || isa(value, 'containers.Map'), ...
+        'NWB:CheckDType:InvalidValue', ...
+        ['Value of compound type must be a struct, table, or a ', ...
+        'containers.Map but was a "%s"'], class(value) )
 end
 
 function tf = canWeCast(typeDescriptor)
@@ -315,4 +318,69 @@ function validateCompoundTypeDescriptor(name, expectedTypeDesc, actualTypeDesc)
                 name, expectedName, expectedType, actualType);
         end
     end
+end
+
+function tf = canBeAnyType(typeDescriptor)
+    tf = (ischar(typeDescriptor) || isstring(typeDescriptor)) ...
+        && strcmp(typeDescriptor, 'any');
+end
+
+function value = validateAnyType(value)
+% validateAnyType - Validate values where any dtype is allowed
+
+    persistent validBasicTypes
+    if isempty(validBasicTypes)
+        typeMap = spec.getBasicDTypeMap;
+        validBasicTypes = string( unique(typeMap.values) );
+    end
+    
+    valueType = class(value);
+
+    if any(strcmp(valueType, validBasicTypes))
+        return
+    end
+
+    % Special case: char equivalents that are also valid
+    if isstring(value) || iscellstr(value)
+        return
+    end
+
+    % Accept reference types
+    if isa(value, 'types.untyped.ObjectView') || isa(value, 'types.untyped.RegionView')
+        return
+    end
+    
+    % Accept soft links
+    if isa(value, 'types.untyped.SoftLink')
+        return
+    end
+
+    % Accept compound values
+    try
+        validateCompoundValue(value)
+        return
+    catch
+        % Its not a compound value, move on
+    end
+
+    if isWrapped(value, 'any')
+        unWrappedValue = unwrapValue(value);
+        try
+            validateAnyType(unWrappedValue);
+            return
+        catch exception
+            throw(exception)
+        end
+    end
+
+    % If we got here, the value is not a valid type for hdmf/nwb
+    allowedTypes = [validBasicTypes; ...
+        "types.untyped.ObjectView"; ...
+        "types.untyped.RegionView"; ...
+        "types.untyped.SoftLink"; ...
+        "struct"; "table"; "containers.Map"];
+
+    error('NWB:CheckDType:InvalidType', ...
+        'Value was of type "%s" but must be one of the following types:\n%s', ...
+        valueType, strjoin("  " + allowedTypes, newline))
 end
