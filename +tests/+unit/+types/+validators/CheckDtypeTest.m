@@ -110,6 +110,19 @@ classdef CheckDtypeTest < matlab.unittest.TestCase
                 'NWB:CheckDataType:InvalidConversion')
         end
 
+        function testRejectsDatasetClassWhenRawDataIsExpected(testCase)
+            vectorData = types.hdmf_common.VectorData(...
+                'data', int8(1), ...
+                'description', 'test');
+
+            testCase.verifyError(...
+                @() types.util.checkDtype('data', 'numeric', vectorData), ...
+                'NWB:CheckDataType:InvalidConversion')
+            testCase.verifyError(...
+                @() types.core.Image('data', vectorData), ...
+                'NWB:CheckDataType:InvalidConversion')
+        end
+
 
 
     end
