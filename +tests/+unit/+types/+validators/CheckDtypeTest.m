@@ -123,6 +123,60 @@ classdef CheckDtypeTest < matlab.unittest.TestCase
                 'NWB:CheckDataType:InvalidConversion')
         end
 
+        function testAnyDtypeAllowsBasicAndTextTypes(testCase)
+            stringValue = "hello world";
+            cellstrValue = {'hello world'};
+            charValue = 'hello world';
+            datetimeValue = datetime('now');
+            numericValue = uint8(1);
+
+            value = types.util.checkDtype('stringValue', 'any', stringValue);
+            testCase.verifyClass(value, 'string')
+
+            value = types.util.checkDtype('cellstrValue', 'any', cellstrValue);
+            testCase.verifyTrue(iscellstr(value))
+
+            value = types.util.checkDtype('charValue', 'any', charValue);
+            testCase.verifyClass(value, 'char')
+
+            value = types.util.checkDtype('datetimeValue', 'any', datetimeValue);
+            testCase.verifyClass(value, 'datetime')
+
+            value = types.util.checkDtype('numericValue', 'any', numericValue);
+            testCase.verifyClass(value, 'uint8')
+        end
+
+        function testAnyDtypeAllowsCompoundValues(testCase)
+            [testValueStruct, testValueTable, testValueMap] = ...
+                testCase.getCompoundValues(...
+                'a', 1, ...
+                'b', 'hello world');
+
+            value = types.util.checkDtype('structValue', 'any', testValueStruct);
+            testCase.verifyClass(value, 'struct')
+
+            value = types.util.checkDtype('tableValue', 'any', testValueTable);
+            testCase.verifyClass(value, 'table')
+
+            value = types.util.checkDtype('mapValue', 'any', testValueMap);
+            testCase.verifyClass(value, 'containers.Map')
+        end
+
+        function testAnyDtypeAllowsWrappedValue(testCase)
+            wrappedValue = types.untyped.Anon('test', uint8(1));
+
+            value = types.util.checkDtype('wrappedValue', 'any', wrappedValue);
+
+            testCase.verifyClass(value, 'types.untyped.Anon')
+            testCase.verifyEqual(value.value, uint8(1))
+        end
+
+        function testAnyDtypeRejectsUnsupportedType(testCase)
+            testCase.verifyError(...
+                @() types.util.checkDtype('invalidValue', 'any', {struct()}), ...
+                'NWB:CheckDType:InvalidType')
+        end
+
 
 
     end
