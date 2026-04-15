@@ -4,9 +4,9 @@ function mapping = getBasicDTypeMap()
 % Reference:
 % https://github.com/hdmf-dev/hdmf/blob/5.1.0/src/hdmf/spec/spec.py#L31-L48
 
-    if exist('dictionary', 'class') == 8
+    try
         mapping = dictionary();
-    else
+    catch % Fallback for older MATLAB releases
         mapping = containers.Map('UniformValues', true);
     end
 
