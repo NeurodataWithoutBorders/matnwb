@@ -1,5 +1,5 @@
 classdef BackendFactory
-    % BackendFactory - Factory for creating storage backend readers.
+    % BackendFactory - Factory for creating storage backend components.
 
     methods (Static)
         function reader = createReader(filename, backendName)
@@ -24,6 +24,37 @@ classdef BackendFactory
                             "`%s` is not a valid HDF5 file.", filename)
                     end
                     reader = io.backend.hdf5.HDF5Reader(filename);
+                otherwise
+                    error("NWB:BackendFactory:UnsupportedBackend", ...
+                        "Unsupported backend `%s`.", backendName)
+            end
+        end
+
+        function lazyArray = createLazyArray(filename, datasetPath, dims, dataType, backendName)
+            arguments
+                filename (1,1) string
+                datasetPath (1,1) string
+                dims double = []
+                dataType = []
+                backendName (1,1) string = "auto"
+            end
+
+            backendName = io.backend.BackendFactory.normalizeBackendName(backendName);
+
+            switch backendName
+                case "auto"
+                    if io.backend.BackendFactory.isHDF5File(filename)
+                        lazyArray = io.backend.hdf5.HDF5LazyArray(filename, datasetPath, dims, dataType);
+                    else
+                        error("NWB:BackendFactory:UnsupportedFormat", ...
+                            "No supported lazy array backend found for `%s`.", filename)
+                    end
+                case "hdf5"
+                    if ~io.backend.BackendFactory.isHDF5File(filename)
+                        error("NWB:BackendFactory:InvalidHDF5", ...
+                            "`%s` is not a valid HDF5 file.", filename)
+                    end
+                    lazyArray = io.backend.hdf5.HDF5LazyArray(filename, datasetPath, dims, dataType);
                 otherwise
                     error("NWB:BackendFactory:UnsupportedBackend", ...
                         "Unsupported backend `%s`.", backendName)
