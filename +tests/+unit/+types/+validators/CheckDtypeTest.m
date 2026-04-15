@@ -171,6 +171,32 @@ classdef CheckDtypeTest < matlab.unittest.TestCase
             testCase.verifyEqual(value.value, uint8(1))
         end
 
+        function testAnyDtypeAllowsSoftLink(testCase)
+            warningResetObj = types.untyped.SoftLink.disablePathDeprecationWarning(); %#ok<NASGU>
+
+            softLinkValue = types.untyped.SoftLink('/some/path');
+
+            value = types.util.checkDtype('softLinkValue', 'any', softLinkValue);
+
+            testCase.verifyClass(value, 'types.untyped.SoftLink')
+        end
+
+        function testAnyDtypeRejectsInvalidCompoundFieldValue(testCase)
+            invalidCompoundValue = struct('a', {{1, 2}});
+
+            testCase.verifyError(...
+                @() types.util.checkDtype('invalidCompoundValue', 'any', invalidCompoundValue), ...
+                'NWB:CheckDType:InvalidType')
+        end
+
+        function testAnyDtypeRejectsNestedCompoundValue(testCase)
+            nestedCompoundValue = struct('a', struct('b', 1));
+
+            testCase.verifyError(...
+                @() types.util.checkDtype('nestedCompoundValue', 'any', nestedCompoundValue), ...
+                'NWB:CheckDType:NestedCompoundNotSupported')
+        end
+
         function testAnyDtypeRejectsUnsupportedType(testCase)
             testCase.verifyError(...
                 @() types.util.checkDtype('invalidValue', 'any', {struct()}), ...

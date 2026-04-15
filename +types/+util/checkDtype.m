@@ -236,6 +236,97 @@ function validateCompoundValue(value)
         'containers.Map but was a "%s"'], class(value) )
 end
 
+function tf = isCompoundValue(value)
+    tf = isstruct(value) || istable(value) || isa(value, 'containers.Map');
+end
+
+function validateAnyCompoundValue(value)
+    validateCompoundValue(value)
+
+    if isstruct(value)
+        fieldNames = fieldnames(value);
+
+        if isscalar(value)
+            assertFieldDataSameLengthForAnyCompound(fieldNames, value)
+            for iField = 1:length(fieldNames)
+                fieldValue = value.(fieldNames{iField});
+                assert(~isCompoundValue(fieldValue), ...
+                    'NWB:CheckDType:NestedCompoundNotSupported', ...
+                    'Nested compound values are not supported')
+                validateAnyType(fieldValue)
+            end
+        else
+            for iField = 1:length(fieldNames)
+                fieldName = fieldNames{iField};
+                for iElem = 1:numel(value)
+                    elem = value(iElem).(fieldName);
+                    assert(~iscell(elem) && ...
+                        (isempty(elem) || ...
+                        (isscalar(elem) || (ischar(elem) && isvector(elem)))), ...
+                        'NWB:CheckDType:InvalidType', ...
+                        ['Fields for an array of structs for ' ...
+                        'compound types should have non-cell scalar values or char arrays.']);
+                    assert(~isCompoundValue(elem), ...
+                        'NWB:CheckDType:NestedCompoundNotSupported', ...
+                        'Nested compound values are not supported')
+                    validateAnyType(elem)
+                end
+            end
+        end
+    elseif istable(value)
+        fieldNames = value.Properties.VariableNames;
+        for iField = 1:length(fieldNames)
+            fieldValue = value.(fieldNames{iField});
+            assert(~isCompoundValue(fieldValue), ...
+                'NWB:CheckDType:NestedCompoundNotSupported', ...
+                'Nested compound values are not supported')
+            validateAnyType(fieldValue)
+        end
+    else % containers.Map
+        fieldNames = value.keys();
+        assertFieldDataSameLengthForAnyCompound(fieldNames, value)
+        for iField = 1:length(fieldNames)
+            fieldValue = value(fieldNames{iField});
+            assert(~isCompoundValue(fieldValue), ...
+                'NWB:CheckDType:NestedCompoundNotSupported', ...
+                'Nested compound values are not supported')
+            validateAnyType(fieldValue)
+        end
+    end
+end
+
+function assertFieldDataSameLengthForAnyCompound(fieldNames, value)
+    fieldLengths = zeros(length(fieldNames), 1);
+
+    for iField = 1:length(fieldNames)
+        if isstruct(value)
+            fieldValue = value.(fieldNames{iField});
+        else
+            fieldValue = value(fieldNames{iField});
+        end
+
+        assert(isvector(fieldValue), ...
+            'NWB:CheckDType:InvalidShape', ...
+            ['struct of arrays as a compound type ' ...
+            'cannot have multidimensional data in their fields. ' ...
+            'Field data shape must be scalar or vector to be valid.']);
+
+        if ischar(fieldValue)
+            fieldLengths(iField) = size(fieldValue, 1);
+        else
+            fieldLengths(iField) = length(fieldValue);
+        end
+    end
+
+    uniqueFieldLengths = unique(fieldLengths);
+    assert(isscalar(uniqueFieldLengths), ...
+        'NWB:CheckDType:InvalidShape', ...
+        ['struct of arrays as a compound type ' ...
+        'contains mismatched number of elements with unique sizes: [%s].  ' ...
+        'Number of elements for each struct field must match to be valid.'], ...
+        num2str(uniqueFieldLengths));
+end
+
 function tf = canWeCast(typeDescriptor)
     replaceableNullTypes = getReplaceableNullTypes();
     tf = ischar(typeDescriptor) && ...
@@ -355,12 +446,10 @@ function value = validateAnyType(value)
         return
     end
 
-    % Accept compound values
-    try
-        validateCompoundValue(value)
+    % Accept compound values after validating their field contents
+    if isCompoundValue(value)
+        validateAnyCompoundValue(value)
         return
-    catch
-        % Its not a compound value, move on
     end
 
     if isWrapped(value, 'any')
