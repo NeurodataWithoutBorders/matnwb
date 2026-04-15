@@ -133,7 +133,10 @@ classdef HDF5Reader < io.backend.base.Reader
                     datasetValue = [];
                 else
                     matlabDataType = io.internal.h5.datatype.datatypeInfoToMatlabType(datatype, datasetInfo.Name);
-                    datasetValue = types.untyped.DataStub(obj.Filename, datasetPath, dataspace.Size, matlabDataType);
+                    lazyArray = io.backend.hdf5.HDF5LazyArray(...
+                        obj.Filename, datasetPath, dataspace.Size, matlabDataType);
+                    datasetValue = types.untyped.DataStub(...
+                        obj.Filename, datasetPath, [], [], lazyArray);
                 end
                 H5T.close(tid);
                 H5P.close(pid);
