@@ -21,6 +21,10 @@ function vecHeight = getDataHeight(data)
         elseif ~isscalar(data.internal.data) && isvector(data.internal.data)
             vecHeight = length(data.internal.data); % datapipe axis can be misleading if vector.
         else
+            % rowDimension = types.util.dynamictable.getDataPipeRowDimension(data);
+            % vecHeight = dataSize(rowDimension);
+            dataSize = size(data.internal.data);
+            vecHeight = dataSize(end);
             vecHeight = size(data.internal.data, data.axis);
         end
     elseif isa(data, 'types.untyped.DataStub')
