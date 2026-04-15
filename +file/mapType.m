@@ -27,7 +27,7 @@ function matlabType = mapType(dtype)
     end
 
     if ischar(dtype) % Basic dtype
-        if any(strcmpi({'None', 'any'}, dtype))
+        if isempty(dtype) || any(strcmpi({'None', 'any'}, dtype))
             matlabType = 'any';
         else
             try
