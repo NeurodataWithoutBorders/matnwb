@@ -23,7 +23,6 @@ function mapping = getBasicDTypeMap()
     mapping('int64')        = 'int64';
 
     % Signed 32 bit integer, 32 bit
-    mapping('int')          = 'int32';
     mapping('int32')        = 'int32';
 
     % Signed 16 bit integer, 16 bit
@@ -31,19 +30,20 @@ function mapping = getBasicDTypeMap()
     mapping('int16')        = 'int16';
 
     % Signed 8 bit integer, 8 bit
+    mapping('int')          = 'int8';
     mapping('int8')         = 'int8';
 
     % Unsigned 64 bit integer, 64 bit
     mapping('uint64')       = 'uint64';
 
     % Unsigned 32 bit integer, 32 bit
-    mapping('uint')         = 'uint32';
     mapping('uint32')       = 'uint32';
 
     % Unsigned 16 bit integer, 16 bit
     mapping('uint16')       = 'uint16';
 
     % Unsigned 8 bit integer, 8 bit
+    mapping('uint')         = 'uint8';
     mapping('uint8')        = 'uint8';
 
     % Any numeric type (i.e., any int, uint, float), 8 to 64 bit
