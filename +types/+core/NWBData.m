@@ -42,6 +42,7 @@ methods
     %% VALIDATORS
     
     function val = validate_data(obj, val)
+        val = types.util.checkDtype('data', 'any', val);
         types.util.validateShape('data', {[1]}, val)
     end
     %% EXPORT

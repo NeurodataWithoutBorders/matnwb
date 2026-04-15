@@ -78,6 +78,7 @@ methods
     %% VALIDATORS
     
     function val = validate_data(obj, val)
+        val = types.util.checkDtype('data', 'any', val);
         types.util.validateShape('data', {[Inf,Inf,Inf,Inf], [Inf,Inf,Inf], [Inf,Inf], [Inf]}, val)
     end
     function val = validate_description(obj, val)

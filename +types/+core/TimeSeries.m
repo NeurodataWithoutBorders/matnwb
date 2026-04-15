@@ -210,6 +210,7 @@ methods
         types.util.validateShape('control_description', {[Inf]}, val)
     end
     function val = validate_data(obj, val)
+        val = types.util.checkDtype('data', 'any', val);
         types.util.validateShape('data', {[Inf,Inf,Inf,Inf], [Inf,Inf,Inf], [Inf,Inf], [Inf]}, val)
     end
     function val = validate_data_continuity(obj, val)
