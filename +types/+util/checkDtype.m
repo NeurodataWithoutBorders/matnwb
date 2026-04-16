@@ -423,6 +423,9 @@ function value = validateAnyType(value)
     if isempty(validBasicTypes)
         typeMap = spec.getBasicDTypeMap;
         validBasicTypes = string( unique(typeMap.values) );
+        if isrow(validBasicTypes)
+            validBasicTypes = transpose(validBasicTypes);
+        end
     end
     
     valueType = class(value);
