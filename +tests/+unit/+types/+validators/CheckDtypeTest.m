@@ -202,9 +202,6 @@ classdef CheckDtypeTest < matlab.unittest.TestCase
                 @() types.util.checkDtype('invalidValue', 'any', {struct()}), ...
                 'NWB:CheckDType:InvalidType')
         end
-
-
-
     end
 
     methods (Static)
