@@ -253,7 +253,7 @@ function validateAnyCompoundValue(value)
                 assert(~isCompoundValue(fieldValue), ...
                     'NWB:CheckDType:NestedCompoundNotSupported', ...
                     'Nested compound values are not supported')
-                validateAnyType(fieldValue)
+                validateAnyType(fieldValue);
             end
         else
             for iField = 1:length(fieldNames)
@@ -269,7 +269,7 @@ function validateAnyCompoundValue(value)
                     assert(~isCompoundValue(elem), ...
                         'NWB:CheckDType:NestedCompoundNotSupported', ...
                         'Nested compound values are not supported')
-                    validateAnyType(elem)
+                    validateAnyType(elem);
                 end
             end
         end
@@ -280,7 +280,7 @@ function validateAnyCompoundValue(value)
             assert(~isCompoundValue(fieldValue), ...
                 'NWB:CheckDType:NestedCompoundNotSupported', ...
                 'Nested compound values are not supported')
-            validateAnyType(fieldValue)
+            validateAnyType(fieldValue);
         end
     else % containers.Map
         fieldNames = value.keys();
@@ -290,7 +290,7 @@ function validateAnyCompoundValue(value)
             assert(~isCompoundValue(fieldValue), ...
                 'NWB:CheckDType:NestedCompoundNotSupported', ...
                 'Nested compound values are not supported')
-            validateAnyType(fieldValue)
+            validateAnyType(fieldValue);
         end
     end
 end
@@ -441,8 +441,8 @@ function value = validateAnyType(value)
         return
     end
     
-    % Accept soft links
-    if isa(value, 'types.untyped.SoftLink')
+    % Accept soft links and external links
+    if isa(value, 'types.untyped.SoftLink') || isa(value, 'types.untyped.ExternalLink')
         return
     end
 
