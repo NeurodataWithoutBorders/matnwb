@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set latest MATLAB and Python versions
         id: set-versions
@@ -25,7 +25,7 @@ jobs:
           echo "python_version=$latest_python_version" >> $GITHUB_OUTPUT
 
       - name: Install Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ steps.set-versions.outputs.python_version }}
 
@@ -39,7 +39,7 @@ jobs:
           echo "HDF5_PLUGIN_PATH=$(python -c "import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)")" >> "$GITHUB_ENV"
 
       - name: Check out PyNWB dev repository  (for testing PyNWB tutorials)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: NeurodataWithoutBorders/pynwb
           ref: dev
@@ -49,12 +49,12 @@ jobs:
         run: echo "PYNWB_REPO_DIR=$GITHUB_WORKSPACE/pynwb-repo" >> "$GITHUB_ENV"
 
       - name: Install MATLAB
-        uses: matlab-actions/setup-matlab@v2
+        uses: matlab-actions/setup-matlab@v3
         with:
           release: ${{ steps.set-versions.outputs.matlab_version }}
 
       - name: Run PyNWB-dependent tests
-        uses: matlab-actions/run-command@v2
+        uses: matlab-actions/run-command@v3
         with:
           command: |
             setenv("SKIP_PYNWB_TESTS", "0")
