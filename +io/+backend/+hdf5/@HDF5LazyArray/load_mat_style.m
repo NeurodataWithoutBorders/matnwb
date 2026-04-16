@@ -50,7 +50,12 @@ function data = load_mat_style(obj, varargin)
             selectionDimensions = length(orderedSelection);
             orderedSelection = orderedSelection .';
         else
-            selectionDimensions = fliplr(size(orderedSelection));
+            rawSelectionSize = size(orderedSelection);
+            if matnwb.preference.shouldFlipDimensions()
+                selectionDimensions = fliplr(rawSelectionSize);
+            else
+                selectionDimensions = rawSelectionSize;
+            end
         end
 
         points = cell(length(dataDimensions), 1);
@@ -69,8 +74,11 @@ function data = load_mat_style(obj, varargin)
         [points{:}] = ind2sub(dataDimensions, orderedSelection);
         readSpaceId = H5S.copy(spaceId);
         H5S.select_none(readSpaceId);
-        H5S.select_elements(readSpaceId, 'H5S_SELECT_SET', ...
-            cell2mat(flipud(points)) - 1);
+        pointMatrix = cell2mat(points);
+        if matnwb.preference.shouldFlipDimensions()
+            pointMatrix = flipud(pointMatrix);
+        end
+        H5S.select_elements(readSpaceId, 'H5S_SELECT_SET', pointMatrix - 1);
         memorySpaceId = H5S.create_simple(length(selectionDimensions), ...
             selectionDimensions, selectionDimensions);
     else
@@ -90,6 +98,17 @@ function data = load_mat_style(obj, varargin)
     H5D.close(datasetId);
     H5F.close(fileId);
     H5S.close(memorySpaceId);
+
+    %% Reorder dimensions for schema_style mode
+    % H5D.read returns data in MATLAB F-order (fastest dim first). In
+    % schema_style the user expects C-order (slowest dim first), so permute
+    % to reverse the dimension order. Skip for 1-D data (no ordering to
+    % reverse) and for non-array types (char, cell, struct, table).
+    if ~matnwb.preference.shouldFlipDimensions() ...
+            && (isnumeric(data) || islogical(data)) ...
+            && ~isvector(data)
+        data = permute(data, fliplr(1:ndims(data)));
+    end
 
     %% Reshape Data
     expectedSize = getExpectedSize(dataDimensions, userSelection);

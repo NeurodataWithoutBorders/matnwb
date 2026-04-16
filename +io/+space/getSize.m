@@ -22,8 +22,13 @@ function [datasetSize, datasetMaxSize] = getSize(spaceId)
     end
 
     [~, h5Dims, h5MaxDims] = H5S.get_simple_extent_dims(spaceId);
-    datasetSize = fliplr(h5Dims);
-    datasetMaxSize = fliplr(h5MaxDims);
+    if matnwb.preference.shouldFlipDimensions()
+        datasetSize = fliplr(h5Dims);
+        datasetMaxSize = fliplr(h5MaxDims);
+    else
+        datasetSize = h5Dims;
+        datasetMaxSize = h5MaxDims;
+    end
 
     h5Unlimited = H5ML.get_constant_value('H5S_UNLIMITED');
     datasetMaxSize(datasetMaxSize == h5Unlimited) = Inf;

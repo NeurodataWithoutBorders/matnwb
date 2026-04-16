@@ -53,4 +53,12 @@ function data = load_h5_style(obj, varargin)
                 data = io.internal.h5.postprocess.toLogical(data);
         end
     end
+    % h5read returns data in MATLAB F-order. In schema_style the user expects
+    % C-order (slowest dim first), so permute to reverse the dimension order.
+    % Skip for 1-D data and non-array types (char, cell, struct).
+    if ~matnwb.preference.shouldFlipDimensions() ...
+            && (isnumeric(data) || islogical(data)) ...
+            && ~isvector(data)
+        data = permute(data, fliplr(1:ndims(data)));
+    end
 end

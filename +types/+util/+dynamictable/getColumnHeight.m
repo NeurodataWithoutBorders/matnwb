@@ -7,15 +7,26 @@ function vecHeight = getColumnHeight(VectorData)
 end
 
 function vecHeight = getDataHeight(data)
+    if matnwb.preference.shouldFlipDimensions()
+        rowDimension = @(d) ndims(d);  % matlab_style: row axis is last dimension
+    else
+        rowDimension = @(d) 1;         % schema_style: row axis is first dimension
+    end
+
     if isempty(data)
         vecHeight = 0;
     elseif isa(data, 'types.untyped.DataPipe')
         if data.isBound
             % Bound DataPipes can have an ambiguous inferred axis when a dataset
-            % is extendable in multiple dimensions. Use the loaded MATLAB shape
-            % instead, where DynamicTable row dimension maps to the last axis.
+            % is extendable in multiple dimensions. Use the loaded shape instead,
+            % where DynamicTable row dimension maps to the last axis in
+            % matlab_style and the first axis in schema_style.
             dataDims = size(data);
-            vecHeight = dataDims(end);
+            if matnwb.preference.shouldFlipDimensions()
+                vecHeight = dataDims(end);
+            else
+                vecHeight = dataDims(1);
+            end
         elseif isempty(data.internal.data)
             vecHeight = 0;
         elseif ~isscalar(data.internal.data) && isvector(data.internal.data)
@@ -24,7 +35,11 @@ function vecHeight = getDataHeight(data)
             vecHeight = size(data.internal.data, data.axis);
         end
     elseif isa(data, 'types.untyped.DataStub')
-        vecHeight = data.dims(end);
+        if matnwb.preference.shouldFlipDimensions()
+            vecHeight = data.dims(end);
+        else
+            vecHeight = data.dims(1);
+        end
     elseif isscalar(data) && isstruct(data) % compound type (struct)
         dataFieldNames = fieldnames(data);
         if isempty(dataFieldNames)
@@ -39,7 +54,7 @@ function vecHeight = getDataHeight(data)
     elseif istable(data) % compound type (table)
         vecHeight = height(data);
     elseif isscalar(data) || ~isvector(data)
-        vecHeight = size(data, ndims(data));
+        vecHeight = size(data, rowDimension(data));
     else
         vecHeight = size(data, find(1 < size(data)));
     end

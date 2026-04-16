@@ -40,7 +40,12 @@ function Reference = parseSingleReference(datasetId, referenceType, data)
     end
 
     numHyperBlocks = H5S.get_select_hyper_nblocks(spaceId);
-    selectionBlock = flipud(H5S.get_select_hyper_blocklist(spaceId, 0, numHyperBlocks));
+    rawSelectionBlock = H5S.get_select_hyper_blocklist(spaceId, 0, numHyperBlocks);
+    if matnwb.preference.shouldFlipDimensions()
+        selectionBlock = flipud(rawSelectionBlock);
+    else
+        selectionBlock = rawSelectionBlock;
+    end
     % Returns an (m x 2n) array, where m is the number of dimensions (or rank) of the dataspace.
     % The 2n rows of Result contain the list of blocks. The first row contains the start
     % coordinates of the first block, followed by the next row which contains the opposite

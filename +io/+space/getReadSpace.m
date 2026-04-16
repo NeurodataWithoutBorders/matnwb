@@ -28,10 +28,19 @@ while true
         Selection = shapes{i}{shapeInd(i)};
         [start(i), stride(i), count(i), block(i)] = Selection.getSpaceSpec();
     end
-    % convert start offset to 0-indexed and HDF5 dimension
-    % order.
-    H5S.select_hyperslab(newSid, 'H5S_SELECT_OR',...
-        fliplr(start) - 1, fliplr(stride), fliplr(count), fliplr(block));
+    % convert start offset to 0-indexed and HDF5 dimension order.
+    if matnwb.preference.shouldFlipDimensions()
+        h5Start  = fliplr(start) - 1;
+        h5Stride = fliplr(stride);
+        h5Count  = fliplr(count);
+        h5Block  = fliplr(block);
+    else
+        h5Start  = start - 1;
+        h5Stride = stride;
+        h5Count  = count;
+        h5Block  = block;
+    end
+    H5S.select_hyperslab(newSid, 'H5S_SELECT_OR', h5Start, h5Stride, h5Count, h5Block);
     
     iterateInd = find(shapeInd < shapeIndEnd, 1);
     if isempty(iterateInd)
@@ -56,6 +65,11 @@ for i = 1:rank
         end
     end
 end
-memSid = H5S.create_simple(length(memSize), fliplr(memSize), []);
+if matnwb.preference.shouldFlipDimensions()
+    h5MemSize = fliplr(memSize);
+else
+    h5MemSize = memSize;
+end
+memSid = H5S.create_simple(length(memSize), h5MemSize, []);
 end
 

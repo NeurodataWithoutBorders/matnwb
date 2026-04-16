@@ -5,7 +5,12 @@ classdef Chunking < types.untyped.datapipe.Property
         function obj = fromDcpl(dcpl)
             import types.untyped.datapipe.properties.Chunking;
             [~, h5_chunk_dims] = H5P.get_chunk(dcpl);
-            obj = Chunking(fliplr(h5_chunk_dims));
+            if matnwb.preference.shouldFlipDimensions()
+                chunk_dims = fliplr(h5_chunk_dims);
+            else
+                chunk_dims = h5_chunk_dims;
+            end
+            obj = Chunking(chunk_dims);
         end
     end
     
@@ -38,7 +43,12 @@ classdef Chunking < types.untyped.datapipe.Property
     
     methods
         function addTo(obj, dcpl)
-            H5P.set_chunk(dcpl, fliplr(obj.chunkSize));
+            if matnwb.preference.shouldFlipDimensions()
+                h5_chunk_size = fliplr(obj.chunkSize);
+            else
+                h5_chunk_size = obj.chunkSize;
+            end
+            H5P.set_chunk(dcpl, h5_chunk_size);
         end
     end
 end

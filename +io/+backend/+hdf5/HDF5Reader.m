@@ -83,6 +83,10 @@ classdef HDF5Reader < io.backend.base.Reader
             % when appropriate
             datatype = datasetInfo.Datatype;
             dataspace = datasetInfo.Dataspace;
+            if ~matnwb.preference.shouldFlipDimensions()
+                dataspace.Size = fliplr(dataspace.Size);
+                dataspace.MaxSize = fliplr(dataspace.MaxSize);
+            end
             if strcmp(datatype.Class, 'H5T_REFERENCE')
                 % Load all H5T references. This is required, unfortunately also a
                 % bottleneck

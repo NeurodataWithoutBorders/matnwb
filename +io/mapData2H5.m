@@ -52,7 +52,14 @@ else
         dims = size(data);
     end
     
-    dims = fliplr(dims);
+    if matnwb.preference.shouldFlipDimensions()
+        dims = fliplr(dims);
+    elseif ~isvector(data)
+        % In schema_style the HDF5 space dims stay in C-order (not flipped),
+        % so the data must be permuted from schema/C-order to MATLAB F-order
+        % before H5D.write, otherwise the data is written transposed.
+        data = permute(data, fliplr(1:ndims(data)));
+    end
     if forceChunked
         max_dims = repmat(unlimited_size, size(dims));
     else

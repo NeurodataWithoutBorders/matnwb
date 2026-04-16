@@ -1,14 +1,17 @@
 function configuration = flipChunkDimensions(configuration)
-%FLIPCHUNKDIMENSIONS Reverses (flips left-right) the chunk dimension arrays 
-%   in a structure.
+%FLIPCHUNKDIMENSIONS Reverses (flips up-down) the chunk dimension arrays
+%   in a configuration structure, when operating in matlab_style mode.
 %
-%   configuration = flipChunkDimensions(configuration) locates the 
-%   strategy_by_rank substructure in a configuration structure and flips the 
-%   array for each rank field.
+%   configuration = flipChunkDimensions(configuration) locates the
+%   strategy_by_rank substructure in a configuration structure and, when
+%   the active dimension ordering preference is matlab_style, flips the
+%   chunk dimension array for each rank field.
 %
-%   This is needed because MatNWB dimensions are flipped upon export to
-%   hdf5 files and the specification is defined based on the dimension
-%   ordering in NWB schemas / hdf5
+%   Flipping is needed in matlab_style mode because matnwb dimensions are
+%   reversed upon export to HDF5, while the configuration JSON specifies
+%   chunk dimensions in NWB schema / HDF5 order. In schema_style mode the
+%   configuration arrays already match the user-facing order, so no flip
+%   is applied.
 
     if isstruct(configuration)
         fields = fieldnames(configuration);
@@ -31,8 +34,10 @@ end
 
 function cd = processChunkDimensions(cd)
     % Process the chunk_dimensions field.
+    if ~matnwb.preference.shouldFlipDimensions()
+        return
+    end
     rankFieldNames = fieldnames(cd);
-
     for i = 1:numel(rankFieldNames)
         thisRank = rankFieldNames{i};
         cd.(thisRank) = flipud(cd.(thisRank));

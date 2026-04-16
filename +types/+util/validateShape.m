@@ -3,6 +3,14 @@ function validateShape(propertyName, validShapes, value)
 
 % Todo: might want to refine error message if this fails on DataPipe
 
+    % validShapes are stored in MATLAB order (fastest-changing dim first),
+    % because formatShape reverses schema order at parse time. In
+    % schema_style the user's data is in schema/HDF5 order (slowest-changing
+    % dim first), so flip each valid shape to match before comparing.
+    if ~matnwb.preference.shouldFlipDimensions()
+        validShapes = cellfun(@fliplr, validShapes, 'UniformOutput', false);
+    end
+
     enforceScalarShape = false;
 
     if isa(value, 'types.untyped.DatasetClass')
