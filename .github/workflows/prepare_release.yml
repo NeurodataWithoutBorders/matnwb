@@ -130,7 +130,7 @@ jobs:
 
       - name: Upload JUnit results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results-${{ matrix.os }}-${{ matrix.matlab-version }}
           path: testResults.xml
@@ -145,13 +145,13 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Retrieve result files
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           pattern: test-results-*
           merge-multiple: false
 
       - name: Publish test results
-        uses: mikepenz/action-junit-report@v4
+        uses: mikepenz/action-junit-report@v6
         with:
           report_paths: '*/testResults.xml'
 
