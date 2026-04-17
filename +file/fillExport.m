@@ -35,9 +35,8 @@ function festr = fillExport(propertyNames, RawClass, parentName, required, class
         end
 
         elisions = strjoin(elisions, '/');
-        if ~isempty(elideProps) && all(cellfun('isclass', elideProps, 'file.Group'))
-            exportBody{end+1} = ['io.writeGroup(fid, [fullpath ''/' elisions ''']);'];
-        end
+        needsElisionGroupWrite = ~isempty(elideProps) ...
+            && all(cellfun('isclass', elideProps, 'file.Group'));
 
         if strcmp(propertyName, 'unit') && strcmp(RawClass.type, 'VectorData')
             exportBody{end+1} = fillVectorDataUnitConditional();
@@ -46,7 +45,7 @@ function festr = fillExport(propertyNames, RawClass, parentName, required, class
         elseif strcmp(propertyName, 'resolution') && strcmp(RawClass.type, 'VectorData')
             exportBody{end+1} = fillVectorDataResolutionConditional();
         else
-            exportBody{end+1} = fillDataExport(propertyName, prop, elisions, required);
+            exportBody{end+1} = fillDataExport(propertyName, prop, elisions, required, needsElisionGroupWrite);
         end
     end
 
@@ -167,7 +166,10 @@ function path = traverseRaw(propertyName, RawClass)
     end
 end
 
-function dataExportString = fillDataExport(name, prop, elisions, required)
+function dataExportString = fillDataExport(name, prop, elisions, required, needsElisionGroupWrite)
+    if nargin < 5
+        needsElisionGroupWrite = false;
+    end
     if isempty(elisions)
         fullpath = ['[fullpath ''/' prop.name ''']'];
         elisionpath = 'fullpath';
@@ -271,6 +273,14 @@ function dataExportString = fillDataExport(name, prop, elisions, required)
 
     if ~prop.required
         propertyChecks{end+1} = ['~isempty(obj.' name ')'];
+    end
+
+    % Prepend io.writeGroup for elision path inside the conditional block
+    % to avoid creating empty HDF5 groups when all child properties are
+    % unset. (See issue #234)
+    if needsElisionGroupWrite
+        writeGroupStr = sprintf('io.writeGroup(fid, %s);', elisionpath);
+        dataExportString = sprintf('%s\n%s', writeGroupStr, dataExportString);
     end
 
     if ~isempty(propertyChecks)

@@ -669,164 +669,164 @@ methods
             io.writeDataset(fid, [fullpath '/file_create_date'], obj.file_create_date, 'forceChunking', 'forceArray');
         end
         refs = obj.general.export(fid, [fullpath '/general'], refs);
-        io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_data_collection)
+            io.writeGroup(fid, [fullpath '/general']);
             if startsWith(class(obj.general_data_collection), 'types.untyped.')
                 refs = obj.general_data_collection.export(fid, [fullpath '/general/data_collection'], refs);
             elseif ~isempty(obj.general_data_collection)
                 io.writeDataset(fid, [fullpath '/general/data_collection'], obj.general_data_collection);
             end
         end
-        io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_devices)
+            io.writeGroup(fid, [fullpath '/general']);
             refs = obj.general_devices.export(fid, [fullpath '/general/devices'], refs);
         end
-        io.writeGroup(fid, [fullpath '/general/devices']);
         if ~isempty(obj.general_devices_models)
+            io.writeGroup(fid, [fullpath '/general/devices']);
             refs = obj.general_devices_models.export(fid, [fullpath '/general/devices/models'], refs);
         end
-        io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_experiment_description)
+            io.writeGroup(fid, [fullpath '/general']);
             if startsWith(class(obj.general_experiment_description), 'types.untyped.')
                 refs = obj.general_experiment_description.export(fid, [fullpath '/general/experiment_description'], refs);
             elseif ~isempty(obj.general_experiment_description)
                 io.writeDataset(fid, [fullpath '/general/experiment_description'], obj.general_experiment_description);
             end
         end
-        io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_experimenter)
+            io.writeGroup(fid, [fullpath '/general']);
             if startsWith(class(obj.general_experimenter), 'types.untyped.')
                 refs = obj.general_experimenter.export(fid, [fullpath '/general/experimenter'], refs);
             elseif ~isempty(obj.general_experimenter)
                 io.writeDataset(fid, [fullpath '/general/experimenter'], obj.general_experimenter, 'forceArray');
             end
         end
-        io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_extracellular_ephys)
+            io.writeGroup(fid, [fullpath '/general']);
             refs = obj.general_extracellular_ephys.export(fid, [fullpath '/general/extracellular_ephys'], refs);
         end
-        io.writeGroup(fid, [fullpath '/general/extracellular_ephys']);
         if ~isempty(obj.general_extracellular_ephys_electrodes)
+            io.writeGroup(fid, [fullpath '/general/extracellular_ephys']);
             refs = obj.general_extracellular_ephys_electrodes.export(fid, [fullpath '/general/extracellular_ephys/electrodes'], refs);
         end
-        io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_institution)
+            io.writeGroup(fid, [fullpath '/general']);
             if startsWith(class(obj.general_institution), 'types.untyped.')
                 refs = obj.general_institution.export(fid, [fullpath '/general/institution'], refs);
             elseif ~isempty(obj.general_institution)
                 io.writeDataset(fid, [fullpath '/general/institution'], obj.general_institution);
             end
         end
-        io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_intracellular_ephys)
+            io.writeGroup(fid, [fullpath '/general']);
             refs = obj.general_intracellular_ephys.export(fid, [fullpath '/general/intracellular_ephys'], refs);
         end
-        io.writeGroup(fid, [fullpath '/general/intracellular_ephys']);
         if ~isempty(obj.general_intracellular_ephys_experimental_conditions)
+            io.writeGroup(fid, [fullpath '/general/intracellular_ephys']);
             refs = obj.general_intracellular_ephys_experimental_conditions.export(fid, [fullpath '/general/intracellular_ephys/experimental_conditions'], refs);
         end
-        io.writeGroup(fid, [fullpath '/general/intracellular_ephys']);
         if ~isempty(obj.general_intracellular_ephys_filtering)
+            io.writeGroup(fid, [fullpath '/general/intracellular_ephys']);
             if startsWith(class(obj.general_intracellular_ephys_filtering), 'types.untyped.')
                 refs = obj.general_intracellular_ephys_filtering.export(fid, [fullpath '/general/intracellular_ephys/filtering'], refs);
             elseif ~isempty(obj.general_intracellular_ephys_filtering)
                 io.writeDataset(fid, [fullpath '/general/intracellular_ephys/filtering'], obj.general_intracellular_ephys_filtering);
             end
         end
-        io.writeGroup(fid, [fullpath '/general/intracellular_ephys']);
         if ~isempty(obj.general_intracellular_ephys_intracellular_recordings)
+            io.writeGroup(fid, [fullpath '/general/intracellular_ephys']);
             refs = obj.general_intracellular_ephys_intracellular_recordings.export(fid, [fullpath '/general/intracellular_ephys/intracellular_recordings'], refs);
         end
-        io.writeGroup(fid, [fullpath '/general/intracellular_ephys']);
         if ~isempty(obj.general_intracellular_ephys_repetitions)
+            io.writeGroup(fid, [fullpath '/general/intracellular_ephys']);
             refs = obj.general_intracellular_ephys_repetitions.export(fid, [fullpath '/general/intracellular_ephys/repetitions'], refs);
         end
-        io.writeGroup(fid, [fullpath '/general/intracellular_ephys']);
         if ~isempty(obj.general_intracellular_ephys_sequential_recordings)
+            io.writeGroup(fid, [fullpath '/general/intracellular_ephys']);
             refs = obj.general_intracellular_ephys_sequential_recordings.export(fid, [fullpath '/general/intracellular_ephys/sequential_recordings'], refs);
         end
-        io.writeGroup(fid, [fullpath '/general/intracellular_ephys']);
         if ~isempty(obj.general_intracellular_ephys_simultaneous_recordings)
+            io.writeGroup(fid, [fullpath '/general/intracellular_ephys']);
             refs = obj.general_intracellular_ephys_simultaneous_recordings.export(fid, [fullpath '/general/intracellular_ephys/simultaneous_recordings'], refs);
         end
-        io.writeGroup(fid, [fullpath '/general/intracellular_ephys']);
         if ~isempty(obj.general_intracellular_ephys_sweep_table)
+            io.writeGroup(fid, [fullpath '/general/intracellular_ephys']);
             refs = obj.general_intracellular_ephys_sweep_table.export(fid, [fullpath '/general/intracellular_ephys/sweep_table'], refs);
         end
-        io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_keywords)
+            io.writeGroup(fid, [fullpath '/general']);
             if startsWith(class(obj.general_keywords), 'types.untyped.')
                 refs = obj.general_keywords.export(fid, [fullpath '/general/keywords'], refs);
             elseif ~isempty(obj.general_keywords)
                 io.writeDataset(fid, [fullpath '/general/keywords'], obj.general_keywords, 'forceArray');
             end
         end
-        io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_lab)
+            io.writeGroup(fid, [fullpath '/general']);
             if startsWith(class(obj.general_lab), 'types.untyped.')
                 refs = obj.general_lab.export(fid, [fullpath '/general/lab'], refs);
             elseif ~isempty(obj.general_lab)
                 io.writeDataset(fid, [fullpath '/general/lab'], obj.general_lab);
             end
         end
-        io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_notes)
+            io.writeGroup(fid, [fullpath '/general']);
             if startsWith(class(obj.general_notes), 'types.untyped.')
                 refs = obj.general_notes.export(fid, [fullpath '/general/notes'], refs);
             elseif ~isempty(obj.general_notes)
                 io.writeDataset(fid, [fullpath '/general/notes'], obj.general_notes);
             end
         end
-        io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_optogenetics)
+            io.writeGroup(fid, [fullpath '/general']);
             refs = obj.general_optogenetics.export(fid, [fullpath '/general/optogenetics'], refs);
         end
-        io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_optophysiology)
+            io.writeGroup(fid, [fullpath '/general']);
             refs = obj.general_optophysiology.export(fid, [fullpath '/general/optophysiology'], refs);
         end
-        io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_pharmacology)
+            io.writeGroup(fid, [fullpath '/general']);
             if startsWith(class(obj.general_pharmacology), 'types.untyped.')
                 refs = obj.general_pharmacology.export(fid, [fullpath '/general/pharmacology'], refs);
             elseif ~isempty(obj.general_pharmacology)
                 io.writeDataset(fid, [fullpath '/general/pharmacology'], obj.general_pharmacology);
             end
         end
-        io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_protocol)
+            io.writeGroup(fid, [fullpath '/general']);
             if startsWith(class(obj.general_protocol), 'types.untyped.')
                 refs = obj.general_protocol.export(fid, [fullpath '/general/protocol'], refs);
             elseif ~isempty(obj.general_protocol)
                 io.writeDataset(fid, [fullpath '/general/protocol'], obj.general_protocol);
             end
         end
-        io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_related_publications)
+            io.writeGroup(fid, [fullpath '/general']);
             if startsWith(class(obj.general_related_publications), 'types.untyped.')
                 refs = obj.general_related_publications.export(fid, [fullpath '/general/related_publications'], refs);
             elseif ~isempty(obj.general_related_publications)
                 io.writeDataset(fid, [fullpath '/general/related_publications'], obj.general_related_publications, 'forceArray');
             end
         end
-        io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_session_id)
+            io.writeGroup(fid, [fullpath '/general']);
             if startsWith(class(obj.general_session_id), 'types.untyped.')
                 refs = obj.general_session_id.export(fid, [fullpath '/general/session_id'], refs);
             elseif ~isempty(obj.general_session_id)
                 io.writeDataset(fid, [fullpath '/general/session_id'], obj.general_session_id);
             end
         end
-        io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_slices)
+            io.writeGroup(fid, [fullpath '/general']);
             if startsWith(class(obj.general_slices), 'types.untyped.')
                 refs = obj.general_slices.export(fid, [fullpath '/general/slices'], refs);
             elseif ~isempty(obj.general_slices)
                 io.writeDataset(fid, [fullpath '/general/slices'], obj.general_slices);
             end
         end
-        io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_source_script)
+            io.writeGroup(fid, [fullpath '/general']);
             if startsWith(class(obj.general_source_script), 'types.untyped.')
                 refs = obj.general_source_script.export(fid, [fullpath '/general/source_script'], refs);
             elseif ~isempty(obj.general_source_script)
@@ -841,36 +841,36 @@ methods
         if ~isempty(obj.general_source_script) && isempty(obj.general_source_script_file_name)
             obj.throwErrorIfRequiredDependencyMissing('general_source_script_file_name', 'general_source_script', fullpath)
         end
-        io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_stimulus)
+            io.writeGroup(fid, [fullpath '/general']);
             if startsWith(class(obj.general_stimulus), 'types.untyped.')
                 refs = obj.general_stimulus.export(fid, [fullpath '/general/stimulus'], refs);
             elseif ~isempty(obj.general_stimulus)
                 io.writeDataset(fid, [fullpath '/general/stimulus'], obj.general_stimulus);
             end
         end
-        io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_subject)
+            io.writeGroup(fid, [fullpath '/general']);
             refs = obj.general_subject.export(fid, [fullpath '/general/subject'], refs);
         end
-        io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_surgery)
+            io.writeGroup(fid, [fullpath '/general']);
             if startsWith(class(obj.general_surgery), 'types.untyped.')
                 refs = obj.general_surgery.export(fid, [fullpath '/general/surgery'], refs);
             elseif ~isempty(obj.general_surgery)
                 io.writeDataset(fid, [fullpath '/general/surgery'], obj.general_surgery);
             end
         end
-        io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_virus)
+            io.writeGroup(fid, [fullpath '/general']);
             if startsWith(class(obj.general_virus), 'types.untyped.')
                 refs = obj.general_virus.export(fid, [fullpath '/general/virus'], refs);
             elseif ~isempty(obj.general_virus)
                 io.writeDataset(fid, [fullpath '/general/virus'], obj.general_virus);
             end
         end
-        io.writeGroup(fid, [fullpath '/general']);
         if ~isempty(obj.general_was_generated_by)
+            io.writeGroup(fid, [fullpath '/general']);
             if startsWith(class(obj.general_was_generated_by), 'types.untyped.')
                 refs = obj.general_was_generated_by.export(fid, [fullpath '/general/was_generated_by'], refs);
             elseif ~isempty(obj.general_was_generated_by)
@@ -885,16 +885,16 @@ methods
         if ~isempty(obj.intervals)
             refs = obj.intervals.export(fid, [fullpath '/intervals'], refs);
         end
-        io.writeGroup(fid, [fullpath '/intervals']);
         if ~isempty(obj.intervals_epochs)
+            io.writeGroup(fid, [fullpath '/intervals']);
             refs = obj.intervals_epochs.export(fid, [fullpath '/intervals/epochs'], refs);
         end
-        io.writeGroup(fid, [fullpath '/intervals']);
         if ~isempty(obj.intervals_invalid_times)
+            io.writeGroup(fid, [fullpath '/intervals']);
             refs = obj.intervals_invalid_times.export(fid, [fullpath '/intervals/invalid_times'], refs);
         end
-        io.writeGroup(fid, [fullpath '/intervals']);
         if ~isempty(obj.intervals_trials)
+            io.writeGroup(fid, [fullpath '/intervals']);
             refs = obj.intervals_trials.export(fid, [fullpath '/intervals/trials'], refs);
         end
         io.writeAttribute(fid, [fullpath '/nwb_version'], obj.nwb_version);
