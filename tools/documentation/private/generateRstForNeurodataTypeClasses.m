@@ -15,7 +15,11 @@ function generateRstForNeurodataTypeClasses(namespaceName)
 
     docsSourceRootDir = fullfile(misc.getMatnwbDir, 'docs', 'source');
     exportDir = fullfile(docsSourceRootDir, 'pages', 'neurodata_types', namespaceName);
-    if ~isfolder(exportDir); mkdir(exportDir); end
+    if ~isfolder(exportDir)
+        mkdir(exportDir);
+    else
+        pruneGeneratedRstFiles(exportDir)
+    end
 
     functionTemplate = fileread( getRstTemplateFile('function') );
     classTemplate = fileread( getRstTemplateFile('neurodata_class') );
@@ -61,4 +65,11 @@ function generateRstForNeurodataTypeClasses(namespaceName)
     thisRst = fillTemplate(indexTemplate, data);
     rstFilePath = fullfile(exportDir, ['index', '.rst']);
     filewrite(rstFilePath, thisRst);
+end
+
+function pruneGeneratedRstFiles(exportDir)
+    rstFiles = dir(fullfile(exportDir, '*.rst'));
+    for iFile = 1:numel(rstFiles)
+        delete(fullfile(rstFiles(iFile).folder, rstFiles(iFile).name))
+    end
 end
