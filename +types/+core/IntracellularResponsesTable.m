@@ -54,6 +54,10 @@ methods
     %% SETTERS
     function set.response(obj, val)
         obj.response = obj.validate_response(val);
+        obj.postset_response()
+    end
+    function postset_response(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'response');
     end
     %% VALIDATORS
     

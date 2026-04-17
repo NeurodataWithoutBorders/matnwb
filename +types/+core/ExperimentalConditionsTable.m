@@ -60,6 +60,10 @@ methods
     %% SETTERS
     function set.repetitions(obj, val)
         obj.repetitions = obj.validate_repetitions(val);
+        obj.postset_repetitions()
+    end
+    function postset_repetitions(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'repetitions');
     end
     function set.repetitions_index(obj, val)
         obj.repetitions_index = obj.validate_repetitions_index(val);

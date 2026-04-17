@@ -83,18 +83,34 @@ methods
     %% SETTERS
     function set.start_time(obj, val)
         obj.start_time = obj.validate_start_time(val);
+        obj.postset_start_time()
+    end
+    function postset_start_time(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'start_time');
     end
     function set.stop_time(obj, val)
         obj.stop_time = obj.validate_stop_time(val);
+        obj.postset_stop_time()
+    end
+    function postset_stop_time(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'stop_time');
     end
     function set.tags(obj, val)
         obj.tags = obj.validate_tags(val);
+        obj.postset_tags()
+    end
+    function postset_tags(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'tags');
     end
     function set.tags_index(obj, val)
         obj.tags_index = obj.validate_tags_index(val);
     end
     function set.timeseries(obj, val)
         obj.timeseries = obj.validate_timeseries(val);
+        obj.postset_timeseries()
+    end
+    function postset_timeseries(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'timeseries');
     end
     function set.timeseries_index(obj, val)
         obj.timeseries_index = obj.validate_timeseries_index(val);

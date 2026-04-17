@@ -65,12 +65,20 @@ methods
     %% SETTERS
     function set.simultaneous_recordings(obj, val)
         obj.simultaneous_recordings = obj.validate_simultaneous_recordings(val);
+        obj.postset_simultaneous_recordings()
+    end
+    function postset_simultaneous_recordings(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'simultaneous_recordings');
     end
     function set.simultaneous_recordings_index(obj, val)
         obj.simultaneous_recordings_index = obj.validate_simultaneous_recordings_index(val);
     end
     function set.stimulus_type(obj, val)
         obj.stimulus_type = obj.validate_stimulus_type(val);
+        obj.postset_stimulus_type()
+    end
+    function postset_stimulus_type(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'stimulus_type');
     end
     %% VALIDATORS
     

@@ -131,7 +131,7 @@ methods
         obj.waveforms_index_index = p.Results.waveforms_index_index;
         obj.waveforms_sampling_rate = p.Results.waveforms_sampling_rate;
         obj.waveforms_unit = p.Results.waveforms_unit;
-
+        
         % Only execute validation/setup code when called directly in this class's
         % constructor, not when invoked through superclass constructor chain
         if strcmp(class(obj), 'types.core.Units') %#ok<STISA>
@@ -143,21 +143,37 @@ methods
     %% SETTERS
     function set.electrode_group(obj, val)
         obj.electrode_group = obj.validate_electrode_group(val);
+        obj.postset_electrode_group()
+    end
+    function postset_electrode_group(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'electrode_group');
     end
     function set.electrodes(obj, val)
         obj.electrodes = obj.validate_electrodes(val);
+        obj.postset_electrodes()
+    end
+    function postset_electrodes(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'electrodes');
     end
     function set.electrodes_index(obj, val)
         obj.electrodes_index = obj.validate_electrodes_index(val);
     end
     function set.obs_intervals(obj, val)
         obj.obs_intervals = obj.validate_obs_intervals(val);
+        obj.postset_obs_intervals()
+    end
+    function postset_obs_intervals(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'obs_intervals');
     end
     function set.obs_intervals_index(obj, val)
         obj.obs_intervals_index = obj.validate_obs_intervals_index(val);
     end
     function set.spike_times(obj, val)
         obj.spike_times = obj.validate_spike_times(val);
+        obj.postset_spike_times()
+    end
+    function postset_spike_times(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'spike_times');
     end
     function set.spike_times_index(obj, val)
         obj.spike_times_index = obj.validate_spike_times_index(val);
@@ -180,6 +196,10 @@ methods
     end
     function set.waveform_mean(obj, val)
         obj.waveform_mean = obj.validate_waveform_mean(val);
+        obj.postset_waveform_mean()
+    end
+    function postset_waveform_mean(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'waveform_mean');
     end
     function set.waveform_mean_sampling_rate(obj, val)
         obj.waveform_mean_sampling_rate = obj.validate_waveform_mean_sampling_rate(val);
@@ -199,6 +219,10 @@ methods
     end
     function set.waveform_sd(obj, val)
         obj.waveform_sd = obj.validate_waveform_sd(val);
+        obj.postset_waveform_sd()
+    end
+    function postset_waveform_sd(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'waveform_sd');
     end
     function set.waveform_sd_sampling_rate(obj, val)
         obj.waveform_sd_sampling_rate = obj.validate_waveform_sd_sampling_rate(val);
@@ -218,6 +242,10 @@ methods
     end
     function set.waveforms(obj, val)
         obj.waveforms = obj.validate_waveforms(val);
+        obj.postset_waveforms()
+    end
+    function postset_waveforms(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'waveforms');
     end
     function set.waveforms_index(obj, val)
         obj.waveforms_index = obj.validate_waveforms_index(val);

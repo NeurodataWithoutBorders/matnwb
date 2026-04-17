@@ -113,39 +113,87 @@ methods
     %% SETTERS
     function set.filtering(obj, val)
         obj.filtering = obj.validate_filtering(val);
+        obj.postset_filtering()
+    end
+    function postset_filtering(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'filtering');
     end
     function set.group(obj, val)
         obj.group = obj.validate_group(val);
+        obj.postset_group()
+    end
+    function postset_group(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'group');
     end
     function set.group_name(obj, val)
         obj.group_name = obj.validate_group_name(val);
+        obj.postset_group_name()
+    end
+    function postset_group_name(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'group_name');
     end
     function set.imp(obj, val)
         obj.imp = obj.validate_imp(val);
+        obj.postset_imp()
+    end
+    function postset_imp(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'imp');
     end
     function set.location(obj, val)
         obj.location = obj.validate_location(val);
+        obj.postset_location()
+    end
+    function postset_location(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'location');
     end
     function set.reference(obj, val)
         obj.reference = obj.validate_reference(val);
+        obj.postset_reference()
+    end
+    function postset_reference(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'reference');
     end
     function set.rel_x(obj, val)
         obj.rel_x = obj.validate_rel_x(val);
+        obj.postset_rel_x()
+    end
+    function postset_rel_x(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'rel_x');
     end
     function set.rel_y(obj, val)
         obj.rel_y = obj.validate_rel_y(val);
+        obj.postset_rel_y()
+    end
+    function postset_rel_y(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'rel_y');
     end
     function set.rel_z(obj, val)
         obj.rel_z = obj.validate_rel_z(val);
+        obj.postset_rel_z()
+    end
+    function postset_rel_z(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'rel_z');
     end
     function set.x(obj, val)
         obj.x = obj.validate_x(val);
+        obj.postset_x()
+    end
+    function postset_x(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'x');
     end
     function set.y(obj, val)
         obj.y = obj.validate_y(val);
+        obj.postset_y()
+    end
+    function postset_y(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'y');
     end
     function set.z(obj, val)
         obj.z = obj.validate_z(val);
+        obj.postset_z()
+    end
+    function postset_z(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'z');
     end
     %% VALIDATORS
     

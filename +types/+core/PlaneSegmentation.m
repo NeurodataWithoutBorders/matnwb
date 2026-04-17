@@ -88,12 +88,20 @@ methods
     %% SETTERS
     function set.image_mask(obj, val)
         obj.image_mask = obj.validate_image_mask(val);
+        obj.postset_image_mask()
+    end
+    function postset_image_mask(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'image_mask');
     end
     function set.imaging_plane(obj, val)
         obj.imaging_plane = obj.validate_imaging_plane(val);
     end
     function set.pixel_mask(obj, val)
         obj.pixel_mask = obj.validate_pixel_mask(val);
+        obj.postset_pixel_mask()
+    end
+    function postset_pixel_mask(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'pixel_mask');
     end
     function set.pixel_mask_index(obj, val)
         obj.pixel_mask_index = obj.validate_pixel_mask_index(val);
@@ -103,6 +111,10 @@ methods
     end
     function set.voxel_mask(obj, val)
         obj.voxel_mask = obj.validate_voxel_mask(val);
+        obj.postset_voxel_mask()
+    end
+    function postset_voxel_mask(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'voxel_mask');
     end
     function set.voxel_mask_index(obj, val)
         obj.voxel_mask_index = obj.validate_voxel_mask_index(val);

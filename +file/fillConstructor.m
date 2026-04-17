@@ -28,7 +28,7 @@ function functionString = fillConstructor(name, parentname, defaults, props, nam
     end
 
     % Add custom validation for DynamicTable and its descendant classes
-    if isDynamicTableDescendant(name, namespace)
+    if file.isDynamicTableDescendant(name, namespace)
         constructorElements{end+1} = '    types.util.dynamictable.checkConfig(obj);';
     end
     
@@ -268,26 +268,6 @@ function docString = fillConstructorDocString(name, props, namespace, superClass
     ];
 
     docString = char( strjoin(docString, newline) );
-end
-
-function tf = isDynamicTableDescendant(name, namespace)
-% Check if name is DynamicTable or if name is for a type that inherits from DynamicTable
-
-    tf = false;
-
-    if strcmp(name, 'DynamicTable')
-        tf = true;
-        return
-    end
-
-    ancestry = namespace.getRootBranch(name);
-    for iAncestor = 1:length(ancestry)
-        ParentRaw = ancestry{iAncestor};
-        % this is always true, we just use the proper index as typedefs may vary.
-        typeDefInd = isKey(ParentRaw, namespace.TYPEDEF_KEYS);
-        ancestorName = ParentRaw(namespace.TYPEDEF_KEYS{typeDefInd});
-        tf = tf || strcmp(ancestorName, 'DynamicTable');
-    end
 end
 
 % Todo: Mostly duplicate code from file.fillProps. Should consolidate

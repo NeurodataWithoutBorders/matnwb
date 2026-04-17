@@ -60,6 +60,10 @@ methods
     %% SETTERS
     function set.sequential_recordings(obj, val)
         obj.sequential_recordings = obj.validate_sequential_recordings(val);
+        obj.postset_sequential_recordings()
+    end
+    function postset_sequential_recordings(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'sequential_recordings');
     end
     function set.sequential_recordings_index(obj, val)
         obj.sequential_recordings_index = obj.validate_sequential_recordings_index(val);

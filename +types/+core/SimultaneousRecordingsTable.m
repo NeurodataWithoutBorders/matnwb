@@ -60,6 +60,10 @@ methods
     %% SETTERS
     function set.recordings(obj, val)
         obj.recordings = obj.validate_recordings(val);
+        obj.postset_recordings()
+    end
+    function postset_recordings(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'recordings');
     end
     function set.recordings_index(obj, val)
         obj.recordings_index = obj.validate_recordings_index(val);

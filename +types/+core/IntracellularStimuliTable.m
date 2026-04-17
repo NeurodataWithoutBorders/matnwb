@@ -62,9 +62,17 @@ methods
     %% SETTERS
     function set.stimulus(obj, val)
         obj.stimulus = obj.validate_stimulus(val);
+        obj.postset_stimulus()
+    end
+    function postset_stimulus(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'stimulus');
     end
     function set.stimulus_template(obj, val)
         obj.stimulus_template = obj.validate_stimulus_template(val);
+        obj.postset_stimulus_template()
+    end
+    function postset_stimulus_template(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'stimulus_template');
     end
     %% VALIDATORS
     

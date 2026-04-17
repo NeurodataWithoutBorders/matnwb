@@ -18,18 +18,26 @@ function checkConfig(DynamicTable, ignoreList)
         ignoreList (1,:) cell = {};
     end
 
+    detectedColumnNames = getDetectedColumnNames(DynamicTable);
     if isempty(DynamicTable.colnames)
-        assert(isempty(getDetectedColumnNames(DynamicTable)), ...
+        assert(isempty(detectedColumnNames), ...
             'NWB:DynamicTable:CheckConfig:ColumnNamesMismatch', ...
             'All Vector Data/Index columns must have their name ordered in the `colnames` property.');
         return;
     end
 
-    % remove null characters from column names
-    DynamicTable.colnames = cleanColumnNames(DynamicTable.colnames);
+    DynamicTable.colnames = types.util.dynamictable.validateColnames(DynamicTable.colnames);
+    columns = DynamicTable.colnames;
+
+    missingColumnNames = setdiff(detectedColumnNames, columns, 'stable');
+    assert(isempty(missingColumnNames), ...
+        'NWB:DynamicTable:CheckConfig:ColumnNamesMismatch', ...
+        ['All materialized DynamicTable columns must be listed in `colnames`.\n' ...
+        'Missing from `colnames`: %s'], ...
+        strjoin(missingColumnNames, ', '));
 
     % do not check specified columns - useful for classes that build on DynamicTable class
-    columns = setdiff(DynamicTable.colnames, ignoreList);
+    columns = columns(~ismember(columns, ignoreList));
 
     if isempty(columns)
         return
@@ -81,8 +89,7 @@ function names = getDetectedColumnNames(DynamicTable)
     for iProp = 1:length(tableProps)
         propName = tableProps{iProp};
         propValue = DynamicTable.(propName);
-        if ~isempty(propValue) ...
-                && (isa(propValue, 'types.core.VectorData') || isa(propValue, 'types.hdmf_common.VectorData'))
+        if isMaterializedColumn(propValue)
             names{end+1} = propName;
         end
     end
@@ -91,20 +98,11 @@ function names = getDetectedColumnNames(DynamicTable)
     for iVector = 1:length(vectorNames)
         vectorName = vectorNames{iVector};
         Vector = DynamicTable.vectordata.get(vectorName);
-        if isa(Vector, 'types.hdmf_common.VectorData') || isa(Vector, 'types.core.VectorData')
-            if isa(Vector.data, 'types.untyped.DataStub')
-                isDataEmpty = any(Vector.data.dims == 0);
-            elseif isa(Vector.data, 'types.untyped.DataPipe')
-                isDataEmpty = any(size(Vector.data) == 0);
-            else
-                isDataEmpty = isempty(Vector.data);
-            end
-            if ~isDataEmpty
-                names{end+1} = vectorName;
-            end
+        if isMaterializedColumn(Vector)
+            names{end+1} = vectorName;
         end
     end
-
+    names = unique(names, 'stable');
 end
 
 function Vector = getVector(DynamicTable, column)
@@ -135,23 +133,10 @@ function highestName = retrieveHighestIndex(DynamicTable, column)
     end
 end
 
-function colnames = cleanColumnNames(colnames)
-    %CLEANCOLUMNNAMES removes the null character from column names.
-    assert(iscellstr(colnames) || ischar(colnames), ...
-        'NWB:DynamicTable:CheckConfig:InvalidColumnNames', ...
-        'Column names must be a cell array of strings or a character array.');
-    isScalarChar = ischar(colnames);
-    if isScalarChar
-        colnames = {colnames};
-    end
-
-    for iColumn = 1:length(colnames)
-        column = colnames{iColumn};
-        column = column(0 ~= double(column));
-        colnames{iColumn} = column;
-    end
-
-    if isScalarChar
-        colnames = colnames{1};
-    end
+function tf = isMaterializedColumn(value)
+    isVectorData = isa(value, 'types.hdmf_common.VectorData') ...
+        || isa(value, 'types.core.VectorData');
+    isVectorIndex = isa(value, 'types.hdmf_common.VectorIndex') ...
+        || isa(value, 'types.core.VectorIndex');
+    tf = ~isempty(value) && isVectorData && ~isVectorIndex;
 end
