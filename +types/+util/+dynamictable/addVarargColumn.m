@@ -72,15 +72,8 @@ end
 function storageTargets = resolveStorageTargets(dynamicTable, columnNames, columnData)
     storageTargets = cell(size(columnNames));
     for i = 1:length(columnNames)
-        % try
-            storageTargets{i} = types.util.dynamictable.resolveColumnStorage( ...
-                dynamicTable, columnNames{i}, columnData{i});
-        % catch exception
-        %     switch exception.identifier
-        %         case 'NWB:DynamicTable:AddColumn:InvalidPropertyCollision'
-        %             newException = 
-        %     end
-        % end
+        storageTargets{i} = types.util.dynamictable.resolveColumnStorage( ...
+            dynamicTable, columnNames{i}, columnData{i});
     end
 end
 
