@@ -351,6 +351,10 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
             testCase.verifyError( ...
                 @() timeIntervals.addColumn('timeseries', wrongTypeColumn), ...
                 'NWB:CheckType:InvalidNeurodataType');
+
+            % colnames must not have been updated when the assignment failed
+            testCase.verifyEmpty(timeIntervals.colnames, ...
+                'colnames should be unmodified when addColumn throws during assignment');
         end
 
         function testAddColumnRejectsNonColumnPropertyCollision(testCase)

@@ -56,6 +56,7 @@ for i = 1:length(newColNames)
 
         validateColumnHeight(new_cn, currentColumnHeight, tableHeight)
     end
+    assignColumn(DynamicTable, new_cn, new_cv, storageTargets{i});
     if 8 == exist('types.hdmf_common.VectorIndex', 'class')
         if ~isa(new_cv, 'types.hdmf_common.VectorIndex')
             DynamicTable.colnames{end+1} = new_cn;
@@ -65,7 +66,6 @@ for i = 1:length(newColNames)
             DynamicTable.colnames{end+1} = new_cn;
         end
     end
-    assignColumn(DynamicTable, new_cn, new_cv, storageTargets{i});
 end
 end
 
