@@ -1,12 +1,12 @@
-HERD
-====
+DeviceModel
+===========
 
 See also:
-  :nwb-hdmf_experimental-type-schema:`Format Specification<herd>` 
-  or :nwb-hdmf_experimental-type-schema:`Source Specification<sec-herd-src>` for HERD.
+  :nwb-core-type-schema:`Format Specification<devicemodel>` 
+  or :nwb-core-type-schema:`Source Specification<sec-devicemodel-src>` for DeviceModel.
 
-.. mat:module:: types.hdmf_experimental
-.. autoclass:: types.hdmf_experimental.HERD
+.. mat:module:: types.core
+.. autoclass:: types.core.DeviceModel
     :members:
     :show-inheritance:
 

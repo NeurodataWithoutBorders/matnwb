@@ -8,4 +8,3 @@ These are the MatNWB neurodata types from the hdmf_experimental schema specifica
    :caption: Functions
 
    EnumData
-   HERD
