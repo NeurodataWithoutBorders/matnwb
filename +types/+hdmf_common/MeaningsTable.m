@@ -55,11 +55,12 @@ methods
         obj.meaning = p.Results.meaning;
         obj.target = p.Results.target;
         obj.value = p.Results.value;
-        if strcmp(class(obj), 'types.hdmf_common.MeaningsTable')
+        
+        % Only execute validation/setup code when called directly in this class's
+        % constructor, not when invoked through superclass constructor chain
+        if strcmp(class(obj), 'types.hdmf_common.MeaningsTable') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
-        end
-        if strcmp(class(obj), 'types.hdmf_common.MeaningsTable')
             types.util.dynamictable.checkConfig(obj);
         end
     end
