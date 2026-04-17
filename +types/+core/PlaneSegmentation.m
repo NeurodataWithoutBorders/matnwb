@@ -39,6 +39,8 @@ methods
         %
         %  - imaging_plane (ImagingPlane) - Link to ImagingPlane object from which this data was generated.
         %
+        %  - meanings_tables (MeaningsTable) - MeaningsTable objects that provide meanings for values in VectorData columns within this DynamicTable. Tables should be named according to the column they provide meanings for with a "_meanings" suffix. e.g., if a VectorData column is named "stimulus_type", the corresponding MeaningsTable should be named "stimulus_type_meanings".
+        %
         %  - pixel_mask (VectorData) - Pixel masks for each ROI: a list of indices and weights for the ROI. Pixel masks are concatenated and parsing of this dataset is maintained by the PlaneSegmentation. At least one of `image_mask`, `pixel_mask`, or `voxel_mask` is required.
         %
         %  - pixel_mask_index (VectorIndex) - Index into pixel_mask.

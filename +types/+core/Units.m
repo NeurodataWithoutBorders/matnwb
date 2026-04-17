@@ -16,11 +16,11 @@ properties
     electrode_group; %  (VectorData) Electrode group that each spike unit came from.
     electrodes; %  (DynamicTableRegion) Electrode that each spike unit came from, specified using a DynamicTableRegion.
     electrodes_index; %  (VectorIndex) Index into electrodes.
-    obs_intervals; %  (VectorData) Observation intervals for each unit.
+    obs_intervals; %  (VectorData) Observation intervals for each unit, in seconds, relative to the session reference time (i.e. session_start_time or, if defined, timestamps_reference_time). Intervals should be in ascending order and non-overlapping.
     obs_intervals_index; %  (VectorIndex) Index into the obs_intervals dataset.
-    spike_times; %  (VectorData) Spike times for each unit in seconds.
+    spike_times; %  (VectorData) Spike times for each unit, in seconds, relative to the session reference time (i.e. session_start_time or, if defined, timestamps_reference_time). Times should be stored in ascending order.
     spike_times_index; %  (VectorIndex) Index into the spike_times dataset.
-    spike_times_resolution; %  (double) The smallest possible difference between two spike times. Usually 1 divided by the acquisition sampling rate from which spike times were extracted, but could be larger if the acquisition time series was downsampled or smaller if the acquisition time series was smoothed/interpolated and it is possible for the spike time to be between samples.
+    spike_times_resolution; %  (double) The temporal resolution of the spike times, in seconds. This is typically the sampling period (1/sampling_rate) of the acquisition data from which spikes were extracted. If the acquisition data was downsampled before spike sorting, the resolution should be based on the downsampled sampling rate (lower sampling rate, larger resolution value). If interpolation was applied during spike sorting, then spike times may fall between samples of the acquisition data, so the resolution should be the interpolation step size (higher sampling rate, smaller resolution value).
     waveform_mean; %  (VectorData) Spike waveform mean for each spike unit.
     waveform_mean_sampling_rate; %  (single) Sampling rate, in hertz.
     waveform_sd; %  (VectorData) Spike waveform standard deviation for each spike unit.
@@ -53,15 +53,17 @@ methods
         %
         %  - id (ElementIdentifiers) - Array of unique identifiers for the rows of this dynamic table.
         %
-        %  - obs_intervals (VectorData) - Observation intervals for each unit.
+        %  - meanings_tables (MeaningsTable) - MeaningsTable objects that provide meanings for values in VectorData columns within this DynamicTable. Tables should be named according to the column they provide meanings for with a "_meanings" suffix. e.g., if a VectorData column is named "stimulus_type", the corresponding MeaningsTable should be named "stimulus_type_meanings".
+        %
+        %  - obs_intervals (VectorData) - Observation intervals for each unit, in seconds, relative to the session reference time (i.e. session_start_time or, if defined, timestamps_reference_time). Intervals should be in ascending order and non-overlapping.
         %
         %  - obs_intervals_index (VectorIndex) - Index into the obs_intervals dataset.
         %
-        %  - spike_times (VectorData) - Spike times for each unit in seconds.
+        %  - spike_times (VectorData) - Spike times for each unit, in seconds, relative to the session reference time (i.e. session_start_time or, if defined, timestamps_reference_time). Times should be stored in ascending order.
         %
         %  - spike_times_index (VectorIndex) - Index into the spike_times dataset.
         %
-        %  - spike_times_resolution (double) - The smallest possible difference between two spike times. Usually 1 divided by the acquisition sampling rate from which spike times were extracted, but could be larger if the acquisition time series was downsampled or smaller if the acquisition time series was smoothed/interpolated and it is possible for the spike time to be between samples.
+        %  - spike_times_resolution (double) - The temporal resolution of the spike times, in seconds. This is typically the sampling period (1/sampling_rate) of the acquisition data from which spikes were extracted. If the acquisition data was downsampled before spike sorting, the resolution should be based on the downsampled sampling rate (lower sampling rate, larger resolution value). If interpolation was applied during spike sorting, then spike times may fall between samples of the acquisition data, so the resolution should be the interpolation step size (higher sampling rate, smaller resolution value).
         %
         %  - vectordata (VectorData) - Vector columns, including index columns, of this dynamic table.
         %
@@ -131,7 +133,7 @@ methods
         obj.waveforms_index_index = p.Results.waveforms_index_index;
         obj.waveforms_sampling_rate = p.Results.waveforms_sampling_rate;
         obj.waveforms_unit = p.Results.waveforms_unit;
-
+        
         % Only execute validation/setup code when called directly in this class's
         % constructor, not when invoked through superclass constructor chain
         if strcmp(class(obj), 'types.core.Units') %#ok<STISA>

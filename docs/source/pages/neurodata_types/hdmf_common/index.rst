@@ -14,6 +14,8 @@ These are the MatNWB neurodata types from the hdmf_common schema specification.
    DynamicTable
    DynamicTableRegion
    ElementIdentifiers
+   HERD
+   MeaningsTable
    SimpleMultiContainer
    VectorData
    VectorIndex

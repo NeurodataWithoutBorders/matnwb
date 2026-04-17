@@ -28,6 +28,8 @@ methods
         %
         %  - id (ElementIdentifiers) - Array of unique identifiers for the rows of this dynamic table.
         %
+        %  - meanings_tables (MeaningsTable) - MeaningsTable objects that provide meanings for values in VectorData columns within this DynamicTable. Tables should be named according to the column they provide meanings for with a "_meanings" suffix. e.g., if a VectorData column is named "stimulus_type", the corresponding MeaningsTable should be named "stimulus_type_meanings".
+        %
         %  - simultaneous_recordings (DynamicTableRegion) - A reference to one or more rows in the SimultaneousRecordingsTable table.
         %
         %  - simultaneous_recordings_index (VectorIndex) - Index dataset for the simultaneous_recordings column.
