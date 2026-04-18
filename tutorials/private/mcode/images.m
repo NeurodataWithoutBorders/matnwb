@@ -219,9 +219,9 @@ nwb.acquisition.set('ImageCollection', image_collection);
 % is shown at each time point. |timestamps| define when each indexed image was 
 % presented.
 % 
-% For example, if <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IndexSeries.html 
-% |*IndexSeries*|>|.data| is |[0, 1, 0, 1]|, then the first and third presentations 
-% use the first image in <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImageReferences.html 
+% For example, if the |data| property of <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IndexSeries.html 
+% |*IndexSeries*|> is |[0, 1, 0, 1]|, then the first and third presentations use 
+% the first image in <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImageReferences.html 
 % |*ImageReferences*|>, and the second and fourth presentations use the second 
 % image:
 
