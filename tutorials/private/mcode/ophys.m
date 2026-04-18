@@ -69,7 +69,7 @@ nwb.general_subject = subject;
 % |manufacturer|, |model_number|, |model_name|, and |serial_number| are optional, 
 % but recommended. Then create an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OpticalChannel.html 
 % |*OpticalChannel*|> and add both of these to the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImagingPlane.html 
-% |*ImagingPlane*|>|*.*|
+% |*ImagingPlane*|>.
 
 device = types.core.Device( ...
     'description', 'My two-photon microscope', ...
@@ -102,7 +102,7 @@ nwb.general_optophysiology.set(imaging_plane_name, imaging_plane);
 % |*TwoPhotonSeries*|>, like <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
 % |*SpatialSeries*|>, inherits from <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
 % |*TimeSeries*|> and is similar in behavior to <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OnePhotonSeries.html 
-% |*OnePhotonSeries*|>|.|
+% |*OnePhotonSeries*|>.
 % 
 % 
 
@@ -272,7 +272,7 @@ img_seg = types.core.ImageSegmentation();
 img_seg.planesegmentation.set('PlaneSegmentation', plane_segmentation);
 %% 
 % Add the |img_seg| object to the "ophys" <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ProcessingModule.html 
-% |*ProcessingModule*|> we created before, naming it "|ImageSegmentation|"|.|
+% |*ProcessingModule*|> we created before, naming it "|ImageSegmentation|".
 
 ophys_module.nwbdatainterface.set('ImageSegmentation', img_seg);
 % Storing fluorescence of ROIs over time
