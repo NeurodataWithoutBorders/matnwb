@@ -3,6 +3,8 @@
 # Relative paths
 TUTORIAL_FOLDER="tutorials"
 PRIVATE_FOLDER="$TUTORIAL_FOLDER/private"
+TUTORIAL_HTML_FOLDER="docs/source/_static/html/tutorials"
+TUTORIAL_RST_FOLDER="docs/source/pages/tutorials"
 
 # Define file mappings (script files and their corresponding documentation)
 SCRIPT_FILES=("generateCore.m" "generateExtension.m" "nwbRead.m" "nwbExport.m")
@@ -21,18 +23,20 @@ if [[ -n "$TUTORIAL_FILES" ]]; then
         # Get the base name without extension
         BASENAME=$(basename "$TUTORIAL_FILE" .mlx)
 
-        # Find corresponding .html and .m files
-        HTML_FILE=$(find "$TUTORIAL_FOLDER" -name "$BASENAME.html" -print -quit)
+        # Find corresponding generated files
+        HTML_FILE=$(find "$TUTORIAL_HTML_FOLDER" -name "$BASENAME.html" -print -quit)
         MC_FILE=$(find "$PRIVATE_FOLDER" -name "$BASENAME.m" -print -quit)
+        RST_FILE=$(find "$TUTORIAL_RST_FOLDER" -name "$BASENAME.rst" -print -quit)
 
         # Get modification dates (default to 0 if file doesn't exist)
         TUTORIAL_FILE_DATE=$(stat -f "%m" "$TUTORIAL_FILE")
         HTML_FILE_DATE=$(stat -f "%m" "$HTML_FILE" 2>/dev/null || echo 0)
         MC_FILE_DATE=$(stat -f "%m" "$MC_FILE" 2>/dev/null || echo 0)
+        RST_FILE_DATE=$(stat -f "%m" "$RST_FILE" 2>/dev/null || echo 0)
 
-        # Check if .html or .m file is outdated
-        if [[ "$TUTORIAL_FILE_DATE" -gt "$HTML_FILE_DATE" || "$TUTORIAL_FILE_DATE" -gt "$MC_FILE_DATE" ]]; then
-            echo "Error: Please re-export html/m-files for live script \"$BASENAME.mlx\"." >&2
+        # Check if generated files are outdated
+        if [[ "$TUTORIAL_FILE_DATE" -gt "$HTML_FILE_DATE" || "$TUTORIAL_FILE_DATE" -gt "$MC_FILE_DATE" || "$TUTORIAL_FILE_DATE" -gt "$RST_FILE_DATE" ]]; then
+            echo "Error: Please re-export html/m/rst files for live script \"$BASENAME.mlx\"." >&2
             exit 1
         fi
     done
