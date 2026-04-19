@@ -114,6 +114,10 @@ function matnwb_exportTutorials(options)
             end
         end
     end
+
+    if ~isempty(filePaths)
+        generateRstForTutorials()
+    end
 end
 
 function mustStartWithDot(value)
