@@ -25,8 +25,8 @@ When creating a NWB file, the first step is to create the ``NWBFile`` object usi
 .. code-block:: matlab
 
    nwb = NwbFile( ...
-       'session_description', 'mouse in open exploration',...
-       'identifier', char(java.util.UUID.randomUUID), ...
+       'identifier', 'matnwb_optogenetics_tutorial', ...
+       'session_description', 'mouse in open exploration', ...
        'session_start_time', datetime(2018, 4, 25, 2, 30, 3, 'TimeZone', 'local'), ...
        'general_experimenter', 'Last, First M.', ... % optional
        'general_session_id', 'session_1234', ... % optional
@@ -41,7 +41,7 @@ When creating a NWB file, the first step is to create the ``NWBFile`` object usi
    
                                                 nwb_version: '2.9.0'
                                            file_create_date: []
-                                                 identifier: '141f8f81-2f93-4258-a7db-5ef3757e0f02'
+                                                 identifier: 'matnwb_optogenetics_tutorial'
                                         session_description: 'mouse in open exploration'
                                          session_start_time: {[2018-04-25T02:30:03.000000+02:00]}
                                   timestamps_reference_time: []
@@ -151,7 +151,7 @@ With the `OptogeneticStimulusSite <https://matnwb.readthedocs.io/en/latest/pages
    
                                                 nwb_version: '2.9.0'
                                            file_create_date: []
-                                                 identifier: '141f8f81-2f93-4258-a7db-5ef3757e0f02'
+                                                 identifier: 'matnwb_optogenetics_tutorial'
                                         session_description: 'mouse in open exploration'
                                          session_start_time: {[2018-04-25T02:30:03.000000+02:00]}
                                   timestamps_reference_time: []
