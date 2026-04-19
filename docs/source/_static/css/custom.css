@@ -72,3 +72,14 @@ button.copybtn {
     border: none;
     background: none;
 }
+
+.rst-content img.tutorial-media {
+    max-width: 100% !important;
+    height: auto;
+    display: block;
+    margin: 1rem auto;
+}
+
+.rst-content .highlight-text button.copybtn {
+    display: none !important;
+}
