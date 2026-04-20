@@ -38,12 +38,12 @@ An NWB file represents a single session of an experiment. Each file must have a 
 .. code-block:: matlab
 
    nwb = NwbFile( ...
+       'identifier', 'matnwb_ophys_tutorial', ...
        'session_description', 'mouse in open exploration',...
-       'identifier', 'Mouse5_Day3', ...
        'session_start_time', datetime(2018, 4, 25, 2, 30, 3, 'TimeZone', 'local'), ...
        'timestamps_reference_time', datetime(2018, 4, 25, 3, 0, 45, 'TimeZone', 'local'), ...
        'general_experimenter', 'LastName, FirstName', ... % optional
-       'general_session_id', 'session_1234', ... % optional
+       'general_session_id', 'Mouse5_Day3', ... % optional
        'general_institution', 'University of My Institution', ... % optional
        'general_related_publications', {'DOI:10.1016/j.neuron.2016.12.011'}); % optional
    nwb
@@ -55,7 +55,7 @@ An NWB file represents a single session of an experiment. Each file must have a 
    
                                                 nwb_version: '2.9.0'
                                            file_create_date: []
-                                                 identifier: 'Mouse5_Day3'
+                                                 identifier: 'matnwb_ophys_tutorial'
                                         session_description: 'mouse in open exploration'
                                          session_start_time: {[2018-04-25T02:30:03.000000+02:00]}
                                   timestamps_reference_time: {[2018-04-25T03:00:45.000000+02:00]}
@@ -86,7 +86,7 @@ An NWB file represents a single session of an experiment. Each file must have a 
                                        general_pharmacology: ''
                                            general_protocol: ''
                                general_related_publications: {'DOI:10.1016/j.neuron.2016.12.011'}
-                                         general_session_id: 'session_1234'
+                                         general_session_id: 'Mouse5_Day3'
                                              general_slices: ''
                                       general_source_script: ''
                             general_source_script_file_name: ''
@@ -286,7 +286,7 @@ ROIs can be added to a `PlaneSegmentation <https://matnwb.readthedocs.io/en/late
    
    n_rois = 20;
    image_mask = zeros(y, x, n_rois);
-   center = randi(90,2,n_rois);
+   center = generateCenterCoords(90,2,n_rois);
    for i = 1:n_rois
        image_mask(center(1,i):center(1,i)+10, center(2,i):center(2,i)+10, i) = 1;
    end
@@ -382,9 +382,10 @@ Then we create a `RoiResponseSeries <https://matnwb.readthedocs.io/en/latest/pag
 
 .. code-block:: matlab
 
+   data = generateCalciumResponses(n_rois, 100); % [nRoi, nT]
    roi_response_series = types.core.RoiResponseSeries( ...
        'rois', roi_table_region, ...
-       'data', NaN(n_rois, 100), ... % [nRoi, nT]
+       'data', data, ...
        'data_unit', 'lumens', ...
        'starting_time_rate', 3.0, ...
        'starting_time', 0.0);
@@ -440,42 +441,36 @@ This allows you to conveniently work with datasets that are too large to fit in 
 
 .. code-block:: matlab
 
-   read_nwb.processing.get('ophys').nwbdatainterface.get('Fluorescence'). ...
-       roiresponseseries.get('RoiResponseSeries').data.load
+   signals = read_nwb.processing.get('ophys').nwbdatainterface.get('Fluorescence'). ...
+       roiresponseseries.get('RoiResponseSeries').data.load();
+   
+   % Plot signals for all RoIs
+   plot(signals' + (1:size(signals, 1)))
+   xlabel('timepoints'); ylabel('rois')
+   title('Fluorescence signals')
 
-.. code-block:: text
-
-   ans = 20x100
-      NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN
-      NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN
-      NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN
-      NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN
-      NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN
-      NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN
-      NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN
-      NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN
-      NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN
-      NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN
+.. image:: ../../_static/tutorials/media/ophys/figure_0.png
+   :class: tutorial-media
+   :alt: figure_0.png
 
 If all you need is a section of the data, you can read only that section by indexing the ``DataStub`` object like a normal array in MATLAB. This will just read the selected region from disk into RAM. This technique is particularly useful if you are dealing with a large dataset that is too big to fit entirely into your available RAM.
 
 .. code-block:: matlab
 
-   read_nwb.processing.get('ophys'). ...
+   signal_subset = read_nwb.processing.get('ophys'). ...
        nwbdatainterface.get('Fluorescence'). ...
        roiresponseseries.get('RoiResponseSeries'). ...
-       data(1:5, 1:10)
+       data(1:5, 1:20);
+   
+   % Plot signals for a subset of RoIs and timepoints
+   plot(signal_subset' + (1:size(signal_subset, 1)))
+   xlabel('timepoints'); ylabel('rois')
 
-.. code-block:: text
+.. image:: ../../_static/tutorials/media/ophys/figure_1.png
+   :class: tutorial-media
+   :alt: figure_1.png
 
-   ans = 5x10
-      NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN
-      NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN
-      NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN
-      NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN
-      NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN
-
-Finally, read back the image/pixel masks and display the first roi in a figure:
+Finally, read back the image/pixel masks and display the first 10 RoIs in a figure:
 
 .. code-block:: matlab
 
@@ -483,20 +478,43 @@ Finally, read back the image/pixel masks and display the first roi in a figure:
        nwbdatainterface.get('ImageSegmentation'). ...
        planesegmentation.get('PlaneSegmentation');
    
-   if ~isempty(plane_segmentation.image_mask)
-       roi_mask = plane_segmentation.image_mask.data(:,:,1);
-   elseif ~isempty(plane_segmentation.pixel_mask)
-       row = plane_segmentation.getRow(1, 'columns', {'pixel_mask'});
-       pixel_mask = row.pixel_mask{1};
-       roi_mask = zeros(imaging_shape);
-       ind = sub2ind(imaging_shape, pixel_mask.y, pixel_mask.x);
-       roi_mask(ind) = pixel_mask.weight;
-   end    
-   imshow(roi_mask)
+   num_rois = plane_segmentation.id.data.dims(1);
+   
+   % Replace this with the correct image size if needed
+   % Example: imaging_shape = [512, 512];
+   label_image = zeros(imaging_shape);
+   
+   for i = 1:10
+       if ~isempty(plane_segmentation.image_mask)
+           % image_mask is assumed to be height x width x nRois
+           image_mask_data = plane_segmentation.image_mask.data;
+           roi_mask = image_mask_data(:,:,i) > 0;
+           label_image(roi_mask) = i;
+       
+       elseif ~isempty(plane_segmentation.pixel_mask)
+           row = plane_segmentation.getRow(i, 'columns', {'pixel_mask'});
+           pixel_mask = row.pixel_mask{1};
+   
+           % pixel_mask is assumed to have fields x, y, and weight
+           ind = sub2ind(imaging_shape, pixel_mask.y, pixel_mask.x);
+   
+           % Mark ROI pixels with the ROI index
+           label_image(ind) = i;
+       end
+   end
+   
+   % Create one distinct color per ROI
+   cmap = lines(num_rois);
+   
+   % Convert label image to RGB
+   rgb_image = label2rgb(label_image, cmap, 'k', 'shuffle');
+   
+   imshow(rgb_image)
+   title(sprintf('First %d ROIs', 10))
 
-.. image:: ../../_static/tutorials/media/ophys/figure_0.png
+.. image:: ../../_static/tutorials/media/ophys/figure_2.png
    :class: tutorial-media
-   :alt: figure_0.png
+   :alt: figure_2.png
 
 Learn more!
 -----------
@@ -524,3 +542,45 @@ See our tutorials for more details about your data type:
 * `Iterative data write <https://pynwb.readthedocs.io/en/stable/tutorials/advanced_io/plot_iterative_write.html#sphx-glr-tutorials-advanced-io-plot-iterative-write-py>`_
 * `Extensions <https://pynwb.readthedocs.io/en/stable/tutorials/general/extensions.html#sphx-glr-tutorials-general-extensions-py>`_
 * `Advanced HDF5 I/O <https://pynwb.readthedocs.io/en/stable/tutorials/advanced_io/h5dataio.html#sphx-glr-tutorials-advanced-io-h5dataio-py>`_
+
+... Helper functions ...
+------------------------
+
+.. code-block:: matlab
+
+   function X = generateCenterCoords(varargin)
+       % Use reproducible random number generation for consistent 
+       % tutorial output and export.
+       rndGeneratorState = rng(2, 'twister');
+       rngCleanup = onCleanup(@() rng(rndGeneratorState));
+       X = randi(varargin{:});
+   end
+   
+   function data = generateCalciumResponses(nRois, nTime)
+       arguments
+           nRois (1,1) double {mustBeInteger, mustBePositive}
+           nTime (1,1) double {mustBeInteger, mustBePositive}
+       end
+   
+       % Use reproducible random number generation for consistent 
+       % tutorial output and export.
+       rndGeneratorState = rng(2, 'twister');
+       rngCleanup = onCleanup(@() rng(rndGeneratorState));
+   
+       data = zeros(nRois, nTime);
+   
+       eventProbability = 0.05;
+       decayTimeConstant = 3;                 % samples
+       kernelLength = 16;                     % samples
+   
+       kernel = exp(-(0:kernelLength-1) / decayTimeConstant);
+   
+       for i = 1:nRois
+           spikeTrain = rand(1, nTime) < eventProbability;
+           response = conv(double(spikeTrain), kernel, "same");
+           noise = 0.05 * randn(1, nTime);
+           baseline = 0.1 * randn;
+   
+           data(i, :) = baseline + response + noise;
+       end
+   end
