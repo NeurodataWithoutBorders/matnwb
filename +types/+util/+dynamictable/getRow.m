@@ -10,7 +10,7 @@ function subTable = getRow(DynamicTable, ind, varargin)
 
 validateattributes(DynamicTable,...
     {'types.core.DynamicTable', 'types.hdmf_common.DynamicTable'}, {'scalar'});
-validateattributes(ind, {'numeric'}, {'vector'});
+validateattributes(ind, {'numeric'}, {'integer', 'vector'});
 
 p = inputParser;
 addParameter(p, 'columns', DynamicTable.colnames, @(x)iscellstr(x));
@@ -20,15 +20,14 @@ parse(p, varargin{:});
 columns = p.Results.columns;
 row = cell(1, length(columns));
 
-if isempty(DynamicTable.id)
-    DynamicTable.id = types.hdmf_common.ElementIdentifiers();
-    return;
-end
-
 if p.Results.useId
+    assert(~isempty(DynamicTable.id), ...
+        'NWB:DynamicTable:GetRow:MissingId', ...
+        'Cannot retrieve rows by `id` because the DynamicTable has no `id` column.');
     ind = getIndById(DynamicTable, ind);
 else
     validateattributes(ind, {'numeric'}, {'positive', 'vector'});
+    validateRowIndices(DynamicTable, ind);
 end
 
 for i = 1:length(columns)
@@ -103,7 +102,11 @@ for i = 1:length(columns)
         row{i} = rowStruct .';
     end
 end
-subTable = table(row{:}, 'VariableNames', columns);
+if isempty(columns)
+    subTable = table('Size', [numel(ind), 0], 'VariableTypes', {}, 'VariableNames', {});
+else
+    subTable = table(row{:}, 'VariableNames', columns);
+end
 end
 
 function selected = select(DynamicTable, colIndStack, matInd)
@@ -217,6 +220,15 @@ end
 [idMatch, ind] = ismember(id, ids);
 assert(all(idMatch), 'NWB:DynamicTable:GetRow:InvalidId',...
     'Invalid ids found. If you wish to use row indices directly, remove the `useId` flag.');
+end
+
+function validateRowIndices(dynamicTable, rowIndices)
+    tableHeight = types.util.dynamictable.internal.getTableHeight(dynamicTable);
+
+    assert(all(rowIndices <= tableHeight), ...
+        'NWB:DynamicTable:GetRow:RowOutOfBounds', ...
+        'Requested row index (%s) exceeds the DynamicTable height of %d.', ...
+        strjoin(compose('%d', rowIndices(rowIndices > tableHeight) ), ', '), tableHeight);
 end
 
 function ME = InvalidVectorDataShapeError(column_name)
