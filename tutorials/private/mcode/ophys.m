@@ -406,11 +406,7 @@ for i = 1:10
     end
 end
 
-% Create one distinct color per ROI
-cmap = lines(num_rois);
-
-% Convert label image to RGB
-rgb_image = label2rgb(label_image, cmap, 'k', 'shuffle');
+rgb_image = convertLabelImage2RGBImage(label_image); % Local helper function
 
 imshow(rgb_image)
 title(sprintf('First %d ROIs', 10))
@@ -438,7 +434,7 @@ title(sprintf('First %d ROIs', 10))
 % Extensions>
 % * <https://pynwb.readthedocs.io/en/stable/tutorials/advanced_io/h5dataio.html#sphx-glr-tutorials-advanced-io-h5dataio-py 
 % Advanced HDF5 I/O>
-%% ... Helper functions ...
+%% Helper functions
 
 function X = generateCenterCoords(varargin)
     % Use reproducible random number generation for consistent 
@@ -475,4 +471,15 @@ function data = generateCalciumResponses(nRois, nTime)
 
         data(i, :) = baseline + response + noise;
     end
+end
+
+function rgbImage = convertLabelImage2RGBImage(labelImage)
+    numLabels = numel(unique(labelImage(labelImage>0)));
+
+    % Create one distinct color per label
+    cmap = lines(numLabels);
+    
+    % Convert label image to RGB
+    map = [0 0 0; cmap]; % black for background plus label colors 
+    rgbImage = reshape(map(labelImage(:)+1, :), [size(labelImage), 3]);
 end
