@@ -503,11 +503,7 @@ Finally, read back the image/pixel masks and display the first 10 RoIs in a figu
        end
    end
    
-   % Create one distinct color per ROI
-   cmap = lines(num_rois);
-   
-   % Convert label image to RGB
-   rgb_image = label2rgb(label_image, cmap, 'k', 'shuffle');
+   rgb_image = convertLabelImage2RGBImage(label_image); % Local helper function
    
    imshow(rgb_image)
    title(sprintf('First %d ROIs', 10))
@@ -543,8 +539,8 @@ See our tutorials for more details about your data type:
 * `Extensions <https://pynwb.readthedocs.io/en/stable/tutorials/general/extensions.html#sphx-glr-tutorials-general-extensions-py>`_
 * `Advanced HDF5 I/O <https://pynwb.readthedocs.io/en/stable/tutorials/advanced_io/h5dataio.html#sphx-glr-tutorials-advanced-io-h5dataio-py>`_
 
-... Helper functions ...
-------------------------
+Helper functions
+----------------
 
 .. code-block:: matlab
 
@@ -583,4 +579,15 @@ See our tutorials for more details about your data type:
    
            data(i, :) = baseline + response + noise;
        end
+   end
+   
+   function rgbImage = convertLabelImage2RGBImage(labelImage)
+       numLabels = numel(unique(labelImage(labelImage>0)));
+   
+       % Create one distinct color per label
+       cmap = lines(numLabels);
+       
+       % Convert label image to RGB
+       map = [0 0 0; cmap]; % black for background plus label colors 
+       rgbImage = reshape(map(labelImage(:)+1, :), [size(labelImage), 3]);
    end
