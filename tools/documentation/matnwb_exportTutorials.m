@@ -113,10 +113,8 @@ function matnwb_exportTutorials(options)
                 postProcessLivescriptHtml(targetFilePath)
             end
         end
-    end
 
-    if ~isempty(filePaths)
-        generateRstForTutorials()
+        generateRstForTutorial(string(sourcePath))
     end
 end
 
