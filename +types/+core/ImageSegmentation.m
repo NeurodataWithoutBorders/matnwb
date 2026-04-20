@@ -9,7 +9,7 @@ classdef ImageSegmentation < types.core.NWBDataInterface & types.untyped.GroupCl
 properties
     planesegmentation; % REQUIRED (PlaneSegmentation) Results from image segmentation of a specific imaging plane.
 end
-properties (Access = protected)
+properties (Constant, Access = private)
     GroupPropertyNames = {'planesegmentation'}
 end
 

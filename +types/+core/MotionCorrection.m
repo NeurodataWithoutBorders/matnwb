@@ -9,7 +9,7 @@ classdef MotionCorrection < types.core.NWBDataInterface & types.untyped.GroupCla
 properties
     correctedimagestack; % REQUIRED (CorrectedImageStack) Results from motion correction of an image stack.
 end
-properties (Access = protected)
+properties (Constant, Access = private)
     GroupPropertyNames = {'correctedimagestack'}
 end
 

@@ -9,7 +9,7 @@ classdef BehavioralEpochs < types.core.NWBDataInterface & types.untyped.GroupCla
 properties
     intervalseries; % REQUIRED (IntervalSeries) IntervalSeries object containing start and stop times of epochs.
 end
-properties (Access = protected)
+properties (Constant, Access = private)
     GroupPropertyNames = {'intervalseries'}
 end
 

@@ -23,7 +23,7 @@ function functionString = fillConstructor(name, parentname, defaults, props, nam
         '    types.util.checkUnset(obj, unique(cellStringArguments));'};
     
     % Include the setup function for the HasUnnamedGroups mixin if applicable
-    if isa(class, 'file.Group') && class.hasAnonGroups
+    if isa(class, 'file.Group') && (class.hasAnonGroups || class.hasAnonData)
         constructorElements{end+1} = '    obj.setupHasUnnamedGroupsMixin();';
     end
 
