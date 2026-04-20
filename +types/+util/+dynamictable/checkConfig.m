@@ -46,8 +46,9 @@ function checkConfig(DynamicTable, ignoreList)
     columnHeights = zeros(length(columns), 1);
     columnNames = strings(length(columns), 1);
     for iCol = 1:length(columns)
-        columnName = retrieveHighestIndex(DynamicTable, columns{iCol});
-        columnHeight = unique(types.util.dynamictable.getColumnHeight(getVector(DynamicTable, columnName)));
+        [columnHeight, columnName] = types.util.dynamictable.internal.getColumnRowHeight( ...
+            DynamicTable, columns{iCol});
+        columnHeight = unique(columnHeight);
 
         assert(isscalar(columnHeight), ...
             'NWB:DynamicTable:CheckConfig:InvalidShape', ...
@@ -73,7 +74,7 @@ function checkConfig(DynamicTable, ignoreList)
         return;
     end
 
-    numIds = types.util.dynamictable.getColumnHeight(DynamicTable.id);
+    numIds = types.util.dynamictable.internal.getColumnHeight(DynamicTable.id);
     assert(tableHeight == numIds, ...
         'NWB:DynamicTable:CheckConfig:InvalidId', ...
         'Special column `id` of DynamicTable needs to match the detected height of %d. Found %d IDs.', ...
@@ -105,38 +106,31 @@ function names = getDetectedColumnNames(DynamicTable)
     names = unique(names, 'stable');
 end
 
-function Vector = getVector(DynamicTable, column)
-    if isprop(DynamicTable, column)
-        Vector = DynamicTable.(column);
-    elseif isprop(DynamicTable, 'vectorindex') && isKey(DynamicTable.vectorindex, column)
-        Vector = DynamicTable.vectorindex.get(column);
-    elseif isKey(DynamicTable.vectordata, column)
-        Vector = DynamicTable.vectordata.get(column);
-    else
-        Vector = [];
-    end
-end
-
-function highestName = retrieveHighestIndex(DynamicTable, column)
-    columnHistory = {};
-    highestName = column;
-    while true
-        indexName = types.util.dynamictable.getIndex(DynamicTable, highestName);
-        if isempty(indexName)
-            return;
-        end
-        assert(~any(strcmp(columnHistory, indexName)), ...
-            'NWB:DynamicTable:CheckConfig:InfiniteReferenceLoop', ...
-            'Invalid Table shape detected: There is an infinite loop in your VectorIndex objects.');
-        columnHistory{end+1} = indexName;
-        highestName = indexName;
-    end
-end
-
 function tf = isMaterializedColumn(value)
     isVectorData = isa(value, 'types.hdmf_common.VectorData') ...
         || isa(value, 'types.core.VectorData');
     isVectorIndex = isa(value, 'types.hdmf_common.VectorIndex') ...
         || isa(value, 'types.core.VectorIndex');
     tf = ~isempty(value) && isVectorData && ~isVectorIndex;
+end
+
+function colnames = cleanColumnNames(colnames)
+    %CLEANCOLUMNNAMES removes the null character from column names.
+    assert(iscellstr(colnames) || ischar(colnames), ...
+        'NWB:DynamicTable:CheckConfig:InvalidColumnNames', ...
+        'Column names must be a cell array of strings or a character array.');
+    isScalarChar = ischar(colnames);
+    if isScalarChar
+        colnames = {colnames};
+    end
+
+    for iColumn = 1:length(colnames)
+        column = colnames{iColumn};
+        column = column(0 ~= double(column));
+        colnames{iColumn} = column;
+    end
+
+    if isScalarChar
+        colnames = colnames{1};
+    end
 end
