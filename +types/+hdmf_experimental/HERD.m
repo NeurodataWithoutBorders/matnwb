@@ -187,17 +187,17 @@ methods
         end
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.hdmf_common.Container(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.hdmf_common.Container(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
-        refs = obj.entities.export(fid, [fullpath '/entities'], refs);
-        refs = obj.entity_keys.export(fid, [fullpath '/entity_keys'], refs);
-        refs = obj.files.export(fid, [fullpath '/files'], refs);
-        refs = obj.keys.export(fid, [fullpath '/keys'], refs);
-        refs = obj.object_keys.export(fid, [fullpath '/object_keys'], refs);
-        refs = obj.objects.export(fid, [fullpath '/objects'], refs);
+        refs = obj.entities.export(writer, [fullpath '/entities'], refs);
+        refs = obj.entity_keys.export(writer, [fullpath '/entity_keys'], refs);
+        refs = obj.files.export(writer, [fullpath '/files'], refs);
+        refs = obj.keys.export(writer, [fullpath '/keys'], refs);
+        refs = obj.object_keys.export(writer, [fullpath '/object_keys'], refs);
+        refs = obj.objects.export(writer, [fullpath '/objects'], refs);
     end
 end
 

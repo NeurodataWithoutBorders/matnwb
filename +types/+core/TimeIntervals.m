@@ -135,24 +135,24 @@ methods
         types.util.checkType('timeseries_index', 'types.hdmf_common.VectorIndex', val);
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.hdmf_common.DynamicTable(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.hdmf_common.DynamicTable(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
-        refs = obj.start_time.export(fid, [fullpath '/start_time'], refs);
-        refs = obj.stop_time.export(fid, [fullpath '/stop_time'], refs);
+        refs = obj.start_time.export(writer, [fullpath '/start_time'], refs);
+        refs = obj.stop_time.export(writer, [fullpath '/stop_time'], refs);
         if ~isempty(obj.tags)
-            refs = obj.tags.export(fid, [fullpath '/tags'], refs);
+            refs = obj.tags.export(writer, [fullpath '/tags'], refs);
         end
         if ~isempty(obj.tags_index)
-            refs = obj.tags_index.export(fid, [fullpath '/tags_index'], refs);
+            refs = obj.tags_index.export(writer, [fullpath '/tags_index'], refs);
         end
         if ~isempty(obj.timeseries)
-            refs = obj.timeseries.export(fid, [fullpath '/timeseries'], refs);
+            refs = obj.timeseries.export(writer, [fullpath '/timeseries'], refs);
         end
         if ~isempty(obj.timeseries_index)
-            refs = obj.timeseries_index.export(fid, [fullpath '/timeseries_index'], refs);
+            refs = obj.timeseries_index.export(writer, [fullpath '/timeseries_index'], refs);
         end
     end
 end

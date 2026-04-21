@@ -83,12 +83,12 @@ methods
         types.util.checkType('rois', 'types.hdmf_common.DynamicTableRegion', val);
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.TimeSeries(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.core.TimeSeries(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
-        refs = obj.rois.export(fid, [fullpath '/rois'], refs);
+        refs = obj.rois.export(writer, [fullpath '/rois'], refs);
     end
 end
 

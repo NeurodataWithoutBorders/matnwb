@@ -194,80 +194,80 @@ methods
         types.util.validateShape('whole_cell_series_resistance_comp', {[1]}, val)
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.PatchClampSeries(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.core.PatchClampSeries(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
         if ~isempty(obj.capacitance_fast)
             if startsWith(class(obj.capacitance_fast), 'types.untyped.')
-                refs = obj.capacitance_fast.export(fid, [fullpath '/capacitance_fast'], refs);
+                refs = obj.capacitance_fast.export(writer, [fullpath '/capacitance_fast'], refs);
             elseif ~isempty(obj.capacitance_fast)
-                io.writeDataset(fid, [fullpath '/capacitance_fast'], obj.capacitance_fast);
+                writer.writeValue([fullpath '/capacitance_fast'], obj.capacitance_fast);
             end
         end
         if ~isempty(obj.capacitance_fast) && ~isa(obj.capacitance_fast, 'types.untyped.SoftLink') && ~isa(obj.capacitance_fast, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/capacitance_fast/unit'], obj.capacitance_fast_unit);
+            writer.writeAttribute([fullpath '/capacitance_fast/unit'], obj.capacitance_fast_unit);
         end
         if ~isempty(obj.capacitance_slow)
             if startsWith(class(obj.capacitance_slow), 'types.untyped.')
-                refs = obj.capacitance_slow.export(fid, [fullpath '/capacitance_slow'], refs);
+                refs = obj.capacitance_slow.export(writer, [fullpath '/capacitance_slow'], refs);
             elseif ~isempty(obj.capacitance_slow)
-                io.writeDataset(fid, [fullpath '/capacitance_slow'], obj.capacitance_slow);
+                writer.writeValue([fullpath '/capacitance_slow'], obj.capacitance_slow);
             end
         end
         if ~isempty(obj.capacitance_slow) && ~isa(obj.capacitance_slow, 'types.untyped.SoftLink') && ~isa(obj.capacitance_slow, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/capacitance_slow/unit'], obj.capacitance_slow_unit);
+            writer.writeAttribute([fullpath '/capacitance_slow/unit'], obj.capacitance_slow_unit);
         end
         if ~isempty(obj.resistance_comp_bandwidth)
             if startsWith(class(obj.resistance_comp_bandwidth), 'types.untyped.')
-                refs = obj.resistance_comp_bandwidth.export(fid, [fullpath '/resistance_comp_bandwidth'], refs);
+                refs = obj.resistance_comp_bandwidth.export(writer, [fullpath '/resistance_comp_bandwidth'], refs);
             elseif ~isempty(obj.resistance_comp_bandwidth)
-                io.writeDataset(fid, [fullpath '/resistance_comp_bandwidth'], obj.resistance_comp_bandwidth);
+                writer.writeValue([fullpath '/resistance_comp_bandwidth'], obj.resistance_comp_bandwidth);
             end
         end
         if ~isempty(obj.resistance_comp_bandwidth) && ~isa(obj.resistance_comp_bandwidth, 'types.untyped.SoftLink') && ~isa(obj.resistance_comp_bandwidth, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/resistance_comp_bandwidth/unit'], obj.resistance_comp_bandwidth_unit);
+            writer.writeAttribute([fullpath '/resistance_comp_bandwidth/unit'], obj.resistance_comp_bandwidth_unit);
         end
         if ~isempty(obj.resistance_comp_correction)
             if startsWith(class(obj.resistance_comp_correction), 'types.untyped.')
-                refs = obj.resistance_comp_correction.export(fid, [fullpath '/resistance_comp_correction'], refs);
+                refs = obj.resistance_comp_correction.export(writer, [fullpath '/resistance_comp_correction'], refs);
             elseif ~isempty(obj.resistance_comp_correction)
-                io.writeDataset(fid, [fullpath '/resistance_comp_correction'], obj.resistance_comp_correction);
+                writer.writeValue([fullpath '/resistance_comp_correction'], obj.resistance_comp_correction);
             end
         end
         if ~isempty(obj.resistance_comp_correction) && ~isa(obj.resistance_comp_correction, 'types.untyped.SoftLink') && ~isa(obj.resistance_comp_correction, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/resistance_comp_correction/unit'], obj.resistance_comp_correction_unit);
+            writer.writeAttribute([fullpath '/resistance_comp_correction/unit'], obj.resistance_comp_correction_unit);
         end
         if ~isempty(obj.resistance_comp_prediction)
             if startsWith(class(obj.resistance_comp_prediction), 'types.untyped.')
-                refs = obj.resistance_comp_prediction.export(fid, [fullpath '/resistance_comp_prediction'], refs);
+                refs = obj.resistance_comp_prediction.export(writer, [fullpath '/resistance_comp_prediction'], refs);
             elseif ~isempty(obj.resistance_comp_prediction)
-                io.writeDataset(fid, [fullpath '/resistance_comp_prediction'], obj.resistance_comp_prediction);
+                writer.writeValue([fullpath '/resistance_comp_prediction'], obj.resistance_comp_prediction);
             end
         end
         if ~isempty(obj.resistance_comp_prediction) && ~isa(obj.resistance_comp_prediction, 'types.untyped.SoftLink') && ~isa(obj.resistance_comp_prediction, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/resistance_comp_prediction/unit'], obj.resistance_comp_prediction_unit);
+            writer.writeAttribute([fullpath '/resistance_comp_prediction/unit'], obj.resistance_comp_prediction_unit);
         end
         if ~isempty(obj.whole_cell_capacitance_comp)
             if startsWith(class(obj.whole_cell_capacitance_comp), 'types.untyped.')
-                refs = obj.whole_cell_capacitance_comp.export(fid, [fullpath '/whole_cell_capacitance_comp'], refs);
+                refs = obj.whole_cell_capacitance_comp.export(writer, [fullpath '/whole_cell_capacitance_comp'], refs);
             elseif ~isempty(obj.whole_cell_capacitance_comp)
-                io.writeDataset(fid, [fullpath '/whole_cell_capacitance_comp'], obj.whole_cell_capacitance_comp);
+                writer.writeValue([fullpath '/whole_cell_capacitance_comp'], obj.whole_cell_capacitance_comp);
             end
         end
         if ~isempty(obj.whole_cell_capacitance_comp) && ~isa(obj.whole_cell_capacitance_comp, 'types.untyped.SoftLink') && ~isa(obj.whole_cell_capacitance_comp, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/whole_cell_capacitance_comp/unit'], obj.whole_cell_capacitance_comp_unit);
+            writer.writeAttribute([fullpath '/whole_cell_capacitance_comp/unit'], obj.whole_cell_capacitance_comp_unit);
         end
         if ~isempty(obj.whole_cell_series_resistance_comp)
             if startsWith(class(obj.whole_cell_series_resistance_comp), 'types.untyped.')
-                refs = obj.whole_cell_series_resistance_comp.export(fid, [fullpath '/whole_cell_series_resistance_comp'], refs);
+                refs = obj.whole_cell_series_resistance_comp.export(writer, [fullpath '/whole_cell_series_resistance_comp'], refs);
             elseif ~isempty(obj.whole_cell_series_resistance_comp)
-                io.writeDataset(fid, [fullpath '/whole_cell_series_resistance_comp'], obj.whole_cell_series_resistance_comp);
+                writer.writeValue([fullpath '/whole_cell_series_resistance_comp'], obj.whole_cell_series_resistance_comp);
             end
         end
         if ~isempty(obj.whole_cell_series_resistance_comp) && ~isa(obj.whole_cell_series_resistance_comp, 'types.untyped.SoftLink') && ~isa(obj.whole_cell_series_resistance_comp, 'types.untyped.ExternalLink')
-            io.writeAttribute(fid, [fullpath '/whole_cell_series_resistance_comp/unit'], obj.whole_cell_series_resistance_comp_unit);
+            writer.writeAttribute([fullpath '/whole_cell_series_resistance_comp/unit'], obj.whole_cell_series_resistance_comp_unit);
         end
     end
 end

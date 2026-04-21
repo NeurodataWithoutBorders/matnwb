@@ -30,13 +30,14 @@ classdef NwbFile < types.core.NWBFile
             end
         end
 
-        function export(obj, filename, mode)
+        function export(obj, filename, mode, options)
         % EXPORT - Export NWB file object
 
             arguments
                 obj (1,1) NwbFile
                 filename (1,1) string
                 mode (1,1) string {mustBeMember(mode, ["edit", "overwrite"])} = "edit"
+                options.StorageBackend (1,1) string = "hdf5"
             end
 
             % add to file create date
@@ -62,30 +63,17 @@ classdef NwbFile < types.core.NWBFile
                 obj.timestamps_reference_time = obj.session_start_time;
             end
 
-            isEditingFile = false;
-
-            if isfile(filename)
-                if mode == "edit"
-                    output_file_id = H5F.open(filename, 'H5F_ACC_RDWR', 'H5P_DEFAULT');
-                    isEditingFile = true;
-                elseif mode == "overwrite"
-                    output_file_id = H5F.create(filename, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
-                end
-            else
-                output_file_id = H5F.create(filename);
-            end
+            writer = io.backend.BackendFactory.createWriter(filename, ...
+                Mode=mode, StorageBackend=options.StorageBackend);
 
             try
-                obj.embedSpecifications(output_file_id)
-                refs = export@types.core.NWBFile(obj, output_file_id, '/', {});
-                obj.resolveReferences(output_file_id, refs);
-                H5F.close(output_file_id);
+                obj.embedSpecifications(writer)
+                refs = export@types.core.NWBFile(obj, writer, '/', {});
+                obj.resolveReferences(writer, refs);
+                writer.close();
             catch ME
                 obj.file_create_date(end) = [];
-                H5F.close(output_file_id);
-                if ~isEditingFile
-                    delete(filename);
-                end
+                writer.abort();
                 rethrow(ME);
             end
         end
@@ -369,7 +357,7 @@ classdef NwbFile < types.core.NWBFile
             end
         end
 
-        function embedSpecifications(obj, output_file_id)
+        function embedSpecifications(obj, writer)
             jsonSpecs = schemes.exportJson();
 
             if isempty(jsonSpecs)
@@ -396,21 +384,22 @@ classdef NwbFile < types.core.NWBFile
             jsonSpecs = jsonSpecs(keepIdx);
 
             io.spec.writeEmbeddedSpecifications(...
-                output_file_id, ...
+                writer, ...
                 jsonSpecs);
 
             io.spec.validateEmbeddedSpecifications(...
-                output_file_id, ...
+                writer.FileId, ...
                 strrep(namespaceNames, '_', '-'))
         end
         
-        function resolveReferences(obj, fid, references)
+        function resolveReferences(obj, writer, references)
+            writer = io.backend.base.Writer.ensure(writer);
             while ~isempty(references)
                 resolved = false(size(references));
                 for iRef = 1:length(references)
                     refSource = references{iRef};
                     sourceObj = obj.resolve(refSource);
-                    unresolvedRefs = sourceObj.export(fid, refSource, {});
+                    unresolvedRefs = sourceObj.export(writer, refSource, {});
                     exportSuccess = isempty(unresolvedRefs);
                     resolved(iRef) = exportSuccess;
                 end

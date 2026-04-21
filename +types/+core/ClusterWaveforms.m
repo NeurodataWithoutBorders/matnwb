@@ -89,26 +89,26 @@ methods
         types.util.validateShape('waveform_sd', {[Inf,Inf]}, val)
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.NWBDataInterface(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.core.NWBDataInterface(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
-        refs = obj.clustering_interface.export(fid, [fullpath '/clustering_interface'], refs);
+        refs = obj.clustering_interface.export(writer, [fullpath '/clustering_interface'], refs);
         if startsWith(class(obj.waveform_filtering), 'types.untyped.')
-            refs = obj.waveform_filtering.export(fid, [fullpath '/waveform_filtering'], refs);
+            refs = obj.waveform_filtering.export(writer, [fullpath '/waveform_filtering'], refs);
         elseif ~isempty(obj.waveform_filtering)
-            io.writeDataset(fid, [fullpath '/waveform_filtering'], obj.waveform_filtering);
+            writer.writeValue([fullpath '/waveform_filtering'], obj.waveform_filtering);
         end
         if startsWith(class(obj.waveform_mean), 'types.untyped.')
-            refs = obj.waveform_mean.export(fid, [fullpath '/waveform_mean'], refs);
+            refs = obj.waveform_mean.export(writer, [fullpath '/waveform_mean'], refs);
         elseif ~isempty(obj.waveform_mean)
-            io.writeDataset(fid, [fullpath '/waveform_mean'], obj.waveform_mean, 'forceArray', 'forceMatrix');
+            writer.writeValue([fullpath '/waveform_mean'], obj.waveform_mean, 'forceArray', 'forceMatrix');
         end
         if startsWith(class(obj.waveform_sd), 'types.untyped.')
-            refs = obj.waveform_sd.export(fid, [fullpath '/waveform_sd'], refs);
+            refs = obj.waveform_sd.export(writer, [fullpath '/waveform_sd'], refs);
         elseif ~isempty(obj.waveform_sd)
-            io.writeDataset(fid, [fullpath '/waveform_sd'], obj.waveform_sd, 'forceArray', 'forceMatrix');
+            writer.writeValue([fullpath '/waveform_sd'], obj.waveform_sd, 'forceArray', 'forceMatrix');
         end
     end
 end
