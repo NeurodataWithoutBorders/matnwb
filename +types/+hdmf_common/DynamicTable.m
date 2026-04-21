@@ -79,6 +79,7 @@ methods
     function val = validate_colnames(obj, val)
         val = types.util.checkDtype('colnames', 'char', val);
         types.util.validateShape('colnames', {[Inf]}, val)
+        val = types.util.dynamictable.validateColnames(val);
     end
     function val = validate_description(obj, val)
         val = types.util.checkDtype('description', 'char', val);
@@ -109,6 +110,11 @@ methods
         if ~isempty(obj.vectordata) && obj.vectordata.Count ~= 0
             refs = obj.vectordata.export(writer, fullpath, refs);
         end
+    end
+    %% CUSTOM CONSTRAINTS
+    function checkCustomConstraint(obj)
+        checkCustomConstraint@types.untyped.MetaClass(obj)
+        types.util.dynamictable.checkConfig(obj)
     end
     %% TABLE METHODS
     function addRow(obj, varargin)

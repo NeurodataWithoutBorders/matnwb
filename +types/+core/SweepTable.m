@@ -65,12 +65,20 @@ methods
     %% SETTERS
     function set.series(obj, val)
         obj.series = obj.validate_series(val);
+        obj.postset_series()
+    end
+    function postset_series(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'series');
     end
     function set.series_index(obj, val)
         obj.series_index = obj.validate_series_index(val);
     end
     function set.sweep_number(obj, val)
         obj.sweep_number = obj.validate_sweep_number(val);
+        obj.postset_sweep_number()
+    end
+    function postset_sweep_number(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'sweep_number');
     end
     %% VALIDATORS
     

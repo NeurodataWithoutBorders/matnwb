@@ -1,35 +1,54 @@
 function checkConfig(DynamicTable, ignoreList)
-    % CHECKCONFIG Given a DynamicTable object, this functions checks for proper
-    % DynamicTable configuration
-    %
-    %   checkConfig(DYNAMICTABLE) runs without error if the DynamicTable is
-    %   configured correctly
-    %
-    %   checkConfig(DYNAMICTABLE,IGNORELIST) performs checks on columns not in
-    %   IGNORELIST cell array
-    %
-    %
-    %  A properly configured DynamicTable should meet the following criteria:
-    %  1) The length of all columns in the dynamic table is the same.
-    %  2) All rows have a corresponding id. If none exist, this function creates them.
-    %  3) No index loops exist.
+% CHECKCONFIG Check a DynamicTable for valid column registration and shape.
+%
+%   checkConfig(DYNAMICTABLE) runs without error if DYNAMICTABLE is
+%   configured correctly.
+%
+%   checkConfig(DYNAMICTABLE, IGNORELIST) skips columns named in the
+%   IGNORELIST cell array when checking for registration in `colnames` and
+%   when comparing column row counts.
+%
+%   A properly configured DynamicTable meets the following criteria:
+%   1) All materialized columns are listed in `colnames`, except those in
+%      IGNORELIST.
+%   2) The row counts of all checked columns are consistent. For ragged
+%      columns, this follows VectorIndex links to the outermost index.
+%   3) Compound columns have a consistent height across all fields.
+%   4) All rows have a corresponding id. If none exist, this function
+%      creates them.
+%   5) No infinite VectorIndex reference loops exist.
+    
     arguments
         DynamicTable
         ignoreList (1,:) cell = {};
     end
 
+    detectedColumnNames = getDetectedColumnNames(DynamicTable);
+    % Remove ignored columns before any validation so that columns
+    % intentionally omitted from colnames do not trigger ColumnNamesMismatch.
+    if ~isempty(ignoreList)
+        detectedColumnNames = detectedColumnNames(~ismember(detectedColumnNames, ignoreList));
+    end
+
     if isempty(DynamicTable.colnames)
-        assert(isempty(getDetectedColumnNames(DynamicTable)), ...
+        assert(isempty(detectedColumnNames), ...
             'NWB:DynamicTable:CheckConfig:ColumnNamesMismatch', ...
             'All Vector Data/Index columns must have their name ordered in the `colnames` property.');
         return;
     end
 
-    % remove null characters from column names
-    DynamicTable.colnames = cleanColumnNames(DynamicTable.colnames);
+    DynamicTable.colnames = types.util.dynamictable.validateColnames(DynamicTable.colnames);
+    columns = DynamicTable.colnames;
+
+    missingColumnNames = setdiff(detectedColumnNames, columns, 'stable');
+    assert(isempty(missingColumnNames), ...
+        'NWB:DynamicTable:CheckConfig:ColumnNamesMismatch', ...
+        ['All materialized DynamicTable columns must be listed in `colnames`.\n' ...
+        'Missing from `colnames`: %s'], ...
+        strjoin(missingColumnNames, ', '));
 
     % do not check specified columns - useful for classes that build on DynamicTable class
-    columns = setdiff(DynamicTable.colnames, ignoreList);
+    columns = columns(~ismember(columns, ignoreList));
 
     if isempty(columns)
         return
@@ -82,8 +101,7 @@ function names = getDetectedColumnNames(DynamicTable)
     for iProp = 1:length(tableProps)
         propName = tableProps{iProp};
         propValue = DynamicTable.(propName);
-        if ~isempty(propValue) ...
-                && (isa(propValue, 'types.core.VectorData') || isa(propValue, 'types.hdmf_common.VectorData'))
+        if isMaterializedColumn(propValue)
             names{end+1} = propName;
         end
     end
@@ -92,20 +110,19 @@ function names = getDetectedColumnNames(DynamicTable)
     for iVector = 1:length(vectorNames)
         vectorName = vectorNames{iVector};
         Vector = DynamicTable.vectordata.get(vectorName);
-        if isa(Vector, 'types.hdmf_common.VectorData') || isa(Vector, 'types.core.VectorData')
-            if isa(Vector.data, 'types.untyped.DataStub')
-                isDataEmpty = any(Vector.data.dims == 0);
-            elseif isa(Vector.data, 'types.untyped.DataPipe')
-                isDataEmpty = any(size(Vector.data) == 0);
-            else
-                isDataEmpty = isempty(Vector.data);
-            end
-            if ~isDataEmpty
-                names{end+1} = vectorName;
-            end
+        if isMaterializedColumn(Vector)
+            names{end+1} = vectorName;
         end
     end
+    names = unique(names, 'stable');
+end
 
+function tf = isMaterializedColumn(value)
+    isVectorData = isa(value, 'types.hdmf_common.VectorData') ...
+        || isa(value, 'types.core.VectorData');
+    isVectorIndex = isa(value, 'types.hdmf_common.VectorIndex') ...
+        || isa(value, 'types.core.VectorIndex');
+    tf = ~isempty(value) && isVectorData && ~isVectorIndex;
 end
 
 function colnames = cleanColumnNames(colnames)
