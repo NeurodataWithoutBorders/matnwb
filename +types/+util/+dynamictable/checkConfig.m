@@ -1,18 +1,23 @@
 function checkConfig(DynamicTable, ignoreList)
-    % CHECKCONFIG Given a DynamicTable object, this functions checks for proper
-    % DynamicTable configuration
-    %
-    %   checkConfig(DYNAMICTABLE) runs without error if the DynamicTable is
-    %   configured correctly
-    %
-    %   checkConfig(DYNAMICTABLE,IGNORELIST) performs checks on columns not in
-    %   IGNORELIST cell array
-    %
-    %
-    %  A properly configured DynamicTable should meet the following criteria:
-    %  1) The length of all columns in the dynamic table is the same.
-    %  2) All rows have a corresponding id. If none exist, this function creates them.
-    %  3) No index loops exist.
+% CHECKCONFIG Check a DynamicTable for valid column registration and shape.
+%
+%   checkConfig(DYNAMICTABLE) runs without error if DYNAMICTABLE is
+%   configured correctly.
+%
+%   checkConfig(DYNAMICTABLE, IGNORELIST) skips columns named in the
+%   IGNORELIST cell array when checking for registration in `colnames` and
+%   when comparing column row counts.
+%
+%   A properly configured DynamicTable meets the following criteria:
+%   1) All materialized columns are listed in `colnames`, except those in
+%      IGNORELIST.
+%   2) The row counts of all checked columns are consistent. For ragged
+%      columns, this follows VectorIndex links to the outermost index.
+%   3) Compound columns have a consistent height across all fields.
+%   4) All rows have a corresponding id. If none exist, this function
+%      creates them.
+%   5) No infinite VectorIndex reference loops exist.
+    
     arguments
         DynamicTable
         ignoreList (1,:) cell = {};
