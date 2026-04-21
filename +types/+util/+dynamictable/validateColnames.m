@@ -1,22 +1,24 @@
 function colnames = validateColnames(colnames)
-%VALIDATECOLNAMES Validate and normalize DynamicTable column names.
+% VALIDATECOLNAMES Validate and normalize DynamicTable column names.
+%
+% Input can be a cell array of character vectors, a string array or a
+% character vector. Output is a cell array of character vectors.
 
     if isempty(colnames)
         return
     end
 
-    colnames = cleanColumnNames(colnames);
-    if ischar(colnames)
-        colnames = {colnames};
-    end
-
-    assert(iscellstr(colnames) || isstring(colnames), ...
+    assert(iscellstr(colnames) || isstring(colnames) || ischar(colnames), ...
         'NWB:DynamicTable:InvalidColumnNames', ...
         'Column names must be a cell array of character vectors.');
 
     if isstring(colnames)
         colnames = cellstr(colnames);
+    elseif ischar(colnames)
+        colnames = {colnames};
     end
+
+    colnames = cleanColumnNames(colnames);
 
     uniqueNames = unique(colnames, 'stable');
     assert(numel(uniqueNames) == numel(colnames), ...
@@ -25,22 +27,9 @@ function colnames = validateColnames(colnames)
 end
 
 function colnames = cleanColumnNames(colnames)
-    assert(iscellstr(colnames) || ischar(colnames), ...
-        'NWB:DynamicTable:InvalidColumnNames', ...
-        'Column names must be a cell array of strings or a character array.');
-
-    isScalarChar = ischar(colnames);
-    if isScalarChar
-        colnames = {colnames};
-    end
-
     for iColumn = 1:length(colnames)
         column = colnames{iColumn};
         column = column(0 ~= double(column));
         colnames{iColumn} = column;
-    end
-
-    if isScalarChar
-        colnames = colnames{1};
     end
 end
