@@ -677,11 +677,11 @@ methods
                 io.writeDataset(fid, [fullpath '/general/data_collection'], obj.general_data_collection);
             end
         end
-        if ~isempty(obj.general_devices)
+        if ~isempty(obj.general_devices) && obj.general_devices.Count ~= 0
             io.writeGroup(fid, [fullpath '/general']);
             refs = obj.general_devices.export(fid, [fullpath '/general/devices'], refs);
         end
-        if ~isempty(obj.general_devices_models)
+        if ~isempty(obj.general_devices_models) && obj.general_devices_models.Count ~= 0
             io.writeGroup(fid, [fullpath '/general/devices']);
             refs = obj.general_devices_models.export(fid, [fullpath '/general/devices/models'], refs);
         end
@@ -701,7 +701,7 @@ methods
                 io.writeDataset(fid, [fullpath '/general/experimenter'], obj.general_experimenter, 'forceArray');
             end
         end
-        if ~isempty(obj.general_extracellular_ephys)
+        if ~isempty(obj.general_extracellular_ephys) && obj.general_extracellular_ephys.Count ~= 0
             io.writeGroup(fid, [fullpath '/general']);
             refs = obj.general_extracellular_ephys.export(fid, [fullpath '/general/extracellular_ephys'], refs);
         end
@@ -717,7 +717,7 @@ methods
                 io.writeDataset(fid, [fullpath '/general/institution'], obj.general_institution);
             end
         end
-        if ~isempty(obj.general_intracellular_ephys)
+        if ~isempty(obj.general_intracellular_ephys) && obj.general_intracellular_ephys.Count ~= 0
             io.writeGroup(fid, [fullpath '/general']);
             refs = obj.general_intracellular_ephys.export(fid, [fullpath '/general/intracellular_ephys'], refs);
         end
@@ -777,11 +777,11 @@ methods
                 io.writeDataset(fid, [fullpath '/general/notes'], obj.general_notes);
             end
         end
-        if ~isempty(obj.general_optogenetics)
+        if ~isempty(obj.general_optogenetics) && obj.general_optogenetics.Count ~= 0
             io.writeGroup(fid, [fullpath '/general']);
             refs = obj.general_optogenetics.export(fid, [fullpath '/general/optogenetics'], refs);
         end
-        if ~isempty(obj.general_optophysiology)
+        if ~isempty(obj.general_optophysiology) && obj.general_optophysiology.Count ~= 0
             io.writeGroup(fid, [fullpath '/general']);
             refs = obj.general_optophysiology.export(fid, [fullpath '/general/optophysiology'], refs);
         end
@@ -882,7 +882,7 @@ methods
         elseif ~isempty(obj.identifier)
             io.writeDataset(fid, [fullpath '/identifier'], obj.identifier);
         end
-        if ~isempty(obj.intervals)
+        if ~isempty(obj.intervals) && obj.intervals.Count ~= 0
             refs = obj.intervals.export(fid, [fullpath '/intervals'], refs);
         end
         if ~isempty(obj.intervals_epochs)
@@ -899,7 +899,7 @@ methods
         end
         io.writeAttribute(fid, [fullpath '/nwb_version'], obj.nwb_version);
         refs = obj.processing.export(fid, [fullpath '/processing'], refs);
-        if ~isempty(obj.scratch)
+        if ~isempty(obj.scratch) && obj.scratch.Count ~= 0
             refs = obj.scratch.export(fid, [fullpath '/scratch'], refs);
         end
         if startsWith(class(obj.session_description), 'types.untyped.')

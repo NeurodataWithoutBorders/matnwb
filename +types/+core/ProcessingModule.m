@@ -92,10 +92,10 @@ methods
             return;
         end
         io.writeAttribute(fid, [fullpath '/description'], obj.description);
-        if ~isempty(obj.dynamictable)
+        if ~isempty(obj.dynamictable) && obj.dynamictable.Count ~= 0
             refs = obj.dynamictable.export(fid, fullpath, refs);
         end
-        if ~isempty(obj.nwbdatainterface)
+        if ~isempty(obj.nwbdatainterface) && obj.nwbdatainterface.Count ~= 0
             refs = obj.nwbdatainterface.export(fid, fullpath, refs);
         end
     end

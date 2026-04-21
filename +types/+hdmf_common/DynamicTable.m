@@ -106,7 +106,7 @@ methods
         io.writeAttribute(fid, [fullpath '/colnames'], obj.colnames, 'forceArray');
         io.writeAttribute(fid, [fullpath '/description'], obj.description);
         refs = obj.id.export(fid, [fullpath '/id'], refs);
-        if ~isempty(obj.vectordata)
+        if ~isempty(obj.vectordata) && obj.vectordata.Count ~= 0
             refs = obj.vectordata.export(fid, fullpath, refs);
         end
     end

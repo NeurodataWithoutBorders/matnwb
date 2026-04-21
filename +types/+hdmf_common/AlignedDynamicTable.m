@@ -88,7 +88,7 @@ methods
             return;
         end
         io.writeAttribute(fid, [fullpath '/categories'], obj.categories, 'forceArray');
-        if ~isempty(obj.dynamictable)
+        if ~isempty(obj.dynamictable) && obj.dynamictable.Count ~= 0
             refs = obj.dynamictable.export(fid, fullpath, refs);
         end
     end
