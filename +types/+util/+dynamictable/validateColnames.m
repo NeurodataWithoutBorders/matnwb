@@ -10,9 +10,13 @@ function colnames = validateColnames(colnames)
         colnames = {colnames};
     end
 
-    assert(iscellstr(colnames), ...
+    assert(iscellstr(colnames) || isstring(colnames), ...
         'NWB:DynamicTable:InvalidColumnNames', ...
         'Column names must be a cell array of character vectors.');
+
+    if isstring(colnames)
+        colnames = cellstr(colnames);
+    end
 
     uniqueNames = unique(colnames, 'stable');
     assert(numel(uniqueNames) == numel(colnames), ...
