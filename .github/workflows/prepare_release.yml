@@ -76,10 +76,10 @@ jobs:
             skip-nwbinspector-test: '0'
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -110,12 +110,12 @@ jobs:
           Add-Content -Path $env:GITHUB_ENV -Value "HDF5_PLUGIN_PATH=$pluginPath"
 
       - name: Install MATLAB
-        uses: matlab-actions/setup-matlab@v2
+        uses: matlab-actions/setup-matlab@v3
         with:
           release: ${{ matrix.matlab-version }}
 
       - name: Run tests
-        uses: matlab-actions/run-command@v2
+        uses: matlab-actions/run-command@v3
         env:
           HDF5_PLUGIN_PATH: ${{ env.HDF5_PLUGIN_PATH }}
         with:
@@ -130,7 +130,7 @@ jobs:
 
       - name: Upload JUnit results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results-${{ matrix.os }}-${{ matrix.matlab-version }}
           path: testResults.xml
@@ -142,16 +142,16 @@ jobs:
     needs: [run_tests]
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Retrieve result files
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           pattern: test-results-*
           merge-multiple: false
 
       - name: Publish test results
-        uses: mikepenz/action-junit-report@v4
+        uses: mikepenz/action-junit-report@v6
         with:
           report_paths: '*/testResults.xml'
 
@@ -161,7 +161,7 @@ jobs:
     needs: [run_tests]
     steps:
       - name: Checkout repository using deploy key
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: refs/heads/main
           ssh-key: ${{ secrets.DEPLOY_KEY }}
@@ -200,7 +200,7 @@ jobs:
           git push
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12' # Pinned to 3.12 because of pybadges dependencies
 
@@ -240,7 +240,7 @@ jobs:
       
       # Commit the SVG for the MATLAB releases test badge to gh-badges branch
       - name: Checkout gh-badges branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: gh-badges
           path: gh-badges
