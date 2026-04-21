@@ -19,41 +19,23 @@ function typeInstance = createParsedType(typePath, typeName, varargin)
 %   Outputs:
 %       typeInstance - The generated neurodata type instance.
 
+    if contains(typePath, 'pixel_mask')
+        %keyboard
+    end
+
     warnState = warning('off', 'NWB:CheckUnset:InvalidProperties');
     cleanupObj = onCleanup(@(s) warning(warnState)); % Make sure warning state is reset later
 
     [lastWarningMessage, lastWarningID] = lastwarn('', ''); % Clear last warning
 
-    try
-        typeInstance = feval(typeName, varargin{:}); % Create the type.
-    catch exception
-        lastwarn(lastWarningMessage, lastWarningID); % Reset last warning
-
-        % Add information about which data type failed, and where in the
-        % file it is located.
-        newException = MException('NWB:createParsedType:TypeCreationFailed', ...
-            'Failed to create object of type "%s" in file location "%s".', ...
-            typeName, typePath);
-
-        % Add full error stack to the exception's cause for easier
-        % debugging
-        extendedCause = MException(exception.identifier, ...
-            getReport(exception, "extended"));
-        newException = newException.addCause(extendedCause);
-        if ~isempty(exception.cause)
-            for i = 1:numel(exception.cause)
-                newException = newException.addCause(exception.cause{i});
-            end
-        end
-        throw(newException)
-    end
+    typeInstance = feval(typeName, varargin{:}); % Create the type.
 
     [warningMessage, warningID] = lastwarn();
 
     % Handle any warnings if they occurred.
     if ~isempty(warningMessage)
         if strcmp( warningID, 'NWB:CheckUnset:InvalidProperties' )
-
+            
             clear cleanupObj % Reset last warning state
 
             if endsWith(warningMessage, '.')
@@ -61,14 +43,14 @@ function typeInstance = createParsedType(typePath, typeName, varargin)
             end
 
             updatedMessage = sprintf('%s at file location "%s"\n', warningMessage, typePath);
-
+            
             disclaimer = 'NB: The properties in question were dropped while reading the file.';
 
             suggestion = [...
                 'Consider checking the schema version of the file with '...
                 '`util.getSchemaVersion(filename)` and comparing with the ' ...
                 'YAML namespace version present in nwb-schema/core/nwb.namespace.yaml' ];        
-
+            
             warning(warningID, '%s\n%s\n\n%s', updatedMessage, disclaimer, suggestion)
         else
             % Pass, warning has already been displayed

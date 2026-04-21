@@ -12,7 +12,7 @@ classdef BackendFactoryTest < matlab.unittest.TestCase
             filename = "factory-test.nwb";
             nwbExport(nwb, filename);
 
-            % Verify both "auto" and "h5" creates a valid reader
+            % Verify both "auto" and "h5" create a valid reader.
             reader = io.backend.BackendFactory.createReader(filename, ...
                 StorageBackend="auto");
             testCase.verifyClass(reader, "io.backend.hdf5.HDF5Reader");
@@ -32,26 +32,29 @@ classdef BackendFactoryTest < matlab.unittest.TestCase
             testCase.verifyClass(lazyArray, "io.backend.hdf5.HDF5LazyArray");
         end
 
-        function unsupportedBackendThrowsError(testCase)
+        function invalidZarrBackendThrowsError(testCase)
             nwb = tests.factory.NWBFile();
             filename = "factory-test.nwb";
             nwbExport(nwb, filename);
 
             testCase.verifyError( ...
                 @() io.backend.BackendFactory.createReader(filename, StorageBackend="zarr"), ...
-                "NWB:BackendFactory:UnsupportedBackend");
+                "NWB:BackendFactory:InvalidZarr");
+        end
 
-            zarrFilepath = 'test.zarr.nwb';
+        function unsupportedFormatThrowsError(testCase)
+            zarrFilepath = "test.zarr.nwb";
             mkdir(zarrFilepath)
-               
+
             testCase.verifyError( ...
                 @() io.backend.BackendFactory.createReader(zarrFilepath, StorageBackend="auto"), ...
                 "NWB:BackendFactory:UnsupportedFormat");
         end
 
-        function verifyInvalidHDF5FileThrowsError(testCase)
-            zarrFilepath = 'test.zarr.nwb';
+        function invalidHDF5FileThrowsError(testCase)
+            zarrFilepath = "test.zarr.nwb";
             mkdir(zarrFilepath)
+
             testCase.verifyError( ...
                 @() io.backend.BackendFactory.createReader(zarrFilepath, StorageBackend="hdf5"), ...
                 "NWB:BackendFactory:InvalidHDF5");
