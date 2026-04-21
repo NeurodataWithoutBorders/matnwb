@@ -66,20 +66,20 @@ methods
         types.util.validateShape('emission_lambda', {[1]}, val)
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.NWBContainer(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.core.NWBContainer(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
         if startsWith(class(obj.description), 'types.untyped.')
-            refs = obj.description.export(fid, [fullpath '/description'], refs);
+            refs = obj.description.export(writer, [fullpath '/description'], refs);
         elseif ~isempty(obj.description)
-            io.writeDataset(fid, [fullpath '/description'], obj.description);
+            writer.writeValue([fullpath '/description'], obj.description);
         end
         if startsWith(class(obj.emission_lambda), 'types.untyped.')
-            refs = obj.emission_lambda.export(fid, [fullpath '/emission_lambda'], refs);
+            refs = obj.emission_lambda.export(writer, [fullpath '/emission_lambda'], refs);
         elseif ~isempty(obj.emission_lambda)
-            io.writeDataset(fid, [fullpath '/emission_lambda'], obj.emission_lambda);
+            writer.writeValue([fullpath '/emission_lambda'], obj.emission_lambda);
         end
     end
 end

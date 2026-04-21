@@ -43,8 +43,9 @@ classdef ObjectView < handle
             end
         end
         
-        function refs = export(obj, fid, fullpath, refs)
-            io.writeDataset(fid, fullpath, obj);
+        function refs = export(obj, writer, fullpath, refs)
+            writer = io.backend.base.Writer.ensure(writer);
+            writer.writeValue(fullpath, obj);
         end
         
         function path = get.path(obj)

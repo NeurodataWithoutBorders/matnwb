@@ -64,10 +64,11 @@ classdef SoftLink < handle
             end
         end
         
-        function refs = export(obj, fid, fullpath, refs)
+        function refs = export(obj, writer, fullpath, refs)
+            writer = io.backend.base.Writer.ensure(writer);
             if nargin < 4; refs = {}; end
             for i = 1:numel(obj)
-                refs = obj(i).exportScalar(fid, fullpath, refs); %#ok<AGROW>
+                refs = obj(i).exportScalar(writer.FileId, fullpath, refs); %#ok<AGROW>
             end
         end
     end

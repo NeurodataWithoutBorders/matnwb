@@ -30,8 +30,8 @@ classdef Anon < handle
             tf = isempty(obj.name);
         end
         
-        function refs = export(obj, fid, fullpath, refs)
-            refs = obj.value.export(fid, [fullpath obj.name '/'], refs);
+        function refs = export(obj, writer, fullpath, refs)
+            refs = obj.value.export(writer, [fullpath obj.name '/'], refs);
         end
 
         function tf = isKey(obj, name)

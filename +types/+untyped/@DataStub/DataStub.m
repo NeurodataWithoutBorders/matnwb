@@ -113,7 +113,7 @@ classdef (Sealed) DataStub < handle
 
         data = load_mat_style(obj, varargin);
         
-        refs = export(obj, fid, fullpath, refs);
+        refs = export(obj, writer, fullpath, refs);
         
         function varargout = subsref(obj, S)
             CurrentSubRef = S(1);
