@@ -1,15 +1,21 @@
 classdef Zarr2LazyArray < io.backend.base.LazyArray
 % Zarr2LazyArray - Minimal Zarr v2-backed lazy dataset access implementation.
 
+    properties (Access = private)
+        datasetInfo_ struct = struct.empty
+    end
+
     methods
-        function obj = Zarr2LazyArray(filename, datasetPath, dims, dataType)
+        function obj = Zarr2LazyArray(filename, datasetPath, dims, dataType, datasetInfo)
             arguments
                 filename (1,1) string
                 datasetPath (1,1) string
                 dims double = []
                 dataType = []
+                datasetInfo struct = struct.empty
             end
             obj@io.backend.base.LazyArray(filename, datasetPath, dims, dataType);
+            obj.datasetInfo_ = datasetInfo;
         end
 
         function refreshSizeInfo(obj)
@@ -70,8 +76,14 @@ classdef Zarr2LazyArray < io.backend.base.LazyArray
 
     methods (Access = private)
         function datasetInfo = readDatasetInfo(obj)
+            if ~isempty(obj.datasetInfo_)
+                datasetInfo = obj.datasetInfo_;
+                return
+            end
+
             reader = io.backend.zarr2.Zarr2Reader(obj.Filename);
             datasetInfo = reader.readNodeInfo(obj.DatasetPath);
+            obj.datasetInfo_ = datasetInfo;
         end
 
         function datasetDirectory = resolveDatasetDirectory(obj)

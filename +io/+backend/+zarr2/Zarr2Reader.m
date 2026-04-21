@@ -77,7 +77,7 @@ classdef Zarr2Reader < io.backend.base.Reader
                 datasetDirectory = obj.resolveDatasetDirectory(datasetPath);
                 matlabDataType = io.internal.zarr2.getMatlabDataType(datasetDirectory, datasetInfo);
                 lazyArray = io.backend.zarr2.Zarr2LazyArray(...
-                    obj.Filename, datasetPath, dataDimensions, matlabDataType);
+                    obj.Filename, datasetPath, dataDimensions, matlabDataType, datasetInfo);
                 datasetValue = types.untyped.DataStub(...
                     obj.Filename, datasetPath, [], [], lazyArray);
             end
