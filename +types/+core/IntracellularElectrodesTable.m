@@ -54,6 +54,10 @@ methods
     %% SETTERS
     function set.electrode(obj, val)
         obj.electrode = obj.validate_electrode(val);
+        obj.postset_electrode()
+    end
+    function postset_electrode(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'electrode');
     end
     %% VALIDATORS
     

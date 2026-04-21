@@ -73,15 +73,31 @@ methods
     %% SETTERS
     function set.band_limits(obj, val)
         obj.band_limits = obj.validate_band_limits(val);
+        obj.postset_band_limits()
+    end
+    function postset_band_limits(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'band_limits');
     end
     function set.band_mean(obj, val)
         obj.band_mean = obj.validate_band_mean(val);
+        obj.postset_band_mean()
+    end
+    function postset_band_mean(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'band_mean');
     end
     function set.band_name(obj, val)
         obj.band_name = obj.validate_band_name(val);
+        obj.postset_band_name()
+    end
+    function postset_band_name(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'band_name');
     end
     function set.band_stdev(obj, val)
         obj.band_stdev = obj.validate_band_stdev(val);
+        obj.postset_band_stdev()
+    end
+    function postset_band_stdev(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'band_stdev');
     end
     %% VALIDATORS
     

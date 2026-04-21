@@ -21,6 +21,9 @@ function validationStr = fillValidators(propnames, props, namespaceReg, classNam
             validationBody = fillDtypeValidation(nm, prop, namespaceReg);
         end
 
+        hookInfo = file.getPropertyHooks(nm, prop, classNameParts(className), namespaceReg);
+        validationBody = appendLines(validationBody, hookInfo.ValidatorLines);
+
         headerStr = ['function val = validate_' nm '(obj, val)'];
         if isempty(validationBody)
             functionStr = [headerStr newline 'end'];
@@ -30,6 +33,25 @@ function validationStr = fillValidators(propnames, props, namespaceReg, classNam
         end
         validationStr = strcat(validationStr, [newline, functionStr]);
     end
+end
+
+function typeName = classNameParts(className)
+    classNameSplit = strsplit(className, '.');
+    typeName = classNameSplit{end};
+end
+
+function combinedLines = appendLines(validationBody, additionalLines)
+    if isempty(additionalLines)
+        combinedLines = validationBody;
+        return
+    end
+
+    validationLines = {};
+    if ~isempty(strtrim(validationBody))
+        validationLines = {strtrim(validationBody)};
+    end
+
+    combinedLines = strjoin([validationLines, additionalLines], newline);
 end
 
 function unitValidationStr = fillUnitValidation(name, prop, namespaceReg)
