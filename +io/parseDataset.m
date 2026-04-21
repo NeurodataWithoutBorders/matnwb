@@ -105,5 +105,5 @@ function promotedAttributes = promoteDatasetAttributes(datasetName, attributes)
 
     promotedAttributeNames = strcat(datasetName, '_', attributeNames);
     attributeValues = values(attributes, attributeNames);
-    promotedAttributes = containers.Map(promotedAttributeNames, attributeValues);
+    promotedAttributes = containers.Map(promotedAttributeNames, attributeValues, 'UniformValues', false);
 end

@@ -16,7 +16,6 @@ refs = containers.Map;
 [~, root] = io.pathParts(info.Name);
 [attributeProperties, Type] =...
     io.parseAttributes(filename, info.Attributes, info.Name, blacklist, reader);
-Type = io.resolveNeurodataTypeInfo(Type, info.Name);
 
 %parse datasets
 datasetProperties = containers.Map;
