@@ -105,15 +105,16 @@ function existingCols = getExistingColumns(dynamicTable, newColNames, storageTar
 end
 
 function assignColumn(DynamicTable, columnName, columnValue, storageTarget)
+    assert(any(strcmp(storageTarget, {'property', 'vectordata'})), ...
+        'NWB:DynamicTable:AddColumn:InternalError', ...
+        'Unrecognized storage target `%s` for column `%s`.', ...
+        storageTarget, columnName);
+    
     switch storageTarget
         case 'property'
             DynamicTable.(columnName) = columnValue;
         case 'vectordata'
             DynamicTable.vectordata.set(columnName, columnValue);
-        otherwise
-            error('NWB:DynamicTable:AddColumn:InternalError', ...
-                'Unrecognized storage target `%s` for column `%s`.', ...
-                storageTarget, columnName);
     end
 end
 
