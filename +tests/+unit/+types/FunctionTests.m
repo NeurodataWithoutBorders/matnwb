@@ -116,5 +116,20 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                 @(varargin) types.util.correctType('5i', 'double'), ...
                 'NWB:TypeCorrection:DataLoss')
         end
+
+        function testUnwrapAndRewrapNestedAnonDataset(testCase)
+            datasetValue = types.hdmf_common.VectorData(...
+                'data', int8(1), ...
+                'description', 'test');
+            wrappedValue = types.untyped.Anon('wrapped_data', datasetValue);
+
+            [value, originalValue] = types.util.unwrapValue(wrappedValue);
+            testCase.verifyEqual(value, int8(1))
+
+            rewrappedValue = types.util.rewrapValue(value, originalValue);
+            testCase.verifyClass(rewrappedValue, 'types.untyped.Anon')
+            testCase.verifyClass(rewrappedValue.value, 'types.hdmf_common.VectorData')
+            testCase.verifyEqual(rewrappedValue.value.data, int8(1))
+        end
     end
 end
