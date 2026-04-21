@@ -19,6 +19,12 @@ function checkConfig(DynamicTable, ignoreList)
     end
 
     detectedColumnNames = getDetectedColumnNames(DynamicTable);
+    % Remove ignored columns before any validation so that columns
+    % intentionally omitted from colnames do not trigger ColumnNamesMismatch.
+    if ~isempty(ignoreList)
+        detectedColumnNames = detectedColumnNames(~ismember(detectedColumnNames, ignoreList));
+    end
+
     if isempty(DynamicTable.colnames)
         assert(isempty(detectedColumnNames), ...
             'NWB:DynamicTable:CheckConfig:ColumnNamesMismatch', ...
