@@ -113,8 +113,8 @@ methods
                 % skip validation for empty values
             else
                 vprops = struct();
-                vprops.entities_idx = 'uint';
-                vprops.keys_idx = 'uint';
+                vprops.entities_idx = 'uint8';
+                vprops.keys_idx = 'uint8';
                 val = types.util.checkDtype('entity_keys', vprops, val);
             end
             types.util.validateShape('entity_keys', {[Inf]}, val)
@@ -159,8 +159,8 @@ methods
                 % skip validation for empty values
             else
                 vprops = struct();
-                vprops.objects_idx = 'uint';
-                vprops.keys_idx = 'uint';
+                vprops.objects_idx = 'uint8';
+                vprops.keys_idx = 'uint8';
                 val = types.util.checkDtype('object_keys', vprops, val);
             end
             types.util.validateShape('object_keys', {[Inf]}, val)
@@ -175,7 +175,7 @@ methods
                 % skip validation for empty values
             else
                 vprops = struct();
-                vprops.files_idx = 'uint';
+                vprops.files_idx = 'uint8';
                 vprops.object_id = 'char';
                 vprops.object_type = 'char';
                 vprops.relative_path = 'char';
