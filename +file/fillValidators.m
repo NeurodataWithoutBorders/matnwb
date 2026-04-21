@@ -179,9 +179,11 @@ function unitValidationStr = fillDatasetValidation(name, prop, namespaceReg)
 
             datasetAttributeValidationLines = ...
                 fillTypedDatasetAttributeReferenceValidation(name, prop, namespaceReg);
-            datasetValidationLines = [...
-                {fillDtypeValidation(name, prop.dtype, namespaceReg)}, ...
-                {fillDimensionValidation(name, prop.shape)} ];
+            datasetValidationLines = {};
+            if ~prop.skipDtypeValidation
+                datasetValidationLines{end+1} = fillDtypeValidation(name, prop.dtype, namespaceReg); %#ok<AGROW>
+            end
+            datasetValidationLines{end+1} = fillDimensionValidation(name, prop.shape); %#ok<AGROW>
 
             datasetAttributeValidationLines(cellfun('isempty', datasetAttributeValidationLines)) = [];
             datasetValidationLines(cellfun('isempty', datasetValidationLines)) = [];
@@ -317,12 +319,7 @@ function fdvstr = fillDtypeValidation(name, type, namespaceReg)
         fdvstr = fillReferenceTypeValidation(name, type, namespaceReg);
     else
         fdvstr = '';
-        if strcmp(type, 'any')
-            fdvstr = '';
-            return;
-        else
-            ts = strrep(type, '-', '_');
-        end
+        ts = strrep(type, '-', '_');
         fdvstr = [fdvstr ...
             'val = types.util.checkDtype(''' name ''', ''' ts ''', val);'];
     end
