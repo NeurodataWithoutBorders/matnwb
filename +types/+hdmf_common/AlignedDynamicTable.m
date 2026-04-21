@@ -82,14 +82,14 @@ methods
         types.util.checkSet('dynamictable', namedprops, constrained, val);
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.hdmf_common.DynamicTable(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.hdmf_common.DynamicTable(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
-        io.writeAttribute(fid, [fullpath '/categories'], obj.categories, 'forceArray');
+        writer.writeAttribute([fullpath '/categories'], obj.categories, 'forceArray');
         if ~isempty(obj.dynamictable) && obj.dynamictable.Count ~= 0
-            refs = obj.dynamictable.export(fid, fullpath, refs);
+            refs = obj.dynamictable.export(writer, fullpath, refs);
         end
     end
 end

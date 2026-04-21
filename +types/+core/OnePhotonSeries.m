@@ -164,29 +164,29 @@ methods
         types.util.validateShape('scan_line_rate', {[1]}, val)
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.ImageSeries(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.core.ImageSeries(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
         if ~isempty(obj.binning)
-            io.writeAttribute(fid, [fullpath '/binning'], obj.binning);
+            writer.writeAttribute([fullpath '/binning'], obj.binning);
         end
         if ~isempty(obj.exposure_time)
-            io.writeAttribute(fid, [fullpath '/exposure_time'], obj.exposure_time);
+            writer.writeAttribute([fullpath '/exposure_time'], obj.exposure_time);
         end
-        refs = obj.imaging_plane.export(fid, [fullpath '/imaging_plane'], refs);
+        refs = obj.imaging_plane.export(writer, [fullpath '/imaging_plane'], refs);
         if ~isempty(obj.intensity)
-            io.writeAttribute(fid, [fullpath '/intensity'], obj.intensity);
+            writer.writeAttribute([fullpath '/intensity'], obj.intensity);
         end
         if ~isempty(obj.pmt_gain)
-            io.writeAttribute(fid, [fullpath '/pmt_gain'], obj.pmt_gain);
+            writer.writeAttribute([fullpath '/pmt_gain'], obj.pmt_gain);
         end
         if ~isempty(obj.power)
-            io.writeAttribute(fid, [fullpath '/power'], obj.power);
+            writer.writeAttribute([fullpath '/power'], obj.power);
         end
         if ~isempty(obj.scan_line_rate)
-            io.writeAttribute(fid, [fullpath '/scan_line_rate'], obj.scan_line_rate);
+            writer.writeAttribute([fullpath '/scan_line_rate'], obj.scan_line_rate);
         end
     end
 end

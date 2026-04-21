@@ -42,11 +42,12 @@ methods
     %% VALIDATORS
     
     function val = validate_data(obj, val)
+        val = types.util.checkDtype('data', 'any', val);
         types.util.validateShape('data', {[1]}, val)
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.hdmf_common.Data(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.hdmf_common.Data(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end

@@ -67,12 +67,12 @@ methods
         types.util.validateShape('target', {[1]}, val)
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.hdmf_common.VectorData(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.hdmf_common.VectorData(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
-        io.writeAttribute(fid, [fullpath '/target'], obj.target);
+        writer.writeAttribute([fullpath '/target'], obj.target);
     end
 end
 

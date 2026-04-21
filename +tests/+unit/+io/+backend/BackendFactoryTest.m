@@ -13,10 +13,12 @@ classdef BackendFactoryTest < matlab.unittest.TestCase
             nwbExport(nwb, filename);
 
             % Verify both "auto" and "h5" creates a valid reader
-            reader = io.backend.BackendFactory.createReader(filename, "auto");
+            reader = io.backend.BackendFactory.createReader(filename, ...
+                StorageBackend="auto");
             testCase.verifyClass(reader, "io.backend.hdf5.HDF5Reader");
 
-            reader = io.backend.BackendFactory.createReader(filename, "h5");
+            reader = io.backend.BackendFactory.createReader(filename, ...
+                StorageBackend="h5");
             testCase.verifyClass(reader, "io.backend.hdf5.HDF5Reader");
         end
 
@@ -36,14 +38,14 @@ classdef BackendFactoryTest < matlab.unittest.TestCase
             nwbExport(nwb, filename);
 
             testCase.verifyError( ...
-                @() io.backend.BackendFactory.createReader(filename, "zarr"), ...
+                @() io.backend.BackendFactory.createReader(filename, StorageBackend="zarr"), ...
                 "NWB:BackendFactory:UnsupportedBackend");
 
             zarrFilepath = 'test.zarr.nwb';
             mkdir(zarrFilepath)
                
             testCase.verifyError( ...
-                @() io.backend.BackendFactory.createReader(zarrFilepath, "auto"), ...
+                @() io.backend.BackendFactory.createReader(zarrFilepath, StorageBackend="auto"), ...
                 "NWB:BackendFactory:UnsupportedFormat");
         end
 
@@ -51,8 +53,19 @@ classdef BackendFactoryTest < matlab.unittest.TestCase
             zarrFilepath = 'test.zarr.nwb';
             mkdir(zarrFilepath)
             testCase.verifyError( ...
-                @() io.backend.BackendFactory.createReader(zarrFilepath, "hdf5"), ...
+                @() io.backend.BackendFactory.createReader(zarrFilepath, StorageBackend="hdf5"), ...
                 "NWB:BackendFactory:InvalidHDF5");
+        end
+
+        function createHDF5WriterWithStorageBackendOption(testCase)
+            filename = "factory-writer-test.nwb";
+
+            writer = io.backend.BackendFactory.createWriter(filename, ...
+                Mode="overwrite", StorageBackend="h5");
+
+            testCase.verifyClass(writer, "io.backend.hdf5.HDF5Writer");
+            writer.close()
+            testCase.verifyTrue(isfile(filename))
         end
     end
 end

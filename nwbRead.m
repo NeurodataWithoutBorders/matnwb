@@ -27,6 +27,9 @@ function nwb = nwbRead(filename, flags, options)
 %    - savedir (string) -
 %      A folder to save generated classes for NWB types.
 %
+%    - StorageBackend (string) -
+%      Storage backend used for reading. Default: "auto".
+%
 % Output Arguments:
 %  - nwb (NwbFile) - Nwb file object
 %
@@ -57,11 +60,13 @@ function nwb = nwbRead(filename, flags, options)
     end
     arguments
         options.savedir (1,1) string = misc.getMatnwbDir(); % {matnwb.common.compatibility.mustBeFolder} ?
+        options.StorageBackend (1,1) string = "auto"
     end
 
     shouldRegenerateSchemaClasses = not( any(strcmpi(string(flags), 'ignorecache')) );
 
-    reader = io.backend.BackendFactory.createReader(filename);
+    reader = io.backend.BackendFactory.createReader(filename, ...
+        StorageBackend=options.StorageBackend);
 
     schemaVersionActive = matnwb.common.getActiveSchemaVersion();
     schemaVersionOfFile = reader.getSchemaVersion();

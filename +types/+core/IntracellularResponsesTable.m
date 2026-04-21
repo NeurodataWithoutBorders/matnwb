@@ -68,12 +68,12 @@ methods
         types.util.checkType('response', 'types.core.TimeSeriesReferenceVectorData', val);
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.hdmf_common.DynamicTable(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.hdmf_common.DynamicTable(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
-        refs = obj.response.export(fid, [fullpath '/response'], refs);
+        refs = obj.response.export(writer, [fullpath '/response'], refs);
     end
 end
 

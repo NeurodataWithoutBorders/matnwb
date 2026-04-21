@@ -89,12 +89,12 @@ methods
         val = types.util.validateSoftLink('site', val, 'types.core.OptogeneticStimulusSite');
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.TimeSeries(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.core.TimeSeries(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
-        refs = obj.site.export(fid, [fullpath '/site'], refs);
+        refs = obj.site.export(writer, [fullpath '/site'], refs);
     end
 end
 

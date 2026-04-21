@@ -14,6 +14,7 @@ classdef Dataset < file.interface.HasProps & file.interface.HasQuantity
         attributes;
         linkable;
         definesType;
+        skipDtypeValidation;
     end
     
     methods
@@ -28,6 +29,7 @@ classdef Dataset < file.interface.HasProps & file.interface.HasQuantity
             obj.readonly = false;
             obj.scalar = true;
             obj.definesType = false;
+            obj.skipDtypeValidation = false;
             
             obj.shape = {};
             obj.dimnames = {};
@@ -78,6 +80,10 @@ classdef Dataset < file.interface.HasProps & file.interface.HasQuantity
             dataTypeKey = 'dtype';
             if isKey(source, dataTypeKey)
                 obj.dtype = file.mapType(source(dataTypeKey));
+            end
+
+            if isKey(source, 'skip_dtype_validation')
+                obj.skipDtypeValidation = logical(source('skip_dtype_validation'));
             end
             
             % If a value key is specified, the resulting property is a

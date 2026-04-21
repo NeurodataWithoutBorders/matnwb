@@ -89,12 +89,12 @@ methods
         val = types.util.validateSoftLink('masked_imageseries', val, 'types.core.ImageSeries');
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.ImageSeries(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.core.ImageSeries(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
-        refs = obj.masked_imageseries.export(fid, [fullpath '/masked_imageseries'], refs);
+        refs = obj.masked_imageseries.export(writer, [fullpath '/masked_imageseries'], refs);
     end
 end
 

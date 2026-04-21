@@ -125,24 +125,24 @@ methods
         val = types.util.validateSoftLink('source_timeseries', val, 'types.core.TimeSeries');
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.TimeSeries(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.core.TimeSeries(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
         if ~isempty(obj.bands)
-            refs = obj.bands.export(fid, [fullpath '/bands'], refs);
+            refs = obj.bands.export(writer, [fullpath '/bands'], refs);
         end
         if startsWith(class(obj.metric), 'types.untyped.')
-            refs = obj.metric.export(fid, [fullpath '/metric'], refs);
+            refs = obj.metric.export(writer, [fullpath '/metric'], refs);
         elseif ~isempty(obj.metric)
-            io.writeDataset(fid, [fullpath '/metric'], obj.metric);
+            writer.writeValue([fullpath '/metric'], obj.metric);
         end
         if ~isempty(obj.source_channels)
-            refs = obj.source_channels.export(fid, [fullpath '/source_channels'], refs);
+            refs = obj.source_channels.export(writer, [fullpath '/source_channels'], refs);
         end
         if ~isempty(obj.source_timeseries)
-            refs = obj.source_timeseries.export(fid, [fullpath '/source_timeseries'], refs);
+            refs = obj.source_timeseries.export(writer, [fullpath '/source_timeseries'], refs);
         end
     end
 end

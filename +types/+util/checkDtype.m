@@ -22,7 +22,10 @@ function value = checkDtype(name, typeDescriptor, value)
         value
     end
 
-    if isstruct(typeDescriptor) % Compound type processing
+    if canBeAnyType(typeDescriptor)
+        value = validateAnyType(value);
+
+    elseif isstruct(typeDescriptor) % Compound type processing
         value = checkDtypeForCompoundDataset(name, typeDescriptor, value);
     
     elseif isa(value, 'types.untyped.SoftLink')
@@ -158,13 +161,6 @@ function value = checkDtypeForCompoundDataset(name, typeDescriptor, value)
         value = valueWrapper; % re-wrap value
     end
 
-    function validateCompoundValue(value)
-        assert(isstruct(value) || istable(value) || isa(value, 'containers.Map'), ...
-            'NWB:CheckDType:InvalidValue', ...
-            ['Value of compound type must be a struct, table, or a ', ...
-            'containers.Map but was a "%s"'], class(value) )
-    end
-
     function validateCompoundFields(expectedFields, value)
         % Assert field names and order of fields are correct.
         if isstruct(value)
@@ -231,6 +227,104 @@ function value = checkDtypeForCompoundDataset(name, typeDescriptor, value)
             'Number of elements for each struct field must match to be valid.'], ...
             num2str(uniqueFieldLengths));
     end
+end
+
+function validateCompoundValue(value)
+    assert(isstruct(value) || istable(value) || isa(value, 'containers.Map'), ...
+        'NWB:CheckDType:InvalidValue', ...
+        ['Value of compound type must be a struct, table, or a ', ...
+        'containers.Map but was a "%s"'], class(value) )
+end
+
+function tf = isCompoundValue(value)
+    tf = isstruct(value) || istable(value) || isa(value, 'containers.Map');
+end
+
+function validateAnyCompoundValue(value)
+    validateCompoundValue(value)
+
+    if isstruct(value)
+        fieldNames = fieldnames(value);
+
+        if isscalar(value)
+            assertFieldDataSameLengthForAnyCompound(fieldNames, value)
+            for iField = 1:length(fieldNames)
+                fieldValue = value.(fieldNames{iField});
+                assert(~isCompoundValue(fieldValue), ...
+                    'NWB:CheckDType:NestedCompoundNotSupported', ...
+                    'Nested compound values are not supported')
+                validateAnyType(fieldValue);
+            end
+        else
+            for iField = 1:length(fieldNames)
+                fieldName = fieldNames{iField};
+                for iElem = 1:numel(value)
+                    elem = value(iElem).(fieldName);
+                    assert(~iscell(elem) && ...
+                        (isempty(elem) || ...
+                        (isscalar(elem) || (ischar(elem) && isvector(elem)))), ...
+                        'NWB:CheckDType:InvalidType', ...
+                        ['Fields for an array of structs for ' ...
+                        'compound types should have non-cell scalar values or char arrays.']);
+                    assert(~isCompoundValue(elem), ...
+                        'NWB:CheckDType:NestedCompoundNotSupported', ...
+                        'Nested compound values are not supported')
+                    validateAnyType(elem);
+                end
+            end
+        end
+    elseif istable(value)
+        fieldNames = value.Properties.VariableNames;
+        for iField = 1:length(fieldNames)
+            fieldValue = value.(fieldNames{iField});
+            assert(~isCompoundValue(fieldValue), ...
+                'NWB:CheckDType:NestedCompoundNotSupported', ...
+                'Nested compound values are not supported')
+            validateAnyType(fieldValue);
+        end
+    else % containers.Map
+        fieldNames = value.keys();
+        assertFieldDataSameLengthForAnyCompound(fieldNames, value)
+        for iField = 1:length(fieldNames)
+            fieldValue = value(fieldNames{iField});
+            assert(~isCompoundValue(fieldValue), ...
+                'NWB:CheckDType:NestedCompoundNotSupported', ...
+                'Nested compound values are not supported')
+            validateAnyType(fieldValue);
+        end
+    end
+end
+
+function assertFieldDataSameLengthForAnyCompound(fieldNames, value)
+    fieldLengths = zeros(length(fieldNames), 1);
+
+    for iField = 1:length(fieldNames)
+        if isstruct(value)
+            fieldValue = value.(fieldNames{iField});
+        else
+            fieldValue = value(fieldNames{iField});
+        end
+
+        assert(isvector(fieldValue), ...
+            'NWB:CheckDType:InvalidShape', ...
+            ['struct of arrays as a compound type ' ...
+            'cannot have multidimensional data in their fields. ' ...
+            'Field data shape must be scalar or vector to be valid.']);
+
+        if ischar(fieldValue)
+            fieldLengths(iField) = size(fieldValue, 1);
+        else
+            fieldLengths(iField) = length(fieldValue);
+        end
+    end
+
+    uniqueFieldLengths = unique(fieldLengths);
+    assert(isscalar(uniqueFieldLengths), ...
+        'NWB:CheckDType:InvalidShape', ...
+        ['struct of arrays as a compound type ' ...
+        'contains mismatched number of elements with unique sizes: [%s].  ' ...
+        'Number of elements for each struct field must match to be valid.'], ...
+        num2str(uniqueFieldLengths));
 end
 
 function tf = canWeCast(typeDescriptor)
@@ -315,4 +409,72 @@ function validateCompoundTypeDescriptor(name, expectedTypeDesc, actualTypeDesc)
                 name, expectedName, expectedType, actualType);
         end
     end
+end
+
+function tf = canBeAnyType(typeDescriptor)
+    tf = (ischar(typeDescriptor) || isstring(typeDescriptor)) ...
+        && strcmp(typeDescriptor, 'any');
+end
+
+function value = validateAnyType(value)
+% validateAnyType - Validate values where any dtype is allowed
+
+    persistent validBasicTypes
+    if isempty(validBasicTypes)
+        typeMap = spec.getBasicDTypeMap;
+        validBasicTypes = string( unique(typeMap.values) );
+        if isrow(validBasicTypes)
+            validBasicTypes = transpose(validBasicTypes);
+        end
+    end
+    
+    valueType = class(value);
+
+    if any(strcmp(valueType, validBasicTypes))
+        return
+    end
+
+    % Special case: char equivalents that are also valid
+    if isstring(value) || iscellstr(value)
+        return
+    end
+
+    % Accept reference types
+    if isa(value, 'types.untyped.ObjectView') || isa(value, 'types.untyped.RegionView')
+        return
+    end
+    
+    % Accept soft links and external links
+    if isa(value, 'types.untyped.SoftLink') || isa(value, 'types.untyped.ExternalLink')
+        return
+    end
+
+    % Accept compound values after validating their field contents
+    if isCompoundValue(value)
+        validateAnyCompoundValue(value)
+        return
+    end
+
+    if isWrapped(value, 'any')
+        unWrappedValue = unwrapValue(value);
+        try
+            validateAnyType(unWrappedValue);
+            return
+        catch exception
+            throw(exception)
+        end
+    end
+
+    % If we got here, the value is not a valid type for hdmf/nwb
+    allowedTypes = [validBasicTypes; ...
+        "string"; "cellstr"; ...
+        "types.untyped.ObjectView"; ...
+        "types.untyped.RegionView"; ...
+        "types.untyped.ExternalLink"; ...
+        "types.untyped.SoftLink"; ...
+        "struct"; "table"; "containers.Map"];
+
+    error('NWB:CheckDType:InvalidType', ...
+        'Value was of type "%s" but must be one of the following types:\n%s', ...
+        valueType, strjoin("  " + allowedTypes, newline))
 end

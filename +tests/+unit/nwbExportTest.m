@@ -175,6 +175,15 @@ classdef nwbExportTest < tests.abstract.NwbTestCase
                 'nwbExport should still write the requested file');
         end
 
+        function testExportAcceptsStorageBackendOption(testCase)
+            nwbFile = tests.factory.NWBFile();
+            nwbFilePath = testCase.getRandomFilename();
+
+            testCase.verifyWarningFree(@() nwbExport(nwbFile, nwbFilePath, ...
+                StorageBackend="h5"))
+            testCase.verifyTrue(isfile(nwbFilePath))
+        end
+
         function testEmbeddedSpecs(testCase)
             
             % Install extensions, one will be used, the other will not. 

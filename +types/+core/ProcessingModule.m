@@ -86,17 +86,17 @@ methods
         types.util.checkSet('nwbdatainterface', namedprops, constrained, val);
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.NWBContainer(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.core.NWBContainer(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
-        io.writeAttribute(fid, [fullpath '/description'], obj.description);
+        writer.writeAttribute([fullpath '/description'], obj.description);
         if ~isempty(obj.dynamictable) && obj.dynamictable.Count ~= 0
-            refs = obj.dynamictable.export(fid, fullpath, refs);
+            refs = obj.dynamictable.export(writer, fullpath, refs);
         end
         if ~isempty(obj.nwbdatainterface) && obj.nwbdatainterface.Count ~= 0
-            refs = obj.nwbdatainterface.export(fid, fullpath, refs);
+            refs = obj.nwbdatainterface.export(writer, fullpath, refs);
         end
     end
 end
