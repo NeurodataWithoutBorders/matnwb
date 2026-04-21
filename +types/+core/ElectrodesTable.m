@@ -295,42 +295,42 @@ methods
         end
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.hdmf_common.DynamicTable(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.hdmf_common.DynamicTable(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
         if ~isempty(obj.filtering)
-            refs = obj.filtering.export(fid, [fullpath '/filtering'], refs);
+            refs = obj.filtering.export(writer, [fullpath '/filtering'], refs);
         end
-        refs = obj.group.export(fid, [fullpath '/group'], refs);
+        refs = obj.group.export(writer, [fullpath '/group'], refs);
         if ~isempty(obj.group_name)
-            refs = obj.group_name.export(fid, [fullpath '/group_name'], refs);
+            refs = obj.group_name.export(writer, [fullpath '/group_name'], refs);
         end
         if ~isempty(obj.imp)
-            refs = obj.imp.export(fid, [fullpath '/imp'], refs);
+            refs = obj.imp.export(writer, [fullpath '/imp'], refs);
         end
-        refs = obj.location.export(fid, [fullpath '/location'], refs);
+        refs = obj.location.export(writer, [fullpath '/location'], refs);
         if ~isempty(obj.reference)
-            refs = obj.reference.export(fid, [fullpath '/reference'], refs);
+            refs = obj.reference.export(writer, [fullpath '/reference'], refs);
         end
         if ~isempty(obj.rel_x)
-            refs = obj.rel_x.export(fid, [fullpath '/rel_x'], refs);
+            refs = obj.rel_x.export(writer, [fullpath '/rel_x'], refs);
         end
         if ~isempty(obj.rel_y)
-            refs = obj.rel_y.export(fid, [fullpath '/rel_y'], refs);
+            refs = obj.rel_y.export(writer, [fullpath '/rel_y'], refs);
         end
         if ~isempty(obj.rel_z)
-            refs = obj.rel_z.export(fid, [fullpath '/rel_z'], refs);
+            refs = obj.rel_z.export(writer, [fullpath '/rel_z'], refs);
         end
         if ~isempty(obj.x)
-            refs = obj.x.export(fid, [fullpath '/x'], refs);
+            refs = obj.x.export(writer, [fullpath '/x'], refs);
         end
         if ~isempty(obj.y)
-            refs = obj.y.export(fid, [fullpath '/y'], refs);
+            refs = obj.y.export(writer, [fullpath '/y'], refs);
         end
         if ~isempty(obj.z)
-            refs = obj.z.export(fid, [fullpath '/z'], refs);
+            refs = obj.z.export(writer, [fullpath '/z'], refs);
         end
     end
 end

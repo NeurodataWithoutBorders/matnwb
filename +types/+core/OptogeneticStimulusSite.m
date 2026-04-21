@@ -89,26 +89,26 @@ methods
         types.util.validateShape('location', {[1]}, val)
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.NWBContainer(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.core.NWBContainer(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
         if startsWith(class(obj.description), 'types.untyped.')
-            refs = obj.description.export(fid, [fullpath '/description'], refs);
+            refs = obj.description.export(writer, [fullpath '/description'], refs);
         elseif ~isempty(obj.description)
-            io.writeDataset(fid, [fullpath '/description'], obj.description);
+            writer.writeValue([fullpath '/description'], obj.description);
         end
-        refs = obj.device.export(fid, [fullpath '/device'], refs);
+        refs = obj.device.export(writer, [fullpath '/device'], refs);
         if startsWith(class(obj.excitation_lambda), 'types.untyped.')
-            refs = obj.excitation_lambda.export(fid, [fullpath '/excitation_lambda'], refs);
+            refs = obj.excitation_lambda.export(writer, [fullpath '/excitation_lambda'], refs);
         elseif ~isempty(obj.excitation_lambda)
-            io.writeDataset(fid, [fullpath '/excitation_lambda'], obj.excitation_lambda);
+            writer.writeValue([fullpath '/excitation_lambda'], obj.excitation_lambda);
         end
         if startsWith(class(obj.location), 'types.untyped.')
-            refs = obj.location.export(fid, [fullpath '/location'], refs);
+            refs = obj.location.export(writer, [fullpath '/location'], refs);
         elseif ~isempty(obj.location)
-            io.writeDataset(fid, [fullpath '/location'], obj.location);
+            writer.writeValue([fullpath '/location'], obj.location);
         end
     end
 end

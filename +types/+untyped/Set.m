@@ -107,8 +107,9 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
         end
 
         %% Export
-        function refs = export(obj, fid, fullpath, refs)
-            io.writeGroup(fid, fullpath);
+        function refs = export(obj, writer, fullpath, refs)
+            writer = io.backend.base.Writer.ensure(writer);
+            writer.writeGroup(fullpath);
 
             allPropertyNames = obj.PropertyManager.getAllPropertyNames();
             for iPropName = 1:length(allPropertyNames)
@@ -119,9 +120,9 @@ classdef Set < dynamicprops & matlab.mixin.CustomDisplay
                 propertyFullPath = [fullpath '/' originalName];
                 
                 if startsWith(class(propertyValue), 'types.')
-                    refs = propertyValue.export(fid, propertyFullPath, refs);
+                    refs = propertyValue.export(writer, propertyFullPath, refs);
                 else
-                    io.writeDataset(fid, propertyFullPath, propertyValue);
+                    writer.writeValue(propertyFullPath, propertyValue);
                 end
             end
         end

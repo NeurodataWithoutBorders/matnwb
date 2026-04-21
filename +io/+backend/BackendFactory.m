@@ -2,15 +2,36 @@ classdef BackendFactory
     % BackendFactory - Factory for creating storage backend components.
 
     methods (Static)
-        function reader = createReader(filename, backendName)
+        function writer = createWriter(fileReference, options)
+
             arguments
-                filename (1,1) string
-                backendName (1,1) string = "auto"
+                fileReference
+                options.Mode (1,1) string {mustBeMember(options.Mode, ["edit", "overwrite"])} = "edit"
+                options.StorageBackend (1,1) string = "hdf5"
             end
 
-            backendName = io.backend.BackendFactory.normalizeBackendName(backendName);
+            storageBackend = io.backend.BackendFactory.normalizeStorageBackend(options.StorageBackend);
 
-            switch backendName
+            switch storageBackend
+                case "auto"
+                    writer = io.backend.hdf5.HDF5Writer(fileReference, options.Mode);
+                case "hdf5"
+                    writer = io.backend.hdf5.HDF5Writer(fileReference, options.Mode);
+                otherwise
+                    error("NWB:BackendFactory:UnsupportedBackend", ...
+                        "Unsupported backend `%s`.", storageBackend)
+            end
+        end
+
+        function reader = createReader(filename, options)
+            arguments
+                filename (1,1) string
+                options.StorageBackend (1,1) string = "auto"
+            end
+
+            storageBackend = io.backend.BackendFactory.normalizeStorageBackend(options.StorageBackend);
+
+            switch storageBackend
                 case "auto"
                     if io.backend.BackendFactory.isHDF5File(filename)
                         reader = io.backend.hdf5.HDF5Reader(filename);
@@ -26,22 +47,22 @@ classdef BackendFactory
                     reader = io.backend.hdf5.HDF5Reader(filename);
                 otherwise
                     error("NWB:BackendFactory:UnsupportedBackend", ...
-                        "Unsupported backend `%s`.", backendName)
+                        "Unsupported backend `%s`.", storageBackend)
             end
         end
 
-        function lazyArray = createLazyArray(filename, datasetPath, dims, dataType, backendName)
+        function lazyArray = createLazyArray(filename, datasetPath, dims, dataType, options)
             arguments
                 filename (1,1) string
                 datasetPath (1,1) string
                 dims double = []
                 dataType = []
-                backendName (1,1) string = "auto"
+                options.StorageBackend (1,1) string = "auto"
             end
 
-            backendName = io.backend.BackendFactory.normalizeBackendName(backendName);
+            storageBackend = io.backend.BackendFactory.normalizeStorageBackend(options.StorageBackend);
 
-            switch backendName
+            switch storageBackend
                 case "auto"
                     if io.backend.BackendFactory.isHDF5File(filename)
                         lazyArray = io.backend.hdf5.HDF5LazyArray(filename, datasetPath, dims, dataType);
@@ -57,14 +78,14 @@ classdef BackendFactory
                     lazyArray = io.backend.hdf5.HDF5LazyArray(filename, datasetPath, dims, dataType);
                 otherwise
                     error("NWB:BackendFactory:UnsupportedBackend", ...
-                        "Unsupported backend `%s`.", backendName)
+                        "Unsupported backend `%s`.", storageBackend)
             end
         end
 
-        function backendName = normalizeBackendName(backendName)
-            backendName = lower(string(backendName));
-            if backendName == "h5"
-                backendName = "hdf5";
+        function storageBackend = normalizeStorageBackend(storageBackend)
+            storageBackend = lower(string(storageBackend));
+            if storageBackend == "h5"
+                storageBackend = "hdf5";
             end
         end
 

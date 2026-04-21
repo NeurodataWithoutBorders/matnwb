@@ -30,6 +30,9 @@ function nwbExport(nwbFileObjects, filePaths, mode, options)
 %    Default: false. When true, existing DataPipe objects found in the file are reconfigured 
 %    using the provided dataset settings.
 %
+%  - StorageBackend (string) -
+%    Default: "hdf5". Storage backend used for export.
+%
 % Usage:
 %  Example 1 - Export an NWB file::
 %
@@ -70,6 +73,7 @@ function nwbExport(nwbFileObjects, filePaths, mode, options)
         options.DatasetSettingsProfile (1,1) io.config.enum.ConfigurationProfile = "none"
         options.DatasetSettings = []
         options.OverrideDatasetSettings (1,1) logical = false
+        options.StorageBackend (1,1) string = "hdf5"
     end
 
     assert(length(nwbFileObjects) == length(filePaths), ...
@@ -94,6 +98,7 @@ function nwbExport(nwbFileObjects, filePaths, mode, options)
 
     for iFiles = 1:length(nwbFileObjects)
         filePath = char(filePaths(iFiles));
-        nwbFileObjects(iFiles).export(filePath, mode);
+        nwbFileObjects(iFiles).export(filePath, mode, ...
+            StorageBackend=options.StorageBackend);
     end
 end

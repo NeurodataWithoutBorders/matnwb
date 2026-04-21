@@ -81,17 +81,17 @@ methods
         types.util.validateShape('model_number', {[1]}, val)
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.NWBContainer(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.core.NWBContainer(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
         if ~isempty(obj.description)
-            io.writeAttribute(fid, [fullpath '/description'], obj.description);
+            writer.writeAttribute([fullpath '/description'], obj.description);
         end
-        io.writeAttribute(fid, [fullpath '/manufacturer'], obj.manufacturer);
+        writer.writeAttribute([fullpath '/manufacturer'], obj.manufacturer);
         if ~isempty(obj.model_number)
-            io.writeAttribute(fid, [fullpath '/model_number'], obj.model_number);
+            writer.writeAttribute([fullpath '/model_number'], obj.model_number);
         end
     end
 end

@@ -50,8 +50,8 @@ methods
         types.util.validateShape('data', {[4,Inf,Inf]}, val)
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.core.Image(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.core.Image(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end

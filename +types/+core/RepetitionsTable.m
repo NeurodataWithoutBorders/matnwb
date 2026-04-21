@@ -81,13 +81,13 @@ methods
         types.util.checkType('sequential_recordings_index', 'types.hdmf_common.VectorIndex', val);
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.hdmf_common.DynamicTable(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.hdmf_common.DynamicTable(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
-        refs = obj.sequential_recordings.export(fid, [fullpath '/sequential_recordings'], refs);
-        refs = obj.sequential_recordings_index.export(fid, [fullpath '/sequential_recordings_index'], refs);
+        refs = obj.sequential_recordings.export(writer, [fullpath '/sequential_recordings'], refs);
+        refs = obj.sequential_recordings_index.export(writer, [fullpath '/sequential_recordings_index'], refs);
     end
 end
 

@@ -93,22 +93,22 @@ methods
         types.util.validateShape('sampling_rate', {[1]}, val)
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.hdmf_common.Data(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.hdmf_common.Data(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
-        io.writeAttribute(fid, [fullpath '/description'], obj.description);
+        writer.writeAttribute([fullpath '/description'], obj.description);
         if ~isempty(obj.resolution) && any(endsWith(fullpath, 'units/spike_times'))
-            io.writeAttribute(fid, [fullpath '/resolution'], obj.resolution);
+            writer.writeAttribute([fullpath '/resolution'], obj.resolution);
         end
         validDataSamplingPaths = strcat('units/', {'waveform_mean', 'waveform_sd', 'waveforms'});
         if ~isempty(obj.sampling_rate) && any(endsWith(fullpath, validDataSamplingPaths))
-            io.writeAttribute(fid, [fullpath '/sampling_rate'], obj.sampling_rate);
+            writer.writeAttribute([fullpath '/sampling_rate'], obj.sampling_rate);
         end
         validUnitPaths = strcat('units/', {'waveform_mean', 'waveform_sd', 'waveforms'});
         if ~isempty(obj.unit) && any(endsWith(fullpath, validUnitPaths))
-            io.writeAttribute(fid, [fullpath '/unit'], obj.unit);
+            writer.writeAttribute([fullpath '/unit'], obj.unit);
         end
     end
 end

@@ -99,16 +99,16 @@ methods
         types.util.checkSet('vectordata', struct(), constrained, val);
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.hdmf_common.Container(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.hdmf_common.Container(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
-        io.writeAttribute(fid, [fullpath '/colnames'], obj.colnames, 'forceArray');
-        io.writeAttribute(fid, [fullpath '/description'], obj.description);
-        refs = obj.id.export(fid, [fullpath '/id'], refs);
+        writer.writeAttribute([fullpath '/colnames'], obj.colnames, 'forceArray');
+        writer.writeAttribute([fullpath '/description'], obj.description);
+        refs = obj.id.export(writer, [fullpath '/id'], refs);
         if ~isempty(obj.vectordata)
-            refs = obj.vectordata.export(fid, fullpath, refs);
+            refs = obj.vectordata.export(writer, fullpath, refs);
         end
     end
     %% CUSTOM CONSTRAINTS

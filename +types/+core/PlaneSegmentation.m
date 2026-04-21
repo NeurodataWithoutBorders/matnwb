@@ -177,27 +177,27 @@ methods
         types.util.checkType('voxel_mask_index', 'types.hdmf_common.VectorIndex', val);
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.hdmf_common.DynamicTable(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.hdmf_common.DynamicTable(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
         if ~isempty(obj.image_mask)
-            refs = obj.image_mask.export(fid, [fullpath '/image_mask'], refs);
+            refs = obj.image_mask.export(writer, [fullpath '/image_mask'], refs);
         end
-        refs = obj.imaging_plane.export(fid, [fullpath '/imaging_plane'], refs);
+        refs = obj.imaging_plane.export(writer, [fullpath '/imaging_plane'], refs);
         if ~isempty(obj.pixel_mask)
-            refs = obj.pixel_mask.export(fid, [fullpath '/pixel_mask'], refs);
+            refs = obj.pixel_mask.export(writer, [fullpath '/pixel_mask'], refs);
         end
         if ~isempty(obj.pixel_mask_index)
-            refs = obj.pixel_mask_index.export(fid, [fullpath '/pixel_mask_index'], refs);
+            refs = obj.pixel_mask_index.export(writer, [fullpath '/pixel_mask_index'], refs);
         end
-        refs = obj.reference_images.export(fid, [fullpath '/reference_images'], refs);
+        refs = obj.reference_images.export(writer, [fullpath '/reference_images'], refs);
         if ~isempty(obj.voxel_mask)
-            refs = obj.voxel_mask.export(fid, [fullpath '/voxel_mask'], refs);
+            refs = obj.voxel_mask.export(writer, [fullpath '/voxel_mask'], refs);
         end
         if ~isempty(obj.voxel_mask_index)
-            refs = obj.voxel_mask_index.export(fid, [fullpath '/voxel_mask_index'], refs);
+            refs = obj.voxel_mask_index.export(writer, [fullpath '/voxel_mask_index'], refs);
         end
     end
 end
