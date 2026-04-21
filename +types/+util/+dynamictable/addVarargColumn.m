@@ -57,15 +57,7 @@ for i = 1:length(newColNames)
         validateColumnHeight(new_cn, currentColumnHeight, tableHeight)
     end
     assignColumn(DynamicTable, new_cn, new_cv, storageTargets{i});
-    if 8 == exist('types.hdmf_common.VectorIndex', 'class')
-        if ~isa(new_cv, 'types.hdmf_common.VectorIndex')
-            DynamicTable.colnames{end+1} = new_cn;
-        end
-    else %legacy case
-        if ~isa(new_cv, 'types.core.VectorIndex')
-            DynamicTable.colnames{end+1} = new_cn;
-        end
-    end
+    updateColnames(DynamicTable, new_cn, new_cv)
 end
 end
 
@@ -115,6 +107,23 @@ function assignColumn(DynamicTable, columnName, columnValue, storageTarget)
             DynamicTable.(columnName) = columnValue;
         case 'vectordata'
             DynamicTable.vectordata.set(columnName, columnValue);
+    end
+end
+
+function updateColnames(DynamicTable, new_cn, new_cv)
+    % Skip update if new column name is already present in colnames. Column
+    % names for schema-defined columns are added to the colnames property
+    % automatically via property post-set hooks.
+    if any(strcmp(DynamicTable.colnames, new_cn))
+        return
+    end
+
+    % Update colnames property if the column vector being added is not a vector index.
+    if ~isa(new_cv, 'types.hdmf_common.VectorIndex') || isa(new_cv, 'types.core.VectorIndex')
+        % assignColumn will update colnames for schema-defined columns via
+        % post set hook. Only add column name to colnames if if is not
+        % wlaready added.
+        DynamicTable.colnames{end+1} = new_cn;
     end
 end
 
