@@ -24,7 +24,7 @@ function matnwb_exportTutorials(options)
 % cleanly.
 
     arguments
-        options.ExportFormat (1,:) string {mustStartWithDot} = [".m", ".html"]
+        options.ExportFormat (1,:) string {mustStartWithDot} = [".m", ".html", ".rst"]
         options.Expression (1,1) string = "*" % Filter by expression
         options.FileNames (1,:) string = string.empty % Filter by file names
         options.FilePaths (1,:) string = string.empty % Export specified files
@@ -34,7 +34,8 @@ function matnwb_exportTutorials(options)
 
     EXPORT_FOLDERS = dictionary(...
         '.m', fullfile(misc.getMatnwbDir, "tutorials", "private", "mcode"), ...
-        '.html', fullfile(misc.getMatnwbDir, "docs", "source", "_static", "html", "tutorials") );
+        '.html', fullfile(misc.getMatnwbDir, "docs", "source", "_static", "html", "tutorials"), ...
+        '.rst', fullfile(misc.getMatnwbDir, "docs", "source", "pages", "tutorials"));
     
     [exportFormat, targetFolderNames] = deal(options.ExportFormat);
 
@@ -108,7 +109,11 @@ function matnwb_exportTutorials(options)
         for j = 1:numel(exportFormat)
             targetFilePath = fullfile(targetFolderPaths(j), fileNames(i) + exportFormat(j));
             fprintf('Exporting livescript "%s" to "%s"\n', fileNames(i), exportFormat(j))
-            export(sourcePath, targetFilePath);
+            if strcmp(exportFormat(j), '.rst') % Custom export/conversion needed
+                generateRstForTutorial(string(sourcePath))
+            else
+                export(sourcePath, targetFilePath);
+            end
             if strcmp(exportFormat(j), '.html')
                 postProcessLivescriptHtml(targetFilePath)
             end
