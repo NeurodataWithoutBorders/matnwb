@@ -21,7 +21,7 @@ isFirstColumn = isempty(DynamicTable.colnames) && ...
 
 % get current table height - assume id length reflects table height
 if ~isempty(DynamicTable.colnames)
-    tableHeight = types.util.dynamictable.getColumnHeight(DynamicTable.id);
+    tableHeight = types.util.dynamictable.internal.getColumnHeight(DynamicTable.id);
 end
 
 % If adding the first column, initialize the id with 0-indexed values
@@ -35,7 +35,7 @@ if isFirstColumn && ~isempty(newColNames)
         firstColData = newVectorData.(indexName);
     end
 
-    newTableHeight = types.util.dynamictable.getColumnHeight(firstColData);
+    newTableHeight = types.util.dynamictable.internal.getColumnHeight(firstColData);
     types.util.dynamictable.internal.initDynamicTableId(DynamicTable, newTableHeight);
     tableHeight = newTableHeight;
 end
@@ -52,7 +52,7 @@ for i = 1:length(newColNames)
         else
             heightColumn = newVectorData.(indexName);
         end
-        currentColumnHeight = types.util.dynamictable.getColumnHeight(heightColumn);
+        currentColumnHeight = types.util.dynamictable.internal.getColumnHeight(heightColumn);
 
         validateColumnHeight(new_cn, currentColumnHeight, tableHeight)
     end

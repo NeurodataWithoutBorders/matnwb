@@ -49,6 +49,39 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
             end
         end
 
+        function testGetRowRequiresIdOnlyWhenUseIdIsTrue(testCase)
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'test table', ...
+                'colnames', {'vec'}, ...
+                'vec', types.hdmf_common.VectorData( ...
+                    'description', 'data column', ...
+                    'data', (1:3)') ...
+                );
+
+            dynamicTable.id = [];
+
+            testCase.verifyWarningFree(@() dynamicTable.getRow(1));
+            testCase.verifyError( ...
+                @() dynamicTable.getRow(1, 'useId', true), ...
+                'NWB:DynamicTable:GetRow:MissingId');
+        end
+
+        function testGetRowThrowsSpecificErrorForOutOfBoundsIndex(testCase)
+            dynamicTable = util.table2nwb(table([1; 2], ["a"; "b"]));
+
+            testCase.verifyError( ...
+                @() dynamicTable.getRow(3), ...
+                'NWB:DynamicTable:GetRow:RowOutOfBounds');
+        end
+
+        function testGetRowThrowsSpecificErrorForEmptyTable(testCase)
+            dynamicTable = types.hdmf_common.DynamicTable();
+
+            testCase.verifyError( ...
+                @() dynamicTable.getRow(1), ...
+                'NWB:DynamicTable:GetRow:RowOutOfBounds');
+        end
+
         function testNwbToTableWithReferencedTablesAsRowIndices(testCase)
             % The default mode for the toTable() method is to return the row indices
             % for dynamic table regions. This test verifies that the data type of

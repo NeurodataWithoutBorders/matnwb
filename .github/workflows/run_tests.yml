@@ -39,7 +39,7 @@ jobs:
       latest_matlab_version: ${{ steps.set-matrix.outputs.latest_matlab_version }}
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set matrix
         id: set-matrix
@@ -87,10 +87,10 @@ jobs:
       matrix: ${{ fromJSON(needs.set_matrix.outputs.matrix) }}
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -113,7 +113,7 @@ jobs:
 
       - name: Check out PyNWB repository (for testing PyNWB tutorials)
         if: ${{ matrix.skip-pynwb-tests == '0' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: NeurodataWithoutBorders/pynwb
           ref: ${{ steps.configure-python.outputs.pynwb_version }}
@@ -124,14 +124,14 @@ jobs:
         run: echo "PYNWB_REPO_DIR=$GITHUB_WORKSPACE/pynwb-repo" >> "$GITHUB_ENV"
 
       - name: Install MATLAB
-        uses: matlab-actions/setup-matlab@v2
+        uses: matlab-actions/setup-matlab@v3
         if: always()
         with:
           release: ${{ matrix.matlab-version }}
           cache: ${{ env.USE_CACHE }}
 
       - name: Run tests
-        uses: matlab-actions/run-command@v2
+        uses: matlab-actions/run-command@v3
         with:
           command: |
             setenv("SKIP_PYNWB_TESTS", ...
@@ -144,7 +144,7 @@ jobs:
 
       - name: Upload JUnit results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results-${{ matrix.matlab-version }}
           path: testResults.xml
@@ -152,7 +152,7 @@ jobs:
 
       - name: Upload coverage results
         if: always() && matrix.matlab-version == needs.set_matrix.outputs.latest_matlab_version
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-coverage-${{ matrix.matlab-version }}
           path: ./coverage.xml
@@ -164,16 +164,16 @@ jobs:
     needs: [run_tests]
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Retrieve result files
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           pattern: test-results-*
           merge-multiple: true
 
       - name: Publish test results
-        uses: mikepenz/action-junit-report@v4
+        uses: mikepenz/action-junit-report@v6
         with:
           report_paths: 'testResults*.xml'
 
@@ -184,15 +184,15 @@ jobs:
     needs: [run_tests, set_matrix]
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Retrieve code coverage files
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: test-coverage-${{ needs.set_matrix.outputs.latest_matlab_version }}
 
       - name: Publish on coverage results on Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage*.xml

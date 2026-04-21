@@ -8,9 +8,9 @@ classdef CSRMatrix < types.hdmf_common.Container & types.untyped.GroupClass
 % REQUIRED PROPERTIES
 properties
     data; % REQUIRED (any) The non-zero values in the matrix.
-    indices; % REQUIRED (uint) The column indices.
-    indptr; % REQUIRED (uint) The row index pointer.
-    shape; % REQUIRED (uint) The shape (number of rows, number of columns) of this sparse matrix.
+    indices; % REQUIRED (uint8) The column indices.
+    indptr; % REQUIRED (uint8) The row index pointer.
+    shape; % REQUIRED (uint8) The shape (number of rows, number of columns) of this sparse matrix.
 end
 
 methods
@@ -25,11 +25,11 @@ methods
         % Input Arguments (Name-Value Arguments):
         %  - data (any) - The non-zero values in the matrix.
         %
-        %  - indices (uint) - The column indices.
+        %  - indices (uint8) - The column indices.
         %
-        %  - indptr (uint) - The row index pointer.
+        %  - indptr (uint8) - The row index pointer.
         %
-        %  - shape (uint) - The shape (number of rows, number of columns) of this sparse matrix.
+        %  - shape (uint8) - The shape (number of rows, number of columns) of this sparse matrix.
         %
         % Output Arguments:
         %  - cSRMatrix (types.hdmf_common.CSRMatrix) - A CSRMatrix object
@@ -77,15 +77,15 @@ methods
         types.util.validateShape('data', {[Inf]}, val)
     end
     function val = validate_indices(obj, val)
-        val = types.util.checkDtype('indices', 'uint', val);
+        val = types.util.checkDtype('indices', 'uint8', val);
         types.util.validateShape('indices', {[Inf]}, val)
     end
     function val = validate_indptr(obj, val)
-        val = types.util.checkDtype('indptr', 'uint', val);
+        val = types.util.checkDtype('indptr', 'uint8', val);
         types.util.validateShape('indptr', {[Inf]}, val)
     end
     function val = validate_shape(obj, val)
-        val = types.util.checkDtype('shape', 'uint', val);
+        val = types.util.checkDtype('shape', 'uint8', val);
         types.util.validateShape('shape', {[2]}, val)
     end
     %% EXPORT

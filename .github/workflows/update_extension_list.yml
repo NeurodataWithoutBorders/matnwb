@@ -16,17 +16,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install MATLAB
-        uses: matlab-actions/setup-matlab@v2
+        uses: matlab-actions/setup-matlab@v3
       
       # Use deploy key to push back to protected branch
       - name: Checkout repository using deploy key
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: refs/heads/main
           ssh-key: ${{ secrets.DEPLOY_KEY }}
 
       - name: Update extension list in nwbInstallExtensions
-        uses: matlab-actions/run-command@v2
+        uses: matlab-actions/run-command@v3
         with:
           command: |
             addpath(genpath("tools"));
