@@ -1,4 +1,4 @@
-function checkConfig(DynamicTable, ignoreList)
+function checkConfig(dynamicTable, ignoreList)
     % CHECKCONFIG Given a DynamicTable object, this functions checks for proper
     % DynamicTable configuration
     %
@@ -14,22 +14,24 @@ function checkConfig(DynamicTable, ignoreList)
     %  2) All rows have a corresponding id. If none exist, this function creates them.
     %  3) No index loops exist.
     arguments
-        DynamicTable
-        ignoreList (1,:) cell = {};
+        dynamicTable (1,1) {matnwb.common.validation.mustBeDynamicTable}
+        ignoreList = {}
     end
 
-    if isempty(DynamicTable.colnames)
-        assert(isempty(getDetectedColumnNames(DynamicTable)), ...
+    ignoreList = normalizeIgnoreList(ignoreList);
+
+    if isempty(dynamicTable.colnames)
+        assert(isempty(getDetectedColumnNames(dynamicTable)), ...
             'NWB:DynamicTable:CheckConfig:ColumnNamesMismatch', ...
             'All Vector Data/Index columns must have their name ordered in the `colnames` property.');
         return;
     end
 
     % remove null characters from column names
-    DynamicTable.colnames = cleanColumnNames(DynamicTable.colnames);
+    dynamicTable.colnames = cleanColumnNames(dynamicTable.colnames);
 
     % do not check specified columns - useful for classes that build on DynamicTable class
-    columns = setdiff(DynamicTable.colnames, ignoreList);
+    columns = setdiff(dynamicTable.colnames, ignoreList);
 
     if isempty(columns)
         return
@@ -39,7 +41,7 @@ function checkConfig(DynamicTable, ignoreList)
     columnNames = strings(length(columns), 1);
     for iCol = 1:length(columns)
         [columnHeight, columnName] = types.util.dynamictable.internal.getColumnRowHeight( ...
-            DynamicTable, columns{iCol});
+            dynamicTable, columns{iCol});
         columnHeight = unique(columnHeight);
 
         assert(isscalar(columnHeight), ...
@@ -61,51 +63,50 @@ function checkConfig(DynamicTable, ignoreList)
         'Detected column heights:\n' ...
         strjoin( compose(formatSpec, columnNames, columnHeights), newline) ]);
 
-    if isempty(DynamicTable.id)
-        types.util.dynamictable.internal.initDynamicTableId(DynamicTable, tableHeight);
+    if isempty(dynamicTable.id)
+        types.util.dynamictable.internal.initDynamicTableId(dynamicTable, tableHeight);
         return;
     end
 
-    numIds = types.util.dynamictable.internal.getColumnHeight(DynamicTable.id);
+    numIds = types.util.dynamictable.internal.getColumnHeight(dynamicTable.id);
     assert(tableHeight == numIds, ...
         'NWB:DynamicTable:CheckConfig:InvalidId', ...
         'Special column `id` of DynamicTable needs to match the detected height of %d. Found %d IDs.', ...
         tableHeight, numIds);
 end
 
-function names = getDetectedColumnNames(DynamicTable)
+function names = getDetectedColumnNames(dynamicTable)
     % scan the entire dynamic table for columns that may or may not be
     % registered.
 
     names = {};
-    tableProps = properties(DynamicTable);
+    tableProps = properties(dynamicTable);
     for iProp = 1:length(tableProps)
         propName = tableProps{iProp};
-        propValue = DynamicTable.(propName);
+        propValue = dynamicTable.(propName);
         if ~isempty(propValue) ...
                 && (isa(propValue, 'types.core.VectorData') || isa(propValue, 'types.hdmf_common.VectorData'))
             names{end+1} = propName;
         end
     end
 
-    vectorNames = DynamicTable.vectordata.keys();
+    vectorNames = dynamicTable.vectordata.keys();
     for iVector = 1:length(vectorNames)
         vectorName = vectorNames{iVector};
-        Vector = DynamicTable.vectordata.get(vectorName);
-        if isa(Vector, 'types.hdmf_common.VectorData') || isa(Vector, 'types.core.VectorData')
-            if isa(Vector.data, 'types.untyped.DataStub')
-                isDataEmpty = any(Vector.data.dims == 0);
-            elseif isa(Vector.data, 'types.untyped.DataPipe')
-                isDataEmpty = any(size(Vector.data) == 0);
+        vectorData = dynamicTable.vectordata.get(vectorName);
+        if isa(vectorData, 'types.hdmf_common.VectorData') || isa(vectorData, 'types.core.VectorData')
+            if isa(vectorData.data, 'types.untyped.DataStub')
+                isDataEmpty = any(vectorData.data.dims == 0);
+            elseif isa(vectorData.data, 'types.untyped.DataPipe')
+                isDataEmpty = any(size(vectorData.data) == 0);
             else
-                isDataEmpty = isempty(Vector.data);
+                isDataEmpty = isempty(vectorData.data);
             end
             if ~isDataEmpty
                 names{end+1} = vectorName;
             end
         end
     end
-
 end
 
 function colnames = cleanColumnNames(colnames)
@@ -127,4 +128,16 @@ function colnames = cleanColumnNames(colnames)
     if isScalarChar
         colnames = colnames{1};
     end
+end
+
+function ignoreList = normalizeIgnoreList(ignoreList)
+    if ischar(ignoreList)
+        ignoreList = {ignoreList};
+    elseif isstring(ignoreList)
+        ignoreList = cellstr(ignoreList);
+    end
+
+    assert(iscellstr(ignoreList), ...
+        'NWB:DynamicTable:CheckConfig:InvalidIgnoreList', ...
+        'Ignore list must be text or a cell array of character vectors.');
 end

@@ -6,7 +6,7 @@ function tableHeight = getTableHeight(dynamicTable)
 % column object.
 
     arguments
-        dynamicTable
+        dynamicTable {matnwb.common.validation.mustBeDynamicTable}
     end
 
     if ~isempty(dynamicTable.id)

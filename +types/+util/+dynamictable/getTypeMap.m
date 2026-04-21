@@ -1,42 +1,45 @@
-function TypeMap = getTypeMap(DynamicTable)
+function typeMap = getTypeMap(dynamicTable)
 % GETTYPEMAP returns containers.Map mapping column name to struct
 % containing type name and size.
-TypeMap = containers.Map;
-if isempty(DynamicTable.id.data)...
-        || (isa(DynamicTable.id.data, 'types.untyped.DataPipe')...
-            && 0 == DynamicTable.id.data.offset)
-    return;
-end
-TypeStruct = struct('type', '', 'dims', [0, 0]);
-for i = 1:length(DynamicTable.colnames)
-    colnm = DynamicTable.colnames{i};
-    if isprop(DynamicTable, colnm)
-        colVecData = DynamicTable.(colnm);
-    else
-        colVecData = DynamicTable.vectordata.get(colnm);
+    arguments
+        dynamicTable (1,1) {matnwb.common.validation.mustBeDynamicTable}
     end
 
-    if isa(colVecData.data, 'types.untyped.DataPipe')
-        colval = colVecData.data.load(1);
-    elseif istable(colVecData.data)
-        colval = colVecData.data;
-    else
-        colval = colVecData.data(1);
+    typeMap = containers.Map;
+    if isempty(dynamicTable.id.data)...
+            || (isa(dynamicTable.id.data, 'types.untyped.DataPipe')...
+                && 0 == dynamicTable.id.data.offset)
+        return;
     end
+    typeInfo = struct('type', '', 'dims', [0, 0]);
+    for iColumn = 1:length(dynamicTable.colnames)
+        columnName = dynamicTable.colnames{iColumn};
+        if isprop(dynamicTable, columnName)
+            columnVectorData = dynamicTable.(columnName);
+        else
+            columnVectorData = dynamicTable.vectordata.get(columnName);
+        end
     
-    if iscellstr(colval)
-        TypeStruct.type = 'cellstr';
-    else
-        TypeStruct.type = class(colval);
+        if isa(columnVectorData.data, 'types.untyped.DataPipe')
+            columnValue = columnVectorData.data.load(1);
+        elseif istable(columnVectorData.data)
+            columnValue = columnVectorData.data;
+        else
+            columnValue = columnVectorData.data(1);
+        end
+    
+        if iscellstr(columnValue)
+            typeInfo.type = 'cellstr';
+        else
+            typeInfo.type = class(columnValue);
+        end
+    
+        if isa(columnVectorData.data, 'types.untyped.DataPipe')
+            typeInfo.dims = columnVectorData.data.internal.maxSize;
+        else
+            typeInfo.dims = size(columnVectorData.data);
+        end
+    
+        typeMap(columnName) = typeInfo;
     end
-    
-    if isa(colVecData.data, 'types.untyped.DataPipe')
-        TypeStruct.dims = colVecData.data.internal.maxSize;
-    else
-        TypeStruct.dims = size(colVecData.data);
-    end
-    
-    TypeMap(colnm) = TypeStruct;
 end
-end
-

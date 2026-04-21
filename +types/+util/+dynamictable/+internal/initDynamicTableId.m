@@ -6,7 +6,7 @@ function initDynamicTableId(dynamicTable, tableHeight)
 %   core namespace.
 
     arguments
-        dynamicTable
+        dynamicTable {matnwb.common.validation.mustBeDynamicTable}
         tableHeight = []
     end
 
@@ -15,7 +15,7 @@ function initDynamicTableId(dynamicTable, tableHeight)
     else
         idData = [];
     end
-    
+
     if exist('types.hdmf_common.ElementIdentifiers', 'class') == 8
         dynamicTable.id = types.hdmf_common.ElementIdentifiers('data', idData);
     else % legacy ElementIdentifiers
