@@ -311,6 +311,12 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
             testCase.verifyError(...
                 @() dynamicTable.addColumn('columnA', duplicateColumn), ...
                 'NWB:DynamicTable:AddColumn:ColumnExists');
+
+            % Remove colnames and verify that we still cannot add column A
+            dynamicTable.colnames = {};
+            testCase.verifyError(...
+                @() dynamicTable.addColumn('columnA', duplicateColumn), ...
+                'NWB:DynamicTable:AddColumn:ColumnExists');
         end
 
         function testAddMultipleColumnsThrowsErrorIfAnyExists(testCase)
@@ -327,6 +333,86 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
             testCase.verifyError(...
                 @() dynamicTable.addColumn('newColumn', newColumn, 'columnA', duplicateColumn), ...
                 'NWB:DynamicTable:AddColumn:ColumnExists');
+        end
+
+        function testAddColumnUsesSchemaPropertyForTimeIntervals(testCase)
+            numRows = 3;
+            timeIntervals = types.core.TimeIntervals( ...
+                'description', 'test time intervals');
+
+            startTime = types.hdmf_common.VectorData( ...
+                'description', 'start time', ...
+                'data', single((1:numRows)'));
+
+            timeIntervals.addColumn('start_time', startTime);
+
+            testCase.verifyEqual(timeIntervals.colnames, {'start_time'});
+            testCase.verifyNotEmpty(timeIntervals.start_time);
+            testCase.verifyEqual(timeIntervals.start_time.data, single((1:numRows)'));
+            testCase.verifyFalse(timeIntervals.vectordata.isKey('start_time'));
+            testCase.verifyEqual(timeIntervals.id.data, int64((0:numRows-1)'));
+
+            matlabTable = timeIntervals.toTable();
+            testCase.verifyEqual(matlabTable.start_time, single((1:numRows)'));
+        end
+
+        function testAddColumnUsesVectorDataForNonSchemaColumn(testCase)
+            numRows = 3;
+            timeIntervals = types.core.TimeIntervals( ...
+                'description', 'test time intervals');
+
+            customColumn = types.hdmf_common.VectorData( ...
+                'description', 'custom column', ...
+                'data', single((1:numRows)'));
+
+            timeIntervals.addColumn('custom_col', customColumn);
+
+            testCase.verifyEqual(timeIntervals.colnames, {'custom_col'});
+            testCase.verifyTrue(timeIntervals.vectordata.isKey('custom_col'));
+            testCase.verifyFalse(isprop(timeIntervals, 'custom_col'));
+        end
+
+        function testAddColumnUsesSchemaPropertyForTimeSeriesReferenceColumn(testCase)
+            timeIntervals = types.core.TimeIntervals( ...
+                'description', 'test time intervals');
+
+            timeseriesColumn = types.core.TimeSeriesReferenceVectorData( ...
+                'description', 'timeseries references');
+
+            timeIntervals.addColumn('timeseries', timeseriesColumn);
+
+            testCase.verifyEqual(timeIntervals.colnames, {'timeseries'});
+            testCase.verifyEqual(timeIntervals.timeseries, timeseriesColumn);
+            testCase.verifyFalse(timeIntervals.vectordata.isKey('timeseries'));
+        end
+
+        function testAddColumnWrongTypeForSchemaPropertyKeepsPropertyRouting(testCase)
+            timeIntervals = types.core.TimeIntervals( ...
+                'description', 'test time intervals');
+
+            wrongTypeColumn = types.hdmf_common.VectorData( ...
+                'description', 'wrong type for timeseries column');
+
+            testCase.verifyError( ...
+                @() timeIntervals.addColumn('timeseries', wrongTypeColumn), ...
+                'NWB:CheckType:InvalidNeurodataType');
+
+            % colnames must not have been updated when the assignment failed
+            testCase.verifyEmpty(timeIntervals.colnames, ...
+                'colnames should be unmodified when addColumn throws during assignment');
+        end
+
+        function testAddColumnRejectsNonColumnPropertyCollision(testCase)
+            units = types.core.Units( ...
+                'description', 'test units table');
+
+            invalidColumn = types.hdmf_common.VectorData( ...
+                'description', 'invalid column', ...
+                'data', single((1:3)'));
+
+            testCase.verifyError( ...
+                @() units.addColumn('waveform_mean_sampling_rate', invalidColumn), ...
+                'NWB:DynamicTable:AddColumn:InvalidPropertyCollision');
         end
     
         function testAddDataPipeWithWrongHeightToDynamicTable(testCase)
