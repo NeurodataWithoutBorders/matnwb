@@ -37,9 +37,41 @@ methods
         %
         %  - control_description (char) - Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0.
         %
-        %  - data (numeric) - Binary data representing images across frames. If data are stored in an external file, this should be an empty 3D array.
+        %  - data (numeric) - Time-series of microscopy data indexed as data[time, width, height].
+        
+        Indexing convention:
+          - width: first spatial axis (horizontal direction, columns)
+          - height: second spatial axis (vertical direction, rows)
+        
+        For raster-scanning systems (two-photon, confocal, one-photon laser scanning):
+          - width: fast scan direction (horizontal)
+          - height: slow scan direction (vertical)
+        
+        Coordinate system diagram:
+        
+          height  ^
+          (slow)  |
+                  |    +-----------------+
+                  |    |                 |
+                  |    |   Image plane   |
+                  |    |                 |
+                  |    +-----------------+
+                  |
+                  0 ----------------------> width (fast)
+        
+        
+        For non-raster systems (wide-field, light-sheet, random-access), width and height
+        are arbitrary coordinates of the image plane.
+        
+        Note: This indexing convention conflicts with standard matrix[row, column] notation
+        for array access where the first index moves vertically through rows and the second moves horizontally
+        through columns. In the schema, data[time, width, height] means that the first spatial
+        index moves horizontally (width) through columns and the second spatial index moves
+        vertically (height) through rows. In summary, incrementing the first spatial index 
+        moves you horizontally across the image, while in matrix notation it would move you 
+        vertically across the rows of the image. 
         %
-        %  - data_continuity (char) - Optionally describe the continuity of the data. Can be "continuous", "instantaneous", or "step". For example, a voltage trace would be "continuous", because samples are recorded from a continuous process. An array of lick times would be "instantaneous", because the data represents distinct moments in time. Times of image presentations would be "step" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable.
+        %  - data_continuity (char) - Optionally describe the continuity of the data. Can be "continuous", "instantaneous", or "step". For example, a voltage trace would be "continuous", because samples are recorded from a continuous process. An array of lick times would be "instantaneous", because the data represents distinct moments in time. Times of image presentations would be "step" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable. For storing instantaneous event information, it is recommended to use an EventsTable instead of a TimeSeries with continuity set to "instantaneous".
         %
         %  - data_conversion (single) - Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data to the specified 'unit'. e.g. if the data acquisition system stores values in this object as signed 16-bit integers (int16 range -32,768 to 32,767) that correspond to a 5V range (-2.5V to 2.5V), and the data acquisition system gain is 8000X, then the 'conversion' multiplier to get from raw data acquisition values to recorded volts is 2.5/32768/8000 = 9.5367e-9.
         %
@@ -66,6 +98,8 @@ methods
         %  - imaging_plane (ImagingPlane) - Link to ImagingPlane object from which this TimeSeries data was generated.
         %
         %  - intensity (single) - Intensity of the excitation in mW/mm^2, if known.
+        %
+        %  - num_samples (uint32) - Total number of frames across all external files. This is required when format='external' and timing is described using starting_time and rate, since data is empty and its first dimension cannot be used to determine the number of frames. When timestamps is provided, len(timestamps) already serves this purpose.
         %
         %  - pmt_gain (single) - Photomultiplier gain.
         %
@@ -139,6 +173,10 @@ methods
     function val = validate_binning(obj, val)
         val = types.util.checkDtype('binning', 'uint8', val);
         types.util.validateShape('binning', {[1]}, val)
+    end
+    function val = validate_data(obj, val)
+        val = types.util.checkDtype('data', 'numeric', val);
+        types.util.validateShape('data', {[Inf,Inf,Inf,Inf], [Inf,Inf,Inf]}, val)
     end
     function val = validate_exposure_time(obj, val)
         val = types.util.checkDtype('exposure_time', 'single', val);
