@@ -67,12 +67,20 @@ methods
     %% SETTERS
     function set.meaning(obj, val)
         obj.meaning = obj.validate_meaning(val);
+        obj.postset_meaning()
+    end
+    function postset_meaning(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'meaning');
     end
     function set.target(obj, val)
         obj.target = obj.validate_target(val);
     end
     function set.value(obj, val)
         obj.value = obj.validate_value(val);
+        obj.postset_value()
+    end
+    function postset_value(obj)
+        types.util.dynamictable.syncNamedColumn(obj, 'value');
     end
     %% VALIDATORS
     
@@ -91,14 +99,14 @@ methods
         types.util.checkType('value', 'types.hdmf_common.VectorData', val);
     end
     %% EXPORT
-    function refs = export(obj, fid, fullpath, refs)
-        refs = export@types.hdmf_common.DynamicTable(obj, fid, fullpath, refs);
+    function refs = export(obj, writer, fullpath, refs)
+        refs = export@types.hdmf_common.DynamicTable(obj, writer, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
         end
-        refs = obj.meaning.export(fid, [fullpath '/meaning'], refs);
-        refs = obj.target.export(fid, [fullpath '/target'], refs);
-        refs = obj.value.export(fid, [fullpath '/value'], refs);
+        refs = obj.meaning.export(writer, [fullpath '/meaning'], refs);
+        refs = obj.target.export(writer, [fullpath '/target'], refs);
+        refs = obj.value.export(writer, [fullpath '/value'], refs);
     end
 end
 
