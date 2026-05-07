@@ -7,7 +7,7 @@ classdef NWBFile < types.core.NWBContainer & types.untyped.GroupClass
 
 % READONLY PROPERTIES
 properties(SetAccess = protected)
-    nwb_version = "2.9.0"; %  (char) File version string. Use semantic versioning, e.g. 1.2.1. This will be the name of the format with trailing major, minor and patch numbers.
+    nwb_version = "2.10.0"; %  (char) File version string. Use semantic versioning, e.g. 1.2.1. This will be the name of the format with trailing major, minor and patch numbers.
 end
 % REQUIRED PROPERTIES
 properties
@@ -21,12 +21,14 @@ end
 properties
     acquisition; %  (DynamicTable|NWBDataInterface) Tabular data that is relevant to acquisition | Acquired, raw data.
     analysis; %  (DynamicTable|NWBContainer) Tabular data that is relevant to data stored in analysis | Custom analysis results.
+    events; %  (EventsTable) Events that occurred during the session.
     general; %  (LabMetaData) Place-holder than can be extended so that lab-specific meta-data can be placed in /general.
     general_data_collection; %  (char) Notes about data collection and analysis.
     general_devices; %  (Device) Data acquisition devices.
     general_devices_models; %  (DeviceModel) Data acquisition device models.
     general_experiment_description; %  (char) General description of the experiment.
     general_experimenter; %  (char) Name of person(s) who performed the experiment. Can also specify roles of different people involved.
+    general_external_resources; %  (HERD) This is the HERD structure for this specific NWBFile, storing the mapped external resources.
     general_extracellular_ephys; %  (ElectrodeGroup) Physical group of electrodes.
     general_extracellular_ephys_electrodes; %  (ElectrodesTable) A table of all electrodes (i.e. channels) used for recording. Changed in NWB 2.9.0 to use the newly added ElectrodesTable neurodata type instead of a DynamicTable with added columns.
     general_institution; %  (char) Institution(s) where experiment was performed.
@@ -80,6 +82,8 @@ methods
         %
         %  - analysis (DynamicTable|NWBContainer) - Tabular data that is relevant to data stored in analysis
         %
+        %  - events (EventsTable) - Events that occurred during the session.
+        %
         %  - file_create_date (datetime) - A record of the date the file was created and of subsequent modifications. The date is stored in UTC with local timezone offset as ISO 8601 extended formatted strings: 2018-09-28T14:43:54.123+02:00. Dates stored in UTC end in "Z" with no timezone offset. Date accuracy is up to milliseconds. The file can be created after the experiment was run, so this may differ from the experiment start time. Each modification to the nwb file adds a new entry to the array.
         %
         %  - general (LabMetaData) - Place-holder than can be extended so that lab-specific meta-data can be placed in /general.
@@ -93,6 +97,8 @@ methods
         %  - general_experiment_description (char) - General description of the experiment.
         %
         %  - general_experimenter (char) - Name of person(s) who performed the experiment. Can also specify roles of different people involved.
+        %
+        %  - general_external_resources (HERD) - This is the HERD structure for this specific NWBFile, storing the mapped external resources.
         %
         %  - general_extracellular_ephys (ElectrodeGroup) - Physical group of electrodes.
         %
@@ -179,7 +185,7 @@ methods
         % Output Arguments:
         %  - nWBFile (types.core.NWBFile) - A NWBFile object
         
-        varargin = [{'nwb_version' '2.9.0'} varargin];
+        varargin = [{'nwb_version' '2.10.0'} varargin];
         obj = obj@types.core.NWBContainer(varargin{:});
         
         
@@ -189,6 +195,7 @@ methods
         p.StructExpand = false;
         addParameter(p, 'acquisition',types.untyped.Set());
         addParameter(p, 'analysis',types.untyped.Set());
+        addParameter(p, 'events',types.untyped.Set());
         addParameter(p, 'file_create_date',[]);
         addParameter(p, 'general',types.untyped.Set());
         addParameter(p, 'general_data_collection',[]);
@@ -196,6 +203,7 @@ methods
         addParameter(p, 'general_devices_models',types.untyped.Set());
         addParameter(p, 'general_experiment_description',[]);
         addParameter(p, 'general_experimenter',[]);
+        addParameter(p, 'general_external_resources',[]);
         addParameter(p, 'general_extracellular_ephys',types.untyped.Set());
         addParameter(p, 'general_extracellular_ephys_electrodes',[]);
         addParameter(p, 'general_institution',[]);
@@ -241,6 +249,7 @@ methods
         misc.parseSkipInvalidName(p, varargin);
         obj.acquisition = p.Results.acquisition;
         obj.analysis = p.Results.analysis;
+        obj.events = p.Results.events;
         obj.file_create_date = p.Results.file_create_date;
         obj.general = p.Results.general;
         obj.general_data_collection = p.Results.general_data_collection;
@@ -248,6 +257,7 @@ methods
         obj.general_devices_models = p.Results.general_devices_models;
         obj.general_experiment_description = p.Results.general_experiment_description;
         obj.general_experimenter = p.Results.general_experimenter;
+        obj.general_external_resources = p.Results.general_external_resources;
         obj.general_extracellular_ephys = p.Results.general_extracellular_ephys;
         obj.general_extracellular_ephys_electrodes = p.Results.general_extracellular_ephys_electrodes;
         obj.general_institution = p.Results.general_institution;
@@ -305,6 +315,9 @@ methods
     function set.analysis(obj, val)
         obj.analysis = obj.validate_analysis(val);
     end
+    function set.events(obj, val)
+        obj.events = obj.validate_events(val);
+    end
     function set.file_create_date(obj, val)
         obj.file_create_date = obj.validate_file_create_date(val);
     end
@@ -325,6 +338,9 @@ methods
     end
     function set.general_experimenter(obj, val)
         obj.general_experimenter = obj.validate_general_experimenter(val);
+    end
+    function set.general_external_resources(obj, val)
+        obj.general_external_resources = obj.validate_general_external_resources(val);
     end
     function set.general_extracellular_ephys(obj, val)
         obj.general_extracellular_ephys = obj.validate_general_extracellular_ephys(val);
@@ -465,6 +481,11 @@ methods
         constrained = {'types.hdmf_common.DynamicTable', 'types.core.NWBContainer'};
         types.util.checkSet('analysis', struct(), constrained, val);
     end
+    function val = validate_events(obj, val)
+        namedprops = struct();
+        constrained = {'types.core.EventsTable'};
+        types.util.checkSet('events', namedprops, constrained, val);
+    end
     function val = validate_file_create_date(obj, val)
         val = types.util.checkDtype('file_create_date', 'datetime', val);
         types.util.validateShape('file_create_date', {[Inf]}, val)
@@ -495,6 +516,9 @@ methods
     function val = validate_general_experimenter(obj, val)
         val = types.util.checkDtype('general_experimenter', 'char', val);
         types.util.validateShape('general_experimenter', {[Inf]}, val)
+    end
+    function val = validate_general_external_resources(obj, val)
+        val = types.util.checkDtype('general_external_resources', 'types.hdmf_common.HERD', val);
     end
     function val = validate_general_extracellular_ephys(obj, val)
         namedprops = struct();
@@ -663,170 +687,177 @@ methods
         fullpath = '';
         refs = obj.acquisition.export(writer, [fullpath '/acquisition'], refs);
         refs = obj.analysis.export(writer, [fullpath '/analysis'], refs);
+        if ~isempty(obj.events)
+            refs = obj.events.export(writer, [fullpath '/events'], refs);
+        end
         if startsWith(class(obj.file_create_date), 'types.untyped.')
             refs = obj.file_create_date.export(writer, [fullpath '/file_create_date'], refs);
         elseif ~isempty(obj.file_create_date)
             writer.writeValue([fullpath '/file_create_date'], obj.file_create_date, 'forceChunking', 'forceArray');
         end
         refs = obj.general.export(writer, [fullpath '/general'], refs);
+        writer.writeGroup([fullpath '/general']);
         if ~isempty(obj.general_data_collection)
-            writer.writeGroup([fullpath '/general']);
             if startsWith(class(obj.general_data_collection), 'types.untyped.')
                 refs = obj.general_data_collection.export(writer, [fullpath '/general/data_collection'], refs);
             elseif ~isempty(obj.general_data_collection)
                 writer.writeValue([fullpath '/general/data_collection'], obj.general_data_collection);
             end
         end
-        if ~isempty(obj.general_devices) && obj.general_devices.Count ~= 0
-            writer.writeGroup([fullpath '/general']);
+        writer.writeGroup([fullpath '/general']);
+        if ~isempty(obj.general_devices)
             refs = obj.general_devices.export(writer, [fullpath '/general/devices'], refs);
         end
-        if ~isempty(obj.general_devices_models) && obj.general_devices_models.Count ~= 0
-            writer.writeGroup([fullpath '/general/devices']);
+        writer.writeGroup([fullpath '/general/devices']);
+        if ~isempty(obj.general_devices_models)
             refs = obj.general_devices_models.export(writer, [fullpath '/general/devices/models'], refs);
         end
+        writer.writeGroup([fullpath '/general']);
         if ~isempty(obj.general_experiment_description)
-            writer.writeGroup([fullpath '/general']);
             if startsWith(class(obj.general_experiment_description), 'types.untyped.')
                 refs = obj.general_experiment_description.export(writer, [fullpath '/general/experiment_description'], refs);
             elseif ~isempty(obj.general_experiment_description)
                 writer.writeValue([fullpath '/general/experiment_description'], obj.general_experiment_description);
             end
         end
+        writer.writeGroup([fullpath '/general']);
         if ~isempty(obj.general_experimenter)
-            writer.writeGroup([fullpath '/general']);
             if startsWith(class(obj.general_experimenter), 'types.untyped.')
                 refs = obj.general_experimenter.export(writer, [fullpath '/general/experimenter'], refs);
             elseif ~isempty(obj.general_experimenter)
                 writer.writeValue([fullpath '/general/experimenter'], obj.general_experimenter, 'forceArray');
             end
         end
-        if ~isempty(obj.general_extracellular_ephys) && obj.general_extracellular_ephys.Count ~= 0
-            writer.writeGroup([fullpath '/general']);
+        writer.writeGroup([fullpath '/general']);
+        if ~isempty(obj.general_external_resources)
+            refs = obj.general_external_resources.export(writer, [fullpath '/general/external_resources'], refs);
+        end
+        writer.writeGroup([fullpath '/general']);
+        if ~isempty(obj.general_extracellular_ephys)
             refs = obj.general_extracellular_ephys.export(writer, [fullpath '/general/extracellular_ephys'], refs);
         end
+        writer.writeGroup([fullpath '/general/extracellular_ephys']);
         if ~isempty(obj.general_extracellular_ephys_electrodes)
-            writer.writeGroup([fullpath '/general/extracellular_ephys']);
             refs = obj.general_extracellular_ephys_electrodes.export(writer, [fullpath '/general/extracellular_ephys/electrodes'], refs);
         end
+        writer.writeGroup([fullpath '/general']);
         if ~isempty(obj.general_institution)
-            writer.writeGroup([fullpath '/general']);
             if startsWith(class(obj.general_institution), 'types.untyped.')
                 refs = obj.general_institution.export(writer, [fullpath '/general/institution'], refs);
             elseif ~isempty(obj.general_institution)
                 writer.writeValue([fullpath '/general/institution'], obj.general_institution);
             end
         end
-        if ~isempty(obj.general_intracellular_ephys) && obj.general_intracellular_ephys.Count ~= 0
-            writer.writeGroup([fullpath '/general']);
+        writer.writeGroup([fullpath '/general']);
+        if ~isempty(obj.general_intracellular_ephys)
             refs = obj.general_intracellular_ephys.export(writer, [fullpath '/general/intracellular_ephys'], refs);
         end
+        writer.writeGroup([fullpath '/general/intracellular_ephys']);
         if ~isempty(obj.general_intracellular_ephys_experimental_conditions)
-            writer.writeGroup([fullpath '/general/intracellular_ephys']);
             refs = obj.general_intracellular_ephys_experimental_conditions.export(writer, [fullpath '/general/intracellular_ephys/experimental_conditions'], refs);
         end
+        writer.writeGroup([fullpath '/general/intracellular_ephys']);
         if ~isempty(obj.general_intracellular_ephys_filtering)
-            writer.writeGroup([fullpath '/general/intracellular_ephys']);
             if startsWith(class(obj.general_intracellular_ephys_filtering), 'types.untyped.')
                 refs = obj.general_intracellular_ephys_filtering.export(writer, [fullpath '/general/intracellular_ephys/filtering'], refs);
             elseif ~isempty(obj.general_intracellular_ephys_filtering)
                 writer.writeValue([fullpath '/general/intracellular_ephys/filtering'], obj.general_intracellular_ephys_filtering);
             end
         end
+        writer.writeGroup([fullpath '/general/intracellular_ephys']);
         if ~isempty(obj.general_intracellular_ephys_intracellular_recordings)
-            writer.writeGroup([fullpath '/general/intracellular_ephys']);
             refs = obj.general_intracellular_ephys_intracellular_recordings.export(writer, [fullpath '/general/intracellular_ephys/intracellular_recordings'], refs);
         end
+        writer.writeGroup([fullpath '/general/intracellular_ephys']);
         if ~isempty(obj.general_intracellular_ephys_repetitions)
-            writer.writeGroup([fullpath '/general/intracellular_ephys']);
             refs = obj.general_intracellular_ephys_repetitions.export(writer, [fullpath '/general/intracellular_ephys/repetitions'], refs);
         end
+        writer.writeGroup([fullpath '/general/intracellular_ephys']);
         if ~isempty(obj.general_intracellular_ephys_sequential_recordings)
-            writer.writeGroup([fullpath '/general/intracellular_ephys']);
             refs = obj.general_intracellular_ephys_sequential_recordings.export(writer, [fullpath '/general/intracellular_ephys/sequential_recordings'], refs);
         end
+        writer.writeGroup([fullpath '/general/intracellular_ephys']);
         if ~isempty(obj.general_intracellular_ephys_simultaneous_recordings)
-            writer.writeGroup([fullpath '/general/intracellular_ephys']);
             refs = obj.general_intracellular_ephys_simultaneous_recordings.export(writer, [fullpath '/general/intracellular_ephys/simultaneous_recordings'], refs);
         end
+        writer.writeGroup([fullpath '/general/intracellular_ephys']);
         if ~isempty(obj.general_intracellular_ephys_sweep_table)
-            writer.writeGroup([fullpath '/general/intracellular_ephys']);
             refs = obj.general_intracellular_ephys_sweep_table.export(writer, [fullpath '/general/intracellular_ephys/sweep_table'], refs);
         end
+        writer.writeGroup([fullpath '/general']);
         if ~isempty(obj.general_keywords)
-            writer.writeGroup([fullpath '/general']);
             if startsWith(class(obj.general_keywords), 'types.untyped.')
                 refs = obj.general_keywords.export(writer, [fullpath '/general/keywords'], refs);
             elseif ~isempty(obj.general_keywords)
                 writer.writeValue([fullpath '/general/keywords'], obj.general_keywords, 'forceArray');
             end
         end
+        writer.writeGroup([fullpath '/general']);
         if ~isempty(obj.general_lab)
-            writer.writeGroup([fullpath '/general']);
             if startsWith(class(obj.general_lab), 'types.untyped.')
                 refs = obj.general_lab.export(writer, [fullpath '/general/lab'], refs);
             elseif ~isempty(obj.general_lab)
                 writer.writeValue([fullpath '/general/lab'], obj.general_lab);
             end
         end
+        writer.writeGroup([fullpath '/general']);
         if ~isempty(obj.general_notes)
-            writer.writeGroup([fullpath '/general']);
             if startsWith(class(obj.general_notes), 'types.untyped.')
                 refs = obj.general_notes.export(writer, [fullpath '/general/notes'], refs);
             elseif ~isempty(obj.general_notes)
                 writer.writeValue([fullpath '/general/notes'], obj.general_notes);
             end
         end
-        if ~isempty(obj.general_optogenetics) && obj.general_optogenetics.Count ~= 0
-            writer.writeGroup([fullpath '/general']);
+        writer.writeGroup([fullpath '/general']);
+        if ~isempty(obj.general_optogenetics)
             refs = obj.general_optogenetics.export(writer, [fullpath '/general/optogenetics'], refs);
         end
-        if ~isempty(obj.general_optophysiology) && obj.general_optophysiology.Count ~= 0
-            writer.writeGroup([fullpath '/general']);
+        writer.writeGroup([fullpath '/general']);
+        if ~isempty(obj.general_optophysiology)
             refs = obj.general_optophysiology.export(writer, [fullpath '/general/optophysiology'], refs);
         end
+        writer.writeGroup([fullpath '/general']);
         if ~isempty(obj.general_pharmacology)
-            writer.writeGroup([fullpath '/general']);
             if startsWith(class(obj.general_pharmacology), 'types.untyped.')
                 refs = obj.general_pharmacology.export(writer, [fullpath '/general/pharmacology'], refs);
             elseif ~isempty(obj.general_pharmacology)
                 writer.writeValue([fullpath '/general/pharmacology'], obj.general_pharmacology);
             end
         end
+        writer.writeGroup([fullpath '/general']);
         if ~isempty(obj.general_protocol)
-            writer.writeGroup([fullpath '/general']);
             if startsWith(class(obj.general_protocol), 'types.untyped.')
                 refs = obj.general_protocol.export(writer, [fullpath '/general/protocol'], refs);
             elseif ~isempty(obj.general_protocol)
                 writer.writeValue([fullpath '/general/protocol'], obj.general_protocol);
             end
         end
+        writer.writeGroup([fullpath '/general']);
         if ~isempty(obj.general_related_publications)
-            writer.writeGroup([fullpath '/general']);
             if startsWith(class(obj.general_related_publications), 'types.untyped.')
                 refs = obj.general_related_publications.export(writer, [fullpath '/general/related_publications'], refs);
             elseif ~isempty(obj.general_related_publications)
                 writer.writeValue([fullpath '/general/related_publications'], obj.general_related_publications, 'forceArray');
             end
         end
+        writer.writeGroup([fullpath '/general']);
         if ~isempty(obj.general_session_id)
-            writer.writeGroup([fullpath '/general']);
             if startsWith(class(obj.general_session_id), 'types.untyped.')
                 refs = obj.general_session_id.export(writer, [fullpath '/general/session_id'], refs);
             elseif ~isempty(obj.general_session_id)
                 writer.writeValue([fullpath '/general/session_id'], obj.general_session_id);
             end
         end
+        writer.writeGroup([fullpath '/general']);
         if ~isempty(obj.general_slices)
-            writer.writeGroup([fullpath '/general']);
             if startsWith(class(obj.general_slices), 'types.untyped.')
                 refs = obj.general_slices.export(writer, [fullpath '/general/slices'], refs);
             elseif ~isempty(obj.general_slices)
                 writer.writeValue([fullpath '/general/slices'], obj.general_slices);
             end
         end
+        writer.writeGroup([fullpath '/general']);
         if ~isempty(obj.general_source_script)
-            writer.writeGroup([fullpath '/general']);
             if startsWith(class(obj.general_source_script), 'types.untyped.')
                 refs = obj.general_source_script.export(writer, [fullpath '/general/source_script'], refs);
             elseif ~isempty(obj.general_source_script)
@@ -841,36 +872,36 @@ methods
         if ~isempty(obj.general_source_script) && isempty(obj.general_source_script_file_name)
             obj.throwErrorIfRequiredDependencyMissing('general_source_script_file_name', 'general_source_script', fullpath)
         end
+        writer.writeGroup([fullpath '/general']);
         if ~isempty(obj.general_stimulus)
-            writer.writeGroup([fullpath '/general']);
             if startsWith(class(obj.general_stimulus), 'types.untyped.')
                 refs = obj.general_stimulus.export(writer, [fullpath '/general/stimulus'], refs);
             elseif ~isempty(obj.general_stimulus)
                 writer.writeValue([fullpath '/general/stimulus'], obj.general_stimulus);
             end
         end
+        writer.writeGroup([fullpath '/general']);
         if ~isempty(obj.general_subject)
-            writer.writeGroup([fullpath '/general']);
             refs = obj.general_subject.export(writer, [fullpath '/general/subject'], refs);
         end
+        writer.writeGroup([fullpath '/general']);
         if ~isempty(obj.general_surgery)
-            writer.writeGroup([fullpath '/general']);
             if startsWith(class(obj.general_surgery), 'types.untyped.')
                 refs = obj.general_surgery.export(writer, [fullpath '/general/surgery'], refs);
             elseif ~isempty(obj.general_surgery)
                 writer.writeValue([fullpath '/general/surgery'], obj.general_surgery);
             end
         end
+        writer.writeGroup([fullpath '/general']);
         if ~isempty(obj.general_virus)
-            writer.writeGroup([fullpath '/general']);
             if startsWith(class(obj.general_virus), 'types.untyped.')
                 refs = obj.general_virus.export(writer, [fullpath '/general/virus'], refs);
             elseif ~isempty(obj.general_virus)
                 writer.writeValue([fullpath '/general/virus'], obj.general_virus);
             end
         end
+        writer.writeGroup([fullpath '/general']);
         if ~isempty(obj.general_was_generated_by)
-            writer.writeGroup([fullpath '/general']);
             if startsWith(class(obj.general_was_generated_by), 'types.untyped.')
                 refs = obj.general_was_generated_by.export(writer, [fullpath '/general/was_generated_by'], refs);
             elseif ~isempty(obj.general_was_generated_by)
@@ -882,24 +913,24 @@ methods
         elseif ~isempty(obj.identifier)
             writer.writeValue([fullpath '/identifier'], obj.identifier);
         end
-        if ~isempty(obj.intervals) && obj.intervals.Count ~= 0
+        if ~isempty(obj.intervals)
             refs = obj.intervals.export(writer, [fullpath '/intervals'], refs);
         end
+        writer.writeGroup([fullpath '/intervals']);
         if ~isempty(obj.intervals_epochs)
-            writer.writeGroup([fullpath '/intervals']);
             refs = obj.intervals_epochs.export(writer, [fullpath '/intervals/epochs'], refs);
         end
+        writer.writeGroup([fullpath '/intervals']);
         if ~isempty(obj.intervals_invalid_times)
-            writer.writeGroup([fullpath '/intervals']);
             refs = obj.intervals_invalid_times.export(writer, [fullpath '/intervals/invalid_times'], refs);
         end
+        writer.writeGroup([fullpath '/intervals']);
         if ~isempty(obj.intervals_trials)
-            writer.writeGroup([fullpath '/intervals']);
             refs = obj.intervals_trials.export(writer, [fullpath '/intervals/trials'], refs);
         end
         writer.writeAttribute([fullpath '/nwb_version'], obj.nwb_version);
         refs = obj.processing.export(writer, [fullpath '/processing'], refs);
-        if ~isempty(obj.scratch) && obj.scratch.Count ~= 0
+        if ~isempty(obj.scratch)
             refs = obj.scratch.export(writer, [fullpath '/scratch'], refs);
         end
         if startsWith(class(obj.session_description), 'types.untyped.')

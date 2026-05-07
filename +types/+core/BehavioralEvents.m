@@ -1,5 +1,5 @@
 classdef BehavioralEvents < types.core.NWBDataInterface & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups
-% BEHAVIORALEVENTS - TimeSeries for storing behavioral events. See description of BehavioralEpochs for more details.
+% BEHAVIORALEVENTS - DEPRECATED. Use an EventsTable instead. TimeSeries for storing behavioral events. See description of BehavioralEpochs for more details.
 %
 % Required Properties:
 %  timeseries
