@@ -16,5 +16,16 @@ classdef VectorDataPatchTest < tests.abstract.NwbTestCase
             testCase.verifyTrue(ismember('waveform_sd_unit', unitsPropertyNames))
             testCase.verifyTrue(ismember('waveforms_unit', unitsPropertyNames))
         end
+
+        function testUnitsDoesNotSyncPromotedUnitAttributesFromVectorData(testCase)
+            unitsFile = fullfile( ...
+                testCase.getTypesOutputFolder(), ...
+                '+types', '+core', 'Units.m');
+            unitsContents = string(fileread(unitsFile));
+
+            testCase.verifyFalse(contains(unitsContents, 'obj.waveform_mean.unit'))
+            testCase.verifyFalse(contains(unitsContents, 'obj.waveform_sd.unit'))
+            testCase.verifyFalse(contains(unitsContents, 'obj.waveforms.unit'))
+        end
     end
 end
