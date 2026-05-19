@@ -75,10 +75,10 @@ methods
         if any(strcmp(refs, fullpath))
             return;
         end
-        if ~isempty(obj.container)
+        if ~isempty(obj.container) && obj.container.Count ~= 0
             refs = obj.container.export(writer, fullpath, refs);
         end
-        if ~isempty(obj.data)
+        if ~isempty(obj.data) && obj.data.Count ~= 0
             refs = obj.data.export(writer, fullpath, refs);
         end
     end
