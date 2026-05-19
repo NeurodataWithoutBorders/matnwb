@@ -65,6 +65,10 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                 'NWB:DynamicTable:DuplicateColumnNames');
 
             testCase.verifyClass(dynamicTable, testType)
+            [warningMessage, warningIdentifier] = lastwarn();
+            testCase.verifyEqual( ...
+                warningIdentifier, 'NWB:DynamicTable:DuplicateColumnNames')
+            testCase.verifyTrue(contains(warningMessage, '`columnA`'))
         end
 
         function testCreateDynamicTableWithColumnNamesMismatchWarns(testCase)
