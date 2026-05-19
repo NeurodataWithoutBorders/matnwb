@@ -330,7 +330,7 @@ nwb.units.toTable()
 % Define spike snippets: 20 events, 3 channels, 40 samples per event. 
 spike_snippets = rand(20, 3, 40);
 % Permute spike snippets (See dimensionMapNoDataPipes tutorial)
-spike_snippets = permute(spike_snippets, [3,2,1]) 
+spike_snippets = permute(spike_snippets, [3,2,1]); 
 
 % Create electrode table region referencing electrodes 0, 1, and 2
 shank0_table_region = types.hdmf_common.DynamicTableRegion( ...

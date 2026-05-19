@@ -37,13 +37,13 @@
 % 
 % |python -c "import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)|
 % 
-% 2. Set the environment variable |HDF5_PLUGIN_PATH| to point to the local installation 
+% 3. Set the environment variable |HDF5_PLUGIN_PATH| to point to the local installation 
 % of the plugins (from |hdf5plugin.PLUGINS_PATH|) through _System Properties > 
 % Advanced > Environment Variables:_
 % 
 % 
 % 
-% 3. Restart MATLAB.
+% 4. Restart MATLAB.
 % 
 % That's it! Now you can read datasets that use the following filters:
 %% 
