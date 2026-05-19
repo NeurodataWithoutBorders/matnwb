@@ -255,6 +255,7 @@ function docString = fillConstructorDocString(name, props, namespace, superClass
         catch
             description = 'No description';
         end
+        description = formatConstructorArgumentDescription(description);
 
         docString = [docString, ...
             sprintf("%%  - %s (%s) - %s", propName, valueType, description), ...
@@ -268,6 +269,16 @@ function docString = fillConstructorDocString(name, props, namespace, superClass
     ];
 
     docString = char( strjoin(docString, newline) );
+end
+
+function description = formatConstructorArgumentDescription(description)
+    descriptionLines = splitlines(string(description));
+
+    if numel(descriptionLines) > 1
+        descriptionLines(2:end) = "%    " + descriptionLines(2:end);
+    end
+
+    description = char(strjoin(descriptionLines, newline));
 end
 
 % Todo: Mostly duplicate code from file.fillProps. Should consolidate

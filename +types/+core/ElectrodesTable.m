@@ -16,12 +16,12 @@ properties
     group_name; %  (VectorData) Name of the ElectrodeGroup this electrode is a part of.
     imp; %  (VectorData) Impedance of the channel, in ohms.
     reference; %  (VectorData) Description of the reference electrode and/or reference scheme used for this electrode, e.g., "stainless steel skull screw" or "online common average referencing".
-    rel_x; %  (VectorData) x coordinate in electrode group
-    rel_y; %  (VectorData) y coordinate in electrode group
-    rel_z; %  (VectorData) z coordinate in electrode group
-    x; %  (VectorData) x coordinate of the channel location in the brain (+x is posterior).
-    y; %  (VectorData) y coordinate of the channel location in the brain (+y is inferior).
-    z; %  (VectorData) z coordinate of the channel location in the brain (+z is right).
+    rel_x; %  (VectorData) x coordinate in electrode group. Units should be specified in microns.
+    rel_y; %  (VectorData) y coordinate in electrode group. Units should be specified in microns.
+    rel_z; %  (VectorData) z coordinate in electrode group. Units should be specified in microns.
+    x; %  (VectorData) x coordinate of the channel location in the brain (+x is posterior). Units should be specified in microns.
+    y; %  (VectorData) y coordinate of the channel location in the brain (+y is inferior). Units should be specified in microns.
+    z; %  (VectorData) z coordinate of the channel location in the brain (+z is right). Units should be specified in microns.
 end
 
 methods
@@ -50,21 +50,23 @@ methods
         %
         %  - location (VectorData) - Location of the electrode (channel). Specify the area, layer, comments on estimation of area/layer, stereotaxic coordinates if in vivo, etc. Use standard atlas names for anatomical regions when possible.
         %
+        %  - meanings_tables (MeaningsTable) - MeaningsTable objects that provide meanings for values in VectorData columns within this DynamicTable. Tables should be named according to the column they provide meanings for with a "_meanings" suffix. e.g., if a VectorData column is named "stimulus_type", the corresponding MeaningsTable should be named "stimulus_type_meanings".
+        %
         %  - reference (VectorData) - Description of the reference electrode and/or reference scheme used for this electrode, e.g., "stainless steel skull screw" or "online common average referencing".
         %
-        %  - rel_x (VectorData) - x coordinate in electrode group
+        %  - rel_x (VectorData) - x coordinate in electrode group. Units should be specified in microns.
         %
-        %  - rel_y (VectorData) - y coordinate in electrode group
+        %  - rel_y (VectorData) - y coordinate in electrode group. Units should be specified in microns.
         %
-        %  - rel_z (VectorData) - z coordinate in electrode group
+        %  - rel_z (VectorData) - z coordinate in electrode group. Units should be specified in microns.
         %
         %  - vectordata (VectorData) - Vector columns, including index columns, of this dynamic table.
         %
-        %  - x (VectorData) - x coordinate of the channel location in the brain (+x is posterior).
+        %  - x (VectorData) - x coordinate of the channel location in the brain (+x is posterior). Units should be specified in microns.
         %
-        %  - y (VectorData) - y coordinate of the channel location in the brain (+y is inferior).
+        %  - y (VectorData) - y coordinate of the channel location in the brain (+y is inferior). Units should be specified in microns.
         %
-        %  - z (VectorData) - z coordinate of the channel location in the brain (+z is right).
+        %  - z (VectorData) - z coordinate of the channel location in the brain (+z is right). Units should be specified in microns.
         %
         % Output Arguments:
         %  - electrodesTable (types.core.ElectrodesTable) - A ElectrodesTable object

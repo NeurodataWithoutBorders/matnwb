@@ -1,5 +1,5 @@
 classdef TimeIntervals < types.hdmf_common.DynamicTable & types.untyped.GroupClass
-% TIMEINTERVALS - A container for aggregating epoch data and the TimeSeries that each epoch applies to.
+% TIMEINTERVALS - A column-based table to store information about time intervals, one interval per row. Use `TimeIntervals` when each row naturally has a start and stop time and represents a contiguous period of time, often encompassing an experimental condition. Rows can optionally reference `TimeSeries` data via the `timeseries` column. Examples include trials, epochs, behavioral states (e.g., "running", "resting"), and invalid recording windows.
 %
 % Required Properties:
 %  colnames, description, id, start_time, stop_time
@@ -33,6 +33,8 @@ methods
         %  - description (char) - Description of what is in this dynamic table.
         %
         %  - id (ElementIdentifiers) - Array of unique identifiers for the rows of this dynamic table.
+        %
+        %  - meanings_tables (MeaningsTable) - MeaningsTable objects that provide meanings for values in VectorData columns within this DynamicTable. Tables should be named according to the column they provide meanings for with a "_meanings" suffix. e.g., if a VectorData column is named "stimulus_type", the corresponding MeaningsTable should be named "stimulus_type_meanings".
         %
         %  - start_time (VectorData) - Start time of epoch, in seconds.
         %

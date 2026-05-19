@@ -7,7 +7,7 @@ classdef EnumData < types.hdmf_common.VectorData & types.untyped.DatasetClass
 
 % REQUIRED PROPERTIES
 properties
-    elements; % REQUIRED (Object reference to VectorData) Reference to the VectorData object that contains the enumerable elements
+    elements; % REQUIRED (Object reference to VectorData) Reference to the VectorData object that contains the enumerable elements.
 end
 
 methods
@@ -24,7 +24,7 @@ methods
         %
         %  - description (char) - Description of what these vectors represent.
         %
-        %  - elements (Object reference to VectorData) - Reference to the VectorData object that contains the enumerable elements
+        %  - elements (Object reference to VectorData) - Reference to the VectorData object that contains the enumerable elements.
         %
         % Output Arguments:
         %  - enumData (types.hdmf_experimental.EnumData) - A EnumData object
