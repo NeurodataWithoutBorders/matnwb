@@ -42,7 +42,7 @@ methods
           - width: fast scan direction (horizontal)
           - height: slow scan direction (vertical)
         
-        Coordinate system diagram:
+        Coordinate system diagram::
         
           height  ^
           (slow)  |

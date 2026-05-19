@@ -1,5 +1,5 @@
 classdef EventsTable < types.hdmf_common.DynamicTable & types.untyped.GroupClass
-% EVENTSTABLE - A column-based table to store information about events (event instances), one event per row. Additional columns may be added to store metadata about each event, such as the duration of the event.
+% EVENTSTABLE - A column-based table to store information about events, one event per row. Use `EventsTable` when each row is anchored at a single timestamp and duration is absent, optional, or mixed across rows. Additional columns may be added to store metadata about each event, such as the duration of the event. Examples include TTL pulses, licks, rewards, stimulus onsets, and detected ripples.
 %
 % Required Properties:
 %  colnames, description, id, timestamp
