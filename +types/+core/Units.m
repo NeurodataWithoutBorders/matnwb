@@ -400,9 +400,6 @@ methods
         if ~isempty(obj.waveform_mean) && ~isa(obj.waveform_mean, 'types.untyped.SoftLink') && ~isa(obj.waveform_mean, 'types.untyped.ExternalLink') && ~isempty(obj.waveform_mean_sampling_rate)
             writer.writeAttribute([fullpath '/waveform_mean/sampling_rate'], obj.waveform_mean_sampling_rate);
         end
-        if isempty(obj.waveform_mean_unit) && ~isempty(obj.waveform_mean) && isobject(obj.waveform_mean) && isprop(obj.waveform_mean, 'unit') && ~isempty(obj.waveform_mean.unit)
-            obj.waveform_mean_unit = obj.waveform_mean.unit;
-        end
         if ~isempty(obj.waveform_mean) && ~isa(obj.waveform_mean, 'types.untyped.SoftLink') && ~isa(obj.waveform_mean, 'types.untyped.ExternalLink') && ~isempty(obj.waveform_mean_unit)
             writer.writeAttribute([fullpath '/waveform_mean/unit'], obj.waveform_mean_unit);
         end
@@ -414,9 +411,6 @@ methods
         end
         if ~isempty(obj.waveform_sd) && ~isa(obj.waveform_sd, 'types.untyped.SoftLink') && ~isa(obj.waveform_sd, 'types.untyped.ExternalLink') && ~isempty(obj.waveform_sd_sampling_rate)
             writer.writeAttribute([fullpath '/waveform_sd/sampling_rate'], obj.waveform_sd_sampling_rate);
-        end
-        if isempty(obj.waveform_sd_unit) && ~isempty(obj.waveform_sd) && isobject(obj.waveform_sd) && isprop(obj.waveform_sd, 'unit') && ~isempty(obj.waveform_sd.unit)
-            obj.waveform_sd_unit = obj.waveform_sd.unit;
         end
         if ~isempty(obj.waveform_sd) && ~isa(obj.waveform_sd, 'types.untyped.SoftLink') && ~isa(obj.waveform_sd, 'types.untyped.ExternalLink') && ~isempty(obj.waveform_sd_unit)
             writer.writeAttribute([fullpath '/waveform_sd/unit'], obj.waveform_sd_unit);
@@ -435,9 +429,6 @@ methods
         end
         if ~isempty(obj.waveforms) && ~isa(obj.waveforms, 'types.untyped.SoftLink') && ~isa(obj.waveforms, 'types.untyped.ExternalLink') && ~isempty(obj.waveforms_sampling_rate)
             writer.writeAttribute([fullpath '/waveforms/sampling_rate'], obj.waveforms_sampling_rate);
-        end
-        if isempty(obj.waveforms_unit) && ~isempty(obj.waveforms) && isobject(obj.waveforms) && isprop(obj.waveforms, 'unit') && ~isempty(obj.waveforms.unit)
-            obj.waveforms_unit = obj.waveforms.unit;
         end
         if ~isempty(obj.waveforms) && ~isa(obj.waveforms, 'types.untyped.SoftLink') && ~isa(obj.waveforms, 'types.untyped.ExternalLink') && ~isempty(obj.waveforms_unit)
             writer.writeAttribute([fullpath '/waveforms/unit'], obj.waveforms_unit);
