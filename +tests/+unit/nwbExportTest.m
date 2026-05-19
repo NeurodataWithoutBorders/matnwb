@@ -351,5 +351,56 @@ classdef nwbExportTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(fileAIn.identifier, fileA.identifier);
             testCase.verifyEqual(fileBIn.identifier, fileB.identifier);
         end
+
+        function testEmptyGeneralSubgroupsNotWritten(testCase)
+        % Verify that empty optional groups under /general are not
+        % written to the HDF5 file (issue #234).
+            nwb = tests.factory.NWBFile();
+            nwbFilePath = testCase.getRandomFilename();
+            nwbExport(nwb, nwbFilePath);
+
+            info = h5info(nwbFilePath, '/general');
+            if isempty(info.Groups)
+                groupNames = {};
+            else
+                groupNames = {info.Groups.Name};
+            end
+
+            % These groups should NOT exist because no properties were set
+            testCase.verifyFalse( ...
+                any(strcmp(groupNames, '/general/extracellular_ephys')), ...
+                'Empty extracellular_ephys group should not be written');
+            testCase.verifyFalse( ...
+                any(strcmp(groupNames, '/general/intracellular_ephys')), ...
+                'Empty intracellular_ephys group should not be written');
+            testCase.verifyFalse( ...
+                any(strcmp(groupNames, '/general/optogenetics')), ...
+                'Empty optogenetics group should not be written');
+            testCase.verifyFalse( ...
+                any(strcmp(groupNames, '/general/optophysiology')), ...
+                'Empty optophysiology group should not be written');
+            testCase.verifyFalse( ...
+                any(strcmp(groupNames, '/general/devices')), ...
+                'Empty devices group should not be written');
+        end
+
+        function testNonEmptyGeneralSubgroupsWritten(testCase)
+        % Verify that non-empty optional groups under /general ARE
+        % written to the HDF5 file.
+            nwb = tests.factory.NWBFile();
+
+            device = types.core.Device();
+            nwb.general_devices.set('TestDevice', device);
+
+            nwbFilePath = testCase.getRandomFilename();
+            nwbExport(nwb, nwbFilePath);
+
+            info = h5info(nwbFilePath, '/general');
+            groupNames = {info.Groups.Name};
+
+            testCase.verifyTrue( ...
+                any(strcmp(groupNames, '/general/devices')), ...
+                'Non-empty devices group should be written');
+        end
     end
 end

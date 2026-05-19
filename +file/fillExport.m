@@ -35,9 +35,8 @@ function festr = fillExport(propertyNames, RawClass, parentName, required, class
         end
 
         elisions = strjoin(elisions, '/');
-        if ~isempty(elideProps) && all(cellfun('isclass', elideProps, 'file.Group'))
-            exportBody{end+1} = ['writer.writeGroup([fullpath ''/' elisions ''']);'];
-        end
+        needsElisionGroupWrite = ~isempty(elideProps) ...
+            && all(cellfun('isclass', elideProps, 'file.Group'));
 
         if strcmp(propertyName, 'unit') && strcmp(RawClass.type, 'VectorData')
             exportBody{end+1} = fillVectorDataUnitConditional();
@@ -46,7 +45,7 @@ function festr = fillExport(propertyNames, RawClass, parentName, required, class
         elseif strcmp(propertyName, 'resolution') && strcmp(RawClass.type, 'VectorData')
             exportBody{end+1} = fillVectorDataResolutionConditional();
         else
-            exportBody{end+1} = fillDataExport(propertyName, prop, elisions, required);
+            exportBody{end+1} = fillDataExport(propertyName, prop, elisions, required, needsElisionGroupWrite, classprops);
         end
     end
 
@@ -167,7 +166,13 @@ function path = traverseRaw(propertyName, RawClass)
     end
 end
 
-function dataExportString = fillDataExport(name, prop, elisions, required)
+function dataExportString = fillDataExport(name, prop, elisions, required, needsElisionGroupWrite, classprops)
+    if nargin < 5
+        needsElisionGroupWrite = false;
+    end
+    if nargin < 6
+        classprops = containers.Map;
+    end
     if isempty(elisions)
         fullpath = ['[fullpath ''/' prop.name ''']'];
         elisionpath = 'fullpath';
@@ -221,6 +226,8 @@ function dataExportString = fillDataExport(name, prop, elisions, required)
     propertyChecks = {};
     dependencyCheck = {};
     preExportString = '';
+    isCurrentPropertySet = getPropertySetCheck(name, prop);
+    isCurrentPropertyUnset = getPropertyUnsetCheck(name, prop);
 
     if isa(prop, 'file.Attribute') && ~isempty(prop.dependent)
         %if attribute is dependent, check before writing
@@ -232,16 +239,21 @@ function dataExportString = fillDataExport(name, prop, elisions, required)
             depPropname = [flattened prop.dependent];
         end
         propertyReference = sprintf('obj.%s', depPropname);
-        propertyChecks{end+1} = sprintf(['~isempty(%1$s) ' ...
-        '&& ~isa(%1$s, ''types.untyped.SoftLink'') ' ...
-        '&& ~isa(%1$s, ''types.untyped.ExternalLink'')'], propertyReference);
+        depProp = getProperty(prop.dependent, depPropname, classprops);
+        isDependentPropertySet = getPropertySetCheck(depPropname, depProp);
+        isDependentPropertyUnset = getPropertyUnsetCheck(depPropname, depProp);
+
+        propertyChecks{end+1} = sprintf(['%s ' ...
+            '&& ~isa(%s, ''types.untyped.SoftLink'') ' ...
+            '&& ~isa(%s, ''types.untyped.ExternalLink'')'], ...
+            isDependentPropertySet, propertyReference, propertyReference);
 
         % Properties that are required and dependent will not be exported
         % if the property they depend on are unset (empty). Ensure such cases 
         % are warned against if they occur.
         if prop.required && ~prop.readonly
             warnIfNotExportedString = sprintf('obj.warnIfPropertyAttributeNotExported(''%s'', ''%s'', fullpath)', name, depPropname);
-            warningNeededCheck = sprintf('isempty(obj.%s) && ~isempty(obj.%s)', depPropname, name);
+            warningNeededCheck = sprintf('%s && %s', isDependentPropertyUnset, isCurrentPropertySet);
         end
         
         % If a property (attribute) is required, and it's parent dataset or
@@ -249,21 +261,32 @@ function dataExportString = fillDataExport(name, prop, elisions, required)
         % is set and the dependent required property is unset.
         isParentRequired = any(strcmp(depPropname, required));
         if prop.required && not(prop.readonly) && not(isParentRequired)
-            dependencyCheck{end+1} = sprintf('~isempty(obj.%s) && isempty(obj.%s)', depPropname, name);
+            dependencyCheck{end+1} = sprintf('%s && %s', isDependentPropertySet, isCurrentPropertyUnset);
             warnIfMissingRequiredDependentAttributeStr = ...
                 sprintf('obj.throwErrorIfRequiredDependencyMissing(''%s'', ''%s'', fullpath)', name, depPropname);
         end
 
         if prop.promoted_to_container
             preExportString = sprintf([ ...
-                'if isempty(obj.%1$s) && ~isempty(obj.%2$s) && isobject(obj.%2$s) && isprop(obj.%2$s, ''%3$s'') && ~isempty(obj.%2$s.%3$s)\n' ...
-                '    obj.%1$s = obj.%2$s.%3$s;\n' ...
-                'end'], name, depPropname, prop.name);
+                'if %s && %s && isobject(obj.%s) && isprop(obj.%s, ''%s'') && ~isempty(obj.%s.%s)\n' ...
+                '    obj.%s = obj.%s.%s;\n' ...
+                'end'], ...
+                isCurrentPropertyUnset, isDependentPropertySet, ...
+                depPropname, depPropname, prop.name, depPropname, prop.name, ...
+                name, depPropname, prop.name);
         end
     end
 
     if ~prop.required
-        propertyChecks{end+1} = ['~isempty(obj.' name ')'];
+        propertyChecks{end+1} = isCurrentPropertySet;
+    end
+
+    % Prepend writer.writeGroup for elision path inside the conditional block
+    % to avoid creating empty HDF5 groups when all child properties are
+    % unset. (See issue #234)
+    if needsElisionGroupWrite
+        writeGroupStr = sprintf('writer.writeGroup(%s);', elisionpath);
+        dataExportString = sprintf('%s\n%s', writeGroupStr, dataExportString);
     end
 
     if ~isempty(propertyChecks)
@@ -288,6 +311,49 @@ function dataExportString = fillDataExport(name, prop, elisions, required)
             dataExportString, ...
             strjoin(dependencyCheck, ' && '), ...
             file.addSpaces(warnIfMissingRequiredDependentAttributeStr, 4) ...
-            );
+        );
+    end
+end
+
+function prop = getProperty(rawPropertyName, flattenedPropertyName, classprops)
+    prop = [];
+    if isKey(classprops, flattenedPropertyName)
+        prop = classprops(flattenedPropertyName);
+    elseif isKey(classprops, rawPropertyName)
+        prop = classprops(rawPropertyName);
+    end
+end
+
+function check = getPropertySetCheck(propertyName, prop)
+    if isSetBackedProperty(prop)
+        check = sprintf('~isempty(obj.%s) && obj.%s.Count ~= 0', propertyName, propertyName);
+    else
+        check = sprintf('~isempty(obj.%s)', propertyName);
+    end
+end
+
+function check = getPropertyUnsetCheck(propertyName, prop)
+    if isSetBackedProperty(prop)
+        check = sprintf('isempty(obj.%s) || obj.%s.Count == 0', propertyName, propertyName);
+    else
+        check = sprintf('isempty(obj.%s)', propertyName);
+    end
+end
+
+function tf = isSetBackedProperty(prop)
+    tf = false;
+    if isempty(prop) || isa(prop, 'file.Attribute')
+        return;
+    end
+
+    if (isa(prop, 'file.interface.HasProps') || isa(prop, 'file.Link')) && ~isscalar(prop)
+        tf = true;
+        return;
+    end
+
+    if isa(prop, 'file.Group')
+        tf = prop.hasAnonData || prop.hasAnonGroups || prop.isConstrainedSet;
+    elseif isa(prop, 'file.Dataset') || isa(prop, 'file.Link')
+        tf = prop.isConstrainedSet;
     end
 end
