@@ -10,6 +10,10 @@ function syncNamedColumn(DynamicTable, columnName)
         return
     end
 
+    if strcmp(types.util.validationContext(), 'read')
+        return
+    end
+
     if isempty(DynamicTable.colnames)
         DynamicTable.colnames = {columnName};
         return
