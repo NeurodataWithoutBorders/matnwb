@@ -130,18 +130,6 @@ function attributeNames = getSchemaDefinedAttributeNames(typeName, namespace)
 end
 
 function class = patchVectorData(class)
-    %% Unit Attribute
-    % derived from schema 2.6.0
-    source = containers.Map();
-    source('name') = 'unit';
-    source('doc') = ['NOTE: this is a special value for compatibility with the Units table and is ' ...
-        'only written to file when detected to be in that specific HDF5 Group. ' ...
-        'The value must be ''volts'''];
-    source('dtype') = 'text';
-    source('value') = 'volts';
-    source('required') = false;
-    class.attributes(end+1) = file.Attribute(source);
-
     %% Sampling Rate Attribute
     % derived from schema 2.6.0
 

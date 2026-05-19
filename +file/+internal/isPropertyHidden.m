@@ -4,7 +4,7 @@ function result = isPropertyHidden(propertyInfo, className, namespace)
     if isa(propertyInfo, 'file.Attribute') || isa(propertyInfo, 'file.Dataset') 
         if strcmp(namespace.name, 'hdmf_common') ...
             && strcmp(className, 'VectorData') ...
-            && any(strcmp(propertyInfo.name, {'unit', 'sampling_rate', 'resolution'}))
+            && any(strcmp(propertyInfo.name, {'sampling_rate', 'resolution'}))
             result = true;
         else
             result = false;

@@ -68,7 +68,7 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
 
             if strcmp(namespace.name, 'hdmf_common') ...
                 && strcmp(name, 'VectorData') ...
-                && any(strcmp(prop.name, {'unit', 'sampling_rate', 'resolution'}))
+                && any(strcmp(prop.name, {'sampling_rate', 'resolution'}))
                 hidden{end+1} = propertyName;
             end
         end
