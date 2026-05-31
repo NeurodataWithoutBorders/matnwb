@@ -21,7 +21,7 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
             'streaming.py', ...             % Requires that HDF5 library is installed with the ROS3 driver enabled which is not a given
             'object_id.py', ...             % Does not export nwb file
             'plot_configurator.py', ...     % Does not export nwb file
-            'plot_zarr_io', ...             % Does not export nwb file in nwb format
+            'plot_zarr_io.py', ...          % Does not export nwb file in nwb format
             'brain_observatory.py', ...     % Requires allen sdk
             'extensions.py'};               % Discrepancy between tutorial and schema: https://github.com/NeurodataWithoutBorders/pynwb/issues/1952
 
