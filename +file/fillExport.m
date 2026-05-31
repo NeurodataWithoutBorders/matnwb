@@ -38,13 +38,7 @@ function festr = fillExport(propertyNames, RawClass, parentName, required, class
         needsElisionGroupWrite = ~isempty(elideProps) ...
             && all(cellfun('isclass', elideProps, 'file.Group'));
 
-        if strcmp(propertyName, 'sampling_rate') && strcmp(RawClass.type, 'VectorData')
-            exportBody{end+1} = fillVectorDataSamplingRateConditional();
-        elseif strcmp(propertyName, 'resolution') && strcmp(RawClass.type, 'VectorData')
-            exportBody{end+1} = fillVectorDataResolutionConditional();
-        else
-            exportBody{end+1} = fillDataExport(propertyName, prop, elisions, required, needsElisionGroupWrite, classprops);
-        end
+        exportBody{end+1} = fillDataExport(propertyName, prop, elisions, required, needsElisionGroupWrite, classprops);
     end
 
     festr = strjoin({ ...
@@ -52,21 +46,6 @@ function festr = fillExport(propertyNames, RawClass, parentName, required, class
         , file.addSpaces(strjoin(exportBody, newline), 4) ...
         , 'end' ...
         }, newline);
-end
-
-function exportBody = fillVectorDataResolutionConditional()
-    exportBody = strjoin({...
-        'if ~isempty(obj.resolution) && any(endsWith(fullpath, ''units/spike_times''))' ...
-        , '    writer.writeAttribute([fullpath ''/resolution''], obj.resolution);' ...
-        , 'end'}, newline);
-end
-
-function exportBody = fillVectorDataSamplingRateConditional()
-    exportBody = strjoin({...
-          'validDataSamplingPaths = strcat(''units/'', {''waveform_mean'', ''waveform_sd'', ''waveforms''});' ...
-        , 'if ~isempty(obj.sampling_rate) && any(endsWith(fullpath, validDataSamplingPaths))' ...
-        , '    writer.writeAttribute([fullpath ''/sampling_rate''], obj.sampling_rate);' ...
-        , 'end'}, newline);
 end
 
 function path = traverseRaw(propertyName, RawClass)
@@ -255,16 +234,6 @@ function dataExportString = fillDataExport(name, prop, elisions, required, needs
             warnIfMissingRequiredDependentAttributeStr = ...
                 sprintf('obj.throwErrorIfRequiredDependencyMissing(''%s'', ''%s'', fullpath)', name, depPropname);
         end
-
-        if prop.promoted_to_container && ~strcmp(prop.name, 'unit')
-            preExportString = sprintf([ ...
-                'if %s && %s && isobject(obj.%s) && isprop(obj.%s, ''%s'') && ~isempty(obj.%s.%s)\n' ...
-                '    obj.%s = obj.%s.%s;\n' ...
-                'end'], ...
-                isCurrentPropertyUnset, isDependentPropertySet, ...
-                depPropname, depPropname, prop.name, depPropname, prop.name, ...
-                name, depPropname, prop.name);
-        end
     end
 
     if ~prop.required
@@ -290,10 +259,6 @@ function dataExportString = fillDataExport(name, prop, elisions, required, needs
         else
              dataExportString = sprintf('%s\nend', dataExportString);
         end
-    end
-
-    if ~isempty(preExportString)
-        dataExportString = sprintf('%s\n%s', preExportString, dataExportString);
     end
 
     if ~isempty(dependencyCheck)
