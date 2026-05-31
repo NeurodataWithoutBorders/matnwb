@@ -78,10 +78,6 @@ function props = markPromotedAttributesForIncludedTypedDatasets(classObj, props,
 
             if any(strcmp(attribute.name, schemaAttributeNames))
                 remove(props, propertyName);
-            else
-                promotedAttribute = props(propertyName);
-                promotedAttribute.promoted_to_container = true;
-                props(propertyName) = promotedAttribute;
             end
         end
     end
