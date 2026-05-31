@@ -66,10 +66,16 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
             end
         end
     end
+
+    % Each property is emitted in exactly one properties block, with readonly
+    % taking precedence over required/optional. Restrict each bucket to
+    % non-inherited names and remove anything already going into the readonly
+    % block to avoid duplicate property declarations.
     nonInherited = setdiff(allProperties, inherited);
     readonly = intersect(readonly, nonInherited);
-    required = intersect(required, nonInherited);
-    optional = intersect(optional, nonInherited);
+    settable = setdiff(nonInherited, readonly);  % what's left for required/optional
+    required = intersect(required, settable);
+    optional = intersect(optional, settable);
 
     %% CLASSDEF
     superclassNames = {};
