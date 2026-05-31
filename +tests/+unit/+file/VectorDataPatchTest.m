@@ -6,8 +6,8 @@ classdef VectorDataPatchTest < tests.abstract.NwbTestCase
             vectorDataPropertyNames = {vectorDataClass.PropertyList.Name};
 
             testCase.verifyFalse(ismember('unit', vectorDataPropertyNames))
-            testCase.verifyTrue(ismember('sampling_rate', vectorDataPropertyNames))
-            testCase.verifyTrue(ismember('resolution', vectorDataPropertyNames))
+            testCase.verifyFalse(ismember('sampling_rate', vectorDataPropertyNames))
+            testCase.verifyFalse(ismember('resolution', vectorDataPropertyNames))
 
             unitsClass = ?types.core.Units;
             unitsPropertyNames = {unitsClass.PropertyList.Name};
