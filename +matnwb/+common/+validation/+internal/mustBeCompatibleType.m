@@ -8,8 +8,8 @@ function mustBeCompatibleType(value, neurodataTypeName)
 % neurodata type.
 %
 % The function checks both compatible class names using `isa` on the fast
-% path. Only if validation fails does it call `exist(..., 'class')` to
-% distinguish between:
+% path. Only if validation fails does it check for the presence of the
+% expected class files on the MATLAB path to distinguish between:
 %   1) a value of the wrong type, and
 %   2) missing generated NWB classes on the MATLAB path.
 %
