@@ -37,15 +37,14 @@ function requiredPropertyNames = getRequiredPropsForClass(fullClassName, namespa
     % Resolve the required properties. For the final list of required properties,
     % we ignore both hidden and read-only properties.
     allPropertieNames = keys(classprops);
-    [isRequired, isReadOnly, isHidden] = deal( false(1, classprops.Count) );
+    [isRequired, isReadOnly] = deal( false(1, classprops.Count) );
     
     for iProp = 1:length(allPropertieNames)
         propertyName = allPropertieNames{iProp};
         prop = classprops(propertyName);
         isRequired(iProp) = file.internal.isPropertyRequired(prop, propertyName, classprops);
         isReadOnly(iProp) = file.internal.isPropertyReadonly(prop);
-        isHidden(iProp) = file.internal.isPropertyHidden(prop, className, namespace);
     end
 
-    requiredPropertyNames = allPropertieNames(isRequired & ~isReadOnly & ~isHidden);
+    requiredPropertyNames = allPropertieNames(isRequired & ~isReadOnly);
 end

@@ -24,10 +24,6 @@ methods
         %
         %  - description (char) - Description of what these vectors represent.
         %
-        %  - resolution (double) - NOTE: this is a special value for compatibility with the Units table and is only written to file when detected to be in that specific HDF5 Group. The smallest possible difference between two spike times. Usually 1 divided by the acquisition sampling rate from which spike times were extracted, but could be larger if the acquisition time series was downsampled or smaller if the acquisition time series was smoothed/interpolated and it is possible for the spike time to be between samples.
-        %
-        %  - sampling_rate (single) - NOTE: this is a special value for compatibility with the Units table and is only written to file when detected to be in that specific HDF5 Group. Must be Hertz
-        %
         %  - target (Object reference to VectorData) - Reference to the target dataset that this index applies to.
         %
         % Output Arguments:

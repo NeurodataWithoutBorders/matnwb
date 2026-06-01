@@ -5,15 +5,6 @@ classdef VectorData < types.hdmf_common.Data & types.untyped.DatasetClass
 %  data, description
 
 
-% HIDDEN READONLY PROPERTIES
-properties(Hidden, SetAccess = protected)
-    unit = "volts"; %  (char) NOTE: this is a special value for compatibility with the Units table and is only written to file when detected to be in that specific HDF5 Group. The value must be 'volts'
-end
-% HIDDEN PROPERTIES
-properties(Hidden)
-    resolution; %  (double) NOTE: this is a special value for compatibility with the Units table and is only written to file when detected to be in that specific HDF5 Group. The smallest possible difference between two spike times. Usually 1 divided by the acquisition sampling rate from which spike times were extracted, but could be larger if the acquisition time series was downsampled or smaller if the acquisition time series was smoothed/interpolated and it is possible for the spike time to be between samples.
-    sampling_rate; %  (single) NOTE: this is a special value for compatibility with the Units table and is only written to file when detected to be in that specific HDF5 Group. Must be Hertz
-end
 % REQUIRED PROPERTIES
 properties
     description; % REQUIRED (char) Description of what these vectors represent.
@@ -33,14 +24,9 @@ methods
         %
         %  - description (char) - Description of what these vectors represent.
         %
-        %  - resolution (double) - NOTE: this is a special value for compatibility with the Units table and is only written to file when detected to be in that specific HDF5 Group. The smallest possible difference between two spike times. Usually 1 divided by the acquisition sampling rate from which spike times were extracted, but could be larger if the acquisition time series was downsampled or smaller if the acquisition time series was smoothed/interpolated and it is possible for the spike time to be between samples.
-        %
-        %  - sampling_rate (single) - NOTE: this is a special value for compatibility with the Units table and is only written to file when detected to be in that specific HDF5 Group. Must be Hertz
-        %
         % Output Arguments:
         %  - vectorData (types.hdmf_common.VectorData) - A VectorData object
         
-        varargin = [{'unit' 'volts'} varargin];
         obj = obj@types.hdmf_common.Data(varargin{:});
         
         
@@ -49,14 +35,8 @@ methods
         p.PartialMatching = false;
         p.StructExpand = false;
         addParameter(p, 'description',[]);
-        addParameter(p, 'resolution',[]);
-        addParameter(p, 'sampling_rate',[]);
-        addParameter(p, 'unit',[]);
         misc.parseSkipInvalidName(p, varargin);
         obj.description = p.Results.description;
-        obj.resolution = p.Results.resolution;
-        obj.sampling_rate = p.Results.sampling_rate;
-        obj.unit = p.Results.unit;
         
         % Only execute validation/setup code when called directly in this class's
         % constructor, not when invoked through superclass constructor chain
@@ -69,12 +49,6 @@ methods
     function set.description(obj, val)
         obj.description = obj.validate_description(val);
     end
-    function set.resolution(obj, val)
-        obj.resolution = obj.validate_resolution(val);
-    end
-    function set.sampling_rate(obj, val)
-        obj.sampling_rate = obj.validate_sampling_rate(val);
-    end
     %% VALIDATORS
     
     function val = validate_data(obj, val)
@@ -85,14 +59,6 @@ methods
         val = types.util.checkDtype('description', 'char', val);
         types.util.validateShape('description', {[1]}, val)
     end
-    function val = validate_resolution(obj, val)
-        val = types.util.checkDtype('resolution', 'double', val);
-        types.util.validateShape('resolution', {[1]}, val)
-    end
-    function val = validate_sampling_rate(obj, val)
-        val = types.util.checkDtype('sampling_rate', 'single', val);
-        types.util.validateShape('sampling_rate', {[1]}, val)
-    end
     %% EXPORT
     function refs = export(obj, writer, fullpath, refs)
         refs = export@types.hdmf_common.Data(obj, writer, fullpath, refs);
@@ -100,17 +66,6 @@ methods
             return;
         end
         writer.writeAttribute([fullpath '/description'], obj.description);
-        if ~isempty(obj.resolution) && any(endsWith(fullpath, 'units/spike_times'))
-            writer.writeAttribute([fullpath '/resolution'], obj.resolution);
-        end
-        validDataSamplingPaths = strcat('units/', {'waveform_mean', 'waveform_sd', 'waveforms'});
-        if ~isempty(obj.sampling_rate) && any(endsWith(fullpath, validDataSamplingPaths))
-            writer.writeAttribute([fullpath '/sampling_rate'], obj.sampling_rate);
-        end
-        validUnitPaths = strcat('units/', {'waveform_mean', 'waveform_sd', 'waveforms'});
-        if ~isempty(obj.unit) && any(endsWith(fullpath, validUnitPaths))
-            writer.writeAttribute([fullpath '/unit'], obj.unit);
-        end
     end
 end
 
