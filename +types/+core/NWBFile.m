@@ -7,7 +7,7 @@ classdef NWBFile < types.core.NWBContainer & types.untyped.GroupClass
 
 % READONLY PROPERTIES
 properties(SetAccess = protected)
-    nwb_version = "2.9.0"; %  (char) File version string. Use semantic versioning, e.g. 1.2.1. This will be the name of the format with trailing major, minor and patch numbers.
+    nwb_version = "2.10.0"; %  (char) File version string. Use semantic versioning, e.g. 1.2.1. This will be the name of the format with trailing major, minor and patch numbers.
 end
 % REQUIRED PROPERTIES
 properties
@@ -21,12 +21,14 @@ end
 properties
     acquisition; %  (DynamicTable|NWBDataInterface) Tabular data that is relevant to acquisition | Acquired, raw data.
     analysis; %  (DynamicTable|NWBContainer) Tabular data that is relevant to data stored in analysis | Custom analysis results.
+    events; %  (EventsTable) Events that occurred during the session.
     general; %  (LabMetaData) Place-holder than can be extended so that lab-specific meta-data can be placed in /general.
     general_data_collection; %  (char) Notes about data collection and analysis.
     general_devices; %  (Device) Data acquisition devices.
     general_devices_models; %  (DeviceModel) Data acquisition device models.
     general_experiment_description; %  (char) General description of the experiment.
     general_experimenter; %  (char) Name of person(s) who performed the experiment. Can also specify roles of different people involved.
+    general_external_resources; %  (HERD) This is the HERD structure for this specific NWBFile, storing the mapped external resources.
     general_extracellular_ephys; %  (ElectrodeGroup) Physical group of electrodes.
     general_extracellular_ephys_electrodes; %  (ElectrodesTable) A table of all electrodes (i.e. channels) used for recording. Changed in NWB 2.9.0 to use the newly added ElectrodesTable neurodata type instead of a DynamicTable with added columns.
     general_institution; %  (char) Institution(s) where experiment was performed.
@@ -80,6 +82,8 @@ methods
         %
         %  - analysis (DynamicTable|NWBContainer) - Tabular data that is relevant to data stored in analysis
         %
+        %  - events (EventsTable) - Events that occurred during the session.
+        %
         %  - file_create_date (datetime) - A record of the date the file was created and of subsequent modifications. The date is stored in UTC with local timezone offset as ISO 8601 extended formatted strings: 2018-09-28T14:43:54.123+02:00. Dates stored in UTC end in "Z" with no timezone offset. Date accuracy is up to milliseconds. The file can be created after the experiment was run, so this may differ from the experiment start time. Each modification to the nwb file adds a new entry to the array.
         %
         %  - general (LabMetaData) - Place-holder than can be extended so that lab-specific meta-data can be placed in /general.
@@ -93,6 +97,8 @@ methods
         %  - general_experiment_description (char) - General description of the experiment.
         %
         %  - general_experimenter (char) - Name of person(s) who performed the experiment. Can also specify roles of different people involved.
+        %
+        %  - general_external_resources (HERD) - This is the HERD structure for this specific NWBFile, storing the mapped external resources.
         %
         %  - general_extracellular_ephys (ElectrodeGroup) - Physical group of electrodes.
         %
@@ -179,7 +185,7 @@ methods
         % Output Arguments:
         %  - nwbFile (types.core.NWBFile) - An NWBFile object
         
-        varargin = [{'nwb_version' '2.9.0'} varargin];
+        varargin = [{'nwb_version' '2.10.0'} varargin];
         obj = obj@types.core.NWBContainer(varargin{:});
         
         
@@ -189,6 +195,7 @@ methods
         p.StructExpand = false;
         addParameter(p, 'acquisition',types.untyped.Set());
         addParameter(p, 'analysis',types.untyped.Set());
+        addParameter(p, 'events',types.untyped.Set());
         addParameter(p, 'file_create_date',[]);
         addParameter(p, 'general',types.untyped.Set());
         addParameter(p, 'general_data_collection',[]);
@@ -196,6 +203,7 @@ methods
         addParameter(p, 'general_devices_models',types.untyped.Set());
         addParameter(p, 'general_experiment_description',[]);
         addParameter(p, 'general_experimenter',[]);
+        addParameter(p, 'general_external_resources',[]);
         addParameter(p, 'general_extracellular_ephys',types.untyped.Set());
         addParameter(p, 'general_extracellular_ephys_electrodes',[]);
         addParameter(p, 'general_institution',[]);
@@ -241,6 +249,7 @@ methods
         misc.parseSkipInvalidName(p, varargin);
         obj.acquisition = p.Results.acquisition;
         obj.analysis = p.Results.analysis;
+        obj.events = p.Results.events;
         obj.file_create_date = p.Results.file_create_date;
         obj.general = p.Results.general;
         obj.general_data_collection = p.Results.general_data_collection;
@@ -248,6 +257,7 @@ methods
         obj.general_devices_models = p.Results.general_devices_models;
         obj.general_experiment_description = p.Results.general_experiment_description;
         obj.general_experimenter = p.Results.general_experimenter;
+        obj.general_external_resources = p.Results.general_external_resources;
         obj.general_extracellular_ephys = p.Results.general_extracellular_ephys;
         obj.general_extracellular_ephys_electrodes = p.Results.general_extracellular_ephys_electrodes;
         obj.general_institution = p.Results.general_institution;
@@ -305,6 +315,9 @@ methods
     function set.analysis(obj, val)
         obj.analysis = obj.validate_analysis(val);
     end
+    function set.events(obj, val)
+        obj.events = obj.validate_events(val);
+    end
     function set.file_create_date(obj, val)
         obj.file_create_date = obj.validate_file_create_date(val);
     end
@@ -325,6 +338,9 @@ methods
     end
     function set.general_experimenter(obj, val)
         obj.general_experimenter = obj.validate_general_experimenter(val);
+    end
+    function set.general_external_resources(obj, val)
+        obj.general_external_resources = obj.validate_general_external_resources(val);
     end
     function set.general_extracellular_ephys(obj, val)
         obj.general_extracellular_ephys = obj.validate_general_extracellular_ephys(val);
@@ -465,6 +481,11 @@ methods
         constrained = {'types.hdmf_common.DynamicTable', 'types.core.NWBContainer'};
         types.util.checkSet('analysis', struct(), constrained, val);
     end
+    function val = validate_events(obj, val)
+        namedprops = struct();
+        constrained = {'types.core.EventsTable'};
+        types.util.checkSet('events', namedprops, constrained, val);
+    end
     function val = validate_file_create_date(obj, val)
         val = types.util.checkDtype('file_create_date', 'datetime', val);
         types.util.validateShape('file_create_date', {[Inf]}, val)
@@ -495,6 +516,9 @@ methods
     function val = validate_general_experimenter(obj, val)
         val = types.util.checkDtype('general_experimenter', 'char', val);
         types.util.validateShape('general_experimenter', {[Inf]}, val)
+    end
+    function val = validate_general_external_resources(obj, val)
+        val = types.util.checkDtype('general_external_resources', 'types.hdmf_common.HERD', val);
     end
     function val = validate_general_extracellular_ephys(obj, val)
         namedprops = struct();
@@ -663,6 +687,9 @@ methods
         fullpath = '';
         refs = obj.acquisition.export(writer, [fullpath '/acquisition'], refs);
         refs = obj.analysis.export(writer, [fullpath '/analysis'], refs);
+        if ~isempty(obj.events) && obj.events.Count ~= 0
+            refs = obj.events.export(writer, [fullpath '/events'], refs);
+        end
         if startsWith(class(obj.file_create_date), 'types.untyped.')
             refs = obj.file_create_date.export(writer, [fullpath '/file_create_date'], refs);
         elseif ~isempty(obj.file_create_date)
@@ -700,6 +727,10 @@ methods
             elseif ~isempty(obj.general_experimenter)
                 writer.writeValue([fullpath '/general/experimenter'], obj.general_experimenter, 'forceArray');
             end
+        end
+        if ~isempty(obj.general_external_resources)
+            writer.writeGroup([fullpath '/general']);
+            refs = obj.general_external_resources.export(writer, [fullpath '/general/external_resources'], refs);
         end
         if ~isempty(obj.general_extracellular_ephys) && obj.general_extracellular_ephys.Count ~= 0
             writer.writeGroup([fullpath '/general']);
