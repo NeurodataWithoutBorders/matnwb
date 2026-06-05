@@ -108,12 +108,33 @@ classdef nwbReadTest < tests.abstract.NwbTestCase
             nwbExport(nwbFile, fileName)
             
             nwbIn = nwbRead(fileName, "ignorecache");
-            testCase.verifyClass(nwbIn.session_start_time, 'types.untyped.DataStub')
+            testCase.verifyClass(nwbIn.general_was_generated_by, 'types.untyped.DataStub')
 
             nwbIn.loadAll();
-            testCase.verifyTrue(isa(nwbIn.session_start_time, 'datetime'))
+            testCase.verifyFalse(isa(nwbIn.general_was_generated_by, 'types.untyped.DataStub'))
 
             % Todo: Acquisition (But, loadAll is currently not recursive.)
+        end
+
+        function readNWBFileMetadataDatasetsEagerly(testCase)
+            nwbFile = tests.factory.NWBFile();
+            nwbFile.acquisition.set('ts', tests.factory.TimeSeriesWithTimestamps);
+            nwbFile.general_experimenter = ["Alice", "Bob"];
+            nwbFile.general_keywords = ["ecephys", "behavior"];
+            fileName = 'testReadNWBFileMetadataDatasetsEagerly.nwb';
+            nwbExport(nwbFile, fileName)
+
+            nwbIn = nwbRead(fileName, "ignorecache");
+
+            testCase.verifyClass(nwbIn.session_start_time, 'datetime')
+            testCase.verifyClass(nwbIn.file_create_date, 'datetime')
+            testCase.verifyClass(nwbIn.timestamps_reference_time, 'datetime')
+            testCase.verifyFalse(isa(nwbIn.general_experimenter, 'types.untyped.DataStub'))
+            testCase.verifyFalse(isa(nwbIn.general_keywords, 'types.untyped.DataStub'))
+            testCase.verifyEqual(string(nwbIn.general_experimenter(:)), ["Alice"; "Bob"])
+            testCase.verifyEqual(string(nwbIn.general_keywords(:)), ["ecephys"; "behavior"])
+            testCase.verifyClass(nwbIn.general_was_generated_by, 'types.untyped.DataStub')
+            testCase.verifyClass(nwbIn.acquisition.get('ts').data, 'types.untyped.DataStub')
         end
 
         function readFileWithInvalidTimeSeriesTimestampsShape(testCase)

@@ -927,4 +927,34 @@ methods
     end
 end
 
+%% READ POLICY
+methods (Static, Hidden)
+    function propertyNames = getEagerLoadProperties()
+        propertyNames = {
+            'file_create_date'
+            'general_data_collection'
+            'general_experiment_description'
+            'general_experimenter'
+            'general_institution'
+            'general_intracellular_ephys_filtering'
+            'general_keywords'
+            'general_lab'
+            'general_notes'
+            'general_pharmacology'
+            'general_protocol'
+            'general_related_publications'
+            'general_session_id'
+            'general_slices'
+            'general_source_script'
+            'general_stimulus'
+            'general_surgery'
+            'general_virus'
+            'identifier'
+            'session_description'
+            'session_start_time'
+            'timestamps_reference_time'
+        };
+    end
+end
+
 end
