@@ -237,6 +237,19 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
 
         function throwErrorIfMissingRequiredProps(obj, fullpath)
             missingRequiredProps = obj.checkRequiredProps();
+
+            % Exception: `colnames` of a DynamicTable is only required to
+            % order existing columns. A DynamicTable that genuinely has no
+            % columns (e.g. an empty IntracellularRecordingsTable) has empty
+            % `colnames` by definition and must still be exportable.
+            % `checkConfig` runs first via throwErrorIfCustomConstraintUnfulfilled
+            % (see the comment in `export`) and already errors when columns
+            % exist without being listed in `colnames`. Reaching this point with
+            % empty `colnames` therefore guarantees the table has no columns.
+            if isa(obj, 'types.hdmf_common.DynamicTable')
+                missingRequiredProps = setdiff(missingRequiredProps, 'colnames', 'stable');
+            end
+
             if ~isempty( missingRequiredProps )
                 propertyListStr = obj.prettyPrintPropertyList(missingRequiredProps);
                 error('NWB:RequiredPropertyMissing', ...
