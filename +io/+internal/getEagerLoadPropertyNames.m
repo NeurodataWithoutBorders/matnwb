@@ -16,26 +16,6 @@ function propertyNames = getEagerLoadPropertyNames(typeName)
     end
 
     propertyNames = getGeneratedEagerLoadPropertyNames(typeName);
-    if isempty(propertyNames) && ~isNWBFileType(typeName)
-        propertyNameCache(typeName) = propertyNames;
-        return
-    end
-
-    if isempty(propertyNames)
-        try
-            propertyNames = schemes.internal.getEagerLoadPropsForClass(typeName);
-        catch ME
-            recoverableErrorIds = { ...
-                'NWB:Namespace:CacheMissing', ...
-                'NWB:Scheme:Namespace:NotFound' ...
-                };
-            if ~any(strcmp(ME.identifier, recoverableErrorIds))
-                rethrow(ME)
-            end
-            propertyNames = {};
-        end
-    end
-
     propertyNameCache(typeName) = propertyNames;
 end
 
@@ -53,8 +33,4 @@ function propertyNames = getGeneratedEagerLoadPropertyNames(typeName)
     end
 
     propertyNames = feval([typeName '.getEagerLoadProperties']);
-end
-
-function tf = isNWBFileType(typeName)
-    tf = strcmp(typeName, 'NwbFile') || endsWith(typeName, '.NWBFile');
 end
