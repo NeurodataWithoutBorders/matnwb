@@ -502,6 +502,29 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
             testCase.verifyError(@() nwbExport(nwb, fileName), ...
                 'NWB:CustomConstraintUnfulfilled');
         end
+
+        function testExportTableWithoutColumns(testCase)
+            % A DynamicTable that genuinely has no columns (e.g. an
+            % IntracellularRecordingsTable whose data lives entirely in its
+            % category sub-tables) has empty `colnames` by definition and must
+            % still be exportable without adding a dummy column.
+            fileName = testCase.getRandomFilename();
+            nwb = tests.factory.NWBFile();
+
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'table without any columns', ...
+                'id', types.hdmf_common.ElementIdentifiers('data', (0:2)'));
+            testCase.verifyEmpty(dynamicTable.colnames);
+
+            nwb.acquisition.set('DynamicTable', dynamicTable);
+
+            testCase.verifyWarningFree(@() nwbExport(nwb, fileName));
+
+            readNwb = nwbRead(fileName, 'ignorecache');
+            readTable = readNwb.acquisition.get('DynamicTable');
+            testCase.verifyEmpty(readTable.colnames);
+            testCase.verifyEqual(readTable.id.data.load(), int64((0:2)'));
+        end
     end
 
     methods (Static, Access=private)
