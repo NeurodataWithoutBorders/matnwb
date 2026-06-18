@@ -8,13 +8,17 @@ function storageTarget = resolveColumnStorage(dynamicTable, columnName, columnDa
         columnName (1,1) string
         columnData {matnwb.common.validation.mustBeVectorData}
     end
+    
+    if dynamicTable.isDynamicProperty(columnName)
+        storageTarget = 'vectordata';
+        return
+    end
 
     if ~isprop(dynamicTable, columnName)
         storageTarget = 'vectordata';
         return;
     end
 
-   
     if canAssignToProperty(dynamicTable, columnName, columnData)
         storageTarget = 'property';
         return;
