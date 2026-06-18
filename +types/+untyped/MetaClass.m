@@ -308,6 +308,8 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
                             end
                         catch MEValidator
                             if strcmp(MEValidator.identifier, 'MATLAB:maxlhs')
+                                % Validator does not provide an output. Call
+                                % again without requesting a normalized value.
                                 feval(validatorName, obj, propertyValue);
                             else
                                 rethrow(MEValidator)
