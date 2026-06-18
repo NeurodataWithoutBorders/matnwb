@@ -278,6 +278,9 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
         %   conform to the schema) are not written back out as a new, invalid
         %   file. Validators run in the default (strict) context here, so a
         %   schema violation raises an error rather than a warning.
+            previousValidationContext = types.util.validationContext('strict');
+            cleanupValidationContext = onCleanup(@() types.util.validationContext(previousValidationContext));
+
             if isempty(fullpath)
                 fullpath = 'root';
             end
