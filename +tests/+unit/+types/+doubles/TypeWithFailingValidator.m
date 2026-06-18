@@ -7,6 +7,7 @@ classdef TypeWithFailingValidator < types.untyped.MetaClass
     properties
         validProperty
         invalidProperty
+        coercingProperty
     end
 
     methods
@@ -17,6 +18,12 @@ classdef TypeWithFailingValidator < types.untyped.MetaClass
         function validate_invalidProperty(~, ~)
             error('NWB:Test:InvalidPropertyValue', ...
                 'This property value is never valid.')
+        end
+
+        function value = validate_coercingProperty(~, value)
+            % Simulates a validator that coerces the input (e.g., dtype
+            % conversion). Returns the value as double regardless of input type.
+            value = double(value);
         end
 
         function runValidateProperties(obj, fullpath)
