@@ -7,10 +7,6 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
         REQUIRED containers.Map = containers.Map
     end
 
-    properties (Hidden, Dependent, Transient)
-        TypeName % Short name for data type class, i.e NWBFile
-    end
-
     methods
         function obj = MetaClass(varargin)
         end
@@ -147,13 +143,6 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
         end
     end
     
-    methods % Set/get
-        function result = get.TypeName(obj)
-            classNameParts = strsplit( class(obj), '.');
-            result = classNameParts{end};
-        end
-    end 
-
     methods (Hidden)
         % Set of methods that should be publicly available, for example for
         % testing purposes, or other use cases where type inspection might
@@ -174,6 +163,12 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
                 requiredProps = schemes.internal.getRequiredPropsForClass(className);
                 obj.REQUIRED( typeKey ) = requiredProps;
             end
+        end
+    
+        function name = getTypeShortName(obj)
+        % getTypeShortName - Get short name for data type class, i.e NWBFile
+            classNameParts = strsplit( class(obj), '.');
+            name = classNameParts{end};
         end
     end
 
