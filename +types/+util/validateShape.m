@@ -35,17 +35,14 @@ function validateShape(propertyName, validShapes, value)
     try
         types.util.checkDims(valueShape, validShapes, enforceScalarShape);
     catch MECause
-        ME = MException(MECause.identifier, ...
-            'Invalid shape for property "%s".', propertyName);
-        ME = ME.addCause(MECause);
-        
+        causes = MECause;
         if isa(value, 'types.untyped.DataPipe')
-            extraCause = MException('NWB:ValidateShape:InvalidMaxSize', ...
+            causes(end+1) = MException('NWB:ValidateShape:InvalidMaxSize', ...
                 ['For DataPipe objects, ensure the `maxSize` property ', ...
                 'matches the valid shape.']);
-            ME = ME.addCause(extraCause);
         end
-        throw(ME)
+        types.util.reportSchemaViolation(MECause.identifier, ...
+            sprintf('Invalid shape for property "%s".', propertyName), causes);
     end
 
     % Check actual size of DataPipe and warn if it is not valid
