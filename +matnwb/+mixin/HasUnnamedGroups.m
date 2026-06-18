@@ -49,11 +49,19 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
     properties (Access = private, Dependent, Transient)
         % GroupPropertyNames - String array of property names that contain Sets
         GroupPropertyNames (1,:) string
-    end   
-    
+        
+        % NonDynamicPropertyNames - String array of class-defined (non-dynamic)
+        % property names, i.e. properties declared in the classdef rather than
+        % added at runtime as dynamic properties
+        NonDynamicPropertyNames (1,:) string
+    end
+
     properties (Access = private)
         % GroupPropertyNames_ - Cached value backing the dependent property GroupPropertyNames
         GroupPropertyNames_ (1,:) string
+
+        % NonDynamicPropertyNames_ - Cached value backing the dependent property NonDynamicPropertyNames
+        NonDynamicPropertyNames_ (1,:) string
     end
     
     properties (Access = private, Transient)
@@ -159,6 +167,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
         end
     end
 
+    % Getter methods
     methods
         function value = get.GroupPropertyNames(obj)
             if isempty(obj.GroupPropertyNames_)
@@ -166,6 +175,13 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                 obj.GroupPropertyNames_ = obj.getGroupPropertyNamesAcrossTypeHierarchy(className);
             end
             value = obj.GroupPropertyNames_;
+        end
+
+        function value = get.NonDynamicPropertyNames(obj)
+            if isempty(obj.NonDynamicPropertyNames_)
+                obj.NonDynamicPropertyNames_ = obj.getNonDynamicProperties();
+            end
+            value = obj.NonDynamicPropertyNames_;
         end
     end
 
@@ -207,9 +223,20 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
         end
     end
 
+    % Hidden utility method
+    methods (Hidden)
+        function tf = isDynamicProperty(obj, name)
+        % isDynamicProperty - Is name a runtime-added dynamic property on this object
+            arguments
+                obj matnwb.mixin.HasUnnamedGroups
+                name (1,1) string
+            end
+            tf = obj.PropertyManager.existPropertyName(name);
+        end
+    end
+
     % Internal utility methods
     methods (Access = private)
-        
         function tf = isContainerLike(obj)
         % isContainerLike - Whether neurodata type is purely a container
         % for other data objects
@@ -218,10 +245,10 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
         % properties for storing other neurodata types, i.e properties
         % containing types.untyped.Set objects
             
-            staticProperties = obj.getStaticProperties();
+            nonDynamicProperties = obj.NonDynamicPropertyNames;
             groupProperties = obj.GroupPropertyNames;
 
-            tf = isempty(setdiff(staticProperties, groupProperties));
+            tf = isempty(setdiff(nonDynamicProperties, groupProperties));
         end
 
         function T = getTableWithAliasNames(obj)
@@ -254,11 +281,11 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             n = sum(nPerGroup);
         end
         
-        function staticProperties = getStaticProperties(obj)
+        function nonDynamicProperties = getNonDynamicProperties(obj)
             allProperties = properties(obj);
             dynamicPropNames = obj.PropertyManager.getAllPropertyNames();
 
-            staticProperties = setdiff(allProperties, dynamicPropNames);
+            nonDynamicProperties = setdiff(allProperties, dynamicPropNames);
         end
     end
 
@@ -400,7 +427,6 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             % Set the value to the Set of the contained subgroup
             obj.(groupName).set(name, value);
         end
-
 
         function value = getDynamicPropertyValueFromAnon(obj, groupName)
             value = obj.(groupName).value;
