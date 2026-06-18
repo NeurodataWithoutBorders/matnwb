@@ -295,8 +295,24 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
                 % validator. An empty value represents an unset optional
                 % property, which is not written on export.
                 if ~isempty(propertyValue) && ismethod(obj, validatorName)
+                    warnState = warning('error', 'NWB:CheckDataType:NeedsManualConversion');
+                    warnCleanupObj = onCleanup(@() warning(warnState));
                     try
-                        feval(validatorName, obj, propertyValue);
+                        try
+                            validatedValue = feval(validatorName, obj, propertyValue);
+                            if ~strcmp(class(validatedValue), class(propertyValue)) || ~isequaln(validatedValue, propertyValue)
+                                error('NWB:Export:PropertyValueRequiresNormalization', ...
+                                    ['Property "%s" would be modified by its validator. ' ...
+                                    'Assign it via its setter (strict validation) before export.'], ...
+                                    propertyName);
+                            end
+                        catch MEValidator
+                            if strcmp(MEValidator.identifier, 'MATLAB:maxlhs')
+                                feval(validatorName, obj, propertyValue);
+                            else
+                                rethrow(MEValidator)
+                            end
+                        end
                     catch ME
                         newException = MException( ...
                             'NWB:Export:InvalidPropertyValue', ...
