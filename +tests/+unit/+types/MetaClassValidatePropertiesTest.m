@@ -48,5 +48,17 @@ classdef MetaClassValidatePropertiesTest < matlab.unittest.TestCase
             testCase.verifyWarningFree( ...
                 @() testType.runValidateProperties('/some/path'))
         end
+
+        function testCoercingValidatorRaisesError(testCase)
+            % A validator that changes (coerces) the value must produce an
+            % error, because the exported value would differ from what the
+            % validator accepted.
+            testType = tests.unit.types.doubles.TypeWithFailingValidator();
+            testType.coercingProperty = int32(5);  % int32 -> double on validate
+
+            testCase.verifyError( ...
+                @() testType.runValidateProperties('/some/path'), ...
+                'NWB:Export:InvalidPropertyValue')
+        end
     end
 end
