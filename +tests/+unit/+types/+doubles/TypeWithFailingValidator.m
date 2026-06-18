@@ -8,6 +8,7 @@ classdef TypeWithFailingValidator < types.untyped.MetaClass
         validProperty
         invalidProperty
         coercingProperty
+        datetimeProperty
     end
 
     methods
@@ -24,6 +25,10 @@ classdef TypeWithFailingValidator < types.untyped.MetaClass
             % Simulates a validator that coerces the input (e.g., dtype
             % conversion). Returns the value as double regardless of input type.
             value = double(value);
+        end
+
+        function value = validate_datetimeProperty(~, value)
+            value = types.util.checkDtype('datetimeProperty', 'datetime', value);
         end
 
         function runValidateProperties(obj, fullpath)

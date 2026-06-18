@@ -50,15 +50,24 @@ classdef MetaClassValidatePropertiesTest < matlab.unittest.TestCase
         end
 
         function testCoercingValidatorRaisesError(testCase)
-            % A validator that changes (coerces) the value must produce an
-            % error, because the exported value would differ from what the
-            % validator accepted.
+            % A validator that changes the MATLAB class must produce an
+            % error, because the writer would receive a value whose type does
+            % not match what strict validation accepts.
             testType = tests.unit.types.doubles.TypeWithFailingValidator();
             testType.coercingProperty = int32(5);  % int32 -> double on validate
 
             testCase.verifyError( ...
                 @() testType.runValidateProperties('/some/path'), ...
                 'NWB:Export:InvalidPropertyValue')
+        end
+
+        function testDatetimeFormatterNormalizationPasses(testCase)
+            testType = tests.unit.types.doubles.TypeWithFailingValidator();
+            testType.datetimeProperty = {datetime(2020, 1, 1, ...
+                'Format', 'dd-MMM-uuuu HH:mm:ss')};
+
+            testCase.verifyWarningFree( ...
+                @() testType.runValidateProperties('/some/path'))
         end
     end
 end
