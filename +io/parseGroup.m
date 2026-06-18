@@ -72,9 +72,12 @@ else
         elided_gprops = elide(groupProperties, properties(Type.typename));
         groupProperties = [groupProperties; elided_gprops];
     end
+
+    typeProperties = [attributeProperties; datasetProperties; groupProperties; linkProperties];
+    typeProperties = io.internal.eagerLoadProperties(Type.typename, typeProperties);
+
     %construct as kwargs and instantiate object
-    kwargs = io.map2kwargs(...
-        [attributeProperties; datasetProperties; groupProperties; linkProperties]);
+    kwargs = io.map2kwargs(typeProperties);
     if isempty(root)
         %we are root
         if strcmp(Type.name, 'NWBFile')

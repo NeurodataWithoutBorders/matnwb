@@ -178,8 +178,35 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
 
     fullMethodBody = strjoin({'methods' ...
         file.addSpaces(methodBody, 4) 'end'}, newline);
-    template = strjoin({classDefinitionHeader fullPropertyDefinition fullMethodBody 'end'}, ...
-        [newline newline]);
+    readPolicyMethodBlock = fillReadPolicy(class, classprops);
+    classSections = {classDefinitionHeader, fullPropertyDefinition, fullMethodBody};
+    if ~isempty(readPolicyMethodBlock)
+        classSections{end+1} = readPolicyMethodBlock;
+    end
+    classSections{end+1} = 'end';
+    template = strjoin(classSections, [newline newline]);
+end
+
+function readPolicyStr = fillReadPolicy(classInfo, classProps)
+    eagerLoadPropertyNames = file.getEagerLoadPropertyNames(classInfo, classProps);
+    if isempty(eagerLoadPropertyNames)
+        readPolicyStr = '';
+        return
+    end
+
+    quotedPropertyNames = strcat("'", string(eagerLoadPropertyNames), "'");
+    propertyList = strjoin(quotedPropertyNames, newline);
+    propertyList = file.addSpaces(char(propertyList), 12);
+
+    readPolicyStr = strjoin({...
+        '%% READ POLICY', ...
+        'methods (Static, Hidden)', ...
+        '    function propertyNames = getEagerLoadProperties()', ...
+        '        propertyNames = {', ...
+        propertyList, ...
+        '        };', ...
+        '    end', ...
+        'end'}, newline);
 end
 
 function tf = resolveRequiredForDependentProp(propertyName, propInfo, allProps)
