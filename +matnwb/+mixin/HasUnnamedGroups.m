@@ -89,7 +89,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             end
 
             if obj.nameExists(name)
-                throwAsCaller(getNameExistsException(name, obj.TypeName))
+                throwAsCaller(getNameExistsException(name, obj.getTypeShortName()))
             end
 
             wasSuccess = false;
@@ -553,7 +553,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
         % displayAliasWarning - Display warning if any names have aliases
             T = getTableWithAliasNames(obj);
             if ~isempty(T)
-                types.untyped.internal.displayAliasWarning(T, obj.TypeName)
+                types.untyped.internal.displayAliasWarning(T, obj.getTypeShortName())
             end
         end
     end
