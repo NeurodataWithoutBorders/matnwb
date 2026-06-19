@@ -315,6 +315,16 @@ classdef nwbExportTest < tests.abstract.NwbTestCase
                 ts.data_unit)
         end
 
+        function testExportWritesScalarDatetimeAsScalarDataset(testCase)
+            nwb = tests.factory.NWBFile();
+            filename = "write_scalar_datetime_test.nwb";
+            nwbExport(nwb, filename);
+
+            datasetInfo = h5info(filename, "/session_start_time");
+
+            testCase.verifyEqual(datasetInfo.Dataspace.Type, 'scalar')
+        end
+
         function testWasGeneratedByProperty(testCase)
             nwb = tests.factory.NWBFile();
             nwbFilename = testCase.getRandomFilename();
