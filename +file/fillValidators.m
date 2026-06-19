@@ -11,7 +11,7 @@ function validationStr = fillValidators(propnames, props, namespaceReg, classNam
             % attributes of a property from public (in a superclass) to 
             % protected (in a subclass).
             if any(strcmp(nm, inherited))
-                validationBody = fillReadOnlyValidation(nm, prop.value, className);
+                validationBody = fillReadOnlyValidation(nm, prop.value, prop.dtype, className);
             else
                 continue
             end
@@ -364,7 +364,7 @@ function validationStr = fillReferenceTypeValidation(name, typeSpec, namespaceRe
     validationStr = strjoin(validationLines, newline);
 end
 
-function fdvstr = fillReadOnlyValidation(name, value, className)
+function fdvstr = fillReadOnlyValidation(name, value, dtype, className)
 
     classNameSplit = strsplit(className, '.');
     shortName = classNameSplit{end};
@@ -376,9 +376,15 @@ function fdvstr = fillReadOnlyValidation(name, value, className)
             sprintf('    val = ''%s'';', value ), ...
                     'else' }, newline);
     elseif isnumeric(value) || islogical(value)
+        valueLiteral = mat2str(value);
+        valueExpression = valueLiteral;
+        if canCorrectReadOnlyValueType(dtype)
+            valueExpression = sprintf( ...
+                'types.util.correctType(%s, ''%s'')', valueLiteral, dtype);
+        end
         condition = strjoin({ ...
-            sprintf('if isequal(val, %d)', value), ...
-            sprintf('    val = %d;', value ), ...
+            sprintf('if isequal(val, %s)', valueLiteral), ...
+            sprintf('    val = %s;', valueExpression), ...
                     'else' }, newline);
     else
         % Note: According to the documentation for Attribute specification keys
@@ -392,6 +398,16 @@ function fdvstr = fillReadOnlyValidation(name, value, className)
             condition, ...
             sprintf('    %s', errorStr), ...
             'end' }, newline );
+end
+
+function tf = canCorrectReadOnlyValueType(dtype)
+    correctableTypes = { ...
+        'single', 'double', ...
+        'int64', 'int32', 'int16', 'int8', ...
+        'uint64', 'uint32', 'uint16', 'uint8', ...
+        'logical'};
+
+    tf = ischar(dtype) && any(strcmp(dtype, correctableTypes));
 end
 
 function fullname = getFullClassName(namespaceReg, propType, name)
