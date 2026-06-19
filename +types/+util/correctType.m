@@ -36,16 +36,6 @@ function val = correctType(val, type)
                     val = arrayfun(@formatDatetime, val);
                 else
                     val = cellfun(@formatDatetime, val, 'UniformOutput', false);
-                    try
-                        val = [val{:}]; % Try creating a datetime array
-                    catch exception
-                        if strcmp(exception.identifier, 'MATLAB:datetime:cat:IncompatibleTZ')
-                            % Cells are mixed, some datetime value have
-                            % timezone info, some do not. Keep cell output.
-                        else
-                            rethrow(exception)
-                        end
-                    end
                 end
             end
 
