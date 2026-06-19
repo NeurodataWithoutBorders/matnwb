@@ -75,29 +75,20 @@ methods
         types.util.validateShape('data', {[Inf,Inf,Inf], [Inf,Inf]}, val)
     end
     function val = validate_data_unit(obj, val)
-        if isequal(val, 'volts')
-            val = 'volts';
-        else
-            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''data_unit'' property of class ''<a href="matlab:doc types.core.SpikeEventSeries">SpikeEventSeries</a>'' because it is read-only.')
-        end
+        constantValue = 'volts';
+        val = types.util.checkConstant('data_unit', constantValue, val, 'types.core.SpikeEventSeries');
     end
     function val = validate_timestamps(obj, val)
         val = types.util.checkDtype('timestamps', 'double', val);
         types.util.validateShape('timestamps', {[Inf]}, val)
     end
     function val = validate_timestamps_interval(obj, val)
-        if isequal(val, 1)
-            val = 1;
-        else
-            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''timestamps_interval'' property of class ''<a href="matlab:doc types.core.SpikeEventSeries">SpikeEventSeries</a>'' because it is read-only.')
-        end
+        constantValue = types.util.correctType(1, 'int32');
+        val = types.util.checkConstant('timestamps_interval', constantValue, val, 'types.core.SpikeEventSeries');
     end
     function val = validate_timestamps_unit(obj, val)
-        if isequal(val, 'seconds')
-            val = 'seconds';
-        else
-            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''timestamps_unit'' property of class ''<a href="matlab:doc types.core.SpikeEventSeries">SpikeEventSeries</a>'' because it is read-only.')
-        end
+        constantValue = 'seconds';
+        val = types.util.checkConstant('timestamps_unit', constantValue, val, 'types.core.SpikeEventSeries');
     end
     %% EXPORT
     function refs = export(obj, writer, fullpath, refs)

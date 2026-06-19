@@ -99,11 +99,8 @@ methods
         types.util.validateShape('data_resolution', {[1]}, val)
     end
     function val = validate_data_unit(obj, val)
-        if isequal(val, 'N/A')
-            val = 'N/A';
-        else
-            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''data_unit'' property of class ''<a href="matlab:doc types.core.IndexSeries">IndexSeries</a>'' because it is read-only.')
-        end
+        constantValue = 'N/A';
+        val = types.util.checkConstant('data_unit', constantValue, val, 'types.core.IndexSeries');
     end
     function val = validate_indexed_images(obj, val)
         val = types.util.validateSoftLink('indexed_images', val, 'types.core.Images');

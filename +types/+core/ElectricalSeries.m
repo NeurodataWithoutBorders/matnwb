@@ -108,11 +108,8 @@ methods
         types.util.validateShape('data', {[Inf,Inf,Inf], [Inf,Inf], [Inf]}, val)
     end
     function val = validate_data_unit(obj, val)
-        if isequal(val, 'volts')
-            val = 'volts';
-        else
-            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''data_unit'' property of class ''<a href="matlab:doc types.core.ElectricalSeries">ElectricalSeries</a>'' because it is read-only.')
-        end
+        constantValue = 'volts';
+        val = types.util.checkConstant('data_unit', constantValue, val, 'types.core.ElectricalSeries');
     end
     function val = validate_electrodes(obj, val)
         types.util.checkType('electrodes', 'types.hdmf_common.DynamicTableRegion', val);

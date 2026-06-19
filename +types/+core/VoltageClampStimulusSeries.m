@@ -77,11 +77,8 @@ methods
         types.util.validateShape('data', {[Inf]}, val)
     end
     function val = validate_data_unit(obj, val)
-        if isequal(val, 'volts')
-            val = 'volts';
-        else
-            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''data_unit'' property of class ''<a href="matlab:doc types.core.VoltageClampStimulusSeries">VoltageClampStimulusSeries</a>'' because it is read-only.')
-        end
+        constantValue = 'volts';
+        val = types.util.checkConstant('data_unit', constantValue, val, 'types.core.VoltageClampStimulusSeries');
     end
     %% EXPORT
     function refs = export(obj, writer, fullpath, refs)
