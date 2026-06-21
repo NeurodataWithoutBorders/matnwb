@@ -1,5 +1,5 @@
 classdef SchemaCategoryAlignedTable < types.hdmf_common.AlignedDynamicTable
-    %SchemaCategoryAlignedTable Test fixture with one schema-defined category.
+    %SchemaCategoryAlignedTable Test double with one schema-defined category.
 
     properties
         categoryOne

@@ -38,7 +38,7 @@ classdef alignedDynamicTableTest < matlab.unittest.TestCase
         end
 
         function testAddSchemaCategoryUsesNamedProperty(testCase)
-            alignedTable = tests.unit.SchemaCategoryAlignedTable( ...
+            alignedTable = tests.doubles.SchemaCategoryAlignedTable( ...
                 'description', 'parent table');
             categoryTable = tests.unit.alignedDynamicTableTest.createTableWithHeight(2);
 
@@ -50,7 +50,7 @@ classdef alignedDynamicTableTest < matlab.unittest.TestCase
         end
 
         function testDirectSchemaCategoryAssignmentSyncsCategories(testCase)
-            alignedTable = tests.unit.SchemaCategoryAlignedTable( ...
+            alignedTable = tests.doubles.SchemaCategoryAlignedTable( ...
                 'description', 'parent table');
             categoryTable = tests.unit.alignedDynamicTableTest.createTableWithHeight(2);
 
