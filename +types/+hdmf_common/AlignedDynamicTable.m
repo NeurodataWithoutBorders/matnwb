@@ -60,7 +60,7 @@ methods
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
             obj.setupHasUnnamedGroupsMixin();
-            types.util.dynamictable.checkConfig(obj);
+            types.util.aligneddynamictable.checkConfig(obj);
         end
     end
     %% SETTERS
@@ -75,6 +75,7 @@ methods
     function val = validate_categories(obj, val)
         val = types.util.checkDtype('categories', 'char', val);
         types.util.validateShape('categories', {[Inf]}, val)
+        val = types.util.aligneddynamictable.validateCategories(val);
     end
     function val = validate_dynamictable(obj, val)
         namedprops = struct();
@@ -91,6 +92,32 @@ methods
         if ~isempty(obj.dynamictable) && obj.dynamictable.Count ~= 0
             refs = obj.dynamictable.export(writer, fullpath, refs);
         end
+    end
+    %% CUSTOM CONSTRAINTS
+    function checkCustomConstraint(obj)
+        checkCustomConstraint@types.untyped.MetaClass(obj)
+        types.util.aligneddynamictable.checkConfig(obj)
+    end
+    %% CATEGORY METHODS
+    function addCategory(obj, categoryName, categoryTable, options)
+        arguments
+            obj (1,1) types.hdmf_common.AlignedDynamicTable
+        end
+        arguments (Repeating)
+            categoryName (1,1) string
+            categoryTable (1,1) {matnwb.common.validation.mustBeDynamicTable}
+        end
+        arguments
+            options.Replace (1,1) logical = false
+        end
+        types.util.aligneddynamictable.addCategory( ...
+            obj, categoryName, categoryTable, Replace=options.Replace);
+    end
+end
+
+methods (Hidden)
+    function categoryNames = getSchemaDefinedCategories(obj) %#ok<MANU>
+        categoryNames = string.empty(1, 0);
     end
 end
 

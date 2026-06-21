@@ -62,18 +62,30 @@ methods
         if strcmp(class(obj), 'types.core.IntracellularRecordingsTable') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
-            types.util.dynamictable.checkConfig(obj);
+            types.util.aligneddynamictable.checkConfig(obj);
         end
     end
     %% SETTERS
     function set.electrodes(obj, val)
         obj.electrodes = obj.validate_electrodes(val);
+        obj.postset_electrodes()
+    end
+    function postset_electrodes(obj)
+        types.util.aligneddynamictable.syncNamedCategory(obj, 'electrodes');
     end
     function set.responses(obj, val)
         obj.responses = obj.validate_responses(val);
+        obj.postset_responses()
+    end
+    function postset_responses(obj)
+        types.util.aligneddynamictable.syncNamedCategory(obj, 'responses');
     end
     function set.stimuli(obj, val)
         obj.stimuli = obj.validate_stimuli(val);
+        obj.postset_stimuli()
+    end
+    function postset_stimuli(obj)
+        types.util.aligneddynamictable.syncNamedCategory(obj, 'stimuli');
     end
     %% VALIDATORS
     
@@ -99,6 +111,14 @@ methods
         refs = obj.electrodes.export(writer, [fullpath '/electrodes'], refs);
         refs = obj.responses.export(writer, [fullpath '/responses'], refs);
         refs = obj.stimuli.export(writer, [fullpath '/stimuli'], refs);
+    end
+end
+
+methods (Hidden)
+    function categoryNames = getSchemaDefinedCategories(obj)
+        categoryNames = getSchemaDefinedCategories@types.hdmf_common.AlignedDynamicTable(obj);
+        localCategoryNames = ["electrodes", "responses", "stimuli"];
+        categoryNames = unique([categoryNames, localCategoryNames], 'stable');
     end
 end
 

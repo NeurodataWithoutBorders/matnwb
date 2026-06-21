@@ -176,10 +176,19 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
         methodBody = strjoin({methodBody, '%% TABLE METHODS', file.fillDynamicTableMethods()}, newline);
     end
 
+    if strcmp(name, 'AlignedDynamicTable')
+        methodBody = strjoin({methodBody, '%% CATEGORY METHODS', file.fillAlignedDynamicTableMethods()}, newline);
+    end
+
     fullMethodBody = strjoin({'methods' ...
         file.addSpaces(methodBody, 4) 'end'}, newline);
+    schemaCategoryMethodBlock = createMethodBlockForAlignedDynamicTableCategories( ...
+        classprops, nonInherited, name, namespace, superclassNames{1});
     readPolicyMethodBlock = fillReadPolicy(class, classprops);
     classSections = {classDefinitionHeader, fullPropertyDefinition, fullMethodBody};
+    if ~isempty(schemaCategoryMethodBlock)
+        classSections{end+1} = schemaCategoryMethodBlock;
+    end
     if ~isempty(readPolicyMethodBlock)
         classSections{end+1} = readPolicyMethodBlock;
     end
@@ -230,4 +239,56 @@ function propertyBlockStr = createPropertyBlockForHasUnnamedGroupMixin(classInfo
         'properties (Access = protected)', ...
         sprintf('    GroupPropertyNames = {%s}', strjoin(strcat('''', anonNames, ''''), ', ') ), ...
         'end'}, newline);
+end
+
+function methodBlockStr = createMethodBlockForAlignedDynamicTableCategories( ...
+        classProps, propertyNames, className, namespace, superclassName)
+
+    methodBlockStr = '';
+    if ~file.isAlignedDynamicTableDescendant(className, namespace)
+        return
+    end
+
+    categoryNames = string.empty(1, 0);
+    for iProperty = 1:length(propertyNames)
+        propertyName = propertyNames{iProperty};
+        propertyInfo = classProps(propertyName);
+        if isSchemaDefinedAlignedDynamicTableCategory(propertyInfo, namespace)
+            categoryNames(end+1) = string(propertyName); %#ok<AGROW>
+        end
+    end
+
+    if strcmp(className, 'AlignedDynamicTable')
+        methodLines = { ...
+            'function categoryNames = getSchemaDefinedCategories(obj) %#ok<MANU>', ...
+            '    categoryNames = string.empty(1, 0);', ...
+            'end'};
+    else
+        formattedNames = """" + categoryNames + """";
+        if isempty(formattedNames)
+            localCategoryLine = 'localCategoryNames = string.empty(1, 0);';
+        else
+            localCategoryLine = sprintf( ...
+                'localCategoryNames = [%s];', strjoin(formattedNames, ', '));
+        end
+
+        methodLines = { ...
+            'function categoryNames = getSchemaDefinedCategories(obj)', ...
+            sprintf('    categoryNames = getSchemaDefinedCategories@%s(obj);', superclassName), ...
+            sprintf('    %s', localCategoryLine), ...
+            '    categoryNames = unique([categoryNames, localCategoryNames], ''stable'');', ...
+            'end'};
+    end
+
+    methodBlockStr = strjoin({ ...
+        'methods (Hidden)', ...
+        file.addSpaces(strjoin(methodLines, newline), 4), ...
+        'end'}, newline);
+end
+
+function tf = isSchemaDefinedAlignedDynamicTableCategory(propertyInfo, namespace)
+    tf = isa(propertyInfo, 'file.Group') ...
+        && ~propertyInfo.isConstrainedSet ...
+        && ~isempty(propertyInfo.type) ...
+        && file.isDynamicTableDescendant(propertyInfo.type, namespace);
 end
