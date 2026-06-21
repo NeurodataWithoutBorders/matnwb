@@ -9,6 +9,7 @@ classdef SchemaCategoryAlignedTable < types.hdmf_common.AlignedDynamicTable
         function obj = SchemaCategoryAlignedTable(varargin)
             obj = obj@types.hdmf_common.AlignedDynamicTable(varargin{:});
             obj.setupHasUnnamedGroupsMixin();
+            types.util.aligneddynamictable.checkConfig(obj);
         end
 
         function set.categoryOne(obj, value)
