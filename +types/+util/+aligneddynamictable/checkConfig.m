@@ -28,24 +28,17 @@ function checkConfig(alignedTable)
             strjoin(missingCategoryNames, ', '));
     end
 
-    extraCategoryNames = setdiff(categories, materializedCategoryNames, 'stable');
-    if ~isempty(extraCategoryNames)
-        handleCategoryNamesMismatch( ...
-            ['All category names in `categories` must match materialized category tables.', ...
-            '\nMissing category table(s): %s'], ...
-            strjoin(extraCategoryNames, ', '));
-    end
-
     if isempty(categories)
         return
     end
 
     [parentHeight, parentHasHeight] = ...
         types.util.aligneddynamictable.internal.getTableHeightInfo(alignedTable);
-    categoryHeights = zeros(size(categories));
+    materializedRegisteredNames = intersect(categories, materializedCategoryNames, 'stable');
+    categoryHeights = zeros(size(materializedRegisteredNames));
 
-    for iCategory = 1:numel(categories)
-        categoryName = categories{iCategory};
+    for iCategory = 1:numel(materializedRegisteredNames)
+        categoryName = materializedRegisteredNames{iCategory};
         categoryTable = types.util.aligneddynamictable.internal.getCategoryTable( ...
             alignedTable, categoryName);
         types.util.dynamictable.checkConfig(categoryTable);
@@ -74,7 +67,15 @@ function checkConfig(alignedTable)
         end
     end
 
-    assert(all(categoryHeights == parentHeight), ...
+    unmaterializedCategoryNames = setdiff(categories, materializedCategoryNames, 'stable');
+    if ~isempty(unmaterializedCategoryNames) && parentHasHeight && parentHeight > 0
+        handleCategoryNamesMismatch( ...
+            ['All category names in `categories` must match materialized category tables.', ...
+            '\nMissing category table(s): %s'], ...
+            strjoin(unmaterializedCategoryNames, ', '));
+    end
+
+    assert(isempty(categoryHeights) || all(categoryHeights == parentHeight), ...
         'NWB:AlignedDynamicTable:CheckConfig:InvalidCategoryShape', ...
         ['Invalid AlignedDynamicTable: all category tables must have the ', ...
         'same height as the parent table.'])
