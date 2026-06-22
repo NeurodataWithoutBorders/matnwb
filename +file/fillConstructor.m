@@ -29,7 +29,7 @@ function functionString = fillConstructor(name, parentname, defaults, props, nam
 
     % Add custom validation for DynamicTable and its descendant classes
     if file.isAlignedDynamicTableDescendant(name, namespace)
-        constructorElements{end+1} = '    types.util.aligneddynamictable.checkConfig(obj);';
+        constructorElements{end+1} = '    obj.validateAlignedTableConsistency();';
     elseif file.isDynamicTableDescendant(name, namespace)
         constructorElements{end+1} = '    types.util.dynamictable.checkConfig(obj);';
     end

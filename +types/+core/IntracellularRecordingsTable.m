@@ -62,7 +62,7 @@ methods
         if strcmp(class(obj), 'types.core.IntracellularRecordingsTable') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
-            types.util.aligneddynamictable.checkConfig(obj);
+            obj.validateAlignedTableConsistency();
         end
     end
     %% SETTERS
@@ -71,21 +71,21 @@ methods
         obj.postset_electrodes()
     end
     function postset_electrodes(obj)
-        types.util.aligneddynamictable.syncNamedCategory(obj, 'electrodes');
+        obj.syncNamedCategory('electrodes');
     end
     function set.responses(obj, val)
         obj.responses = obj.validate_responses(val);
         obj.postset_responses()
     end
     function postset_responses(obj)
-        types.util.aligneddynamictable.syncNamedCategory(obj, 'responses');
+        obj.syncNamedCategory('responses');
     end
     function set.stimuli(obj, val)
         obj.stimuli = obj.validate_stimuli(val);
         obj.postset_stimuli()
     end
     function postset_stimuli(obj)
-        types.util.aligneddynamictable.syncNamedCategory(obj, 'stimuli');
+        obj.syncNamedCategory('stimuli');
     end
     %% VALIDATORS
     
@@ -114,7 +114,7 @@ methods
     end
 end
 
-methods (Hidden)
+methods (Access = protected, Hidden)
     function categoryNames = getSchemaDefinedCategories(obj)
         categoryNames = getSchemaDefinedCategories@types.hdmf_common.AlignedDynamicTable(obj);
         localCategoryNames = ["electrodes", "responses", "stimuli"];

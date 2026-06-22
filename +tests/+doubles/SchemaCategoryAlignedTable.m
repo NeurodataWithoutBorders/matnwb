@@ -1,4 +1,4 @@
-classdef SchemaCategoryAlignedTable < types.hdmf_common.AlignedDynamicTable
+classdef SchemaCategoryAlignedTable < tests.doubles.AlignedDynamicTableStub
     %SchemaCategoryAlignedTable Test double with one schema-defined category.
 
     properties
@@ -6,10 +6,17 @@ classdef SchemaCategoryAlignedTable < types.hdmf_common.AlignedDynamicTable
     end
 
     methods
-        function obj = SchemaCategoryAlignedTable(varargin)
-            obj = obj@types.hdmf_common.AlignedDynamicTable(varargin{:});
-            obj.setupHasUnnamedGroupsMixin();
-            types.util.aligneddynamictable.checkConfig(obj);
+        function obj = SchemaCategoryAlignedTable(options)
+            arguments
+                options.Description (1,:) char = 'schema category table'
+                options.IdData = []
+                options.Categories = []
+            end
+
+            obj = obj@tests.doubles.AlignedDynamicTableStub( ...
+                Description=options.Description, ...
+                IdData=options.IdData, ...
+                Categories=options.Categories);
         end
 
         function set.categoryOne(obj, value)
@@ -19,13 +26,13 @@ classdef SchemaCategoryAlignedTable < types.hdmf_common.AlignedDynamicTable
         end
 
         function postset_categoryOne(obj)
-            types.util.aligneddynamictable.syncNamedCategory(obj, 'categoryOne');
+            obj.syncNamedCategory('categoryOne');
         end
     end
 
-    methods (Hidden)
+    methods (Access = protected, Hidden)
         function categoryNames = getSchemaDefinedCategories(obj)
-            categoryNames = getSchemaDefinedCategories@types.hdmf_common.AlignedDynamicTable(obj);
+            categoryNames = getSchemaDefinedCategories@tests.doubles.AlignedDynamicTableStub(obj);
             localCategoryNames = "categoryOne";
             categoryNames = unique([categoryNames, localCategoryNames], 'stable');
         end

@@ -1,4 +1,4 @@
-classdef AlignedDynamicTable < types.hdmf_common.DynamicTable & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups
+classdef AlignedDynamicTable < types.hdmf_common.DynamicTable & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups & matnwb.neurodata.AlignedDynamicTableBase
 % ALIGNEDDYNAMICTABLE - DynamicTable container that supports storing a collection of sub-tables. Each sub-table is a DynamicTable itself that is aligned with the main table by row index. I.e., all DynamicTables stored in this group MUST have the same number of rows. This type effectively defines a 2-level table in which the main data is stored in the main table implemented by this type and additional columns of the table are grouped into categories, with each category being represented by a separate DynamicTable stored within the group.
 %
 % Required Properties:
@@ -60,7 +60,7 @@ methods
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
             obj.setupHasUnnamedGroupsMixin();
-            types.util.aligneddynamictable.checkConfig(obj);
+            obj.validateAlignedTableConsistency();
         end
     end
     %% SETTERS
@@ -75,7 +75,7 @@ methods
     function val = validate_categories(obj, val)
         val = types.util.checkDtype('categories', 'char', val);
         types.util.validateShape('categories', {[Inf]}, val)
-        val = types.util.aligneddynamictable.validateCategories(val);
+        val = obj.validateCategories(val);
     end
     function val = validate_dynamictable(obj, val)
         namedprops = struct();
@@ -96,28 +96,13 @@ methods
     %% CUSTOM CONSTRAINTS
     function checkCustomConstraint(obj)
         checkCustomConstraint@types.untyped.MetaClass(obj)
-        types.util.aligneddynamictable.checkConfig(obj)
-    end
-    %% CATEGORY METHODS
-    function addCategory(obj, categoryName, categoryTable, options)
-        arguments
-            obj (1,1) types.hdmf_common.AlignedDynamicTable
-        end
-        arguments (Repeating)
-            categoryName (1,1) string
-            categoryTable (1,1) {matnwb.common.validation.mustBeDynamicTable}
-        end
-        arguments
-            options.Replace (1,1) logical = false
-        end
-        types.util.aligneddynamictable.addCategory( ...
-            obj, categoryName, categoryTable, Replace=options.Replace);
+        obj.validateAlignedTableConsistency()
     end
 end
 
-methods (Hidden)
-    function categoryNames = getSchemaDefinedCategories(obj) %#ok<MANU>
-        categoryNames = string.empty(1, 0);
+methods (Access = protected, Hidden)
+    function categoryNames = getSchemaDefinedCategories(obj)
+        categoryNames = getSchemaDefinedCategories@matnwb.neurodata.AlignedDynamicTableBase(obj);
     end
 end
 
