@@ -26,7 +26,7 @@ classdef SchemaCategoryAlignedTable < tests.doubles.AlignedDynamicTableStub
         end
 
         function postset_categoryOne(obj)
-            obj.syncNamedCategory('categoryOne');
+            obj.ensureCategoryNameRegistered('categoryOne');
         end
     end
 

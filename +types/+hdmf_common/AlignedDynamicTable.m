@@ -75,7 +75,7 @@ methods
     function val = validate_categories(obj, val)
         val = types.util.checkDtype('categories', 'char', val);
         types.util.validateShape('categories', {[Inf]}, val)
-        val = obj.validateCategories(val);
+        val = obj.validateCategoryNames(val);
     end
     function val = validate_dynamictable(obj, val)
         namedprops = struct();

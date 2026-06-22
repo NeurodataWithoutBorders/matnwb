@@ -16,7 +16,7 @@ function hooks = getPropertyHooks(propName, prop, typeName, namespace)
     if strcmp(fullClassName, 'types.hdmf_common.AlignedDynamicTable') ...
             && strcmp(propName, 'categories')
         hooks.ValidatorLines = { ...
-            'val = obj.validateCategories(val);' };
+            'val = obj.validateCategoryNames(val);' };
     end
 
     if file.isDynamicTableDescendant(typeName, namespace) ...
@@ -28,7 +28,7 @@ function hooks = getPropertyHooks(propName, prop, typeName, namespace)
     if file.isAlignedDynamicTableDescendant(typeName, namespace) ...
             && isSchemaDefinedAlignedDynamicTableCategory(prop, namespace)
         hooks.PostsetStatements = [hooks.PostsetStatements, { ...
-            sprintf('obj.syncNamedCategory(''%s'');', propName) }];
+            sprintf('obj.ensureCategoryNameRegistered(''%s'');', propName) }];
     end
 end
 

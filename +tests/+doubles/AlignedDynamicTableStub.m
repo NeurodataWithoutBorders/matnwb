@@ -40,7 +40,7 @@ classdef AlignedDynamicTableStub < tests.doubles.DynamicTableStub ...
         function value = validate_categories(obj, value)
             value = types.util.checkDtype('categories', 'char', value);
             types.util.validateShape('categories', {Inf}, value)
-            value = obj.validateCategories(value);
+            value = obj.validateCategoryNames(value);
         end
 
         function value = validate_dynamictable(~, value)

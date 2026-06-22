@@ -71,21 +71,21 @@ methods
         obj.postset_electrodes()
     end
     function postset_electrodes(obj)
-        obj.syncNamedCategory('electrodes');
+        obj.ensureCategoryNameRegistered('electrodes');
     end
     function set.responses(obj, val)
         obj.responses = obj.validate_responses(val);
         obj.postset_responses()
     end
     function postset_responses(obj)
-        obj.syncNamedCategory('responses');
+        obj.ensureCategoryNameRegistered('responses');
     end
     function set.stimuli(obj, val)
         obj.stimuli = obj.validate_stimuli(val);
         obj.postset_stimuli()
     end
     function postset_stimuli(obj)
-        obj.syncNamedCategory('stimuli');
+        obj.ensureCategoryNameRegistered('stimuli');
     end
     %% VALIDATORS
     

@@ -37,7 +37,7 @@ classdef (Abstract) AlignedDynamicTableBase < handle
 
                 obj.assertCategoryHeightMatchesParent(currentName, categoryHeight, parentHeight)
                 obj.assignCategoryTable(currentName, currentTable)
-                obj.addNameToCategories(currentName)
+                obj.registerCategoryName(currentName)
             end
         end
 
@@ -63,7 +63,7 @@ classdef (Abstract) AlignedDynamicTableBase < handle
                 return
             end
 
-            categoryNames = obj.validateCategories(obj.categories);
+            categoryNames = obj.validateCategoryNames(obj.categories);
             missingCategoryNames = setdiff(categoryTableNames, categoryNames, 'stable');
             if ~isempty(missingCategoryNames)
                 obj.handleCategoryNamesMismatch( ...
@@ -128,12 +128,12 @@ classdef (Abstract) AlignedDynamicTableBase < handle
             categoryNames = string.empty(1, 0);
         end
 
-        function categoryNames = validateCategories(~, categoryNames)
+        function categoryNames = validateCategoryNames(~, categoryNames)
             categoryNames = types.util.dynamictable.normalizeColnames(categoryNames);
             validateUniqueCategoryNames(categoryNames)
         end
 
-        function syncNamedCategory(obj, categoryName)
+        function ensureCategoryNameRegistered(obj, categoryName)
             arguments
                 obj (1,1) matnwb.neurodata.AlignedDynamicTableBase
                 categoryName (1,:) char
@@ -147,7 +147,7 @@ classdef (Abstract) AlignedDynamicTableBase < handle
                 return % No mutation on read
             end
 
-            obj.addNameToCategories(categoryName)
+            obj.registerCategoryName(categoryName)
         end
     end
 
@@ -269,8 +269,8 @@ classdef (Abstract) AlignedDynamicTableBase < handle
             end
         end
 
-        function addNameToCategories(obj, categoryName)
-            categoryNames = obj.validateCategories(obj.categories);
+        function registerCategoryName(obj, categoryName)
+            categoryNames = obj.validateCategoryNames(obj.categories);
             if isempty(categoryNames)
                 obj.categories = {char(categoryName)};
                 return
