@@ -25,7 +25,7 @@ classdef (Abstract) AlignedDynamicTableBase < handle
                 'Provide at least one category name and DynamicTable pair.')
             obj.assertUniqueCategoryNames(categoryNames)
 
-            [parentHeight, parentHasHeight] = obj.getTableHeightInfo(obj);
+            [parentHeight, parentHasHeight] = matnwb.neurodata.internal.table.getTableHeight(obj);
 
             for iCategory = 1:numel(categoryNames)
                 currentName = categoryNames(iCategory);
@@ -35,7 +35,7 @@ classdef (Abstract) AlignedDynamicTableBase < handle
                     obj.establishAlignedTableHeight( ...
                     currentTable, parentHeight, parentHasHeight);
 
-                obj.validateCategoryHeight(currentName, categoryHeight, parentHeight)
+                obj.assertCategoryHeightMatchesParent(currentName, categoryHeight, parentHeight)
                 obj.assignCategoryTable(currentName, currentTable)
                 obj.addNameToCategories(currentName)
             end
@@ -50,11 +50,12 @@ classdef (Abstract) AlignedDynamicTableBase < handle
 
             types.util.dynamictable.checkConfig(obj);
 
-            materializedCategoryNames = obj.getMaterializedCategoryNames();
-            obj.validateMaterializedCategoryTablesAreNotAligned(materializedCategoryNames);
+            categoryTableNames = obj.getMaterializedCategoryNames();
+
+            obj.assertNoNestedAlignedDynamicTable(categoryTableNames);
 
             if isempty(obj.categories)
-                if ~isempty(materializedCategoryNames)
+                if ~isempty(categoryTableNames)
                     obj.handleCategoryNamesMismatch( ...
                         ['All materialized AlignedDynamicTable category tables must be ', ...
                         'listed in the `categories` property.']);
@@ -63,7 +64,7 @@ classdef (Abstract) AlignedDynamicTableBase < handle
             end
 
             categoryNames = obj.validateCategories(obj.categories);
-            missingCategoryNames = setdiff(materializedCategoryNames, categoryNames, 'stable');
+            missingCategoryNames = setdiff(categoryTableNames, categoryNames, 'stable');
             if ~isempty(missingCategoryNames)
                 obj.handleCategoryNamesMismatch( ...
                     ['All materialized AlignedDynamicTable category tables must be listed ', ...
@@ -75,8 +76,8 @@ classdef (Abstract) AlignedDynamicTableBase < handle
                 return
             end
 
-            [parentHeight, parentHasHeight] = obj.getTableHeightInfo(obj);
-            materializedRegisteredNames = intersect(categoryNames, materializedCategoryNames, 'stable');
+            [parentHeight, parentHasHeight] = matnwb.neurodata.internal.table.getTableHeight(obj);
+            materializedRegisteredNames = intersect(categoryNames, categoryTableNames, 'stable');
             categoryHeights = zeros(size(materializedRegisteredNames));
 
             for iCategory = 1:numel(materializedRegisteredNames)
@@ -93,7 +94,7 @@ classdef (Abstract) AlignedDynamicTableBase < handle
                 end
             end
 
-            unmaterializedCategoryNames = setdiff(categoryNames, materializedCategoryNames, 'stable');
+            unmaterializedCategoryNames = setdiff(categoryNames, categoryTableNames, 'stable');
             if ~isempty(unmaterializedCategoryNames) && parentHasHeight && parentHeight > 0
                 obj.handleCategoryNamesMismatch( ...
                     ['The `categories` property lists category table(s) that have not ', ...
@@ -151,6 +152,29 @@ classdef (Abstract) AlignedDynamicTableBase < handle
     end
 
     methods (Access = private)
+        function tf = isSchemaDefinedCategory(obj, categoryName)
+            arguments
+                obj (1,1) matnwb.neurodata.AlignedDynamicTableBase
+                categoryName (1,1) string
+            end
+
+            schemaCategoryNames = obj.getSchemaDefinedCategories();
+            tf = any(schemaCategoryNames == categoryName);
+        end
+
+        function tf = categoryExists(obj, categoryName)
+            arguments
+                obj (1,1) matnwb.neurodata.AlignedDynamicTableBase
+                categoryName (1,1) string
+            end
+
+            if obj.isSchemaDefinedCategory(categoryName)
+                tf = ~isempty(obj.(categoryName));
+            else
+                tf = ~isempty(obj.dynamictable) && obj.dynamictable.isKey(categoryName);
+            end
+        end
+
         function categoryTable = getCategoryTable(obj, categoryName)
             arguments
                 obj (1,1) matnwb.neurodata.AlignedDynamicTableBase
@@ -194,116 +218,32 @@ classdef (Abstract) AlignedDynamicTableBase < handle
             categoryNames = cellstr(unique(categoryNames, 'stable'));
         end
 
-        function [tableHeight, hasEstablishedHeight] = getTableHeightInfo(~, dynamicTable)
-            matnwb.common.validation.mustBeDynamicTable(dynamicTable);
-
-            if ~isempty(dynamicTable.id)
-                [tableHeight, hasEstablishedHeight] = getIdHeightInfo(dynamicTable.id);
-                if hasEstablishedHeight
-                    return
-                end
-            end
-
-            if isempty(dynamicTable.colnames)
-                tableHeight = 0;
-                hasEstablishedHeight = false;
-                return
-            end
-
-            tableHeight = types.util.dynamictable.internal.getColumnRowHeight( ...
-                dynamicTable, dynamicTable.colnames{1});
-            tableHeight = unique(tableHeight);
-
-            assert(isscalar(tableHeight), ...
-                'NWB:AlignedDynamicTable:GetTableHeightInfo:InvalidShape', ...
-                ['Cannot determine DynamicTable row height because one or more ', ...
-                'compound column fields have inconsistent heights.']);
-
-            hasEstablishedHeight = true;
-        end
-
+        % establishAlignedTableHeight
         function [parentHeight, parentHasHeight, categoryHeight, categoryHasHeight] = ...
                 establishAlignedTableHeight(obj, categoryTable, parentHeight, parentHasHeight)
 
-            [categoryHeight, categoryHasHeight] = obj.getTableHeightInfo(categoryTable);
+            [categoryHeight, categoryHasHeight] = matnwb.neurodata.internal.table.getTableHeight(categoryTable);
 
             if parentHasHeight && ~categoryHasHeight
-                obj.initializeTableId(categoryTable, parentHeight);
+                matnwb.neurodata.internal.table.initializeTableId(categoryTable, parentHeight);
                 categoryHeight = parentHeight;
                 categoryHasHeight = true;
             elseif ~parentHasHeight && categoryHasHeight
-                obj.initializeTableId(obj, categoryHeight);
+                matnwb.neurodata.internal.table.initializeTableId(obj, categoryHeight);
                 parentHeight = categoryHeight;
                 parentHasHeight = true;
             elseif ~parentHasHeight && ~categoryHasHeight
-                obj.initializeTableId(categoryTable, 0);
-                obj.initializeTableId(obj, 0);
-                categoryHeight = 0;
-                parentHeight = 0;
-                categoryHasHeight = true;
-                parentHasHeight = true;
+                matnwb.neurodata.internal.table.initializeTableId(categoryTable, 0);
+                matnwb.neurodata.internal.table.initializeTableId(obj, 0);
+                [categoryHeight, parentHeight] = deal(0);
+                [categoryHasHeight, parentHasHeight] = deal(true);
             end
         end
 
-        function initializeTableId(~, dynamicTable, tableHeight)
-            matnwb.common.validation.mustBeDynamicTable(dynamicTable);
-            validateattributes(tableHeight, {'double'}, ...
-                {'scalar', 'integer', 'nonnegative'});
-
-            if isempty(dynamicTable.id)
-                types.util.dynamictable.internal.initDynamicTableId(dynamicTable, tableHeight);
-                return
-            end
-
-            idData = dynamicTable.id.data;
-            newIdData = int64(0:tableHeight-1).';
-
-            if isa(idData, 'types.untyped.DataPipe') && ~idData.isBound
-                if idData.offset > 0
-                    error('NWB:AlignedDynamicTable:CannotInitializeId', ...
-                        ['Cannot initialize ids for table `%s` because its id DataPipe ', ...
-                        'already has an offset of %d.'], class(dynamicTable), idData.offset)
-                end
-
-                if tableHeight > 0
-                    idData.append(newIdData)
-                end
-            elseif isempty(idData)
-                dynamicTable.id.data = newIdData;
-            else
-                error('NWB:AlignedDynamicTable:CannotInitializeId', ...
-                    ['Cannot initialize ids for table `%s` because its id dataset ', ...
-                    'already has file-backed or non-empty data.'], class(dynamicTable))
-            end
-        end
-
-        function tf = isSchemaDefinedCategory(obj, categoryName)
-            arguments
-                obj (1,1) matnwb.neurodata.AlignedDynamicTableBase
-                categoryName (1,1) string
-            end
-
-            schemaCategoryNames = obj.getSchemaDefinedCategories();
-            tf = any(schemaCategoryNames == categoryName);
-        end
-
-        function tf = categoryExists(obj, categoryName)
-            arguments
-                obj (1,1) matnwb.neurodata.AlignedDynamicTableBase
-                categoryName (1,1) string
-            end
-
-            if obj.isSchemaDefinedCategory(categoryName)
-                tf = ~isempty(obj.(categoryName));
-            else
-                tf = ~isempty(obj.dynamictable) && obj.dynamictable.isKey(categoryName);
-            end
-        end
-
-        function validateMaterializedCategoryTablesAreNotAligned(obj, categoryNames)
+        function assertNoNestedAlignedDynamicTable(obj, categoryNames)
             for iCategory = 1:numel(categoryNames)
                 categoryTable = obj.getCategoryTable(string(categoryNames{iCategory}));
-                obj.validateCategoryTableIsNotAligned(categoryTable);
+                mustNotBeAlignedDynamicTable(categoryTable)
             end
         end
 
@@ -353,19 +293,11 @@ classdef (Abstract) AlignedDynamicTableBase < handle
                 'Each category name can only be specified once.')
         end
 
-        function validateCategoryHeight(categoryName, categoryHeight, parentHeight)
+        function assertCategoryHeightMatchesParent(categoryName, categoryHeight, parentHeight)
             if categoryHeight ~= parentHeight
                 error('NWB:AlignedDynamicTable:AddCategory:MissingRows', ...
                     'Category `%s` has detected height %d, but the parent table height is %d.', ...
                     categoryName, categoryHeight, parentHeight)
-            end
-        end
-
-        function validateCategoryTableIsNotAligned(categoryTable)
-            if isa(categoryTable, 'matnwb.neurodata.AlignedDynamicTableBase')
-                error('NWB:AlignedDynamicTable:NestedAlignedTable', ...
-                    ['AlignedDynamicTable category tables cannot themselves be ', ...
-                    'AlignedDynamicTable instances.'])
             end
         end
 
@@ -408,42 +340,6 @@ function validateUniqueCategoryNames(categories)
     else
         error('NWB:AlignedDynamicTable:DuplicateCategoryNames', '%s', message);
     end
-end
-
-function [idHeight, hasEstablishedHeight] = getIdHeightInfo(elementIdentifiers)
-    idData = elementIdentifiers.data;
-
-    if isa(idData, 'types.untyped.DataStub')
-        idHeight = idData.dims(end);
-        hasEstablishedHeight = true;
-    elseif isa(idData, 'types.untyped.DataPipe')
-        [idHeight, hasEstablishedHeight] = getDataPipeHeightInfo(idData);
-    elseif isempty(idData)
-        idHeight = 0;
-        hasEstablishedHeight = false;
-    else
-        idHeight = types.util.dynamictable.internal.getColumnHeight(elementIdentifiers);
-        hasEstablishedHeight = true;
-    end
-end
-
-function [height, hasEstablishedHeight] = getDataPipeHeightInfo(dataPipe)
-    if dataPipe.isBound
-        dataSize = size(dataPipe);
-        height = dataSize(end);
-        hasEstablishedHeight = true;
-        return
-    end
-
-    if dataPipe.offset > 0
-        height = dataPipe.offset;
-        hasEstablishedHeight = true;
-        return
-    end
-
-    height = types.util.dynamictable.internal.getColumnHeight( ...
-        types.hdmf_common.ElementIdentifiers('data', dataPipe));
-    hasEstablishedHeight = height > 0;
 end
 
 function mustNotBeAlignedDynamicTable(value)
