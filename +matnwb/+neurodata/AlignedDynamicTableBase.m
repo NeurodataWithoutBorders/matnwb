@@ -41,8 +41,8 @@ classdef (Abstract) AlignedDynamicTableBase < handle
             end
         end
 
-        function validateAlignedTableConsistency(obj)
-        % validateAlignedTableConsistency - Validate table and category consistency.
+        function ensureAlignedTableConsistency(obj)
+        % ensureAlignedTableConsistency - Ensure table and category consistency.
 
             arguments
                 obj (1,1) matnwb.neurodata.AlignedDynamicTableBase

@@ -60,7 +60,7 @@ methods
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
             obj.setupHasUnnamedGroupsMixin();
-            obj.validateAlignedTableConsistency();
+            obj.ensureAlignedTableConsistency();
         end
     end
     %% SETTERS
@@ -96,7 +96,7 @@ methods
     %% CUSTOM CONSTRAINTS
     function checkCustomConstraint(obj)
         checkCustomConstraint@types.untyped.MetaClass(obj)
-        obj.validateAlignedTableConsistency()
+        obj.ensureAlignedTableConsistency()
     end
 end
 

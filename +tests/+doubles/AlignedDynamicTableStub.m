@@ -26,7 +26,7 @@ classdef AlignedDynamicTableStub < tests.doubles.DynamicTableStub ...
             obj.categories = options.Categories;
             obj.dynamictable = types.untyped.Set();
             obj.setupHasUnnamedGroupsMixin();
-            obj.validateAlignedTableConsistency();
+            obj.ensureAlignedTableConsistency();
         end
 
         function set.categories(obj, value)
