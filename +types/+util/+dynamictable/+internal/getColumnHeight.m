@@ -21,12 +21,8 @@ function columnHeight = getDataHeight(data)
             % instead, where DynamicTable row dimension maps to the last axis.
             dataDims = size(data);
             columnHeight = dataDims(end);
-        elseif isempty(data.internal.data)
-            columnHeight = 0;
-        elseif ~isscalar(data.internal.data) && isvector(data.internal.data)
-            columnHeight = length(data.internal.data); % datapipe axis can be misleading if vector.
         else
-            columnHeight = size(data.internal.data, data.axis);
+            columnHeight = getUnboundDataPipeHeight(data);
         end
     elseif isa(data, 'types.untyped.DataStub')
         columnHeight = data.dims(end);
@@ -47,5 +43,22 @@ function columnHeight = getDataHeight(data)
         columnHeight = size(data, ndims(data));
     else
         columnHeight = size(data, find(1 < size(data)));
+    end
+end
+
+function columnHeight = getUnboundDataPipeHeight(dataPipe)
+    dataHeight = getQueuedDataHeight(dataPipe);
+    columnHeight = dataPipe.offset + dataHeight;
+end
+
+function dataHeight = getQueuedDataHeight(dataPipe)
+    if isempty(dataPipe.internal.data)
+        dataHeight = 0;
+    elseif ~isscalar(dataPipe.internal.data) && isvector(dataPipe.internal.data)
+        % DataPipe axis can be misleading for vectors because vectors are
+        % coerced to vertical arrays when bound to file.
+        dataHeight = length(dataPipe.internal.data);
+    else
+        dataHeight = size(dataPipe.internal.data, dataPipe.axis);
     end
 end

@@ -46,7 +46,7 @@ classdef (Abstract) AlignedDynamicTableBase < handle
                 'Provide at least one category name and DynamicTable pair.')
             obj.assertUniqueCategoryNames(categoryNames)
 
-            [parentHeight, parentHasHeight] = matnwb.neurodata.internal.table.getTableHeight(obj);
+            [parentHeight, parentHasHeight] = types.util.dynamictable.internal.getTableHeight(obj);
 
             for iCategory = 1:numel(categoryNames)
                 currentName = categoryNames(iCategory);
@@ -132,7 +132,7 @@ classdef (Abstract) AlignedDynamicTableBase < handle
                 return
             end
 
-            [parentHeight, parentHasHeight] = matnwb.neurodata.internal.table.getTableHeight(obj);
+            [parentHeight, parentHasHeight] = types.util.dynamictable.internal.getTableHeight(obj);
             materializedRegisteredNames = intersect(categoryNames, categoryTableNames, 'stable');
             categoryHeights = zeros(size(materializedRegisteredNames));
 
@@ -293,19 +293,19 @@ classdef (Abstract) AlignedDynamicTableBase < handle
         % table has a height, it initializes both as empty tables so later
         % checks can treat height as established.
 
-            [categoryHeight, categoryHasHeight] = matnwb.neurodata.internal.table.getTableHeight(categoryTable);
+            [categoryHeight, categoryHasHeight] = types.util.dynamictable.internal.getTableHeight(categoryTable);
 
             if parentHasHeight && ~categoryHasHeight
-                matnwb.neurodata.internal.table.initializeTableId(categoryTable, parentHeight);
+                types.util.dynamictable.internal.initDynamicTableId(categoryTable, parentHeight);
                 categoryHeight = parentHeight;
                 categoryHasHeight = true;
             elseif ~parentHasHeight && categoryHasHeight
-                matnwb.neurodata.internal.table.initializeTableId(obj, categoryHeight);
+                types.util.dynamictable.internal.initDynamicTableId(obj, categoryHeight);
                 parentHeight = categoryHeight;
                 parentHasHeight = true;
             elseif ~parentHasHeight && ~categoryHasHeight
-                matnwb.neurodata.internal.table.initializeTableId(categoryTable, 0);
-                matnwb.neurodata.internal.table.initializeTableId(obj, 0);
+                types.util.dynamictable.internal.initDynamicTableId(categoryTable, 0);
+                types.util.dynamictable.internal.initDynamicTableId(obj, 0);
                 [categoryHeight, parentHeight] = deal(0);
                 [categoryHasHeight, parentHasHeight] = deal(true);
             end
