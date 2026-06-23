@@ -1,4 +1,4 @@
-function [columnRowHeight, resolvedColumnName] = getColumnRowHeight(dynamicTable, columnName)
+function [columnRowHeight, resolvedColumnName, hasEstablishedHeight] = getColumnRowHeight(dynamicTable, columnName)
 % getColumnRowHeight - Return the row height for a DynamicTable column.
 %
 % For ragged columns, this follows VectorIndex links to the outermost index
@@ -13,7 +13,9 @@ function [columnRowHeight, resolvedColumnName] = getColumnRowHeight(dynamicTable
     resolvedColumnName = types.util.dynamictable.internal.getOutermostIndexColumnName( ...
         dynamicTable, columnName);
     vector = getVector(dynamicTable, resolvedColumnName);
-    columnRowHeight = types.util.dynamictable.internal.getColumnHeight(vector);
+    [columnRowHeight, hasEstablishedHeight] = ...
+        types.util.dynamictable.internal.getColumnHeight(vector);
+    hasEstablishedHeight = hasEstablishedHeight || ~isempty(vector);
 end
 
 function vector = getVector(dynamicTable, columnName)

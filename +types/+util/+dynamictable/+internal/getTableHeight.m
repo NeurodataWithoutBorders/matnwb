@@ -12,7 +12,8 @@ function [tableHeight, hasEstablishedHeight] = getTableHeight(dynamicTable)
     end
 
     if ~isempty(dynamicTable.id)
-        [tableHeight, hasEstablishedHeight] = getIdHeight(dynamicTable.id);
+        [tableHeight, hasEstablishedHeight] = ...
+            types.util.dynamictable.internal.getColumnHeight(dynamicTable.id);
         if hasEstablishedHeight
             return
         end
@@ -24,34 +25,13 @@ function [tableHeight, hasEstablishedHeight] = getTableHeight(dynamicTable)
         return;
     end
 
-    tableHeight = types.util.dynamictable.internal.getColumnRowHeight( ...
+    [tableHeight, ~, hasEstablishedHeight] = types.util.dynamictable.internal.getColumnRowHeight( ...
         dynamicTable, dynamicTable.colnames{1});
     tableHeight = unique(tableHeight);
+    hasEstablishedHeight = any(hasEstablishedHeight);
 
     assert(isscalar(tableHeight), ...
         'NWB:DynamicTable:GetRow:InvalidShape', ...
         ['Cannot determine DynamicTable row height because one or more ', ...
          'compound column fields have inconsistent heights.']);
-
-    hasEstablishedHeight = true;
-end
-
-function [idHeight, hasEstablishedHeight] = getIdHeight(elementIdentifiers)
-    idData = elementIdentifiers.data;
-
-    if isa(idData, 'types.untyped.DataPipe')
-        [idHeight, hasEstablishedHeight] = getDataPipeHeight(idData);
-    elseif isempty(idData)
-        idHeight = 0;
-        hasEstablishedHeight = false;
-    else
-        idHeight = types.util.dynamictable.internal.getColumnHeight(elementIdentifiers);
-        hasEstablishedHeight = true;
-    end
-end
-
-function [height, hasEstablishedHeight] = getDataPipeHeight(dataPipe)
-    height = types.util.dynamictable.internal.getColumnHeight( ...
-        struct('data', dataPipe));
-    hasEstablishedHeight = dataPipe.isBound || dataPipe.offset > 0 || height > 0;
 end
