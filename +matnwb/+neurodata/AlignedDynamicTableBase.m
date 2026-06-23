@@ -1,21 +1,10 @@
 classdef (Abstract) AlignedDynamicTableBase < handle
 % AlignedDynamicTableBase - Non-generated base class for AlignedDynamicTable.
 %
-% This class provides utility methods for working with category tables and
-% custom validation methods to ensure aligned dynamic table consistency. The 
-% class adds logic that is not explicitly expressed by the schema language.
-%
-% Methods:
-%   - addCategory : Add a category table to the AlignedDynamicTable.
-%
-%   - getCategory : Get a category table given its name.
-%
-%   - ensureAlignedTableConsistency: Ensure that AlignedDynamicTable is valid
-%       - Checks whether all category tables are represented in the
-%         category property.
-%       - Checks that names in category are unique
-%       - Checks that all tables are the same height (by row count)
-%       - Initializes ids for tables where these are missing
+% This class owns custom behavior that the generated schema class
+% cannot express: category table registration and lookup, category name
+% validation, and row-height consistency between the parent table and all
+% category tables.
 
     properties (Abstract)
         categories
@@ -27,11 +16,12 @@ classdef (Abstract) AlignedDynamicTableBase < handle
         % addCategory - Add one or more category tables.
         %
         % Syntax:
-        %  alignedDynamicTable.addCategory(categoryName, categoryTable)
-        %  Adds a category to the table given a name
+        %   alignedDynamicTable.addCategory(categoryName, categoryTable)
+        %   alignedDynamicTable.addCategory(categoryNameA, categoryTableA, ...)
         %
-        %  alignedDynamicTable.addCategory(categoryNameA, categoryTableA, categoryNameB, categoryTableB, ...)
-        %  Adds many categories to the table given name-table pairs.
+        % This method assigns each category table, registers the category
+        % name, and ensures the category table height matches the parent
+        % AlignedDynamicTable height.
         %
         % Input Arguments:
         %  - categoryName (string) -
@@ -76,8 +66,11 @@ classdef (Abstract) AlignedDynamicTableBase < handle
         % getCategory - Return a schema-defined or custom category table.
         %
         % Syntax:
-        %  categoryTable = alignedDynamicTable.getCategory(categoryName)
-        %  Returns a category table given its name
+        %   categoryTable = alignedDynamicTable.getCategory(categoryName)
+        %
+        % This method resolves schema-defined categories stored as object
+        % properties and custom categories stored in the constrained
+        % dynamictable group.
         %
         % Input Arguments:
         %  - categoryName (string) -
@@ -92,19 +85,20 @@ classdef (Abstract) AlignedDynamicTableBase < handle
         end
     end
 
-    % The following method is public to allow access from test suites
-    % and power users. However, MatNWB will call it during object
-    % construction or file export as part of the standard validation flow,
-    % and users should not normally need to call it.
+    % Hidden because this method is normally called by generated
+    % validation/export flow, but remains callable for explicit consistency
+    % checks.
     methods (Hidden)
         function ensureAlignedTableConsistency(obj)
-        % ensureAlignedTableConsistency - Ensure table and category consistency.
+        % ensureAlignedTableConsistency - Ensure category and height consistency.
         %
-        % This method validates category registry consistency and category
-        % table heights. It may also initialize missing id datasets when the
-        % table height can be inferred from the parent table or a category
-        % table. Category registry mismatches are warnings while reading
-        % existing files, but errors during normal validation/export.
+        % This method delegates ordinary DynamicTable validation to
+        % types.util.dynamictable.checkConfig, then validates category
+        % registration and category table heights. It may also initialize
+        % missing id datasets when the table height can be inferred from the
+        % parent table or a category table. Category registry mismatches are
+        % warnings while reading existing files, but errors during normal
+        % validation/export.
 
             arguments
                 obj (1,1) matnwb.neurodata.AlignedDynamicTableBase
@@ -176,16 +170,18 @@ classdef (Abstract) AlignedDynamicTableBase < handle
 
     methods (Access = protected, Hidden)
         function categoryNames = getSchemaDefinedCategories(obj) %#ok<MANU>
-        % This method will be defined on every subclass by the class
-        % generation pipeline. Any subclass that has schema-defined
-        % categories, will append those to the categoryNames list
+        % getSchemaDefinedCategories - Return schema-defined category names.
+        %
+        % The class generation pipeline extends this method for every
+        % subclass. Subclasses with schema-defined category properties append
+        % those names to the list returned by this base implementation.
             categoryNames = string.empty(1, 0);
         end
 
         function ensureCategoryNameRegistered(obj, categoryName)
         % ensureCategoryNameRegistered - Register a populated schema category.
         %
-        % This method is added as a property postset hook for any
+        % This method is added as a generated property post-set hook for any
         % schema-defined category property by the class generation pipeline.
         %
         % Generated property setters call this after assigning schema-defined
@@ -195,9 +191,7 @@ classdef (Abstract) AlignedDynamicTableBase < handle
         % This ensures "electrodes" is added to the categories property if
         % it was not assigned during table construction.
         %
-        % Note: 
-        % On file read, this function does nothing - ensuring that categories
-        % are not mutated for an in-memory view of an existing file.
+        % During file read, this method does not mutate categories.
 
             arguments
                 obj (1,1) matnwb.neurodata.AlignedDynamicTableBase
@@ -294,10 +288,10 @@ classdef (Abstract) AlignedDynamicTableBase < handle
                 establishAlignedTableHeight(obj, categoryTable, parentHeight, parentHasHeight)
         % establishAlignedTableHeight - Establish compatible parent/category heights.
         %
-        % If exactly one table has an established height, initialize ids for
-        % the other table to that height. If neither table has a height,
-        % initialize both as empty tables so later checks can treat height as
-        % established.
+        % If exactly one table has an established height, this method
+        % initializes ids for the other table to that height. If neither
+        % table has a height, it initializes both as empty tables so later
+        % checks can treat height as established.
 
             [categoryHeight, categoryHasHeight] = matnwb.neurodata.internal.table.getTableHeight(categoryTable);
 
