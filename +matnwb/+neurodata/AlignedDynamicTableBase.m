@@ -1,5 +1,21 @@
 classdef (Abstract) AlignedDynamicTableBase < handle
-% AlignedDynamicTableBase - Handwritten behavior for AlignedDynamicTable.
+% AlignedDynamicTableBase - Non-generated base class for AlignedDynamicTable.
+%
+% This class provides utility methods for working with category tables and
+% custom validation methods to ensure aligned dynamic table consistency. The 
+% class adds logic that is not explicitly expressed by the schema language.
+%
+% Methods:
+%   - addCategory : Add a category table to the AlignedDynamicTable.
+%
+%   - getCategory : Get a category table given its name.
+%
+%   - ensureAlignedTableConsistency: Ensure that AlignedDynamicTable is valid
+%       - Checks whether all category tables are represented in the
+%         category property.
+%       - Checks that names in category are unique
+%       - Checks that all tables are the same height (by row count)
+%       - Initializes ids for tables where these are missing
 
     properties (Abstract)
         categories
@@ -9,6 +25,21 @@ classdef (Abstract) AlignedDynamicTableBase < handle
     methods
         function addCategory(obj, categoryName, categoryTable)
         % addCategory - Add one or more category tables.
+        %
+        % Syntax:
+        %  alignedDynamicTable.addCategory(categoryName, categoryTable)
+        %  Adds a category to the table given a name
+        %
+        %  alignedDynamicTable.addCategory(categoryNameA, categoryTableA, categoryNameB, categoryTableB, ...)
+        %  Adds many categories to the table given name-table pairs.
+        %
+        % Input Arguments:
+        %  - categoryName (string) -
+        %    A name for the category.
+        %
+        %  - categoryTable (types.hdmf_common.DynamicTable) -
+        %    A dynamic table to add as a category table. Note: Nested
+        %    AlignedDynamicTables are not supported.
 
             arguments
                 obj (1,1) matnwb.neurodata.AlignedDynamicTableBase
@@ -41,8 +72,39 @@ classdef (Abstract) AlignedDynamicTableBase < handle
             end
         end
 
+        function categoryTable = getCategory(obj, categoryName)
+        % getCategory - Return a schema-defined or custom category table.
+        %
+        % Syntax:
+        %  categoryTable = alignedDynamicTable.getCategory(categoryName)
+        %  Returns a category table given its name
+        %
+        % Input Arguments:
+        %  - categoryName (string) -
+        %    A name for the category.
+
+            arguments
+                obj (1,1) matnwb.neurodata.AlignedDynamicTableBase
+                categoryName (1,1) string
+            end
+
+            categoryTable = obj.getCategoryTable(categoryName);
+        end
+    end
+
+    % The following method is public to allow access from test suites
+    % and power users. However, MatNWB will call it during object
+    % construction or file export as part of the standard validation flow,
+    % and users should not normally need to call it.
+    methods (Hidden)
         function ensureAlignedTableConsistency(obj)
         % ensureAlignedTableConsistency - Ensure table and category consistency.
+        %
+        % This method validates category registry consistency and category
+        % table heights. It may also initialize missing id datasets when the
+        % table height can be inferred from the parent table or a category
+        % table. Category registry mismatches are warnings while reading
+        % existing files, but errors during normal validation/export.
 
             arguments
                 obj (1,1) matnwb.neurodata.AlignedDynamicTableBase
@@ -110,30 +172,33 @@ classdef (Abstract) AlignedDynamicTableBase < handle
                 ['Invalid AlignedDynamicTable: all category tables must have the ', ...
                 'same height as the parent table.'])
         end
-
-        function categoryTable = getCategory(obj, categoryName)
-        % getCategory - Return a schema-defined or custom category table.
-
-            arguments
-                obj (1,1) matnwb.neurodata.AlignedDynamicTableBase
-                categoryName (1,1) string
-            end
-
-            categoryTable = obj.getCategoryTable(categoryName);
-        end
     end
 
     methods (Access = protected, Hidden)
         function categoryNames = getSchemaDefinedCategories(obj) %#ok<MANU>
+        % This method will be defined on every subclass by the class
+        % generation pipeline. Any subclass that has schema-defined
+        % categories, will append those to the categoryNames list
             categoryNames = string.empty(1, 0);
         end
 
-        function categoryNames = validateCategoryNames(~, categoryNames)
-            categoryNames = types.util.dynamictable.normalizeColnames(categoryNames);
-            validateUniqueCategoryNames(categoryNames)
-        end
-
         function ensureCategoryNameRegistered(obj, categoryName)
+        % ensureCategoryNameRegistered - Register a populated schema category.
+        %
+        % This method is added as a property postset hook for any
+        % schema-defined category property by the class generation pipeline.
+        %
+        % Generated property setters call this after assigning schema-defined
+        % category table properties, for example:
+        %   intracellularRecordingsTable.electrodes = electrodesTable;
+        %
+        % This ensures "electrodes" is added to the categories property if
+        % it was not assigned during table construction.
+        %
+        % Note: 
+        % On file read, this function does nothing - ensuring that categories
+        % are not mutated for an in-memory view of an existing file.
+
             arguments
                 obj (1,1) matnwb.neurodata.AlignedDynamicTableBase
                 categoryName (1,:) char
@@ -148,6 +213,13 @@ classdef (Abstract) AlignedDynamicTableBase < handle
             end
 
             obj.registerCategoryName(categoryName)
+        end
+    
+        function categoryNames = validateCategoryNames(~, categoryNames)
+        % validateCategoryNames - Normalize category names and reject duplicates.
+
+            categoryNames = types.util.dynamictable.normalizeColnames(categoryNames);
+            validateUniqueCategoryNames(categoryNames)
         end
     end
 
@@ -218,9 +290,14 @@ classdef (Abstract) AlignedDynamicTableBase < handle
             categoryNames = cellstr(unique(categoryNames, 'stable'));
         end
 
-        % establishAlignedTableHeight
         function [parentHeight, parentHasHeight, categoryHeight, categoryHasHeight] = ...
                 establishAlignedTableHeight(obj, categoryTable, parentHeight, parentHasHeight)
+        % establishAlignedTableHeight - Establish compatible parent/category heights.
+        %
+        % If exactly one table has an established height, initialize ids for
+        % the other table to that height. If neither table has a height,
+        % initialize both as empty tables so later checks can treat height as
+        % established.
 
             [categoryHeight, categoryHasHeight] = matnwb.neurodata.internal.table.getTableHeight(categoryTable);
 
