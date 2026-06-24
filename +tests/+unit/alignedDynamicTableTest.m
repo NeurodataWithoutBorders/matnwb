@@ -124,6 +124,22 @@ classdef alignedDynamicTableTest < matlab.unittest.TestCase
             testCase.verifyEqual(alignedTable.categories, {'categoryOne'})
         end
 
+        function testAddDuplicateCategoryNameFails(testCase)
+            alignedTable = tests.doubles.AlignedDynamicTableStub( ...
+                Description='parent table');
+            categoryTable = tests.unit.alignedDynamicTableTest.createTableWithHeight(1);
+
+            alignedTable.addCategory("custom", categoryTable)
+            
+            testCase.verifyError(...
+                @() assignCategoryNameToCategories(alignedTable, 'custom'), ...
+                'NWB:AlignedDynamicTable:DuplicateCategoryNames')
+
+            function assignCategoryNameToCategories(alignedTable, name)
+                alignedTable.categories{end+1} = name;
+            end
+        end
+        
         function testConstructorAllowsSchemaCategoriesBeforeTables(testCase)
             alignedTable = tests.doubles.SchemaCategoryAlignedTable( ...
                 Description='parent table', ...
