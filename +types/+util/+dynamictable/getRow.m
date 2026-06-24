@@ -13,7 +13,7 @@ validateattributes(DynamicTable,...
 validateattributes(ind, {'numeric'}, {'integer', 'vector'});
 
 p = inputParser;
-addParameter(p, 'columns', DynamicTable.colnames, @(x)iscellstr(x));
+addParameter(p, 'columns', DynamicTable.colnames, @(x)isempty(x)||iscellstr(x))
 addParameter(p, 'useId', false, @(x)islogical(x));
 parse(p, varargin{:});
 
