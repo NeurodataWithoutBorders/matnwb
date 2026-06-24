@@ -1,4 +1,4 @@
-function tf = isDescendantOf(name, targetAncestorName, namespace)
+function tf = isDescendantOf(name, namespace, targetAncestorName)
 %isDescendantOf Check if a type inherits from an ancestor type.
 
     tf = false;

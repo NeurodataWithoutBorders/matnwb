@@ -245,7 +245,7 @@ function methodBlockStr = createMethodBlockForAlignedDynamicTableCategories( ...
         classProps, propertyNames, className, namespace, superclassName)
 
     methodBlockStr = '';
-    if ~file.internal.isDescendantOf(className, 'AlignedDynamicTable', namespace)
+    if ~file.internal.isDescendantOf(className, namespace, 'AlignedDynamicTable')
         return
     end
 
@@ -290,5 +290,5 @@ function tf = isSchemaDefinedAlignedDynamicTableCategory(propertyInfo, namespace
     tf = isa(propertyInfo, 'file.Group') ...
         && ~propertyInfo.isConstrainedSet ...
         && ~isempty(propertyInfo.type) ...
-        && file.internal.isDescendantOf(propertyInfo.type, 'DynamicTable', namespace);
+        && file.internal.isDescendantOf(propertyInfo.type, namespace, 'DynamicTable');
 end
