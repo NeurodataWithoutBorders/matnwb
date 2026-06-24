@@ -138,7 +138,6 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                 'NWB:AlignedDynamicTable:CategoryNotFound')
         end
 
-
         function testGetCategoryRejectsMissingCustomCategory(testCase)
             alignedTable = tests.system.AlignedDynamicTableTest.createSchemaAlignedTable();
 
@@ -249,6 +248,16 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             alignedTable.addCategory("custom", categoryTable)
 
             testCase.verifyEqual(alignedTable.categories, {'custom'})
+        end
+    
+        function testToTable(testCase)
+            alignedTable = tests.system.AlignedDynamicTableTest.createAlignedTable();
+            categoryTable = tests.system.AlignedDynamicTableTest.createTableWithHeight(3);
+
+            alignedTable.addCategory("custom", categoryTable)
+            
+            matlabTable = alignedTable.toTable();
+            testCase.verifyTrue(any(ismember(matlabTable.Properties.VariableNames, 'custom')))
         end
     end
 
