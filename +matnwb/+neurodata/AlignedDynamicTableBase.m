@@ -128,10 +128,6 @@ classdef (Abstract) AlignedDynamicTableBase < handle
                     strjoin(missingCategoryNames, ', '));
             end
 
-            if isempty(categoryNames)
-                return
-            end
-
             [parentHeight, parentHasHeight] = types.util.dynamictable.internal.getTableHeight(obj);
             materializedRegisteredNames = intersect(categoryNames, categoryTableNames, 'stable');
             categoryHeights = zeros(size(materializedRegisteredNames));
@@ -237,7 +233,7 @@ classdef (Abstract) AlignedDynamicTableBase < handle
             if obj.isSchemaDefinedCategory(categoryName)
                 tf = ~isempty(obj.(categoryName));
             else
-                tf = ~isempty(obj.dynamictable) && obj.dynamictable.isKey(categoryName);
+                tf = obj.dynamictable.Count ~= 0 && obj.dynamictable.isKey(categoryName);
             end
         end
 
@@ -253,7 +249,7 @@ classdef (Abstract) AlignedDynamicTableBase < handle
                         'Category `%s` has not been added to the table.', categoryName)
                 end
                 categoryTable = obj.(categoryName);
-            elseif isempty(obj.dynamictable) || ~obj.dynamictable.isKey(categoryName)
+            elseif obj.dynamictable.Count == 0 || ~obj.dynamictable.isKey(categoryName)
                 error('NWB:AlignedDynamicTable:CategoryNotFound', ...
                     'Category `%s` has not been added to the table.', categoryName)
             else
@@ -276,7 +272,7 @@ classdef (Abstract) AlignedDynamicTableBase < handle
                 end
             end
 
-            if ~isempty(obj.dynamictable)
+            if obj.dynamictable.Count ~= 0
                 customCategoryNames = string(obj.dynamictable.keys());
                 categoryNames = [categoryNames, customCategoryNames];
             end
