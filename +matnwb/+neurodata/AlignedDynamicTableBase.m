@@ -158,13 +158,19 @@ classdef (Abstract) AlignedDynamicTableBase < handle
     end
 
     methods (Access = protected, Hidden)
-        function categoryNames = getSchemaDefinedCategories(obj) %#ok<MANU>
+        function categoryNames = getSchemaDefinedCategories(obj)
         % getSchemaDefinedCategories - Return schema-defined category names.
         %
-        % The class generation pipeline extends this method for every
-        % subclass. Subclasses with schema-defined category properties append
-        % those names to the list returned by this base implementation.
-            categoryNames = string.empty(1, 0);
+        % The class generation pipeline declares local schema category names
+        % as private constant properties on each generated aligned table
+        % class. This method aggregates those declarations across the class
+        % hierarchy.
+
+            import matnwb.neurodata.internal.collectConstantPropertiesAcrossHierarchy
+            
+            className = class(obj);
+            categoryNames = collectConstantPropertiesAcrossHierarchy(...
+                className, 'DeclaredSchemaCategories');
         end
 
         function ensureCategoryNameRegistered(obj, categoryName)

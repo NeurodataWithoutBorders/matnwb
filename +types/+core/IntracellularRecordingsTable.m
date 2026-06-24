@@ -12,6 +12,10 @@ properties
     stimuli; % REQUIRED (IntracellularStimuliTable) Table for storing intracellular stimulus related metadata.
 end
 
+properties (Constant, Access = private)
+    DeclaredSchemaCategories = ["electrodes", "responses", "stimuli"];
+end
+
 methods
     function obj = IntracellularRecordingsTable(varargin)
         % INTRACELLULARRECORDINGSTABLE - Constructor for IntracellularRecordingsTable
@@ -111,14 +115,6 @@ methods
         refs = obj.electrodes.export(writer, [fullpath '/electrodes'], refs);
         refs = obj.responses.export(writer, [fullpath '/responses'], refs);
         refs = obj.stimuli.export(writer, [fullpath '/stimuli'], refs);
-    end
-end
-
-methods (Access = protected, Hidden)
-    function categoryNames = getSchemaDefinedCategories(obj)
-        categoryNames = getSchemaDefinedCategories@types.hdmf_common.AlignedDynamicTable(obj);
-        localCategoryNames = ["electrodes", "responses", "stimuli"];
-        categoryNames = unique([categoryNames, localCategoryNames], 'stable');
     end
 end
 

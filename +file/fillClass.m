@@ -182,13 +182,14 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
 
     fullMethodBody = strjoin({'methods' ...
         file.addSpaces(methodBody, 4) 'end'}, newline);
-    schemaCategoryMethodBlock = createMethodBlockForAlignedDynamicTableCategories( ...
-        classprops, nonInherited, name, namespace, superclassNames{1});
+    schemaCategoryPropertyBlock = createPropertyBlockForAlignedDynamicTableCategories( ...
+        classprops, nonInherited, name, namespace);
     readPolicyMethodBlock = fillReadPolicy(class, classprops);
-    classSections = {classDefinitionHeader, fullPropertyDefinition, fullMethodBody};
-    if ~isempty(schemaCategoryMethodBlock)
-        classSections{end+1} = schemaCategoryMethodBlock;
+    classSections = {classDefinitionHeader, fullPropertyDefinition};
+    if ~isempty(schemaCategoryPropertyBlock)
+        classSections{end+1} = schemaCategoryPropertyBlock;
     end
+    classSections{end+1} = fullMethodBody;
     if ~isempty(readPolicyMethodBlock)
         classSections{end+1} = readPolicyMethodBlock;
     end
@@ -241,10 +242,10 @@ function propertyBlockStr = createPropertyBlockForHasUnnamedGroupMixin(classInfo
         'end'}, newline);
 end
 
-function methodBlockStr = createMethodBlockForAlignedDynamicTableCategories( ...
-        classProps, propertyNames, className, namespace, superclassName)
+function propertyBlockStr = createPropertyBlockForAlignedDynamicTableCategories( ...
+        classProps, propertyNames, className, namespace)
 
-    methodBlockStr = '';
+    propertyBlockStr = '';
     if ~file.internal.isDescendantOf(className, namespace, 'AlignedDynamicTable')
         return
     end
@@ -258,31 +259,17 @@ function methodBlockStr = createMethodBlockForAlignedDynamicTableCategories( ...
         end
     end
 
-    if strcmp(className, 'AlignedDynamicTable')
-        methodLines = { ...
-            'function categoryNames = getSchemaDefinedCategories(obj)', ...
-            '    categoryNames = getSchemaDefinedCategories@matnwb.neurodata.AlignedDynamicTableBase(obj);', ...
-            'end'};
+    formattedNames = """" + categoryNames + """";
+    if isempty(formattedNames)
+        propertyLine = 'DeclaredSchemaCategories = string.empty(1, 0);';
     else
-        formattedNames = """" + categoryNames + """";
-        if isempty(formattedNames)
-            localCategoryLine = 'localCategoryNames = string.empty(1, 0);';
-        else
-            localCategoryLine = sprintf( ...
-                'localCategoryNames = [%s];', strjoin(formattedNames, ', '));
-        end
-
-        methodLines = { ...
-            'function categoryNames = getSchemaDefinedCategories(obj)', ...
-            sprintf('    categoryNames = getSchemaDefinedCategories@%s(obj);', superclassName), ...
-            sprintf('    %s', localCategoryLine), ...
-            '    categoryNames = unique([categoryNames, localCategoryNames], ''stable'');', ...
-            'end'};
+        propertyLine = sprintf( ...
+            'DeclaredSchemaCategories = [%s];', strjoin(formattedNames, ', '));
     end
 
-    methodBlockStr = strjoin({ ...
-        'methods (Access = protected, Hidden)', ...
-        file.addSpaces(strjoin(methodLines, newline), 4), ...
+    propertyBlockStr = strjoin({ ...
+        'properties (Constant, Access = private)', ...
+        file.addSpaces(propertyLine, 4), ...
         'end'}, newline);
 end
 

@@ -17,6 +17,10 @@ properties (Access = protected)
     GroupPropertyNames = {'dynamictable'}
 end
 
+properties (Constant, Access = private)
+    DeclaredSchemaCategories = string.empty(1, 0);
+end
+
 methods
     function obj = AlignedDynamicTable(varargin)
         % ALIGNEDDYNAMICTABLE - Constructor for AlignedDynamicTable
@@ -97,12 +101,6 @@ methods
     function checkCustomConstraint(obj)
         checkCustomConstraint@types.untyped.MetaClass(obj)
         obj.ensureAlignedTableConsistency()
-    end
-end
-
-methods (Access = protected, Hidden)
-    function categoryNames = getSchemaDefinedCategories(obj)
-        categoryNames = getSchemaDefinedCategories@matnwb.neurodata.AlignedDynamicTableBase(obj);
     end
 end
 
