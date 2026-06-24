@@ -86,17 +86,17 @@ matlabTable = [matlabTable DynamicTable.getRow( ...
 )];
 
 % Add category tables if this dynamic table is an aligned dynamic table
-if isa(DynamicTable, 'types.hdmf_common.AlignedDynamicTable')    
+if isa(DynamicTable, 'types.hdmf_common.AlignedDynamicTable') || isa(DynamicTable, 'types.core.AlignedDynamicTable') 
+    columns = [columns, DynamicTable.categories];
     for i = 1:numel(DynamicTable.categories)
         currentCategory = DynamicTable.categories{i};
         categoryTable = DynamicTable.getCategory(currentCategory);
-        
-        if isequal(matlabTable.id, categoryTable.id)
-            categoryTable = removevars(categoryTable, 'id');
+        categoryTableMTable = categoryTable.toTable();
+        if all(matlabTable.id == categoryTableMTable.id)
+            categoryTableMTable = removevars(categoryTableMTable, 'id');
         end
-
-        matlabTable.(currentCategory) = categoryTable;
-        columnDescriptions{end+1} = categoryTable.description; %#ok<AGROW>
+        matlabTable.(currentCategory) = categoryTableMTable;
+        columnDescriptions(end+1) = {categoryTable.description}; %#ok<AGROW>
     end
 end
 
