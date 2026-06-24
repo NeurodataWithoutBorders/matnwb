@@ -167,11 +167,8 @@ methods
         types.util.validateShape('data', {[Inf]}, val)
     end
     function val = validate_data_unit(obj, val)
-        if isequal(val, 'amperes')
-            val = 'amperes';
-        else
-            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''data_unit'' property of class ''<a href="matlab:doc types.core.VoltageClampSeries">VoltageClampSeries</a>'' because it is read-only.')
-        end
+        constantValue = 'amperes';
+        val = types.util.checkConstant('data_unit', constantValue, val, 'types.core.VoltageClampSeries');
     end
     function val = validate_resistance_comp_bandwidth(obj, val)
         val = types.util.checkDtype('resistance_comp_bandwidth', 'single', val);

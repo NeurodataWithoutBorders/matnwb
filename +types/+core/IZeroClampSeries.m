@@ -71,32 +71,20 @@ methods
     %% VALIDATORS
     
     function val = validate_bias_current(obj, val)
-        if isequal(val, 0)
-            val = 0;
-        else
-            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''bias_current'' property of class ''<a href="matlab:doc types.core.IZeroClampSeries">IZeroClampSeries</a>'' because it is read-only.')
-        end
+        constantValue = types.util.correctType(0, 'single');
+        val = types.util.checkConstant('bias_current', constantValue, val, 'types.core.IZeroClampSeries');
     end
     function val = validate_bridge_balance(obj, val)
-        if isequal(val, 0)
-            val = 0;
-        else
-            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''bridge_balance'' property of class ''<a href="matlab:doc types.core.IZeroClampSeries">IZeroClampSeries</a>'' because it is read-only.')
-        end
+        constantValue = types.util.correctType(0, 'single');
+        val = types.util.checkConstant('bridge_balance', constantValue, val, 'types.core.IZeroClampSeries');
     end
     function val = validate_capacitance_compensation(obj, val)
-        if isequal(val, 0)
-            val = 0;
-        else
-            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''capacitance_compensation'' property of class ''<a href="matlab:doc types.core.IZeroClampSeries">IZeroClampSeries</a>'' because it is read-only.')
-        end
+        constantValue = types.util.correctType(0, 'single');
+        val = types.util.checkConstant('capacitance_compensation', constantValue, val, 'types.core.IZeroClampSeries');
     end
     function val = validate_stimulus_description(obj, val)
-        if isequal(val, 'N/A')
-            val = 'N/A';
-        else
-            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''stimulus_description'' property of class ''<a href="matlab:doc types.core.IZeroClampSeries">IZeroClampSeries</a>'' because it is read-only.')
-        end
+        constantValue = 'N/A';
+        val = types.util.checkConstant('stimulus_description', constantValue, val, 'types.core.IZeroClampSeries');
     end
     %% EXPORT
     function refs = export(obj, writer, fullpath, refs)

@@ -67,18 +67,12 @@ methods
         types.util.validateShape('data', {[Inf]}, val)
     end
     function val = validate_data_resolution(obj, val)
-        if isequal(val, -1)
-            val = -1;
-        else
-            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''data_resolution'' property of class ''<a href="matlab:doc types.core.AnnotationSeries">AnnotationSeries</a>'' because it is read-only.')
-        end
+        constantValue = types.util.correctType(-1, 'single');
+        val = types.util.checkConstant('data_resolution', constantValue, val, 'types.core.AnnotationSeries');
     end
     function val = validate_data_unit(obj, val)
-        if isequal(val, 'n/a')
-            val = 'n/a';
-        else
-            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''data_unit'' property of class ''<a href="matlab:doc types.core.AnnotationSeries">AnnotationSeries</a>'' because it is read-only.')
-        end
+        constantValue = 'n/a';
+        val = types.util.checkConstant('data_unit', constantValue, val, 'types.core.AnnotationSeries');
     end
     %% EXPORT
     function refs = export(obj, writer, fullpath, refs)
