@@ -30,6 +30,25 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             testCase.verifyEmpty(categoryTable.id.data)
         end
 
+        function testAddCategoryInitializesEmptyIdDataPipe(testCase)
+            parent = types.hdmf_common.AlignedDynamicTable( ...
+                'description', 'parent', ...
+                'id', types.hdmf_common.ElementIdentifiers('data', int64((0:9)')));
+        
+            idDataPipe = types.untyped.DataPipe( ...
+                'maxSize', Inf, ...
+                'dataType', 'int64');
+        
+            category = types.hdmf_common.DynamicTable( ...
+                'description', 'category');
+            category.id = types.hdmf_common.ElementIdentifiers('data', idDataPipe);
+        
+            parent.addCategory("category", category)
+        
+            testCase.verifyEqual(idDataPipe.internal.data, int64((0:9)'))
+            types.util.dynamictable.checkConfig(category)
+        end
+
         function testGetCustomCategory(testCase)
             alignedTable = tests.system.AlignedDynamicTableTest.createAlignedTable();
             categoryTable = tests.system.AlignedDynamicTableTest.createTableWithHeight(3);
