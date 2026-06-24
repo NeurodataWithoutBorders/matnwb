@@ -15,7 +15,7 @@ function [columnRowHeight, resolvedColumnName, hasEstablishedHeight] = getColumn
     vector = getVector(dynamicTable, resolvedColumnName);
     [columnRowHeight, hasEstablishedHeight] = ...
         types.util.dynamictable.internal.getColumnHeight(vector);
-    hasEstablishedHeight = hasEstablishedHeight || ~isempty(vector);
+    hasEstablishedHeight = any(hasEstablishedHeight) || ~isempty(vector);
 end
 
 function vector = getVector(dynamicTable, columnName)
