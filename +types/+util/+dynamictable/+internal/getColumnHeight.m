@@ -3,6 +3,9 @@ function columnHeight = getColumnHeight(column)
 %
 % This helper inspects the underlying stored data shape only. It does not
 % resolve VectorIndex chains to determine DynamicTable row height.
+    arguments
+        column
+    end
 
     if isempty(column)
         columnHeight = 0;
@@ -12,6 +15,10 @@ function columnHeight = getColumnHeight(column)
 end
 
 function columnHeight = getDataHeight(data)
+    arguments
+        data
+    end
+
     if isempty(data)
         columnHeight = 0;
     elseif isa(data, 'types.untyped.DataPipe')
