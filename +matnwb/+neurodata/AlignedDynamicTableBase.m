@@ -110,15 +110,6 @@ classdef (Abstract) AlignedDynamicTableBase < handle
 
             obj.assertNoNestedAlignedDynamicTable(categoryTableNames);
 
-            if isempty(obj.categories)
-                if ~isempty(categoryTableNames)
-                    obj.handleCategoryNamesMismatch( ...
-                        ['All materialized AlignedDynamicTable category tables must be ', ...
-                        'listed in the `categories` property.']);
-                end
-                return
-            end
-
             categoryNames = obj.validateCategoryNames(obj.categories);
             missingCategoryNames = setdiff(categoryTableNames, categoryNames, 'stable');
             if ~isempty(missingCategoryNames)
@@ -127,6 +118,8 @@ classdef (Abstract) AlignedDynamicTableBase < handle
                     'in `categories`.\nMissing from `categories`: %s'], ...
                     strjoin(missingCategoryNames, ', '));
             end
+
+            if isempty(categoryNames); return; end
 
             [parentHeight, parentHasHeight] = types.util.dynamictable.internal.getTableHeight(obj);
             materializedRegisteredNames = intersect(categoryNames, categoryTableNames, 'stable');
