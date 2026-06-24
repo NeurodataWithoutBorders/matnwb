@@ -119,6 +119,28 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                 'NWB:AlignedDynamicTable:CategoryNotFound')
         end
 
+
+        function testGetCategoryRejectsMissingCustomCategory(testCase)
+            alignedTable = tests.system.AlignedDynamicTableTest.createSchemaAlignedTable();
+
+            testCase.verifyError( ...
+                @() alignedTable.getCategory("nonExistingCategory"), ...
+                'NWB:AlignedDynamicTable:CategoryNotFound')
+        end
+
+        function testMissingCategoryNameThrows(testCase)
+            alignedTable = tests.system.AlignedDynamicTableTest.createAlignedTable();
+            categoryTable = tests.factory.DynamicTable('NumColumns', 1, 'NumRows', 1);
+
+            % Add category (bypassing category registration)
+            alignedTable.dynamictable.set('category', categoryTable);
+
+            testCase.verifyError(...
+                @alignedTable.ensureAlignedTableConsistency, ...
+                'NWB:AlignedDynamicTable:ValidateAlignedTableConsistency:CategoryNamesMismatch' ...
+                )
+        end
+
         function testDirectSchemaCategoryAssignmentSyncsCategories(testCase)
             alignedTable = tests.system.AlignedDynamicTableTest.createSchemaAlignedTable();
             categoryTable = tests.system.AlignedDynamicTableTest.createElectrodesTableWithHeight(2);
