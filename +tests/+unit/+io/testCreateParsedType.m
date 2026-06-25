@@ -34,20 +34,17 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
         end
 
         function testCreateTypeWithInvalidPropertyValue(testCase)
+            % An invalid property value is read permissively: createParsedType
+            % warns and keeps the value instead of failing the read (#776).
             testPath = 'some/dataset/path';
             testType = 'types.hdmf_common.VectorIndex';
             kwargs = {'data', 'text is not numeric indices'};
 
-            try
-                io.createParsedType(testPath, testType, kwargs{:});
-                testCase.verifyFail('Expected io.createParsedType to throw an error.');
-            catch exception
-                testCase.verifyEqual(...
-                    exception.identifier, ...
-                    'NWB:createParsedType:TypeCreationFailed');
-                testCase.verifyNotEmpty(strfind(exception.message, testType));
-                testCase.verifyNotEmpty(strfind(exception.message, testPath));
-            end
+            type = testCase.verifyWarning(...
+                @() io.createParsedType(testPath, testType, kwargs{:}), ...
+                'NWB:CheckDataType:InvalidConversion');
+
+            testCase.verifyClass(type, testType)
         end
 
         function testCreateDynamicTableWithDuplicateColnamesWarns(testCase)
