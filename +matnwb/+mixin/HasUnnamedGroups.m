@@ -579,35 +579,11 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             arguments
                 nwbTypeName (1,1) string
             end
-        
-            groupPropertyNames = string.empty; % Initialize an empty cell array
-            currentType = nwbTypeName; % Start with the specific type
-        
-            % Iterate over class and superclasses to detect property names for 
-            % unnamed groups across the type hierarchy.
-            while ~strcmp(currentType, 'types.untyped.MetaClass')
-                
-                % Use MetaClass information to get class information
-                metaClass = meta.class.fromName(currentType);
-                
-                % Get value of GroupPropertyNames if this class is a subclass of
-                % the HasUnnamedGroups subclass.
-                if any(strcmp({metaClass.SuperclassList.Name}, 'matnwb.mixin.HasUnnamedGroups'))
-                    isProp = strcmp({metaClass.PropertyList.Name}, 'GroupPropertyNames');
-                    if any(isProp)
-                        groupPropertyNames = [groupPropertyNames, ...
-                            string(metaClass.PropertyList(isProp).DefaultValue)]; %#ok<AGROW>
-                    end
-                end
-                
-                if isempty(metaClass.SuperclassList)
-                    break; % Reached the base type
-                end
-        
-                % Get superclass for next iteration. NWB parent type should 
-                % always be the first superclass in the list
-                currentType = metaClass.SuperclassList(1).Name;
-            end    
+
+            import matnwb.neurodata.internal.collectConstantPropertiesAcrossHierarchy
+
+            groupPropertyNames = collectConstantPropertiesAcrossHierarchy(...
+                nwbTypeName, 'GroupPropertyNames');
         end
     end
 end
