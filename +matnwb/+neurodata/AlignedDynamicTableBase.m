@@ -156,6 +156,48 @@ classdef (Abstract) AlignedDynamicTableBase < matnwb.neurodata.DynamicTableBase
         end
     end
 
+    methods (Access = ?matnwb.mixin.HasUnnamedGroups)
+        function wasHandled = handleUnnamedGroupAdd(obj, groupName, name, value)
+        % handleUnnamedGroupAdd - Route unnamed category additions through addCategory.
+
+            arguments
+                obj (1,1) matnwb.neurodata.AlignedDynamicTableBase
+                groupName (1,1) string
+                name (1,1) string
+                value
+            end
+
+            wasHandled = false;
+
+            if groupName ~= "dynamictable"
+                return
+            end
+
+            if ~isa(value, 'types.hdmf_common.DynamicTable') && ...
+                    ~isa(value, 'types.core.DynamicTable')
+                return
+            end
+
+            obj.addCategory(name, value)
+            wasHandled = true;
+        end
+
+        function tip = getCustomUnnamedGroupAddTip(~, groupName)
+        % getCustomUnnamedGroupAddTip - Display the preferred category add method.
+
+            arguments
+                ~
+                groupName (1,1) string
+            end
+
+            if groupName == "dynamictable"
+                tip = "Tip: Use the 'addCategory' method to add category tables.";
+            else
+                tip = "Tip: Use the 'add' method to add data objects to this group.";
+            end
+        end
+    end
+
     methods (Access = protected, Hidden)
         function categoryNames = getSchemaDefinedCategories(obj)
         % getSchemaDefinedCategories - Return schema-defined category names.
