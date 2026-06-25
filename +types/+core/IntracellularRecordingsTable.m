@@ -11,7 +11,6 @@ properties
     responses; % REQUIRED (IntracellularResponsesTable) Table for storing intracellular response related metadata.
     stimuli; % REQUIRED (IntracellularStimuliTable) Table for storing intracellular stimulus related metadata.
 end
-
 properties (Constant, Access = private)
     DeclaredSchemaCategories = ["electrodes", "responses", "stimuli"];
 end
