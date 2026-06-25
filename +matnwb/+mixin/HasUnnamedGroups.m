@@ -101,6 +101,11 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                 end
 
                 try
+                    if obj.tryHandleUnnamedGroupAdd(groupName, name, value)
+                        wasSuccess = true;
+                        break
+                    end
+
                     currentSet.set(name, value, ...
                         'FailOnInvalidType', true);
                     wasSuccess = true;
@@ -286,6 +291,28 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             dynamicPropNames = obj.PropertyManager.getAllPropertyNames();
 
             nonDynamicProperties = setdiff(allProperties, dynamicPropNames);
+        end
+
+        function wasHandled = tryHandleUnnamedGroupAdd(obj, groupName, name, value)
+        % tryHandleUnnamedGroupAdd - Call optional type-specific add hook.
+            wasHandled = false;
+            if obj.hasMethod('handleUnnamedGroupAdd')
+                wasHandled = obj.handleUnnamedGroupAdd(groupName, name, value);
+            end
+        end
+
+        function tip = getAddTipForUnnamedGroup(obj, groupName)
+        % getAddTipForUnnamedGroup - Resolve display tip for adding entries.
+            if obj.hasMethod('getCustomUnnamedGroupAddTip')
+                tip = obj.getCustomUnnamedGroupAddTip(groupName);
+            else
+                tip = "Tip: Use the 'add' method to add data objects to this group.";
+            end
+        end
+
+        function tf = hasMethod(obj, methodName)
+            metaClass = metaclass(obj);
+            tf = any(strcmp({metaClass.MethodList.Name}, methodName));
         end
     end
 
@@ -533,7 +560,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                         end
                     else
                         title = "<strong>" + groupName + ":</strong> (no entries)" + ...
-                            sprintf('\n    Tip: Use the ''add'' method to add data objects to this group.');
+                            sprintf('\n    %s', obj.getAddTipForUnnamedGroup(groupName));
                     end
                     
                     % Add this group to the property groups
