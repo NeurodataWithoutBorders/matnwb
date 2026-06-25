@@ -15,9 +15,9 @@ classdef ValidateSoftLinkTest < matlab.unittest.TestCase
         function testWrongTargetTypeWarnsInReadContext(testCase)
             softLink = testCase.createSoftLinkWithTargetType('types.core.Device');
 
-            previousContext = types.util.validationContext('read');
+            previousContext = matnwb.common.validation.internal.context("read");
             cleanup = onCleanup( ...
-                @() types.util.validationContext(previousContext));
+                @() matnwb.common.validation.internal.context(previousContext));
 
             value = testCase.verifyWarning( ...
                 @() types.util.validateSoftLink( ...

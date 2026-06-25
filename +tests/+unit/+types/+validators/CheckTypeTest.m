@@ -26,9 +26,9 @@ classdef CheckTypeTest < matlab.unittest.TestCase
             value = types.hdmf_common.VectorData( ...
                 'description', 'a column', 'data', (1:3)');
 
-            previousContext = types.util.validationContext('read');
+            previousContext = matnwb.common.validation.internal.context("read");
             cleanup = onCleanup( ...
-                @() types.util.validationContext(previousContext));
+                @() matnwb.common.validation.internal.context(previousContext));
 
             testCase.verifyWarning( ...
                 @() types.util.checkType( ...
@@ -39,9 +39,9 @@ classdef CheckTypeTest < matlab.unittest.TestCase
         function testUnknownExpectedTypeAlwaysErrors(testCase)
             % An unrecognized expected type indicates an internal problem,
             % not a non-conforming file, so it stays an error on read.
-            previousContext = types.util.validationContext('read');
+            previousContext = matnwb.common.validation.internal.context("read");
             cleanup = onCleanup( ...
-                @() types.util.validationContext(previousContext));
+                @() matnwb.common.validation.internal.context(previousContext));
 
             testCase.verifyError( ...
                 @() types.util.checkType('x', 'types.core.NotARealType', 5), ...

@@ -13,9 +13,9 @@ classdef CheckConstraintTest < matlab.unittest.TestCase
         end
 
         function testValueMatchingNoConstrainedTypeWarnsInReadContext(testCase)
-            previousContext = types.util.validationContext('read');
+            previousContext = matnwb.common.validation.internal.context("read");
             cleanup = onCleanup( ...
-                @() types.util.validationContext(previousContext));
+                @() matnwb.common.validation.internal.context(previousContext));
 
             value = testCase.verifyWarning( ...
                 @() types.util.checkConstraint('group', 'item', struct(), ...
