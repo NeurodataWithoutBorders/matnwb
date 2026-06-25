@@ -79,11 +79,8 @@ methods
         types.util.validateShape('data', {[Inf,Inf], [Inf]}, val)
     end
     function val = validate_data_unit(obj, val)
-        if isequal(val, 'watts')
-            val = 'watts';
-        else
-            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''data_unit'' property of class ''<a href="matlab:doc types.core.OptogeneticSeries">OptogeneticSeries</a>'' because it is read-only.')
-        end
+        constantValue = 'watts';
+        val = types.util.checkConstant('data_unit', constantValue, val, 'types.core.OptogeneticSeries');
     end
     function val = validate_site(obj, val)
         val = types.util.validateSoftLink('site', val, 'types.core.OptogeneticStimulusSite');
