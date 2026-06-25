@@ -17,9 +17,12 @@ function outermostIndexColumnName = getOutermostIndexColumnName(dynamicTable, co
         if isempty(indexName)
             return;
         end
-        assert(~any(strcmp(columnHistory, indexName)), ...
-            'NWB:DynamicTable:CheckConfig:InfiniteReferenceLoop', ...
-            'Invalid Table shape detected: There is an infinite loop in your VectorIndex objects.');
+        if any(strcmp(columnHistory, indexName))
+            matnwb.common.validation.reportSchemaViolation( ...
+                'NWB:DynamicTable:CheckConfig:InfiniteReferenceLoop', ...
+                'Invalid Table shape detected: There is an infinite loop in your VectorIndex objects.');
+            return
+        end
         columnHistory{end+1} = indexName; %#ok<AGROW>
         outermostIndexColumnName = indexName;
     end
