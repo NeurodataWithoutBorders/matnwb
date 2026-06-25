@@ -23,5 +23,17 @@ classdef CheckConstraintTest < matlab.unittest.TestCase
                 'NWB:CheckConstraint:InvalidType');
             testCase.verifyEqual(value, 5)
         end
+
+        function testReadContextProbesConstrainedTypesStrictly(testCase)
+            previousContext = matnwb.common.validation.internal.context("read");
+            cleanup = onCleanup( ...
+                @() matnwb.common.validation.internal.context(previousContext));
+
+            value = testCase.verifyWarningFree( ...
+                @() types.util.checkConstraint('group', 'item', struct(), ...
+                    {'types.hdmf_common.VectorData', 'double'}, 5));
+
+            testCase.verifyEqual(value, 5)
+        end
     end
 end

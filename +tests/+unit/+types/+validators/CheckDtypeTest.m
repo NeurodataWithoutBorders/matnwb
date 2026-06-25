@@ -202,6 +202,45 @@ classdef CheckDtypeTest < matlab.unittest.TestCase
                 @() types.util.checkDtype('invalidValue', 'any', {struct()}), ...
                 'NWB:CheckDType:InvalidType')
         end
+
+        function testAnyDtypeWarnsForUnsupportedTypeInReadContext(testCase)
+            previousContext = matnwb.common.validation.internal.context("read");
+            cleanup = onCleanup( ...
+                @() matnwb.common.validation.internal.context(previousContext));
+
+            invalidValue = {struct()};
+
+            value = testCase.verifyWarning( ...
+                @() types.util.checkDtype('invalidValue', 'any', invalidValue), ...
+                'NWB:CheckDType:InvalidType');
+
+            testCase.verifyEqual(value, invalidValue)
+        end
+
+        function testStrictModeErrorsInReadContext(testCase)
+            previousContext = matnwb.common.validation.internal.context("read");
+            cleanup = onCleanup( ...
+                @() matnwb.common.validation.internal.context(previousContext));
+
+            testCase.verifyError( ...
+                @() types.util.checkDtype( ...
+                    'invalidValue', 'any', {struct()}, Mode="strict"), ...
+                'NWB:CheckDType:InvalidType')
+        end
+
+        function testInvalidConversionWarnsInReadContext(testCase)
+            previousContext = matnwb.common.validation.internal.context("read");
+            cleanup = onCleanup( ...
+                @() matnwb.common.validation.internal.context(previousContext));
+
+            invalidValue = single(realmax('single'));
+
+            value = testCase.verifyWarning( ...
+                @() types.util.checkDtype('precisionLossError', 'uint64', invalidValue), ...
+                'NWB:CheckDataType:InvalidConversion');
+
+            testCase.verifyEqual(value, invalidValue)
+        end
     end
 
     methods (Static)
