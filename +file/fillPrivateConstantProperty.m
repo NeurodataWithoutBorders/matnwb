@@ -2,15 +2,9 @@ function propertyBlockStr = fillPrivateConstantProperty(propertyName, listOfStri
 % fillPrivateConstantProperty - Fill a private constant string-list property.
 
     arguments
-        propertyName (1,:) char
-        listOfStrings
+        propertyName (1,1) string
+        listOfStrings (1,:) string
     end
-
-    assert(isstring(listOfStrings) || iscellstr(listOfStrings) || isempty(listOfStrings), ...
-        'NWB:FillPrivateConstantProperty:InvalidStringList', ...
-        'Expected listOfStrings to be a string array or cell array of character vectors.')
-
-    listOfStrings = reshape(string(listOfStrings), 1, []);
 
     if isempty(listOfStrings)
         propertyLine = sprintf('%s = string.empty(1, 0);', propertyName);
