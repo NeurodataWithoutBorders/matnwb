@@ -400,16 +400,6 @@ function tf = canCorrectReadOnlyConstantType(dtype)
     tf = ischar(dtype) && any(strcmp(dtype, correctableTypes));
 end
 
-function tf = canCorrectReadOnlyConstantType(dtype)
-    correctableTypes = { ...
-        'single', 'double', ...
-        'int64', 'int32', 'int16', 'int8', ...
-        'uint64', 'uint32', 'uint16', 'uint8', ...
-        'logical'};
-
-    tf = ischar(dtype) && any(strcmp(dtype, correctableTypes));
-end
-
 function fullname = getFullClassName(namespaceReg, propType, name)
     fullname = '';
     try
