@@ -10,7 +10,7 @@ function syncNamedColumn(DynamicTable, columnName)
         return
     end
 
-    if strcmp(types.util.validationContext(), 'read')
+    if matnwb.common.validation.isReadContext()
         return
     end
 
