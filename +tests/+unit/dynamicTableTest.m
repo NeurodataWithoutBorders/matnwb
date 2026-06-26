@@ -369,7 +369,9 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
 
             testCase.verifyEqual(timeIntervals.colnames, {'custom_col'});
             testCase.verifyTrue(timeIntervals.vectordata.isKey('custom_col'));
-            testCase.verifyFalse(isprop(timeIntervals, 'custom_col'));
+            
+            % Verify it is added as dynamic property by the HasUnnamedGroups mixin
+            testCase.verifyTrue(timeIntervals.isDynamicProperty('custom_col'));
         end
 
         function testAddColumnUsesSchemaPropertyForTimeSeriesReferenceColumn(testCase)
