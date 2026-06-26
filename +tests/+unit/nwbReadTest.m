@@ -141,7 +141,7 @@ classdef nwbReadTest < tests.abstract.NwbTestCase
             fileName = 'invalid_timeseries_timestamps_shape.nwb';
             createInvalidTimeSeriesFile(fileName)
 
-            % The file is read permissively: a warning is issued and the 
+            % The file is read permissively: a warning is issued and the
             % value is kept, so the data remains accessible (issue #776).
             nwb = testCase.verifyWarning(...
                 @() nwbRead(fileName, "ignorecache"), ...
@@ -150,6 +150,10 @@ classdef nwbReadTest < tests.abstract.NwbTestCase
             testCase.verifyClass(nwb, 'NwbFile')
             testCase.verifyClass(nwb.acquisition.get('bad_ts'), ...
                 'types.core.TimeSeries')
+            [warningMessage, warningId] = lastwarn();
+            testCase.verifyEqual(warningId, 'NWB:CheckDims:InvalidDimensions')
+            testCase.verifySubstring(warningMessage, '/acquisition/bad_ts')
+            testCase.verifySubstring(warningMessage, 'types.core.TimeSeries')
         end
 
         function readWithStringFilenameArg(testCase)

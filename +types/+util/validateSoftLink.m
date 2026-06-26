@@ -33,7 +33,19 @@ function value = validateSoftLink(propertyName, value, targetType)
             end
         else
             types.util.checkType(propertyName, targetType, v);
+            if matnwb.common.validation.isReadContext() ...
+                    && ~isValidSoftLinkTarget(v, targetType)
+                return
+            end
             v = types.untyped.SoftLink(v);  % Wrap after successful validation
         end
     end
+end
+
+function tf = isValidSoftLinkTarget(value, targetType)
+    if isWrapped(value, targetType)
+        value = unwrapValue(value);
+    end
+
+    tf = isa(value, targetType);
 end

@@ -37,6 +37,10 @@ function checkConfig(DynamicTable, ignoreList)
         end
         return;
     end
+    if ~types.util.dynamictable.internal.isColnamesTextContainer(DynamicTable.colnames) ...
+            && matnwb.common.validation.isReadContext()
+        return
+    end
     columns = types.util.dynamictable.normalizeColnames(DynamicTable.colnames);
     if ~matnwb.common.validation.isReadContext()
         % Skip on file read, this might mutate colnames

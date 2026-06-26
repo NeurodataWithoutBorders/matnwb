@@ -27,6 +27,11 @@ function typeInstance = createParsedType(typePath, typeName, varargin)
     previousValidationContext = matnwb.common.validation.internal.context("read");
     validationContextCleanupObj = onCleanup( ...
         @() matnwb.common.validation.internal.context(previousValidationContext));
+    source.TypeName = typeName;
+    source.Path = typePath;
+    previousReportingSource = matnwb.common.validation.internal.reportingSource(source);
+    reportingSourceCleanupObj = onCleanup( ...
+        @() matnwb.common.validation.internal.reportingSource(previousReportingSource));
 
     try
         typeInstance = feval(typeName, varargin{:}); % Create the type.
@@ -53,6 +58,7 @@ function typeInstance = createParsedType(typePath, typeName, varargin)
     end
 
     clear validationContextCleanupObj
+    clear reportingSourceCleanupObj
 
     [warningMessage, warningID] = lastwarn();
 

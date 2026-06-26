@@ -4,6 +4,11 @@ function colnames = validateColnames(colnames)
 % Input can be a cell array of character vectors, a string array or a
 % character vector. Output is a cell array of character vectors.
 
+    if ~types.util.dynamictable.internal.isColnamesTextContainer(colnames) ...
+            && matnwb.common.validation.isReadContext()
+        return
+    end
+
     colnames = types.util.dynamictable.normalizeColnames(colnames);
     types.util.dynamictable.validateUniqueColnames(colnames);
 end

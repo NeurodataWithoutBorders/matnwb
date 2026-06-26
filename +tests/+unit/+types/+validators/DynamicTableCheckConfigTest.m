@@ -2,18 +2,19 @@ classdef DynamicTableCheckConfigTest < matlab.unittest.TestCase
 % DynamicTableCheckConfigTest - Unit tests for DynamicTable schema checks.
 
     methods (Test)
-        function testInvalidColnamesErrorsInReadContext(testCase)
-            % A non-text colnames is a structural defect, not a recoverable
-            % schema deviation, so it is a hard error even when reading.
+        function testInvalidColnamesWarnsOnceInReadContext(testCase)
             previousContext = matnwb.common.validation.internal.context("read");
             cleanup = onCleanup( ...
                 @() matnwb.common.validation.internal.context(previousContext));
 
-            testCase.verifyError( ...
+            dynamicTable = testCase.verifyWarning( ...
                 @() types.hdmf_common.DynamicTable( ...
                     'description', 'invalid colnames', ...
                     'colnames', 1), ...
-                'NWB:DynamicTable:InvalidColumnNames')
+                'NWB:CheckDataType:InvalidConversion');
+
+            testCase.verifyClass(dynamicTable, 'types.hdmf_common.DynamicTable')
+            testCase.verifyEqual(dynamicTable.colnames, 1)
         end
 
         function testMismatchedColumnHeightsWarnInReadContext(testCase)
