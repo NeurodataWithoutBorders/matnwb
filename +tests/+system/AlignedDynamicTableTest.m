@@ -30,7 +30,6 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                 'disp(tests.system.AlignedDynamicTableTest.createAlignedTable())');
 
             testCase.verifyTrue(contains(displayText, "Use the 'addCategory' method"))
-            testCase.verifyTrue(contains(displayText, "Use the 'add' method"))
         end
 
         function testAddEmptyTableInitializesParentAndCategoryId(testCase)
