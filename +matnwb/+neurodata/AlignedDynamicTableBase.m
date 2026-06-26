@@ -156,7 +156,7 @@ classdef (Abstract) AlignedDynamicTableBase < matnwb.neurodata.DynamicTableBase
         end
     end
 
-    methods (Access = ?matnwb.mixin.HasUnnamedGroups)
+    methods (Access = {?matnwb.mixin.HasUnnamedGroups, ?matnwb.neurodata.AlignedDynamicTableBase})
         function wasHandled = handleUnnamedGroupAdd(obj, groupName, name, value)
         % handleUnnamedGroupAdd - Route unnamed category additions through addCategory.
 
@@ -166,8 +166,11 @@ classdef (Abstract) AlignedDynamicTableBase < matnwb.neurodata.DynamicTableBase
                 name (1,1) string
                 value
             end
-
-            wasHandled = false;
+            
+            wasHandled = handleUnnamedGroupAdd@matnwb.neurodata.DynamicTableBase(obj, groupName, name, value);
+            if wasHandled
+                return
+            end
 
             if groupName ~= "dynamictable"
                 return
@@ -182,18 +185,18 @@ classdef (Abstract) AlignedDynamicTableBase < matnwb.neurodata.DynamicTableBase
             wasHandled = true;
         end
 
-        function tip = getCustomUnnamedGroupAddTip(~, groupName)
+        function tip = getCustomUnnamedGroupAddTip(obj, groupName)
         % getCustomUnnamedGroupAddTip - Display the preferred category add method.
 
             arguments
-                ~
+                obj
                 groupName (1,1) string
             end
 
             if groupName == "dynamictable"
                 tip = "Tip: Use the 'addCategory' method to add category tables.";
             else
-                tip = "Tip: Use the 'add' method to add data objects to this group.";
+                tip = getCustomUnnamedGroupAddTip@matnwb.neurodata.DynamicTableBase(obj, groupName);
             end
         end
     end
