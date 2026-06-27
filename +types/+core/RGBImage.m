@@ -11,9 +11,9 @@ methods
         % RGBIMAGE - Constructor for RGBImage
         %
         % Syntax:
-        %  RGBImage = types.core.RGBIMAGE() creates a RGBImage object with unset property values.
+        %  rgbImage = types.core.RGBIMAGE() creates a RGBImage object with unset property values.
         %
-        %  RGBImage = types.core.RGBIMAGE(Name, Value) creates a RGBImage object where one or more property values are specified using name-value pairs.
+        %  rgbImage = types.core.RGBIMAGE(Name, Value) creates a RGBImage object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - data (numeric) - Data property for dataset class (RGBImage)
@@ -23,7 +23,7 @@ methods
         %  - resolution (single) - Pixel resolution of the image, in pixels per centimeter.
         %
         % Output Arguments:
-        %  - RGBImage (types.core.RGBImage) - A RGBImage object
+        %  - rgbImage (types.core.RGBImage) - A RGBImage object
         
         obj = obj@types.core.Image(varargin{:});
         

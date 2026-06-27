@@ -71,9 +71,9 @@ methods
         % NWBFILE - Constructor for NWBFile
         %
         % Syntax:
-        %  NWBFile = types.core.NWBFILE() creates a NWBFile object with unset property values.
+        %  nwbFile = types.core.NWBFILE() creates a NWBFile object with unset property values.
         %
-        %  NWBFile = types.core.NWBFILE(Name, Value) creates a NWBFile object where one or more property values are specified using name-value pairs.
+        %  nwbFile = types.core.NWBFILE(Name, Value) creates a NWBFile object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - acquisition (DynamicTable|NWBDataInterface) - Tabular data that is relevant to acquisition
@@ -177,7 +177,7 @@ methods
         %  - units (Units) - Data about sorted spike units.
         %
         % Output Arguments:
-        %  - NWBFile (types.core.NWBFile) - A NWBFile object
+        %  - nwbFile (types.core.NWBFile) - A NWBFile object
         
         varargin = [{'nwb_version' '2.9.0'} varargin];
         obj = obj@types.core.NWBContainer(varargin{:});

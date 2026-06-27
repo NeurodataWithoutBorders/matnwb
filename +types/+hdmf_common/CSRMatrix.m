@@ -18,9 +18,9 @@ methods
         % CSRMATRIX - Constructor for CSRMatrix
         %
         % Syntax:
-        %  CSRMatrix = types.hdmf_common.CSRMATRIX() creates a CSRMatrix object with unset property values.
+        %  csrMatrix = types.hdmf_common.CSRMATRIX() creates a CSRMatrix object with unset property values.
         %
-        %  CSRMatrix = types.hdmf_common.CSRMATRIX(Name, Value) creates a CSRMatrix object where one or more property values are specified using name-value pairs.
+        %  csrMatrix = types.hdmf_common.CSRMATRIX(Name, Value) creates a CSRMatrix object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - data (any) - The non-zero values in the matrix.
@@ -32,7 +32,7 @@ methods
         %  - shape (uint8) - The shape (number of rows, number of columns) of this sparse matrix.
         %
         % Output Arguments:
-        %  - CSRMatrix (types.hdmf_common.CSRMatrix) - A CSRMatrix object
+        %  - csrMatrix (types.hdmf_common.CSRMatrix) - A CSRMatrix object
         
         obj = obj@types.hdmf_common.Container(varargin{:});
         

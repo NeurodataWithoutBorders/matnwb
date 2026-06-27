@@ -217,10 +217,11 @@ end
 
 function docString = fillConstructorDocString(name, props, namespace, superClassProps)
     
-    % Create a variablename for this class. Lowercase the first letter only 
-    % when followed by a lowercase letter, preserving abbreviations. 
-    % Example: ProcessingModule -> processingModule, LFP -> LFP
-    classVarName = regexprep(name, '^([A-Z])(?=[a-z])', '${lower($1)}');
+    % Create a variablename for this class. Abbreviations in the beginning are
+    % all lowercased. 
+    % Example: processingModule -> processingModule, LFP -> lfp
+    pattern = '^([A-Z]+(?=[A-Z][a-z]|\d|$)|[A-Z])';
+    classVarName = regexprep(name, pattern, '${lower($1)}');
 
     fullClassName = sprintf('types.%s.%s', namespace.name, name);
     fullClassNameUpper = sprintf('types.%s.%s', namespace.name, upper(name));
