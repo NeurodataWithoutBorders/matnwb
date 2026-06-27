@@ -15,9 +15,9 @@ methods
         % IMAGEMASKSERIES - Constructor for ImageMaskSeries
         %
         % Syntax:
-        %  imageMaskSeries = types.core.IMAGEMASKSERIES() creates a ImageMaskSeries object with unset property values.
+        %  imageMaskSeries = types.core.IMAGEMASKSERIES() creates an ImageMaskSeries object with unset property values.
         %
-        %  imageMaskSeries = types.core.IMAGEMASKSERIES(Name, Value) creates a ImageMaskSeries object where one or more property values are specified using name-value pairs.
+        %  imageMaskSeries = types.core.IMAGEMASKSERIES(Name, Value) creates an ImageMaskSeries object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - comments (char) - Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string.

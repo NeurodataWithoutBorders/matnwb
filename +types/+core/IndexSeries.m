@@ -16,9 +16,9 @@ methods
         % INDEXSERIES - Constructor for IndexSeries
         %
         % Syntax:
-        %  indexSeries = types.core.INDEXSERIES() creates a IndexSeries object with unset property values.
+        %  indexSeries = types.core.INDEXSERIES() creates an IndexSeries object with unset property values.
         %
-        %  indexSeries = types.core.INDEXSERIES(Name, Value) creates a IndexSeries object where one or more property values are specified using name-value pairs.
+        %  indexSeries = types.core.INDEXSERIES(Name, Value) creates an IndexSeries object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - comments (char) - Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string.

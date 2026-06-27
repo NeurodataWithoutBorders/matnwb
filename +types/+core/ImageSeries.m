@@ -19,9 +19,9 @@ methods
         % IMAGESERIES - Constructor for ImageSeries
         %
         % Syntax:
-        %  imageSeries = types.core.IMAGESERIES() creates a ImageSeries object with unset property values.
+        %  imageSeries = types.core.IMAGESERIES() creates an ImageSeries object with unset property values.
         %
-        %  imageSeries = types.core.IMAGESERIES(Name, Value) creates a ImageSeries object where one or more property values are specified using name-value pairs.
+        %  imageSeries = types.core.IMAGESERIES(Name, Value) creates an ImageSeries object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - comments (char) - Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string.

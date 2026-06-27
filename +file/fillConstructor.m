@@ -229,16 +229,18 @@ function docString = fillConstructorDocString(name, props, namespace, superClass
     props = file.internal.mergeProps(props, superClassProps);
     names = props.keys();
 
+    article = resolveIndefiniteArticle(name);
+
     docString = [...
         "%", ...
         "% Syntax:", ...
-        sprintf("%%  %s = %s() creates a %s object with unset property values.", classVarName, fullClassNameUpper, name), ...
+        sprintf("%%  %s = %s() creates %s %s object with unset property values.", classVarName, fullClassNameUpper, article, name), ...
         "%", ...
         ];
     
     if ~isempty(names)
         docString = [docString, ...
-            sprintf("%%  %s = %s(Name, Value) creates a %s object where one or more property values are specified using name-value pairs.", classVarName, fullClassNameUpper, name), ...
+            sprintf("%%  %s = %s(Name, Value) creates %s %s object where one or more property values are specified using name-value pairs.", classVarName, fullClassNameUpper, article, name), ...
             "%", ...
             "% Input Arguments (Name-Value Arguments):", ...
         ];
@@ -329,4 +331,29 @@ function word = capitalize(word)
         word (1,:) char
     end
     word(1) = upper(word(1));
+end
+
+function article = resolveIndefiniteArticle(name)
+    % Returns 'a' or 'an' based on the spoken sound of the class name.
+    % CamelCase: 'an' for A/E/I/O initial letter. U excluded ('Units' sounds
+    %   like 'yoo-nits'). Special case: 'One...' sounds like 'wun' → 'a'.
+    % All-caps acronyms: 'an' when the letter name begins with a vowel sound
+    %   (A, E, F, I, L, M, N, O, R, S, X). H excluded — prefer 'a HERD'.
+    if ~isempty(regexp(name, '^One', 'once'))
+        article = 'a';
+    elseif ~isempty(regexp(name, '^[A-Z][a-z]', 'once'))
+        if ismember(name(1), 'AEIO')
+            article = 'an';
+        else
+            article = 'a';
+        end
+    elseif ~isempty(regexp(name, '^[A-Z]{2}', 'once'))
+        if ismember(name(1), 'AEFILMNORSX')
+            article = 'an';
+        else
+            article = 'a';
+        end
+    else
+        article = 'a';
+    end
 end

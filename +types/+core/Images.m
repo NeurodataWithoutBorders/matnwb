@@ -20,9 +20,9 @@ methods
         % IMAGES - Constructor for Images
         %
         % Syntax:
-        %  images = types.core.IMAGES() creates a Images object with unset property values.
+        %  images = types.core.IMAGES() creates an Images object with unset property values.
         %
-        %  images = types.core.IMAGES(Name, Value) creates a Images object where one or more property values are specified using name-value pairs.
+        %  images = types.core.IMAGES(Name, Value) creates an Images object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - baseimage (BaseImage) - Images stored in this collection.

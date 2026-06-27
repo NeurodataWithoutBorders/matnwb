@@ -11,9 +11,9 @@ methods
         % ELEMENTIDENTIFIERS - Constructor for ElementIdentifiers
         %
         % Syntax:
-        %  elementIdentifiers = types.hdmf_common.ELEMENTIDENTIFIERS() creates a ElementIdentifiers object with unset property values.
+        %  elementIdentifiers = types.hdmf_common.ELEMENTIDENTIFIERS() creates an ElementIdentifiers object with unset property values.
         %
-        %  elementIdentifiers = types.hdmf_common.ELEMENTIDENTIFIERS(Name, Value) creates a ElementIdentifiers object where one or more property values are specified using name-value pairs.
+        %  elementIdentifiers = types.hdmf_common.ELEMENTIDENTIFIERS(Name, Value) creates an ElementIdentifiers object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - data (int8) - Data property for dataset class (ElementIdentifiers)

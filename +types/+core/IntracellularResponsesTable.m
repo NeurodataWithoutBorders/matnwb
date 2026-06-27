@@ -15,9 +15,9 @@ methods
         % INTRACELLULARRESPONSESTABLE - Constructor for IntracellularResponsesTable
         %
         % Syntax:
-        %  intracellularResponsesTable = types.core.INTRACELLULARRESPONSESTABLE() creates a IntracellularResponsesTable object with unset property values.
+        %  intracellularResponsesTable = types.core.INTRACELLULARRESPONSESTABLE() creates an IntracellularResponsesTable object with unset property values.
         %
-        %  intracellularResponsesTable = types.core.INTRACELLULARRESPONSESTABLE(Name, Value) creates a IntracellularResponsesTable object where one or more property values are specified using name-value pairs.
+        %  intracellularResponsesTable = types.core.INTRACELLULARRESPONSESTABLE(Name, Value) creates an IntracellularResponsesTable object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - colnames (char) - The names of the columns in this table. This should be used to specify an order to the columns.

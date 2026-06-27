@@ -22,9 +22,9 @@ methods
         % ALIGNEDDYNAMICTABLE - Constructor for AlignedDynamicTable
         %
         % Syntax:
-        %  alignedDynamicTable = types.hdmf_common.ALIGNEDDYNAMICTABLE() creates a AlignedDynamicTable object with unset property values.
+        %  alignedDynamicTable = types.hdmf_common.ALIGNEDDYNAMICTABLE() creates an AlignedDynamicTable object with unset property values.
         %
-        %  alignedDynamicTable = types.hdmf_common.ALIGNEDDYNAMICTABLE(Name, Value) creates a AlignedDynamicTable object where one or more property values are specified using name-value pairs.
+        %  alignedDynamicTable = types.hdmf_common.ALIGNEDDYNAMICTABLE(Name, Value) creates an AlignedDynamicTable object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - categories (char) - The names of the categories in this AlignedDynamicTable. Each category is represented by one DynamicTable stored in the parent group. This attribute should be used to specify an order of categories and the category names must match the names of the corresponding DynamicTable in the group.

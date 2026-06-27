@@ -17,9 +17,9 @@ methods
         % OPTICALSERIES - Constructor for OpticalSeries
         %
         % Syntax:
-        %  opticalSeries = types.core.OPTICALSERIES() creates a OpticalSeries object with unset property values.
+        %  opticalSeries = types.core.OPTICALSERIES() creates an OpticalSeries object with unset property values.
         %
-        %  opticalSeries = types.core.OPTICALSERIES(Name, Value) creates a OpticalSeries object where one or more property values are specified using name-value pairs.
+        %  opticalSeries = types.core.OPTICALSERIES(Name, Value) creates an OpticalSeries object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - comments (char) - Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string.

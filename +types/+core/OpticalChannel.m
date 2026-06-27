@@ -16,9 +16,9 @@ methods
         % OPTICALCHANNEL - Constructor for OpticalChannel
         %
         % Syntax:
-        %  opticalChannel = types.core.OPTICALCHANNEL() creates a OpticalChannel object with unset property values.
+        %  opticalChannel = types.core.OPTICALCHANNEL() creates an OpticalChannel object with unset property values.
         %
-        %  opticalChannel = types.core.OPTICALCHANNEL(Name, Value) creates a OpticalChannel object where one or more property values are specified using name-value pairs.
+        %  opticalChannel = types.core.OPTICALCHANNEL(Name, Value) creates an OpticalChannel object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - description (char) - Description or other notes about the channel.

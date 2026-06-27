@@ -11,7 +11,7 @@ methods
         % NWBCONTAINER - Constructor for NWBContainer
         %
         % Syntax:
-        %  nwbContainer = types.core.NWBCONTAINER() creates a NWBContainer object with unset property values.
+        %  nwbContainer = types.core.NWBCONTAINER() creates an NWBContainer object with unset property values.
         %
         % Output Arguments:
         %  - nwbContainer (types.core.NWBContainer) - A NWBContainer object

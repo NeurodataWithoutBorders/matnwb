@@ -19,9 +19,9 @@ methods
         % ABSTRACTFEATURESERIES - Constructor for AbstractFeatureSeries
         %
         % Syntax:
-        %  abstractFeatureSeries = types.core.ABSTRACTFEATURESERIES() creates a AbstractFeatureSeries object with unset property values.
+        %  abstractFeatureSeries = types.core.ABSTRACTFEATURESERIES() creates an AbstractFeatureSeries object with unset property values.
         %
-        %  abstractFeatureSeries = types.core.ABSTRACTFEATURESERIES(Name, Value) creates a AbstractFeatureSeries object where one or more property values are specified using name-value pairs.
+        %  abstractFeatureSeries = types.core.ABSTRACTFEATURESERIES(Name, Value) creates an AbstractFeatureSeries object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - comments (char) - Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string.

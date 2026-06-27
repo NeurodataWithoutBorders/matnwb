@@ -15,9 +15,9 @@ methods
         % OPTOGENETICSERIES - Constructor for OptogeneticSeries
         %
         % Syntax:
-        %  optogeneticSeries = types.core.OPTOGENETICSERIES() creates a OptogeneticSeries object with unset property values.
+        %  optogeneticSeries = types.core.OPTOGENETICSERIES() creates an OptogeneticSeries object with unset property values.
         %
-        %  optogeneticSeries = types.core.OPTOGENETICSERIES(Name, Value) creates a OptogeneticSeries object where one or more property values are specified using name-value pairs.
+        %  optogeneticSeries = types.core.OPTOGENETICSERIES(Name, Value) creates an OptogeneticSeries object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - comments (char) - Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string.

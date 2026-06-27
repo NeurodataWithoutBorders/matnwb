@@ -15,9 +15,9 @@ methods
         % ENUMDATA - Constructor for EnumData
         %
         % Syntax:
-        %  enumData = types.hdmf_experimental.ENUMDATA() creates a EnumData object with unset property values.
+        %  enumData = types.hdmf_experimental.ENUMDATA() creates an EnumData object with unset property values.
         %
-        %  enumData = types.hdmf_experimental.ENUMDATA(Name, Value) creates a EnumData object where one or more property values are specified using name-value pairs.
+        %  enumData = types.hdmf_experimental.ENUMDATA(Name, Value) creates an EnumData object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - data (uint8) - Data property for dataset class (EnumData)

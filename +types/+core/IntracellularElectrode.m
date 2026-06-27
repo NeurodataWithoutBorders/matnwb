@@ -26,9 +26,9 @@ methods
         % INTRACELLULARELECTRODE - Constructor for IntracellularElectrode
         %
         % Syntax:
-        %  intracellularElectrode = types.core.INTRACELLULARELECTRODE() creates a IntracellularElectrode object with unset property values.
+        %  intracellularElectrode = types.core.INTRACELLULARELECTRODE() creates an IntracellularElectrode object with unset property values.
         %
-        %  intracellularElectrode = types.core.INTRACELLULARELECTRODE(Name, Value) creates a IntracellularElectrode object where one or more property values are specified using name-value pairs.
+        %  intracellularElectrode = types.core.INTRACELLULARELECTRODE(Name, Value) creates an IntracellularElectrode object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - cell_id (char) - unique ID of the cell

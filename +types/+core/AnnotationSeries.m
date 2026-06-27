@@ -11,9 +11,9 @@ methods
         % ANNOTATIONSERIES - Constructor for AnnotationSeries
         %
         % Syntax:
-        %  annotationSeries = types.core.ANNOTATIONSERIES() creates a AnnotationSeries object with unset property values.
+        %  annotationSeries = types.core.ANNOTATIONSERIES() creates an AnnotationSeries object with unset property values.
         %
-        %  annotationSeries = types.core.ANNOTATIONSERIES(Name, Value) creates a AnnotationSeries object where one or more property values are specified using name-value pairs.
+        %  annotationSeries = types.core.ANNOTATIONSERIES(Name, Value) creates an AnnotationSeries object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - comments (char) - Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string.

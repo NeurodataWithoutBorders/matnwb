@@ -11,9 +11,9 @@ methods
         % INTERVALSERIES - Constructor for IntervalSeries
         %
         % Syntax:
-        %  intervalSeries = types.core.INTERVALSERIES() creates a IntervalSeries object with unset property values.
+        %  intervalSeries = types.core.INTERVALSERIES() creates an IntervalSeries object with unset property values.
         %
-        %  intervalSeries = types.core.INTERVALSERIES(Name, Value) creates a IntervalSeries object where one or more property values are specified using name-value pairs.
+        %  intervalSeries = types.core.INTERVALSERIES(Name, Value) creates an IntervalSeries object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - comments (char) - Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string.

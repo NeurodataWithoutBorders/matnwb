@@ -35,9 +35,9 @@ methods
         % IMAGINGPLANE - Constructor for ImagingPlane
         %
         % Syntax:
-        %  imagingPlane = types.core.IMAGINGPLANE() creates a ImagingPlane object with unset property values.
+        %  imagingPlane = types.core.IMAGINGPLANE() creates an ImagingPlane object with unset property values.
         %
-        %  imagingPlane = types.core.IMAGINGPLANE(Name, Value) creates a ImagingPlane object where one or more property values are specified using name-value pairs.
+        %  imagingPlane = types.core.IMAGINGPLANE(Name, Value) creates an ImagingPlane object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - description (char) - Description of the imaging plane.

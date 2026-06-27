@@ -18,9 +18,9 @@ methods
         % IMAGESEGMENTATION - Constructor for ImageSegmentation
         %
         % Syntax:
-        %  imageSegmentation = types.core.IMAGESEGMENTATION() creates a ImageSegmentation object with unset property values.
+        %  imageSegmentation = types.core.IMAGESEGMENTATION() creates an ImageSegmentation object with unset property values.
         %
-        %  imageSegmentation = types.core.IMAGESEGMENTATION(Name, Value) creates a ImageSegmentation object where one or more property values are specified using name-value pairs.
+        %  imageSegmentation = types.core.IMAGESEGMENTATION(Name, Value) creates an ImageSegmentation object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - planesegmentation (PlaneSegmentation) - Results from image segmentation of a specific imaging plane.

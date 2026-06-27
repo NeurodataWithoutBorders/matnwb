@@ -25,9 +25,9 @@ methods
         % EVENTDETECTION - Constructor for EventDetection
         %
         % Syntax:
-        %  eventDetection = types.core.EVENTDETECTION() creates a EventDetection object with unset property values.
+        %  eventDetection = types.core.EVENTDETECTION() creates an EventDetection object with unset property values.
         %
-        %  eventDetection = types.core.EVENTDETECTION(Name, Value) creates a EventDetection object where one or more property values are specified using name-value pairs.
+        %  eventDetection = types.core.EVENTDETECTION(Name, Value) creates an EventDetection object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - detection_method (char) - Description of how events were detected, such as voltage threshold, or dV/dT threshold, as well as relevant values.

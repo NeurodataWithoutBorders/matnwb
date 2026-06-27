@@ -21,9 +21,9 @@ methods
         % ELECTRODEGROUP - Constructor for ElectrodeGroup
         %
         % Syntax:
-        %  electrodeGroup = types.core.ELECTRODEGROUP() creates a ElectrodeGroup object with unset property values.
+        %  electrodeGroup = types.core.ELECTRODEGROUP() creates an ElectrodeGroup object with unset property values.
         %
-        %  electrodeGroup = types.core.ELECTRODEGROUP(Name, Value) creates a ElectrodeGroup object where one or more property values are specified using name-value pairs.
+        %  electrodeGroup = types.core.ELECTRODEGROUP(Name, Value) creates an ElectrodeGroup object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - description (char) - Description of this electrode group.

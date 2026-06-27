@@ -71,9 +71,9 @@ methods
         % NWBFILE - Constructor for NWBFile
         %
         % Syntax:
-        %  nwbFile = types.core.NWBFILE() creates a NWBFile object with unset property values.
+        %  nwbFile = types.core.NWBFILE() creates an NWBFile object with unset property values.
         %
-        %  nwbFile = types.core.NWBFILE(Name, Value) creates a NWBFile object where one or more property values are specified using name-value pairs.
+        %  nwbFile = types.core.NWBFILE(Name, Value) creates an NWBFile object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - acquisition (DynamicTable|NWBDataInterface) - Tabular data that is relevant to acquisition

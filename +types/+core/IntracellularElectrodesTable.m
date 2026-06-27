@@ -15,9 +15,9 @@ methods
         % INTRACELLULARELECTRODESTABLE - Constructor for IntracellularElectrodesTable
         %
         % Syntax:
-        %  intracellularElectrodesTable = types.core.INTRACELLULARELECTRODESTABLE() creates a IntracellularElectrodesTable object with unset property values.
+        %  intracellularElectrodesTable = types.core.INTRACELLULARELECTRODESTABLE() creates an IntracellularElectrodesTable object with unset property values.
         %
-        %  intracellularElectrodesTable = types.core.INTRACELLULARELECTRODESTABLE(Name, Value) creates a IntracellularElectrodesTable object where one or more property values are specified using name-value pairs.
+        %  intracellularElectrodesTable = types.core.INTRACELLULARELECTRODESTABLE(Name, Value) creates an IntracellularElectrodesTable object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - colnames (char) - The names of the columns in this table. This should be used to specify an order to the columns.

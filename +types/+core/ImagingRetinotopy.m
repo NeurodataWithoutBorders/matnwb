@@ -48,9 +48,9 @@ methods
         % IMAGINGRETINOTOPY - Constructor for ImagingRetinotopy
         %
         % Syntax:
-        %  imagingRetinotopy = types.core.IMAGINGRETINOTOPY() creates a ImagingRetinotopy object with unset property values.
+        %  imagingRetinotopy = types.core.IMAGINGRETINOTOPY() creates an ImagingRetinotopy object with unset property values.
         %
-        %  imagingRetinotopy = types.core.IMAGINGRETINOTOPY(Name, Value) creates a ImagingRetinotopy object where one or more property values are specified using name-value pairs.
+        %  imagingRetinotopy = types.core.IMAGINGRETINOTOPY(Name, Value) creates an ImagingRetinotopy object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - axis_1_phase_map (single) - Phase response to stimulus on the first measured axis.

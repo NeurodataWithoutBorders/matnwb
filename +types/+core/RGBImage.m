@@ -11,9 +11,9 @@ methods
         % RGBIMAGE - Constructor for RGBImage
         %
         % Syntax:
-        %  rgbImage = types.core.RGBIMAGE() creates a RGBImage object with unset property values.
+        %  rgbImage = types.core.RGBIMAGE() creates an RGBImage object with unset property values.
         %
-        %  rgbImage = types.core.RGBIMAGE(Name, Value) creates a RGBImage object where one or more property values are specified using name-value pairs.
+        %  rgbImage = types.core.RGBIMAGE(Name, Value) creates an RGBImage object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - data (numeric) - Data property for dataset class (RGBImage)

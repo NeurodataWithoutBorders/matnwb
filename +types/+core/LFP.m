@@ -18,9 +18,9 @@ methods
         % LFP - Constructor for LFP
         %
         % Syntax:
-        %  lfp = types.core.LFP() creates a LFP object with unset property values.
+        %  lfp = types.core.LFP() creates an LFP object with unset property values.
         %
-        %  lfp = types.core.LFP(Name, Value) creates a LFP object where one or more property values are specified using name-value pairs.
+        %  lfp = types.core.LFP(Name, Value) creates an LFP object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - electricalseries (ElectricalSeries) - ElectricalSeries object(s) containing LFP data for one or more channels.
