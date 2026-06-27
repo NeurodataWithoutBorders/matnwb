@@ -7,7 +7,7 @@ classdef OptogeneticSeries < types.core.TimeSeries & types.untyped.GroupClass
 
 % REQUIRED PROPERTIES
 properties
-    site; % REQUIRED OptogeneticStimulusSite
+    site; % REQUIRED (OptogeneticStimulusSite) Link to OptogeneticStimulusSite object that describes the site to which this stimulus was applied.
 end
 
 methods

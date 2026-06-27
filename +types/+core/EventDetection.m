@@ -12,7 +12,7 @@ end
 % REQUIRED PROPERTIES
 properties
     detection_method; % REQUIRED (char) Description of how events were detected, such as voltage threshold, or dV/dT threshold, as well as relevant values.
-    source_electricalseries; % REQUIRED ElectricalSeries
+    source_electricalseries; % REQUIRED (ElectricalSeries) Link to the ElectricalSeries that this data was calculated from. Metadata about electrodes and their position can be read from that ElectricalSeries so it's not necessary to include that information here.
     source_idx; % REQUIRED (int32) Indices (zero-based) into the linked source ElectricalSeries::data array corresponding to time of event or time and channel of event. ''description'' should define what is meant by time of event (e.g., .25 ms before action potential peak, zero-crossing time, etc). The index points to each event from the raw data.
 end
 % OPTIONAL PROPERTIES

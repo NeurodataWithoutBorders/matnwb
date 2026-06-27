@@ -7,8 +7,8 @@ classdef IndexSeries < types.core.TimeSeries & types.untyped.GroupClass
 
 % OPTIONAL PROPERTIES
 properties
-    indexed_images; %  Images
-    indexed_timeseries; %  ImageSeries
+    indexed_images; %  (Images) Link to Images object containing an ordered set of images that are indexed. The Images object must contain a 'ordered_images' dataset specifying the order of the images in the Images type.
+    indexed_timeseries; %  (ImageSeries) Link to ImageSeries object containing images that are indexed. Use of this link is discouraged and will be deprecated. Link to an Images type instead.
 end
 
 methods

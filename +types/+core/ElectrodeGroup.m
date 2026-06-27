@@ -8,7 +8,7 @@ classdef ElectrodeGroup < types.core.NWBContainer & types.untyped.GroupClass
 % REQUIRED PROPERTIES
 properties
     description; % REQUIRED (char) Description of this electrode group.
-    device; % REQUIRED Device
+    device; % REQUIRED (Device) Link to the device that was used to record from this electrode group.
     location; % REQUIRED (char) Location of electrode group. Specify the area, layer, comments on estimation of area/layer, etc. Use standard atlas names for anatomical regions when possible.
 end
 % OPTIONAL PROPERTIES

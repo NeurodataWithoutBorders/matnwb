@@ -8,7 +8,7 @@ classdef IntracellularElectrode < types.core.NWBContainer & types.untyped.GroupC
 % REQUIRED PROPERTIES
 properties
     description; % REQUIRED (char) Description of electrode (e.g.,  whole-cell, sharp, etc.).
-    device; % REQUIRED Device
+    device; % REQUIRED (Device) Device that was used to record from this electrode.
 end
 % OPTIONAL PROPERTIES
 properties

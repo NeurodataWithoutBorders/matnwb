@@ -7,7 +7,7 @@ classdef PatchClampSeries < types.core.TimeSeries & types.untyped.GroupClass
 
 % REQUIRED PROPERTIES
 properties
-    electrode; % REQUIRED IntracellularElectrode
+    electrode; % REQUIRED (IntracellularElectrode) Link to IntracellularElectrode object that describes the electrode that was used to apply or record this data.
     stimulus_description; % REQUIRED (char) Protocol/stimulus name for this patch-clamp dataset.
 end
 % OPTIONAL PROPERTIES

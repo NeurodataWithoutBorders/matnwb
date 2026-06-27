@@ -8,7 +8,7 @@ classdef OptogeneticStimulusSite < types.core.NWBContainer & types.untyped.Group
 % REQUIRED PROPERTIES
 properties
     description; % REQUIRED (char) Description of stimulation site.
-    device; % REQUIRED Device
+    device; % REQUIRED (Device) Device that generated the stimulus.
     excitation_lambda; % REQUIRED (single) Excitation wavelength, in nm.
     location; % REQUIRED (char) Location of the stimulation site. Specify the area, layer, comments on estimation of area/layer, stereotaxic coordinates if in vivo, etc. Use standard atlas names for anatomical regions when possible.
 end

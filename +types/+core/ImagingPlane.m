@@ -7,7 +7,7 @@ classdef ImagingPlane < types.core.NWBContainer & types.untyped.GroupClass & mat
 
 % REQUIRED PROPERTIES
 properties
-    device; % REQUIRED Device
+    device; % REQUIRED (Device) Link to the Device object that was used to record from this electrode.
     excitation_lambda; % REQUIRED (single) Excitation wavelength, in nm.
     indicator; % REQUIRED (char) Calcium indicator.
     location; % REQUIRED (char) Location of the imaging plane. Specify the area, layer, comments on estimation of area/layer, stereotaxic coordinates if in vivo, etc. Use standard atlas names for anatomical regions when possible.

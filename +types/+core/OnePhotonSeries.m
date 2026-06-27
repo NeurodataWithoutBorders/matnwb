@@ -7,7 +7,7 @@ classdef OnePhotonSeries < types.core.ImageSeries & types.untyped.GroupClass
 
 % REQUIRED PROPERTIES
 properties
-    imaging_plane; % REQUIRED ImagingPlane
+    imaging_plane; % REQUIRED (ImagingPlane) Link to ImagingPlane object from which this TimeSeries data was generated.
 end
 % OPTIONAL PROPERTIES
 properties

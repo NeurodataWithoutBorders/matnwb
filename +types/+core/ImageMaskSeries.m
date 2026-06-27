@@ -7,7 +7,7 @@ classdef ImageMaskSeries < types.core.ImageSeries & types.untyped.GroupClass
 
 % REQUIRED PROPERTIES
 properties
-    masked_imageseries; % REQUIRED ImageSeries
+    masked_imageseries; % REQUIRED (ImageSeries) Link to ImageSeries object that this image mask is applied to.
 end
 
 methods
