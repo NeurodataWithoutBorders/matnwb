@@ -217,9 +217,9 @@ end
 
 function docString = fillConstructorDocString(name, props, namespace, superClassProps)
     
-    % Create a variablename for this class. Abbreviations in the beginning are
-    % all lowercased. 
-    % Example: processingModule -> processingModule, LFP -> lfp
+    % Create a variablename for this class name  in camelCase. Abbreviations in 
+    % the beginning of the name are all lowercased. 
+    % Example: ProcessingModule -> processingModule, LFP -> lfp
     pattern = '^([A-Z]+(?=[A-Z][a-z]|\d|$)|[A-Z])';
     classVarName = regexprep(name, pattern, '${lower($1)}');
 
