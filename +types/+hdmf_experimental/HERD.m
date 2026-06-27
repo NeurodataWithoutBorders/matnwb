@@ -20,9 +20,9 @@ methods
         % HERD - Constructor for HERD
         %
         % Syntax:
-        %  hERD = types.hdmf_experimental.HERD() creates a HERD object with unset property values.
+        %  HERD = types.hdmf_experimental.HERD() creates a HERD object with unset property values.
         %
-        %  hERD = types.hdmf_experimental.HERD(Name, Value) creates a HERD object where one or more property values are specified using name-value pairs.
+        %  HERD = types.hdmf_experimental.HERD(Name, Value) creates a HERD object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - entities (Data) - A table for mapping user terms (i.e., keys) to resource entities.
@@ -38,7 +38,7 @@ methods
         %  - objects (Data) - A table for identifying which objects in a file contain references to external resources.
         %
         % Output Arguments:
-        %  - hERD (types.hdmf_experimental.HERD) - A HERD object
+        %  - HERD (types.hdmf_experimental.HERD) - A HERD object
         
         obj = obj@types.hdmf_common.Container(varargin{:});
         

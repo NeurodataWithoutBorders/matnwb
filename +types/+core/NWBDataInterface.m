@@ -11,10 +11,10 @@ methods
         % NWBDATAINTERFACE - Constructor for NWBDataInterface
         %
         % Syntax:
-        %  nWBDataInterface = types.core.NWBDATAINTERFACE() creates a NWBDataInterface object with unset property values.
+        %  NWBDataInterface = types.core.NWBDATAINTERFACE() creates a NWBDataInterface object with unset property values.
         %
         % Output Arguments:
-        %  - nWBDataInterface (types.core.NWBDataInterface) - A NWBDataInterface object
+        %  - NWBDataInterface (types.core.NWBDataInterface) - A NWBDataInterface object
         
         obj = obj@types.core.NWBContainer(varargin{:});
         

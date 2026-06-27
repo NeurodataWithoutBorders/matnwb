@@ -11,9 +11,9 @@ methods
         % IZEROCLAMPSERIES - Constructor for IZeroClampSeries
         %
         % Syntax:
-        %  iZeroClampSeries = types.core.IZEROCLAMPSERIES() creates a IZeroClampSeries object with unset property values.
+        %  IZeroClampSeries = types.core.IZEROCLAMPSERIES() creates a IZeroClampSeries object with unset property values.
         %
-        %  iZeroClampSeries = types.core.IZEROCLAMPSERIES(Name, Value) creates a IZeroClampSeries object where one or more property values are specified using name-value pairs.
+        %  IZeroClampSeries = types.core.IZEROCLAMPSERIES(Name, Value) creates a IZeroClampSeries object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - comments (char) - Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string.
@@ -47,7 +47,7 @@ methods
         %  - timestamps (double) - Timestamps for samples stored in data, in seconds, relative to the common experiment master-clock stored in NWBFile.timestamps_reference_time.
         %
         % Output Arguments:
-        %  - iZeroClampSeries (types.core.IZeroClampSeries) - A IZeroClampSeries object
+        %  - IZeroClampSeries (types.core.IZeroClampSeries) - A IZeroClampSeries object
         
         varargin = [{'bias_current' types.util.correctType(0, 'single') 'bridge_balance' types.util.correctType(0, 'single') 'capacitance_compensation' types.util.correctType(0, 'single') 'stimulus_description' 'N/A'} varargin];
         obj = obj@types.core.CurrentClampSeries(varargin{:});
