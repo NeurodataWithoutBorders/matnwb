@@ -221,8 +221,11 @@ function docString = fillConstructorDocString(name, props, namespace, superClass
     % the beginning of the name are all lowercased. 
     % Example: ProcessingModule -> processingModule, LFP -> lfp
     pattern = '^([A-Z]+(?=[A-Z][a-z]|\d|$)|[A-Z])';
-    classVarName = regexprep(name, pattern, '${lower($1)}');
-
+    prefix = regexp(name, pattern, 'match', 'once');
+    classVarName = name;
+    if ~isempty(prefix)
+        classVarName = [lower(prefix) name(numel(prefix)+1:end)];
+    end
     fullClassName = sprintf('types.%s.%s', namespace.name, name);
     fullClassNameUpper = sprintf('types.%s.%s', namespace.name, upper(name));
     
