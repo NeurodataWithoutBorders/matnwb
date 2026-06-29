@@ -26,7 +26,7 @@ methods
         %  - emission_lambda (single) - Emission wavelength for channel, in nm.
         %
         % Output Arguments:
-        %  - opticalChannel (types.core.OpticalChannel) - A OpticalChannel object
+        %  - opticalChannel (types.core.OpticalChannel) - An OpticalChannel object
         
         obj = obj@types.core.NWBContainer(varargin{:});
         

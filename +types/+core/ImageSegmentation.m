@@ -26,7 +26,7 @@ methods
         %  - planesegmentation (PlaneSegmentation) - Results from image segmentation of a specific imaging plane.
         %
         % Output Arguments:
-        %  - imageSegmentation (types.core.ImageSegmentation) - A ImageSegmentation object
+        %  - imageSegmentation (types.core.ImageSegmentation) - An ImageSegmentation object
         
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.planesegmentation, ivarargin] = types.util.parseConstrained(obj,'planesegmentation', 'types.core.PlaneSegmentation', varargin{:});

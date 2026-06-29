@@ -39,7 +39,7 @@ methods
         %  - times (double) - DEPRECATED. Timestamps of events, in seconds.
         %
         % Output Arguments:
-        %  - eventDetection (types.core.EventDetection) - A EventDetection object
+        %  - eventDetection (types.core.EventDetection) - An EventDetection object
         
         varargin = [{'times_unit' 'seconds'} varargin];
         obj = obj@types.core.NWBDataInterface(varargin{:});

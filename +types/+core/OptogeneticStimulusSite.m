@@ -32,7 +32,7 @@ methods
         %  - location (char) - Location of the stimulation site. Specify the area, layer, comments on estimation of area/layer, stereotaxic coordinates if in vivo, etc. Use standard atlas names for anatomical regions when possible.
         %
         % Output Arguments:
-        %  - optogeneticStimulusSite (types.core.OptogeneticStimulusSite) - A OptogeneticStimulusSite object
+        %  - optogeneticStimulusSite (types.core.OptogeneticStimulusSite) - An OptogeneticStimulusSite object
         
         obj = obj@types.core.NWBContainer(varargin{:});
         

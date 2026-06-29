@@ -23,7 +23,7 @@ methods
         %  - resolution (single) - Pixel resolution of the image, in pixels per centimeter.
         %
         % Output Arguments:
-        %  - rgbImage (types.core.RGBImage) - A RGBImage object
+        %  - rgbImage (types.core.RGBImage) - An RGBImage object
         
         obj = obj@types.core.Image(varargin{:});
         

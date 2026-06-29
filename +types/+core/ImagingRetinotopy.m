@@ -116,7 +116,7 @@ methods
         %  - vasculature_image_format (char) - Format of image. Right now only 'raw' is supported.
         %
         % Output Arguments:
-        %  - imagingRetinotopy (types.core.ImagingRetinotopy) - A ImagingRetinotopy object
+        %  - imagingRetinotopy (types.core.ImagingRetinotopy) - An ImagingRetinotopy object
         
         obj = obj@types.core.NWBDataInterface(varargin{:});
         

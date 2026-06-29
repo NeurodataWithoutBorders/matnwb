@@ -26,7 +26,7 @@ methods
         %  - electricalseries (ElectricalSeries) - ElectricalSeries object(s) containing LFP data for one or more channels.
         %
         % Output Arguments:
-        %  - lfp (types.core.LFP) - A LFP object
+        %  - lfp (types.core.LFP) - An LFP object
         
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.electricalseries, ivarargin] = types.util.parseConstrained(obj,'electricalseries', 'types.core.ElectricalSeries', varargin{:});

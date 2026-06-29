@@ -59,7 +59,7 @@ methods
         %  - timestamps (double) - Timestamps for samples stored in data, in seconds, relative to the common experiment master-clock stored in NWBFile.timestamps_reference_time.
         %
         % Output Arguments:
-        %  - imageMaskSeries (types.core.ImageMaskSeries) - A ImageMaskSeries object
+        %  - imageMaskSeries (types.core.ImageMaskSeries) - An ImageMaskSeries object
         
         obj = obj@types.core.ImageSeries(varargin{:});
         

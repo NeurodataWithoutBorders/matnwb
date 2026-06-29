@@ -33,7 +33,7 @@ methods
         %  - image_mode (char) - Image mode (color mode) of the image, e.g., "RGB", "RGBA", "grayscale", and "LA".
         %
         % Output Arguments:
-        %  - externalImage (types.core.ExternalImage) - A ExternalImage object
+        %  - externalImage (types.core.ExternalImage) - An ExternalImage object
         
         obj = obj@types.core.BaseImage(varargin{:});
         

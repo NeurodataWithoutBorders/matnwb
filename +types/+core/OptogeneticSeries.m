@@ -47,7 +47,7 @@ methods
         %  - timestamps (double) - Timestamps for samples stored in data, in seconds, relative to the common experiment master-clock stored in NWBFile.timestamps_reference_time.
         %
         % Output Arguments:
-        %  - optogeneticSeries (types.core.OptogeneticSeries) - A OptogeneticSeries object
+        %  - optogeneticSeries (types.core.OptogeneticSeries) - An OptogeneticSeries object
         
         varargin = [{'data_unit' 'watts'} varargin];
         obj = obj@types.core.TimeSeries(varargin{:});

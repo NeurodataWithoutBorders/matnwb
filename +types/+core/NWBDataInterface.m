@@ -14,7 +14,7 @@ methods
         %  nwbDataInterface = types.core.NWBDATAINTERFACE() creates an NWBDataInterface object with unset property values.
         %
         % Output Arguments:
-        %  - nwbDataInterface (types.core.NWBDataInterface) - A NWBDataInterface object
+        %  - nwbDataInterface (types.core.NWBDataInterface) - An NWBDataInterface object
         
         obj = obj@types.core.NWBContainer(varargin{:});
         

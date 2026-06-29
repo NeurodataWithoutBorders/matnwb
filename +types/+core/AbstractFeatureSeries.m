@@ -55,7 +55,7 @@ methods
         %  - timestamps (double) - Timestamps for samples stored in data, in seconds, relative to the common experiment master-clock stored in NWBFile.timestamps_reference_time.
         %
         % Output Arguments:
-        %  - abstractFeatureSeries (types.core.AbstractFeatureSeries) - A AbstractFeatureSeries object
+        %  - abstractFeatureSeries (types.core.AbstractFeatureSeries) - An AbstractFeatureSeries object
         
         varargin = [{'data_unit' 'see `feature_units`'} varargin];
         obj = obj@types.core.TimeSeries(varargin{:});

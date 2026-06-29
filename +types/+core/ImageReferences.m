@@ -19,7 +19,7 @@ methods
         %  - data (Object reference to BaseImage) - Data property for dataset class (ImageReferences)
         %
         % Output Arguments:
-        %  - imageReferences (types.core.ImageReferences) - A ImageReferences object
+        %  - imageReferences (types.core.ImageReferences) - An ImageReferences object
         
         obj = obj@types.core.NWBData(varargin{:});
         

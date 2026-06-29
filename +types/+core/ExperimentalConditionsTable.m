@@ -34,7 +34,7 @@ methods
         %  - vectordata (VectorData) - Vector columns, including index columns, of this dynamic table.
         %
         % Output Arguments:
-        %  - experimentalConditionsTable (types.core.ExperimentalConditionsTable) - A ExperimentalConditionsTable object
+        %  - experimentalConditionsTable (types.core.ExperimentalConditionsTable) - An ExperimentalConditionsTable object
         
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         

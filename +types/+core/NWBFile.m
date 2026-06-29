@@ -177,7 +177,7 @@ methods
         %  - units (Units) - Data about sorted spike units.
         %
         % Output Arguments:
-        %  - nwbFile (types.core.NWBFile) - A NWBFile object
+        %  - nwbFile (types.core.NWBFile) - An NWBFile object
         
         varargin = [{'nwb_version' '2.9.0'} varargin];
         obj = obj@types.core.NWBContainer(varargin{:});

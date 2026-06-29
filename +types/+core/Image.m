@@ -27,7 +27,7 @@ methods
         %  - resolution (single) - Pixel resolution of the image, in pixels per centimeter.
         %
         % Output Arguments:
-        %  - image (types.core.Image) - A Image object
+        %  - image (types.core.Image) - An Image object
         
         obj = obj@types.core.BaseImage(varargin{:});
         

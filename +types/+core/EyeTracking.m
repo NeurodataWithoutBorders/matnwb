@@ -26,7 +26,7 @@ methods
         %  - spatialseries (SpatialSeries) - SpatialSeries object containing data measuring direction of gaze.
         %
         % Output Arguments:
-        %  - eyeTracking (types.core.EyeTracking) - A EyeTracking object
+        %  - eyeTracking (types.core.EyeTracking) - An EyeTracking object
         
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.spatialseries, ivarargin] = types.util.parseConstrained(obj,'spatialseries', 'types.core.SpatialSeries', varargin{:});

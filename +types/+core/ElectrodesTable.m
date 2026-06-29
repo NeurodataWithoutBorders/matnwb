@@ -67,7 +67,7 @@ methods
         %  - z (VectorData) - z coordinate of the channel location in the brain (+z is right).
         %
         % Output Arguments:
-        %  - electrodesTable (types.core.ElectrodesTable) - A ElectrodesTable object
+        %  - electrodesTable (types.core.ElectrodesTable) - An ElectrodesTable object
         
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         

@@ -60,7 +60,7 @@ methods
         %  - timestamps (double) - Timestamps for samples stored in data, in seconds, relative to the common experiment master-clock stored in NWBFile.timestamps_reference_time.
         %
         % Output Arguments:
-        %  - electricalSeries (types.core.ElectricalSeries) - A ElectricalSeries object
+        %  - electricalSeries (types.core.ElectricalSeries) - An ElectricalSeries object
         
         varargin = [{'channel_conversion_axis' types.util.correctType(1, 'int32') 'data_unit' 'volts'} varargin];
         obj = obj@types.core.TimeSeries(varargin{:});

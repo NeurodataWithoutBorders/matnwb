@@ -50,7 +50,7 @@ methods
         %  - slice (char) - Information about slice used for recording.
         %
         % Output Arguments:
-        %  - intracellularElectrode (types.core.IntracellularElectrode) - A IntracellularElectrode object
+        %  - intracellularElectrode (types.core.IntracellularElectrode) - An IntracellularElectrode object
         
         obj = obj@types.core.NWBContainer(varargin{:});
         

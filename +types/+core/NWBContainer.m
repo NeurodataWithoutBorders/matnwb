@@ -14,7 +14,7 @@ methods
         %  nwbContainer = types.core.NWBCONTAINER() creates an NWBContainer object with unset property values.
         %
         % Output Arguments:
-        %  - nwbContainer (types.core.NWBContainer) - A NWBContainer object
+        %  - nwbContainer (types.core.NWBContainer) - An NWBContainer object
         
         obj = obj@types.hdmf_common.Container(varargin{:});
         

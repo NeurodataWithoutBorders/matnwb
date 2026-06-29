@@ -39,7 +39,7 @@ methods
         %  - timestamps (double) - Timestamps for samples stored in data, in seconds, relative to the common experiment master-clock stored in NWBFile.timestamps_reference_time.
         %
         % Output Arguments:
-        %  - intervalSeries (types.core.IntervalSeries) - A IntervalSeries object
+        %  - intervalSeries (types.core.IntervalSeries) - An IntervalSeries object
         
         varargin = [{'data_resolution' types.util.correctType(-1, 'single') 'data_unit' 'n/a'} varargin];
         obj = obj@types.core.TimeSeries(varargin{:});

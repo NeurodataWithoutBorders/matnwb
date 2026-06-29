@@ -47,7 +47,7 @@ methods
         %  - timestamps (double) - Timestamps for samples stored in data, in seconds, relative to the common experiment master-clock stored in NWBFile.timestamps_reference_time.
         %
         % Output Arguments:
-        %  - iZeroClampSeries (types.core.IZeroClampSeries) - A IZeroClampSeries object
+        %  - iZeroClampSeries (types.core.IZeroClampSeries) - An IZeroClampSeries object
         
         varargin = [{'bias_current' types.util.correctType(0, 'single') 'bridge_balance' types.util.correctType(0, 'single') 'capacitance_compensation' types.util.correctType(0, 'single') 'stimulus_description' 'N/A'} varargin];
         obj = obj@types.core.CurrentClampSeries(varargin{:});

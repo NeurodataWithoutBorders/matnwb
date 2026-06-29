@@ -27,7 +27,7 @@ methods
         %  - elements (Object reference to VectorData) - Reference to the VectorData object that contains the enumerable elements
         %
         % Output Arguments:
-        %  - enumData (types.hdmf_experimental.EnumData) - A EnumData object
+        %  - enumData (types.hdmf_experimental.EnumData) - An EnumData object
         
         obj = obj@types.hdmf_common.VectorData(varargin{:});
         

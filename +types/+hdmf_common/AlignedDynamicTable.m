@@ -40,7 +40,7 @@ methods
         %  - vectordata (VectorData) - Vector columns, including index columns, of this dynamic table.
         %
         % Output Arguments:
-        %  - alignedDynamicTable (types.hdmf_common.AlignedDynamicTable) - A AlignedDynamicTable object
+        %  - alignedDynamicTable (types.hdmf_common.AlignedDynamicTable) - An AlignedDynamicTable object
         
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         [obj.dynamictable, ivarargin] = types.util.parseConstrained(obj,'dynamictable', 'types.hdmf_common.DynamicTable', varargin{:});

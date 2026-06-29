@@ -29,7 +29,7 @@ methods
         %  - vectordata (VectorData) - Vector columns, including index columns, of this dynamic table.
         %
         % Output Arguments:
-        %  - intracellularElectrodesTable (types.core.IntracellularElectrodesTable) - A IntracellularElectrodesTable object
+        %  - intracellularElectrodesTable (types.core.IntracellularElectrodesTable) - An IntracellularElectrodesTable object
         
         varargin = [{'description' 'Table for storing intracellular electrode related metadata.'} varargin];
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});

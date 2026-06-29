@@ -26,7 +26,7 @@ methods
         %  - spikeeventseries (SpikeEventSeries) - SpikeEventSeries object(s) containing detected spike event waveforms.
         %
         % Output Arguments:
-        %  - eventWaveform (types.core.EventWaveform) - A EventWaveform object
+        %  - eventWaveform (types.core.EventWaveform) - An EventWaveform object
         
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.spikeeventseries, ivarargin] = types.util.parseConstrained(obj,'spikeeventseries', 'types.core.SpikeEventSeries', varargin{:});

@@ -35,7 +35,7 @@ methods
         %  - position (Table with columns: (single, single, single)) - stereotaxic or common framework coordinates
         %
         % Output Arguments:
-        %  - electrodeGroup (types.core.ElectrodeGroup) - A ElectrodeGroup object
+        %  - electrodeGroup (types.core.ElectrodeGroup) - An ElectrodeGroup object
         
         obj = obj@types.core.NWBContainer(varargin{:});
         

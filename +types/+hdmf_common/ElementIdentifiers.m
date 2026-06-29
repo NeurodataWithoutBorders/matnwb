@@ -19,7 +19,7 @@ methods
         %  - data (int8) - Data property for dataset class (ElementIdentifiers)
         %
         % Output Arguments:
-        %  - elementIdentifiers (types.hdmf_common.ElementIdentifiers) - A ElementIdentifiers object
+        %  - elementIdentifiers (types.hdmf_common.ElementIdentifiers) - An ElementIdentifiers object
         
         obj = obj@types.hdmf_common.Data(varargin{:});
         

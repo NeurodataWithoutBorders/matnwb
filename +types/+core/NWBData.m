@@ -19,7 +19,7 @@ methods
         %  - data (any) - Data property for dataset class (NWBData)
         %
         % Output Arguments:
-        %  - nwbData (types.core.NWBData) - A NWBData object
+        %  - nwbData (types.core.NWBData) - An NWBData object
         
         obj = obj@types.hdmf_common.Data(varargin{:});
         

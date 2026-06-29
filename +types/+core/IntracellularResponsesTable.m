@@ -29,7 +29,7 @@ methods
         %  - vectordata (VectorData) - Vector columns, including index columns, of this dynamic table.
         %
         % Output Arguments:
-        %  - intracellularResponsesTable (types.core.IntracellularResponsesTable) - A IntracellularResponsesTable object
+        %  - intracellularResponsesTable (types.core.IntracellularResponsesTable) - An IntracellularResponsesTable object
         
         varargin = [{'description' 'Table for storing intracellular response related metadata.'} varargin];
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
