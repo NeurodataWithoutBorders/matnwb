@@ -11,7 +11,7 @@ function validationStr = fillValidators(propnames, props, namespaceReg, classNam
             % attributes of a property from public (in a superclass) to 
             % protected (in a subclass).
             if any(strcmp(nm, inherited))
-                validationBody = fillReadOnlyValidation(nm, prop.value, className);
+                validationBody = fillReadOnlyValidation(nm, prop.value, prop.dtype, className);
             else
                 continue
             end
@@ -364,22 +364,18 @@ function validationStr = fillReferenceTypeValidation(name, typeSpec, namespaceRe
     validationStr = strjoin(validationLines, newline);
 end
 
-function fdvstr = fillReadOnlyValidation(name, value, className)
-
-    classNameSplit = strsplit(className, '.');
-    shortName = classNameSplit{end};
-    errorStr = sprintf( 'error(''NWB:Type:ReadOnlyProperty'', ''Unable to set the ''''%s'''' property of class ''''<a href="matlab:doc %s">%s</a>'''' because it is read-only.'')', name, className, shortName);  
+function fdvstr = fillReadOnlyValidation(name, value, dtype, className)
+% fillReadOnlyValidation - Emit a validator for a schema-fixed (constant) property.
 
     if ischar(value)
-        condition = strjoin({ ...
-            sprintf('if isequal(val, ''%s'')', value), ...
-            sprintf('    val = ''%s'';', value ), ...
-                    'else' }, newline);
+        constantValueExpression = sprintf('''%s''', value);
     elseif isnumeric(value) || islogical(value)
-        condition = strjoin({ ...
-            sprintf('if isequal(val, %d)', value), ...
-            sprintf('    val = %d;', value ), ...
-                    'else' }, newline);
+        constantValueExpression = mat2str(value);
+        if canCorrectReadOnlyConstantType(dtype)
+            constantValueExpression = sprintf( ...
+                'types.util.correctType(%s, ''%s'')', ...
+                constantValueExpression, dtype);
+        end
     else
         % Note: According to the documentation for Attribute specification keys
         % (https://schema-language.readthedocs.io/en/latest/description.html#sec-attributes-spec),
@@ -387,11 +383,21 @@ function fdvstr = fillReadOnlyValidation(name, value, className)
         error('NWB:ClassGenerator:ReadOnlyValidatorNotImplemented', ...
             'Read-only validator is not implemented for values of type "%s"', class(value))
     end
-    
-    fdvstr = strjoin({...
-            condition, ...
-            sprintf('    %s', errorStr), ...
-            'end' }, newline );
+
+    fdvstr = sprintf([ ...
+        'constantValue = %s;\n', ...
+        'val = types.util.checkConstant(''%s'', constantValue, val, ''%s'');'], ...
+        constantValueExpression, name, className);
+end
+
+function tf = canCorrectReadOnlyConstantType(dtype)
+    correctableTypes = { ...
+        'single', 'double', ...
+        'int64', 'int32', 'int16', 'int8', ...
+        'uint64', 'uint32', 'uint16', 'uint8', ...
+        'logical'};
+
+    tf = ischar(dtype) && any(strcmp(dtype, correctableTypes));
 end
 
 function fullname = getFullClassName(namespaceReg, propType, name)

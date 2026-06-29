@@ -186,13 +186,6 @@ methods
         if isempty(obj.spike_times) && ~isempty(obj.spike_times_resolution)
             obj.warnIfAttributeDependencyMissing('spike_times_resolution', 'spike_times')
         end
-        if ~isempty(obj.spike_times) && isobject(obj.spike_times) && isprop(obj.spike_times, 'resolution')
-            if ~isempty(obj.spike_times_resolution)
-                obj.spike_times.resolution = obj.spike_times_resolution;
-            elseif ~isempty(obj.spike_times.resolution)
-                obj.spike_times_resolution = obj.spike_times.resolution;
-            end
-        end
     end
     function set.waveform_mean(obj, val)
         obj.waveform_mean = obj.validate_waveform_mean(val);
@@ -209,13 +202,6 @@ methods
         if isempty(obj.waveform_mean) && ~isempty(obj.waveform_mean_sampling_rate)
             obj.warnIfAttributeDependencyMissing('waveform_mean_sampling_rate', 'waveform_mean')
         end
-        if ~isempty(obj.waveform_mean) && isobject(obj.waveform_mean) && isprop(obj.waveform_mean, 'sampling_rate')
-            if ~isempty(obj.waveform_mean_sampling_rate)
-                obj.waveform_mean.sampling_rate = obj.waveform_mean_sampling_rate;
-            elseif ~isempty(obj.waveform_mean.sampling_rate)
-                obj.waveform_mean_sampling_rate = obj.waveform_mean.sampling_rate;
-            end
-        end
     end
     function set.waveform_sd(obj, val)
         obj.waveform_sd = obj.validate_waveform_sd(val);
@@ -231,13 +217,6 @@ methods
     function postset_waveform_sd_sampling_rate(obj)
         if isempty(obj.waveform_sd) && ~isempty(obj.waveform_sd_sampling_rate)
             obj.warnIfAttributeDependencyMissing('waveform_sd_sampling_rate', 'waveform_sd')
-        end
-        if ~isempty(obj.waveform_sd) && isobject(obj.waveform_sd) && isprop(obj.waveform_sd, 'sampling_rate')
-            if ~isempty(obj.waveform_sd_sampling_rate)
-                obj.waveform_sd.sampling_rate = obj.waveform_sd_sampling_rate;
-            elseif ~isempty(obj.waveform_sd.sampling_rate)
-                obj.waveform_sd_sampling_rate = obj.waveform_sd.sampling_rate;
-            end
         end
     end
     function set.waveforms(obj, val)
@@ -260,13 +239,6 @@ methods
     function postset_waveforms_sampling_rate(obj)
         if isempty(obj.waveforms) && ~isempty(obj.waveforms_sampling_rate)
             obj.warnIfAttributeDependencyMissing('waveforms_sampling_rate', 'waveforms')
-        end
-        if ~isempty(obj.waveforms) && isobject(obj.waveforms) && isprop(obj.waveforms, 'sampling_rate')
-            if ~isempty(obj.waveforms_sampling_rate)
-                obj.waveforms.sampling_rate = obj.waveforms_sampling_rate;
-            elseif ~isempty(obj.waveforms.sampling_rate)
-                obj.waveforms_sampling_rate = obj.waveforms.sampling_rate;
-            end
         end
     end
     %% VALIDATORS
@@ -385,23 +357,14 @@ methods
         if ~isempty(obj.spike_times_index)
             refs = obj.spike_times_index.export(writer, [fullpath '/spike_times_index'], refs);
         end
-        if isempty(obj.spike_times_resolution) && ~isempty(obj.spike_times) && isobject(obj.spike_times) && isprop(obj.spike_times, 'resolution') && ~isempty(obj.spike_times.resolution)
-            obj.spike_times_resolution = obj.spike_times.resolution;
-        end
         if ~isempty(obj.spike_times) && ~isa(obj.spike_times, 'types.untyped.SoftLink') && ~isa(obj.spike_times, 'types.untyped.ExternalLink') && ~isempty(obj.spike_times_resolution)
             writer.writeAttribute([fullpath '/spike_times/resolution'], obj.spike_times_resolution);
         end
         if ~isempty(obj.waveform_mean)
             refs = obj.waveform_mean.export(writer, [fullpath '/waveform_mean'], refs);
         end
-        if isempty(obj.waveform_mean_sampling_rate) && ~isempty(obj.waveform_mean) && isobject(obj.waveform_mean) && isprop(obj.waveform_mean, 'sampling_rate') && ~isempty(obj.waveform_mean.sampling_rate)
-            obj.waveform_mean_sampling_rate = obj.waveform_mean.sampling_rate;
-        end
         if ~isempty(obj.waveform_mean) && ~isa(obj.waveform_mean, 'types.untyped.SoftLink') && ~isa(obj.waveform_mean, 'types.untyped.ExternalLink') && ~isempty(obj.waveform_mean_sampling_rate)
             writer.writeAttribute([fullpath '/waveform_mean/sampling_rate'], obj.waveform_mean_sampling_rate);
-        end
-        if isempty(obj.waveform_mean_unit) && ~isempty(obj.waveform_mean) && isobject(obj.waveform_mean) && isprop(obj.waveform_mean, 'unit') && ~isempty(obj.waveform_mean.unit)
-            obj.waveform_mean_unit = obj.waveform_mean.unit;
         end
         if ~isempty(obj.waveform_mean) && ~isa(obj.waveform_mean, 'types.untyped.SoftLink') && ~isa(obj.waveform_mean, 'types.untyped.ExternalLink') && ~isempty(obj.waveform_mean_unit)
             writer.writeAttribute([fullpath '/waveform_mean/unit'], obj.waveform_mean_unit);
@@ -409,14 +372,8 @@ methods
         if ~isempty(obj.waveform_sd)
             refs = obj.waveform_sd.export(writer, [fullpath '/waveform_sd'], refs);
         end
-        if isempty(obj.waveform_sd_sampling_rate) && ~isempty(obj.waveform_sd) && isobject(obj.waveform_sd) && isprop(obj.waveform_sd, 'sampling_rate') && ~isempty(obj.waveform_sd.sampling_rate)
-            obj.waveform_sd_sampling_rate = obj.waveform_sd.sampling_rate;
-        end
         if ~isempty(obj.waveform_sd) && ~isa(obj.waveform_sd, 'types.untyped.SoftLink') && ~isa(obj.waveform_sd, 'types.untyped.ExternalLink') && ~isempty(obj.waveform_sd_sampling_rate)
             writer.writeAttribute([fullpath '/waveform_sd/sampling_rate'], obj.waveform_sd_sampling_rate);
-        end
-        if isempty(obj.waveform_sd_unit) && ~isempty(obj.waveform_sd) && isobject(obj.waveform_sd) && isprop(obj.waveform_sd, 'unit') && ~isempty(obj.waveform_sd.unit)
-            obj.waveform_sd_unit = obj.waveform_sd.unit;
         end
         if ~isempty(obj.waveform_sd) && ~isa(obj.waveform_sd, 'types.untyped.SoftLink') && ~isa(obj.waveform_sd, 'types.untyped.ExternalLink') && ~isempty(obj.waveform_sd_unit)
             writer.writeAttribute([fullpath '/waveform_sd/unit'], obj.waveform_sd_unit);
@@ -430,14 +387,8 @@ methods
         if ~isempty(obj.waveforms_index_index)
             refs = obj.waveforms_index_index.export(writer, [fullpath '/waveforms_index_index'], refs);
         end
-        if isempty(obj.waveforms_sampling_rate) && ~isempty(obj.waveforms) && isobject(obj.waveforms) && isprop(obj.waveforms, 'sampling_rate') && ~isempty(obj.waveforms.sampling_rate)
-            obj.waveforms_sampling_rate = obj.waveforms.sampling_rate;
-        end
         if ~isempty(obj.waveforms) && ~isa(obj.waveforms, 'types.untyped.SoftLink') && ~isa(obj.waveforms, 'types.untyped.ExternalLink') && ~isempty(obj.waveforms_sampling_rate)
             writer.writeAttribute([fullpath '/waveforms/sampling_rate'], obj.waveforms_sampling_rate);
-        end
-        if isempty(obj.waveforms_unit) && ~isempty(obj.waveforms) && isobject(obj.waveforms) && isprop(obj.waveforms, 'unit') && ~isempty(obj.waveforms.unit)
-            obj.waveforms_unit = obj.waveforms.unit;
         end
         if ~isempty(obj.waveforms) && ~isa(obj.waveforms, 'types.untyped.SoftLink') && ~isa(obj.waveforms, 'types.untyped.ExternalLink') && ~isempty(obj.waveforms_unit)
             writer.writeAttribute([fullpath '/waveforms/unit'], obj.waveforms_unit);

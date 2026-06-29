@@ -62,11 +62,8 @@ methods
     %% VALIDATORS
     
     function val = validate_description(obj, val)
-        if isequal(val, 'Table for storing intracellular response related metadata.')
-            val = 'Table for storing intracellular response related metadata.';
-        else
-            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''description'' property of class ''<a href="matlab:doc types.core.IntracellularResponsesTable">IntracellularResponsesTable</a>'' because it is read-only.')
-        end
+        constantValue = 'Table for storing intracellular response related metadata.';
+        val = types.util.checkConstant('description', constantValue, val, 'types.core.IntracellularResponsesTable');
     end
     function val = validate_response(obj, val)
         types.util.checkType('response', 'types.core.TimeSeriesReferenceVectorData', val);

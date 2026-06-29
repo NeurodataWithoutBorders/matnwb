@@ -31,21 +31,24 @@ function checkConfig(DynamicTable, ignoreList)
     end
 
     if isempty(DynamicTable.colnames)
-        assert(isempty(detectedColumnNames), ...
-            'NWB:DynamicTable:CheckConfig:ColumnNamesMismatch', ...
-            'All Vector Data/Index columns must have their name ordered in the `colnames` property.');
+        if ~isempty(detectedColumnNames)
+            handleColumnNamesMismatch( ...
+                'All Vector Data/Index columns must have their name ordered in the `colnames` property.');
+        end
         return;
     end
-
-    DynamicTable.colnames = types.util.dynamictable.validateColnames(DynamicTable.colnames);
-    columns = DynamicTable.colnames;
+    columns = types.util.dynamictable.normalizeColnames(DynamicTable.colnames);
+    if ~isReadContext()
+        types.util.dynamictable.validateUniqueColnames(columns);
+    end
 
     missingColumnNames = setdiff(detectedColumnNames, columns, 'stable');
-    assert(isempty(missingColumnNames), ...
-        'NWB:DynamicTable:CheckConfig:ColumnNamesMismatch', ...
-        ['All materialized DynamicTable columns must be listed in `colnames`.\n' ...
-        'Missing from `colnames`: %s'], ...
-        strjoin(missingColumnNames, ', '));
+    if ~isempty(missingColumnNames)
+        handleColumnNamesMismatch( ...
+            ['All materialized DynamicTable columns must be listed in `colnames`.\n' ...
+            'Missing from `colnames`: %s'], ...
+            strjoin(missingColumnNames, ', '));
+    end
 
     % do not check specified columns - useful for classes that build on DynamicTable class
     columns = columns(~ismember(columns, ignoreList));
@@ -125,23 +128,16 @@ function tf = isMaterializedColumn(value)
     tf = ~isempty(value) && isVectorData && ~isVectorIndex;
 end
 
-function colnames = cleanColumnNames(colnames)
-    %CLEANCOLUMNNAMES removes the null character from column names.
-    assert(iscellstr(colnames) || ischar(colnames), ...
-        'NWB:DynamicTable:CheckConfig:InvalidColumnNames', ...
-        'Column names must be a cell array of strings or a character array.');
-    isScalarChar = ischar(colnames);
-    if isScalarChar
-        colnames = {colnames};
+function handleColumnNamesMismatch(message, varargin)
+    if isReadContext()
+        warning('NWB:DynamicTable:CheckConfig:ColumnNamesMismatch', ...
+            message, varargin{:});
+    else
+        error('NWB:DynamicTable:CheckConfig:ColumnNamesMismatch', ...
+            message, varargin{:});
     end
+end
 
-    for iColumn = 1:length(colnames)
-        column = colnames{iColumn};
-        column = column(0 ~= double(column));
-        colnames{iColumn} = column;
-    end
-
-    if isScalarChar
-        colnames = colnames{1};
-    end
+function tf = isReadContext()
+    tf = strcmp(types.util.validationContext(), 'read');
 end
