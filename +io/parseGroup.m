@@ -89,13 +89,7 @@ else
         
         return;
     end
-    try
-        parsed = io.createParsedType(info.Name, Type.typename, kwargs{:});
-    catch
-        %parsed = feval(Type.typename);
-        %keyboard
-        parsed = [];
-    end
+    parsed = io.createParsedType(info.Name, Type.typename, kwargs{:});
 end
 end
 
