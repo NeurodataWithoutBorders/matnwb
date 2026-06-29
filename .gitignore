@@ -22,3 +22,6 @@ nwbtest.env
 
 docs/build
 docs/reports
+
+# External dependencies installed by setup (e.g. Zarr wrapper)
+external_packages/MATLAB-support-for-Zarr-files
