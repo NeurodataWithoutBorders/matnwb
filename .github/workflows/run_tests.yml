@@ -104,6 +104,11 @@ jobs:
             pip install pynwb
             pynwb_version=$(pip show pynwb | grep "^Version:" | awk '{print $2}')
             echo "pynwb_version=$pynwb_version" >> "$GITHUB_OUTPUT"
+            # Zarr v2 reader tests: tensorstore (reading) and hdmf-zarr (test
+            # fixture generation). Best-effort: if wheels are unavailable for a
+            # given Python version, the Zarr tests skip gracefully.
+            pip install tensorstore hdmf-zarr \
+              || echo "Zarr Python dependencies unavailable; Zarr reader tests will be skipped"
           fi
           if [[ "${{ matrix.skip-nwbinspector-test }}" == "0" ]]; then
             pip install nwbinspector
@@ -122,6 +127,20 @@ jobs:
       - name: Set PyNWB repo path
         if: ${{ matrix.skip-pynwb-tests == '0' }}
         run: echo "PYNWB_REPO_DIR=$GITHUB_WORKSPACE/pynwb-repo" >> "$GITHUB_ENV"
+
+      # The Zarr v2 reader depends on the MathWorks Zarr wrapper (zarrinfo,
+      # zarrread, readZattrs). MATLAB has no native Zarr support, so these come
+      # from a fork that adds functionality not yet available upstream. Pinned
+      # to a specific commit for reproducibility. See io.backend.zarr2.
+      - name: Check out MathWorks Zarr wrapper (for Zarr reader tests)
+        uses: actions/checkout@v6
+        with:
+          repository: ehennestad/MATLAB-support-for-Zarr-files
+          ref: a55a3f2a20551cd761de1a8a57fc46144d03a241
+          path: zarr-wrapper
+
+      - name: Set Zarr wrapper path
+        run: echo "ZARR_WRAPPER_PATH=$GITHUB_WORKSPACE/zarr-wrapper" >> "$GITHUB_ENV"
 
       - name: Install MATLAB
         uses: matlab-actions/setup-matlab@v3
