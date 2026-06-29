@@ -3,6 +3,8 @@ function subTable = getRow(DynamicTable, ind, varargin)
 % Index is a scalar 0-based index of the expected row.
 % optional keyword argument "columns" allows for only grabbing certain
 %   columns instead of returning all columns.
+% optional keyword argument "categories" allows for only grabbing certain
+%   categories from an AlignedDynamicTable.
 % optional keyword `id` allows for row filtering by user-defined `id`
 %   instead of row index.
 % The returned value is a set of output arguments in the order of
@@ -14,11 +16,18 @@ validateattributes(ind, {'numeric'}, {'integer', 'vector'});
 
 p = inputParser;
 addParameter(p, 'columns', DynamicTable.colnames, @(x)isempty(x)||iscellstr(x))
+if isa(DynamicTable, 'matnwb.neurodata.AlignedDynamicTableBase')
+    defaultCategories = DynamicTable.categories;
+else
+    defaultCategories = {};
+end
+addParameter(p, 'categories', defaultCategories, @(x)isempty(x)||iscellstr(x))
 addParameter(p, 'useId', false, @(x)islogical(x));
 parse(p, varargin{:});
 
 columns = p.Results.columns;
-row = cell(1, length(columns));
+categories = p.Results.categories;
+row = cell(1, numel(columns) + numel(categories));
 
 if p.Results.useId
     assert(~isempty(DynamicTable.id), ...
@@ -102,10 +111,16 @@ for i = 1:length(columns)
         row{i} = rowStruct .';
     end
 end
-if isempty(columns)
+for iCategory = 1:numel(categories)
+    categoryTable = DynamicTable.getCategory(categories{iCategory});
+    row{numel(columns) + iCategory} = categoryTable.getRow(ind);
+end
+
+variableNames = [columns, categories];
+if isempty(variableNames)
     subTable = table('Size', [numel(ind), 0], 'VariableTypes', {}, 'VariableNames', {});
 else
-    subTable = table(row{:}, 'VariableNames', columns);
+    subTable = table(row{:}, 'VariableNames', variableNames);
 end
 end
 
