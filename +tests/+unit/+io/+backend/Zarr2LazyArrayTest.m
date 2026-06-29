@@ -52,6 +52,36 @@ classdef Zarr2LazyArrayTest < matlab.unittest.TestCase
             testCase.verifyEqual(dataStub(1:3, 2), expectedData(1:3, 2));
         end
 
+        function integer1dDatasetHasCorrectMatlabType(testCase)
+            % electrodes/channel_id is a 1-D int64 column added by the fixture
+            % generator. Verifies that the dtype mapping reaches the LazyArray.
+            lazyArray = io.backend.zarr2.Zarr2LazyArray( ...
+                testCase.fixturePath, ...
+                "/general/extracellular_ephys/electrodes/channel_id");
+            testCase.verifyEqual(lazyArray.dataType, 'int64');
+        end
+
+        function loadWithInfCountReadsToEnd(testCase)
+            % Passing Inf in the count vector tells readPartialData to compute
+            % count = floor((dims - start) / stride) + 1 for that dimension.
+            lazyArray = io.backend.zarr2.Zarr2LazyArray(testCase.fixturePath, testCase.datasetPath);
+            fullData = lazyArray.load_h5_style();
+            partialData = lazyArray.load_h5_style([2 3], [Inf Inf]);
+
+            testCase.verifyEqual(partialData, fullData(2:end, 3:end));
+        end
+
+        function loadMatStyleIrregularSelectionFallsBackToFullRead(testCase)
+            % Non-uniform step sizes ([1 2 4] has steps [1 2]) cannot be mapped
+            % to a zarrread call, so the implementation falls back to reading all
+            % data and indexing in MATLAB.
+            lazyArray = io.backend.zarr2.Zarr2LazyArray(testCase.fixturePath, testCase.datasetPath);
+            fullData = lazyArray.load_h5_style();
+            result = lazyArray.load_mat_style([1 2 4], 1:29);
+
+            testCase.verifyEqual(result, fullData([1 2 4], 1:29));
+        end
+
         function loadMatStyleUsesPartialReadForRegularSelection(testCase)
             lazyArray = io.backend.zarr2.Zarr2LazyArray(testCase.fixturePath, testCase.datasetPath);
             fullData = lazyArray.load_h5_style();

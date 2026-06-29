@@ -80,6 +80,39 @@ classdef Zarr2ReaderTest < matlab.unittest.TestCase
             testCase.verifyEqual(datasetValue.dims, [4 29]);
         end
 
+        function read1dDatasetReturnsDataStub(testCase)
+            % /units/spike_times is a 1-D float64 dataset (NUM_SPIKE_TIMES = 5 elements).
+            reader = io.backend.zarr2.Zarr2Reader(testCase.fixturePath);
+            datasetInfo = reader.readNodeInfo("/units/spike_times");
+            datasetValue = reader.readDatasetValue(datasetInfo, "/units/spike_times");
+
+            testCase.verifyClass(datasetValue, "types.untyped.DataStub");
+            % 1-D dims are not flipped; the scalar size is preserved as-is.
+            testCase.verifyEqual(datasetValue.dims, 5);  % NUM_SPIKE_TIMES
+        end
+
+        function readStringArrayDatasetContainsExpectedValues(testCase)
+            % /general/extracellular_ephys/electrodes/location is a 1-D string
+            % dataset with one entry per electrode (all "brain").
+            reader = io.backend.zarr2.Zarr2Reader(testCase.fixturePath);
+            locationPath = "/general/extracellular_ephys/electrodes/location";
+            datasetInfo = reader.readNodeInfo(locationPath);
+            datasetValue = reader.readDatasetValue(datasetInfo, locationPath);
+
+            if isa(datasetValue, "types.untyped.DataStub")
+                loadedValue = datasetValue.load();
+            else
+                loadedValue = datasetValue;
+            end
+
+            if iscell(loadedValue)
+                loadedValue = string(loadedValue);
+            end
+
+            testCase.verifyEqual(numel(loadedValue), 4);  % NUM_ELECTRODES
+            testCase.verifyTrue(all(loadedValue == "brain"));
+        end
+
         function readEmbeddedSpecificationsFromZarr(testCase)
             reader = io.backend.zarr2.Zarr2Reader(testCase.fixturePath);
             specs = io.spec.readEmbeddedSpecifications( ...
