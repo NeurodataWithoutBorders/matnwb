@@ -18,15 +18,15 @@ methods
         % LFP - Constructor for LFP
         %
         % Syntax:
-        %  lFP = types.core.LFP() creates a LFP object with unset property values.
+        %  lfp = types.core.LFP() creates an LFP object with unset property values.
         %
-        %  lFP = types.core.LFP(Name, Value) creates a LFP object where one or more property values are specified using name-value pairs.
+        %  lfp = types.core.LFP(Name, Value) creates an LFP object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - electricalseries (ElectricalSeries) - ElectricalSeries object(s) containing LFP data for one or more channels.
         %
         % Output Arguments:
-        %  - lFP (types.core.LFP) - A LFP object
+        %  - lfp (types.core.LFP) - An LFP object
         
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.electricalseries, ivarargin] = types.util.parseConstrained(obj,'electricalseries', 'types.core.ElectricalSeries', varargin{:});

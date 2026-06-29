@@ -8,7 +8,7 @@ classdef IntracellularElectrode < types.core.NWBContainer & types.untyped.GroupC
 % REQUIRED PROPERTIES
 properties
     description; % REQUIRED (char) Description of electrode (e.g.,  whole-cell, sharp, etc.).
-    device; % REQUIRED Device
+    device; % REQUIRED (Device) Device that was used to record from this electrode.
 end
 % OPTIONAL PROPERTIES
 properties
@@ -26,9 +26,9 @@ methods
         % INTRACELLULARELECTRODE - Constructor for IntracellularElectrode
         %
         % Syntax:
-        %  intracellularElectrode = types.core.INTRACELLULARELECTRODE() creates a IntracellularElectrode object with unset property values.
+        %  intracellularElectrode = types.core.INTRACELLULARELECTRODE() creates an IntracellularElectrode object with unset property values.
         %
-        %  intracellularElectrode = types.core.INTRACELLULARELECTRODE(Name, Value) creates a IntracellularElectrode object where one or more property values are specified using name-value pairs.
+        %  intracellularElectrode = types.core.INTRACELLULARELECTRODE(Name, Value) creates an IntracellularElectrode object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - cell_id (char) - unique ID of the cell
@@ -50,7 +50,7 @@ methods
         %  - slice (char) - Information about slice used for recording.
         %
         % Output Arguments:
-        %  - intracellularElectrode (types.core.IntracellularElectrode) - A IntracellularElectrode object
+        %  - intracellularElectrode (types.core.IntracellularElectrode) - An IntracellularElectrode object
         
         obj = obj@types.core.NWBContainer(varargin{:});
         

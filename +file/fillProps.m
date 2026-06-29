@@ -98,6 +98,8 @@ function propStr = getPropStr(prop, propName)
         propStr = sprintf('(%s) %s', typeStr, strjoin(propStrCell, ' | '));
     elseif isa(prop, 'file.Attribute')
         propStr = sprintf('(%s) %s', typeStr, prop.doc);
+    elseif isa(prop, 'file.Link')
+        propStr = sprintf('(%s) %s', typeStr, prop.doc);
     else
         propStr = typeStr;
     end

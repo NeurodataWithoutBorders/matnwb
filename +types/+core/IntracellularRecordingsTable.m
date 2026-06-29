@@ -17,9 +17,9 @@ methods
         % INTRACELLULARRECORDINGSTABLE - Constructor for IntracellularRecordingsTable
         %
         % Syntax:
-        %  intracellularRecordingsTable = types.core.INTRACELLULARRECORDINGSTABLE() creates a IntracellularRecordingsTable object with unset property values.
+        %  intracellularRecordingsTable = types.core.INTRACELLULARRECORDINGSTABLE() creates an IntracellularRecordingsTable object with unset property values.
         %
-        %  intracellularRecordingsTable = types.core.INTRACELLULARRECORDINGSTABLE(Name, Value) creates a IntracellularRecordingsTable object where one or more property values are specified using name-value pairs.
+        %  intracellularRecordingsTable = types.core.INTRACELLULARRECORDINGSTABLE(Name, Value) creates an IntracellularRecordingsTable object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - categories (char) - The names of the categories in this AlignedDynamicTable. Each category is represented by one DynamicTable stored in the parent group. This attribute should be used to specify an order of categories and the category names must match the names of the corresponding DynamicTable in the group.
@@ -39,7 +39,7 @@ methods
         %  - vectordata (VectorData) - Vector columns, including index columns, of this dynamic table.
         %
         % Output Arguments:
-        %  - intracellularRecordingsTable (types.core.IntracellularRecordingsTable) - A IntracellularRecordingsTable object
+        %  - intracellularRecordingsTable (types.core.IntracellularRecordingsTable) - An IntracellularRecordingsTable object
         
         varargin = [{'description' 'A table to group together a stimulus and response from a single electrode and a single simultaneous recording and for storing metadata about the intracellular recording.'} varargin];
         obj = obj@types.hdmf_common.AlignedDynamicTable(varargin{:});

@@ -11,15 +11,15 @@ methods
         % IMAGEREFERENCES - Constructor for ImageReferences
         %
         % Syntax:
-        %  imageReferences = types.core.IMAGEREFERENCES() creates a ImageReferences object with unset property values.
+        %  imageReferences = types.core.IMAGEREFERENCES() creates an ImageReferences object with unset property values.
         %
-        %  imageReferences = types.core.IMAGEREFERENCES(Name, Value) creates a ImageReferences object where one or more property values are specified using name-value pairs.
+        %  imageReferences = types.core.IMAGEREFERENCES(Name, Value) creates an ImageReferences object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - data (Object reference to BaseImage) - Data property for dataset class (ImageReferences)
         %
         % Output Arguments:
-        %  - imageReferences (types.core.ImageReferences) - A ImageReferences object
+        %  - imageReferences (types.core.ImageReferences) - An ImageReferences object
         
         obj = obj@types.core.NWBData(varargin{:});
         

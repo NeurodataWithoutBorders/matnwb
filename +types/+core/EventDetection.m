@@ -12,7 +12,7 @@ end
 % REQUIRED PROPERTIES
 properties
     detection_method; % REQUIRED (char) Description of how events were detected, such as voltage threshold, or dV/dT threshold, as well as relevant values.
-    source_electricalseries; % REQUIRED ElectricalSeries
+    source_electricalseries; % REQUIRED (ElectricalSeries) Link to the ElectricalSeries that this data was calculated from. Metadata about electrodes and their position can be read from that ElectricalSeries so it's not necessary to include that information here.
     source_idx; % REQUIRED (int32) Indices (zero-based) into the linked source ElectricalSeries::data array corresponding to time of event or time and channel of event. ''description'' should define what is meant by time of event (e.g., .25 ms before action potential peak, zero-crossing time, etc). The index points to each event from the raw data.
 end
 % OPTIONAL PROPERTIES
@@ -25,9 +25,9 @@ methods
         % EVENTDETECTION - Constructor for EventDetection
         %
         % Syntax:
-        %  eventDetection = types.core.EVENTDETECTION() creates a EventDetection object with unset property values.
+        %  eventDetection = types.core.EVENTDETECTION() creates an EventDetection object with unset property values.
         %
-        %  eventDetection = types.core.EVENTDETECTION(Name, Value) creates a EventDetection object where one or more property values are specified using name-value pairs.
+        %  eventDetection = types.core.EVENTDETECTION(Name, Value) creates an EventDetection object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - detection_method (char) - Description of how events were detected, such as voltage threshold, or dV/dT threshold, as well as relevant values.
@@ -39,7 +39,7 @@ methods
         %  - times (double) - DEPRECATED. Timestamps of events, in seconds.
         %
         % Output Arguments:
-        %  - eventDetection (types.core.EventDetection) - A EventDetection object
+        %  - eventDetection (types.core.EventDetection) - An EventDetection object
         
         varargin = [{'times_unit' 'seconds'} varargin];
         obj = obj@types.core.NWBDataInterface(varargin{:});
