@@ -136,7 +136,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: ehennestad/MATLAB-support-for-Zarr-files
-          ref: a55a3f2a20551cd761de1a8a57fc46144d03a241
+          ref: 66373602f5a5c0126f5ba30232e960e02f01a456
           path: zarr-wrapper
 
       - name: Set Zarr wrapper path
