@@ -113,6 +113,36 @@ classdef Zarr2ReaderTest < matlab.unittest.TestCase
             testCase.verifyTrue(all(loadedValue == "brain"));
         end
 
+        function readCompoundDatasetReturnsTable(testCase)
+            % pixel_mask is a 1-D compound array of (x uint32, y uint32, weight float32)
+            % records written by PlaneSegmentation. NUM_ROIS=3, NUM_PIXELS_PER_ROI=4
+            % gives 12 records total.
+            % The compound reader returns a struct array; convertCompoundDataToTable
+            % promotes it to a table when accessed via load_mat_style.
+            pixelMaskPath = "/processing/ophys/PlaneSegmentation/pixel_mask";
+            reader = io.backend.zarr2.Zarr2Reader(testCase.fixturePath);
+            datasetInfo = reader.readNodeInfo(pixelMaskPath);
+            datasetValue = reader.readDatasetValue(datasetInfo, pixelMaskPath);
+
+            testCase.verifyClass(datasetValue, "types.untyped.DataStub");
+
+            loaded = datasetValue.load();
+            testCase.verifyEqual(numel(loaded), 12);  % NUM_ROIS * NUM_PIXELS_PER_ROI
+
+            % Each record must have the three expected fields.
+            if istable(loaded)
+                testCase.verifyTrue(ismember("x", loaded.Properties.VariableNames));
+                testCase.verifyTrue(ismember("y", loaded.Properties.VariableNames));
+                testCase.verifyTrue(ismember("weight", loaded.Properties.VariableNames));
+            elseif isstruct(loaded)
+                testCase.verifyTrue(isfield(loaded, "x"));
+                testCase.verifyTrue(isfield(loaded, "y"));
+                testCase.verifyTrue(isfield(loaded, "weight"));
+            else
+                testCase.verifyFail("Expected compound data as table or struct array.");
+            end
+        end
+
         function readEmbeddedSpecificationsFromZarr(testCase)
             reader = io.backend.zarr2.Zarr2Reader(testCase.fixturePath);
             specs = io.spec.readEmbeddedSpecifications( ...

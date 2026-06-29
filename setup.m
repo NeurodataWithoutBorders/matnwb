@@ -30,7 +30,7 @@ function installZarrWrapper(matnwbDir)
     % The wrapper currently resolves to a fork that adds functionality not yet
     % available upstream. Pinned to a specific commit for reproducibility.
     repoUrl = "https://github.com/ehennestad/MATLAB-support-for-Zarr-files.git";
-    pinnedRef = "a55a3f2a20551cd761de1a8a57fc46144d03a241";
+    pinnedRef = "66373602f5a5c0126f5ba30232e960e02f01a456";
     targetFolder = fullfile(matnwbDir, "external_packages", "MATLAB-support-for-Zarr-files");
 
     if isfolder(targetFolder)
