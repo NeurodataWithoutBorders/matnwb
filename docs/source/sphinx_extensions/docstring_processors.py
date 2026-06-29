@@ -137,13 +137,16 @@ def _make_syntax_examples_code_literals(lines):
             in_syntax_section = False
 
         if in_syntax_section:
-            # Wrap MATLAB expressions in double backticks
-            match = matlab_expr_pattern.search(line)
+            # Strip RST role markup before matching: auto_link may have already
+            # converted identifiers to :class:`X <Y>` or :meth:`X() <Y>` roles.
+            # Syntax examples are code — links inside them are unwanted and also
+            # break the MATLAB expression pattern (line starts with ':' not a word).
+            clean = re.sub(r':[\w:]+:`([^`<]+?)\s*<[^>]+>`', r'\1', line)
+            clean = re.sub(r':[\w:]+:`([^`]+?)`', r'\1', clean)
+            match = matlab_expr_pattern.search(clean)
             if match:
-                # Need group 1 as group 0 contains the leading whitespace...?
-                line = matlab_expr_pattern.sub(lambda m: f"``{m.group(1)}``", line)
-                # Need to prepend a leading space, no idea why.
-                lines[i] = " " + line
+                clean = matlab_expr_pattern.sub(lambda m: f"``{m.group(1)}``", clean)
+                lines[i] = " " + clean
 
 
 def _format_input_arguments(lines):
@@ -236,7 +239,9 @@ def _format_nwbtype_shortnames(lines):
 
 
 def _is_section_header(line):
-    # Regex to identify section headers
-    section_header_pattern = re.compile(r"^\s*%?\s*[A-Za-z ]+:")
+    # Regex to identify section headers.
+    # Must start with a letter (not space) to avoid matching RST roles like
+    # :class:`X` where backtracking would let [A-Za-z ] match a leading space.
+    section_header_pattern = re.compile(r"^\s*%?\s*[A-Za-z][A-Za-z ]*:")
 
     return section_header_pattern.match(line)
