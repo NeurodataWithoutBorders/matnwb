@@ -9,7 +9,10 @@ rely on:
 * a scalar string dataset (``/identifier``)
 * a soft link (electrode group -> device)
 * an object-reference attribute (``/units/spike_times_index`` -> target)
-* a 2-D numeric dataset (``/acquisition/es/data``) for lazy/partial reads
+* a 1-D string dataset (``/general/extracellular_ephys/electrodes/location``)
+* a 1-D integer dataset (``/general/extracellular_ephys/electrodes/channel_id``)
+* a 1-D float64 dataset (``/units/spike_times``)
+* a 2-D float32 dataset (``/acquisition/es/data``) for lazy/partial reads
 
 Usage:
     python generateZarrTestFile.py <output_path.nwb.zarr>
@@ -29,6 +32,9 @@ from hdmf_zarr.nwb import NWBZarrIO
 IDENTIFIER = "ZARR_FIXTURE"
 NUM_ELECTRODES = 4
 NUM_SAMPLES = 29
+ELECTRODE_LOCATION = "brain"
+SPIKE_TIMES = [1.0, 2.0, 3.0, 4.0, 5.0]
+NUM_SPIKE_TIMES = len(SPIKE_TIMES)
 
 
 def build_nwbfile():
@@ -45,8 +51,13 @@ def build_nwbfile():
         location="brain",
         device=device,
     )
-    for _ in range(NUM_ELECTRODES):
-        nwbfile.add_electrode(location="brain", group=electrode_group, group_name="shank0")
+    for i in range(NUM_ELECTRODES):
+        nwbfile.add_electrode(
+            location=ELECTRODE_LOCATION,
+            group=electrode_group,
+            group_name="shank0",
+            channel_id=i,   # 1-D integer dataset under electrodes/
+        )
     electrode_region = nwbfile.create_electrode_table_region(
         region=list(range(NUM_ELECTRODES)),
         description="all electrodes",
@@ -66,8 +77,9 @@ def build_nwbfile():
 
     # An indexed column creates /units/spike_times_index with a 'target'
     # object reference pointing at /units/spike_times.
-    nwbfile.add_unit(spike_times=[1.0, 2.0, 3.0])
-    nwbfile.add_unit(spike_times=[4.0, 5.0])
+    # SPIKE_TIMES split across two units so the index dataset is non-trivial.
+    nwbfile.add_unit(spike_times=SPIKE_TIMES[:3])
+    nwbfile.add_unit(spike_times=SPIKE_TIMES[3:])
 
     return nwbfile
 
