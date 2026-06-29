@@ -250,14 +250,52 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             testCase.verifyEqual(alignedTable.categories, {'custom'})
         end
     
-        function testToTable(testCase)
+        function testGetRowIncludesSelectedCategoryRows(testCase)
             alignedTable = tests.system.AlignedDynamicTableTest.createAlignedTable();
-            categoryTable = tests.system.AlignedDynamicTableTest.createTableWithHeight(3);
+            categoryTable = tests.factory.DynamicTable(NumRows=3, NumColumns=1);
 
             alignedTable.addCategory("custom", categoryTable)
-            
+
+            selectedRows = alignedTable.getRow([1, 3]);
+            expectedCategoryRows = categoryTable.getRow([1, 3]);
+
+            testCase.verifyEqual(selectedRows.custom, expectedCategoryRows)
+        end
+
+        function testGetRowSelectsRequestedCategories(testCase)
+            alignedTable = tests.system.AlignedDynamicTableTest.createAlignedTable();
+            firstCategory = tests.factory.DynamicTable(NumRows=3, NumColumns=1);
+            secondCategory = tests.factory.DynamicTable(NumRows=3, NumColumns=1);
+            alignedTable.addCategory( ...
+                "first", firstCategory, ...
+                "second", secondCategory)
+
+            selectedRows = alignedTable.getRow(1, 'categories', {'second'});
+
+            testCase.verifyEqual(selectedRows.Properties.VariableNames, {'second'})
+            testCase.verifyEqual(selectedRows.second, secondCategory.getRow(1))
+        end
+
+        function testGetRowSelectsCategoryRowsByParentId(testCase)
+            alignedTable = tests.system.AlignedDynamicTableTest.createAlignedTableWithId( ...
+                int64([10; 20; 30]));
+            categoryTable = tests.factory.DynamicTable(NumRows=3, NumColumns=1);
+            alignedTable.addCategory("custom", categoryTable)
+
+            selectedRow = alignedTable.getRow(20, 'useId', true);
+
+            testCase.verifyEqual(selectedRow.custom, categoryTable.getRow(2))
+        end
+
+        function testToTableIncludesCategoryAsNestedTable(testCase)
+            alignedTable = tests.system.AlignedDynamicTableTest.createAlignedTable();
+            categoryTable = tests.factory.DynamicTable(NumRows=3, NumColumns=1);
+            alignedTable.addCategory("custom", categoryTable)
+            expectedCategoryTable = removevars(categoryTable.toTable(), 'id');
+
             matlabTable = alignedTable.toTable();
-            testCase.verifyTrue(any(ismember(matlabTable.Properties.VariableNames, 'custom')))
+
+            testCase.verifyEqual(matlabTable.custom, expectedCategoryTable)
         end
     end
 
