@@ -10,7 +10,7 @@ rely on:
 * a soft link (electrode group -> device)
 * an object-reference attribute (``/units/spike_times_index`` -> target)
 * a 1-D string dataset (``/general/extracellular_ephys/electrodes/location``)
-* a 1-D integer dataset (``/general/extracellular_ephys/electrodes/channel_id``)
+* a 1-D integer dataset (``/general/extracellular_ephys/electrodes/id``, auto-generated)
 * a 1-D float64 dataset (``/units/spike_times``)
 * a 2-D float32 dataset (``/acquisition/es/data``) for lazy/partial reads
 * a compound dataset (``/processing/ophys/PlaneSegmentation/pixel_mask``)
@@ -43,7 +43,6 @@ NUM_SPIKE_TIMES = len(SPIKE_TIMES)
 # Stored as a 1-D compound array of (x uint32, y uint32, weight float32) records.
 NUM_ROIS = 3
 NUM_PIXELS_PER_ROI = 4
-NUM_PIXEL_MASK_RECORDS = NUM_ROIS * NUM_PIXELS_PER_ROI
 
 
 def build_nwbfile():
@@ -60,12 +59,11 @@ def build_nwbfile():
         location="brain",
         device=device,
     )
-    for i in range(NUM_ELECTRODES):
+    for _ in range(NUM_ELECTRODES):
         nwbfile.add_electrode(
             location=ELECTRODE_LOCATION,
             group=electrode_group,
             group_name="shank0",
-            channel_id=i,   # 1-D integer dataset under electrodes/
         )
     electrode_region = nwbfile.create_electrode_table_region(
         region=list(range(NUM_ELECTRODES)),

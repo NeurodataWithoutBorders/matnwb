@@ -53,11 +53,11 @@ classdef Zarr2LazyArrayTest < matlab.unittest.TestCase
         end
 
         function integer1dDatasetHasCorrectMatlabType(testCase)
-            % electrodes/channel_id is a 1-D int64 column added by the fixture
-            % generator. Verifies that the dtype mapping reaches the LazyArray.
+            % electrodes/id is the auto-generated integer row-id column (int64).
+            % Verifies that the integer dtype mapping reaches the LazyArray.
             lazyArray = io.backend.zarr2.Zarr2LazyArray( ...
                 testCase.fixturePath, ...
-                "/general/extracellular_ephys/electrodes/channel_id");
+                "/general/extracellular_ephys/electrodes/id");
             testCase.verifyEqual(lazyArray.dataType, 'int64');
         end
 
