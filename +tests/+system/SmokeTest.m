@@ -51,6 +51,39 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
 
             tests.util.verifyContainerEqual(testCase, readFile, file);
         end
+
+        function testReservedKeywordPropertyRoundTrip(testCase)
+            % The NWBFile "events" field is a reserved MATLAB keyword, so it is
+            % exposed as the property "events_" and stored on disk as "/events".
+            % Verify the property name, the on-disk name, and a full round-trip.
+            testCase.verifyTrue(isprop(types.core.NWBFile(), 'events_'), ...
+                'Reserved schema field "events" should map to property "events_"')
+
+            eventsTable = types.core.EventsTable( ...
+                'description', 'detected events', ...
+                'colnames', {'timestamp'}, ...
+                'id', types.hdmf_common.ElementIdentifiers('data', int64([0;1;2])), ...
+                'timestamp', types.core.TimestampVectorData( ...
+                    'data', [0.1; 0.5; 1.2], 'description', 'event times'));
+
+            eventsSet = types.untyped.Set();
+            eventsSet.set('detected', eventsTable);
+
+            file = NwbFile( ...
+                'identifier', 'evt', ...
+                'session_description', 'reserved keyword test', ...
+                'session_start_time', datetime, ...
+                'timestamps_reference_time', datetime, ...
+                'events_', eventsSet);
+            nwbExport(file, 'events.nwb');
+
+            % The schema name is preserved on disk, not the MATLAB identifier.
+            diskGroup = h5info('events.nwb', '/events');
+            testCase.verifyEqual({diskGroup.Groups.Name}, {'/events/detected'})
+
+            readFile = nwbRead('events.nwb', 'ignorecache');
+            tests.util.verifyContainerEqual(testCase, readFile, file);
+        end
     end
 end
 

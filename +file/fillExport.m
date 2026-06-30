@@ -150,13 +150,17 @@ function dataExportString = fillDataExport(name, prop, elisions, required, needs
         elisionpath = ['[fullpath ''/' elisions ''']'];
     end
 
+    % The on-disk path uses the schema name (prop.name); property access uses
+    % the valid MATLAB identifier, which differs for reserved-keyword names.
+    propertyIdentifier = file.internal.getMatlabPropertyName(name);
+
     if isprop(prop, 'isConstrainedSet') && prop.isConstrainedSet
         % is a sub-object (with an export function)
-        dataExportString = ['refs = obj.' name '.export(writer, ' elisionpath ', refs);'];
+        dataExportString = ['refs = obj.' propertyIdentifier '.export(writer, ' elisionpath ', refs);'];
     elseif isa(prop, 'file.Link') || isa(prop, 'file.Group') ||...
             (isa(prop, 'file.Dataset') && ~isempty(prop.type))
         % obj, loc_id, path, refs
-        dataExportString = ['refs = obj.' name '.export(writer, ' fullpath ', refs);'];
+        dataExportString = ['refs = obj.' propertyIdentifier '.export(writer, ' fullpath ', refs);'];
     elseif isa(prop, 'file.Dataset') % untyped dataset
         options = {};
 
@@ -172,13 +176,13 @@ function dataExportString = fillDataExport(name, prop, elisions, required, needs
         end
 
         % just to guarantee optional arguments are correct syntax
-        nameProp = sprintf('obj.%s', name);
+        nameProp = sprintf('obj.%s', propertyIdentifier);
         nameArgs = [{nameProp} options];
         nameArgs = strjoin(nameArgs, ', ');
         dataExportString = strjoin({...
-            ['if startsWith(class(obj.' name '), ''types.untyped.'')']...
-            ['    refs = obj.' name '.export(writer, ' fullpath ', refs);']...
-            ['elseif ~isempty(obj.' name ')']...
+            ['if startsWith(class(obj.' propertyIdentifier '), ''types.untyped.'')']...
+            ['    refs = obj.' propertyIdentifier '.export(writer, ' fullpath ', refs);']...
+            ['elseif ~isempty(obj.' propertyIdentifier ')']...
             [sprintf('    writer.writeValue(%s, %s);', fullpath, nameArgs)]...
             'end'...
             }, newline);
@@ -189,14 +193,14 @@ function dataExportString = fillDataExport(name, prop, elisions, required, needs
             forceArrayFlag = ', ''forceArray''';
         end
         dataExportString = sprintf('writer.writeAttribute(%1$s, obj.%2$s%3$s);',...
-            fullpath, name, forceArrayFlag);
+            fullpath, propertyIdentifier, forceArrayFlag);
     end
 
     propertyChecks = {};
     dependencyCheck = {};
     preExportString = '';
-    isCurrentPropertySet = getPropertySetCheck(name, prop);
-    isCurrentPropertyUnset = getPropertyUnsetCheck(name, prop);
+    isCurrentPropertySet = getPropertySetCheck(propertyIdentifier, prop);
+    isCurrentPropertyUnset = getPropertyUnsetCheck(propertyIdentifier, prop);
 
     if isa(prop, 'file.Attribute') && ~isempty(prop.dependent)
         %if attribute is dependent, check before writing
@@ -207,10 +211,13 @@ function dataExportString = fillDataExport(name, prop, elisions, required, needs
             flattened = strrep(elisions(1:flattened(end)), '/', '_');
             depPropname = [flattened prop.dependent];
         end
-        propertyReference = sprintf('obj.%s', depPropname);
+        % The parent (dependent) property may have a reserved schema name; its
+        % value is accessed through the valid identifier.
+        depPropIdentifier = file.internal.getMatlabPropertyName(depPropname);
+        propertyReference = sprintf('obj.%s', depPropIdentifier);
         depProp = getProperty(prop.dependent, depPropname, classprops);
-        isDependentPropertySet = getPropertySetCheck(depPropname, depProp);
-        isDependentPropertyUnset = getPropertyUnsetCheck(depPropname, depProp);
+        isDependentPropertySet = getPropertySetCheck(depPropIdentifier, depProp);
+        isDependentPropertyUnset = getPropertyUnsetCheck(depPropIdentifier, depProp);
 
         propertyChecks{end+1} = sprintf(['%s ' ...
             '&& ~isa(%s, ''types.untyped.SoftLink'') ' ...
