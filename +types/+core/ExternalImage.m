@@ -19,9 +19,9 @@ methods
         % EXTERNALIMAGE - Constructor for ExternalImage
         %
         % Syntax:
-        %  externalImage = types.core.EXTERNALIMAGE() creates a ExternalImage object with unset property values.
+        %  externalImage = types.core.EXTERNALIMAGE() creates an ExternalImage object with unset property values.
         %
-        %  externalImage = types.core.EXTERNALIMAGE(Name, Value) creates a ExternalImage object where one or more property values are specified using name-value pairs.
+        %  externalImage = types.core.EXTERNALIMAGE(Name, Value) creates an ExternalImage object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - data (char) - Data property for dataset class (ExternalImage)
@@ -33,7 +33,7 @@ methods
         %  - image_mode (char) - Image mode (color mode) of the image, e.g., "RGB", "RGBA", "grayscale", and "LA".
         %
         % Output Arguments:
-        %  - externalImage (types.core.ExternalImage) - A ExternalImage object
+        %  - externalImage (types.core.ExternalImage) - An ExternalImage object
         
         obj = obj@types.core.BaseImage(varargin{:});
         

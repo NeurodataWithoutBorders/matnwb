@@ -11,9 +11,9 @@ methods
         % ANNOTATIONSERIES - Constructor for AnnotationSeries
         %
         % Syntax:
-        %  annotationSeries = types.core.ANNOTATIONSERIES() creates a AnnotationSeries object with unset property values.
+        %  annotationSeries = types.core.ANNOTATIONSERIES() creates an AnnotationSeries object with unset property values.
         %
-        %  annotationSeries = types.core.ANNOTATIONSERIES(Name, Value) creates a AnnotationSeries object where one or more property values are specified using name-value pairs.
+        %  annotationSeries = types.core.ANNOTATIONSERIES(Name, Value) creates an AnnotationSeries object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - comments (char) - Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string.
@@ -39,7 +39,7 @@ methods
         %  - timestamps (double) - Timestamps for samples stored in data, in seconds, relative to the common experiment master-clock stored in NWBFile.timestamps_reference_time.
         %
         % Output Arguments:
-        %  - annotationSeries (types.core.AnnotationSeries) - A AnnotationSeries object
+        %  - annotationSeries (types.core.AnnotationSeries) - An AnnotationSeries object
         
         varargin = [{'data_resolution' types.util.correctType(-1, 'single') 'data_unit' 'n/a'} varargin];
         obj = obj@types.core.TimeSeries(varargin{:});

@@ -13,7 +13,7 @@ end
 properties
     bands; %  (FrequencyBandsTable) Table for describing the bands that this series was generated from.
     source_channels; %  (DynamicTableRegion) DynamicTableRegion pointer to the channels that this decomposition series was generated from.
-    source_timeseries; %  TimeSeries
+    source_timeseries; %  (TimeSeries) Link to TimeSeries object that this data was calculated from. Metadata about electrodes and their position can be read from that ElectricalSeries so it is not necessary to store that information here.
 end
 
 methods

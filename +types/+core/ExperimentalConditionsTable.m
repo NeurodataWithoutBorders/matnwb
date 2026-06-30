@@ -16,9 +16,9 @@ methods
         % EXPERIMENTALCONDITIONSTABLE - Constructor for ExperimentalConditionsTable
         %
         % Syntax:
-        %  experimentalConditionsTable = types.core.EXPERIMENTALCONDITIONSTABLE() creates a ExperimentalConditionsTable object with unset property values.
+        %  experimentalConditionsTable = types.core.EXPERIMENTALCONDITIONSTABLE() creates an ExperimentalConditionsTable object with unset property values.
         %
-        %  experimentalConditionsTable = types.core.EXPERIMENTALCONDITIONSTABLE(Name, Value) creates a ExperimentalConditionsTable object where one or more property values are specified using name-value pairs.
+        %  experimentalConditionsTable = types.core.EXPERIMENTALCONDITIONSTABLE(Name, Value) creates an ExperimentalConditionsTable object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - colnames (char) - The names of the columns in this table. This should be used to specify an order to the columns.
@@ -34,7 +34,7 @@ methods
         %  - vectordata (VectorData) - Vector columns, including index columns, of this dynamic table.
         %
         % Output Arguments:
-        %  - experimentalConditionsTable (types.core.ExperimentalConditionsTable) - A ExperimentalConditionsTable object
+        %  - experimentalConditionsTable (types.core.ExperimentalConditionsTable) - An ExperimentalConditionsTable object
         
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         
