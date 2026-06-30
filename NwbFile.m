@@ -23,6 +23,7 @@ classdef NwbFile < types.core.NWBFile
                 propValues.nwb_version
             end
             nameValuePairs = namedargs2cell(propValues);
+            nameValuePairs = [{'identifier', char(java.util.UUID.randomUUID())}, nameValuePairs];
             obj = obj@types.core.NWBFile(nameValuePairs{:});
             if strcmp(class(obj), 'NwbFile') %#ok<STISA>
                 cellStringArguments = convertContainedStringsToChars(nameValuePairs(1:2:end));
