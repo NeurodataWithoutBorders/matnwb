@@ -7,7 +7,7 @@ classdef ImageSeries < types.core.TimeSeries & types.untyped.GroupClass
 
 % OPTIONAL PROPERTIES
 properties
-    device; %  Device
+    device; %  (Device) Link to the Device object that was used to capture these images.
     dimension; %  (int32) Number of pixels on x, y, (and z) axes.
     external_file; %  (char) Paths to one or more external file(s). The field is only present if format='external'. This is only relevant if the image series is stored in the file system as one or more image file(s). This field should NOT be used if the image is stored in another NWB file and that file is linked to this file.
     external_file_starting_frame; %  (int32) Each external image may contain one or more consecutive frames of the full ImageSeries. This attribute serves as an index to indicate which frames each file contains, to facilitate random access. The 'starting_frame' attribute, hence, contains a list of frame numbers within the full ImageSeries of the first frame of each file listed in the parent 'external_file' dataset. Zero-based indexing is used (hence, the first element will always be zero). For example, if the 'external_file' dataset has three paths to files and the first file has 5 frames, the second file has 10 frames, and the third file has 20 frames, then this attribute will have values [0, 5, 15]. If there is a single external file that holds all of the frames of the ImageSeries (and so there is a single element in the 'external_file' dataset), then this attribute should have value [0].
@@ -19,9 +19,9 @@ methods
         % IMAGESERIES - Constructor for ImageSeries
         %
         % Syntax:
-        %  imageSeries = types.core.IMAGESERIES() creates a ImageSeries object with unset property values.
+        %  imageSeries = types.core.IMAGESERIES() creates an ImageSeries object with unset property values.
         %
-        %  imageSeries = types.core.IMAGESERIES(Name, Value) creates a ImageSeries object where one or more property values are specified using name-value pairs.
+        %  imageSeries = types.core.IMAGESERIES(Name, Value) creates an ImageSeries object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - comments (char) - Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string.
@@ -61,7 +61,7 @@ methods
         %  - timestamps (double) - Timestamps for samples stored in data, in seconds, relative to the common experiment master-clock stored in NWBFile.timestamps_reference_time.
         %
         % Output Arguments:
-        %  - imageSeries (types.core.ImageSeries) - A ImageSeries object
+        %  - imageSeries (types.core.ImageSeries) - An ImageSeries object
         
         obj = obj@types.core.TimeSeries(varargin{:});
         

@@ -29,9 +29,9 @@ methods
         % ELECTRODESTABLE - Constructor for ElectrodesTable
         %
         % Syntax:
-        %  electrodesTable = types.core.ELECTRODESTABLE() creates a ElectrodesTable object with unset property values.
+        %  electrodesTable = types.core.ELECTRODESTABLE() creates an ElectrodesTable object with unset property values.
         %
-        %  electrodesTable = types.core.ELECTRODESTABLE(Name, Value) creates a ElectrodesTable object where one or more property values are specified using name-value pairs.
+        %  electrodesTable = types.core.ELECTRODESTABLE(Name, Value) creates an ElectrodesTable object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - colnames (char) - The names of the columns in this table. This should be used to specify an order to the columns.
@@ -67,7 +67,7 @@ methods
         %  - z (VectorData) - z coordinate of the channel location in the brain (+z is right).
         %
         % Output Arguments:
-        %  - electrodesTable (types.core.ElectrodesTable) - A ElectrodesTable object
+        %  - electrodesTable (types.core.ElectrodesTable) - An ElectrodesTable object
         
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         

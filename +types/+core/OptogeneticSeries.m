@@ -7,7 +7,7 @@ classdef OptogeneticSeries < types.core.TimeSeries & types.untyped.GroupClass
 
 % REQUIRED PROPERTIES
 properties
-    site; % REQUIRED OptogeneticStimulusSite
+    site; % REQUIRED (OptogeneticStimulusSite) Link to OptogeneticStimulusSite object that describes the site to which this stimulus was applied.
 end
 
 methods
@@ -15,9 +15,9 @@ methods
         % OPTOGENETICSERIES - Constructor for OptogeneticSeries
         %
         % Syntax:
-        %  optogeneticSeries = types.core.OPTOGENETICSERIES() creates a OptogeneticSeries object with unset property values.
+        %  optogeneticSeries = types.core.OPTOGENETICSERIES() creates an OptogeneticSeries object with unset property values.
         %
-        %  optogeneticSeries = types.core.OPTOGENETICSERIES(Name, Value) creates a OptogeneticSeries object where one or more property values are specified using name-value pairs.
+        %  optogeneticSeries = types.core.OPTOGENETICSERIES(Name, Value) creates an OptogeneticSeries object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - comments (char) - Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string.
@@ -47,7 +47,7 @@ methods
         %  - timestamps (double) - Timestamps for samples stored in data, in seconds, relative to the common experiment master-clock stored in NWBFile.timestamps_reference_time.
         %
         % Output Arguments:
-        %  - optogeneticSeries (types.core.OptogeneticSeries) - A OptogeneticSeries object
+        %  - optogeneticSeries (types.core.OptogeneticSeries) - An OptogeneticSeries object
         
         varargin = [{'data_unit' 'watts'} varargin];
         obj = obj@types.core.TimeSeries(varargin{:});

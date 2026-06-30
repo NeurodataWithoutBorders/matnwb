@@ -8,7 +8,7 @@ classdef OptogeneticStimulusSite < types.core.NWBContainer & types.untyped.Group
 % REQUIRED PROPERTIES
 properties
     description; % REQUIRED (char) Description of stimulation site.
-    device; % REQUIRED Device
+    device; % REQUIRED (Device) Device that generated the stimulus.
     excitation_lambda; % REQUIRED (single) Excitation wavelength, in nm.
     location; % REQUIRED (char) Location of the stimulation site. Specify the area, layer, comments on estimation of area/layer, stereotaxic coordinates if in vivo, etc. Use standard atlas names for anatomical regions when possible.
 end
@@ -18,9 +18,9 @@ methods
         % OPTOGENETICSTIMULUSSITE - Constructor for OptogeneticStimulusSite
         %
         % Syntax:
-        %  optogeneticStimulusSite = types.core.OPTOGENETICSTIMULUSSITE() creates a OptogeneticStimulusSite object with unset property values.
+        %  optogeneticStimulusSite = types.core.OPTOGENETICSTIMULUSSITE() creates an OptogeneticStimulusSite object with unset property values.
         %
-        %  optogeneticStimulusSite = types.core.OPTOGENETICSTIMULUSSITE(Name, Value) creates a OptogeneticStimulusSite object where one or more property values are specified using name-value pairs.
+        %  optogeneticStimulusSite = types.core.OPTOGENETICSTIMULUSSITE(Name, Value) creates an OptogeneticStimulusSite object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - description (char) - Description of stimulation site.
@@ -32,7 +32,7 @@ methods
         %  - location (char) - Location of the stimulation site. Specify the area, layer, comments on estimation of area/layer, stereotaxic coordinates if in vivo, etc. Use standard atlas names for anatomical regions when possible.
         %
         % Output Arguments:
-        %  - optogeneticStimulusSite (types.core.OptogeneticStimulusSite) - A OptogeneticStimulusSite object
+        %  - optogeneticStimulusSite (types.core.OptogeneticStimulusSite) - An OptogeneticStimulusSite object
         
         obj = obj@types.core.NWBContainer(varargin{:});
         
