@@ -5,9 +5,7 @@ classdef DynamicTableCheckConfigTest < matlab.unittest.TestCase
         function testInvalidColnamesErrorsInReadContext(testCase)
             % A non-text colnames is a structural defect, not a recoverable
             % schema deviation, so it is a hard error even when reading.
-            previousContext = matnwb.common.validation.internal.context("read");
-            cleanup = onCleanup( ...
-                @() matnwb.common.validation.internal.context(previousContext));
+            [~, cleanup] = matnwb.common.validation.internal.context("read");
 
             testCase.verifyError( ...
                 @() types.hdmf_common.DynamicTable( ...
@@ -17,9 +15,7 @@ classdef DynamicTableCheckConfigTest < matlab.unittest.TestCase
         end
 
         function testMismatchedColumnHeightsWarnInReadContext(testCase)
-            previousContext = matnwb.common.validation.internal.context("read");
-            cleanup = onCleanup( ...
-                @() matnwb.common.validation.internal.context(previousContext));
+            [~, cleanup] = matnwb.common.validation.internal.context("read");
 
             testCase.verifyWarning( ...
                 @() types.hdmf_common.DynamicTable( ...
@@ -37,9 +33,7 @@ classdef DynamicTableCheckConfigTest < matlab.unittest.TestCase
         end
 
         function testMismatchedIdHeightWarnsInReadContext(testCase)
-            previousContext = matnwb.common.validation.internal.context("read");
-            cleanup = onCleanup( ...
-                @() matnwb.common.validation.internal.context(previousContext));
+            [~, cleanup] = matnwb.common.validation.internal.context("read");
 
             testCase.verifyWarning( ...
                 @() types.hdmf_common.DynamicTable( ...

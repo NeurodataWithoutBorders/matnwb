@@ -15,15 +15,37 @@ classdef ValidateSoftLinkTest < matlab.unittest.TestCase
         function testWrongTargetTypeWarnsInReadContext(testCase)
             softLink = testCase.createSoftLinkWithTargetType('types.core.Device');
 
-            previousContext = matnwb.common.validation.internal.context("read");
-            cleanup = onCleanup( ...
-                @() matnwb.common.validation.internal.context(previousContext));
+            [~, cleanup] = matnwb.common.validation.internal.context("read");
 
             value = testCase.verifyWarning( ...
                 @() types.util.validateSoftLink( ...
                     'electrode_group', softLink, 'types.core.ElectrodeGroup'), ...
                 'NWB:ValidateSoftLink:InvalidNeurodataType');
             testCase.verifyClass(value, 'types.untyped.SoftLink')
+        end
+
+        function testWrongDirectTargetTypeIsKeptInReadContext(testCase)
+            value = types.core.Device('description', 'wrong target');
+
+            [~, cleanup] = matnwb.common.validation.internal.context("read");
+
+            validatedValue = testCase.verifyWarning( ...
+                @() types.util.validateSoftLink( ...
+                    'electrode_group', value, 'types.core.ElectrodeGroup'), ...
+                'NWB:CheckType:InvalidNeurodataType');
+
+            testCase.verifySameHandle(validatedValue, value)
+            testCase.verifyFalse(isa(validatedValue, 'types.untyped.SoftLink'))
+        end
+
+        function testValidDirectTargetTypeIsWrapped(testCase)
+            value = types.core.Device('description', 'valid target');
+
+            validatedValue = testCase.verifyWarningFree( ...
+                @() types.util.validateSoftLink( ...
+                    'device', value, 'types.core.Device'));
+
+            testCase.verifyClass(validatedValue, 'types.untyped.SoftLink')
         end
     end
 

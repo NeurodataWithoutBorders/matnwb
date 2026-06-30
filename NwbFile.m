@@ -40,9 +40,7 @@ classdef NwbFile < types.core.NWBFile
                 options.StorageBackend (1,1) string = "hdf5"
             end
 
-            previousSchemaValidationContext = matnwb.common.validation.internal.context("write");
-            schemaValidationContextCleanupObj = onCleanup( ...
-                @() matnwb.common.validation.internal.context(previousSchemaValidationContext));
+            [~, contextCleanup] = matnwb.common.validation.internal.context("write");
 
             % add to file create date
             if isa(obj.file_create_date, 'types.untyped.DataStub')

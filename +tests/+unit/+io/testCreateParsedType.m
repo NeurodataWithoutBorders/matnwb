@@ -5,6 +5,9 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
         function setupMethod(testCase)
             % Use a fixture to create a temporary working directory
             testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
+            previousReportingSource = matnwb.common.validation.internal.reportingSource([]);
+            testCase.addTeardown( ...
+                @() matnwb.common.validation.internal.reportingSource(previousReportingSource));
         end
     end
 
@@ -45,6 +48,10 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                 'NWB:CheckDataType:InvalidConversion');
 
             testCase.verifyClass(type, testType)
+            [warningMessage, warningId] = lastwarn();
+            testCase.verifyEqual(warningId, 'NWB:CheckDataType:InvalidConversion')
+            testCase.verifySubstring(warningMessage, testPath)
+            testCase.verifySubstring(warningMessage, testType)
         end
 
         function testCreateDynamicTableWithDuplicateColnamesWarns(testCase)
@@ -90,9 +97,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
         end
 
         function testCheckConfigDoesNotRevalidateDuplicateColnamesOnRead(testCase)
-            previousValidationContext = matnwb.common.validation.internal.context("read");
-            cleanupContext = onCleanup( ...
-                @() matnwb.common.validation.internal.context(previousValidationContext));
+            [~, cleanupContext] = matnwb.common.validation.internal.context("read");
 
             warningState = warning('off', 'NWB:DynamicTable:DuplicateColumnNames');
             cleanupWarning = onCleanup(@() warning(warningState));
@@ -125,6 +130,8 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                     'description', 'new dynamic table', ...
                     'colnames', {'columnA', 'columnA'}), ...
                 'NWB:DynamicTable:DuplicateColumnNames');
+            testCase.verifyEmpty( ...
+                matnwb.common.validation.internal.reportingSource())
         end
     end
 end
