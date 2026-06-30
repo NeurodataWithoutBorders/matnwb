@@ -11,9 +11,9 @@ methods
         % RGBAIMAGE - Constructor for RGBAImage
         %
         % Syntax:
-        %  rGBAImage = types.core.RGBAIMAGE() creates a RGBAImage object with unset property values.
+        %  rgbaImage = types.core.RGBAIMAGE() creates an RGBAImage object with unset property values.
         %
-        %  rGBAImage = types.core.RGBAIMAGE(Name, Value) creates a RGBAImage object where one or more property values are specified using name-value pairs.
+        %  rgbaImage = types.core.RGBAIMAGE(Name, Value) creates an RGBAImage object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - data (numeric) - Data property for dataset class (RGBAImage)
@@ -23,7 +23,7 @@ methods
         %  - resolution (single) - Pixel resolution of the image, in pixels per centimeter.
         %
         % Output Arguments:
-        %  - rGBAImage (types.core.RGBAImage) - A RGBAImage object
+        %  - rgbaImage (types.core.RGBAImage) - An RGBAImage object
         
         obj = obj@types.core.Image(varargin{:});
         

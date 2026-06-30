@@ -58,7 +58,6 @@ extensions = [
     "sphinx.ext.mathjax",  # or other extensions you may need
     'sphinxcontrib.matlab', # generate docs for matlab functions
     'sphinx.ext.autodoc', # autogenerate docs
-    'sphinx.ext.napoleon', # for parsing e.g google style parameter docstring
     'sphinx.ext.viewcode',
     'sphinx.ext.linkcode',
     'sphinx.ext.extlinks', # For maintaining external links
