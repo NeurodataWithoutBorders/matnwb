@@ -315,14 +315,27 @@ classdef nwbExportTest < tests.abstract.NwbTestCase
                 ts.data_unit)
         end
 
-        function testExportWritesScalarDatetimeAsScalarDataset(testCase)
+        function testExportScalarDatetimeWritesCorrectShape(testCase)
+            % Verify that in-memory scalar datetime values are exported with 
+            % a shape determined by schema, e.g.:
+            %   session_start_time  -> HDF5 scalar dataset
+            %   file_create_date    -> HDF5 non-scalar (simple) dataset
+
             nwb = tests.factory.NWBFile();
             filename = "write_scalar_datetime_test.nwb";
             nwbExport(nwb, filename);
 
-            datasetInfo = h5info(filename, "/session_start_time");
+            testCase.verifyLength(nwb.session_start_time, 1)
+            testCase.verifyLength(nwb.file_create_date, 1)
 
+            % session_start_time should be scalar
+            datasetInfo = h5info(filename, "/session_start_time");
             testCase.verifyEqual(datasetInfo.Dataspace.Type, 'scalar')
+
+            % file_create_date should be non-scalar
+            datasetInfo = h5info(filename, "/file_create_date");
+            testCase.verifyEqual(datasetInfo.Dataspace.Type, 'simple')
+            testCase.verifyEqual(datasetInfo.Dataspace.Size, 1)
         end
 
         function testWasGeneratedByProperty(testCase)
