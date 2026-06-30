@@ -1,25 +1,31 @@
 classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
     SmokeTest < matlab.unittest.TestCase
+% Test construction of all core (including hdmf_common) types
+% Test simple read write for HDF5-based nwb file
 
-    methods (TestMethodSetup)
+    properties (Constant)
+        NAMESPACES = ["core", "hdmf_common"]
+    end
+
+    properties (TestParameter)
+        % typeName - Fully qualified name of a generated core/hdmf_common
+        % type, keyed by a readable identifier for use in test names.
+        typeName = listCoreTypeNames();
+    end
+
+    methods (TestClassSetup)
         function setup(testCase)
-            % This method runs before each test method.
+            import matlab.unittest.fixtures.SuppressedWarningsFixture
+            testCase.applyFixture(SuppressedWarningsFixture('NWB:AttributeDependencyNotSet'))
             testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
         end
     end
 
     methods (Test)
-        %TODO rewrite namespace instantiation check
-        function testSmokeInstantiateCore(testCase)
-            % classes = fieldnames(testCase.TestData.registry);
-            % for i = 1:numel(classes)
-            %     c = classes{i};
-            %     try
-            %         types.(c);
-            %     catch e
-            %         testCase.verifyFail(['Could not instantiate types.' c ' : ' e.message]);
-            %     end
-            % end
+        function testSmokeInstantiateCore(testCase, typeName) %#ok<INUSD>
+            % Construct a generated type with no arguments to confirm the
+            % class definition is at least syntactically valid and loadable.
+            feval(str2func(typeName));
         end
 
         function testSmokeReadWrite(testCase)
@@ -44,6 +50,25 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             readFile = nwbRead('epoch.nwb', 'ignorecache');
 
             tests.util.verifyContainerEqual(testCase, readFile, file);
+        end
+    end
+end
+
+function typeNames = listCoreTypeNames()
+% listCoreTypeNames - Fully qualified names of generated core/hdmf_common
+% types, keyed by a readable identifier for use in parameterized test names.
+    namespaceNames = tests.system.SmokeTest.NAMESPACES;
+    typeNames = struct();
+    for iNamespace = 1:numel(namespaceNames)
+        namespaceName = namespaceNames{iNamespace};
+        classFiles = dir(fullfile(misc.getMatnwbDir, '+types', ['+' namespaceName], '*.m'));
+        for iClass = 1:numel(classFiles)
+            [~, className] = fileparts(classFiles(iClass).name);
+            if strcmp(className, 'Version')
+                continue
+            end
+            key = [namespaceName '_' className];
+            typeNames.(key) = sprintf('types.%s.%s', namespaceName, className);
         end
     end
 end
