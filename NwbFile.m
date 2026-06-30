@@ -41,6 +41,10 @@ classdef NwbFile < types.core.NWBFile
                 options.StorageBackend (1,1) string = "hdf5"
             end
 
+            previousSchemaValidationContext = matnwb.common.validation.internal.context("write");
+            schemaValidationContextCleanupObj = onCleanup( ...
+                @() matnwb.common.validation.internal.context(previousSchemaValidationContext));
+
             % add to file create date
             if isa(obj.file_create_date, 'types.untyped.DataStub')
                 obj.file_create_date = obj.file_create_date.load();
@@ -77,6 +81,8 @@ classdef NwbFile < types.core.NWBFile
                 writer.abort();
                 rethrow(ME);
             end
+
+            clear schemaValidationContextCleanupObj
         end
 
         function datasetConfig = applyDatasetSettingsProfile(obj, profile, options)
