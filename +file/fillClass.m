@@ -99,7 +99,7 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
     %% return classfile string
     classDefinitionHeader = [...
         'classdef ' name ' < ' strjoin(superclassNames, ' & ') newline... %header, dependencies
-        '% ' upper(name) ' - ' class.doc]; %name, docstr
+        '% ' upper(name) ' - ' file.internal.processDocstring(class.doc)]; %name, docstr
 
     fullClassName = strjoin({'types', misc.str2validName(namespace.name), name}, '.');
     allRequiredPropertyNames = schemes.internal.getRequiredPropsForClass(fullClassName, namespace);
