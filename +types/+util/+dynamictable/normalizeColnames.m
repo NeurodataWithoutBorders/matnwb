@@ -5,9 +5,10 @@ function colnames = normalizeColnames(colnames)
         return
     end
 
-    % This low-level normalizer is intentionally strict. Read-context callers
-    % that preserve an invalid value after dtype validation should bypass
-    % normalization rather than re-reporting the same schema violation.
+    % A non-text colnames is a structural defect, not a recoverable schema
+    % deviation: it cannot be iterated or used to look up columns, and cannot
+    % arise from a normal read (HDF5 string datasets parse to text). It is a
+    % hard error in every context rather than a warn-on-read violation.
     assert(types.util.dynamictable.internal.isColnamesTextContainer(colnames), ...
         'NWB:DynamicTable:InvalidColumnNames', ...
         'Column names must be a cell array of character vectors.');
