@@ -24,7 +24,7 @@ function s = fillProps(props, names, varargin)
     for i=1:length(names)
         pnm = names{i};
         propInfo = props(pnm);
-        propStr = strjoin(strsplit(getPropStr(props(pnm)), newline), [newline '% ']);
+        propStr = file.internal.processDocstring(getPropStr(props(pnm)));
         defaultValue = [];
         if startsWith(class(propInfo), 'file.')
             if isprop(propInfo, 'value')
