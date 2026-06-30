@@ -24,9 +24,9 @@ function typeInstance = createParsedType(typePath, typeName, varargin)
 
     [lastWarningMessage, lastWarningID] = lastwarn('', ''); % Clear last warning
 
-    previousValidationContext = types.util.validationContext('read');
+    previousValidationContext = matnwb.common.validation.internal.context("read");
     validationContextCleanupObj = onCleanup( ...
-        @() types.util.validationContext(previousValidationContext));
+        @() matnwb.common.validation.internal.context(previousValidationContext));
 
     try
         typeInstance = feval(typeName, varargin{:}); % Create the type.

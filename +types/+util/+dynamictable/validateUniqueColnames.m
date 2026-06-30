@@ -22,11 +22,6 @@ function validateUniqueColnames(colnames)
         'Column names in `colnames` must be unique. Duplicate column %s: %s.', ...
         columnLabel, duplicateNamesText);
 
-    if strcmp(types.util.validationContext(), 'read')
-        warning('NWB:DynamicTable:DuplicateColumnNames', ...
-            message);
-    else
-        error('NWB:DynamicTable:DuplicateColumnNames', ...
-            message);
-    end
+    matnwb.common.validation.reportSchemaViolation(...
+        'NWB:DynamicTable:DuplicateColumnNames', message)
 end
