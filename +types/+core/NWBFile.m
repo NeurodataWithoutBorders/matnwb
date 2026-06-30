@@ -21,7 +21,7 @@ end
 properties
     acquisition; %  (DynamicTable|NWBDataInterface) Tabular data that is relevant to acquisition | Acquired, raw data.
     analysis; %  (DynamicTable|NWBContainer) Tabular data that is relevant to data stored in analysis | Custom analysis results.
-    events; %  (EventsTable) An EventsTable holding a collection of event times of a particular type (e.g., licks, rewards, stimulus presentations) along with their per-event metadata.
+    events_; %  (EventsTable) An EventsTable holding a collection of event times of a particular type (e.g., licks, rewards, stimulus presentations) along with their per-event metadata.
     general; %  (LabMetaData) Place-holder than can be extended so that lab-specific meta-data can be placed in /general.
     general_data_collection; %  (char) Notes about data collection and analysis.
     general_devices; %  (Device) Data acquisition devices.
@@ -66,6 +66,9 @@ properties
     stimulus_presentation; %  (DynamicTable|NWBDataInterface|TimeSeries) DynamicTable objects containing data of presented stimuli. | Generic NWB data interfaces, usually from an extension, containing data of presented stimuli. | TimeSeries objects containing data of presented stimuli.
     stimulus_templates; %  (Images|TimeSeries) Images objects containing images of presented stimuli. | TimeSeries objects containing template data of presented stimuli.
     units; %  (Units) Data about sorted spike units.
+end
+properties (Constant, Hidden)
+    SchemaPropertyNameMapping = struct('events_', 'events')
 end
 
 methods
@@ -195,7 +198,7 @@ methods
         p.StructExpand = false;
         addParameter(p, 'acquisition',types.untyped.Set());
         addParameter(p, 'analysis',types.untyped.Set());
-        addParameter(p, 'events',types.untyped.Set());
+        addParameter(p, 'events_',types.untyped.Set());
         addParameter(p, 'file_create_date',[]);
         addParameter(p, 'general',types.untyped.Set());
         addParameter(p, 'general_data_collection',[]);
@@ -249,7 +252,7 @@ methods
         misc.parseSkipInvalidName(p, varargin);
         obj.acquisition = p.Results.acquisition;
         obj.analysis = p.Results.analysis;
-        obj.events = p.Results.events;
+        obj.events_ = p.Results.events_;
         obj.file_create_date = p.Results.file_create_date;
         obj.general = p.Results.general;
         obj.general_data_collection = p.Results.general_data_collection;
@@ -315,8 +318,8 @@ methods
     function set.analysis(obj, val)
         obj.analysis = obj.validate_analysis(val);
     end
-    function set.events(obj, val)
-        obj.events = obj.validate_events(val);
+    function set.events_(obj, val)
+        obj.events_ = obj.validate_events_(val);
     end
     function set.file_create_date(obj, val)
         obj.file_create_date = obj.validate_file_create_date(val);
@@ -481,7 +484,7 @@ methods
         constrained = {'types.hdmf_common.DynamicTable', 'types.core.NWBContainer'};
         types.util.checkSet('analysis', struct(), constrained, val);
     end
-    function val = validate_events(obj, val)
+    function val = validate_events_(obj, val)
         namedprops = struct();
         constrained = {'types.core.EventsTable'};
         types.util.checkSet('events', namedprops, constrained, val);
@@ -687,8 +690,8 @@ methods
         fullpath = '';
         refs = obj.acquisition.export(writer, [fullpath '/acquisition'], refs);
         refs = obj.analysis.export(writer, [fullpath '/analysis'], refs);
-        if ~isempty(obj.events) && obj.events.Count ~= 0
-            refs = obj.events.export(writer, [fullpath '/events'], refs);
+        if ~isempty(obj.events_) && obj.events_.Count ~= 0
+            refs = obj.events_.export(writer, [fullpath '/events'], refs);
         end
         if startsWith(class(obj.file_create_date), 'types.untyped.')
             refs = obj.file_create_date.export(writer, [fullpath '/file_create_date'], refs);

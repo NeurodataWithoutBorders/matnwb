@@ -141,9 +141,18 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
     end
     if isa(class, 'file.Group') && class.hasAnonGroups
         mixinPropertyBlock = createPropertyBlockForHasUnnamedGroupMixin(class);
-        
+
         fullPropertyDefinition = strjoin(...
             {fullPropertyDefinition, mixinPropertyBlock}, newline);
+    end
+
+    % Emit a mapping from valid property identifiers to their schema names for
+    % any properties introduced by this class whose schema name is a reserved
+    % MATLAB keyword. MatNWB uses this mapping to remap names on read.
+    schemaNameMappingBlock = createSchemaNameMappingBlock(nonInherited);
+    if ~isempty(schemaNameMappingBlock)
+        fullPropertyDefinition = strjoin(...
+            {fullPropertyDefinition, schemaNameMappingBlock}, newline);
     end
 
     constructorBody = file.fillConstructor(...
@@ -225,9 +234,31 @@ end
 function propertyBlockStr = createPropertyBlockForHasUnnamedGroupMixin(classInfo)
     isAnonGroup = arrayfun(@(x) isempty(x.name), classInfo.subgroups, 'uni', true);
     anonNames = arrayfun(@(x) lower(x.type), classInfo.subgroups(isAnonGroup), 'uni', false);
-    
+
     propertyBlockStr = strjoin({...
         'properties (Access = protected)', ...
         sprintf('    GroupPropertyNames = {%s}', strjoin(strcat('''', anonNames, ''''), ', ') ), ...
+        'end'}, newline);
+end
+
+function propertyBlockStr = createSchemaNameMappingBlock(schemaNames)
+    % Build a (Constant, Hidden) struct mapping the valid property identifier
+    % to its schema name for each reserved-keyword schema name.
+    reservedNames = schemaNames(ismember(schemaNames, file.internal.reservedPropertyNames()));
+    if isempty(reservedNames)
+        propertyBlockStr = '';
+        return
+    end
+
+    entries = cell(1, numel(reservedNames));
+    for i = 1:numel(reservedNames)
+        schemaName = reservedNames{i};
+        identifier = file.internal.getMatlabPropertyName(schemaName);
+        entries{i} = sprintf('''%s'', ''%s''', identifier, schemaName);
+    end
+
+    propertyBlockStr = strjoin({...
+        'properties (Constant, Hidden)', ...
+        sprintf('    SchemaPropertyNameMapping = struct(%s)', strjoin(entries, ', ')), ...
         'end'}, newline);
 end
