@@ -21,7 +21,7 @@ end
 properties
     acquisition; %  (DynamicTable|NWBDataInterface) Tabular data that is relevant to acquisition | Acquired, raw data.
     analysis; %  (DynamicTable|NWBContainer) Tabular data that is relevant to data stored in analysis | Custom analysis results.
-    events; %  (EventsTable) Events that occurred during the session.
+    events; %  (EventsTable) An EventsTable holding a collection of event times of a particular type (e.g., licks, rewards, stimulus presentations) along with their per-event metadata.
     general; %  (LabMetaData) Place-holder than can be extended so that lab-specific meta-data can be placed in /general.
     general_data_collection; %  (char) Notes about data collection and analysis.
     general_devices; %  (Device) Data acquisition devices.
@@ -58,9 +58,9 @@ properties
     general_virus; %  (char) Information about virus(es) used in experiments, including virus ID, source, date made, injection location, volume, etc.
     general_was_generated_by; %  (char) Name and version of software package(s) used to generate data contained in this NWB File. For each software package or library, include the name of the software as the first value and the version as the second value.
     intervals; %  (TimeIntervals) Optional additional table(s) for describing other experimental time intervals.
-    intervals_epochs; %  (TimeIntervals) Divisions in time marking experimental stages or sub-divisions of a single recording session.
+    intervals_epochs; %  (TimeIntervals) Time intervals marking coarse-grained experimental phases or subdivisions of a recording session, such as baseline, task, rest, or sleep stages.
     intervals_invalid_times; %  (TimeIntervals) Time intervals that should be removed from analysis.
-    intervals_trials; %  (TimeIntervals) Repeated experimental events that have a logical grouping.
+    intervals_trials; %  (TimeIntervals) Time intervals corresponding to repeated experimental units with consistent structure, such as individual stimulus-response-reward cycles.
     processing; %  (ProcessingModule) Intermediate analysis of acquired data.
     scratch; %  (DynamicTable|NWBContainer|ScratchData) Any one-off tables | Any one-off containers | Any one-off datasets
     stimulus_presentation; %  (DynamicTable|NWBDataInterface|TimeSeries) DynamicTable objects containing data of presented stimuli. | Generic NWB data interfaces, usually from an extension, containing data of presented stimuli. | TimeSeries objects containing data of presented stimuli.
@@ -82,7 +82,7 @@ methods
         %
         %  - analysis (DynamicTable|NWBContainer) - Tabular data that is relevant to data stored in analysis
         %
-        %  - events (EventsTable) - Events that occurred during the session.
+        %  - events (EventsTable) - An EventsTable holding a collection of event times of a particular type (e.g., licks, rewards, stimulus presentations) along with their per-event metadata.
         %
         %  - file_create_date (datetime) - A record of the date the file was created and of subsequent modifications. The date is stored in UTC with local timezone offset as ISO 8601 extended formatted strings: 2018-09-28T14:43:54.123+02:00. Dates stored in UTC end in "Z" with no timezone offset. Date accuracy is up to milliseconds. The file can be created after the experiment was run, so this may differ from the experiment start time. Each modification to the nwb file adds a new entry to the array.
         %
@@ -160,11 +160,11 @@ methods
         %
         %  - intervals (TimeIntervals) - Optional additional table(s) for describing other experimental time intervals.
         %
-        %  - intervals_epochs (TimeIntervals) - Divisions in time marking experimental stages or sub-divisions of a single recording session.
+        %  - intervals_epochs (TimeIntervals) - Time intervals marking coarse-grained experimental phases or subdivisions of a recording session, such as baseline, task, rest, or sleep stages.
         %
         %  - intervals_invalid_times (TimeIntervals) - Time intervals that should be removed from analysis.
         %
-        %  - intervals_trials (TimeIntervals) - Repeated experimental events that have a logical grouping.
+        %  - intervals_trials (TimeIntervals) - Time intervals corresponding to repeated experimental units with consistent structure, such as individual stimulus-response-reward cycles.
         %
         %  - processing (ProcessingModule) - Intermediate analysis of acquired data.
         %

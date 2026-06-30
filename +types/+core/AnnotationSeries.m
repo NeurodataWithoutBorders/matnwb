@@ -1,5 +1,5 @@
 classdef AnnotationSeries < types.core.TimeSeries & types.untyped.GroupClass
-% ANNOTATIONSERIES - DEPRECATED. Use an EventsTable instead. Stores user annotations made during an experiment. The data[] field stores a text array, and timestamps are stored for each annotation (ie, interval=1). This is largely an alias to a standard TimeSeries storing a text array but that is identifiable as storing annotations in a machine-readable way.
+% ANNOTATIONSERIES - DEPRECATED. Use an `EventsTable` instead, placed in the top-level `/events` group of the `NWBFile`. The `timestamps` field maps to the `timestamp` column, and the `data` field (annotation strings) maps to the `annotation` column on `EventsTable`. Use the `source_description` attribute on the `EventsTable` to record where the annotations came from (e.g., "Manual video review"). Original definition: Stores user annotations made during an experiment. The data[] field stores a text array, and timestamps are stored for each annotation (ie, interval=1). This is largely an alias to a standard TimeSeries storing a text array but that is identifiable as storing annotations in a machine-readable way.
 %
 % Required Properties:
 %  data
