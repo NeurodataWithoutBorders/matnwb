@@ -23,6 +23,7 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
             'plot_configurator.py', ...     % Does not export nwb file
             'plot_zarr_io.py', ...          % Does not export nwb file in nwb format
             'brain_observatory.py', ...     % Requires allen sdk
+            'resources_streaming.py', ...   % Requires dandi api
             'extensions.py'};               % Discrepancy between tutorial and schema: https://github.com/NeurodataWithoutBorders/pynwb/issues/1952
 
         % SkippedFiles - Name of exported nwb files to skip reading with matnwb
