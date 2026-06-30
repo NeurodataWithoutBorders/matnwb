@@ -33,36 +33,29 @@ methods
         %  - control_description (char) - Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0.
         %
         %  - data (numeric) - Time-series of microscopy data indexed as data[time, width, height].
-        
-        Indexing convention:
-          - width: first spatial axis (horizontal direction, columns)
-          - height: second spatial axis (vertical direction, rows)
-        
-        For raster-scanning systems (two-photon, confocal, one-photon laser scanning):
-          - width: fast scan direction (horizontal)
-          - height: slow scan direction (vertical)
-        
-        Coordinate system diagram:
-        
-          height  ^
-          (slow)  |
-                  |    +-----------------+
-                  |    |                 |
-                  |    |   Image plane   |
-                  |    |                 |
-                  |    +-----------------+
-                  |
-                  0 ----------------------> width (fast)
-        
-        
-        For non-raster systems (wide-field, light-sheet, random-access), width and height
-        are arbitrary coordinates of the image plane.
-        
-        Note: This indexing convention conflicts with standard matrix[row, column] notation
-        for array access where the first index moves vertically through rows and the second moves horizontally
-        through columns. In the schema, data[time, width, height] means that the first spatial
-        index moves horizontally (width) through columns and the second spatial index moves
-        vertically (height) through rows.
+        %   Indexing convention:
+        %     - width: first spatial axis (horizontal direction, columns)
+        %     - height: second spatial axis (vertical direction, rows)
+        %   For raster-scanning systems (two-photon, confocal, one-photon laser scanning):
+        %     - width: fast scan direction (horizontal)
+        %     - height: slow scan direction (vertical)
+        %   Coordinate system diagram::
+        %     height  ^
+        %     (slow)  |
+        %             |    +-----------------+
+        %             |    |                 |
+        %             |    |   Image plane   |
+        %             |    |                 |
+        %             |    +-----------------+
+        %             |
+        %             0 ----------------------> width (fast)
+        %   For non-raster systems (wide-field, light-sheet, random-access), width and height
+        %   are arbitrary coordinates of the image plane.
+        %   Note: This indexing convention conflicts with standard matrix[row, column] notation
+        %   for array access where the first index moves vertically through rows and the second moves horizontally
+        %   through columns. In the schema, data[time, width, height] means that the first spatial
+        %   index moves horizontally (width) through columns and the second spatial index moves
+        %   vertically (height) through rows.
         %
         %  - data_continuity (char) - Optionally describe the continuity of the data. Can be "continuous", "instantaneous", or "step". For example, a voltage trace would be "continuous", because samples are recorded from a continuous process. An array of lick times would be "instantaneous", because the data represents distinct moments in time. Times of image presentations would be "step" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable. For storing instantaneous event information, it is recommended to use an EventsTable instead of a TimeSeries with continuity set to "instantaneous".
         %
