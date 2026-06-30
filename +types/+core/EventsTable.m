@@ -21,9 +21,9 @@ methods
         % EVENTSTABLE - Constructor for EventsTable
         %
         % Syntax:
-        %  eventsTable = types.core.EVENTSTABLE() creates a EventsTable object with unset property values.
+        %  eventsTable = types.core.EVENTSTABLE() creates an EventsTable object with unset property values.
         %
-        %  eventsTable = types.core.EVENTSTABLE(Name, Value) creates a EventsTable object where one or more property values are specified using name-value pairs.
+        %  eventsTable = types.core.EVENTSTABLE(Name, Value) creates an EventsTable object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - annotation (VectorData) - Column containing user annotations about events.
@@ -45,7 +45,7 @@ methods
         %  - vectordata (VectorData) - Vector columns, including index columns, of this dynamic table.
         %
         % Output Arguments:
-        %  - eventsTable (types.core.EventsTable) - A EventsTable object
+        %  - eventsTable (types.core.EventsTable) - An EventsTable object
         
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         

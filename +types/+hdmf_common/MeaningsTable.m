@@ -8,7 +8,7 @@ classdef MeaningsTable < types.hdmf_common.DynamicTable & types.untyped.GroupCla
 % REQUIRED PROPERTIES
 properties
     meaning; % REQUIRED (VectorData) The meaning of the value in the linked VectorData object.
-    target; % REQUIRED VectorData
+    target; % REQUIRED (VectorData) Link to the VectorData object for which this table provides meanings.
     value; % REQUIRED (VectorData) The value of a row in the linked VectorData object.
 end
 
