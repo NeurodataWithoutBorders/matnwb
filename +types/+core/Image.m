@@ -15,9 +15,9 @@ methods
         % IMAGE - Constructor for Image
         %
         % Syntax:
-        %  image = types.core.IMAGE() creates a Image object with unset property values.
+        %  image = types.core.IMAGE() creates an Image object with unset property values.
         %
-        %  image = types.core.IMAGE(Name, Value) creates a Image object where one or more property values are specified using name-value pairs.
+        %  image = types.core.IMAGE(Name, Value) creates an Image object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - data (numeric) - Data property for dataset class (Image)
@@ -27,7 +27,7 @@ methods
         %  - resolution (single) - Pixel resolution of the image, in pixels per centimeter.
         %
         % Output Arguments:
-        %  - image (types.core.Image) - A Image object
+        %  - image (types.core.Image) - An Image object
         
         obj = obj@types.core.BaseImage(varargin{:});
         

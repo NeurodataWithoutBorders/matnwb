@@ -20,9 +20,9 @@ methods
         % IMAGES - Constructor for Images
         %
         % Syntax:
-        %  images = types.core.IMAGES() creates a Images object with unset property values.
+        %  images = types.core.IMAGES() creates an Images object with unset property values.
         %
-        %  images = types.core.IMAGES(Name, Value) creates a Images object where one or more property values are specified using name-value pairs.
+        %  images = types.core.IMAGES(Name, Value) creates an Images object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - baseimage (BaseImage) - Images stored in this collection.
@@ -32,7 +32,7 @@ methods
         %  - order_of_images (ImageReferences) - Ordered dataset of references to BaseImage objects stored in the parent group. Each object in the Images group should be stored once and only once, so the dataset should have the same length as the number of images.
         %
         % Output Arguments:
-        %  - images (types.core.Images) - A Images object
+        %  - images (types.core.Images) - An Images object
         
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.baseimage, ivarargin] = types.util.parseConstrained(obj,'baseimage', 'types.core.BaseImage', varargin{:});

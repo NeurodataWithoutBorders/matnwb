@@ -7,8 +7,8 @@ classdef IndexSeries < types.core.TimeSeries & types.untyped.GroupClass
 
 % OPTIONAL PROPERTIES
 properties
-    indexed_images; %  Images
-    indexed_timeseries; %  ImageSeries
+    indexed_images; %  (Images) Link to Images object containing an ordered set of images that are indexed. The Images object must contain a 'ordered_images' dataset specifying the order of the images in the Images type.
+    indexed_timeseries; %  (ImageSeries) Link to ImageSeries object containing images that are indexed. Use of this link is discouraged and will be deprecated. Link to an Images type instead.
 end
 
 methods
@@ -16,9 +16,9 @@ methods
         % INDEXSERIES - Constructor for IndexSeries
         %
         % Syntax:
-        %  indexSeries = types.core.INDEXSERIES() creates a IndexSeries object with unset property values.
+        %  indexSeries = types.core.INDEXSERIES() creates an IndexSeries object with unset property values.
         %
-        %  indexSeries = types.core.INDEXSERIES(Name, Value) creates a IndexSeries object where one or more property values are specified using name-value pairs.
+        %  indexSeries = types.core.INDEXSERIES(Name, Value) creates an IndexSeries object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - comments (char) - Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string.
@@ -50,7 +50,7 @@ methods
         %  - timestamps (double) - Timestamps for samples stored in data, in seconds, relative to the common experiment master-clock stored in NWBFile.timestamps_reference_time.
         %
         % Output Arguments:
-        %  - indexSeries (types.core.IndexSeries) - A IndexSeries object
+        %  - indexSeries (types.core.IndexSeries) - An IndexSeries object
         
         varargin = [{'data_conversion' types.util.correctType(1, 'single') 'data_offset' types.util.correctType(0, 'single') 'data_resolution' types.util.correctType(-1, 'single') 'data_unit' 'N/A'} varargin];
         obj = obj@types.core.TimeSeries(varargin{:});

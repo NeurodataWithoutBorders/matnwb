@@ -11,15 +11,15 @@ methods
         % NWBDATA - Constructor for NWBData
         %
         % Syntax:
-        %  nWBData = types.core.NWBDATA() creates a NWBData object with unset property values.
+        %  nwbData = types.core.NWBDATA() creates an NWBData object with unset property values.
         %
-        %  nWBData = types.core.NWBDATA(Name, Value) creates a NWBData object where one or more property values are specified using name-value pairs.
+        %  nwbData = types.core.NWBDATA(Name, Value) creates an NWBData object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - data (any) - Data property for dataset class (NWBData)
         %
         % Output Arguments:
-        %  - nWBData (types.core.NWBData) - A NWBData object
+        %  - nwbData (types.core.NWBData) - An NWBData object
         
         obj = obj@types.hdmf_common.Data(varargin{:});
         

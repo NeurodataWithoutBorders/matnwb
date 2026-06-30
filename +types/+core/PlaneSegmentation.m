@@ -7,7 +7,7 @@ classdef PlaneSegmentation < types.hdmf_common.DynamicTable & types.untyped.Grou
 
 % REQUIRED PROPERTIES
 properties
-    imaging_plane; % REQUIRED ImagingPlane
+    imaging_plane; % REQUIRED (ImagingPlane) Link to ImagingPlane object from which this data was generated.
 end
 % OPTIONAL PROPERTIES
 properties

@@ -38,7 +38,8 @@ function checkConfig(DynamicTable, ignoreList)
         return;
     end
     columns = types.util.dynamictable.normalizeColnames(DynamicTable.colnames);
-    if ~isReadContext()
+    if ~matnwb.common.validation.isReadContext()
+        % Skip on file read, this might mutate colnames
         types.util.dynamictable.validateUniqueColnames(columns);
     end
 
@@ -129,15 +130,7 @@ function tf = isMaterializedColumn(value)
 end
 
 function handleColumnNamesMismatch(message, varargin)
-    if isReadContext()
-        warning('NWB:DynamicTable:CheckConfig:ColumnNamesMismatch', ...
-            message, varargin{:});
-    else
-        error('NWB:DynamicTable:CheckConfig:ColumnNamesMismatch', ...
-            message, varargin{:});
-    end
-end
-
-function tf = isReadContext()
-    tf = strcmp(types.util.validationContext(), 'read');
+    matnwb.common.validation.reportSchemaViolation(...
+        'NWB:DynamicTable:CheckConfig:ColumnNamesMismatch', ...
+        sprintf(message, varargin{:}))
 end

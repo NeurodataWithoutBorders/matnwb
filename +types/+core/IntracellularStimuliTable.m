@@ -19,9 +19,9 @@ methods
         % INTRACELLULARSTIMULITABLE - Constructor for IntracellularStimuliTable
         %
         % Syntax:
-        %  intracellularStimuliTable = types.core.INTRACELLULARSTIMULITABLE() creates a IntracellularStimuliTable object with unset property values.
+        %  intracellularStimuliTable = types.core.INTRACELLULARSTIMULITABLE() creates an IntracellularStimuliTable object with unset property values.
         %
-        %  intracellularStimuliTable = types.core.INTRACELLULARSTIMULITABLE(Name, Value) creates a IntracellularStimuliTable object where one or more property values are specified using name-value pairs.
+        %  intracellularStimuliTable = types.core.INTRACELLULARSTIMULITABLE(Name, Value) creates an IntracellularStimuliTable object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - colnames (char) - The names of the columns in this table. This should be used to specify an order to the columns.
@@ -35,7 +35,7 @@ methods
         %  - vectordata (VectorData) - Vector columns, including index columns, of this dynamic table.
         %
         % Output Arguments:
-        %  - intracellularStimuliTable (types.core.IntracellularStimuliTable) - A IntracellularStimuliTable object
+        %  - intracellularStimuliTable (types.core.IntracellularStimuliTable) - An IntracellularStimuliTable object
         
         varargin = [{'description' 'Table for storing intracellular stimulus related metadata.'} varargin];
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});

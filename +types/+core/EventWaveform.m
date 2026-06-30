@@ -18,15 +18,15 @@ methods
         % EVENTWAVEFORM - Constructor for EventWaveform
         %
         % Syntax:
-        %  eventWaveform = types.core.EVENTWAVEFORM() creates a EventWaveform object with unset property values.
+        %  eventWaveform = types.core.EVENTWAVEFORM() creates an EventWaveform object with unset property values.
         %
-        %  eventWaveform = types.core.EVENTWAVEFORM(Name, Value) creates a EventWaveform object where one or more property values are specified using name-value pairs.
+        %  eventWaveform = types.core.EVENTWAVEFORM(Name, Value) creates an EventWaveform object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
         %  - spikeeventseries (SpikeEventSeries) - SpikeEventSeries object(s) containing detected spike event waveforms.
         %
         % Output Arguments:
-        %  - eventWaveform (types.core.EventWaveform) - A EventWaveform object
+        %  - eventWaveform (types.core.EventWaveform) - An EventWaveform object
         
         obj = obj@types.core.NWBDataInterface(varargin{:});
         [obj.spikeeventseries, ivarargin] = types.util.parseConstrained(obj,'spikeeventseries', 'types.core.SpikeEventSeries', varargin{:});

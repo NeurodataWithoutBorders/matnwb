@@ -23,6 +23,7 @@ classdef NwbFile < types.core.NWBFile
                 propValues.nwb_version
             end
             nameValuePairs = namedargs2cell(propValues);
+            nameValuePairs = [{'identifier', char(java.util.UUID.randomUUID())}, nameValuePairs];
             obj = obj@types.core.NWBFile(nameValuePairs{:});
             if strcmp(class(obj), 'NwbFile') %#ok<STISA>
                 cellStringArguments = convertContainedStringsToChars(nameValuePairs(1:2:end));
@@ -39,6 +40,10 @@ classdef NwbFile < types.core.NWBFile
                 mode (1,1) string {mustBeMember(mode, ["edit", "overwrite"])} = "edit"
                 options.StorageBackend (1,1) string = "hdf5"
             end
+
+            previousSchemaValidationContext = matnwb.common.validation.internal.context("write");
+            schemaValidationContextCleanupObj = onCleanup( ...
+                @() matnwb.common.validation.internal.context(previousSchemaValidationContext));
 
             % add to file create date
             if isa(obj.file_create_date, 'types.untyped.DataStub')
@@ -76,6 +81,8 @@ classdef NwbFile < types.core.NWBFile
                 writer.abort();
                 rethrow(ME);
             end
+
+            clear schemaValidationContextCleanupObj
         end
 
         function datasetConfig = applyDatasetSettingsProfile(obj, profile, options)
