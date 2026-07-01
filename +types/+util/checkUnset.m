@@ -15,8 +15,24 @@ function checkUnset(obj, argin)
     end
     dropped = setdiff(argin, union(allProperties, anonNames));
     if ~isempty(dropped)
-        warning('NWB:CheckUnset:InvalidProperties', ...
-            'Unexpected properties {%s} for instance of type "%s".', ...
+        message = sprintf('Unexpected properties {%s} for instance of type "%s".', ...
             misc.cellPrettyPrint(dropped), class(obj));
+
+        source = matnwb.common.validation.internal.reportingSource();
+        if ~isempty(source)
+            message = sprintf('%s at file location "%s".', ...
+                message(1:end-1), source.Path);
+        end
+
+        message = sprintf('%s\nNB: The properties in question were dropped.', message);
+
+        if matnwb.common.validation.isReadContext()
+            message = sprintf(['%s\nConsider checking the schema version of the file ' ...
+                'with `util.getSchemaVersion(filename)` and comparing with the ' ...
+                'YAML namespace version present in nwb-schema/core/nwb.namespace.yaml'], ...
+                message);
+        end
+
+        warning('NWB:CheckUnset:InvalidProperties', '%s', message)
     end
 end
