@@ -145,7 +145,7 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
 
         function testClearDynamicTable(testCase)
             dtr_table = testCase.createDynamicTableWithTableRegionReferences();
-            types.util.dynamictable.clear(dtr_table)
+            dtr_table.clear()
         
             % testCase.verifyEmpty(dtr_table.vectordata) %todo when PR merged
             testCase.verifyEqual(size(dtr_table.vectordata), uint64([0,1]))
