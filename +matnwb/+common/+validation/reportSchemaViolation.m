@@ -31,6 +31,13 @@ function reportSchemaViolation(errorId, message, causes, options)
         for iCause = 1:numel(causes)
             fullMessage = fullMessage + " " + string(causes(iCause).message);
         end
+        source = matnwb.common.validation.internal.reportingSource();
+        if isReadContext && ~isempty(source)
+            sourceMessage = sprintf( ...
+                'While reading object of type "%s" at file location "%s".', ...
+                source.TypeName, source.Path);
+            fullMessage = fullMessage + " " + sourceMessage;
+        end
         fullMessage = fullMessage + " " + lenientGuidance;
 
         warning(errorId, '%s', fullMessage)

@@ -4,6 +4,7 @@ classdef ReportSchemaViolationTest < matlab.unittest.TestCase
     methods (TestMethodTeardown)
         function resetValidationContext(~)
             matnwb.common.validation.internal.context("edit");
+            matnwb.common.validation.internal.reportingSource([]);
         end
     end
 
@@ -50,10 +51,34 @@ classdef ReportSchemaViolationTest < matlab.unittest.TestCase
                 warningMessage, 'The nested validation failed.')
             testCase.verifySubstring( ...
                 warningMessage, 'The non-conforming value is kept.')
+            testCase.verifyFalse(contains(warningMessage, 'While reading object'))
+        end
+
+        function testReadContextWarnsWithReportingSource(testCase)
+            matnwb.common.validation.internal.context("read");
+            source.TypeName = 'types.core.TimeSeries';
+            source.Path = '/acquisition/bad_ts';
+            matnwb.common.validation.internal.reportingSource(source);
+
+            lastwarn('')
+            testCase.verifyWarning( ...
+                @() matnwb.common.validation.reportSchemaViolation( ...
+                    'NWB:Test:SchemaViolation', ...
+                    "The value does not match the schema."), ...
+                'NWB:Test:SchemaViolation')
+
+            [warningMessage, warningId] = lastwarn;
+            testCase.verifyEqual(warningId, 'NWB:Test:SchemaViolation')
+            testCase.verifySubstring(warningMessage, ...
+                ['While reading object of type "types.core.TimeSeries" ' ...
+                'at file location "/acquisition/bad_ts".'])
         end
 
         function testWarnInsteadOfErrorWarnsInEditContext(testCase)
             matnwb.common.validation.internal.context("edit");
+            source.TypeName = 'types.core.TimeSeries';
+            source.Path = '/acquisition/bad_ts';
+            matnwb.common.validation.internal.reportingSource(source);
 
             testCase.verifyWarning( ...
                 @() matnwb.common.validation.reportSchemaViolation( ...
@@ -61,6 +86,10 @@ classdef ReportSchemaViolationTest < matlab.unittest.TestCase
                     "The value does not match the schema.", ...
                     WarnInsteadOfError=true), ...
                 'NWB:Test:SchemaViolation')
+
+            [warningMessage, warningId] = lastwarn;
+            testCase.verifyEqual(warningId, 'NWB:Test:SchemaViolation')
+            testCase.verifyFalse(contains(warningMessage, 'While reading object'))
         end
 
         function testWriteContextRaisesErrorWithWarnInsteadOfError(testCase)
