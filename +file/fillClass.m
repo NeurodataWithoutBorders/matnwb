@@ -3,7 +3,8 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
     %namespace is the namespace context for this class
 
     customBaseClasses = struct( ...
-        'DynamicTable', 'matnwb.neurodata.DynamicTableBase' ...
+        'DynamicTable',        'matnwb.neurodata.DynamicTableBase', ...
+        'AlignedDynamicTable', 'matnwb.neurodata.AlignedDynamicTableBase' ...
     );
 
     %% PROCESSING
@@ -182,8 +183,14 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
 
     fullMethodBody = strjoin({'methods' ...
         file.addSpaces(methodBody, 4) 'end'}, newline);
+    schemaCategoryPropertyBlock = createPropertyBlockForAlignedDynamicTableCategories( ...
+        classprops, nonInherited, name, namespace);
     readPolicyMethodBlock = fillReadPolicy(class, classprops);
-    classSections = {classDefinitionHeader, fullPropertyDefinition, fullMethodBody};
+    classSections = {classDefinitionHeader, fullPropertyDefinition};
+    if ~isempty(schemaCategoryPropertyBlock)
+        classSections{end+1} = schemaCategoryPropertyBlock;
+    end
+    classSections{end+1} = fullMethodBody;
     if ~isempty(readPolicyMethodBlock)
         classSections{end+1} = readPolicyMethodBlock;
     end
@@ -234,4 +241,42 @@ function propertyBlockStr = createPropertyBlockForHasUnnamedGroupMixin(classInfo
         'properties (Access = protected)', ...
         sprintf('    GroupPropertyNames = {%s}', strjoin(strcat('''', anonNames, ''''), ', ') ), ...
         'end'}, newline);
+end
+
+function propertyBlockStr = createPropertyBlockForAlignedDynamicTableCategories( ...
+        classProps, propertyNames, className, namespace)
+
+    propertyBlockStr = '';
+    if ~file.internal.isDescendantOf(className, namespace, 'AlignedDynamicTable')
+        return
+    end
+
+    categoryNames = string.empty(1, 0);
+    for iProperty = 1:length(propertyNames)
+        propertyName = propertyNames{iProperty};
+        propertyInfo = classProps(propertyName);
+        if isSchemaDefinedAlignedDynamicTableCategory(propertyInfo, namespace)
+            categoryNames(end+1) = string(propertyName); %#ok<AGROW>
+        end
+    end
+
+    formattedNames = """" + categoryNames + """";
+    if isempty(formattedNames)
+        propertyLine = 'DeclaredSchemaCategories = string.empty(1, 0);';
+    else
+        propertyLine = sprintf( ...
+            'DeclaredSchemaCategories = [%s];', strjoin(formattedNames, ', '));
+    end
+
+    propertyBlockStr = strjoin({ ...
+        'properties (Constant, Access = private)', ...
+        file.addSpaces(propertyLine, 4), ...
+        'end'}, newline);
+end
+
+function tf = isSchemaDefinedAlignedDynamicTableCategory(propertyInfo, namespace)
+    tf = isa(propertyInfo, 'file.Group') ...
+        && ~propertyInfo.isConstrainedSet ...
+        && ~isempty(propertyInfo.type) ...
+        && file.internal.isDescendantOf(propertyInfo.type, namespace, 'DynamicTable');
 end
