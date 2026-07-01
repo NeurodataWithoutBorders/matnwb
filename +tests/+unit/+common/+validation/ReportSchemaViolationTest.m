@@ -4,7 +4,7 @@ classdef ReportSchemaViolationTest < matlab.unittest.TestCase
     methods (TestMethodTeardown)
         function resetValidationContext(~)
             matnwb.common.validation.internal.context("edit");
-            matnwb.common.validation.internal.reportingSource([]);
+            matnwb.common.validation.internal.validationTarget([]);
         end
     end
 
@@ -54,11 +54,11 @@ classdef ReportSchemaViolationTest < matlab.unittest.TestCase
             testCase.verifyFalse(contains(warningMessage, 'While reading object'))
         end
 
-        function testReadContextWarnsWithReportingSource(testCase)
+        function testReadContextWarnsWithValidationTarget(testCase)
             matnwb.common.validation.internal.context("read");
             source.TypeName = 'types.core.TimeSeries';
             source.Path = '/acquisition/bad_ts';
-            matnwb.common.validation.internal.reportingSource(source);
+            matnwb.common.validation.internal.validationTarget(source);
 
             lastwarn('')
             testCase.verifyWarning( ...
@@ -78,7 +78,7 @@ classdef ReportSchemaViolationTest < matlab.unittest.TestCase
             matnwb.common.validation.internal.context("edit");
             source.TypeName = 'types.core.TimeSeries';
             source.Path = '/acquisition/bad_ts';
-            matnwb.common.validation.internal.reportingSource(source);
+            matnwb.common.validation.internal.validationTarget(source);
 
             testCase.verifyWarning( ...
                 @() matnwb.common.validation.reportSchemaViolation( ...

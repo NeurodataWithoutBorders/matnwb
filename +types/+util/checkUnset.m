@@ -18,10 +18,10 @@ function checkUnset(obj, argin)
         message = sprintf('Unexpected properties {%s} for instance of type "%s".', ...
             misc.cellPrettyPrint(dropped), class(obj));
 
-        source = matnwb.common.validation.internal.reportingSource();
-        if ~isempty(source)
+        target = matnwb.common.validation.internal.validationTarget();
+        if ~isempty(target)
             message = sprintf('%s at file location "%s".', ...
-                message(1:end-1), source.Path);
+                message(1:end-1), target.Path);
         end
 
         message = sprintf('%s\nNB: The properties in question were dropped.', message);

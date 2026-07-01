@@ -5,9 +5,9 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
         function setupMethod(testCase)
             % Use a fixture to create a temporary working directory
             testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
-            previousReportingSource = matnwb.common.validation.internal.reportingSource([]);
+            previousValidationTarget = matnwb.common.validation.internal.validationTarget([]);
             testCase.addTeardown( ...
-                @() matnwb.common.validation.internal.reportingSource(previousReportingSource));
+                @() matnwb.common.validation.internal.validationTarget(previousValidationTarget));
         end
     end
 
@@ -67,7 +67,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                 @() io.createParsedType(testPath, testType, kwargs{:}), ...
                 'NWB:DynamicTable:DuplicateColumnNames');
             testCase.verifyEmpty( ...
-                matnwb.common.validation.internal.reportingSource())
+                matnwb.common.validation.internal.validationTarget())
 
             testCase.verifyClass(dynamicTable, testType)
             [warningMessage, warningIdentifier] = lastwarn();

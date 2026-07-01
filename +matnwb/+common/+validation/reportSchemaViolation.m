@@ -31,12 +31,12 @@ function reportSchemaViolation(errorId, message, causes, options)
         for iCause = 1:numel(causes)
             fullMessage = fullMessage + " " + string(causes(iCause).message);
         end
-        source = matnwb.common.validation.internal.reportingSource();
-        if isReadContext && ~isempty(source)
-            sourceMessage = sprintf( ...
+        target = matnwb.common.validation.internal.validationTarget();
+        if isReadContext && ~isempty(target)
+            targetMessage = sprintf( ...
                 'While reading object of type "%s" at file location "%s".', ...
-                source.TypeName, source.Path);
-            fullMessage = fullMessage + " " + sourceMessage;
+                target.TypeName, target.Path);
+            fullMessage = fullMessage + " " + targetMessage;
         end
         fullMessage = fullMessage + " " + lenientGuidance;
 
