@@ -19,16 +19,21 @@ function [previousTarget, cleanup] = validationTarget(newTarget, options)
     persistent activeTarget
 
     if isempty(activeTarget)
-        activeTarget = [];
+        activeTarget = struct.empty;
     end
 
     previousTarget = activeTarget;
 
-    if ~isempty(newTarget) || ~isempty(fieldnames(options))
+    % Any explicit argument is a set/reset request; calling with no arguments
+    % is a pure getter. nargin counts only positional arguments, so name-value
+    % input is detected via the options struct. An explicit empty target resets
+    % the state, which is how the onCleanup handler restores the prior (possibly
+    % empty) target when a scope exits.
+    if nargin >= 1 || ~isempty(fieldnames(options))
         assert(isempty(newTarget) || isempty(fieldnames(options)), ...
             'NWB:Validation:InvalidValidationTarget', ...
             'Specify target as a struct or as name-value pairs, not both.')
-        if isempty(newTarget)
+        if isempty(newTarget) && ~isempty(fieldnames(options))
             newTarget = options;
         end
         validateTarget(newTarget)
