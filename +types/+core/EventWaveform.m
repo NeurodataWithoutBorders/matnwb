@@ -9,8 +9,8 @@ classdef EventWaveform < types.core.NWBDataInterface & types.untyped.GroupClass 
 properties
     spikeeventseries; % REQUIRED (SpikeEventSeries) SpikeEventSeries object(s) containing detected spike event waveforms.
 end
-properties (Access = protected)
-    GroupPropertyNames = {'spikeeventseries'}
+properties (Constant, Access = private)
+    GroupPropertyNames = ["spikeeventseries"];
 end
 
 methods

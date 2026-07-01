@@ -14,8 +14,8 @@ properties
     dynamictable; %  (DynamicTable) Tables stored in this collection.
     nwbdatainterface; %  (NWBDataInterface) Data objects stored in this collection.
 end
-properties (Access = protected)
-    GroupPropertyNames = {'nwbdatainterface', 'dynamictable'}
+properties (Constant, Access = private)
+    GroupPropertyNames = ["nwbdatainterface", "dynamictable"];
 end
 
 methods

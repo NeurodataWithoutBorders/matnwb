@@ -9,8 +9,8 @@ classdef CompassDirection < types.core.NWBDataInterface & types.untyped.GroupCla
 properties
     spatialseries; % REQUIRED (SpatialSeries) SpatialSeries object containing direction of gaze travel.
 end
-properties (Access = protected)
-    GroupPropertyNames = {'spatialseries'}
+properties (Constant, Access = private)
+    GroupPropertyNames = ["spatialseries"];
 end
 
 methods

@@ -9,8 +9,8 @@ classdef FilteredEphys < types.core.NWBDataInterface & types.untyped.GroupClass 
 properties
     electricalseries; % REQUIRED (ElectricalSeries) ElectricalSeries object(s) containing filtered electrophysiology data.
 end
-properties (Access = protected)
-    GroupPropertyNames = {'electricalseries'}
+properties (Constant, Access = private)
+    GroupPropertyNames = ["electricalseries"];
 end
 
 methods

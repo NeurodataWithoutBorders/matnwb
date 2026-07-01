@@ -9,8 +9,8 @@ classdef LFP < types.core.NWBDataInterface & types.untyped.GroupClass & matnwb.m
 properties
     electricalseries; % REQUIRED (ElectricalSeries) ElectricalSeries object(s) containing LFP data for one or more channels.
 end
-properties (Access = protected)
-    GroupPropertyNames = {'electricalseries'}
+properties (Constant, Access = private)
+    GroupPropertyNames = ["electricalseries"];
 end
 
 methods

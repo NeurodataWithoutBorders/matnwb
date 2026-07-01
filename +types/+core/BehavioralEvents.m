@@ -9,8 +9,8 @@ classdef BehavioralEvents < types.core.NWBDataInterface & types.untyped.GroupCla
 properties
     timeseries; % REQUIRED (TimeSeries) TimeSeries object containing behavioral events.
 end
-properties (Access = protected)
-    GroupPropertyNames = {'timeseries'}
+properties (Constant, Access = private)
+    GroupPropertyNames = ["timeseries"];
 end
 
 methods
