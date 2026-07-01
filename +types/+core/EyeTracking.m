@@ -9,8 +9,8 @@ classdef EyeTracking < types.core.NWBDataInterface & types.untyped.GroupClass & 
 properties
     spatialseries; % REQUIRED (SpatialSeries) SpatialSeries object containing data measuring direction of gaze.
 end
-properties (Access = protected)
-    GroupPropertyNames = {'spatialseries'}
+properties (Constant, Access = private)
+    GroupPropertyNames = ["spatialseries"];
 end
 
 methods
