@@ -70,8 +70,8 @@ classdef ReportSchemaViolationTest < matlab.unittest.TestCase
             [warningMessage, warningId] = lastwarn;
             testCase.verifyEqual(warningId, 'NWB:Test:SchemaViolation')
             testCase.verifySubstring(warningMessage, ...
-                ['While reading object of type "types.core.TimeSeries" ' ...
-                'at file location "/acquisition/bad_ts".'])
+                ['Validation failed while reading object of type ' ...
+                '"types.core.TimeSeries" at file location "/acquisition/bad_ts":'])
         end
 
         function testWarnInsteadOfErrorWarnsInEditContext(testCase)
