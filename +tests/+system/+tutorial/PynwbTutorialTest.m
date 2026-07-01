@@ -22,6 +22,7 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
             'object_id.py', ...             % Does not export nwb file
             'plot_configurator.py', ...     % Does not export nwb file
             'plot_zarr_io.py', ...          % Does not export nwb file in nwb format
+            'add_remove_containers.py', ... % Includes custom modification of file ("legacy_device_model.nwb") using h5py, read fails in MatNWB
             'brain_observatory.py', ...     % Requires allen sdk
             'resources_streaming.py', ...   % Requires dandi api
             'extensions.py'};               % Discrepancy between tutorial and schema: https://github.com/NeurodataWithoutBorders/pynwb/issues/1952
