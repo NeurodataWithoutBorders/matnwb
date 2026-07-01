@@ -1,4 +1,4 @@
-classdef AlignedDynamicTable < types.hdmf_common.DynamicTable & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups
+classdef AlignedDynamicTable < types.hdmf_common.DynamicTable & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups & matnwb.neurodata.AlignedDynamicTableBase
 % ALIGNEDDYNAMICTABLE - DynamicTable container that supports storing a collection of sub-tables. Each sub-table is a DynamicTable itself that is aligned with the main table by row index. I.e., all DynamicTables stored in this group MUST have the same number of rows. This type effectively defines a 2-level table in which the main data is stored in the main table implemented by this type and additional columns of the table are grouped into categories, with each category being represented by a separate DynamicTable stored within the group.
 %
 % Required Properties:
@@ -15,6 +15,10 @@ properties
 end
 properties (Access = protected)
     GroupPropertyNames = {'dynamictable'}
+end
+
+properties (Constant, Access = private)
+    DeclaredSchemaCategories = string.empty(1, 0);
 end
 
 methods
@@ -60,7 +64,7 @@ methods
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
             obj.setupHasUnnamedGroupsMixin();
-            obj.ensureDynamicTableConsistency();
+            obj.ensureAlignedTableConsistency();
         end
     end
     %% SETTERS
@@ -75,6 +79,7 @@ methods
     function val = validate_categories(obj, val)
         val = types.util.checkDtype('categories', 'char', val);
         types.util.validateShape('categories', {[Inf]}, val)
+        val = obj.validateCategoryNames(val);
     end
     function val = validate_dynamictable(obj, val)
         namedprops = struct();
@@ -91,6 +96,11 @@ methods
         if ~isempty(obj.dynamictable) && obj.dynamictable.Count ~= 0
             refs = obj.dynamictable.export(writer, fullpath, refs);
         end
+    end
+    %% CUSTOM CONSTRAINTS
+    function checkCustomConstraint(obj)
+        checkCustomConstraint@types.untyped.MetaClass(obj)
+        obj.ensureAlignedTableConsistency()
     end
 end
 
