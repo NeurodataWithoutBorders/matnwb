@@ -15,14 +15,9 @@ function typeInstance = createParsedType(typePath, typeName, varargin)
 %   Outputs:
 %       typeInstance - The generated neurodata type instance.
 
-    previousValidationContext = matnwb.common.validation.internal.context("read");
-    validationContextCleanupObj = onCleanup( ...
-        @() matnwb.common.validation.internal.context(previousValidationContext));
-    source.TypeName = typeName;
-    source.Path = typePath;
-    previousReportingSource = matnwb.common.validation.internal.reportingSource(source);
-    reportingSourceCleanupObj = onCleanup( ...
-        @() matnwb.common.validation.internal.reportingSource(previousReportingSource));
+    [~, contextCleanup] = matnwb.common.validation.internal.context("read"); %#ok<ASGLU>
+    [~, sourceCleanup] = matnwb.common.validation.internal.reportingSource(...
+        "TypeName", typeName, "Path", typePath); %#ok<ASGLU>
 
     try
         typeInstance = feval(typeName, varargin{:}); % Create the type.

@@ -15,9 +15,7 @@ classdef ValidateSoftLinkTest < matlab.unittest.TestCase
         function testWrongTargetTypeWarnsInReadContext(testCase)
             softLink = testCase.createSoftLinkWithTargetType('types.core.Device');
 
-            previousContext = matnwb.common.validation.internal.context("read");
-            cleanup = onCleanup( ...
-                @() matnwb.common.validation.internal.context(previousContext));
+            [~, cleanup] = matnwb.common.validation.internal.context("read");
 
             value = testCase.verifyWarning( ...
                 @() types.util.validateSoftLink( ...
@@ -29,9 +27,7 @@ classdef ValidateSoftLinkTest < matlab.unittest.TestCase
         function testWrongDirectTargetTypeIsKeptInReadContext(testCase)
             value = types.core.Device('description', 'wrong target');
 
-            previousContext = matnwb.common.validation.internal.context("read");
-            cleanup = onCleanup( ...
-                @() matnwb.common.validation.internal.context(previousContext));
+            [~, cleanup] = matnwb.common.validation.internal.context("read");
 
             validatedValue = testCase.verifyWarning( ...
                 @() types.util.validateSoftLink( ...

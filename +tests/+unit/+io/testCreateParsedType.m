@@ -97,9 +97,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
         end
 
         function testCheckConfigDoesNotRevalidateDuplicateColnamesOnRead(testCase)
-            previousValidationContext = matnwb.common.validation.internal.context("read");
-            cleanupContext = onCleanup( ...
-                @() matnwb.common.validation.internal.context(previousValidationContext));
+            [~, cleanupContext] = matnwb.common.validation.internal.context("read");
 
             warningState = warning('off', 'NWB:DynamicTable:DuplicateColumnNames');
             cleanupWarning = onCleanup(@() warning(warningState));

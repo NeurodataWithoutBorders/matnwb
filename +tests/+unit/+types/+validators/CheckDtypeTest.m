@@ -204,9 +204,7 @@ classdef CheckDtypeTest < matlab.unittest.TestCase
         end
 
         function testAnyDtypeWarnsForUnsupportedTypeInReadContext(testCase)
-            previousContext = matnwb.common.validation.internal.context("read");
-            cleanup = onCleanup( ...
-                @() matnwb.common.validation.internal.context(previousContext));
+            [~, cleanup] = matnwb.common.validation.internal.context("read");
 
             invalidValue = {struct()};
 
@@ -218,9 +216,7 @@ classdef CheckDtypeTest < matlab.unittest.TestCase
         end
 
         function testStrictModeErrorsInReadContext(testCase)
-            previousContext = matnwb.common.validation.internal.context("read");
-            cleanup = onCleanup( ...
-                @() matnwb.common.validation.internal.context(previousContext));
+            [~, cleanup] = matnwb.common.validation.internal.context("read");
 
             testCase.verifyError( ...
                 @() types.util.checkDtype( ...
@@ -229,9 +225,7 @@ classdef CheckDtypeTest < matlab.unittest.TestCase
         end
 
         function testInvalidConversionWarnsInReadContext(testCase)
-            previousContext = matnwb.common.validation.internal.context("read");
-            cleanup = onCleanup( ...
-                @() matnwb.common.validation.internal.context(previousContext));
+            [~, cleanup] = matnwb.common.validation.internal.context("read");
 
             invalidValue = single(realmax('single'));
 
