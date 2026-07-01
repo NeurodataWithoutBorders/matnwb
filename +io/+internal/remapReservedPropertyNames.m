@@ -15,7 +15,7 @@ function propMap = remapReservedPropertyNames(typeName, propMap)
         propMap containers.Map
     end
 
-    mapping = getSchemaPropertyNameMapping(typeName);
+    mapping = io.internal.getSchemaPropertyNameMapping(typeName);
     if isempty(mapping)
         return
     end
@@ -28,21 +28,5 @@ function propMap = remapReservedPropertyNames(typeName, propMap)
             propMap(propertyIdentifier) = propMap(schemaName);
             remove(propMap, schemaName);
         end
-    end
-end
-
-function mapping = getSchemaPropertyNameMapping(typeName)
-    % Read the (inherited or own) SchemaPropertyNameMapping constant from the
-    % class without instantiating it. Returns [] when the class declares none.
-    % meta.class objects are cached and invalidated by MATLAB on class
-    % redefinition, so no additional caching is needed here.
-    mapping = [];
-    metaClass = meta.class.fromName(typeName);
-    if isempty(metaClass)
-        return
-    end
-    isMappingProperty = strcmp({metaClass.PropertyList.Name}, 'SchemaPropertyNameMapping');
-    if any(isMappingProperty)
-        mapping = metaClass.PropertyList(isMappingProperty).DefaultValue;
     end
 end

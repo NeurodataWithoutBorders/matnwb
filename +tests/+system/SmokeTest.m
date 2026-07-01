@@ -83,6 +83,13 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
 
             readFile = nwbRead('events.nwb', 'ignorecache');
             tests.util.verifyContainerEqual(testCase, readFile, file);
+
+            % searchFor and resolve must use the schema name in paths, not the
+            % property identifier, and must be consistent with each other.
+            foundPaths = readFile.searchFor('types.core.EventsTable').keys();
+            testCase.verifyEqual(foundPaths, {'/events/detected'})
+            testCase.verifyClass(readFile.resolve('/events/detected'), ...
+                'types.core.EventsTable')
         end
     end
 end
