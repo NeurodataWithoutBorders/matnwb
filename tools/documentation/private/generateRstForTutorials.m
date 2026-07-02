@@ -1,55 +1,74 @@
-function generateRstForTutorials()
-% generateRstForTutorials - Generate rst files for all the tutorial HTML files
+function generateRstForTutorials(options)
+% generateRstForTutorials - Generate rst files for tutorial pages.
 
-    docsSourceRootDir = fullfile(misc.getMatnwbDir, 'docs', 'source');
-    
-    tutorialHtmlSourceDir = fullfile(docsSourceRootDir, '_static', 'html', 'tutorials');
-    tutorialRstTargetDir = fullfile(docsSourceRootDir, 'pages', 'tutorials');
-    if ~isfolder(tutorialRstTargetDir); mkdir(tutorialRstTargetDir); end
-    
-    tutorialConfigFilePath = fullfile(docsSourceRootDir, '_config', 'tutorial_config.json');
-    S = jsondecode(fileread(tutorialConfigFilePath));
-
-    rstTemplate = fileread( getRstTemplateFile('tutorial') );
-
-    % List all html files in source dir
-    L = dir(fullfile(tutorialHtmlSourceDir, '*.html'));
-    
-    for i = 1:numel(L)
-        thisFilePath = fullfile(L(i).folder, L(i).name);
-        relPath = strrep(thisFilePath, docsSourceRootDir, '../..');
-    
-        [~, name] = fileparts(relPath);
-        title = S.titles.(name);
-    
-        rstOutput = replace(rstTemplate, '{{static_html_path}}', relPath);
-        rstOutput = replace(rstOutput, '{{tutorial_name}}', name);
-
-        % Add the youtube badge block if the tutorial has a corresponding youtube video
-        if isfield(S.youtube, name)
-            youtubeBadge = fileread( getRstTemplateFile('youtube_badge') );
-            youtubeBadge = replace(youtubeBadge, '{{youtube_url}}', S.youtube.(name));
-            title = sprintf('%s 🎬', title); % Add emoji in the title if there is a video
-        else
-            youtubeBadge = '';
-        end
-        rstOutput = replace(rstOutput, '{{youtube_badge_block}}', youtubeBadge);
-        rstOutput = replace(rstOutput, '{{tutorial_title}}', title);
-        rstOutput = replace(rstOutput, '{{tutorial_title_underline}}', repmat('=', 1, numel(title)));
-        rstOutputFile = fullfile(tutorialRstTargetDir, [name, '.rst']);
-        fid = fopen(rstOutputFile, 'wt');
-        fwrite(fid, rstOutput);
-        fclose(fid);
+    arguments
+        options.FileNames (1,:) string = string.empty
     end
 
-    % Create index
-    indexTemplate = fileread( getRstTemplateFile('index_tutorials') );
-    [~, fileNames] = fileparts(string({L.name}));
-    data.file_list = strjoin("   "+fileNames, newline);
-    
-    thisRst = fillTemplate(indexTemplate, data);
-    rstFilePath = fullfile(tutorialRstTargetDir, ['index', '.rst']);
+    docsSourceRootDir = fullfile(misc.getMatnwbDir, 'docs', 'source');
+    tempMarkdownExportDir = fullfile(docsSourceRootDir, '_static', 'markdown');
+
+    tutorialConfigFilePath = fullfile(docsSourceRootDir, '_config', 'tutorial_config.json');
+    tutorialConfig = jsondecode(fileread(tutorialConfigFilePath));
+
+    tutorialNames = string(fieldnames(tutorialConfig.titles));
+    tutorialNames = sort(tutorialNames);
+
+    if ~isempty(options.FileNames)
+        tutorialNames = intersect(tutorialNames, options.FileNames, 'stable');
+    end
+
+    for i = 1:numel(tutorialNames)
+        tutorialName = tutorialNames(i);
+        [sourceFilePath, sourceRepoPath] = resolveTutorialSource(tutorialName);
+        if sourceFilePath == ""
+            warning('Could not find a tutorial source file for "%s"', tutorialName)
+            continue
+        end
+
+        generateRstForTutorial(sourceFilePath, ...
+            "SourceRepoPath", sourceRepoPath);
+    end
+
+    indexTemplate = fileread(getRstTemplateFile('index_tutorials'));
+    data.file_list = strjoin("   " + tutorialNames, newline);
+
+    thisRst = fillTemplate(indexTemplate, data); %#ok<NASGU>
+    rstFilePath = fullfile(docsSourceRootDir, 'pages', 'tutorials', ['index', '.rst']); %#ok<NASGU>
 
     % Commented out because currently this index file is edited manually.
     %filewrite(rstFilePath, thisRst);
+
+    safeRemoveDir(tempMarkdownExportDir)
+end
+
+function [sourceFilePath, sourceRepoPath] = resolveTutorialSource(tutorialName)
+    tutorialRootDir = fullfile(misc.getMatnwbDir, 'tutorials');
+    candidateFilePaths = [ ...
+        fullfile(tutorialRootDir, tutorialName + ".mlx")
+        fullfile(tutorialRootDir, tutorialName + ".m")
+        fullfile(tutorialRootDir, 'private', 'mcode', tutorialName + ".m")
+    ];
+    candidateRepoPaths = [ ...
+        fullfile('tutorials', tutorialName + ".mlx")
+        fullfile('tutorials', tutorialName + ".m")
+        fullfile('tutorials', tutorialName + ".mlx")
+    ];
+
+    sourceFilePath = "";
+    sourceRepoPath = "";
+
+    for i = 1:numel(candidateFilePaths)
+        if isfile(candidateFilePaths(i))
+            sourceFilePath = candidateFilePaths(i);
+            sourceRepoPath = strrep(candidateRepoPaths(i), filesep, '/');
+            return
+        end
+    end
+end
+
+function safeRemoveDir(folderPath)
+    if isfolder(folderPath)
+        rmdir(folderPath, 's');
+    end
 end
