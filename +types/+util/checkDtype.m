@@ -1,4 +1,4 @@
-function value = checkDtype(name, typeDescriptor, value)
+function value = checkDtype(name, typeDescriptor, value, options)
 % checkDtype - Validates and corrects the data type of a given value
 % 
 % Syntax:
@@ -20,13 +20,36 @@ function value = checkDtype(name, typeDescriptor, value)
         name {mustBeTextScalar}
         typeDescriptor {mustBeValidTypeDescriptor}
         value
+        options.Mode (1,1) string ...
+            {mustBeMember(options.Mode, ["report", "strict"])} = "report"
     end
 
+    if options.Mode == "strict"
+        value = checkDtypeStrict(name, typeDescriptor, value, options.Mode);
+        return
+    end
+
+    originalValue = value;
+    try
+        value = checkDtypeStrict(name, typeDescriptor, value, options.Mode);
+    catch exception
+        if isSchemaValidationException(exception)
+            matnwb.common.validation.reportSchemaViolation( ...
+                exception.identifier, exception.message, getCauses(exception));
+            value = originalValue;
+        else
+            rethrow(exception)
+        end
+    end
+end
+
+function value = checkDtypeStrict(name, typeDescriptor, value, validationMode)
     if canBeAnyType(typeDescriptor)
         value = validateAnyType(value);
 
     elseif isstruct(typeDescriptor) % Compound type processing
-        value = checkDtypeForCompoundDataset(name, typeDescriptor, value);
+        value = checkDtypeForCompoundDataset( ...
+            name, typeDescriptor, value, validationMode);
     
     elseif isa(value, 'types.untyped.SoftLink')
         if ~isempty(value.target)
@@ -98,6 +121,24 @@ end
 
 %% Local functions
 
+function tf = isSchemaValidationException(exception)
+    schemaValidationPrefixes = "NWB:CheckDType:";
+    schemaValidationIds = [ ...
+        "NWB:CheckDataType:InvalidConversion", ...
+        "NWB:TypeCorrection:InvalidConversion", ...
+        "NWB:TypeCorrection:PrecisionLossDetected"];
+
+    tf = startsWith(string(exception.identifier), schemaValidationPrefixes) ...
+        || any(strcmp(exception.identifier, schemaValidationIds));
+end
+
+function causes = getCauses(exception)
+    causes = MException.empty(1, 0);
+    for iCause = 1:numel(exception.cause)
+        causes(end+1) = exception.cause{iCause}; %#ok<AGROW>
+    end
+end
+
 function mustBeValidTypeDescriptor(typeDescriptor)
     isValid = isstruct(typeDescriptor) || ischar(typeDescriptor) || isstring(typeDescriptor);
     assert( isValid, ...
@@ -105,7 +146,8 @@ function mustBeValidTypeDescriptor(typeDescriptor)
         'Type descriptor must be a struct, character vector or a string.');
 end
 
-function value = checkDtypeForCompoundDataset(name, typeDescriptor, value)
+function value = checkDtypeForCompoundDataset( ...
+    name, typeDescriptor, value, validationMode)
     
     valueWrapper = [];
     if isWrapped(value, typeDescriptor)
@@ -138,7 +180,8 @@ function value = checkDtypeForCompoundDataset(name, typeDescriptor, value)
 
         if (isstruct(value) && isscalar(value)) || istable(value)
             % scalar struct or table with columns.
-            value.(name) = types.util.checkDtype(subName,subType,value.(name));
+            value.(name) = types.util.checkDtype(subName, subType, value.(name), ...
+                Mode=validationMode);
         elseif isstruct(value)
             % array of structs
             for j=1:length(value)
@@ -149,11 +192,13 @@ function value = checkDtypeForCompoundDataset(name, typeDescriptor, value)
                     'NWB:CheckDType:InvalidType',...
                     ['Fields for an array of structs for '...
                     'compound types should have non-cell scalar values or char arrays.']);
-                value(j).(name) = types.util.checkDtype(subName, subType, elem);
+                value(j).(name) = types.util.checkDtype(subName, subType, elem, ...
+                    Mode=validationMode);
             end
         else
             value(expectedFields{iField}) = types.util.checkDtype( ...
-                subName, subType, value(expectedFields{iField}));
+                subName, subType, value(expectedFields{iField}), ...
+                Mode=validationMode);
         end
     end
 

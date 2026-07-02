@@ -5,6 +5,8 @@ function colnames = normalizeColnames(colnames)
         return
     end
 
+    % Non-text column names cannot be used to look up columns, so they are a
+    % hard error in every validation context rather than a warn-on-read issue.
     assert(iscellstr(colnames) || isstring(colnames) || ischar(colnames), ...
         'NWB:DynamicTable:InvalidColumnNames', ...
         'Column names must be a cell array of character vectors.');

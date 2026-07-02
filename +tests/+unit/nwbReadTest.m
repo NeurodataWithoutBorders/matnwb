@@ -141,20 +141,15 @@ classdef nwbReadTest < tests.abstract.NwbTestCase
             fileName = 'invalid_timeseries_timestamps_shape.nwb';
             createInvalidTimeSeriesFile(fileName)
 
-            try
-                nwbRead(fileName, "ignorecache");
-                testCase.assertFail('Expected nwbRead to fail when timestamps are 2-D.')
-            catch exception
-                testCase.verifyEqual(exception.identifier, ...
-                    'NWB:createParsedType:TypeCreationFailed')
-                testCase.verifySubstring(exception.message, ...
-                    'Failed to create object of type "types.core.TimeSeries"')
-                testCase.verifySubstring(exception.message, ...
-                    'file location "/acquisition/bad_ts"')
-                testCase.verifyNotEmpty(exception.cause)
-                testCase.verifySubstring(exception.cause{1}.message, ...
-                    'Invalid shape for property "timestamps".')
-            end
+            % The file is read permissively: a warning is issued and the
+            % value is kept, so the data remains accessible (issue #776).
+            nwb = testCase.verifyWarning(...
+                @() nwbRead(fileName, "ignorecache"), ...
+                'NWB:CheckDims:InvalidDimensions');
+
+            testCase.verifyClass(nwb, 'NwbFile')
+            testCase.verifyClass(nwb.acquisition.get('bad_ts'), ...
+                'types.core.TimeSeries')
         end
 
         function readWithStringFilenameArg(testCase)
