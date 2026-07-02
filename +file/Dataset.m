@@ -106,6 +106,19 @@ classdef Dataset < file.interface.HasProps & file.interface.HasQuantity
             if isKey(source, 'shape')
                 obj.shape = file.formatShape(source('shape'));
                 obj.scalar = file.isShapeScalar(obj.shape);
+            elseif ~isKey(source, 'dtype') && ~isKey(source, 'dims')
+                % Abstract base dataset types (e.g. hdmf-common `Data`,
+                % `NWBData`) declare no dtype, dims, or shape. Their shape is
+                % defined by including/refining types, so impose no shape
+                % constraint here. 
+                % Note: This is an ad-hoc deviation from the hdmf-shema language 
+                % (v2.0.2), but it matches HDMF, whose validator treats an
+                % unspecified shape as any shape (check_shape(None) -> true) and
+                % validates instances against refined shapes (of datasets defined 
+                % by inclusion via the 'neurodata_type_inc' key). Concrete
+                % datasets that declare a dtype keep the scalar default below.
+                obj.shape = NaN;
+                obj.scalar = false;
             else
                 obj.shape = 1;
             end
