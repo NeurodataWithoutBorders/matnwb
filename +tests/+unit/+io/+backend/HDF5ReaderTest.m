@@ -19,7 +19,7 @@ classdef HDF5ReaderTest < matlab.unittest.TestCase
             testCase.verifyEqual(reader.getSchemaVersion(), util.getSchemaVersion(filename));
         end
 
-        function readDatasetValueReturnsDataStubForScalarDataset(testCase)
+        function readDatasetValueReadsScalarDatasetEagerly(testCase)
             nwb = tests.factory.NWBFile();
             filename = "reader-dataset-test.nwb";
             nwbExport(nwb, filename);
@@ -29,7 +29,7 @@ classdef HDF5ReaderTest < matlab.unittest.TestCase
             datasetInfo = rootInfo.Datasets(strcmp({rootInfo.Datasets.Name}, "session_start_time"));
             datasetValue = reader.readDatasetValue(datasetInfo, "/session_start_time");
 
-            testCase.verifyClass(datasetValue, "types.untyped.DataStub");
+            testCase.verifyFalse(isa(datasetValue, "types.untyped.DataStub"))
         end
     end
 end
