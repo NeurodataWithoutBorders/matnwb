@@ -1,4 +1,24 @@
 function addVarargRow(DynamicTable, varargin)
+% ADDVARARGROW Given a dynamic table and a set of keyword arguments for the row,
+% add a single row to the dynamic table if using keywords, or multiple rows
+% if using a table.
+%
+%  ADDVARARGROW(DT,col1,val1,col2,val2,...,coln,valn) append a single row
+%  to the DynamicTable
+%
+%  ADDVARARGROW(DT,___,Name,Value) optional 'id'
+%
+% This function asserts the following:
+% 1) The given keyword argument names match one of those ALREADY specified
+%    by the DynamicTable (that is, colnames MUST be filled out).
+% 2) If the dynamic table is non-empty, the types of the column value MUST
+%    match the keyword value.
+% 3) All horizontal data must match the width of the rest of the rows.
+%    Variable length strings should use cell arrays each row.
+% 4) The type of the data cannot be a cell array of numeric values if using
+%    keyword arguments. For table appending mode, this is how ragged arrays
+%    are represented.
+
     p = inputParser();
     p.KeepUnmatched = true;
     p.StructExpand = false;
