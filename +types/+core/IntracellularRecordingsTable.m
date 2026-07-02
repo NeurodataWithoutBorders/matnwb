@@ -12,6 +12,10 @@ properties
     stimuli; % REQUIRED (IntracellularStimuliTable) Table for storing intracellular stimulus related metadata.
 end
 
+properties (Constant, Access = private)
+    DeclaredSchemaCategories = ["electrodes", "responses", "stimuli"];
+end
+
 methods
     function obj = IntracellularRecordingsTable(varargin)
         % INTRACELLULARRECORDINGSTABLE - Constructor for IntracellularRecordingsTable
@@ -64,18 +68,30 @@ methods
         if strcmp(class(obj), 'types.core.IntracellularRecordingsTable') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
-            obj.ensureDynamicTableConsistency();
+            obj.ensureAlignedTableConsistency();
         end
     end
     %% SETTERS
     function set.electrodes(obj, val)
         obj.electrodes = obj.validate_electrodes(val);
+        obj.postset_electrodes()
+    end
+    function postset_electrodes(obj)
+        obj.ensureCategoryNameRegistered('electrodes');
     end
     function set.responses(obj, val)
         obj.responses = obj.validate_responses(val);
+        obj.postset_responses()
+    end
+    function postset_responses(obj)
+        obj.ensureCategoryNameRegistered('responses');
     end
     function set.stimuli(obj, val)
         obj.stimuli = obj.validate_stimuli(val);
+        obj.postset_stimuli()
+    end
+    function postset_stimuli(obj)
+        obj.ensureCategoryNameRegistered('stimuli');
     end
     %% VALIDATORS
     
