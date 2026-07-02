@@ -2,6 +2,10 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
     %name is the name of the scheme
     %namespace is the namespace context for this class
 
+    customBaseClasses = struct( ...
+        'DynamicTable', 'matnwb.neurodata.DynamicTableBase' ...
+    );
+
     %% PROCESSING
     class = processed(1);
 
@@ -96,6 +100,10 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
         superclassNames{end+1} = 'matnwb.mixin.HasUnnamedGroups';
     end
 
+    if isfield(customBaseClasses, name)
+        superclassNames{end+1} = customBaseClasses.(name);
+    end
+
     %% return classfile string
     classDefinitionHeader = [...
         'classdef ' name ' < ' strjoin(superclassNames, ' & ') newline... %header, dependencies
@@ -170,10 +178,6 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
     customConstraintStr = file.fillCustomConstraint(name);
     if ~isempty(customConstraintStr)
         methodBody = strjoin({methodBody, '%% CUSTOM CONSTRAINTS', customConstraintStr}, newline);
-    end
-
-    if strcmp(name, 'DynamicTable')
-        methodBody = strjoin({methodBody, '%% TABLE METHODS', file.fillDynamicTableMethods()}, newline);
     end
 
     fullMethodBody = strjoin({'methods' ...
