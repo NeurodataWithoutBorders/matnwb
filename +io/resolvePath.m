@@ -46,9 +46,14 @@ end
 function [o, remainder] = resolveObj(obj, tokens)
 props = properties(obj);
 toklen = length(tokens);
+% Path tokens use schema names; a reserved-keyword schema name (e.g. "events")
+% is stored under a trailing-underscore property identifier ("events_"). Map
+% candidates to identifiers before matching against the object's properties.
+schemaMapping = io.internal.getSchemaPropertyNameMapping(obj);
 eagerlist = cell(toklen,1);
 for i=1:toklen
-    eagerlist{i} = strjoin(tokens(1:i), '_');
+    candidate = strjoin(tokens(1:i), '_');
+    eagerlist{i} = io.internal.getPropertyNameForSchemaName(schemaMapping, candidate);
 end
 % stable in this case preserves ordering with eagerlist bias
 [eagers, ei, ~] = intersect(eagerlist, props, 'stable');

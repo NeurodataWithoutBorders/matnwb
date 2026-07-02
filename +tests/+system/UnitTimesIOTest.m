@@ -47,7 +47,7 @@ classdef UnitTimesIOTest < tests.system.PyNWBIOTest
             file.units.waveform_sd_sampling_rate = 1;
 
             % Skip waveforms_sampling_rate because PyNWB does not export it.
-            % Units.waveforms_sampling_rate = 1
+            file.units.waveforms_sampling_rate = 1;
         end
         
         function c = getContainer(~, file)

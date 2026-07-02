@@ -460,10 +460,14 @@ function pathToObjectMap = searchProperties(...
         searchTypename = @(obj, typename) metaHasType(metaclass(obj), typename, 'ExactMatch', exactTypeMatch);
     end
 
+    % A reserved-keyword schema field is stored under a trailing-underscore
+    % property identifier; the on-disk path uses the schema name.
+    schemaMapping = io.internal.getSchemaPropertyNameMapping(obj);
+
     for i = 1:length(propertyNames)
         propName = propertyNames{i};
         propValue = getProperty(obj, propName);
-        fullPath = [basePath '/' propName];
+        fullPath = [basePath '/' io.internal.getSchemaNameForPropertyName(schemaMapping, propName)];
         if searchTypename(propValue, typename)
             pathToObjectMap(fullPath) = propValue;
         end
@@ -475,11 +479,11 @@ function pathToObjectMap = searchProperties(...
 
         if isa(propValue, 'types.untyped.Set')...
             || isa(propValue, 'types.untyped.Anon')
-           
+
             if isa(obj, 'matnwb.mixin.HasUnnamedGroups')
-                % If the current property value is a Set of a type that inherits 
-                % from the HasUnnamedGroups mixin, a recursive search would yield 
-                % duplicate objects because the Set members are also exposed as 
+                % If the current property value is a Set of a type that inherits
+                % from the HasUnnamedGroups mixin, a recursive search would yield
+                % duplicate objects because the Set members are also exposed as
                 % dynamic properties of the type via the mixin.
             else
                 % Recursive (even if there is a match!)
