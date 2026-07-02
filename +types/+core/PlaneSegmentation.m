@@ -82,7 +82,7 @@ methods
         if strcmp(class(obj), 'types.core.PlaneSegmentation') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
-            types.util.dynamictable.checkConfig(obj);
+            obj.ensureDynamicTableConsistency();
         end
     end
     %% SETTERS
