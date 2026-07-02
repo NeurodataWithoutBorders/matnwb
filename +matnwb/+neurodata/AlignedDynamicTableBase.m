@@ -141,7 +141,7 @@ classdef (Abstract) AlignedDynamicTableBase < matnwb.neurodata.DynamicTableBase
 
             unmaterializedCategoryNames = setdiff(categoryNames, categoryTableNames, 'stable');
             if ~isempty(unmaterializedCategoryNames) && parentHasHeight && parentHeight > 0
-                classShortName = obj.TypeName;
+                classShortName = obj.getTypeShortName();
                 obj.handleCategoryNamesMismatch( ...
                     ['The `categories` property lists category table(s) that have not ', ...
                     'been added to the %s: %s.\n', ...
@@ -153,6 +153,51 @@ classdef (Abstract) AlignedDynamicTableBase < matnwb.neurodata.DynamicTableBase
                 'NWB:AlignedDynamicTable:ValidateAlignedTableConsistency:InvalidCategoryShape', ...
                 ['Invalid AlignedDynamicTable: all category tables must have the ', ...
                 'same height as the parent table.'])
+        end
+    end
+
+    methods (Access = {?matnwb.mixin.HasUnnamedGroups, ?matnwb.neurodata.AlignedDynamicTableBase})
+        function wasHandled = handleUnnamedGroupAdd(obj, groupName, name, value)
+        % handleUnnamedGroupAdd - Route unnamed category additions through addCategory.
+
+            arguments
+                obj (1,1) matnwb.neurodata.AlignedDynamicTableBase
+                groupName (1,1) string
+                name (1,1) string
+                value
+            end
+            
+            wasHandled = handleUnnamedGroupAdd@matnwb.neurodata.DynamicTableBase(obj, groupName, name, value);
+            if wasHandled
+                return
+            end
+
+            if groupName ~= "dynamictable"
+                return
+            end
+
+            if ~isa(value, 'types.hdmf_common.DynamicTable') && ...
+                    ~isa(value, 'types.core.DynamicTable')
+                return
+            end
+
+            obj.addCategory(name, value)
+            wasHandled = true;
+        end
+
+        function tip = getCustomUnnamedGroupAddTip(obj, groupName)
+        % getCustomUnnamedGroupAddTip - Display the preferred category add method.
+
+            arguments
+                obj
+                groupName (1,1) string
+            end
+
+            if groupName == "dynamictable"
+                tip = "Tip: Use the 'addCategory' method to add category tables.";
+            else
+                tip = getCustomUnnamedGroupAddTip@matnwb.neurodata.DynamicTableBase(obj, groupName);
+            end
         end
     end
 

@@ -1,4 +1,4 @@
-function functionString = fillConstructor(name, parentname, defaults, props, namespace, superClassProps, class, inherited)
+function functionString = fillConstructor(name, parentname, defaults, props, namespace, superClassProps, processed, inherited)
     caps = upper(name);
     functionBody = ['% ' caps ' - Constructor for ' name];
 
@@ -7,7 +7,7 @@ function functionString = fillConstructor(name, parentname, defaults, props, nam
         functionBody = [functionBody newline() docString];
     end
 
-    bodyString = fillBody(parentname, defaults, props, namespace, class, inherited);
+    bodyString = fillBody(parentname, defaults, props, namespace, inherited);
     if ~isempty(bodyString)
         functionBody = [functionBody newline() bodyString];
     end
@@ -22,8 +22,11 @@ function functionString = fillConstructor(name, parentname, defaults, props, nam
         '    cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));', ...
         '    types.util.checkUnset(obj, unique(cellStringArguments));'};
     
-    % Include the setup function for the HasUnnamedGroups mixin if applicable
-    if isa(class, 'file.Group') && class.hasAnonGroups
+    % Include the setup for the HasUnnamedGroups mixin when this class or any of
+    % its ancestors defines unnamed (anonymous or constrained) groups. The call
+    % must be emitted in every concrete subclass because it is guarded to run
+    % only for the leaf class being instantiated (see strcmp(class(obj), ...)).
+    if usesUnnamedGroupsMixin(processed)
         constructorElements{end+1} = '    obj.setupHasUnnamedGroupsMixin();';
     end
 
@@ -43,7 +46,22 @@ function functionString = fillConstructor(name, parentname, defaults, props, nam
         'end'}, newline());
 end
 
-function bodystr = fillBody(parentName, defaults, props, namespace, class, inherited)
+function tf = usesUnnamedGroupsMixin(processed)
+% usesUnnamedGroupsMixin - True if the class or any ancestor defines unnamed
+% (anonymous or constrained) groups and therefore uses the HasUnnamedGroups
+% mixin. The mixin setup cannot be gated on the leaf class alone because a
+% subclass inherits the mixin from an ancestor without redeclaring it.
+    tf = false;
+    for iType = 1:numel(processed)
+        ancestor = processed(iType);
+        if isa(ancestor, 'file.Group') && (ancestor.hasAnonGroups || ancestor.hasAnonData)
+            tf = true;
+            break
+        end
+    end
+end
+
+function bodystr = fillBody(parentName, defaults, props, namespace, inherited)
     if isempty(defaults)
         bodystr = '';
     else
@@ -294,6 +312,26 @@ function docString = fillConstructorDocString(name, props, namespace, superClass
     ];
 
     docString = char( strjoin(docString, newline) );
+end
+
+function tf = isDynamicTableDescendant(name, namespace)
+% Check if name is DynamicTable or if name is for a type that inherits from DynamicTable
+
+    tf = false;
+
+    if strcmp(name, 'DynamicTable')
+        tf = true;
+        return
+    end
+
+    ancestry = namespace.getRootBranch(name);
+    for iAncestor = 1:length(ancestry)
+        ParentRaw = ancestry{iAncestor};
+        % this is always true, we just use the proper index as typedefs may vary.
+        typeDefInd = isKey(ParentRaw, namespace.TYPEDEF_KEYS);
+        ancestorName = ParentRaw(namespace.TYPEDEF_KEYS{typeDefInd});
+        tf = tf || strcmp(ancestorName, 'DynamicTable');
+    end
 end
 
 % Todo: Mostly duplicate code from file.fillProps. Should consolidate
