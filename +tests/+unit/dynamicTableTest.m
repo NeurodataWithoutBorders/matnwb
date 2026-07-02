@@ -486,6 +486,48 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
                 'NWB:DynamicTable:CheckConfig:ColumnNamesMismatch');
         end
 
+        function testGetTableHeightReportsUnestablishedEmptyTable(testCase)
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'empty table');
+
+            [tableHeight, hasEstablishedHeight] = ...
+                types.util.dynamictable.internal.getTableHeight(dynamicTable);
+
+            testCase.verifyEqual(tableHeight, 0)
+            testCase.verifyFalse(hasEstablishedHeight)
+        end
+
+        function testUnboundDataPipeOffsetContributesToColumnHeight(testCase)
+            idDataPipe = types.untyped.DataPipe( ...
+                'maxSize', Inf, ...
+                'axis', 1, ...
+                'offset', 3, ...
+                'dataType', 'int64');
+            idColumn = types.hdmf_common.ElementIdentifiers( ...
+                'data', idDataPipe);
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'table with unbound id DataPipe');
+            dynamicTable.id = idColumn;
+
+            columnHeight = types.util.dynamictable.internal.getColumnHeight(idColumn);
+            [tableHeight, hasEstablishedHeight] = ...
+                types.util.dynamictable.internal.getTableHeight(dynamicTable);
+
+            testCase.verifyEqual(columnHeight, 3)
+            testCase.verifyEqual(tableHeight, 3)
+            testCase.verifyTrue(hasEstablishedHeight)
+        end
+
+        function testInitDynamicTableIdFillsExistingEmptyId(testCase)
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'table with empty id dataset');
+            dynamicTable.id = types.hdmf_common.ElementIdentifiers('data', []);
+
+            types.util.dynamictable.internal.initDynamicTableId(dynamicTable, 3);
+
+            testCase.verifyEqual(dynamicTable.id.data, int64((0:2)'))
+        end
+
         function testExportDetectsColumnsMissingFromColnames(testCase)
             fileName = testCase.getRandomFilename();
             nwb = tests.factory.NWBFile();
