@@ -57,6 +57,7 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
             writer = io.backend.base.Writer.ensure(writer);
             obj.throwErrorIfCustomConstraintUnfulfilled(fullpath)
             obj.throwErrorIfMissingRequiredProps(fullpath)
+            obj.validateProperties(fullpath)
             obj.metaClass_fullPath = fullpath;
             %find reference properties
             propnames = properties(obj);
@@ -267,6 +268,65 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
                     ['The following error was caught when exporting type ', ...
                     '"%s" at file location "%s":\n%s'], ...
                     class(obj), fullpath, ME.message)
+            end
+        end
+
+        function validateProperties(obj, fullpath)
+        % validateProperties - Re-run property validators before writing to file.
+        %   Ensures property values that bypassed strict validation (for
+        %   example, values read permissively from a file that does not
+        %   conform to the schema) are not written back out as a new, invalid
+        %   file. Validators run in the default (strict) context here, so a
+        %   schema violation raises an error rather than a warning.
+            previousValidationContext = matnwb.common.validation.internal.context('write');
+            cleanupValidationContext = onCleanup(@() matnwb.common.validation.internal.context(previousValidationContext));
+
+            if isempty(fullpath)
+                fullpath = 'root';
+            end
+
+            propertyNames = properties(obj);
+            for iProperty = 1:numel(propertyNames)
+                propertyName = propertyNames{iProperty};
+                propertyValue = obj.(propertyName);
+                validatorName = ['validate_' propertyName];
+
+                % Validate only set properties that have a generated
+                % validator. An empty value represents an unset optional
+                % property, which is not written on export.
+                if ~isempty(propertyValue) && ismethod(obj, validatorName)
+                    warnState = warning('error', 'NWB:CheckDataType:NeedsManualConversion');
+                    warnCleanupObj = onCleanup(@() warning(warnState));
+                    try
+                        try
+                            validatedValue = feval(validatorName, obj, propertyValue);
+                            if ~strcmp(class(validatedValue), class(propertyValue))
+                                error('NWB:Export:PropertyValueRequiresNormalization', ...
+                                    ['Property "%s" would be converted by its validator. ' ...
+                                    'Assign it via its setter (strict validation) before export.'], ...
+                                    propertyName);
+                            end
+                        catch MEValidator
+                            if any(strcmp(MEValidator.identifier, ...
+                                    {'MATLAB:maxlhs', 'MATLAB:TooManyOutputs'}))
+                                % Validator does not provide an output. Call
+                                % again without requesting a normalized value.
+                                feval(validatorName, obj, propertyValue);
+                            else
+                                rethrow(MEValidator)
+                            end
+                        end
+                    catch ME
+                        newException = MException( ...
+                            'NWB:Export:InvalidPropertyValue', ...
+                            ['The value of property "%s" for type "%s" at ', ...
+                            'file location "%s" is not valid according to ', ...
+                            'the schema and cannot be exported:\n%s'], ...
+                            propertyName, class(obj), fullpath, ME.message);
+                        newException = newException.addCause(ME);
+                        throw(newException)
+                    end
+                end
             end
         end
     end
