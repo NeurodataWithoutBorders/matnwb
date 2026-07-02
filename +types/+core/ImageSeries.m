@@ -12,6 +12,7 @@ properties
     external_file; %  (char) Paths to one or more external file(s). The field is only present if format='external'. This is only relevant if the image series is stored in the file system as one or more image file(s). This field should NOT be used if the image is stored in another NWB file and that file is linked to this file.
     external_file_starting_frame; %  (int32) Each external image may contain one or more consecutive frames of the full ImageSeries. This attribute serves as an index to indicate which frames each file contains, to facilitate random access. The 'starting_frame' attribute, hence, contains a list of frame numbers within the full ImageSeries of the first frame of each file listed in the parent 'external_file' dataset. Zero-based indexing is used (hence, the first element will always be zero). For example, if the 'external_file' dataset has three paths to files and the first file has 5 frames, the second file has 10 frames, and the third file has 20 frames, then this attribute will have values [0, 5, 15]. If there is a single external file that holds all of the frames of the ImageSeries (and so there is a single element in the 'external_file' dataset), then this attribute should have value [0].
     format = "raw"; %  (char) Format of image. If this is 'external', then the attribute 'external_file' contains the path information to the image files. If this is 'raw', then the raw (single-channel) binary data is stored in the 'data' dataset. If this attribute is not present, then the default format='raw' case is assumed.
+    num_samples; %  (uint32) Total number of frames across all external files. This is required when format='external' and timing is described using starting_time and rate, since data is empty and its first dimension cannot be used to determine the number of frames. When timestamps is provided, len(timestamps) already serves this purpose.
 end
 
 methods
@@ -32,7 +33,7 @@ methods
         %
         %  - data (numeric) - Binary data representing images across frames. If data are stored in an external file, this should be an empty 3D array.
         %
-        %  - data_continuity (char) - Optionally describe the continuity of the data. Can be "continuous", "instantaneous", or "step". For example, a voltage trace would be "continuous", because samples are recorded from a continuous process. An array of lick times would be "instantaneous", because the data represents distinct moments in time. Times of image presentations would be "step" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable.
+        %  - data_continuity (char) - Optionally describe the continuity of the data. Can be "continuous", "instantaneous", or "step". For example, a voltage trace would be "continuous", because samples are recorded from a continuous process. An array of lick times would be "instantaneous", because the data represents distinct moments in time. Times of image presentations would be "step" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable. For storing instantaneous event information, it is recommended to use an EventsTable instead of a TimeSeries with continuity set to "instantaneous".
         %
         %  - data_conversion (single) - Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data to the specified 'unit'. e.g. if the data acquisition system stores values in this object as signed 16-bit integers (int16 range -32,768 to 32,767) that correspond to a 5V range (-2.5V to 2.5V), and the data acquisition system gain is 8000X, then the 'conversion' multiplier to get from raw data acquisition values to recorded volts is 2.5/32768/8000 = 9.5367e-9.
         %
@@ -53,6 +54,8 @@ methods
         %  - external_file_starting_frame (int32) - Each external image may contain one or more consecutive frames of the full ImageSeries. This attribute serves as an index to indicate which frames each file contains, to facilitate random access. The 'starting_frame' attribute, hence, contains a list of frame numbers within the full ImageSeries of the first frame of each file listed in the parent 'external_file' dataset. Zero-based indexing is used (hence, the first element will always be zero). For example, if the 'external_file' dataset has three paths to files and the first file has 5 frames, the second file has 10 frames, and the third file has 20 frames, then this attribute will have values [0, 5, 15]. If there is a single external file that holds all of the frames of the ImageSeries (and so there is a single element in the 'external_file' dataset), then this attribute should have value [0].
         %
         %  - format (char) - Format of image. If this is 'external', then the attribute 'external_file' contains the path information to the image files. If this is 'raw', then the raw (single-channel) binary data is stored in the 'data' dataset. If this attribute is not present, then the default format='raw' case is assumed.
+        %
+        %  - num_samples (uint32) - Total number of frames across all external files. This is required when format='external' and timing is described using starting_time and rate, since data is empty and its first dimension cannot be used to determine the number of frames. When timestamps is provided, len(timestamps) already serves this purpose.
         %
         %  - starting_time (double) - Timestamp of the first sample in seconds. When timestamps are uniformly spaced, the timestamp of the first sample can be specified and all subsequent ones calculated from the sampling rate attribute.
         %
@@ -75,12 +78,14 @@ methods
         addParameter(p, 'external_file',[]);
         addParameter(p, 'external_file_starting_frame',[]);
         addParameter(p, 'format',[]);
+        addParameter(p, 'num_samples',[]);
         misc.parseSkipInvalidName(p, varargin);
         obj.device = p.Results.device;
         obj.dimension = p.Results.dimension;
         obj.external_file = p.Results.external_file;
         obj.external_file_starting_frame = p.Results.external_file_starting_frame;
         obj.format = p.Results.format;
+        obj.num_samples = p.Results.num_samples;
         
         % Only execute validation/setup code when called directly in this class's
         % constructor, not when invoked through superclass constructor chain
@@ -111,6 +116,9 @@ methods
     function set.format(obj, val)
         obj.format = obj.validate_format(val);
     end
+    function set.num_samples(obj, val)
+        obj.num_samples = obj.validate_num_samples(val);
+    end
     %% VALIDATORS
     
     function val = validate_data(obj, val)
@@ -135,6 +143,10 @@ methods
     function val = validate_format(obj, val)
         val = types.util.checkDtype('format', 'char', val);
         types.util.validateShape('format', {[1]}, val)
+    end
+    function val = validate_num_samples(obj, val)
+        val = types.util.checkDtype('num_samples', 'uint32', val);
+        types.util.validateShape('num_samples', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, writer, fullpath, refs)
@@ -172,6 +184,13 @@ methods
                 refs = obj.format.export(writer, [fullpath '/format'], refs);
             elseif ~isempty(obj.format)
                 writer.writeValue([fullpath '/format'], obj.format);
+            end
+        end
+        if ~isempty(obj.num_samples)
+            if startsWith(class(obj.num_samples), 'types.untyped.')
+                refs = obj.num_samples.export(writer, [fullpath '/num_samples'], refs);
+            elseif ~isempty(obj.num_samples)
+                writer.writeValue([fullpath '/num_samples'], obj.num_samples);
             end
         end
     end

@@ -67,6 +67,10 @@ if isempty(Type.typename)
     parsed = types.untyped.Set(...
         [attributeProperties; datasetProperties; groupProperties; linkProperties]);
 else
+    % Translate on-disk names that are reserved MATLAB keywords (e.g. "events")
+    % to the valid property identifiers used by the generated class. Done before
+    % elide so the names match the class property list during matching.
+    groupProperties = io.internal.remapReservedPropertyNames(Type.typename, groupProperties);
     if groupProperties.Count > 0
         %elide group properties
         elided_gprops = elide(groupProperties, properties(Type.typename));
@@ -75,6 +79,9 @@ else
 
     typeProperties = [attributeProperties; datasetProperties; groupProperties; linkProperties];
     typeProperties = io.internal.eagerLoadProperties(Type.typename, typeProperties);
+    % Translate any remaining reserved-keyword schema names (attributes,
+    % datasets, links) to valid property identifiers before constructing.
+    typeProperties = io.internal.remapReservedPropertyNames(Type.typename, typeProperties);
 
     %construct as kwargs and instantiate object
     kwargs = io.map2kwargs(typeProperties);

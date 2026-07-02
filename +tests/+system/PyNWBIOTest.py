@@ -205,7 +205,7 @@ class NWBFileIOTest(PyNWBIOTest):
                         'SIunit', timestamps=list(range(10)), resolution=0.1)
         self.file.add_acquisition(ts)
         mod = file.create_processing_module('test_module', 'a test module')
-        mod.add_container(SpatialSeries("SpatialSeries", list(range(1, 11)),
+        mod.add(SpatialSeries("SpatialSeries", list(range(1, 11)),
                                     description='A test spatial series',
                                     unit='n/a',
                                     timestamps=list(range(1, 11))))

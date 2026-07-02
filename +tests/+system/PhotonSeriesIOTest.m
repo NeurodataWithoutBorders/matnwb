@@ -25,6 +25,12 @@ classdef PhotonSeriesIOTest < tests.system.PyNWBIOTest & tests.system.AmendTest
                 'scan_line_rate', 3.4, ...
                 'timestamps', (0:9) .', ...
                 'dimension', [200;200]);
+
+            % In nwb-schema v2.10.0, 'num_samples' was introduced on
+            % ImageSeries and PyNWB (v4.0.0) computes it from the data if no
+            % 'external_file' is present. Add it here to ensure the
+            % matcontainer will be equal to the pycontainer
+            tps.num_samples = size(tps.data, ndims(tps.data));
             
             file.general_devices.set('dev1', dev);
             file.general_optophysiology.set('imgpln1', ip);
