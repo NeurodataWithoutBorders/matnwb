@@ -18,27 +18,27 @@ function val = correctType(val, type)
                 errorMessage ...
             );
         case 'datetime'
-            isCellString = iscellstr(val) || (iscell(val) && all(cellfun('isclass', val, 'string')));
-            isCellDatetime = iscell(val) && all(cellfun('isclass', val, 'datetime'));
-            isHeterogeneousCell = isCellString || isCellDatetime;
-            assert(ischar(val) || isdatetime(val) || isstring(val) || isHeterogeneousCell, ...
+            isCellString = iscellstr(val) || (iscell(val) && all(cellfun('isclass', val, 'string'))); %#ok<ISCLSTR>
+            isCellDatetime = iscell(val) && all(cellfun('isclass', val, 'datetime'));            
+            
+            isValid = ischar(val) || isdatetime(val) || isstring(val) || isCellString || isCellDatetime;
+            
+            assert(isValid, ...
                 errorId, sprintf(errorTemplate, 'value is not a timestamp or datetime object'));
             
             % convert strings to datetimes
             if ischar(val) || isstring(val) || isCellString
                 val = formatDatetime(io.timestamp2datetime(val));
-                return;
+            elseif isdatetime(val) && isscalar(val)
+                val = formatDatetime(val);
+            else % datetime array or cell array of datetimes values
+                if isdatetime(val)
+                    val = arrayfun(@formatDatetime, val);
+                else
+                    val = cellfun(@formatDatetime, val, 'UniformOutput', false);
+                end
             end
-            if isdatetime(val)
-                val = num2cell(val);
-            end
-            
-            % set format depending on default values.
-            for iDatetime = 1:length(val)
-                % note, must be a for loop since datetimes with/without timezones cannot be
-                % concatenated.
-                val{iDatetime} = formatDatetime(val{iDatetime});
-            end
+
         case {'single', 'double', 'int64', 'int32', 'int16', 'int8', 'uint64', ...
                 'uint32', 'uint16', 'uint8'}
             errorMessage = sprintf(errorTemplate ...
