@@ -24,7 +24,9 @@ function validationStr = fillValidators(propnames, props, namespaceReg, classNam
         hookInfo = file.getPropertyHooks(nm, prop, classNameParts(className), namespaceReg);
         validationBody = appendLines(validationBody, hookInfo.ValidatorLines);
 
-        headerStr = ['function val = validate_' nm '(obj, val)'];
+        % The schema name (nm) may be a reserved MATLAB keyword; the validator
+        % method name must match the setter, which uses the valid identifier.
+        headerStr = ['function val = validate_' file.internal.getMatlabPropertyName(nm) '(obj, val)'];
         if isempty(validationBody)
             functionStr = [headerStr newline 'end'];
         else

@@ -24,7 +24,10 @@ function s = fillProps(props, names, varargin)
     for i=1:length(names)
         pnm = names{i};
         propInfo = props(pnm);
-        propStr = strjoin(strsplit(getPropStr(props(pnm)), newline), [newline '% ']);
+        propStr = file.internal.processDocstring(getPropStr(props(pnm)));
+        % The on-disk/schema name (pnm) may be a reserved MATLAB keyword; the
+        % declared property uses a valid identifier. MatNWB remaps on read/write.
+        propertyIdentifier = file.internal.getMatlabPropertyName(pnm);
         defaultValue = [];
         if startsWith(class(propInfo), 'file.')
             if isprop(propInfo, 'value')
@@ -32,10 +35,10 @@ function s = fillProps(props, names, varargin)
             end
         end
         if isempty(defaultValue)
-            proplines{i} = [pnm '; % ' requiredStr ' ' propStr];
+            proplines{i} = [propertyIdentifier '; % ' requiredStr ' ' propStr];
         else
             defaultValue = formatValueAsString(defaultValue);
-            proplines{i} = [pnm ' = %s; %% ', requiredStr ' ' propStr];
+            proplines{i} = [propertyIdentifier ' = %s; %% ', requiredStr ' ' propStr];
             proplines{i} = sprintf(proplines{i}, defaultValue);
         end
     end

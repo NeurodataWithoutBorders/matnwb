@@ -48,10 +48,13 @@ function bodystr = fillBody(parentName, defaults, props, namespace, class, inher
         overridemap = containers.Map;
         for i=1:length(defaults)
             nm = defaults{i};
+            % Key the injected default by the valid identifier so it matches the
+            % name-value argument declared by addParameter for this property.
+            identifier = file.internal.getMatlabPropertyName(nm);
             if strcmp(props(nm).dtype, 'char')
-                overridemap(nm) = ['''' props(nm).value ''''];
+                overridemap(identifier) = ['''' props(nm).value ''''];
             else
-                overridemap(nm) =...
+                overridemap(identifier) =...
                     sprintf('types.util.correctType(%d, ''%s'')',...
                     props(nm).value,...
                     props(nm).dtype);
@@ -132,8 +135,12 @@ function bodystr = fillBody(parentName, defaults, props, namespace, class, inher
         warning(warningId, warnmsg, invalidVars{i});
     end
     varnames = lower(varnames);
+    % A schema name may be a reserved MATLAB keyword; constrained/anon/link
+    % parsing accesses the property via the valid identifier.
+    varnames = cellfun( ...
+        @(v) file.internal.getMatlabPropertyName(v), varnames, 'UniformOutput', false);
 
-    % We delete parsed elements from varargin such that any conflicts do not 
+    % We delete parsed elements from varargin such that any conflicts do not
     % show up in inputParser
     deleteFromVars = 'varargin(ivarargin) = [];';
 
@@ -205,12 +212,16 @@ function bodystr = fillBody(parentName, defaults, props, namespace, class, inher
             defaults{i} = '[]';
         end
     end
+    % A schema name may be a reserved MATLAB keyword; the name-value argument
+    % and property access use the valid identifier. MatNWB remaps on read/write.
+    propertyIdentifiers = cellfun( ...
+        @(n) file.internal.getMatlabPropertyName(n), names, 'UniformOutput', false);
     % add parameters
-    parser = [parser, strcat('addParameter(p, ''', names, ''', ', defaults,');')];
+    parser = [parser, strcat('addParameter(p, ''', propertyIdentifiers, ''', ', defaults,');')];
     % parse
     parser = [parser, {'misc.parseSkipInvalidName(p, varargin);'}];
     % get results
-    parser = [parser, strcat('obj.', names, ' = p.Results.', names, ';')];
+    parser = [parser, strcat('obj.', propertyIdentifiers, ' = p.Results.', propertyIdentifiers, ';')];
     parser = strjoin(parser, newline);
     bodystr(end+1:end+length(parser)+1) = [newline parser];
 end
@@ -265,6 +276,7 @@ function docString = fillConstructorDocString(name, props, namespace, superClass
         catch
             description = 'No description';
         end
+        description = file.internal.processDocstring(description, "%   ");
 
         docString = [docString, ...
             sprintf("%%  - %s (%s) - %s", propName, valueType, description), ...

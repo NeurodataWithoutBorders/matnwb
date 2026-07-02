@@ -79,8 +79,21 @@ switch class(data)
         if isdatetime(data)
             data = num2cell(data);
         end
-        
+
         for i = 1:length(data)
+            % Check the element type before converting: datetime properties may
+            % arrive here as a datetime array (num2cell'd above) or as a cell
+            % that already wraps datetime values.
+            isDatetimeElement = isdatetime(data{i});
             data{i} = char(data{i});
+            if isDatetimeElement
+                % Emit a numeric zero offset ("+00:00") instead of the "Z" UTC
+                % designator that MATLAB's ISO 8601 format produces for UTC.
+                % Both are valid ISO 8601, but Python's datetime.fromisoformat
+                % cannot parse "Z" before Python 3.11, which breaks reading
+                % MatNWB files in PyNWB on older Python. "+00:00" also matches
+                % PyNWB's own output (datetime.isoformat).
+                data{i} = regexprep(data{i}, 'Z$', '+00:00');
+            end
         end
 end
