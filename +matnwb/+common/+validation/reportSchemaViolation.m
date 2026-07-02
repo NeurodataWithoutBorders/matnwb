@@ -24,13 +24,24 @@ function reportSchemaViolation(errorId, message, causes, options)
     isWriteContext = validationContext == ValidationContext.WRITE;
 
     if ~isWriteContext && (isReadContext || options.WarnInsteadOfError)
-        lenientGuidance = ['The non-conforming value is kept. If you maintain ' ...
-            'this data, consider correcting it before export.'];
+        lenientGuidance = sprintf("\nNote: The non-conforming value is kept. If you maintain " + ...
+            "this data, consider correcting it before export.");
 
-        fullMessage = message;
+        fullMessage = "";
+
+        target = matnwb.common.validation.internal.validationTarget();
+        if isReadContext && ~isempty(target)
+            targetMessage = sprintf( ...
+                'Validation failed while reading object of type "%s" at file location "%s":', ...
+                target.TypeName, target.Path);
+            fullMessage = string(targetMessage) + newline;
+        end
+
+        fullMessage = fullMessage + message;
         for iCause = 1:numel(causes)
             fullMessage = fullMessage + " " + string(causes(iCause).message);
         end
+
         fullMessage = fullMessage + " " + lenientGuidance;
 
         warning(errorId, '%s', fullMessage)
