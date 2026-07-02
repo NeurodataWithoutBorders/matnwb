@@ -51,7 +51,13 @@ matlabTable = table( ...
 
 % deal with DynamicTableRegion columns when index is false
 [columns, remainingColumns] = deal(DynamicTable.colnames);
-columnDescriptions = repmat({''}, 1, length(columns));
+columnDescriptions = types.util.dynamictable.internal.getColumnDescriptions( ...
+    DynamicTable, columns);
+if isa(DynamicTable, 'matnwb.neurodata.AlignedDynamicTableBase')
+    categories = DynamicTable.categories;
+else
+    categories = {};
+end
 
 for i = 1:length(columns)
     cn = columns{i};
@@ -62,7 +68,6 @@ for i = 1:length(columns)
     else
         cv = DynamicTable.vectordata.get(cn);
     end
-    columnDescriptions{i} = cv.description;
     if ~index && ...
             (isa(cv,'types.hdmf_common.DynamicTableRegion') ||...
             isa(cv,'types.core.DynamicTableRegion'))
@@ -82,8 +87,24 @@ end
 % making the assumption that length of ids reflects table height
 matlabTable = [matlabTable DynamicTable.getRow( ...
     1:length(ids), ...
-    'columns', remainingColumns ...
+    'columns', remainingColumns, ...
+    'categories', categories ...
 )];
+
+% Add category metadata if this dynamic table is an aligned dynamic table
+if ~isempty(categories)
+    columns = [columns, categories];
+    for i = 1:numel(categories)
+        currentCategory = categories{i};
+        categoryTable = DynamicTable.getCategory(currentCategory);
+        categoryRows = matlabTable.(currentCategory);
+        categoryRows.Properties.VariableDescriptions = ...
+            types.util.dynamictable.internal.getColumnDescriptions( ...
+                categoryTable, categoryTable.colnames);
+        matlabTable.(currentCategory) = categoryRows;
+        columnDescriptions(end+1) = {categoryTable.description}; %#ok<AGROW>
+    end
+end
 
 % Update the columns order to be the same as the original
 if iscolumn(columns); columns = transpose(columns); end
