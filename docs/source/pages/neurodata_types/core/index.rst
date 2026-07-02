@@ -23,11 +23,13 @@ These are the MatNWB neurodata types from the core schema specification.
    Device
    DeviceModel
    DfOverF
+   DurationVectorData
    ElectricalSeries
    ElectrodeGroup
    ElectrodesTable
    EventDetection
    EventWaveform
+   EventsTable
    ExperimentalConditionsTable
    ExternalImage
    EyeTracking
@@ -83,6 +85,7 @@ These are the MatNWB neurodata types from the core schema specification.
    TimeIntervals
    TimeSeries
    TimeSeriesReferenceVectorData
+   TimestampVectorData
    TwoPhotonSeries
    Units
    VoltageClampSeries
