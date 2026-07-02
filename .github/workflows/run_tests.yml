@@ -101,7 +101,7 @@ jobs:
           pip install -r +tests/requirements.txt
           # Install pynwb and nwbinspector only for Python 3.10+ (both dropped Python 3.9 support)
           if [[ "${{ matrix.skip-pynwb-tests }}" == "0" ]]; then
-            pip install "pynwb==3.1.3"
+            pip install "pynwb==4.0.0"
             pynwb_version=$(pip show pynwb | grep "^Version:" | awk '{print $2}')
             echo "pynwb_version=$pynwb_version" >> "$GITHUB_OUTPUT"
           fi
