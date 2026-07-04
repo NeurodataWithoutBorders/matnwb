@@ -30,6 +30,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Remove folders not needed for docs build
+        run: rm -rf +tests tools tutorials
+
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
