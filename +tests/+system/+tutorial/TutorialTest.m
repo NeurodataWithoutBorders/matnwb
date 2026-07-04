@@ -56,6 +56,9 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture, tests.fixtur
             % Use a fixture to add the folder to the search path
             %testCase.applyFixture(matlab.unittest.fixtures.PathFixture(rootPath));
             testCase.applyFixture(matlab.unittest.fixtures.PathFixture(tutorialsFolder));
+        
+            warningID = 'NWB:AttributeDependencyNotSet';
+            testCase.applyFixture(matlab.unittest.fixtures.SuppressedWarningsFixture(warningID));
         end
     end
 
@@ -68,6 +71,8 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture, tests.fixtur
     
     methods (Test)
         function testTutorial(testCase, tutorialFile) %#ok<INUSD>
+            warningCleanup = testCase.suppressExternalVideosWarning(); %#ok<NASGU>
+
             % Intentionally capturing output, in order for tests to cover
             % code which overloads display methods for nwb types/objects.
             C = evalc( 'run(tutorialFile)' ); %#ok<NASGU>
@@ -138,6 +143,21 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture, tests.fixtur
     end
 
     methods (Static, Access = private)
+        function warningCleanup = suppressExternalVideosWarning()
+            warningContext = py.warnings.catch_warnings();
+            enterWarningContext = py.getattr(warningContext, '__enter__');
+            enterWarningContext();
+            py.warnings.filterwarnings('ignore', pyargs( ...
+                'message', "ImageSeries 'ExternalVideos': Either external_file or data must be specified.*"));
+            warningCleanup = onCleanup( ...
+                @() tests.system.tutorial.TutorialTest.exitWarningContext(warningContext));
+        end
+
+        function exitWarningContext(warningContext)
+            exitContext = py.getattr(warningContext, '__exit__');
+            exitContext(py.None, py.None, py.None);
+        end
+
         function results = nwbinspectorImportanceToNumber(results)
             importanceLevels = containers.Map(...
                 ["BEST_PRACTICE_SUGGESTION", ...
