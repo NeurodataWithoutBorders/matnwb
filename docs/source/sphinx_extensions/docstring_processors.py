@@ -1,13 +1,6 @@
 # Patches generated MATLAB docstrings so they parse as valid reST. Fixes
 # rendering only — never change what fillConstructor.m embeds in the
 # generated .m source, since that text also serves plain `help` output.
-#
-# Root cause of the multiline cases: schema `doc:` fields are valid reST as
-# written (nwb-schema's own docs render them fine, unmodified). matnwb's
-# schema parsing drops the blank lines before fillConstructor.m embeds the
-# text, which is what breaks it here. The proper fix is upstream (preserve
-# blank lines/indentation through codegen); this module is a downstream
-# workaround until that happens.
 import os
 import re
 from _util import list_neurodata_types
@@ -22,7 +15,6 @@ def process_matlab_docstring(app, what, name, obj, options, lines):
     _format_input_arguments(lines)
     _split_and_format_example_lines(lines)
     _escape_role_end_before_invalid_char(lines)
-    _wrap_multiline_argument_descriptions(lines)
 
 
 # Characters allowed to directly follow an inline markup end-string in reST.
@@ -47,72 +39,6 @@ def _escape_role_end_before_invalid_char(lines):
 
     for i, line in enumerate(lines):
         lines[i] = _ROLE_END_PATTERN.sub(_insert_escape, line)
-
-
-# Matches the first line of a "- name (type) - description" Name-Value
-# Arguments list item (as produced by file.internal.processDocstring /
-# fillConstructor.m), capturing its leading indentation. Runs after
-# _format_input_arguments, so the name/type may already be wrapped in
-# "**...**" / "``...``" markup.
-_ARG_ITEM_START_PATTERN = re.compile(r"^(?P<indent>\s*)-\s+\*{0,2}\w+\*{0,2}\s*(?:\(.*?\))?\s*-\s*\S")
-
-# Inline markup that earlier formatting passes may have applied to a line;
-# stripped from literal-block content below so diagrams/nested lists are
-# shown as their original plain text rather than with stray markup chars.
-_INLINE_MARKUP_PATTERNS = (
-    re.compile(r":[\w:]+:`([^`<]+?)\s*<[^>]+>`\\?\s*"),
-    re.compile(r":[\w:]+:`([^`]+?)`"),
-    re.compile(r"\*\*(.+?)\*\*"),
-    re.compile(r"``(.+?)``"),
-)
-
-
-def _strip_inline_markup(line):
-    for pattern in _INLINE_MARKUP_PATTERNS:
-        line = pattern.sub(r"\1", line)
-    return line
-
-
-def _wrap_multiline_argument_descriptions(lines):
-    """
-    Some schema descriptions (YAML literal block scalars) span multiple
-    lines and may contain nested bullet lists, ASCII diagrams, or other
-    structured text. By the time it reaches this docstring, that content
-    has already lost the blank lines and relative indentation that made it
-    valid reST in the schema source (see module note above), so it fails
-    to parse here (e.g. a nested list immediately following a paragraph
-    with no blank line). Render the continuation as a reST literal block
-    instead, so it is always displayed verbatim rather than being
-    (mis-)parsed as reST.
-
-    Modifies the `lines` list in place.
-    """
-
-    i = 0
-    while i < len(lines):
-        match = _ARG_ITEM_START_PATTERN.match(lines[i])
-        if not match:
-            i += 1
-            continue
-
-        item_index = i
-        i += 1
-        continuation_start = i
-        while i < len(lines) and lines[i].strip() != "":
-            i += 1
-        continuation = lines[continuation_start:i]
-
-        if not continuation:
-            continue
-
-        literal_indent = match.group("indent") + "    "
-        literal_lines = [literal_indent + _strip_inline_markup(cline) for cline in continuation]
-
-        lines[item_index] += "::"
-        lines[continuation_start:i] = [""] + literal_lines
-        i = continuation_start + len(literal_lines) + 1
-
-    return lines
 
 
 def _format_matlab_type_as_code_literal(lines):

@@ -278,7 +278,7 @@ function docString = fillConstructorDocString(name, props, namespace, superClass
         catch
             description = 'No description';
         end
-        description = file.internal.processDocstring(description, "%   ");
+        description = file.internal.processDocstring(description, "%    ");
 
         docString = [docString, ...
             sprintf("%%  - %s (%s) - %s", propName, valueType, description), ...
