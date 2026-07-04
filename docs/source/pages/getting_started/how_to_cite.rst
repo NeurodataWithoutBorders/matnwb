@@ -1,3 +1,7 @@
+.. This page is linked to directly (e.g. from overview.rst) but is not part
+   of any toctree, so :orphan: suppresses the "not included in toctree" warning.
+:orphan:
+
 Citing MatNWB
 =============
 
