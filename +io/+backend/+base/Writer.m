@@ -33,6 +33,27 @@ classdef Writer < handle
             io.backend.base.Writer.throwNotImplemented("writeAttribute")
         end
 
+        function specLocation = getEmbeddedSpecLocation(obj) %#ok<MANU>
+            % getEmbeddedSpecLocation - Return the location of embedded schema
+            % specifications, or '' if none are embedded yet. Mirrors
+            % io.backend.base.Reader.getEmbeddedSpecLocation for the write
+            % side (needed when editing a file that may already embed specs).
+            specLocation = '';
+            io.backend.base.Writer.throwNotImplemented("getEmbeddedSpecLocation")
+        end
+
+        function groupNames = listChildGroupNames(obj, groupPath) %#ok<INUSD>
+            % listChildGroupNames - Return the names of immediate child
+            % groups (not datasets) under groupPath.
+            groupNames = {};
+            io.backend.base.Writer.throwNotImplemented("listChildGroupNames")
+        end
+
+        function deleteNode(obj, nodePath) %#ok<INUSD>
+            % deleteNode - Delete the group or dataset at nodePath.
+            io.backend.base.Writer.throwNotImplemented("deleteNode")
+        end
+
         function close(obj) %#ok<MANU>
             % Default no-op. Concrete backends can override when they own
             % resources that should be released explicitly.

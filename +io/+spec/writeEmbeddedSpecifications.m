@@ -1,12 +1,15 @@
 function writeEmbeddedSpecifications(writer, jsonSpecs)
 % writeEmbeddedSpecifications - Write schema specifications to an NWB file
+%
+%   Backend-agnostic: only uses the io.backend.base.Writer interface, so
+%   this works for any registered storage backend, not just HDF5.
 
     arguments
         writer (1,1) io.backend.base.Writer
         jsonSpecs   % String representation of schema specifications in json format
     end
 
-    specLocation = io.spec.internal.readEmbeddedSpecLocation(writer.FileId);
+    specLocation = writer.getEmbeddedSpecLocation();
 
     if isempty(specLocation)
         specLocation = '/specifications';
@@ -20,12 +23,9 @@ function writeEmbeddedSpecifications(writer, jsonSpecs)
         schemaNamespaceLocation = strjoin({specLocation, JsonDatum.name}, '/');
         namespaceExists = writer.writeGroup(schemaNamespaceLocation);
         if namespaceExists
-            namespaceGroupId = H5G.open(writer.FileId, schemaNamespaceLocation);
-            names = getVersionNames(namespaceGroupId);
-            H5G.close(namespaceGroupId);
+            names = writer.listChildGroupNames(schemaNamespaceLocation);
             for iNames = 1:length(names)
-                H5L.delete(writer.FileId, [schemaNamespaceLocation '/' names{iNames}],...
-                    'H5P_DEFAULT');
+                writer.deleteNode([schemaNamespaceLocation '/' names{iNames}]);
             end
         end
         schemaLocation = ...
@@ -38,15 +38,5 @@ function writeEmbeddedSpecifications(writer, jsonSpecs)
             path = [schemaLocation '/' name];
             writer.writeValue(path, Json(name));
         end
-    end
-end
-
-function versionNames = getVersionNames(namespaceGroupId)
-    [~, ~, versionNames] = H5L.iterate(namespaceGroupId,...
-        'H5_INDEX_NAME', 'H5_ITER_NATIVE',...
-        0, @appendName, {});
-    function [status, versionNames] = appendName(~, name, versionNames)
-        versionNames{end+1} = name;
-        status = 0;
     end
 end
