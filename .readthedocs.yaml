@@ -6,6 +6,7 @@ build:
     python: "3.10"
   jobs:
     pre_build:
+      - rm -rf +tests tools tutorials
       - python docs/source/sphinx_extensions/copy_files.py
 
     post_build:
