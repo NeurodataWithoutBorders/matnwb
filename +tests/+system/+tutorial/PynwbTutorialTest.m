@@ -99,8 +99,6 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
     methods(Access = private)
         function suppressKnownWarning(testCase, tutorialFile)
             switch tutorialFile
-                case 'domain/ophys.py'
-                    warningID = 'NWB:BoundPipe:InvalidPipeShape';
                 case 'domain/images.py'
                     warningID = 'NWB:AttributeDependencyNotSet';
                 otherwise
