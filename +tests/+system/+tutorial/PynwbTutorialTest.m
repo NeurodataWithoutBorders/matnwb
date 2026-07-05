@@ -59,6 +59,7 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
 
     methods (Test, TestTags = {'UsesPython'})
         function testTutorial(testCase, TutorialFile)
+            testCase.suppressKnownWarning(TutorialFile)
             galleryFolder = fullfile(pwd, 'docs', 'gallery');
             tutorialFilePath = fullfile(galleryFolder, TutorialFile);
             pythonExecutable = getenv("PYTHON_EXECUTABLE");
@@ -96,6 +97,19 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
     end
     
     methods(Access = private)
+        function suppressKnownWarning(testCase, tutorialFile)
+            switch tutorialFile
+                case 'domain/ophys.py'
+                    warningID = 'NWB:BoundPipe:InvalidPipeShape';
+                case 'domain/images.py'
+                    warningID = 'NWB:AttributeDependencyNotSet';
+                otherwise
+                    return % no warnings to suppress
+            end
+            testCase.applyFixture(...
+                matlab.unittest.fixtures.SuppressedWarningsFixture(warningID));
+        end
+
         function copyTutorialFilesToWorkingFolder(testCase, pynwbRepoDir)
         % copyTutorialFilesToWorkingFolder - Copy the pynwb tutorial files
         % to the temporary working folder used by this test suite.
