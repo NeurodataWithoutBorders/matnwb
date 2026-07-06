@@ -19,7 +19,7 @@
 
 (intro-H_5755-1)=
 
-# Installing MatNWB
+## Installing MatNWB
 
 Use the code below within the brackets to install MatNWB from source. MatNWB works by automatically creating API classes based on the schema.
 
@@ -31,7 +31,7 @@ addpath(genpath(pwd));
 ```
 (intro-H_51bb-1)=
 
-# Set up the NWB File
+## Set up the NWB File
 
 An NWB file represents a single session of an experiment. Each file must have a session\_description, identifier, and session start time. Create a new [**`NWBFile`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html) object with those and additional metadata using the [**`NwbFile`**](https://matnwb.readthedocs.io/en/latest/pages/functions/NwbFile.html) command. For all MatNWB classes and functions, we use the Matlab method of entering keyword argument pairs, where arguments are entered as name followed by value. Ellipses are used for clarity.
 
@@ -107,7 +107,7 @@ nwb =
 
 (intro-H_3b84-1)=
 
-# Subject Information
+## Subject Information
 
 You can also provide information about your subject in the NWB file. Create a [**`Subject`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Subject.html) object to store information such as age, species, genotype, sex, and a freeform description. Then set **`nwb.general_subject`** to the [**`Subject`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Subject.html) object.
 
@@ -156,7 +156,7 @@ Note: the DANDI archive requires all NWB files to have a subject object with sub
 
 (intro-H_47a8-1)=
 
-# Time Series Data
+## Time Series Data
 
 [**`TimeSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html) is a common base class for measurements sampled over time, and provides fields for `data` and `timestamps` (regularly or irregularly sampled). You will also need to supply the `name` and `unit` of measurement ([SI unit](https://en.wikipedia.org/wiki/International_System_of_Units)).
 
@@ -189,7 +189,7 @@ The [**`TimeSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_t
 
 (intro-H_336b-1)=
 
-# Other Types of Time Series 
+## Other Types of Time Series 
 
 As mentioned previously, there are many subtypes of [**`TimeSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html) in MatNWB that are used to store different kinds of data. One example is [**`AnnotationSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/AnnotationSeries.html), a subclass of [**`TimeSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html) that stores text\-based records about the experiment. Similar to our [**`TimeSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html) example above, we can create an [**`AnnotationSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/AnnotationSeries.html) object with text information about a stimulus and add it to the stimulus\_presentation group in the [**`NWBFile`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html). Below is an example where we create an AnnotationSeries object with annotations for airpuff stimuli and add it to the NWBFile.
 
@@ -216,10 +216,10 @@ ans =
 
 (intro-H_8d44-1)=
 
-# Behavior
+## Behavior
 (intro-H_298a-1)=
 
-## SpatialSeries and Position
+### SpatialSeries and Position
 
 Many types of data have special data types in NWB. To store the spatial position of a subject, we will use the [**`SpatialSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html) and [**`Position`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Position.html) classes. 
 
@@ -263,7 +263,7 @@ nwb.processing.set('behavior', behavior_module);
 ```
 (intro-H_2d94-1)=
 
-## Trials
+### Trials
 (intro-H_FF7B86AB-1)=
 
 Trials are stored in a [**`TimeIntervals`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeIntervals.html) object which is a subclass of [**`DynamicTable`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html). [**`DynamicTable`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html) objects are used to store tabular metadata throughout NWB, including for trials, electrodes, and sorted units. They offer flexibility for tabular data by allowing required columns, optional columns, and custom columns.
@@ -309,7 +309,7 @@ nwb.intervals.set('custom_intervals_table_name', trials);
 ```
 (intro-H_098c-1)=
 
-# Write
+## Write
 (intro-H_66678991-1)=
 
 Now, to write the NWB file that we have built so far:
@@ -326,7 +326,7 @@ We can use the [HDFView](https://www.hdfgroup.org/downloads/hdfview/) applicatio
 
 (intro-H_9060-1)=
 
-# Read
+## Read
 
 We can then read the file back in using MatNWB and inspect its contents. 
 
@@ -425,8 +425,8 @@ read_spatial_series =
 ```
 
 (intro-H_2a80-1)=
-#
-# Reading Data
+##
+## Reading Data
 
 Counter to normal MATLAB workflow, data arrays are read passively from the file. Calling **`read_spatial_series.data`** does not read the data values, but presents a **`DataStub`** object that can be indexed to read data. 
 
@@ -476,7 +476,7 @@ ans = 2x10
 
 (intro-H_0b60-1)=
 
-# Next Steps
+## Next Steps
 
 This concludes the introductory tutorial. Please proceed to one of the specialized tutorials, which are designed to follow this one.
 

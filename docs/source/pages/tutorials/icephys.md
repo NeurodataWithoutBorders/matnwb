@@ -31,7 +31,7 @@ The following tutorial describes storage of intracellular electrophysiology data
 
 (icephys-H_3a73-1)=
 
-# Creating an NWBFile
+## Creating an NWBFile
 
 When creating an NWB file, the first step is to create the [**`NWBFile`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html), which you can create using the [**`NwbFile`**](https://matnwb.readthedocs.io/en/latest/pages/functions/NwbFile.html) command.
 
@@ -52,7 +52,7 @@ nwbfile = NwbFile( ...
 ```
 (icephys-H_6e62-1)=
 
-## Subject Information
+### Subject Information
 
 It is also recommended to store information about the experimental subject in the file. Create a [**`Subject`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Subject.html) object to store metadata about the subject, then assign it to `nwb.general_subject`.
 
@@ -68,7 +68,7 @@ nwb.general_subject = subject;
 ```
 (icephys-H_86b2-1)=
 
-## Device metadata
+### Device metadata
 
 Device metadata is represented by [**`Device`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Device.html) objects.
 
@@ -78,7 +78,7 @@ nwbfile.general_devices.set('Heka ITC-1600', device);
 ```
 (icephys-H_9715-1)=
 
-## **Electrode metadata**
+### **Electrode metadata**
 
 Intracellular electrode metadata is represented by [**`IntracellularElectrode`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IntracellularElectrode.html) objects. Create an electrode object, which requires a link to the device of the previous step. Then add it to the NWB file.
 
@@ -92,7 +92,7 @@ nwbfile.general_intracellular_ephys.set('IntracellularElectrode', electrode);
 ```
 (icephys-H_083d-1)=
 
-# **Stimulus and response data**
+## **Stimulus and response data**
 
 Intracellular stimulus and response data are represented with subclasses of [**`PatchClampSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/PatchClampSeries.html). A stimulus is described by a time series representing voltage or current stimulation with a particular set of parameters. There are two classes for representing stimulus data:
 
@@ -186,7 +186,7 @@ nwbfile.acquisition.set('IZeroClampSeries',  izcs);
 ```
 (icephys-H_478c-1)=
 
-## Adding an intracellular recording
+### Adding an intracellular recording
 
 The [**`IntracellularRecordingsTable`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IntracellularRecordingsTable.html) relates electrode, stimulus and response pairs and describes metadata specific to individual recordings.
 
@@ -312,14 +312,14 @@ nwbfile.general_intracellular_ephys_intracellular_recordings = ic_rec_table;
 ```
 (icephys-H_1536-1)=
 
-# Hierarchical organization of recordings
+## Hierarchical organization of recordings
 (icephys-H_F58007A2-1)=
 
 To describe the organization of intracellular experiments, the metadata is organized hierarchically in a sequence of tables. All of the tables are so\-called [**`DynamicTables`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html) enabling users to add columns for custom metadata. Storing data in hierarchical tables has the advantage that it allows us to avoid duplication of metadata. E.g., for a single experiment we only need to describe the metadata that is constant across an experimental condition as a single row in the [**`SimultaneousRecordingsTable`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SimultaneousRecordingsTable.html) without having to replicate the same information across all repetitions and sequential\-, simultaneous\-, and individual intracellular recordings. For analysis, this means that we can easily focus on individual aspects of an experiment while still being able to easily access information about information from related tables. All of these tables are optional, but to use one you must use all of the lower level tables, even if you only need a single row.
 
 (icephys-H_310f-1)=
 
-## Add a simultaneous recording
+### Add a simultaneous recording
 
 The [**`SimultaneousRecordingsTable`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SimultaneousRecordingsTable.html) groups intracellular recordings from the [**`IntracellularRecordingsTable`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IntracellularRecordingsTable.html) together that were recorded simultaneously from different electrodes and/or cells and describes metadata that is constant across the simultaneous recordings. In practice a simultaneous recording is often also referred to as a sweep. This example adds a custom column, "simultaneous\_recording\_tag".
 
@@ -381,7 +381,7 @@ nwbfile.general_intracellular_ephys_simultaneous_recordings = ic_sim_recs_table;
 ```
 (icephys-H_4279-1)=
 
-## Add a sequential recording
+### Add a sequential recording
 
 The [**`SequentialRecordingsTable`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SequentialRecordingsTable.html) groups simultaneously recorded intracellular recordings from the [**`SimultaneousRecordingsTable`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SimultaneousRecordingsTable.html) together and describes metadata that is constant across the simultaneous recordings. In practice a sequential recording is often also referred to as a sweep sequence. A common use of sequential recordings is to group together simultaneous recordings where a sequence of stimuli of the same type with varying parameters have been presented in a sequence (e.g., a sequence of square waveforms with varying amplitude).
 
@@ -421,7 +421,7 @@ nwbfile.general_intracellular_ephys_sequential_recordings = sequential_recording
 ```
 (icephys-H_1d70-1)=
 
-## Add repetitions table
+### Add repetitions table
 
 The [**`RepetitionsTable`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RepetitionsTable.html) groups sequential recordings from the [**`SequentialRecordingsTable`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SequentialRecordingsTable.html). In practice, a repetition is often also referred to a run. A typical use of the [**`RepetitionsTable`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RepetitionsTable.html) is to group sets of different stimuli that are applied in sequence that may be repeated.
 
@@ -449,7 +449,7 @@ nwbfile.general_intracellular_ephys_repetitions = types.core.RepetitionsTable( .
 ```
 (icephys-H_6075-1)=
 
-## Add experimental condition table
+### Add experimental condition table
 
 The [**`ExperimentalConditionsTable`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ExperimentalConditionsTable.html) groups repetitions of intracellular recording from the [**`RepetitionsTable`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RepetitionsTable.html) together that belong to the same experimental conditions.
 
@@ -480,13 +480,13 @@ nwbfile.general_intracellular_ephys_experimental_conditions = ...
 ```
 (icephys-H_6d41-1)=
 
-# Write the NWB file
+## Write the NWB file
 ```matlab
 nwbExport(nwbfile, 'icephys_tutorial.nwb');
 ```
 (icephys-H_6b40-1)=
 
-# Read the NWB file
+## Read the NWB file
 ```matlab
 nwbfile2 = nwbRead('icephys_tutorial.nwb', 'ignorecache')
 ```

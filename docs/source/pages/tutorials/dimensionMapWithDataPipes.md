@@ -26,7 +26,7 @@ The key difference when using **`DataPipe`** instead of **`VectorData`** is that
 
 **Please note**: The following tutorial mixes row and column vectors and does not produce a valid dynamic table. The tutorial is only meant to showcase how data maps onto HDF5 datasets when using **`DataPipe`** objects.
 
-# Create Table
+## Create Table
 
 First, create an expandable `TimeIntervals` table of height 10.
 
@@ -84,7 +84,7 @@ trials_table = types.core.TimeIntervals(...
                 'id', ids_col ...     
 );
 ```
-# Export Table
+## Export Table
 
 Create NWB file with expandable `TimeIntervals` table and export.
 

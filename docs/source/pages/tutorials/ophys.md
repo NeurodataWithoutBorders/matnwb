@@ -23,7 +23,7 @@
 
 (ophys-H_70db-1)=
 
-# Introduction
+## Introduction
 
 In this tutorial, we will create fake data for a hypothetical optical physiology experiment with a freely moving animal. The types of data we will convert are:
 
@@ -38,7 +38,7 @@ It is recommended to first work through the [Introduction to MatNWB tutorial](in
 
 (ophys-H_0991-1)=
 
-# Set up the NWB file
+## Set up the NWB file
 
 An NWB file represents a single session of an experiment. Each file must have a session\_description, identifier, and session start time. Create a new `NWBFile` object with those and additional metadata. For all MatNWB functions, we use the Matlab method of entering keyword argument pairs, where arguments are entered as name followed by value.
 
@@ -115,7 +115,7 @@ nwb =
 
 (ophys-H_3a0a-1)=
 
-## Subject Information
+### Subject Information
 
 It is recommended to store information about the experimental subject in the file. Create a [**`Subject`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Subject.html) object to store metadata about the subject, then assign it to `nwb.general_subject`.
 
@@ -131,7 +131,7 @@ nwb.general_subject = subject;
 ```
 (ophys-H_4a0a-1)=
 
-# Optical Physiology
+## Optical Physiology
 (ophys-H_25054651-1)=
 
 Optical physiology results are written in four steps:
@@ -142,7 +142,7 @@ Optical physiology results are written in four steps:
 4. Fluorescence and dF/F responses
 (ophys-H_1e01-1)=
 
-## Imaging Plane
+### Imaging Plane
 
 First, you must create an [**`ImagingPlane`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImagingPlane.html) object, which will hold information about the area and method used to collect the optical imaging data. This requires creation of a [**`Device`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Device.html) object for the microscope and an [**`OpticalChannel`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OpticalChannel.html) object. Then you can create an [**`ImagingPlane`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImagingPlane.html).
 
@@ -181,7 +181,7 @@ nwb.general_optophysiology.set(imaging_plane_name, imaging_plane);
 ```
 (ophys-H_49fa-1)=
 
-## Storing Two\-Photon Data
+### Storing Two\-Photon Data
 (ophys-H_BEB8D2A0-1)=
 
 You can create a [**`TwoPhotonSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TwoPhotonSeries.html) class representing two photon imaging data. [**`TwoPhotonSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TwoPhotonSeries.html), like [**`SpatialSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html), inherits from [**`TimeSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html) and is similar in behavior to [**`OnePhotonSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OnePhotonSeries.html).
@@ -203,7 +203,7 @@ nwb.acquisition.set('2pInternal', InternalTwoPhoton);
 ```
 (ophys-H_651e-1)=
 
-## Storing One\-Photon Data
+### Storing One\-Photon Data
 
 Now that we have our [**`ImagingPlane`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImagingPlane.html), we can create a [**`OnePhotonSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OnePhotonSeries.html) object to store raw one\-photon imaging data.
 
@@ -220,7 +220,7 @@ nwb.acquisition.set('1pInternal', InternalOnePhoton);
 ```
 (ophys-H_2e61-1)=
 
-## Motion Correction (optional)
+### Motion Correction (optional)
 (ophys-H_BE3DB7E3-1)=
 
 You can also store the result of motion correction using a [**`MotionCorrection`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/MotionCorrection.html) object, a container type that can hold one or more [**`CorrectedImageStack`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/CorrectedImageStack.html) objects.
@@ -273,7 +273,7 @@ nwb.processing.set('ophys', ophys_module);
 ```
 (ophys-H_5d6d-1)=
 
-## Plane Segmentation
+### Plane Segmentation
 
 Image segmentation stores the detected regions of interest in the [**`TwoPhotonSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TwoPhotonSeries.html) data. [**`ImageSegmentation`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImageSegmentation.html) allows you to have more than one segmentation by creating more [**`PlaneSegmentation`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/PlaneSegmentation.html) objects.
 
@@ -282,7 +282,7 @@ Image segmentation stores the detected regions of interest in the [**`TwoPhotonS
 
 (ophys-H_9fc3-1)=
 
-## Regions of interest (ROIs)
+### Regions of interest (ROIs)
 (ophys-H_32ABACFC-1)=
 
 ROIs can be added to a [**`PlaneSegmentation`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/PlaneSegmentation.html) either as an image\_mask **or** as a pixel\_mask. An image mask is an array that is the same size as a single frame of the [**`TwoPhotonSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TwoPhotonSeries.html), and indicates where a single region of interest is. This image mask may be boolean or continuous between 0 and 1. A pixel\_mask, on the other hand, is a list of indices (i.e coordinates) and weights for the ROI. The pixel\_mask is represented as a compound data type using a [ragged array](<https://nwb-schema.readthedocs.io/en/latest/format_description.html#tables-and-ragged-arrays>) and below is an example demonstrating how to create either an image\_mask or a pixel\_mask. Changing the dropdown selection will update the [**`PlaneSegmentation`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/PlaneSegmentation.html) object accordingly.
@@ -354,7 +354,7 @@ end
 ```
 (ophys-H_7312-1)=
 
-## Adding ROIs to NWB file 
+### Adding ROIs to NWB file 
 
 Now create an [**`ImageSegmentation`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImageSegmentation.html) object and put the `plane_segmentation` object inside of it, naming it "`PlaneSegmentation"`.
 
@@ -370,7 +370,7 @@ ophys_module.nwbdatainterface.set('ImageSegmentation', img_seg);
 ```
 (ophys-H_26e1-1)=
 
-## Storing fluorescence of ROIs over time
+### Storing fluorescence of ROIs over time
 (ophys-H_09424E2F-1)=
 
 Now that ROIs are stored, you can store fluorescence data for these regions of interest. This type of data is stored using the [**`RoiResponseSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RoiResponseSeries.html) class. 
@@ -417,7 +417,7 @@ ophys_module.nwbdatainterface.set('Fluorescence', fluorescence);
 
 (ophys-H_7a45-1)=
 
-# Writing the NWB file
+## Writing the NWB file
 ```matlab
 nwb_file_name = 'ophys_tutorial.nwb';
 if isfile(nwb_file_name); delete(nwb_file_name); end
@@ -425,7 +425,7 @@ nwbExport(nwb, nwb_file_name);
 ```
 (ophys-H_391c-1)=
 
-# Reading the NWB file
+## Reading the NWB file
 ```matlab
 read_nwb = nwbRead(nwb_file_name, 'ignorecache');
 ```
@@ -523,18 +523,18 @@ title(sprintf('First %d ROIs', 10))
 ![figure_2.png](../../_static/tutorials/media/ophys/figure_2.png){.tutorial-media}
 (ophys-T_08c6-1)=
 
-# Learn more!
+## Learn more!
 (ophys-H_0f3d-1)=
 
-## See the [API documentation](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/index.html) to learn what data types are available.
+### See the [API documentation](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/index.html) to learn what data types are available.
 (ophys-H_80ac-1)=
 
-# Other MatNWB tutorials
+## Other MatNWB tutorials
 -  [Extracellular electrophysiology](ecephys) 
 -  [Intracellular electrophysiology](icephys) 
 (ophys-H_9f53-1)=
 
-# Python tutorials
+## Python tutorials
 
 See our tutorials for more details about your data type:
 
@@ -549,7 +549,7 @@ See our tutorials for more details about your data type:
 -  [Advanced HDF5 I/O](<https://pynwb.readthedocs.io/en/stable/tutorials/advanced_io/h5dataio.html#sphx-glr-tutorials-advanced-io-h5dataio-py>) 
 (ophys-T_1671-1)=
 
-# Helper functions
+## Helper functions
 ```matlab
 function X = generateCenterCoords(varargin)
     % Use reproducible random number generation for consistent 

@@ -22,7 +22,7 @@ This is a user guide to interacting with [**DynamicTable**](https://matnwb.readt
 
 (dynamic_tables-H_1987-1)=
 
-# **MatNWB setup**
+## **MatNWB setup**
 
 Start by setting up your MATLAB workspace. The code below adds the directory containing the MatNWB package to the MATLAB search path. MatNWB works by automatically creating API classes based on a defined schema.
 
@@ -34,7 +34,7 @@ addpath(genpath(pwd));
 ```
 (dynamic_tables-H_869a-1)=
 
-# Constructing a table with initialized columns
+## Constructing a table with initialized columns
 
 The [**DynamicTable**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html) class represents a column\-based table to which you can add custom columns. It consists of a description, a list of columns , and a list of row IDs. You can create a [**DynamicTable**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html) by first defining the [**VectorData**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/VectorData.html) objects that will make up the columns of the table. Each [**VectorData**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/VectorData.html) object must contain the same number of rows. A list of rows IDs may be passed to the [**DynamicTable**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html) using the id argument. Row IDs are a useful way to access row information independent of row location index. The list of row IDs must be cast as an [**ElementIdentifiers**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/ElementIdentifiers.html) object before being passed to the [**DynamicTable**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html) object. If no value is passed to id, an [**ElementIdentifiers**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/ElementIdentifiers.html) object with 0\-indexed row IDs will be created for you automatically.
 
@@ -78,7 +78,7 @@ my_table =
 
 (dynamic_tables-H_106f-1)=
 
-# Adding rows
+## Adding rows
 
 You can add rows to an existing [**DynamicTable**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html) using the object's `addRow` method. One way of using this method is to pass in the names of columns as parameter names followed by the elements to append. The class of the elements of the column must match the elements to append.
 
@@ -87,7 +87,7 @@ my_table.addRow('col1', 3, 'col2', {'c'}, 'id', 2);
 ```
 (dynamic_tables-H_3afc-1)=
 
-# Adding columns
+## Adding columns
 
 You can add new columns to an existing [**DynamicTable**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html) object using the `addColumn` method. One way of using this method is to pass in the names of each new column followed by the corresponding values for each new column. The height of the new columns must match the height of the table.
 
@@ -101,7 +101,7 @@ my_table.addColumn('col3', col3,'col4', col4);
 ```
 (dynamic_tables-H_8036-1)=
 
-# Create MATLAB table and convert to dynamic table
+## Create MATLAB table and convert to dynamic table
 
 As an alternative to building a dynamic table using the [**DynamicTable**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html) and [**VectorData**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/VectorData.html) data types, it is also possible to create a MATLAB table and convert it to a dynamic table. Lets create the same table as before, but using MATLAB's table class:
 
@@ -111,14 +111,14 @@ T = table([1;2], {'a';'b'}, 'VariableNames', {'col1', 'col2'});
 T.Properties.VariableDescriptions = {'column #1', 'column #2'};
 ```
 (dynamic_tables-H_3663-1)=
-#
-# Adding rows
+##
+## Adding rows
 ```matlab
 T(end+1, :) = {3, 'c'};
 ```
 (dynamic_tables-H_34c1-1)=
 
-## Adding variables (columns)
+### Adding variables (columns)
 ```matlab
 T = addvars(T, [100;200;300], 'NewVariableNames',{'col3'});
 T.Properties.VariableDescriptions{3} = 'column #3';
@@ -139,7 +139,7 @@ T
 
 (dynamic_tables-H_6f53-1)=
 
-## Convert to dynamic table
+### Convert to dynamic table
 ```matlab
 dynamic_table = util.table2nwb(T, 'A MATLAB table that was converted to a dynamic table')
 ```
@@ -157,13 +157,13 @@ dynamic_table =
 
 (dynamic_tables-H_5ba4-1)=
 
-# Enumerated (categorical) data
+## Enumerated (categorical) data
 
 [**`EnumData`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_experimental/EnumData.html) is a special type of column for storing an enumerated data type. This way each unique value is stored once, and the data references those values by index. Using this method is more efficient than storing a single value many times, and has the advantage of communicating to downstream tools that the data is categorical in nature.
 
 (dynamic_tables-H_7077-1)=
 
-## Warning regarding EnumData 
+### Warning regarding EnumData 
 
 [**`EnumData`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_experimental/EnumData.html) is currently an experimental feature and as such should not be used in a production environment.
 
@@ -186,7 +186,7 @@ cell_type_table.addColumn('cell_type', cell_type);
 ```
 (dynamic_tables-H_2d5c-1)=
 
-# Ragged array columns
+## Ragged array columns
 
 A table column with a different number of elements for each row is called a "ragged array column." To define a table with a ragged array column, pass both the [**VectorData**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/VectorData.html) and the corresponding [**VectorIndex**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/VectorIndex.html) as columns of the [**DynamicTable**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html) object. The [**VectorData**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/VectorData.html) columns will contain the data values. The [**VectorIndex**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/VectorIndex.html) column serves to indicate how to arrange the data across rows. By convention the [**VectorIndex**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/VectorIndex.html) object corresponding to a particular column must have have the same name with the addition of the '\_index' suffix.
 
@@ -218,7 +218,7 @@ table_ragged_col = types.hdmf_common.DynamicTable( ...
 ```
 (dynamic_tables-H_4351-1)=
 
-## Adding ragged array rows
+### Adding ragged array rows
 
 You can add a new row to the ragged array column. Under the hood, the `addRow` method will add the appropriate value to the [**VectorIndex**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/VectorIndex.html) column to maintain proper formatting.
 
@@ -227,7 +227,7 @@ table_ragged_col.addRow('col1', {'3a'; '3b'; '3c'}, 'id', 2);
 ```
 (dynamic_tables-H_5229-1)=
 
-# Accessing row elements
+## Accessing row elements
 
 You can access data from entire rows of a [**DynamicTable**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html) object by calling the `getRow` method for the corresponding object. You can supply either an individual row number or a list of row numbers.
 
@@ -285,7 +285,7 @@ table_ragged_col.getRow(1:2)
 
 (dynamic_tables-H_0c2a-1)=
 
-# Accessing column elements
+## Accessing column elements
 
 To access all rows from a particular column use the .get method on the vectordata field of the [**DynamicTable**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html) object
 
@@ -303,7 +303,7 @@ ans = 3x1 cell
 
 (dynamic_tables-H_520f-1)=
 
-# Referencing rows of other tables
+## Referencing rows of other tables
 
 You can create a column that references rows of other tables by adding a [**DynamicTableRegion**](file:///Users/cesar/Repositories/matnwb/doc/+types/+hdmf_common/DynamicTableRegion.html) object as a column of a [**DynamicTable**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html). This is analogous to a foreign key in a relational database. The [**DynamicTableRegion**](file:///Users/cesar/Repositories/matnwb/doc/+types/+hdmf_common/DynamicTableRegion.html) class takes in an `ObjectView` object as argument. `ObjectView` objects create links from one object type referencing another.
 
@@ -329,7 +329,7 @@ dtr_table = types.hdmf_common.DynamicTable( ...
 ```
 (dynamic_tables-H_395d-1)=
 
-# Converting a [**DynamicTable**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html) **to a MATLAB table**
+## Converting a [**DynamicTable**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html) **to a MATLAB table**
 
 You can convert a [**DynamicTable**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html) object to a MATLAB table by making use of the object's `toTable` method. This is a useful way to view the whole table in a human\-readable format.
 
@@ -363,7 +363,7 @@ dtr_table.toTable(false)
 
 (dynamic_tables-H_0ea2-1)=
 
-# Creating an expandable table
+## Creating an expandable table
 
 When using the default HDF5 backend, each column of these tables is an HDF5 Dataset, which by default are set to an unchangeable size. This means that once a file is written, it is not possible to add a new row. If you want to be able to save this file, load it, and add more rows to the table, you will need to set this up when you create the [**VectorData**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/VectorData.html) and [**ElementIdentifiers**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/ElementIdentifiers.html) columns of a [**DynamicTable**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html). Specifically, you must wrap the column data with a **DataPipe** object. The **DataPipe** class takes in `maxSize` and `axis` as arguments to indicate the maximum desired size for each axis and the axis to which to append to, respectively. For example, creating a **DataPipe** object with a *maxSize* value equal to `[Inf, 1]` indicates that the number of rows may increase indefinitely. In contrast, setting *maxSize* equal to `[8, 1]` would allow the column to grow to a maximum height of 8.
 
@@ -438,13 +438,13 @@ nwbExport(read_file, 'expandableTableTestFile.nwb');
 
 (dynamic_tables-H_3cf3-1)=
 
-# Multidimensional columns
+## Multidimensional columns
 
 The order of dimensions of multidimensional columns in MatNWB is reversed relative to the Python HDMF package (see [documentation](https://matnwb.readthedocs.io/en/latest/pages/concepts/dimension_ordering.html) for detailed explanation). Therefore, the height of a multidimensional column belonging to a [**DynamicTable**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html) object is defined by the shape of its last dimension. A valid [**DynamicTable**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html) must have matched height across columns. 
 
 (dynamic_tables-H_8545-1)=
 
-## Constructing multidimensional columns
+### Constructing multidimensional columns
 ```matlab
 % Define 1D column
 simple_col = types.hdmf_common.VectorData( ...
@@ -467,7 +467,7 @@ multi_dim_table = types.hdmf_common.DynamicTable( ...
 ```
 (dynamic_tables-H_1248-1)=
 
-## Multidimensional ragged array columns
+### Multidimensional ragged array columns
 
 [**DynamicTable**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html) objects with multidimensional ragged array columns can be constructed by passing in the corresponding [**VectorIndex**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/VectorIndex.html) column
 
@@ -492,8 +492,8 @@ multi_ragged_table = types.hdmf_common.DynamicTable( ...
 );
 ```
 (dynamic_tables-H_9bac-1)=
-#
-# Adding rows to multidimensional array columns
+##
+## Adding rows to multidimensional array columns
 
 [**DynamicTable**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html) objects with multidimensional array columns can also be constructed by adding a single row at a time. This method makes use of **DataPipe** objects due to the fact that MATLAB doesn't support singleton dimensions for arrays with more than 2 dimensions. The code block below demonstrates how to build a [**DynamicTable**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html) object with a multidimensional ragged array column in this manner.
 
@@ -579,10 +579,10 @@ read_file.intervals_trials.addRow( ...
 ```
 (dynamic_tables-H_42c6-1)=
 
-# Learn more!
+## Learn more!
 (dynamic_tables-H_8e0c-1)=
 
-## Python Tutorial
+### Python Tutorial
 
 [DynamicTable Tutorial](<https://hdmf.readthedocs.io/en/stable/tutorials/plot_dynamictable_tutorial.html#sphx-glr-tutorials-plot-dynamictable-tutorial-py>)
 

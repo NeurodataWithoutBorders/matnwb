@@ -22,7 +22,7 @@ This tutorial will focus on the basics of working with a [**`NWBFile`**](https:/
 
 (scratch-H_6D5A695F-1)=
 
-# Setup
+## Setup
 
 Let us first set up an environment with some "acquired data".
 
@@ -102,13 +102,13 @@ nwbExport(ContextFile, 'context_file.nwb');
 ```
 (scratch-H_F0AB2427-1)=
 
-# Warning Regarding the Usage of Scratch Space
+## Warning Regarding the Usage of Scratch Space
 
 **Scratch data written into the scratch space should not be intended for reuse or sharing. Standard NWB types, along with any extensions, should always be used for any data intended to be shared. Published data should not include scratch data and any reuse should not require scratch data for data processing.**
 
 (scratch-H_AB310D43-1)=
 
-# Writing Data to Scratch Space
+## Writing Data to Scratch Space
 
 Let us first copy what we need from the processed data file.
 

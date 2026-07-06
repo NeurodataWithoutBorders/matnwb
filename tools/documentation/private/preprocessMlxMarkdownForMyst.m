@@ -25,6 +25,7 @@ function markdownText = preprocessMlxMarkdownForMyst(markdownFilePath, tutorialN
 
     markdownText = stripEmbeddedToc(markdownText);
     markdownText = stripDuplicateDocumentTitle(markdownText);
+    markdownText = shiftHeadingLevelsDownOneStep(markdownText);
     markdownText = resolveAnchorsAndSamePageLinks(markdownText, tutorialName);
     markdownText = rewriteTutorialLinks(markdownText);
     markdownText = renameCapturedOutputFence(markdownText);
@@ -123,6 +124,36 @@ function lines = dropLeadingLineIfMatches(lines, predicate)
     if ~isempty(lines) && predicate(strtrim(lines(1)))
         lines(1) = [];
     end
+end
+
+function text = shiftHeadingLevelsDownOneStep(text)
+% The page template already renders the tutorial title as an H1. MATLAB
+% exports the tutorial's own top-level sections as "#" too (the same
+% level), which produces multiple sibling H1 sections on one page instead
+% of a single nested document tree. That breaks two things at once: the
+% sidebar navigation promotes every tutorial section as if it were its own
+% page, and the {contents} directive -- which can only enumerate a
+% section's descendants -- has nothing to list, so the on-page ToC renders
+% empty. Shifting every heading down one level (H1->H2, H2->H3, ...) nests
+% the body under the page title as intended. Fenced code blocks are left
+% untouched, since a captured command-window output line could
+% coincidentally start with "#".
+    lines = splitlines(text);
+    inFence = false;
+    for i = 1:numel(lines)
+        trimmedLine = strtrim(lines(i));
+        if startsWith(trimmedLine, "```")
+            inFence = ~inFence;
+            continue
+        end
+        if inFence
+            continue
+        end
+        if ~isempty(regexp(trimmedLine, "^#+(\s|$)", 'once'))
+            lines(i) = "#" + lines(i);
+        end
+    end
+    text = strjoin(lines, newline);
 end
 
 function text = rewriteTutorialLinks(text)

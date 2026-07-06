@@ -17,14 +17,14 @@
 :depth: 2
 ```
 
-# Installing Dynamically Loaded Filters
+## Installing Dynamically Loaded Filters
 
 HDF5 can use various filters to compress data when writing datasets. GZIP is the default filter, and it can be read with any HDF5 installation without any setup, but many users find that other filters, such as Zstd, offer better performance. If you want to read an HDF5 Dataset that was compressed using another filter in MATLAB, such as Zstd, you will need to configure MATLAB to read using dynamically loaded filters. 
 
 
 The easiest way we have found to set up dynamically loaded filters is to use the Python package [hdf5plugin](https://github.com/silx-kit/hdf5plugin). This library has a sophisticated installation process that compiles several of the most popular dynamically loaded filters and works across popular operating systems. Installing this Python package is a trick that allows us to offload the tricky parts of installing dynamically loaded filters in MATLAB.
 
-## Linux or Mac
+### Linux or Mac
 
 1. In your Terminal window, install hdf5plugin:
 
@@ -46,7 +46,7 @@ The easiest way we have found to set up dynamically loaded filters is to use the
 
 The path above is an example of a common location for OSX. The exact path of MATLAB may vary on your computer.
 
-## Windows
+### Windows
 
 1. Install `hdf5plugin` in the Command Prompt:
 
@@ -83,7 +83,7 @@ The beauty of HDF5 is that it handles the rest under the hood. When you read a d
 
 For more information about installing filter plugins, see the [MATLAB documentation](https://www.mathworks.com/help/matlab/import_export/read-and-write-hdf5-datasets-using-dynamically-loaded-filters.html).
 
-# Writing with Dynamically Loaded Filters
+## Writing with Dynamically Loaded Filters
 
 To write with dynamically loaded filters, first follow the installation steps above. **This feature requires MATLAB version ≥ 2022a.**
 
@@ -109,14 +109,14 @@ Error in types.untyped.datapipe.properties.DynamicFilter (line 22)
             assert(H5Z.filter_avail(uint32(filter)), ...
 ```
 
-## Parameters
+### Parameters
 
 Some filter plugins allow for setting special configuration parameters to modify the filter's behavior. The `DynamicFilter` property type contains a modifiable  `parameters` field which can be used to set your parameters. This is equivalent to setting the `cd_values` argument in HDF5. In the case of the [Zstandard HDF5 plugin](https://github.com/aparamon/HDF5Plugin-Zstandard), the first (and only) array argument value indicates the compression level.
 
 ```matlab
 zstdProperty.parameters = 4; % compression level.
 ```
-## Multiple Filters
+### Multiple Filters
 
 You can use multiple dynamic filters by concatenating multiple DynamicFilter properties together. They will be applied in order of the inserted array.
 
@@ -124,7 +124,7 @@ You can use multiple dynamic filters by concatenating multiple DynamicFilter pro
 ShuffleProperty = Shuffle();
 dynamicProperties = [ShuffleProperty zstdProperty];
 ```
-## Writing
+### Writing
 
 The `DataPipe` class takes in a keyword argument called `filters` which is an array of `DynamicFilter` objects. Supplying a `'filters'` argument will deactivate the default GZIP compression.
 

@@ -23,14 +23,14 @@
 
 In this tutorial, we demonstrate the reading and usage of the NWB file produced in the [File Conversion Tutorial](https://matnwb.readthedocs.io/en/latest/pages/tutorials/convertTrials.html). The output is a near\-reproduction of Figure 1e from the [Li et al](https://www.ncbi.nlm.nih.gov/pubmed/27074502) publication, showing raster and peristimulus time histogram (PSTH) plots for neural recordings from anterior lateral motor cortex (ALM). This figure illustrates the main finding of the publication, showing the robustness of motor planning behavior and neural dynamics following short unilateral network silencing via optogenetic inhibition. 
 
-# Reading NWB Files
+## Reading NWB Files
 
 NWB files can be read in using the *nwbRead()* function.  This function returns a *nwbfile* object which is the in\-memory representation of the NWB file structure.
 
 ```matlab
 nwb = nwbRead('out\ANM255201_20141124.nwb', 'ignorecache');
 ```
-# **Constrained Sets**
+## **Constrained Sets**
 
 Analyzed data in NWB is placed under the *analysis* property, which is a **Constrained Set**.  A constrained set consists of an arbitrary amount of key\-value pairs similar to [Map containers](https://www.mathworks.com/help/matlab/map-containers.html) in MATLAB or a dictionary in Python.  However, constrained sets also have the ability to validate their own properties closer to how a typed Object would.
 
@@ -40,7 +40,7 @@ You can get/set values in constrained sets using their respective *.get()/.set()
 ```matlab
 unit_names = keys(nwb.analysis);
 ```
-# Dictionaries with MATLAB R2022b
+## Dictionaries with MATLAB R2022b
 
 As noted above, constrained sets uses Map container objects, a custom class that allows user to retrieve values using a corresponding key.  For users working with MATLAB version R2022b, a notable addition of the [dictionary](https://www.mathworks.com/help/matlab/ref/dictionary.html?s_tid=doc_ta) object offers significantly faster functionality.
 
@@ -50,15 +50,15 @@ You can initialize a dictionary and configure its contents from relevant analyse
 
 Number of entries in a dictionary can be done with the new [numEntries()](https://www.mathworks.com/help/matlab/ref/dictionary.numentries.html) function. One can also return all the keys and values of a dictionary as arrays using [keys(dict\_name)](https://www.mathworks.com/help/matlab/ref/dictionary.keys.html) and [values(dict\_name)](https://www.mathworks.com/help/matlab/ref/dictionary.values.html) functions. 
 
-# Dynamic Tables
+## Dynamic Tables
 
 *nwb.intervals\_trials* returns a unique type of table called a **Dynamic Table**.  Dynamic tables inherit from the NWB type *types.hdmf\_common.DynamicTable* and allow for a table\-like interface in NWB.  In the case below, we grab the special column *start\_time*.  Dynamic Tables allow adding your own vectors using the *vectordata* property, which are Constrained Sets.  All columns are represented by either a  *types.hdmf\_common.VectorData* or a *types.hdmf\_common.VectorIndex* type.
 
-# Data Stubs
+## Data Stubs
 
 The *data* property of the column *id* in *nwb.units* is a *types.untyped.DataStub.*  This object is a representation of a dataset that is not loaded in memory, and is what allows MatNWB to lazily load its file data.  To load the data into memory, use the  *.load()* method which extracts all data from the NWB file. Alternatively, you can index into the DataStub directly using conventional MATLAB syntax.
 
-# Jagged Arrays in Dynamic Tables
+## Jagged Arrays in Dynamic Tables
 
 With the new addition of *addRow* and *getRow* to Dynamic Tables, the concept of jagged arrays can be worked around and no longer require full understanding outside of specific data format concerns or low\-level nwb tool development. The below paragraph is retained in its entirety from its original form as purely informational.
 
@@ -78,7 +78,7 @@ unit_ids = nwb.units.id.data.load(); % array of unit ids represented within this
 unit_trials = containers.Map('KeyType',class(unit_ids),'ValueType','any');
 unit_times = containers.Map('KeyType',class(unit_ids),'ValueType','any');
 ```
-### MATLAB R2022b Versions
+#### MATLAB R2022b Versions
 ```matlab
 % unit_trials = dictionary();
 % unit_times  = dictionary();
@@ -96,7 +96,7 @@ for i = 1:length(unit_ids)
     unit_times(unit_id) = row.spike_times{1};
 end
 ```
-# Process Units
+## Process Units
 
 We now do the following for each Unit:
 
@@ -116,7 +116,7 @@ Photostim = struct(...
 % Initialize Map container of plotting data for each unit, stored as structure
 Unit = containers.Map('KeyType',class(unit_ids),'ValueType','any');
 ```
-### MATLAB R2022b Versions
+#### MATLAB R2022b Versions
 ```matlab
 % Unit = dictionary();
 ```
@@ -260,7 +260,7 @@ Compose Scatter Plots and the Peristimulus Time Histogram zeroed on the Response
     Unit(unit_id) = curr_unit;
 end
 ```
-# Plot Example Neurons
+## Plot Example Neurons
 ```matlab
 neuron_labels = [2, 3]; % neuron labels from Figure 1e
 neuron_ids = [11, 2]; % neuron unit IDs corresponding to the Fig 1e labels
@@ -328,7 +328,7 @@ end
 ```
 
 ![figure_0.png](../../_static/tutorials/media/basicUsage/figure_0.png){.tutorial-media}
-# Helper Functions
+## Helper Functions
 
 PSTH helper function
 

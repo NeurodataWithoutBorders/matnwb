@@ -33,7 +33,7 @@ reverseDims = @(data) permute(data, ndims(data):-1:1);
 ```
 (images-H_6a48-1)=
 
-# Create an NWB File
+## Create an NWB File
 ```matlab
 nwb = NwbFile( ...
     'session_description', 'mouse in open exploration',...
@@ -108,7 +108,7 @@ nwb =
 
 (images-H_6e62-1)=
 
-## Subject Information
+### Subject Information
 
 It is recommended to store information about the experimental subject in the file. Create a [**`Subject`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Subject.html) object to store metadata about the subject, then assign it to `nwb.general_subject`.
 
@@ -124,7 +124,7 @@ nwb.general_subject = subject;
 ```
 (images-H_2581-1)=
 
-# ImageSeries: Storing series of images as acquisition
+## ImageSeries: Storing series of images as acquisition
 
 [**`ImageSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImageSeries.html) is a general container for time series of images acquired during an experiment. Image data can be stored directly in the NWB file or referenced from external image files (see section [External files](#images-H_9b57-1) below). For color images stored in the NWB file, the channel order must be RGB. 
 
@@ -142,7 +142,7 @@ nwb.acquisition.set('ImageSeries', behavior_images);
 ```
 (images-H_5693-1)=
 
-# OpticalSeries: Storing series of images as stimuli
+## OpticalSeries: Storing series of images as stimuli
 
 We will use the [**`OpticalSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OpticalSeries.html) class to store time series of images presented to the subject as stimuli. The [**`OpticalSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OpticalSeries.html) class extends the ImageSeries with additional fields that describe the spatial relationship between the subject and the stimuli, such as: 
 
@@ -167,7 +167,7 @@ nwb.stimulus_presentation.set('StimulusPresentation', optical_series);
 ```
 (images-H_1478-1)=
 
-# AbstractFeatureSeries: Storing features of visual stimuli
+## AbstractFeatureSeries: Storing features of visual stimuli
 
 While full image data is usually stored in an [**`OpticalSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OpticalSeries.html), you can also store derived features of the visual stimuli—either instead of, or in addition to, the raw images. Examples of derived features include **mean luminance**, **contrast**, or **spatial frequency**. The [**`AbstractFeatureSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/AbstractFeatureSeries.html) class is a general `TimeSeries` container for storing such feature data over time.
 
@@ -189,7 +189,7 @@ nwb.stimulus_presentation.set('StimulusFeatures', abstract_feature_series);
 ```
 (images-H_9b57-1)=
 
-# External files
+## External files
 
 External files (e.g., videos of the behaving animal) can be added to an [**`NWBFile`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html) by creating an [**`ImageSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImageSeries.html) with the `external_file` field set to the relative path(s) of the file(s) on disk. The path must be relative to the NWB file’s location.
 
@@ -222,13 +222,13 @@ nwb.acquisition.set('ExternalVideos', behavior_external_file);
 ```
 (images-H_81aa-1)=
 
-# Static images
+## Static images
 
 Static images can be stored in an [**`NWBFile`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html) object using the [**`RGBAImage`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RGBAImage.html), [**`RGBImage`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RGBImage.html) or [**`GrayscaleImage`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/GrayscaleImage.html) classes. All of these image types provide an optional `description` parameter to include text description about the image and the `resolution` parameter to specify the pixels/cm resolution of the image.
 
 (images-H_7dfe-1)=
 
-## RGBAImage: for color images with transparency
+### RGBAImage: for color images with transparency
 
 [**`RGBAImage`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RGBAImage.html) is for storing data of color image with transparency. `data` must be 3D where the first and second dimensions represent x and y. The third dimension has length 4 and represents the RGBA value.
 
@@ -243,7 +243,7 @@ rgba_image = types.core.RGBAImage( ...
 ```
 (images-H_84b0-1)=
 
-## RGBImage: for color images
+### RGBImage: for color images
 
 [**`RGBImage`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RGBImage.html) is for storing data of RGB color image. `data` must be 3D where the first and second dimensions represent x and y. The third dimension has length 3 and represents the RGB value.
 
@@ -258,7 +258,7 @@ rgb_image = types.core.RGBImage( ...
 ```
 (images-H_8cdc-1)=
 
-## **GrayscaleImage: for grayscale images**
+### **GrayscaleImage: for grayscale images**
 
 [**`GrayscaleImage`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/GrayscaleImage.html) is for storing grayscale image data. `data` must be 2D where the first and second dimensions represent x and y.
 
@@ -273,7 +273,7 @@ grayscale_image = types.core.GrayscaleImage( ...
 ```
 (images-H_0c5e-1)=
 
-## Images: a container for images
+### Images: a container for images
 
 Add these images to an [**`Images`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Images.html) container that accepts any mix of these image types.
 
@@ -290,7 +290,7 @@ nwb.acquisition.set('ImageCollection', image_collection);
 ```
 (images-H_100c-1)=
 
-# IndexSeries for repeated images
+## IndexSeries for repeated images
 
 If the same images are presented multiple times, storing each copy in an [**`ImageSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImageSeries.html) would duplicate data. The [**`IndexSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/IndexSeries.html) avoids this by referencing a set of unique images stored in an [**`Images`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Images.html) container.
 
@@ -372,7 +372,7 @@ Here *data* contains the (0\-indexed) index of the displayed image as they are o
 
 (images-H_44e2-1)=
 
-# Writing the images to an NWB File
+## Writing the images to an NWB File
 
 Now use [**`nwbExport`**](https://matnwb.readthedocs.io/en/latest/pages/functions/nwbExport.html) to write the [**`NWBFile`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/NWBFile.html) object and all its contents to disk:
 

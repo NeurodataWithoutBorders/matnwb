@@ -101,7 +101,7 @@ nwbfile =
 
 That's it! MATLAB will automatically detect that this is an S3 path instead of a local filepath and will set up a remote read interface for that NWB file. This approach works on any computer with a fairly recent version of MATLAB and an internet connection. It works particularly well on the [DANDI Hub](http://hub.dandiarchive.org), which has a very fast connection to the DANDI S3 store and which provides a MATLAB environment for free provided you have a license.
 
-# Note: MATLAB vs. Python remote read
+## Note: MATLAB vs. Python remote read
 
 Python also allows you to remotely read a file, and has several advantages over MATLAB. Reading in Python is faster. On DANDI Hub, for MATLAB, reading the file takes about 51 seconds, while the analogous operation takes less than a second in Python. Python also allows you to create a local cache so you are not repeatedly requesting the same data, which can further speed up data access. Overall, we recommend remote reading using Python instead of MATLAB.
 

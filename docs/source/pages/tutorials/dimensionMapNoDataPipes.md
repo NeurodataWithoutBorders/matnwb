@@ -28,7 +28,7 @@ Due to differences in how MATLAB and HDF5 represent data, the dimensions of data
 
 Contrast this tutorial with the [**dimensionMapWithDataPipes**](dimensionMapWithDataPipes) tutorial that illustrates how vectors are represented differently when using **`DataPipe`** objects within **`VectorData`** objects.
 
-# Create Table
+## Create Table
 
 First, create a `TimeIntervals` table of height 10.
 
@@ -64,7 +64,7 @@ trials_table = types.core.TimeIntervals(...
                 'id', id_col ...     
 );
 ```
-# Export Table
+## Export Table
 
 Create NWB file with `TimeIntervals` table and export.
 

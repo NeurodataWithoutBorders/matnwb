@@ -23,7 +23,7 @@
 
 (ecephys-H_98dc-1)=
 
-# About This Tutorial
+## About This Tutorial
 
 This tutorial describes storage of hypothetical data from extracellular electrophysiology experiments in NWB for the following data categories:
 
@@ -32,7 +32,7 @@ This tutorial describes storage of hypothetical data from extracellular electrop
 -  Spike times 
 (ecephys-H_7bd1-1)=
 
-# Before You Begin
+## Before You Begin
 
 It is recommended to first work through the [Introduction to MatNWB tutorial](intro), which demonstrates installing MatNWB and creating an NWB file with subject information, animal position, and trials, as well as writing and reading NWB files in MATLAB.
 
@@ -41,7 +41,7 @@ It is recommended to first work through the [Introduction to MatNWB tutorial](in
 
 (ecephys-H_6ffc-1)=
 
-# Setting up the NWB File
+## Setting up the NWB File
 
 An NWB file represents a single session of an experiment. Each file must have a `session_description`, `identifier`, and `session_start_time`. Create a new [**`NWBFile`**](https://matnwb.readthedocs.io/en/latest/pages/functions/NwbFile.html) object these required fields along with any additional metadata. In MatNWB, arguments are specified using MATLAB's keyword argument pair convention, where each argument name is followed by its value.
 
@@ -118,7 +118,7 @@ nwb =
 
 (ecephys-H_9e1e-1)=
 
-## Subject Information
+### Subject Information
 
 It is also recommended to store information about the experimental subject in the file. Create a [**`Subject`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Subject.html) object to store metadata about the subject, then assign it to `nwb.general_subject`.
 
@@ -134,7 +134,7 @@ nwb.general_subject = subject;
 ```
 (ecephys-H_4139-1)=
 
-# Electrode Information
+## Electrode Information
 
 In order to store extracellular electrophysiology data, you first must create an electrodes table describing the electrodes that generated this data. Extracellular electrodes are stored in an `electrodes` table, which is also a [**`DynamicTable`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html). `electrodes` has several required fields: `x`, `y`, `z`, `impedance`, `location`, `filtering`, and `electrode_group`.
 
@@ -165,7 +165,7 @@ nwb.general_devices.set('array', device);
 ```
 (ecephys-H_7313-1)=
 
-## Electrodes Table
+### Electrodes Table
 
 ![image_0.png](../../_static/tutorials/media/ecephys/image_0.png){.tutorial-media width=576px}
 
@@ -223,19 +223,19 @@ nwb.general_extracellular_ephys_electrodes = electrodesDynamicTable;
 ```
 (ecephys-H_3ff3-1)=
 
-## Links
+### Links
 
 In the above loop, we create [**`ElectrodeGroup`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ElectrodeGroup.html) objects. The `electrodes` table then uses an `ObjectView` in each row to link to the corresponding [**`ElectrodeGroup`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ElectrodeGroup.html) object. An `ObjectView` is a construct that enables linking one neurodata type to another, allowing a neurodata type to reference another within the NWB file.
 
 (ecephys-H_9bf7-1)=
 
-# Recorded Extracellular Signals
+## Recorded Extracellular Signals
 
 Voltage data are stored using the [**`ElectricalSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ElectricalSeries.html) class, a subclass of the [**`TimeSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html) class specialized for voltage data. 
 
 (ecephys-H_46c1-1)=
 
-## Referencing Electrodes
+### Referencing Electrodes
 
 In order to create our [**`ElectricalSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ElectricalSeries.html) object, we first need to reference a set of rows in the `electrodes` table to indicate which electrode (channel) each entry in the electrical series were recorded from. We will do this by creating a [**`DynamicTableRegion`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTableRegion.html), which is a type of link that allows you to reference specific rows of a [**`DynamicTable`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html), such as the `electrodes` table, using row indices.
 
@@ -250,7 +250,7 @@ electrode_table_region = types.hdmf_common.DynamicTableRegion( ...
 ```
 (ecephys-H_7c91-1)=
 
-## Raw Voltage Data
+### Raw Voltage Data
 
 Now create an [**`ElectricalSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ElectricalSeries.html) object to hold acquisition data collected during the experiment.
 
@@ -273,10 +273,10 @@ nwb.acquisition.set('ElectricalSeries', raw_electrical_series);
 ```
 (ecephys-H_861c-1)=
 
-# Processed Extracellular Electrical Signals
+## Processed Extracellular Electrical Signals
 (ecephys-H_378a-1)=
 
-## LFP
+### LFP
 
 LFP refers to data that has been low\-pass filtered, typically below 300 Hz. This data may also be downsampled. Because it is filtered and potentially resampled, it is categorized as processed data. LFP data would also be stored in an [**`ElectricalSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ElectricalSeries.html). To help data analysis and visualization tools know that this [**`ElectricalSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ElectricalSeries.html) object represents LFP data, we store it inside an [**`LFP`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/LFP.html) object and then place the [**`LFP`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/LFP.html) object in a [**`ProcessingModule`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ProcessingModule.html) named `'ecephys'`. This is analogous to how we stored the [**`SpatialSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html) object inside of a [**`Position`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Position.html) object and stored the [**`Position`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Position.html) object in a [**`ProcessingModule`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ProcessingModule.html) named `'behavior'` in the [behavior](behavior) tutorial
 
@@ -302,7 +302,7 @@ nwb.processing.set('ecephys', ecephys_module);
 ```
 (ecephys-H_9aad-1)=
 
-## Other Types of Filtered Electrical Signals
+### Other Types of Filtered Electrical Signals
 
 If your acquired data is filtered for frequency ranges other than LFP—such as Gamma or Theta—you can store the result in an [**`ElectricalSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ElectricalSeries.html) and encapsulate it within a [**`FilteredEphys`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/FilteredEphys.html) object instead of the [**`LFP`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/LFP.html) object.
 
@@ -330,7 +330,7 @@ ecephys_module.nwbdatainterface.set('FilteredEphys', filtered_ephys);
 ```
 (ecephys-H_1073-1)=
 
-## Decomposition of LFP Data into Frequency Bands
+### Decomposition of LFP Data into Frequency Bands
 
 In some cases, you may want to further process the LFP data and decompose the signal into different frequency bands for additional downstream analyses. You can then store the processed data from these spectral analyses using a [**`DecompositionSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/DecompositionSeries.html) object. This object allows you to include metadata about the frequency bands and metric used (e.g., `power`, `phase`, `amplitude`), as well as link the decomposed data to the original [**`TimeSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html) signal the data was derived from.
 
@@ -382,10 +382,10 @@ ecephys_module.nwbdatainterface.set('theta', decomp_series);
 ```
 (ecephys-H_7ffa-1)=
 
-# Spike Times and Extracellular Events
+## Spike Times and Extracellular Events
 (ecephys-H_70ee-1)=
 
-## Sorted Spike Times
+### Sorted Spike Times
 
 Spike times are stored in a [**`Units`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Units.html) table, a specialization of the [**`DynamicTable`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/DynamicTable.html) class. The default [**`Units`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Units.html) table is located at `/units` in the HDF5 file. You can add columns to the [**`Units`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Units.html) table just like you did for `electrodes` and `trials` (see [convertTrials](convertTrials)). Here, we generate some random spike time data and populate the table. Note: Spike times of a [**`Units`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Units.html) table should be sorted in ascending order.
 
@@ -406,7 +406,7 @@ spike_times
 
 (ecephys-H_7e54-1)=
 
-### Ragged Arrays
+#### Ragged Arrays
 
 Spike times are an example of a ragged array\- it's like a matrix, but each row has a different number of elements. We can represent this type of data as an indexed column of the [**`Units`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Units.html) table. These indexed columns have two components, the [**`VectorData`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/VectorData.html) object that holds the data and the [**`VectorIndex`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/VectorIndex.html) object that holds the indices in the vector that indicate the row breaks. You can use the convenience function `util.create_indexed_column` to create these objects. For more information about ragged arrays, we refer you to the **"Ragged Array Columns"** section of the [dynamic table](dynamic_tables) tutorial.
 
@@ -445,7 +445,7 @@ nwb.units.toTable()
 
 (ecephys-H_44c4-1)=
 
-## Unsorted Spike Times
+### Unsorted Spike Times
 
 While the [**`Units`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Units.html) table is used to store spike times and waveform data for spike\-sorted, single\-unit activity, you may also want to store spike times and waveform snippets of unsorted spiking activity. This is useful for recording multi\-unit activity detected via threshold crossings during data acquisition. Such information can be stored using [**`SpikeEventSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpikeEventSeries.html) objects.
 
@@ -1343,7 +1343,7 @@ nwb.acquisition.set('SpikeEvents_Shank0', spike_events);
 ```
 (ecephys-H_3265-1)=
 
-## Detected Events
+### Detected Events
 (ecephys-H_8F2CA75F-1)=
 
 If you need to store the complete, continuous raw voltage traces, along with unsorted spike times, you should store the traces in [**`ElectricalSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ElectricalSeries.html) objects in the acquisition group, and use the [**`EventDetection`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/EventDetection.html) class to identify the spike events in your raw traces.
@@ -1363,7 +1363,7 @@ ecephys_module.nwbdatainterface.set('ThresholdEvents', event_detection);
 ```
 (ecephys-H_901e-1)=
 
-## Storing Spike Features (e.g Principal Components)
+### Storing Spike Features (e.g Principal Components)
 
 NWB also provides a way to store features of spikes, such as principal components, using the [**`FeatureExtraction`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/FeatureExtraction.html) class. 
 
@@ -1385,7 +1385,7 @@ ecephys_module.nwbdatainterface.set('PCA_features', feature_extraction);
 ```
 (ecephys-H_5aa2-1)=
 
-# Choosing NWB\-Types for Electrophysiology Data (A Summary)
+## Choosing NWB\-Types for Electrophysiology Data (A Summary)
 
 As mentioned above, [**`ElectricalSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ElectricalSeries.html) objects are meant for storing electrical timeseries data like raw voltage signals or processed signals like LFP or other filtered signals. In addition to the [**`ElectricalSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ElectricalSeries.html) class, NWB provides some more classes for storing event\-based electropysiological data. We will briefly discuss them here, and refer the reader to the [**API documentation**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/index.html) and the section on [Extracellular Physiology](<https://nwb-schema.readthedocs.io/en/latest/format.html#extracellular-electrophysiology>) in the "NWB Format Specification" for more details on using these objects.
 
@@ -1397,13 +1397,13 @@ The results of spike sorting (or clustering) should be stored in the top\-level 
 
 (ecephys-H_71fb-1)=
 
-# Writing the NWB File
+## Writing the NWB File
 ```matlab
 nwbExport(nwb, 'ecephys_tutorial.nwb')
 ```
 (ecephys-H_5f5d-1)=
 
-# Reading NWB Data
+## Reading NWB Data
 
 Data arrays are read passively from the file. Calling `TimeSeries.data` does not read the data values, but presents an HDF5 object that can be indexed to read data. This allows you to conveniently work with datasets that are too large to fit in RAM all at once. `load` with no input arguments reads the entire dataset:
 
@@ -1416,7 +1416,7 @@ nwb2.processing.get('ecephys'). ...
 ```
 (ecephys-H_88a3-1)=
 
-# Accessing Data Regions
+## Accessing Data Regions
 
 If all you need is a data region, you can index a `DataStub` object like you would any normal array in MATLAB, as shown below. When indexing the dataset this way, only the selected region is read from disk into RAM. This allows you to handle very large datasets that would not fit entirely into RAM.
 
@@ -1462,18 +1462,18 @@ ans = 21x1
 
 (ecephys-T_6757-1)=
 
-# Learn more!
+## Learn more!
 (ecephys-H_2485-1)=
 
-## See the [API documentation](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/index.html) to learn what data types are available.
+### See the [API documentation](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/index.html) to learn what data types are available.
 (ecephys-H_1b55-1)=
 
-# MATLAB tutorials
+## MATLAB tutorials
 -  [Optical physiology](ophys) 
 -  [Intracellular electrophysiology](icephys) 
 (ecephys-H_6223-1)=
 
-# Python tutorials
+## Python tutorials
 
 See our tutorials for more details about your data type:
 

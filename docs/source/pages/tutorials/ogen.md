@@ -20,7 +20,7 @@
 
 This tutorial will demonstrate how to write optogenetics data.
 
-# Creating an NWBFile object
+## Creating an NWBFile object
 
 When creating a NWB file, the first step is to create the **`NWBFile`** object using [**`NwbFile`**](https://matnwb.readthedocs.io/en/latest/pages/functions/NwbFile.html).
 
@@ -96,7 +96,7 @@ nwb =
 
 (ogen-H_6e62-1)=
 
-## Subject Information
+### Subject Information
 
 It is recommended to store information about the experimental subject in the file. Create a [**`Subject`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Subject.html) object to store metadata about the subject, then assign it to `nwb.general_subject`.
 
@@ -110,7 +110,7 @@ subject = types.core.Subject( ...
 );
 nwb.general_subject = subject;
 ```
-# Adding optogenetic data
+## Adding optogenetic data
 
 The  **`ogen`** module contains two data types that you will need to write optogenetics data, [**`OptogeneticStimulusSite`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OptogeneticStimulusSite.html), which contains metadata about the stimulus site, and [**`OptogeneticSeries`**](https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OptogeneticSeries.html), which contains the values of the time series.
 
