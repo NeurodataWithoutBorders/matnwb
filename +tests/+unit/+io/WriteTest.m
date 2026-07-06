@@ -276,5 +276,34 @@ classdef WriteTest < matlab.unittest.TestCase
             testCase.verifyTrue(all(referenceBuffer(:) == 0))
             testCase.verifyEqual(size(referenceBuffer, 2), 2)
         end
+
+        function testWriteObjectReferenceNoNull(testCase)
+            % A reference column with no null references (the common case)
+            % must be written in full and resolve on read-back. Guards against
+            % the non-null path being skipped when null slots are handled
+            % separately.
+            filename = 'temp_no_null_ref.h5';
+            fid = H5F.create(filename, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
+            fileCleanupObj = onCleanup(@() H5F.close(fid)); %#ok<NASGU>
+
+            % Targets that the references point to.
+            io.writeDataset(fid, '/target_one', rand(3, 1));
+            io.writeDataset(fid, '/target_two', rand(3, 1));
+
+            references = [ ...
+                types.untyped.ObjectView('/target_one'); ...
+                types.untyped.ObjectView('/target_two')];
+            io.writeDataset(fid, '/references', references);
+
+            did = H5D.open(fid, '/references');
+            didCleanupObj = onCleanup(@() H5D.close(did)); %#ok<NASGU>
+            referenceBuffer = H5D.read(did);
+            % No slot is a null reference and both resolve to their targets.
+            testCase.verifyFalse(any(all(referenceBuffer == 0, 1)))
+            testCase.verifyEqual( ...
+                H5R.get_name(did, 'H5R_OBJECT', referenceBuffer(:, 1)), '/target_one')
+            testCase.verifyEqual( ...
+                H5R.get_name(did, 'H5R_OBJECT', referenceBuffer(:, 2)), '/target_two')
+        end
     end
 end
