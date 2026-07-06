@@ -30,7 +30,7 @@ end
 groupProperties = containers.Map;
 for i=1:length(info.Groups)
     group = info.Groups(i);
-    if any(strcmp(group.Name, blacklist.groups))
+    if any(strcmp(string(group.Name), string(blacklist.groups)))
         continue;
     end
     [~, gname] = io.pathParts(group.Name);
