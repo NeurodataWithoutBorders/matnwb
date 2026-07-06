@@ -37,10 +37,49 @@ function writeDataset(fid, fullpath, data, varargin)
             rethrow(ME);
         end
     end
-    H5D.write(did, tid, sid, sid, 'H5P_DEFAULT', data);
+    writeBuffer(did, tid, sid, dims, data);
     H5D.close(did);
     if isa(tid, 'H5ML.id')
         H5T.close(tid);
     end
     H5S.close(sid);
+end
+
+function writeBuffer(did, tid, sid, dims, data)
+    % writeBuffer - Write a data buffer to an open dataset.
+    %
+    % Reference datasets containing a null reference in their first element
+    % cannot be written as a single buffer: MATLAB's H5D.write validates the
+    % leading reference and rejects a null (all-zero) one on HDF5 1.14+
+    % (bundled with MATLAB R2024a and newer). To avoid this, only the non-null
+    % references are written, using element selection. The null slots retain
+    % the dataset's default fill value (all zeros = null reference), which is
+    % byte-identical to the output produced by earlier HDF5 releases.
+    if isReferenceType(tid) && isscalar(dims)
+        referenceSize = H5T.get_size(tid);
+        buffer = reshape(data, referenceSize, []);
+        isNullReference = all(buffer == 0, 1);
+        if all(isNullReference)
+            % Nothing to write; the dataset already reads back as null
+            % references from its zero fill value.
+            return
+        elseif any(isNullReference)
+            validColumns = find(~isNullReference);
+            fileSpace = H5D.get_space(did);
+            % Coordinates are 0-based and must be double precision.
+            H5S.select_elements(fileSpace, 'H5S_SELECT_SET', double(validColumns - 1));
+            memorySpace = H5S.create_simple(1, numel(validColumns), numel(validColumns));
+            H5D.write(did, tid, memorySpace, fileSpace, 'H5P_DEFAULT', buffer(:, validColumns));
+            H5S.close(memorySpace);
+            H5S.close(fileSpace);
+            return
+        end
+    end
+    H5D.write(did, tid, sid, sid, 'H5P_DEFAULT', data);
+end
+
+function tf = isReferenceType(tid)
+    % Object (H5T_STD_REF_OBJ) and region (H5T_STD_REF_DSETREG) reference
+    % types are passed through as char identifiers by io.getBaseType.
+    tf = (ischar(tid) || isstring(tid)) && startsWith(tid, 'H5T_STD_REF');
 end
