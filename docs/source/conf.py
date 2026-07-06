@@ -62,7 +62,24 @@ extensions = [
     'sphinx.ext.linkcode',
     'sphinx.ext.extlinks', # For maintaining external links
     'sphinx_copybutton',
+    'myst_parser', # render live-script tutorials exported to markdown
 ]
+
+# -- Options for MyST (markdown) tutorial pages ------------------------------
+
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.md': 'markdown',
+}
+
+# Lets tutorial images carry a CSS class/width without being pulled out of
+# inline prose (e.g. an icon referenced mid-sentence in a numbered step).
+myst_enable_extensions = ["attrs_inline"]
+
+# Some live scripts nest an H3 subsection directly under an H1 with no H2 in
+# between; that's a benign authoring quirk, not a docs build defect, so
+# don't fail the build over it.
+suppress_warnings = ["myst.header"]
 
 # -- Options that are MATLAB specific ----------------------------------------
 

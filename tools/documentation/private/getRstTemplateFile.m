@@ -1,8 +1,9 @@
-function templateFilePath = getRstTemplateFile(templateName)
+function templateFilePath = getRstTemplateFile(templateName, options)
     arguments
         templateName (1,1) string
+        options.Format (1,1) string {mustBeMember(options.Format, ["rst", "md"])} = "rst"
     end
-    fileName = templateName + ".rst.template";
+    fileName = templateName + "." + options.Format + ".template";
 
     templateFilePath = fullfile(...
         misc.getMatnwbDir, ...

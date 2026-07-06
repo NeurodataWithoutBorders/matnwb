@@ -26,7 +26,7 @@ function generateRstForTutorials(options)
             continue
         end
 
-        generateRstForTutorial(sourceFilePath, ...
+        generateDocsPageForTutorial(sourceFilePath, ...
             "SourceRepoPath", sourceRepoPath);
     end
 

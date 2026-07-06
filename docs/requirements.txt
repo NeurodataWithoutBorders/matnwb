@@ -2,3 +2,4 @@ sphinx
 sphinx-rtd-theme
 sphinx-copybutton
 sphinxcontrib-matlabdomain
+myst-parser

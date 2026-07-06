@@ -110,7 +110,7 @@ function matnwb_exportTutorials(options)
             targetFilePath = fullfile(targetFolderPaths(j), fileNames(i) + exportFormat(j));
             fprintf('Exporting livescript "%s" to "%s"\n', fileNames(i), exportFormat(j))
             if strcmp(exportFormat(j), '.rst') % Custom export/conversion needed
-                generateRstForTutorial(string(sourcePath))
+                generateDocsPageForTutorial(string(sourcePath))
             else
                 export(sourcePath, targetFilePath);
             end
