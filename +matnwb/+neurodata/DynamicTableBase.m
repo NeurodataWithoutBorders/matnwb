@@ -112,6 +112,145 @@ classdef (Abstract) DynamicTableBase < handle
             types.util.dynamictable.addVarargColumn(obj, columnVectorPairs{:});
         end
 
+        function addRaggedArray(obj, columnName, data, options)
+        % addRaggedArray - Add a ragged-array column to the DynamicTable.
+        %
+        % A ragged array stores a variable number of elements per row. The
+        % values are held in a single VectorData column, and a companion
+        % VectorIndex ('<columnName>_index') marks each row's boundary. See
+        % the "Tables and ragged arrays" section of the NWB format
+        % specification.
+        %
+        % Syntax:
+        %  dynamicTable.addRaggedArray(columnName, data) build and add a
+        %  ragged column named columnName, plus its VectorIndex.
+        %
+        %  dynamicTable.addRaggedArray(__, Name, Value) provide optional
+        %  arguments (see below).
+        %
+        % Input Arguments:
+        %  - columnName (string) -
+        %    Name of the new column.
+        %
+        %  - data (cell) -
+        %    A cell array with one cell per row; each cell holds that row's
+        %    elements (e.g. {[1 2 3], [4 5]} for a 2-row table).
+        %
+        % Name-Value Arguments:
+        %  - description (string) -
+        %    Description stored on the VectorData column.
+        %
+        %  - table (DynamicTable) -
+        %    If provided, the column is created as a DynamicTableRegion that
+        %    references this table (row indices) instead of a VectorData.
+        %
+        % See also util.create_indexed_column, addColumn, addDoublyRaggedArray
+
+            arguments
+                obj (1,1) {matnwb.common.validation.mustBeDynamicTable}
+                columnName (1,1) string
+                data cell
+                options.description (1,1) string = "no description"
+                options.table = []
+            end
+
+            if isempty(options.table)
+                [vector, index] = util.create_indexed_column( ...
+                    data, char(options.description));
+            else
+                [vector, index] = util.create_indexed_column( ...
+                    data, char(options.description), options.table);
+            end
+            obj.addColumn(columnName, vector, columnName + "_index", index);
+        end
+
+        function addDoublyRaggedArray(obj, columnName, data, options)
+        % addDoublyRaggedArray - Add a doubly-ragged-array column to the DynamicTable.
+        %
+        % A doubly-ragged array stores, for each row, a variable number of
+        % sub-groups, each holding a variable number of fixed-length elements
+        % (e.g. the Units table 'waveforms' column: per unit, a variable number
+        % of spike events, each with a waveform per electrode). It is backed by
+        % a VectorData column and two VectorIndex levels
+        % ('<columnName>_index' over sub-groups and '<columnName>_index_index'
+        % over rows). See the "Doubly ragged arrays" section of the NWB format
+        % specification.
+        %
+        % Syntax:
+        %  dynamicTable.addDoublyRaggedArray(columnName, data) build and add a
+        %  doubly-ragged column named columnName, plus its two VectorIndex
+        %  levels.
+        %
+        % Input Arguments:
+        %  - columnName (string) -
+        %    Name of the new column.
+        %
+        %  - data (cell) -
+        %    A cell array with one cell per row. Each cell is either a numeric
+        %    matrix [nSubGroups x nSamples] (one element per sub-group), or a
+        %    cell array whose j-th entry is a [nElements x nSamples] matrix for
+        %    sub-group j. See util.create_doubly_indexed_column.
+        %
+        % Name-Value Arguments:
+        %  - description (string) -
+        %    Description stored on the VectorData column.
+        %
+        % See also util.create_doubly_indexed_column, addColumn, addRaggedArray
+
+            arguments
+                obj (1,1) {matnwb.common.validation.mustBeDynamicTable}
+                columnName (1,1) string
+                data cell
+                options.description (1,1) string = "no description"
+            end
+
+            [vector, index, indexIndex] = ...
+                util.create_doubly_indexed_column(data, options.description);
+
+            % The number of rows equals the length of the outermost index.
+            rowCount = numel(indexIndex.data);
+
+            % Initialize id for a new table before checking editability (which
+            % inspects the id column).
+            if isempty(obj.id) || isempty(obj.id.data)
+                types.util.dynamictable.internal.initDynamicTableId(obj, rowCount);
+            end
+
+            obj.assertIsEditable('NWB:DynamicTable:AddDoublyRaggedArray:Uneditable')
+
+            tableHeight = types.util.dynamictable.internal.getColumnHeight(obj.id);
+            assert(rowCount == tableHeight, ...
+                'NWB:DynamicTable:AddDoublyRaggedArray:MissingRows', ...
+                'Column `%s` has %d rows, but the table height is %d.', ...
+                columnName, rowCount, tableHeight)
+
+            % Assign the data column and both index levels to the appropriate
+            % storage (a typed property for schema-defined columns such as
+            % Units.waveforms, otherwise the generic vectordata set). addColumn
+            % is not used here because its height check only follows a single
+            % index level.
+            names = [columnName, columnName + "_index", columnName + "_index_index"];
+            values = {vector, index, indexIndex};
+            for iName = 1:numel(names)
+                thisName = char(names(iName));
+                storageTarget = types.util.dynamictable.resolveColumnStorage( ...
+                    obj, thisName, values{iName});
+                switch storageTarget
+                    case 'property'
+                        obj.(thisName) = values{iName};
+                    case 'vectordata'
+                        obj.vectordata.set(thisName, values{iName});
+                end
+            end
+
+            % Only the data column is listed in colnames; the index levels are
+            % implicit. Schema-defined columns are added by a property post-set
+            % hook, so guard against duplicates.
+            if ~any(strcmp(obj.colnames, char(columnName)))
+                obj.colnames{end+1} = char(columnName);
+            end
+        end
+
         function row = getRow(obj, rowIndices, options)
         % getRow - Return one or more DynamicTable rows.
         %
