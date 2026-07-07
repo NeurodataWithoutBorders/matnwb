@@ -9,6 +9,7 @@ classdef (Abstract) DynamicTableBase < handle
     properties (Abstract)
         id
         colnames
+        vectordata
     end
     
     methods
