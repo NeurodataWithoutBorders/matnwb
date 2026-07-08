@@ -4,6 +4,7 @@ Work with Data
    :maxdepth: 1
 
    working_with_containers
+   ragged_arrays
 
 Use Extensions
 ==============
