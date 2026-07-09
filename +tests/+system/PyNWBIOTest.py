@@ -219,8 +219,17 @@ class UnitTimesIOTest(PyNWBIOTest):
         # Build a Units table with multi-electrode, doubly-ragged waveforms
         # using the idiomatic add_unit method. This mirrors the MatNWB
         # addRaggedArray / addDoublyRaggedArray construction in UnitTimesIOTest.m.
+        #
+        # Each unit's waveforms are passed as a 3-D array with shape
+        # (num_spikes, num_electrodes, num_samples). Note the LAST dimension is
+        # samples, not electrodes: the `waveforms` column is doubly indexed, so
+        # add_unit stores a 2-D [num_waveforms, num_samples] dataset with the
+        # electrode dimension carried by waveforms_index. (The add_unit docstring
+        # line "the third dimension shows ... different electrodes" describes a
+        # non-indexed 3-D dataset and does not match this input order.)
+        #
         # Unit 1 has 2 spikes, unit 2 has 3 spikes; each spike has 2 electrodes
-        # and 3 samples, so each unit's waveforms are (num_spikes, 2, 3).
+        # and 3 samples.
         self.file.units = Units(name='units', waveform_rate=1., resolution=3.,
                                 description='data on spiking units')
         self.file.units.add_unit(spike_times=[1., 2.],

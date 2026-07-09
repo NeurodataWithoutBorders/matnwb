@@ -11,7 +11,11 @@ classdef UnitTimesIOTest < tests.system.PyNWBIOTest
             file.units.addRaggedArray('spike_times', {[1 2], [3 4 5]});
 
             % waveforms: a doubly-ragged column. data{unit}{spike} is a
-            % [numWaveforms x numSamples] matrix (one waveform per electrode).
+            % [numElectrodes x numSamples] matrix (one row per electrode's
+            % waveform). This matches PyNWB add_unit's per-unit 3-D input
+            % (num_spikes, num_electrodes, num_samples): both store a 2-D
+            % [num_waveforms, num_samples] dataset with the electrode dimension
+            % carried by waveforms_index.
             % Unit 1 has 2 spikes, unit 2 has 3 spikes; each spike has 2
             % electrodes and 3 samples.
             waveforms = { ...
