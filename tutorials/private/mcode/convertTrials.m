@@ -52,7 +52,7 @@ nwb.general_source_script_file_name = "matnwb/tutorials/convertTrials.mlx";
 nwb.general_lab = 'Svoboda';
 nwb.general_keywords = {'Network models', 'Premotor cortex', 'Short-term memory'};
 nwb.general_institution = ['Janelia Research Campus,'...
-    ' Howard Huges Medical Institute, Ashburn, Virginia 20147, USA'];
+    ' Howard Hughes Medical Institute, Ashburn, Virginia 20147, USA'];
 nwb.general_related_publications = ...
     ['Li N, Daie K, Svoboda K, Druckmann S (2016).', ...
     ' Robust neuronal dynamics in premotor cortex during motor planning.', ...
@@ -73,7 +73,7 @@ nwb.general_surgery = ['Mice were prepared for photoinhibition and ', ...
 nwb.session_description = sprintf('Animal `%s` on Session `%s`', animal, session);
 %% 
 % All properties with the prefix |general| contain context for the entire experiment 
-% such as lab, institution, and experimentors. For session-delimited data from 
+% such as lab, institution, and experimenters. For session-delimited data from 
 % the same experiment, these fields will all be the same. Note that most of this 
 % information was pulled from the publishing paper and not from any of the downloadable 
 % data.
@@ -231,7 +231,7 @@ electrodesTable = types.core.ElectrodesTable( ...
     'group', types.hdmf_common.VectorData('description', 'Reference to the ElectrodeGroup this electrode is a part of.'), ...
     'group_name', types.hdmf_common.VectorData('description', 'Name of the ElectrodeGroup this electrode is a part of.'));
 
-% All electrodes channels are part of the same electrode group
+% All electrode channels are part of the same electrode group
 eGroupReference = types.untyped.ObjectView(electrodeGroup);
 
 % Add electrodes one by one using the `addRow` method. The `id` column 
@@ -285,8 +285,9 @@ fprintf('Processing Data Structure `%s`\n', relative_datastructure_loc);
 loaded = load(datastructure_loc, 'obj');
 data = loaded.obj;
 
-% Append 's' to match NWBs preferred units format for time units, i.e., second->seconds
-data.timeUnitNames = strcat(data.timeUnitNames, 's') 
+% Dataset-specific: Append 's' to match NWB's preferred units format for time 
+% units, i.e., second->seconds
+data.timeUnitNames = strcat(data.timeUnitNames, 's');
 % Hashes
 % ALM-3 stores its data structures in the form of *hashes* which are essentially 
 % the same as python's dictionaries or MATLAB's maps but where the keys and values 
@@ -335,14 +336,14 @@ laserPowerTrace = types.core.OptogeneticSeries( ...
     'site', types.untyped.SoftLink(photoStim));
 nwb.stimulus_presentation.set('laser_power', laserPowerTrace);
 % Build Trials Table (TimeIntervals)
-% The sessions of the ALM-3 dataset has a trial-based structure. We will build 
-% a trials table using the |*TimeIntervals*| class, a subclass of the |*DynamicTable*|, 
-% to represent this trial structure. The |*TimeIntervals*| requires a |start_time| 
-% and a |stop_time| for each row. It also supports adding references to the portion 
-% of one or more time series that belong to a given trial. We will add time series 
-% references below, but we start by adding dataset-specific trial information. 
-% Because of how the original data is structured, we will build the trials table 
-% column-by-column using the |addColumn| method.
+% The ALM-3 dataset has a trial-based structure. We will build a trials table 
+% using the |*TimeIntervals*| class, a subclass of the |*DynamicTable*|, to represent 
+% this trial structure. The |*TimeIntervals*| requires a |start_time| and a |stop_time| 
+% for each row. It also supports adding references to the portion of one or more 
+% time series that belong to a given trial. We will add time series references 
+% below, but we start by adding dataset-specific trial information. Because of 
+% how the original data is structured, we will build the trials table column-by-column 
+% using the |addColumn| method.
 
 % Initialize the trials table with start times and trial ids
 trial_intervals = types.core.TimeIntervals( ...
@@ -415,8 +416,8 @@ for i = 1:length(ephus_trials)
         laser_power_ref int64(t_start) int64(t_count)};
 end
 %% Add timeseries to trial_intervals
-% Because we are adding more than one timeseries reference per trial, we need 
-% to add these references to the |*TimeIntervals*| table as a <https://nwb-schema.readthedocs.io/en/latest/format_description.html#tables-and-ragged-arrays 
+% Because we are adding multiple time series references per trial, we need to 
+% add these references to the |*TimeIntervals*| table as a <https://nwb-schema.readthedocs.io/en/latest/format_description.html#tables-and-ragged-arrays 
 % ragged array>. That means that we need to create a |*TimeSeriesReferenceVectorData*| 
 % object to represent the references and a |*VectorIndex*| object to map these 
 % references to their respective trials (rows). Each element in the |*VectorIndex*| 
@@ -523,13 +524,14 @@ nwb.units.waveform_sd = types.hdmf_common.VectorData( ...
 % other, refer to <https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ecephys.html#13 
 % this diagram> from the Extracellular Electrophysiology Tutorial. 
 % 
-% Also note: if a unit was present on more than one electrode, each spike has 
-% one waveform _per electrode_. In that case, build each unit's entry as a nested 
-% cell — |data{unit}{spike}| a |[numElectrodes x numSamples]| matrix (one row 
-% per electrode) — and pass it to |addDoublyRaggedArray|. The row order must match 
-% the electrodes listed in that unit's |electrodes| entry (as the NWB schema requires). 
-% Here each unit was recorded on a single electrode, so each spike has exactly 
-% one waveform and the simpler |[numSpikes x numSamples]| form used above is sufficient.
+% Advanced note: if a unit was present on more than one electrode, each spike 
+% has one waveform _per electrode_. In that case, build each unit's entry as a 
+% nested cell — |data{unit}{spike}| a |[numElectrodes x numSamples]| matrix (one 
+% row per electrode) — and pass it to |addDoublyRaggedArray|. The row order must 
+% match the electrodes listed in that unit's |electrodes| entry (as the NWB schema 
+% requires). Here each unit was recorded on a single electrode, so each spike 
+% has exactly one waveform and the simpler |[numSpikes x numSamples]| form used 
+% above is sufficient.
 %% Raw Acquisition Data
 % Each ALM-3 session is associated with a large number of raw voltage data grouped 
 % by trial ID. To map this data to NWB, each trial is created as its own *ElectricalSeries* 
@@ -568,7 +570,7 @@ for i = 1:length(rawfiles)
     tol = 1e-6;
     if max(abs(diff(deltaT))) < tol*mean(deltaT) % Constant rate
         nvPairs = {'starting_time', rawdata.TimeStamps(1), ...
-            'starting_time_rate', mean(deltaT)};
+            'starting_time_rate', 1 / mean(deltaT)};
     else
         nvPairs = {'timestamps', rawdata.TimeStamps};
     end
@@ -586,7 +588,10 @@ for i = 1:length(rawfiles)
 end
 % Link the raw acquired data to the trials in the trials table.
 % Link to the raw data by adding a column named "raw_voltage_traces" with |ObjectViews| 
-% to the |ElectricalSeries| objects for the raw voltage traces.
+% to the |ElectricalSeries| objects for the raw voltage traces. Because each trial 
+% has a one-to-one mapping to a full |*ElectricalSeries*| object, we add a separate 
+% table column with |*ObjectView*| references instead of using the |*TimeSeriesReferenceVectorData*|, 
+% which is specialised for referencing portions of |*TimeSeries*| objects.
 
 emptyReferences = cellfun('isempty', objrefs);
 objrefs(emptyReferences) = {[]};
@@ -599,11 +604,12 @@ trial_intervals.addRaggedArray('raw_voltage_traces', objrefs, ...
 trial_intervals.stop_time = types.hdmf_common.VectorData( ...
      'data', endTimestamps', ...
      'description', 'The end time of each trial');
-%% 
-% Note: Because each trial has a one-to-one mapping to a full |*ElectricalSeries*| 
-% object, we added a separate table column with |*ObjectView*| references instead 
-% of adding using the |*TimeSeriesReferenceVectorData*|, which is specialised 
-% for referencing portions of |*TimeSeries*| objects.
+
+% Reorder colnames
+trial_intervals.colnames = [{'start_time', 'stop_time'}, setdiff(trial_intervals.colnames, {'start_time', 'stop_time'})];
+
+% Display to complete trials table
+trial_intervals.toTable()
 %% Export
 % Prepare the output directory:
 
