@@ -14,7 +14,7 @@
 % *Last updated*: July 6, 2026
 %% Script Configuration
 % The following section describes the dataset identifiers and the file organization 
-% and names needed to read the original data.
+% and filenames needed to read the original data.
 
 animal = 'ANM255201';
 session = '20141124';
@@ -22,7 +22,7 @@ session = '20141124';
 identifier = [animal '_' session];
 %% 
 % The animal and session specifiers can be changed to fit any of the available 
-% sessions.
+% sessions of the dataset.
 % The ALM-3 File Structure
 % Each ALM-3 session has three files: a metadata .mat file describing the experiment, 
 % a data structures .mat file containing processed data, and a raw .tar archive 
@@ -104,7 +104,8 @@ nwb.session_start_time = datetime([meta.dateOfExperiment meta.timeOfExperiment],
 nwb.timestamps_reference_time = nwb.session_start_time;
 
 nwb.general_experimenter = strjoin(meta.experimenters, ', ');
-%%
+% Add Subject
+
 nwb.general_subject = types.core.Subject( ...
     'species', meta.species{1}, ...
     'subject_id', meta.animalID{1}(1,:), ... %weird case with duplicate Animal ID
@@ -151,7 +152,6 @@ nwb.general_experiment_description = [...
 nwb.general_data_collection = formatStruct(meta.extracellular, ...
     {'extracellularDataType';'cellType';'identificationMethod';'amplifierRolloff';...
     'spikeSorting';'ADunit'});
-
 % Add Devices
 % We store information about the multichannel silicon probe and the optogenetic 
 % stimulation laser using |*DeviceModel*| and |*Device*| objects.
@@ -412,7 +412,7 @@ for i = 1:length(ephus_trials)
         aom_input_trace_reference  int64(t_start) int64(t_count);...
         laser_power_ref int64(t_start) int64(t_count)};
 end
-%% Add timeseries to trial_intervals
+% Add Timeseries to Trials Table
 % Because we are adding multiple time series references per trial, we need to 
 % add these references to the |*TimeIntervals*| table as a <https://nwb-schema.readthedocs.io/en/latest/format_description.html#tables-and-ragged-arrays 
 % ragged array>. That means that we need to create a |*TimeSeriesReferenceVectorData*| 
