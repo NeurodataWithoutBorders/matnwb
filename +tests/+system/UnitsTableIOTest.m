@@ -1,4 +1,4 @@
-classdef UnitTimesIOTest < tests.system.PyNWBIOTest
+classdef UnitsTableIOTest < tests.system.PyNWBIOTest
     methods
         function addContainer(~, file)
             % Build a Units table with multi-electrode, doubly-ragged waveforms
