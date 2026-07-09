@@ -379,9 +379,6 @@ end
 
 % Add trial_intervals to the 'intervals_trials' property of the NWB file.
 nwb.intervals_trials = trial_intervals;
-
-% Display the trials table
-nwb.intervals_trials.toTable()
 % Build Trial-Aligned Timeseries References
 % The |timeseries| property of the |*TimeIntervals*| object is an example of 
 % a *compound data type* containing the following fields: a |timeseries| (an *ObjectView* 
@@ -406,7 +403,7 @@ laser_power_ref = types.untyped.ObjectView(laserPowerTrace);
 [ephus_trials, ~, trials_to_data] = unique(ephusTimeseriesData.trial);
 for i = 1:length(ephus_trials)
     i_loc = i == trials_to_data;
-    t_start = find(i_loc, 1);
+    t_start = find(i_loc, 1) - 1;   % 0-based index for TimeSeriesReference.idx_start
     t_count = sum(i_loc);
     trial = ephus_trials(i);
     
@@ -478,7 +475,7 @@ for i = 1:length(unitIds)
     channel = esData.channel(good_trials_mask);
     
     assert(strcmp(data.timeUnitNames{data.timeUnitIds(esData.timeUnit)}, 'seconds'), ...
-        'Expected time unit for spike event series data to be second')
+        'Expected time unit for spike event series data to be seconds')
 
     if ~isempty(esData.cellType)
         cellType = esData.cellType{1};
