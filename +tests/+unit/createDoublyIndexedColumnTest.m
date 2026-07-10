@@ -33,6 +33,22 @@ classdef createDoublyIndexedColumnTest < tests.abstract.NwbTestCase
             testCase.verifySameHandle(indexIndex.target.target, index);
         end
 
+        function testNDArrayShortcut(testCase)
+            % The first dimension is the subgroup axis; trailing dimensions are
+            % preserved as the fixed element payload.
+            unit1 = reshape(1:(2*3*4), 2, 3, 4);
+            unit2 = 100 + reshape(1:(1*3*4), 1, 3, 4);
+
+            [vector, index, indexIndex] = ...
+                util.create_doubly_indexed_column({unit1, unit2}, 'volumes');
+
+            testCase.verifyEqual(size(vector.data), [4, 3, 3]);
+            testCase.verifyEqual(vector.data(:, :, 1), reshape(unit1(1, :, :), 3, 4).');
+            testCase.verifyEqual(vector.data(:, :, 3), reshape(unit2(1, :, :), 3, 4).');
+            testCase.verifyEqual(index.data, uint64((1:3)'));
+            testCase.verifyEqual(indexIndex.data, uint64([2; 3]));
+        end
+
         function testGeneralNestedCell(testCase)
             % Cell-per-row form: DATA{i}{j} is [nElements x nSamples].
             nSamples = 4;
@@ -49,6 +65,49 @@ classdef createDoublyIndexedColumnTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(index.data, uint64([2; 3; 6]));
             % Outer index counts sub-groups per row: 2, 1.
             testCase.verifyEqual(indexIndex.data, uint64([2; 3]));
+        end
+
+        function testNDArrayNestedCell(testCase)
+            % Cell-per-row form supports arbitrary trailing element dimensions.
+            unit1 = {reshape(1:(2*3*4), 2, 3, 4), ...
+                100 + reshape(1:(1*3*4), 1, 3, 4)};
+            unit2 = {200 + reshape(1:(3*3*4), 3, 3, 4)};
+
+            [vector, index, indexIndex] = ...
+                util.create_doubly_indexed_column({unit1, unit2});
+
+            testCase.verifyEqual(size(vector.data), [4, 3, 6]);
+            testCase.verifyEqual(vector.data(:, :, 1), reshape(unit1{1}(1, :, :), 3, 4).');
+            testCase.verifyEqual(vector.data(:, :, 3), reshape(unit1{2}(1, :, :), 3, 4).');
+            testCase.verifyEqual(vector.data(:, :, 6), reshape(unit2{1}(3, :, :), 3, 4).');
+            testCase.verifyEqual(index.data, uint64([2; 3; 6]));
+            testCase.verifyEqual(indexIndex.data, uint64([2; 3]));
+        end
+
+        function testNDArrayExportKeepsSchemaDimensionOrder(testCase)
+            unit1 = {reshape(1:(2*3*4), 2, 3, 4), ...
+                100 + reshape(1:(1*3*4), 1, 3, 4)};
+            unit2 = {200 + reshape(1:(3*3*4), 3, 3, 4)};
+
+            vector = util.create_doubly_indexed_column({unit1, unit2});
+
+            fileName = testCase.getRandomFilename();
+            fileId = H5F.create(fileName);
+            cleanup = onCleanup(@() H5F.close(fileId));
+            io.writeDataset(fileId, '/wf', vector.data);
+            delete(cleanup)
+
+            fileId = H5F.open(fileName, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
+            fileCleanup = onCleanup(@() H5F.close(fileId));
+            datasetId = H5D.open(fileId, '/wf');
+            datasetCleanup = onCleanup(@() H5D.close(datasetId));
+            spaceId = H5D.get_space(datasetId);
+            spaceCleanup = onCleanup(@() H5S.close(spaceId));
+            [~, h5Dimensions, ~] = H5S.get_simple_extent_dims(spaceId);
+            testCase.verifyEqual(h5Dimensions, [6, 3, 4]);
+            delete(spaceCleanup)
+            delete(datasetCleanup)
+            delete(fileCleanup)
         end
 
         function testEmptyRow(testCase)
