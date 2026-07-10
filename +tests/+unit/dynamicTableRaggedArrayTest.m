@@ -51,6 +51,23 @@ classdef dynamicTableRaggedArrayTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(dt.vectordata.get('wf_index_index').data, uint64([3; 7]));
         end
 
+        function testAddDoublyRaggedArrayWithNDArrayElements(testCase)
+            unit1 = {reshape(1:(2*3*4), 2, 3, 4), ...
+                100 + reshape(1:(1*3*4), 1, 3, 4)};
+            unit2 = {200 + reshape(1:(3*3*4), 3, 3, 4)};
+
+            dt = types.hdmf_common.DynamicTable('description', 'test');
+            dt.addDoublyRaggedArray('wf', {unit1, unit2}, 'description', 'volumes');
+
+            testCase.verifyEqual(size(dt.vectordata.get('wf').data), [4, 3, 6]);
+            testCase.verifyEqual(dt.vectordata.get('wf').data(:, :, 1), ...
+                reshape(unit1{1}(1, :, :), 3, 4).');
+            testCase.verifyEqual(dt.vectordata.get('wf').data(:, :, 6), ...
+                reshape(unit2{1}(3, :, :), 3, 4).');
+            testCase.verifyEqual(dt.vectordata.get('wf_index').data, uint64([2; 3; 6]));
+            testCase.verifyEqual(dt.vectordata.get('wf_index_index').data, uint64([2; 3]));
+        end
+
         function testAddDoublyRaggedArrayOnUnitsRoundTrip(testCase)
             nSamples = 4;
             unit1 = reshape(1:(3*nSamples), 3, nSamples);
