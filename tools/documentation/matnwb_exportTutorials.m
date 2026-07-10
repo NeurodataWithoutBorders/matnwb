@@ -78,6 +78,8 @@ function matnwb_exportTutorials(options)
     % temporary folder which is cleaned up afterwards
     currentDir = pwd();
     cleanupWorkdir = onCleanup(@(fp) cd(currentDir));
+    recycleState = recycle('off');
+    recycleCleanupObj = onCleanup(@() recycle(recycleState));
 
     tempDir = fullfile(tempdir, 'nwbTutorials');
     if ~isfolder(tempDir); mkdir(tempDir); end
