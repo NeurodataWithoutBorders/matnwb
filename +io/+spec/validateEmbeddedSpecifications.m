@@ -55,6 +55,6 @@ function deleteUnusedNamespaces(writer, unusedNamespaces, specRootLocation)
     for i = 1:numel(unusedNamespaces)
         thisName = unusedNamespaces{i};
         namespaceSpecLocation = strjoin( {specRootLocation, thisName}, '/');
-        writer.deleteNode(namespaceSpecLocation)
+        writer.deleteGroup(namespaceSpecLocation)
     end
 end

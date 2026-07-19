@@ -25,7 +25,7 @@ function writeEmbeddedSpecifications(writer, jsonSpecs)
         if namespaceExists
             names = writer.listChildGroupNames(schemaNamespaceLocation);
             for iNames = 1:length(names)
-                writer.deleteNode([schemaNamespaceLocation '/' names{iNames}]);
+                writer.deleteGroup([schemaNamespaceLocation '/' names{iNames}]);
             end
         end
         schemaLocation = ...

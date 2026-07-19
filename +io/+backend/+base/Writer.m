@@ -49,9 +49,9 @@ classdef Writer < handle
             io.backend.base.Writer.throwNotImplemented("listChildGroupNames")
         end
 
-        function deleteNode(obj, nodePath) %#ok<INUSD>
-            % deleteNode - Delete the group or dataset at nodePath.
-            io.backend.base.Writer.throwNotImplemented("deleteNode")
+        function deleteGroup(obj, groupPath) %#ok<INUSD>
+            % deleteGroup - Delete the group at groupPath and its contents.
+            io.backend.base.Writer.throwNotImplemented("deleteGroup")
         end
 
         function close(obj) %#ok<MANU>

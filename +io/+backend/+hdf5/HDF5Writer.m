@@ -91,8 +91,8 @@ classdef HDF5Writer < io.backend.base.Writer
             groupNames = io.internal.h5.listGroupNames(obj.H5FileId, groupPath);
         end
 
-        function deleteNode(obj, nodePath)
-            io.internal.h5.deleteGroup(obj.H5FileId, nodePath);
+        function deleteGroup(obj, groupPath)
+            io.internal.h5.deleteGroup(obj.H5FileId, groupPath);
         end
     end
 
