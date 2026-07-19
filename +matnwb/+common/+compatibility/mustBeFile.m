@@ -14,7 +14,18 @@ function mustBeFile(filePath)
     if startsWith(filePath, "s3://")
         return
     end
-    
+
+    % Directory-based stores (e.g. Zarr) use a ".zarr" suffix by convention.
+    % These are folders, not files, so validate folder existence instead.
+    if endsWith(filePath, ".zarr", "IgnoreCase", true)
+        try
+            matnwb.common.compatibility.mustBeFolder(filePath)
+        catch ME
+            throwAsCaller(ME)
+        end
+        return
+    end
+
     if verLessThan('matlab', '9.9') %#ok<VERLESSMATLAB>
         % Custom implementation (MATLAB < R2020b)
         try
