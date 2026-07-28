@@ -1,3 +1,6 @@
+# Patches generated MATLAB docstrings so they parse as valid reST. Fixes
+# rendering only — never change what fillConstructor.m embeds in the
+# generated .m source, since that text also serves plain `help` output.
 import os
 import re
 from _util import list_neurodata_types
@@ -11,6 +14,31 @@ def process_matlab_docstring(app, what, name, obj, options, lines):
     _make_syntax_examples_code_literals(lines)
     _format_input_arguments(lines)
     _split_and_format_example_lines(lines)
+    _escape_role_end_before_invalid_char(lines)
+
+
+# Characters allowed to directly follow an inline markup end-string in reST.
+# See: https://docutils.sourceforge.io/docs/ref/rst/restructuredtext.html#inline-markup-recognition-rules
+_ALLOWED_CHARS_AFTER_ROLE = re.compile(r"[\s'\")\]}>\-.,:;!?/\\]")
+
+# Matches the closing backtick of an explicit-title role reference, e.g.
+# ":attr:`format <types.core.ImageSeries.format>`", so a "\ " escape can be
+# inserted when matlab_auto_link places such a reference directly before
+# punctuation from the original schema text (e.g. "format='raw'" or
+# "control_description[0]"), which would otherwise break reST parsing.
+_ROLE_END_PATTERN = re.compile(r"(<[^<>`]+>)`")
+
+
+def _escape_role_end_before_invalid_char(lines):
+    def _insert_escape(match):
+        end = match.end()
+        next_char = match.string[end:end + 1]
+        if next_char and not _ALLOWED_CHARS_AFTER_ROLE.match(next_char):
+            return match.group(0) + "\\ "
+        return match.group(0)
+
+    for i, line in enumerate(lines):
+        lines[i] = _ROLE_END_PATTERN.sub(_insert_escape, line)
 
 
 def _format_matlab_type_as_code_literal(lines):

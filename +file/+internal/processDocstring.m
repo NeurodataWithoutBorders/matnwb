@@ -12,7 +12,11 @@ function docstring = processDocstring(docstring, continuationPrefix)
     end
 
     docstring = strtrim(docstring);
-    lines = strsplit(docstring, newline);
+    % CollapseDelimiters must be false: schema docs can have blank lines
+    % separating paragraphs, and the default (true) silently merges them
+    % away, losing structure the reST docs pipeline depends on to tell
+    % paragraphs/lists apart.
+    lines = strsplit(docstring, newline, 'CollapseDelimiters', false);
     lines = strip(lines, 'right');
     docstring = char(strjoin(lines, [newline char(continuationPrefix)]));
 end
