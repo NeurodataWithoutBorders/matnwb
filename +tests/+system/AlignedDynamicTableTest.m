@@ -28,7 +28,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
         function testDisplayTipRecommendsAddCategory(testCase)
             displayText = evalc( ...
                 'disp(tests.system.AlignedDynamicTableTest.createAlignedTable())');
-
+            disp(displayText)
             testCase.verifyTrue(contains(displayText, "Use the 'addCategory' method"))
         end
 
