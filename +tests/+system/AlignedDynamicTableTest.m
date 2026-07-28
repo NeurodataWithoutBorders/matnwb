@@ -14,6 +14,29 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             testCase.verifyEqual(alignedTable.id.data, int64((0:2)'))
         end
 
+        function testAddRoutesCustomCategoryThroughAddCategory(testCase)
+            alignedTable = tests.system.AlignedDynamicTableTest.createAlignedTable();
+            categoryTable = tests.system.AlignedDynamicTableTest.createTableWithHeight(3);
+
+            alignedTable.add("custom", categoryTable)
+
+            testCase.verifyTrue(alignedTable.dynamictable.isKey("custom"))
+            testCase.verifyEqual(alignedTable.categories, {'custom'})
+            testCase.verifyEqual(alignedTable.id.data, int64((0:2)'))
+        end
+
+        function testDisplayTipRecommendsAddCategory(testCase)
+            % Verify "groups" display mode
+            origPrefValue = getpref('matnwb', 'ContainerDisplayMode');
+            testCase.addTeardown(@() setpref('matnwb', 'ContainerDisplayMode', origPrefValue))
+            setpref('matnwb', 'ContainerDisplayMode', 'groups')
+
+            displayText = evalc( ...
+                'disp(tests.system.AlignedDynamicTableTest.createAlignedTable())');
+
+            testCase.verifyTrue(contains(displayText, "Use the 'addCategory' method"))
+        end
+
         function testAddEmptyTableInitializesParentAndCategoryId(testCase)
             alignedTable = tests.system.AlignedDynamicTableTest.createAlignedTable();
             categoryTable = tests.system.AlignedDynamicTableTest.createEmptyTable();

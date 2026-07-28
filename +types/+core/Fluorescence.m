@@ -9,8 +9,8 @@ classdef Fluorescence < types.core.NWBDataInterface & types.untyped.GroupClass &
 properties
     roiresponseseries; % REQUIRED (RoiResponseSeries) RoiResponseSeries object(s) containing fluorescence data for a ROI.
 end
-properties (Access = protected)
-    GroupPropertyNames = {'roiresponseseries'}
+properties (Constant, Access = private)
+    GroupPropertyNames = ["roiresponseseries"];
 end
 
 methods

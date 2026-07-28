@@ -205,6 +205,47 @@ classdef (Abstract) DynamicTableBase < handle
         end
     end
 
+    methods (Access = {?matnwb.mixin.HasUnnamedGroups, ?matnwb.neurodata.AlignedDynamicTableBase})
+        function wasHandled = handleUnnamedGroupAdd(obj, groupName, name, value)
+        % handleUnnamedGroupAdd - Route vectordata additions through addColumn.
+
+            arguments
+                obj (1,1) matnwb.neurodata.DynamicTableBase
+                groupName (1,1) string
+                name (1,1) string
+                value
+            end
+
+            wasHandled = false;
+
+            if groupName ~= "vectordata"
+                return
+            end
+
+            if ~isa(value, 'types.hdmf_common.VectorData') && ~isa(value, 'types.core.VectorData')
+                return
+            end
+
+            obj.addColumn(name, value)
+            wasHandled = true;
+        end
+
+        function tip = getCustomUnnamedGroupAddTip(~, groupName)
+        % getCustomUnnamedGroupAddTip - Display the preferred column add method.
+
+            arguments
+                ~
+                groupName (1,1) string
+            end
+
+            if groupName == "vectordata"
+                tip = "Tip: Use the 'addColumn' method to add column data.";
+            else
+                tip = "Tip: Use the 'add' method to add data objects to this group.";
+            end
+        end
+    end
+
     methods (Access = private)
         function assertIsEditable(obj, errorID)
             arguments

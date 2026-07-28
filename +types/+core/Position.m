@@ -9,8 +9,8 @@ classdef Position < types.core.NWBDataInterface & types.untyped.GroupClass & mat
 properties
     spatialseries; % REQUIRED (SpatialSeries) SpatialSeries object containing position data.
 end
-properties (Access = protected)
-    GroupPropertyNames = {'spatialseries'}
+properties (Constant, Access = private)
+    GroupPropertyNames = ["spatialseries"];
 end
 
 methods

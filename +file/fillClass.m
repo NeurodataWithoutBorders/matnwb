@@ -97,7 +97,7 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
         superclassNames{end+1} = 'types.untyped.DatasetClass';
     end
 
-    if isa(class, 'file.Group') && class.hasAnonGroups
+    if isa(class, 'file.Group') && (class.hasAnonGroups || class.hasAnonData)
         superclassNames{end+1} = 'matnwb.mixin.HasUnnamedGroups';
     end
 
@@ -148,9 +148,11 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
             , propertyDefinitionBody ...
             }, newline);
     end
-    if isa(class, 'file.Group') && class.hasAnonGroups
-        mixinPropertyBlock = createPropertyBlockForHasUnnamedGroupMixin(class);
-
+    if isa(class, 'file.Group') && (class.hasAnonGroups || class.hasAnonData)
+        groupPropertyNames = collectGroupPropertyNamesForHasUnnamedGroupMixin(class);
+        mixinPropertyBlock = file.fillPrivateConstantProperty( ...
+            'GroupPropertyNames', groupPropertyNames);
+        
         fullPropertyDefinition = strjoin(...
             {fullPropertyDefinition, mixinPropertyBlock}, newline);
     end
@@ -164,6 +166,15 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
             {fullPropertyDefinition, schemaNameMappingBlock}, newline);
     end
 
+    if file.internal.isDescendantOf(name, namespace, 'AlignedDynamicTable')
+        categoryNames = collectSchemaDefinedAlignedDynamicTableCategories( ...
+            classprops, nonInherited, namespace);
+        schemaCategoryPropertyBlock = file.fillPrivateConstantProperty( ...
+            'DeclaredSchemaCategories', categoryNames);
+        fullPropertyDefinition = strjoin(...
+            {fullPropertyDefinition, schemaCategoryPropertyBlock}, newline);
+    end
+
     constructorBody = file.fillConstructor(...
         name,...
         superclassNames{1},...
@@ -171,7 +182,7 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
         classprops,...
         namespace, ...
         superClassProps, ...
-        class, ...
+        processed, ...
         inherited);
     setterFcns = file.fillSetters( ...
         setdiff(nonInherited, readonly), ...
@@ -192,14 +203,10 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
 
     fullMethodBody = strjoin({'methods' ...
         file.addSpaces(methodBody, 4) 'end'}, newline);
-    schemaCategoryPropertyBlock = createPropertyBlockForAlignedDynamicTableCategories( ...
-        classprops, nonInherited, name, namespace);
+
+    classSections = {classDefinitionHeader, fullPropertyDefinition, fullMethodBody};
+    
     readPolicyMethodBlock = fillReadPolicy(class, classprops);
-    classSections = {classDefinitionHeader, fullPropertyDefinition};
-    if ~isempty(schemaCategoryPropertyBlock)
-        classSections{end+1} = schemaCategoryPropertyBlock;
-    end
-    classSections{end+1} = fullMethodBody;
     if ~isempty(readPolicyMethodBlock)
         classSections{end+1} = readPolicyMethodBlock;
     end
@@ -242,24 +249,18 @@ function tf = resolveRequiredForDependentProp(propertyName, propInfo, allProps)
     end
 end
 
-function propertyBlockStr = createPropertyBlockForHasUnnamedGroupMixin(classInfo)
+function groupPropertyNames = collectGroupPropertyNamesForHasUnnamedGroupMixin(classInfo)
     isAnonGroup = arrayfun(@(x) isempty(x.name), classInfo.subgroups, 'uni', true);
-    anonNames = arrayfun(@(x) lower(x.type), classInfo.subgroups(isAnonGroup), 'uni', false);
+    isAnonDataset = arrayfun(@(x) isempty(x.name), classInfo.datasets, 'uni', true);
 
-    propertyBlockStr = strjoin({...
-        'properties (Access = protected)', ...
-        sprintf('    GroupPropertyNames = {%s}', strjoin(strcat('''', anonNames, ''''), ', ') ), ...
-        'end'}, newline);
+    groupPropertyNames = [...
+        arrayfun(@(x) lower(x.type), classInfo.subgroups(isAnonGroup), 'uni', false), ...
+        arrayfun(@(x) lower(x.type), classInfo.datasets(isAnonDataset), 'uni', false), ...
+        ];
 end
 
-function propertyBlockStr = createPropertyBlockForAlignedDynamicTableCategories( ...
-        classProps, propertyNames, className, namespace)
-
-    propertyBlockStr = '';
-    if ~file.internal.isDescendantOf(className, namespace, 'AlignedDynamicTable')
-        return
-    end
-
+function categoryNames = collectSchemaDefinedAlignedDynamicTableCategories( ...
+        classProps, propertyNames, namespace)
     categoryNames = string.empty(1, 0);
     for iProperty = 1:length(propertyNames)
         propertyName = propertyNames{iProperty};
@@ -268,19 +269,6 @@ function propertyBlockStr = createPropertyBlockForAlignedDynamicTableCategories(
             categoryNames(end+1) = string(propertyName); %#ok<AGROW>
         end
     end
-
-    formattedNames = """" + categoryNames + """";
-    if isempty(formattedNames)
-        propertyLine = 'DeclaredSchemaCategories = string.empty(1, 0);';
-    else
-        propertyLine = sprintf( ...
-            'DeclaredSchemaCategories = [%s];', strjoin(formattedNames, ', '));
-    end
-
-    propertyBlockStr = strjoin({ ...
-        'properties (Constant, Access = private)', ...
-        file.addSpaces(propertyLine, 4), ...
-        'end'}, newline);
 end
 
 function tf = isSchemaDefinedAlignedDynamicTableCategory(propertyInfo, namespace)

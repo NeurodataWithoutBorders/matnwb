@@ -1,20 +1,18 @@
 function result = collectConstantPropertiesAcrossHierarchy(className, propertyName)
-% collectConstantPropertyAcrossHierarchy - Collect constant property values
-% across class hierarchy
+% collectConstantPropertiesAcrossHierarchy - Collect constant property values
+% across a generated neurodata class hierarchy.
 %
 % Syntax:
-%   groupTypes = collectConstantPropertiesAcrossHierarchy(nwbTypeName) 
-%   This function retrieves property names of unnamed groups associated with 
-%   the specified NWB type name, traversing the class hierarchy to also include
-%   property names of unnamed groups for parent types.
+%   result = collectConstantPropertiesAcrossHierarchy(className, propertyName)
+%   This function retrieves private constant string-list metadata declared on
+%   a generated neurodata type and its generated parent types.
 %
 % Input Arguments:
-%   nwbTypeName (1,1) string - The name of the NWB type for which property 
-%   names of unnamed groups are to be retrieved.
+%   className (1,1) string - The full class name of a generated neurodata type.
+%   propertyName (1,1) string - The constant property to collect.
 %
 % Output Arguments:
-%   groupPropertyNames - An array of property names of unnamed groups 
-%   associated with the specified NWB type.
+%   result - A string array containing the aggregated property values.
 %
 % Assumptions:
 %   1. Class name is the name of a generated neurodata type
@@ -26,18 +24,15 @@ function result = collectConstantPropertiesAcrossHierarchy(className, propertyNa
         propertyName (1,1) string
     end
 
-    result = string.empty; % Initialize an empty cell array
-    currentType = className; % Start with the specific type
+    result = string.empty(1, 0);
+    currentType = className;
 
-    % Iterate over class and superclasses to detect property names for 
-    % unnamed groups across the type hierarchy.
+    % NWB parent type inheritance is represented by the first superclass.
+    % Additional superclasses are mixins and implementation base classes.
     while ~strcmp(currentType, 'types.untyped.MetaClass')
         
-        % Use MetaClass information to get class information
         metaClass = meta.class.fromName(currentType);
         
-        % Get value of GroupPropertyNames if this class is a subclass of
-        % the HasUnnamedGroups subclass.
         isProp = strcmp({metaClass.PropertyList.Name}, propertyName);
         if any(isProp)
             result = [result, ...
