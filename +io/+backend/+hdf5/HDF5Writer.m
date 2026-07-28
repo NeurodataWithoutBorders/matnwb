@@ -82,6 +82,18 @@ classdef HDF5Writer < io.backend.base.Writer
         function writeAttribute(obj, attributePath, value, varargin)
             io.writeAttribute(obj.H5FileId, attributePath, value, varargin{:});
         end
+
+        function specLocation = getEmbeddedSpecLocation(obj)
+            specLocation = io.spec.internal.readEmbeddedSpecLocation(obj.H5FileId);
+        end
+
+        function groupNames = listChildGroupNames(obj, groupPath)
+            groupNames = io.internal.h5.listGroupNames(obj.H5FileId, groupPath);
+        end
+
+        function deleteGroup(obj, groupPath)
+            io.internal.h5.deleteGroup(obj.H5FileId, groupPath);
+        end
     end
 
     methods (Access = protected)

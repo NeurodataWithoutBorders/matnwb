@@ -1,12 +1,15 @@
-function specs = readEmbeddedSpecifications(filename, specLocation)
+function specs = readEmbeddedSpecifications(reader, specLocation)
 % readEmbeddedSpecifications - Read embedded specs from an NWB file
 %
-%   specs = io.spec.readEmbeddedSpecifications(filename, specLocation) read 
-%       embedded specs from the specLocation in an NWB file
+%   specs = io.spec.readEmbeddedSpecifications(reader, specLocation) reads
+%       embedded specs from the specLocation in an NWB file, using reader
+%       (an io.backend.base.Reader) to access the file. Backend-agnostic:
+%       only uses the io.backend.base.Reader interface, so this works for
+%       any registered storage backend, not just HDF5.
 %
 %   Inputs:
-%       filename (string) : Absolute path of an nwb file
-%       specLocation (string) : h5 path for the location of specs inside the NWB file
+%       reader (io.backend.base.Reader) : Reader for the NWB file
+%       specLocation (string) : Path for the location of specs inside the NWB file
 %
 %   Outputs
 %       specs cell: A cell array of structs with one element for each embedded
@@ -17,40 +20,38 @@ function specs = readEmbeddedSpecifications(filename, specLocation)
 %       - schemaMap (containers.Map): A set of schema specifications for the namespace
 
     arguments
-        filename (1,1) string {matnwb.common.mustBeNwbFile}
+        reader (1,1) io.backend.base.Reader
         specLocation (1,1) string
     end
 
-    specInfo = h5info(filename, specLocation);
+    specInfo = reader.readNodeInfo(specLocation);
     specs = deal( cell(size(specInfo.Groups)) );
-    
-    fid = H5F.open(filename);
-    fileCleanup = onCleanup(@(id) H5F.close(fid) );
 
     for iGroup = 1:length(specInfo.Groups)
-        location = specInfo.Groups(iGroup).Groups(1);
+        namespaceGroupInfo = specInfo.Groups(iGroup);
+        location = namespaceGroupInfo.Groups(1);
 
-        namespaceName = split(specInfo.Groups(iGroup).Name, '/');
+        namespaceName = split(namespaceGroupInfo.Name, '/');
         namespaceName = namespaceName{end};
 
-        filenames = {location.Datasets.Name};
-        if ~any(strcmp('namespace', filenames))
+        datasetNames = {location.Datasets.Name};
+        if ~any(strcmp('namespace', datasetNames))
             warning('NWB:Read:GenerateSpec:CacheInvalid',...
                 'Couldn''t find a `namespace` in namespace `%s`.  Skipping cache generation.',...
                 namespaceName);
             return;
         end
-        sourceNames = {location.Datasets.Name};
-        fileLocation = strcat(location.Name, '/', sourceNames);
+
         schemaMap = containers.Map;
-        for iFileLocation = 1:length(fileLocation)
-            did = H5D.open(fid, fileLocation{iFileLocation});
-            if strcmp('namespace', sourceNames{iFileLocation})
-                namespaceText = H5D.read(did);
+        for iDataset = 1:length(datasetNames)
+            datasetName = datasetNames{iDataset};
+            datasetPath = strcat(location.Name, '/', datasetName);
+            datasetValue = reader.readDatasetValue(location.Datasets(iDataset), datasetPath);
+            if strcmp('namespace', datasetName)
+                namespaceText = datasetValue;
             else
-                schemaMap(sourceNames{iFileLocation}) = H5D.read(did);
+                schemaMap(datasetName) = datasetValue;
             end
-            H5D.close(did);
         end
 
         specs{iGroup}.namespaceName = namespaceName;
