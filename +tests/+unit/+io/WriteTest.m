@@ -223,5 +223,87 @@ classdef WriteTest < matlab.unittest.TestCase
             testCase.verifyTrue(strcmp(S.Links.Type, 'soft link'))
             testCase.verifyTrue(strcmp(S.Links.Value{1}, targetPath))
         end
-    end 
+
+        function testWriteObjectReferenceWithLeadingNull(testCase)
+            % Regression test: a reference column whose first element is a
+            % null (empty) reference must export. On HDF5 1.14+ (MATLAB
+            % R2024a and newer) H5D.write rejects a leading null reference
+            % when the whole buffer is written at once, so io.writeDataset
+            % writes only the non-null references and leaves the null slots
+            % as the dataset's zero fill value.
+            filename = 'temp_leading_null_ref.h5';
+            fid = H5F.create(filename, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
+            fileCleanupObj = onCleanup(@() H5F.close(fid)); %#ok<NASGU>
+
+            % Targets that the references point to.
+            io.writeDataset(fid, '/target_one', rand(3, 1));
+            io.writeDataset(fid, '/target_two', rand(3, 1));
+
+            % References with a null in the first and a middle position.
+            references = [ ...
+                types.untyped.ObjectView(''); ...
+                types.untyped.ObjectView('/target_one'); ...
+                types.untyped.ObjectView(''); ...
+                types.untyped.ObjectView('/target_two')];
+
+            io.writeDataset(fid, '/references', references);
+
+            % Null slots read back as null references; valid slots resolve.
+            did = H5D.open(fid, '/references');
+            didCleanupObj = onCleanup(@() H5D.close(did)); %#ok<NASGU>
+            referenceBuffer = H5D.read(did);
+            isNullReference = all(referenceBuffer == 0, 1);
+            testCase.verifyEqual(isNullReference, logical([1 0 1 0]))
+            testCase.verifyEqual( ...
+                H5R.get_name(did, 'H5R_OBJECT', referenceBuffer(:, 2)), '/target_one')
+            testCase.verifyEqual( ...
+                H5R.get_name(did, 'H5R_OBJECT', referenceBuffer(:, 4)), '/target_two')
+        end
+
+        function testWriteObjectReferenceAllNull(testCase)
+            % A reference column that is entirely null references should
+            % export and read back as all null references.
+            filename = 'temp_all_null_ref.h5';
+            fid = H5F.create(filename, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
+            fileCleanupObj = onCleanup(@() H5F.close(fid)); %#ok<NASGU>
+
+            references = [types.untyped.ObjectView(''); types.untyped.ObjectView('')];
+            io.writeDataset(fid, '/references', references);
+
+            did = H5D.open(fid, '/references');
+            didCleanupObj = onCleanup(@() H5D.close(did)); %#ok<NASGU>
+            referenceBuffer = H5D.read(did);
+            testCase.verifyTrue(all(referenceBuffer(:) == 0))
+            testCase.verifyEqual(size(referenceBuffer, 2), 2)
+        end
+
+        function testWriteObjectReferenceNoNull(testCase)
+            % A reference column with no null references (the common case)
+            % must be written in full and resolve on read-back. Guards against
+            % the non-null path being skipped when null slots are handled
+            % separately.
+            filename = 'temp_no_null_ref.h5';
+            fid = H5F.create(filename, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
+            fileCleanupObj = onCleanup(@() H5F.close(fid)); %#ok<NASGU>
+
+            % Targets that the references point to.
+            io.writeDataset(fid, '/target_one', rand(3, 1));
+            io.writeDataset(fid, '/target_two', rand(3, 1));
+
+            references = [ ...
+                types.untyped.ObjectView('/target_one'); ...
+                types.untyped.ObjectView('/target_two')];
+            io.writeDataset(fid, '/references', references);
+
+            did = H5D.open(fid, '/references');
+            didCleanupObj = onCleanup(@() H5D.close(did)); %#ok<NASGU>
+            referenceBuffer = H5D.read(did);
+            % No slot is a null reference and both resolve to their targets.
+            testCase.verifyFalse(any(all(referenceBuffer == 0, 1)))
+            testCase.verifyEqual( ...
+                H5R.get_name(did, 'H5R_OBJECT', referenceBuffer(:, 1)), '/target_one')
+            testCase.verifyEqual( ...
+                H5R.get_name(did, 'H5R_OBJECT', referenceBuffer(:, 2)), '/target_two')
+        end
+    end
 end
