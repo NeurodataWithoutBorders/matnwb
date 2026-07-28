@@ -83,6 +83,53 @@ classdef (Abstract) AlignedDynamicTableBase < matnwb.neurodata.DynamicTableBase
 
             categoryTable = obj.getCategoryTable(categoryName);
         end
+    
+        function row = getRow(obj, rowIndices, options)
+        % getRow - Return one or more AlignedDynamicTable rows.
+        %
+        % Syntax:
+        %  alignedDynamicTable.getRow(rowIndices) return one or more rows of the
+        %  table given a scalar row index or a list of row indices.
+        %
+        %  alignedDynamicTable.getRow(rowIndices, Name, Value) get rows providing 
+        %  optional name-value pairs for customization (see Input Arguments).
+        %
+        % Input Arguments:
+        %  - rowIndices (double) -
+        %    A scalar index or a vector of row indices for rows to extract.
+        %    Must be positive integers, respecting the row count of the table.
+        %
+        %  - options (name-value pairs) -
+        %    Optional name-value pairs. Available options:
+        %
+        %    - columns (string) -
+        %      A list of names of columns to retrieve. Allows for only 
+        %      grabbing certain columns instead of returning all columns.
+        %
+        %    - categories (string) -
+        %      A list of category table names to include as nested tables.
+        %
+        %    - useId (logical) -
+        %      If true, rowIndices refer to the table's id column instead
+        %      of the MATLAB-based row indices.
+        %
+        % Output Arguments:
+        %  - row (table) -
+        %    A table of specified rows, with columns ordered according to
+        %    the DynamicTable's colnames property, or the values given for 
+        %    the "columns" option if provided.
+
+            arguments
+                obj (1,1) {matnwb.common.validation.mustBeDynamicTable}
+                rowIndices (1,:) double {mustBeInteger}
+                options.columns (1,:)
+                options.categories
+                options.useId (1,1) logical
+            end
+
+            nvPairs = namedargs2cell(options);
+            row = types.util.dynamictable.getRow(obj, rowIndices, nvPairs{:});
+        end
     end
 
     % Hidden because this method is normally called by generated
