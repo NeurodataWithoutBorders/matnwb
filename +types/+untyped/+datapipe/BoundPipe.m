@@ -6,6 +6,14 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
         pipeProperties = {};
         stub types.untyped.DataStub = types.untyped.DataStub.empty;
     end
+
+    properties (Access = private)
+        % Warnings about append readiness, recorded at construction and
+        % emitted on the first append. Deferring them keeps reading a file
+        % silent, since the append axis and chunking only matter when
+        % growing the dataset.
+        pendingAppendWarnings = struct('id', {}, 'message', {});
+    end
     
     properties (SetAccess = private, Dependent)
         axis;
@@ -31,41 +39,26 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
             
             if isempty(varargin)
                 obj.config = Configuration(max_size);
-                axis = find(current_size < max_size);
-                if isempty(axis)
-                    % the data is completely filled. Just assume it was the
-                    % last dimension anyway.
-                    axis = length(max_size);
-                elseif ~isscalar(axis)
-                    formattedAxes = sprintf('[%s]', ...
-                        strjoin(arrayfun(@num2str, axis, 'UniformOutput', false), ', '));
-                    formattedMaxSize = sprintf('[%s]', ...
-                        strjoin(arrayfun(@num2str, max_size, 'UniformOutput', false), ', '));
-                    warning('NWB:BoundPipe:InvalidPipeShape' ...
-                        , [ ...
-                        'Multiple data dimensions %s are smaller than the dataset''s ' ...
-                        'maximum dimensions (%s). Attempting to append to this ' ...
-                        'dataset will most likely produce errors.'] ...
-                        , formattedAxes, formattedMaxSize);
-                    axis = axis(1);
-                end
-                
+                [axis, ambiguityWarning] = ...
+                    types.untyped.datapipe.BoundPipe.inferAppendAxis(current_size, max_size);
                 obj.config.axis = axis;
-                obj.config.offset = current_size(obj.config.axis);
+                obj.config.offset = current_size(axis);
+                obj.deferAppendWarning(ambiguityWarning);
                 tid = H5D.get_type(did);
                 obj.config.dataType = io.getMatType(tid);
                 H5T.close(tid);
             else
                 obj.config = varargin{1};
             end
-            
+
             pid = H5D.get_create_plist(did);
             if Chunking.isInDcpl(pid)
                 obj.pipeProperties{end+1} = Chunking.fromDcpl(pid);
             else
-                warning('NWB:BoundPipe:NotChunked' ...
-                    , ['Bound pipe is not chunked. Only read access is allowed.\n ' ...
-                    'Attempting to append to this pipe may cause errors.']);
+                obj.deferAppendWarning(struct( ...
+                    'id', 'NWB:BoundPipe:NotChunked', ...
+                    'message', ['This dataset is not chunked, so it cannot ' ...
+                    'be appended to; it is read-only.']));
             end
             
             if Compression.isInDcpl(pid)
@@ -112,6 +105,24 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
     end
     
     methods (Access = private)
+        function deferAppendWarning(obj, warningInfo)
+            % Record a warning to be emitted on the first append. Empty
+            % warningInfo (no issue detected) is ignored.
+            if ~isempty(warningInfo)
+                obj.pendingAppendWarnings(end+1) = warningInfo;
+            end
+        end
+
+        function emitPendingAppendWarnings(obj)
+            % Emit any recorded append-readiness warnings, then clear them
+            % so they surface once rather than on every append.
+            for i = 1:numel(obj.pendingAppendWarnings)
+                warningInfo = obj.pendingAppendWarnings(i);
+                warning(warningInfo.id, '%s', warningInfo.message);
+            end
+            obj.pendingAppendWarnings(:) = [];
+        end
+
         function fid = getFile(obj, access)
             if nargin < 2
                 access = 'H5F_ACC_RDONLY';
@@ -171,10 +182,75 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
             H5D.set_extent(did, fliplr(new_extents));
         end
     end
-    
+
+    methods (Static, Access = private)
+        function [axis, appendWarning] = inferAppendAxis(currentSize, maxSize)
+            % inferAppendAxis - Determine which dimension a bound pipe appends along.
+            %
+            %   The append axis is the extendable dimension of the dataset.
+            %   An unlimited (Inf) maximum size is the definitive signal for
+            %   an extendable dimension and takes precedence. When no
+            %   dimension is unlimited (a bounded pipe), the append axis is
+            %   inferred as the dimension that is not yet full.
+            %
+            %   The optional second output is a warning (struct with 'id'
+            %   and 'message' fields, empty when none) describing why the
+            %   append axis is ambiguous. The caller defers it until an
+            %   append is actually attempted.
+
+            appendWarning = struct('id', {}, 'message', {});
+
+            unlimitedAxes = find(isinf(maxSize));
+            if isscalar(unlimitedAxes)
+                % Typical case: exactly one unlimited dimension.
+                axis = unlimitedAxes;
+                return
+            elseif ~isempty(unlimitedAxes)
+                % Several unlimited dimensions. The dataset is fully
+                % appendable, but which axis to grow is a convention we
+                % cannot recover from the file. Default to the last such
+                % dimension, matching NWB's convention of growing along the
+                % trailing MATLAB dimension.
+                axis = unlimitedAxes(end);
+                appendWarning = struct( ...
+                    'id', 'NWB:BoundPipe:AmbiguousAppendAxis', ...
+                    'message', sprintf(['The dataset has multiple unlimited ' ...
+                    'dimensions (%s), so the append axis cannot be ' ...
+                    'determined from the file. Appending along axis %d.'], ...
+                    mat2str(unlimitedAxes), axis));
+                return
+            end
+
+            % No unlimited dimension: a bounded pipe. The append axis is the
+            % dimension that still has room to grow.
+            growableAxes = find(currentSize < maxSize);
+            if isscalar(growableAxes)
+                axis = growableAxes;
+            elseif isempty(growableAxes)
+                % Completely filled and not extendable: no append is
+                % possible. Default to the last dimension so the config is
+                % well-defined; any append is rejected later by expandDataset.
+                axis = length(maxSize);
+            else
+                % Several bounded dimensions are underfull. The append axis
+                % is ambiguous and appending is likely to fail the non-axis
+                % size check in expandDataset.
+                axis = growableAxes(1);
+                appendWarning = struct( ...
+                    'id', 'NWB:BoundPipe:InvalidPipeShape', ...
+                    'message', sprintf(['The dataset has multiple non-full ' ...
+                    'bounded dimensions (%s of maxSize %s), so the append ' ...
+                    'axis is ambiguous and appending is likely to fail.'], ...
+                    mat2str(growableAxes), mat2str(maxSize)));
+            end
+        end
+    end
+
     %% Pipe
     methods
         function append(obj, data)
+            obj.emitPendingAppendWarnings();
+
             rank = length(obj.config.maxSize);
             data_size = size(data);
             data_rank = length(data_size);

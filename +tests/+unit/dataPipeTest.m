@@ -139,7 +139,9 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             fid = H5F.create(filename);
             fullpipe.export(fid, dsName, {});
             H5F.close(fid);
-            DataPipe('filename', filename, 'path', dsName);
+            % Reading a bound pipe must not warn.
+            testCase.verifyWarningFree(...
+                @() DataPipe('filename', filename, 'path', dsName));
             delete(filename);
             
             %% multi-axis case
@@ -169,14 +171,21 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             H5D.close(did);
             H5F.close(fid);
             
-            multipipe = testCase.verifyWarning(...
-                @(varargin) DataPipe('filename', filename, 'path', dsName), ...
+            % Reading is silent; the ambiguous-append-axis warning is
+            % deferred until an append is actually attempted.
+            multipipe = testCase.verifyWarningFree(...
+                @() DataPipe('filename', filename, 'path', dsName));
+
+            % The dataset has multiple non-full bounded dimensions, so the
+            % first append warns about the ambiguous append axis.
+            testCase.verifyWarning(...
+                @() multipipe.append(rand(10, 2)), ...
                 'NWB:BoundPipe:InvalidPipeShape');
-            
+
             testCase.verifyError(...
-                @(varargin) multipipe.append(rand(10, 2, 10)), ...
+                @() multipipe.append(rand(10, 2, 10)), ...
                 'NWB:BoundPipe:InvalidDataShape')
-        
+
             delete(filename);
             
             %% not chunked behavior
@@ -190,11 +199,23 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             H5D.close(did);
             H5F.close(fid);
         
-            nochunk = testCase.verifyWarning(...
-                @(varargin) DataPipe('filename', filename, 'path', dsName), ...
-                'NWB:BoundPipe:NotChunked');
-        
+            % Not-chunked datasets are read-only; reading must stay silent
+            % and the warning is deferred until an append is attempted.
+            nochunk = testCase.verifyWarningFree(...
+                @() DataPipe('filename', filename, 'path', dsName));
+
             nochunk.load(); % test still loadable.
+
+            % Any append on a non-chunked dataset fails, but it must first
+            % surface the NotChunked warning explaining why.
+            lastwarn('', '');
+            try
+                nochunk.append(1);
+            catch
+                % Expected: appending to a non-chunked dataset is not allowed.
+            end
+            [~, warnId] = lastwarn();
+            testCase.verifyEqual(warnId, 'NWB:BoundPipe:NotChunked');
         end
         
         function testConfigurationFromData(testCase)
