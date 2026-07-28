@@ -26,9 +26,14 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
         end
 
         function testDisplayTipRecommendsAddCategory(testCase)
+            % Verify "groups" display mode
+            origPrefValue = getpref('matnwb', 'ContainerDisplayMode');
+            testCase.addTeardown(@() setpref('matnwb', 'ContainerDisplayMode', origPrefValue))
+            setpref('matnwb', 'ContainerDisplayMode', 'groups')
+
             displayText = evalc( ...
                 'disp(tests.system.AlignedDynamicTableTest.createAlignedTable())');
-            disp(displayText)
+
             testCase.verifyTrue(contains(displayText, "Use the 'addCategory' method"))
         end
 
