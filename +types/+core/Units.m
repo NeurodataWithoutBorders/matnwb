@@ -30,6 +30,9 @@ properties
     waveforms_index_index; %  (VectorIndex) Index into the 'waveforms_index' dataset. One value for every unit (row in the table). See 'waveforms' for more detail.
     waveforms_sampling_rate; %  (single) Sampling rate, in hertz.
 end
+properties (Constant, Access = private)
+    DeclaredSchemaColumns = ["electrode_group", "electrodes", "electrodes_index", "obs_intervals", "obs_intervals_index", "spike_times", "spike_times_index", "waveform_mean", "waveform_sd", "waveforms", "waveforms_index", "waveforms_index_index"];
+end
 
 methods
     function obj = Units(varargin)

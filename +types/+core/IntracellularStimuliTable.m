@@ -13,6 +13,9 @@ end
 properties
     stimulus_template; %  (TimeSeriesReferenceVectorData) Column storing the reference to the stimulus template for the recording (rows).
 end
+properties (Constant, Access = private)
+    DeclaredSchemaColumns = ["stimulus", "stimulus_template"];
+end
 
 methods
     function obj = IntracellularStimuliTable(varargin)

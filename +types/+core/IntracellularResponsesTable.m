@@ -9,6 +9,9 @@ classdef IntracellularResponsesTable < types.hdmf_common.DynamicTable & types.un
 properties
     response; % REQUIRED (TimeSeriesReferenceVectorData) Column storing the reference to the recorded response for the recording (rows)
 end
+properties (Constant, Access = private)
+    DeclaredSchemaColumns = ["response"];
+end
 
 methods
     function obj = IntracellularResponsesTable(varargin)

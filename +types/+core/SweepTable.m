@@ -11,6 +11,9 @@ properties
     series_index; % REQUIRED (VectorIndex) Index for series.
     sweep_number; % REQUIRED (VectorData) Sweep number of the PatchClampSeries in that row.
 end
+properties (Constant, Access = private)
+    DeclaredSchemaColumns = ["series", "series_index", "sweep_number"];
+end
 
 methods
     function obj = SweepTable(varargin)

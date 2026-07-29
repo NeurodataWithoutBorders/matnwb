@@ -180,6 +180,22 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
             nwbClearGenerated(typesOutputFolder, 'ClearCache',true)
             generateCore('savedir', typesOutputFolder);
         end
+
+        function testCoreNamespaceDynamicTableValidatesColnames(testCase)
+            import tests.fixtures.NwbClearGeneratedFixture
+
+            typesOutputFolder = testCase.getTypesOutputFolder();
+            testCase.applyFixture( ...
+                NwbClearGeneratedFixture(typesOutputFolder))
+            generateCore("2.1.0", "savedir", typesOutputFolder)
+
+            constructor = @() types.core.DynamicTable( ...
+                'description', 'test duplicate column names', ...
+                'colnames', {'columnA', 'columnA'});
+
+            testCase.verifyError( ...
+                constructor, 'NWB:DynamicTable:DuplicateColumnNames')
+        end
         
         function testToTableForNdVectorData(testCase)
             import matlab.unittest.fixtures.SuppressedWarningsFixture

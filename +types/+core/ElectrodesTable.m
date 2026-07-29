@@ -23,6 +23,9 @@ properties
     y; %  (VectorData) y coordinate of the channel location in the brain (+y is inferior). Units should be specified in microns.
     z; %  (VectorData) z coordinate of the channel location in the brain (+z is right). Units should be specified in microns.
 end
+properties (Constant, Access = private)
+    DeclaredSchemaColumns = ["filtering", "group", "group_name", "imp", "location", "reference", "rel_x", "rel_y", "rel_z", "x", "y", "z"];
+end
 
 methods
     function obj = ElectrodesTable(varargin)

@@ -14,6 +14,9 @@ end
 properties (Constant, Access = private)
     DeclaredSchemaCategories = ["electrodes", "responses", "stimuli"];
 end
+properties (Constant, Access = private)
+    DeclaredSchemaColumns = string.empty(1, 0);
+end
 
 methods
     function obj = IntracellularRecordingsTable(varargin)

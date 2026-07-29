@@ -10,6 +10,9 @@ properties
     recordings; % REQUIRED (DynamicTableRegion) A reference to one or more rows in the IntracellularRecordingsTable table.
     recordings_index; % REQUIRED (VectorIndex) Index dataset for the recordings column.
 end
+properties (Constant, Access = private)
+    DeclaredSchemaColumns = ["recordings", "recordings_index"];
+end
 
 methods
     function obj = SimultaneousRecordingsTable(varargin)
