@@ -1,5 +1,6 @@
 function tf = isSchemaDefinedTableColumn(propertyInfo, namespace)
-% isSchemaDefinedTableColumn - Determine whether a property stores a schema-defined table column.
+% isSchemaDefinedTableColumn - Determine whether a property stores a 
+% schema-defined DynamicTable column.
 
     tf = isscalar(propertyInfo) ...
         && isa(propertyInfo, 'file.Dataset') ...
