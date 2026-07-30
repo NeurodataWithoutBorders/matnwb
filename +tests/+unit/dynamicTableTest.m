@@ -407,6 +407,29 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
             testCase.verifyFalse(timeIntervals.vectordata.isKey('timeseries'));
         end
 
+        function testAddColumnUsesSchemaPropertiesForRaggedSchemaColumn(testCase)
+            timeIntervals = types.core.TimeIntervals( ...
+                'description', 'test time intervals');
+
+            tags = types.hdmf_common.VectorData( ...
+                'description', 'tags', ...
+                'data', {'a'; 'b'; 'c'});
+            tagsIndex = types.hdmf_common.VectorIndex( ...
+                'description', 'tag indices', ...
+                'data', uint64([2; 3]), ...
+                'target', types.untyped.ObjectView(tags));
+
+            timeIntervals.addColumn('tags', tags, 'tags_index', tagsIndex);
+
+            % Both halves of a ragged schema column are stored on their
+            % generated property, but only the data column is a colname.
+            testCase.verifyEqual(timeIntervals.tags, tags);
+            testCase.verifyEqual(timeIntervals.tags_index, tagsIndex);
+            testCase.verifyFalse(timeIntervals.vectordata.isKey('tags'));
+            testCase.verifyFalse(timeIntervals.vectordata.isKey('tags_index'));
+            testCase.verifyEqual(timeIntervals.colnames, {'tags'});
+        end
+
         function testAddColumnWrongTypeForSchemaPropertyKeepsPropertyRouting(testCase)
             timeIntervals = types.core.TimeIntervals( ...
                 'description', 'test time intervals');
