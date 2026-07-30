@@ -26,8 +26,9 @@ function hooks = getPropertyHooks(propName, prop, typeName, namespace)
             sprintf('types.util.dynamictable.syncNamedColumn(obj, ''%s'');', propName) };
     end
 
-    if file.internal.isDescendantOf(typeName, namespace, 'AlignedDynamicTable') ...
-            && file.internal.isSchemaDefinedTableCategory(prop, namespace)
+    isNamedTableCategory = file.internal.isDescendantOf(typeName, namespace, 'AlignedDynamicTable') ...
+        && file.internal.isSchemaDefinedTableCategory(prop, namespace);
+    if isNamedTableCategory
         hooks.PostsetStatements = [hooks.PostsetStatements, { ...
             sprintf('obj.ensureCategoryNameRegistered(''%s'');', propName) }];
     end
