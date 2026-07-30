@@ -27,15 +27,8 @@ function hooks = getPropertyHooks(propName, prop, typeName, namespace)
     end
 
     if file.internal.isDescendantOf(typeName, namespace, 'AlignedDynamicTable') ...
-            && isSchemaDefinedAlignedDynamicTableCategory(prop, namespace)
+            && file.internal.isSchemaDefinedTableCategory(prop, namespace)
         hooks.PostsetStatements = [hooks.PostsetStatements, { ...
             sprintf('obj.ensureCategoryNameRegistered(''%s'');', propName) }];
     end
-end
-
-function tf = isSchemaDefinedAlignedDynamicTableCategory(prop, namespace)
-    tf = isa(prop, 'file.Group') ...
-        && ~prop.isConstrainedSet ...
-        && ~isempty(prop.type) ...
-        && file.internal.isDescendantOf(prop.type, namespace, 'DynamicTable');
 end

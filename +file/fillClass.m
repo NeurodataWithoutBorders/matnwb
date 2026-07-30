@@ -274,17 +274,10 @@ function categoryNames = collectSchemaDefinedAlignedDynamicTableCategories( ...
     for iProperty = 1:length(propertyNames)
         propertyName = propertyNames{iProperty};
         propertyInfo = classProps(propertyName);
-        if isSchemaDefinedAlignedDynamicTableCategory(propertyInfo, namespace)
+        if file.internal.isSchemaDefinedTableCategory(propertyInfo, namespace)
             categoryNames(end+1) = string(propertyName); %#ok<AGROW>
         end
     end
-end
-
-function tf = isSchemaDefinedAlignedDynamicTableCategory(propertyInfo, namespace)
-    tf = isa(propertyInfo, 'file.Group') ...
-        && ~propertyInfo.isConstrainedSet ...
-        && ~isempty(propertyInfo.type) ...
-        && file.internal.isDescendantOf(propertyInfo.type, namespace, 'DynamicTable');
 end
 
 function columnNames = collectSchemaDefinedTableColumns( ...
