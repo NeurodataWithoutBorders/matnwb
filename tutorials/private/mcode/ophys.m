@@ -25,12 +25,12 @@
 % as name followed by value.
 
 nwb = NwbFile( ...
+    'identifier', 'matnwb_ophys_tutorial', ...
     'session_description', 'mouse in open exploration',...
-    'identifier', 'Mouse5_Day3', ...
     'session_start_time', datetime(2018, 4, 25, 2, 30, 3, 'TimeZone', 'local'), ...
     'timestamps_reference_time', datetime(2018, 4, 25, 3, 0, 45, 'TimeZone', 'local'), ...
     'general_experimenter', 'LastName, FirstName', ... % optional
-    'general_session_id', 'session_1234', ... % optional
+    'general_session_id', 'Mouse5_Day3', ... % optional
     'general_institution', 'University of My Institution', ... % optional
     'general_related_publications', {'DOI:10.1016/j.neuron.2016.12.011'}); % optional
 nwb
@@ -69,7 +69,7 @@ nwb.general_subject = subject;
 % |manufacturer|, |model_number|, |model_name|, and |serial_number| are optional, 
 % but recommended. Then create an <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OpticalChannel.html 
 % |*OpticalChannel*|> and add both of these to the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ImagingPlane.html 
-% |*ImagingPlane*|>|*.*|
+% |*ImagingPlane*|>.
 
 device = types.core.Device( ...
     'description', 'My two-photon microscope', ...
@@ -102,7 +102,7 @@ nwb.general_optophysiology.set(imaging_plane_name, imaging_plane);
 % |*TwoPhotonSeries*|>, like <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/SpatialSeries.html 
 % |*SpatialSeries*|>, inherits from <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
 % |*TimeSeries*|> and is similar in behavior to <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/OnePhotonSeries.html 
-% |*OnePhotonSeries*|>|.|
+% |*OnePhotonSeries*|>.
 % 
 % 
 
@@ -209,7 +209,7 @@ y = imaging_shape(2);
 
 n_rois = 20;
 image_mask = zeros(y, x, n_rois);
-center = randi(90,2,n_rois);
+center = generateCenterCoords(90,2,n_rois);
 for i = 1:n_rois
     image_mask(center(1,i):center(1,i)+10, center(2,i):center(2,i)+10, i) = 1;
 end
@@ -272,7 +272,7 @@ img_seg = types.core.ImageSegmentation();
 img_seg.planesegmentation.set('PlaneSegmentation', plane_segmentation);
 %% 
 % Add the |img_seg| object to the "ophys" <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/ProcessingModule.html 
-% |*ProcessingModule*|> we created before, naming it "|ImageSegmentation|"|.|
+% |*ProcessingModule*|> we created before, naming it "|ImageSegmentation|".
 
 ophys_module.nwbdatainterface.set('ImageSegmentation', img_seg);
 % Storing fluorescence of ROIs over time
@@ -304,9 +304,10 @@ roi_table_region = types.hdmf_common.DynamicTableRegion( ...
 % Then we create a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/RoiResponseSeries.html 
 % |*RoiResponseSeries*|> object to store fluorescence data for those ROIs.
 
+data = generateCalciumResponses(n_rois, 100); % [nRoi, nT]
 roi_response_series = types.core.RoiResponseSeries( ...
     'rois', roi_table_region, ...
-    'data', NaN(n_rois, 100), ... % [nRoi, nT]
+    'data', data, ...
     'data_unit', 'lumens', ...
     'starting_time_rate', 3.0, ...
     'starting_time', 0.0);
@@ -350,8 +351,13 @@ read_nwb.processing.get('ophys').nwbdatainterface.get('Fluorescence')...
 % 
 % |load| with no input arguments reads the entire dataset:
 
-read_nwb.processing.get('ophys').nwbdatainterface.get('Fluorescence'). ...
-    roiresponseseries.get('RoiResponseSeries').data.load
+signals = read_nwb.processing.get('ophys').nwbdatainterface.get('Fluorescence'). ...
+    roiresponseseries.get('RoiResponseSeries').data.load();
+
+% Plot signals for all RoIs
+plot(signals' + (1:size(signals, 1)))
+xlabel('timepoints'); ylabel('rois')
+title('Fluorescence signals')
 %% 
 % If all you need is a section of the data, you can read only that section by 
 % indexing the |DataStub| object like a normal array in MATLAB. This will just 
@@ -359,27 +365,51 @@ read_nwb.processing.get('ophys').nwbdatainterface.get('Fluorescence'). ...
 % useful if you are dealing with a large dataset that is too big to fit entirely 
 % into your available RAM.
 
-read_nwb.processing.get('ophys'). ...
+signal_subset = read_nwb.processing.get('ophys'). ...
     nwbdatainterface.get('Fluorescence'). ...
     roiresponseseries.get('RoiResponseSeries'). ...
-    data(1:5, 1:10)
+    data(1:5, 1:20);
+
+% Plot signals for a subset of RoIs and timepoints
+plot(signal_subset' + (1:size(signal_subset, 1)))
+xlabel('timepoints'); ylabel('rois')
 %% 
-% Finally, read back the image/pixel masks and display the first roi in a figure:
+% Finally, read back the image/pixel masks and display the first 10 RoIs in 
+% a figure:
 
 plane_segmentation = read_nwb.processing.get('ophys'). ...
     nwbdatainterface.get('ImageSegmentation'). ...
     planesegmentation.get('PlaneSegmentation');
 
-if ~isempty(plane_segmentation.image_mask)
-    roi_mask = plane_segmentation.image_mask.data(:,:,1);
-elseif ~isempty(plane_segmentation.pixel_mask)
-    row = plane_segmentation.getRow(1, 'columns', {'pixel_mask'});
-    pixel_mask = row.pixel_mask{1};
-    roi_mask = zeros(imaging_shape);
-    ind = sub2ind(imaging_shape, pixel_mask.y, pixel_mask.x);
-    roi_mask(ind) = pixel_mask.weight;
-end    
-imshow(roi_mask)
+num_rois = plane_segmentation.id.data.dims(1);
+
+% Replace this with the correct image size if needed
+% Example: imaging_shape = [512, 512];
+label_image = zeros(imaging_shape);
+
+for i = 1:10
+    if ~isempty(plane_segmentation.image_mask)
+        % image_mask is assumed to be height x width x nRois
+        image_mask_data = plane_segmentation.image_mask.data;
+        roi_mask = image_mask_data(:,:,i) > 0;
+        label_image(roi_mask) = i;
+    
+    elseif ~isempty(plane_segmentation.pixel_mask)
+        row = plane_segmentation.getRow(i, 'columns', {'pixel_mask'});
+        pixel_mask = row.pixel_mask{1};
+
+        % pixel_mask is assumed to have fields x, y, and weight
+        ind = sub2ind(imaging_shape, pixel_mask.y, pixel_mask.x);
+
+        % Mark ROI pixels with the ROI index
+        label_image(ind) = i;
+    end
+end
+
+rgb_image = convertLabelImage2RGBImage(label_image); % Local helper function
+
+imshow(rgb_image)
+title(sprintf('First %d ROIs', 10))
 %% Learn more!
 % See the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/index.html API documentation> to learn what data types are available.
 %% Other MatNWB tutorials
@@ -404,4 +434,52 @@ imshow(roi_mask)
 % Extensions>
 % * <https://pynwb.readthedocs.io/en/stable/tutorials/advanced_io/h5dataio.html#sphx-glr-tutorials-advanced-io-h5dataio-py 
 % Advanced HDF5 I/O>
-%%
+%% Helper functions
+
+function X = generateCenterCoords(varargin)
+    % Use reproducible random number generation for consistent 
+    % tutorial output and export.
+    rndGeneratorState = rng(2, 'twister');
+    rngCleanup = onCleanup(@() rng(rndGeneratorState));
+    X = randi(varargin{:});
+end
+
+function data = generateCalciumResponses(nRois, nTime)
+    arguments
+        nRois (1,1) double {mustBeInteger, mustBePositive}
+        nTime (1,1) double {mustBeInteger, mustBePositive}
+    end
+
+    % Use reproducible random number generation for consistent 
+    % tutorial output and export.
+    rndGeneratorState = rng(2, 'twister');
+    rngCleanup = onCleanup(@() rng(rndGeneratorState));
+
+    data = zeros(nRois, nTime);
+
+    eventProbability = 0.05;
+    decayTimeConstant = 3;                 % samples
+    kernelLength = 16;                     % samples
+
+    kernel = exp(-(0:kernelLength-1) / decayTimeConstant);
+
+    for i = 1:nRois
+        spikeTrain = rand(1, nTime) < eventProbability;
+        response = conv(double(spikeTrain), kernel, "same");
+        noise = 0.05 * randn(1, nTime);
+        baseline = 0.1 * randn;
+
+        data(i, :) = baseline + response + noise;
+    end
+end
+
+function rgbImage = convertLabelImage2RGBImage(labelImage)
+    numLabels = numel(unique(labelImage(labelImage>0)));
+
+    % Create one distinct color per label
+    cmap = lines(numLabels);
+    
+    % Convert label image to RGB
+    map = [0 0 0; cmap]; % black for background plus label colors 
+    rgbImage = reshape(map(labelImage(:)+1, :), [size(labelImage), 3]);
+end
