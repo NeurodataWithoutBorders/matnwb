@@ -4,36 +4,38 @@ classdef Zarr3Reader < io.backend.base.Reader
     % This reader is backed by the zarr-matlab package
     % (https://github.com/catalystneuro/zarr-matlab), which must be on the
     % MATLAB path, and reads Zarr v3 stores natively in MATLAB (no Python
-    % dependency). It pairs with io.backend.zarr3.Zarr3Writer for writing.
+    % dependency).
     %
-    % Object references are represented as an attribute value struct
-    % `struct('zarr_dtype', "object", 'value', struct('path', targetPath))`,
-    % matching the convention used by hdmf-zarr for Zarr v2 stores. There is no published Zarr v3 convention for NWB, but
-    % this matches the "zarr_dtype" reference convention used by real
-    % hdmf-zarr-style Zarr v3 NWB exports (verified against example files),
-    % as well as the reader/writer pair's own round-trips.
-    %
-    % A dataset whose elements are themselves object references (e.g. a
-    % DynamicTable column of ElectrodeGroup references) is represented on
-    % disk as a plain Zarr "string" array whose elements are the same
-    % reference JSON, tagged via a "zarr_dtype":"object" attribute on the
-    % array itself (see io.internal.zarr3.buildNodeInfo); each element is
-    % decoded into a types.untyped.ObjectView object array.
+    % The hdmf-zarr storage conventions that layer HDF5's links and object
+    % references on top of Zarr (https://hdmf-zarr.readthedocs.io/en/latest/storage.html)
+    % are handled by the hdmf-zarr-matlab package
+    % (https://github.com/catalystneuro/hdmf-zarr-matlab), which must also
+    % be on the MATLAB path:
+    %   - group links are "zarr_link" attribute records (hdmf.zarr.Link),
+    %     surfaced as h5info-style Links by io.internal.zarr3.convertAttributes;
+    %   - an object reference is a {source, path, object_id, ...} record
+    %     (hdmf.zarr.Reference), stored as {zarr_dtype:"object", value:<record>}
+    %     in an attribute, or as the JSON-string elements of a dataset
+    %     tagged zarr_dtype:"object" (hdmf.zarr.isReferenceArray), e.g. a
+    %     DynamicTable column of ElectrodeGroup references. Both decode to
+    %     types.untyped.ObjectView via io.internal.zarr3.decodeObjectReferences;
+    %   - the root ".specloc" attribute names the cached specifications
+    %     group (hdmf.zarr.File.specLoc).
     %
     % A compound (struct/table) dataset -- a Zarr v3 "structured" data_type,
     % e.g. PlaneSegmentation's pixel_mask/voxel_mask, or
     % TimeSeriesReferenceVectorData's response/stimulus columns -- is backed
     % by io.backend.zarr3.Zarr3LazyArray; a field tagged "object" via the
     % array's "zarr_dtype" attribute (see
-    % io.internal.zarr3.getCompoundFieldSemantics) is decoded into a
-    % types.untyped.ObjectView, matching the plain object-reference-array
-    % convention above. Requires zarr-matlab to support the Zarr v3
-    % "structured" and "fixed_length_utf32" data types, which are unstable,
-    % unspecified zarr-python extensions -- see
+    % io.internal.zarr3.getCompoundFieldSemantics) holds the same JSON
+    % reference records and is decoded the same way. Requires zarr-matlab
+    % to support the Zarr v3 "structured" and "fixed_length_utf32" data
+    % types, which are unstable, unspecified zarr-python extensions -- see
     % zarr.internal.dtype_info in zarr-matlab.
 
     properties (Access = private)
-        RootGroup = []
+        HdmfFile = []   % hdmf.zarr.File wrapping the open store
+        RootGroup = []  % zarr.Group at the root of the store (HdmfFile.root)
         RootInfoCache = []
         NodeInfoMap = containers.Map('KeyType', 'char', 'ValueType', 'any')
     end
@@ -57,13 +59,12 @@ classdef Zarr3Reader < io.backend.base.Reader
 
         function specLocation = getEmbeddedSpecLocation(obj)
             obj.ensureMetadataCache();
-            attributes = obj.RootGroup.attrs;
-            if isfield(attributes, "x_specloc")
-                specLocation = string(attributes.x_specloc);
-            elseif obj.RootGroup.isKey("specifications")
+            % hdmf-zarr records the cached-specifications group in the root
+            % ".specloc" attribute; fall back to the conventional group name
+            % when a writer omitted it.
+            specLocation = obj.HdmfFile.specLoc();
+            if specLocation == "" && obj.RootGroup.isKey("specifications")
                 specLocation = "/specifications";
-            else
-                specLocation = "";
             end
 
             if specLocation ~= "" && ~startsWith(specLocation, "/")
@@ -94,7 +95,7 @@ classdef Zarr3Reader < io.backend.base.Reader
         function attributeValue = readAttributeValue(~, attributeInfo, ~)
             if (ischar(attributeInfo.Datatype) || isstring(attributeInfo.Datatype)) ...
                     && strcmp(attributeInfo.Datatype, "object reference")
-                attributeValue = types.untyped.ObjectView(attributeInfo.Value.value.path);
+                attributeValue = io.internal.zarr3.decodeObjectReferences(attributeInfo.Value);
             else
                 attributeValue = attributeInfo.Value;
             end
@@ -141,7 +142,8 @@ classdef Zarr3Reader < io.backend.base.Reader
         function ensureMetadataCache(obj)
             if isempty(obj.RootGroup)
                 io.backend.zarr3.internal.ensureAvailable()
-                obj.RootGroup = zarr.open(obj.Filename);
+                obj.HdmfFile = hdmf.zarr.open(obj.Filename);
+                obj.RootGroup = obj.HdmfFile.root;
                 [obj.RootInfoCache, obj.NodeInfoMap] = io.internal.zarr3.buildNodeInfo(obj.RootGroup);
                 obj.RootInfoCache.Filename = char(obj.Filename);
             end
@@ -211,34 +213,17 @@ classdef Zarr3Reader < io.backend.base.Reader
         end
 
         function datasetValue = readObjectArrayValue(obj, datasetPath)
-            % readObjectArrayValue - Decode an array whose elements are
-            % JSON-encoded object references (Datatype "object"; see
-            % io.internal.zarr3.buildNodeInfo) into a types.untyped.ObjectView
-            % object array (matching io.parseReference's shape for HDF5
-            % reference datasets, which types.util.checkDtype requires --
-            % a cell array of ObjectView is not an accepted dtype). Each
-            % element is stored as a zarr "string" containing the same
-            % {"source":...,"path":...} JSON convention used for
-            % object-reference attributes (io.internal.zarr3.convertAttributes),
-            % but is not auto-decoded to a struct by zarr-matlab since the
-            % array's own Zarr v3 data_type is plain "string".
+            % readObjectArrayValue - Decode a dataset of object references
+            % (Datatype "object"; see io.internal.zarr3.buildNodeInfo) into
+            % a types.untyped.ObjectView array. Each element is a zarr
+            % "string" holding a JSON reference record (hdmf.zarr.Reference);
+            % zarr-matlab does not decode these itself since the array's
+            % own Zarr v3 data_type is plain "string".
 
             relativePath = io.internal.zarr3.stripLeadingSlash(datasetPath);
             arrayNode = zarr.open(obj.Filename, Path=relativePath);
             rawValues = string(arrayNode.read());
-
-            datasetValue = types.untyped.ObjectView.empty(0, 0);
-            for iValue = 1:numel(rawValues)
-                datasetValue(iValue) = io.backend.zarr3.Zarr3Reader.decodeObjectReferenceElement(rawValues(iValue));
-            end
-            datasetValue = reshape(datasetValue, size(rawValues));
-        end
-    end
-
-    methods (Static, Access = private)
-        function objectView = decodeObjectReferenceElement(rawElement)
-            decoded = jsondecode(char(rawElement));
-            objectView = types.untyped.ObjectView(decoded.path);
+            datasetValue = io.internal.zarr3.decodeObjectReferences(rawValues);
         end
     end
 end

@@ -130,7 +130,8 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
             % io.backend.hdf5.@HDF5LazyArray/load_h5_style.m produces via
             % io.parseCompound, decoding any field tagged as an object
             % reference (see io.internal.zarr3.getCompoundFieldSemantics)
-            % into a types.untyped.ObjectView array along the way.
+            % into a types.untyped.ObjectView array along the way (see
+            % io.internal.zarr3.decodeObjectReferences).
             if ~isstruct(data)
                 return
             end
@@ -143,12 +144,8 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
                 name = fieldNames{iField};
                 rawValues = {data.(name)};
                 if isKey(fieldSemantics, name) && fieldSemantics(name) == "object"
-                    values = types.untyped.ObjectView.empty(0, 0);
-                    for iValue = 1:n
-                        decoded = jsondecode(char(rawValues{iValue}));
-                        values(iValue) = types.untyped.ObjectView(decoded.path);
-                    end
-                    converted.(name) = reshape(values, n, 1);
+                    objectViews = io.internal.zarr3.decodeObjectReferences(string(rawValues));
+                    converted.(name) = reshape(objectViews, n, 1);
                 else
                     converted.(name) = reshape([rawValues{:}], n, 1);
                 end

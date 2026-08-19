@@ -12,7 +12,7 @@ classdef Zarr3LazyArrayTest < matlab.unittest.TestCase
             import matlab.unittest.fixtures.PathFixture
             import matlab.unittest.fixtures.TemporaryFolderFixture
 
-            testCase.applyFixture(PathFixture(tests.util.getZarr3MatlabPath()));
+            testCase.applyFixture(PathFixture(tests.util.getZarr3DependencyPaths()));
 
             tempFixture = testCase.applyFixture(TemporaryFolderFixture);
             testCase.FixturePath = tests.fixtures.createZarr3TestFile(tempFixture.Folder);

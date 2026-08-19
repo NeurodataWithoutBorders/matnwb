@@ -6,18 +6,26 @@ function [attributes, links] = convertAttributes(rawAttributes)
 %   zarr-matlab) into:
 %
 %     attributes - struct array with fields Name, Datatype, Dataspace,
-%       Value, matching the shape produced by h5info. Object references
-%       (see io.internal.zarr3.encodeObjectReference) are tagged with
-%       Datatype "object reference".
+%       Value, matching the shape produced by h5info. An attribute holding
+%       an hdmf-zarr object reference (the {zarr_dtype:"object", value:...}
+%       form; see hdmf.zarr.Reference) is tagged with Datatype
+%       "object reference" and keeps the raw record as its Value, which
+%       io.backend.zarr3.Zarr3Reader.readAttributeValue decodes.
 %
-%     links - struct array with fields Name, Type, Value, decoded from the
-%       reserved "zarr_link" attribute (soft/external link records written
-%       by io.backend.zarr3.Zarr3Writer). Non-group nodes never carry links,
-%       but the reserved attribute is filtered out regardless.
+%     links - struct array with fields Name, Type, Value, converted from the
+%       hdmf-zarr "zarr_link" attribute (decoded by hdmf.zarr.Link).
+%       Non-group nodes never carry links, but the reserved attribute is
+%       filtered out regardless.
+%
+%   The hdmf-zarr bookkeeping attributes (zarr_link, zarr_dtype, .specloc,
+%   _ARRAY_DIMENSIONS) are not schema attributes and are never promoted to
+%   the attributes output.
 %
 %   This convention matches the shape produced by h5info, so that the same
 %   downstream parsing code (io.parseGroup, io.parseAttributes) can consume
 %   node info from any backend.
+%
+%   See also hdmf.zarr.Link, hdmf.zarr.Reference
 
     attributes = emptyAttributeStruct();
     links = emptyLinkStruct();
@@ -26,24 +34,14 @@ function [attributes, links] = convertAttributes(rawAttributes)
         return
     end
 
+    links = convertLinks(hdmf.zarr.Link.fromAttributes(rawAttributes));
+
     fieldNames = fieldnames(rawAttributes);
     for iField = 1:numel(fieldNames)
         name = fieldNames{iField};
         value = rawAttributes.(name);
 
-        if strcmp(name, "zarr_link")
-            links = convertLinks(value);
-            continue
-        elseif strcmp(name, "x_specloc")
-            % Reserved marker for io.backend.zarr3.Zarr3Reader.getEmbeddedSpecLocation;
-            % not a schema attribute, so it is never promoted.
-            continue
-        elseif strcmp(name, "zarr_dtype") || strcmp(name, "x_ARRAY_DIMENSIONS")
-            % Reserved bookkeeping attributes written by hdmf-zarr-style
-            % exporters (dtype hint / xarray dimension names, the latter
-            % written to disk as "_ARRAY_DIMENSIONS" but renamed by
-            % jsondecode since a leading underscore is not a valid MATLAB
-            % identifier); not schema attributes.
+        if isReservedAttribute(name)
             continue
         end
 
@@ -62,30 +60,42 @@ function [attributes, links] = convertAttributes(rawAttributes)
     end
 end
 
+function tf = isReservedAttribute(name)
+% isReservedAttribute - True for hdmf-zarr bookkeeping attributes.
+%   Names are as they appear after jsondecode, which renames keys that are
+%   not valid MATLAB identifiers: ".specloc" (root attribute naming the
+%   cached specifications group; read via hdmf.zarr.File.specLoc) becomes
+%   "x_specloc", and "_ARRAY_DIMENSIONS" (xarray dimension names) becomes
+%   "x_ARRAY_DIMENSIONS".
+    reservedNames = ["zarr_link", "zarr_dtype", ...
+        matlab.lang.makeValidName(".specloc"), ...
+        matlab.lang.makeValidName("_ARRAY_DIMENSIONS")];
+    tf = any(strcmp(name, reservedNames));
+end
+
 function tf = isObjectReferenceValue(value)
+% isObjectReferenceValue - True for the attribute form of an hdmf-zarr
+%   object reference, {zarr_dtype:"object", value:<record>} (the shape
+%   hdmf.zarr.Reference.encodeAttribute produces).
     tf = isstruct(value) && isscalar(value) ...
         && isfield(value, 'zarr_dtype') ...
         && strcmp(string(value.zarr_dtype), "object");
 end
 
-function links = convertLinks(rawLinks)
+function links = convertLinks(hdmfLinks)
+% convertLinks - Map hdmf.zarr.Link objects onto h5info's Links struct
+%   shape (Name, Type, Value) as io.parseGroup expects: a soft link's Value
+%   is {path}; an external link's Value is {source, path}.
     links = emptyLinkStruct();
-    if isempty(rawLinks)
-        return
-    end
-    if ~iscell(rawLinks)
-        rawLinks = num2cell(rawLinks);
-    end
-
-    for iLink = 1:numel(rawLinks)
-        rawLink = rawLinks{iLink};
-        link = struct('Name', char(rawLink.name), 'Type', '', 'Value', []);
-        if strcmp(rawLink.source, '.')
-            link.Type = 'soft link';
-            link.Value = {char(rawLink.path)};
-        else
+    for iLink = 1:numel(hdmfLinks)
+        target = hdmfLinks(iLink).Target;
+        link = struct('Name', char(hdmfLinks(iLink).Name), 'Type', '', 'Value', []);
+        if target.isExternal()
             link.Type = 'external link';
-            link.Value = {char(rawLink.source), char(rawLink.path)};
+            link.Value = {char(target.Source), char(target.Path)};
+        else
+            link.Type = 'soft link';
+            link.Value = {char(target.Path)};
         end
         links(end+1) = link; %#ok<AGROW>
     end

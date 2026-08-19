@@ -24,5 +24,6 @@ docs/build
 docs/reports
 
 # External dependencies installed by matbox.installRequirements
-# (e.g. zarr-matlab, see requirements.txt)
+# (see requirements.txt)
 external_packages/zarr-matlab
+external_packages/hdmf-zarr-matlab

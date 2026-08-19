@@ -2,10 +2,14 @@ function fixturePath = createZarr3TestFile(rootFolder)
 % createZarr3TestFile - Build a small Zarr v3 NWB-like fixture for tests.
 %
 %   fixturePath = createZarr3TestFile(rootFolder) creates a Zarr v3 store
-%   under rootFolder directly via the zarr-matlab package (independent of
-%   io.backend.zarr3.Zarr3Writer, so io.backend.zarr3.Zarr3Reader tests are
-%   not circularly validated only against the writer), and returns the path
-%   to the store.
+%   under rootFolder and returns the path to the store. Plain groups and
+%   arrays are written directly via the zarr-matlab package; the hdmf-zarr
+%   conventions (a soft link, an external link, an object reference in an
+%   attribute, a dataset of object references and the root ".specloc"
+%   attribute) are written via hdmf-zarr-matlab's hdmf.zarr.File, whose
+%   output is validated against hdmf-zarr's storage spec in that package's
+%   own CI -- so io.backend.zarr3.Zarr3Reader is tested against the real
+%   on-disk conventions rather than against its own writer.
 %
 %   The pixel_mask compound dataset is built via zarr.metadata.ArrayMetadata
 %   + a direct zarr.Array construction rather than zarr.create, because
@@ -21,9 +25,14 @@ function fixturePath = createZarr3TestFile(rootFolder)
 
     fixturePath = fullfile(rootFolder, "fixture.zarr");
 
+    % hdmf-zarr names the cached-specifications group in a root attribute
+    % called ".specloc". zarr-matlab stores attributes as a struct, which
+    % cannot hold that field name, so the key is written under a placeholder
+    % and renamed in the raw metadata by writeSpecLocAttribute below.
+    specLocPlaceholder = 'SPECLOC_PLACEHOLDER';
     root = zarr.create_group(fixturePath, Attributes=struct(...
         'nwb_version', "2.7.0", ...
-        'x_specloc', "/specifications"));
+        specLocPlaceholder, "specifications"));
 
     root.createArray("identifier", [], "string").write("ZARR3_FIXTURE");
     root.createGroup("specifications");
@@ -38,9 +47,7 @@ function fixturePath = createZarr3TestFile(rootFolder)
 
     unitsGroup = root.createGroup("units");
     unitsGroup.createArray("spike_times", 5, "double").write([1.1 2.2 3.3 4.4 5.5]);
-    spikeTimesIndexGroup = unitsGroup.createGroup("spike_times_index");
-    spikeTimesIndexGroup.setAttr("target", ...
-        struct('zarr_dtype', "object", 'value', struct('path', "/units/spike_times")));
+    unitsGroup.createGroup("spike_times_index");
 
     generalGroup = root.createGroup("general");
     electrophysGroup = generalGroup.createGroup("extracellular_ephys");
@@ -50,17 +57,39 @@ function fixturePath = createZarr3TestFile(rootFolder)
 
     devicesGroup = generalGroup.createGroup("devices");
     devicesGroup.createGroup("array");
-
-    shank0Group = electrophysGroup.createGroup("shank0");
-    shank0Group.setAttr("zarr_link", ...
-        {struct('name', "device", 'source', ".", 'path', "/general/devices/array")});
+    electrophysGroup.createGroup("shank0");
 
     processingGroup = root.createGroup("processing");
     ophysGroup = processingGroup.createGroup("ophys");
     planeSegmentationGroup = ophysGroup.createGroup("PlaneSegmentation");
     createPixelMaskArray(planeSegmentationGroup);
 
+    % hdmf-zarr conventions: links and object references.
+    hdmfFile = hdmf.zarr.File(root.store);
+    hdmfFile.addLink("general/extracellular_ephys/shank0", "device", "general/devices/array");
+    hdmfFile.setRefAttr("units/spike_times_index", "target", "units/spike_times");
+    hdmfFile.writeRefs("general/extracellular_ephys/electrodes/group", ...
+        repmat("general/extracellular_ephys/shank0", 4, 1));
+    % An external link names another store; hdmf.zarr.File.addLink only
+    % creates in-store links, so this record is encoded directly.
+    externalLink = hdmf.zarr.Link("external_series", ...
+        hdmf.zarr.Reference("/acquisition/es", Source="other_session.nwb.zarr"));
+    acquisitionGroup.setAttr("zarr_link", externalLink.encode());
+
+    % Consolidate before renaming: consolidate_metadata re-encodes the root
+    % attributes from their struct form, which would undo the rename.
     zarr.consolidate_metadata(root.store);
+    writeSpecLocAttribute(root.store, specLocPlaceholder);
+end
+
+function writeSpecLocAttribute(store, placeholderName)
+% writeSpecLocAttribute - Rename the root attribute placeholderName to
+% hdmf-zarr's ".specloc" in the raw root metadata (see createZarr3TestFile).
+    rootMetadataKey = "zarr.json";
+    rootMetadataText = native2unicode(store.get(rootMetadataKey), 'UTF-8');
+    rootMetadataText = replace(rootMetadataText, ...
+        """" + placeholderName + """", """.specloc""");
+    store.set(rootMetadataKey, unicode2native(char(rootMetadataText), 'UTF-8'));
 end
 
 function createPixelMaskArray(parentGroup)
@@ -79,6 +108,11 @@ function createPixelMaskArray(parentGroup)
     meta.chunkShape = numRecords;
     meta.fillValue = struct('x', uint32(0), 'y', uint32(0), 'weight', single(0));
     meta.codecs = {zarr.codecs.BytesCodec()};
+    % hdmf-zarr tags a compound dataset with a zarr_dtype LIST of per-field
+    % descriptors (not the scalar "object"/"scalar" markers), which the
+    % reader must pass over without mistaking it for a reference dataset.
+    meta.attributes = struct('zarr_dtype', ...
+        struct('name', {'x', 'y', 'weight'}, 'dtype', {'uint32', 'uint32', 'float32'}));
 
     arrayPath = parentGroup.path + "/pixel_mask";
     parentGroup.store.set(arrayPath + "/zarr.json", unicode2native(char(meta.toJsonText()), 'UTF-8'));
