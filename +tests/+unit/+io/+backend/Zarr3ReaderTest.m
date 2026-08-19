@@ -11,7 +11,7 @@ classdef Zarr3ReaderTest < matlab.unittest.TestCase
             import matlab.unittest.fixtures.PathFixture
             import matlab.unittest.fixtures.TemporaryFolderFixture
 
-            testCase.applyFixture(PathFixture(tests.util.getZarr3MatlabPath()));
+            testCase.applyFixture(PathFixture(tests.util.getZarr3DependencyPaths()));
 
             tempFixture = testCase.applyFixture(TemporaryFolderFixture);
             testCase.FixturePath = tests.fixtures.createZarr3TestFile(tempFixture.Folder);
@@ -41,6 +41,17 @@ classdef Zarr3ReaderTest < matlab.unittest.TestCase
 
             % The reserved zarr_link attribute must not leak into Attributes.
             testCase.verifyEmpty(nodeInfo.Attributes);
+        end
+
+        function readNodeInfoIncludesExternalLinks(testCase)
+            reader = io.backend.zarr3.Zarr3Reader(testCase.FixturePath);
+            nodeInfo = reader.readNodeInfo("/acquisition");
+
+            testCase.verifyEqual(numel(nodeInfo.Links), 1);
+            testCase.verifyEqual(nodeInfo.Links(1).Name, 'external_series');
+            testCase.verifyEqual(nodeInfo.Links(1).Type, 'external link');
+            testCase.verifyEqual(string(nodeInfo.Links(1).Value), ...
+                ["other_session.nwb.zarr", "/acquisition/es"]);
         end
 
         function readAttributeValueConvertsObjectReference(testCase)
@@ -106,6 +117,22 @@ classdef Zarr3ReaderTest < matlab.unittest.TestCase
 
             testCase.verifyEqual(datasetValue.dataType, 'int64');
             testCase.verifyEqual(datasetValue.load(), int64([0; 1; 2; 3]));
+        end
+
+        function readObjectReferenceDatasetReturnsObjectViews(testCase)
+            reader = io.backend.zarr3.Zarr3Reader(testCase.FixturePath);
+            groupColumnPath = "/general/extracellular_ephys/electrodes/group";
+            datasetInfo = reader.readNodeInfo(groupColumnPath);
+            testCase.verifyEqual(datasetInfo.Datatype, 'object');
+
+            datasetValue = reader.readDatasetValue(datasetInfo, groupColumnPath);
+            testCase.verifyClass(datasetValue, "types.untyped.ObjectView");
+            testCase.verifySize(datasetValue, [4 1]);
+            testCase.verifyTrue(all(string({datasetValue.path}) == ...
+                "/general/extracellular_ephys/shank0"));
+
+            % The reserved zarr_dtype marker must not leak into Attributes.
+            testCase.verifyFalse(any(strcmp({datasetInfo.Attributes.Name}, 'zarr_dtype')));
         end
 
         function readCompoundDatasetReturnsCompoundDataStub(testCase)
