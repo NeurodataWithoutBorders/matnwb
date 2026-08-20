@@ -124,14 +124,16 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
         end
 
         function data = postProcessCompound(obj, data)
-            % postProcessCompound - Convert zarr-matlab's array-of-records
-            % (one struct per element) into the "struct of arrays" shape
-            % (one scalar struct, each field an Nx1 array) that
-            % io.backend.hdf5.@HDF5LazyArray/load_h5_style.m produces via
-            % io.parseCompound, decoding any field tagged as an object
-            % reference (see io.internal.zarr3.getCompoundFieldSemantics)
-            % into a types.untyped.ObjectView array along the way (see
-            % io.internal.zarr3.decodeObjectReferences).
+        % postProcessCompound - Reshape compound records to struct of arrays.
+        %
+        % Converts zarr-matlab's array-of-records (one struct per element)
+        % into the "struct of arrays" shape (one scalar struct, each field an
+        % Nx1 array) that io.backend.hdf5.@HDF5LazyArray/load_h5_style.m
+        % produces via io.parseCompound. Any field tagged as an object
+        % reference (see io.internal.zarr3.getCompoundFieldSemantics) is
+        % decoded into a types.untyped.ObjectView array along the way (see
+        % io.internal.zarr3.decodeObjectReferences).
+
             if ~isstruct(data)
                 return
             end

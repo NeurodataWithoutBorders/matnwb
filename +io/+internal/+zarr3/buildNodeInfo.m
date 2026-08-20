@@ -1,9 +1,9 @@
 function [rootInfo, nodeInfoMap] = buildNodeInfo(rootGroup)
 % buildNodeInfo - Build an h5info-like node tree from a zarr.Group root.
 %
-%   [rootInfo, nodeInfoMap] = buildNodeInfo(rootGroup) walks the hierarchy
-%   below rootGroup (a zarr.Group opened via zarr.open, using its
-%   consolidated metadata when available) and returns:
+% [rootInfo, nodeInfoMap] = buildNodeInfo(rootGroup) walks the hierarchy
+% below rootGroup (a zarr.Group opened via zarr.open, using its
+% consolidated metadata when available) and returns:
 %
 %     rootInfo - h5info-like struct for the root node (fields Name, Groups,
 %       Datasets, Links, Attributes), recursively populated.
@@ -11,8 +11,8 @@ function [rootInfo, nodeInfoMap] = buildNodeInfo(rootGroup)
 %     nodeInfoMap - containers.Map from absolute node path (char, leading
 %       '/') to the corresponding node info struct (group or dataset).
 %
-%   The output shape mirrors h5info's, so io.parseGroup/io.parseDataset/
-%   io.parseAttributes can consume it directly.
+% The output shape mirrors h5info's, so io.parseGroup/io.parseDataset/
+% io.parseAttributes can consume it directly.
 
     nodeInfoMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
     rootInfo = buildGroupInfo(rootGroup, "/", nodeInfoMap);
@@ -69,10 +69,10 @@ function datasetInfo = buildDatasetInfo(arrayNode, leafName)
 
     % Two hdmf-zarr semantic markers have no native Zarr v3 equivalent and
     % override Datatype so io.backend.zarr3.Zarr3Reader can dispatch on them:
-    %   "object" - a dataset of object references (string array of JSON
+    % "object" - a dataset of object references (string array of JSON
     %     reference records tagged zarr_dtype:"object"; detected by
     %     hdmf.zarr.isReferenceArray, decoded by hdmf.zarr.Reference).
-    %   "scalar" - hdmf-zarr represents an NWB scalar property (e.g.
+    % "scalar" - hdmf-zarr represents an NWB scalar property (e.g.
     %     identifier, session_description) as a rank-1, length-1 Zarr
     %     array tagged zarr_dtype:"scalar" rather than a true rank-0 array,
     %     so shape alone cannot distinguish it from a genuine one-row
