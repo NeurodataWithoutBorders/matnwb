@@ -1,5 +1,5 @@
 classdef DurationVectorData < types.hdmf_common.VectorData & types.untyped.DatasetClass
-% DURATIONVECTORDATA - A 1-dimensional VectorData that stores durations in seconds.
+% DURATIONVECTORDATA - A 1-D VectorData that stores durations in seconds.
 %
 % Required Properties:
 %  data, description

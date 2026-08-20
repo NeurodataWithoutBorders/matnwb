@@ -15,12 +15,12 @@ properties
     axis_2_phase_map_dimension; % REQUIRED (int32) Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.
     axis_2_phase_map_field_of_view; % REQUIRED (single) Size of viewing area, in meters.
     axis_2_phase_map_unit; % REQUIRED (char) Unit that axis data is stored in (e.g., degrees).
-    axis_descriptions; % REQUIRED (char) Two-element array describing the contents of the two response axis fields. Description should be something like ['altitude', 'azimuth'] or '['radius', 'theta'].
+    axis_descriptions; % REQUIRED (char) Two-element array describing the contents of the two response axis fields. Description should be something like ['altitude', 'azimuth'] or ['radius', 'theta'].
     vasculature_image; % REQUIRED (uint16) Gray-scale anatomical image of cortical surface. Array structure: [rows][columns]
-    vasculature_image_bits_per_pixel; % REQUIRED (int32) Number of bits used to represent each value. This is necessary to determine maximum (white) pixel value
+    vasculature_image_bits_per_pixel; % REQUIRED (int32) Number of bits used to represent each value. This is necessary to determine maximum (white) pixel value.
     vasculature_image_dimension; % REQUIRED (int32) Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.
     vasculature_image_field_of_view; % REQUIRED (single) Size of viewing area, in meters.
-    vasculature_image_format; % REQUIRED (char) Format of image. Right now only 'raw' is supported.
+    vasculature_image_format; % REQUIRED (char) Format of image. Currently only 'raw' is supported.
 end
 % OPTIONAL PROPERTIES
 properties
@@ -32,12 +32,12 @@ properties
     axis_2_power_map_dimension; %  (int32) Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.
     axis_2_power_map_field_of_view; %  (single) Size of viewing area, in meters.
     axis_2_power_map_unit; %  (char) Unit that axis data is stored in (e.g., degrees).
-    focal_depth_image; %  (uint16) Gray-scale image taken with same settings/parameters (e.g., focal depth, wavelength) as data collection. Array format: [rows][columns].
+    focal_depth_image; %  (uint16) Gray-scale image taken with the same settings/parameters (e.g., focal depth, wavelength) as data collection. Array format: [rows][columns].
     focal_depth_image_bits_per_pixel; %  (int32) Number of bits used to represent each value. This is necessary to determine maximum (white) pixel value.
     focal_depth_image_dimension; %  (int32) Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.
     focal_depth_image_field_of_view; %  (single) Size of viewing area, in meters.
     focal_depth_image_focal_depth; %  (single) Focal depth offset, in meters.
-    focal_depth_image_format; %  (char) Format of image. Right now only 'raw' is supported.
+    focal_depth_image_format; %  (char) Format of image. Currently only 'raw' is supported.
     sign_map; %  (single) Sine of the angle between the direction of the gradient in axis_1 and axis_2.
     sign_map_dimension; %  (int32) Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.
     sign_map_field_of_view; %  (single) Size of viewing area, in meters.
@@ -85,9 +85,9 @@ methods
         %
         %  - axis_2_power_map_unit (char) - Unit that axis data is stored in (e.g., degrees).
         %
-        %  - axis_descriptions (char) - Two-element array describing the contents of the two response axis fields. Description should be something like ['altitude', 'azimuth'] or '['radius', 'theta'].
+        %  - axis_descriptions (char) - Two-element array describing the contents of the two response axis fields. Description should be something like ['altitude', 'azimuth'] or ['radius', 'theta'].
         %
-        %  - focal_depth_image (uint16) - Gray-scale image taken with same settings/parameters (e.g., focal depth, wavelength) as data collection. Array format: [rows][columns].
+        %  - focal_depth_image (uint16) - Gray-scale image taken with the same settings/parameters (e.g., focal depth, wavelength) as data collection. Array format: [rows][columns].
         %
         %  - focal_depth_image_bits_per_pixel (int32) - Number of bits used to represent each value. This is necessary to determine maximum (white) pixel value.
         %
@@ -97,7 +97,7 @@ methods
         %
         %  - focal_depth_image_focal_depth (single) - Focal depth offset, in meters.
         %
-        %  - focal_depth_image_format (char) - Format of image. Right now only 'raw' is supported.
+        %  - focal_depth_image_format (char) - Format of image. Currently only 'raw' is supported.
         %
         %  - sign_map (single) - Sine of the angle between the direction of the gradient in axis_1 and axis_2.
         %
@@ -107,13 +107,13 @@ methods
         %
         %  - vasculature_image (uint16) - Gray-scale anatomical image of cortical surface. Array structure: [rows][columns]
         %
-        %  - vasculature_image_bits_per_pixel (int32) - Number of bits used to represent each value. This is necessary to determine maximum (white) pixel value
+        %  - vasculature_image_bits_per_pixel (int32) - Number of bits used to represent each value. This is necessary to determine maximum (white) pixel value.
         %
         %  - vasculature_image_dimension (int32) - Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.
         %
         %  - vasculature_image_field_of_view (single) - Size of viewing area, in meters.
         %
-        %  - vasculature_image_format (char) - Format of image. Right now only 'raw' is supported.
+        %  - vasculature_image_format (char) - Format of image. Currently only 'raw' is supported.
         %
         % Output Arguments:
         %  - imagingRetinotopy (types.core.ImagingRetinotopy) - An ImagingRetinotopy object

@@ -7,7 +7,7 @@ classdef NWBFile < types.core.NWBContainer & types.untyped.GroupClass
 
 % READONLY PROPERTIES
 properties(SetAccess = protected)
-    nwb_version = "2.10.0"; %  (char) File version string. Use semantic versioning, e.g. 1.2.1. This will be the name of the format with trailing major, minor and patch numbers.
+    nwb_version = "2.11.0"; %  (char) File version string. Use semantic versioning, e.g., 1.2.1. This will be the name of the format with trailing major, minor and patch numbers.
 end
 % REQUIRED PROPERTIES
 properties
@@ -22,7 +22,7 @@ properties
     acquisition; %  (DynamicTable|NWBDataInterface) Tabular data that is relevant to acquisition | Acquired, raw data.
     analysis; %  (DynamicTable|NWBContainer) Tabular data that is relevant to data stored in analysis | Custom analysis results.
     events_; %  (EventsTable) An EventsTable holding a collection of event times of a particular type (e.g., licks, rewards, stimulus presentations) along with their per-event metadata.
-    general; %  (LabMetaData) Place-holder than can be extended so that lab-specific meta-data can be placed in /general.
+    general; %  (LabMetaData) Place-holder that can be extended so that lab-specific meta-data can be placed in /general.
     general_data_collection; %  (char) Notes about data collection and analysis.
     general_devices; %  (Device) Data acquisition devices.
     general_devices_models; %  (DeviceModel) Data acquisition device models.
@@ -30,14 +30,14 @@ properties
     general_experimenter; %  (char) Name of person(s) who performed the experiment. Can also specify roles of different people involved.
     general_external_resources; %  (HERD) This is the HERD structure for this specific NWBFile, storing the mapped external resources.
     general_extracellular_ephys; %  (ElectrodeGroup) Physical group of electrodes.
-    general_extracellular_ephys_electrodes; %  (ElectrodesTable) A table of all electrodes (i.e. channels) used for recording. Changed in NWB 2.9.0 to use the newly added ElectrodesTable neurodata type instead of a DynamicTable with added columns.
+    general_extracellular_ephys_electrodes; %  (ElectrodesTable) A table of all electrodes (i.e., channels) used for recording. Changed in NWB 2.9.0 to use the newly added ElectrodesTable neurodata type instead of a DynamicTable with added columns.
     general_institution; %  (char) Institution(s) where experiment was performed.
     general_intracellular_ephys; %  (IntracellularElectrode) An intracellular electrode.
-    general_intracellular_ephys_experimental_conditions; %  (ExperimentalConditionsTable) A table for grouping different intracellular recording repetitions together that belong to the same experimental experimental_conditions.
+    general_intracellular_ephys_experimental_conditions; %  (ExperimentalConditionsTable) A table for grouping different intracellular recording repetitions together that belong to the same experimental conditions.
     general_intracellular_ephys_filtering; %  (char) [DEPRECATED] Use IntracellularElectrode.filtering instead. Description of filtering used. Includes filtering type and parameters, frequency fall-off, etc. If this changes between TimeSeries, filter description should be stored as a text attribute for each TimeSeries.
-    general_intracellular_ephys_intracellular_recordings; %  (IntracellularRecordingsTable) A table to group together a stimulus and response from a single electrode and a single simultaneous recording. Each row in the table represents a single recording consisting typically of a stimulus and a corresponding response. In some cases, however, only a stimulus or a response are recorded as as part of an experiment. In this case both, the stimulus and response will point to the same TimeSeries while the idx_start and count of the invalid column will be set to -1, thus, indicating that no values have been recorded for the stimulus or response, respectively. Note, a recording MUST contain at least a stimulus or a response. Typically the stimulus and response are PatchClampSeries. However, the use of AD/DA channels that are not associated to an electrode is also common in intracellular electrophysiology, in which case other TimeSeries may be used.
+    general_intracellular_ephys_intracellular_recordings; %  (IntracellularRecordingsTable) A table to group together a stimulus and response from a single electrode and a single simultaneous recording. Each row in the table represents a single recording consisting typically of a stimulus and a corresponding response. In some cases, however, only a stimulus or a response are recorded as part of an experiment. In this case, both the stimulus and response will point to the same TimeSeries while the idx_start and count of the invalid column will be set to -1, thus, indicating that no values have been recorded for the stimulus or response, respectively. Note, a recording MUST contain at least a stimulus or a response. Typically the stimulus and response are PatchClampSeries. However, the use of AD/DA channels that are not associated to an electrode is also common in intracellular electrophysiology, in which case other TimeSeries may be used.
     general_intracellular_ephys_repetitions; %  (RepetitionsTable) A table for grouping different sequential intracellular recordings together. With each SequentialRecording typically representing a particular type of stimulus, the RepetitionsTable table is typically used to group sets of stimuli applied in sequence.
-    general_intracellular_ephys_sequential_recordings; %  (SequentialRecordingsTable) A table for grouping different sequential recordings from the SimultaneousRecordingsTable table together. This is typically used to group together sequential recordings where the a sequence of stimuli of the same type with varying parameters have been presented in a sequence.
+    general_intracellular_ephys_sequential_recordings; %  (SequentialRecordingsTable) A table for grouping different sequential recordings from the SimultaneousRecordingsTable table together. This is typically used to group together sequential recordings where a sequence of stimuli of the same type with varying parameters have been presented in a sequence.
     general_intracellular_ephys_simultaneous_recordings; %  (SimultaneousRecordingsTable) A table for grouping different intracellular recordings from the IntracellularRecordingsTable table together that were recorded simultaneously from different electrodes
     general_intracellular_ephys_sweep_table; %  (SweepTable) [DEPRECATED] Table used to group different PatchClampSeries. SweepTable is being replaced by IntracellularRecordingsTable and SimultaneousRecordingsTable tables. Additional SequentialRecordingsTable, RepetitionsTable and ExperimentalConditions tables provide enhanced support for experiment metadata.
     general_keywords; %  (char) Terms to search over.
@@ -56,7 +56,7 @@ properties
     general_subject; %  (Subject) Information about the animal or person from which the data was measured.
     general_surgery; %  (char) Narrative description about surgery/surgeries, including date(s) and who performed surgery.
     general_virus; %  (char) Information about virus(es) used in experiments, including virus ID, source, date made, injection location, volume, etc.
-    general_was_generated_by; %  (char) Name and version of software package(s) used to generate data contained in this NWB File. For each software package or library, include the name of the software as the first value and the version as the second value.
+    general_was_generated_by; %  (char) Name and version of software package(s) used to generate data contained in this NWB file. For each software package or library, include the name of the software as the first value and the version as the second value.
     intervals; %  (TimeIntervals) Optional additional table(s) for describing other experimental time intervals.
     intervals_epochs; %  (TimeIntervals) Time intervals marking coarse-grained experimental phases or subdivisions of a recording session, such as baseline, task, rest, or sleep stages.
     intervals_invalid_times; %  (TimeIntervals) Time intervals that should be removed from analysis.
@@ -89,7 +89,7 @@ methods
         %
         %  - file_create_date (datetime) - A record of the date the file was created and of subsequent modifications. The date is stored in UTC with local timezone offset as ISO 8601 extended formatted strings: 2018-09-28T14:43:54.123+02:00. Dates stored in UTC end in "Z" with no timezone offset. Date accuracy is up to milliseconds. The file can be created after the experiment was run, so this may differ from the experiment start time. Each modification to the nwb file adds a new entry to the array.
         %
-        %  - general (LabMetaData) - Place-holder than can be extended so that lab-specific meta-data can be placed in /general.
+        %  - general (LabMetaData) - Place-holder that can be extended so that lab-specific meta-data can be placed in /general.
         %
         %  - general_data_collection (char) - Notes about data collection and analysis.
         %
@@ -105,21 +105,21 @@ methods
         %
         %  - general_extracellular_ephys (ElectrodeGroup) - Physical group of electrodes.
         %
-        %  - general_extracellular_ephys_electrodes (ElectrodesTable) - A table of all electrodes (i.e. channels) used for recording. Changed in NWB 2.9.0 to use the newly added ElectrodesTable neurodata type instead of a DynamicTable with added columns.
+        %  - general_extracellular_ephys_electrodes (ElectrodesTable) - A table of all electrodes (i.e., channels) used for recording. Changed in NWB 2.9.0 to use the newly added ElectrodesTable neurodata type instead of a DynamicTable with added columns.
         %
         %  - general_institution (char) - Institution(s) where experiment was performed.
         %
         %  - general_intracellular_ephys (IntracellularElectrode) - An intracellular electrode.
         %
-        %  - general_intracellular_ephys_experimental_conditions (ExperimentalConditionsTable) - A table for grouping different intracellular recording repetitions together that belong to the same experimental experimental_conditions.
+        %  - general_intracellular_ephys_experimental_conditions (ExperimentalConditionsTable) - A table for grouping different intracellular recording repetitions together that belong to the same experimental conditions.
         %
         %  - general_intracellular_ephys_filtering (char) - [DEPRECATED] Use IntracellularElectrode.filtering instead. Description of filtering used. Includes filtering type and parameters, frequency fall-off, etc. If this changes between TimeSeries, filter description should be stored as a text attribute for each TimeSeries.
         %
-        %  - general_intracellular_ephys_intracellular_recordings (IntracellularRecordingsTable) - A table to group together a stimulus and response from a single electrode and a single simultaneous recording. Each row in the table represents a single recording consisting typically of a stimulus and a corresponding response. In some cases, however, only a stimulus or a response are recorded as as part of an experiment. In this case both, the stimulus and response will point to the same TimeSeries while the idx_start and count of the invalid column will be set to -1, thus, indicating that no values have been recorded for the stimulus or response, respectively. Note, a recording MUST contain at least a stimulus or a response. Typically the stimulus and response are PatchClampSeries. However, the use of AD/DA channels that are not associated to an electrode is also common in intracellular electrophysiology, in which case other TimeSeries may be used.
+        %  - general_intracellular_ephys_intracellular_recordings (IntracellularRecordingsTable) - A table to group together a stimulus and response from a single electrode and a single simultaneous recording. Each row in the table represents a single recording consisting typically of a stimulus and a corresponding response. In some cases, however, only a stimulus or a response are recorded as part of an experiment. In this case, both the stimulus and response will point to the same TimeSeries while the idx_start and count of the invalid column will be set to -1, thus, indicating that no values have been recorded for the stimulus or response, respectively. Note, a recording MUST contain at least a stimulus or a response. Typically the stimulus and response are PatchClampSeries. However, the use of AD/DA channels that are not associated to an electrode is also common in intracellular electrophysiology, in which case other TimeSeries may be used.
         %
         %  - general_intracellular_ephys_repetitions (RepetitionsTable) - A table for grouping different sequential intracellular recordings together. With each SequentialRecording typically representing a particular type of stimulus, the RepetitionsTable table is typically used to group sets of stimuli applied in sequence.
         %
-        %  - general_intracellular_ephys_sequential_recordings (SequentialRecordingsTable) - A table for grouping different sequential recordings from the SimultaneousRecordingsTable table together. This is typically used to group together sequential recordings where the a sequence of stimuli of the same type with varying parameters have been presented in a sequence.
+        %  - general_intracellular_ephys_sequential_recordings (SequentialRecordingsTable) - A table for grouping different sequential recordings from the SimultaneousRecordingsTable table together. This is typically used to group together sequential recordings where a sequence of stimuli of the same type with varying parameters have been presented in a sequence.
         %
         %  - general_intracellular_ephys_simultaneous_recordings (SimultaneousRecordingsTable) - A table for grouping different intracellular recordings from the IntracellularRecordingsTable table together that were recorded simultaneously from different electrodes
         %
@@ -157,7 +157,7 @@ methods
         %
         %  - general_virus (char) - Information about virus(es) used in experiments, including virus ID, source, date made, injection location, volume, etc.
         %
-        %  - general_was_generated_by (char) - Name and version of software package(s) used to generate data contained in this NWB File. For each software package or library, include the name of the software as the first value and the version as the second value.
+        %  - general_was_generated_by (char) - Name and version of software package(s) used to generate data contained in this NWB file. For each software package or library, include the name of the software as the first value and the version as the second value.
         %
         %  - identifier (char) - A unique text identifier for the file. For example, concatenated lab name, file creation date/time and experimentalist, or a hash of these and/or other values. The goal is that the string should be unique to all other files.
         %
@@ -188,7 +188,7 @@ methods
         % Output Arguments:
         %  - nwbFile (types.core.NWBFile) - An NWBFile object
         
-        varargin = [{'nwb_version' '2.10.0'} varargin];
+        varargin = [{'nwb_version' '2.11.0'} varargin];
         obj = obj@types.core.NWBContainer(varargin{:});
         
         
