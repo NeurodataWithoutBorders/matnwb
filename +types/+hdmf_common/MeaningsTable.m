@@ -1,5 +1,5 @@
 classdef MeaningsTable < types.hdmf_common.DynamicTable & types.untyped.GroupClass
-% MEANINGSTABLE - A table to store information about the meanings of values in a linked VectorData object. All possible values of the linked VectorData object should be present in the 'value' column of this table, even if the value is not observed in the data. Additional columns may be added to store additional metadata about each value. The name of the MeaningsTable should correspond to the name of the linked VectorData object with a "_meanings" suffix. e.g., if the linked VectorData object is named "stimulus_type", the corresponding MeaningsTable should be named "stimulus_type_meanings".
+% MEANINGSTABLE - A table to store information about the meanings of values in a referenced VectorData object. All possible values of the referenced VectorData object should be present in the 'value' column of this table, even if the value is not observed in the data. Additional columns may be added to store additional metadata about each value. The name of the MeaningsTable should correspond to the name of the referenced VectorData object with a "_meanings" suffix. e.g., if the referenced VectorData object is named "stimulus_type", the corresponding MeaningsTable should be named "stimulus_type_meanings".
 %
 % Required Properties:
 %  colnames, description, id, meaning, target, value
@@ -7,9 +7,9 @@ classdef MeaningsTable < types.hdmf_common.DynamicTable & types.untyped.GroupCla
 
 % REQUIRED PROPERTIES
 properties
-    meaning; % REQUIRED (VectorData) The meaning of the value in the linked VectorData object.
-    target; % REQUIRED (VectorData) Link to the VectorData object for which this table provides meanings.
-    value; % REQUIRED (VectorData) The value of a row in the linked VectorData object.
+    meaning; % REQUIRED (VectorData) The meaning of the value in the referenced VectorData object.
+    target; % REQUIRED (Object reference to VectorData) Reference to the VectorData object for which this table provides meanings.
+    value; % REQUIRED (VectorData) The value of a row in the referenced VectorData object.
 end
 properties (Constant, Access = private)
     DeclaredSchemaColumns = ["meaning", "value"];
@@ -31,13 +31,13 @@ methods
         %
         %  - id (ElementIdentifiers) - Array of unique identifiers for the rows of this dynamic table.
         %
-        %  - meaning (VectorData) - The meaning of the value in the linked VectorData object.
+        %  - meaning (VectorData) - The meaning of the value in the referenced VectorData object.
         %
         %  - meanings_tables (MeaningsTable) - MeaningsTable objects that provide meanings for values in VectorData columns within this DynamicTable. Tables should be named according to the column they provide meanings for with a "_meanings" suffix. e.g., if a VectorData column is named "stimulus_type", the corresponding MeaningsTable should be named "stimulus_type_meanings".
         %
-        %  - target (VectorData) - Link to the VectorData object for which this table provides meanings.
+        %  - target (Object reference to VectorData) - Reference to the VectorData object for which this table provides meanings.
         %
-        %  - value (VectorData) - The value of a row in the linked VectorData object.
+        %  - value (VectorData) - The value of a row in the referenced VectorData object.
         %
         %  - vectordata (VectorData) - Vector columns, including index columns, of this dynamic table.
         %
@@ -97,7 +97,9 @@ methods
         end
     end
     function val = validate_target(obj, val)
-        val = types.util.validateSoftLink('target', val, 'types.hdmf_common.VectorData');
+        % Reference to type `VectorData`
+        val = types.util.validateReferenceType('target', val, 'types.hdmf_common.VectorData', 'types.untyped.ObjectView');
+        types.util.validateShape('target', {[1]}, val)
     end
     function val = validate_value(obj, val)
         types.util.checkType('value', 'types.hdmf_common.VectorData', val);
@@ -109,7 +111,7 @@ methods
             return;
         end
         refs = obj.meaning.export(writer, [fullpath '/meaning'], refs);
-        refs = obj.target.export(writer, [fullpath '/target'], refs);
+        writer.writeAttribute([fullpath '/target'], obj.target);
         refs = obj.value.export(writer, [fullpath '/value'], refs);
     end
 end

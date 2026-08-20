@@ -7,7 +7,7 @@ classdef FeatureExtraction < types.core.NWBDataInterface & types.untyped.GroupCl
 
 % REQUIRED PROPERTIES
 properties
-    description; % REQUIRED (char) Description of features (eg, ''PC1'') for each of the extracted features.
+    description; % REQUIRED (char) Description of features (e.g., ''PC1'') for each of the extracted features.
     electrodes; % REQUIRED (DynamicTableRegion) DynamicTableRegion pointer to the electrodes that this time series was generated from.
     features; % REQUIRED (single) Multi-dimensional array of features extracted from each event.
     times; % REQUIRED (double) Times of events that features correspond to (can be a link).
@@ -23,7 +23,7 @@ methods
         %  featureExtraction = types.core.FEATUREEXTRACTION(Name, Value) creates a FeatureExtraction object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
-        %  - description (char) - Description of features (eg, ''PC1'') for each of the extracted features.
+        %  - description (char) - Description of features (e.g., ''PC1'') for each of the extracted features.
         %
         %  - electrodes (DynamicTableRegion) - DynamicTableRegion pointer to the electrodes that this time series was generated from.
         %
