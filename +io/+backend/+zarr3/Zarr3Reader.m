@@ -1,37 +1,37 @@
 classdef Zarr3Reader < io.backend.base.Reader
-    % Zarr3Reader - Reader implementation for local Zarr v3 stores.
-    %
-    % This reader is backed by the zarr-matlab package
-    % (https://github.com/catalystneuro/zarr-matlab), which must be on the
-    % MATLAB path, and reads Zarr v3 stores natively in MATLAB (no Python
-    % dependency).
-    %
-    % The hdmf-zarr storage conventions that layer HDF5's links and object
-    % references on top of Zarr (https://hdmf-zarr.readthedocs.io/en/latest/storage.html)
-    % are handled by the hdmf-zarr-matlab package
-    % (https://github.com/catalystneuro/hdmf-zarr-matlab), which must also
-    % be on the MATLAB path:
-    %   - group links are "zarr_link" attribute records (hdmf.zarr.Link),
-    %     surfaced as h5info-style Links by io.internal.zarr3.convertAttributes;
-    %   - an object reference is a {source, path, object_id, ...} record
-    %     (hdmf.zarr.Reference), stored as {zarr_dtype:"object", value:<record>}
-    %     in an attribute, or as the JSON-string elements of a dataset
-    %     tagged zarr_dtype:"object" (hdmf.zarr.isReferenceArray), e.g. a
-    %     DynamicTable column of ElectrodeGroup references. Both decode to
-    %     types.untyped.ObjectView via io.internal.zarr3.decodeObjectReferences;
-    %   - the root ".specloc" attribute names the cached specifications
-    %     group (hdmf.zarr.File.specLoc).
-    %
-    % A compound (struct/table) dataset -- a Zarr v3 "structured" data_type,
-    % e.g. PlaneSegmentation's pixel_mask/voxel_mask, or
-    % TimeSeriesReferenceVectorData's response/stimulus columns -- is backed
-    % by io.backend.zarr3.Zarr3LazyArray; a field tagged "object" via the
-    % array's "zarr_dtype" attribute (see
-    % io.internal.zarr3.getCompoundFieldSemantics) holds the same JSON
-    % reference records and is decoded the same way. Requires zarr-matlab
-    % to support the Zarr v3 "structured" and "fixed_length_utf32" data
-    % types, which are unstable, unspecified zarr-python extensions -- see
-    % zarr.internal.dtype_info in zarr-matlab.
+% Zarr3Reader - Reader implementation for local Zarr v3 stores.
+%
+% This reader is backed by the zarr-matlab package
+% (https://github.com/catalystneuro/zarr-matlab), which must be on the
+% MATLAB path, and reads Zarr v3 stores natively in MATLAB (no Python
+% dependency).
+%
+% The hdmf-zarr storage conventions that layer HDF5's links and object
+% references on top of Zarr (https://hdmf-zarr.readthedocs.io/en/latest/storage.html)
+% are handled by the hdmf-zarr-matlab package
+% (https://github.com/catalystneuro/hdmf-zarr-matlab), which must also
+% be on the MATLAB path:
+% - group links are "zarr_link" attribute records (hdmf.zarr.Link),
+%     surfaced as h5info-style Links by io.internal.zarr3.convertAttributes;
+% - an object reference is a {source, path, object_id, ...} record
+%     (hdmf.zarr.Reference), stored as {zarr_dtype:"object", value:<record>}
+%     in an attribute, or as the JSON-string elements of a dataset
+%     tagged zarr_dtype:"object" (hdmf.zarr.isReferenceArray), e.g. a
+%     DynamicTable column of ElectrodeGroup references. Both decode to
+%     types.untyped.ObjectView via io.internal.zarr3.decodeObjectReferences;
+% - the root ".specloc" attribute names the cached specifications
+%     group (hdmf.zarr.File.specLoc).
+%
+% A compound (struct/table) dataset -- a Zarr v3 "structured" data_type,
+% e.g. PlaneSegmentation's pixel_mask/voxel_mask, or
+% TimeSeriesReferenceVectorData's response/stimulus columns -- is backed
+% by io.backend.zarr3.Zarr3LazyArray; a field tagged "object" via the
+% array's "zarr_dtype" attribute (see
+% io.internal.zarr3.getCompoundFieldSemantics) holds the same JSON
+% reference records and is decoded the same way. Requires zarr-matlab
+% to support the Zarr v3 "structured" and "fixed_length_utf32" data
+% types, which are unstable, unspecified zarr-python extensions -- see
+% zarr.internal.dtype_info in zarr-matlab.
 
     properties (Access = private)
         HdmfFile = []   % hdmf.zarr.File wrapping the open store
@@ -105,10 +105,9 @@ classdef Zarr3Reader < io.backend.base.Reader
             dataDimensions = obj.getDatasetDims(datasetInfo);
             isObjectReferenceArray = strcmp(datasetInfo.Datatype, "object");
             isStructuredArray = strcmp(datasetInfo.Datatype, "structured");
-            % A true rank-0 array (this reader's own Zarr3Writer's scalar
-            % convention) or one explicitly marked "scalar" by hdmf-zarr's
-            % zarr_dtype hint (see io.internal.zarr3.buildNodeInfo) is read
-            % eagerly. Dataspace.Size == 1 alone is NOT a reliable scalar
+            % A true rank-0 array, or one explicitly marked "scalar" by
+            % hdmf-zarr's zarr_dtype hint (see
+            % io.internal.zarr3.buildNodeInfo), is read eagerly. Dataspace.Size == 1 alone is NOT a reliable scalar
             % signal: hdmf-zarr represents a genuine NWB scalar property as
             % a rank-1, length-1 array, which is indistinguishable by shape
             % from a one-row VectorData column (e.g. a DynamicTable with a
@@ -186,19 +185,18 @@ classdef Zarr3Reader < io.backend.base.Reader
         end
 
         function datasetValue = readStructuredValue(obj, datasetPath, dataDimensions)
-            % readStructuredValue - Wrap a "structured" (compound) array in
-            % a DataStub backed by io.backend.zarr3.Zarr3LazyArray. The
-            % DataStub's dataType is a compound type descriptor struct
-            % (field name -> MATLAB class name, or 'types.untyped.ObjectView'
-            % for a field tagged as a reference via the array's own
-            % "zarr_dtype" attribute; see
-            % io.internal.zarr3.getCompoundTypeDescriptor) rather than a
-            % plain class name, matching what
-            % types.util.checkDtype/types.untyped.DataStub.isCompoundType
-            % expect -- this alone is enough for schema validation to
-            % succeed without loading any data (see
-            % types.util.checkDtype>checkDtypeForCompoundDataset's
-            % DataStub fast path).
+        % readStructuredValue - Wrap a compound array in a DataStub.
+        %
+        % The DataStub is backed by io.backend.zarr3.Zarr3LazyArray, and its
+        % dataType is a compound type descriptor struct (field name -> MATLAB
+        % class name, or 'types.untyped.ObjectView' for a field tagged as a
+        % reference via the array's own "zarr_dtype" attribute; see
+        % io.internal.zarr3.getCompoundTypeDescriptor) rather than a plain
+        % class name, matching what types.util.checkDtype and
+        % types.untyped.DataStub.isCompoundType expect. This alone is enough
+        % for schema validation to succeed without loading any data (see
+        % types.util.checkDtype>checkDtypeForCompoundDataset's DataStub fast
+        % path).
 
             relativePath = io.internal.zarr3.stripLeadingSlash(datasetPath);
             arrayNode = zarr.open(obj.Filename, Path=relativePath);
@@ -213,12 +211,13 @@ classdef Zarr3Reader < io.backend.base.Reader
         end
 
         function datasetValue = readObjectArrayValue(obj, datasetPath)
-            % readObjectArrayValue - Decode a dataset of object references
-            % (Datatype "object"; see io.internal.zarr3.buildNodeInfo) into
-            % a types.untyped.ObjectView array. Each element is a zarr
-            % "string" holding a JSON reference record (hdmf.zarr.Reference);
-            % zarr-matlab does not decode these itself since the array's
-            % own Zarr v3 data_type is plain "string".
+        % readObjectArrayValue - Decode a dataset of object references.
+        %
+        % Decodes a dataset whose Datatype is "object" (see
+        % io.internal.zarr3.buildNodeInfo) into a types.untyped.ObjectView
+        % array. Each element is a zarr "string" holding a JSON reference
+        % record (hdmf.zarr.Reference); zarr-matlab does not decode these
+        % itself since the array's own Zarr v3 data_type is plain "string".
 
             relativePath = io.internal.zarr3.stripLeadingSlash(datasetPath);
             arrayNode = zarr.open(obj.Filename, Path=relativePath);

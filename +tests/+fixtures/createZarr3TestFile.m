@@ -1,23 +1,23 @@
 function fixturePath = createZarr3TestFile(rootFolder)
 % createZarr3TestFile - Build a small Zarr v3 NWB-like fixture for tests.
 %
-%   fixturePath = createZarr3TestFile(rootFolder) creates a Zarr v3 store
-%   under rootFolder and returns the path to the store. Plain groups and
-%   arrays are written directly via the zarr-matlab package; the hdmf-zarr
-%   conventions (a soft link, an external link, an object reference in an
-%   attribute, a dataset of object references and the root ".specloc"
-%   attribute) are written via hdmf-zarr-matlab's hdmf.zarr.File, whose
-%   output is validated against hdmf-zarr's storage spec in that package's
-%   own CI -- so io.backend.zarr3.Zarr3Reader is tested against the real
-%   on-disk conventions rather than against its own writer.
+% fixturePath = createZarr3TestFile(rootFolder) creates a Zarr v3 store
+% under rootFolder and returns the path to the store. Plain groups and
+% arrays are written directly via the zarr-matlab package; the hdmf-zarr
+% conventions (a soft link, an external link, an object reference in an
+% attribute, a dataset of object references and the root ".specloc"
+% attribute) are written via hdmf-zarr-matlab's hdmf.zarr.File, whose
+% output is validated against hdmf-zarr's storage spec in that package's
+% own CI -- so io.backend.zarr3.Zarr3Reader is tested against the real
+% on-disk conventions rather than against its own writer.
 %
-%   The pixel_mask compound dataset is built via zarr.metadata.ArrayMetadata
-%   + a direct zarr.Array construction rather than zarr.create, because
-%   zarr.create's public API has no way to pass a "structured" data_type's
-%   field configuration (its dtype argument is a plain scalar string) --
-%   the only way to create a "structured" array today, matching how
-%   zarr-matlab's own test suite does it (see
-%   TestStructuredDtype>structuredArrayEndToEnd in zarr-matlab).
+% The pixel_mask compound dataset is built via zarr.metadata.ArrayMetadata
+% + a direct zarr.Array construction rather than zarr.create, because
+% zarr.create's public API has no way to pass a "structured" data_type's
+% field configuration (its dtype argument is a plain scalar string) --
+% the only way to create a "structured" array today, matching how
+% zarr-matlab's own test suite does it (see
+% TestStructuredDtype>structuredArrayEndToEnd in zarr-matlab).
 
     arguments
         rootFolder (1,1) string
@@ -83,8 +83,11 @@ function fixturePath = createZarr3TestFile(rootFolder)
 end
 
 function writeSpecLocAttribute(store, placeholderName)
-% writeSpecLocAttribute - Rename the root attribute placeholderName to
-% hdmf-zarr's ".specloc" in the raw root metadata (see createZarr3TestFile).
+% writeSpecLocAttribute - Write hdmf-zarr's ".specloc" root attribute.
+%
+% Renames the root attribute placeholderName to ".specloc" in the raw root
+% metadata (see createZarr3TestFile).
+
     rootMetadataKey = "zarr.json";
     rootMetadataText = native2unicode(store.get(rootMetadataKey), 'UTF-8');
     rootMetadataText = replace(rootMetadataText, ...
@@ -93,9 +96,11 @@ function writeSpecLocAttribute(store, placeholderName)
 end
 
 function createPixelMaskArray(parentGroup)
-% createPixelMaskArray - Write a 3-record "structured" (compound) pixel_mask
-% array (x uint32, y uint32, weight float32) as a child of parentGroup,
-% matching a real hdmf-zarr PlaneSegmentation.pixel_mask column.
+% createPixelMaskArray - Write a compound pixel_mask array.
+%
+% Writes a 3-record "structured" (compound) array (x uint32, y uint32, weight
+% float32) as a child of parentGroup, matching a real hdmf-zarr
+% PlaneSegmentation.pixel_mask column.
 
     info = zarr.internal.dtype_info(struct('name', "structured", 'configuration', struct( ...
         'fields', {{{'x', 'uint32'}; {'y', 'uint32'}; {'weight', 'float32'}}})));

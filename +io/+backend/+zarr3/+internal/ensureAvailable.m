@@ -1,15 +1,20 @@
 function ensureAvailable()
-% ensureAvailable - Validate that the Zarr v3 backend dependencies are on path.
+% ensureAvailable - Validate that Zarr v3 backend dependencies are on path.
 %
-%   The Zarr v3 backend needs two external MATLAB packages (both listed in
-%   requirements.txt and installable with matbox.installRequirements):
-%     - zarr-matlab: the `zarr` namespace (Zarr v3 stores, arrays, groups)
-%     - hdmf-zarr-matlab: the `hdmf.zarr` namespace (hdmf-zarr's link,
-%       object reference and cached-specification conventions)
+% The Zarr v3 backend needs two external MATLAB packages, both listed in
+% requirements.txt and installable with matbox.installRequirements:
+%
+% zarr-matlab      - the `zarr` namespace (Zarr v3 stores, arrays, groups),
+%                      from github.com/catalystneuro/zarr-matlab
+% hdmf-zarr-matlab - the `hdmf.zarr` namespace (hdmf-zarr's link, object
+%                      reference and cached-specification conventions), from
+%                      github.com/catalystneuro/hdmf-zarr-matlab
+%
+% Raises NWB:Zarr3:DependencyMissing naming the package and the functions that
+% could not be resolved.
 %
 % See also:
-%   https://github.com/catalystneuro/zarr-matlab
-%   https://github.com/catalystneuro/hdmf-zarr-matlab
+% io.backend.zarr3.Zarr3Reader, io.backend.BackendFactory
 
     persistent isValidated
 
