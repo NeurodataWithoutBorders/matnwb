@@ -1,2 +1,2 @@
 https://github.com/catalystneuro/zarr-matlab
-https://github.com/catalystneuro/hdmf-zarr-matlab
+https://github.com/catalystneuro/hdmf-zarr-matlab@extract-reference-link-value-classes
