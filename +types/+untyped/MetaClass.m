@@ -1,6 +1,7 @@
 classdef MetaClass < handle & matlab.mixin.CustomDisplay
     properties (Hidden, SetAccess = private)
         metaClass_fullPath;
+        object_id (1,:) char = ''
     end
 
     properties (Constant, Transient, Access = protected)
@@ -9,6 +10,12 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
 
     methods
         function obj = MetaClass(varargin)
+            isMatch = strcmp(varargin(1:2:end), 'object_id');
+            if any(isMatch)
+                obj.object_id = varargin{find(isMatch, 1, 'last') * 2};
+            else
+                obj.object_id = java.util.UUID.randomUUID().toString();
+            end
         end
     end
     
@@ -79,11 +86,10 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
                 return;
             end
             
-            uuid = char(java.util.UUID.randomUUID().toString());
             if isa(obj, 'NwbFile')
                 writer.writeAttribute('/namespace', 'core');
                 writer.writeAttribute('/neurodata_type', 'NWBFile');
-                writer.writeAttribute('/object_id', uuid);
+                writer.writeAttribute('/object_id', obj.object_id);
             else
                 namespacePath = [fullpath '/namespace'];
                 neuroTypePath = [fullpath '/neurodata_type'];
@@ -93,7 +99,7 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
                 classtype = dotparts{3};
                 writer.writeAttribute(namespacePath, namespace);
                 writer.writeAttribute(neuroTypePath, classtype);
-                writer.writeAttribute(uuidPath, uuid);
+                writer.writeAttribute(uuidPath, obj.object_id);
             end
         end
         

@@ -58,8 +58,15 @@ function parsed = parseDataset(filename, datasetInfo, datasetPath, blacklist, re
     parsed = containers.Map;
 
     if isTypedDataset
+        % properties() excludes object_id — a hidden property defined on
+        % types.untyped.MetaClass and adopted by its constructor. It must be
+        % consumed by the typed dataset itself: left unconsumed, it would be
+        % promoted to the parent as '<datasetName>_object_id' (an unknown kwarg
+        % that gets dropped) and the child would generate a fresh uuid, breaking
+        % object id persistence across read/write round trips.
+        consumableNames = [properties(datasetTypeName); {'object_id'}];
         [typeProperties, unconsumedAttributes] = ...
-            splitAttributes(parsedAttributes, properties(datasetTypeName));
+            splitAttributes(parsedAttributes, consumableNames);
         typeProperties('data') = datasetValue;
         kwargs = io.map2kwargs(typeProperties);
         parsed(datasetName) = io.createParsedType(datasetPath, datasetTypeName, kwargs{:});

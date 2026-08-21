@@ -21,6 +21,7 @@ classdef NwbFile < types.core.NWBFile
             arguments
                 propValues.?types.core.NWBFile
                 propValues.nwb_version
+                propValues.object_id
             end
             nameValuePairs = namedargs2cell(propValues);
             nameValuePairs = [{'identifier', char(java.util.UUID.randomUUID())}, nameValuePairs];
