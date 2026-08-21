@@ -19,7 +19,9 @@ function result = inspectNwbFile(nwbFilepath, options)
 %      Which order to arrange the variables in the tabular report.
 % 
 % Output Arguments:
-%  - report (table) - A tabular report listing nwbinspector issues
+%  - report (table) - A tabular report listing nwbinspector issues. If PyNWB
+%    fails to read the file, no checks are run and an error is raised instead
+%    of returning a report.
 %
 % Usage:
 %  Example 1 - Inspect an NWB file::
@@ -95,7 +97,32 @@ function result = inspectNwbFile(nwbFilepath, options)
         error('NWB:InspectNwbFile:NwbInspectorNotFound', ...
             'Did not find nwbinspector. See `help inspectNwbFile` for more details')
     end
+    throwErrorIfFileCouldNotBeRead(result, nwbFilepath)
     result = result(:, options.VariableOrder);
+end
+
+function throwErrorIfFileCouldNotBeRead(resultTable, nwbFilepath)
+% throwErrorIfFileCouldNotBeRead - Raise an error if PyNWB could not read the file.
+%
+%   nwbinspector does not raise when PyNWB fails to read a file. It returns a
+%   single message with importance ERROR whose check_function_name is a
+%   sentence starting with "During io.read()" and whose message is the Python
+%   traceback (see nwbinspector._nwb_inspection.inspect_nwbfile). Such a
+%   result means no checks ran at all, so returning it as a report would
+%   silently let an unreadable file "pass". nwbinspector provides no
+%   structured marker for this case, so the prefix is matched as text. See
+%   https://github.com/NeurodataWithoutBorders/nwbinspector/issues/723
+
+    READ_ERROR_PREFIX = "During io.read(), an error occurred";
+
+    isReadError = startsWith(string(resultTable.check_function_name), READ_ERROR_PREFIX);
+    if any(isReadError)
+        pythonTraceback = strjoin(string(resultTable.message(isReadError)), newline);
+        error('NWB:InspectNwbFile:FileReadError', ...
+            ['nwbinspector could not inspect "%s" because PyNWB failed to read ', ...
+            'the file, so no checks were run. The Python traceback was:\n%s'], ...
+            nwbFilepath, pythonTraceback)
+    end
 end
 
 function resultTable = convertNwbInspectorResultsToTable(resultsIn)

@@ -50,6 +50,26 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
             report = inspectNwbFile('ecephys_tutorial.nwb', 'UseCLI', true);
             testCase.verifyClass(report, 'table')
         end
+
+        function testErrorWhenPyNwbCannotReadFile(testCase)
+            if testCase.skipIfNwbInspectorTest()
+                return
+            end
+            % nwbinspector reports a PyNWB read failure as an ERROR-level
+            % message instead of raising. Because no checks run on such a
+            % file, inspectNwbFile must raise rather than return a report.
+            nwbFile = tests.factory.NWBFile();
+            nwbExport(nwbFile, 'unreadable.nwb');
+            % Removing a required dataset makes PyNWB fail on read
+            deleteLink('unreadable.nwb', '/session_description');
+
+            testCase.verifyError(...
+                @() inspectNwbFile('unreadable.nwb'), ...
+                'NWB:InspectNwbFile:FileReadError')
+            testCase.verifyError(...
+                @() inspectNwbFile('unreadable.nwb', 'UseCLI', true), ...
+                'NWB:InspectNwbFile:FileReadError')
+        end
     end
 
     methods (Static, Access = private)
@@ -65,4 +85,10 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
             end
         end
     end
+end
+
+function deleteLink(filename, linkPath)
+    fileId = H5F.open(filename, 'H5F_ACC_RDWR', 'H5P_DEFAULT');
+    fileCleanup = onCleanup(@() H5F.close(fileId)); %#ok<NASGU>
+    H5L.delete(fileId, linkPath, 'H5P_DEFAULT');
 end
