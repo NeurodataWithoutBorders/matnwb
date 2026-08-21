@@ -215,10 +215,8 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             module.add('DynamicTable', types.hdmf_common.DynamicTable());
 
             % Verify both display modes
-            origPrefValue = getpref('matnwb', 'ContainerDisplayMode', 'flat');
-            testCase.addTeardown(@() setpref('matnwb', 'ContainerDisplayMode', origPrefValue))
-
-            setpref('matnwb', 'ContainerDisplayMode', 'flat')
+            testCase.applyFixture( ...
+                tests.fixtures.PreferenceFixture('matnwb', 'ContainerDisplayMode', 'flat'))
             C = evalc('disp(module)');
             testCase.verifyFalse(contains(C, 'nwbdatainterface group'))
             testCase.verifyFalse(contains(C, 'dynamictable group'))
