@@ -86,14 +86,21 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
                 return;
             end
             
-            % Detects one object being exported to two locations, which
-            % would write two objects sharing a single object id.
-            writer.registerWrittenObjectId(obj.object_id, fullpath);
+            % One object exported to two locations would write two objects
+            % sharing a single object id, which other NWB APIs reject when
+            % reading the file. Write the duplicate location under a new id
+            % instead, preserving the file layout MatNWB has always written.
+            objectId = obj.object_id;
+            previousPath = writer.registerWrittenObjectId(objectId, fullpath);
+            if ~isempty(previousPath)
+                objectId = generateUuid();
+                obj.warnIfExportedToMultipleLocations(previousPath, fullpath)
+            end
 
             if isa(obj, 'NwbFile')
                 writer.writeAttribute('/namespace', 'core');
                 writer.writeAttribute('/neurodata_type', 'NWBFile');
-                writer.writeAttribute('/object_id', obj.object_id);
+                writer.writeAttribute('/object_id', objectId);
             else
                 namespacePath = [fullpath '/namespace'];
                 neuroTypePath = [fullpath '/neurodata_type'];
@@ -103,7 +110,7 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
                 classtype = dotparts{3};
                 writer.writeAttribute(namespacePath, namespace);
                 writer.writeAttribute(neuroTypePath, classtype);
-                writer.writeAttribute(uuidPath, obj.object_id);
+                writer.writeAttribute(uuidPath, objectId);
             end
         end
         
@@ -144,6 +151,27 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
                     generateNewObjectIdForValue(obj.(propertyNames{iProperty}));
                 end
             end
+        end
+
+        function warnIfExportedToMultipleLocations(obj, previousPath, fullpath)
+        % warnIfExportedToMultipleLocations - Warn that an object is
+        % exported to more than one location in the same file.
+        %
+        %   The object is written again under a newly generated object id,
+        %   so the file stays readable by other NWB APIs, but the two
+        %   locations hold copies that no longer share an identity. A
+        %   future release will raise an error instead.
+
+            warnState = warning('backtrace', 'off');
+            cleanupObj = onCleanup(@(s) warning(warnState)); %#ok<NASGU>
+            warning('NWB:Export:DuplicateObjectId', ...
+                ['The object of type "%s" was already exported to the file ', ...
+                'location "%s" and is now also exported to "%s". Each ', ...
+                'neurodata object should have exactly one location in an ', ...
+                'NWB file, so "%s" is written as a copy under a new object ', ...
+                'id. Create a separate object for each location, or use a ', ...
+                'types.untyped.SoftLink to reference the object at "%s".'], ...
+                class(obj), previousPath, fullpath, fullpath, previousPath)
         end
 
         function warnIfAttributeDependencyMissing(obj, propName, dependencyPropName)

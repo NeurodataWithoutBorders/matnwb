@@ -164,18 +164,29 @@ classdef objectIdTest < tests.abstract.NwbTestCase
             testCase.verifyNumElements(unique(newIds), numel(newIds));
         end
 
-        function testExportingOneObjectToTwoLocationsRaises(testCase)
+        function testExportingOneObjectToTwoLocationsWarns(testCase)
             % An object id identifies a single object, so exporting the same
-            % object to two locations would write two objects sharing one id.
-            % PyNWB rejects such a file when reading it, so export must fail.
+            % object to two locations would write two objects sharing one id
+            % — a file PyNWB rejects when reading it. Export warns and writes
+            % the second location as a copy under a new id instead.
             nwbFile = tests.factory.NWBFile();
             trials = testCase.createTrialsTable();
             nwbFile.intervals_trials = trials;
             nwbFile.intervals.set('custom_intervals_table_name', trials);
 
-            testCase.verifyError(...
-                @() nwbExport(nwbFile, testCase.getRandomFilename()), ...
+            filename = testCase.getRandomFilename();
+            testCase.verifyWarning(...
+                @() nwbExport(nwbFile, filename), ...
                 'NWB:Export:DuplicateObjectId')
+
+            % Both locations exist and hold distinct ids, so the file stays
+            % readable by other NWB APIs.
+            firstId = h5readatt(filename, '/intervals/trials', 'object_id');
+            secondId = h5readatt(filename, ...
+                '/intervals/custom_intervals_table_name', 'object_id');
+            testCase.verifyNotEqual(firstId, secondId);
+            testCase.verifyMatches(firstId, testCase.UuidPattern);
+            testCase.verifyMatches(secondId, testCase.UuidPattern);
         end
 
         function testExportingDistinctObjectsToBothLocationsSucceeds(testCase)
