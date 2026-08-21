@@ -14,7 +14,7 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
             if any(isMatch)
                 obj.object_id = varargin{find(isMatch, 1, 'last') * 2};
             else
-                obj.object_id = java.util.UUID.randomUUID().toString();
+                obj.object_id = generateUuid();
             end
         end
     end
@@ -109,6 +109,35 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
                 prop = obj.(propnames{i});
                 if isa(prop, 'types.untyped.DataStub')
                     obj.(propnames{i}) = prop.load();
+                end
+            end
+        end
+
+        function generateNewObjectId(obj, options)
+        % generateNewObjectId - Assign a new object id to this object.
+        %
+        % Syntax:
+        %  generateNewObjectId(OBJ) assigns a new UUID to OBJ and, recursively,
+        %  to all neurodata type objects contained within it.
+        %
+        %  generateNewObjectId(OBJ, Recurse=false) assigns a new UUID to OBJ only.
+        %
+        % Object ids persist across read/write round trips. Use this method
+        % when repurposing an object (or a file about to be exported) as a
+        % new entity, so that it no longer shares identity with the object
+        % it was derived from.
+
+            arguments
+                obj (1,1) types.untyped.MetaClass
+                options.Recurse (1,1) logical = true
+            end
+
+            obj.object_id = generateUuid();
+
+            if options.Recurse
+                propertyNames = properties(obj);
+                for iProperty = 1:numel(propertyNames)
+                    generateNewObjectIdForValue(obj.(propertyNames{iProperty}));
                 end
             end
         end
@@ -376,4 +405,26 @@ function version = getNamespaceVersionForType(typeClassName)
     version = feval( ...
         sprintf('%s.%s', namespaceName, matnwb.common.constant.VERSIONFUNCTION) ...
         );
+end
+
+function uuid = generateUuid()
+    uuid = char(java.util.UUID.randomUUID().toString());
+end
+
+function generateNewObjectIdForValue(value)
+% Recurse into contained neurodata types for generateNewObjectId. Sets and Anons
+% are containers holding typed objects; SoftLinks and ExternalLinks refer
+% to objects owned elsewhere and are intentionally not followed.
+    if isa(value, 'types.untyped.MetaClass')
+        for i = 1:numel(value)
+            value(i).generateNewObjectId();
+        end
+    elseif isa(value, 'types.untyped.Set')
+        setValues = value.values();
+        for i = 1:numel(setValues)
+            generateNewObjectIdForValue(setValues{i});
+        end
+    elseif isa(value, 'types.untyped.Anon')
+        generateNewObjectIdForValue(value.value);
+    end
 end
