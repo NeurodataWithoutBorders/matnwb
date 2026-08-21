@@ -1,8 +1,8 @@
-function parsed = parseDataset(filename, datasetInfo, datasetPath, blacklist, reader)
+function parsed = parseDataset(filename, datasetInfo, datasetPath, exclusions, reader)
 % parseDataset - Read an HDF5 dataset and return it as named map entries.
 %
 % Syntax:
-%  parsed = io.parseDataset(filename, datasetInfo, datasetPath, blacklist, reader) 
+%  parsed = io.parseDataset(filename, datasetInfo, datasetPath, exclusions, reader) 
 %  parses the dataset identified by datasetPath in the HDF5 file filename using 
 %  metadata from datasetInfo.
 %
@@ -10,7 +10,7 @@ function parsed = parseDataset(filename, datasetInfo, datasetPath, blacklist, re
 %  - filename  - Path to the HDF5 file.
 %  - datasetInfo - Dataset metadata structure, typically obtained from h5info.
 %  - datasetPath - Full HDF5 path to the dataset.
-%  - blacklist - Attribute names or rules to exclude when parsing attributes.
+%  - exclusions - Attribute and group names to exclude when parsing.
 %  - reader - An object of an NWB reader class (io.backend.base.Reader)
 %
 % Output argument:
@@ -41,12 +41,12 @@ function parsed = parseDataset(filename, datasetInfo, datasetPath, blacklist, re
         filename (1,:) char
         datasetInfo struct
         datasetPath (1,:) char
-        blacklist struct = struct('attributes', {{}}, 'groups', {{}})
+        exclusions struct = io.internal.defaultParseExclusions()
         reader io.backend.base.Reader = io.backend.BackendFactory.createReader(filename);
     end
 
     [parsedAttributes, typeInfo] = ...
-        io.parseAttributes(filename, datasetInfo.Attributes, datasetPath, blacklist, reader);
+        io.parseAttributes(filename, datasetInfo.Attributes, datasetPath, exclusions, reader);
 
     datasetTypeName = typeInfo.typename;
     isTypedDataset = ~isempty(datasetTypeName);

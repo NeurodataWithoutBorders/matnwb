@@ -93,17 +93,15 @@ function nwb = nwbRead(filename, flags, options)
         warnIfSchemaVersionsMismatch(schemaVersionOfFile, schemaVersionActive)
     end
 
-    blackList = struct(...
-        'attributes', {{'.specloc'}},...
-        'groups', {{}});
+    parseExclusions = io.internal.defaultParseExclusions();
     if ~isempty(specLocation)
-        blackList.groups{end+1} = specLocation;
+        parseExclusions.groups{end+1} = specLocation;
     end
     
     softLinkWarningResetObj = types.untyped.SoftLink.disablePathDeprecationWarning(); %#ok<NASGU>
 
     try
-        nwb = io.parseGroup(filename, reader.readRootInfo(), blackList, reader);
+        nwb = io.parseGroup(filename, reader.readRootInfo(), parseExclusions, reader);
     catch ME
         if isSchemaVersionMismatch ...
                 && strcmp(ME.identifier, 'MATLAB:class:RequireSuperClass')
