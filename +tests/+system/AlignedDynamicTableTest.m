@@ -27,7 +27,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
 
         function testDisplayTipRecommendsAddCategory(testCase)
             % Verify "groups" display mode
-            origPrefValue = getpref('matnwb', 'ContainerDisplayMode');
+            origPrefValue = getpref('matnwb', 'ContainerDisplayMode', 'flat');
             testCase.addTeardown(@() setpref('matnwb', 'ContainerDisplayMode', origPrefValue))
             setpref('matnwb', 'ContainerDisplayMode', 'groups')
 
