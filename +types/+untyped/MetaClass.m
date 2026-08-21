@@ -86,6 +86,10 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
                 return;
             end
             
+            % Detects one object being exported to two locations, which
+            % would write two objects sharing a single object id.
+            writer.registerWrittenObjectId(obj.object_id, fullpath);
+
             if isa(obj, 'NwbFile')
                 writer.writeAttribute('/namespace', 'core');
                 writer.writeAttribute('/neurodata_type', 'NWBFile');

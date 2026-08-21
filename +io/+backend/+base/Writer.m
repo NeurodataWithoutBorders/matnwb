@@ -8,6 +8,14 @@ classdef Writer < handle
         Filename
     end
 
+    properties (Access = private)
+        % Maps the object id of each exported neurodata object to the file
+        % location it was written to. Assigned in the constructor, not as a
+        % property default, because a containers.Map default would be shared
+        % by every Writer instance.
+        ObjectIdToPathMap
+    end
+
     properties (Dependent, SetAccess = private, Hidden)
         FileId
     end
@@ -18,6 +26,46 @@ classdef Writer < handle
                 filename = [];
             end
             obj.Filename = filename;
+            obj.ObjectIdToPathMap = containers.Map();
+        end
+
+        function registerWrittenObjectId(obj, objectId, fullPath)
+        % registerWrittenObjectId - Record where an object id was written.
+        %
+        %   Raises an error if the same object id was already written to a
+        %   different location during this export. An object id is the
+        %   identity of a neurodata object, so exporting one object to two
+        %   locations produces a file containing two objects that claim the
+        %   same identity, which other NWB APIs reject when reading it.
+        %
+        %   Re-registering the same location is allowed: reference
+        %   resolution re-exports an object at its original location.
+
+            arguments
+                obj (1,1) io.backend.base.Writer
+                objectId (1,:) char
+                fullPath (1,:) char
+            end
+
+            if isempty(fullPath)
+                fullPath = '/'; % The root NwbFile is exported with an empty path
+            end
+
+            if isKey(obj.ObjectIdToPathMap, objectId)
+                previousPath = obj.ObjectIdToPathMap(objectId);
+                if ~strcmp(previousPath, fullPath)
+                    error('NWB:Export:DuplicateObjectId', ...
+                        ['The object with id "%s" was already exported to the ', ...
+                        'file location "%s" and can not also be exported to ', ...
+                        '"%s". Each neurodata object must have exactly one ', ...
+                        'location in an NWB file. Create a separate object for ', ...
+                        'each location, or use a types.untyped.SoftLink to ', ...
+                        'reference the object at "%s".'], ...
+                        objectId, previousPath, fullPath, previousPath)
+                end
+            else
+                obj.ObjectIdToPathMap(objectId) = fullPath;
+            end
         end
 
         function groupExists = writeGroup(obj, groupPath) %#ok<INUSD>

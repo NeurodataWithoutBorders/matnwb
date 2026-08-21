@@ -163,6 +163,56 @@ classdef objectIdTest < tests.abstract.NwbTestCase
             end
             testCase.verifyNumElements(unique(newIds), numel(newIds));
         end
+
+        function testExportingOneObjectToTwoLocationsRaises(testCase)
+            % An object id identifies a single object, so exporting the same
+            % object to two locations would write two objects sharing one id.
+            % PyNWB rejects such a file when reading it, so export must fail.
+            nwbFile = tests.factory.NWBFile();
+            trials = testCase.createTrialsTable();
+            nwbFile.intervals_trials = trials;
+            nwbFile.intervals.set('custom_intervals_table_name', trials);
+
+            testCase.verifyError(...
+                @() nwbExport(nwbFile, testCase.getRandomFilename()), ...
+                'NWB:Export:DuplicateObjectId')
+        end
+
+        function testExportingDistinctObjectsToBothLocationsSucceeds(testCase)
+            % The counterpart to testExportingOneObjectToTwoLocationsRaises:
+            % two separate tables carry distinct ids and must export fine.
+            nwbFile = tests.factory.NWBFile();
+            nwbFile.intervals_trials = testCase.createTrialsTable();
+            nwbFile.intervals.set(...
+                'custom_intervals_table_name', testCase.createTrialsTable());
+
+            filename = testCase.getRandomFilename();
+            nwbExport(nwbFile, filename);
+            testCase.verifyNotEqual(...
+                h5readatt(filename, '/intervals/trials', 'object_id'), ...
+                h5readatt(filename, '/intervals/custom_intervals_table_name', ...
+                    'object_id'))
+        end
+
+        function testObjectWithUnresolvedReferenceExports(testCase)
+            % Reference resolution re-exports an object at its original
+            % location after its reference target has been written. That
+            % second export of the same id must not be mistaken for the same
+            % object being written to two locations.
+            nwbFile = tests.factory.NWBFile();
+            timeSeries = testCase.createTimeSeries();
+            nwbFile.acquisition.set('ts', timeSeries);
+            % The link target is exported after the referring object
+            nwbFile.scratch.set('reference', types.core.ScratchData(...
+                'notes', 'reference to acquisition', ...
+                'data', types.untyped.ObjectView(timeSeries)));
+
+            filename = testCase.getRandomFilename();
+            nwbExport(nwbFile, filename);
+            testCase.verifyEqual(...
+                h5readatt(filename, '/acquisition/ts', 'object_id'), ...
+                timeSeries.object_id);
+        end
     end
 
     methods (Static, Access = private)
