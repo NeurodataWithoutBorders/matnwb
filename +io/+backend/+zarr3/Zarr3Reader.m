@@ -37,7 +37,11 @@ classdef Zarr3Reader < io.backend.base.Reader
         HdmfFile = []   % hdmf.zarr.File wrapping the open store
         RootGroup = []  % zarr.Group at the root of the store (HdmfFile.root)
         RootInfoCache = []
-        NodeInfoMap = containers.Map('KeyType', 'char', 'ValueType', 'any')
+        % NodeInfoMap - containers.Map from absolute node path to node info.
+        % Built by ensureMetadataCache; a containers.Map is a handle, so it
+        % must not be created as a property default (that would share one
+        % map across every Zarr3Reader instance).
+        NodeInfoMap = []
     end
 
     methods

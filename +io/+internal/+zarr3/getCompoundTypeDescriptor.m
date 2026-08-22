@@ -18,13 +18,13 @@ function typeDescriptor = getCompoundTypeDescriptor(info, fieldSemantics)
     end
 
     typeDescriptor = struct();
-    for k = 1:numel(info.fields)
-        f = info.fields(k);
-        name = char(f.Name);
+    for iField = 1:numel(info.fields)
+        fieldInfo = info.fields(iField);
+        name = char(fieldInfo.Name);
         if isKey(fieldSemantics, name) && fieldSemantics(name) == "object"
             typeDescriptor.(name) = 'types.untyped.ObjectView';
         else
-            typeDescriptor.(name) = char(f.Info.matlabClass);
+            typeDescriptor.(name) = char(fieldInfo.Info.matlabClass);
         end
     end
 end
