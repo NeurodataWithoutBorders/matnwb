@@ -20,8 +20,8 @@ classdef objectIdTest < tests.abstract.NwbTestCase
 
     methods (Test)
         function testObjectIdAssignedOnConstruction(testCase)
-            timeSeriesA = testCase.createTimeSeries();
-            timeSeriesB = testCase.createTimeSeries();
+            timeSeriesA = tests.factory.TimeSeries();
+            timeSeriesB = tests.factory.TimeSeries();
 
             testCase.verifyMatches(timeSeriesA.object_id, testCase.UuidPattern);
             testCase.verifyMatches(timeSeriesB.object_id, testCase.UuidPattern);
@@ -38,7 +38,7 @@ classdef objectIdTest < tests.abstract.NwbTestCase
         end
 
         function testObjectIdIsReadOnly(testCase)
-            timeSeries = testCase.createTimeSeries();
+            timeSeries = tests.factory.TimeSeries();
             testCase.verifyError(...
                 @() setfield(timeSeries, 'object_id', 'other'), ...
                 'MATLAB:class:SetProhibited');
@@ -46,7 +46,7 @@ classdef objectIdTest < tests.abstract.NwbTestCase
 
         function testObjectIdStableAcrossExports(testCase)
             nwbFile = tests.factory.NWBFile();
-            timeSeries = testCase.createTimeSeries();
+            timeSeries = tests.factory.TimeSeries();
             nwbFile.acquisition.set('ts', timeSeries);
 
             filenameA = testCase.getRandomFilename();
@@ -65,7 +65,7 @@ classdef objectIdTest < tests.abstract.NwbTestCase
 
         function testRoundTripPreservesObjectIds(testCase)
             nwbFile = tests.factory.NWBFile();
-            nwbFile.acquisition.set('ts', testCase.createTimeSeries());
+            nwbFile.acquisition.set('ts', tests.factory.TimeSeries());
 
             filenameA = testCase.getRandomFilename();
             nwbExport(nwbFile, filenameA);
@@ -93,7 +93,7 @@ classdef objectIdTest < tests.abstract.NwbTestCase
             % (e.g. 'id_object_id'), which also raised an unexpected
             % property warning on read.
             nwbFile = tests.factory.NWBFile();
-            nwbFile.intervals_trials = testCase.createTrialsTable();
+            nwbFile.intervals_trials = tests.factory.TimeIntervals();
 
             filename = testCase.getRandomFilename();
             nwbExport(nwbFile, filename);
@@ -115,7 +115,7 @@ classdef objectIdTest < tests.abstract.NwbTestCase
             % have no object_id attributes. They must read cleanly, with
             % new ids assigned on construction.
             nwbFile = tests.factory.NWBFile();
-            nwbFile.acquisition.set('ts', testCase.createTimeSeries());
+            nwbFile.acquisition.set('ts', tests.factory.TimeSeries());
 
             filename = testCase.getRandomFilename();
             nwbExport(nwbFile, filename);
@@ -129,7 +129,7 @@ classdef objectIdTest < tests.abstract.NwbTestCase
         end
 
         function testGenerateNewObjectIdNonRecursive(testCase)
-            trials = testCase.createTrialsTable();
+            trials = tests.factory.TimeIntervals();
             tableId = trials.object_id;
             columnId = trials.start_time.object_id;
 
@@ -141,8 +141,8 @@ classdef objectIdTest < tests.abstract.NwbTestCase
 
         function testGenerateNewObjectIdRecursesIntoContainedTypes(testCase)
             nwbFile = tests.factory.NWBFile();
-            nwbFile.intervals_trials = testCase.createTrialsTable();
-            timeSeries = testCase.createTimeSeries();
+            nwbFile.intervals_trials = tests.factory.TimeIntervals();
+            timeSeries = tests.factory.TimeSeries();
             nwbFile.acquisition.set('ts', timeSeries);
 
             oldIds = {nwbFile.object_id, ...
@@ -170,7 +170,7 @@ classdef objectIdTest < tests.abstract.NwbTestCase
             % — a file PyNWB rejects when reading it. Export warns and writes
             % the second location as a copy under a new id instead.
             nwbFile = tests.factory.NWBFile();
-            trials = testCase.createTrialsTable();
+            trials = tests.factory.TimeIntervals();
             nwbFile.intervals_trials = trials;
             nwbFile.intervals.set('custom_intervals_table_name', trials);
 
@@ -193,9 +193,9 @@ classdef objectIdTest < tests.abstract.NwbTestCase
             % The counterpart to testExportingOneObjectToTwoLocationsRaises:
             % two separate tables carry distinct ids and must export fine.
             nwbFile = tests.factory.NWBFile();
-            nwbFile.intervals_trials = testCase.createTrialsTable();
+            nwbFile.intervals_trials = tests.factory.TimeIntervals();
             nwbFile.intervals.set(...
-                'custom_intervals_table_name', testCase.createTrialsTable());
+                'custom_intervals_table_name', tests.factory.TimeIntervals());
 
             filename = testCase.getRandomFilename();
             nwbExport(nwbFile, filename);
@@ -211,7 +211,7 @@ classdef objectIdTest < tests.abstract.NwbTestCase
             % second export of the same id must not be mistaken for the same
             % object being written to two locations.
             nwbFile = tests.factory.NWBFile();
-            timeSeries = testCase.createTimeSeries();
+            timeSeries = tests.factory.TimeSeries();
             nwbFile.acquisition.set('ts', timeSeries);
             % The link target is exported after the referring object
             nwbFile.scratch.set('reference', types.core.ScratchData(...
@@ -223,27 +223,6 @@ classdef objectIdTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(...
                 h5readatt(filename, '/acquisition/ts', 'object_id'), ...
                 timeSeries.object_id);
-        end
-    end
-
-    methods (Static, Access = private)
-        function timeSeries = createTimeSeries()
-            timeSeries = types.core.TimeSeries(...
-                'data', (1:10)', ...
-                'data_unit', 'a.u.', ...
-                'starting_time', 0, ...
-                'starting_time_rate', 1);
-        end
-
-        function trials = createTrialsTable()
-            trials = types.core.TimeIntervals(...
-                'description', 'trials', ...
-                'colnames', {'start_time', 'stop_time'}, ...
-                'id', types.hdmf_common.ElementIdentifiers('data', int64([0; 1])), ...
-                'start_time', types.hdmf_common.VectorData(...
-                    'description', 'start', 'data', [0; 1]), ...
-                'stop_time', types.hdmf_common.VectorData(...
-                    'description', 'stop', 'data', [1; 2]));
         end
     end
 end

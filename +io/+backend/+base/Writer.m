@@ -39,8 +39,12 @@ classdef Writer < handle
         %   identity of a neurodata object, so two objects sharing one id
         %   produce a file that other NWB APIs reject when reading it.
         %
-        %   Re-registering the same location returns '': reference
-        %   resolution re-exports an object at its original location.
+        %   Re-registering the same location returns '' rather than
+        %   reporting a duplicate. An object holding an ObjectView,
+        %   RegionView or SoftLink that cannot be resolved yet is skipped
+        %   during the main export and exported again by
+        %   NwbFile.resolveReferences once its target exists — at the same
+        %   location — so one location being registered twice is expected.
 
             arguments
                 obj (1,1) io.backend.base.Writer
