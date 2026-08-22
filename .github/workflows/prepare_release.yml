@@ -22,62 +22,42 @@ jobs:
           fi
           echo "Version '$version' is valid."
 
+  set_matrix:
+    name: Set test matrix
+    runs-on: ubuntu-latest
+    needs: [validate_version]
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      releases: ${{ steps.set-matrix.outputs.releases }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set matrix
+        id: set-matrix
+        run: |
+          config=.github/workflows/configurations/matlab_release_matrix_strategy.yml
+
+          # Cross every MATLAB release with every platform
+          matrix=$(yq -o=json '{
+              "os": ["windows-latest", "ubuntu-latest", "macos-15-intel"],
+              "matlab-version": [.[].matlab-version],
+              "include": .
+            }' "$config" | tr -d '\n')
+
+          # Release list for the 'tested with' badge, e.g. "R2021a | R2021b"
+          releases=$(yq '[.[].matlab-version] | join(" | ")' "$config")
+
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+          echo "releases=$releases" >> $GITHUB_OUTPUT
+
   run_tests:
     name: Run MATLAB tests (${{ matrix.matlab-version }} on ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
-    needs: [validate_version]
+    needs: [validate_version, set_matrix]
     strategy:
       fail-fast: false
-      matrix:
-        os: [windows-latest, ubuntu-latest, macos-15-intel]
-        # Note: When updating MATLAB versions, also update:
-        #   - .github/workflows/configurations/matlab_release_matrix_strategy.yml
-        #   - The badge text in the 'Generate tested with badge' step below
-        include:
-          - matlab-version: R2021a
-            python-version: '3.9'
-            skip-pynwb-tests: '1'
-            skip-nwbinspector-test: '1'
-          - matlab-version: R2021b
-            python-version: '3.9'
-            skip-pynwb-tests: '1'
-            skip-nwbinspector-test: '1'
-          - matlab-version: R2022a
-            python-version: '3.9'
-            skip-pynwb-tests: '1'
-            skip-nwbinspector-test: '1'
-          - matlab-version: R2022b
-            python-version: '3.10'
-            skip-pynwb-tests: '0'
-            skip-nwbinspector-test: '0'
-          - matlab-version: R2023a
-            python-version: '3.10'
-            skip-pynwb-tests: '0'
-            skip-nwbinspector-test: '0'
-          - matlab-version: R2023b
-            python-version: '3.11'
-            skip-pynwb-tests: '0'
-            skip-nwbinspector-test: '0'
-          - matlab-version: R2024a
-            python-version: '3.11'
-            skip-pynwb-tests: '0'
-            skip-nwbinspector-test: '0'
-          - matlab-version: R2024b
-            python-version: '3.12'
-            skip-pynwb-tests: '0'
-            skip-nwbinspector-test: '0'
-          - matlab-version: R2025a
-            python-version: '3.12'
-            skip-pynwb-tests: '0'
-            skip-nwbinspector-test: '0'
-          - matlab-version: R2025b
-            python-version: '3.12'
-            skip-pynwb-tests: '0'
-            skip-nwbinspector-test: '0'
-          - matlab-version: R2026a
-            python-version: '3.13'
-            skip-pynwb-tests: '0'
-            skip-nwbinspector-test: '0'
+      matrix: ${{ fromJSON(needs.set_matrix.outputs.matrix) }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
@@ -162,7 +142,7 @@ jobs:
   update_version:
     name: Create new draft relase for given version
     runs-on: ubuntu-latest
-    needs: [run_tests]
+    needs: [run_tests, set_matrix]
     steps:
       - name: Checkout repository using deploy key
         uses: actions/checkout@v6
@@ -209,7 +189,6 @@ jobs:
           python-version: '3.12' # Pinned to 3.12 because of pybadges dependencies
 
       - name: Generate tested with badge
-        # Note: Update this list when MATLAB versions change in the matrix above
         run: |
           pip install --upgrade setuptools
           pip install pybadges
@@ -219,7 +198,7 @@ jobs:
           with open('.github/badges/v${{ inputs.version }}/tested_with.svg', 'w') as f:
               f.write(badge(
                   left_text='tested with',
-                  right_text='R2021a | R2021b | R2022a | R2022b | R2023a | R2023b | R2024a | R2024b | R2025a | R2025b | R2026a',
+                  right_text='${{ needs.set_matrix.outputs.releases }}',
                   right_color='green'
               ))
           "
