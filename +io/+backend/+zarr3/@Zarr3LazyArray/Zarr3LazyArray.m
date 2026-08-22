@@ -247,7 +247,7 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
             end
 
             stepSizes = diff(selection);
-            tf = all(stepSizes > 0) && numel(unique(stepSizes)) == 1;
+            tf = all(stepSizes > 0) && isscalar(unique(stepSizes));
         end
 
         function [start, count, stride] = selectionToReadParameters(~, selection)

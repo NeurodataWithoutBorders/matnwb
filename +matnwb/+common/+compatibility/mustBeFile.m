@@ -1,8 +1,11 @@
 function mustBeFile(filePath)
-% mustBeFile - Check if value is path name of existing file.
+% mustBeFile - Check if value is path name of existing file or Zarr store.
 %
 % mustBeFile was introduced in R2020b. In order to support older releases
 % of MATLAB, this function implements mustBeFile also for older releases.
+%
+% A path with a ".zarr" extension names a directory-based store, so folder
+% existence is validated for such a path instead of file existence.
 %
 % Note: Currently only works for scalar strings
 

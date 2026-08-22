@@ -36,7 +36,7 @@ function groupInfo = buildGroupInfo(group, groupPath, nodeInfoMap)
         childArray = group.item(arrayNames(iArray));
         childPath = joinPath(groupPath, arrayNames(iArray));
         datasetInfo = buildDatasetInfo(childArray, arrayNames(iArray));
-        groupInfo.Datasets(end+1) = datasetInfo; %#ok<AGROW>
+        groupInfo.Datasets(end+1) = datasetInfo;
         nodeInfoMap(char(childPath)) = datasetInfo;
     end
 
@@ -44,10 +44,12 @@ function groupInfo = buildGroupInfo(group, groupPath, nodeInfoMap)
         childGroup = group.item(groupNames(iGroup));
         childPath = joinPath(groupPath, groupNames(iGroup));
         childInfo = buildGroupInfo(childGroup, childPath, nodeInfoMap);
-        groupInfo.Groups(end+1) = childInfo; %#ok<AGROW>
+        groupInfo.Groups(end+1) = childInfo;
     end
 
-    nodeInfoMap(char(groupPath)) = groupInfo;
+    % nodeInfoMap is a containers.Map (a handle), so this insertion is seen
+    % by the caller even though nodeInfoMap is not returned from here.
+    nodeInfoMap(char(groupPath)) = groupInfo; %#ok<NASGU>
 end
 
 function datasetInfo = buildDatasetInfo(arrayNode, leafName)

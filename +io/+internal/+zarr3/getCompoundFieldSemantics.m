@@ -21,7 +21,8 @@ function fieldSemantics = getCompoundFieldSemantics(attrs)
         return
     end
 
-    for i = 1:numel(fieldDescriptors)
-        fieldSemantics(char(fieldDescriptors(i).name)) = string(fieldDescriptors(i).dtype);
+    for iField = 1:numel(fieldDescriptors)
+        fieldSemantics(char(fieldDescriptors(iField).name)) = ...
+            string(fieldDescriptors(iField).dtype);
     end
 end
