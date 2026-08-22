@@ -8,7 +8,19 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
 % MATLAB column vector.
 
     properties (Access = private)
+        % ArrayNode - zarr.Array for the wrapped dataset. Opened lazily by
+        % resolveArray on first read and cached, so that repeated reads
+        % reuse a single open array rather than reopening the store.
         ArrayNode = []
+
+        % FieldSemantics - containers.Map from compound field name to the
+        % hdmf-zarr semantic dtype of that field, or empty for a
+        % non-compound dataset. Supplied by io.backend.zarr3.Zarr3Reader,
+        % which has already read it; getFieldSemantics falls back to reading
+        % it from the array when a Zarr3LazyArray is constructed directly.
+        % The only value consumed is "object", marking a field that holds
+        % object references rather than literal data (see
+        % io.internal.zarr3.getCompoundFieldSemantics).
         FieldSemantics = []
     end
 

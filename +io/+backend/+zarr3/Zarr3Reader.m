@@ -20,7 +20,7 @@ classdef Zarr3Reader < io.backend.base.Reader
 %     DynamicTable column of ElectrodeGroup references. Both decode to
 %     types.untyped.ObjectView via io.internal.zarr3.decodeObjectReferences;
 % - the root ".specloc" attribute names the cached specifications
-%     group (hdmf.zarr.File.specLoc).
+%     group (io.internal.zarr3.getSpecLocAttributeName).
 %
 % A compound (struct/table) dataset -- a Zarr v3 "structured" data_type,
 % e.g. PlaneSegmentation's pixel_mask/voxel_mask, or
@@ -34,13 +34,23 @@ classdef Zarr3Reader < io.backend.base.Reader
 % zarr.internal.dtype_info in zarr-matlab.
 
     properties (Access = private)
-        HdmfFile = []   % hdmf.zarr.File wrapping the open store
-        RootGroup = []  % zarr.Group at the root of the store (HdmfFile.root)
+        % RootGroup - zarr.Group at the root of the store. Entry point for
+        % walking the hierarchy, and the source of the root attributes that
+        % carry nwb_version and the cached-specification location.
+        RootGroup = []
+
+        % RootInfoCache - h5info-style struct describing the root node,
+        % returned by readRootInfo.
         RootInfoCache = []
-        % NodeInfoMap - containers.Map from absolute node path to node info.
-        % Built by ensureMetadataCache; a containers.Map is a handle, so it
-        % must not be created as a property default (that would share one
-        % map across every Zarr3Reader instance).
+
+        % NodeInfoMap - containers.Map from absolute node path (char, leading
+        % '/') to that node's h5info-style struct, backing readNodeInfo.
+        %
+        % A containers.Map is a handle, so it must not be created as a
+        % property default: that would share one map across every
+        % Zarr3Reader instance. It is built in ensureMetadataCache instead,
+        % which populates all four of these properties in one pass so the
+        % store is walked only once per reader.
         NodeInfoMap = []
     end
 
@@ -66,7 +76,12 @@ classdef Zarr3Reader < io.backend.base.Reader
             % hdmf-zarr records the cached-specifications group in the root
             % ".specloc" attribute; fall back to the conventional group name
             % when a writer omitted it.
-            specLocation = obj.HdmfFile.specLoc();
+            specLocation = "";
+            attributes = obj.RootGroup.attrs;
+            specLocAttribute = io.internal.zarr3.getSpecLocAttributeName();
+            if isfield(attributes, specLocAttribute)
+                specLocation = string(attributes.(specLocAttribute));
+            end
             if specLocation == "" && obj.RootGroup.isKey("specifications")
                 specLocation = "/specifications";
             end
@@ -145,8 +160,7 @@ classdef Zarr3Reader < io.backend.base.Reader
         function ensureMetadataCache(obj)
             if isempty(obj.RootGroup)
                 io.backend.zarr3.internal.ensureAvailable()
-                obj.HdmfFile = hdmf.zarr.open(obj.Filename);
-                obj.RootGroup = obj.HdmfFile.root;
+                obj.RootGroup = zarr.open(obj.Filename);
                 [obj.RootInfoCache, obj.NodeInfoMap] = io.internal.zarr3.buildNodeInfo(obj.RootGroup);
                 obj.RootInfoCache.Filename = char(obj.Filename);
             end
