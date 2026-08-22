@@ -10,9 +10,10 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
 
     methods
         function obj = MetaClass(varargin)
-            isMatch = strcmp(varargin(1:2:end), 'object_id');
-            if any(isMatch)
-                obj.object_id = varargin{find(isMatch, 1, 'last') * 2};
+            isObjectIDArgin = strcmp(varargin(1:2:end), 'object_id');
+            if any(isObjectIDArgin)
+                objectIDIndex = find(isObjectIDArgin, 1, 'last') * 2;
+                obj.object_id = varargin{objectIDIndex};
             else
                 obj.object_id = generateUuid();
             end
