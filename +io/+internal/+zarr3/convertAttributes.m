@@ -64,13 +64,13 @@ function tf = isReservedAttribute(name)
 % isReservedAttribute - True for hdmf-zarr bookkeeping attributes.
 %
 % Names are as they appear after jsondecode, which renames keys that are not
-% valid MATLAB identifiers: ".specloc" (root attribute naming the cached
-% specifications group; read via hdmf.zarr.File.specLoc) becomes "x_specloc",
-% and "_ARRAY_DIMENSIONS" (xarray dimension names) becomes
+% valid MATLAB identifiers: ".specloc" (the root attribute naming the cached
+% specifications group, read by io.backend.zarr3.Zarr3Reader) becomes
+% "x_specloc", and "_ARRAY_DIMENSIONS" (xarray dimension names) becomes
 % "x_ARRAY_DIMENSIONS".
 
     reservedNames = ["zarr_link", "zarr_dtype", ...
-        matlab.lang.makeValidName(".specloc"), ...
+        io.internal.zarr3.getSpecLocAttributeName(), ...
         matlab.lang.makeValidName("_ARRAY_DIMENSIONS")];
     tf = any(strcmp(name, reservedNames));
 end
