@@ -1,11 +1,9 @@
-function parsed = parseGroup(filename, info, blacklist, reader)
+function parsed = parseGroup(filename, info, exclusions, reader)
 % NOTE, group name is in path format so we need to parse that out.
 % parsed is either a containers.Map containing properties mapped to values OR a
 % typed value
 if nargin < 3
-    blacklist = struct(...
-        'attributes', {{'.specloc', 'object_id'}},...
-        'groups', {{}});
+    exclusions = io.internal.defaultParseExclusions();
 end
 if nargin < 4
     reader = io.backend.BackendFactory.createReader(filename);
@@ -15,7 +13,7 @@ links = containers.Map;
 refs = containers.Map;
 [~, root] = io.pathParts(info.Name);
 [attributeProperties, Type] =...
-    io.parseAttributes(filename, info.Attributes, info.Name, blacklist, reader);
+    io.parseAttributes(filename, info.Attributes, info.Name, exclusions, reader);
 
 %parse datasets
 datasetProperties = containers.Map;
@@ -23,18 +21,18 @@ for i=1:length(info.Datasets)
     datasetInfo = info.Datasets(i);
     fullPath = [info.Name '/' datasetInfo.Name];
     datasetProperties = [datasetProperties; ...
-        io.parseDataset(filename, datasetInfo, fullPath, blacklist, reader)]; %#ok<AGROW>
+        io.parseDataset(filename, datasetInfo, fullPath, exclusions, reader)]; %#ok<AGROW>
 end
 
 %parse subgroups
 groupProperties = containers.Map;
 for i=1:length(info.Groups)
     group = info.Groups(i);
-    if any(strcmp(group.Name, blacklist.groups))
+    if any(strcmp(group.Name, exclusions.groups))
         continue;
     end
     [~, gname] = io.pathParts(group.Name);
-    subg = io.parseGroup(filename, group, blacklist, reader);
+    subg = io.parseGroup(filename, group, exclusions, reader);
     groupProperties(gname) = subg;
 end
 

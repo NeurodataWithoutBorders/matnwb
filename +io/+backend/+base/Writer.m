@@ -8,6 +8,14 @@ classdef Writer < handle
         Filename
     end
 
+    properties (Access = private)
+        % Maps the object id of each exported neurodata object to the file
+        % location it was written to. Assigned in the constructor, not as a
+        % property default, because a containers.Map default would be shared
+        % by every Writer instance.
+        ObjectIdToPathMap
+    end
+
     properties (Dependent, SetAccess = private, Hidden)
         FileId
     end
@@ -18,6 +26,46 @@ classdef Writer < handle
                 filename = [];
             end
             obj.Filename = filename;
+            obj.ObjectIdToPathMap = containers.Map();
+        end
+
+        function previousPath = registerWrittenObjectId(obj, objectId, fullPath)
+        % registerWrittenObjectId - Record where an object id is written.
+        %
+        %   Returns the location this object id was previously written to,
+        %   or '' when it has not been written before. A non-empty return
+        %   value means the same object is being exported to a second
+        %   location, which the caller must resolve: an object id is the
+        %   identity of a neurodata object, so two objects sharing one id
+        %   produce a file that other NWB APIs reject when reading it.
+        %
+        %   Re-registering the same location returns '' rather than
+        %   reporting a duplicate. An object holding an ObjectView,
+        %   RegionView or SoftLink that cannot be resolved yet is skipped
+        %   during the main export and exported again by
+        %   NwbFile.resolveReferences once its target exists — at the same
+        %   location — so one location being registered twice is expected.
+
+            arguments
+                obj (1,1) io.backend.base.Writer
+                objectId (1,:) char
+                fullPath (1,:) char
+            end
+
+            previousPath = '';
+
+            if isempty(fullPath)
+                fullPath = '/'; % The root NwbFile is exported with an empty path
+            end
+
+            if isKey(obj.ObjectIdToPathMap, objectId)
+                registeredPath = obj.ObjectIdToPathMap(objectId);
+                if ~strcmp(registeredPath, fullPath)
+                    previousPath = registeredPath;
+                end
+            else
+                obj.ObjectIdToPathMap(objectId) = fullPath;
+            end
         end
 
         function groupExists = writeGroup(obj, groupPath) %#ok<INUSD>
