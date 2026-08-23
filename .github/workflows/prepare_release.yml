@@ -254,7 +254,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           draft: true
-          tag: ${{ inputs.version }}
+          tag: v${{ inputs.version }}
           generateReleaseNotes: true
           body: |
             ![Tested On Platforms](https://raw.githubusercontent.com/NeurodataWithoutBorders/matnwb/refs/heads/gh-badges/.github/badges/tested_on.svg)
