@@ -11,15 +11,15 @@
   skip-pynwb-tests: '1'
   skip-nwbinspector-test: '1'
 - matlab-version: R2022b
-  python-version: '3.9'
-  skip-pynwb-tests: '1'
-  skip-nwbinspector-test: '1'
+  python-version: '3.10'
+  skip-pynwb-tests: '0'
+  skip-nwbinspector-test: '0'
 - matlab-version: R2023a
   python-version: '3.10'
   skip-pynwb-tests: '0'
   skip-nwbinspector-test: '0'
 - matlab-version: R2023b
-  python-version: '3.10'
+  python-version: '3.11'
   skip-pynwb-tests: '0'
   skip-nwbinspector-test: '0'
 - matlab-version: R2024a
@@ -27,7 +27,7 @@
   skip-pynwb-tests: '0'
   skip-nwbinspector-test: '0'
 - matlab-version: R2024b
-  python-version: '3.11'
+  python-version: '3.12'
   skip-pynwb-tests: '0'
   skip-nwbinspector-test: '0'
 - matlab-version: R2025a
@@ -35,6 +35,10 @@
   skip-pynwb-tests: '0'
   skip-nwbinspector-test: '0'
 - matlab-version: R2025b
+  python-version: '3.12'
+  skip-pynwb-tests: '0'
+  skip-nwbinspector-test: '0'
+- matlab-version: R2026a
   python-version: '3.13'
   skip-pynwb-tests: '0'
   skip-nwbinspector-test: '0'

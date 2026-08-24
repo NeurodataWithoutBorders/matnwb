@@ -81,7 +81,13 @@ jobs:
     needs: set_matrix
     runs-on: ubuntu-latest
     env:
-      USE_CACHE: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft == true }}
+      # Cache only the release draft PRs actually use. GitHub scopes caches per
+      # branch: a PR can read entries written on the default branch, but not
+      # entries written by another PR. Writing on pushes to main therefore gives
+      # every draft PR one shared entry instead of its own throwaway copy.
+      USE_CACHE: >-
+        ${{ matrix.matlab-version == needs.set_matrix.outputs.latest_matlab_version
+        && (github.ref == 'refs/heads/main' || github.event_name == 'pull_request') }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.set_matrix.outputs.matrix) }}
