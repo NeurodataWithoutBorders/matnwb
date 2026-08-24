@@ -30,11 +30,11 @@ classdef HDF5Reader < io.backend.base.Reader
                 obj
                 linkPath (1,1) string
             end
-            fileId = H5F.open(obj.Filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
+            propertyListId = 'H5P_DEFAULT';
+            fileId = H5F.open(obj.Filename, 'H5F_ACC_RDONLY', propertyListId);
             fileCleanup = onCleanup(@() H5F.close(fileId));
 
-            plist = 'H5P_DEFAULT';
-            rawInfo = H5L.get_info(fileId, char(linkPath), plist);
+            rawInfo = H5L.get_info(fileId, char(linkPath), propertyListId);
             isExternal = rawInfo.type == H5ML.get_constant_value('H5L_TYPE_EXTERNAL');
             isSoft = rawInfo.type == H5ML.get_constant_value('H5L_TYPE_SOFT');
             assert(isExternal || isSoft, ...
@@ -44,15 +44,15 @@ classdef HDF5Reader < io.backend.base.Reader
 
             % H5L.get_val returns {targetPath} for a soft link and
             % {targetFilename, targetPath} for an external one.
-            rawValue = H5L.get_val(fileId, char(linkPath), plist);
+            rawValue = H5L.get_val(fileId, char(linkPath), propertyListId);
             if isExternal
-                linkInfo = struct('Type', "external link", ...
-                    'TargetFilename', string(rawValue{1}), ...
-                    'TargetPath', string(rawValue{2}));
+                linkInfo = struct('type', "external link", ...
+                    'targetFilename', string(rawValue{1}), ...
+                    'targetPath', string(rawValue{2}));
             else
-                linkInfo = struct('Type', "soft link", ...
-                    'TargetFilename', "", ...
-                    'TargetPath', string(rawValue{1}));
+                linkInfo = struct('type', "soft link", ...
+                    'targetFilename', "", ...
+                    'targetPath', string(rawValue{1}));
             end
         end
 

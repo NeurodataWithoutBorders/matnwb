@@ -129,9 +129,9 @@ classdef Reader < handle
         %  - linkPath - Path of the link node.
         %
         % Output Arguments:
-        %  - linkInfo - Struct with fields Type ("soft link" or "external
+        %  - linkInfo - Struct with fields type ("soft link" or "external
         %    link", matching the vocabulary io.parseGroup consumes),
-        %    TargetPath, and TargetFilename (empty for a soft link).
+        %    targetPath, and targetFilename (empty for a soft link).
             linkInfo = struct.empty;
             io.backend.base.Reader.throwNotImplemented("readLinkInfo")
         end

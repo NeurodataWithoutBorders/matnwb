@@ -22,22 +22,22 @@ function writeLink(fileId, linkPath, linkType, targetPath, targetFilename)
         targetFilename (1,:) char = ''
     end
 
-    plist = 'H5P_DEFAULT';
-    if H5L.exists(fileId, linkPath, plist)
-        if isMatchingLink(fileId, linkPath, plist, linkType, targetPath, targetFilename)
+    propertyListId = 'H5P_DEFAULT';
+    if H5L.exists(fileId, linkPath, propertyListId)
+        if isMatchingLink(fileId, linkPath, propertyListId, linkType, targetPath, targetFilename)
             return
         end
-        H5L.delete(fileId, linkPath, plist);
+        H5L.delete(fileId, linkPath, propertyListId);
     end
 
     if linkType == "soft"
-        H5L.create_soft(targetPath, fileId, linkPath, plist, plist);
+        H5L.create_soft(targetPath, fileId, linkPath, propertyListId, propertyListId);
     else
-        H5L.create_external(targetFilename, targetPath, fileId, linkPath, plist, plist);
+        H5L.create_external(targetFilename, targetPath, fileId, linkPath, propertyListId, propertyListId);
     end
 end
 
-function tf = isMatchingLink(fileId, linkPath, plist, linkType, targetPath, targetFilename)
+function tf = isMatchingLink(fileId, linkPath, propertyListId, linkType, targetPath, targetFilename)
 % isMatchingLink - Whether the link already present is the one requested.
 %
 % H5L.get_val returns {targetPath} for a soft link and
@@ -45,15 +45,15 @@ function tf = isMatchingLink(fileId, linkPath, plist, linkType, targetPath, targ
 % group or dataset rather than a link is not a match, so it is replaced.
 
     tf = false;
-    linkInfo = H5L.get_info(fileId, linkPath, plist);
+    linkInfo = H5L.get_info(fileId, linkPath, propertyListId);
     isSoft = linkInfo.type == H5ML.get_constant_value('H5L_TYPE_SOFT');
     isExternal = linkInfo.type == H5ML.get_constant_value('H5L_TYPE_EXTERNAL');
 
     if linkType == "soft" && isSoft
-        existingValue = H5L.get_val(fileId, linkPath, plist);
+        existingValue = H5L.get_val(fileId, linkPath, propertyListId);
         tf = strcmp(existingValue{1}, targetPath);
     elseif linkType == "external" && isExternal
-        existingValue = H5L.get_val(fileId, linkPath, plist);
+        existingValue = H5L.get_val(fileId, linkPath, propertyListId);
         tf = strcmp(existingValue{1}, targetFilename) ...
             && strcmp(existingValue{2}, targetPath);
     end

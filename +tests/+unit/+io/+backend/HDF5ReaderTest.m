@@ -44,9 +44,9 @@ classdef HDF5ReaderTest < matlab.unittest.TestCase
             reader = io.backend.hdf5.HDF5Reader("reader-softlink.nwb");
             linkInfo = reader.readLinkInfo("/link");
 
-            testCase.verifyEqual(linkInfo.Type, "soft link");
-            testCase.verifyEqual(linkInfo.TargetPath, "/target");
-            testCase.verifyEqual(linkInfo.TargetFilename, "");
+            testCase.verifyEqual(linkInfo.type, "soft link");
+            testCase.verifyEqual(linkInfo.targetPath, "/target");
+            testCase.verifyEqual(linkInfo.targetFilename, "");
         end
 
         function readLinkInfoReturnsExternalLinkTarget(testCase)
@@ -60,9 +60,9 @@ classdef HDF5ReaderTest < matlab.unittest.TestCase
             reader = io.backend.hdf5.HDF5Reader("reader-external.nwb");
             linkInfo = reader.readLinkInfo("/elink");
 
-            testCase.verifyEqual(linkInfo.Type, "external link");
-            testCase.verifyEqual(linkInfo.TargetFilename, "other.nwb");
-            testCase.verifyEqual(linkInfo.TargetPath, "/data");
+            testCase.verifyEqual(linkInfo.type, "external link");
+            testCase.verifyEqual(linkInfo.targetFilename, "other.nwb");
+            testCase.verifyEqual(linkInfo.targetPath, "/data");
         end
 
         function readLinkInfoRejectsNodeThatIsNotALink(testCase)
