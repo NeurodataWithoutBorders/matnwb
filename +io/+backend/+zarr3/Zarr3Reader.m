@@ -27,7 +27,7 @@ classdef Zarr3Reader < io.backend.base.Reader
 % TimeSeriesReferenceVectorData's response/stimulus columns -- is backed
 % by io.backend.zarr3.Zarr3LazyArray; a field tagged "object" via the
 % array's "zarr_dtype" attribute (see
-% io.internal.zarr3.getCompoundFieldSemantics) holds the same JSON
+% io.internal.zarr3.getObjectReferenceFields) holds the same JSON
 % reference records and is decoded the same way. Requires zarr-matlab
 % to support the Zarr v3 "structured" and "fixed_length_utf32" data
 % types, which are unstable, unspecified zarr-python extensions -- see
@@ -219,11 +219,11 @@ classdef Zarr3Reader < io.backend.base.Reader
             relativePath = io.internal.zarr3.stripLeadingSlash(datasetPath);
             arrayNode = zarr.open(obj.Filename, Path=relativePath);
             info = zarr.internal.dtype_info(arrayNode.meta.dataType, arrayNode.meta.dataTypeConfig);
-            fieldSemantics = io.internal.zarr3.getCompoundFieldSemantics(arrayNode.attrs);
-            typeDescriptor = io.internal.zarr3.getCompoundTypeDescriptor(info, fieldSemantics);
+            objectReferenceFields = io.internal.zarr3.getObjectReferenceFields(arrayNode.attrs);
+            typeDescriptor = io.internal.zarr3.getCompoundTypeDescriptor(info, objectReferenceFields);
 
             lazyArray = io.backend.zarr3.Zarr3LazyArray(...
-                obj.Filename, datasetPath, dataDimensions, typeDescriptor, fieldSemantics);
+                obj.Filename, datasetPath, dataDimensions, typeDescriptor, objectReferenceFields);
             datasetValue = types.untyped.DataStub(...
                 obj.Filename, datasetPath, [], [], lazyArray);
         end

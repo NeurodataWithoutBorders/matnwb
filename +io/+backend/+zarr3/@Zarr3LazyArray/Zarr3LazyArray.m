@@ -13,28 +13,27 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
         % reuse a single open array rather than reopening the store.
         ArrayNode = []
 
-        % FieldSemantics - containers.Map from compound field name to the
-        % hdmf-zarr semantic dtype of that field, or empty for a
+        % ObjectReferenceFields - Names of the compound fields that hold
+        % object references rather than literal data, or empty for a
         % non-compound dataset. Supplied by io.backend.zarr3.Zarr3Reader,
-        % which has already read it; getFieldSemantics falls back to reading
-        % it from the array when a Zarr3LazyArray is constructed directly.
-        % The only value consumed is "object", marking a field that holds
-        % object references rather than literal data (see
-        % io.internal.zarr3.getCompoundFieldSemantics).
-        FieldSemantics = []
+        % which has already read them; getObjectReferenceFields falls back
+        % to reading them from the array when a Zarr3LazyArray is
+        % constructed directly (see
+        % io.internal.zarr3.getObjectReferenceFields).
+        ObjectReferenceFields (1,:) string = string.empty(1, 0)
     end
 
     methods
-        function obj = Zarr3LazyArray(filename, datasetPath, dims, dataType, fieldSemantics)
+        function obj = Zarr3LazyArray(filename, datasetPath, dims, dataType, objectReferenceFields)
             arguments
                 filename (1,1) string
                 datasetPath (1,1) string
                 dims double = []
                 dataType = []
-                fieldSemantics = []
+                objectReferenceFields (1,:) string = string.empty(1, 0)
             end
             obj@io.backend.base.LazyArray(filename, datasetPath, dims, dataType);
-            obj.FieldSemantics = fieldSemantics;
+            obj.ObjectReferenceFields = objectReferenceFields;
         end
 
         function refreshSizeInfo(obj)
@@ -59,7 +58,7 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
             arrayNode = obj.resolveArray();
             info = zarr.internal.dtype_info(arrayNode.meta.dataType, arrayNode.meta.dataTypeConfig);
             if info.zarrType == "structured"
-                dataType = io.internal.zarr3.getCompoundTypeDescriptor(info, obj.getFieldSemantics());
+                dataType = io.internal.zarr3.getCompoundTypeDescriptor(info, obj.getObjectReferenceFields());
             else
                 dataType = char(info.matlabClass);
             end
@@ -127,11 +126,11 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
             arrayNode = obj.ArrayNode;
         end
 
-        function fieldSemantics = getFieldSemantics(obj)
-            if ~isempty(obj.FieldSemantics) && obj.FieldSemantics.Count > 0
-                fieldSemantics = obj.FieldSemantics;
+        function referenceFields = getObjectReferenceFields(obj)
+            if ~isempty(obj.ObjectReferenceFields)
+                referenceFields = obj.ObjectReferenceFields;
             else
-                fieldSemantics = io.internal.zarr3.getCompoundFieldSemantics(obj.resolveArray().attrs);
+                referenceFields = io.internal.zarr3.getObjectReferenceFields(obj.resolveArray().attrs);
             end
         end
 
@@ -141,8 +140,8 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
         % Converts zarr-matlab's array-of-records (one struct per element)
         % into the "struct of arrays" shape (one scalar struct, each field an
         % Nx1 array) that io.backend.hdf5.@HDF5LazyArray/load_h5_style.m
-        % produces via io.parseCompound. Any field tagged as an object
-        % reference (see io.internal.zarr3.getCompoundFieldSemantics) is
+        % produces via io.parseCompound. Any field that holds an object
+        % reference (see io.internal.zarr3.getObjectReferenceFields) is
         % decoded into a types.untyped.ObjectView array along the way (see
         % io.internal.zarr3.decodeObjectReferences).
 
@@ -150,14 +149,14 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
                 return
             end
 
-            fieldSemantics = obj.getFieldSemantics();
+            referenceFields = obj.getObjectReferenceFields();
             fieldNames = fieldnames(data);
             n = numel(data);
             converted = struct();
             for iField = 1:numel(fieldNames)
                 name = fieldNames{iField};
                 rawValues = {data.(name)};
-                if isKey(fieldSemantics, name) && fieldSemantics(name) == "object"
+                if ismember(name, referenceFields)
                     objectViews = io.internal.zarr3.decodeObjectReferences(string(rawValues));
                     converted.(name) = reshape(objectViews, n, 1);
                 else
