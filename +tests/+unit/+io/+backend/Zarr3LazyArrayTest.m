@@ -5,6 +5,21 @@ classdef Zarr3LazyArrayTest < matlab.unittest.TestCase
         DatasetPath = "/acquisition/es/data"
     end
 
+    properties (TestParameter)
+        % linearSelection - Single-subscript selections into the 4x29
+        % fixture dataset, covering the orderings and shapes MATLAB linear
+        % indexing has to reproduce.
+        linearSelection = struct(...
+            'scalar', 1, ...
+            'ascending', [1 2 3], ...
+            'unordered', [3 1 2], ...
+            'duplicated', [5 5 2], ...
+            'column', (1:6)', ...
+            'lastElement', 116, ...
+            'everyElement', 1:116, ...
+            'empty', [])
+    end
+
     methods (TestClassSetup)
         function setupZarrFixture(testCase)
             tests.util.assumeZarr3Support(testCase)
@@ -107,6 +122,51 @@ classdef Zarr3LazyArrayTest < matlab.unittest.TestCase
             testCase.verifyClass(selectedRecords, "table");
             testCase.verifyEqual(selectedRecords.x, uint32([1; 2]));
             testCase.verifyEqual(selectedRecords.weight, single([0.6; 0.7]));
+        end
+
+        function linearIndexSelectionMatchesNativeIndexing(testCase, linearSelection)
+        % A lone subscript is MATLAB linear indexing, which has no Zarr
+        % equivalent -- zarr.Array.read takes a contiguous hyperslab. The
+        % result must still match indexing the fully loaded array, including
+        % the value order, the duplicates and the orientation.
+            lazyArray = io.backend.zarr3.Zarr3LazyArray(...
+                testCase.FixturePath, testCase.DatasetPath);
+            fullData = lazyArray.load_h5_style();
+
+            selectedData = lazyArray.load_mat_style(linearSelection);
+
+            testCase.verifyEqual(selectedData, fullData(linearSelection));
+        end
+
+        function singleElementReadDoesNotMaterialiseSparseDataset(testCase)
+        % Regression test: a single subscript used to be rejected by
+        % tryBuildRegularSelection and fall through to a full read, so
+        % probing a large sparse dataset -- which types.util.checkDtype does
+        % via load(1) on every "any" dtype -- tried to allocate the whole
+        % array and failed on the MATLAB array size limit.
+            import matlab.unittest.fixtures.TemporaryFolderFixture
+            folderFixture = testCase.applyFixture(TemporaryFolderFixture);
+            storePath = string(fullfile(folderFixture.Folder, "sparse.zarr"));
+
+            % Metadata only: no chunk holds data, so the store stays tiny
+            % while the array it describes could never fit in memory.
+            zarr.create(storePath, [1e6 1e6], "double", ...
+                Path="huge", ChunkShape=[10 10]);
+            lazyArray = io.backend.zarr3.Zarr3LazyArray(storePath, "/huge");
+
+            testCase.verifyEqual(lazyArray.dims, [1e6 1e6]);
+            testCase.verifyEqual(lazyArray.load_mat_style(1), 0);
+            testCase.verifyEqual(lazyArray.load_mat_style([1 2]), [0 0]);
+        end
+
+        function linearIndexOutOfRangeErrors(testCase)
+            lazyArray = io.backend.zarr3.Zarr3LazyArray(...
+                testCase.FixturePath, testCase.DatasetPath);
+
+            testCase.verifyError(@() lazyArray.load_mat_style(117), ...
+                'NWB:DataStub:Load:InvalidSelection');
+            testCase.verifyError(@() lazyArray.load_mat_style(0), ...
+                'NWB:DataStub:Load:InvalidSelection');
         end
     end
 end
