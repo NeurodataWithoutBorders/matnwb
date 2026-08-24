@@ -159,6 +159,36 @@ classdef Zarr3LazyArrayTest < matlab.unittest.TestCase
             testCase.verifyEqual(lazyArray.load_mat_style([1 2]), [0 0]);
         end
 
+        function compoundTextFieldsReadBackAsCellstr(testCase)
+        % zarr-matlab returns Zarr text as a MATLAB string, but
+        % io.parseCompound gives a cellstr column for an HDF5 compound's
+        % string field and the generated type classes declare such fields as
+        % 'char'. The Zarr backend converts so that the same compound reads
+        % back as the same MATLAB types on either backend -- without which
+        % types.util.checkDtype rejects the dataset outright.
+            lazyArray = io.backend.zarr3.Zarr3LazyArray(...
+                testCase.FixturePath, "/processing/ophys/PlaneSegmentation/entities");
+
+            testCase.verifyEqual(lazyArray.dataType, ...
+                struct('entity_id', 'char', 'entity_uri', 'char'));
+
+            data = lazyArray.load_h5_style();
+            testCase.verifyClass(data.entity_id, "cell");
+            testCase.verifyEqual(data.entity_id, {'NCBITaxon:10090'; 'MBA:385'});
+        end
+
+        function compoundTextSurvivesPartialRead(testCase)
+        % The conversion runs in postProcessCompound, which serves partial
+        % reads too, so a selected record must convert the same way.
+            lazyArray = io.backend.zarr3.Zarr3LazyArray(...
+                testCase.FixturePath, "/processing/ophys/PlaneSegmentation/entities");
+
+            selectedRecords = lazyArray.load_mat_style(2);
+
+            testCase.verifyClass(selectedRecords, "table");
+            testCase.verifyEqual(selectedRecords.entity_id, {'MBA:385'});
+        end
+
         function linearIndexOutOfRangeErrors(testCase)
             lazyArray = io.backend.zarr3.Zarr3LazyArray(...
                 testCase.FixturePath, testCase.DatasetPath);

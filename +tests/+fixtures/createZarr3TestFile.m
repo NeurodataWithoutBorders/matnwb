@@ -63,6 +63,7 @@ function fixturePath = createZarr3TestFile(rootFolder)
     ophysGroup = processingGroup.createGroup("ophys");
     planeSegmentationGroup = ophysGroup.createGroup("PlaneSegmentation");
     createPixelMaskArray(planeSegmentationGroup);
+    createEntitiesArray(planeSegmentationGroup);
 
     % hdmf-zarr conventions: links and object references.
     hdmfFile = hdmf.zarr.File(root.store);
@@ -128,4 +129,42 @@ function createPixelMaskArray(parentGroup)
 
     pixelMaskArray = zarr.Array(parentGroup.store, arrayPath, meta);
     pixelMaskArray.write(records);
+end
+
+function createEntitiesArray(parentGroup)
+% createEntitiesArray - Write a compound array with a text field.
+%
+% Writes a 2-record "structured" array whose fields are text
+% ("fixed_length_utf32"), matching a real hdmf-zarr HERD.entities column.
+% Text is the case where zarr-matlab's MATLAB class (string) differs from
+% what the HDF5 backend reports and the generated type classes declare
+% (char), so it is the fixture for that conversion. Built the same way as
+% createPixelMaskArray, for the reason documented there.
+
+    textType = struct('name', "fixed_length_utf32", ...
+        'configuration', struct('length_bytes', 128));
+    info = zarr.internal.dtype_info(struct('name', "structured", 'configuration', struct( ...
+        'fields', {{{'entity_id', textType}; {'entity_uri', textType}}})));
+
+    numRecords = 2;
+    meta = zarr.metadata.ArrayMetadata();
+    meta.shape = numRecords;
+    meta.dataType = "structured";
+    meta.dataTypeConfig = info.config;
+    meta.chunkShape = numRecords;
+    meta.fillValue = struct('entity_id', "", 'entity_uri', "");
+    meta.codecs = {zarr.codecs.BytesCodec()};
+    % hdmf-zarr records a text field's dtype as "str_", distinguishing it
+    % from the "object" marker used for reference fields.
+    meta.attributes = struct('zarr_dtype', ...
+        struct('name', {'entity_id', 'entity_uri'}, 'dtype', {'str_', 'str_'}));
+
+    arrayPath = parentGroup.path + "/entities";
+    parentGroup.store.set(arrayPath + "/zarr.json", unicode2native(char(meta.toJsonText()), 'UTF-8'));
+
+    records(1, 1) = struct('entity_id', "NCBITaxon:10090", 'entity_uri', "https://example.org/10090");
+    records(2, 1) = struct('entity_id', "MBA:385", 'entity_uri', "https://example.org/385");
+
+    entitiesArray = zarr.Array(parentGroup.store, arrayPath, meta);
+    entitiesArray.write(records);
 end

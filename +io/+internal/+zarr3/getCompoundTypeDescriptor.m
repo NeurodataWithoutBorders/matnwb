@@ -7,7 +7,8 @@ function typeDescriptor = getCompoundTypeDescriptor(info, objectReferenceFields)
 % validateCompoundTypeDescriptor requires exact field order), whose value is
 % either 'types.untyped.ObjectView', when objectReferenceFields names that
 % field (see io.internal.zarr3.getObjectReferenceFields), or the field's
-% MATLAB class name (info.fields(k).Info.matlabClass) otherwise, e.g. 'int32'.
+% MATLAB class name otherwise, e.g. 'int32' -- with text reported as 'char'
+% (see matlabClassName below).
 %
 % info is a zarr.internal.dtype_info struct for a "structured" dtype
 % (info.zarrType == "structured").
@@ -24,7 +25,26 @@ function typeDescriptor = getCompoundTypeDescriptor(info, objectReferenceFields)
         if ismember(name, objectReferenceFields)
             typeDescriptor.(name) = 'types.untyped.ObjectView';
         else
-            typeDescriptor.(name) = char(fieldInfo.Info.matlabClass);
+            typeDescriptor.(name) = matlabClassName(fieldInfo.Info.matlabClass);
         end
+    end
+end
+
+function className = matlabClassName(matlabClass)
+% matlabClassName - Field class, named the way the HDF5 backend names it.
+%
+% zarr-matlab represents both Zarr text types -- "string" and
+% "fixed_length_utf32" -- as a MATLAB string, but the HDF5 backend reports
+% H5T_STRING as char (io.internal.h5.datatype.datatypeInfoToMatlabType) and
+% the generated type classes declare text compound fields as 'char'.
+% Reporting char keeps a compound dataset's declared type independent of the
+% backend that wrote it, which types.util.checkDtype relies on: its
+% validateCompoundTypeDescriptor compares descriptor entries by name.
+% io.backend.zarr3.Zarr3LazyArray converts the values to match on read.
+
+    if string(matlabClass) == "string"
+        className = 'char';
+    else
+        className = char(matlabClass);
     end
 end

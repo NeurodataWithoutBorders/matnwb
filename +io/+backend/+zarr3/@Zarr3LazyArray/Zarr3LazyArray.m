@@ -148,7 +148,9 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
         % produces via io.parseCompound. Any field that holds an object
         % reference (see io.internal.zarr3.getObjectReferenceFields) is
         % decoded into a types.untyped.ObjectView array along the way (see
-        % io.internal.zarr3.decodeObjectReferences).
+        % io.internal.zarr3.decodeObjectReferences), and text is returned as
+        % cellstr so that a compound dataset reads back as the same MATLAB
+        % types on either backend.
 
             if ~isstruct(data)
                 return
@@ -164,6 +166,15 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
                 if ismember(name, referenceFields)
                     objectViews = io.internal.zarr3.decodeObjectReferences(string(rawValues));
                     converted.(name) = reshape(objectViews, n, 1);
+                elseif ~isempty(rawValues) && isstring(rawValues{1})
+                    % zarr-matlab returns both Zarr text types as MATLAB
+                    % strings. io.parseCompound yields a cellstr column for
+                    % an HDF5 compound's variable-length string field, and
+                    % the type descriptor reports these fields as 'char'
+                    % (see io.internal.zarr3.getCompoundTypeDescriptor), so
+                    % convert to keep the value and its declared type
+                    % consistent with the HDF5 backend.
+                    converted.(name) = reshape(cellstr(string(rawValues)), n, 1);
                 else
                     converted.(name) = reshape([rawValues{:}], n, 1);
                 end
