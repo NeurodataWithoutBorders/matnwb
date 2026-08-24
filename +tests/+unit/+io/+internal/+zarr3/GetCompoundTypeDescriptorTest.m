@@ -55,15 +55,45 @@ classdef GetCompoundTypeDescriptorTest < matlab.unittest.TestCase
 
         function treatsEveryFieldAsLiteralWhenNoReferencesDeclared(testCase)
         % A reference-free compound dataset keeps its underlying classes --
-        % notably a "string" field must stay a string, not become an
+        % notably a text field stays literal text rather than becoming an
         % ObjectView.
             info = tests.unit.io.internal.zarr3.GetCompoundTypeDescriptorTest.buildDtypeInfo(...
                 ["label", "weight"], ["string", "double"]);
 
             typeDescriptor = io.internal.zarr3.getCompoundTypeDescriptor(info, string.empty(1, 0));
 
-            testCase.verifyEqual(typeDescriptor.label, 'string');
+            testCase.verifyEqual(typeDescriptor.label, 'char');
             testCase.verifyEqual(typeDescriptor.weight, 'double');
+        end
+
+        function reportsTextFieldsAsCharToMatchHdf5Backend(testCase)
+        % zarr-matlab represents both Zarr text types as a MATLAB string, but
+        % the HDF5 backend reports H5T_STRING as char and the generated type
+        % classes declare text compound fields as 'char' (for instance
+        % types.hdmf_common.HERD's entity_id). Since
+        % types.util.checkDtype>validateCompoundTypeDescriptor compares
+        % descriptor entries by name, a descriptor saying 'string' makes an
+        % otherwise valid file unreadable.
+            info = tests.unit.io.internal.zarr3.GetCompoundTypeDescriptorTest.buildDtypeInfo(...
+                ["entity_id", "entity_uri"], ["string", "string"]);
+
+            typeDescriptor = io.internal.zarr3.getCompoundTypeDescriptor(...
+                info, string.empty(1, 0));
+
+            testCase.verifyEqual(typeDescriptor.entity_id, 'char');
+            testCase.verifyEqual(typeDescriptor.entity_uri, 'char');
+        end
+
+        function leavesNonTextClassesUnchanged(testCase)
+        % The text mapping must not disturb any other class name.
+            info = tests.unit.io.internal.zarr3.GetCompoundTypeDescriptorTest.buildDtypeInfo(...
+                ["a", "b", "c", "d"], ["int32", "double", "logical", "uint64"]);
+
+            typeDescriptor = io.internal.zarr3.getCompoundTypeDescriptor(...
+                info, string.empty(1, 0));
+
+            testCase.verifyEqual(struct2cell(typeDescriptor), ...
+                {'int32'; 'double'; 'logical'; 'uint64'});
         end
 
         function mapsMultipleReferenceFields(testCase)
