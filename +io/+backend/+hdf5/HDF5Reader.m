@@ -21,6 +21,10 @@ classdef HDF5Reader < io.backend.base.Reader
             node = h5info(obj.Filename);
         end
 
+        function tf = isReferenceDataset(~, datasetInfo)
+            tf = strcmp(datasetInfo.Datatype.Class, 'H5T_REFERENCE');
+        end
+
         function linkInfo = readLinkInfo(obj, linkPath)
             arguments
                 obj
@@ -114,7 +118,7 @@ classdef HDF5Reader < io.backend.base.Reader
             % when appropriate
             datatype = datasetInfo.Datatype;
             dataspace = datasetInfo.Dataspace;
-            if strcmp(datatype.Class, 'H5T_REFERENCE')
+            if obj.isReferenceDataset(datasetInfo)
                 % Load all H5T references. This is required, unfortunately also a
                 % bottleneck
                 tid = H5D.get_type(did);
