@@ -92,6 +92,11 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
                 return
             end
 
+            if obj.isLinearSelection(varargin)
+                data = obj.readLinearSelection(varargin{1});
+                return
+            end
+
             [isSupported, fullSelection] = obj.tryBuildRegularSelection(varargin);
             if isSupported
                 [start, count, stride] = obj.selectionToReadParameters(fullSelection);
@@ -209,6 +214,85 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
             end
             data = io.internal.zarr3.normalizeDatasetDimensions(data, rank);
             data = obj.postProcessCompound(data);
+        end
+
+        function tf = isLinearSelection(obj, userSelection)
+        % isLinearSelection - True for a single numeric subscript, data(k).
+        %
+        % Compound datasets are excluded: their records are assembled by
+        % postProcessCompound and returned as a table, which the
+        % element-at-a-time read below does not reproduce. They stay on the
+        % full-read path, which is tolerable because NWB compound datasets
+        % (pixel_mask, TimeSeriesReferenceVectorData columns) are small.
+
+            tf = isscalar(userSelection) ...
+                && isnumeric(userSelection{1}) ...
+                && ~isstruct(obj.dataType);
+        end
+
+        function data = readLinearSelection(obj, linearIndices)
+        % readLinearSelection - Read the elements named by linear indices.
+        %
+        % MATLAB linear indexing into an N-D array has no Zarr equivalent:
+        % zarr.Array.read takes a contiguous hyperslab, so the indices are
+        % converted to per-dimension subscripts and read one element at a
+        % time. Reading N elements costs N reads, but the alternative for a
+        % scattered selection is the bounding box that spans it, which for a
+        % large sparse dataset is the whole array.
+        %
+        % This path matters beyond user indexing: types.util.checkDtype
+        % samples a dataset with load(1) to determine its type, so without
+        % it every read of an "any"-dtype dataset materialises the array
+        % (see io.backend.hdf5.@HDF5LazyArray/load_mat_style, which serves
+        % the same selection with an H5S_SELECT_ELEMENTS point read).
+
+            dataDimensions = obj.dims;
+            assert(all(linearIndices(:) > 0 & linearIndices(:) == floor(linearIndices(:))), ...
+                'NWB:DataStub:Load:InvalidSelection', ...
+                'DataStub linear indices must be positive integer values');
+            assert(all(linearIndices(:) <= prod(dataDimensions)), ...
+                'NWB:DataStub:Load:InvalidSelection', ...
+                ['DataStub linear indices must be less than or equal to the ' ...
+                'number of elements %u'], prod(dataDimensions));
+
+            rank = numel(dataDimensions);
+            if isscalar(dataDimensions)
+                % From R2024b ind2sub requires two or more dimensions; a
+                % scalar size refers to the row dimension, matching what
+                % io.backend.hdf5.@HDF5LazyArray/load_mat_style assumes.
+                dataDimensions = [dataDimensions, 1];
+            end
+
+            uniqueIndices = unique(linearIndices(:));
+            if isempty(uniqueIndices)
+                % Nothing selected: take the type from the first element so
+                % that an empty of the right class is returned.
+                sample = obj.readPoint(ones(1, rank));
+                data = sample([]);
+                return
+            end
+
+            subscripts = cell(1, numel(dataDimensions));
+            [subscripts{:}] = ind2sub(dataDimensions, uniqueIndices);
+            subscripts = cell2mat(subscripts);
+
+            uniqueValues = obj.readPoint(subscripts(1, 1:rank));
+            uniqueValues = repmat(uniqueValues, numel(uniqueIndices), 1);
+            for iIndex = 2:numel(uniqueIndices)
+                uniqueValues(iIndex) = obj.readPoint(subscripts(iIndex, 1:rank));
+            end
+
+            % Restore the caller's order, and any duplicate indices, from
+            % the sorted unique set that was actually read.
+            [~, positions] = ismember(linearIndices, uniqueIndices);
+            data = uniqueValues(positions);
+            data = obj.applySelectionShape(data, {linearIndices});
+        end
+
+        function value = readPoint(obj, subscript)
+        % readPoint - Read the single element at a subscript vector.
+            value = obj.readPartialData(subscript, ones(1, numel(subscript)), ...
+                ones(1, numel(subscript)));
         end
 
         function [isSupported, fullSelection] = tryBuildRegularSelection(obj, userSelection)
