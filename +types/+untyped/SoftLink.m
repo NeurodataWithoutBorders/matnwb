@@ -68,38 +68,22 @@ classdef SoftLink < handle
             writer = io.backend.base.Writer.ensure(writer);
             if nargin < 4; refs = {}; end
             for i = 1:numel(obj)
-                refs = obj(i).exportScalar(writer.FileId, fullpath, refs); %#ok<AGROW>
+                refs = obj(i).exportScalar(writer, fullpath, refs);
             end
         end
     end
 
     methods (Access = private)
-        function refs = exportScalar(obj, fid, fullpath, refs)
+        function refs = exportScalar(obj, writer, fullpath, refs)
             if isempty(obj.path)
+                % The target has no location yet, so the link cannot be
+                % written. Report it so that NwbFile.resolveReferences
+                % exports this object again once the target exists.
                 refs{end+1} = fullpath;
                 return;
             end
-            
-            if isempty(obj.path)
-                target_path = obj.target.metaClass_fullPath;
-            else
-                target_path = obj.path;
-            end
-            
-            plist = 'H5P_DEFAULT';
-            try
-                H5L.create_soft(target_path, fid, fullpath, plist, plist);
-            catch ME
-                if contains(ME.message, 'name already exists')
-                    previousLink = H5L.get_val(fid, fullpath, plist);
-                    if ~strcmp(previousLink{1}, obj.path)
-                        H5L.delete(fid, fullpath, plist);
-                        H5L.create_soft(obj.path, fid, fullpath, plist, plist);
-                    end
-                else
-                    rethrow(ME);
-                end
-            end
+
+            writer.writeSoftLink(fullpath, obj.path);
         end
     end
 

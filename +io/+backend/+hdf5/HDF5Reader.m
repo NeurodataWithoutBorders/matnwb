@@ -21,6 +21,37 @@ classdef HDF5Reader < io.backend.base.Reader
             node = h5info(obj.Filename);
         end
 
+        function linkInfo = readLinkInfo(obj, linkPath)
+            arguments
+                obj
+                linkPath (1,1) string
+            end
+            fileId = H5F.open(obj.Filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
+            fileCleanup = onCleanup(@() H5F.close(fileId));
+
+            plist = 'H5P_DEFAULT';
+            rawInfo = H5L.get_info(fileId, char(linkPath), plist);
+            isExternal = rawInfo.type == H5ML.get_constant_value('H5L_TYPE_EXTERNAL');
+            isSoft = rawInfo.type == H5ML.get_constant_value('H5L_TYPE_SOFT');
+            assert(isExternal || isSoft, ...
+                'NWB:Backend:Reader:UnsupportedLinkType', ...
+                'The node at "%s" in "%s" is not a soft or external link.', ...
+                linkPath, obj.Filename);
+
+            % H5L.get_val returns {targetPath} for a soft link and
+            % {targetFilename, targetPath} for an external one.
+            rawValue = H5L.get_val(fileId, char(linkPath), plist);
+            if isExternal
+                linkInfo = struct('Type', "external link", ...
+                    'TargetFilename', string(rawValue{1}), ...
+                    'TargetPath', string(rawValue{2}));
+            else
+                linkInfo = struct('Type', "soft link", ...
+                    'TargetFilename', "", ...
+                    'TargetPath', string(rawValue{1}));
+            end
+        end
+
         function node = readNodeInfo(obj, nodePath)
             arguments
                 obj

@@ -102,6 +102,21 @@ classdef Reader < handle
             io.backend.base.Reader.throwNotImplemented("readAttributeValue")
         end
 
+        function linkInfo = readLinkInfo(obj, linkPath) %#ok<INUSD>
+        % readLinkInfo - Return the target of a link without following it.
+        %
+        % Input Arguments:
+        %  - obj - Reader instance.
+        %  - linkPath - Path of the link node.
+        %
+        % Output Arguments:
+        %  - linkInfo - Struct with fields Type ("soft link" or "external
+        %    link", matching the vocabulary io.parseGroup consumes),
+        %    TargetPath, and TargetFilename (empty for a soft link).
+            linkInfo = struct.empty;
+            io.backend.base.Reader.throwNotImplemented("readLinkInfo")
+        end
+
         function datasetValue = readDatasetValue(obj, datasetInfo, datasetPath) %#ok<INUSD>
         % readDatasetValue - Read the value of a dataset from the backend.
         %

@@ -83,6 +83,15 @@ classdef HDF5Writer < io.backend.base.Writer
             io.writeAttribute(obj.H5FileId, attributePath, value, varargin{:});
         end
 
+        function writeSoftLink(obj, linkPath, targetPath)
+            io.internal.h5.writeLink(obj.H5FileId, linkPath, "soft", targetPath);
+        end
+
+        function writeExternalLink(obj, linkPath, targetFilename, targetPath)
+            io.internal.h5.writeLink(...
+                obj.H5FileId, linkPath, "external", targetPath, targetFilename);
+        end
+
         function specLocation = getEmbeddedSpecLocation(obj)
             specLocation = io.spec.internal.readEmbeddedSpecLocation(obj.H5FileId);
         end
