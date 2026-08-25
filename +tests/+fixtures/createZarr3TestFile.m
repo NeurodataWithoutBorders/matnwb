@@ -77,6 +77,19 @@ function fixturePath = createZarr3TestFile(rootFolder)
         hdmf.zarr.Reference("/acquisition/es", Source="other_session.nwb.zarr"));
     acquisitionGroup.setAttr("zarr_link", externalLink.encode());
 
+    % A second store, so that an external link can actually be followed
+    % rather than only read as metadata. The link above records the relative
+    % source hdmf-zarr writes; these record an absolute one, so following
+    % them does not depend on the process working directory.
+    externalStorePath = createExternalTargetStore(rootFolder);
+    scratchGroup = root.createGroup("scratch");
+    scratchLinks = [ ...
+        hdmf.zarr.Link("linked_data", ...
+            hdmf.zarr.Reference("/data", Source=externalStorePath)), ...
+        hdmf.zarr.Link("linked_group", ...
+            hdmf.zarr.Reference("/plain_group", Source=externalStorePath))];
+    scratchGroup.setAttr("zarr_link", scratchLinks.encode());
+
     % Consolidate before renaming: consolidate_metadata re-encodes the root
     % attributes from their struct form, which would undo the rename.
     zarr.consolidate_metadata(root.store);
@@ -167,4 +180,20 @@ function createEntitiesArray(parentGroup)
 
     entitiesArray = zarr.Array(parentGroup.store, arrayPath, meta);
     entitiesArray.write(records);
+end
+
+function externalStorePath = createExternalTargetStore(rootFolder)
+% createExternalTargetStore - A second store for external links to point at.
+%
+% Holds the two node kinds types.untyped.ExternalLink.deref tells apart
+% without any neurodata type having to be generated: a plain dataset, which
+% dereferences to a lazy stub, and an untyped group, which deref rejects by
+% name. Both are stored as a separate Zarr store so the link crosses a store
+% boundary, as an external link does.
+
+    externalStorePath = fullfile(rootFolder, "external_target.zarr");
+    externalRoot = zarr.create_group(externalStorePath);
+    externalRoot.createArray("data", 3, "int64").write(int64([7; 8; 9]));
+    externalRoot.createGroup("plain_group");
+    zarr.consolidate_metadata(externalRoot.store);
 end

@@ -119,6 +119,31 @@ classdef Zarr3ReaderTest < matlab.unittest.TestCase
             testCase.verifyEqual(datasetValue.load(), int64([0; 1; 2; 3]));
         end
 
+        function externalLinkToDatasetDereferences(testCase)
+        % End to end: an external link read out of a Zarr store resolves,
+        % through io.backend.BackendFactory, into a reader for the target
+        % store and yields that dataset. Exercises the whole chain
+        % types.untyped.ExternalLink.deref depends on -- backend detection,
+        % readNodeInfo, node classification and isReferenceDataset.
+            link = testCase.readScratchLink("linked_data");
+
+            target = link.deref();
+
+            testCase.verifyClass(target, "types.untyped.DataStub");
+            testCase.verifyEqual(target.load(), int64([7; 8; 9]));
+        end
+
+        function externalLinkToUntypedGroupIsReported(testCase)
+        % An untyped group cannot be returned on its own, and deref says so
+        % by name. Reaching that specific error is what proves the node was
+        % recognised as a group at all: a classification that does not fit
+        % this backend fails earlier, with UnknownNodeType.
+            link = testCase.readScratchLink("linked_group");
+
+            testCase.verifyError(@() link.deref(), ...
+                'NWB:ExternalLink:UntypedGroup');
+        end
+
         function isReferenceDatasetIdentifiesReferenceDatasets(testCase)
         % types.untyped.ExternalLink.deref asks the reader whether a linked
         % dataset holds references, to decide between parsing it and
@@ -187,4 +212,17 @@ classdef Zarr3ReaderTest < matlab.unittest.TestCase
                 "NWB:Zarr3Reader:NodeNotFound");
         end
     end
+
+    methods (Access = private)
+        function link = readScratchLink(testCase, linkName)
+        % readScratchLink - Build an ExternalLink from the fixture's own
+        % metadata, so the target location is never hard-coded here.
+            reader = io.backend.zarr3.Zarr3Reader(testCase.FixturePath);
+            nodeInfo = reader.readNodeInfo("/scratch");
+            record = nodeInfo.Links(strcmp({nodeInfo.Links.Name}, linkName));
+            testCase.assertEqual(record.Type, 'external link');
+            link = types.untyped.ExternalLink(record.Value{1}, record.Value{2});
+        end
+    end
+
 end
