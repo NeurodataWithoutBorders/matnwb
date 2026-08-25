@@ -136,6 +136,15 @@ classdef HDF5Writer < io.backend.base.Writer
             H5F.close(src_fid);
         end
 
+        function writtenPipe = exportDataPipe(obj, dataPipe, destinationPath)
+            % The pipe internals (BoundPipe/BlueprintPipe) drive H5P/H5D
+            % directly for chunking, compression, dynamic filters and
+            % extendable datasets, so they legitimately consume a raw HDF5
+            % file id. Keeping this call inside the HDF5 writer means the
+            % raw id never crosses the backend interface.
+            writtenPipe = dataPipe.internal.write(obj.H5FileId, destinationPath);
+        end
+
         function writeSoftLink(obj, linkPath, targetPath)
             io.internal.h5.writeLink(obj.H5FileId, linkPath, "soft", targetPath);
         end
@@ -168,11 +177,6 @@ classdef HDF5Writer < io.backend.base.Writer
         end
     end
 
-    methods (Access = protected)
-        function fileId = getFileId(obj)
-            fileId = obj.H5FileId;
-        end
-    end
 end
 
 function hasReference = isCompoundWithReference(src_tid)
