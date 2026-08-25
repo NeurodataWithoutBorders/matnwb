@@ -9,6 +9,9 @@ classdef IntracellularElectrodesTable < types.hdmf_common.DynamicTable & types.u
 properties
     electrode; % REQUIRED (VectorData) Column for storing the reference to the intracellular electrode.
 end
+properties (Constant, Access = private)
+    DeclaredSchemaColumns = ["electrode"];
+end
 
 methods
     function obj = IntracellularElectrodesTable(varargin)

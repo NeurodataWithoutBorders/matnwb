@@ -193,6 +193,19 @@ classdef (Abstract) DynamicTableBase < handle
     end
     
     methods (Hidden)
+        function columnNames = getSchemaDefinedColumns(obj)
+        % getSchemaDefinedColumns - Return schema-defined column names.
+        %
+        % Generated DynamicTable classes declare their local schema column
+        % names as private constants. Aggregate them across the generated
+        % neurodata type hierarchy so inherited columns are included.
+
+            import matnwb.neurodata.internal.collectConstantPropertiesAcrossHierarchy
+
+            columnNames = collectConstantPropertiesAcrossHierarchy( ...
+                class(obj), 'DeclaredSchemaColumns');
+        end
+
         function ensureDynamicTableConsistency(obj)
         % ensureDynamicTableConsistency - Ensure DynamicTable column consistency.
         %

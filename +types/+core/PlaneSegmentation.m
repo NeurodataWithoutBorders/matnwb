@@ -18,6 +18,9 @@ properties
     voxel_mask; %  (VectorData) Voxel masks for each ROI: a list of indices and weights for the ROI. Voxel masks are concatenated and parsing of this dataset is maintained by the PlaneSegmentation. At least one of `image_mask`, `pixel_mask`, or `voxel_mask` is required.
     voxel_mask_index; %  (VectorIndex) Index into voxel_mask.
 end
+properties (Constant, Access = private)
+    DeclaredSchemaColumns = ["image_mask", "pixel_mask", "pixel_mask_index", "voxel_mask", "voxel_mask_index"];
+end
 
 methods
     function obj = PlaneSegmentation(varargin)

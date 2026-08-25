@@ -19,6 +19,9 @@ end
 properties (Constant, Access = private)
     GroupPropertyNames = ["vectordata"];
 end
+properties (Constant, Access = private)
+    DeclaredSchemaColumns = string.empty(1, 0);
+end
 
 methods
     function obj = DynamicTable(varargin)

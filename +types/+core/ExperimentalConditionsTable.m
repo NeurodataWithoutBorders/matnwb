@@ -10,6 +10,9 @@ properties
     repetitions; % REQUIRED (DynamicTableRegion) A reference to one or more rows in the RepetitionsTable table.
     repetitions_index; % REQUIRED (VectorIndex) Index dataset for the repetitions column.
 end
+properties (Constant, Access = private)
+    DeclaredSchemaColumns = ["repetitions", "repetitions_index"];
+end
 
 methods
     function obj = ExperimentalConditionsTable(varargin)

@@ -15,6 +15,9 @@ properties
     band_mean; %  (VectorData) The mean Gaussian filters, in Hz.
     band_stdev; %  (VectorData) The standard deviation of Gaussian filters, in Hz.
 end
+properties (Constant, Access = private)
+    DeclaredSchemaColumns = ["band_limits", "band_mean", "band_name", "band_stdev"];
+end
 
 methods
     function obj = FrequencyBandsTable(varargin)

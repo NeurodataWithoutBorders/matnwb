@@ -10,6 +10,9 @@ properties
     sequential_recordings; % REQUIRED (DynamicTableRegion) A reference to one or more rows in the SequentialRecordingsTable table.
     sequential_recordings_index; % REQUIRED (VectorIndex) Index dataset for the sequential_recordings column.
 end
+properties (Constant, Access = private)
+    DeclaredSchemaColumns = ["sequential_recordings", "sequential_recordings_index"];
+end
 
 methods
     function obj = RepetitionsTable(varargin)

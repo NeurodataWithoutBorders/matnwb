@@ -1,0 +1,7 @@
+namespaces:
+- full_name: DynamicTable Column Schema Test
+  name: dtc
+  schema:
+  - namespace: core
+  - source: dtc.tables.yaml
+  version: 1.0.0

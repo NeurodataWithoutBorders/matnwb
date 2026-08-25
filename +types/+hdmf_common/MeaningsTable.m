@@ -11,6 +11,9 @@ properties
     target; % REQUIRED (VectorData) Link to the VectorData object for which this table provides meanings.
     value; % REQUIRED (VectorData) The value of a row in the linked VectorData object.
 end
+properties (Constant, Access = private)
+    DeclaredSchemaColumns = ["meaning", "value"];
+end
 
 methods
     function obj = MeaningsTable(varargin)

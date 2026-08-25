@@ -175,6 +175,15 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
             {fullPropertyDefinition, schemaCategoryPropertyBlock}, newline);
     end
 
+    if file.internal.isDescendantOf(name, namespace, 'DynamicTable')
+        columnNames = collectSchemaDefinedTableColumns( ...
+            classprops, nonInherited, namespace);
+        schemaColumnPropertyBlock = file.fillPrivateConstantProperty( ...
+            'DeclaredSchemaColumns', columnNames);
+        fullPropertyDefinition = strjoin(...
+            {fullPropertyDefinition, schemaColumnPropertyBlock}, newline);
+    end
+
     constructorBody = file.fillConstructor(...
         name,...
         superclassNames{1},...
@@ -265,17 +274,22 @@ function categoryNames = collectSchemaDefinedAlignedDynamicTableCategories( ...
     for iProperty = 1:length(propertyNames)
         propertyName = propertyNames{iProperty};
         propertyInfo = classProps(propertyName);
-        if isSchemaDefinedAlignedDynamicTableCategory(propertyInfo, namespace)
+        if file.internal.isSchemaDefinedTableCategory(propertyInfo, namespace)
             categoryNames(end+1) = string(propertyName); %#ok<AGROW>
         end
     end
 end
 
-function tf = isSchemaDefinedAlignedDynamicTableCategory(propertyInfo, namespace)
-    tf = isa(propertyInfo, 'file.Group') ...
-        && ~propertyInfo.isConstrainedSet ...
-        && ~isempty(propertyInfo.type) ...
-        && file.internal.isDescendantOf(propertyInfo.type, namespace, 'DynamicTable');
+function columnNames = collectSchemaDefinedTableColumns( ...
+        classProps, propertyNames, namespace)
+    columnNames = string.empty(1, 0);
+    for iProperty = 1:length(propertyNames)
+        propertyName = propertyNames{iProperty};
+        propertyInfo = classProps(propertyName);
+        if file.internal.isSchemaDefinedTableColumn(propertyInfo, namespace)
+            columnNames(end+1) = string(propertyName); %#ok<AGROW>
+        end
+    end
 end
 
 function propertyBlockStr = createSchemaNameMappingBlock(schemaNames)

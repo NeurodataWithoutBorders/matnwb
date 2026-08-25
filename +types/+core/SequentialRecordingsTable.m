@@ -11,6 +11,9 @@ properties
     simultaneous_recordings_index; % REQUIRED (VectorIndex) Index dataset for the simultaneous_recordings column.
     stimulus_type; % REQUIRED (VectorData) The type of stimulus used for the sequential recording.
 end
+properties (Constant, Access = private)
+    DeclaredSchemaColumns = ["simultaneous_recordings", "simultaneous_recordings_index", "stimulus_type"];
+end
 
 methods
     function obj = SequentialRecordingsTable(varargin)
