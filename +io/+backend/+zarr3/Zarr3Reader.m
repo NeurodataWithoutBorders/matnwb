@@ -120,9 +120,19 @@ classdef Zarr3Reader < io.backend.base.Reader
             end
         end
 
+        function tf = isReferenceDataset(~, datasetInfo)
+        % isReferenceDataset - Whether a dataset holds object references.
+        %
+        % Zarr v3 has no native reference type. hdmf-zarr marks such a
+        % dataset with a zarr_dtype of "object", which
+        % io.internal.zarr3.buildNodeInfo surfaces as the node's Datatype
+        % (see hdmf.zarr.isReferenceArray).
+            tf = strcmp(datasetInfo.Datatype, "object");
+        end
+
         function datasetValue = readDatasetValue(obj, datasetInfo, datasetPath)
             dataDimensions = obj.getDatasetDims(datasetInfo);
-            isObjectReferenceArray = strcmp(datasetInfo.Datatype, "object");
+            isObjectReferenceArray = obj.isReferenceDataset(datasetInfo);
             isStructuredArray = strcmp(datasetInfo.Datatype, "structured");
             % A true rank-0 array, or one explicitly marked "scalar" by
             % hdmf-zarr's zarr_dtype hint (see

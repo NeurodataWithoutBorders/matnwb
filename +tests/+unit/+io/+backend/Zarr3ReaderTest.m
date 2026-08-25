@@ -119,6 +119,29 @@ classdef Zarr3ReaderTest < matlab.unittest.TestCase
             testCase.verifyEqual(datasetValue.load(), int64([0; 1; 2; 3]));
         end
 
+        function isReferenceDatasetIdentifiesReferenceDatasets(testCase)
+        % types.untyped.ExternalLink.deref asks the reader whether a linked
+        % dataset holds references, to decide between parsing it and
+        % returning a lazy stub. Zarr encodes that as hdmf-zarr's
+        % zarr_dtype:"object" rather than a datatype class, which is why the
+        % question belongs to the backend.
+            reader = io.backend.zarr3.Zarr3Reader(testCase.FixturePath);
+
+            referenceInfo = reader.readNodeInfo(...
+                "/general/extracellular_ephys/electrodes/group");
+            testCase.verifyTrue(reader.isReferenceDataset(referenceInfo));
+
+            plainInfo = reader.readNodeInfo(...
+                "/general/extracellular_ephys/electrodes/id");
+            testCase.verifyFalse(reader.isReferenceDataset(plainInfo));
+
+            % A compound dataset is not a reference dataset, even though
+            % individual fields of it may hold references.
+            compoundInfo = reader.readNodeInfo(...
+                "/processing/ophys/PlaneSegmentation/pixel_mask");
+            testCase.verifyFalse(reader.isReferenceDataset(compoundInfo));
+        end
+
         function readObjectReferenceDatasetReturnsObjectViews(testCase)
             reader = io.backend.zarr3.Zarr3Reader(testCase.FixturePath);
             groupColumnPath = "/general/extracellular_ephys/electrodes/group";
