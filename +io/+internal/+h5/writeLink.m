@@ -13,6 +13,9 @@ function writeLink(fileId, linkPath, linkType, targetPath, targetFilename)
 % link target is not resolvable yet a second time, once the target exists
 % (see NwbFile.resolveReferences), so re-writing the same link is routine
 % rather than a conflict.
+%
+% Errors with NWB:WriteLink:PathOccupiedByNode when a group or dataset
+% already occupies linkPath, rather than deleting it.
 
     arguments
         fileId
@@ -24,7 +27,13 @@ function writeLink(fileId, linkPath, linkType, targetPath, targetFilename)
 
     propertyListId = 'H5P_DEFAULT';
     if H5L.exists(fileId, linkPath, propertyListId)
-        if isMatchingLink(fileId, linkPath, propertyListId, linkType, targetPath, targetFilename)
+        existingType = readExistingLinkType(fileId, linkPath, propertyListId);
+        assert(existingType ~= "none", 'NWB:WriteLink:PathOccupiedByNode', ...
+            ['A group or dataset already exists at "%s", so a %s link ', ...
+            'cannot be written there. Remove the existing node, or write ', ...
+            'the link at a different location.'], linkPath, linkType);
+        if isMatchingLink(fileId, linkPath, propertyListId, existingType, ...
+                linkType, targetPath, targetFilename)
             return
         end
         H5L.delete(fileId, linkPath, propertyListId);
@@ -33,28 +42,46 @@ function writeLink(fileId, linkPath, linkType, targetPath, targetFilename)
     if linkType == "soft"
         H5L.create_soft(targetPath, fileId, linkPath, propertyListId, propertyListId);
     else
-        H5L.create_external(targetFilename, targetPath, fileId, linkPath, propertyListId, propertyListId);
+        H5L.create_external(targetFilename, targetPath, fileId, linkPath, ...
+            propertyListId, propertyListId);
     end
 end
 
-function tf = isMatchingLink(fileId, linkPath, propertyListId, linkType, targetPath, targetFilename)
+function existingType = readExistingLinkType(fileId, linkPath, propertyListId)
+% readExistingLinkType - "soft", "external", or "none" for a non-link node.
+%
+% A group or dataset is a hard link, which reports as "none" here: it is a
+% node occupying the path rather than a link that could be compared or
+% replaced.
+
+    linkInfo = H5L.get_info(fileId, linkPath, propertyListId);
+    if linkInfo.type == H5ML.get_constant_value('H5L_TYPE_SOFT')
+        existingType = "soft";
+    elseif linkInfo.type == H5ML.get_constant_value('H5L_TYPE_EXTERNAL')
+        existingType = "external";
+    else
+        existingType = "none";
+    end
+end
+
+function isMatch = isMatchingLink(fileId, linkPath, propertyListId, ...
+        existingType, linkType, targetPath, targetFilename)
 % isMatchingLink - Whether the link already present is the one requested.
 %
 % H5L.get_val returns {targetPath} for a soft link and
-% {targetFilename, targetPath} for an external one. A path that holds a
-% group or dataset rather than a link is not a match, so it is replaced.
+% {targetFilename, targetPath} for an external one. It is only valid for a
+% symbolic link, so the caller has already excluded a non-link node.
 
-    tf = false;
-    linkInfo = H5L.get_info(fileId, linkPath, propertyListId);
-    isSoft = linkInfo.type == H5ML.get_constant_value('H5L_TYPE_SOFT');
-    isExternal = linkInfo.type == H5ML.get_constant_value('H5L_TYPE_EXTERNAL');
+    isMatch = false;
+    if existingType ~= linkType
+        return
+    end
 
-    if linkType == "soft" && isSoft
-        existingValue = H5L.get_val(fileId, linkPath, propertyListId);
-        tf = strcmp(existingValue{1}, targetPath);
-    elseif linkType == "external" && isExternal
-        existingValue = H5L.get_val(fileId, linkPath, propertyListId);
-        tf = strcmp(existingValue{1}, targetFilename) ...
+    existingValue = H5L.get_val(fileId, linkPath, propertyListId);
+    if linkType == "soft"
+        isMatch = strcmp(existingValue{1}, targetPath);
+    else
+        isMatch = strcmp(existingValue{1}, targetFilename) ...
             && strcmp(existingValue{2}, targetPath);
     end
 end

@@ -67,6 +67,43 @@ classdef HDF5WriterTest < matlab.unittest.TestCase
             testCase.verifyEqual(link.Value{1}, '/second');
         end
 
+        function writeLinkRejectsPathHeldByAnotherNode(testCase)
+        % A group or dataset at the link path is not something to compare or
+        % replace -- H5L.get_val is not even valid for it. Report the
+        % conflict rather than deleting the node that is already there.
+            writer = io.backend.hdf5.HDF5Writer("occupied-test.nwb", "overwrite");
+            testCase.addTeardown(@() writer.close());
+            writer.writeGroup('/occupied');
+
+            testCase.verifyError(@() writer.writeSoftLink('/occupied', '/elsewhere'), ...
+                'NWB:WriteLink:PathOccupiedByNode');
+            testCase.verifyError(...
+                @() writer.writeExternalLink('/occupied', 'other.nwb', '/data'), ...
+                'NWB:WriteLink:PathOccupiedByNode');
+
+            % The group that was already there must survive the rejected writes.
+            writer.close();
+            info = h5info("occupied-test.nwb", '/');
+            testCase.verifyTrue(any(endsWith({info.Groups.Name}, 'occupied')));
+        end
+
+        function writeSoftLinkReplacesExternalLinkAtSamePath(testCase)
+        % Two links of different kinds at one path are both links, so the
+        % newer one replaces the older rather than being a conflict.
+            writer = io.backend.hdf5.HDF5Writer("swap-test.nwb", "overwrite");
+            testCase.addTeardown(@() writer.close());
+            writer.writeGroup('/target');
+
+            writer.writeExternalLink('/link', 'other.nwb', '/data');
+            writer.writeSoftLink('/link', '/target');
+            writer.close();
+
+            info = h5info("swap-test.nwb", '/');
+            link = info.Links(strcmp({info.Links.Name}, 'link'));
+            testCase.verifyEqual(link.Type, 'soft link');
+            testCase.verifyEqual(link.Value{1}, '/target');
+        end
+
         function writeExternalLinkRecordsFileAndPath(testCase)
             targetWriter = io.backend.hdf5.HDF5Writer("target-file.nwb", "overwrite");
             targetWriter.writeGroup('/data');
