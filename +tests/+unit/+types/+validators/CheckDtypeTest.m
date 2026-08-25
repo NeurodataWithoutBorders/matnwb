@@ -220,6 +220,33 @@ classdef CheckDtypeTest < matlab.unittest.TestCase
             % The stub is returned unread, so the data stays lazy.
             testCase.verifyClass(validatedValue, 'types.untyped.DataStub');
         end
+
+        function testAnyDtypeSamplesDataStubWithUnresolvableType(testCase)
+        % Counterpart to testAnyDtypeValidatesDataStubWithoutReading: when
+        % the declared type does not name a constructible class, validation
+        % falls back to sampling one element, so here the file must exist
+        % and hold valid data.
+            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
+            filename = "check-dtype-sampling.h5";
+            h5create(filename, "/data", [2 2]);
+            h5write(filename, "/data", magic(2));
+
+            unresolvableTypes = {...
+                {'double'}, ...               % not text at all
+                'notARealClassName', ...      % text, but no such class
+                'matlab.mixin.Heterogeneous'};% a class, but abstract
+
+            for iType = 1:numel(unresolvableTypes)
+                lazyArray = io.backend.hdf5.HDF5LazyArray(...
+                    filename, "/data", [2 2], unresolvableTypes{iType});
+                dataStub = types.untyped.DataStub(...
+                    filename, "/data", [2 2], [], lazyArray);
+
+                validatedValue = types.util.checkDtype('data', 'any', dataStub);
+
+                testCase.verifyClass(validatedValue, 'types.untyped.DataStub');
+            end
+        end
     end
 
     methods (Static)

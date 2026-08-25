@@ -45,11 +45,25 @@ function fixturePath = createZarr3TestFile(rootFolder)
     % (channels x timepoints) dims read by Zarr3ReaderTest/Zarr3LazyArrayTest.
     esGroup.createArray("data", [29 4], "single").write(reshape(single(1:116), [4 29]).');
 
+    % A rank-3 dataset (numpy order [4 3 2] -> MatNWB dims [2 3 4]), for the
+    % rank >= 3 axis reversal (io.internal.zarr3.normalizeDatasetDimensions
+    % uses permute rather than transpose there) and for selections naming
+    % fewer subscripts than the rank.
+    volumeGroup = acquisitionGroup.createGroup("vol");
+    volumeGroup.createArray("data", [4 3 2], "double").write(reshape(1:24, [4 3 2]));
+
     unitsGroup = root.createGroup("units");
     unitsGroup.createArray("spike_times", 5, "double").write([1.1 2.2 3.3 4.4 5.5]);
     unitsGroup.createGroup("spike_times_index");
 
     generalGroup = root.createGroup("general");
+    % hdmf-zarr represents a genuine NWB scalar property as a rank-1,
+    % length-1 array tagged zarr_dtype:"scalar" -- indistinguishable by
+    % shape from a one-row column, so the tag is what makes the reader
+    % return a bare value (see io.internal.zarr3.buildNodeInfo).
+    generalGroup.createArray("session_id", 1, "string", ...
+        Attributes=struct('zarr_dtype', 'scalar')).write("sess-01");
+
     electrophysGroup = generalGroup.createGroup("extracellular_ephys");
     electrodesGroup = electrophysGroup.createGroup("electrodes");
     electrodesGroup.createArray("location", 4, "string").write(repmat("brain", 4, 1));
@@ -64,6 +78,9 @@ function fixturePath = createZarr3TestFile(rootFolder)
     planeSegmentationGroup = ophysGroup.createGroup("PlaneSegmentation");
     createPixelMaskArray(planeSegmentationGroup);
     createEntitiesArray(planeSegmentationGroup);
+
+    intervalsGroup = root.createGroup("intervals");
+    createTimeseriesReferenceArray(intervalsGroup.createGroup("trials"));
 
     % hdmf-zarr conventions: links and object references.
     hdmfFile = hdmf.zarr.File(root.store);
@@ -83,6 +100,11 @@ function fixturePath = createZarr3TestFile(rootFolder)
     % them does not depend on the process working directory.
     externalStorePath = createExternalTargetStore(rootFolder);
     scratchGroup = root.createGroup("scratch");
+    % A dataset with a zero-length dimension, which the reader returns as [].
+    scratchGroup.createArray("empty", 0, "double");
+    % A true rank-0 array of a type zarr-matlab reads back as a scalar cell
+    % (variable_length_bytes), which the reader's eager path unwraps.
+    scratchGroup.createArray("blob", [], "variable_length_bytes").write({uint8([1 2 3])});
     scratchLinks = [ ...
         hdmf.zarr.Link("linked_data", ...
             hdmf.zarr.Reference("/data", Source=externalStorePath)), ...
@@ -180,6 +202,46 @@ function createEntitiesArray(parentGroup)
 
     entitiesArray = zarr.Array(parentGroup.store, arrayPath, meta);
     entitiesArray.write(records);
+end
+
+function createTimeseriesReferenceArray(parentGroup)
+% createTimeseriesReferenceArray - Write a compound array with a reference field.
+%
+% Writes a 2-record "structured" array shaped like a
+% TimeSeriesReferenceVectorData column (idx_start int32, count int32,
+% timeseries -> object reference). The reference field's storage type is
+% text whose elements are hdmf.zarr.Reference JSON records, and the array's
+% zarr_dtype attribute tags that field "object" (see
+% io.internal.zarr3.getObjectReferenceFields), which is how hdmf-zarr
+% emulates an HDF5 compound with a reference member. Built the same way as
+% createPixelMaskArray, for the reason documented there.
+
+    textType = struct('name', "fixed_length_utf32", ...
+        'configuration', struct('length_bytes', 512));
+    info = zarr.internal.dtype_info(struct('name', "structured", 'configuration', struct( ...
+        'fields', {{{'idx_start', 'int32'}; {'count', 'int32'}; {'timeseries', textType}}})));
+
+    numRecords = 2;
+    meta = zarr.metadata.ArrayMetadata();
+    meta.shape = numRecords;
+    meta.dataType = "structured";
+    meta.dataTypeConfig = info.config;
+    meta.chunkShape = numRecords;
+    meta.fillValue = struct('idx_start', int32(0), 'count', int32(0), 'timeseries', "");
+    meta.codecs = {zarr.codecs.BytesCodec()};
+    meta.attributes = struct('zarr_dtype', ...
+        struct('name', {'idx_start', 'count', 'timeseries'}, ...
+            'dtype', {'int32', 'int32', 'object'}));
+
+    arrayPath = parentGroup.path + "/timeseries";
+    parentGroup.store.set(arrayPath + "/zarr.json", unicode2native(char(meta.toJsonText()), 'UTF-8'));
+
+    referenceJson = string(jsonencode(hdmf.zarr.Reference("/acquisition/es").encode()));
+    records(1, 1) = struct('idx_start', int32(0), 'count', int32(10), 'timeseries', referenceJson);
+    records(2, 1) = struct('idx_start', int32(10), 'count', int32(5), 'timeseries', referenceJson);
+
+    referenceArray = zarr.Array(parentGroup.store, arrayPath, meta);
+    referenceArray.write(records);
 end
 
 function externalStorePath = createExternalTargetStore(rootFolder)

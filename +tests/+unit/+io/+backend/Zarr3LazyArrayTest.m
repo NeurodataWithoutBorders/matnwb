@@ -198,5 +198,129 @@ classdef Zarr3LazyArrayTest < matlab.unittest.TestCase
             testCase.verifyError(@() lazyArray.load_mat_style(0), ...
                 'NWB:DataStub:Load:InvalidSelection');
         end
+
+        function loadMatStyleWithNoArgumentsLoadsEverything(testCase)
+            lazyArray = io.backend.zarr3.Zarr3LazyArray(...
+                testCase.FixturePath, testCase.DatasetPath);
+            testCase.verifyEqual(lazyArray.load_mat_style(), ...
+                reshape(single(1:116), [4 29]));
+
+            % A compound dataset keeps the table convention on this path too.
+            compoundArray = io.backend.zarr3.Zarr3LazyArray(...
+                testCase.FixturePath, "/processing/ophys/PlaneSegmentation/pixel_mask");
+            allRecords = compoundArray.load_mat_style();
+            testCase.verifyClass(allRecords, "table");
+            testCase.verifyEqual(height(allRecords), 3);
+        end
+
+        function compoundRegularSelectionUsesPartialRead(testCase)
+        % Two subscripts route through the regular-selection partial read
+        % (a lone subscript cannot: compound datasets are excluded from the
+        % linear-selection path), and the selected records must still come
+        % back as a table.
+            lazyArray = io.backend.zarr3.Zarr3LazyArray(...
+                testCase.FixturePath, "/processing/ophys/PlaneSegmentation/pixel_mask");
+
+            selectedRecords = lazyArray.load_mat_style(2:3, 1);
+
+            testCase.verifyClass(selectedRecords, "table");
+            testCase.verifyEqual(selectedRecords.x, uint32([1; 2]));
+            testCase.verifyEqual(selectedRecords.weight, single([0.6; 0.7]));
+        end
+
+        function emptySelectionOnCompoundReturnsNoRecords(testCase)
+            lazyArray = io.backend.zarr3.Zarr3LazyArray(...
+                testCase.FixturePath, "/processing/ophys/PlaneSegmentation/pixel_mask");
+
+            selectedRecords = lazyArray.load_mat_style([]);
+
+            testCase.verifyClass(selectedRecords, "table");
+            testCase.verifyEqual(height(selectedRecords), 0);
+        end
+
+        function colonSelectionMatchesNativeIndexing(testCase)
+            lazyArray = io.backend.zarr3.Zarr3LazyArray(...
+                testCase.FixturePath, testCase.DatasetPath);
+            fullData = lazyArray.load_h5_style();
+
+            testCase.verifyEqual(lazyArray.load_mat_style(':'), fullData(:));
+        end
+
+        function logicalSelectionFallsBackToFullRead(testCase)
+        % A logical mask is valid MATLAB indexing but has no hyperslab
+        % equivalent, so it must take the full-read fallback.
+            lazyArray = io.backend.zarr3.Zarr3LazyArray(...
+                testCase.FixturePath, testCase.DatasetPath);
+            fullData = lazyArray.load_h5_style();
+            rowMask = logical([1 0 1 1]);
+
+            testCase.verifyEqual(...
+                lazyArray.load_mat_style(rowMask, 1:29), ...
+                fullData(rowMask, 1:29));
+        end
+
+        function rank3DatasetReversesAxesAndPadsSelection(testCase)
+        % Rank >= 3 exercises the permute branch of
+        % io.internal.zarr3.normalizeDatasetDimensions (rank 2 uses a plain
+        % transpose), and a selection naming fewer subscripts than the rank
+        % reads index 1 of each unnamed trailing dimension -- matching
+        % io.backend.hdf5.@HDF5LazyArray/load_mat_style, not MATLAB's
+        % trailing-dimension folding.
+            lazyArray = io.backend.zarr3.Zarr3LazyArray(...
+                testCase.FixturePath, "/acquisition/vol/data");
+            fullData = lazyArray.load_h5_style();
+
+            testCase.verifyEqual(lazyArray.dims, [2 3 4]);
+            % The store holds numpy-order [4 3 2] data written as
+            % reshape(1:24, [4 3 2]); reversing the axes maps element
+            % (i,j,k) to raw (k,j,i).
+            testCase.verifyEqual(fullData(1, 1, 1), 1);
+            testCase.verifyEqual(fullData(2, 3, 4), 24);
+
+            testCase.verifyEqual(...
+                lazyArray.load_mat_style(1:2, 2), ...
+                fullData(1:2, 2, 1));
+        end
+
+        function linearIndexInto1dDatasetKeepsColumnShape(testCase)
+            lazyArray = io.backend.zarr3.Zarr3LazyArray(...
+                testCase.FixturePath, "/units/spike_times");
+            fullData = lazyArray.load_h5_style();
+
+            testCase.verifyEqual(lazyArray.load_mat_style([3 1]), fullData([3 1]));
+        end
+
+        function linearIndexIntoRowVectorDatasetKeepsRowShape(testCase)
+        % A [1 N] dataset is the one place a scalar linear selection must
+        % come back 1x1 via the row-vector branch of getExpectedSize.
+            import matlab.unittest.fixtures.TemporaryFolderFixture
+            folderFixture = testCase.applyFixture(TemporaryFolderFixture);
+            storePath = string(fullfile(folderFixture.Folder, "row.zarr"));
+
+            % numpy-order shape [3 1] reverses to MatNWB dims [1 3].
+            rowArray = zarr.create(storePath, [3 1], "double", Path="row");
+            rowArray.write([7; 8; 9]);
+            lazyArray = io.backend.zarr3.Zarr3LazyArray(storePath, "/row");
+
+            testCase.verifyEqual(lazyArray.dims, [1 3]);
+            testCase.verifyEqual(lazyArray.load_mat_style(2), 8);
+        end
+
+        function suppliedReferenceFieldsDecodeToObjectViews(testCase)
+        % io.backend.zarr3.Zarr3Reader passes the reference field names to
+        % the constructor so a compound load does not re-read them from the
+        % array's attributes; the supplied names must drive the decoding.
+            lazyArray = io.backend.zarr3.Zarr3LazyArray(...
+                testCase.FixturePath, "/intervals/trials/timeseries", ...
+                2, [], "timeseries");
+
+            data = lazyArray.load_h5_style();
+
+            testCase.verifyClass(data.timeseries, "types.untyped.ObjectView");
+            testCase.verifySize(data.timeseries, [2 1]);
+            testCase.verifyTrue(all(string({data.timeseries.path}) == ...
+                "/acquisition/es"));
+            testCase.verifyEqual(data.count, int32([10; 5]));
+        end
     end
 end
