@@ -103,6 +103,32 @@ classdef Writer < handle
             io.backend.base.Writer.throwNotImplemented("writeExternalLink")
         end
 
+        function validateReferenceResolvable(obj, referenceValue) %#ok<INUSD>
+        % validateReferenceResolvable - Verify a reference target is resolvable.
+        %
+        % Probes whether the target of each ObjectView or RegionView in
+        % referenceValue can be resolved in the file as written so far,
+        % without writing anything. Returns silently when every target is
+        % resolvable.
+        %
+        % Throws an error with identifier 'NWB:getRefData:InvalidPath'
+        % when a target path does not (yet) exist in the file. Export
+        % code treats that identifier, and 'NWB:ObjectView:MissingPath'
+        % raised while resolving a view's own path, as "defer this object
+        % to a second export pass once its target exists" (see
+        % types.untyped.MetaClass.export and NwbFile.resolveReferences),
+        % so implementations must let both propagate unchanged. For a
+        % RegionView the probe must also verify that the referenced
+        % dataset itself can be opened, not merely that its path exists.
+        %
+        % Input Arguments:
+        %   obj - Writer instance used to probe the file written so far.
+        %   referenceValue - Array of types.untyped.ObjectView or
+        %       types.untyped.RegionView whose targets are probed.
+
+            io.backend.base.Writer.throwNotImplemented("validateReferenceResolvable")
+        end
+
         function specLocation = getEmbeddedSpecLocation(obj) %#ok<MANU>
             % getEmbeddedSpecLocation - Return the location of embedded schema
             % specifications, or '' if none are embedded yet. Mirrors
