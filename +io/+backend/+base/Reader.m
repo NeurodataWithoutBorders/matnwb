@@ -121,6 +121,21 @@ classdef Reader < handle
             io.backend.base.Reader.throwNotImplemented("isReferenceDataset")
         end
 
+        function base = getExternalLinkBase(obj) %#ok<MANU>
+        % getExternalLinkBase - Base location for resolving relative link targets.
+        %
+        % A relative target filename stored in an external link resolves
+        % against a backend-specific location: HDF5 resolves it against the
+        % directory containing the linking file, while hdmf-zarr resolves
+        % it against the store path itself.
+        %
+        % Output Arguments:
+        %  - base - Absolute path that relative external-link targets in
+        %    this backend resource resolve against.
+            base = string.empty;
+            io.backend.base.Reader.throwNotImplemented("getExternalLinkBase")
+        end
+
         function linkInfo = readLinkInfo(obj, linkPath) %#ok<INUSD>
         % readLinkInfo - Return the target of a link without following it.
         %

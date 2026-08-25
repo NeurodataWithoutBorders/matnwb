@@ -32,6 +32,18 @@ classdef HDF5ReaderTest < matlab.unittest.TestCase
             testCase.verifyFalse(isa(datasetValue, "types.untyped.DataStub"))
         end
 
+        function getExternalLinkBaseReturnsFileFolder(testCase)
+            writer = io.backend.hdf5.HDF5Writer("reader-linkbase.nwb", "overwrite");
+            writer.close();
+
+            reader = io.backend.hdf5.HDF5Reader("reader-linkbase.nwb");
+            % The base must be the absolute path of the containing folder;
+            % fileattrib is used for the expected value as well so symlinked
+            % temp folders (e.g. /var -> /private/var on macOS) compare equal.
+            [~, folderInfo] = fileattrib(pwd);
+            testCase.verifyEqual(reader.getExternalLinkBase(), string(folderInfo.Name));
+        end
+
         function readLinkInfoReturnsSoftLinkTarget(testCase)
             import matlab.unittest.fixtures.WorkingFolderFixture
             testCase.applyFixture(WorkingFolderFixture);

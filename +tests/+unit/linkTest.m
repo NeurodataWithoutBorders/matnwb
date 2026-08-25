@@ -15,6 +15,11 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             testCase.verifyEqual(l.filename, 'myfile.nwb');
         end
 
+        function testExternLinkConstructorWithBasePath(testCase)
+            link = types.untyped.ExternalLink('myfile.nwb', '/mypath', 'somefolder');
+            testCase.verifyEqual(link.BasePath, 'somefolder');
+        end
+
         function testSoftLinkConstructor(testCase)
             import matlab.unittest.fixtures.SuppressedWarningsFixture
             testCase.applyFixture(SuppressedWarningsFixture('NWB:SoftLink:DeprecatedPath'));
@@ -143,7 +148,93 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                 {'/general/extracellular_ephys/ElectrodeGroup'});
         end
 
-        
+        function testExternalLinkRelativeTargetResolution(testCase)
+            % A relative link target resolves against the folder containing
+            % the linking file, matching HDF5 semantics, not against the
+            % working directory. A decoy file with the target's name is
+            % placed in the working directory: resolving against the wrong
+            % base would silently return the decoy's data.
+            dataFolder = fullfile(pwd, 'data');
+            mkdir(dataFolder)
+
+            expectedData = (1:10)';
+            rawNwbFile = tests.factory.NWBFile();
+            timeSeries = tests.factory.TimeSeriesWithTimestamps();
+            timeSeries.data = expectedData;
+            rawNwbFile.acquisition.set('ts', timeSeries);
+            nwbExport(rawNwbFile, fullfile(dataFolder, 'raw.nwb'));
+
+            decoyNwbFile = tests.factory.NWBFile();
+            decoyTimeSeries = tests.factory.TimeSeriesWithTimestamps();
+            decoyTimeSeries.data = -expectedData;
+            decoyNwbFile.acquisition.set('ts', decoyTimeSeries);
+            nwbExport(decoyNwbFile, 'raw.nwb');
+
+            processedNwbFile = tests.factory.NWBFile();
+            processedNwbFile.acquisition.set('linked', ...
+                types.untyped.ExternalLink('raw.nwb', '/acquisition/ts'));
+            nwbExport(processedNwbFile, fullfile(dataFolder, 'proc.nwb'));
+
+            importedNwbFile = nwbRead(fullfile(dataFolder, 'proc.nwb'), 'ignorecache');
+            % An unresolvable link fails type validation during nwbRead and
+            % is dropped from the set, so its presence is asserted first.
+            testCase.assertTrue(any(strcmp(importedNwbFile.acquisition.keys(), 'linked')), ...
+                'The external link entry was dropped during nwbRead.')
+            linkedSeries = importedNwbFile.acquisition.get('linked').deref();
+            testCase.verifyEqual(linkedSeries.data.load(), expectedData);
+        end
+
+        function testExternalLinkAbsoluteTargetResolution(testCase)
+            % An absolute link target must be used as given, unaffected by
+            % the base captured from the linking file's folder.
+            dataFolder = fullfile(pwd, 'data');
+            mkdir(dataFolder)
+
+            expectedData = (1:10)';
+            rawNwbFile = tests.factory.NWBFile();
+            timeSeries = tests.factory.TimeSeriesWithTimestamps();
+            timeSeries.data = expectedData;
+            rawNwbFile.acquisition.set('ts', timeSeries);
+            rawFilePath = fullfile(pwd, 'raw.nwb');
+            nwbExport(rawNwbFile, rawFilePath);
+
+            processedNwbFile = tests.factory.NWBFile();
+            processedNwbFile.acquisition.set('linked', ...
+                types.untyped.ExternalLink(rawFilePath, '/acquisition/ts'));
+            nwbExport(processedNwbFile, fullfile(dataFolder, 'proc.nwb'));
+
+            importedNwbFile = nwbRead(fullfile(dataFolder, 'proc.nwb'), 'ignorecache');
+            linkedSeries = importedNwbFile.acquisition.get('linked').deref();
+            testCase.verifyEqual(linkedSeries.data.load(), expectedData);
+        end
+
+        function testExternalLinkChainedRelativeTarget(testCase)
+            % Dereferencing a link whose target is itself an external link
+            % returns a new ExternalLink; its relative target must resolve
+            % against the folder of the file that chained link lives in.
+            dataFolder = fullfile(pwd, 'data');
+            mkdir(dataFolder)
+
+            expectedData = (1:10)';
+            rawNwbFile = tests.factory.NWBFile();
+            timeSeries = tests.factory.TimeSeriesWithTimestamps();
+            timeSeries.data = expectedData;
+            rawNwbFile.acquisition.set('ts', timeSeries);
+            nwbExport(rawNwbFile, fullfile(dataFolder, 'raw.nwb'));
+
+            % A bare HDF5 file is enough to hold the intermediate link.
+            writer = io.backend.hdf5.HDF5Writer(...
+                fullfile(dataFolder, 'mid.nwb'), 'overwrite');
+            writer.writeExternalLink('/elink', 'raw.nwb', '/acquisition/ts');
+            writer.close();
+
+            outerLink = types.untyped.ExternalLink(...
+                fullfile(dataFolder, 'mid.nwb'), '/elink');
+            chainedLink = outerLink.deref();
+            testCase.assertClass(chainedLink, 'types.untyped.ExternalLink')
+            testCase.verifyEqual(chainedLink.deref().data.load(), expectedData);
+        end
+
         function testDirectTypeAssignmentToSoftLinkProperty(testCase)
             device = types.core.Device('description', 'test_device');
             electrodeGroup = types.core.ElectrodeGroup(...
