@@ -67,6 +67,43 @@ classdef HDF5WriterTest < matlab.unittest.TestCase
             testCase.verifyEqual(link.Value{1}, '/second');
         end
 
+        function writeExternalLinkIsIdempotent(testCase)
+        % The external branch of the existing-link comparison: re-writing an
+        % identical external link leaves it alone rather than deleting and
+        % recreating it, matching the soft-link case.
+            writer = io.backend.hdf5.HDF5Writer("re-external-test.nwb", "overwrite");
+            testCase.addTeardown(@() writer.close());
+
+            writer.writeExternalLink('/elink', 'other.nwb', '/data');
+            testCase.verifyWarningFree(...
+                @() writer.writeExternalLink('/elink', 'other.nwb', '/data'));
+            writer.close();
+
+            info = h5info("re-external-test.nwb", '/');
+            link = info.Links(strcmp({info.Links.Name}, 'elink'));
+            testCase.verifyEqual(link.Value, {'other.nwb'; '/data'});
+        end
+
+        function writeExternalLinkReplacesDifferentTarget(testCase)
+        % An external link differing in either the file or the path is a
+        % different link, so it replaces the one already there. Both halves
+        % of the comparison are exercised.
+            writer = io.backend.hdf5.HDF5Writer("swap-external-test.nwb", "overwrite");
+            testCase.addTeardown(@() writer.close());
+
+            writer.writeExternalLink('/elink', 'first.nwb', '/data');
+            writer.writeExternalLink('/elink', 'second.nwb', '/data');
+            writer.writeExternalLink('/pathlink', 'same.nwb', '/first');
+            writer.writeExternalLink('/pathlink', 'same.nwb', '/second');
+            writer.close();
+
+            info = h5info("swap-external-test.nwb", '/');
+            changedFile = info.Links(strcmp({info.Links.Name}, 'elink'));
+            changedPath = info.Links(strcmp({info.Links.Name}, 'pathlink'));
+            testCase.verifyEqual(changedFile.Value, {'second.nwb'; '/data'});
+            testCase.verifyEqual(changedPath.Value, {'same.nwb'; '/second'});
+        end
+
         function writeLinkRejectsPathHeldByAnotherNode(testCase)
         % A group or dataset at the link path is not something to compare or
         % replace -- H5L.get_val is not even valid for it. Report the
