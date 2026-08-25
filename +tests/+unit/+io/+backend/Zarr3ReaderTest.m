@@ -211,6 +211,128 @@ classdef Zarr3ReaderTest < matlab.unittest.TestCase
                 @() reader.readNodeInfo("/does/not/exist"), ...
                 "NWB:Zarr3Reader:NodeNotFound");
         end
+
+        function readNodeInfoNormalizesPath(testCase)
+        % An empty path names the root node, and a missing leading slash
+        % is added before the lookup.
+            reader = io.backend.zarr3.Zarr3Reader(testCase.FixturePath);
+
+            rootInfo = reader.readNodeInfo("");
+            testCase.verifyEqual(rootInfo.Name, '/');
+
+            unitsInfo = reader.readNodeInfo("units");
+            testCase.verifyEqual(unitsInfo.Name, '/units');
+        end
+
+        function missingSchemaVersionErrors(testCase)
+        % A store whose root attributes lack nwb_version is not an NWB
+        % store, and the reader must say so rather than guess.
+            import matlab.unittest.fixtures.TemporaryFolderFixture
+            folderFixture = testCase.applyFixture(TemporaryFolderFixture);
+            storePath = string(fullfile(folderFixture.Folder, "bare.zarr"));
+            zarr.create_group(storePath);
+
+            reader = io.backend.zarr3.Zarr3Reader(storePath);
+            testCase.verifyError(@() reader.getSchemaVersion(), ...
+                "NWB:Zarr3Reader:MissingSchemaVersion");
+        end
+
+        function specLocationFallsBackToConventionalGroupName(testCase)
+        % A writer that omits the ".specloc" root attribute still gets its
+        % cached specifications found under the conventional group name.
+            import matlab.unittest.fixtures.TemporaryFolderFixture
+            folderFixture = testCase.applyFixture(TemporaryFolderFixture);
+            storePath = string(fullfile(folderFixture.Folder, "no-specloc.zarr"));
+            root = zarr.create_group(storePath, ...
+                Attributes=struct('nwb_version', "2.7.0"));
+            root.createGroup("specifications");
+
+            reader = io.backend.zarr3.Zarr3Reader(storePath);
+            testCase.verifyEqual(reader.getEmbeddedSpecLocation(), "/specifications");
+        end
+
+        function readAttributeValuePassesPlainValueThrough(testCase)
+        % Only attributes tagged "object reference" are decoded; any other
+        % attribute value is returned as stored.
+            reader = io.backend.zarr3.Zarr3Reader(testCase.FixturePath);
+            rootInfo = reader.readRootInfo();
+            attributeInfo = rootInfo.Attributes(...
+                strcmp({rootInfo.Attributes.Name}, 'nwb_version'));
+
+            attributeValue = reader.readAttributeValue(attributeInfo, "/");
+
+            testCase.verifyEqual(string(attributeValue), "2.7.0");
+        end
+
+        function readScalarMarkedDatasetReturnsBareValue(testCase)
+        % hdmf-zarr represents an NWB scalar property as a rank-1, length-1
+        % array tagged zarr_dtype:"scalar"; the tag, not the shape, is what
+        % makes the reader return a bare value (see the corresponding
+        % comment in readDatasetValue).
+            reader = io.backend.zarr3.Zarr3Reader(testCase.FixturePath);
+            datasetInfo = reader.readNodeInfo("/general/session_id");
+            testCase.verifyEqual(datasetInfo.Datatype, 'scalar');
+
+            datasetValue = reader.readDatasetValue(datasetInfo, "/general/session_id");
+
+            testCase.verifyEqual(datasetValue, 'sess-01');
+        end
+
+        function readEmptyDatasetReturnsEmpty(testCase)
+            reader = io.backend.zarr3.Zarr3Reader(testCase.FixturePath);
+            datasetInfo = reader.readNodeInfo("/scratch/empty");
+
+            datasetValue = reader.readDatasetValue(datasetInfo, "/scratch/empty");
+
+            testCase.verifyEmpty(datasetValue);
+        end
+
+        function readDatasetValueToleratesMissingDataspace(testCase)
+        % A node info struct without a Dataspace field reads as a scalar;
+        % the reader must not assume the field exists.
+            reader = io.backend.zarr3.Zarr3Reader(testCase.FixturePath);
+            datasetInfo = struct('Datatype', 'string');
+
+            datasetValue = reader.readDatasetValue(datasetInfo, "/identifier");
+
+            testCase.verifyEqual(datasetValue, 'ZARR3_FIXTURE');
+        end
+
+        function readEagerValueUnwrapsScalarCell(testCase)
+        % zarr-matlab reads a variable_length_bytes array back as a cell of
+        % uint8 vectors; for a rank-0 dataset the eager path unwraps the
+        % scalar cell so the caller gets the bare value.
+            reader = io.backend.zarr3.Zarr3Reader(testCase.FixturePath);
+            datasetInfo = reader.readNodeInfo("/scratch/blob");
+
+            datasetValue = reader.readDatasetValue(datasetInfo, "/scratch/blob");
+
+            testCase.verifyClass(datasetValue, "uint8");
+            testCase.verifyEqual(datasetValue(:).', uint8([1 2 3]));
+        end
+
+        function readCompoundDatasetDecodesReferenceField(testCase)
+        % A compound field tagged "object" via the array's zarr_dtype
+        % attribute holds JSON reference records; the reader must declare it
+        % as ObjectView in the type descriptor and decode it on load.
+            reader = io.backend.zarr3.Zarr3Reader(testCase.FixturePath);
+            referencePath = "/intervals/trials/timeseries";
+            datasetInfo = reader.readNodeInfo(referencePath);
+
+            datasetValue = reader.readDatasetValue(datasetInfo, referencePath);
+
+            testCase.verifyClass(datasetValue, "types.untyped.DataStub");
+            testCase.verifyEqual(datasetValue.dataType, struct(...
+                'idx_start', 'int32', ...
+                'count', 'int32', ...
+                'timeseries', 'types.untyped.ObjectView'));
+
+            loadedValue = datasetValue.load();
+            testCase.verifyEqual(loadedValue.idx_start, int32([0; 10]));
+            testCase.verifyClass(loadedValue.timeseries, "types.untyped.ObjectView");
+            testCase.verifyTrue(all(string({loadedValue.timeseries.path}) == ...
+                "/acquisition/es"));
+        end
     end
 
     methods (Access = private)
