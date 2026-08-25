@@ -102,6 +102,40 @@ classdef Reader < handle
             io.backend.base.Reader.throwNotImplemented("readAttributeValue")
         end
 
+        function tf = isReferenceDataset(obj, datasetInfo) %#ok<INUSD>
+        % isReferenceDataset - Whether a dataset holds object references.
+        %
+        % A dataset of references has to be read and resolved rather than
+        % returned as a lazy stub, so callers deciding how to handle a
+        % dataset need to ask this without knowing how the backend encodes
+        % it (HDF5 uses a reference datatype class; hdmf-zarr marks the
+        % dataset with a "zarr_dtype" attribute of "object").
+        %
+        % Input Arguments:
+        %  - obj - Reader instance.
+        %  - datasetInfo - Dataset metadata, as returned by readNodeInfo.
+        %
+        % Output Arguments:
+        %  - tf - true when the dataset holds references.
+            tf = false;
+            io.backend.base.Reader.throwNotImplemented("isReferenceDataset")
+        end
+
+        function linkInfo = readLinkInfo(obj, linkPath) %#ok<INUSD>
+        % readLinkInfo - Return the target of a link without following it.
+        %
+        % Input Arguments:
+        %  - obj - Reader instance.
+        %  - linkPath - Path of the link node.
+        %
+        % Output Arguments:
+        %  - linkInfo - Struct with fields type ("soft link" or "external
+        %    link", matching the vocabulary io.parseGroup consumes),
+        %    targetPath, and targetFilename (empty for a soft link).
+            linkInfo = struct.empty;
+            io.backend.base.Reader.throwNotImplemented("readLinkInfo")
+        end
+
         function datasetValue = readDatasetValue(obj, datasetInfo, datasetPath) %#ok<INUSD>
         % readDatasetValue - Read the value of a dataset from the backend.
         %

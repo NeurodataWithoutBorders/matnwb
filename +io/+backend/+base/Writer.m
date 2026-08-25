@@ -81,6 +81,28 @@ classdef Writer < handle
             io.backend.base.Writer.throwNotImplemented("writeAttribute")
         end
 
+        function writeSoftLink(obj, linkPath, targetPath) %#ok<INUSD>
+            % writeSoftLink - Create a link to another location in this file.
+            %
+            % Creates a link at linkPath that resolves to targetPath within
+            % the same file. Writing over an existing link with the same
+            % target is a no-op; writing over one with a different target
+            % replaces it, so that re-exporting an object whose link target
+            % was not yet resolvable succeeds (see
+            % NwbFile.resolveReferences).
+            io.backend.base.Writer.throwNotImplemented("writeSoftLink")
+        end
+
+        function writeExternalLink(obj, linkPath, targetFilename, targetPath) %#ok<INUSD>
+            % writeExternalLink - Create a link into a separate file.
+            %
+            % Creates a link at linkPath that resolves to targetPath inside
+            % the file targetFilename. targetFilename is stored as given:
+            % a relative path is recorded relative to this file, which is
+            % how a linked pair of files stays movable together.
+            io.backend.base.Writer.throwNotImplemented("writeExternalLink")
+        end
+
         function specLocation = getEmbeddedSpecLocation(obj) %#ok<MANU>
             % getEmbeddedSpecLocation - Return the location of embedded schema
             % specifications, or '' if none are embedded yet. Mirrors

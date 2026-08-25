@@ -21,6 +21,41 @@ classdef HDF5Reader < io.backend.base.Reader
             node = h5info(obj.Filename);
         end
 
+        function tf = isReferenceDataset(~, datasetInfo)
+            tf = strcmp(datasetInfo.Datatype.Class, 'H5T_REFERENCE');
+        end
+
+        function linkInfo = readLinkInfo(obj, linkPath)
+            arguments
+                obj
+                linkPath (1,1) string
+            end
+            propertyListId = 'H5P_DEFAULT';
+            fileId = H5F.open(obj.Filename, 'H5F_ACC_RDONLY', propertyListId);
+            fileCleanup = onCleanup(@() H5F.close(fileId));
+
+            rawInfo = H5L.get_info(fileId, char(linkPath), propertyListId);
+            isExternal = rawInfo.type == H5ML.get_constant_value('H5L_TYPE_EXTERNAL');
+            isSoft = rawInfo.type == H5ML.get_constant_value('H5L_TYPE_SOFT');
+            assert(isExternal || isSoft, ...
+                'NWB:Backend:Reader:UnsupportedLinkType', ...
+                'The node at "%s" in "%s" is not a soft or external link.', ...
+                linkPath, obj.Filename);
+
+            % H5L.get_val returns {targetPath} for a soft link and
+            % {targetFilename, targetPath} for an external one.
+            rawValue = H5L.get_val(fileId, char(linkPath), propertyListId);
+            if isExternal
+                linkInfo = struct('type', "external link", ...
+                    'targetFilename', string(rawValue{1}), ...
+                    'targetPath', string(rawValue{2}));
+            else
+                linkInfo = struct('type', "soft link", ...
+                    'targetFilename', "", ...
+                    'targetPath', string(rawValue{1}));
+            end
+        end
+
         function node = readNodeInfo(obj, nodePath)
             arguments
                 obj
@@ -83,7 +118,7 @@ classdef HDF5Reader < io.backend.base.Reader
             % when appropriate
             datatype = datasetInfo.Datatype;
             dataspace = datasetInfo.Dataspace;
-            if strcmp(datatype.Class, 'H5T_REFERENCE')
+            if obj.isReferenceDataset(datasetInfo)
                 % Load all H5T references. This is required, unfortunately also a
                 % bottleneck
                 tid = H5D.get_type(did);

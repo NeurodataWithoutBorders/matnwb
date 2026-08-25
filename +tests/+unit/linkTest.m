@@ -112,6 +112,37 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             % for links, deref() should return its own link.
             tests.util.verifyContainerEqual(testCase, metaExternalLink.deref().deref(), expected);
         end
+
+        function testExternalResolutionToTypedDataset(testCase)
+            % A link to a dataset that is itself a neurodata type, or that
+            % holds object references, is parsed rather than returned as a
+            % bare stub -- the branch testExternalResolution does not reach,
+            % since it links to a plain dataset.
+            nwb = NwbFile('identifier', 'TYPEDDATASET',...
+                'session_description', 'external link to a typed dataset',...
+                'session_start_time', datetime());
+            tests.factory.ElectrodeTable(nwb);
+            nwb.export('typed_dataset.nwb');
+
+            % A typed dataset comes back as its neurodata type.
+            idLink = types.untyped.ExternalLink('typed_dataset.nwb', ...
+                '/general/extracellular_ephys/electrodes/id');
+            identifiers = idLink.deref();
+            testCase.verifyClass(identifiers, 'types.hdmf_common.ElementIdentifiers');
+            testCase.verifyEqual(identifiers.data.load(), ...
+                nwb.general_extracellular_ephys_electrodes.id.data);
+
+            % A dataset of object references has those references resolved,
+            % rather than being handed back as raw reference values.
+            groupLink = types.untyped.ExternalLink('typed_dataset.nwb', ...
+                '/general/extracellular_ephys/electrodes/group');
+            groupColumn = groupLink.deref();
+            testCase.verifyClass(groupColumn, 'types.hdmf_common.VectorData');
+            testCase.verifyClass(groupColumn.data, 'types.untyped.ObjectView');
+            testCase.verifyEqual({groupColumn.data.path}, ...
+                {'/general/extracellular_ephys/ElectrodeGroup'});
+        end
+
         
         function testDirectTypeAssignmentToSoftLinkProperty(testCase)
             device = types.core.Device('description', 'test_device');
