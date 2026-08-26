@@ -120,6 +120,23 @@ classdef Zarr3Reader < io.backend.base.Reader
             end
         end
 
+        function base = getExternalLinkBase(obj)
+        % getExternalLinkBase - Base for resolving relative link targets.
+        %
+        % hdmf-zarr computes a relative external-link source against the
+        % store path itself, not the store's parent directory: a store is a
+        % directory, so the same relpath(target, file) formula HDF5 tooling
+        % applies yields one extra ".." (see os.path.relpath in hdmf-zarr's
+        % backend.py, and the discussion on issue #865). Returned as an
+        % absolute path so a link dereferenced after the working directory
+        % has changed still resolves correctly.
+            [isResolved, fileInfo] = fileattrib(char(obj.Filename));
+            assert(isResolved, ...
+                'NWB:Backend:Reader:FileNotFound', ...
+                'Could not resolve the location of `%s`.', obj.Filename);
+            base = string(fileInfo.Name);
+        end
+
         function tf = isReferenceDataset(~, datasetInfo)
         % isReferenceDataset - Whether a dataset holds object references.
         %
