@@ -35,7 +35,8 @@ function parsed = parseDataset(filename, datasetInfo, datasetPath, exclusions, r
 %    datatype.
 %  - For non-scalar datasets, chunked numeric datasets are represented as
 %    DataPipe, other non-empty datasets as DataStub, and empty datasets as
-%    [].
+%    []. A compound dataset is represented as a DataStub whether or not it
+%    holds any rows, so that its member names and types survive the read.
 
     arguments
         filename (1,:) char
