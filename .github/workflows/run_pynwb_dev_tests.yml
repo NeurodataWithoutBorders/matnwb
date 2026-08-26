@@ -52,6 +52,11 @@ jobs:
         uses: matlab-actions/setup-matlab@v3
         with:
           release: ${{ steps.set-versions.outputs.matlab_version }}
+          # This workflow runs on a schedule, so it runs on the default branch
+          # and reads the cache entry run_tests.yml writes there for the latest
+          # release. Same release and no product list means the same cache key,
+          # so this reuses that entry rather than storing a second copy.
+          cache: true
 
       - name: Run PyNWB-dependent tests
         uses: matlab-actions/run-command@v3
@@ -60,7 +65,8 @@ jobs:
             setenv("SKIP_PYNWB_TESTS", "0")
             setenv("SKIP_NWBINSPECTOR_TEST", "0")
             pyenv("ExecutionMode", "OutOfProcess");
-            results = nwbtest('ReportOutputFolder', '.', 'Tag', 'UsesPython');
+            results = nwbtest('ReportOutputFolder', '.', ...
+                'Tag', {'UsesPython', 'UsesPythonWhenAvailable'});
             assert(~isempty(results), 'No tests ran');
             assertSuccess(results);
 
