@@ -276,6 +276,25 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
             testCase.verifyTrue(herd == nwb.getExternalResources())
         end
 
+        function testGetExternalResourcesIsExportable(testCase)
+            % Asking a file for its external resources without going on to add
+            % a reference still has to produce a file that can be written, the
+            % way PyNWB writes a HERD whose tables hold no rows.
+            nwb = testCase.createFile();
+            nwb.getExternalResources();
+
+            filename = testCase.getRandomFilename();
+            nwbExport(nwb, filename);
+            readFile = nwbRead(filename, 'ignorecache');
+
+            testCase.verifyEmpty(readFile.general_external_resources.toTable())
+            for tableName = ["keys", "files", "entities", "objects", "object_keys", "entity_keys"]
+                info = h5info(filename, char("/general/external_resources/" + tableName));
+                testCase.verifyEqual(info.Dataspace.Size, 0, ...
+                    sprintf('Expected the %s table to be written with no rows.', tableName))
+            end
+        end
+
         function testGetExternalResourcesReturnsExistingAfterRead(testCase)
             [nwb, table] = testCase.createFile(); %#ok<ASGLU>
             nwb.addRef(nwb.general_subject, Key="Mus musculus", ...
