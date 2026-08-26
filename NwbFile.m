@@ -337,6 +337,8 @@ classdef NwbFile < types.core.NWBFile
         %  resource such as an ontology. A file has at most one HERD, so
         %  this returns the existing one if the file already has one, for
         %  example after nwbRead, and attaches a new empty one otherwise.
+        %  The HERD it returns can be exported as it is, so a file whose
+        %  external resources hold no references still writes them.
         %
         % Output Arguments:
         %  - herd (types.hdmf_common.HERD) -
@@ -351,6 +353,7 @@ classdef NwbFile < types.core.NWBFile
                 obj.general_external_resources = types.hdmf_common.HERD();
             end
             herd = obj.general_external_resources;
+            herd.ensureTablesInitialized()
         end
 
         function addRef(obj, container, options)

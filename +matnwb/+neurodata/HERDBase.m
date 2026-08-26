@@ -354,6 +354,23 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
         end
     end
 
+    methods (Access = ?NwbFile)
+        function ensureTablesInitialized(obj)
+        % ensureTablesInitialized - Give every unset table an empty value.
+        %
+        % All six tables are required by the schema, so an unset one would make
+        % the HERD fail to export. NwbFile.getExternalResources calls this so
+        % that the HERD it hands back can be written even if no reference is
+        % ever added to it.
+            for tableName = matnwb.neurodata.HERDBase.TableNames
+                if isempty(obj.(tableName))
+                    obj.setTable(tableName, ...
+                        matnwb.neurodata.HERDBase.createEmptyTable(tableName));
+                end
+            end
+        end
+    end
+
     methods (Access = private)
         function summary = referenceCountSummary(obj)
         % referenceCountSummary - One-line summary of the table sizes.
@@ -406,19 +423,6 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
                 ['The %s being referenced is not part of this file. Add it to ', ...
                 'the file before adding an external reference to it.'], ...
                 matnwb.neurodata.HERDBase.getObjectTypeName(container))
-        end
-
-        function ensureTablesInitialized(obj)
-        % ensureTablesInitialized - Give every unset table an empty value.
-        %
-        % All six tables are required by the schema, so an unset one would make
-        % the HERD fail to export.
-            for tableName = matnwb.neurodata.HERDBase.TableNames
-                if isempty(obj.(tableName))
-                    obj.setTable(tableName, ...
-                        matnwb.neurodata.HERDBase.createEmptyTable(tableName));
-                end
-            end
         end
 
         function value = getTable(obj, tableName)
