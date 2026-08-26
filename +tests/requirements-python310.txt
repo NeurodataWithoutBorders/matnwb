@@ -1,0 +1,15 @@
+# Test dependencies that require Python 3.10 or later.
+# Installed conditionally by the test workflows; see +tests/requirements.txt
+# for the dependencies installed on every supported Python version.
+#
+# These versions are pinned so that test and release runs are predictable: the
+# result depends only on what is in the branch, not on which pynwb or
+# nwbinspector release happens to be current that day. Without a pin, an
+# upstream release can fail a pull request check or a release run that has
+# nothing to do with the change being tested.
+#
+# Dependabot opens a pull request when a newer release is published, so an
+# upstream change is tested on its own before anything depends on it. Both
+# workflows read this file, so test and release runs also stay in step.
+pynwb==4.1.0
+nwbinspector==0.7.2

@@ -72,12 +72,11 @@ jobs:
         run: |
           python -m pip install -U pip
           pip install -r +tests/requirements.txt
-          # Install pynwb and nwbinspector only for Python 3.10+ (both dropped Python 3.9 support)
+          # Install pynwb and nwbinspector only for Python 3.10+ (both dropped Python 3.9 support).
+          # Release tests use the same pinned releases as run_tests.yml; dev-branch
+          # compatibility is covered separately by run_pynwb_dev_tests.yml.
           if [[ "${{ matrix.skip-pynwb-tests }}" == "0" ]]; then
-            pip install "git+https://github.com/NeurodataWithoutBorders/pynwb.git@dev"
-          fi
-          if [[ "${{ matrix.skip-nwbinspector-test }}" == "0" ]]; then
-            pip install "git+https://github.com/NeurodataWithoutBorders/nwbinspector.git@dev"
+            pip install -r +tests/requirements-python310.txt
           fi
           python -m pip list
 

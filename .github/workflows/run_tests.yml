@@ -107,12 +107,9 @@ jobs:
           pip install -r +tests/requirements.txt
           # Install pynwb and nwbinspector only for Python 3.10+ (both dropped Python 3.9 support)
           if [[ "${{ matrix.skip-pynwb-tests }}" == "0" ]]; then
-            pip install "pynwb==4.0.0"
+            pip install -r +tests/requirements-python310.txt
             pynwb_version=$(pip show pynwb | grep "^Version:" | awk '{print $2}')
             echo "pynwb_version=$pynwb_version" >> "$GITHUB_OUTPUT"
-          fi
-          if [[ "${{ matrix.skip-nwbinspector-test }}" == "0" ]]; then
-            pip install nwbinspector
           fi
           python -m pip list
           echo "HDF5_PLUGIN_PATH=$(python -c "import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)")" >> "$GITHUB_ENV"
