@@ -144,6 +144,36 @@ classdef Zarr3ReaderTest < matlab.unittest.TestCase
                 'NWB:ExternalLink:UntypedGroup');
         end
 
+        function externalLinkBaseIsTheStorePathItself(testCase)
+        % hdmf-zarr computes a relative link source against the store path,
+        % not the store's parent: a store is a directory, so the
+        % relpath(target, file) formula HDF5 tooling uses gains one extra
+        % "..". An implementation that copied HDF5's parent-directory base
+        % would resolve every relative Zarr link one directory too high.
+            reader = io.backend.zarr3.Zarr3Reader(testCase.FixturePath);
+
+            base = reader.getExternalLinkBase();
+
+            [~, fixtureInfo] = fileattrib(char(testCase.FixturePath));
+            testCase.verifyEqual(base, string(fixtureInfo.Name));
+        end
+
+        function relativeExternalLinkResolvesAgainstStorePath(testCase)
+        % End to end over a relative source, from a working directory that
+        % is neither the store nor its parent: only resolution against the
+        % store path finds the sibling store the ".." points at.
+            import matlab.unittest.fixtures.WorkingFolderFixture
+            testCase.applyFixture(WorkingFolderFixture);
+
+            link = testCase.readScratchLink("linked_data_relative");
+            testCase.assertEqual(link.filename, '../external_target.zarr');
+
+            target = link.deref();
+
+            testCase.verifyClass(target, "types.untyped.DataStub");
+            testCase.verifyEqual(target.load(), int64([7; 8; 9]));
+        end
+
         function isReferenceDatasetIdentifiesReferenceDatasets(testCase)
         % types.untyped.ExternalLink.deref asks the reader whether a linked
         % dataset holds references, to decide between parsing it and
@@ -343,7 +373,8 @@ classdef Zarr3ReaderTest < matlab.unittest.TestCase
             nodeInfo = reader.readNodeInfo("/scratch");
             record = nodeInfo.Links(strcmp({nodeInfo.Links.Name}, linkName));
             testCase.assertEqual(record.Type, 'external link');
-            link = types.untyped.ExternalLink(record.Value{1}, record.Value{2});
+            link = types.untyped.ExternalLink(record.Value{1}, record.Value{2}, ...
+                reader.getExternalLinkBase());
         end
     end
 
