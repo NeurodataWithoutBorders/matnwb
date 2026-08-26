@@ -302,6 +302,20 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
             testCase.verifyEqual(sort(references.object_type), {'Subject'; 'VectorData'})
         end
 
+        function testAddRefOnFileItselfUsesSchemaTypeName(testCase)
+            % NwbFile is a MatNWB-only wrapper around the generated NWBFile
+            % type; its object_type must match the neurodata_type MetaClass
+            % writes on export ("NWBFile"), not the wrapper's class name
+            % ("NwbFile"), or getObjectType("NWBFile") would miss it.
+            nwb = testCase.createFile();
+            herd = types.hdmf_common.HERD();
+            herd.addRef(nwb, nwb, Key="a", EntityId="X:1", EntityUri="http://x/1");
+
+            references = herd.toTable();
+            testCase.verifyEqual(references.object_type{1}, 'NWBFile')
+            testCase.verifyEqual(height(herd.getObjectType("NWBFile")), 1)
+        end
+
         function testDisplayShowsSummaryAndTable(testCase)
             nwb = testCase.createFile();
             herd = types.hdmf_common.HERD();

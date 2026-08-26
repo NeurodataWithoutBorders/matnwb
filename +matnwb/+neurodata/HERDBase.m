@@ -494,9 +494,7 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
             usedRows = double(objectKeyTable.keys_idx( ...
                 objectKeyTable.objects_idx == uint32(objectRow - 1))) + 1;
             keyRow = intersect(candidateRows, usedRows);
-            if isempty(keyRow)
-                keyRow = [];
-            else
+            if ~isempty(keyRow)
                 keyRow = keyRow(1);
             end
         end
@@ -614,7 +612,14 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
         function typeName = getObjectTypeName(container)
         % getObjectTypeName - Class name of a container without its namespace.
         %
-        % HDMF records the unqualified class name, e.g. "VectorData".
+        % HDMF records the unqualified class name, e.g. "VectorData". NwbFile
+        % is a MatNWB-only wrapper around the generated NWBFile type, so its
+        % class name diverges from the neurodata_type MetaClass.export
+        % writes for it; special-case it to keep the two in agreement.
+            if isa(container, 'NwbFile')
+                typeName = 'NWBFile';
+                return
+            end
             nameParts = strsplit(class(container), '.');
             typeName = nameParts{end};
         end
