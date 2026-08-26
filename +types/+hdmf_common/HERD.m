@@ -1,4 +1,4 @@
-classdef HERD < types.hdmf_common.Container & types.untyped.GroupClass
+classdef HERD < types.hdmf_common.Container & types.untyped.GroupClass & matnwb.neurodata.HERDBase
 % HERD - HDMF External Resources Data Structure. A set of six tables for tracking external resource references in a file or across multiple files.
 %
 % Required Properties:
