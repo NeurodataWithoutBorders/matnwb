@@ -25,6 +25,18 @@ classdef HDF5Reader < io.backend.base.Reader
             tf = strcmp(datasetInfo.Datatype.Class, 'H5T_REFERENCE');
         end
 
+        function base = getExternalLinkBase(obj)
+            % HDF5 resolves a relative external-link target against the
+            % directory containing the linking file. The directory is
+            % returned as an absolute path so a link dereferenced after
+            % the working directory has changed still resolves correctly.
+            [isResolved, fileInfo] = fileattrib(char(obj.Filename));
+            assert(isResolved, ...
+                'NWB:Backend:Reader:FileNotFound', ...
+                'Could not resolve the location of `%s`.', obj.Filename);
+            base = string(fileparts(fileInfo.Name));
+        end
+
         function linkInfo = readLinkInfo(obj, linkPath)
             arguments
                 obj

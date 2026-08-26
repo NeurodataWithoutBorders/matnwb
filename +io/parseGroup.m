@@ -56,7 +56,11 @@ for i=1:length(info.Links)
 
             lnk = types.untyped.SoftLink(link.Value{1}, fullTargetTypeName);
         case 'external link'
-            lnk = types.untyped.ExternalLink(link.Value{:});
+            % A relative target filename resolves against a backend-specific
+            % base (see io.backend.base.Reader.getExternalLinkBase), captured
+            % here so the link stays valid if the working directory changes.
+            lnk = types.untyped.ExternalLink(link.Value{:}, ...
+                reader.getExternalLinkBase());
     end
     linkProperties(link.Name) = lnk;
 end
