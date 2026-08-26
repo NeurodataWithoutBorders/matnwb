@@ -4,6 +4,7 @@ hdf5plugin
 dataframe_image     # Used by PyNWB "Icepys pandas" tutorial
 Pillow              # Used by PyNWB "Images" tutorial
 
-# Note: pynwb and nwbinspector are installed conditionally in the workflow files
-# (only for Python 3.10+, as both packages dropped Python 3.9 support)
-# For local testing, install manually
+# Note: pynwb and nwbinspector are pinned in +tests/requirements-python310.txt and
+# installed conditionally by the workflow files (only for Python 3.10+, as both
+# packages dropped Python 3.9 support). For local testing on Python 3.10 or later:
+#   pip install -r +tests/requirements-python310.txt

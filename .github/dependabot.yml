@@ -1,0 +1,12 @@
+# Keep the pinned Python test dependencies current.
+# Dependabot opens a pull request when pynwb or nwbinspector publishes a new
+# release, so the bump runs through CI before it applies to any branch.
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/+tests"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "ci"
