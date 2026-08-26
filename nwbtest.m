@@ -149,18 +149,18 @@ function suite = filterTestsByCompatibility(suite)
     skipExternalFilterTests = ~isempty(skipExternalFilterTests) && logical(str2double(skipExternalFilterTests));
 
     if skipPythonTests
-        suite = suite.selectIf(~HasTag('UsesPython'));
+        suite = suite.selectIf(~HasTag('RequiresPython'));
     end
 
     if skipExternalFilterTests
-        suite = suite.selectIf(~HasTag('UsesDynamicallyLoadedFilters'));
+        suite = suite.selectIf(~HasTag('RequiresDynamicallyLoadedFilters'));
     end
 
     % Filter out tests testing dynamically loaded filters. Using
     % dynamically loaded filters is only supported in MATLAB R2022a and
     % newer
     if ~exist("isMATLABReleaseOlderThan", "file") || isMATLABReleaseOlderThan('R2022a')
-        suite = suite.selectIf(~HasTag('UsesDynamicallyLoadedFilters'));
+        suite = suite.selectIf(~HasTag('RequiresDynamicallyLoadedFilters'));
         % Manually skip test for "dynamically loaded filters" tutorial
         isDynamicLoadedFiltersTutorial = contains({suite.Name}, "tutorialFile=dynamically_loaded_filters_mlx");
         suite(isDynamicLoadedFiltersTutorial) = [];

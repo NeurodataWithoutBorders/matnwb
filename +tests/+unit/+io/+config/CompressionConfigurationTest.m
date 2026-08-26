@@ -66,7 +66,7 @@ classdef CompressionConfigurationTest < matlab.unittest.TestCase
         end
     end
 
-    methods (Test, TestTags={'UsesDynamicallyLoadedFilters'})
+    methods (Test, TestTags={'RequiresDynamicallyLoadedFilters'})
         
         function testCustomCompressionMethod(testCase)
             CUSTOM_COMPRESSION_METHOD = "ZStandard";
