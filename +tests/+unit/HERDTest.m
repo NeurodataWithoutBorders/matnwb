@@ -264,6 +264,58 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
             objectKeys = h5read(filename, '/general/external_resources/object_keys');
             testCase.verifyClass(objectKeys.objects_idx, 'uint32')
         end
+
+        function testGetExternalResourcesCreatesOnFirstCall(testCase)
+            nwb = testCase.createFile();
+            testCase.verifyEmpty(nwb.general_external_resources)
+
+            herd = nwb.getExternalResources();
+            testCase.verifyClass(herd, 'types.hdmf_common.HERD')
+            testCase.verifyTrue(herd == nwb.general_external_resources)
+            % A second call must not replace the HERD that is already attached.
+            testCase.verifyTrue(herd == nwb.getExternalResources())
+        end
+
+        function testGetExternalResourcesReturnsExistingAfterRead(testCase)
+            [nwb, table] = testCase.createFile(); %#ok<ASGLU>
+            nwb.addRef(nwb.general_subject, Key="Mus musculus", ...
+                EntityId="NCBITaxon:10090", EntityUri="http://x/1");
+
+            filename = testCase.getRandomFilename();
+            nwbExport(nwb, filename);
+            readFile = nwbRead(filename, 'ignorecache');
+
+            herd = readFile.getExternalResources();
+            testCase.verifyTrue(herd == readFile.general_external_resources)
+            testCase.verifyEqual(height(herd.toTable()), 1)
+        end
+
+        function testNwbFileAddRefDelegatesToHerd(testCase)
+            [nwb, table] = testCase.createFile();
+            nwb.addRef(nwb.general_subject, Key="Mus musculus", ...
+                EntityId="NCBITaxon:10090", EntityUri="http://purl.obolibrary.org/obo/NCBITaxon_10090");
+            nwb.addRef(table, Attribute="location", Key="VISp", ...
+                EntityId="MBA:385", EntityUri="http://mba/385");
+
+            references = nwb.general_external_resources.toTable();
+            testCase.verifyEqual(height(references), 2)
+            testCase.verifyEqual(sort(references.object_type), {'Subject'; 'VectorData'})
+        end
+
+        function testDisplayShowsSummaryAndTable(testCase)
+            nwb = testCase.createFile();
+            herd = types.hdmf_common.HERD();
+            output = evalc('disp(herd)');
+            testCase.verifySubstring(output, '0 key(s), 0 entity(ies), 0 object(s), 0 file(s)')
+            testCase.verifySubstring(output, 'No external resource references.')
+
+            herd.addRef(nwb, nwb.general_subject, Key="Mus musculus", ...
+                EntityId="NCBITaxon:10090", EntityUri="http://x/1");
+            output = evalc('disp(herd)');
+            testCase.verifySubstring(output, '1 key(s), 1 entity(ies), 1 object(s), 1 file(s)')
+            testCase.verifySubstring(output, 'Mus musculus')
+            testCase.verifySubstring(output, 'NCBITaxon:10090')
+        end
     end
 
     methods (Test, TestTags = {'UsesPython'})

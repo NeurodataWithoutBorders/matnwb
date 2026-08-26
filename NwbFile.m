@@ -326,6 +326,98 @@ classdef NwbFile < types.core.NWBFile
             end
             result = cat(1, result{:});
         end
+
+        function herd = getExternalResources(obj)
+        % getExternalResources - Get this file's HERD, creating one if needed.
+        %
+        % Syntax:
+        %  herd = nwb.getExternalResources() returns the file's HERD (HDMF
+        %  External Resources Data Structure), which records that terms
+        %  used in the file correspond to entities in an external
+        %  resource such as an ontology. A file has at most one HERD, so
+        %  this returns the existing one if the file already has one, for
+        %  example after nwbRead, and attaches a new empty one otherwise.
+        %
+        % Output Arguments:
+        %  - herd (types.hdmf_common.HERD) -
+        %    The HERD external resources object for this file.
+        %
+        % See also: NwbFile.addRef, types.hdmf_common.HERD
+
+            arguments
+                obj (1,1) NwbFile
+            end
+            if isempty(obj.general_external_resources)
+                obj.general_external_resources = types.hdmf_common.HERD();
+            end
+            herd = obj.general_external_resources;
+        end
+
+        function addRef(obj, container, options)
+        % addRef - Record that an object in this file refers to an external entity.
+        %
+        % Syntax:
+        %  nwb.addRef(container, EntityId=entityId, EntityUri=entityUri)
+        %  records that container refers to the external entity identified
+        %  by entityId, creating this file's HERD (see
+        %  getExternalResources) if it does not have one yet.
+        %
+        %  nwb.addRef(__, Attribute=attribute) attaches the reference to a
+        %  neurodata object held by container rather than to container
+        %  itself, for example a column of a DynamicTable.
+        %
+        % Input Arguments:
+        %  - container (types.untyped.MetaClass) -
+        %    The object the reference is attached to. Must already be
+        %    part of this file.
+        %
+        % Name-Value Arguments:
+        %  - EntityId (string) -
+        %    Identifier of the entity in the external resource, given as
+        %    a compact URI (CURIE) of the form prefix:identifier, for
+        %    example "NCBITaxon:10090".
+        %
+        %  - EntityUri (string) -
+        %    The URL that EntityId resolves to. Required the first time
+        %    an entity is added; ignored afterwards, since the stored URI
+        %    is kept.
+        %
+        %  - Key (string) -
+        %    The term as it is used in the file, for example
+        %    "Mus musculus".
+        %
+        %  - Attribute (string) -
+        %    Name of a property of container holding the neurodata object
+        %    the reference belongs to. Only properties that are
+        %    themselves neurodata types are supported, such as a column
+        %    of a table.
+        %
+        %  - Field (string) -
+        %    Field of a compound data type the reference applies to.
+        %    Leave unset unless the target is a compound dataset.
+        %
+        % Usage:
+        %  Example 1 - Annotate a subject's species::
+        %
+        %    nwb.addRef(nwb.general_subject, Key=nwb.general_subject.species, ...
+        %        EntityId="NCBITaxon:10090", ...
+        %        EntityUri="http://purl.obolibrary.org/obo/NCBITaxon_10090")
+        %
+        % See also: NwbFile.getExternalResources, types.hdmf_common.HERD/addRef
+
+            arguments
+                obj (1,1) NwbFile
+                container (1,1) types.untyped.MetaClass
+                options.EntityId (1,1) string = ""
+                options.EntityUri (1,1) string = ""
+                options.Key (1,1) string = ""
+                options.Attribute (1,1) string = ""
+                options.Field (1,1) string = ""
+            end
+            herd = obj.getExternalResources();
+            nameValuePairs = namedargs2cell(options);
+            herd.addRef(obj, container, nameValuePairs{:});
+        end
     end
 
     methods (Hidden)

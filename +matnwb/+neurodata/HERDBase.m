@@ -1,4 +1,4 @@
-classdef (Abstract) HERDBase < handle
+classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
 % HERDBase - Non-generated base class for HERD behavior.
 %
 % This class owns handwritten HERD (HDMF External Resources Data Structure)
@@ -28,7 +28,10 @@ classdef (Abstract) HERDBase < handle
 % appends a second, identical object_keys row. The two files are read the
 % same way, so this only avoids a duplicated row in the flattened view.
 %
-% See also types.hdmf_common.HERD
+% NwbFile.addRef and NwbFile.getExternalResources are the usual entry
+% points: they lazily attach and reuse the one HERD a file may hold.
+%
+% See also NwbFile.addRef, NwbFile.getExternalResources, types.hdmf_common.HERD
 
     properties (Abstract)
         keys
@@ -46,6 +49,11 @@ classdef (Abstract) HERDBase < handle
     methods
         function addRef(obj, file, container, options)
         % addRef - Record that an object in a file refers to an external entity.
+        %
+        % NwbFile.addRef calls this method and is the more convenient way to
+        % add a reference when working from the file. Call this method
+        % directly when working with the HERD object itself, for example
+        % before it has been assigned to a file.
         %
         % Syntax:
         %  herd.addRef(file, container, EntityId=entityId, EntityUri=entityUri)
@@ -325,7 +333,35 @@ classdef (Abstract) HERDBase < handle
         end
     end
 
+    methods (Access = protected) % Override matlab.mixin.CustomDisplay
+        function header = getHeader(obj)
+            classNameParts = strsplit(class(obj), '.');
+            className = classNameParts{end};
+            header = sprintf('  %s with %s', className, obj.referenceCountSummary());
+        end
+
+        function displayScalarObject(obj)
+            disp(obj.getHeader())
+            references = obj.toTable();
+            if isempty(references)
+                fprintf('    No external resource references.\n');
+            else
+                disp(references)
+            end
+            % Preserve the missing-required-property warning that getFooter
+            % triggers as a side effect elsewhere in the class hierarchy.
+            obj.getFooter();
+        end
+    end
+
     methods (Access = private)
+        function summary = referenceCountSummary(obj)
+        % referenceCountSummary - One-line summary of the table sizes.
+            summary = sprintf('%d key(s), %d entity(ies), %d object(s), %d file(s)', ...
+                height(obj.getTable("keys")), height(obj.getTable("entities")), ...
+                height(obj.getTable("objects")), height(obj.getTable("files")));
+        end
+
         function [target, relativePath] = resolveTarget(~, container, attribute)
         % resolveTarget - Resolve a container and attribute to the annotated object.
             relativePath = "";
