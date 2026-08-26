@@ -9,7 +9,7 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
         end
     end
 
-    methods (Test, TestTags={'UsesPython'})
+    methods (Test, TestTags={'RequiresPython'})
         function testNwbInspector(testCase)
             if testCase.skipIfNwbInspectorTest()
                 return

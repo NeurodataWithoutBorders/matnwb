@@ -407,7 +407,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
         end
     end
 
-    methods (Test, TestTags={'UsesDynamicallyLoadedFilters'})
+    methods (Test, TestTags={'RequiresDynamicallyLoadedFilters'})
                 
         function testExternalFilters(testCase)
             import types.untyped.datapipe.dynamic.Filter;
