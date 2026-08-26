@@ -60,7 +60,8 @@ jobs:
             setenv("SKIP_PYNWB_TESTS", "0")
             setenv("SKIP_NWBINSPECTOR_TEST", "0")
             pyenv("ExecutionMode", "OutOfProcess");
-            results = nwbtest('ReportOutputFolder', '.', 'Tag', 'UsesPython');
+            results = nwbtest('ReportOutputFolder', '.', ...
+                'Tag', {'UsesPython', 'UsesPythonWhenAvailable'});
             assert(~isempty(results), 'No tests ran');
             assertSuccess(results);
 
