@@ -18,10 +18,14 @@ concurrency:
 jobs:
   validate_version:
     runs-on: ubuntu-latest
+    # The dispatch input reaches the shell as an environment variable. Pasting
+    # it into a script with ${{ }} would let its contents be parsed as code.
+    env:
+      VERSION: ${{ inputs.version }}
     steps:
       - name: Check version format
         run: |
-          version="${{ github.event.inputs.version }}"
+          version="$VERSION"
           if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "Error: Input for 'version' ('$version') is not in the expected major.minor.patch format."
             exit 1
@@ -34,7 +38,7 @@ jobs:
       - name: Check version is not already released
         if: github.ref == 'refs/heads/main'
         run: |
-          version="${{ github.event.inputs.version }}"
+          version="$VERSION"
           remote="https://github.com/${{ github.repository }}.git"
 
           # An annotated tag lists both the tag object and, under ^{}, the commit
@@ -199,11 +203,14 @@ jobs:
       # rehearses the release against that branch: every step runs, but nothing
       # is pushed and no release is created.
       IS_RELEASE: ${{ github.ref == 'refs/heads/main' }}
+      # The dispatch input reaches the shell as an environment variable. Pasting
+      # it into a script with ${{ }} would let its contents be parsed as code.
+      VERSION: ${{ inputs.version }}
     steps:
       - name: Report release mode
         run: |
           if [[ "$IS_RELEASE" == "true" ]]; then
-            echo "Publishing v${{ inputs.version }} from \`main\`." >> "$GITHUB_STEP_SUMMARY"
+            echo "Publishing v$VERSION from \`main\`." >> "$GITHUB_STEP_SUMMARY"
           else
             {
               echo "### Rehearsal only"
@@ -235,7 +242,7 @@ jobs:
           year_number=$(date +"%Y")
           
           # Replace placeholders in template
-          header="${template/\{\{version_number\}\}/${{ github.event.inputs.version }}}"
+          header="${template/\{\{version_number\}\}/$VERSION}"
           header="${header/\{\{date_string\}\}/$date_string}"
           header="${header/\{\{year_number\}\}/$year_number}"
           
@@ -263,7 +270,7 @@ jobs:
           # bump before failing later on. Skip the commit instead of failing, so
           # the workflow can be re-run after such a failure.
           if git diff --quiet -- Contents.m; then
-            echo "Contents.m is already at version ${{ inputs.version }}; nothing to commit."
+            echo "Contents.m is already at version $VERSION; nothing to commit."
             exit 0
           fi
 
@@ -285,29 +292,48 @@ jobs:
           python-version: '3.12'
 
       - name: Install badge generator
-        run: pip install anybadge
+        # Pinned so a new anybadge release cannot change the badges, or break
+        # this job, without the pin being updated deliberately.
+        run: pip install anybadge==1.16.0
 
       - name: Generate tested with badge
+        env:
+          RELEASES: ${{ needs.set_matrix.outputs.releases }}
         run: |
-          mkdir -p .github/badges/v${{ inputs.version }}
-          python -c "
+          mkdir -p ".github/badges/v$VERSION"
+          OUT_PATH=".github/badges/v$VERSION/tested_with.svg" python -c "
+          import os
           from anybadge import Badge
           # Explicit hex rather than the 'green' keyword, which anybadge maps to
           # a brighter shade than earlier releases of this badge used.
           Badge(
               label='tested with',
-              value='${{ needs.set_matrix.outputs.releases }}',
+              value=os.environ['RELEASES'],
               default_color='#97CA00'
-          ).write_badge('.github/badges/v${{ inputs.version }}/tested_with.svg', overwrite=True)
+          ).write_badge(os.environ['OUT_PATH'], overwrite=True)
           "
 
       - name: Generate NWB schema version badge
         run: |
-          python .github/workflows/scripts/create_nwb_schema_version_badge.py ${{ inputs.version }}
+          # The latest/ badge should describe the newest release. Re-running for
+          # an older version must not point it backwards. Tags are matched with
+          # and without a leading v, since releases up to 2.9.0 omitted it.
+          highest=$(git ls-remote --tags --refs origin \
+            | sed 's|.*refs/tags/||; s|^v||' \
+            | grep -E '^[0-9]+(\.[0-9]+)+$' \
+            | sort -V | tail -1)
+
+          if [[ -z "$highest" || "$(printf '%s\n%s\n' "$highest" "$VERSION" | sort -V | tail -1)" == "$VERSION" ]]; then
+            echo "$VERSION is the newest release; updating the latest/ badge."
+            python .github/workflows/scripts/create_nwb_schema_version_badge.py "$VERSION" --update-latest
+          else
+            echo "$VERSION is older than $highest; leaving the latest/ badge alone."
+            python .github/workflows/scripts/create_nwb_schema_version_badge.py "$VERSION"
+          fi
 
       - name: Tag repository with version tag
         run: |
-          tag="v${{ inputs.version }}"
+          tag="v$VERSION"
 
           git config user.name "${{ github.workflow }} by ${{ github.actor }}"
           git config user.email "<>"
@@ -346,11 +372,15 @@ jobs:
 
       - name: Push to gh-badges
         run: |
-          mkdir -p gh-badges/.github/badges/v${{ inputs.version }}
-          mkdir -p gh-badges/.github/badges/latest
-          cp .github/badges/v${{ inputs.version }}/tested_with.svg gh-badges/.github/badges/v${{ inputs.version }}/tested_with.svg
-          cp .github/badges/v${{ inputs.version }}/supported_nwb_schema.svg gh-badges/.github/badges/v${{ inputs.version }}/supported_nwb_schema.svg
-          cp .github/badges/latest/supported_nwb_schema.svg gh-badges/.github/badges/latest/supported_nwb_schema.svg
+          mkdir -p "gh-badges/.github/badges/v$VERSION"
+          cp ".github/badges/v$VERSION/tested_with.svg" "gh-badges/.github/badges/v$VERSION/tested_with.svg"
+          cp ".github/badges/v$VERSION/supported_nwb_schema.svg" "gh-badges/.github/badges/v$VERSION/supported_nwb_schema.svg"
+
+          # Only present when this release is the newest one.
+          if [[ -f .github/badges/latest/supported_nwb_schema.svg ]]; then
+            mkdir -p gh-badges/.github/badges/latest
+            cp .github/badges/latest/supported_nwb_schema.svg gh-badges/.github/badges/latest/supported_nwb_schema.svg
+          fi
           cd gh-badges
 
           git config user.name "${{ github.workflow }} by ${{ github.actor }}"
@@ -363,7 +393,7 @@ jobs:
           fi
 
           git add .github/badges
-          git commit -m "Update badges for release v${{ inputs.version }}"
+          git commit -m "Update badges for release v$VERSION"
 
           if [[ "$IS_RELEASE" != "true" ]]; then
             echo "Rehearsal: committed badges locally, not pushing to gh-badges."

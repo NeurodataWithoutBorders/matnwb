@@ -78,6 +78,13 @@ def main():
         default=None,
         help='Output directory for the badge (default: .github/badges/v<version>)'
     )
+    parser.add_argument(
+        '--update-latest',
+        action='store_true',
+        help='Also write the badge to .github/badges/latest. Pass this only when '
+             'releasing a version newer than every existing release, so that '
+             'rebuilding an older one does not point latest backwards.'
+    )
     
     args = parser.parse_args()
     
@@ -92,12 +99,14 @@ def main():
     
     # Set default output directory
     output_dir = args.output_dir or repo_root / '.github' / 'badges' / f'v{args.version}'
-    latest_dir = repo_root / '.github' / 'badges' / 'latest'
     
     # Get version range and create badge
     min_schema, max_schema = get_schema_version_range(schema_dir)
     create_badge(args.version, min_schema, max_schema, output_dir)
-    create_badge(args.version, min_schema, max_schema, latest_dir)
+    
+    if args.update_latest:
+        latest_dir = repo_root / '.github' / 'badges' / 'latest'
+        create_badge(args.version, min_schema, max_schema, latest_dir)
 
 
 if __name__ == '__main__':
