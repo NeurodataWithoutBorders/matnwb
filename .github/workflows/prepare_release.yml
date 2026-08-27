@@ -202,21 +202,21 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Install badge generator
+        run: pip install anybadge
+
       - name: Generate tested with badge
         run: |
-          # pybadges imports pkg_resources at load time, which setuptools no
-          # longer ships as of 82.0. Python 3.12 does not bundle setuptools, so
-          # it has to be installed explicitly and held below that version.
-          pip install "setuptools<82" pybadges
           mkdir -p .github/badges/v${{ inputs.version }}
           python -c "
-          from pybadges import badge
-          with open('.github/badges/v${{ inputs.version }}/tested_with.svg', 'w') as f:
-              f.write(badge(
-                  left_text='tested with',
-                  right_text='${{ needs.set_matrix.outputs.releases }}',
-                  right_color='green'
-              ))
+          from anybadge import Badge
+          # Explicit hex rather than the 'green' keyword, which anybadge maps to
+          # a brighter shade than earlier releases of this badge used.
+          Badge(
+              label='tested with',
+              value='${{ needs.set_matrix.outputs.releases }}',
+              default_color='#97CA00'
+          ).write_badge('.github/badges/v${{ inputs.version }}/tested_with.svg', overwrite=True)
           "
 
       - name: Generate NWB schema version badge

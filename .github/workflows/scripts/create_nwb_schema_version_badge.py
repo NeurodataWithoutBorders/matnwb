@@ -5,7 +5,7 @@ import argparse
 import re
 from pathlib import Path
 
-from pybadges import badge
+from anybadge import Badge
 
 
 def get_schema_version_range(schema_dir: Path) -> tuple[str, str]:
@@ -47,14 +47,12 @@ def create_badge(version: str, min_schema: str, max_schema: str, output_dir: Pat
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / 'supported_nwb_schema.svg'
     
-    badge_svg = badge(
-        left_text='supported NWB schema',
-        right_text=f'{min_schema} - {max_schema}',
-        right_color='Teal'
+    badge = Badge(
+        label='supported NWB schema',
+        value=f'{min_schema} - {max_schema}',
+        default_color='Teal'
     )
-    
-    with open(output_path, 'w') as f:
-        f.write(badge_svg)
+    badge.write_badge(output_path, overwrite=True)
     
     print(f"Badge created: {output_path}")
     print(f"Schema version range: {min_schema} - {max_schema}")
