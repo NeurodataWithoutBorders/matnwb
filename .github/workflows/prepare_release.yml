@@ -144,7 +144,7 @@ jobs:
           report_paths: '*/testResults.xml'
 
   update_version:
-    name: Create new draft relase for given version
+    name: Create new draft release for given version
     runs-on: ubuntu-latest
     needs: [run_tests, set_matrix]
     steps:
@@ -178,24 +178,36 @@ jobs:
           echo "$content" >> Contents.m
 
       - name: Commit updated Contents.m file
-        continue-on-error: true
         run: |
           git config user.name "${{ github.workflow }} by ${{ github.actor }}"
           git config user.email "<>"
+
+          # Contents.m is already at this version when a previous run pushed the
+          # bump before failing later on. Skip the commit instead of failing, so
+          # the workflow can be re-run after such a failure.
+          if git diff --quiet -- Contents.m; then
+            echo "Contents.m is already at version ${{ inputs.version }}; nothing to commit."
+            exit 0
+          fi
+
           git add Contents.m
           git commit -m "Update version number in Contents.m"
-          git fetch
-          git push
+
+          # Let a rejected push fail the job. main having moved during the test
+          # run means the release needs a human decision, not a silent retry.
+          git push origin HEAD:refs/heads/main
 
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.12' # Pinned to 3.12 because of pybadges dependencies
+          python-version: '3.12'
 
       - name: Generate tested with badge
         run: |
-          pip install --upgrade setuptools
-          pip install pybadges
+          # pybadges imports pkg_resources at load time, which setuptools no
+          # longer ships as of 82.0. Python 3.12 does not bundle setuptools, so
+          # it has to be installed explicitly and held below that version.
+          pip install "setuptools<82" pybadges
           mkdir -p .github/badges/v${{ inputs.version }}
           python -c "
           from pybadges import badge
@@ -212,18 +224,30 @@ jobs:
           python .github/workflows/scripts/create_nwb_schema_version_badge.py ${{ inputs.version }}
 
       - name: Tag repository with version tag
-        if: always()
         run: |
-          git fetch
+          tag="v${{ inputs.version }}"
 
           git config user.name "${{ github.workflow }} by ${{ github.actor }}"
           git config user.email "<>"
 
-          # Create the tag with a message
-          git tag -a "v${{ inputs.version }}" -m "Release v${{ inputs.version }}" 
+          git fetch --tags origin
 
-          # Push the new tag to the remote repository
-          git push origin "v${{ inputs.version }}"
+          # A previous run may have pushed the tag before failing further down.
+          # Re-use it when it already marks this commit; refuse when it marks a
+          # different one, so a release is never cut against unexpected code.
+          if existing=$(git rev-list -n 1 "$tag" 2>/dev/null); then
+            if [[ "$existing" == "$(git rev-parse HEAD)" ]]; then
+              echo "Tag $tag already points at $existing; keeping it."
+              exit 0
+            fi
+            echo "Error: tag $tag already exists and points at $existing."
+            echo "This run is releasing $(git rev-parse HEAD)."
+            echo "Delete the tag or choose a new version, then re-run."
+            exit 1
+          fi
+
+          git tag -a "$tag" -m "Release $tag"
+          git push origin "$tag"
       
       # Commit the SVG for the MATLAB releases test badge to gh-badges branch
       - name: Checkout gh-badges branch
@@ -245,12 +269,12 @@ jobs:
           git config user.email "<>"
 
           # Only proceed with commit and push if changes are detected
-          if [[ $(git add .github/badges/* --dry-run | wc -l) -gt 0 ]]; then
-            git add .github/badges/*
+          if [[ -n "$(git status --porcelain .github/badges)" ]]; then
+            git add .github/badges
             git commit -m "Update badges for release v${{ inputs.version }}"
-            git push -f
+            git push
           else
-            echo "Nothing to commit"
+            echo "Badges are unchanged; nothing to commit"
           fi
 
       # Create the release
