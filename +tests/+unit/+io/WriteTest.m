@@ -95,18 +95,20 @@ classdef WriteTest < matlab.unittest.TestCase
         end
         
         function testWriteCompoundMap(testCase)
-            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture)
             fid = H5F.create('test.h5');
             data = containers.Map({'a', 'b'}, 1:2);
             io.writeCompound(fid, '/map_data', data)
             H5F.close(fid);
+
+            readData = h5read('test.h5', '/map_data');
+            testCase.verifyEqual(readData.a, 1)
+            testCase.verifyEqual(readData.b, 2)
         end
         
         function testWriteCompoundWithoutFields(testCase)
             % A compound type needs at least one member, so data carrying no
             % fields cannot be written at all. Every input kind is normalized
             % before the check, so all three reach it.
-            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture)
             fid = H5F.create('test.h5');
             inputs = {struct, table(), containers.Map};
             for iInput = 1:numel(inputs)
@@ -169,16 +171,16 @@ classdef WriteTest < matlab.unittest.TestCase
         end
 
         function testWriteCompoundScalar(testCase)
-            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture)
             fid = H5F.create('test.h5');
             data = struct('a','b');
-            io.writeCompound(fid, '/map_data', data)
+            io.writeCompound(fid, '/scalar_data', data)
             H5F.close(fid);
+
+            info = h5info('test.h5', '/scalar_data');
+            testCase.verifyEqual(info.Dataspace.Type, 'scalar')
         end
 
-        function testWriteCompoundNonScalar(testCase)
-            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture)
-            
+        function testWriteCompoundNonScalar(testCase)            
             numRows = 5;
             numericVector = rand(numRows, 1);
             charVector = char(randi([65 90], numRows, 1));
@@ -186,8 +188,12 @@ classdef WriteTest < matlab.unittest.TestCase
             data = table(numericVector, charVector);
                         
             fid = H5F.create('test.h5');
-            io.writeCompound(fid, '/map_data', data)
+            io.writeCompound(fid, '/nonscalar_data', data)
             H5F.close(fid);
+            
+            info = h5info('test.h5', '/nonscalar_data');
+            testCase.verifyEqual(info.Dataspace.Type, 'simple')
+            testCase.verifyEqual(info.Dataspace.Size, numRows)
         end
 
         function testWriteCompoundOverWrite(testCase)
