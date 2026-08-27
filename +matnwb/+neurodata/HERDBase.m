@@ -24,10 +24,6 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
 % term used on two different objects is stored as two key rows, matching
 % HDMF. A single key may resolve to more than one entity.
 %
-% Adding a reference that is already recorded changes nothing, whereas HDMF
-% appends a second, identical object_keys row. The two files are read the
-% same way, so this only avoids a duplicated row in the flattened view.
-%
 % NwbFile.addRef and NwbFile.getExternalResources are the usual entry
 % points: they lazily attach and reuse the one HERD a file may hold.
 %
@@ -105,8 +101,8 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
         %
         %    herd.addRef(nwb, nwb.general_extracellular_ephys_electrodes, ...
         %        Attribute="location", Key="VISp", ...
-        %        EntityId="MBA:385", ...
-        %        EntityUri="https://purl.brain-bican.org/ontology/mbao/MBA_385")
+        %        EntityId="UBERON:0002436", ...
+        %        EntityUri="http://purl.obolibrary.org/obo/UBERON_0002436")
 
             arguments
                 obj (1,1) matnwb.neurodata.HERDBase
@@ -583,7 +579,9 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
                 % which carries no column information.
                 value = matnwb.neurodata.HERDBase.createEmptyTable(tableName);
             elseif isstruct(value) && ~isscalar(value)
-                value = struct2table(value, 'AsArray', false);
+                % A struct array holds one element per row. AsArray only
+                % applies to a scalar struct and is rejected here.
+                value = struct2table(value);
             elseif isstruct(value)
                 fields = fieldnames(value);
                 if isempty(fields) || isempty(value.(fields{1}))
