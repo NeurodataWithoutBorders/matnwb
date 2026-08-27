@@ -27,23 +27,22 @@ function writeCompound(fid, fullpath, data, varargin)
 %   Example:
 %     io.writeCompound(fid, '/group/dataset', data);
 
-
     forceArray = any(strcmp('forceArray', varargin));
     forceMatrix = any(strcmp('forceMatrix', varargin));
 
     % Normalize the input to a scalar struct holding one column per field,
     % taking the row count from the input.
     if istable(data)
-        numrows = height(data);
+        numRows = height(data);
         data = tableToColumnStruct(data);
     elseif isstruct(data) && ~isscalar(data)
-        numrows = numel(data);
+        numRows = numel(data);
         data = structArrayToColumnStruct(data);
     else
         if isa(data, 'containers.Map')
             data = mapToColumnStruct(data);
         end
-        numrows = scalarStructNumRows(data);
+        numRows = scalarStructNumRows(data);
     end
 
     names = fieldnames(data);
@@ -124,10 +123,10 @@ function writeCompound(fid, fullpath, data, varargin)
     end
 
     try
-        if numrows == 1 && ~(forceArray || forceMatrix)
+        if numRows == 1 && ~(forceArray || forceMatrix)
             sid = H5S.create('H5S_SCALAR');
         else
-            sid = H5S.create_simple(1, numrows, []);
+            sid = H5S.create_simple(1, numRows, []);
         end
         did = H5D.create(fid, fullpath, tid, sid, 'H5P_DEFAULT');
     catch ME
@@ -138,7 +137,7 @@ function writeCompound(fid, fullpath, data, varargin)
             [~, edit_dims, ~] = H5S.get_simple_extent_dims(edit_sid);
             layout = H5P.get_layout(create_plist);
             is_chunked = layout == H5ML.get_constant_value('H5D_CHUNKED');
-            is_same_dims = all(edit_dims == numrows);
+            is_same_dims = all(edit_dims == numRows);
 
             if ~is_same_dims
                 if is_chunked
