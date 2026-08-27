@@ -127,6 +127,30 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
             end
         end
 
+        function testAddRefRejectsAValueThatIsNotANeurodataObject(testCase)
+            % An unset property of a file is an empty double. Declaring the
+            % argument as types.untyped.MetaClass would convert it into an
+            % empty object of that class instead of rejecting it, because that
+            % constructor accepts any input, and the reference would then fail
+            % much later against a name the user has no reason to recognise.
+            nwb = testCase.createFile();
+            herd = types.hdmf_common.HERD();
+
+            testCase.verifyEmpty(nwb.general_extracellular_ephys_electrodes)
+            testCase.verifyError( ...
+                @() herd.addRef(nwb, nwb.general_extracellular_ephys_electrodes, ...
+                    Key="a", EntityId="X:1", EntityUri="http://x"), ...
+                'NWB:validators:mustBeNeurodataObject')
+            testCase.verifyError( ...
+                @() herd.addRef(nwb, 'subject', Key="a", ...
+                    EntityId="X:1", EntityUri="http://x"), ...
+                'NWB:validators:mustBeNeurodataObject')
+            testCase.verifyError( ...
+                @() nwb.addRef(nwb.general_extracellular_ephys_electrodes, ...
+                    Key="a", EntityId="X:1", EntityUri="http://x"), ...
+                'NWB:validators:mustBeNeurodataObject')
+        end
+
         function testAddRefRequiresKeyAndEntity(testCase)
             nwb = testCase.createFile();
             herd = types.hdmf_common.HERD();

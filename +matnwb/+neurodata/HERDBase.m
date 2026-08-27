@@ -27,7 +27,10 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
 % NwbFile.addRef and NwbFile.getExternalResources are the usual entry
 % points: they lazily attach and reuse the one HERD a file may hold.
 %
-% See also NwbFile.addRef, NwbFile.getExternalResources, types.hdmf_common.HERD
+% See also:
+%   NwbFile.addRef
+%   NwbFile.getExternalResources
+%   types.hdmf_common.HERD
 
     properties (Abstract)
         keys
@@ -64,8 +67,9 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
         %  - file (NwbFile) -
         %    The file that container belongs to.
         %
-        %  - container (types.untyped.MetaClass) -
-        %    The object the reference is attached to.
+        %  - container -
+        %    The neurodata object the reference is attached to, for example a
+        %    types.core.Subject or a column of a table.
         %
         % Name-Value Arguments:
         %  - EntityId (string) -
@@ -101,13 +105,13 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
         %
         %    herd.addRef(nwb, nwb.general_extracellular_ephys_electrodes, ...
         %        Attribute="location", Key="VISp", ...
-        %        EntityId="UBERON:0002436", ...
-        %        EntityUri="http://purl.obolibrary.org/obo/UBERON_0002436")
+        %        EntityId="MBA:385", ...
+        %        EntityUri="https://purl.brain-bican.org/ontology/mbao/MBA_385")
 
             arguments
                 obj (1,1) matnwb.neurodata.HERDBase
                 file (1,1) NwbFile
-                container (1,1) types.untyped.MetaClass
+                container {matnwb.common.validation.mustBeNeurodataObject}
                 options.EntityId (1,1) string = ""
                 options.EntityUri (1,1) string = ""
                 options.Key (1,1) string = ""
@@ -227,7 +231,7 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
             arguments
                 obj (1,1) matnwb.neurodata.HERDBase
                 file (1,1) NwbFile
-                container (1,1) types.untyped.MetaClass
+                container {matnwb.common.validation.mustBeNeurodataObject}
                 options.Attribute (1,1) string = ""
                 options.Field (1,1) string = ""
             end
