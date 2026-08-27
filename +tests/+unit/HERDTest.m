@@ -245,6 +245,25 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
             testCase.verifyEmpty(herd.getObjectType("TimeSeries"))
         end
 
+        function testGetObjectTypeNarrowsByRelativePathAndField(testCase)
+            % References currently carry an empty relative path and field, so
+            % narrowing by the value they hold keeps the row and narrowing by
+            % any other value drops it.
+            nwb = testCase.createFile();
+            herd = types.hdmf_common.HERD();
+            herd.addRef(nwb, nwb.general_subject, Key="a", ...
+                EntityId="X:1", EntityUri="http://x/1");
+
+            testCase.verifyEqual(height(herd.getObjectType("Subject", RelativePath="")), 1)
+            testCase.verifyEmpty(herd.getObjectType("Subject", RelativePath="species"))
+            testCase.verifyEqual(height(herd.getObjectType("Subject", Field="")), 1)
+            testCase.verifyEmpty(herd.getObjectType("Subject", Field="somefield"))
+
+            % A HERD holding no references at all returns nothing rather than
+            % indexing into a table that has no columns to match on.
+            testCase.verifyEmpty(types.hdmf_common.HERD().getObjectType("Subject"))
+        end
+
         function testEmptyHerdRoundTrip(testCase)
             % A HERD without references still has to write its six tables.
             nwb = testCase.createFile();
@@ -263,6 +282,28 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
             testCase.verifyEmpty(readFile.general_external_resources.toTable())
             objectKeys = h5read(filename, '/general/external_resources/object_keys');
             testCase.verifyClass(objectKeys.objects_idx, 'uint32')
+        end
+
+        function testReadsTablesStoredAsStructs(testCase)
+            % The generated class accepts a compound dataset as a struct array
+            % or as a scalar struct of columns, not only as a table, so the
+            % lookups have to normalize those shapes too.
+            [nwb, table] = testCase.createFile();
+            herd = types.hdmf_common.HERD();
+            herd.addRef(nwb, nwb.general_subject, Key="alpha", ...
+                EntityId="X:1", EntityUri="http://x/1");
+            herd.addRef(nwb, table, Attribute="location", Key="beta", ...
+                EntityId="Y:2", EntityUri="http://y/2");
+
+            % A struct array, one element per row.
+            herd.keys = types.hdmf_common.Data('data', table2struct(herd.keys.data));
+            testCase.verifyEqual(sort(herd.toTable().key), {'alpha'; 'beta'})
+
+            % A scalar struct holding one column per field.
+            herd.entities = types.hdmf_common.Data('data', ...
+                struct('entity_id', {{'X:1'; 'Y:2'}}, 'entity_uri', {{'http://x/1'; 'http://y/2'}}));
+            entity = herd.getEntity("Y:2");
+            testCase.verifyEqual(entity.entity_uri{1}, 'http://y/2')
         end
 
         function testGetExternalResourcesCreatesOnFirstCall(testCase)
@@ -319,6 +360,27 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
             references = nwb.general_external_resources.toTable();
             testCase.verifyEqual(height(references), 2)
             testCase.verifyEqual(sort(references.object_type), {'Subject'; 'VectorData'})
+        end
+
+        function testNwbFileAddRefValidatesItsOwnArguments(testCase)
+            % NwbFile.addRef declares the name-value arguments itself rather
+            % than forwarding them, so its defaults are a separate surface from
+            % the ones HERD.addRef declares and need their own coverage.
+            nwb = testCase.createFile();
+            subject = nwb.general_subject;
+
+            testCase.verifyError( ...
+                @() nwb.addRef(subject, EntityId="X:1", EntityUri="http://x"), ...
+                'NWB:HERD:MissingKey')
+            testCase.verifyError( ...
+                @() nwb.addRef(subject, Key="a"), ...
+                'NWB:HERD:MissingEntityId')
+            testCase.verifyError( ...
+                @() nwb.addRef(subject, Key="a", EntityId="BRAND:NEW"), ...
+                'NWB:HERD:MissingEntityUri')
+
+            % A failed call must not leave a half-populated HERD behind.
+            testCase.verifyEmpty(nwb.general_external_resources.toTable())
         end
 
         function testAddRefOnFileItselfUsesSchemaTypeName(testCase)
