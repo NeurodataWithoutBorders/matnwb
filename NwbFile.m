@@ -344,7 +344,9 @@ classdef NwbFile < types.core.NWBFile
         %  - herd (types.hdmf_common.HERD) -
         %    The HERD external resources object for this file.
         %
-        % See also: NwbFile.addRef, types.hdmf_common.HERD
+        % See also:
+        %   NwbFile.addRef
+        %   types.hdmf_common.HERD
 
             arguments
                 obj (1,1) NwbFile
@@ -370,9 +372,10 @@ classdef NwbFile < types.core.NWBFile
         %  itself, for example a column of a DynamicTable.
         %
         % Input Arguments:
-        %  - container (types.untyped.MetaClass) -
-        %    The object the reference is attached to. Must already be
-        %    part of this file.
+        %  - container -
+        %    The neurodata object the reference is attached to, for
+        %    example a types.core.Subject or a column of a table. Must
+        %    already be part of this file.
         %
         % Name-Value Arguments:
         %  - EntityId (string) -
@@ -406,11 +409,13 @@ classdef NwbFile < types.core.NWBFile
         %        EntityId="NCBITaxon:10090", ...
         %        EntityUri="http://purl.obolibrary.org/obo/NCBITaxon_10090")
         %
-        % See also: NwbFile.getExternalResources, types.hdmf_common.HERD/addRef
+        % See also:
+        %   NwbFile.getExternalResources
+        %   types.hdmf_common.HERD
 
             arguments
                 obj (1,1) NwbFile
-                container (1,1) types.untyped.MetaClass
+                container {matnwb.common.validation.mustBeNeurodataObject}
                 options.EntityId (1,1) string = ""
                 options.EntityUri (1,1) string = ""
                 options.Key (1,1) string = ""
