@@ -31,37 +31,28 @@ function writeCompound(fid, fullpath, data, varargin)
     forceArray = any(strcmp('forceArray', varargin));
     forceMatrix = any(strcmp('forceMatrix', varargin));
 
-    %convert to a struct
+    % Normalize the input to a scalar struct holding one column per field,
+    % taking the row count from the input.
     if istable(data)
-        data = table2struct(data);
-    elseif isa(data, 'containers.Map')
-        names = keys(data);
-        vals = values(data, names);
-
-        s = struct();
-        for i=1:length(names)
-            s.(misc.str2validName(names{i})) = vals{i};
+        numrows = height(data);
+        data = tableToColumnStruct(data);
+    elseif isstruct(data) && ~isscalar(data)
+        numrows = numel(data);
+        data = structArrayToColumnStruct(data);
+    else
+        if isa(data, 'containers.Map')
+            data = mapToColumnStruct(data);
         end
-        data = s;
+        numrows = scalarStructNumRows(data);
     end
 
-    %convert to scalar struct
     names = fieldnames(data);
     if isempty(names)
-        numrows = 0;
-    elseif isscalar(data)
-        if ischar(data.(names{1}))
-            numrows = 1;
-        else
-            numrows = length(data.(names{1}));
-        end
-    else
-        numrows = length(data);
-        s = struct();
-        for i=1:length(names)
-            s.(names{i}) = {data.(names{i})};
-        end
-        data = s;
+        error('NWB:WriteCompound:NoFields', ...
+            ['Cannot write the compound dataset "%s" because the data has no ' ...
+            'fields, and a compound type needs at least one member. Provide a ' ...
+            'table with at least one column, a struct with at least one field, ' ...
+            'or a containers.Map with at least one key.'], fullpath)
     end
 
     %check for references and construct tid.
@@ -170,4 +161,74 @@ function writeCompound(fid, fullpath, data, varargin)
     H5D.write(did, tid, sid, sid, 'H5P_DEFAULT', data);
     H5D.close(did);
     H5S.close(sid);
+end
+
+function s = tableToColumnStruct(data)
+% tableToColumnStruct - Convert a table to a scalar struct of columns.
+    if height(data) == 0
+        s = zeroRowTableToColumnStruct(data);
+    else
+        s = structArrayToColumnStruct(table2struct(data));
+    end
+end
+
+function s = zeroRowTableToColumnStruct(data)
+% zeroRowTableToColumnStruct - Convert a table with no rows to a scalar struct
+% of empty columns.
+%
+% Each compound member takes its type from the class of its column, and
+% table2struct loses those classes for a zero-row table, so the columns are
+% read off the table directly. Numeric and logical columns keep their class.
+% Every other column is carried as an empty cellstr, giving it the variable
+% length string member type, which is the type a text column gets for a table
+% with rows. Classes that cannot be typed from an empty value, such as object
+% references, therefore also write as strings.
+    s = struct();
+    variableNames = data.Properties.VariableNames;
+    for iVariable = 1:numel(variableNames)
+        column = data{:, iVariable};
+        if ~isnumeric(column) && ~islogical(column)
+            column = cell(0, 1);
+        end
+        s.(variableNames{iVariable}) = column;
+    end
+end
+
+function s = structArrayToColumnStruct(data)
+% structArrayToColumnStruct - Gather a struct array into a scalar struct whose
+% fields each hold that field's column of values.
+    s = struct();
+    names = fieldnames(data);
+    for iName = 1:numel(names)
+        s.(names{iName}) = {data.(names{iName})};
+    end
+end
+
+function s = mapToColumnStruct(data)
+% mapToColumnStruct - Convert a containers.Map to a scalar struct of columns.
+    s = struct();
+    names = keys(data);
+    vals = values(data, names);
+    for iName = 1:numel(names)
+        s.(misc.str2validName(names{iName})) = vals{iName};
+    end
+end
+
+function numrows = scalarStructNumRows(data)
+% scalarStructNumRows - Number of rows a scalar struct describes.
+%
+% A scalar struct holds either a single row of values or one column per field.
+% The two are told apart by the first field: text is a single value, anything
+% else is a column whose length is the row count.
+    names = fieldnames(data);
+    if isempty(names)
+        numrows = 0;
+        return
+    end
+    firstColumn = data.(names{1});
+    if ischar(firstColumn)
+        numrows = 1;
+    else
+        numrows = length(firstColumn);
+    end
 end
