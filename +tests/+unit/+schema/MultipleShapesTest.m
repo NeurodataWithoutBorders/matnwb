@@ -39,15 +39,22 @@ classdef MultipleShapesTest < tests.unit.abstract.SchemaTest
         end
         
         function testMultipleNullShapesDataset(testCase)
+            % MultiNullShapeDataset accepts one-dimensional data of any length
+            % and two-dimensional data of any size. Cover a scalar, a column
+            % vector, a row vector and a matrix; assigning a shape the type does
+            % not accept errors on assignment and fails the test.
+            validShapes = {[1, 1], [23, 1], [1, 23], [7, 5]};
+
             mnsd = types.mss.MultiNullShapeDataset;
-            randiMax = intmax('int8');
-            for i=1:100
-                if rand() > 0.5
-                    mnsd.data = rand(randi(randiMax), 1);
-                else
-                    mnsd.data = rand(randi(randiMax), randi(randiMax));
-                end
+            for iShape = 1:numel(validShapes)
+                mnsd.data = rand(validShapes{iShape});
             end
+
+            % Export a matrix. One-dimensional data is written as a rank-1
+            % dataset and read back as a column, so a row vector would not
+            % compare equal after the round trip (see the dimension ordering
+            % concept documentation).
+            mnsd.data = rand(7, 5);
             testCase.roundabout(mnsd);
         end
         
