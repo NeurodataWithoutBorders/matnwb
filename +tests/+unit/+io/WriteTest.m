@@ -102,16 +102,72 @@ classdef WriteTest < matlab.unittest.TestCase
             H5F.close(fid);
         end
         
-        function testWriteCompoundEmpty(testCase)
+        function testWriteCompoundWithoutFields(testCase)
+            % A compound type needs at least one member, so data carrying no
+            % fields cannot be written at all. Every input kind is normalized
+            % before the check, so all three reach it.
             testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture)
             fid = H5F.create('test.h5');
-            data = struct;
-            testCase.verifyError(...
-                @(varargin) io.writeCompound(fid, '/map_data', data), ...
-                'MATLAB:imagesci:hdf5lib:libraryError')
+            inputs = {struct, table(), containers.Map};
+            for iInput = 1:numel(inputs)
+                testCase.verifyError(...
+                    @(varargin) io.writeCompound(fid, '/no_fields', inputs{iInput}), ...
+                    'NWB:WriteCompound:NoFields')
+            end
             H5F.close(fid);
         end
         
+        function testWriteCompoundZeroRowTableKeepsColumnTypes(testCase)
+            % A zero-row table still has to write each column with its own
+            % type. table2struct cannot express that, so writeCompound reads
+            % the columns directly in this case.
+            fid = H5F.create('test.h5');
+            data = table(uint32.empty(0, 1), cell(0, 1), zeros(0, 1), false(0, 1), ...
+                'VariableNames', {'index', 'name', 'value', 'flag'});
+            io.writeCompound(fid, '/empty_data', data, 'forceArray')
+            H5F.close(fid);
+
+            info = h5info('test.h5', '/empty_data');
+            testCase.verifyEqual(info.Dataspace.Size, 0)
+            memberTypes = {info.Datatype.Type.Member.Datatype};
+            testCase.verifyEqual(memberTypes{1}.Class, 'H5T_INTEGER')
+            testCase.verifyEqual(memberTypes{2}.Class, 'H5T_STRING')
+            testCase.verifyEqual(memberTypes{3}.Class, 'H5T_FLOAT')
+            testCase.verifyEqual(memberTypes{4}.Class, 'H5T_ENUM')
+
+            readData = h5read('test.h5', '/empty_data');
+            testCase.verifyClass(readData.index, 'uint32')
+            testCase.verifyEmpty(readData.index)
+        end
+
+        function testWriteCompoundZeroRowTableAcceptsEveryColumnClass(testCase)
+            % A member type can only be derived from an empty column for some
+            % classes. The rest fall back to the string member type they were
+            % already given, rather than erroring. Each column is placed first
+            % because the row count is read off the first field.
+            columns = { ...
+                'chardata',    char.empty(0, 1); ...
+                'stringdata',  string.empty(0, 1); ...
+                'cellstrdata', cell(0, 1); ...
+                'int64data',   int64.empty(0, 1); ...
+                'singledata',  single.empty(0, 1)};
+
+            for iColumn = 1:size(columns, 1)
+                columnName = columns{iColumn, 1};
+                data = table(columns{iColumn, 2}, uint32.empty(0, 1), ...
+                    'VariableNames', {columnName, 'idx'});
+
+                fileName = sprintf('%s.h5', columnName);
+                fid = H5F.create(fileName);
+                io.writeCompound(fid, '/d', data, 'forceArray')
+                H5F.close(fid);
+
+                info = h5info(fileName, '/d');
+                testCase.verifyEqual(info.Dataspace.Size, 0, ...
+                    sprintf('A zero-row "%s" column should write no rows.', columnName))
+            end
+        end
+
         function testWriteCompoundScalar(testCase)
             testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture)
             fid = H5F.create('test.h5');
