@@ -9,6 +9,12 @@ on:
         required: true
         type: string
 
+# Releases from the same ref run one at a time. Rehearsals on a branch use a
+# separate group, so they never queue behind or block a release from main.
+concurrency:
+  group: prepare-release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   validate_version:
     runs-on: ubuntu-latest
@@ -21,6 +27,39 @@ jobs:
             exit 1
           fi
           echo "Version '$version' is valid."
+
+      # Reject an already released version now, rather than after the test
+      # matrix has run and the version bump has been pushed to main. Rehearsals
+      # push nothing, so they are not subject to this check.
+      - name: Check version is not already released
+        if: github.ref == 'refs/heads/main'
+        run: |
+          version="${{ github.event.inputs.version }}"
+          remote="https://github.com/${{ github.repository }}.git"
+
+          # An annotated tag lists both the tag object and, under ^{}, the commit
+          # it marks. Prefer the latter, which is what the tag step compares.
+          tagged=$(git ls-remote --tags "$remote" "refs/tags/v$version^{}" | awk '{print $1}')
+          if [[ -z "$tagged" ]]; then
+            tagged=$(git ls-remote --tags "$remote" "refs/tags/v$version" | awk '{print $1}')
+          fi
+
+          if [[ -z "$tagged" ]]; then
+            echo "Tag 'v$version' does not exist yet."
+            exit 0
+          fi
+
+          # A tag on the current tip of main is left over from a run that failed
+          # after tagging. Allow it, so that run can be retried.
+          main_tip=$(git ls-remote "$remote" refs/heads/main | awk '{print $1}')
+          if [[ "$tagged" == "$main_tip" ]]; then
+            echo "Tag 'v$version' already marks the tip of main; treating this as a retry."
+            exit 0
+          fi
+
+          echo "Error: version $version is already released. Tag 'v$version' marks $tagged."
+          echo "Choose a new version, or delete the tag if it is left over from a failed run."
+          exit 1
 
   set_matrix:
     name: Set test matrix
@@ -128,6 +167,12 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     needs: [run_tests]
+    # Stated explicitly so the job keeps working if the repository default for
+    # GITHUB_TOKEN is ever reduced to read-only. The report action creates a
+    # check run; pull-requests write is only needed with `comment: true`.
+    permissions:
+      contents: read
+      checks: write
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
@@ -147,11 +192,35 @@ jobs:
     name: Create new draft release for given version
     runs-on: ubuntu-latest
     needs: [run_tests, set_matrix]
+    permissions:
+      contents: write
+    env:
+      # Only a dispatch from main publishes. Dispatching from another branch
+      # rehearses the release against that branch: every step runs, but nothing
+      # is pushed and no release is created.
+      IS_RELEASE: ${{ github.ref == 'refs/heads/main' }}
     steps:
+      - name: Report release mode
+        run: |
+          if [[ "$IS_RELEASE" == "true" ]]; then
+            echo "Publishing v${{ inputs.version }} from \`main\`." >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "### Rehearsal only"
+              echo
+              echo "Dispatched from \`${{ github.ref_name }}\` rather than \`main\`, so this run publishes nothing:"
+              echo "no commit to main, no tag, no badge push and no release."
+              echo "Dispatch from \`main\` to publish."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Checkout repository using deploy key
         uses: actions/checkout@v6
         with:
-          ref: refs/heads/main
+          # A rehearsal checks out the branch it was dispatched from, so it
+          # exercises that branch's scripts rather than the ones on main. A
+          # release is dispatched from main, so this resolves to refs/heads/main.
+          ref: ${{ github.ref }}
           ssh-key: ${{ secrets.DEPLOY_KEY }}
 
       - name: Update Contents.m file
@@ -173,6 +242,14 @@ jobs:
           # Extract the content after the header from the current Contents.m file
           content=$(awk '/^% -{10,}/{flag=1;next} flag{print}' Contents.m)
           
+          # An empty result means the separator was not found. Writing the file
+          # at this point would replace the whole listing with just the header.
+          if [[ -z "$content" ]]; then
+            echo "Error: found no content after the header separator in Contents.m."
+            echo "The separator line (% followed by 10 or more dashes) may have changed."
+            exit 1
+          fi
+          
           # Combine new header with existing content
           echo "$header" > Contents.m
           echo "$content" >> Contents.m
@@ -192,6 +269,11 @@ jobs:
 
           git add Contents.m
           git commit -m "Update version number in Contents.m"
+
+          if [[ "$IS_RELEASE" != "true" ]]; then
+            echo "Rehearsal: committed locally, not pushing to main."
+            exit 0
+          fi
 
           # Let a rejected push fail the job. main having moved during the test
           # run means the release needs a human decision, not a silent retry.
@@ -247,6 +329,12 @@ jobs:
           fi
 
           git tag -a "$tag" -m "Release $tag"
+
+          if [[ "$IS_RELEASE" != "true" ]]; then
+            echo "Rehearsal: tagged locally, not pushing $tag."
+            exit 0
+          fi
+
           git push origin "$tag"
       
       # Commit the SVG for the MATLAB releases test badge to gh-badges branch
@@ -269,16 +357,24 @@ jobs:
           git config user.email "<>"
 
           # Only proceed with commit and push if changes are detected
-          if [[ -n "$(git status --porcelain .github/badges)" ]]; then
-            git add .github/badges
-            git commit -m "Update badges for release v${{ inputs.version }}"
-            git push
-          else
+          if [[ -z "$(git status --porcelain .github/badges)" ]]; then
             echo "Badges are unchanged; nothing to commit"
+            exit 0
           fi
+
+          git add .github/badges
+          git commit -m "Update badges for release v${{ inputs.version }}"
+
+          if [[ "$IS_RELEASE" != "true" ]]; then
+            echo "Rehearsal: committed badges locally, not pushing to gh-badges."
+            exit 0
+          fi
+
+          git push
 
       # Create the release
       - name: Create GitHub release
+        if: env.IS_RELEASE == 'true'
         uses: ncipollo/release-action@v1
         with:
           draft: true
