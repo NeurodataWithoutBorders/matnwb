@@ -38,11 +38,16 @@ jobs:
         run: |
           config=.github/workflows/configurations/matlab_release_matrix_strategy.yml
 
-          # Cross every MATLAB release with every platform
+          # One job per MATLAB release and platform. The macOS runner is
+          # release-specific, so the combinations are listed explicitly instead
+          # of being generated as a cross product of `os` and `matlab-version`.
           matrix=$(yq -o=json '{
-              "os": ["windows-latest", "ubuntu-latest", "macos-15-intel"],
-              "matlab-version": [.[].matlab-version],
-              "include": .
+              "include": [
+                .[] as $release
+                  | ["windows-latest", "ubuntu-latest", $release.macos-runner]
+                  | .[] as $os
+                  | ($release * {"os": $os} | del(.macos-runner))
+              ]
             }' "$config" | tr -d '\n')
 
           # Release list for the 'tested with' badge, e.g. "R2021a | R2021b"
