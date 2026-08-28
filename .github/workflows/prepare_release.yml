@@ -9,18 +9,61 @@ on:
         required: true
         type: string
 
+# Releases from the same ref run one at a time. Rehearsals on a branch use a
+# separate group, so they never queue behind or block a release from main.
+concurrency:
+  group: prepare-release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   validate_version:
     runs-on: ubuntu-latest
+    # The dispatch input reaches the shell as an environment variable. Pasting
+    # it into a script with ${{ }} would let its contents be parsed as code.
+    env:
+      VERSION: ${{ inputs.version }}
     steps:
       - name: Check version format
         run: |
-          version="${{ github.event.inputs.version }}"
+          version="$VERSION"
           if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "Error: Input for 'version' ('$version') is not in the expected major.minor.patch format."
             exit 1
           fi
           echo "Version '$version' is valid."
+
+      # Reject an already released version now, rather than after the test
+      # matrix has run and the version bump has been pushed to main. Rehearsals
+      # push nothing, so they are not subject to this check.
+      - name: Check version is not already released
+        if: github.ref == 'refs/heads/main'
+        run: |
+          version="$VERSION"
+          remote="https://github.com/${{ github.repository }}.git"
+
+          # An annotated tag lists both the tag object and, under ^{}, the commit
+          # it marks. Prefer the latter, which is what the tag step compares.
+          tagged=$(git ls-remote --tags "$remote" "refs/tags/v$version^{}" | awk '{print $1}')
+          if [[ -z "$tagged" ]]; then
+            tagged=$(git ls-remote --tags "$remote" "refs/tags/v$version" | awk '{print $1}')
+          fi
+
+          if [[ -z "$tagged" ]]; then
+            echo "Tag 'v$version' does not exist yet."
+            exit 0
+          fi
+
+          # A tag on the current tip of main is left over from a run that failed
+          # after tagging. Allow it, so that run can be retried.
+          main_tip=$(git ls-remote "$remote" refs/heads/main | awk '{print $1}')
+          if [[ "$tagged" == "$main_tip" ]]; then
+            echo "Tag 'v$version' already marks the tip of main; treating this as a retry."
+            exit 0
+          fi
+
+          echo "Error: version $version is already released. Tag 'v$version' marks $tagged."
+          echo "Choose a new version, or delete the tag if it is left over from a failed run."
+          exit 1
 
   set_matrix:
     name: Set test matrix
@@ -128,6 +171,12 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     needs: [run_tests]
+    # Stated explicitly so the job keeps working if the repository default for
+    # GITHUB_TOKEN is ever reduced to read-only. The report action creates a
+    # check run; pull-requests write is only needed with `comment: true`.
+    permissions:
+      contents: read
+      checks: write
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
@@ -144,14 +193,41 @@ jobs:
           report_paths: '*/testResults.xml'
 
   update_version:
-    name: Create new draft relase for given version
+    name: Create new draft release for given version
     runs-on: ubuntu-latest
     needs: [run_tests, set_matrix]
+    permissions:
+      contents: write
+    env:
+      # Only a dispatch from main publishes. Dispatching from another branch
+      # rehearses the release against that branch: every step runs, but nothing
+      # is pushed and no release is created.
+      IS_RELEASE: ${{ github.ref == 'refs/heads/main' }}
+      # The dispatch input reaches the shell as an environment variable. Pasting
+      # it into a script with ${{ }} would let its contents be parsed as code.
+      VERSION: ${{ inputs.version }}
     steps:
+      - name: Report release mode
+        run: |
+          if [[ "$IS_RELEASE" == "true" ]]; then
+            echo "Publishing v$VERSION from \`main\`." >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "### Rehearsal only"
+              echo
+              echo "Dispatched from \`${{ github.ref_name }}\` rather than \`main\`, so this run publishes nothing:"
+              echo "no commit to main, no tag, no badge push and no release."
+              echo "Dispatch from \`main\` to publish."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Checkout repository using deploy key
         uses: actions/checkout@v6
         with:
-          ref: refs/heads/main
+          # A rehearsal checks out the branch it was dispatched from, so it
+          # exercises that branch's scripts rather than the ones on main. A
+          # release is dispatched from main, so this resolves to refs/heads/main.
+          ref: ${{ github.ref }}
           ssh-key: ${{ secrets.DEPLOY_KEY }}
 
       - name: Update Contents.m file
@@ -166,64 +242,126 @@ jobs:
           year_number=$(date +"%Y")
           
           # Replace placeholders in template
-          header="${template/\{\{version_number\}\}/${{ github.event.inputs.version }}}"
+          header="${template/\{\{version_number\}\}/$VERSION}"
           header="${header/\{\{date_string\}\}/$date_string}"
           header="${header/\{\{year_number\}\}/$year_number}"
           
           # Extract the content after the header from the current Contents.m file
           content=$(awk '/^% -{10,}/{flag=1;next} flag{print}' Contents.m)
           
+          # An empty result means the separator was not found. Writing the file
+          # at this point would replace the whole listing with just the header.
+          if [[ -z "$content" ]]; then
+            echo "Error: found no content after the header separator in Contents.m."
+            echo "The separator line (% followed by 10 or more dashes) may have changed."
+            exit 1
+          fi
+          
           # Combine new header with existing content
           echo "$header" > Contents.m
           echo "$content" >> Contents.m
 
       - name: Commit updated Contents.m file
-        continue-on-error: true
         run: |
           git config user.name "${{ github.workflow }} by ${{ github.actor }}"
           git config user.email "<>"
+
+          # Contents.m is already at this version when a previous run pushed the
+          # bump before failing later on. Skip the commit instead of failing, so
+          # the workflow can be re-run after such a failure.
+          if git diff --quiet -- Contents.m; then
+            echo "Contents.m is already at version $VERSION; nothing to commit."
+            exit 0
+          fi
+
           git add Contents.m
           git commit -m "Update version number in Contents.m"
-          git fetch
-          git push
+
+          if [[ "$IS_RELEASE" != "true" ]]; then
+            echo "Rehearsal: committed locally, not pushing to main."
+            exit 0
+          fi
+
+          # Let a rejected push fail the job. main having moved during the test
+          # run means the release needs a human decision, not a silent retry.
+          git push origin HEAD:refs/heads/main
 
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.12' # Pinned to 3.12 because of pybadges dependencies
+          python-version: '3.12'
+
+      - name: Install badge generator
+        # Pinned so a new anybadge release cannot change the badges, or break
+        # this job, without the pin being updated deliberately.
+        run: pip install anybadge==1.16.0
 
       - name: Generate tested with badge
+        env:
+          RELEASES: ${{ needs.set_matrix.outputs.releases }}
         run: |
-          pip install --upgrade setuptools
-          pip install pybadges
-          mkdir -p .github/badges/v${{ inputs.version }}
-          python -c "
-          from pybadges import badge
-          with open('.github/badges/v${{ inputs.version }}/tested_with.svg', 'w') as f:
-              f.write(badge(
-                  left_text='tested with',
-                  right_text='${{ needs.set_matrix.outputs.releases }}',
-                  right_color='green'
-              ))
+          mkdir -p ".github/badges/v$VERSION"
+          OUT_PATH=".github/badges/v$VERSION/tested_with.svg" python -c "
+          import os
+          from anybadge import Badge
+          # Explicit hex rather than the 'green' keyword, which anybadge maps to
+          # a brighter shade than earlier releases of this badge used.
+          Badge(
+              label='tested with',
+              value=os.environ['RELEASES'],
+              default_color='#97CA00'
+          ).write_badge(os.environ['OUT_PATH'], overwrite=True)
           "
 
       - name: Generate NWB schema version badge
         run: |
-          python .github/workflows/scripts/create_nwb_schema_version_badge.py ${{ inputs.version }}
+          # The latest/ badge should describe the newest release. Re-running for
+          # an older version must not point it backwards. Tags are matched with
+          # and without a leading v, since releases up to 2.9.0 omitted it.
+          highest=$(git ls-remote --tags --refs origin \
+            | sed 's|.*refs/tags/||; s|^v||' \
+            | grep -E '^[0-9]+(\.[0-9]+)+$' \
+            | sort -V | tail -1)
+
+          if [[ -z "$highest" || "$(printf '%s\n%s\n' "$highest" "$VERSION" | sort -V | tail -1)" == "$VERSION" ]]; then
+            echo "$VERSION is the newest release; updating the latest/ badge."
+            python .github/workflows/scripts/create_nwb_schema_version_badge.py "$VERSION" --update-latest
+          else
+            echo "$VERSION is older than $highest; leaving the latest/ badge alone."
+            python .github/workflows/scripts/create_nwb_schema_version_badge.py "$VERSION"
+          fi
 
       - name: Tag repository with version tag
-        if: always()
         run: |
-          git fetch
+          tag="v$VERSION"
 
           git config user.name "${{ github.workflow }} by ${{ github.actor }}"
           git config user.email "<>"
 
-          # Create the tag with a message
-          git tag -a "v${{ inputs.version }}" -m "Release v${{ inputs.version }}" 
+          git fetch --tags origin
 
-          # Push the new tag to the remote repository
-          git push origin "v${{ inputs.version }}"
+          # A previous run may have pushed the tag before failing further down.
+          # Re-use it when it already marks this commit; refuse when it marks a
+          # different one, so a release is never cut against unexpected code.
+          if existing=$(git rev-list -n 1 "$tag" 2>/dev/null); then
+            if [[ "$existing" == "$(git rev-parse HEAD)" ]]; then
+              echo "Tag $tag already points at $existing; keeping it."
+              exit 0
+            fi
+            echo "Error: tag $tag already exists and points at $existing."
+            echo "This run is releasing $(git rev-parse HEAD)."
+            echo "Delete the tag or choose a new version, then re-run."
+            exit 1
+          fi
+
+          git tag -a "$tag" -m "Release $tag"
+
+          if [[ "$IS_RELEASE" != "true" ]]; then
+            echo "Rehearsal: tagged locally, not pushing $tag."
+            exit 0
+          fi
+
+          git push origin "$tag"
       
       # Commit the SVG for the MATLAB releases test badge to gh-badges branch
       - name: Checkout gh-badges branch
@@ -234,27 +372,39 @@ jobs:
 
       - name: Push to gh-badges
         run: |
-          mkdir -p gh-badges/.github/badges/v${{ inputs.version }}
-          mkdir -p gh-badges/.github/badges/latest
-          cp .github/badges/v${{ inputs.version }}/tested_with.svg gh-badges/.github/badges/v${{ inputs.version }}/tested_with.svg
-          cp .github/badges/v${{ inputs.version }}/supported_nwb_schema.svg gh-badges/.github/badges/v${{ inputs.version }}/supported_nwb_schema.svg
-          cp .github/badges/latest/supported_nwb_schema.svg gh-badges/.github/badges/latest/supported_nwb_schema.svg
+          mkdir -p "gh-badges/.github/badges/v$VERSION"
+          cp ".github/badges/v$VERSION/tested_with.svg" "gh-badges/.github/badges/v$VERSION/tested_with.svg"
+          cp ".github/badges/v$VERSION/supported_nwb_schema.svg" "gh-badges/.github/badges/v$VERSION/supported_nwb_schema.svg"
+
+          # Only present when this release is the newest one.
+          if [[ -f .github/badges/latest/supported_nwb_schema.svg ]]; then
+            mkdir -p gh-badges/.github/badges/latest
+            cp .github/badges/latest/supported_nwb_schema.svg gh-badges/.github/badges/latest/supported_nwb_schema.svg
+          fi
           cd gh-badges
 
           git config user.name "${{ github.workflow }} by ${{ github.actor }}"
           git config user.email "<>"
 
           # Only proceed with commit and push if changes are detected
-          if [[ $(git add .github/badges/* --dry-run | wc -l) -gt 0 ]]; then
-            git add .github/badges/*
-            git commit -m "Update badges for release v${{ inputs.version }}"
-            git push -f
-          else
-            echo "Nothing to commit"
+          if [[ -z "$(git status --porcelain .github/badges)" ]]; then
+            echo "Badges are unchanged; nothing to commit"
+            exit 0
           fi
+
+          git add .github/badges
+          git commit -m "Update badges for release v$VERSION"
+
+          if [[ "$IS_RELEASE" != "true" ]]; then
+            echo "Rehearsal: committed badges locally, not pushing to gh-badges."
+            exit 0
+          fi
+
+          git push
 
       # Create the release
       - name: Create GitHub release
+        if: env.IS_RELEASE == 'true'
         uses: ncipollo/release-action@v1
         with:
           draft: true

@@ -5,7 +5,7 @@ import argparse
 import re
 from pathlib import Path
 
-from pybadges import badge
+from anybadge import Badge
 
 
 def get_schema_version_range(schema_dir: Path) -> tuple[str, str]:
@@ -47,14 +47,12 @@ def create_badge(version: str, min_schema: str, max_schema: str, output_dir: Pat
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / 'supported_nwb_schema.svg'
     
-    badge_svg = badge(
-        left_text='supported NWB schema',
-        right_text=f'{min_schema} - {max_schema}',
-        right_color='Teal'
+    badge = Badge(
+        label='supported NWB schema',
+        value=f'{min_schema} - {max_schema}',
+        default_color='Teal'
     )
-    
-    with open(output_path, 'w') as f:
-        f.write(badge_svg)
+    badge.write_badge(output_path, overwrite=True)
     
     print(f"Badge created: {output_path}")
     print(f"Schema version range: {min_schema} - {max_schema}")
@@ -80,6 +78,13 @@ def main():
         default=None,
         help='Output directory for the badge (default: .github/badges/v<version>)'
     )
+    parser.add_argument(
+        '--update-latest',
+        action='store_true',
+        help='Also write the badge to .github/badges/latest. Pass this only when '
+             'releasing a version newer than every existing release, so that '
+             'rebuilding an older one does not point latest backwards.'
+    )
     
     args = parser.parse_args()
     
@@ -94,12 +99,14 @@ def main():
     
     # Set default output directory
     output_dir = args.output_dir or repo_root / '.github' / 'badges' / f'v{args.version}'
-    latest_dir = repo_root / '.github' / 'badges' / 'latest'
     
     # Get version range and create badge
     min_schema, max_schema = get_schema_version_range(schema_dir)
     create_badge(args.version, min_schema, max_schema, output_dir)
-    create_badge(args.version, min_schema, max_schema, latest_dir)
+    
+    if args.update_latest:
+        latest_dir = repo_root / '.github' / 'badges' / 'latest'
+        create_badge(args.version, min_schema, max_schema, latest_dir)
 
 
 if __name__ == '__main__':
