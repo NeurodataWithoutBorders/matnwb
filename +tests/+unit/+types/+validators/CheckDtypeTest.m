@@ -202,6 +202,51 @@ classdef CheckDtypeTest < matlab.unittest.TestCase
                 @() types.util.checkDtype('invalidValue', 'any', {struct()}), ...
                 'NWB:CheckDType:InvalidType')
         end
+
+        function testAnyDtypeValidatesDataStubWithoutReading(testCase)
+        % Validating an "any" dtype only needs the class of the value, which
+        % a DataStub already declares. Reading a sample element to learn it
+        % costs I/O on every read, and on a large dataset that is not free.
+        % The stub here points at a file that does not exist, so any attempt
+        % to read raises rather than passing silently.
+            missingFile = "/nonexistent/store.zarr";
+            lazyArray = io.backend.zarr3.Zarr3LazyArray(...
+                missingFile, "/data", [1000 1000], 'double');
+            dataStub = types.untyped.DataStub(...
+                missingFile, "/data", [1000 1000], 'double', lazyArray);
+
+            validatedValue = types.util.checkDtype('data', 'any', dataStub);
+
+            % The stub is returned unread, so the data stays lazy.
+            testCase.verifyClass(validatedValue, 'types.untyped.DataStub');
+        end
+
+        function testAnyDtypeSamplesDataStubWithUnresolvableType(testCase)
+        % Counterpart to testAnyDtypeValidatesDataStubWithoutReading: when
+        % the declared type does not name a constructible class, validation
+        % falls back to sampling one element, so here the file must exist
+        % and hold valid data.
+            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
+            filename = "check-dtype-sampling.h5";
+            h5create(filename, "/data", [2 2]);
+            h5write(filename, "/data", magic(2));
+
+            unresolvableTypes = {...
+                {'double'}, ...               % not text at all
+                'notARealClassName', ...      % text, but no such class
+                'matlab.mixin.Heterogeneous'};% a class, but abstract
+
+            for iType = 1:numel(unresolvableTypes)
+                lazyArray = io.backend.hdf5.HDF5LazyArray(...
+                    filename, "/data", [2 2], unresolvableTypes{iType});
+                dataStub = types.untyped.DataStub(...
+                    filename, "/data", [2 2], [], lazyArray);
+
+                validatedValue = types.util.checkDtype('data', 'any', dataStub);
+
+                testCase.verifyClass(validatedValue, 'types.untyped.DataStub');
+            end
+        end
     end
 
     methods (Static)

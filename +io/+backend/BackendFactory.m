@@ -35,6 +35,8 @@ classdef BackendFactory
                 case "auto"
                     if io.backend.BackendFactory.isHDF5File(filename)
                         reader = io.backend.hdf5.HDF5Reader(filename);
+                    elseif io.backend.BackendFactory.isZarr3Directory(filename)
+                        reader = io.backend.zarr3.Zarr3Reader(filename);
                     else
                         error("NWB:BackendFactory:UnsupportedFormat", ...
                             "No supported reader found for `%s`.", filename)
@@ -45,6 +47,12 @@ classdef BackendFactory
                             "`%s` is not a valid HDF5 file.", filename)
                     end
                     reader = io.backend.hdf5.HDF5Reader(filename);
+                case "zarr3"
+                    if ~io.backend.BackendFactory.isZarr3Directory(filename)
+                        error("NWB:BackendFactory:InvalidZarr3", ...
+                            "`%s` is not a supported local Zarr v3 directory store.", filename)
+                    end
+                    reader = io.backend.zarr3.Zarr3Reader(filename);
                 otherwise
                     error("NWB:BackendFactory:UnsupportedBackend", ...
                         "Unsupported backend `%s`.", storageBackend)
@@ -66,6 +74,8 @@ classdef BackendFactory
                 case "auto"
                     if io.backend.BackendFactory.isHDF5File(filename)
                         lazyArray = io.backend.hdf5.HDF5LazyArray(filename, datasetPath, dims, dataType);
+                    elseif io.backend.BackendFactory.isZarr3Directory(filename)
+                        lazyArray = io.backend.zarr3.Zarr3LazyArray(filename, datasetPath, dims, dataType);
                     else
                         error("NWB:BackendFactory:UnsupportedFormat", ...
                             "No supported lazy array backend found for `%s`.", filename)
@@ -76,6 +86,12 @@ classdef BackendFactory
                             "`%s` is not a valid HDF5 file.", filename)
                     end
                     lazyArray = io.backend.hdf5.HDF5LazyArray(filename, datasetPath, dims, dataType);
+                case "zarr3"
+                    if ~io.backend.BackendFactory.isZarr3Directory(filename)
+                        error("NWB:BackendFactory:InvalidZarr3", ...
+                            "`%s` is not a supported local Zarr v3 directory store.", filename)
+                    end
+                    lazyArray = io.backend.zarr3.Zarr3LazyArray(filename, datasetPath, dims, dataType);
                 otherwise
                     error("NWB:BackendFactory:UnsupportedBackend", ...
                         "Unsupported backend `%s`.", storageBackend)
@@ -103,6 +119,33 @@ classdef BackendFactory
                 catch
                     tf = false;
                 end
+            end
+        end
+
+        function tf = isZarr3Directory(filename)
+            arguments
+                filename (1,1) string
+            end
+
+            tf = false;
+            if startsWith(filename, "s3://", "IgnoreCase", true) || ~isfolder(filename)
+                return
+            end
+
+            if ~endsWith(filename, ".zarr", "IgnoreCase", true)
+                return
+            end
+
+            rootMetadataFile = fullfile(filename, "zarr.json");
+            if ~isfile(rootMetadataFile)
+                return
+            end
+
+            try
+                rootMetadata = jsondecode(fileread(rootMetadataFile));
+                tf = isfield(rootMetadata, "zarr_format") && isequal(rootMetadata.zarr_format, 3);
+            catch
+                tf = false;
             end
         end
     end

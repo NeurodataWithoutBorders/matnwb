@@ -1,8 +1,11 @@
 function mustBeFile(filePath)
-% mustBeFile - Check if value is path name of existing file.
+% mustBeFile - Check if value is path name of existing file or Zarr store.
 %
 % mustBeFile was introduced in R2020b. In order to support older releases
 % of MATLAB, this function implements mustBeFile also for older releases.
+%
+% A path with a ".zarr" extension names a directory-based store, so folder
+% existence is validated for such a path instead of file existence.
 %
 % Note: Currently only works for scalar strings
 
@@ -14,7 +17,18 @@ function mustBeFile(filePath)
     if startsWith(filePath, "s3://")
         return
     end
-    
+
+    % Directory-based stores (e.g. Zarr) use a ".zarr" suffix by convention.
+    % These are folders, not files, so validate folder existence instead.
+    if endsWith(filePath, ".zarr", "IgnoreCase", true)
+        try
+            matnwb.common.compatibility.mustBeFolder(filePath)
+        catch ME
+            throwAsCaller(ME)
+        end
+        return
+    end
+
     if verLessThan('matlab', '9.9') %#ok<VERLESSMATLAB>
         % Custom implementation (MATLAB < R2020b)
         try
