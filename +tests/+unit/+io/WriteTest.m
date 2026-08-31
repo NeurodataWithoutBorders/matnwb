@@ -170,6 +170,19 @@ classdef WriteTest < matlab.unittest.TestCase
             end
         end
 
+        function testWriteCompoundZeroRowTableRejectsReferenceColumn(testCase)
+            % A member type cannot be derived from an empty reference column,
+            % and the string fallback would commit a member type that
+            % contradicts the schema, so the write is rejected.
+            fid = H5F.create('test.h5');
+            data = table(types.untyped.ObjectView.empty(0, 1), uint32.empty(0, 1), ...
+                'VariableNames', {'reference', 'idx'});
+            testCase.verifyError(...
+                @() io.writeCompound(fid, '/ref_data', data, 'forceArray'), ...
+                'NWB:WriteCompound:EmptyReferenceColumn')
+            H5F.close(fid);
+        end
+
         function testWriteCompoundScalar(testCase)
             fid = H5F.create('test.h5');
             data = struct('a','b');
