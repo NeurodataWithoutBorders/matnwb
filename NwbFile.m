@@ -410,14 +410,18 @@ classdef NwbFile < types.core.NWBFile
         % See also:
         %   NwbFile.getExternalResources types.hdmf_common.HERD
 
+            % The options are declared without defaults so that an option the
+            % caller leaves out is absent from the struct and is not forwarded,
+            % keeping the defaults and the requiredness rules single-sourced in
+            % HERDBase.addRef.
             arguments
                 obj (1,1) NwbFile
                 container {matnwb.common.validation.mustBeNeurodataObject}
-                options.EntityId (1,1) string = ""
-                options.EntityUri (1,1) string = ""
-                options.Key (1,1) string = ""
-                options.Attribute (1,1) string = ""
-                options.Field (1,1) string = ""
+                options.EntityId (1,1) string
+                options.EntityUri (1,1) string
+                options.Key (1,1) string
+                options.Attribute (1,1) string
+                options.Field (1,1) string
             end
             herd = obj.getExternalResources();
             nameValuePairs = namedargs2cell(options);
@@ -426,6 +430,16 @@ classdef NwbFile < types.core.NWBFile
     end
 
     methods (Hidden)
+        function name = getTypeShortName(~)
+        % getTypeShortName - Get short name for data type class, i.e NWBFile
+        %
+        % NwbFile is a MatNWB-only wrapper around the generated NWBFile type,
+        % so deriving the name from the class would give "NwbFile". Return the
+        % neurodata type name the file is written with instead, so every
+        % consumer of this method agrees with what export puts on disk.
+            name = 'NWBFile';
+        end
+
         function resolveSoftLinks(obj)
             % Note: Will not find/resolve soft links that are nested within dynamic tables
             softLinkMap = obj.searchFor('types.untyped.SoftLink');
