@@ -92,6 +92,16 @@ classdef HDF5Writer < io.backend.base.Writer
                 obj.H5FileId, linkPath, "external", targetPath, targetFilename);
         end
 
+        function validateReferenceResolvable(obj, referenceValue)
+            % io.getRefData creates the reference bytes as a side effect
+            % of probing; the result is discarded because the actual
+            % reference data is written later through writeValue. Reusing
+            % it keeps this probe and the eventual write agreeing on what
+            % "resolvable" means: it opens a RegionView's dataset rather
+            % than only checking that the target path exists.
+            io.getRefData(obj.H5FileId, referenceValue);
+        end
+
         function specLocation = getEmbeddedSpecLocation(obj)
             specLocation = io.spec.internal.readEmbeddedSpecLocation(obj.H5FileId);
         end
