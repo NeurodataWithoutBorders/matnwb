@@ -66,6 +66,7 @@ methods
         if strcmp(class(obj), 'types.hdmf_common.HERD') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
+            obj.ensureTablesInitialized();
         end
     end
     %% SETTERS

@@ -345,8 +345,7 @@ classdef NwbFile < types.core.NWBFile
         %    The HERD external resources object for this file.
         %
         % See also:
-        %   NwbFile.addRef
-        %   types.hdmf_common.HERD
+        %   NwbFile.addRef types.hdmf_common.HERD
 
             arguments
                 obj (1,1) NwbFile
@@ -355,7 +354,6 @@ classdef NwbFile < types.core.NWBFile
                 obj.general_external_resources = types.hdmf_common.HERD();
             end
             herd = obj.general_external_resources;
-            herd.ensureTablesInitialized()
         end
 
         function addRef(obj, container, options)
@@ -410,8 +408,7 @@ classdef NwbFile < types.core.NWBFile
         %        EntityUri="http://purl.obolibrary.org/obo/NCBITaxon_10090")
         %
         % See also:
-        %   NwbFile.getExternalResources
-        %   types.hdmf_common.HERD
+        %   NwbFile.getExternalResources types.hdmf_common.HERD
 
             arguments
                 obj (1,1) NwbFile
