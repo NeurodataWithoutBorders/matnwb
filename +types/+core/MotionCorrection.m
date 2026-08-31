@@ -1,5 +1,5 @@
 classdef MotionCorrection < types.core.NWBDataInterface & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups
-% MOTIONCORRECTION - An image stack where all frames are shifted (registered) to a common coordinate system, to account for movement and drift between frames. Note: each frame at each point in time is assumed to be 2-D (has only x & y dimensions).
+% MOTIONCORRECTION - An image stack where all frames are shifted (registered) to a common coordinate system, to account for movement and drift between frames. Note: each frame at each point in time is assumed to be 2-D (has only x and y dimensions).
 %
 % Required Properties:
 %  correctedimagestack
