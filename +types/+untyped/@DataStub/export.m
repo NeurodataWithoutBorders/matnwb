@@ -13,8 +13,10 @@ function refs = export(obj, writer, fullpath, refs)
     src_did = H5D.open(src_fid, obj.path);
     src_tid = H5D.get_type(src_did);
 
-    % Check for compound data type refs
-    if H5T.get_class(src_tid) == H5ML.get_constant_value('H5T_COMPOUND')
+    % Check for compound data type refs. A dataset without rows holds no
+    % reference values, so it takes the plain object copy below.
+    hasRows = ~any(obj.dims == 0);
+    if hasRows && H5T.get_class(src_tid) == H5ML.get_constant_value('H5T_COMPOUND')
         isCompoundDatasetWithReference = isCompoundWithReference(src_tid);
     else
         isCompoundDatasetWithReference = false;
