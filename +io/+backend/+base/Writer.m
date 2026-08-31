@@ -81,6 +81,34 @@ classdef Writer < handle
             io.backend.base.Writer.throwNotImplemented("writeAttribute")
         end
 
+        function copyDatasetFromFile(obj, sourceFilename, sourcePath, destinationPath) %#ok<INUSD>
+        % copyDatasetFromFile - Copy a dataset from another file into this file.
+        %
+        % Copies the dataset at sourcePath inside the file sourceFilename,
+        % together with its attributes, to destinationPath in the file this
+        % writer targets. Used to carry data that is still stored in a
+        % source file (types.untyped.DataStub) over to the file being
+        % exported.
+        %
+        % The copy is skipped when the source and the destination are the
+        % same store: a dataset re-exported to the file it came from is
+        % already in place. It is also skipped when destinationPath is
+        % already occupied, so that a second export pass over the same
+        % object does not disturb data copied by the first (see
+        % NwbFile.resolveReferences). Implementations may substitute an
+        % element-wise rewrite for a raw copy when their storage layer
+        % cannot copy the dataset faithfully; see the compound-reference
+        % workaround in io.backend.hdf5.HDF5Writer.
+        %
+        % Input Arguments:
+        %   obj - Writer instance targeting the destination file.
+        %   sourceFilename - Name of the file holding the source dataset.
+        %   sourcePath - Path of the dataset inside the source file.
+        %   destinationPath - Path the dataset is copied to in this file.
+
+            io.backend.base.Writer.throwNotImplemented("copyDatasetFromFile")
+        end
+
         function writeSoftLink(obj, linkPath, targetPath) %#ok<INUSD>
             % writeSoftLink - Create a link to another location in this file.
             %
