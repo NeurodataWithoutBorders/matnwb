@@ -354,14 +354,14 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
         end
     end
 
-    methods (Access = ?NwbFile)
+    methods (Hidden)
         function ensureTablesInitialized(obj)
         % ensureTablesInitialized - Give every unset table an empty value.
         %
         % All six tables are required by the schema, so an unset one would make
-        % the HERD fail to export. NwbFile.getExternalResources calls this so
-        % that the HERD it hands back can be written even if no reference is
-        % ever added to it.
+        % the HERD fail to export. The generated constructor calls this so
+        % that every HERD can be written even if no reference is ever added
+        % to it.
             for tableName = matnwb.neurodata.HERDBase.TableNames
                 if isempty(obj.(tableName))
                     obj.setTable(tableName, ...
@@ -587,12 +587,10 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
                 % applies to a scalar struct and is rejected here.
                 value = struct2table(value);
             elseif isstruct(value)
-                fields = fieldnames(value);
-                if isempty(fields) || isempty(value.(fields{1}))
-                    value = matnwb.neurodata.HERDBase.createEmptyTable(tableName);
-                else
-                    value = struct2table(value, 'AsArray', false);
-                end
+                % A scalar struct of empty columns converts to a zero-row
+                % table, so no separate empty case is needed, and a struct
+                % with the wrong fields fails the column check below.
+                value = struct2table(value, 'AsArray', false);
             end
             assert(istable(value), 'NWB:HERD:InvalidTable', ...
                 'The %s table holds a `%s`, which is not a table.', tableName, class(value))

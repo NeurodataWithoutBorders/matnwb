@@ -289,15 +289,11 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
         end
 
         function testEmptyHerdRoundTrip(testCase)
-            % A HERD without references still has to write its six tables.
+            % A HERD without references still has to write its six tables. The
+            % constructor initializes them, so a freshly constructed HERD is
+            % exportable as it is.
             nwb = testCase.createFile();
-            herd = types.hdmf_common.HERD();
-            herd.addRef(nwb, nwb.general_subject, Key="a", ...
-                EntityId="X:1", EntityUri="http://x/1");
-            for tableName = ["keys", "files", "entities", "objects", "object_keys", "entity_keys"]
-                herd.(tableName).data(:, :) = [];
-            end
-            nwb.general_external_resources = herd;
+            nwb.general_external_resources = types.hdmf_common.HERD();
 
             filename = testCase.getRandomFilename();
             nwbExport(nwb, filename);
@@ -306,6 +302,22 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
             testCase.verifyEmpty(readFile.general_external_resources.toTable())
             objectKeys = h5read(filename, '/general/external_resources/object_keys');
             testCase.verifyClass(objectKeys.objects_idx, 'uint32')
+        end
+
+        function testEmptyTableStoredAsStructArrayIsExportable(testCase)
+            % A row-less compound value counts as set in every representation
+            % the API accepts, so a table replaced by a struct array with
+            % fields but no elements exports without a missing-property
+            % warning.
+            nwb = testCase.createFile();
+            herd = types.hdmf_common.HERD();
+            herd.keys = types.hdmf_common.Data('data', struct('key', {}));
+            nwb.general_external_resources = herd;
+
+            filename = testCase.getRandomFilename();
+            testCase.verifyWarningFree(@() nwbExport(nwb, filename))
+            info = h5info(filename, '/general/external_resources/keys');
+            testCase.verifyEqual(info.Dataspace.Size, 0)
         end
 
         function testReadsTablesStoredAsStructs(testCase)
