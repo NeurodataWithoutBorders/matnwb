@@ -165,9 +165,8 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
             % its object ids, so the same id may appear under a different file.
             fileRow = obj.findOrAddRow("files", {file.object_id});
             objectRow = obj.findOrAddRow("objects", ...
-                {uint32(fileRow - 1), target.object_id, ...
-                 matnwb.neurodata.HERDBase.getObjectTypeName(target), ...
-                 char(relativePath), char(options.Field)});
+                matnwb.neurodata.HERDBase.createObjectRowValues( ...
+                    fileRow, target, relativePath, options.Field));
 
             keyRow = obj.findKeyForObject(key, objectRow);
             if isempty(keyRow)
@@ -241,9 +240,8 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
             objectRow = [];
             if ~isempty(fileRow)
                 objectRow = obj.findRow("objects", ...
-                    {uint32(fileRow - 1), target.object_id, ...
-                     matnwb.neurodata.HERDBase.getObjectTypeName(target), ...
-                     char(relativePath), char(options.Field)});
+                    matnwb.neurodata.HERDBase.createObjectRowValues( ...
+                        fileRow, target, relativePath, options.Field));
             end
             if isempty(objectRow)
                 error('NWB:HERD:ObjectNotFound', ...
@@ -335,9 +333,8 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
 
     methods (Access = protected) % Override matlab.mixin.CustomDisplay
         function header = getHeader(obj)
-            classNameParts = strsplit(class(obj), '.');
-            className = classNameParts{end};
-            header = sprintf('  %s with %s', className, obj.referenceCountSummary());
+            header = sprintf('  %s with %s', ...
+                obj.getTypeShortName(), obj.referenceCountSummary());
         end
 
         function displayScalarObject(obj)
@@ -422,7 +419,7 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
             error('NWB:HERD:ContainerNotInFile', ...
                 ['The %s being referenced is not part of this file. Add it to ', ...
                 'the file before adding an external reference to it.'], ...
-                matnwb.neurodata.HERDBase.getObjectTypeName(container))
+                container.getTypeShortName())
         end
 
         function value = getTable(obj, tableName)
@@ -613,19 +610,19 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
             value = table(columns{:}, 'VariableNames', cellstr(columnNames));
         end
 
-        function typeName = getObjectTypeName(container)
-        % getObjectTypeName - Class name of a container without its namespace.
+        function values = createObjectRowValues(fileRow, target, relativePath, field)
+        % createObjectRowValues - Identity of a row of the objects table.
         %
-        % HDMF records the unqualified class name, e.g. "VectorData". NwbFile
-        % is a MatNWB-only wrapper around the generated NWBFile type, so its
-        % class name diverges from the neurodata_type MetaClass.export
-        % writes for it; special-case it to keep the two in agreement.
-            if isa(container, 'NwbFile')
-                typeName = 'NWBFile';
-                return
-            end
-            nameParts = strsplit(class(container), '.');
-            typeName = nameParts{end};
+        % The values are ordered to match the columns getTableSpecification
+        % declares for the objects table. Adding a reference and looking one
+        % up build the same identity, so both take it from here.
+        %
+        % object_type holds the unqualified type name HDMF records, e.g.
+        % "VectorData", which is the same name MetaClass.export writes as the
+        % neurodata_type attribute.
+            values = {uint32(fileRow - 1), target.object_id, ...
+                target.getTypeShortName(), ...
+                char(relativePath), char(field)};
         end
     end
 end
