@@ -453,8 +453,11 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
         end
     end
 
-    methods (Test, TestTags = {'UsesPython'})
+    methods (Test, TestTags = {'RequiresPython'})
         function testPynwbReadsHerd(testCase)
+            % The pynwb-side reads live in tests.util.readHerdCountsWithPynwb,
+            % so this file holds no direct py.* references and still loads on
+            % a MATLAB release whose Python is unsupported.
             [nwb, table] = testCase.createFile();
             herd = types.hdmf_common.HERD();
             herd.addRef(nwb, nwb.general_subject, Key="Mus musculus", ...
@@ -466,14 +469,11 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
             filename = testCase.getRandomFilename();
             nwbExport(nwb, filename);
 
-            [pyNwbFile, pyNwbFileCleanup] = testCase.readNwbFileWithPynwb(filename); %#ok<ASGLU>
-            pyHerd = pyNwbFile.get_external_resources();
-            testCase.verifyEqual(double(py.len(pyHerd.keys)), 2)
-            testCase.verifyEqual(double(py.len(pyHerd.entities)), 2)
-            testCase.verifyEqual(double(py.len(pyHerd.objects)), 2)
-
-            entities = pyHerd.get_object_entities(pyargs('container', pyNwbFile.subject));
-            testCase.verifyEqual(double(py.len(entities)), 1)
+            counts = tests.util.readHerdCountsWithPynwb(filename);
+            testCase.verifyEqual(counts.numKeys, 2)
+            testCase.verifyEqual(counts.numEntities, 2)
+            testCase.verifyEqual(counts.numObjects, 2)
+            testCase.verifyEqual(counts.numSubjectEntities, 1)
         end
     end
 
