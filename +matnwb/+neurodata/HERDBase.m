@@ -140,7 +140,7 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
             % Resolve the entity before anything is written, so a reference that
             % cannot be completed leaves the tables untouched.
             entityTable = obj.getTable("entities");
-            entityRow = obj.findRow("entities", {char(options.EntityId)}, 1);
+            entityRow = find(strcmp(entityTable.entity_id, char(options.EntityId)), 1);
             if isempty(entityRow)
                 if strlength(options.EntityUri) == 0
                     error('NWB:HERD:MissingEntityUri', ...
@@ -195,7 +195,7 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
             end
 
             entityTable = obj.getTable("entities");
-            rowIndex = obj.findRow("entities", {char(entityId)}, 1);
+            rowIndex = find(strcmp(entityTable.entity_id, char(entityId)), 1);
             entities = entityTable(rowIndex, :);
         end
 
@@ -236,10 +236,12 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
             end
 
             [target, relativePath] = obj.resolveTarget(container, options.Attribute);
-            fileRow = obj.findRow("files", {file.object_id}, 1);
+            fileRow = matnwb.neurodata.HERDBase.findRowInTable( ...
+                obj.getTable("files"), {file.object_id});
             objectRow = [];
             if ~isempty(fileRow)
-                objectRow = obj.findRow("objects", ...
+                objectRow = matnwb.neurodata.HERDBase.findRowInTable( ...
+                    obj.getTable("objects"), ...
                     matnwb.neurodata.HERDBase.createObjectRowValues( ...
                         fileRow, target, relativePath, options.Field));
             end
@@ -420,14 +422,18 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
 
         function value = getTable(obj, tableName)
         % getTable - Read one HERD table as a MATLAB table.
-            value = obj.(tableName);
-            if isempty(value)
+            storedData = obj.(tableName);
+            if isempty(storedData)
                 value = matnwb.neurodata.HERDBase.createEmptyTable(tableName);
                 return
             end
-            value = value.data;
+            value = storedData.data;
             if isa(value, 'types.untyped.DataStub')
+                % Keep the loaded dataset. Every lookup reads its table
+                % through this method, so leaving the stub in place would
+                % read the file from disk once per lookup.
                 value = value.load();
+                storedData.data = value;
             end
             value = matnwb.neurodata.HERDBase.normalizeToTable(tableName, value);
         end
@@ -445,28 +451,10 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
             obj.(tableName) = existing;
         end
 
-        function rowIndex = findRow(obj, tableName, values, numColumns)
-        % findRow - Find the row matching values, comparing the first columns.
-            if nargin < 4
-                numColumns = numel(values);
-            end
-            value = obj.getTable(tableName);
-            columnNames = value.Properties.VariableNames;
-            isMatch = true(height(value), 1);
-            for iColumn = 1:numColumns
-                column = value.(columnNames{iColumn});
-                if iscell(column)
-                    isMatch = isMatch & strcmp(column, values{iColumn});
-                else
-                    isMatch = isMatch & (column == values{iColumn});
-                end
-            end
-            rowIndex = find(isMatch, 1);
-        end
-
         function rowIndex = findOrAddRow(obj, tableName, values)
         % findOrAddRow - Return the row matching values, appending it if absent.
-            rowIndex = obj.findRow(tableName, values);
+            rowIndex = matnwb.neurodata.HERDBase.findRowInTable( ...
+                obj.getTable(tableName), values);
             if isempty(rowIndex)
                 rowIndex = obj.appendRow(tableName, values);
             end
@@ -604,6 +592,30 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
                 end
             end
             value = table(columns{:}, 'VariableNames', cellstr(columnNames));
+        end
+
+        function rowIndex = findRowInTable(value, values)
+        % findRowInTable - Find the row of an already read table whose columns
+        % all equal values.
+        %
+        % values holds one entry per column, in the order getTableSpecification
+        % declares, which is the order createRow builds a row in. A lookup on a
+        % single named column is written out at its call site instead, so no
+        % caller depends on which column comes first.
+            assert(numel(values) == width(value), 'NWB:HERD:InvalidRow', ...
+                'A lookup needs one value per column, but got %d for %d columns.', ...
+                numel(values), width(value))
+            columnNames = value.Properties.VariableNames;
+            isMatch = true(height(value), 1);
+            for iColumn = 1:numel(values)
+                column = value.(columnNames{iColumn});
+                if iscell(column)
+                    isMatch = isMatch & strcmp(column, values{iColumn});
+                else
+                    isMatch = isMatch & (column == values{iColumn});
+                end
+            end
+            rowIndex = find(isMatch, 1);
         end
 
         function values = createObjectRowValues(fileRow, target, relativePath, field)
