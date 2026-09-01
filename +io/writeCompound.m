@@ -180,12 +180,18 @@ function s = zeroRowTableToColumnStruct(data)
 % read off the table directly. Numeric and logical columns keep their class.
 % Every other column is carried as an empty cellstr, giving it the variable
 % length string member type, which is the type a text column gets for a table
-% with rows. Classes that cannot be typed from an empty value, such as object
-% references, therefore also write as strings.
+% with rows. Reference columns are rejected, because the string fallback
+% would commit a member type that contradicts the schema.
     s = struct();
     variableNames = data.Properties.VariableNames;
     for iVariable = 1:numel(variableNames)
         column = data{:, iVariable};
+        if isa(column, 'types.untyped.ObjectView') || isa(column, 'types.untyped.RegionView')
+            error('NWB:WriteCompound:EmptyReferenceColumn', ...
+                ['Cannot write an empty compound dataset with a reference ', ...
+                'column ("%s"); add at least one row first.'], ...
+                variableNames{iVariable})
+        end
         if ~isnumeric(column) && ~islogical(column)
             column = cell(0, 1);
         end

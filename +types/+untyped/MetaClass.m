@@ -255,10 +255,16 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
             for i = 1:numel(requiredProps)
                 thisPropName = requiredProps{i};
                 propValue = obj.(thisPropName);
-                % A row-less table is a value rather than an omission: a
-                % compound dataset that holds no rows, such as the tables of a
-                % HERD without references, still has to be written.
-                if isempty(propValue) && ~istable(propValue)
+                % A row-less compound value is a value rather than an omission:
+                % a compound dataset that holds no rows, such as the tables of
+                % a HERD without references, still has to be written. It can be
+                % held as a table with columns or as a struct array with
+                % fields; a table with no columns carries no members, so it
+                % still counts as missing.
+                hasCompoundStructure = ...
+                    (istable(propValue) && width(propValue) > 0) || ...
+                    (isstruct(propValue) && ~isempty(fieldnames(propValue)));
+                if isempty(propValue) && ~hasCompoundStructure
                     missingRequiredProps{end+1} = thisPropName; %#ok<AGROW>
                 end
             end
