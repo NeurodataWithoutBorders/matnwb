@@ -270,18 +270,22 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
         end
 
         function testGetObjectTypeNarrowsByRelativePathAndField(testCase)
-            % References currently carry an empty relative path and field, so
-            % narrowing by the value they hold keeps the row and narrowing by
-            % any other value drops it.
+            % The default matches rows whose relative_path and field are
+            % empty, like HDMF, and AllInstances returns every row of the
+            % type regardless of those columns.
             nwb = testCase.createFile();
             herd = types.hdmf_common.HERD();
             herd.addRef(nwb, nwb.general_subject, Key="a", ...
                 EntityId="X:1", EntityUri="http://x/1");
+            herd.addRef(nwb, nwb.general_subject, Key="b", ...
+                EntityId="Y:2", EntityUri="http://y/2", Field="somefield");
 
-            testCase.verifyEqual(height(herd.getObjectType("Subject", RelativePath="")), 1)
+            testCase.verifyEqual(height(herd.getObjectType("Subject")), 1)
+            testCase.verifyEqual(herd.getObjectType("Subject").key{1}, 'a')
+            testCase.verifyEqual(height(herd.getObjectType("Subject", Field="somefield")), 1)
+            testCase.verifyEqual(herd.getObjectType("Subject", Field="somefield").key{1}, 'b')
+            testCase.verifyEqual(height(herd.getObjectType("Subject", AllInstances=true)), 2)
             testCase.verifyEmpty(herd.getObjectType("Subject", RelativePath="species"))
-            testCase.verifyEqual(height(herd.getObjectType("Subject", Field="")), 1)
-            testCase.verifyEmpty(herd.getObjectType("Subject", Field="somefield"))
 
             % A HERD holding no references at all returns nothing rather than
             % indexing into a table that has no columns to match on.

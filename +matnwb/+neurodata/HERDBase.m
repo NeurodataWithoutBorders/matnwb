@@ -302,10 +302,15 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
         %
         % Syntax:
         %  references = herd.getObjectType(objectType) returns the rows of
-        %  toTable whose object_type matches objectType, for example "Subject".
+        %  toTable whose object_type matches objectType, for example
+        %  "Subject", and whose relative_path and field are empty.
         %
         %  references = herd.getObjectType(__, RelativePath=relativePath, Field=field)
-        %  narrows the result further.
+        %  matches the given relative_path and field instead of empty ones.
+        %
+        %  references = herd.getObjectType(__, AllInstances=true) returns
+        %  every row of the type regardless of relative_path and field,
+        %  which are ignored.
         %
         % Input Arguments:
         %  - objectType (string) -
@@ -314,11 +319,15 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
         %
         % Name-Value Arguments:
         %  - RelativePath (string) -
-        %    Keep only rows whose relative_path matches. References added by
-        %    MatNWB currently always store an empty relative path.
+        %    The relative_path a row must hold. References added by MatNWB
+        %    currently always store an empty relative path.
         %
         %  - Field (string) -
-        %    Keep only rows whose field matches, as in addRef.
+        %    The field a row must hold, as in addRef.
+        %
+        %  - AllInstances (logical) -
+        %    Return the rows of every instance of the type, ignoring
+        %    RelativePath and Field. Matches HDMF's all_instances.
         %
         % Output Arguments:
         %  - references (table) -
@@ -327,8 +336,9 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
             arguments
                 obj (1,1) matnwb.neurodata.HERDBase
                 objectType (1,1) string
-                options.RelativePath string = string.empty
-                options.Field string = string.empty
+                options.RelativePath (1,1) string = ""
+                options.Field (1,1) string = ""
+                options.AllInstances (1,1) logical = false
             end
 
             references = obj.toTable();
@@ -336,12 +346,12 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
                 return
             end
             references = references(strcmp(references.object_type, objectType), :);
-            if ~isempty(options.RelativePath)
-                references = references(strcmp(references.relative_path, options.RelativePath), :);
+            if options.AllInstances
+                return
             end
-            if ~isempty(options.Field)
-                references = references(strcmp(references.field, options.Field), :);
-            end
+            references = references( ...
+                strcmp(references.relative_path, options.RelativePath) ...
+                & strcmp(references.field, options.Field), :);
         end
 
         function references = toTable(obj)
