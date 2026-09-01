@@ -5,18 +5,19 @@
 % |Subject| and want to link it to the corresponding NCBI Taxonomy term, so that 
 % the value is standardised and easy to query.
 % 
-% From a user's point of view a HERD can be treated as a single table that associates 
-% a *key*, a term used on an *object* in the file, with an *entity*, a term in 
-% an external resource identified by an |entity_id| and an |entity_uri|. Internally 
-% HERD stores this in six linked tables (|keys|, |files|, |entities|, |entity_keys|, 
-% |objects| and |object_keys|), and provides methods so you rarely need to work 
-% with those tables directly.
+% From a user's point of view a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/HERD.html 
+% |*HERD*|> object can be treated as a single table that associates a *key*, a 
+% term used on an *object* in the file, with an *entity*, a term in an external 
+% resource identified by an |entity_id| and an |entity_uri|. Internally, the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/HERD.html 
+% |*HERD*|> class stores this in six linked tables (|keys|, |files|, |entities|, 
+% |entity_keys|, |objects| and |object_keys|), and provides methods so you rarely 
+% need to work with those tables directly.
 % 
 % This tutorial creates a file, annotates two values in it, writes the file, 
 % and reads the annotations back.
 %% Create a file to annotate
-% Start with an |NwbFile| describing a mouse. The species is the first value 
-% we will annotate.
+% Start with an |NwbFile| describing a mouse (<https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Subject.html 
+% |*Subject*|>). The species is the first value we will annotate.
 
 nwb = NwbFile( ...
     'session_description', 'a demonstration of external resources', ...
@@ -34,9 +35,11 @@ nwb.general_subject = types.core.Subject( ...
     'age', 'P90D');
 %% Record a reference
 % |NwbFile.addRef| records that an object in the file refers to an external 
-% entity. A file has at most one HERD, so the first call creates and attaches 
-% one and later calls add to it. The object being annotated must already be part 
-% of the file, because a reference records which file the object belongs to.
+% entity. A file has at most one <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/HERD.html 
+% |*HERD*|> object, so the first call creates and attaches one and later calls 
+% add to it. The object being annotated (i.e the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Subject.html 
+% |*Subject*|>) must already be part of the file, because a reference records 
+% which file the object belongs to.
 % 
 % An entity is identified by an |entity_id| and an |entity_uri|. The |entity_id| 
 % is a compact URI of the form |prefix:identifier| whose prefix is registered 
@@ -91,14 +94,15 @@ nwb.addRef(nwb.general_extracellular_ephys_electrodes, ...
     EntityId = "MBA:385", ...
     EntityUri = "https://purl.brain-bican.org/ontology/mbao/MBA_385");
 %% Inspect the references
-% |getExternalResources| returns the file's HERD, creating and attaching an 
-% empty one if the file does not have one yet, and returning the existing one 
-% otherwise, for example when the file was read from disk. The |general_external_resources| 
-% property returns the HERD without creating one, and is empty when the file has 
-% no external resources.
+% |getExternalResources| returns the file's <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/HERD.html 
+% |*HERD*|> object, creating and attaching an empty one if the file does not have 
+% one yet, and returning the existing one otherwise, for example when the file 
+% was read from disk. The |general_external_resources| property returns the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/HERD.html 
+% |*HERD*|> without creating one, and is empty when the file has no external resources.
 % 
-% Displaying a HERD shows how many keys, entities, objects and files it holds, 
-% followed by every reference it records.
+% Displaying a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/HERD.html 
+% |*HERD*|> shows how many keys, entities, objects and files it holds, followed 
+% by every reference it records.
 
 herd = nwb.getExternalResources()
 % As a table
@@ -122,16 +126,17 @@ herd.getObjectEntities(nwb, nwb.general_subject)
 
 herd.getObjectType("Subject")
 %% Write and read the file
-% Writing the file stores the HERD inside it, under |/general/external_resources|. 
-% Reading the file back makes the annotations available again.
+% Writing the file stores the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/HERD.html 
+% |*HERD*|> inside it, under |/general/external_resources|. Reading the file back 
+% makes the annotations available again.
 
 nwbExport(nwb, 'externalResources.nwb');
 readFile = nwbRead('externalResources.nwb', 'ignorecache');
 readFile.general_external_resources.toTable()
 % Look up an annotation from the file that was read
-% The lookups work the same way on a HERD read from disk. Object identity survives 
-% the round trip, so the subject read back from the file matches the reference 
-% recorded for it.
+% The lookups work the same way on a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/HERD.html 
+% |*HERD*|> read from disk. Object identity survives the round trip, so the subject 
+% read back from the file matches the reference recorded for it.
 
 readFile.general_external_resources.getObjectEntities(readFile, readFile.general_subject)
 %% Notes
