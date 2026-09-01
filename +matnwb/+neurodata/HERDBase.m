@@ -24,6 +24,8 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
 % term used on two different objects is stored as two key rows, matching
 % HDMF. A single key may resolve to more than one entity.
 %
+% Note: Method names mirror the HDMF/PyNWB HERD API
+%
 % NwbFile.addRef and NwbFile.getExternalResources are the usual entry
 % points: they lazily attach and reuse the one HERD a file may hold.
 %
@@ -131,7 +133,7 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
                     ['An external reference needs a Key. Provide the term as it ', ...
                     'is used in the file, for example Key="Mus musculus".'])
             end
-            key = options.Key;
+            keyName = options.Key;
 
             [target, relativePath] = obj.resolveTarget(container, options.Attribute);
             obj.assertContainerInFile(file, target)
@@ -165,12 +167,11 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
             % its object ids, so the same id may appear under a different file.
             fileRow = obj.findOrAddRow("files", {file.object_id});
             objectRow = obj.findOrAddRow("objects", ...
-                matnwb.neurodata.HERDBase.createObjectRowValues( ...
-                    fileRow, target, relativePath, options.Field));
+                obj.createObjectRowValues(fileRow, target, relativePath, options.Field));
 
-            keyRow = obj.findKeyForObject(key, objectRow);
+            keyRow = obj.findKeyForObject(keyName, objectRow);
             if isempty(keyRow)
-                keyRow = obj.appendRow("keys", {char(key)});
+                keyRow = obj.appendRow("keys", {char(keyName)});
             end
             obj.findOrAddRow("object_keys", {uint32(objectRow - 1), uint32(keyRow - 1)});
 
@@ -181,13 +182,23 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
             obj.findOrAddRow("entity_keys", {uint32(entityRow - 1), uint32(keyRow - 1)});
         end
 
-        function entities = getEntity(obj, entityId)
+        function entity = getEntity(obj, entityId)
         % getEntity - Get the entity stored under an identifier.
         %
         % Syntax:
-        %  entities = herd.getEntity(entityId) returns a one-row table with the
-        %  entity_id and entity_uri stored for entityId, or an empty table if
-        %  the identifier is not in this HERD.
+        %  entity = herd.getEntity(entityId) returns the entity stored for
+        %  entityId.
+        %
+        % Input Arguments:
+        %  - entityId (string) -
+        %    Identifier of the entity in the external resource, for example
+        %    "NCBITaxon:10090".
+        %
+        % Output Arguments:
+        %  - entity (table) -
+        %    A one-row table with the entity_id and entity_uri stored for
+        %    entityId, or a table with no rows if the identifier is not in
+        %    this HERD.
 
             arguments
                 obj (1,1) matnwb.neurodata.HERDBase
@@ -196,16 +207,24 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
 
             entityTable = obj.getTable("entities");
             rowIndex = find(strcmp(entityTable.entity_id, char(entityId)), 1);
-            entities = entityTable(rowIndex, :);
+            entity = entityTable(rowIndex, :);
         end
 
         function keys = getKey(obj, keyName)
         % getKey - Get the keys stored under a term.
         %
         % Syntax:
-        %  keys = herd.getKey(keyName) returns a table of the key rows matching
-        %  keyName. The same term used on different objects is stored once per
-        %  object, so this can return more than one row.
+        %  keys = herd.getKey(keyName) returns the key rows matching keyName.
+        %
+        % Input Arguments:
+        %  - keyName (string) -
+        %    The term as it is used in the file, for example "Mus musculus".
+        %
+        % Output Arguments:
+        %  - keys (table) -
+        %    The key rows whose key equals keyName. The same term used on
+        %    different objects is stored once per object, so this can hold
+        %    more than one row.
 
             arguments
                 obj (1,1) matnwb.neurodata.HERDBase
@@ -220,12 +239,34 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
         % getObjectEntities - Get the entities annotated on a single object.
         %
         % Syntax:
-        %  entities = herd.getObjectEntities(file, container) returns a table of
-        %  the entity_id and entity_uri of every entity annotated on container.
+        %  entities = herd.getObjectEntities(file, container) returns the
+        %  entities annotated on container. An object with no references
+        %  stored raises an error rather than returning an empty table.
         %
         %  entities = herd.getObjectEntities(__, Attribute=attribute) resolves
         %  the target the same way addRef does, so a reference added with an
         %  attribute is retrieved with the same attribute.
+        %
+        % Input Arguments:
+        %  - file (NwbFile) -
+        %    The file that container belongs to.
+        %
+        %  - container -
+        %    The annotated neurodata object, for example a types.core.Subject.
+        %
+        % Name-Value Arguments:
+        %  - Attribute (string) -
+        %    Name of a property of container holding the annotated object, as
+        %    in addRef.
+        %
+        %  - Field (string) -
+        %    Field of a compound data type the reference applies to, as in
+        %    addRef.
+        %
+        % Output Arguments:
+        %  - entities (table) -
+        %    One row per entity annotated on the object, with the entity_id
+        %    and entity_uri columns of the entities table.
 
             arguments
                 obj (1,1) matnwb.neurodata.HERDBase
@@ -236,14 +277,11 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
             end
 
             [target, relativePath] = obj.resolveTarget(container, options.Attribute);
-            fileRow = matnwb.neurodata.HERDBase.findRowInTable( ...
-                obj.getTable("files"), {file.object_id});
+            fileRow = obj.findRowInTable(obj.getTable("files"), {file.object_id});
             objectRow = [];
             if ~isempty(fileRow)
-                objectRow = matnwb.neurodata.HERDBase.findRowInTable( ...
-                    obj.getTable("objects"), ...
-                    matnwb.neurodata.HERDBase.createObjectRowValues( ...
-                        fileRow, target, relativePath, options.Field));
+                objectRow = obj.findRowInTable(obj.getTable("objects"), ...
+                    obj.createObjectRowValues(fileRow, target, relativePath, options.Field));
             end
             if isempty(objectRow)
                 error('NWB:HERD:ObjectNotFound', ...
@@ -268,6 +306,23 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
         %
         %  references = herd.getObjectType(__, RelativePath=relativePath, Field=field)
         %  narrows the result further.
+        %
+        % Input Arguments:
+        %  - objectType (string) -
+        %    The unqualified neurodata type name a reference is recorded
+        %    under, for example "Subject" or "VectorData".
+        %
+        % Name-Value Arguments:
+        %  - RelativePath (string) -
+        %    Keep only rows whose relative_path matches. References added by
+        %    MatNWB currently always store an empty relative path.
+        %
+        %  - Field (string) -
+        %    Keep only rows whose field matches, as in addRef.
+        %
+        % Output Arguments:
+        %  - references (table) -
+        %    The matching rows of toTable.
 
             arguments
                 obj (1,1) matnwb.neurodata.HERDBase
@@ -296,6 +351,12 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
         %  references = herd.toTable() returns one row per object, key and
         %  entity association, with the internal row indices resolved into the
         %  values they point at.
+        %
+        % Output Arguments:
+        %  - references (table) -
+        %    One row per association, with the columns file_object_id,
+        %    object_id, object_type, relative_path, field, key, entity_id
+        %    and entity_uri.
 
             arguments
                 obj (1,1) matnwb.neurodata.HERDBase
@@ -347,8 +408,8 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
             else
                 disp(references)
             end
-            % Preserve the missing-required-property warning that getFooter
-            % triggers as a side effect elsewhere in the class hierarchy.
+            % Preserve the missing-required-property warning that
+            % types.untyped.MetaClass.getFooter triggers as a side effect.
             obj.getFooter();
         end
     end
@@ -361,10 +422,9 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
         % the HERD fail to export. The generated constructor calls this so
         % that every HERD can be written even if no reference is ever added
         % to it.
-            for tableName = matnwb.neurodata.HERDBase.TableNames
+            for tableName = obj.TableNames
                 if isempty(obj.(tableName))
-                    obj.setTable(tableName, ...
-                        matnwb.neurodata.HERDBase.createEmptyTable(tableName));
+                    obj.setTable(tableName, obj.createEmptyTable(tableName));
                 end
             end
         end
@@ -380,6 +440,11 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
 
         function [target, relativePath] = resolveTarget(~, container, attribute)
         % resolveTarget - Resolve a container and attribute to the annotated object.
+        %
+        % relativePath is currently always "": HDMF records a relative path
+        % for attributes that are not neurodata types, which MatNWB does not
+        % support yet, and the output is kept so a row of the objects table
+        % is built with the same shape HDMF writes.
             relativePath = "";
             if strlength(attribute) == 0
                 target = container;
@@ -420,62 +485,61 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
                 container.getTypeShortName())
         end
 
-        function value = getTable(obj, tableName)
+        function tableData = getTable(obj, tableName)
         % getTable - Read one HERD table as a MATLAB table.
             storedData = obj.(tableName);
             if isempty(storedData)
-                value = matnwb.neurodata.HERDBase.createEmptyTable(tableName);
+                tableData = obj.createEmptyTable(tableName);
                 return
             end
-            value = storedData.data;
-            if isa(value, 'types.untyped.DataStub')
+            tableData = storedData.data;
+            if isa(tableData, 'types.untyped.DataStub')
                 % Keep the loaded dataset. Every lookup reads its table
                 % through this method, so leaving the stub in place would
                 % read the file from disk once per lookup.
-                value = value.load();
-                storedData.data = value;
+                tableData = tableData.load();
+                storedData.data = tableData;
             end
-            value = matnwb.neurodata.HERDBase.normalizeToTable(tableName, value);
+            tableData = obj.normalizeToTable(tableName, tableData);
         end
 
-        function setTable(obj, tableName, value)
+        function setTable(obj, tableName, tableData)
         % setTable - Write one HERD table back onto the generated property.
             existing = obj.(tableName);
             if isa(existing, 'types.hdmf_common.Data')
                 % Reuse the existing Data so that its object id survives editing.
-                existing.data = value;
+                existing.data = tableData;
             else
-                existing = types.hdmf_common.Data('data', value);
+                existing = types.hdmf_common.Data('data', tableData);
             end
             % Assigning through the property runs the generated schema validation.
             obj.(tableName) = existing;
         end
 
-        function rowIndex = findOrAddRow(obj, tableName, values)
-        % findOrAddRow - Return the row matching values, appending it if absent.
-            rowIndex = matnwb.neurodata.HERDBase.findRowInTable( ...
-                obj.getTable(tableName), values);
+        function rowIndex = findOrAddRow(obj, tableName, rowValues)
+        % findOrAddRow - Return the row matching rowValues, appending it if absent.
+            rowIndex = obj.findRowInTable(obj.getTable(tableName), rowValues);
             if isempty(rowIndex)
-                rowIndex = obj.appendRow(tableName, values);
+                rowIndex = obj.appendRow(tableName, rowValues);
             end
         end
 
-        function rowIndex = appendRow(obj, tableName, values)
+        function rowIndex = appendRow(obj, tableName, rowValues)
         % appendRow - Append one row and return its one-based index.
-            value = obj.getTable(tableName);
-            value = [value; matnwb.neurodata.HERDBase.createRow(tableName, values)];
-            obj.setTable(tableName, value);
-            rowIndex = height(value);
+            tableData = obj.getTable(tableName);
+            tableData = [tableData; obj.createRow(tableName, rowValues)];
+            obj.setTable(tableName, tableData);
+            rowIndex = height(tableData);
         end
 
-        function keyRow = findKeyForObject(obj, key, objectRow)
+        function keyRow = findKeyForObject(obj, keyName, objectRow)
         % findKeyForObject - Find a key already used by an object.
         %
         % Keys are scoped to an object, so a term already recorded against this
         % object is reused while the same term on another object is not.
             keyTable = obj.getTable("keys");
             objectKeyTable = obj.getTable("object_keys");
-            candidateRows = find(strcmp(keyTable.key, key));
+            candidateRows = find(strcmp(keyTable.key, keyName));
             usedRows = double(objectKeyTable.keys_idx( ...
                 objectKeyTable.objects_idx == uint32(objectRow - 1))) + 1;
             keyRow = intersect(candidateRows, usedRows);
@@ -485,8 +549,8 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
         end
     end
 
-    methods (Static, Access = private)
-        function [columnNames, isIndexColumn] = getTableSpecification(tableName)
+    methods (Access = private) % Build and match rows from the table specification
+        function [columnNames, isIndexColumn] = getTableSpecification(~, tableName)
         % getTableSpecification - Column names and kinds of one HERD table.
         %
         % The names and their order have to match the compound type declared by
@@ -517,10 +581,9 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
             end
         end
 
-        function value = createEmptyTable(tableName)
+        function tableData = createEmptyTable(obj, tableName)
         % createEmptyTable - Build a row-less table with the right column types.
-            [columnNames, isIndexColumn] = ...
-                matnwb.neurodata.HERDBase.getTableSpecification(tableName);
+            [columnNames, isIndexColumn] = obj.getTableSpecification(tableName);
             columns = cell(1, numel(columnNames));
             for iColumn = 1:numel(columnNames)
                 if isIndexColumn(iColumn)
@@ -529,60 +592,59 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
                     columns{iColumn} = cell(0, 1);
                 end
             end
-            value = table(columns{:}, 'VariableNames', cellstr(columnNames));
+            tableData = table(columns{:}, 'VariableNames', cellstr(columnNames));
         end
 
-        function value = createRow(tableName, values)
-        % createRow - Build a one-row table from a cell array of values.
-            [columnNames, isIndexColumn] = ...
-                matnwb.neurodata.HERDBase.getTableSpecification(tableName);
-            assert(numel(values) == numel(columnNames), ...
+        function rowTable = createRow(obj, tableName, rowValues)
+        % createRow - Build a one-row table from a cell array of column values.
+            [columnNames, isIndexColumn] = obj.getTableSpecification(tableName);
+            assert(numel(rowValues) == numel(columnNames), ...
                 'NWB:HERD:InvalidRow', ...
                 'A row of the %s table needs %d values.', tableName, numel(columnNames))
             columns = cell(1, numel(columnNames));
             for iColumn = 1:numel(columnNames)
                 if isIndexColumn(iColumn)
-                    columns{iColumn} = uint32(values{iColumn});
+                    columns{iColumn} = uint32(rowValues{iColumn});
                 else
-                    columns{iColumn} = {char(values{iColumn})};
+                    columns{iColumn} = {char(rowValues{iColumn})};
                 end
             end
-            value = table(columns{:}, 'VariableNames', cellstr(columnNames));
+            rowTable = table(columns{:}, 'VariableNames', cellstr(columnNames));
         end
 
-        function value = normalizeToTable(tableName, value)
+        function tableData = normalizeToTable(obj, tableName, tableData)
         % normalizeToTable - Coerce stored compound data into a MATLAB table.
         %
         % Compound datasets are read back as a scalar struct of columns, while
         % data written in this session is already a table. Both are brought to
         % the column order and types the schema declares.
-            [columnNames, isIndexColumn] = ...
-                matnwb.neurodata.HERDBase.getTableSpecification(tableName);
+            [columnNames, isIndexColumn] = obj.getTableSpecification(tableName);
 
-            if ~istable(value) && ~isstruct(value) && isempty(value)
+            if ~istable(tableData) && ~isstruct(tableData) && isempty(tableData)
                 % A row-less compound dataset is read back as an empty array,
                 % which carries no column information.
-                value = matnwb.neurodata.HERDBase.createEmptyTable(tableName);
-            elseif isstruct(value) && ~isscalar(value)
+                tableData = obj.createEmptyTable(tableName);
+            elseif isstruct(tableData) && ~isscalar(tableData)
                 % A struct array holds one element per row. AsArray only
                 % applies to a scalar struct and is rejected here.
-                value = struct2table(value);
-            elseif isstruct(value)
+                tableData = struct2table(tableData);
+            elseif isstruct(tableData)
                 % A scalar struct of empty columns converts to a zero-row
                 % table, so no separate empty case is needed, and a struct
                 % with the wrong fields fails the column check below.
-                value = struct2table(value, 'AsArray', false);
+                tableData = struct2table(tableData, 'AsArray', false);
             end
-            assert(istable(value), 'NWB:HERD:InvalidTable', ...
-                'The %s table holds a `%s`, which is not a table.', tableName, class(value))
+            assert(istable(tableData), 'NWB:HERD:InvalidTable', ...
+                'The %s table holds a `%s`, which is not a table.', ...
+                tableName, class(tableData))
 
-            storedNames = string(value.Properties.VariableNames);
+            storedNames = string(tableData.Properties.VariableNames);
             columns = cell(1, numel(columnNames));
             for iColumn = 1:numel(columnNames)
                 name = columnNames(iColumn);
                 assert(any(storedNames == name), 'NWB:HERD:MissingColumn', ...
                     'The %s table is missing the column "%s".', tableName, name)
-                column = value.(char(name));
+                column = tableData.(char(name));
                 if isIndexColumn(iColumn)
                     columns{iColumn} = uint32(column(:));
                 elseif isempty(column)
@@ -591,34 +653,33 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
                     columns{iColumn} = cellstr(string(column(:)));
                 end
             end
-            value = table(columns{:}, 'VariableNames', cellstr(columnNames));
+            tableData = table(columns{:}, 'VariableNames', cellstr(columnNames));
         end
 
-        function rowIndex = findRowInTable(value, values)
+        function rowIndex = findRowInTable(~, tableData, rowValues)
         % findRowInTable - Find the row of an already read table whose columns
-        % all equal values.
+        % all equal rowValues.
         %
-        % values holds one entry per column, in the order getTableSpecification
-        % declares, which is the order createRow builds a row in. A lookup on a
-        % single named column is written out at its call site instead, so no
-        % caller depends on which column comes first.
-            assert(numel(values) == width(value), 'NWB:HERD:InvalidRow', ...
+        % rowValues holds one entry per column, in the order
+        % getTableSpecification declares, which is the order createRow builds
+        % a row in.
+            assert(numel(rowValues) == width(tableData), 'NWB:HERD:InvalidRow', ...
                 'A lookup needs one value per column, but got %d for %d columns.', ...
-                numel(values), width(value))
-            columnNames = value.Properties.VariableNames;
-            isMatch = true(height(value), 1);
-            for iColumn = 1:numel(values)
-                column = value.(columnNames{iColumn});
+                numel(rowValues), width(tableData))
+            columnNames = tableData.Properties.VariableNames;
+            isMatch = true(height(tableData), 1);
+            for iColumn = 1:numel(rowValues)
+                column = tableData.(columnNames{iColumn});
                 if iscell(column)
-                    isMatch = isMatch & strcmp(column, values{iColumn});
+                    isMatch = isMatch & strcmp(column, rowValues{iColumn});
                 else
-                    isMatch = isMatch & (column == values{iColumn});
+                    isMatch = isMatch & (column == rowValues{iColumn});
                 end
             end
             rowIndex = find(isMatch, 1);
         end
 
-        function values = createObjectRowValues(fileRow, target, relativePath, field)
+        function rowValues = createObjectRowValues(~, fileRow, target, relativePath, field)
         % createObjectRowValues - Identity of a row of the objects table.
         %
         % The values are ordered to match the columns getTableSpecification
@@ -628,7 +689,7 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
         % object_type holds the unqualified type name HDMF records, e.g.
         % "VectorData", which is the same name MetaClass.export writes as the
         % neurodata_type attribute.
-            values = {uint32(fileRow - 1), target.object_id, ...
+            rowValues = {uint32(fileRow - 1), target.object_id, ...
                 target.getTypeShortName(), ...
                 char(relativePath), char(field)};
         end
