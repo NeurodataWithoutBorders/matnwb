@@ -409,12 +409,8 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
             if container == file
                 return
             end
-            objectMap = file.searchFor('MetaClass', 'includeSubClasses');
-            paths = objectMap.keys();
-            for iPath = 1:numel(paths)
-                if objectMap(paths{iPath}) == container
-                    return
-                end
+            if matnwb.utility.containsObject(file, container)
+                return
             end
             error('NWB:HERD:ContainerNotInFile', ...
                 ['The %s being referenced is not part of this file. Add it to ', ...
