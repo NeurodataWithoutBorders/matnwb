@@ -2,7 +2,8 @@ function mustBeNeurodataObject(value)
 % mustBeNeurodataObject - Validate that value is a single neurodata object
 %
 % A neurodata object is an instance of a type of the NWB format, for example
-% a types.core.Subject, a column of a table, or an NwbFile.
+% a types.core.Subject, a column of a table (types.hdmf_common.VectorData), or 
+% an NwbFile.
 %
 % This is used instead of declaring types.untyped.MetaClass as the argument
 % type. That class is the root every neurodata type inherits from, so it
@@ -12,12 +13,11 @@ function mustBeNeurodataObject(value)
 
     if ~isa(value, 'types.untyped.MetaClass')
         if isempty(value)
-            % The common case: a property of a file that was never set.
+            % An empty value is reported as empty rather than by its class,
+            % because the class of the usual empty value, [], is double.
             error('NWB:validators:mustBeNeurodataObject', ...
                 ['Value must be a neurodata object, for example a ', ...
-                'types.core.Subject or a column of a table, but it is empty. ', ...
-                'A property of an NwbFile that has not been set yet is empty, ', ...
-                'so assign the object to the file before referring to it.'])
+                'types.core.Subject or a column of a table, but it is empty.'])
         end
         error('NWB:validators:mustBeNeurodataObject', ...
             ['Value must be a neurodata object, for example a ', ...
