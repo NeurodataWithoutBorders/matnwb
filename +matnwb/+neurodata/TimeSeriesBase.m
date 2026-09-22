@@ -232,8 +232,16 @@ classdef (Abstract) TimeSeriesBase < handle
         %
         % The 'axis' attribute of channel_conversion is the zero-based axis
         % of the dataset as it is laid out in the file. MatNWB reverses the
-        % dimension order when reading, so the corresponding MATLAB
-        % dimension is counted from the end of the array instead.
+        % dimension order when reading, so the file axis maps to a MATLAB
+        % dimension counted from the end of the array:
+        %
+        %   matlabDimension = numDimensions - channelAxis
+        %
+        % With the axis fixed to 1 by the schema, the channels lie along the
+        % second-to-last MATLAB dimension:
+        %
+        %   File (time, channels)           -> MATLAB [channels time]:         dimension 1
+        %   File (time, channels, samples)  -> MATLAB [samples channels time]: dimension 2
 
             channelAxis = 1; % Fixed to 1 by the schema, but read it if available.
             if isprop(obj, 'channel_conversion_axis') ...
