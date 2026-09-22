@@ -254,7 +254,11 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
 
             for i = 1:numel(requiredProps)
                 thisPropName = requiredProps{i};
-                if isempty(obj.(thisPropName))
+                propValue = obj.(thisPropName);
+                % A row-less table is a value rather than an omission: a
+                % compound dataset that holds no rows, such as the tables of a
+                % HERD without references, still has to be written.
+                if isempty(propValue) && ~istable(propValue)
                     missingRequiredProps{end+1} = thisPropName; %#ok<AGROW>
                 end
             end
