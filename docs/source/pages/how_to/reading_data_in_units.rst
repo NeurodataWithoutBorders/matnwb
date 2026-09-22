@@ -12,13 +12,13 @@ This guide shows you how to get the data of a :class:`types.core.TimeSeries` in 
 Stored values are not in ``data_unit``
 --------------------------------------
 
-The ``data`` of a :class:`types.core.TimeSeries` holds the values as the acquisition system produced them, which is often integer counts. ``data_unit`` names the unit those values are *meant to be read in*, and two further properties say how to get there:
+The ``data`` of a :class:`types.core.TimeSeries` is not necessarily stored in the unit its ``data_unit`` property names. The help text of ``data_unit`` says so, and points to the two properties that carry the conversion into that unit:
 
 .. code-block:: MATLAB
 
     data = rawData * data_conversion + data_offset
 
-Both default to the identity (``data_conversion = 1``, ``data_offset = 0``), so a file whose writer stored calibrated values reads correctly as is. A file whose writer stored raw counts does not: the same array is off by whatever ``data_conversion`` is, and nothing in the array itself says so. An :class:`types.core.ElectricalSeries` may add a per-channel ``channel_conversion`` on top of the global one.
+Both default to the identity (``data_conversion = 1``, ``data_offset = 0``), so a file whose writer stored values already in ``data_unit`` reads correctly as is. A file whose writer did not is off by whatever ``data_conversion`` and ``data_offset`` are, and nothing in the array itself says so. An :class:`types.core.ElectricalSeries` may add a per-channel ``channel_conversion`` on top of the global one.
 
 Getting the whole dataset
 -------------------------
@@ -56,7 +56,7 @@ Channels lie along the first dimension of the array in MatNWB, even though ``cha
 Why not multiply by hand
 ------------------------
 
-Integer arithmetic in MATLAB rounds and saturates instead of promoting, so scaling stored integers directly keeps them integers:
+Integer arithmetic in MATLAB rounds and saturates instead of promoting, so scaling stored integers directly keeps them integers. The help text of ``data_conversion`` describes an acquisition system that stores signed 16-bit integers for a ±2.5 V range; leaving out its gain factor:
 
 .. code-block:: MATLAB
 
