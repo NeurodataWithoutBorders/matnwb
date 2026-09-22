@@ -1,4 +1,4 @@
-classdef TimeSeries < types.core.NWBDataInterface & types.untyped.GroupClass
+classdef TimeSeries < types.core.NWBDataInterface & types.untyped.GroupClass & matnwb.neurodata.TimeSeriesBase
 % TIMESERIES - General purpose time series.
 %
 % Required Properties:
