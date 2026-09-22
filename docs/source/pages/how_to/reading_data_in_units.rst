@@ -51,7 +51,7 @@ For an :class:`types.core.ElectricalSeries` with a per-channel ``channel_convers
     rawSubset = electricalSeries.data(3:5, 1:30000);
     volts = electricalSeries.applyConversion(rawSubset, 'Channels', 3:5);
 
-``channel_conversion`` describes axis 1 of the dataset in the file, which MatNWB reads with the dimensions reversed, so the channels lie along the second-to-last dimension of the array: the first dimension of ``[channels x time]`` data, the second of ``[samples x channels x time]`` data. See :doc:`Dimension ordering </pages/concepts/dimension_ordering>` for why. ``'Channels'`` is only needed when the subset holds some of the channels. A subset that holds all of them, or a :class:`types.core.TimeSeries` with no ``channel_conversion``, does not need it.
+``'Channels'`` is only needed when the subset holds some of the channels. A subset that holds all of them, or a :class:`types.core.TimeSeries` with no ``channel_conversion``, does not need it.
 
 Why not multiply by hand
 ------------------------
