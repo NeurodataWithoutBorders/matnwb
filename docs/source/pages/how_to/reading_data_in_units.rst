@@ -56,7 +56,7 @@ Channels lie along the first dimension of the array in MatNWB, even though ``cha
 Why not multiply by hand
 ------------------------
 
-Integer arithmetic in MATLAB rounds and saturates instead of promoting, so scaling stored integers directly keeps them integers. The help text of ``data_conversion`` describes an acquisition system that stores signed 16-bit integers for a ±2.5 V range; leaving out its gain factor:
+Integer arithmetic in MATLAB rounds and saturates instead of promoting, so scaling stored integers directly keeps them integers. Take a series that stores signed 16-bit integers spanning ±2.5 V:
 
 .. code-block:: MATLAB
 
