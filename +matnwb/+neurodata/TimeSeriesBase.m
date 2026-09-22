@@ -173,7 +173,13 @@ classdef (Abstract) TimeSeriesBase < handle
                     numChannels, obj.getChannelDimension(numel(datasetDims)), numDefinedChannels))
             end
 
-            channelDimension = obj.getChannelDimension(ndims(rawData));
+            % The channel dimension is taken from the rank of the stored
+            % dataset, not of rawData. MATLAB drops trailing singleton
+            % dimensions, so a time slice of [samples x channels x time]
+            % data arrives as [samples x channels], and its own rank would
+            % put the channels on the wrong dimension. size() answers 1 for
+            % a dropped dimension, which is the right channel count for it.
+            channelDimension = obj.getChannelDimension(numel(datasetDims));
             numLoadedChannels = size(rawData, channelDimension);
 
             if isfield(options, 'Channels')
@@ -214,8 +220,9 @@ classdef (Abstract) TimeSeriesBase < handle
             % data expands them across the other dimensions. For data of
             % size [5 30000] with channels along dimension 1 the factors
             % become [5 1]; for [16 5 30000] with channels along dimension 2
-            % they become [1 5 1].
-            newShape = ones(1, ndims(rawData));
+            % they become [1 5 1]. The shape has to reach the channel
+            % dimension even when rawData has dropped trailing singletons.
+            newShape = ones(1, max(ndims(rawData), channelDimension));
             newShape(channelDimension) = numel(channelConversion);
             channelConversion = reshape(channelConversion, newShape);
         end

@@ -150,6 +150,40 @@ classdef TimeSeriesTest < tests.abstract.NwbTestCase
             end
         end
 
+        function testApplyConversionOnTimeSliceOfThreeDimensionalData(testCase)
+            % A time slice of [samples x channels x time] data comes back
+            % two-dimensional, because MATLAB drops trailing singleton
+            % dimensions. The channels still lie along the second
+            % dimension, which has to be found from the rank of the stored
+            % data rather than from the rank of the slice.
+            channelConversion = testCase.ChannelConversion;
+            numChannels = numel(channelConversion);
+            numSamples = 4;
+            numTimes = 6;
+            data = reshape(1:(numSamples*numChannels*numTimes), ...
+                numSamples, numChannels, numTimes);
+
+            electricalSeries = types.core.ElectricalSeries( ...
+                'data', data, ...
+                'data_conversion', 10, ...
+                'data_offset', 3, ...
+                'channel_conversion', channelConversion);
+            dataInUnits = electricalSeries.getDataInUnits();
+
+            timeSlice = electricalSeries.data(:, :, 2);
+            testCase.assertSize(timeSlice, [numSamples, numChannels])
+
+            testCase.verifyEqual( ...
+                electricalSeries.applyConversion(timeSlice), ...
+                dataInUnits(:, :, 2))
+
+            selectedChannels = [4 2];
+            testCase.verifyEqual( ...
+                electricalSeries.applyConversion( ...
+                    timeSlice(:, selectedChannels), 'Channels', selectedChannels), ...
+                dataInUnits(:, selectedChannels, 2))
+        end
+
         function testGetDataInUnitsWithScalarChannelConversion(testCase)
             % A single channel conversion factor applies to the whole
             % array, independent of which dimension holds the channels.
