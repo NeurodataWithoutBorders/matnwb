@@ -110,9 +110,10 @@ classdef (Abstract) TimeSeriesBase < handle
                     class(rawData))
             end
 
-            % Integer arithmetic in MATLAB saturates and stays integral, so
-            % the raw data has to be promoted to a floating point type
-            % before the conversion factor is applied.
+            % Multiplying an integer array by a double keeps the integer
+            % class, so the result would be rounded to whole numbers and
+            % clipped to the range of that class. Cast to floating point
+            % first.
             if isa(rawData, 'single')
                 workingType = 'single';
             else
@@ -141,7 +142,7 @@ classdef (Abstract) TimeSeriesBase < handle
         % resolveChannelConversion - Select and orient the channel conversion factors
         %
         % Picks the factors belonging to the channels held by rawData and
-        % reshapes them so they broadcast along its channel dimension.
+        % reshapes them to line up with its channel dimension.
         %
         % Every failure below is the caller passing data and channels that
         % do not go together, so each one is thrown as the caller to report
@@ -181,9 +182,10 @@ classdef (Abstract) TimeSeriesBase < handle
             elseif numLoadedChannels > numDefinedChannels
                 throwAsCaller(MException( ...
                     'NWB:TimeSeries:ApplyConversion:ChannelConversionMismatch', ...
-                    ['Dimension %d of data holds %d channels, but ', ...
-                    '"channel_conversion" only defines %d conversion factors. ', ...
-                    'Store one conversion factor per channel.'], ...
+                    ['Dimension %d of the data holds %d channels, but ', ...
+                    '"channel_conversion" defines only %d conversion factors. ', ...
+                    'Check the channel_conversion of this TimeSeries against ', ...
+                    'the shape of its data.'], ...
                     channelDimension, numLoadedChannels, numDefinedChannels))
             elseif numLoadedChannels < numDefinedChannels
                 throwAsCaller(MException( ...
@@ -195,7 +197,13 @@ classdef (Abstract) TimeSeriesBase < handle
                     channelDimension, numLoadedChannels, numDefinedChannels, numLoadedChannels))
             end
 
-            newShape = ones(1, max(2, ndims(rawData)));
+            % Lay the factors along the channel dimension, with a singleton
+            % in every other dimension, so that multiplying them with the
+            % data expands them across the other dimensions. For data of
+            % size [5 30000] with channels along dimension 1 the factors
+            % become [5 1]; for [16 5 30000] with channels along dimension 2
+            % they become [1 5 1].
+            newShape = ones(1, ndims(rawData));
             newShape(channelDimension) = numel(channelConversion);
             channelConversion = reshape(channelConversion, newShape);
         end

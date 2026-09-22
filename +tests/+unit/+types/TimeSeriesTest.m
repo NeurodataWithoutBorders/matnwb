@@ -125,6 +125,31 @@ classdef TimeSeriesTest < tests.abstract.NwbTestCase
             end
         end
 
+        function testGetDataInUnitsWithThreeDimensionalData(testCase)
+            % ElectricalSeries data can be [samples x channels x time] in
+            % MatNWB, which puts the channels along the second dimension
+            % and so exercises the reshaping of the conversion factors.
+            channelConversion = testCase.ChannelConversion;
+            numChannels = numel(channelConversion);
+            conversion = 10;
+            offset = 3;
+
+            electricalSeries = types.core.ElectricalSeries( ...
+                'data', ones(4, numChannels, 6), ...
+                'data_conversion', conversion, ...
+                'data_offset', offset, ...
+                'channel_conversion', channelConversion);
+
+            dataInUnits = electricalSeries.getDataInUnits();
+
+            testCase.verifySize(dataInUnits, [4, numChannels, 6])
+            for iChannel = 1:numChannels
+                testCase.verifyEqual( ...
+                    dataInUnits(:, iChannel, :), ...
+                    ones(4, 1, 6) * conversion * channelConversion(iChannel) + offset)
+            end
+        end
+
         function testGetDataInUnitsWithScalarChannelConversion(testCase)
             % A single channel conversion factor applies to the whole
             % array, independent of which dimension holds the channels.
