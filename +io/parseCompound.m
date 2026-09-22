@@ -2,10 +2,15 @@ function data = parseCompound(datasetId, data, isScalar)
     %did is the dataset_id for the containing dataset
     %data should be a scalar struct with fields as columns
     if nargin < 3; isScalar = false; end
+    typeId = H5D.get_type(datasetId);
     if isempty(data)
+        % A dataset holding no rows is read back as a 0x0 struct without any
+        % fields, so the columns have to be rebuilt from the compound type in
+        % order to keep the member names and their types.
+        data = emptyCompoundData(typeId);
+        H5T.close(typeId)
         return;
     end
-    typeId = H5D.get_type(datasetId);
     numFields = H5T.get_nmembers(typeId);
     subTypeId = cell(1, numFields);
     isReferenceType = false(1, numFields);
@@ -71,5 +76,34 @@ function data = parseCompound(datasetId, data, isScalar)
     for iFieldName = 1:length(scalarCellstrFieldName)
         name = scalarCellstrFieldName{iFieldName};
         data.(name) = data.(name){1};
+    end
+end
+
+function data = emptyCompoundData(typeId)
+% emptyCompoundData - Build a scalar struct of empty, typed columns.
+    data = struct();
+    numFields = H5T.get_nmembers(typeId);
+    for iField = 1:numFields
+        name = H5T.get_member_name(typeId, iField-1);
+        fieldTypeId = H5T.get_member_type(typeId, iField-1);
+        matlabType = io.getMatType(fieldTypeId);
+        H5T.close(fieldTypeId)
+        data.(name) = emptyColumn(matlabType);
+    end
+end
+
+function column = emptyColumn(matlabType)
+% emptyColumn - Empty column of the MATLAB type a compound member maps to.
+    switch matlabType
+        case {'char', 'cell'}
+            % Variable length strings and non-boolean enums are read as one
+            % character vector per row.
+            column = cell(0, 1);
+        case 'logical'
+            column = false(0, 1);
+        otherwise
+            % Numeric types and the reference wrapper classes all construct an
+            % empty instance from their class name.
+            column = feval([matlabType '.empty'], 0, 1);
     end
 end

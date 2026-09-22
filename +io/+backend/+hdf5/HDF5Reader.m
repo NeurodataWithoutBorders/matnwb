@@ -174,9 +174,14 @@ classdef HDF5Reader < io.backend.base.Reader
                 classId = H5T.get_class(tid);
                 isNumeric = classId == H5ML.get_constant_value('H5T_INTEGER') ...
                     || classId == H5ML.get_constant_value('H5T_FLOAT');
+                % A compound dataset is stubbed even when it holds no rows.
+                % Its member names and types are part of its structure, and
+                % collapsing it to [] would drop them along with the evidence
+                % that the dataset exists at all.
+                isCompound = classId == H5ML.get_constant_value('H5T_COMPOUND');
                 if isChunked && isNumeric
                     datasetValue = types.untyped.DataPipe('filename', obj.Filename, 'path', datasetPath);
-                elseif any(dataspace.Size == 0)
+                elseif any(dataspace.Size == 0) && ~isCompound
                     datasetValue = [];
                 else
                     matlabDataType = io.internal.h5.datatype.datatypeInfoToMatlabType(datatype, datasetInfo.Name);

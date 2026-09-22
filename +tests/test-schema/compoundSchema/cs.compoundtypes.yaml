@@ -51,3 +51,21 @@ groups:
       dtype:
         target_type: NWBDataInterface
         reftype: object
+
+- neurodata_type_def: PlainCompoundData
+  neurodata_type_inc: NWBContainer
+  doc: Data type with a compound data type that has no reference members.
+  datasets:
+  - name: data
+    shape:
+    - null
+    dtype:
+    - name: index
+      dtype: uint32
+      doc: An integer value.
+    - name: label
+      dtype: text
+      doc: A text value.
+    - name: flag
+      dtype: bool
+      doc: A boolean value.
