@@ -299,6 +299,96 @@ classdef TimeSeriesTest < tests.abstract.NwbTestCase
                 'NWB:TimeSeries:ApplyConversion:InvalidChannelSelection')
         end
 
+        function testApplyConversionDetectsInconsistentTimeSeriesOnSubset(testCase)
+            % The channel count is taken from the data of the TimeSeries,
+            % so a subset cannot hide a channel_conversion of the wrong
+            % length: neither one that happens to match the subset's size
+            % nor one that would otherwise look like a partial load.
+            electricalSeries = types.core.ElectricalSeries( ...
+                'data', ones(5, 10), 'channel_conversion', ones(4, 1));
+
+            testCase.verifyError( ...
+                @() electricalSeries.applyConversion(electricalSeries.data(1:4, :)), ...
+                'NWB:TimeSeries:ApplyConversion:ChannelConversionMismatch')
+            testCase.verifyError( ...
+                @() electricalSeries.applyConversion(electricalSeries.data(1:3, :)), ...
+                'NWB:TimeSeries:ApplyConversion:ChannelConversionMismatch')
+        end
+
+        function testApplyConversionWithDataFromAnotherTimeSeries(testCase)
+            % More channels than the TimeSeries has cannot be a subset of
+            % its data, so it is reported rather than scaled.
+            electricalSeries = testCase.createElectricalSeries();
+
+            testCase.verifyError( ...
+                @() electricalSeries.applyConversion(ones(7, 3)), ...
+                'NWB:TimeSeries:ApplyConversion:DataMismatch')
+        end
+
+        function testApplyConversionOnLazySubsetOfElectricalSeries(testCase)
+            % After a round trip the data and the channel_conversion are
+            % both DataStubs, and the channel count has to come from the
+            % dims of the data stub without loading it.
+            channelConversion = testCase.ChannelConversion;
+            numChannels = numel(channelConversion);
+
+            nwbFile = tests.factory.NWBFile();
+            electrodeTable = tests.factory.ElectrodeTable(nwbFile);
+            electrodeGroup = nwbFile.general_extracellular_ephys.get('ElectrodeGroup');
+            for iElectrode = 2:numChannels
+                electrodeTable.addRow( ...
+                    'location', 'unknown', ...
+                    'group', types.untyped.ObjectView(electrodeGroup), ...
+                    'group_name', 'test electrode group', ...
+                    'label', sprintf('test electrode %d', iElectrode));
+            end
+            electrodes = types.hdmf_common.DynamicTableRegion( ...
+                'table', types.untyped.ObjectView(electrodeTable), ...
+                'description', 'all electrodes', ...
+                'data', (0:numChannels-1)');
+
+            nwbFile.acquisition.set('ElectricalSeries', types.core.ElectricalSeries( ...
+                'data', int16(reshape(1:numChannels*7, numChannels, 7)), ...
+                'electrodes', electrodes, ...
+                'data_conversion', 10, 'data_offset', 3, ...
+                'channel_conversion', channelConversion, ...
+                'starting_time', 0, 'starting_time_rate', 1));
+
+            nwbFilePath = testCase.getRandomFilename();
+            nwbExport(nwbFile, nwbFilePath)
+            electricalSeries = nwbRead(nwbFilePath, 'ignorecache').acquisition.get('ElectricalSeries');
+            testCase.assertClass(electricalSeries.data, 'types.untyped.DataStub')
+
+            dataInUnits = electricalSeries.getDataInUnits();
+            selectedChannels = 2:4;
+            subsetInUnits = electricalSeries.applyConversion( ...
+                electricalSeries.data(selectedChannels, :), ...
+                'Channels', selectedChannels);
+
+            testCase.verifyEqual(subsetInUnits, dataInUnits(selectedChannels, :))
+            testCase.verifyError( ...
+                @() electricalSeries.applyConversion(electricalSeries.data(selectedChannels, :)), ...
+                'NWB:TimeSeries:ApplyConversion:ChannelSelectionRequired')
+        end
+
+        function testGetDataInUnitsWithDataPipeAndChannelConversion(testCase)
+            % A DataPipe answers size() without loading, which is what the
+            % channel count is taken from.
+            channelConversion = testCase.ChannelConversion;
+            numChannels = numel(channelConversion);
+            electricalSeries = types.core.ElectricalSeries( ...
+                'data', types.untyped.DataPipe('data', ones(numChannels, 6)), ...
+                'data_conversion', 10, 'data_offset', 3, ...
+                'channel_conversion', channelConversion);
+
+            dataInUnits = electricalSeries.getDataInUnits();
+
+            for iChannel = 1:numChannels
+                testCase.verifyEqual(dataInUnits(iChannel, :), ...
+                    ones(1, 6) * 10 * channelConversion(iChannel) + 3)
+            end
+        end
+
         function testApplyConversionWithScalarChannelConversion(testCase)
             % A single channel conversion factor applies to every channel,
             % so a subset needs no channel selection.

@@ -127,10 +127,20 @@ classdef (Abstract) TimeSeriesBase < handle
             % ElectricalSeries, not by TimeSeries, so it has to be reached
             % through dynamic property access.
             if isprop(obj, 'channel_conversion') && ~isempty(obj.("channel_conversion"))
-                channelConversion = resolveDatasetValue( ...
-                    obj.("channel_conversion"), 'channel_conversion');
-                scaleFactor = scaleFactor .* obj.resolveChannelConversion( ...
-                    cast(channelConversion, workingType), rawData, options);
+                channelConversion = cast(resolveDatasetValue( ...
+                    obj.("channel_conversion"), 'channel_conversion'), workingType);
+                if isscalar(channelConversion)
+                    % A single factor applies to every channel, so there is
+                    % no channel dimension to resolve.
+                    scaleFactor = scaleFactor .* channelConversion;
+                else
+                    % The channel count comes from the shape of the 'data'
+                    % property, not from rawData, so an inconsistent
+                    % TimeSeries is caught whatever subset was loaded.
+                    datasetDims = getDatasetDims(obj.data, 'data');
+                    scaleFactor = scaleFactor .* obj.resolveChannelConversion( ...
+                        channelConversion, rawData, datasetDims, options);
+                end
             end
 
             data = cast(rawData, workingType) .* scaleFactor + offset;
@@ -138,28 +148,33 @@ classdef (Abstract) TimeSeriesBase < handle
     end
 
     methods (Access = private)
-        function channelConversion = resolveChannelConversion(obj, channelConversion, rawData, options)
+        function channelConversion = resolveChannelConversion(obj, channelConversion, rawData, datasetDims, options)
         % resolveChannelConversion - Select and orient the channel conversion factors
         %
         % Picks the factors belonging to the channels held by rawData and
         % reshapes them to line up with its channel dimension.
         %
-        % Every failure below is the caller passing data and channels that
-        % do not go together, so each one is thrown as the caller to report
-        % against applyConversion rather than against this private helper,
-        % which a user has no way to call. Faults in the reshaping are left
-        % to report against this frame, where they happen.
+        % The first failure below is the TimeSeries itself being
+        % inconsistent; the rest are the caller passing data and channels
+        % that do not go together. Each one is thrown as the caller to
+        % report against applyConversion rather than against this private
+        % helper, which a user has no way to call. Faults in the reshaping
+        % are left to report against this frame, where they happen.
 
-            if isscalar(channelConversion)
-                % A single factor broadcasts across the whole array, so
-                % there is no channel dimension to resolve and no channel
-                % selection to apply.
-                return
+            numChannels = datasetDims(obj.getChannelDimension(numel(datasetDims)));
+            numDefinedChannels = numel(channelConversion);
+            if numDefinedChannels ~= numChannels
+                throwAsCaller(MException( ...
+                    'NWB:TimeSeries:ApplyConversion:ChannelConversionMismatch', ...
+                    ['This TimeSeries holds %d channels along dimension %d of its ', ...
+                    'data, but its "channel_conversion" defines %d conversion ', ...
+                    'factors. Check the channel_conversion of this TimeSeries ', ...
+                    'against the shape of its data.'], ...
+                    numChannels, obj.getChannelDimension(numel(datasetDims)), numDefinedChannels))
             end
 
-            channelDimension = obj.getChannelDimension(rawData);
+            channelDimension = obj.getChannelDimension(ndims(rawData));
             numLoadedChannels = size(rawData, channelDimension);
-            numDefinedChannels = numel(channelConversion);
 
             if isfield(options, 'Channels')
                 channelIndices = options.Channels;
@@ -170,31 +185,28 @@ classdef (Abstract) TimeSeriesBase < handle
                         'holds %d. Specify one channel index per channel in data.'], ...
                         numel(channelIndices), channelDimension, numLoadedChannels))
                 end
-                if max(channelIndices) > numDefinedChannels
+                if max(channelIndices) > numChannels
                     throwAsCaller(MException( ...
                         'NWB:TimeSeries:ApplyConversion:InvalidChannelSelection', ...
-                        ['"Channels" refers to channel %d, but "channel_conversion" ', ...
-                        'only defines %d channels. Specify indices into ', ...
-                        '"channel_conversion".'], ...
-                        max(channelIndices), numDefinedChannels))
+                        ['"Channels" refers to channel %d, but this TimeSeries ', ...
+                        'has %d channels. Specify indices into its channels.'], ...
+                        max(channelIndices), numChannels))
                 end
                 channelConversion = channelConversion(channelIndices);
-            elseif numLoadedChannels > numDefinedChannels
-                throwAsCaller(MException( ...
-                    'NWB:TimeSeries:ApplyConversion:ChannelConversionMismatch', ...
-                    ['Dimension %d of the data holds %d channels, but ', ...
-                    '"channel_conversion" defines only %d conversion factors. ', ...
-                    'Check the channel_conversion of this TimeSeries against ', ...
-                    'the shape of its data.'], ...
-                    channelDimension, numLoadedChannels, numDefinedChannels))
-            elseif numLoadedChannels < numDefinedChannels
+            elseif numLoadedChannels < numChannels
                 throwAsCaller(MException( ...
                     'NWB:TimeSeries:ApplyConversion:ChannelSelectionRequired', ...
-                    ['Dimension %d of data holds %d of the %d channels defined by ', ...
-                    '"channel_conversion". Name the channels it holds with the ', ...
-                    '"Channels" argument, for example ', ...
-                    'applyConversion(data, ''Channels'', 1:%d).'], ...
-                    channelDimension, numLoadedChannels, numDefinedChannels, numLoadedChannels))
+                    ['Dimension %d of data holds %d of the %d channels of this ', ...
+                    'TimeSeries. Name the channels it holds with the "Channels" ', ...
+                    'argument, for example applyConversion(data, ''Channels'', 1:%d).'], ...
+                    channelDimension, numLoadedChannels, numChannels, numLoadedChannels))
+            elseif numLoadedChannels > numChannels
+                throwAsCaller(MException( ...
+                    'NWB:TimeSeries:ApplyConversion:DataMismatch', ...
+                    ['Dimension %d of the data passed holds %d channels, but ', ...
+                    'this TimeSeries has %d. Pass data loaded from the "data" ', ...
+                    'property of this TimeSeries.'], ...
+                    channelDimension, numLoadedChannels, numChannels))
             end
 
             % Lay the factors along the channel dimension, with a singleton
@@ -208,8 +220,8 @@ classdef (Abstract) TimeSeriesBase < handle
             channelConversion = reshape(channelConversion, newShape);
         end
 
-        function channelDimension = getChannelDimension(obj, rawData)
-        % getChannelDimension - Find the dimension of the data holding channels
+        function channelDimension = getChannelDimension(obj, numDimensions)
+        % getChannelDimension - Find the dimension holding channels in an array of the given rank
         %
         % The 'axis' attribute of channel_conversion is the zero-based axis
         % of the dataset as it is laid out in the file. MatNWB reverses the
@@ -221,7 +233,7 @@ classdef (Abstract) TimeSeriesBase < handle
                     && ~isempty(obj.("channel_conversion_axis"))
                 channelAxis = double(obj.("channel_conversion_axis"));
             end
-            channelDimension = max(1, ndims(rawData) - channelAxis);
+            channelDimension = max(1, numDimensions - channelAxis);
         end
     end
 end
@@ -242,6 +254,29 @@ function value = resolveDatasetValue(value, propertyName)
 
     if isa(value, 'types.untyped.DataStub') || isa(value, 'types.untyped.DataPipe')
         value = value.load();
+    end
+end
+
+function dims = getDatasetDims(value, propertyName)
+% getDatasetDims - Size of a dataset property, without loading it
+%
+% A DataStub carries its size as 'dims'. A DataPipe overloads size() for
+% both its bound and in-memory forms, and an in-memory array answers
+% size() directly. Thrown as the caller so an unresolvable link reports
+% against the method the user called, not against this local function.
+    if isa(value, 'types.untyped.ExternalLink')
+        value = value.deref();
+    elseif isa(value, 'types.untyped.SoftLink')
+        throwAsCaller(MException('NWB:TimeSeries:UnresolvedSoftLink', ...
+            ['The "%s" property is a SoftLink, which can not be resolved ', ...
+            'without the NwbFile it belongs to. Dereference the link and ', ...
+            'apply the conversion to the target dataset instead.'], propertyName))
+    end
+
+    if isa(value, 'types.untyped.DataStub')
+        dims = value.dims;
+    else
+        dims = size(value);
     end
 end
 
