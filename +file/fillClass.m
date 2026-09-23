@@ -319,7 +319,13 @@ function relativePaths = collectSchemaRelativePaths(propertyNames, classInfo)
 % type, a link or a set of typed objects are left out: HERD references
 % those objects directly, with an empty relative path. So are properties
 % nested in a typed node, such as Units.spike_times_resolution, whose
-% nearest neurodata type is that node rather than this class.
+% nearest neurodata type is that node rather than this class. The data of a
+% dataset type is the object itself rather than a value stored on it, so it
+% has no path either.
+
+    if isa(classInfo, 'file.Dataset')
+        propertyNames = propertyNames(~strcmp(propertyNames, 'data'));
+    end
 
     relativePaths = string.empty(1, 0);
     for iProperty = 1:length(propertyNames)
