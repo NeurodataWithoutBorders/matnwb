@@ -30,6 +30,9 @@ properties
     starting_time_rate; %  (single) Sampling rate, in Hz.
     timestamps; %  (double) Timestamps for samples stored in data, in seconds, relative to the common experiment master-clock stored in NWBFile.timestamps_reference_time.
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["comments", "control", "control_description", "data", "data/continuity", "data/conversion", "data/offset", "data/resolution", "data/unit", "description", "starting_time", "starting_time/rate", "starting_time/unit", "timestamps", "timestamps/interval", "timestamps/unit"];
+end
 
 methods
     function obj = TimeSeries(varargin)

@@ -9,6 +9,9 @@ classdef BaseImage < types.core.NWBData & types.untyped.DatasetClass
 properties
     description; %  (char) Description of the image.
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["description"];
+end
 
 methods
     function obj = BaseImage(varargin)

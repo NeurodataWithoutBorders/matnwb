@@ -42,6 +42,9 @@ properties
     sign_map_dimension; %  (int32) Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width.
     sign_map_field_of_view; %  (single) Size of viewing area, in meters.
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["axis_1_phase_map", "axis_1_phase_map/dimension", "axis_1_phase_map/field_of_view", "axis_1_phase_map/unit", "axis_1_power_map", "axis_1_power_map/dimension", "axis_1_power_map/field_of_view", "axis_1_power_map/unit", "axis_2_phase_map", "axis_2_phase_map/dimension", "axis_2_phase_map/field_of_view", "axis_2_phase_map/unit", "axis_2_power_map", "axis_2_power_map/dimension", "axis_2_power_map/field_of_view", "axis_2_power_map/unit", "axis_descriptions", "focal_depth_image", "focal_depth_image/bits_per_pixel", "focal_depth_image/dimension", "focal_depth_image/field_of_view", "focal_depth_image/focal_depth", "focal_depth_image/format", "sign_map", "sign_map/dimension", "sign_map/field_of_view", "vasculature_image", "vasculature_image/bits_per_pixel", "vasculature_image/dimension", "vasculature_image/field_of_view", "vasculature_image/format"];
+end
 
 methods
     function obj = ImagingRetinotopy(varargin)

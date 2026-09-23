@@ -12,6 +12,9 @@ properties
     indptr; % REQUIRED (uint8) The row index pointer.
     shape; % REQUIRED (uint8) The shape (number of rows, number of columns) of this sparse matrix.
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["data", "indices", "indptr", "shape"];
+end
 
 methods
     function obj = CSRMatrix(varargin)

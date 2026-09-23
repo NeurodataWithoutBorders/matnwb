@@ -13,6 +13,9 @@ end
 properties
     resolution; %  (single) The temporal resolution of the durations, in seconds. This is typically the sampling period (1 / sampling_rate), also known as the clock period, of the data acquisition system from which the durations were recorded or derived.
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["resolution", "unit"];
+end
 
 methods
     function obj = DurationVectorData(varargin)

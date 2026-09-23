@@ -17,6 +17,9 @@ end
 properties (Constant, Access = private)
     GroupPropertyNames = ["nwbdatainterface", "dynamictable"];
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["description"];
+end
 
 methods
     function obj = ProcessingModule(varargin)

@@ -9,6 +9,9 @@ classdef DynamicTableRegion < types.hdmf_common.VectorData & types.untyped.Datas
 properties
     table; % REQUIRED (Object reference to DynamicTable) Reference to the DynamicTable object that this region applies to.
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["table"];
+end
 
 methods
     function obj = DynamicTableRegion(varargin)

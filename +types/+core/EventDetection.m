@@ -19,6 +19,9 @@ end
 properties
     times; %  (double) DEPRECATED. Timestamps of events, in seconds.
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["detection_method", "source_idx", "times", "times/unit"];
+end
 
 methods
     function obj = EventDetection(varargin)
