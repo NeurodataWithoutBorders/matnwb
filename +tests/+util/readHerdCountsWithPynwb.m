@@ -10,6 +10,7 @@ function counts = readHerdCountsWithPynwb(nwbFilename)
 % so that a MATLAB release whose Python is unsupported can still construct
 % the test suite: the unittest framework fails a whole test file whose
 % py.* references cannot be resolved, dropping every test in it.
+
     [pyNwbFile, pyNwbFileCleanup] = tests.util.readWithPynwb(nwbFilename); %#ok<ASGLU>
     pyHerd = pyNwbFile.get_external_resources();
     counts = struct( ...

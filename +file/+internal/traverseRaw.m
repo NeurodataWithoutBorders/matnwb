@@ -7,7 +7,8 @@ function path = traverseRaw(propertyName, RawClass)
 % nested untyped node is flattened into an underscore-joined name, so
 % "data_unit" resolves to {<data Dataset>, <unit Attribute>}. The path is
 % empty when propertyName is not defined by RawClass itself.
-    path = {}; 
+
+    path = {};
 
     if isa(RawClass, 'file.Dataset')
         if ~isempty(RawClass.attributes)

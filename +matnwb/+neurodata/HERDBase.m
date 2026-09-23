@@ -462,6 +462,7 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
         %  - an attribute holding a plain value: the reference is on
         %    container, and relativePath is the schema path of the attribute
         %    below container, for example "data/unit" for data_unit.
+
             relativePath = "";
             if strlength(attribute) == 0
                 target = container;

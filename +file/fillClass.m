@@ -188,7 +188,12 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
 
     % Emit the schema path of each property that holds a plain value rather
     % than a neurodata type. HERD records this path as relative_path when a
-    % reference targets such a property.
+    % reference targets such a property, for example "data/unit" for
+    % TimeSeries.data_unit. A generated property name joins the names of the
+    % schema nodes leading to it with "_", and "_" also occurs inside schema
+    % names (data_collection, for example), so the path cannot be recovered
+    % from the property name at runtime. The generator is the only place
+    % that knows it, and it is stored on the class for HERDBase to read.
     schemaRelativePaths = collectSchemaRelativePaths(nonInherited, class);
     if ~isempty(schemaRelativePaths)
         schemaRelativePathBlock = file.fillPrivateConstantProperty( ...
@@ -315,6 +320,7 @@ function relativePaths = collectSchemaRelativePaths(propertyNames, classInfo)
 % those objects directly, with an empty relative path. So are properties
 % nested in a typed node, such as Units.spike_times_resolution, whose
 % nearest neurodata type is that node rather than this class.
+
     relativePaths = string.empty(1, 0);
     for iProperty = 1:length(propertyNames)
         propertyName = propertyNames{iProperty};
