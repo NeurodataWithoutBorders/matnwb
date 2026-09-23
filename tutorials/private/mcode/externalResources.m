@@ -48,10 +48,19 @@ nwb.general_subject = types.core.Subject( ...
 % can look up at |https://bioregistry.io/<entity_id>|.
 % 
 % Here the subject's species is linked to the NCBI Taxonomy entry for _Mus musculus_. 
-% The object being annotated is the subject, and the key is the value stored on 
-% it.
+% The object is the subject, |Attribute| names the property holding the value, 
+% and the key is the value itself.
+% 
+% A value such as the species is plain text rather than a neurodata object, 
+% so it has no object id of its own. The reference is recorded on the object that 
+% holds it, together with the path of the value within that object's schema. This 
+% path is stored as |relative_path|, here |species|. For a value nested deeper 
+% in the schema, the path joins the names of the nodes leading to it, so the unit 
+% of a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/TimeSeries.html 
+% |*TimeSeries*|>, the property |data_unit|, is recorded as |data/unit|.
 
 nwb.addRef(nwb.general_subject, ...
+    Attribute = "species", ...
     Key = nwb.general_subject.species, ...
     EntityId = "NCBITaxon:10090", ...
     EntityUri = "http://purl.obolibrary.org/obo/NCBITaxon_10090");
@@ -82,11 +91,11 @@ for iElectrode = 1:4
         'group_name', 'shank0');
 end
 % Annotate the column
-% Pass the table as the object and the column name as |Attribute|. The reference 
-% is attached to the column itself, which is the object that holds the values, 
-% rather than to the table. A ragged column works the same way: |Attribute| names 
-% the column holding the values, and the index that groups them into rows is a 
-% separate property.
+% Pass the table as the object and the column name as |Attribute|. A column 
+% is itself a neurodata object, so the reference is attached to the column, which 
+% holds the values, rather than to the table, and its |relative_path| is empty. 
+% A ragged column works the same way: |Attribute| names the column holding the 
+% values, and the index that groups them into rows is a separate property.
 
 nwb.addRef(nwb.general_extracellular_ephys_electrodes, ...
     Attribute = "location", ...
@@ -117,14 +126,17 @@ references = herd.toTable()
 
 herd.keys.data
 %% Look up what an object refers to
-% |getObjectEntities| returns the entities annotated on one object.
+% |getObjectEntities| returns the entities annotated on one object. Pass |Attribute| 
+% the same way as when the reference was added.
 
-herd.getObjectEntities(nwb, nwb.general_subject)
+herd.getObjectEntities(nwb, nwb.general_subject, Attribute="species")
 % Everything annotated on one type
 % |getObjectType| returns every reference recorded on objects of a given type, 
-% which is useful when the same kind of value is annotated in several places.
+% which is useful when the same kind of value is annotated in several places. 
+% By default it returns references recorded on the objects themselves, so pass 
+% |RelativePath| to return those recorded on a value stored on them.
 
-herd.getObjectType("Subject")
+herd.getObjectType("Subject", RelativePath="species")
 %% Write and read the file
 % Writing the file stores the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/HERD.html 
 % |*HERD*|> inside it, under |/general/external_resources|. Reading the file back 
@@ -138,7 +150,7 @@ readFile.general_external_resources.toTable()
 % |*HERD*|> read from disk. Object identity survives the round trip, so the subject 
 % read back from the file matches the reference recorded for it.
 
-readFile.general_external_resources.getObjectEntities(readFile, readFile.general_subject)
+readFile.general_external_resources.getObjectEntities(readFile, readFile.general_subject, Attribute="species")
 %% Notes
 % A few things are worth knowing when annotating your own files.
 %% 
@@ -146,8 +158,13 @@ readFile.general_external_resources.getObjectEntities(readFile, readFile.general
 % references to the same |entity_id| reuse it.
 % * The same term used on two different objects is recorded once per object, 
 % so each object keeps its own association.
-% * |Attribute| currently accepts properties that are themselves neurodata types, 
-% such as a column of a table.
+% * |Attribute| accepts a property that holds a neurodata object, such as a 
+% column of a table, or a plain value, such as the species. It does not accept 
+% a link, a set of neurodata objects such as |acquisition|, or a value stored 
+% inside another neurodata object, such as |spike_times_resolution| on |Units|, 
+% which belongs to the |spike_times| column.
+% * Without |Attribute|, a reference is recorded on the object itself, with 
+% an empty |relative_path|.
 %% 
 % For the concepts behind HERD and the equivalent Python API, see the <https://hdmf.readthedocs.io/en/stable/tutorials/plot_external_resources.html 
 % HDMF documentation>.
