@@ -22,3 +22,8 @@ nwbtest.env
 
 docs/build
 docs/reports
+
+# External dependencies installed by matbox.installRequirements
+# (see requirements.txt)
+external_packages/zarr-matlab
+external_packages/hdmf-zarr-matlab

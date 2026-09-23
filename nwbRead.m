@@ -95,7 +95,7 @@ function nwb = nwbRead(filename, flags, options)
 
     parseExclusions = io.internal.defaultParseExclusions();
     if ~isempty(specLocation)
-        parseExclusions.groups{end+1} = specLocation;
+        parseExclusions.groups{end+1} = char(specLocation);
     end
     
     softLinkWarningResetObj = types.untyped.SoftLink.disablePathDeprecationWarning(); %#ok<NASGU>

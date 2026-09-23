@@ -455,6 +455,20 @@ function value = validateAnyType(value)
         return
     end
 
+    % A DataStub can be validated from its declared type: the checks above
+    % inspect only the class of a value, never its contents, so sampling the
+    % dataset would read from the file to learn something its metadata
+    % already states. This matters for a large dataset, where the sample read
+    % is not free -- and, on a backend without a point-read path for a single
+    % linear index, materialises the whole array.
+    if isa(value, 'types.untyped.DataStub') && ~value.isCompoundType()
+        [typedEmptyValue, isTypeResolved] = emptyValueOfClassName(value.dataType);
+        if isTypeResolved
+            validateAnyType(typedEmptyValue);
+            return
+        end
+    end
+
     if isWrapped(value, 'any')
         unWrappedValue = unwrapValue(value);
         try
@@ -477,4 +491,34 @@ function value = validateAnyType(value)
     error('NWB:CheckDType:InvalidType', ...
         'Value was of type "%s" but must be one of the following types:\n%s', ...
         valueType, strjoin("  " + allowedTypes, newline))
+end
+
+function [emptyValue, isTypeResolved] = emptyValueOfClassName(className)
+% emptyValueOfClassName - Zero-element value of a named class.
+%
+% Used to answer "what class is this?" without reading data. isTypeResolved
+% is false when className does not name a constructible class -- an unnamed
+% or non-scalar text type descriptor, or one whose class is unavailable -- in
+% which case the caller falls back to sampling the value itself.
+
+    emptyValue = [];
+    isTypeResolved = false;
+
+    isScalarText = ischar(className) || (isstring(className) && isscalar(className));
+    if ~isScalarText
+        return
+    end
+
+    className = string(className);
+    if strlength(className) == 0 || isempty(meta.class.fromName(className))
+        return
+    end
+
+    try
+        emptyValue = feval(className + ".empty");
+        isTypeResolved = true;
+    catch
+        % The class exists but cannot be constructed empty (an abstract class,
+        % for instance). Leave isTypeResolved false so the caller samples.
+    end
 end
