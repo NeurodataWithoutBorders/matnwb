@@ -15,6 +15,9 @@ properties
     pmt_gain; %  (single) Photomultiplier gain.
     scan_line_rate; %  (single) Lines imaged per second. This is also stored in /general/optophysiology but is kept here as it is useful information for analysis, and so good to be stored w/ the actual data.
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["field_of_view", "pmt_gain", "scan_line_rate"];
+end
 
 methods
     function obj = TwoPhotonSeries(varargin)

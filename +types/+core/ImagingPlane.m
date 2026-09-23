@@ -29,6 +29,9 @@ end
 properties (Constant, Access = private)
     GroupPropertyNames = ["opticalchannel"];
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["description", "excitation_lambda", "grid_spacing", "grid_spacing/unit", "imaging_rate", "indicator", "location", "manifold", "manifold/conversion", "manifold/unit", "origin_coords", "origin_coords/unit", "reference_frame"];
+end
 
 methods
     function obj = ImagingPlane(varargin)

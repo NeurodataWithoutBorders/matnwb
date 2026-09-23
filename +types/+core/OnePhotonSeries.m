@@ -18,6 +18,9 @@ properties
     power; %  (single) Power of the excitation in mW, if known.
     scan_line_rate; %  (single) Lines imaged per second. This is also stored in /general/optophysiology but is kept here as it is useful information for analysis, and so good to be stored w/ the actual data.
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["binning", "exposure_time", "intensity", "pmt_gain", "power", "scan_line_rate"];
+end
 
 methods
     function obj = OnePhotonSeries(varargin)

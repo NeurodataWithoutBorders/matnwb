@@ -15,6 +15,9 @@ properties
     gain; %  (single) Gain of the recording, in units Volt/Amp (v-clamp) or Volt/Volt (c-clamp).
     sweep_number; %  (uint32) Sweep number, allows to group different PatchClampSeries together.
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["gain", "stimulus_description", "sweep_number"];
+end
 
 methods
     function obj = PatchClampSeries(varargin)

@@ -194,10 +194,53 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
                 @() herd.addRef(nwb, subject, Attribute="not_a_property", ...
                     Key="a", EntityId="X:1", EntityUri="http://x"), ...
                 'NWB:HERD:UnknownAttribute')
-            % `species` holds text rather than a neurodata type. Referencing it
-            % needs the relative path support that MatNWB does not have yet.
+            % `acquisition` holds a set of neurodata types, which has neither
+            % an object id nor a schema path of a plain value.
             testCase.verifyError( ...
-                @() herd.addRef(nwb, subject, Attribute="species", ...
+                @() herd.addRef(nwb, nwb, Attribute="acquisition", ...
+                    Key="a", EntityId="X:1", EntityUri="http://x"), ...
+                'NWB:HERD:UnsupportedAttribute')
+        end
+
+        function testAddRefWithPlainValueAttributeRecordsRelativePath(testCase)
+            % An attribute holding a plain value annotates the container, with
+            % the schema path of the attribute as relative_path, like HDMF.
+            nwb = testCase.createFile();
+            timeSeries = types.core.TimeSeries( ...
+                'data', 1:3, 'data_unit', 'meters', 'starting_time', 0, ...
+                'starting_time_rate', 1);
+            nwb.acquisition.set('position', timeSeries);
+            herd = types.hdmf_common.HERD();
+            herd.addRef(nwb, nwb.general_subject, Attribute="species", ...
+                Key="Mus musculus", EntityId="NCBITaxon:10090", EntityUri="http://x/1");
+            herd.addRef(nwb, timeSeries, Attribute="data_unit", ...
+                Key="meters", EntityId="UO:0000008", EntityUri="http://x/2");
+            herd.addRef(nwb, nwb, Attribute="general_experimenter", ...
+                Key="Doe, Jane", EntityId="ORCID:1", EntityUri="http://x/3");
+
+            references = herd.toTable();
+            testCase.verifyEqual(references.object_type, {'Subject'; 'TimeSeries'; 'NWBFile'})
+            testCase.verifyEqual(references.object_id, ...
+                {nwb.general_subject.object_id; timeSeries.object_id; nwb.object_id})
+            testCase.verifyEqual(references.relative_path, ...
+                {'species'; 'data/unit'; 'general/experimenter'})
+
+            species = herd.getObjectType("Subject", RelativePath="species");
+            testCase.verifyEqual(species.entity_id, {'NCBITaxon:10090'})
+            testCase.verifyEmpty(herd.getObjectType("Subject"))
+        end
+
+        function testAddRefRejectsValueNestedInNeurodataType(testCase)
+            % Units.spike_times is a VectorData, so its resolution attribute
+            % belongs to that VectorData rather than to Units, and the
+            % reference has no path relative to Units.
+            % resolveTarget runs before the file is checked, so the table
+            % does not need to be complete or part of the file.
+            nwb = testCase.createFile();
+            units = types.core.Units('description', 'units');
+            herd = types.hdmf_common.HERD();
+            testCase.verifyError( ...
+                @() herd.addRef(nwb, units, Attribute="spike_times_resolution", ...
                     Key="a", EntityId="X:1", EntityUri="http://x"), ...
                 'NWB:HERD:UnsupportedAttribute')
         end
@@ -464,16 +507,19 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
                 EntityId="NCBITaxon:10090", EntityUri="http://purl.obolibrary.org/obo/NCBITaxon_10090");
             herd.addRef(nwb, table, Attribute="location", Key="VISp", ...
                 EntityId="MBA:385", EntityUri="http://mba/385");
+            herd.addRef(nwb, nwb.general_subject, Attribute="species", ...
+                Key="Mus musculus", EntityId="NCBITaxon:10090");
             nwb.general_external_resources = herd;
 
             filename = testCase.getRandomFilename();
             nwbExport(nwb, filename);
 
             counts = tests.util.readHerdCountsWithPynwb(filename);
-            testCase.verifyEqual(counts.numKeys, 2)
+            testCase.verifyEqual(counts.numKeys, 3)
             testCase.verifyEqual(counts.numEntities, 2)
-            testCase.verifyEqual(counts.numObjects, 2)
+            testCase.verifyEqual(counts.numObjects, 3)
             testCase.verifyEqual(counts.numSubjectEntities, 1)
+            testCase.verifyEqual(counts.numSpeciesEntities, 1)
         end
     end
 

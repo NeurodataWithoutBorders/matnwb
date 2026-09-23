@@ -18,6 +18,9 @@ end
 properties (Constant, Access = private)
     DeclaredSchemaColumns = ["annotation", "duration", "timestamp"];
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["source_description"];
+end
 
 methods
     function obj = EventsTable(varargin)

@@ -22,6 +22,9 @@ end
 properties (Constant, Access = private)
     DeclaredSchemaColumns = string.empty(1, 0);
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["categories"];
+end
 
 methods
     function obj = AlignedDynamicTable(varargin)

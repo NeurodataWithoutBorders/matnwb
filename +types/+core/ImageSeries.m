@@ -14,6 +14,9 @@ properties
     format = "raw"; %  (char) Format of image. If this is 'external', then the attribute 'external_file' contains the path information to the image files. If this is 'raw', then the raw (single-channel) binary data is stored in the 'data' dataset. If this attribute is not present, then the default format='raw' case is assumed.
     num_samples; %  (uint32) Total number of frames across all external files. This is required when format='external' and timing is described using starting_time and rate, since data is empty and its first dimension cannot be used to determine the number of frames. When timestamps is provided, len(timestamps) already serves this purpose.
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["dimension", "external_file", "external_file/starting_frame", "format", "num_samples"];
+end
 
 methods
     function obj = ImageSeries(varargin)

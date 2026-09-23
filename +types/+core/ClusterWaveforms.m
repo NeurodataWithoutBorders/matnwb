@@ -12,6 +12,9 @@ properties
     waveform_mean; % REQUIRED (single) The mean waveform for each cluster, using the same indices for each wave as cluster numbers in the associated Clustering module (i.e, cluster 3 is in array slot [3]). Waveforms corresponding to gaps in cluster sequence should be empty (e.g., zero- filled)
     waveform_sd; % REQUIRED (single) Stdev of waveforms for each cluster, using the same indices as in mean
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["waveform_filtering", "waveform_mean", "waveform_sd"];
+end
 
 methods
     function obj = ClusterWaveforms(varargin)

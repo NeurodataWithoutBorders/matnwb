@@ -15,6 +15,9 @@ properties
     source_channels; %  (DynamicTableRegion) DynamicTableRegion pointer to the channels that this decomposition series was generated from.
     source_timeseries; %  (TimeSeries) Link to TimeSeries object that this data was calculated from. Metadata about electrodes and their position can be read from that ElectricalSeries so it is not necessary to store that information here.
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["metric"];
+end
 
 methods
     function obj = DecompositionSeries(varargin)

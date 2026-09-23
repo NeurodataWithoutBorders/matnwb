@@ -17,6 +17,9 @@ end
 properties (Constant, Access = private)
     GroupPropertyNames = ["baseimage"];
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["description"];
+end
 
 methods
     function obj = Images(varargin)
