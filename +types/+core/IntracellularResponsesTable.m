@@ -7,7 +7,7 @@ classdef IntracellularResponsesTable < types.hdmf_common.DynamicTable & types.un
 
 % REQUIRED PROPERTIES
 properties
-    response; % REQUIRED (TimeSeriesReferenceVectorData) Column storing the reference to the recorded response for the recording (rows)
+    response; % REQUIRED (TimeSeriesReferenceVectorData) Column storing the reference to the recorded response for the recording (rows).
 end
 properties (Constant, Access = private)
     DeclaredSchemaColumns = ["response"];
@@ -29,7 +29,7 @@ methods
         %
         %  - meanings_tables (MeaningsTable) - MeaningsTable objects that provide meanings for values in VectorData columns within this DynamicTable. Tables should be named according to the column they provide meanings for with a "_meanings" suffix. e.g., if a VectorData column is named "stimulus_type", the corresponding MeaningsTable should be named "stimulus_type_meanings".
         %
-        %  - response (TimeSeriesReferenceVectorData) - Column storing the reference to the recorded response for the recording (rows)
+        %  - response (TimeSeriesReferenceVectorData) - Column storing the reference to the recorded response for the recording (rows).
         %
         %  - vectordata (VectorData) - Vector columns, including index columns, of this dynamic table.
         %

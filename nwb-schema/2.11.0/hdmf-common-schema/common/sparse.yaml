@@ -1,0 +1,35 @@
+# hdmf-schema-language=2.0.2
+groups:
+- data_type_def: CSRMatrix
+  data_type_inc: Container
+  doc: 'A compressed sparse row matrix. Data are stored in the standard CSR format, where column indices for row i are
+    stored in indices[indptr[i]:indptr[i+1]] and their corresponding values are stored in data[indptr[i]:indptr[i+1]].'
+  attributes:
+  - name: shape
+    dtype: uint
+    dims:
+    - number of rows, number of columns
+    shape:
+    - 2
+    doc: The shape (number of rows, number of columns) of this sparse matrix.
+  datasets:
+  - name: indices
+    dtype: uint
+    dims:
+    - number of non-zero values
+    shape:
+    - null
+    doc: The column indices.
+  - name: indptr
+    dtype: uint
+    dims:
+    - number of rows in the matrix + 1
+    shape:
+    - null
+    doc: The row index pointer.
+  - name: data
+    dims:
+    - number of non-zero values
+    shape:
+    - null
+    doc: The non-zero values in the matrix.

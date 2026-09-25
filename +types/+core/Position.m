@@ -1,5 +1,5 @@
 classdef Position < types.core.NWBDataInterface & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups
-% POSITION - Position data, whether along the x, x/y or x/y/z axis.
+% POSITION - Position data, whether along the x, x/y, or x/y/z axes.
 %
 % Required Properties:
 %  spatialseries
