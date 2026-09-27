@@ -80,8 +80,8 @@ The values are 0-based row indices into the referenced table.
 Doubly-ragged arrays
 --------------------
 Use ``addDoublyRaggedArray`` for columns such as :class:`types.core.Units`
-``waveforms``. There are two input forms depending on how many electrodes contribute a
-waveform per spike.
+``waveforms``. There are three input forms, depending on how many electrodes contribute
+a waveform per spike and whether that number is the same for every spike.
 
 .. note::
 
@@ -133,6 +133,30 @@ each spike.
    For a multi-channel unit, the order of the waveform rows within each spike must match
    the order of the electrodes listed in that unit's ``electrodes`` row, and each spike
    of a given unit should have the same number of electrodes.
+
+Multiple channels (array shortcut)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+When every spike of a unit was recorded on the same electrodes, the nested cell array
+can be replaced by one ``[numSpikes x numElectrodes x numSamples]`` array per unit. This
+is the same input PyNWB's ``Units.add_unit`` takes, and it produces the same column as
+the nested form: each spike becomes one sub-group holding one waveform per electrode.
+Here ``a1`` is ``[2 x 3 x 40]`` and ``a2`` is ``[3 x 3 x 40]``:
+
+.. literalinclude:: examples/ragged_arrays_examples.m
+   :language: matlab
+   :start-after: % snippet: doubly-multi-channel-array
+   :end-before: % end snippet
+   :dedent:
+
+This yields the same ``waveforms.data`` size ``[40 15]``, ``waveforms_index = [3 6 9 12
+15]`` and ``waveforms_index_index = [2 5]`` as the nested form above. Dimensions after
+the third, if any, are kept as part of each element.
+
+.. note::
+
+   MATLAB drops trailing dimensions of size 1, so a ``[numSpikes x numElectrodes x 1]``
+   array arrives as a ``[numSpikes x numElectrodes]`` matrix and is read as the
+   single-electrode form. Use the nested cell form for one-sample waveforms.
 
 Understanding the two index levels
 ----------------------------------

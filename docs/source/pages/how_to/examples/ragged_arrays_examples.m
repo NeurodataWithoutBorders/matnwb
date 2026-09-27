@@ -53,6 +53,24 @@ function ragged_arrays_examples()
     assert(isequal(units.waveforms_index.data(:).', uint64([3 6 9 12 15])))
     assert(isequal(units.waveforms_index_index.data(:).', uint64([2 5])))
 
+    % ---- Doubly-ragged, multiple channels per spike, array shortcut ----
+    % When every spike of a unit was recorded on the same electrodes, the
+    % unit's waveforms fit in one [numSpikes x numElectrodes x numSamples]
+    % array, the input PyNWB's Units.add_unit takes.
+    a1 = rand(2, numElectrodes, numSamples);   % 2 spikes
+    a2 = rand(3, numElectrodes, numSamples);   % 3 spikes
+
+    % snippet: doubly-multi-channel-array
+    units = types.core.Units('colnames', {}, 'description', 'units');
+    units.addDoublyRaggedArray('waveforms', {a1, a2}, ...
+        'description', 'multi-channel spike waveforms');
+    % end snippet
+    assert(isequal(size(units.waveforms.data), [numSamples, 15]))
+    assert(isequal(units.waveforms_index.data(:).', uint64([3 6 9 12 15])))
+    assert(isequal(units.waveforms_index_index.data(:).', uint64([2 5])))
+    % Spike 2 of unit 1 is waveform columns 4:6; electrode 3 is the last of them.
+    assert(isequal(units.waveforms.data(:, 6), squeeze(a1(2, 3, :))))
+
     % snippet: helper-functions
     [waveforms, waveformsIndex, waveformsIndexIndex] = ...
         util.create_doubly_indexed_column({unit1, unit2}, 'spike waveforms');
