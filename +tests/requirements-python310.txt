@@ -11,5 +11,5 @@
 # Dependabot opens a pull request when a newer release is published, so an
 # upstream change is tested on its own before anything depends on it. Both
 # workflows read this file, so test and release runs also stay in step.
-pynwb==4.1.0
+pynwb==4.2.0
 nwbinspector==0.7.2

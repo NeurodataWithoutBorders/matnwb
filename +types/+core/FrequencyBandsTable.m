@@ -8,12 +8,12 @@ classdef FrequencyBandsTable < types.hdmf_common.DynamicTable & types.untyped.Gr
 % REQUIRED PROPERTIES
 properties
     band_limits; % REQUIRED (VectorData) Low and high limit of each band in Hz. If it is a Gaussian filter, use 2 SD on either side of the center.
-    band_name; % REQUIRED (VectorData) Name of the band, e.g. theta.
+    band_name; % REQUIRED (VectorData) Name of the band, e.g., theta.
 end
 % OPTIONAL PROPERTIES
 properties
-    band_mean; %  (VectorData) The mean Gaussian filters, in Hz.
-    band_stdev; %  (VectorData) The standard deviation of Gaussian filters, in Hz.
+    band_mean; %  (VectorData) The center frequency (mean) of each Gaussian filter, in Hz.
+    band_stdev; %  (VectorData) The standard deviation (bandwidth) of each Gaussian filter, in Hz.
 end
 properties (Constant, Access = private)
     DeclaredSchemaColumns = ["band_limits", "band_mean", "band_name", "band_stdev"];
@@ -31,11 +31,11 @@ methods
         % Input Arguments (Name-Value Arguments):
         %  - band_limits (VectorData) - Low and high limit of each band in Hz. If it is a Gaussian filter, use 2 SD on either side of the center.
         %
-        %  - band_mean (VectorData) - The mean Gaussian filters, in Hz.
+        %  - band_mean (VectorData) - The center frequency (mean) of each Gaussian filter, in Hz.
         %
-        %  - band_name (VectorData) - Name of the band, e.g. theta.
+        %  - band_name (VectorData) - Name of the band, e.g., theta.
         %
-        %  - band_stdev (VectorData) - The standard deviation of Gaussian filters, in Hz.
+        %  - band_stdev (VectorData) - The standard deviation (bandwidth) of each Gaussian filter, in Hz.
         %
         %  - colnames (char) - The names of the columns in this table. This should be used to specify an order to the columns.
         %

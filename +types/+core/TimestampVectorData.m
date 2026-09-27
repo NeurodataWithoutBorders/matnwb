@@ -1,5 +1,5 @@
 classdef TimestampVectorData < types.hdmf_common.VectorData & types.untyped.DatasetClass
-% TIMESTAMPVECTORDATA - A 1-dimensional VectorData that stores timestamps in seconds from the session start time. Timestamp are not required to be sorted in time.
+% TIMESTAMPVECTORDATA - A 1-D VectorData that stores timestamps in seconds from the session start time. Timestamps are not required to be sorted in time.
 %
 % Required Properties:
 %  data, description

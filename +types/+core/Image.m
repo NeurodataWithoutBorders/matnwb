@@ -1,5 +1,5 @@
 classdef Image < types.core.BaseImage & types.untyped.DatasetClass
-% IMAGE - A type for storing image data directly. Shape can be 2-D (x, y), or 3-D where the third dimension can have three or four elements, e.g. (x, y, (r, g, b)) or (x, y, (r, g, b, a)).
+% IMAGE - A type for storing image data directly. Shape can be 2-D (x, y), or 3-D where the third dimension can have three or four elements, e.g., (x, y, (r, g, b)) or (x, y, (r, g, b, a)).
 %
 % Required Properties:
 %  data
