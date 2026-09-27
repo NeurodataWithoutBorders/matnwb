@@ -15,18 +15,27 @@ function [vector, index, index_index] = create_doubly_indexed_column(data, descr
 %   INDEX. Assign them to a column and its '<col>_index'/'<col>_index_index'
 %   properties (e.g. waveforms, waveforms_index, waveforms_index_index).
 %
-%   DATA is a cell array with one cell per table row. Each cell is either:
-%     - a numeric array [nSubGroups x trailingDimensions] (single-element
-%       shortcut): each slice along dimension 1 is one sub-group containing
-%       exactly one element. This matches spike-sorted units on a single
-%       electrode, where DATA{i} is that unit's [nSpikes x nSamples] waveform
-%       matrix.
+%   DATA is a cell array with one cell per table row. Each cell is one of:
+%     - a numeric matrix [nSubGroups x nSamples] (single-element shortcut):
+%       each row is one sub-group containing exactly one element. This matches
+%       spike-sorted units on a single electrode, where DATA{i} is that unit's
+%       [nSpikes x nSamples] waveform matrix.
+%     - a numeric array [nSubGroups x nElements x elementDimensions] with three
+%       or more dimensions (fixed-count shortcut): every sub-group contains
+%       nElements elements. For Units waveforms this is
+%       [nSpikes x nElectrodes x nSamples]. HDMF's DynamicTable.add_row reads
+%       an array passed to a doubly indexed column in the same order.
 %     - a cell array where DATA{i}{j} is a numeric array
-%       [nElements x trailingDimensions] holding the elements of sub-group j
-%       (general, multi-element case).
+%       [nElements x elementDimensions] holding the elements of sub-group j
+%       (general case, where the element count may differ between sub-groups).
 %
-%   All elements across all rows must have the same trailing dimensions. A row
+%   All elements across all rows must have the same elementDimensions. A row
 %   may be empty ([] or {}) to represent a row with no sub-groups.
+%
+%   Because MATLAB drops trailing singleton dimensions, an array
+%   [nSubGroups x nElements x 1] is indistinguishable from a matrix
+%   [nSubGroups x nElements] and is read as the single-element shortcut. Use
+%   the cell form for elements that hold a single value.
 %
 %   [VECTOR, INDEX, INDEX_INDEX] = CREATE_DOUBLY_INDEXED_COLUMN(DATA, DESCRIPTION)
 %   sets the string DESCRIPTION on the returned VectorData.
@@ -86,15 +95,34 @@ function [vector, index, index_index] = create_doubly_indexed_column(data, descr
 end
 
 function [chunk, counts, payloadSize] = fromArray(rowData, payloadSize, iRow)
-    % Shortcut form: [nSubGroups x trailingDimensions], one element per sub-group.
-    if isempty(rowData)
-        chunk = [];
-        counts = zeros(0, 1);
-        return
+    % Shortcut forms: [nSubGroups x nSamples] (one element per sub-group) or
+    % [nSubGroups x nElements x elementDimensions] (nElements per sub-group).
+    if ismatrix(rowData)
+        if isempty(rowData)
+            chunk = [];
+            counts = zeros(0, 1);
+            return
+        end
+        payloadSize = checkPayloadSize(getPayloadSize(rowData), payloadSize, iRow);
+        chunk = moveFirstDimensionToLast(rowData);
+        counts = ones(size(rowData, 1), 1);
+    else
+        arraySize = size(rowData);
+        numSubGroups = arraySize(1);
+        numElements = arraySize(2);
+        counts = repmat(numElements, numSubGroups, 1);
+        if isempty(rowData)
+            chunk = [];
+            return
+        end
+        elementSize = arraySize(3:end);
+        payloadSize = checkPayloadSize(elementSize, payloadSize, iRow);
+        % Reversing the dimensions gives [fliplr(elementSize) x nElements x
+        % nSubGroups]. Merging the last two lists the elements of sub-group 1
+        % first, then sub-group 2, which is the order the index expects.
+        chunk = reshape(moveFirstDimensionToLast(rowData), ...
+            [fliplr(elementSize), numElements*numSubGroups]);
     end
-    payloadSize = checkPayloadSize(getPayloadSize(rowData), payloadSize, iRow);
-    chunk = moveFirstDimensionToLast(rowData);
-    counts = ones(size(rowData, 1), 1);   % one element per sub-group
 end
 
 function [chunk, counts, payloadSize] = fromCell(rowData, payloadSize, iRow)
