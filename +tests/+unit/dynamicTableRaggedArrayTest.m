@@ -152,6 +152,25 @@ classdef dynamicTableRaggedArrayTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(back.units.waveforms_index_index.data.load(), uint64([3; 5]));
         end
 
+        function testAddDoublyRaggedArrayExistingColumnErrors(testCase)
+            % Like addColumn, adding a column that already exists is an error,
+            % both for generic columns and for schema-defined properties.
+            unit1 = reshape(1:8, 2, 4);
+            unit2 = reshape(1:12, 3, 4);
+
+            dt = types.hdmf_common.DynamicTable('description', 'test');
+            dt.addDoublyRaggedArray('wf', {unit1, unit2});
+            testCase.verifyError( ...
+                @() dt.addDoublyRaggedArray('wf', {unit1, unit2}), ...
+                'NWB:DynamicTable:AddDoublyRaggedArray:ColumnExists');
+
+            units = types.core.Units('colnames', {}, 'description', 'units');
+            units.addDoublyRaggedArray('waveforms', {unit1, unit2});
+            testCase.verifyError( ...
+                @() units.addDoublyRaggedArray('waveforms', {unit1, unit2}), ...
+                'NWB:DynamicTable:AddDoublyRaggedArray:ColumnExists');
+        end
+
         function testAddDoublyRaggedArrayHeightMismatchErrors(testCase)
             dt = types.hdmf_common.DynamicTable('description', 'test');
             dt.addColumn('a', types.hdmf_common.VectorData( ...

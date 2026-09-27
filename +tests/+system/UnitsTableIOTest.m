@@ -83,8 +83,6 @@ classdef UnitsTableIOTest < tests.system.PyNWBIOTest
             file.units.spike_times_resolution = 3;
             file.units.waveform_mean_sampling_rate = 1;
             file.units.waveform_sd_sampling_rate = 1;
-
-            % Skip waveforms_sampling_rate because PyNWB does not export it.
             file.units.waveforms_sampling_rate = 1;
         end
 
