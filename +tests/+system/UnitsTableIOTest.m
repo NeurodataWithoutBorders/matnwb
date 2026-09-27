@@ -1,6 +1,25 @@
 classdef UnitsTableIOTest < tests.system.PyNWBIOTest
+    properties (ClassSetupParameter)
+        % Both addDoublyRaggedArray input forms must store the same waveforms
+        % layout as PyNWB's Units.add_unit.
+        WaveformInput = struct( ...
+            "CellPerSpike", "cell", ...
+            "ArrayPerUnit", "array")
+    end
+
+    properties (Access = private)
+        WaveformInputForm (1,1) string = "cell"
+    end
+
+    methods (TestClassSetup)
+        function setWaveformInput(testCase, WaveformInput)
+            % Class setup runs before the method setup that calls addContainer.
+            testCase.WaveformInputForm = WaveformInput;
+        end
+    end
+
     methods
-        function addContainer(~, file)
+        function addContainer(testCase, file)
             % Build a Units table with multi-electrode, doubly-ragged waveforms
             % using the idiomatic addRaggedArray / addDoublyRaggedArray methods.
             % This mirrors PyNWB's Units.add_unit in PyNWBIOTest.py so the two
@@ -10,18 +29,31 @@ classdef UnitsTableIOTest < tests.system.PyNWBIOTest
             % spike_times: a ragged column, one list of times per unit.
             file.units.addRaggedArray('spike_times', {[1 2], [3 4 5]});
 
-            % waveforms: a doubly-ragged column. data{unit}{spike} is a
-            % [numElectrodes x numSamples] matrix (one row per electrode's
-            % waveform). This matches PyNWB add_unit's per-unit 3-D input
-            % (num_spikes, num_electrodes, num_samples): both store a 2-D
-            % [num_waveforms, num_samples] dataset with the electrode dimension
-            % carried by waveforms_index.
-            % Unit 1 has 2 spikes, unit 2 has 3 spikes; each spike has 2
-            % electrodes and 3 samples.
-            waveforms = { ...
-                {int32([1 2 3; 4 5 6]), int32([7 8 9; 10 11 12])}, ...
-                {int32([13 14 15; 16 17 18]), int32([19 20 21; 22 23 24]), int32([25 26 27; 28 29 30])} ...
-                };
+            % waveforms: a doubly-ragged column stored as a 2-D
+            % [num_waveforms, num_samples] dataset, with the electrode dimension
+            % carried by waveforms_index. Unit 1 has 2 spikes, unit 2 has 3
+            % spikes; each spike has 2 electrodes and 3 samples. Both input
+            % forms below hold the same values as PyNWBIOTest.py.
+            switch testCase.WaveformInputForm
+                case "cell"
+                    % data{unit}{spike} is a [numElectrodes x numSamples] matrix.
+                    waveforms = { ...
+                        {int32([1 2 3; 4 5 6]), int32([7 8 9; 10 11 12])}, ...
+                        {int32([13 14 15; 16 17 18]), int32([19 20 21; 22 23 24]), int32([25 26 27; 28 29 30])} ...
+                        };
+                case "array"
+                    % data{unit} is [numSpikes x numElectrodes x numSamples], the
+                    % input PyNWB's add_unit takes. Reshaping column-major into
+                    % [numSamples x numElectrodes x numSpikes] and reversing the
+                    % dimensions reproduces numpy's row-major
+                    % np.arange(...).reshape(numSpikes, numElectrodes, numSamples).
+                    waveforms = { ...
+                        permute(reshape(int32(1:12), 3, 2, 2), [3 2 1]), ...
+                        permute(reshape(int32(13:30), 3, 2, 3), [3 2 1]) ...
+                        };
+                otherwise
+                    error("Unknown WaveformInput value ""%s"".", testCase.WaveformInputForm)
+            end
             file.units.addDoublyRaggedArray('waveforms', waveforms);
 
             % waveform_mean / waveform_sd: fixed 2-D columns [numSamples x numUnits].

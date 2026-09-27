@@ -187,10 +187,16 @@ classdef (Abstract) DynamicTableBase < handle
         %    Name of the new column.
         %
         %  - data (cell) -
-        %    A cell array with one cell per row. Each cell is either a numeric
-        %    matrix [nSubGroups x nSamples] (one element per sub-group), or a
-        %    cell array whose j-th entry is a [nElements x nSamples] matrix for
-        %    sub-group j. See util.create_doubly_indexed_column.
+        %    A cell array with one cell per row. Each cell is one of:
+        %      - a numeric matrix [nSubGroups x nSamples]: one element per
+        %        sub-group.
+        %      - a numeric array [nSubGroups x nElements x elementDimensions]:
+        %        the same number of elements in every sub-group. For Units
+        %        'waveforms' this is [nSpikes x nElectrodes x nSamples], the
+        %        order PyNWB's Units.add_unit uses.
+        %      - a cell array whose j-th entry is a
+        %        [nElements x elementDimensions] array for sub-group j.
+        %    See util.create_doubly_indexed_column.
         %
         % Name-Value Arguments:
         %  - description (string) -

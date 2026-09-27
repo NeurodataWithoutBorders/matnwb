@@ -33,20 +33,48 @@ classdef createDoublyIndexedColumnTest < tests.abstract.NwbTestCase
             testCase.verifySameHandle(indexIndex.target.target, index);
         end
 
-        function testNDArrayShortcut(testCase)
-            % The first dimension is the subgroup axis; trailing dimensions are
-            % preserved as the fixed element payload.
+        function testFixedCountShortcut(testCase)
+            % A 3-D row is [nSubGroups x nElements x nSamples], the order HDMF's
+            % add_row uses for a doubly indexed column. For rows (2,3,4) and
+            % (1,3,4), HDMF stores data (9, 4), index [3 6 9], index_index [2 3].
             unit1 = reshape(1:(2*3*4), 2, 3, 4);
             unit2 = 100 + reshape(1:(1*3*4), 1, 3, 4);
 
             [vector, index, indexIndex] = ...
-                util.create_doubly_indexed_column({unit1, unit2}, 'volumes');
+                util.create_doubly_indexed_column({unit1, unit2});
 
-            testCase.verifyEqual(size(vector.data), [4, 3, 3]);
-            testCase.verifyEqual(vector.data(:, :, 1), reshape(unit1(1, :, :), 3, 4).');
-            testCase.verifyEqual(vector.data(:, :, 3), reshape(unit2(1, :, :), 3, 4).');
-            testCase.verifyEqual(index.data, uint64((1:3)'));
+            testCase.verifyEqual(size(vector.data), [4, 9]);
+            % Column k is element e of sub-group s, with k = (s-1)*nElements + e.
+            testCase.verifyEqual(vector.data(:, 1), reshape(unit1(1, 1, :), [], 1));
+            testCase.verifyEqual(vector.data(:, 6), reshape(unit1(2, 3, :), [], 1));
+            testCase.verifyEqual(vector.data(:, 7), reshape(unit2(1, 1, :), [], 1));
+            testCase.verifyEqual(index.data, uint64([3; 6; 9]));
             testCase.verifyEqual(indexIndex.data, uint64([2; 3]));
+        end
+
+        function testFixedCountShortcutEqualsCellForm(testCase)
+            unit1 = rand(3, 4, 2);
+            unit2 = rand(2, 4, 2);
+            cellForm = {splitSubGroups(unit1), splitSubGroups(unit2)};
+
+            [vectorA, indexA, indexIndexA] = util.create_doubly_indexed_column({unit1, unit2});
+            [vectorB, indexB, indexIndexB] = util.create_doubly_indexed_column(cellForm);
+
+            testCase.verifyEqual(vectorA.data, vectorB.data);
+            testCase.verifyEqual(indexA.data, indexB.data);
+            testCase.verifyEqual(indexIndexA.data, indexIndexB.data);
+        end
+
+        function testFixedCountShortcutWithNDElements(testCase)
+            % Dimensions after the second are the element's own shape.
+            unit1 = reshape(1:(2*3*4*5), 2, 3, 4, 5);
+
+            [vector, index, indexIndex] = util.create_doubly_indexed_column({unit1});
+
+            testCase.verifyEqual(size(vector.data), [5, 4, 6]);
+            testCase.verifyEqual(vector.data(:, :, 5), reshape(unit1(2, 2, :, :), 4, 5).');
+            testCase.verifyEqual(index.data, uint64([3; 6]));
+            testCase.verifyEqual(indexIndex.data, uint64(2));
         end
 
         function testGeneralNestedCell(testCase)
@@ -168,5 +196,14 @@ classdef createDoublyIndexedColumnTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(back.units.waveforms_index.data.load(), uint64((1:7)'));
             testCase.verifyEqual(back.units.waveforms_index_index.data.load(), uint64([3; 7]));
         end
+    end
+end
+
+function subGroups = splitSubGroups(rowData)
+    % Split [nSubGroups x nElements x nSamples] into one [nElements x nSamples]
+    % matrix per sub-group, independently of the code under test.
+    subGroups = cell(1, size(rowData, 1));
+    for iSubGroup = 1:size(rowData, 1)
+        subGroups{iSubGroup} = squeeze(rowData(iSubGroup, :, :));
     end
 end
