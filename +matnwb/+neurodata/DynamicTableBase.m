@@ -231,21 +231,33 @@ classdef (Abstract) DynamicTableBase < handle
                 'Column `%s` has %d rows, but the table height is %d.', ...
                 columnName, rowCount, tableHeight)
 
-            % Assign the data column and both index levels to the appropriate
-            % storage (a typed property for schema-defined columns such as
+            % Resolve where the data column and both index levels are stored
+            % (a typed property for schema-defined columns such as
             % Units.waveforms, otherwise the generic vectordata set). addColumn
             % is not used here because its height check only follows a single
             % index level.
             names = [columnName, columnName + "_index", columnName + "_index_index"];
             values = {vector, index, indexIndex};
+            storageTargets = strings(size(names));
+            storageNames = strings(size(names));
             for iName = 1:numel(names)
-                [storageTarget, storageName] = ...
+                [storageTargets(iName), storageNames(iName)] = ...
                     types.util.dynamictable.resolveColumnStorage(obj, names(iName));
-                switch storageTarget
-                    case 'property'
-                        obj.(storageName) = values{iName};
-                    case 'vectordata'
-                        obj.vectordata.set(storageName, values{iName});
+            end
+
+            % Like addColumn, refuse to overwrite an existing column.
+            isStored = arrayfun(@(iName) obj.isColumnStored( ...
+                storageTargets(iName), storageNames(iName)), 1:numel(names));
+            assert(~any(isStored) && ~any(strcmp(obj.colnames, char(columnName))), ...
+                'NWB:DynamicTable:AddDoublyRaggedArray:ColumnExists', ...
+                'Column `%s` already exists in the table.', columnName)
+
+            for iName = 1:numel(names)
+                switch storageTargets(iName)
+                    case "property"
+                        obj.(storageNames(iName)) = values{iName};
+                    case "vectordata"
+                        obj.vectordata.set(storageNames(iName), values{iName});
                 end
             end
 
@@ -413,9 +425,29 @@ classdef (Abstract) DynamicTableBase < handle
 
             isEditable = ~isa(obj.id.data, 'types.untyped.DataStub');
 
-            assert(isEditable, errorID, ... 
+            assert(isEditable, errorID, ...
                 ['Cannot write to on-file Dynamic Tables without enabling data pipes. '...
                 'If this was produced with pynwb, please enable chunking for this table.']);
+        end
+
+        function tf = isColumnStored(obj, storageTarget, storageName)
+        % isColumnStored - True if the storage slot for a column already holds data.
+            arguments
+                obj (1,1) matnwb.neurodata.DynamicTableBase
+                storageTarget (1,1) string
+                storageName (1,1) string
+            end
+
+            switch storageTarget
+                case "property"
+                    tf = ~isempty(obj.(storageName));
+                case "vectordata"
+                    tf = isa(obj.vectordata, 'types.untyped.Set') ...
+                        && obj.vectordata.isKey(char(storageName));
+                otherwise
+                    error('NWB:DynamicTable:UnknownStorageTarget', ...
+                        'Unknown column storage target "%s".', storageTarget)
+            end
         end
     end
 end
