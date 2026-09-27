@@ -15,6 +15,9 @@ end
 properties
     position; %  (Table with columns: (x = single, y = single, z = single)) Stereotaxic or common framework coordinates of the electrode group position.
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["description", "location", "position"];
+end
 
 methods
     function obj = ElectrodeGroup(varargin)

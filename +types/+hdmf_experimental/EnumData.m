@@ -9,6 +9,9 @@ classdef EnumData < types.hdmf_common.VectorData & types.untyped.DatasetClass
 properties
     elements; % REQUIRED (Object reference to VectorData) Reference to the VectorData object that contains the enumerable elements.
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["elements"];
+end
 
 methods
     function obj = EnumData(varargin)

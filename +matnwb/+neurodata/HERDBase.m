@@ -62,8 +62,9 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
         %  external entity identified by entityId.
         %
         %  herd.addRef(__, Attribute=attribute) attaches the reference to a
-        %  neurodata object held by container rather than to container itself,
-        %  for example a column of a DynamicTable.
+        %  property of container: to the neurodata object it holds, for
+        %  example a column of a DynamicTable, or to a plain value, for example
+        %  the unit of a TimeSeries (Attribute="data_unit").
         %
         % Input Arguments:
         %  - file (NwbFile) -
@@ -87,9 +88,12 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
         %    The term as it is used in the file, for example "Mus musculus".
         %
         %  - Attribute (string) -
-        %    Name of a property of container holding the neurodata object the
-        %    reference belongs to. Only properties that are themselves
-        %    neurodata types are supported, such as a column of a table.
+        %    Name of a property of container the reference belongs to. A
+        %    property holding a neurodata type, such as a column of a table,
+        %    is referenced as that object. A property holding a plain value is
+        %    referenced as container together with the schema path of the
+        %    property, stored as relative_path, for example "data/unit" for
+        %    data_unit.
         %
         %  - Field (string) -
         %    Field of a compound data type the reference applies to. Leave
@@ -319,8 +323,8 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
         %
         % Name-Value Arguments:
         %  - RelativePath (string) -
-        %    The relative_path a row must hold. References added by MatNWB
-        %    currently always store an empty relative path.
+        %    The relative_path a row must hold, for example "data/unit"
+        %    for a reference added with Attribute="data_unit".
         %
         %  - Field (string) -
         %    The field a row must hold, as in addRef.
@@ -451,10 +455,14 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
         function [target, relativePath] = resolveTarget(~, container, attribute)
         % resolveTarget - Resolve a container and attribute to the annotated object.
         %
-        % relativePath is currently always "": HDMF records a relative path
-        % for attributes that are not neurodata types, which MatNWB does not
-        % support yet, and the output is kept so a row of the objects table
-        % is built with the same shape HDMF writes.
+        % Follows HDMF's HERD._resolve_object_target:
+        %  - no attribute: the reference is on container, relativePath "".
+        %  - an attribute holding a neurodata type: the reference is on that
+        %    object, relativePath "".
+        %  - an attribute holding a plain value: the reference is on
+        %    container, and relativePath is the schema path of the attribute
+        %    below container, for example "data/unit" for data_unit.
+
             relativePath = "";
             if strlength(attribute) == 0
                 target = container;
@@ -465,17 +473,32 @@ classdef (Abstract) HERDBase < handle & matlab.mixin.CustomDisplay
                     'Attribute "%s" is not a property of %s.', attribute, class(container))
             end
             attributeValue = container.(attribute);
-            if ~isa(attributeValue, 'types.untyped.MetaClass')
-                % HDMF also supports attributes that are not neurodata types by
-                % recording a relative path to them. MatNWB does not resolve
-                % those paths yet.
-                error('NWB:HERD:UnsupportedAttribute', ...
-                    ['Attribute "%s" of %s holds a `%s`, which cannot be ', ...
-                    'referenced yet. Reference a property that is itself a ', ...
-                    'neurodata type, such as a column of a table.'], ...
-                    attribute, class(container), class(attributeValue))
+            if isa(attributeValue, 'types.untyped.MetaClass')
+                target = attributeValue;
+                return
             end
-            target = attributeValue;
+
+            % Generated classes list the schema paths of their plain-value
+            % properties. A property name is its schema path with "/" replaced
+            % by "_", so the path is found by flattening each listed path.
+            schemaRelativePaths = ...
+                matnwb.neurodata.internal.collectConstantPropertiesAcrossHierarchy( ...
+                class(container), 'SchemaRelativePaths');
+            schemaName = io.internal.getSchemaNameForPropertyName( ...
+                io.internal.getSchemaPropertyNameMapping(container), char(attribute));
+            isMatch = strrep(schemaRelativePaths, "/", "_") == string(schemaName);
+            if ~any(isMatch)
+                error('NWB:HERD:UnsupportedAttribute', ...
+                    ['Attribute "%s" of %s holds a `%s` and has no schema path, ', ...
+                    'so it cannot be referenced. Reference a property that holds ', ...
+                    'a neurodata type or a plain value. Links and sets of ', ...
+                    'neurodata types are not supported. If %s was generated by ', ...
+                    'an earlier version of MatNWB, regenerate it to reference ', ...
+                    'plain-value properties.'], ...
+                    attribute, class(container), class(attributeValue), class(container))
+            end
+            target = container;
+            relativePath = schemaRelativePaths(find(isMatch, 1));
         end
 
         function assertContainerInFile(~, file, container)

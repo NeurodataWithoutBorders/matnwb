@@ -14,6 +14,9 @@ properties
     model_number; %  (char) DEPRECATED. The model number (or part/product number) of the device, e.g., PRB_1_4_0480_1, PLX-VP-32-15SE(75)-(260-80)(460-10)-300-(1)CON/32m-V, BERGAMO. Instead of using this field, store the value in DeviceModel.model_number and link to that DeviceModel from this Device.
     serial_number; %  (char) The serial number of the device.
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["description", "manufacturer", "model_name", "model_number", "serial_number"];
+end
 
 methods
     function obj = Device(varargin)

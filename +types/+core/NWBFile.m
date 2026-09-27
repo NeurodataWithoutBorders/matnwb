@@ -70,6 +70,9 @@ end
 properties (Constant, Hidden)
     SchemaPropertyNameMapping = struct('events_', 'events')
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["file_create_date", "general/data_collection", "general/experiment_description", "general/experimenter", "general/institution", "general/intracellular_ephys/filtering", "general/keywords", "general/lab", "general/notes", "general/pharmacology", "general/protocol", "general/related_publications", "general/session_id", "general/slices", "general/source_script", "general/source_script/file_name", "general/stimulus", "general/surgery", "general/virus", "general/was_generated_by", "identifier", "nwb_version", "session_description", "session_start_time", "timestamps_reference_time"];
+end
 
 methods
     function obj = NWBFile(varargin)

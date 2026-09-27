@@ -25,6 +25,9 @@ properties
     whole_cell_capacitance_comp; %  (single) Whole cell capacitance compensation, in farads.
     whole_cell_series_resistance_comp; %  (single) Whole cell series resistance compensation, in ohms.
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["capacitance_fast", "capacitance_fast/unit", "capacitance_slow", "capacitance_slow/unit", "resistance_comp_bandwidth", "resistance_comp_bandwidth/unit", "resistance_comp_correction", "resistance_comp_correction/unit", "resistance_comp_prediction", "resistance_comp_prediction/unit", "whole_cell_capacitance_comp", "whole_cell_capacitance_comp/unit", "whole_cell_series_resistance_comp", "whole_cell_series_resistance_comp/unit"];
+end
 
 methods
     function obj = VoltageClampSeries(varargin)

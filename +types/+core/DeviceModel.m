@@ -14,6 +14,9 @@ properties
     description; %  (char) Description of the device model as free-form text.
     model_number; %  (char) The model number (or part/product number) of the device, e.g., PRB_1_4_0480_1, PLX-VP-32-15SE(75)-(260-80)(460-10)-300-(1)CON/32m-V, BERGAMO.
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["description", "manufacturer", "model_number"];
+end
 
 methods
     function obj = DeviceModel(varargin)

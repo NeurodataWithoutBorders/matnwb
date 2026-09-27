@@ -12,6 +12,9 @@ properties
     peak_over_rms; % REQUIRED (single) Maximum ratio of waveform peak to RMS on any channel in the cluster (provides a basic clustering metric).
     times; % REQUIRED (double) Times of clustered events, in seconds. This may be a link to times field in associated FeatureExtraction module.
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["description", "num", "peak_over_rms", "times"];
+end
 
 methods
     function obj = Clustering(varargin)

@@ -20,6 +20,9 @@ properties
     seal; %  (char) Information about seal used for recording.
     slice; %  (char) Information about slice used for recording.
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["cell_id", "description", "filtering", "initial_access_resistance", "location", "resistance", "seal", "slice"];
+end
 
 methods
     function obj = IntracellularElectrode(varargin)

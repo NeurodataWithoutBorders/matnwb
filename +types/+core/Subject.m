@@ -18,6 +18,9 @@ properties
     subject_id; %  (char) ID of animal/person used/participating in experiment (lab convention).
     weight; %  (char) Weight at time of experiment, at time of surgery and at other important times.
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["age", "age/reference", "date_of_birth", "description", "genotype", "sex", "species", "strain", "subject_id", "weight"];
+end
 
 methods
     function obj = Subject(varargin)

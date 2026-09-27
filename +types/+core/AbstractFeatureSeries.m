@@ -13,6 +13,9 @@ end
 properties
     feature_units; %  (char) Units of each feature.
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["feature_units", "features"];
+end
 
 methods
     function obj = AbstractFeatureSeries(varargin)

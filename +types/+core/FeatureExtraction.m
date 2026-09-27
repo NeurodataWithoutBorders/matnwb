@@ -12,6 +12,9 @@ properties
     features; % REQUIRED (single) Multi-dimensional array of features extracted from each event.
     times; % REQUIRED (double) Times of events that features correspond to (can be a link).
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["description", "features", "times"];
+end
 
 methods
     function obj = FeatureExtraction(varargin)

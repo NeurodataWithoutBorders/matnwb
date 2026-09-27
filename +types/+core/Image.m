@@ -9,6 +9,9 @@ classdef Image < types.core.BaseImage & types.untyped.DatasetClass
 properties
     resolution; %  (single) Pixel resolution of the image, in pixels per centimeter.
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["resolution"];
+end
 
 methods
     function obj = Image(varargin)

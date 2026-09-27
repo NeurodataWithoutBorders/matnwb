@@ -366,8 +366,9 @@ classdef NwbFile < types.core.NWBFile
         %  getExternalResources) if it does not have one yet.
         %
         %  nwb.addRef(__, Attribute=attribute) attaches the reference to a
-        %  neurodata object held by container rather than to container
-        %  itself, for example a column of a DynamicTable.
+        %  property of container: to the neurodata object it holds, for
+        %  example a column of a DynamicTable, or to a plain value, for
+        %  example the unit of a TimeSeries (Attribute="data_unit").
         %
         % Input Arguments:
         %  - container -
@@ -391,10 +392,12 @@ classdef NwbFile < types.core.NWBFile
         %    "Mus musculus".
         %
         %  - Attribute (string) -
-        %    Name of a property of container holding the neurodata object
-        %    the reference belongs to. Only properties that are
-        %    themselves neurodata types are supported, such as a column
-        %    of a table.
+        %    Name of a property of container the reference belongs to.
+        %    A property holding a neurodata type, such as a column of a
+        %    table, is referenced as that object. A property holding a
+        %    plain value is referenced as container together with the
+        %    schema path of the property, stored as relative_path, for
+        %    example "data/unit" for data_unit.
         %
         %  - Field (string) -
         %    Field of a compound data type the reference applies to.

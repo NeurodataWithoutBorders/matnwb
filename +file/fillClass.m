@@ -186,6 +186,22 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
             {fullPropertyDefinition, schemaColumnPropertyBlock}, newline);
     end
 
+    % Emit the schema path of each property that holds a plain value rather
+    % than a neurodata type. HERD records this path as relative_path when a
+    % reference targets such a property, for example "data/unit" for
+    % TimeSeries.data_unit. A generated property name joins the names of the
+    % schema nodes leading to it with "_", and "_" also occurs inside schema
+    % names (data_collection, for example), so the path cannot be recovered
+    % from the property name at runtime. The generator is the only place
+    % that knows it, and it is stored on the class for HERDBase to read.
+    schemaRelativePaths = collectSchemaRelativePaths(nonInherited, class);
+    if ~isempty(schemaRelativePaths)
+        schemaRelativePathBlock = file.fillPrivateConstantProperty( ...
+            'SchemaRelativePaths', schemaRelativePaths);
+        fullPropertyDefinition = strjoin(...
+            {fullPropertyDefinition, schemaRelativePathBlock}, newline);
+    end
+
     constructorBody = file.fillConstructor(...
         name,...
         superclassNames{1},...
@@ -291,6 +307,43 @@ function columnNames = collectSchemaDefinedTableColumns( ...
         if file.internal.isSchemaDefinedTableColumn(propertyInfo, namespace)
             columnNames(end+1) = string(propertyName); %#ok<AGROW>
         end
+    end
+end
+
+function relativePaths = collectSchemaRelativePaths(propertyNames, classInfo)
+% collectSchemaRelativePaths - Schema paths of properties that hold plain values.
+%
+% A path joins the schema names of the nodes leading to the property, for
+% example "data/unit" for TimeSeries.data_unit. This is the path HDMF writes
+% as relative_path in a HERD objects table. Properties holding a neurodata
+% type, a link or a set of typed objects are left out: HERD references
+% those objects directly, with an empty relative path. So are properties
+% nested in a typed node, such as Units.spike_times_resolution, whose
+% nearest neurodata type is that node rather than this class. The data of a
+% dataset type is the object itself rather than a value stored on it, so it
+% has no path either.
+
+    if isa(classInfo, 'file.Dataset')
+        propertyNames = propertyNames(~strcmp(propertyNames, 'data'));
+    end
+
+    relativePaths = string.empty(1, 0);
+    for iProperty = 1:length(propertyNames)
+        propertyName = propertyNames{iProperty};
+        pathNodes = file.internal.traverseRaw(propertyName, classInfo);
+        if isempty(pathNodes)
+            continue
+        end
+        leafNode = pathNodes{end};
+        isPlainValue = isa(leafNode, 'file.Attribute') ...
+            || (isa(leafNode, 'file.Dataset') && isempty(leafNode.type));
+        isNestedInType = any(cellfun(@(node) ~isa(node, 'file.Attribute') ...
+            && ~isempty(node.type), pathNodes(1:end-1)));
+        if ~isPlainValue || isNestedInType
+            continue
+        end
+        nodeNames = cellfun(@(node) node.name, pathNodes, 'UniformOutput', false);
+        relativePaths(end+1) = string(strjoin(nodeNames, '/')); %#ok<AGROW>
     end
 end
 

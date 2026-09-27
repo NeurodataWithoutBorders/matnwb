@@ -11,6 +11,9 @@ properties
     bridge_balance; %  (single) Bridge balance, in ohms.
     capacitance_compensation; %  (single) Capacitance compensation, in farads.
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["bias_current", "bridge_balance", "capacitance_compensation"];
+end
 
 methods
     function obj = CurrentClampSeries(varargin)

@@ -9,6 +9,9 @@ classdef SpatialSeries < types.core.TimeSeries & types.untyped.GroupClass
 properties
     reference_frame; %  (char) Description defining what exactly 'straight-ahead' means.
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["reference_frame"];
+end
 
 methods
     function obj = SpatialSeries(varargin)

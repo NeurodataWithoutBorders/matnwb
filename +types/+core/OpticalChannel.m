@@ -10,6 +10,9 @@ properties
     description; % REQUIRED (char) Description or other notes about the channel.
     emission_lambda; % REQUIRED (single) Emission wavelength for channel, in nm.
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["description", "emission_lambda"];
+end
 
 methods
     function obj = OpticalChannel(varargin)

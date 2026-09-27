@@ -11,6 +11,9 @@ properties
     field_of_view; %  (single) Width, height and depth of image, or imaged area, in meters.
     orientation; %  (char) Description of image relative to some reference frame (e.g., which way is up). Must also specify frame of reference.
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["distance", "field_of_view", "orientation"];
+end
 
 methods
     function obj = OpticalSeries(varargin)

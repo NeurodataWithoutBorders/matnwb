@@ -9,6 +9,9 @@ classdef ScratchData < types.core.NWBData & types.untyped.DatasetClass
 properties
     notes; % REQUIRED (char) Any notes the user has about the dataset being stored
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["notes"];
+end
 
 methods
     function obj = ScratchData(varargin)
