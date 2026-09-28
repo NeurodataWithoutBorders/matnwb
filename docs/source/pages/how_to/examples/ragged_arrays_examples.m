@@ -22,58 +22,61 @@ function ragged_arrays_examples()
     assert(isa(units.electrodes, 'types.hdmf_common.DynamicTableRegion'))
 
     % ---- Doubly-ragged, single electrode per unit ----
-    % Each unit's matrix is [numWaveforms x numSamples]; with one electrode,
-    % numWaveforms is the number of spikes.
+    % Each unit's matrix is [numSamples x numWaveforms], one waveform per
+    % column; with one electrode, numWaveforms is the number of spikes.
     numSamples = 40;
-    unit1 = rand(3, numSamples);   % 3 spikes
-    unit2 = rand(4, numSamples);   % 4 spikes
+    unit1 = rand(numSamples, 3);   % 3 spikes
+    unit2 = rand(numSamples, 4);   % 4 spikes
 
     % snippet: doubly-single-electrode
     units = types.core.Units('colnames', {}, 'description', 'units');
-    units.addDoublyRaggedArray('waveforms', {unit1, unit2}, ...
-        'description', 'spike waveforms');
+    units.addRaggedArray('waveforms', {unit1, unit2}, ...
+        'description', 'spike waveforms', 'Depth', 2);
     % end snippet
+    assert(isequal(units.waveforms.data, [unit1, unit2]))
     assert(isequal(units.waveforms_index.data(:).', uint64(1:7)))
     assert(isequal(units.waveforms_index_index.data(:).', uint64([3 7])))
 
     % ---- Doubly-ragged, multiple channels per spike ----
-    % Each spike's matrix is [numWaveforms x numSamples]; with several
+    % Each spike's matrix is [numSamples x numWaveforms]; with several
     % electrodes, numWaveforms is the number of electrodes.
     numElectrodes = 3;
-    m1 = { rand(numElectrodes, numSamples), rand(numElectrodes, numSamples) };
-    m2 = { rand(numElectrodes, numSamples), rand(numElectrodes, numSamples), rand(numElectrodes, numSamples) };
+    m1 = { rand(numSamples, numElectrodes), rand(numSamples, numElectrodes) };
+    m2 = { rand(numSamples, numElectrodes), rand(numSamples, numElectrodes), rand(numSamples, numElectrodes) };
 
     % snippet: doubly-multi-channel
     units = types.core.Units('colnames', {}, 'description', 'units');
-    units.addDoublyRaggedArray('waveforms', {m1, m2}, ...
-        'description', 'multi-channel spike waveforms');
+    units.addRaggedArray('waveforms', {m1, m2}, ...
+        'description', 'multi-channel spike waveforms', 'Depth', 2);
     units.addRaggedArray('electrodes', {[0 1 2], [0 1 2]}, 'table', electrodesTable);
     % end snippet
     assert(isequal(size(units.waveforms.data), [numSamples, 15]))
+    assert(isequal(units.waveforms.data(:, 4:6), m1{2}))
     assert(isequal(units.waveforms_index.data(:).', uint64([3 6 9 12 15])))
     assert(isequal(units.waveforms_index_index.data(:).', uint64([2 5])))
 
     % ---- Doubly-ragged, multiple channels per spike, array shortcut ----
     % When every spike of a unit was recorded on the same electrodes, the
-    % unit's waveforms fit in one [numSpikes x numElectrodes x numSamples]
-    % array, the input PyNWB's Units.add_unit takes.
-    a1 = rand(2, numElectrodes, numSamples);   % 2 spikes
-    a2 = rand(3, numElectrodes, numSamples);   % 3 spikes
+    % unit's waveforms fit in one [numSamples x numElectrodes x numSpikes]
+    % array: the (numSpikes, numElectrodes, numSamples) array PyNWB's
+    % Units.add_unit takes, with the dimensions reversed.
+    a1 = rand(numSamples, numElectrodes, 2);   % 2 spikes
+    a2 = rand(numSamples, numElectrodes, 3);   % 3 spikes
 
     % snippet: doubly-multi-channel-array
     units = types.core.Units('colnames', {}, 'description', 'units');
-    units.addDoublyRaggedArray('waveforms', {a1, a2}, ...
-        'description', 'multi-channel spike waveforms');
+    units.addRaggedArray('waveforms', {a1, a2}, ...
+        'description', 'multi-channel spike waveforms', 'Depth', 2);
     % end snippet
     assert(isequal(size(units.waveforms.data), [numSamples, 15]))
     assert(isequal(units.waveforms_index.data(:).', uint64([3 6 9 12 15])))
     assert(isequal(units.waveforms_index_index.data(:).', uint64([2 5])))
     % Spike 2 of unit 1 is waveform columns 4:6; electrode 3 is the last of them.
-    assert(isequal(units.waveforms.data(:, 6), squeeze(a1(2, 3, :))))
+    assert(isequal(units.waveforms.data(:, 6), a1(:, 3, 2)))
 
     % snippet: helper-functions
     [waveforms, waveformsIndex, waveformsIndexIndex] = ...
-        util.create_doubly_indexed_column({unit1, unit2}, 'spike waveforms');
+        util.create_indexed_column({unit1, unit2}, 'spike waveforms', 'Depth', 2);
 
     units = types.core.Units( ...
         'colnames', {'waveforms'}, ...
