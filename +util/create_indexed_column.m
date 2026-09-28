@@ -15,10 +15,12 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %       DATA_VECTOR.data is [elementDims x totalElements]. On disk the ragged
 %       axis then comes first, as the schema requires.
 %     - [] for a row with no elements.
-%   All array rows must share elementDims, which is taken from the first row
-%   that is not a vector. A row holding a single element may be given with
-%   its trailing dimension of 1 omitted (a column vector [k x 1] when elements
-%   are k-sample vectors, a [k x m] matrix when elements are [k x m]).
+%   All array rows must share elementDims. Trailing dimensions of 1 may be
+%   omitted, as MATLAB omits them from size: the number of element
+%   dimensions is the largest any row shows, and rows with fewer dimensions
+%   are padded with ones. A row holding a single element is thus a column
+%   vector [k x 1] when elements are k-sample vectors, or a [k x m] matrix
+%   when elements are [k x m].
 %   EXAMPLE: [data_vector, data_index] = util.create_indexed_column({[1,2,3], [1,2,3,4]})
 %     data_vector.data is [1;2;3;1;2;3;4] and data_index.data is [3;7].
 %   EXAMPLE: [data_vector, data_index] = util.create_indexed_column({rand(4,2), rand(4,3)})
@@ -50,9 +52,14 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %       [num_samples x num_electrodes x num_spike_events] per unit, which is
 %       the (num_spikes, num_electrodes, num_samples) array PyNWB's
 %       Units.add_unit takes with its dimensions reversed, as for any other
-%       MatNWB dataset.
+%       MatNWB dataset. A unit with a single spike event is then
+%       [num_samples x num_electrodes], its trailing dimension of 1 omitted.
 %     - a numeric matrix [k x nSubGroups] (for n = 2): every sub-group holds a
 %       single k-sample element, as for spike waveforms on one electrode.
+%       This shortcut is used only while no numeric row of DATA has more
+%       than n dimensions. Once a row shows the full form above, a [k x m]
+%       row is read as that form with its trailing dimension of 1 omitted:
+%       one sub-group of m elements. The cell form is unambiguous either way.
 %     - [] or {} for a row with no sub-groups, or [elementDims x 0 x nSubGroups]
 %       for nSubGroups sub-groups that hold no elements.
 %   EXAMPLE (waveforms of 2 units with 3 and 4 spikes on one electrode):
@@ -117,15 +124,15 @@ function [flatData, counts] = flattenRows(rows, depth)
     % count the entries of every index level. COUNTS{k} lists, for each entry
     % of level k, how many level k-1 entries it holds (level 0 entries are the
     % elements); COUNTS{depth} has one entry per row.
-    elementDims = findElementDims(rows, depth);
+    [elementDims, useShortcut] = findLayout(rows, depth);
 
     numRows = numel(rows);
     chunks = cell(1, numRows);
     rowCounts = zeros(numRows, 1);
     rowInnerCounts = cell(1, numRows);
     for iRow = 1:numRows
-        [chunks{iRow}, rowCounts(iRow), rowInnerCounts{iRow}] = ...
-            flattenItem(rows{iRow}, depth, elementDims, sprintf('DATA{%d}', iRow));
+        [chunks{iRow}, rowCounts(iRow), rowInnerCounts{iRow}] = flattenItem( ...
+            rows{iRow}, depth, elementDims, useShortcut, sprintf('DATA{%d}', iRow));
     end
 
     flatData = concatenateChunks(chunks, elementDims);
@@ -137,7 +144,7 @@ function [flatData, counts] = flattenRows(rows, depth)
     end
 end
 
-function [chunk, ownCount, innerCounts] = flattenItem(item, level, elementDims, label)
+function [chunk, ownCount, innerCounts] = flattenItem(item, level, elementDims, useShortcut, label)
     % CHUNK holds the item's elements as [elementDims x nElements] (a column
     % in scalar mode). OWNCOUNT is the number of level-(LEVEL-1) entries in
     % the item, i.e. its elements when LEVEL is 1. INNERCOUNTS{k}, k < LEVEL,
@@ -161,7 +168,7 @@ function [chunk, ownCount, innerCounts] = flattenItem(item, level, elementDims, 
         entryInnerCounts = cell(1, numEntries);
         for iEntry = 1:numEntries
             [chunks{iEntry}, entryCounts(iEntry), entryInnerCounts{iEntry}] = flattenItem( ...
-                item{iEntry}, level - 1, elementDims, sprintf('%s{%d}', label, iEntry));
+                item{iEntry}, level - 1, elementDims, useShortcut, sprintf('%s{%d}', label, iEntry));
         end
         chunk = concatenateChunks(chunks, elementDims);
         ownCount = numEntries;
@@ -186,82 +193,104 @@ function [chunk, ownCount, innerCounts] = flattenItem(item, level, elementDims, 
         return
     end
 
-    [itemElementDims, levelSizes] = splitDims(item, level, label);
-    if isempty(item)
-        % An empty array still declares its sub-groups: [k x 0 x n] is n
-        % sub-groups with no elements. There is no element shape to check.
-        chunk = [];
-    else
-        if ~isequal(itemElementDims, elementDims) && isequal(size(item), elementDims)
-            % A single element, given without the trailing dimensions of 1 that
-            % MATLAB drops.
-            itemElementDims = elementDims;
-            levelSizes = ones(1, level);
+    [itemElementDims, levelSizes] = splitDims(item, level, numel(elementDims), useShortcut);
+    if ~isequal(itemElementDims, elementDims)
+        if isempty(item)
+            % [] has no entries at this level. An empty array that does carry
+            % the element shape, such as [k x 0 x n], declares n sub-groups
+            % with no elements and is counted below.
+            chunk = [];
+            ownCount = 0;
+            return
         end
-        if ~isequal(itemElementDims, elementDims)
-            error("NWB:CreateIndexedColumn:InconsistentElementShape", ...
-                "All elements must have the same shape. Expected elements of shape [%s], " + ...
-                "but %s has size [%s]. Give a numeric row as [elementShape x ...] with the " + ...
-                "ragged axes last.", ...
-                join(string(elementDims), " "), label, join(string(size(item)), " "));
-        end
-        % Merging the trailing ragged dimensions lists the entries of the first
-        % sub-group first, which is the order the index levels describe.
-        chunk = reshape(item, [elementDims, prod(levelSizes)]);
+        error("NWB:CreateIndexedColumn:InconsistentElementShape", ...
+            "All elements must have the same shape. Expected elements of shape [%s], " + ...
+            "but %s has size [%s]. Give a numeric row as [elementShape x ...] with the " + ...
+            "ragged axes last.", ...
+            join(string(elementDims), " "), label, join(string(size(item)), " "));
     end
+
+    % Merging the trailing ragged dimensions lists the entries of the first
+    % sub-group first, which is the order the index levels describe.
+    chunk = reshape(item, [elementDims, prod(levelSizes)]);
     ownCount = levelSizes(level);
     for iLevel = 1:level - 1
         innerCounts{iLevel} = repmat(levelSizes(iLevel), prod(levelSizes(iLevel + 1:level)), 1);
     end
 end
 
-function [elementDims, levelSizes] = splitDims(item, level, label)
-    % Split the size of a numeric item into the element shape and the sizes of
-    % its LEVEL ragged dimensions, innermost first. An item with exactly LEVEL
-    % dimensions holds one element per innermost entry.
+function [elementDims, levelSizes] = splitDims(item, level, numElementDims, useShortcut)
+    % Split the size of a numeric item into its element shape and the sizes of
+    % its LEVEL ragged dimensions, innermost first. MATLAB drops trailing
+    % dimensions of 1 from size, so the size is first padded with ones to the
+    % length the layout expects. An item with more dimensions than that keeps
+    % them in ELEMENTDIMS, where the caller's shape check rejects it.
     dims = size(item);
-    numDims = numel(dims);
-    if numDims >= level + 1
-        elementDims = dims(1:numDims - level);
-        levelSizes = dims(numDims - level + 1:end);
-    elseif numDims == level
-        elementDims = dims(1);
-        levelSizes = [1, dims(2:end)];
+    if useShortcut && level >= 2
+        % [k x s2 x ... x sLEVEL]: one element per innermost entry.
+        dims(end + 1:level) = 1;
+        elementDims = dims(1:end - level + 1);
+        levelSizes = [1, dims(end - level + 2:end)];
     else
-        error("NWB:CreateIndexedColumn:InvalidRow", ...
-            "%s has %d dimensions, but a numeric row at depth %d needs at least %d.", ...
-            label, numDims, level, level);
+        dims(end + 1:numElementDims + level) = 1;
+        elementDims = dims(1:end - level);
+        levelSizes = dims(end - level + 1:end);
     end
 end
 
-function elementDims = findElementDims(rows, depth)
-    % The element shape, from the first numeric array in ROWS. Empty when DEPTH
-    % is 1 and every row is a vector: the elements are then scalars.
-    elementDims = [];
+function [elementDims, useShortcut] = findLayout(rows, depth)
+    % Decide how the numeric items of ROWS split into element shape and ragged
+    % sizes. ELEMENTDIMS is [] when DEPTH is 1 and every row is a vector (the
+    % elements are scalars) or when no row holds elements. As MATLAB drops
+    % trailing dimensions of 1 from size, the number of element dimensions is
+    % the largest any item shows; splitDims pads shorter items to it.
+    % USESHORTCUT is true when the column uses the [k x nSubGroups] form,
+    % which is only unambiguous while no item at level 2 or above shows the
+    % full form by having more dimensions than its level.
+    scan = struct('maxElementDims', -Inf, 'shortcutAllowed', true, ...
+        'firstItem', [], 'firstLevel', 0);
     for iRow = 1:numel(rows)
-        elementDims = findElementDimsInItem( ...
-            rows{iRow}, depth, depth == 1, sprintf('DATA{%d}', iRow));
-        if ~isempty(elementDims)
-            return
-        end
+        scan = scanItem(rows{iRow}, depth, depth == 1, scan);
     end
-end
 
-function elementDims = findElementDimsInItem(item, level, vectorsAreScalars, label)
     elementDims = [];
-    if isempty(item)
+    useShortcut = false;
+    if isempty(scan.firstItem)
         return
     end
+    useShortcut = depth >= 2 && scan.shortcutAllowed && scan.maxElementDims <= 1;
+    if useShortcut
+        numElementDims = 1;
+    else
+        numElementDims = scan.maxElementDims;
+    end
+    elementDims = splitDims(scan.firstItem, scan.firstLevel, numElementDims, useShortcut);
+end
+
+function scan = scanItem(item, level, vectorsAreScalars, scan)
     if iscell(item)
-        for iEntry = 1:numel(item)
-            elementDims = findElementDimsInItem( ...
-                item{iEntry}, level - 1, false, sprintf('%s{%d}', label, iEntry));
-            if ~isempty(elementDims)
-                return
+        % A cell at level 1 is rejected by flattenItem.
+        if level >= 2
+            for iEntry = 1:numel(item)
+                scan = scanItem(item{iEntry}, level - 1, false, scan);
             end
         end
-    elseif (isnumeric(item) || islogical(item)) && ~(vectorsAreScalars && isvector(item))
-        elementDims = splitDims(item, level, label);
+        return
+    end
+    if ~(isnumeric(item) || islogical(item)) || (vectorsAreScalars && isvector(item))
+        return
+    end
+
+    numDims = ndims(item);
+    scan.maxElementDims = max(scan.maxElementDims, numDims - level);
+    if level >= 2 && numDims > level
+        scan.shortcutAllowed = false;
+    end
+    % An empty array such as [k x 0 x n] still shows the layout, but only a
+    % non-empty item can supply the element shape.
+    if isempty(scan.firstItem) && ~isempty(item)
+        scan.firstItem = item;
+        scan.firstLevel = level;
     end
 end
 
