@@ -73,6 +73,24 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(index.data, uint64([2; 3]));
         end
 
+        function testSingleElementRowInAnyOrder(testCase)
+            % Elements [4 x 3]: the single-element row [4 x 3] is read the same
+            % whether or not a fuller row precedes it.
+            oneElement = reshape(1:12, 4, 3);
+            twoElements = 100 + reshape(1:24, 4, 3, 2);
+
+            [vector, index] = util.create_indexed_column({oneElement, twoElements});
+
+            testCase.verifyEqual(size(vector.data), [4, 3, 3]);
+            testCase.verifyEqual(vector.data(:, :, 1), oneElement);
+            testCase.verifyEqual(index.data, uint64([1; 3]));
+
+            [vector, index] = util.create_indexed_column({twoElements, oneElement});
+
+            testCase.verifyEqual(vector.data(:, :, 3), oneElement);
+            testCase.verifyEqual(index.data, uint64([2; 3]));
+        end
+
         function testInconsistentElementShapeErrors(testCase)
             testCase.verifyError( ...
                 @() util.create_indexed_column({ones(4, 2), ones(5, 2)}), ...
@@ -217,6 +235,87 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(indexIndex.data, uint64([2; 3]));
         end
 
+        function testDepth2SingleSpikeRowAmongNDRows(testCase)
+            % [num_samples x num_electrodes x num_spike_events] rows: a unit
+            % with one spike event is [num_samples x num_electrodes], which is
+            % one sub-group of num_electrodes elements, in either row order.
+            numSamples = 4;
+            numElectrodes = 3;
+            oneSpike = reshape(1:(numSamples*numElectrodes), numSamples, numElectrodes);
+            threeSpikes = 100 + reshape(1:(numSamples*numElectrodes*3), numSamples, numElectrodes, 3);
+
+            [vector, index, indexIndex] = ...
+                util.create_indexed_column({oneSpike, threeSpikes}, 'Depth', 2);
+
+            testCase.verifyEqual(size(vector.data), [numSamples, 12]);
+            testCase.verifyEqual(vector.data(:, 1:3), oneSpike);
+            testCase.verifyEqual(index.data, uint64([3; 6; 9; 12]));
+            testCase.verifyEqual(indexIndex.data, uint64([1; 4]));
+
+            [vector, index, indexIndex] = ...
+                util.create_indexed_column({threeSpikes, oneSpike}, 'Depth', 2);
+
+            testCase.verifyEqual(vector.data(:, 10:12), oneSpike);
+            testCase.verifyEqual(index.data, uint64([3; 6; 9; 12]));
+            testCase.verifyEqual(indexIndex.data, uint64([3; 4]));
+        end
+
+        function testDepth2SingleSubGroupRowOfNDElements(testCase)
+            % Elements [4 x 2]: a row with one sub-group of 5 elements is
+            % [4 x 2 x 5], its trailing dimension of 1 omitted, in either order.
+            threeSubGroups = reshape(1:(4*2*5*3), 4, 2, 5, 3);
+            oneSubGroup = 1000 + reshape(1:(4*2*5), 4, 2, 5);
+
+            [vector, index, indexIndex] = ...
+                util.create_indexed_column({threeSubGroups, oneSubGroup}, 'Depth', 2);
+
+            testCase.verifyEqual(size(vector.data), [4, 2, 20]);
+            testCase.verifyEqual(vector.data(:, :, 16:20), oneSubGroup);
+            testCase.verifyEqual(index.data, uint64([5; 10; 15; 20]));
+            testCase.verifyEqual(indexIndex.data, uint64([3; 4]));
+
+            [vector, index, indexIndex] = ...
+                util.create_indexed_column({oneSubGroup, threeSubGroups}, 'Depth', 2);
+
+            testCase.verifyEqual(vector.data(:, :, 1:5), oneSubGroup);
+            testCase.verifyEqual(index.data, uint64([5; 10; 15; 20]));
+            testCase.verifyEqual(indexIndex.data, uint64([1; 4]));
+        end
+
+        function testDepth2ShortcutKeptBesideCellRows(testCase)
+            % A cell row does not switch the column to the full form: a
+            % [k x m] row beside it still means m sub-groups of one element.
+            numSamples = 4;
+            unit1 = {ones(numSamples, 1), 2 * ones(numSamples, 1)};
+            unit2 = 3 * ones(numSamples, 3);
+
+            [vector, index, indexIndex] = ...
+                util.create_indexed_column({unit1, unit2}, 'Depth', 2);
+
+            testCase.verifyEqual(size(vector.data), [numSamples, 5]);
+            testCase.verifyEqual(index.data, uint64((1:5)'));
+            testCase.verifyEqual(indexIndex.data, uint64([2; 5]));
+        end
+
+        function testDepth3OmittedTrailingDimensions(testCase)
+            % Elements [4], 2 per innermost group: [4 x 2 x 3] beside a
+            % [4 x 2 x 3 x 4] row is 3 innermost groups in one middle group,
+            % and [4 x 2] is one innermost group in one middle group.
+            fullRow = reshape(1:(4*2*3*4), 4, 2, 3, 4);
+            oneMiddleGroup = 1000 + reshape(1:(4*2*3), 4, 2, 3);
+            oneInnermostGroup = 2000 + reshape(1:(4*2), 4, 2);
+
+            [vector, index1, index2, index3] = util.create_indexed_column( ...
+                {fullRow, oneMiddleGroup, oneInnermostGroup}, 'Depth', 3);
+
+            testCase.verifyEqual(size(vector.data), [4, 32]);
+            testCase.verifyEqual(vector.data(:, 25:30), reshape(oneMiddleGroup, 4, 6));
+            testCase.verifyEqual(vector.data(:, 31:32), oneInnermostGroup);
+            testCase.verifyEqual(index1.data, uint64((2:2:32)'));
+            testCase.verifyEqual(index2.data, uint64([3; 6; 9; 12; 15; 16]));
+            testCase.verifyEqual(index3.data, uint64([4; 5; 6]));
+        end
+
         function testStringDescriptionIsStoredAsChar(testCase)
             vector = util.create_indexed_column({[1 2]}, "spike times");
 
@@ -225,13 +324,13 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
         end
 
         function testShapeErrorNamesTheRow(testCase)
-            % Row 1 has too few dimensions for depth 3; the error names it.
+            % Row 2 has 5-sample elements among 4-sample ones; the error names it.
             try
-                util.create_indexed_column({ones(4, 2), ones(4, 2, 2, 2)}, 'Depth', 3);
+                util.create_indexed_column({ones(4, 2, 2), ones(5, 2)}, 'Depth', 2);
                 testCase.verifyFail('Expected an error.');
             catch err
-                testCase.verifyEqual(err.identifier, 'NWB:CreateIndexedColumn:InvalidRow');
-                testCase.verifySubstring(err.message, 'DATA{1}');
+                testCase.verifyEqual(err.identifier, 'NWB:CreateIndexedColumn:InconsistentElementShape');
+                testCase.verifySubstring(err.message, 'DATA{2}');
             end
         end
 
