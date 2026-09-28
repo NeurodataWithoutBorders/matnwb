@@ -202,6 +202,39 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(indexIndex.data, uint64([2; 2; 5]));
         end
 
+        function testDepth2EmptySubGroupsInArrayRow(testCase)
+            % [num_samples x 0 x 2] is two sub-groups with no elements: the
+            % inner index repeats and the outer index still counts them.
+            numSamples = 4;
+            row1 = zeros(numSamples, 0, 2);
+            row2 = {ones(numSamples, 3)};
+
+            [vector, index, indexIndex] = ...
+                util.create_indexed_column({row1, row2}, 'Depth', 2);
+
+            testCase.verifyEqual(size(vector.data), [numSamples, 3]);
+            testCase.verifyEqual(index.data, uint64([0; 0; 3]));
+            testCase.verifyEqual(indexIndex.data, uint64([2; 3]));
+        end
+
+        function testStringDescriptionIsStoredAsChar(testCase)
+            vector = util.create_indexed_column({[1 2]}, "spike times");
+
+            testCase.verifyClass(vector.description, 'char');
+            testCase.verifyEqual(vector.description, 'spike times');
+        end
+
+        function testShapeErrorNamesTheRow(testCase)
+            % Row 1 has too few dimensions for depth 3; the error names it.
+            try
+                util.create_indexed_column({ones(4, 2), ones(4, 2, 2, 2)}, 'Depth', 3);
+                testCase.verifyFail('Expected an error.');
+            catch err
+                testCase.verifyEqual(err.identifier, 'NWB:CreateIndexedColumn:InvalidRow');
+                testCase.verifySubstring(err.message, 'DATA{1}');
+            end
+        end
+
         function testDepth2Errors(testCase)
             testCase.verifyError( ...
                 @() util.create_indexed_column({ones(3, 4), ones(2, 5)}, 'Depth', 2), ...
