@@ -53,7 +53,8 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %       MatNWB dataset.
 %     - a numeric matrix [k x nSubGroups] (for n = 2): every sub-group holds a
 %       single k-sample element, as for spike waveforms on one electrode.
-%     - [] or {} for a row with no sub-groups.
+%     - [] or {} for a row with no sub-groups, or [elementDims x 0 x nSubGroups]
+%       for nSubGroups sub-groups that hold no elements.
 %   EXAMPLE (waveforms of 2 units with 3 and 4 spikes on one electrode):
 %     unit1 = rand(40, 3); unit2 = rand(40, 4);   % [num_samples x num_spikes]
 %     [wf, wfIndex, wfIndexIndex] = util.create_indexed_column({unit1, unit2}, 'spike waveforms', 'Depth', 2);
@@ -78,6 +79,8 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
     end
     if isempty(description)
         description = 'no description';
+    else
+        description = char(description);
     end
 
     [flatData, counts] = flattenRows(data, depth);
@@ -140,7 +143,7 @@ function [chunk, ownCount, innerCounts] = flattenItem(item, level, elementDims, 
     % the item, i.e. its elements when LEVEL is 1. INNERCOUNTS{k}, k < LEVEL,
     % lists the counts of the level-k entries inside the item.
     innerCounts = repmat({zeros(0, 1)}, 1, level - 1);
-    if isempty(item)
+    if isempty(item) && (iscell(item) || isempty(elementDims))
         chunk = [];
         ownCount = 0;
         return
@@ -184,23 +187,28 @@ function [chunk, ownCount, innerCounts] = flattenItem(item, level, elementDims, 
     end
 
     [itemElementDims, levelSizes] = splitDims(item, level, label);
-    if ~isequal(itemElementDims, elementDims) && isequal(size(item), elementDims)
-        % A single element, given without the trailing dimensions of 1 that
-        % MATLAB drops.
-        itemElementDims = elementDims;
-        levelSizes = ones(1, level);
+    if isempty(item)
+        % An empty array still declares its sub-groups: [k x 0 x n] is n
+        % sub-groups with no elements. There is no element shape to check.
+        chunk = [];
+    else
+        if ~isequal(itemElementDims, elementDims) && isequal(size(item), elementDims)
+            % A single element, given without the trailing dimensions of 1 that
+            % MATLAB drops.
+            itemElementDims = elementDims;
+            levelSizes = ones(1, level);
+        end
+        if ~isequal(itemElementDims, elementDims)
+            error("NWB:CreateIndexedColumn:InconsistentElementShape", ...
+                "All elements must have the same shape. Expected elements of shape [%s], " + ...
+                "but %s has size [%s]. Give a numeric row as [elementShape x ...] with the " + ...
+                "ragged axes last.", ...
+                join(string(elementDims), " "), label, join(string(size(item)), " "));
+        end
+        % Merging the trailing ragged dimensions lists the entries of the first
+        % sub-group first, which is the order the index levels describe.
+        chunk = reshape(item, [elementDims, prod(levelSizes)]);
     end
-    if ~isequal(itemElementDims, elementDims)
-        error("NWB:CreateIndexedColumn:InconsistentElementShape", ...
-            "All elements must have the same shape. Expected elements of shape [%s], " + ...
-            "but %s has size [%s]. Give a numeric row as [elementShape x ...] with the " + ...
-            "ragged axes last.", ...
-            join(string(elementDims), " "), label, join(string(size(item)), " "));
-    end
-
-    % Merging the trailing ragged dimensions lists the entries of the first
-    % sub-group first, which is the order the index levels describe.
-    chunk = reshape(item, [elementDims, prod(levelSizes)]);
     ownCount = levelSizes(level);
     for iLevel = 1:level - 1
         innerCounts{iLevel} = repmat(levelSizes(iLevel), prod(levelSizes(iLevel + 1:level)), 1);
@@ -231,27 +239,29 @@ function elementDims = findElementDims(rows, depth)
     % is 1 and every row is a vector: the elements are then scalars.
     elementDims = [];
     for iRow = 1:numel(rows)
-        elementDims = findElementDimsInItem(rows{iRow}, depth, depth == 1);
+        elementDims = findElementDimsInItem( ...
+            rows{iRow}, depth, depth == 1, sprintf('DATA{%d}', iRow));
         if ~isempty(elementDims)
             return
         end
     end
 end
 
-function elementDims = findElementDimsInItem(item, level, vectorsAreScalars)
+function elementDims = findElementDimsInItem(item, level, vectorsAreScalars, label)
     elementDims = [];
     if isempty(item)
         return
     end
     if iscell(item)
         for iEntry = 1:numel(item)
-            elementDims = findElementDimsInItem(item{iEntry}, level - 1, false);
+            elementDims = findElementDimsInItem( ...
+                item{iEntry}, level - 1, false, sprintf('%s{%d}', label, iEntry));
             if ~isempty(elementDims)
                 return
             end
         end
     elseif (isnumeric(item) || islogical(item)) && ~(vectorsAreScalars && isvector(item))
-        elementDims = splitDims(item, level, 'DATA');
+        elementDims = splitDims(item, level, label);
     end
 end
 
