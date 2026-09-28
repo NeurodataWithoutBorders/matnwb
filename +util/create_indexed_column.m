@@ -1,5 +1,5 @@
-function [data_vector, data_index] = create_indexed_column(data, description, table)
-%CREATE_INDEXED_COLUMN creates the index and vector NWB objects for storing
+function [data_vector, varargout] = create_indexed_column(data, description, table, options)
+%CREATE_INDEXED_COLUMN creates the vector and index NWB objects for storing
 %a ragged column in an NWB DynamicTable
 %
 %   [DATA_VECTOR, DATA_INDEX] = CREATE_INDEXED_COLUMN(DATA)
@@ -14,14 +14,8 @@ function [data_vector, data_index] = create_indexed_column(data, description, ta
 %       VectorData. Rows are concatenated along that last dimension, so
 %       DATA_VECTOR.data is [elementDims x totalElements]. On disk the ragged
 %       axis then comes first, as the schema requires.
-%     - a string array, character vector, struct array or array of objects
-%       (such as types.untyped.ObjectView references) that is a vector: a
-%       list of elements of that class, one per string, character, struct or
-%       object. DATA_VECTOR.data keeps the class: a string column, a character
-%       column, a struct column or an object column.
 %     - [] for a row with no elements.
-%   All rows must hold elements of the same type, and struct rows the same
-%   fields. All array rows must share elementDims, which is taken from the first row
+%   All array rows must share elementDims, which is taken from the first row
 %   that is not a vector. A row holding a single element may be given with
 %   its trailing dimension of 1 omitted (a column vector [k x 1] when elements
 %   are k-sample vectors, a [k x m] matrix when elements are [k x m]).
@@ -37,136 +31,243 @@ function [data_vector, data_index] = create_indexed_column(data, description, ta
 %   If TABLE is supplied as on ObjectView of an NWB DynamicTable, a
 %   DynamicTableRegion is instead output which references this table.
 %   DynamicTableRegions can be indexed just like DataVectors
+%
+%   [DATA_VECTOR, INDEX1, ..., INDEXn] = CREATE_INDEXED_COLUMN(__, 'Depth', n)
+%   builds a column with n levels of VectorIndex; n = 2 gives a doubly ragged
+%   column such as Units.waveforms. INDEX1 targets DATA_VECTOR and has one
+%   entry per innermost sub-group; every further index targets the one before
+%   it, and INDEXn has one entry per table row. Assign them to the column and
+%   its '<col>_index', '<col>_index_index', ... properties.
+%
+%   With 'Depth', n each cell of DATA is one of:
+%     - a cell array with one entry per sub-group, each entry being a row of
+%       depth n-1. For n = 2 that is a cell of [elementDims x nElements]
+%       arrays, one per sub-group. Vector entries follow the array rule here,
+%       not the scalar-list rule: a column vector [k x 1] is one k-sample
+%       element and a row vector [1 x m] is m single-sample elements.
+%     - a numeric array [elementDims x nElements x nSubGroups] (for n = 2):
+%       every sub-group holds nElements elements. For Units.waveforms this is
+%       [num_samples x num_electrodes x num_spike_events] per unit, which is
+%       the (num_spikes, num_electrodes, num_samples) array PyNWB's
+%       Units.add_unit takes with its dimensions reversed, as for any other
+%       MatNWB dataset.
+%     - a numeric matrix [k x nSubGroups] (for n = 2): every sub-group holds a
+%       single k-sample element, as for spike waveforms on one electrode.
+%     - [] or {} for a row with no sub-groups.
+%   EXAMPLE (waveforms of 2 units with 3 and 4 spikes on one electrode):
+%     unit1 = rand(40, 3); unit2 = rand(40, 4);   % [num_samples x num_spikes]
+%     [wf, wfIndex, wfIndexIndex] = util.create_indexed_column({unit1, unit2}, 'spike waveforms', 'Depth', 2);
+%     units.waveforms = wf;
+%     units.waveforms_index = wfIndex;
+%     units.waveforms_index_index = wfIndexIndex;
+%
+%   See also types.hdmf_common.DynamicTable/addRaggedArray
 
-if ~exist('description', 'var') || isempty(description)
-    description = 'no description';
-end
-
-[data, bounds] = flattenRows(data);
-
-if exist('table', 'var')
-    data_vector = types.hdmf_common.DynamicTableRegion( ...
-        'table', types.untyped.ObjectView(table), ...
-        'description', description, ...
-        'data', data ...
-    );
-else
-    data_vector = types.hdmf_common.VectorData( ...
-        'data', data, ...
-        'description', description ...
-    );
-end
-
-ov = types.untyped.ObjectView(data_vector);
-data_index = types.hdmf_common.VectorIndex( ...
-    'data', bounds, ...
-    'target', ov, ...
-    'description', 'indexes data' ...
-);
-end
-
-function [flatData, bounds] = flattenRows(rows)
-    % Concatenate the rows along the ragged (last) axis and count the elements
-    % of each row. BOUNDS is the cumulative element count, one entry per row.
-    numRows = numel(rows);
-    elementType = "";
-    structFields = {};
-    for iRow = 1:numRows
-        row = rows{iRow};
-        if isnumeric(row) || islogical(row)
-            rowType = "numeric";
-        elseif (isstring(row) || ischar(row) || isstruct(row) || isObjectArray(row)) ...
-                && (isvector(row) || isempty(row))
-            rowType = string(class(row));
-        else
-            error("NWB:CreateIndexedColumn:InvalidRow", ...
-                "Each cell of DATA must be a numeric or logical array, or a vector of " + ...
-                "strings, characters, structs or objects. Cell %d is a %s of size [%s].", ...
-                iRow, class(row), join(string(size(row)), " "));
-        end
-        if isempty(row)
-            continue
-        end
-        if elementType == ""
-            elementType = rowType;
-        elseif rowType ~= elementType
-            error("NWB:CreateIndexedColumn:InconsistentElementType", ...
-                "All rows must hold elements of the same type. Cell %d holds %s " + ...
-                "elements, but an earlier row holds %s elements.", iRow, rowType, elementType);
-        end
-        if isstruct(row)
-            if isempty(structFields)
-                structFields = fieldnames(row);
-            elseif ~isequal(sort(fieldnames(row)), sort(structFields))
-                error("NWB:CreateIndexedColumn:InconsistentElementShape", ...
-                    "All struct rows must have the same fields. Cell %d has fields " + ...
-                    "{%s}, but an earlier row has {%s}.", iRow, ...
-                    strjoin(fieldnames(row), ", "), strjoin(structFields, ", "));
-            end
-        end
+    arguments
+        data cell
+        description = ''
+        table = []
+        options.Depth (1,1) {mustBeInteger, mustBePositive} = 1
     end
 
-    elementDims = findElementDims(rows);
-    counts = zeros(numRows, 1);
-    chunks = cell(1, numRows);
-    for iRow = 1:numRows
-        row = rows{iRow};
-        if isempty(row)
-            counts(iRow) = 0;
-            chunks{iRow} = [];
-        elseif isempty(elementDims)
-            % Every row is a vector: a list of scalars, stacked into a column.
-            counts(iRow) = numel(row);
-            chunks{iRow} = row(:);
-            if isstruct(row)
-                % Concatenating structs needs the fields in the same order.
-                chunks{iRow} = orderfields(chunks{iRow}, structFields);
-            end
-        else
-            rowDims = size(row);
-            if isequal(rowDims, elementDims)
-                % A single element; MATLAB dropped the trailing dimension of 1.
-                counts(iRow) = 1;
-            elseif isequal(rowDims(1:end-1), elementDims)
-                counts(iRow) = rowDims(end);
-            else
-                error("NWB:CreateIndexedColumn:InconsistentElementShape", ...
-                    "All elements must have the same shape. Expected elements of " + ...
-                    "shape [%s], but row %d has size [%s]. Give the elements of a row " + ...
-                    "as [elementShape x nElements], with the ragged axis last.", ...
-                    join(string(elementDims), " "), iRow, join(string(rowDims), " "));
-            end
-            chunks{iRow} = row;
-        end
+    depth = options.Depth;
+    if nargout > depth + 1
+        error("NWB:CreateIndexedColumn:TooManyOutputs", ...
+            "A column of depth %d has %d outputs: the data vector and %d index level(s).", ...
+            depth, depth + 1, depth);
     end
-    bounds = uint64(cumsum(counts));
+    if isempty(description)
+        description = 'no description';
+    end
 
-    nonEmptyChunks = chunks(counts > 0);
-    if isempty(nonEmptyChunks)
-        flatData = [];
-    elseif isempty(elementDims)
-        flatData = vertcat(nonEmptyChunks{:});
+    [flatData, counts] = flattenRows(data, depth);
+
+    if isempty(table)
+        data_vector = types.hdmf_common.VectorData( ...
+            'data', flatData, ...
+            'description', description ...
+        );
     else
-        flatData = cat(numel(elementDims) + 1, nonEmptyChunks{:});
+        data_vector = types.hdmf_common.DynamicTableRegion( ...
+            'table', types.untyped.ObjectView(table), ...
+            'description', description, ...
+            'data', flatData ...
+        );
+    end
+
+    % Index level 1 targets the data vector; every further level targets the
+    % level below it.
+    target = data_vector;
+    varargout = cell(1, depth);
+    for iLevel = 1:depth
+        varargout{iLevel} = types.hdmf_common.VectorIndex( ...
+            'data', uint64(cumsum(counts{iLevel})), ...
+            'target', types.untyped.ObjectView(target), ...
+            'description', 'indexes data' ...
+        );
+        target = varargout{iLevel};
     end
 end
 
-function elementDims = findElementDims(rows)
-    % The element shape, taken from the first row that is not a vector. Empty
-    % when every row is a vector, i.e. the elements are scalars.
+function [flatData, counts] = flattenRows(rows, depth)
+    % Concatenate the elements of all rows along the ragged (last) axis and
+    % count the entries of every index level. COUNTS{k} lists, for each entry
+    % of level k, how many level k-1 entries it holds (level 0 entries are the
+    % elements); COUNTS{depth} has one entry per row.
+    elementDims = findElementDims(rows, depth);
+
+    numRows = numel(rows);
+    chunks = cell(1, numRows);
+    rowCounts = zeros(numRows, 1);
+    rowInnerCounts = cell(1, numRows);
+    for iRow = 1:numRows
+        [chunks{iRow}, rowCounts(iRow), rowInnerCounts{iRow}] = ...
+            flattenItem(rows{iRow}, depth, elementDims, sprintf('DATA{%d}', iRow));
+    end
+
+    flatData = concatenateChunks(chunks, elementDims);
+    counts = cell(1, depth);
+    counts{depth} = rowCounts;
+    for iLevel = 1:depth - 1
+        levelCounts = cellfun(@(inner) inner{iLevel}, rowInnerCounts, 'UniformOutput', false);
+        counts{iLevel} = vertcat(levelCounts{:});
+    end
+end
+
+function [chunk, ownCount, innerCounts] = flattenItem(item, level, elementDims, label)
+    % CHUNK holds the item's elements as [elementDims x nElements] (a column
+    % in scalar mode). OWNCOUNT is the number of level-(LEVEL-1) entries in
+    % the item, i.e. its elements when LEVEL is 1. INNERCOUNTS{k}, k < LEVEL,
+    % lists the counts of the level-k entries inside the item.
+    innerCounts = repmat({zeros(0, 1)}, 1, level - 1);
+    if isempty(item)
+        chunk = [];
+        ownCount = 0;
+        return
+    end
+
+    if iscell(item)
+        if level == 1
+            error("NWB:CreateIndexedColumn:InvalidRow", ...
+                "%s is a cell array, but at the innermost level a row must be a " + ...
+                "numeric or logical array. Increase Depth for nested rows.", label);
+        end
+        numEntries = numel(item);
+        chunks = cell(1, numEntries);
+        entryCounts = zeros(numEntries, 1);
+        entryInnerCounts = cell(1, numEntries);
+        for iEntry = 1:numEntries
+            [chunks{iEntry}, entryCounts(iEntry), entryInnerCounts{iEntry}] = flattenItem( ...
+                item{iEntry}, level - 1, elementDims, sprintf('%s{%d}', label, iEntry));
+        end
+        chunk = concatenateChunks(chunks, elementDims);
+        ownCount = numEntries;
+        innerCounts{level - 1} = entryCounts;
+        for iLevel = 1:level - 2
+            levelCounts = cellfun(@(inner) inner{iLevel}, entryInnerCounts, 'UniformOutput', false);
+            innerCounts{iLevel} = vertcat(levelCounts{:});
+        end
+        return
+    end
+
+    if ~(isnumeric(item) || islogical(item))
+        error("NWB:CreateIndexedColumn:InvalidRow", ...
+            "%s must be a numeric or logical array%s. It is a %s.", ...
+            label, cellHint(level), class(item));
+    end
+
+    if isempty(elementDims)
+        % Scalar mode: every row is a vector, so the elements are scalars.
+        chunk = item(:);
+        ownCount = numel(item);
+        return
+    end
+
+    [itemElementDims, levelSizes] = splitDims(item, level, label);
+    if ~isequal(itemElementDims, elementDims) && isequal(size(item), elementDims)
+        % A single element, given without the trailing dimensions of 1 that
+        % MATLAB drops.
+        itemElementDims = elementDims;
+        levelSizes = ones(1, level);
+    end
+    if ~isequal(itemElementDims, elementDims)
+        error("NWB:CreateIndexedColumn:InconsistentElementShape", ...
+            "All elements must have the same shape. Expected elements of shape [%s], " + ...
+            "but %s has size [%s]. Give a numeric row as [elementShape x ...] with the " + ...
+            "ragged axes last.", ...
+            join(string(elementDims), " "), label, join(string(size(item)), " "));
+    end
+
+    % Merging the trailing ragged dimensions lists the entries of the first
+    % sub-group first, which is the order the index levels describe.
+    chunk = reshape(item, [elementDims, prod(levelSizes)]);
+    ownCount = levelSizes(level);
+    for iLevel = 1:level - 1
+        innerCounts{iLevel} = repmat(levelSizes(iLevel), prod(levelSizes(iLevel + 1:level)), 1);
+    end
+end
+
+function [elementDims, levelSizes] = splitDims(item, level, label)
+    % Split the size of a numeric item into the element shape and the sizes of
+    % its LEVEL ragged dimensions, innermost first. An item with exactly LEVEL
+    % dimensions holds one element per innermost entry.
+    dims = size(item);
+    numDims = numel(dims);
+    if numDims >= level + 1
+        elementDims = dims(1:numDims - level);
+        levelSizes = dims(numDims - level + 1:end);
+    elseif numDims == level
+        elementDims = dims(1);
+        levelSizes = [1, dims(2:end)];
+    else
+        error("NWB:CreateIndexedColumn:InvalidRow", ...
+            "%s has %d dimensions, but a numeric row at depth %d needs at least %d.", ...
+            label, numDims, level, level);
+    end
+end
+
+function elementDims = findElementDims(rows, depth)
+    % The element shape, from the first numeric array in ROWS. Empty when DEPTH
+    % is 1 and every row is a vector: the elements are then scalars.
     elementDims = [];
     for iRow = 1:numel(rows)
-        row = rows{iRow};
-        if ~isempty(row) && ~isvector(row)
-            rowDims = size(row);
-            elementDims = rowDims(1:end-1);
+        elementDims = findElementDimsInItem(rows{iRow}, depth, depth == 1);
+        if ~isempty(elementDims)
             return
         end
     end
 end
 
-function tf = isObjectArray(row)
-    % An array of objects such as types.untyped.ObjectView references. A
-    % table is an object too, but its rows are not elements of one class.
-    tf = isobject(row) && ~istable(row);
+function elementDims = findElementDimsInItem(item, level, vectorsAreScalars)
+    elementDims = [];
+    if isempty(item)
+        return
+    end
+    if iscell(item)
+        for iEntry = 1:numel(item)
+            elementDims = findElementDimsInItem(item{iEntry}, level - 1, false);
+            if ~isempty(elementDims)
+                return
+            end
+        end
+    elseif (isnumeric(item) || islogical(item)) && ~(vectorsAreScalars && isvector(item))
+        elementDims = splitDims(item, level, 'DATA');
+    end
+end
+
+function data = concatenateChunks(chunks, elementDims)
+    nonEmptyChunks = chunks(~cellfun(@isempty, chunks));
+    if isempty(nonEmptyChunks)
+        data = [];
+        return
+    end
+    data = cat(numel(elementDims) + 1, nonEmptyChunks{:});
+end
+
+function hint = cellHint(level)
+    if level > 1
+        hint = ' or a cell array of sub-groups';
+    else
+        hint = '';
+    end
 end

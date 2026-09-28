@@ -141,8 +141,14 @@ function indexName = getIndexInSet(inputStruct, inputName)
     for i = 1:length(columnNames)
         T.vectordata.set(columnNames{i},inputStruct.(columnNames{i}));
     end
-    % use dynamic table function to get index name
-    indexName = types.util.dynamictable.getIndex(T, inputName);
+    % Follow the chain of indices to the outermost one. Its length is the
+    % number of table rows, whatever the depth of the ragged column.
+    indexName = '';
+    nextName = types.util.dynamictable.getIndex(T, inputName);
+    while ~isempty(nextName)
+        indexName = nextName;
+        nextName = types.util.dynamictable.getIndex(T, nextName);
+    end
 end
 
 function validateColumnHeight(columnName, currentColumnHeight, tableHeight)
