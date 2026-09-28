@@ -21,9 +21,8 @@ classdef UnitsTableIOTest < tests.system.PyNWBIOTest
     methods
         function addContainer(testCase, file)
             % Build a Units table with multi-electrode, doubly-ragged waveforms
-            % using the idiomatic addRaggedArray / addDoublyRaggedArray methods.
-            % This mirrors PyNWB's Units.add_unit in PyNWBIOTest.py so the two
-            % round-tripped containers compare equal.
+            % using addRaggedArray. This mirrors PyNWB's Units.add_unit in
+            % PyNWBIOTest.py so the two round-tripped containers compare equal.
             file.units = types.core.Units('description', 'data on spiking units');
 
             % spike_times: a ragged column, one list of times per unit.
@@ -33,28 +32,28 @@ classdef UnitsTableIOTest < tests.system.PyNWBIOTest
             % [num_waveforms, num_samples] dataset, with the electrode dimension
             % carried by waveforms_index. Unit 1 has 2 spikes, unit 2 has 3
             % spikes; each spike has 2 electrodes and 3 samples. Both input
-            % forms below hold the same values as PyNWBIOTest.py.
+            % forms hold the same values as PyNWBIOTest.py, in MatNWB's
+            % orientation: the schema's dimensions reversed, ragged axes last.
             switch testCase.WaveformInputForm
                 case "cell"
-                    % data{unit}{spike} is a [numElectrodes x numSamples] matrix.
+                    % data{unit}{spike} is [num_samples x num_electrodes].
                     waveforms = { ...
-                        {int32([1 2 3; 4 5 6]), int32([7 8 9; 10 11 12])}, ...
-                        {int32([13 14 15; 16 17 18]), int32([19 20 21; 22 23 24]), int32([25 26 27; 28 29 30])} ...
+                        {int32([1 4; 2 5; 3 6]), int32([7 10; 8 11; 9 12])}, ...
+                        {int32([13 16; 14 17; 15 18]), int32([19 22; 20 23; 21 24]), int32([25 28; 26 29; 27 30])} ...
                         };
                 case "array"
-                    % data{unit} is [numSpikes x numElectrodes x numSamples], the
-                    % input PyNWB's add_unit takes. Reshaping column-major into
-                    % [numSamples x numElectrodes x numSpikes] and reversing the
-                    % dimensions reproduces numpy's row-major
-                    % np.arange(...).reshape(numSpikes, numElectrodes, numSamples).
+                    % data{unit} is [num_samples x num_electrodes x num_spikes].
+                    % numpy's row-major reshape(num_spikes, num_electrodes,
+                    % num_samples) and MATLAB's column-major reshape with the
+                    % dimensions reversed lay out the values identically.
                     waveforms = { ...
-                        permute(reshape(int32(1:12), 3, 2, 2), [3 2 1]), ...
-                        permute(reshape(int32(13:30), 3, 2, 3), [3 2 1]) ...
+                        reshape(int32(1:12), 3, 2, 2), ...
+                        reshape(int32(13:30), 3, 2, 3) ...
                         };
                 otherwise
                     error("Unknown WaveformInput value ""%s"".", testCase.WaveformInputForm)
             end
-            file.units.addDoublyRaggedArray('waveforms', waveforms);
+            file.units.addRaggedArray('waveforms', waveforms, 'Depth', 2);
 
             % waveform_mean / waveform_sd: fixed 2-D columns [numSamples x numUnits].
             file.units.waveform_mean = types.hdmf_common.VectorData( ...

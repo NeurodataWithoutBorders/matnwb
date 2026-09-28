@@ -118,9 +118,13 @@ classdef (Abstract) DynamicTableBase < handle
         %
         % A ragged array stores a variable number of elements per row. The
         % values are held in a single VectorData column, and a companion
-        % VectorIndex ('<columnName>_index') marks each row's boundary. See
-        % the "Tables and ragged arrays" section of the NWB format
-        % specification.
+        % VectorIndex ('<columnName>_index') marks each row's boundary. With
+        % Depth 2 the column is doubly ragged: each row holds a variable
+        % number of sub-groups, each with a variable number of elements, and a
+        % second VectorIndex ('<columnName>_index_index') marks the rows. The
+        % Units 'waveforms' column is the canonical doubly ragged column. See
+        % the "Tables and ragged arrays" and "Doubly ragged arrays" sections
+        % of the NWB format specification.
         %
         % Syntax:
         %  dynamicTable.addRaggedArray(columnName, data) build and add a
@@ -134,8 +138,13 @@ classdef (Abstract) DynamicTableBase < handle
         %    Name of the new column.
         %
         %  - data (cell) -
-        %    A cell array with one cell per row; each cell holds that row's
-        %    elements (e.g. {[1 2 3], [4 5]} for a 2-row table).
+        %    A cell array with one cell per row, holding that row's elements
+        %    in the orientation of VectorData.data: a vector of scalars (e.g.
+        %    {[1 2 3], [4 5]} for a 2-row table), or an [elementDims x nElements]
+        %    array with the ragged axis last. With Depth 2 each cell holds the
+        %    row's sub-groups, either as a cell of [elementDims x nElements]
+        %    arrays or as one [elementDims x nElements x nSubGroups] array.
+        %    See util.create_indexed_column for all accepted forms.
         %
         % Name-Value Arguments:
         %  - description (string) -
@@ -145,6 +154,10 @@ classdef (Abstract) DynamicTableBase < handle
         %    If provided, the column is created as a DynamicTableRegion that
         %    references this table (row indices) instead of a VectorData.
         %
+        %  - Depth (integer) -
+        %    Number of VectorIndex levels: 1 (default) for a ragged column,
+        %    2 for a doubly ragged column.
+        %
         % See also util.create_indexed_column, addColumn, addDoublyRaggedArray
 
             arguments
@@ -153,56 +166,31 @@ classdef (Abstract) DynamicTableBase < handle
                 data cell
                 options.description (1,1) string = "no description"
                 options.table = []
+                options.Depth (1,1) {mustBeInteger, mustBePositive} = 1
             end
 
-            if isempty(options.table)
-                [vector, index] = util.create_indexed_column( ...
-                    data, char(options.description));
-            else
-                [vector, index] = util.create_indexed_column( ...
-                    data, char(options.description), options.table);
+            columns = cell(1, options.Depth + 1);
+            [columns{:}] = util.create_indexed_column(data, ...
+                char(options.description), options.table, 'Depth', options.Depth);
+
+            % The data column, then one index level per depth: '<name>_index',
+            % '<name>_index_index', ...
+            names = strings(1, options.Depth + 1);
+            names(1) = columnName;
+            for iLevel = 1:options.Depth
+                names(iLevel + 1) = names(iLevel) + "_index";
             end
-            obj.addColumn(columnName, vector, columnName + "_index", index);
+            pairs = [num2cell(names); columns];
+            obj.addColumn(pairs{:});
         end
 
         function addDoublyRaggedArray(obj, columnName, data, options)
         % addDoublyRaggedArray - Add a doubly-ragged-array column to the DynamicTable.
         %
-        % A doubly-ragged array stores, for each row, a variable number of
-        % sub-groups, each holding a variable number of fixed-length elements
-        % (e.g. the Units table 'waveforms' column: per unit, a variable number
-        % of spike events, each with a waveform per electrode). It is backed by
-        % a VectorData column and two VectorIndex levels
-        % ('<columnName>_index' over sub-groups and '<columnName>_index_index'
-        % over rows). See the "Doubly ragged arrays" section of the NWB format
-        % specification.
+        % Equivalent to addRaggedArray(columnName, data, 'Depth', 2). See
+        % addRaggedArray for the accepted forms of data.
         %
-        % Syntax:
-        %  dynamicTable.addDoublyRaggedArray(columnName, data) build and add a
-        %  doubly-ragged column named columnName, plus its two VectorIndex
-        %  levels.
-        %
-        % Input Arguments:
-        %  - columnName (string) -
-        %    Name of the new column.
-        %
-        %  - data (cell) -
-        %    A cell array with one cell per row. Each cell is one of:
-        %      - a numeric matrix [nSubGroups x nSamples]: one element per
-        %        sub-group.
-        %      - a numeric array [nSubGroups x nElements x elementDimensions]:
-        %        the same number of elements in every sub-group. For Units
-        %        'waveforms' this is [nSpikes x nElectrodes x nSamples], the
-        %        order PyNWB's Units.add_unit uses.
-        %      - a cell array whose j-th entry is a
-        %        [nElements x elementDimensions] array for sub-group j.
-        %    See util.create_doubly_indexed_column.
-        %
-        % Name-Value Arguments:
-        %  - description (string) -
-        %    Description stored on the VectorData column.
-        %
-        % See also util.create_doubly_indexed_column, addColumn, addRaggedArray
+        % See also addRaggedArray
 
             arguments
                 obj (1,1) {matnwb.common.validation.mustBeDynamicTable}
@@ -211,62 +199,8 @@ classdef (Abstract) DynamicTableBase < handle
                 options.description (1,1) string = "no description"
             end
 
-            [vector, index, indexIndex] = ...
-                util.create_doubly_indexed_column(data, options.description);
-
-            % The number of rows equals the length of the outermost index.
-            rowCount = numel(indexIndex.data);
-
-            % Initialize id for a new table before checking editability (which
-            % inspects the id column).
-            if isempty(obj.id) || isempty(obj.id.data)
-                types.util.dynamictable.internal.initDynamicTableId(obj, rowCount);
-            end
-
-            obj.assertIsEditable('NWB:DynamicTable:AddDoublyRaggedArray:Uneditable')
-
-            tableHeight = types.util.dynamictable.internal.getColumnHeight(obj.id);
-            assert(rowCount == tableHeight, ...
-                'NWB:DynamicTable:AddDoublyRaggedArray:MissingRows', ...
-                'Column `%s` has %d rows, but the table height is %d.', ...
-                columnName, rowCount, tableHeight)
-
-            % Resolve where the data column and both index levels are stored
-            % (a typed property for schema-defined columns such as
-            % Units.waveforms, otherwise the generic vectordata set). addColumn
-            % is not used here because its height check only follows a single
-            % index level.
-            names = [columnName, columnName + "_index", columnName + "_index_index"];
-            values = {vector, index, indexIndex};
-            storageTargets = strings(size(names));
-            storageNames = strings(size(names));
-            for iName = 1:numel(names)
-                [storageTargets(iName), storageNames(iName)] = ...
-                    types.util.dynamictable.resolveColumnStorage(obj, names(iName));
-            end
-
-            % Like addColumn, refuse to overwrite an existing column.
-            isStored = arrayfun(@(iName) obj.isColumnStored( ...
-                storageTargets(iName), storageNames(iName)), 1:numel(names));
-            assert(~any(isStored) && ~any(strcmp(obj.colnames, char(columnName))), ...
-                'NWB:DynamicTable:AddDoublyRaggedArray:ColumnExists', ...
-                'Column `%s` already exists in the table.', columnName)
-
-            for iName = 1:numel(names)
-                switch storageTargets(iName)
-                    case "property"
-                        obj.(storageNames(iName)) = values{iName};
-                    case "vectordata"
-                        obj.vectordata.set(storageNames(iName), values{iName});
-                end
-            end
-
-            % Only the data column is listed in colnames; the index levels are
-            % implicit. Schema-defined columns are added by a property post-set
-            % hook, so guard against duplicates.
-            if ~any(strcmp(obj.colnames, char(columnName)))
-                obj.colnames{end+1} = char(columnName);
-            end
+            obj.addRaggedArray(columnName, data, ...
+                'description', options.description, 'Depth', 2);
         end
 
         function row = getRow(obj, rowIndices, options)
@@ -441,26 +375,6 @@ classdef (Abstract) DynamicTableBase < handle
             assert(isEditable, errorID, ...
                 ['Cannot write to on-file Dynamic Tables without enabling data pipes. '...
                 'If this was produced with pynwb, please enable chunking for this table.']);
-        end
-
-        function tf = isColumnStored(obj, storageTarget, storageName)
-        % isColumnStored - True if the storage slot for a column already holds data.
-            arguments
-                obj (1,1) matnwb.neurodata.DynamicTableBase
-                storageTarget (1,1) string
-                storageName (1,1) string
-            end
-
-            switch storageTarget
-                case "property"
-                    tf = ~isempty(obj.(storageName));
-                case "vectordata"
-                    tf = isa(obj.vectordata, 'types.untyped.Set') ...
-                        && obj.vectordata.isKey(char(storageName));
-                otherwise
-                    error('NWB:DynamicTable:UnknownStorageTarget', ...
-                        'Unknown column storage target "%s".', storageTarget)
-            end
         end
     end
 end
