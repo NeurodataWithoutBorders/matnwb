@@ -316,6 +316,56 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(index3.data, uint64([4; 5; 6]));
         end
 
+        function testDepth2MatrixRowIsReadPerColumn(testCase)
+            % A [k x m] row fits the shortcut (m sub-groups of one element) and
+            % the full form with its trailing 1 dropped (one sub-group of m).
+            % Alone it is the shortcut; beside a 3-D row it is the full form.
+            numSamples = 4;
+            matrixRow = ones(numSamples, 5);
+
+            [~, index, indexIndex] = util.create_indexed_column({matrixRow}, 'Depth', 2);
+            testCase.verifyEqual(index.data, uint64((1:5)'));
+            testCase.verifyEqual(indexIndex.data, uint64(5));
+
+            [~, index, indexIndex] = util.create_indexed_column( ...
+                {matrixRow, ones(numSamples, 3, 2)}, 'Depth', 2);
+            testCase.verifyEqual(index.data, uint64([5; 8; 11]));
+            testCase.verifyEqual(indexIndex.data, uint64([1; 3]));
+
+            % An empty 3-D row is a 3-D row too.
+            [~, index, indexIndex] = util.create_indexed_column( ...
+                {matrixRow, zeros(numSamples, 0, 2)}, 'Depth', 2);
+            testCase.verifyEqual(index.data, uint64([5; 5; 5]));
+            testCase.verifyEqual(indexIndex.data, uint64([1; 3]));
+        end
+
+        function testDepth2OneElementPerSubGroupInFullFormColumn(testCase)
+            % Beside a 3-D row, a row with one element per sub-group is given
+            % as [k x 1 x nSubGroups]; MATLAB keeps a dimension of 1 that is
+            % not the last.
+            numSamples = 4;
+            singleElectrode = reshape(1:(numSamples*5), numSamples, 1, 5);
+
+            [vector, index, indexIndex] = util.create_indexed_column( ...
+                {singleElectrode, ones(numSamples, 3, 2)}, 'Depth', 2);
+
+            testCase.verifyEqual(vector.data(:, 1:5), reshape(singleElectrode, numSamples, 5));
+            testCase.verifyEqual(index.data, uint64([1; 2; 3; 4; 5; 8; 11]));
+            testCase.verifyEqual(indexIndex.data, uint64([5; 7]));
+        end
+
+        function testEmptyRowWithOtherElementShapeErrors(testCase)
+            % An empty 3-D row declares sub-groups, so its element shape is
+            % checked; an empty matrix is a row with no sub-groups.
+            testCase.verifyError( ...
+                @() util.create_indexed_column({ones(4, 3, 2), zeros(5, 0, 2)}, 'Depth', 2), ...
+                'NWB:CreateIndexedColumn:InconsistentElementShape');
+
+            [~, ~, indexIndex] = util.create_indexed_column( ...
+                {ones(4, 3, 2), zeros(1, 0)}, 'Depth', 2);
+            testCase.verifyEqual(indexIndex.data, uint64([2; 2]));
+        end
+
         function testStringDescriptionIsStoredAsChar(testCase)
             vector = util.create_indexed_column({[1 2]}, "spike times");
 
