@@ -21,6 +21,40 @@ function ragged_arrays_examples()
     % end snippet
     assert(isa(units.electrodes, 'types.hdmf_common.DynamicTableRegion'))
 
+    % snippet: text-column
+    trials = types.core.TimeIntervals('description', 'trials', ...
+        'colnames', {'start_time', 'stop_time'});
+    trials.addRow('start_time', 0.0, 'stop_time', 1.0);
+    trials.addRow('start_time', 2.0, 'stop_time', 3.0);
+    trials.addRaggedArray('tags', {["go", "rewarded"], "nogo"}, ...
+        'description', 'trial tags');
+    % end snippet
+    assert(isequal(trials.tags.data, ["go"; "rewarded"; "nogo"]))
+    assert(isequal(trials.tags_index.data(:).', uint64([2 3])))
+
+    % snippet: compound-pixel-masks
+    roi1 = table(uint32([1; 2; 3]), uint32([4; 4; 4]), single([1; 1; 1]), ...
+        'VariableNames', {'x', 'y', 'weight'});
+    roi2 = table(uint32([7; 8]), uint32([9; 9]), single([1; 1]), ...
+        'VariableNames', {'x', 'y', 'weight'});
+    planeSegmentation = types.core.PlaneSegmentation('description', 'rois');
+    planeSegmentation.addRaggedArray('pixel_mask', {roi1, roi2}, ...
+        'description', 'pixel masks');
+    % end snippet
+    assert(isequal(planeSegmentation.pixel_mask.data, [roi1; roi2]))
+    assert(isequal(planeSegmentation.pixel_mask_index.data(:).', uint64([3 5])))
+
+    % snippet: flat-pixel-masks
+    pixels = table(uint32([1; 2; 3; 7; 8]), uint32([4; 4; 4; 9; 9]), single(ones(5, 1)), ...
+        'VariableNames', {'x', 'y', 'weight'});
+    pixelsPerRoi = [3; 2];
+    planeSegmentation = types.core.PlaneSegmentation('description', 'rois');
+    planeSegmentation.addRaggedArray('pixel_mask', pixels, ...
+        'ElementsPerRow', pixelsPerRoi, 'description', 'pixel masks');
+    % end snippet
+    assert(isequal(planeSegmentation.pixel_mask.data, [roi1; roi2]))
+    assert(isequal(planeSegmentation.pixel_mask_index.data(:).', uint64([3 5])))
+
     % ---- Doubly-ragged, single electrode per unit ----
     % Each unit's matrix is [numSamples x numWaveforms], one waveform per
     % column; with one electrode, numWaveforms is the number of spikes.
