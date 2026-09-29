@@ -31,8 +31,7 @@ Some columns instead need a *variable* number of values per row. NWB stores thes
 
 For a full description of how NWB represents these on disk — including a diagram of the
 doubly-ragged layout — see the "Tables and ragged arrays" and "Doubly ragged arrays"
-sections of the `NWB format specification
-<https://nwb-schema.readthedocs.io/en/latest/format_description.html#tables-and-ragged-arrays>`_.
+sections of the :nwb-format-description:`NWB format specification <tables-and-ragged-arrays>`.
 
 MatNWB provides one :class:`types.hdmf_common.DynamicTable` method that builds and wires
 these objects for you in a single call: ``addRaggedArray``. Its ``Depth`` argument sets
