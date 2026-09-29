@@ -43,9 +43,10 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %   adds the string DESCRIPTION in the description field of the data vector
 %
 %   [DYNAMICTABLEREGION, DATA_INDEX] = CREATE_INDEXED_COLUMN(DATA, DESCRIPTION, TABLE)
-%   If TABLE is supplied as on ObjectView of an NWB DynamicTable, a
-%   DynamicTableRegion is instead output which references this table.
-%   DynamicTableRegions can be indexed just like DataVectors
+%   returns a DynamicTableRegion that references TABLE instead of a
+%   VectorData. TABLE is the DynamicTable object itself; the function wraps
+%   it in an ObjectView. The values in DATA are 0-based row indices into
+%   TABLE, and the DynamicTableRegion is indexed the same way as a VectorData.
 %
 %   [DATA_VECTOR, INDEX1, ..., INDEXn] = CREATE_INDEXED_COLUMN(__, 'Depth', n)
 %   builds a column with n levels of VectorIndex; n = 2 gives a doubly ragged
