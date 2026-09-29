@@ -17,6 +17,73 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
             testCase.verifySameHandle(index.target.target, vector);
         end
 
+        function testCompoundRowsAsTablesAndStructs(testCase)
+            % A table, a struct array and a scalar struct of columns are lists
+            % of compound elements; all give the same column.
+            [roi1, roi2] = examplePixelMasks();
+
+            [fromTables, index] = util.create_indexed_column({roi1, roi2});
+            testCase.verifyEqual(fromTables.data, [roi1; roi2]);
+            testCase.verifyEqual(index.data, uint64([3; 5]));
+
+            roi1Columns = table2struct(roi1, 'ToScalar', true);
+            roi2Elements = table2struct(roi2);   % struct array, one struct per pixel
+            fromStructs = util.create_indexed_column({roi1Columns, roi2Elements});
+            testCase.verifyEqual(fromStructs.data, fromTables.data);
+        end
+
+        function testCompoundFieldMismatchErrors(testCase)
+            roi1 = table(uint32(1), single(1), 'VariableNames', {'x', 'weight'});
+            roi2 = table(uint32(2), single(1), 'VariableNames', {'y', 'weight'});
+
+            testCase.verifyError(@() util.create_indexed_column({roi1, roi2}), ...
+                'NWB:CreateIndexedColumn:InconsistentElementShape');
+        end
+
+        function testCompoundAndNumericRowsErrors(testCase)
+            roi = table(uint32(1), single(1), 'VariableNames', {'x', 'weight'});
+
+            testCase.verifyError(@() util.create_indexed_column({roi, [1 2]}), ...
+                'NWB:CreateIndexedColumn:InconsistentElementType');
+        end
+
+        function testFlatDataWithElementsPerRow(testCase)
+            [vector, index] = util.create_indexed_column([1 2 3 4 5], 'ElementsPerRow', [3 2]);
+            testCase.verifyEqual(vector.data, [1; 2; 3; 4; 5]);
+            testCase.verifyEqual(index.data, uint64([3; 5]));
+
+            % Elements are 4-sample vectors, one per column.
+            samples = reshape(1:20, 4, 5);
+            [vector, index] = util.create_indexed_column(samples, 'ElementsPerRow', [2 3]);
+            testCase.verifyEqual(vector.data, samples);
+            testCase.verifyEqual(index.data, uint64([2; 5]));
+
+            [vector, index] = util.create_indexed_column(["a" "b" "c"], 'ElementsPerRow', [2 1]);
+            testCase.verifyEqual(vector.data, {'a'; 'b'; 'c'});
+            testCase.verifyEqual(index.data, uint64([2; 3]));
+        end
+
+        function testFlatCompoundDataMatchesCellForm(testCase)
+            [roi1, roi2] = examplePixelMasks();
+
+            flat = util.create_indexed_column([roi1; roi2], 'ElementsPerRow', [3 2]);
+            perRow = util.create_indexed_column({roi1, roi2});
+
+            testCase.verifyEqual(flat.data, perRow.data);
+        end
+
+        function testElementsPerRowErrors(testCase)
+            testCase.verifyError( ...
+                @() util.create_indexed_column([1 2 3], 'ElementsPerRow', [1 1]), ...
+                'NWB:CreateIndexedColumn:ElementCountMismatch');
+            testCase.verifyError( ...
+                @() util.create_indexed_column([1 2 3], 'ElementsPerRow', [1 2], 'Depth', 2), ...
+                'NWB:CreateIndexedColumn:ElementsPerRowNeedsDepth1');
+            % Data that is not a cell array needs ElementsPerRow.
+            testCase.verifyError(@() util.create_indexed_column([1 2 3]), ...
+                'NWB:CreateIndexedColumn:InvalidData');
+        end
+
         function testTextRows(testCase)
             % A cell array of character vectors, a string array and a character
             % vector are lists of text elements, stored as a column cellstr.
@@ -136,7 +203,7 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
 
         function testInvalidRowTypeErrors(testCase)
             testCase.verifyError( ...
-                @() util.create_indexed_column({[1 2], struct('a', 1)}), ...
+                @() util.create_indexed_column({[1 2], @sin}), ...
                 'NWB:CreateIndexedColumn:InvalidRow');
         end
 
@@ -490,6 +557,14 @@ function spikeEvents = splitSpikeEvents(unitWaveforms)
     for iSpikeEvent = 1:numSpikeEvents
         spikeEvents{iSpikeEvent} = unitWaveforms(:, :, iSpikeEvent);
     end
+end
+
+function [roi1, roi2] = examplePixelMasks()
+    % Pixel masks of two ROIs with 3 and 2 pixels.
+    roi1 = table(uint32([1; 2; 3]), uint32([4; 4; 4]), single([1; 1; 1]), ...
+        'VariableNames', {'x', 'y', 'weight'});
+    roi2 = table(uint32([7; 8]), uint32([9; 9]), single([0.5; 0.5]), ...
+        'VariableNames', {'x', 'y', 'weight'});
 end
 
 function requestThreeOutputs(data)
