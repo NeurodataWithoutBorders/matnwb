@@ -9,6 +9,45 @@ classdef dynamicTableRaggedArrayTest < tests.abstract.NwbTestCase
     end
 
     methods (Test)
+        function testAddRaggedArrayPixelMaskOnPlaneSegmentation(testCase)
+            % Pixel masks as one table of all pixels plus the pixel count of
+            % each ROI; PlaneSegmentation stores them on its typed properties.
+            pixels = table(uint32([1; 2; 3; 7; 8]), uint32([4; 4; 4; 9; 9]), single(ones(5, 1)), ...
+                'VariableNames', {'x', 'y', 'weight'});
+
+            planeSegmentation = types.core.PlaneSegmentation('description', 'rois', 'colnames', {});
+            planeSegmentation.addRaggedArray('pixel_mask', pixels, 'ElementsPerRow', [3 2], ...
+                'description', 'pixel masks');
+
+            testCase.verifyEqual(planeSegmentation.colnames, {'pixel_mask'});
+            testCase.verifyEqual(planeSegmentation.pixel_mask.data, pixels);
+            testCase.verifyEqual(planeSegmentation.pixel_mask_index.data, uint64([3; 5]));
+            testCase.verifyEqual(planeSegmentation.id.data, int64([0; 1]));
+        end
+
+        function testAddRaggedArrayCompoundRoundTrip(testCase)
+            roi1 = table(uint32([1; 2; 3]), uint32([4; 4; 4]), single([1; 1; 1]), ...
+                'VariableNames', {'x', 'y', 'weight'});
+            roi2 = table(uint32([7; 8]), uint32([9; 9]), single([0.5; 0.5]), ...
+                'VariableNames', {'x', 'y', 'weight'});
+            dt = types.hdmf_common.DynamicTable('description', 'test');
+            dt.addRaggedArray('mask', {roi1, roi2}, 'description', 'masks');
+
+            nwb = NwbFile( ...
+                'identifier', 'ragged_compound_test', ...
+                'session_description', 'test', ...
+                'session_start_time', datetime(2024, 1, 1, 'TimeZone', 'local'));
+            nwb.acquisition.set('DynamicTable', dt);
+            fileName = testCase.getRandomFilename();
+            nwbExport(nwb, fileName);
+
+            back = nwbRead(fileName, 'ignorecache');
+            tableBack = back.acquisition.get('DynamicTable');
+            % Compound data is read back as a scalar struct of columns.
+            testCase.verifyEqual(struct2table(tableBack.vectordata.get('mask').data.load()), [roi1; roi2]);
+            testCase.verifyEqual(tableBack.vectordata.get('mask_index').data.load(), uint64([3; 5]));
+        end
+
         function testAddRaggedArrayWithTextRowsRoundTrip(testCase)
             dt = types.hdmf_common.DynamicTable('description', 'test');
             dt.addRaggedArray('tags', {{'1a'; '1b'; '1c'}, {'2a'}}, 'description', 'tags');
