@@ -85,8 +85,44 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
 
         function testInvalidRowTypeErrors(testCase)
             testCase.verifyError( ...
-                @() util.create_indexed_column({[1 2], "text"}), ...
+                @() util.create_indexed_column({[1 2], @sin}), ...
                 'NWB:CreateIndexedColumn:InvalidRow');
+            % Strings, characters and structs are accepted as vectors only.
+            testCase.verifyError( ...
+                @() util.create_indexed_column({["a" "b"; "c" "d"]}), ...
+                'NWB:CreateIndexedColumn:InvalidRow');
+        end
+
+        function testStringRowsKeepTheirClass(testCase)
+            [vector, index] = util.create_indexed_column({["a" "b"], "c"});
+
+            testCase.verifyEqual(vector.data, ["a"; "b"; "c"]);
+            testCase.verifyEqual(index.data, uint64([2; 3]));
+        end
+
+        function testCharRowsAreListsOfCharacters(testCase)
+            [vector, index] = util.create_indexed_column({'abc', 'de'});
+
+            testCase.verifyEqual(vector.data, ('abcde')');
+            testCase.verifyEqual(index.data, uint64([3; 5]));
+        end
+
+        function testStructArrayRowsKeepTheirClass(testCase)
+            s1 = struct('x', {uint32(1), uint32(2)}, 'weight', {single(1), single(1)});
+            s2 = struct('weight', single(0.5), 'x', uint32(7));   % fields in another order
+
+            [vector, index] = util.create_indexed_column({s1, s2});
+
+            testCase.verifyEqual(vector.data, [s1(:); orderfields(s2, s1)]);
+            testCase.verifyEqual(index.data, uint64([2; 3]));
+        end
+
+        function testMixedRowTypesErrors(testCase)
+            testCase.verifyError(@() util.create_indexed_column({[1 2], "a"}), ...
+                'NWB:CreateIndexedColumn:InconsistentElementType');
+            testCase.verifyError( ...
+                @() util.create_indexed_column({struct('x', 1), struct('y', 2)}), ...
+                'NWB:CreateIndexedColumn:InconsistentElementShape');
         end
 
         function testTableRegion(testCase)

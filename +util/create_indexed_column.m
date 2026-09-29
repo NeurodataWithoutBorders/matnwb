@@ -14,8 +14,13 @@ function [data_vector, data_index] = create_indexed_column(data, description, ta
 %       VectorData. Rows are concatenated along that last dimension, so
 %       DATA_VECTOR.data is [elementDims x totalElements]. On disk the ragged
 %       axis then comes first, as the schema requires.
+%     - a string array, character vector or struct array that is a vector: a
+%       list of elements of that class, one per string, character or struct.
+%       DATA_VECTOR.data keeps the class: a string column, a character column
+%       or a struct column.
 %     - [] for a row with no elements.
-%   All array rows must share elementDims, which is taken from the first row
+%   All rows must hold elements of the same type, and struct rows the same
+%   fields. All array rows must share elementDims, which is taken from the first row
 %   that is not a vector. A row holding a single element may be given with
 %   its trailing dimension of 1 omitted (a column vector [k x 1] when elements
 %   are k-sample vectors, a [k x m] matrix when elements are [k x m]).
@@ -63,12 +68,39 @@ function [flatData, bounds] = flattenRows(rows)
     % Concatenate the rows along the ragged (last) axis and count the elements
     % of each row. BOUNDS is the cumulative element count, one entry per row.
     numRows = numel(rows);
+    elementType = "";
+    structFields = {};
     for iRow = 1:numRows
         row = rows{iRow};
-        if ~(isnumeric(row) || islogical(row))
+        if isnumeric(row) || islogical(row)
+            rowType = "numeric";
+        elseif (isstring(row) || ischar(row) || isstruct(row)) && (isvector(row) || isempty(row))
+            rowType = string(class(row));
+        else
             error("NWB:CreateIndexedColumn:InvalidRow", ...
-                "Each cell of DATA must be a numeric or logical array. " + ...
-                "Cell %d is a %s.", iRow, class(row));
+                "Each cell of DATA must be a numeric or logical array, or a vector of " + ...
+                "strings, characters or structs. Cell %d is a %s of size [%s].", ...
+                iRow, class(row), join(string(size(row)), " "));
+        end
+        if isempty(row)
+            continue
+        end
+        if elementType == ""
+            elementType = rowType;
+        elseif rowType ~= elementType
+            error("NWB:CreateIndexedColumn:InconsistentElementType", ...
+                "All rows must hold elements of the same type. Cell %d holds %s " + ...
+                "elements, but an earlier row holds %s elements.", iRow, rowType, elementType);
+        end
+        if isstruct(row)
+            if isempty(structFields)
+                structFields = fieldnames(row);
+            elseif ~isequal(sort(fieldnames(row)), sort(structFields))
+                error("NWB:CreateIndexedColumn:InconsistentElementShape", ...
+                    "All struct rows must have the same fields. Cell %d has fields " + ...
+                    "{%s}, but an earlier row has {%s}.", iRow, ...
+                    strjoin(fieldnames(row), ", "), strjoin(structFields, ", "));
+            end
         end
     end
 
@@ -84,6 +116,10 @@ function [flatData, bounds] = flattenRows(rows)
             % Every row is a vector: a list of scalars, stacked into a column.
             counts(iRow) = numel(row);
             chunks{iRow} = row(:);
+            if isstruct(row)
+                % Concatenating structs needs the fields in the same order.
+                chunks{iRow} = orderfields(chunks{iRow}, structFields);
+            end
         else
             rowDims = size(row);
             if isequal(rowDims, elementDims)
