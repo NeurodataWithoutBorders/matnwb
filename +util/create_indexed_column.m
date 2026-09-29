@@ -56,12 +56,17 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %       [num_samples x num_electrodes], its trailing dimension of 1 omitted.
 %     - a numeric matrix [k x nSubGroups] (for n = 2): every sub-group holds a
 %       single k-sample element, as for spike waveforms on one electrode.
-%       This shortcut is used only while no numeric row of DATA has more
-%       than n dimensions. Once a row shows the full form above, a [k x m]
-%       row is read as that form with its trailing dimension of 1 omitted:
-%       one sub-group of m elements. The cell form is unambiguous either way.
 %     - [] or {} for a row with no sub-groups, or [elementDims x 0 x nSubGroups]
 %       for nSubGroups sub-groups that hold no elements.
+%   MATLAB drops trailing dimensions of 1, so a [k x m] row fits both numeric
+%   forms, and DATA is read one way as a whole. If any numeric row has more
+%   than n dimensions, every numeric row is read in the full form with its
+%   omitted trailing dimensions of 1 restored: a [k x m] row is one sub-group
+%   of m elements (for Units.waveforms, one spike event on m electrodes), and
+%   a row with one element per sub-group must be given as [k x 1 x nSubGroups]
+%   (one electrode), since MATLAB keeps a dimension of 1 that is not the last.
+%   Otherwise every [k x m] row is the shortcut form. The cell form is read
+%   the same way in either case.
 %   EXAMPLE (waveforms of 2 units with 3 and 4 spikes on one electrode):
 %     unit1 = rand(40, 3); unit2 = rand(40, 4);   % [num_samples x num_spikes]
 %     [wf, wfIndex, wfIndexIndex] = util.create_indexed_column({unit1, unit2}, 'spike waveforms', 'Depth', 2);
@@ -195,10 +200,11 @@ function [chunk, ownCount, innerCounts] = flattenItem(item, level, elementDims, 
 
     [itemElementDims, levelSizes] = splitDims(item, level, numel(elementDims), useShortcut);
     if ~isequal(itemElementDims, elementDims)
-        if isempty(item)
-            % [] has no entries at this level. An empty array that does carry
-            % the element shape, such as [k x 0 x n], declares n sub-groups
-            % with no elements and is counted below.
+        if isempty(item) && ismatrix(item)
+            % An empty matrix such as [] or zeros(1, 0) has no entries at this
+            % level. An empty array with more dimensions declares entries,
+            % such as [k x 0 x n] for n sub-groups with no elements, so its
+            % element shape must match like any other row's.
             chunk = [];
             ownCount = 0;
             return
