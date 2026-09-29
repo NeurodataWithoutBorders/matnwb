@@ -159,12 +159,32 @@ This yields the same ``waveforms.data`` size ``[40 15]``, ``waveforms_index = [3
 15]`` and ``waveforms_index_index = [2 5]`` as the nested form above. Dimensions before
 the last two, if there are more than one, are kept as part of each element.
 
-.. note::
+Units with different electrode counts
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+MATLAB drops a trailing dimension of 1, so a ``[numSamples x n]`` matrix fits two forms:
+``n`` spikes on one electrode (the single-electrode form), or one spike on ``n``
+electrodes (the array shortcut for a unit with one spike). ``addRaggedArray`` reads a
+whole column one way:
 
-   A ``[numSamples x numElectrodes x 1]`` array for a unit with one spike arrives as a
-   ``[numSamples x numElectrodes]`` matrix, because MATLAB drops a trailing dimension of
-   1, and is read as the single-electrode form: ``numElectrodes`` spikes with one
-   waveform each. Use the nested form for such a unit.
+- If any unit is given as a 3-D ``[numSamples x numElectrodes x numSpikes]`` array, every
+  unit is read as the array shortcut. A ``[numSamples x n]`` matrix is then a unit with
+  one spike on ``n`` electrodes, and a unit recorded on one electrode must be given as
+  ``[numSamples x 1 x numSpikes]``: MATLAB keeps a dimension of 1 that is not the last.
+- Otherwise every ``[numSamples x n]`` matrix is the single-electrode form.
+
+The nested form is read the same way in both cases. Here ``b1`` holds 2 spikes on 3
+electrodes (``[40 x 3 x 2]``), ``b2`` holds 4 spikes on one electrode (``[40 x 1 x 4]``)
+and ``b3`` holds a single spike on 3 electrodes (``[40 x 3]``, its trailing 1 dropped):
+
+.. literalinclude:: examples/ragged_arrays_examples.m
+   :language: matlab
+   :start-after: % snippet: doubly-mixed-electrode-counts
+   :end-before: % end snippet
+   :dedent:
+
+This yields ``waveforms_index = [3 6 7 8 9 10 13]`` (3 waveforms for each spike of
+``b1``, 1 for each spike of ``b2``, 3 for the spike of ``b3``) and
+``waveforms_index_index = [2 6 7]`` (2 spikes, then 4, then 1).
 
 Understanding the two index levels
 ----------------------------------
