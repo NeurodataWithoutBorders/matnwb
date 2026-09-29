@@ -41,12 +41,12 @@ argument builds a ragged column from data that is already flat.
 
 .. note::
 
-   ``addRaggedArray`` builds a whole column in one call. ``addRow`` cannot start a ragged
-   column, but it can append rows to an existing one. Give a row of scalars as a column
-   vector, the orientation of the column's ``data``. For a doubly-ragged column, give each
-   appended row as a cell with one matrix per sub-group, as in the nested form described
-   below: ``addRow`` does not accept a 3-D row, and it reads a ``[numSamples x n]`` matrix
-   as one spike event on ``n`` electrodes.
+   ``addRaggedArray`` builds a whole column in one call. ``addRow`` can also build a
+   ragged column row by row once the column is listed in ``colnames``, or append rows to
+   an existing one. Give a row of scalars as a column vector. For a doubly-ragged column,
+   give each row as a cell with one matrix per sub-group, as in the nested form described
+   below, without an extra enclosing cell: ``addRow`` does not accept a 3-D row, and it
+   reads a ``[numSamples x n]`` matrix as one spike event on ``n`` electrodes.
 
 Data orientation
 ----------------
