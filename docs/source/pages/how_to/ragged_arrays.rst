@@ -36,15 +36,17 @@ sections of the :nwb-format-description:`NWB format specification <tables-and-ra
 MatNWB provides one :class:`types.hdmf_common.DynamicTable` method that builds and wires
 these objects for you in a single call: ``addRaggedArray``. Its ``Depth`` argument sets
 the number of index levels: 1 (the default) for a ragged column, 2 for a doubly-ragged
-column. ``addDoublyRaggedArray`` is a shorthand for ``Depth`` 2.
+column. ``addDoublyRaggedArray`` is a shorthand for ``Depth`` 2. Its ``ElementsPerRow``
+argument builds a ragged column from data that is already flat.
 
 .. note::
 
-   ``addRaggedArray`` builds a whole column in one call. A ragged (single-index) column
-   can also be filled row by row with ``addRow``, but a **doubly-ragged** column cannot
-   be built reliably that way — ``addRow`` infers each value's structure from its array
-   shape, so it may index the data incorrectly. Use ``addRaggedArray`` with ``Depth`` 2
-   for those.
+   ``addRaggedArray`` builds a whole column in one call. ``addRow`` cannot start a ragged
+   column, but it can append rows to an existing one. Give a row of scalars as a column
+   vector, the orientation of the column's ``data``. For a doubly-ragged column, give each
+   appended row as a cell with one matrix per sub-group, as in the nested form described
+   below: ``addRow`` does not accept a 3-D row, and it reads a ``[numSamples x n]`` matrix
+   as one spike event on ``n`` electrodes.
 
 Data orientation
 ----------------
@@ -89,6 +91,60 @@ each unit was detected on (``electrodesTable`` is an existing electrodes table):
    :dedent:
 
 The values are 0-based row indices into the referenced table.
+
+Text and compound columns
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+A row can also hold text or compound elements. Each column holds one kind of element:
+numeric, text or compound.
+
+For text, give each row as a string vector or a cell vector of character vectors, with
+one element per entry. A character vector is a single element. For example, to tag the
+trials of a :class:`types.core.TimeIntervals` table:
+
+.. literalinclude:: examples/ragged_arrays_examples.m
+   :language: matlab
+   :start-after: % snippet: text-column
+   :end-before: % end snippet
+   :dedent:
+
+The ``tags`` column holds ``["go"; "rewarded"; "nogo"]`` and ``tags_index`` is ``[2 3]``.
+The column is a string array when every row is a string array, and a cell array of
+character vectors otherwise.
+
+A compound element has named fields, such as the ``x``, ``y`` and ``weight`` of each pixel
+in the ``pixel_mask`` column of a :class:`types.core.PlaneSegmentation`. Give each row as
+a table with one table row per element:
+
+.. literalinclude:: examples/ragged_arrays_examples.m
+   :language: matlab
+   :start-after: % snippet: compound-pixel-masks
+   :end-before: % end snippet
+   :dedent:
+
+The ``pixel_mask`` column holds all five pixels in one table, and ``pixel_mask_index`` is
+``[3 5]``. A row can also be a struct array with one struct per element, or a scalar
+struct whose fields are equal-length columns. The column is a struct array when every row
+is a struct array, and a table otherwise.
+
+Flat data with ``ElementsPerRow``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Your data may already hold all rows in one array, such as the pixels of every ROI from a
+segmentation tool, or the spike times of every unit sorted by unit. Instead of splitting
+it into one cell per row, pass the whole array together with ``ElementsPerRow``, the
+number of elements in each row:
+
+.. literalinclude:: examples/ragged_arrays_examples.m
+   :language: matlab
+   :start-after: % snippet: flat-pixel-masks
+   :end-before: % end snippet
+   :dedent:
+
+This builds the same ``pixel_mask`` column as the per-ROI tables above. The flat data can
+be a numeric vector, a numeric ``[elementDims x numElements]`` array, text, or compound
+data, with the elements of all rows in row order. It keeps its class: a string array gives
+a string column, and a struct array a struct column. The sum of ``ElementsPerRow`` must
+equal the number of elements. ``ElementsPerRow`` builds ragged columns only
+(``Depth`` 1).
 
 Doubly-ragged arrays
 --------------------
@@ -203,7 +259,8 @@ If you need the underlying objects (for example, to pass them to a constructor),
 helper function that ``addRaggedArray`` builds on: ``util.create_indexed_column`` returns
 a :class:`types.hdmf_common.VectorData` (or :class:`types.hdmf_common.DynamicTableRegion`)
 followed by one :class:`types.hdmf_common.VectorIndex` per index level, innermost first.
-It takes the same ``Depth`` argument and the same input forms.
+It takes the same ``Depth`` and ``ElementsPerRow`` arguments and the same input forms,
+including text and compound rows.
 
 .. literalinclude:: examples/ragged_arrays_examples.m
    :language: matlab
