@@ -15,6 +15,10 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %       DATA_VECTOR.data is [elementDims x totalElements]. On disk the ragged
 %       axis then comes first, as the schema requires.
 %     - [] for a row with no elements.
+%     - text: a cell array of character vectors or a string array is a list
+%       of text elements, and a character vector is one text element.
+%       DATA_VECTOR.data is then a column cell array of character vectors.
+%       A column holds either text or numeric elements, not both.
 %   All array rows must share elementDims. Trailing dimensions of 1 may be
 %   omitted, as MATLAB omits them from size: the number of element
 %   dimensions is the largest any row shows, and rows with fewer dimensions
@@ -66,7 +70,8 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %   a row with one element per sub-group must be given as [k x 1 x nSubGroups]
 %   (one electrode), since MATLAB keeps a dimension of 1 that is not the last.
 %   Otherwise every [k x m] row is the shortcut form. The cell form is read
-%   the same way in either case.
+%   the same way in either case. Text works in the cell form: each sub-group
+%   is a text row as described above.
 %   EXAMPLE (waveforms of 2 units with 3 and 4 spikes on one electrode):
 %     unit1 = rand(40, 3); unit2 = rand(40, 4);   % [num_samples x num_spikes]
 %     [wf, wfIndex, wfIndexIndex] = util.create_indexed_column({unit1, unit2}, 'spike waveforms', 'Depth', 2);
@@ -129,7 +134,7 @@ function [flatData, counts] = flattenRows(rows, depth)
     % count the entries of every index level. COUNTS{k} lists, for each entry
     % of level k, how many level k-1 entries it holds (level 0 entries are the
     % elements); COUNTS{depth} has one entry per row.
-    [elementDims, useShortcut] = findLayout(rows, depth);
+    layout = findLayout(rows, depth);
 
     numRows = numel(rows);
     chunks = cell(1, numRows);
@@ -137,10 +142,10 @@ function [flatData, counts] = flattenRows(rows, depth)
     rowInnerCounts = cell(1, numRows);
     for iRow = 1:numRows
         [chunks{iRow}, rowCounts(iRow), rowInnerCounts{iRow}] = flattenItem( ...
-            rows{iRow}, depth, elementDims, useShortcut, sprintf('DATA{%d}', iRow));
+            rows{iRow}, depth, layout, sprintf('DATA{%d}', iRow));
     end
 
-    flatData = concatenateChunks(chunks, elementDims);
+    flatData = concatenateChunks(chunks, layout.elementDims);
     counts = cell(1, depth);
     counts{depth} = rowCounts;
     for iLevel = 1:depth - 1
@@ -149,11 +154,13 @@ function [flatData, counts] = flattenRows(rows, depth)
     end
 end
 
-function [chunk, ownCount, innerCounts] = flattenItem(item, level, elementDims, useShortcut, label)
+function [chunk, ownCount, innerCounts] = flattenItem(item, level, layout, label)
     % CHUNK holds the item's elements as [elementDims x nElements] (a column
-    % in scalar mode). OWNCOUNT is the number of level-(LEVEL-1) entries in
-    % the item, i.e. its elements when LEVEL is 1. INNERCOUNTS{k}, k < LEVEL,
-    % lists the counts of the level-k entries inside the item.
+    % in scalar mode, a column cell array of character vectors in text mode).
+    % OWNCOUNT is the number of level-(LEVEL-1) entries in the item, i.e. its
+    % elements when LEVEL is 1. INNERCOUNTS{k}, k < LEVEL, lists the counts of
+    % the level-k entries inside the item.
+    elementDims = layout.elementDims;
     innerCounts = repmat({zeros(0, 1)}, 1, level - 1);
     if isempty(item) && (iscell(item) || isempty(elementDims))
         chunk = [];
@@ -161,11 +168,27 @@ function [chunk, ownCount, innerCounts] = flattenItem(item, level, elementDims, 
         return
     end
 
+    if layout.isText && level == 1
+        if ~isTextRow(item)
+            error("NWB:CreateIndexedColumn:InconsistentElementType", ...
+                "%s must be text (a cell array of character vectors, a string array or " + ...
+                "a character vector) like the other rows of the column. It is a %s.", ...
+                label, class(item));
+        end
+        if ischar(item)
+            chunk = {item};
+        else
+            chunk = cellstr(item(:));
+        end
+        ownCount = numel(chunk);
+        return
+    end
+
     if iscell(item)
         if level == 1
             error("NWB:CreateIndexedColumn:InvalidRow", ...
                 "%s is a cell array, but at the innermost level a row must be a " + ...
-                "numeric or logical array. Increase Depth for nested rows.", label);
+                "numeric or logical array or text. Increase Depth for nested rows.", label);
         end
         numEntries = numel(item);
         chunks = cell(1, numEntries);
@@ -173,7 +196,7 @@ function [chunk, ownCount, innerCounts] = flattenItem(item, level, elementDims, 
         entryInnerCounts = cell(1, numEntries);
         for iEntry = 1:numEntries
             [chunks{iEntry}, entryCounts(iEntry), entryInnerCounts{iEntry}] = flattenItem( ...
-                item{iEntry}, level - 1, elementDims, useShortcut, sprintf('%s{%d}', label, iEntry));
+                item{iEntry}, level - 1, layout, sprintf('%s{%d}', label, iEntry));
         end
         chunk = concatenateChunks(chunks, elementDims);
         ownCount = numEntries;
@@ -198,7 +221,7 @@ function [chunk, ownCount, innerCounts] = flattenItem(item, level, elementDims, 
         return
     end
 
-    [itemElementDims, levelSizes] = splitDims(item, level, numel(elementDims), useShortcut);
+    [itemElementDims, levelSizes] = splitDims(item, level, numel(elementDims), layout.useShortcut);
     if ~isequal(itemElementDims, elementDims)
         if isempty(item) && ismatrix(item)
             % An empty matrix such as [] or zeros(1, 0) has no entries at this
@@ -244,36 +267,45 @@ function [elementDims, levelSizes] = splitDims(item, level, numElementDims, useS
     end
 end
 
-function [elementDims, useShortcut] = findLayout(rows, depth)
-    % Decide how the numeric items of ROWS split into element shape and ragged
-    % sizes. ELEMENTDIMS is [] when DEPTH is 1 and every row is a vector (the
-    % elements are scalars) or when no row holds elements. As MATLAB drops
-    % trailing dimensions of 1 from size, the number of element dimensions is
-    % the largest any item shows; splitDims pads shorter items to it.
-    % USESHORTCUT is true when the column uses the [k x nSubGroups] form,
-    % which is only unambiguous while no item at level 2 or above shows the
-    % full form by having more dimensions than its level.
+function layout = findLayout(rows, depth)
+    % Decide how the items of ROWS are read. LAYOUT.ISTEXT is true when the
+    % elements are text. Otherwise LAYOUT.ELEMENTDIMS is the element shape, or
+    % [] when DEPTH is 1 and every row is a vector (the elements are scalars)
+    % or when no row holds elements. As MATLAB drops trailing dimensions of 1
+    % from size, the number of element dimensions is the largest any item
+    % shows; splitDims pads shorter items to it. LAYOUT.USESHORTCUT is true
+    % when the column uses the [k x nSubGroups] form, which is only
+    % unambiguous while no item at level 2 or above shows the full form by
+    % having more dimensions than its level.
     scan = struct('maxElementDims', -Inf, 'shortcutAllowed', true, ...
-        'firstItem', [], 'firstLevel', 0);
+        'firstItem', [], 'firstLevel', 0, 'hasText', false, 'hasNumeric', false);
     for iRow = 1:numel(rows)
         scan = scanItem(rows{iRow}, depth, depth == 1, scan);
     end
 
-    elementDims = [];
-    useShortcut = false;
-    if isempty(scan.firstItem)
+    layout = struct('elementDims', [], 'useShortcut', false, 'isText', scan.hasText);
+    if scan.hasText && scan.hasNumeric
+        error("NWB:CreateIndexedColumn:InconsistentElementType", ...
+            "A column holds either text or numeric elements, but DATA has both.");
+    end
+    if layout.isText || isempty(scan.firstItem)
         return
     end
-    useShortcut = depth >= 2 && scan.shortcutAllowed && scan.maxElementDims <= 1;
-    if useShortcut
+    layout.useShortcut = depth >= 2 && scan.shortcutAllowed && scan.maxElementDims <= 1;
+    if layout.useShortcut
         numElementDims = 1;
     else
         numElementDims = scan.maxElementDims;
     end
-    elementDims = splitDims(scan.firstItem, scan.firstLevel, numElementDims, useShortcut);
+    layout.elementDims = splitDims( ...
+        scan.firstItem, scan.firstLevel, numElementDims, layout.useShortcut);
 end
 
 function scan = scanItem(item, level, vectorsAreScalars, scan)
+    if level == 1 && isTextRow(item)
+        scan.hasText = scan.hasText || ~isempty(item);
+        return
+    end
     if iscell(item)
         % A cell at level 1 is rejected by flattenItem.
         if level >= 2
@@ -283,7 +315,11 @@ function scan = scanItem(item, level, vectorsAreScalars, scan)
         end
         return
     end
-    if ~(isnumeric(item) || islogical(item)) || (vectorsAreScalars && isvector(item))
+    if ~(isnumeric(item) || islogical(item))
+        return
+    end
+    scan.hasNumeric = scan.hasNumeric || ~isempty(item);
+    if vectorsAreScalars && isvector(item)
         return
     end
 
@@ -315,4 +351,8 @@ function hint = cellHint(level)
     else
         hint = '';
     end
+end
+
+function tf = isTextRow(item)
+    tf = iscellstr(item) || isstring(item) || ischar(item);
 end

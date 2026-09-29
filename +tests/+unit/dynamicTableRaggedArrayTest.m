@@ -9,6 +9,36 @@ classdef dynamicTableRaggedArrayTest < tests.abstract.NwbTestCase
     end
 
     methods (Test)
+        function testAddRaggedArrayWithTextRowsRoundTrip(testCase)
+            dt = types.hdmf_common.DynamicTable('description', 'test');
+            dt.addRaggedArray('tags', {{'1a'; '1b'; '1c'}, {'2a'}}, 'description', 'tags');
+
+            nwb = NwbFile( ...
+                'identifier', 'ragged_text_test', ...
+                'session_description', 'test', ...
+                'session_start_time', datetime(2024, 1, 1, 'TimeZone', 'local'));
+            nwb.acquisition.set('DynamicTable', dt);
+            fileName = testCase.getRandomFilename();
+            nwbExport(nwb, fileName);
+
+            back = nwbRead(fileName, 'ignorecache');
+            table = back.acquisition.get('DynamicTable');
+            testCase.verifyEqual(table.vectordata.get('tags').data.load(), {'1a'; '1b'; '1c'; '2a'});
+            testCase.verifyEqual(table.vectordata.get('tags_index').data.load(), uint64([3; 4]));
+        end
+
+        function testAddRaggedArrayToTableWithIdsOnly(testCase)
+            % Tables such as those in the icephys hierarchy get their ids in
+            % the constructor and their ragged column afterwards.
+            dt = types.hdmf_common.DynamicTable('description', 'test', ...
+                'id', types.hdmf_common.ElementIdentifiers('data', int64([19; 21])));
+            dt.addRaggedArray('refs', {0, [0 1]});
+
+            testCase.verifyEqual(dt.vectordata.get('refs_index').data, uint64([1; 3]));
+            testCase.verifyError(@() dt.addRaggedArray('more', {0}), ...
+                'NWB:DynamicTable:AddColumn:MissingRows');
+        end
+
         function testAddRaggedArray(testCase)
             dt = types.hdmf_common.DynamicTable('description', 'test');
             dt.addRaggedArray('spikes', {[1 2 3], [4 5]}, 'description', 'spike times');
