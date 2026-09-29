@@ -17,6 +17,39 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
             testCase.verifySameHandle(index.target.target, vector);
         end
 
+        function testTextRows(testCase)
+            % A cell array of character vectors, a string array and a character
+            % vector are lists of text elements, stored as a column cellstr.
+            [vector, index] = util.create_indexed_column({{'1a'; '1b'; '1c'}, {'2a'}});
+            testCase.verifyEqual(vector.data, {'1a'; '1b'; '1c'; '2a'});
+            testCase.verifyEqual(index.data, uint64([3; 4]));
+
+            [vector, index] = util.create_indexed_column({["1a" "1b" "1c"], '2a'});
+            testCase.verifyEqual(vector.data, {'1a'; '1b'; '1c'; '2a'});
+            testCase.verifyEqual(index.data, uint64([3; 4]));
+        end
+
+        function testTextColumnWithEmptyRow(testCase)
+            [vector, index] = util.create_indexed_column({{'a'; 'b'}, [], {'c'}});
+
+            testCase.verifyEqual(vector.data, {'a'; 'b'; 'c'});
+            testCase.verifyEqual(index.data, uint64([2; 2; 3]));
+        end
+
+        function testTextRowsAtDepth2(testCase)
+            [vector, index, indexIndex] = util.create_indexed_column( ...
+                {{{'a', 'b'}, {'c'}}, {{'d'}}}, 'Depth', 2);
+
+            testCase.verifyEqual(vector.data, {'a'; 'b'; 'c'; 'd'});
+            testCase.verifyEqual(index.data, uint64([2; 3; 4]));
+            testCase.verifyEqual(indexIndex.data, uint64([2; 3]));
+        end
+
+        function testTextAndNumericRowsErrors(testCase)
+            testCase.verifyError(@() util.create_indexed_column({{'a'}, [1 2]}), ...
+                'NWB:CreateIndexedColumn:InconsistentElementType');
+        end
+
         function testColumnVectorsMatchRowVectors(testCase)
             % Orientation of a vector row does not matter: both are lists of scalars.
             [fromRows, indexFromRows] = util.create_indexed_column({[1 2 3], [4 5]});
@@ -103,7 +136,7 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
 
         function testInvalidRowTypeErrors(testCase)
             testCase.verifyError( ...
-                @() util.create_indexed_column({[1 2], "text"}), ...
+                @() util.create_indexed_column({[1 2], struct('a', 1)}), ...
                 'NWB:CreateIndexedColumn:InvalidRow');
         end
 
