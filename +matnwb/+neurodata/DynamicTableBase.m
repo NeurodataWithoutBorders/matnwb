@@ -137,14 +137,16 @@ classdef (Abstract) DynamicTableBase < handle
         %  - columnName (string) -
         %    Name of the new column.
         %
-        %  - data (cell) -
+        %  - data (cell | numeric | text | table | struct) -
         %    A cell array with one cell per row, holding that row's elements
         %    in the orientation of VectorData.data: a vector of scalars (e.g.
-        %    {[1 2 3], [4 5]} for a 2-row table), or an [elementDims x nElements]
-        %    array with the ragged axis last. With Depth 2 each cell holds the
-        %    row's sub-groups, either as a cell of [elementDims x nElements]
-        %    arrays or as one [elementDims x nElements x nSubGroups] array.
-        %    See util.create_indexed_column for all accepted forms.
+        %    {[1 2 3], [4 5]} for a 2-row table), an [elementDims x nElements]
+        %    array with the ragged axis last, text, or compound data (a table
+        %    or struct). With Depth 2 each cell holds the row's sub-groups,
+        %    either as a cell of [elementDims x nElements] arrays or as one
+        %    [elementDims x nElements x nSubGroups] array. With ElementsPerRow,
+        %    data is instead the elements of all rows in row order. See
+        %    util.create_indexed_column for all accepted forms.
         %
         % Name-Value Arguments:
         %  - description (string) -
@@ -158,20 +160,28 @@ classdef (Abstract) DynamicTableBase < handle
         %    Number of VectorIndex levels: 1 (default) for a ragged column,
         %    2 for a doubly ragged column.
         %
+        %  - ElementsPerRow (vector of non-negative integers) -
+        %    Number of elements in each row, for data that is already flat:
+        %    data then holds the elements of all rows in row order, and the
+        %    column has depth 1. For example, pixel masks as one table of all
+        %    pixels plus the number of pixels of each ROI.
+        %
         % See also util.create_indexed_column, addColumn, addDoublyRaggedArray
 
             arguments
                 obj (1,1) {matnwb.common.validation.mustBeDynamicTable}
                 columnName (1,1) string
-                data cell
+                data
                 options.description (1,1) string = "no description"
                 options.table = []
                 options.Depth (1,1) {mustBeInteger, mustBePositive} = 1
+                options.ElementsPerRow {mustBeNumeric, mustBeInteger, mustBeNonnegative} = []
             end
 
             columns = cell(1, options.Depth + 1);
             [columns{:}] = util.create_indexed_column(data, ...
-                char(options.description), options.table, 'Depth', options.Depth);
+                char(options.description), options.table, ...
+                'Depth', options.Depth, 'ElementsPerRow', options.ElementsPerRow);
 
             % The data column, then one index level per depth: '<name>_index',
             % '<name>_index_index', ...
