@@ -15,13 +15,17 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %       DATA_VECTOR.data is [elementDims x totalElements]. On disk the ragged
 %       axis then comes first, as the schema requires.
 %     - [] for a row with no elements.
-%     - text: a cell array of character vectors or a string array is a list
-%       of text elements, and a character vector is one text element.
-%       DATA_VECTOR.data is then a column cell array of character vectors.
+%     - text: a string array, a cell array of character vectors or a
+%       character vector, as a vector. A string or cell array is a list of
+%       text elements, and a character vector is one text element.
+%       DATA_VECTOR.data is a string column when every text row is a string
+%       array, and a column cell array of character vectors otherwise.
 %     - compound: a table holds one compound element per table row, a struct
-%       array one element per struct, and a scalar struct whose fields are
-%       equal-length columns one element per column entry. DATA_VECTOR.data
-%       is then a table, which is written as a compound dataset (for example
+%       array (a vector) one element per struct, with one value in each
+%       field, and a scalar struct whose fields are equal-length columns one
+%       element per column entry. DATA_VECTOR.data is a struct column when
+%       every compound row is a struct array, and a table otherwise; either
+%       is written as a compound dataset (for example
 %       PlaneSegmentation.pixel_mask).
 %   A column holds elements of one kind: numeric, text or compound.
 %   All array rows must share elementDims. Trailing dimensions of 1 may be
@@ -90,8 +94,10 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %   COUNTS(i) is the number of elements in row i. FLATDATA is a numeric
 %   vector (scalar elements), a numeric array [elementDims x nElements], text
 %   (a cell array of character vectors or a string array), or compound data
-%   (a table, a struct array or a scalar struct of columns). SUM(COUNTS) must
-%   equal the number of elements. This form builds a column of depth 1.
+%   (a table, a struct array or a scalar struct of columns). It keeps its
+%   class as rows do: a string array stays a string column and a struct array
+%   a struct column. SUM(COUNTS) must equal the number of elements. This form
+%   builds a column of depth 1.
 %   EXAMPLE (pixel masks of 2 ROIs with 3 and 2 pixels):
 %     pixels = table(uint32([1;2;3;7;8]), uint32([4;4;4;9;9]), single(ones(5,1)), ...
 %         'VariableNames', {'x', 'y', 'weight'});
@@ -186,7 +192,7 @@ function [flatData, counts] = flattenRows(rows, depth)
     end
 
     flatData = concatenateChunks(chunks, layout);
-    if layout.kind == "compound" && ~isempty(flatData)
+    if layout.kind == "compound" && layout.compoundClass == "table" && ~isempty(flatData)
         flatData = struct2table(flatData);
     end
     counts = cell(1, depth);
@@ -199,11 +205,11 @@ end
 
 function [chunk, ownCount, innerCounts] = flattenItem(item, level, layout, label)
     % CHUNK holds the item's elements as [elementDims x nElements] (a column
-    % in scalar mode, a column cell array of character vectors for text, a
-    % scalar struct of columns for compound elements). OWNCOUNT is the number
-    % of level-(LEVEL-1) entries in the item, i.e. its elements when LEVEL is
-    % 1. INNERCOUNTS{k}, k < LEVEL, lists the counts of the level-k entries
-    % inside the item.
+    % in scalar mode, a string or cellstr column for text, a struct column or
+    % a scalar struct of columns for compound elements). OWNCOUNT is the
+    % number of level-(LEVEL-1) entries in the item, i.e. its elements when
+    % LEVEL is 1. INNERCOUNTS{k}, k < LEVEL, lists the counts of the level-k
+    % entries inside the item.
     elementDims = layout.elementDims;
     innerCounts = repmat({zeros(0, 1)}, 1, level - 1);
     if isempty(item) && (iscell(item) || isempty(elementDims))
@@ -219,7 +225,17 @@ function [chunk, ownCount, innerCounts] = flattenItem(item, level, layout, label
                 "of columns) like the other rows of the column. It is a %s.", ...
                 label, class(item));
         end
-        [chunk, ownCount] = compoundColumns(item, label);
+        if isstruct(item) && ~isscalar(item) && ~isvector(item)
+            error("NWB:CreateIndexedColumn:InvalidRow", ...
+                "%s must be a vector of structs. It is a struct array of size [%s].", ...
+                label, join(string(size(item)), " "));
+        end
+        if layout.compoundClass == "struct"
+            chunk = item(:);
+            ownCount = numel(item);
+        else
+            [chunk, ownCount] = compoundColumns(item, label);
+        end
         return
     end
 
@@ -230,7 +246,14 @@ function [chunk, ownCount, innerCounts] = flattenItem(item, level, layout, label
                 "a character vector) like the other rows of the column. It is a %s.", ...
                 label, class(item));
         end
-        if ischar(item)
+        if ~isvector(item)
+            error("NWB:CreateIndexedColumn:InvalidRow", ...
+                "%s must be a vector of text elements. It is a %s of size [%s].", ...
+                label, class(item), join(string(size(item)), " "));
+        end
+        if layout.textClass == "string"
+            chunk = item(:);
+        elseif ischar(item)
             chunk = {item};
         else
             chunk = cellstr(item(:));
@@ -324,7 +347,11 @@ end
 
 function layout = findLayout(rows, depth)
     % Decide how the items of ROWS are read. LAYOUT.KIND is "numeric", "text"
-    % or "compound". For numeric elements, LAYOUT.ELEMENTDIMS is the element
+    % or "compound". LAYOUT.TEXTCLASS is "string" when every text row is a
+    % string array and "cellstr" otherwise; LAYOUT.COMPOUNDCLASS is "struct"
+    % when every compound row is a struct array and "table" otherwise, so a
+    % column keeps the class its rows were given in where that is possible.
+    % For numeric elements, LAYOUT.ELEMENTDIMS is the element
     % shape, or [] when DEPTH is 1 and every row is a vector (the elements are
     % scalars) or when no row holds elements. As MATLAB drops trailing dimensions of 1
     % from size, the number of element dimensions is the largest any item
@@ -334,7 +361,8 @@ function layout = findLayout(rows, depth)
     % having more dimensions than its level.
     scan = struct('maxElementDims', -Inf, 'shortcutAllowed', true, ...
         'firstItem', [], 'firstLevel', 0, ...
-        'hasNumeric', false, 'hasText', false, 'hasCompound', false);
+        'hasNumeric', false, 'hasText', false, 'hasCompound', false, ...
+        'allStrings', true, 'allStructArrays', true);
     for iRow = 1:numel(rows)
         scan = scanItem(rows{iRow}, depth, depth == 1, scan);
     end
@@ -346,9 +374,16 @@ function layout = findLayout(rows, depth)
             "A column holds elements of one kind, but DATA has %s elements.", ...
             strjoin(presentKinds, " and "));
     end
-    layout = struct('elementDims', [], 'useShortcut', false, 'kind', "numeric");
+    layout = struct('elementDims', [], 'useShortcut', false, 'kind', "numeric", ...
+        'textClass', "cellstr", 'compoundClass', "table");
     if ~isempty(presentKinds)
         layout.kind = presentKinds;
+    end
+    if scan.allStrings
+        layout.textClass = "string";
+    end
+    if scan.allStructArrays
+        layout.compoundClass = "struct";
     end
     if layout.kind ~= "numeric" || isempty(scan.firstItem)
         return
@@ -365,11 +400,17 @@ end
 
 function scan = scanItem(item, level, vectorsAreScalars, scan)
     if level == 1 && isTextRow(item)
-        scan.hasText = scan.hasText || ~isempty(item);
+        if ~isempty(item)
+            scan.hasText = true;
+            scan.allStrings = scan.allStrings && isstring(item);
+        end
         return
     end
     if level == 1 && isCompoundRow(item)
-        scan.hasCompound = scan.hasCompound || ~isempty(item);
+        if ~isempty(item)
+            scan.hasCompound = true;
+            scan.allStructArrays = scan.allStructArrays && isStructArrayRow(item);
+        end
         return
     end
     if iscell(item)
@@ -408,7 +449,9 @@ function data = concatenateChunks(chunks, layout)
         data = [];
         return
     end
-    if layout.kind == "compound"
+    if layout.kind == "compound" && layout.compoundClass == "struct"
+        data = joinStructArrays(nonEmptyChunks);
+    elseif layout.kind == "compound"
         data = joinCompoundColumns(nonEmptyChunks);
     else
         data = cat(numel(layout.elementDims) + 1, nonEmptyChunks{:});
@@ -425,8 +468,11 @@ function [flatData, numElements] = normalizeFlatData(data)
             flatData = data;
             numElements = size(data, ndims(data));
         end
-    elseif iscellstr(data) || isstring(data)
-        flatData = cellstr(data(:));
+    elseif (iscellstr(data) || isstring(data)) && (isvector(data) || isempty(data))
+        flatData = data(:);
+        numElements = numel(flatData);
+    elseif isStructArrayRow(data) && (isvector(data) || isempty(data))
+        flatData = data(:);
         numElements = numel(flatData);
     elseif isCompoundRow(data)
         [columns, numElements] = compoundColumns(data, 'DATA');
@@ -495,8 +541,39 @@ function joined = joinCompoundColumns(chunks)
     end
 end
 
+function joined = joinStructArrays(chunks)
+    % Concatenate struct columns, with the fields of every chunk in the order
+    % of the first, as concatenation requires.
+    names = fieldnames(chunks{1});
+    for iChunk = 1:numel(chunks)
+        if ~isequal(sort(fieldnames(chunks{iChunk})), sort(names))
+            error("NWB:CreateIndexedColumn:InconsistentElementShape", ...
+                "All compound elements must have the same fields: %s.", strjoin(names, ", "));
+        end
+        chunks{iChunk} = orderfields(chunks{iChunk}, names);
+    end
+    joined = vertcat(chunks{:});
+end
+
 function tf = isCompoundRow(item)
     tf = istable(item) || isstruct(item);
+end
+
+function tf = isStructArrayRow(item)
+    % A struct array whose fields hold one value per struct, as opposed to a
+    % scalar struct whose fields are columns of values.
+    tf = isstruct(item);
+    if ~tf
+        return
+    end
+    names = fieldnames(item);
+    for iName = 1:numel(names)
+        values = {item.(names{iName})};
+        if ~all(cellfun(@(value) isscalar(value) || ischar(value), values))
+            tf = false;
+            return
+        end
+    end
 end
 
 function hint = cellHint(level)

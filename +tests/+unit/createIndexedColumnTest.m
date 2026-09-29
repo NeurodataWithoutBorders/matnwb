@@ -59,7 +59,7 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(index.data, uint64([2; 5]));
 
             [vector, index] = util.create_indexed_column(["a" "b" "c"], 'ElementsPerRow', [2 1]);
-            testCase.verifyEqual(vector.data, {'a'; 'b'; 'c'});
+            testCase.verifyEqual(vector.data, ["a"; "b"; "c"]);
             testCase.verifyEqual(index.data, uint64([2; 3]));
         end
 
@@ -82,6 +82,63 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
             % Data that is not a cell array needs ElementsPerRow.
             testCase.verifyError(@() util.create_indexed_column([1 2 3]), ...
                 'NWB:CreateIndexedColumn:InvalidData');
+        end
+
+        function testTextRowsKeepStringClass(testCase)
+            % String rows give a string column; cell arrays of character
+            % vectors give a cellstr column.
+            [vector, index] = util.create_indexed_column({["a" "b"], "c"});
+            testCase.verifyEqual(vector.data, ["a"; "b"; "c"]);
+            testCase.verifyEqual(index.data, uint64([2; 3]));
+
+            vector = util.create_indexed_column({{'a'; 'b'}, {'c'}});
+            testCase.verifyEqual(vector.data, {'a'; 'b'; 'c'});
+
+            % String rows together with other text rows give a cellstr column.
+            vector = util.create_indexed_column({["a" "b"], {'c'}});
+            testCase.verifyEqual(vector.data, {'a'; 'b'; 'c'});
+        end
+
+        function testCharRowIsOneTextElement(testCase)
+            [vector, index] = util.create_indexed_column({'abc', 'de'});
+
+            testCase.verifyEqual(vector.data, {'abc'; 'de'});
+            testCase.verifyEqual(index.data, uint64([1; 2]));
+        end
+
+        function testStructArrayRowsKeepTheirClass(testCase)
+            s1 = struct('x', {uint32(1), uint32(2)}, 'weight', {single(1), single(1)});
+            s2 = struct('weight', single(0.5), 'x', uint32(7));   % fields in another order
+
+            [vector, index] = util.create_indexed_column({s1, s2});
+            testCase.verifyEqual(vector.data, [s1(:); orderfields(s2, s1)]);
+            testCase.verifyEqual(index.data, uint64([2; 3]));
+
+            % Flat struct arrays keep their class too.
+            flat = util.create_indexed_column([s1(:); orderfields(s2, s1)], ...
+                'ElementsPerRow', [2 1]);
+            testCase.verifyEqual(flat.data, vector.data);
+        end
+
+        function testStructArraysWithTablesGiveATable(testCase)
+            s1 = struct('x', {uint32(1), uint32(2)}, 'weight', {single(1), single(1)});
+            t2 = table(uint32(7), single(0.5), 'VariableNames', {'x', 'weight'});
+
+            vector = util.create_indexed_column({s1, t2});
+
+            testCase.verifyEqual(vector.data, [struct2table(s1(:)); t2]);
+        end
+
+        function testTextAndStructRowsMustBeVectors(testCase)
+            testCase.verifyError( ...
+                @() util.create_indexed_column({["a" "b"; "c" "d"]}), ...
+                'NWB:CreateIndexedColumn:InvalidRow');
+            testCase.verifyError( ...
+                @() util.create_indexed_column({repmat(struct('x', 1), 2, 2)}), ...
+                'NWB:CreateIndexedColumn:InvalidRow');
+            testCase.verifyError( ...
+                @() util.create_indexed_column({struct('x', 1), struct('y', 2)}), ...
+                'NWB:CreateIndexedColumn:InconsistentElementShape');
         end
 
         function testTextRows(testCase)
