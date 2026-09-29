@@ -437,6 +437,32 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(dynamicTable.id.data, int64((0:numRows-1)'));
         end
 
+        function testAddRaggedColumnToTableWithIdsOnly(testCase)
+            % A table can get its ids before its first column. The ids then
+            % set the height, which the outermost index of a ragged column
+            % must match.
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'ids only', ...
+                'id', types.hdmf_common.ElementIdentifiers('data', int64([0; 1])));
+            [vectorData, vectorIndex] = util.create_indexed_column({[1, 2], 3});
+
+            dynamicTable.addColumn('raggedCol', vectorData, 'raggedCol_index', vectorIndex);
+
+            testCase.verifyEqual(dynamicTable.colnames, {'raggedCol'});
+            testCase.verifyEqual(dynamicTable.id.data, int64([0; 1]));
+        end
+
+        function testAddColumnToTableWithIdsOnlyChecksHeight(testCase)
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'ids only', ...
+                'id', types.hdmf_common.ElementIdentifiers('data', int64([0; 1])));
+
+            testCase.verifyError( ...
+                @() dynamicTable.addColumn('col', types.hdmf_common.VectorData( ...
+                    'description', 'three rows', 'data', [1; 2; 3])), ...
+                'NWB:DynamicTable:AddColumn:MissingRows');
+        end
+
         function testAddColumnThrowsErrorForExistingColumn(testCase)
             % Test that adding a column that already exists throws an error
             dynamicTable = testCase.createDynamicTable();
