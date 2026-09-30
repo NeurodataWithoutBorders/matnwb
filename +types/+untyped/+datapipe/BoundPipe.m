@@ -296,6 +296,11 @@ classdef BoundPipe < types.untyped.datapipe.Pipe
             obj.config.offset = obj.config.offset + data_size(obj.config.axis);
             obj.stub.updateSize()
         end
+
+        function axisLength = getAppendAxisLength(obj)
+            % The size of the dataset on file along the append axis.
+            axisLength = obj.dims(obj.axis);
+        end
         
         function property = getPipeProperty(obj, type)
             property = [];
