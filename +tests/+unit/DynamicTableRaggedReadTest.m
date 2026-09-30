@@ -311,9 +311,9 @@ classdef DynamicTableRaggedReadTest < tests.abstract.NwbTestCase
 end
 
 function elements = getReadElements(spy)
-% getReadElements - Sorted elements that a spy's load_mat_style calls selected in their last subscript.
+% getReadElements - Sorted elements that a spy's reads selected in their last subscript.
 lastSubscripts = cellfun(@(selection) reshape(selection{end}, 1, []), ...
-    spy.MatStyleSelections, 'UniformOutput', false);
+    spy.Selections, 'UniformOutput', false);
 elements = sort([lastSubscripts{:}]);
 end
 
