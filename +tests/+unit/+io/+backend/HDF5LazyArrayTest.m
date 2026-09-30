@@ -154,6 +154,30 @@ classdef HDF5LazyArrayTest < matlab.unittest.TestCase
             testCase.verifyEqual(lazyArray.load_mat_style(':', [columns, repeated], ':'), ...
                 data(:, [columns, repeated], :));
         end
+
+        function loadSelectionsReadsHyperslabsInOneCall(testCase)
+            % One contiguous range or ':' per dimension of a numeric dataset.
+            selections = {{':', ':', 2:3}, {1:2, 4, ':'}, {':', ':', 6}};
+            lazyArray = testCase.createSpy();
+
+            actual = lazyArray.loadSelections(selections);
+
+            testCase.verifyEqual(lazyArray.LoadCount, 1, ...
+                'Expected hyperslab selections to be read without load_mat_style.');
+            testCase.verifySelectionsMatchLoadMatStyle(lazyArray, selections, actual)
+        end
+
+        function loadSelectionsReadsOtherSelectionsWithLoadMatStyle(testCase)
+            % Indices with gaps, a linear index, and fewer subscripts than dimensions.
+            selections = {{':', [1 3], 2}, {5:7}, {':', 2:4}};
+            lazyArray = testCase.createSpy();
+
+            actual = lazyArray.loadSelections(selections);
+
+            testCase.verifyEqual(lazyArray.LoadCount, 1 + numel(selections), ...
+                'Expected each selection to be read with load_mat_style.');
+            testCase.verifySelectionsMatchLoadMatStyle(lazyArray, selections, actual)
+        end
     end
 
     methods (Access = private)
@@ -163,6 +187,23 @@ classdef HDF5LazyArrayTest < matlab.unittest.TestCase
             h5create(filename, "/data", size(data));
             h5write(filename, "/data", data);
             lazyArray = io.backend.hdf5.HDF5LazyArray(filename, "/data");
+        end
+
+        function lazyArray = createSpy(~)
+            filename = "lazy-array-selections.h5";
+            data = reshape(1:120, [4, 5, 6]);
+            h5create(filename, "/data", size(data));
+            h5write(filename, "/data", data);
+            lazyArray = tests.unit.io.backend.doubles.HDF5LazyArraySpy(filename, "/data");
+        end
+
+        function verifySelectionsMatchLoadMatStyle(testCase, lazyArray, selections, actual)
+            testCase.verifySize(actual, size(selections));
+            for iSelection = 1:numel(selections)
+                expected = lazyArray.load_mat_style(selections{iSelection}{:});
+                testCase.verifyEqual(actual{iSelection}, expected, ...
+                    sprintf('Selection %d differs from load_mat_style.', iSelection));
+            end
         end
     end
 end

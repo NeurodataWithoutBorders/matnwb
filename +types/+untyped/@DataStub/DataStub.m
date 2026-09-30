@@ -112,7 +112,18 @@ classdef (Sealed) DataStub < handle
         end
 
         data = load_mat_style(obj, varargin);
-        
+
+        function data = loadSelections(obj, selections)
+            %LOADSELECTIONS Read several selections in one pass over the dataset.
+            %   DATA = LOADSELECTIONS(SELECTIONS) reads each selection as
+            %   indexing the DataStub with it would, and returns the results
+            %   in a cell array of the same size as SELECTIONS. SELECTIONS is
+            %   a cell array with one cell array of subscripts per selection,
+            %   for example {{':', 1:3}, {':', 7:9}}. The storage backend
+            %   decides how many reads this takes.
+            data = obj.lazyArray.loadSelections(selections);
+        end
+
         refs = export(obj, writer, fullpath, refs);
         
         function varargout = subsref(obj, S)
