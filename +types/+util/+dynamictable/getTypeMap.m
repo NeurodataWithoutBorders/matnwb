@@ -17,6 +17,17 @@ for i = 1:length(DynamicTable.colnames)
     end
 
     if isa(colVecData.data, 'types.untyped.DataPipe')
+        hasElements = ~any(size(colVecData.data) == 0);
+    else
+        hasElements = ~isempty(colVecData.data);
+    end
+    if ~hasElements
+        % A column whose rows are all empty has no element to take the type
+        % from.
+        continue;
+    end
+
+    if isa(colVecData.data, 'types.untyped.DataPipe')
         colval = colVecData.data.load(1);
     elseif istable(colVecData.data)
         colval = colVecData.data;
