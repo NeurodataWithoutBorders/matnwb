@@ -319,6 +319,60 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
 
             testCase.verifyEqual(matlabTable.custom, expectedCategoryTable)
         end
+
+        function testGetRowAfterRoundTrip(testCase)
+            readTable = testCase.roundTripAlignedTableWithColumnsAndCategories();
+
+            selectedRows = readTable.getRow([1, 3]);
+
+            testCase.verifyEqual(selectedRows.Properties.VariableNames, ...
+                {'x', 'y', 'z', 'first', 'second'})
+            testCase.verifyEqual(height(selectedRows), 2)
+        end
+
+        function testToTableAfterRoundTrip(testCase)
+            readTable = testCase.roundTripAlignedTableWithColumnsAndCategories();
+
+            matlabTable = readTable.toTable();
+
+            testCase.verifyEqual(matlabTable.Properties.VariableNames, ...
+                {'id', 'x', 'y', 'z', 'first', 'second'})
+            testCase.verifyEqual(height(matlabTable), 3)
+        end
+    end
+
+    methods (Access = private)
+        function readTable = roundTripAlignedTableWithColumnsAndCategories(testCase)
+            % Export and read a table with three columns and two categories.
+            % The `colnames` and `categories` attributes are read as column
+            % cell arrays of different lengths.
+            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
+
+            columnNames = {'x', 'y', 'z'};
+            columns = cell(1, numel(columnNames));
+            for iColumn = 1:numel(columnNames)
+                columns{iColumn} = types.hdmf_common.VectorData( ...
+                    'description', 'parent column', ...
+                    'data', (1:3)');
+            end
+            columnNvPairs = [columnNames; columns];
+
+            alignedTable = types.hdmf_common.AlignedDynamicTable( ...
+                'description', 'parent table', ...
+                'colnames', columnNames, ...
+                columnNvPairs{:});
+            alignedTable.addCategory( ...
+                "first", tests.factory.DynamicTable(NumRows=3, NumColumns=1), ...
+                "second", tests.factory.DynamicTable(NumRows=3, NumColumns=1))
+
+            fileName = 'alignedTable.nwb';
+            nwb = tests.factory.NWBFile();
+            nwb.acquisition.set('AlignedTable', alignedTable);
+            nwbExport(nwb, fileName);
+
+            nwbIn = nwbRead(fileName, 'ignorecache');
+            readTable = nwbIn.acquisition.get('AlignedTable');
+        end
     end
 
     methods (Static, Access = private)
