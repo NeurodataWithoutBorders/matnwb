@@ -64,13 +64,14 @@ function addVarargRow(DynamicTable, varargin)
     if specifiesId
         newId = p.Results.id;
     elseif isa(DynamicTable.id.data, 'types.untyped.DataPipe')
-        newId = DynamicTable.id.data.offset;
+        newId = DynamicTable.id.data.getAppendAxisLength();
     else
         newId = length(DynamicTable.id.data);
     end
 
     if isa(DynamicTable.id.data, 'types.untyped.DataPipe')
-        DynamicTable.id.data.append(newId);
+        % An unbound pipe only accepts values of its own data type.
+        DynamicTable.id.data.append(cast(newId, DynamicTable.id.data.dataType));
     else
         DynamicTable.id.data = [double(DynamicTable.id.data); newId];
     end

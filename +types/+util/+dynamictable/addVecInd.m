@@ -12,7 +12,7 @@ else
 end
 
 if isa(VecData.data, 'types.untyped.DataPipe')
-    oldDataHeight = VecData.data.offset;
+    oldDataHeight = VecData.data.getAppendAxisLength();
 elseif isa(VecData.data, 'types.untyped.DataStub')
     oldDataHeight = VecData.data.dims(end);
 elseif isvector(VecData.data)
