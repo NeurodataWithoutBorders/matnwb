@@ -156,12 +156,37 @@ function numRows = nestedAdd(DynamicTable, indChain, data)
         end % char matrices converted to cell arrays containing character vectors.
 
         if isa(Vector.data, 'types.untyped.DataPipe')
+            % A VectorIndex above this column advances by the number of
+            % elements this call adds, not by the total length of the pipe.
+            lengthBefore = getDataPipeLength(Vector.data);
             Vector.data.append(data);
-            numRows = size(Vector.data, Vector.data.axis);
+            numRows = getDataPipeLength(Vector.data) - lengthBefore;
         else
             numRows = add2MemData(Vector, data);
         end
     end
+end
+
+function pipeLength = getDataPipeLength(dataPipe)
+    %GETDATAPIPELENGTH Number of elements along the append axis of a DataPipe.
+    % For a bound pipe this is the on-file extent along the axis. For an
+    % unbound pipe it is the offset plus the queued data, where a queued
+    % vector is measured by its length because the pipe's axis does not
+    % reflect the orientation of a vector.
+    if dataPipe.isBound
+        pipeLength = size(dataPipe, dataPipe.axis);
+        return
+    end
+
+    queuedData = dataPipe.internal.data;
+    if isempty(queuedData)
+        queuedLength = 0;
+    elseif ~isscalar(queuedData) && isvector(queuedData)
+        queuedLength = length(queuedData);
+    else
+        queuedLength = size(queuedData, dataPipe.axis);
+    end
+    pipeLength = dataPipe.offset + queuedLength;
 end
 
 function numRows = add2MemData(VectorData, data)
@@ -206,7 +231,8 @@ function add2Index(VectorIndex, numElem)
 
     data = double(raggedOffset) + numElem;
     if isa(VectorIndex.data, 'types.untyped.DataPipe')
-        VectorIndex.data.append(data);
+        % An unbound pipe only accepts values of its own data type.
+        VectorIndex.data.append(cast(data, VectorIndex.data.dataType));
     else
         VectorIndex.data = [double(VectorIndex.data); data];
     end
