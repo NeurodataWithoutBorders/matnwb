@@ -123,20 +123,20 @@ function names = getDetectedColumnNames(DynamicTable)
     names = setdiff(names, getEnumElementsNames(DynamicTable), 'stable');
 end
 
-function elementsNames = getEnumElementsNames(DynamicTable)
+function elementsNames = getEnumElementsNames(dynamicTable)
     % Return the names of the vectors that hold the elements of an EnumData
     % column. They are stored next to the columns of the table, but their
     % height is the number of enumerated elements, not the number of rows.
 
     elementsNames = {};
-    vectorNames = DynamicTable.vectordata.keys();
+    vectorNames = dynamicTable.vectordata.keys();
     for iEnum = 1:length(vectorNames)
-        enumColumn = DynamicTable.vectordata.get(vectorNames{iEnum});
+        enumColumn = dynamicTable.vectordata.get(vectorNames{iEnum});
         if isa(enumColumn, 'types.hdmf_experimental.EnumData') && ~isempty(enumColumn.elements)
             for iVector = 1:length(vectorNames)
                 vectorName = vectorNames{iVector};
-                Vector = DynamicTable.vectordata.get(vectorName);
-                if isReferenceTarget(enumColumn.elements, Vector, vectorName)
+                vector = dynamicTable.vectordata.get(vectorName);
+                if isReferenceTarget(enumColumn.elements, vector, vectorName)
                     elementsNames{end+1} = vectorName; %#ok<AGROW>
                 end
             end
@@ -144,13 +144,13 @@ function elementsNames = getEnumElementsNames(DynamicTable)
     end
 end
 
-function tf = isReferenceTarget(objectView, Vector, vectorName)
+function tf = isReferenceTarget(objectView, vector, vectorName)
     % A reference read from a file holds the path of its target instead of
     % the target object.
     if isempty(objectView.target)
         tf = endsWith(objectView.path, ['/' vectorName]);
     else
-        tf = objectView.target == Vector;
+        tf = objectView.target == vector;
     end
 end
 
