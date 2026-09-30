@@ -83,6 +83,40 @@ classdef (Abstract) AlignedDynamicTableBase < matnwb.neurodata.DynamicTableBase
 
             categoryTable = obj.getCategoryTable(categoryName);
         end
+
+        function clear(obj)
+        % clear - Remove all rows and column data from the AlignedDynamicTable.
+        %
+        % Syntax:
+        %  alignedDynamicTable.clear() removes all column objects and the
+        %  row ids of the table and of each of its category tables.
+        %
+        % The table itself is cleared like a DynamicTable: its columns and
+        % row ids are removed and its `colnames` property is preserved.
+        %
+        % Every category table is cleared in the same way, so the table and
+        % its categories all have zero rows afterwards. The category tables
+        % remain part of the table and the `categories` property is
+        % preserved. Each category table keeps its own `colnames` and
+        % `description`.
+        %
+        % Note:
+        %  A category table is a handle object. Clearing the
+        %  AlignedDynamicTable also clears the category table for any
+        %  other variable that refers to it.
+
+            arguments
+                obj (1,1) matnwb.neurodata.AlignedDynamicTableBase
+            end
+
+            clear@matnwb.neurodata.DynamicTableBase(obj)
+
+            categoryNames = obj.getMaterializedCategoryNames();
+            for iCategory = 1:numel(categoryNames)
+                categoryTable = obj.getCategoryTable(categoryNames{iCategory});
+                categoryTable.clear()
+            end
+        end
     
         function row = getRow(obj, rowIndices, options)
         % getRow - Return one or more AlignedDynamicTable rows.

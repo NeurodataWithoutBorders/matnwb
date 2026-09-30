@@ -80,6 +80,57 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             testCase.verifyTrue(alignedTable.getCategory("custom") == categoryTable)
         end
 
+        function testClearAlsoClearsCustomCategoryTable(testCase)
+            alignedTable = tests.system.AlignedDynamicTableTest.createAlignedTable();
+            categoryTable = tests.factory.DynamicTable(NumRows=3, NumColumns=1);
+            alignedTable.addCategory("custom", categoryTable)
+
+            alignedTable.clear()
+
+            testCase.verifyEmpty(alignedTable.id.data)
+            testCase.verifyEmpty(categoryTable.id.data)
+            testCase.verifyEqual(categoryTable.vectordata.Count, uint64(0))
+
+            % The category stays registered and keeps its column names.
+            testCase.verifyEqual(alignedTable.categories, {'custom'})
+            testCase.verifyTrue(alignedTable.getCategory("custom") == categoryTable)
+            testCase.verifyEqual(categoryTable.colnames, {'ColumnA'})
+            testCase.verifyWarningFree(@() alignedTable.ensureAlignedTableConsistency())
+        end
+
+        function testClearAlsoClearsSchemaCategoryTable(testCase)
+            alignedTable = tests.system.AlignedDynamicTableTest.createSchemaAlignedTable();
+            electrodesTable = tests.system.AlignedDynamicTableTest.createElectrodesTableWithHeight(3);
+            alignedTable.addCategory("electrodes", electrodesTable)
+
+            alignedTable.clear()
+
+            testCase.verifyEmpty(alignedTable.id.data)
+            testCase.verifyEmpty(electrodesTable.id.data)
+            testCase.verifyTrue(alignedTable.electrodes == electrodesTable)
+            testCase.verifyEqual(alignedTable.categories, {'electrodes'})
+        end
+
+        function testAddRowsAfterClearKeepsCategoryAligned(testCase)
+            alignedTable = types.hdmf_common.AlignedDynamicTable( ...
+                'description', 'parent table', ...
+                'colnames', {'x'}, ...
+                'x', types.hdmf_common.VectorData( ...
+                    'description', 'parent column', ...
+                    'data', (1:3)'));
+            categoryTable = tests.factory.DynamicTable(NumRows=3, NumColumns=1);
+            alignedTable.addCategory("custom", categoryTable)
+            alignedTable.clear()
+
+            alignedTable.addRow('x', 10);
+            categoryTable.addRow('ColumnA', 20);
+
+            matlabTable = alignedTable.toTable();
+            testCase.verifyEqual(height(matlabTable), 1)
+            testCase.verifyEqual(matlabTable.x, 10)
+            testCase.verifyEqual(matlabTable.custom.ColumnA, 20)
+        end
+
         function testAddCustomCategoryRejectsExistingCategory(testCase)
             alignedTable = tests.system.AlignedDynamicTableTest.createAlignedTable();
             categoryTable = tests.system.AlignedDynamicTableTest.createTableWithHeight(2);
