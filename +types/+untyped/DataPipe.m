@@ -267,6 +267,34 @@ classdef (Sealed) DataPipe < handle
         function data = append(obj, data)
             obj.internal.append(data);
         end
+
+        function axisLength = getAppendAxisLength(obj)
+        % getAppendAxisLength - Return the number of elements along the append axis.
+        %
+        % Syntax:
+        %  axisLength = dataPipe.getAppendAxisLength() returns how many
+        %  elements the DataPipe holds along the dimension that append
+        %  extends. Each append increases this value by the size of the
+        %  appended data along that dimension.
+        %
+        %  For a DataPipe that is bound to a file, this is the size of the
+        %  dataset on file along the append axis. For a DataPipe that is
+        %  not bound, it is the offset plus the data queued in memory.
+        %
+        % Note:
+        %  The value can differ from size(dataPipe, dataPipe.axis) for a
+        %  DataPipe that is not bound. A queued vector is appended along
+        %  its own orientation and is written to file as a column, so it
+        %  counts with its number of elements. A queued row vector with
+        %  axis 1 has size 1 along the axis, but an append axis length
+        %  equal to its number of elements.
+        %
+        % Output Arguments:
+        %  - axisLength (double) -
+        %    Number of elements along the append axis.
+
+            axisLength = obj.internal.getAppendAxisLength();
+        end
         
         function refs = export(obj, writer, fullpath, refs)
             writer = io.backend.base.Writer.ensure(writer);

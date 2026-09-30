@@ -149,15 +149,18 @@ function numRows = nestedAdd(DynamicTable, indChain, data)
             numRows = nestedAdd(DynamicTable, indChain(2:end), data);
         end
 
-        add2Index(Vector, numRows);
+        add2Index(Vector, numRows, name);
     else
         if ischar(data)
             data = mat2cell(data, ones(size(data, 1), 1));
         end % char matrices converted to cell arrays containing character vectors.
 
         if isa(Vector.data, 'types.untyped.DataPipe')
+            % A VectorIndex above this column advances by the number of
+            % elements this call adds, not by the total length of the pipe.
+            lengthBefore = Vector.data.getAppendAxisLength();
             Vector.data.append(data);
-            numRows = size(Vector.data, Vector.data.axis);
+            numRows = Vector.data.getAppendAxisLength() - lengthBefore;
         else
             numRows = add2MemData(Vector, data);
         end
@@ -190,7 +193,7 @@ function numRows = add2MemData(VectorData, data)
     VectorData.data = cat(catDim, VectorData.data, data);
 end
 
-function add2Index(VectorIndex, numElem)
+function add2Index(VectorIndex, numElem, indexName)
     raggedOffset = 0;
     if isa(VectorIndex.data, 'types.untyped.DataPipe')
         if isa(VectorIndex.data.internal, 'types.untyped.datapipe.BlueprintPipe')...
@@ -206,7 +209,17 @@ function add2Index(VectorIndex, numElem)
 
     data = double(raggedOffset) + numElem;
     if isa(VectorIndex.data, 'types.untyped.DataPipe')
-        VectorIndex.data.append(data);
+        % A pipe keeps its data type, so the new value is cast to that
+        % type. An unbound pipe only accepts values of its own data type.
+        indexDataType = VectorIndex.data.dataType;
+        isIntegerType = startsWith(indexDataType, {'int', 'uint'});
+        assert(~isIntegerType || data <= intmax(indexDataType), ...
+            'NWB:DynamicTable:AddRow:IndexOverflow', ...
+            ['The DataPipe of `%s` stores `%s` values and cannot hold the index ' ...
+            'value %d. Create the DataPipe of the VectorIndex with a wider ' ...
+            'data type, for example `uint64`.'], ...
+            indexName, indexDataType, data);
+        VectorIndex.data.append(cast(data, indexDataType));
     else
         VectorIndex.data = [double(VectorIndex.data); data];
     end
