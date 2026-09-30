@@ -616,19 +616,23 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
             testCase.verifyTrue(hasEstablishedHeight)
         end
 
-        function testAddRowToUnboundDataPipeTableAssignsUniqueIds(testCase)
-            timeIntervals = testCase.createTimeIntervalsWithUnboundDataPipes();
+        function testAddRowToUnboundDataPipeTableAssignsNextId(testCase)
+            timeIntervals = testCase.createTimeIntervalsWithUnboundDataPipes( ...
+                StartTime=1, ...
+                Id=int64(0));
 
             timeIntervals.addRow('start_time', 2);
-            timeIntervals.addRow('start_time', 3);
 
-            testCase.verifyEqual(timeIntervals.id.data.load(), int64([0; 1; 2]));
-            testCase.verifyEqual(timeIntervals.start_time.data.load(), [1; 2; 3]);
+            testCase.verifyEqual(timeIntervals.id.data.load(), int64([0; 1]));
+            testCase.verifyEqual(timeIntervals.start_time.data.load(), [1; 2]);
         end
 
         function testAddRowToUnboundDataPipeTableAcceptsExplicitId(testCase)
-            timeIntervals = testCase.createTimeIntervalsWithUnboundDataPipes();
+            timeIntervals = testCase.createTimeIntervalsWithUnboundDataPipes( ...
+                StartTime=1, ...
+                Id=int64(0));
 
+            % The id is passed as a double and stored in the int64 id pipe.
             timeIntervals.addRow('start_time', 2, 'id', 10);
 
             testCase.verifyEqual(timeIntervals.id.data.load(), int64([0; 10]));
@@ -811,20 +815,25 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
                 'id', idColumn);
         end
 
-        function timeIntervals = createTimeIntervalsWithUnboundDataPipes()
-            % Create a one-row table where the column and the ids are
+        function timeIntervals = createTimeIntervalsWithUnboundDataPipes(options)
+            % Create a table where the `start_time` column and the ids are
             % DataPipes that have not been exported.
+            arguments
+                options.StartTime % data of the start_time column
+                options.Id % data of the id column
+            end
+
             timeIntervals = types.core.TimeIntervals( ...
                 'description', 'test table with unbound DataPipes', ...
                 'colnames', {'start_time'}, ...
                 'start_time', types.hdmf_common.VectorData( ...
                     'description', 'start time column', ...
                     'data', types.untyped.DataPipe( ...
-                        'data', 1, ...
+                        'data', options.StartTime, ...
                         'maxSize', Inf)), ...
                 'id', types.hdmf_common.ElementIdentifiers( ...
                     'data', types.untyped.DataPipe( ...
-                        'data', int64(0), ...
+                        'data', options.Id, ...
                         'maxSize', Inf)));
         end
     end
