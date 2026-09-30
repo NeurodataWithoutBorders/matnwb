@@ -123,7 +123,12 @@ function depth = getNestedDataDepth(data, varargin)
     else
         isMultiRow = 1 < size(subData, p.Results.dataPipeDimension);
     end
-    if isMultiRow
+
+    % A value without elements is a row of a ragged column that holds no
+    % elements. Like a row of several elements, it needs an index. An empty
+    % character vector is one element, an empty text value.
+    isEmptyRow = isempty(subData) && ~ischar(subData);
+    if isMultiRow || isEmptyRow
         depth = depth + 1;
     end
 end
@@ -151,6 +156,12 @@ function numRows = nestedAdd(DynamicTable, indChain, data)
 
         add2Index(Vector, numRows);
     else
+        if isempty(data)
+            % A row without elements adds nothing to the column.
+            numRows = 0;
+            return
+        end
+
         if ischar(data)
             data = mat2cell(data, ones(size(data, 1), 1));
         end % char matrices converted to cell arrays containing character vectors.
