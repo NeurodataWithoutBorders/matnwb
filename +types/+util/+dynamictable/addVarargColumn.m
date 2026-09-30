@@ -9,6 +9,13 @@ newColNames = DynamicTable.validate_colnames(fieldnames(p.Unmatched));
 newVectorData = p.Unmatched;
 [storageTargets, storageNames] = resolveStorageTargets(DynamicTable, newColNames);
 
+% The elements of an EnumData column are stored next to the column. They are
+% not a column of the table, so they have no row height and no entry in
+% colnames.
+isEnumElements = ismember(newColNames, ...
+    getNewEnumElementsNames(DynamicTable, newColNames, newVectorData));
+newTableColumnNames = newColNames(~isEnumElements);
+
 % Check if any of the new columns already exist in the table
 existingCols = getExistingColumns( ...
     DynamicTable, newColNames, storageTargets, storageNames);
@@ -31,9 +38,9 @@ end
 indexColumns = collectIndexColumns(DynamicTable, newVectorData);
 
 % If adding the first column, initialize the id with 0-indexed values
-if isFirstColumn && ~isempty(newColNames)
+if isFirstColumn && ~isempty(newTableColumnNames)
     % Determine the height of the first column
-    firstColData = getHeightColumn(newVectorData, newColNames{1}, indexColumns);
+    firstColData = getHeightColumn(newVectorData, newTableColumnNames{1}, indexColumns);
 
     newTableHeight = types.util.dynamictable.internal.getColumnHeight(firstColData);
     types.util.dynamictable.internal.initDynamicTableId(DynamicTable, newTableHeight);
@@ -46,14 +53,32 @@ for i = 1:length(newColNames)
     % The new column must span as many rows as the table has. The rows of a
     % ragged column are counted by its outermost index, not by the number of
     % elements it holds.
-    heightColumn = getHeightColumn(newVectorData, new_cn, indexColumns);
-    currentColumnHeight = types.util.dynamictable.internal.getColumnHeight(heightColumn);
-    validateColumnHeight(new_cn, currentColumnHeight, tableHeight)
+    if ~isEnumElements(i)
+        heightColumn = getHeightColumn(newVectorData, new_cn, indexColumns);
+        currentColumnHeight = types.util.dynamictable.internal.getColumnHeight(heightColumn);
+        validateColumnHeight(new_cn, currentColumnHeight, tableHeight)
+    end
 
     assignColumn( ...
         DynamicTable, new_cn, new_cv, storageTargets{i}, storageNames{i});
-    updateColnames(DynamicTable, new_cn, new_cv)
+    if ~isEnumElements(i)
+        updateColnames(DynamicTable, new_cn, new_cv)
+    end
 end
+end
+
+function elementsNames = getNewEnumElementsNames(dynamicTable, newColumnNames, newVectorData)
+    % Return which of the new vectors hold the elements of an EnumData
+    % column, where the EnumData column is either new or already in the
+    % table.
+    newVectors = cellfun(@(name) newVectorData.(name), newColumnNames, ...
+        'UniformOutput', false);
+    vectorNames = [reshape(dynamicTable.vectordata.keys(), 1, []), reshape(newColumnNames, 1, [])];
+    vectors = [reshape(dynamicTable.vectordata.values(), 1, []), reshape(newVectors, 1, [])];
+
+    elementsNames = types.util.dynamictable.internal.getEnumElementsNames( ...
+        vectorNames, vectors);
+    elementsNames = intersect(elementsNames, newColumnNames, 'stable');
 end
 
 function [storageTargets, storageNames] = resolveStorageTargets(dynamicTable, columnNames)
