@@ -514,6 +514,33 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
                 'NWB:DynamicTable:CheckConfig:ColumnNamesMismatch');
         end
 
+        function testCheckConfigAllowsEnumElementsOutsideColnames(testCase)
+            dynamicTable = testCase.createDynamicTableWithEnumColumn();
+
+            testCase.verifyWarningFree( ...
+                @() types.util.dynamictable.checkConfig(dynamicTable));
+            testCase.verifyEqual(dynamicTable.colnames, {'cell_type'});
+        end
+
+        function testExportTableWithEnumColumn(testCase)
+            fileName = testCase.getRandomFilename();
+            nwb = tests.factory.NWBFile();
+            nwb.acquisition.set('DynamicTable', ...
+                testCase.createDynamicTableWithEnumColumn());
+
+            nwbExport(nwb, fileName);
+
+            nwbIn = testCase.verifyWarningFree(@() nwbRead(fileName, 'ignorecache'));
+            readTable = nwbIn.acquisition.get('DynamicTable');
+            enumColumn = readTable.vectordata.get('cell_type');
+            elements = readTable.vectordata.get('cell_type_elements');
+            testCase.verifyEqual(readTable.colnames, {'cell_type'});
+            testCase.verifyEqual(enumColumn.data.load(), uint8([0; 1; 2; 1; 0]));
+            testCase.verifyEqual(enumColumn.elements.path, ...
+                '/acquisition/DynamicTable/cell_type_elements');
+            testCase.verifyEqual(elements.data.load(), {'aa'; 'bb'; 'cc'});
+        end
+
         function testGetTableHeightReportsUnestablishedEmptyTable(testCase)
             dynamicTable = types.hdmf_common.DynamicTable( ...
                 'description', 'empty table');
@@ -600,6 +627,23 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
     methods (Static, Access=private)
         
         % Non-test functions
+        function dynamicTable = createDynamicTableWithEnumColumn()
+            % Create a table with one EnumData column of 5 rows. The 3
+            % elements are stored next to the column as `cell_type_elements`.
+            elements = types.hdmf_common.VectorData( ...
+                'description', 'fixed set of elements referenced by cell_type', ...
+                'data', {'aa'; 'bb'; 'cc'});
+            enumColumn = types.hdmf_experimental.EnumData( ...
+                'description', 'categorical column', ...
+                'data', uint8([0; 1; 2; 1; 0]), ...
+                'elements', types.untyped.ObjectView(elements));
+
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'test table with an EnumData column');
+            dynamicTable.vectordata.set('cell_type_elements', elements);
+            dynamicTable.addColumn('cell_type', enumColumn);
+        end
+
         function dtr_table = createDynamicTableWithTableRegionReferences()
             % Create a dynamic table with two columns, where the data of each column is 
             % a dynamic table region referencing another dynamic table.
