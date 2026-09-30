@@ -25,8 +25,9 @@ addParameter(p, 'categories', defaultCategories, @(x)isempty(x)||iscellstr(x))
 addParameter(p, 'useId', false, @(x)islogical(x));
 parse(p, varargin{:});
 
-columns = p.Results.columns;
-categories = p.Results.categories;
+% Names read from a file are column cell arrays.
+columns = reshape(p.Results.columns, 1, []);
+categories = reshape(p.Results.categories, 1, []);
 row = cell(1, numel(columns) + numel(categories));
 
 if p.Results.useId
