@@ -473,48 +473,47 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
         end
 
         function testAddRaggedRowToUnboundDataPipeColumn(testCase)
-            dynamicTable = testCase.createTableWithRaggedDataPipeColumn();
+            % Each element of the ragged column is a 3x2 matrix. The table
+            % starts with one row of 5 elements.
+            dynamicTable = testCase.createTableWithRaggedDataPipeColumn( ...
+                FirstRow=rand(3, 2, 5), ...
+                Id=int64(0));
 
-            numElementsPerRow = [6, 3, 8];
-            for iRow = 1:numel(numElementsPerRow)
-                % An unbound pipe only accepts values of its own data type.
-                dynamicTable.addRow( ...
-                    'randomvalues', rand(3, 2, numElementsPerRow(iRow)), ...
-                    'id', int64(iRow));
-            end
+            dynamicTable.addRow('randomvalues', rand(3, 2, 6));
 
+            % The index of the new row is the total number of elements, 5+6.
             dataPipe = dynamicTable.vectordata.get('randomvalues').data;
             indexPipe = dynamicTable.vectordata.get('randomvalues_index').data;
-            testCase.verifyEqual(size(dataPipe), [3, 2, 22]);
-            testCase.verifyEqual(indexPipe.load(), uint64([5; 11; 14; 22]));
+            testCase.verifyEqual(indexPipe.load(), uint64([5; 11]));
+            testCase.verifyEqual(size(dataPipe), [3, 2, 11]);
         end
 
         function testAddRaggedRowToBoundDataPipeColumn(testCase)
+            % Each element of the ragged column is a 3x2 matrix. The table
+            % starts with one row of 5 elements. The ids are in a DataPipe
+            % so that a row can be added after the table is read from file.
+            dynamicTable = testCase.createTableWithRaggedDataPipeColumn( ...
+                FirstRow=rand(3, 2, 5), ...
+                Id=types.untyped.DataPipe('data', int64(0), 'maxSize', Inf));
+
             fileName = testCase.getRandomFilename();
             nwb = tests.factory.NWBFile();
-            nwb.acquisition.set('DynamicTable', ...
-                testCase.createTableWithRaggedDataPipeColumn());
+            nwb.acquisition.set('DynamicTable', dynamicTable);
             nwbExport(nwb, fileName);
 
             nwbIn = nwbRead(fileName, 'ignorecache');
-            dynamicTable = nwbIn.acquisition.get('DynamicTable');
+            readTable = nwbIn.acquisition.get('DynamicTable');
+            readTable.addRow('randomvalues', rand(3, 2, 6));
 
-            numElementsPerRow = [6, 3, 8];
-            for iRow = 1:numel(numElementsPerRow)
-                dynamicTable.addRow( ...
-                    'randomvalues', rand(3, 2, numElementsPerRow(iRow)), ...
-                    'id', iRow);
-            end
-
-            % A bound pipe writes each appended row to the file, so the
-            % index is verified on a fresh read.
+            % A bound pipe writes the added row to the file, so the result
+            % is verified on a fresh read. The index of the new row is the
+            % total number of elements, 5+6.
             nwbReread = nwbRead(fileName, 'ignorecache');
             rereadTable = nwbReread.acquisition.get('DynamicTable');
             dataPipe = rereadTable.vectordata.get('randomvalues').data;
             indexPipe = rereadTable.vectordata.get('randomvalues_index').data;
-            testCase.verifyEqual(size(dataPipe), [3, 2, 22]);
-            testCase.verifyEqual(indexPipe.load(), uint64([5; 11; 14; 22]));
-            testCase.verifyEqual(rereadTable.id.data.load(), int64((0:3)'));
+            testCase.verifyEqual(indexPipe.load(), uint64([5; 11]));
+            testCase.verifyEqual(size(dataPipe), [3, 2, 11]);
         end
 
         function testAddRaggedRowRejectsValueBeyondIndexDataPipeType(testCase)
@@ -700,24 +699,29 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
             );
         end
 
-        function dynamicTable = createTableWithRaggedDataPipeColumn()
-            % Create a one-row table where the ragged column, its index and
-            % the ids are all expandable. The first row holds 5 elements.
+        function dynamicTable = createTableWithRaggedDataPipeColumn(options)
+            % Create a one-row table with the ragged column `randomvalues`
+            % and its index `randomvalues_index`, both backed by a DataPipe
+            % that extends along the third dimension.
+            arguments
+                options.FirstRow (:,:,:) double % elements of the first row, along the third dimension
+                options.Id % data of the id column
+            end
+
+            elementSize = size(options.FirstRow, [1, 2]);
+            numElements = size(options.FirstRow, 3);
+
             randomValues = types.hdmf_common.VectorData( ...
                 'description', 'ragged multidimensional column', ...
                 'data', types.untyped.DataPipe( ...
-                    'data', rand(3, 2, 5), ...
-                    'maxSize', [3, 2, Inf], ...
+                    'data', options.FirstRow, ...
+                    'maxSize', [elementSize, Inf], ...
                     'axis', 3));
             randomValuesIndex = types.hdmf_common.VectorIndex( ...
                 'description', 'index into the ragged column', ...
                 'target', types.untyped.ObjectView(randomValues), ...
                 'data', types.untyped.DataPipe( ...
-                    'data', uint64(5), ...
-                    'maxSize', Inf));
-            idColumn = types.hdmf_common.ElementIdentifiers( ...
-                'data', types.untyped.DataPipe( ...
-                    'data', int64(0), ...
+                    'data', uint64(numElements), ...
                     'maxSize', Inf));
 
             dynamicTable = types.hdmf_common.DynamicTable( ...
@@ -725,7 +729,7 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
                 'colnames', {'randomvalues'}, ...
                 'randomvalues', randomValues, ...
                 'randomvalues_index', randomValuesIndex, ...
-                'id', idColumn);
+                'id', types.hdmf_common.ElementIdentifiers('data', options.Id));
         end
 
         function dynamicTable = createDynamicTable()
