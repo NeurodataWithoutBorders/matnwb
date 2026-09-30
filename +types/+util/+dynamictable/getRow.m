@@ -124,104 +124,225 @@ else
 end
 end
 
-function selected = select(DynamicTable, colIndStack, matInd)
-% recursive function which consumes the colIndStack and produces a nested
-% cell array.
-column = colIndStack{end};
-if isprop(DynamicTable, column)
-    Vector = DynamicTable.(column);
-elseif isprop(DynamicTable, 'vectorindex') && DynamicTable.vectorindex.isKey(column) % Schema version < 2.3.0
-    Vector = DynamicTable.vectorindex.get(column);
-else
-    Vector = DynamicTable.vectordata.get(column);
+function selected = select(DynamicTable, colIndStack, rowIndices)
+% select - Get the requested rows of a column.
+%
+% colIndStack lists the column name first and the names of its VectorIndex
+% columns after it, the outermost index last. A column without an index
+% returns its rows as an array. A ragged column returns a cell array with
+% one cell per row, nested once per index level.
+vectors = cell(size(colIndStack));
+for iVector = 1:numel(colIndStack)
+    vectors{iVector} = getColumnVector(DynamicTable, colIndStack{iVector});
 end
 
-if isscalar(colIndStack)
-    if isa(Vector.data, 'types.untyped.DataStub') || ...
-            isa(Vector.data,'types.untyped.DataPipe')
-        if isa(Vector.data, 'types.untyped.DataStub')
-            refProp = Vector.data.dims;
-        else
-            refProp = Vector.data.internal.maxSize;
-        end
-        if length(refProp) == 2 && refProp(2) == 1
-            % catch row vector
-            rank = 1;
-        else
-            rank = length(refProp);
-        end
-    else
-        if iscolumn(Vector.data)
-            %catch row vector
-            rank = 1;
-        elseif istable(Vector.data)
-            rank = 1;
-        else
-            rank = ndims(Vector.data);
-        end
-    end
-    
-    selectInd = repmat({':'}, 1, rank);
-    if isa(Vector.data, 'types.untyped.DataPipe')
-        selectInd{Vector.data.axis} = matInd;
-    else
-        selectInd{end} = matInd;
-    end
-    
-    if (isstruct(Vector.data) && isscalar(Vector.data)) || istable(Vector.data)
-        if istable(Vector.data)
-            selected = table();
-            fields = Vector.data.Properties.VariableNames;
-        else
-            selected = struct();
-            fields = fieldnames(Vector.data);
-        end
-        
-        for i = 1:length(fields)
-            fieldName = fields{i};
-            columnData = Vector.data.(fieldName);
-            selected.(fieldName) = columnData(selectInd{:});
-        end
-    else
-        selected = Vector.data(selectInd{:});
-    end
+if isscalar(vectors)
+    selected = orientRows(vectors{1}, readRows(vectors{1}, rowIndices));
+else
+    selected = getRaggedRows(vectors, rowIndices);
+end
+end
 
-    % shift dimensions of non-row vectors. otherwise will result in
-    % invalid MATLAB table with uneven column height
-    if isa(Vector.data, 'types.untyped.DataPipe')
-        selected = permute(selected, ...
-            circshift(1:ndims(selected), -(Vector.data.axis-1)));
+function vector = getColumnVector(DynamicTable, columnName)
+% getColumnVector - Get the VectorData or VectorIndex object of a column by name.
+if isprop(DynamicTable, columnName)
+    vector = DynamicTable.(columnName);
+elseif isprop(DynamicTable, 'vectorindex') && DynamicTable.vectorindex.isKey(columnName) % Schema version < 2.3.0
+    vector = DynamicTable.vectorindex.get(columnName);
+else
+    vector = DynamicTable.vectordata.get(columnName);
+end
+end
+
+function selected = getRaggedRows(vectors, rowIndices)
+% getRaggedRows - Get rows of a ragged column with one read per level.
+%
+% vectors lists the column's VectorData first and its VectorIndex objects
+% after it, the outermost index last. Each level is read once, over the span
+% of elements that the requested rows cover, and the rows are then sliced
+% from those windows in memory. A column read from file therefore costs one
+% read per level, whatever the number of rows and elements.
+%
+% selected is a cell array with one cell per requested row. For a doubly
+% ragged column, each cell holds a cell array with one cell per element.
+
+% Offsets are computed by subtraction, which saturates for unsigned integers.
+rowIndices = double(rowIndices);
+
+numLevels = numel(vectors);
+windows = cell(1, numLevels);
+% Element k of windows{iLevel} is element windowOffsets(iLevel) + k of that level.
+windowOffsets = zeros(1, numLevels);
+
+% Read the index levels from the outermost down. levelRows holds the rows
+% requested from the current level.
+levelRows = rowIndices;
+hasEmptyDataRow = false;
+for iLevel = numLevels:-1:2
+    indexVector = vectors{iLevel};
+    assert(isa(indexVector, 'types.hdmf_common.VectorIndex') || isa(indexVector, 'types.core.VectorIndex'), ...
+        'NWB:DynamicTable:GetRow:InternalError', ...
+        'Internal VectorIndex Stack is not using VectorIndex objects!');
+
+    % Start one element early: the stop of the row before the first
+    % requested row gives the first requested row's start.
+    windowOffsets(iLevel) = max(min(levelRows) - 2, 0);
+    windows{iLevel} = readIndexValues(indexVector, (windowOffsets(iLevel) + 1):max(levelRows));
+
+    [starts, stops] = getElementRanges(windows{iLevel}, windowOffsets(iLevel), levelRows);
+    isEmptyRow = starts > stops;
+    if iLevel == 2
+        hasEmptyDataRow = any(isEmptyRow);
+    end
+    if all(isEmptyRow)
+        % No elements are requested from the levels below, so their
+        % windows stay unread.
+        levelRows = [];
+        break
+    end
+    % Elements between the requested rows are read and discarded, which
+    % keeps the next level to a single read.
+    levelRows = min(starts(~isEmptyRow)):max(stops(~isEmptyRow));
+end
+
+dataVector = vectors{1};
+if ~isempty(levelRows)
+    windowOffsets(1) = levelRows(1) - 1;
+    windows{1} = readRows(dataVector, levelRows);
+end
+
+emptyDataRow = [];
+if hasEmptyDataRow
+    % Read an empty selection from the column instead of slicing one from
+    % the window, so an empty row has the type and shape of a direct read.
+    emptyDataRow = orientRows(dataVector, readRows(dataVector, zeros(1, 0)));
+end
+
+[rank, rowAxis] = getRowDimension(dataVector);
+ragged = struct( ...
+    'Windows', {windows}, ...
+    'WindowOffsets', windowOffsets, ...
+    'DataVector', dataVector, ...
+    'Rank', rank, ...
+    'RowAxis', rowAxis, ...
+    'EmptyDataRow', {emptyDataRow});
+selected = sliceRaggedRows(ragged, numLevels, rowIndices);
+end
+
+function selected = sliceRaggedRows(ragged, level, rowIndices)
+% sliceRaggedRows - Slice rows of an index level from the windows read by getRaggedRows.
+[starts, stops] = getElementRanges(ragged.Windows{level}, ragged.WindowOffsets(level), rowIndices);
+selected = cell(numel(rowIndices), 1);
+for iRow = 1:numel(rowIndices)
+    elementRows = starts(iRow):stops(iRow);
+    if level > 2
+        selected{iRow} = sliceRaggedRows(ragged, level - 1, elementRows);
+    elseif isempty(elementRows)
+        selected{iRow} = ragged.EmptyDataRow;
+    else
+        block = indexRows(ragged.Windows{1}, elementRows - ragged.WindowOffsets(1), ...
+            ragged.Rank, ragged.RowAxis);
+        selected{iRow} = orientRows(ragged.DataVector, block);
+    end
+end
+end
+
+function [starts, stops] = getElementRanges(indexWindow, windowOffset, rowIndices)
+% getElementRanges - First and last element of index rows in the level below.
+%
+% Row r spans elements index(r-1)+1 through index(r) of the level below,
+% where index(0) is 0. indexWindow(k) holds index(windowOffset + k).
+stops = reshape(indexWindow(rowIndices - windowOffset), size(rowIndices));
+starts = ones(size(rowIndices));
+hasPreviousRow = rowIndices > 1;
+starts(hasPreviousRow) = indexWindow(rowIndices(hasPreviousRow) - 1 - windowOffset) + 1;
+end
+
+function values = readIndexValues(indexVector, elementIndices)
+% readIndexValues - Read elements of a VectorIndex as a double column vector.
+if isa(indexVector.data, 'types.untyped.DataStub') || isa(indexVector.data, 'types.untyped.DataPipe')
+    values = indexVector.data.load(elementIndices);
+else
+    values = indexVector.data(elementIndices);
+end
+values = double(values(:));
+end
+
+function block = readRows(vector, rowIndices)
+% readRows - Read rows of a column, leaving the rows along the column's row axis.
+[rank, rowAxis] = getRowDimension(vector);
+block = indexRows(vector.data, rowIndices, rank, rowAxis);
+end
+
+function selected = orientRows(vector, block)
+% orientRows - Put the row axis first for a DataPipe column.
+%
+% shift dimensions of non-row vectors. otherwise will result in
+% invalid MATLAB table with uneven column height
+if isa(vector.data, 'types.untyped.DataPipe')
+    selected = permute(block, circshift(1:ndims(block), -(vector.data.axis-1)));
+else
+    selected = block;
+end
+end
+
+function [rank, rowAxis] = getRowDimension(vector)
+% getRowDimension - Number of subscripts used to index a column, and the one that selects rows.
+data = vector.data;
+if isa(data, 'types.untyped.DataStub') || isa(data, 'types.untyped.DataPipe')
+    if isa(data, 'types.untyped.DataStub')
+        refProp = data.dims;
+    else
+        refProp = data.internal.maxSize;
+    end
+    if length(refProp) == 2 && refProp(2) == 1
+        % catch row vector
+        rank = 1;
+    else
+        rank = length(refProp);
     end
 else
-    assert(isa(Vector, 'types.hdmf_common.VectorIndex') || isa(Vector, 'types.core.VectorIndex'),...
-        'NWB:DynamicTable:GetRow:InternalError',...
-        'Internal VectorIndex Stack is not using VectorIndex objects!');
-    if isa(Vector.data, 'types.untyped.DataStub') || isa(Vector.data, 'types.untyped.DataPipe')
-        stopInds = uint64(Vector.data.load(matInd));
+    if iscolumn(data)
+        %catch row vector
+        rank = 1;
+    elseif istable(data)
+        rank = 1;
     else
-        stopInds = uint64(Vector.data(matInd));
+        rank = ndims(data);
+    end
+end
+
+if isa(data, 'types.untyped.DataPipe')
+    rowAxis = data.axis;
+else
+    rowAxis = rank;
+end
+end
+
+function selected = indexRows(data, rowIndices, rank, rowAxis)
+% indexRows - Index rows of in-memory or file-backed column data.
+%
+% The same indexing reads a window from the column and slices rows from
+% that window.
+selectInd = repmat({':'}, 1, rank);
+selectInd{rowAxis} = rowIndices;
+
+if (isstruct(data) && isscalar(data)) || istable(data)
+    if istable(data)
+        selected = table();
+        fields = data.Properties.VariableNames;
+    else
+        selected = struct();
+        fields = fieldnames(data);
     end
 
-    startIndInd = matInd - 1;
-    zeroMask = startIndInd == 0;
-    startInds = zeros(size(startIndInd));
-    if ~isempty(startIndInd(~zeroMask))
-        if isa(Vector.data, 'types.untyped.DataStub') || isa(Vector.data, 'types.untyped.DataPipe')
-            startInds(~zeroMask) = Vector.data.load(startIndInd(~zeroMask));
-        else
-            startInds(~zeroMask) = Vector.data(startIndInd(~zeroMask));
-        end
+    for i = 1:length(fields)
+        fieldName = fields{i};
+        columnData = data.(fieldName);
+        selected.(fieldName) = columnData(selectInd{:});
     end
-    startInds = startInds + 1;
-
-    selected = cell(length(matInd), 1);
-    for iRange = 1:length(matInd)
-        startInd = startInds(iRange);
-        stopInd = stopInds(iRange);
-        selected{iRange} = select(DynamicTable,...
-            colIndStack(1:(end-1)),...
-            startInd:stopInd);
-    end
+else
+    selected = data(selectInd{:});
 end
 end
 
