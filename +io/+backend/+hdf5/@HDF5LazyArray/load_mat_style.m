@@ -9,7 +9,6 @@ function data = load_mat_style(obj, varargin)
 
     %% Select from Space
     dataDimensions = obj.dims;
-    spaceId = obj.getSpace();
     userSelection = varargin;
 
     selectionErrorId = 'NWB:DataStub:Load:InvalidSelection';
@@ -41,8 +40,15 @@ function data = load_mat_style(obj, varargin)
         data = obj.load_mat_style(1);
         data = getEmptyRepresentation(data);
         return
+    end
 
-    elseif isscalar(userSelection) && ~ischar(userSelection{1})
+    % The dataspace and the read use the same open dataset, so each call
+    % opens the file once.
+    fileId = H5F.open(obj.Filename);
+    datasetId = H5D.open(fileId, obj.DatasetPath);
+    spaceId = H5D.get_space(datasetId);
+
+    if isscalar(userSelection) && ~ischar(userSelection{1})
         % linear index into the fast dimension.
         orderedSelection = unique(userSelection{1});
 
@@ -81,8 +87,6 @@ function data = load_mat_style(obj, varargin)
     H5S.close(spaceId);
 
     %% Read Data
-    fileId = H5F.open(obj.Filename);
-    datasetId = H5D.open(fileId, obj.DatasetPath);
     data = H5D.read(datasetId, 'H5ML_DEFAULT', memorySpaceId, readSpaceId, 'H5P_DEFAULT');
 
     %% Retype Data
