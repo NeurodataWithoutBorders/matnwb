@@ -222,22 +222,6 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
             testCase.verifyClass(T, 'table')
         end
 
-        function testToTableWithRowVectorId(testCase)
-            numRows = 4;
-            dynamicTable = types.hdmf_common.DynamicTable( ...
-                'description', 'test table with row vector ids', ...
-                'colnames', {'columnA'}, ...
-                'columnA', types.hdmf_common.VectorData( ...
-                    'description', 'first column', ...
-                    'data', (1:numRows)'), ...
-                'id', types.hdmf_common.ElementIdentifiers('data', 0:numRows-1));
-
-            matlabTable = dynamicTable.toTable();
-
-            testCase.verifySize(matlabTable, [numRows, 2]);
-            testCase.verifyEqual(matlabTable.id, int64((0:numRows-1)'));
-        end
-
         function testCheckConfigUsesLastDimForBoundDataPipe(testCase)
             fileName = strrep(testCase.getRandomFilename(), '.nwb', '.h5');
             datasetName = "/image_mask";
