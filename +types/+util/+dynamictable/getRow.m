@@ -155,107 +155,142 @@ end
 end
 
 function selected = getRaggedRows(vectors, rowIndices)
-% getRaggedRows - Get rows of a ragged column with one read per level.
+% getRaggedRows - Get rows of a ragged column, reading only the requested elements.
 %
 % vectors lists the column's VectorData first and its VectorIndex objects
-% after it, the outermost index last. Each level is read once, over the span
-% of elements that the requested rows cover, and the rows are then sliced
-% from those windows in memory. A column read from file therefore costs one
-% read per level, whatever the number of rows and elements.
+% after it, the outermost index last. Each index level is read in one call,
+% for exactly the index elements the requested rows need. The data is read
+% for exactly the elements of the requested rows, in one call or in one call
+% per contiguous run of elements (see readDataRows). The rows are then taken
+% from those reads in memory.
 %
 % selected is a cell array with one cell per requested row. For a doubly
 % ragged column, each cell holds a cell array with one cell per element.
 
-% Offsets are computed by subtraction, which saturates for unsigned integers.
-rowIndices = double(rowIndices);
+% Row indices are shifted by subtraction, which saturates for unsigned integers.
+rowIndices = double(reshape(rowIndices, 1, []));
 
 numLevels = numel(vectors);
-windows = cell(1, numLevels);
-% Element k of windows{iLevel} is element windowOffsets(iLevel) + k of that level.
-windowOffsets = zeros(1, numLevels);
+% rowStarts{iLevel} and rowStops{iLevel} give the element range, in the
+% level below, of each row requested from level iLevel.
+rowStarts = cell(1, numLevels);
+rowStops = cell(1, numLevels);
 
-% Read the index levels from the outermost down. levelRows holds the rows
-% requested from the current level.
+% Read the index levels from the outermost down. levelRows lists the rows
+% requested from the current level in output order, and after the loop the
+% data elements requested from the column.
 levelRows = rowIndices;
-hasEmptyDataRow = false;
 for iLevel = numLevels:-1:2
     indexVector = vectors{iLevel};
     assert(isa(indexVector, 'types.hdmf_common.VectorIndex') || isa(indexVector, 'types.core.VectorIndex'), ...
         'NWB:DynamicTable:GetRow:InternalError', ...
         'Internal VectorIndex Stack is not using VectorIndex objects!');
 
-    % Start one element early: the stop of the row before the first
-    % requested row gives the first requested row's start.
-    windowOffsets(iLevel) = max(min(levelRows) - 2, 0);
-    windows{iLevel} = readIndexValues(indexVector, (windowOffsets(iLevel) + 1):max(levelRows));
-
-    [starts, stops] = getElementRanges(windows{iLevel}, windowOffsets(iLevel), levelRows);
-    isEmptyRow = starts > stops;
-    if iLevel == 2
-        hasEmptyDataRow = any(isEmptyRow);
-    end
-    if all(isEmptyRow)
-        % No elements are requested from the levels below, so their
-        % windows stay unread.
-        levelRows = [];
-        break
-    end
-    % Elements between the requested rows are read and discarded, which
-    % keeps the next level to a single read.
-    levelRows = min(starts(~isEmptyRow)):max(stops(~isEmptyRow));
+    [rowStarts{iLevel}, rowStops{iLevel}] = readElementRanges(indexVector, levelRows);
+    levelRows = expandRanges(rowStarts{iLevel}, rowStops{iLevel});
 end
 
-dataVector = vectors{1};
-if ~isempty(levelRows)
-    windowOffsets(1) = levelRows(1) - 1;
-    windows{1} = readRows(dataVector, levelRows);
+rowValues = readDataRows(vectors{1}, rowStarts{2}, rowStops{2}, levelRows);
+
+% Nest the rows of each level under their rows in the level above.
+for iLevel = 3:numLevels
+    rowLengths = max(rowStops{iLevel} - rowStarts{iLevel} + 1, 0);
+    rowValues = mat2cell(rowValues, rowLengths(:), 1);
+end
+selected = rowValues;
 end
 
-emptyDataRow = [];
-if hasEmptyDataRow
-    % Read an empty selection from the column instead of slicing one from
-    % the window, so an empty row has the type and shape of a direct read.
-    emptyDataRow = orientRows(dataVector, readRows(dataVector, zeros(1, 0)));
-end
-
-[rank, rowAxis] = getRowDimension(dataVector);
-ragged = struct( ...
-    'Windows', {windows}, ...
-    'WindowOffsets', windowOffsets, ...
-    'DataVector', dataVector, ...
-    'Rank', rank, ...
-    'RowAxis', rowAxis, ...
-    'EmptyDataRow', {emptyDataRow});
-selected = sliceRaggedRows(ragged, numLevels, rowIndices);
-end
-
-function selected = sliceRaggedRows(ragged, level, rowIndices)
-% sliceRaggedRows - Slice rows of an index level from the windows read by getRaggedRows.
-[starts, stops] = getElementRanges(ragged.Windows{level}, ragged.WindowOffsets(level), rowIndices);
-selected = cell(numel(rowIndices), 1);
-for iRow = 1:numel(rowIndices)
-    elementRows = starts(iRow):stops(iRow);
-    if level > 2
-        selected{iRow} = sliceRaggedRows(ragged, level - 1, elementRows);
-    elseif isempty(elementRows)
-        selected{iRow} = ragged.EmptyDataRow;
-    else
-        block = indexRows(ragged.Windows{1}, elementRows - ragged.WindowOffsets(1), ...
-            ragged.Rank, ragged.RowAxis);
-        selected{iRow} = orientRows(ragged.DataVector, block);
-    end
-end
-end
-
-function [starts, stops] = getElementRanges(indexWindow, windowOffset, rowIndices)
-% getElementRanges - First and last element of index rows in the level below.
+function [starts, stops] = readElementRanges(indexVector, rowIndices)
+% readElementRanges - Element range of VectorIndex rows in the level below.
 %
 % Row r spans elements index(r-1)+1 through index(r) of the level below,
-% where index(0) is 0. indexWindow(k) holds index(windowOffset + k).
-stops = reshape(indexWindow(rowIndices - windowOffset), size(rowIndices));
+% where index(0) is 0. The index values of all rows are read in one call.
 starts = ones(size(rowIndices));
+stops = zeros(size(rowIndices));
+if isempty(rowIndices)
+    return
+end
+
+indexElements = unique([rowIndices, rowIndices - 1]);
+indexElements(indexElements == 0) = [];
+indexValues = readIndexValues(indexVector, indexElements);
+
+[~, stopPositions] = ismember(rowIndices, indexElements);
+stops = reshape(indexValues(stopPositions), size(rowIndices));
 hasPreviousRow = rowIndices > 1;
-starts(hasPreviousRow) = indexWindow(rowIndices(hasPreviousRow) - 1 - windowOffset) + 1;
+[~, previousPositions] = ismember(rowIndices(hasPreviousRow) - 1, indexElements);
+starts(hasPreviousRow) = indexValues(previousPositions) + 1;
+end
+
+function elements = expandRanges(starts, stops)
+% expandRanges - Concatenate the ranges starts(i):stops(i) into one row vector.
+isNonEmpty = starts <= stops;
+starts = starts(isNonEmpty);
+stops = stops(isNonEmpty);
+if isempty(starts)
+    elements = zeros(1, 0);
+    return
+end
+
+% Consecutive elements differ by 1 within a range. The first element of a
+% range differs from the last element of the range before it by the gap.
+steps = ones(1, sum(stops - starts + 1));
+rangeFirst = cumsum([1, stops(1:end-1) - starts(1:end-1) + 1]);
+steps(rangeFirst) = [starts(1), starts(2:end) - stops(1:end-1)];
+elements = cumsum(steps);
+end
+
+function rowValues = readDataRows(dataVector, starts, stops, elements)
+% readDataRows - Read the data of ragged rows, one cell per row.
+%
+% Row i holds data elements starts(i) through stops(i), and elements lists
+% the elements of all rows. A column indexed with one subscript reads any
+% set of elements in one call. With more subscripts, a selection with gaps
+% becomes one hyperslab per contiguous run, and building it takes time that
+% grows faster than linearly with the number of runs, so each run is read
+% in a call of its own.
+[rank, rowAxis] = getRowDimension(dataVector);
+elements = unique(elements);
+numElements = numel(elements);
+if numElements == 0
+    [runFirst, runLast] = deal(zeros(1, 0));
+elseif rank == 1
+    [runFirst, runLast] = deal(1, numElements);
+else
+    runFirst = find([true, diff(elements) > 1]);
+    runLast = [runFirst(2:end) - 1, numElements];
+end
+
+blocks = cell(size(runFirst));
+for iRun = 1:numel(runFirst)
+    blocks{iRun} = readRows(dataVector, elements(runFirst(iRun):runLast(iRun)));
+end
+% runOfPosition(k) is the run that holds elements(k).
+runOfPosition = zeros(1, numElements);
+runOfPosition(runFirst) = 1;
+runOfPosition = cumsum(runOfPosition);
+
+isEmptyRow = starts > stops;
+emptyRow = [];
+if any(isEmptyRow)
+    % Read an empty selection from the column instead of taking one from a
+    % block, so an empty row has the type and shape of a direct read.
+    emptyRow = orientRows(dataVector, readRows(dataVector, zeros(1, 0)));
+end
+
+% The elements of a row are consecutive in elements and lie in one run.
+[~, startPositions] = ismember(starts, elements);
+rowValues = cell(numel(starts), 1);
+for iRow = 1:numel(starts)
+    if isEmptyRow(iRow)
+        rowValues{iRow} = emptyRow;
+    else
+        iRun = runOfPosition(startPositions(iRow));
+        blockRows = startPositions(iRow) - runFirst(iRun) + 1 + (0:(stops(iRow) - starts(iRow)));
+        block = indexRows(blocks{iRun}, blockRows, rank, rowAxis);
+        rowValues{iRow} = orientRows(dataVector, block);
+    end
+end
 end
 
 function values = readIndexValues(indexVector, elementIndices)
@@ -322,8 +357,8 @@ end
 function selected = indexRows(data, rowIndices, rank, rowAxis)
 % indexRows - Index rows of in-memory or file-backed column data.
 %
-% The same indexing reads a window from the column and slices rows from
-% that window.
+% The same indexing reads rows from the column and takes rows from a block
+% already read from it.
 selectInd = repmat({':'}, 1, rank);
 selectInd{rowAxis} = rowIndices;
 
