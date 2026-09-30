@@ -85,29 +85,47 @@ classdef DynamicTableRaggedReadTest < tests.abstract.NwbTestCase
         end
 
         function testGetRowReadsEachLevelOnce(testCase)
-            nwbIn = nwbRead(testCase.FileName, 'ignorecache');
-            columnNames = ["waveforms", "waveforms_index", "waveforms_index_index"];
-            spies = cell(size(columnNames));
-            for iColumn = 1:numel(columnNames)
-                vector = nwbIn.units.(columnNames(iColumn));
-                spies{iColumn} = tests.unit.io.backend.doubles.HDF5LazyArraySpy( ...
-                    vector.data.filename, vector.data.path);
-                vector.data = types.untyped.DataStub( ...
-                    vector.data.filename, vector.data.path, [], [], spies{iColumn});
-            end
-            % Assigning data runs validation, which also reads the dataset.
-            loadCountBefore = cellfun(@(spy) spy.LoadCount, spies);
+            [units, spies] = testCase.readUnitsWithSpies();
 
-            nwbIn.units.getRow(1:4, 'columns', {'waveforms'});
+            units.getRow(1:4, 'columns', {'waveforms'});
 
-            for iColumn = 1:numel(columnNames)
-                testCase.verifyEqual(spies{iColumn}.LoadCount - loadCountBefore(iColumn), 1, ...
-                    sprintf('Expected one read of "%s".', columnNames(iColumn)));
+            for columnName = string(fieldnames(spies))'
+                testCase.verifyEqual(spies.(columnName).LoadCount, 1, ...
+                    sprintf('Expected one read of "%s".', columnName));
             end
+        end
+
+        function testGetRowReadsOnlyRequestedElements(testCase)
+            % Units 1 and 4 hold spikes 1-3 and 6-10, whose waveforms are
+            % columns 1-6 and 11-20 of the data. Unit 3 lies between them.
+            [units, spies] = testCase.readUnitsWithSpies();
+
+            units.getRow([1 4], 'columns', {'waveforms'});
+
+            testCase.verifyEqual(getReadElements(spies.waveforms_index_index), [1, 3, 4]);
+            testCase.verifyEqual(getReadElements(spies.waveforms_index), [1:3, 5:10]);
+            testCase.verifyEqual(getReadElements(spies.waveforms), [1:6, 11:20]);
         end
     end
 
     methods (Access = private)
+        function [units, spies] = readUnitsWithSpies(testCase)
+            % readUnitsWithSpies - Read the units table with a spy on each dataset of the waveforms column.
+            nwbIn = nwbRead(testCase.FileName, 'ignorecache');
+            units = nwbIn.units;
+            spies = struct();
+            for columnName = ["waveforms", "waveforms_index", "waveforms_index_index"]
+                vector = units.(columnName);
+                spy = tests.unit.io.backend.doubles.HDF5LazyArraySpy( ...
+                    vector.data.filename, vector.data.path);
+                vector.data = types.untyped.DataStub( ...
+                    vector.data.filename, vector.data.path, [], [], spy);
+                % Assigning data runs validation, which also reads the dataset.
+                spy.reset()
+                spies.(columnName) = spy;
+            end
+        end
+
         function verifyEmptyRowIsSameAloneAndWithOtherRows(testCase, units)
             emptyRowAlone = units.getRow(2).spike_times{1};
             allRows = units.getRow(1:3);
@@ -178,4 +196,11 @@ classdef DynamicTableRaggedReadTest < tests.abstract.NwbTestCase
             units.addColumn('peaks', peaks, 'peaks_index', peaksIndex);
         end
     end
+end
+
+function elements = getReadElements(spy)
+% getReadElements - Sorted elements that a spy's load_mat_style calls selected in their last subscript.
+lastSubscripts = cellfun(@(selection) reshape(selection{end}, 1, []), ...
+    spy.MatStyleSelections, 'UniformOutput', false);
+elements = sort([lastSubscripts{:}]);
 end
