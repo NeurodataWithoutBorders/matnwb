@@ -273,9 +273,7 @@ runOfPosition = cumsum(runOfPosition);
 isEmptyRow = starts > stops;
 emptyRow = [];
 if any(isEmptyRow)
-    % Read an empty selection from the column instead of taking one from a
-    % block, so an empty row has the type and shape of a direct read.
-    emptyRow = orientRows(dataVector, readRows(dataVector, zeros(1, 0)));
+    emptyRow = readEmptyRow(dataVector);
 end
 
 % The elements of a row are consecutive in elements and lie in one run.
@@ -290,6 +288,67 @@ for iRow = 1:numel(starts)
         block = indexRows(blocks{iRun}, blockRows, rank, rowAxis);
         rowValues{iRow} = orientRows(dataVector, block);
     end
+end
+end
+
+function emptyRow = readEmptyRow(dataVector)
+% readEmptyRow - Value of an empty row of a ragged column.
+%
+% The empty row is read as an empty selection from the column instead of
+% taken from a block of rows, so it has the type and shape of a direct read.
+% A file-backed column reads its first element to learn the type of an
+% empty selection, so a dataset without elements gets an empty of its data
+% type instead.
+data = dataVector.data;
+if isa(data, 'types.untyped.DataStub')
+    hasNoElements = any(data.dims == 0);
+elseif isa(data, 'types.untyped.DataPipe') && data.isBound
+    hasNoElements = any(size(data) == 0);
+else
+    % Indexing in-memory data with an empty selection needs no elements.
+    hasNoElements = false;
+end
+
+if hasNoElements
+    emptyRow = orientRows(dataVector, createEmptyValue(data.dataType));
+else
+    emptyRow = orientRows(dataVector, readRows(dataVector, zeros(1, 0)));
+end
+end
+
+function value = createEmptyValue(dataType)
+% createEmptyValue - Empty value of the MATLAB type a dataset is read as.
+%
+% A compound dataset is read as a table with one variable per member, and
+% every other dataset as an array. The empty array is 0x0, the shape an
+% empty selection of a file-backed column has.
+if isstruct(dataType)
+    memberNames = fieldnames(dataType);
+    columns = struct();
+    for iMember = 1:numel(memberNames)
+        columns.(memberNames{iMember}) = createEmptyArray(dataType.(memberNames{iMember}), 1);
+    end
+    value = struct2table(columns);
+else
+    value = createEmptyArray(dataType, 0);
+end
+end
+
+function value = createEmptyArray(matlabType, numColumns)
+% createEmptyArray - Empty array with no rows of the MATLAB type a dataset is read as.
+%
+% The types follow io.parseCompound, which builds the columns of a
+% compound dataset without rows the same way.
+switch matlabType
+    case {'char', 'cell'}
+        % Text and non-boolean enums are read as cell arrays.
+        value = cell(0, numColumns);
+    case 'logical'
+        value = false(0, numColumns);
+    otherwise
+        % Numeric types and the reference classes construct an empty
+        % instance from their class name.
+        value = feval([matlabType '.empty'], 0, numColumns);
 end
 end
 
