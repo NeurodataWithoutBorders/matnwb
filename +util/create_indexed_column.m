@@ -14,10 +14,11 @@ function [data_vector, data_index] = create_indexed_column(data, description, ta
 %       VectorData. Rows are concatenated along that last dimension, so
 %       DATA_VECTOR.data is [elementDims x totalElements]. On disk the ragged
 %       axis then comes first, as the schema requires.
-%     - a string array, character vector or struct array that is a vector: a
-%       list of elements of that class, one per string, character or struct.
-%       DATA_VECTOR.data keeps the class: a string column, a character column
-%       or a struct column.
+%     - a string array, character vector, struct array or array of objects
+%       (such as types.untyped.ObjectView references) that is a vector: a
+%       list of elements of that class, one per string, character, struct or
+%       object. DATA_VECTOR.data keeps the class: a string column, a character
+%       column, a struct column or an object column.
 %     - [] for a row with no elements.
 %   All rows must hold elements of the same type, and struct rows the same
 %   fields. All array rows must share elementDims, which is taken from the first row
@@ -74,12 +75,13 @@ function [flatData, bounds] = flattenRows(rows)
         row = rows{iRow};
         if isnumeric(row) || islogical(row)
             rowType = "numeric";
-        elseif (isstring(row) || ischar(row) || isstruct(row)) && (isvector(row) || isempty(row))
+        elseif (isstring(row) || ischar(row) || isstruct(row) || isObjectArray(row)) ...
+                && (isvector(row) || isempty(row))
             rowType = string(class(row));
         else
             error("NWB:CreateIndexedColumn:InvalidRow", ...
                 "Each cell of DATA must be a numeric or logical array, or a vector of " + ...
-                "strings, characters or structs. Cell %d is a %s of size [%s].", ...
+                "strings, characters, structs or objects. Cell %d is a %s of size [%s].", ...
                 iRow, class(row), join(string(size(row)), " "));
         end
         if isempty(row)
@@ -161,4 +163,10 @@ function elementDims = findElementDims(rows)
             return
         end
     end
+end
+
+function tf = isObjectArray(row)
+    % An array of objects such as types.untyped.ObjectView references. A
+    % table is an object too, but its rows are not elements of one class.
+    tf = isobject(row) && ~istable(row);
 end

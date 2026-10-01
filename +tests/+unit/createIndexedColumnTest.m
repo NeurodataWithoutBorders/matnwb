@@ -117,6 +117,19 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(index.data, uint64([2; 3]));
         end
 
+        function testObjectViewRowsKeepTheirClass(testCase)
+            % Rows of object references, with [] for a row that references
+            % nothing, as when linking each trial to its raw data.
+            seriesView = types.untyped.ObjectView(types.core.TimeSeries('description', 'raw'));
+            deviceView = types.untyped.ObjectView(types.core.Device());
+
+            [vector, index] = util.create_indexed_column( ...
+                {seriesView, [], [seriesView; deviceView]});
+
+            testCase.verifyEqual(vector.data, [seriesView; seriesView; deviceView]);
+            testCase.verifyEqual(index.data, uint64([1; 1; 3]));
+        end
+
         function testMixedRowTypesErrors(testCase)
             testCase.verifyError(@() util.create_indexed_column({[1 2], "a"}), ...
                 'NWB:CreateIndexedColumn:InconsistentElementType');
