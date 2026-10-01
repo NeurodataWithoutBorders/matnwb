@@ -49,7 +49,7 @@ function typeInfo = getNeurodataTypeInfo(attributeInfo)
         typeInfo.typename = char( matnwb.common.composeFullClassName(...
             typeInfo.namespace, typeInfo.name) );
 
-        if ~exist(typeInfo.typename, 'class')
+        if ~isClassName(typeInfo.typename)
             typeInfo = tryCorrectNamespace(typeInfo);
         end
     end
@@ -79,8 +79,13 @@ function typeInfo = tryCorrectNamespace(typeInfo)
     correctedTypename = strrep(typeInfo.typename, ...
         [currentPackage '.'], 'hdmf_common.');
     
-    if exist(correctedTypename, 'class') == 8
+    if isClassName(correctedTypename)
         typeInfo.typename = correctedTypename;
         typeInfo.namespace = 'hdmf-common';
     end
+end
+
+function tf = isClassName(className)
+% isClassName - Check whether a name refers to a class on the MATLAB path.
+    tf = ~isempty(meta.class.fromName(className));
 end
