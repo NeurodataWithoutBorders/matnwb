@@ -87,9 +87,5 @@ end
 
 function tf = isClassName(className)
 % isClassName - Check whether a name refers to a class on the MATLAB path.
-%
-% This runs once for every typed object in a file being read. exist searches
-% the path on every call, whereas meta.class.fromName reuses class
-% definitions MATLAB has already loaded.
     tf = ~isempty(meta.class.fromName(className));
 end
