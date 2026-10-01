@@ -16,6 +16,20 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
 %   This mixin lets you write
 %     module.add('MyData', dataObject)
 %
+% Names of entries:
+%   Each entry is exposed as one property with the entry's name, so a name
+%   must identify a single object. The rules are:
+%   - A name may appear in several groups if every occurrence is the same
+%     object. This happens when an object's type matches more than one
+%     group, for example an entry of a subtype that also satisfies a group
+%     inherited from a parent type. The object has one location in the file
+%     and is written once, so it gets one property, and assigning to that
+%     property updates every group that holds the name.
+%   - Different objects may not share a name, because both would be
+%     written to the same location in the file. Adding one raises
+%     NWB:HasUnnamedGroups:DuplicateEntry and leaves it out of the group.
+%   - The property is removed when no group holds the name any more.
+%
 % Implementation details:
 %   - Data elements are added to objects of this class as dynamic properties.
 %   - Assign callback functions on Set object to make sure objects of this
@@ -131,6 +145,8 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
 
         function remove(obj, name)
         % remove - remove data object given it's original (actual) name
+        %
+        % An object held by several groups is removed from all of them.
            
             arguments
                 obj (1,1) matnwb.mixin.HasUnnamedGroups
@@ -140,23 +156,24 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             warnState = warning('off', 'NWB:Set:PropertyNameExistsForEntry');
             warningCleanup = onCleanup(@() warning(warnState));
 
+            wasRemoved = false;
             for groupName = obj.GroupPropertyNames
                 currentSet = obj.(groupName);
 
                 if isa(currentSet, 'types.untyped.Anon')
                     error('Not implemented yet')
                 end
-                
+
                 % Remove data entry if the name exists in this set
                 if currentSet.isKey(name)
                     currentSet.remove(name);
-                    return
-                else
-                    continue
+                    wasRemoved = true;
                 end
             end
 
-            obj.warnIfNameIsPropertyName(name)
+            if ~wasRemoved
+                obj.warnIfNameIsPropertyName(name)
+            end
         end
 
         function T = getAliasMap(obj)
@@ -383,25 +400,35 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                 validName = sprintf('%s_', name);
             end
 
-            % Verify that name only exists in one group
+            % A name may appear in several groups only if every occurrence
+            % is the same object (see the class help for the rules).
             nameCount = obj.countInstancesOfName(name);
             if nameCount > 1
-                setObj.remove(name)
-                
-                error('NWB:HasUnnamedGroups:DuplicateEntry', ...
-                    ['An entry with name `%s` was detected in multiple ', ...
-                    'contained groups. Removed entry from group `%s`.'], ...
-                    name, groupName)
+                if ~obj.isSameObjectInAllGroups(name)
+                    setObj.remove(name)
+
+                    error('NWB:HasUnnamedGroups:DuplicateEntry', ...
+                        ['A different object with name `%s` already exists ', ...
+                        'in another group. Objects with the same name would ', ...
+                        'be written to the same location in the file, so the ', ...
+                        'entry was removed from group `%s`. Use a different ', ...
+                        'name, or add the same object.'], ...
+                        name, groupName)
+                end
+
+                if obj.PropertyManager.existOriginalName(name)
+                    return % The property was created for another group.
+                end
             end
-            
+
             % Ensure that property does not already exist.
             assert(~isprop(obj, validName), ...
                 'NWB:HasUnnamedGroups:DynamicPropertyExists', ...
                 'Property with name "%s" already exists', validName)
             
             % Create a getter method that will retrieve the value from the Set
-            getMethod = @(~) obj.getDynamicPropertyValueFromSet(name, groupName);
-            setMethod = @(nm, value, gNnm) obj.setDynamicPropertyValueToSet(name, value, groupName);
+            getMethod = @(~) obj.getDynamicPropertyValueFromSet(name);
+            setMethod = @(nm, value, gNnm) obj.setDynamicPropertyValueToSet(name, value);
             
             % Add the property using the PropertyManager
             obj.PropertyManager.addProperty(name, ...
@@ -430,6 +457,20 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             end
         end
 
+        function tf = isSameObjectInAllGroups(obj, name)
+        % isSameObjectInAllGroups - Check that every group holding name holds the same object
+            entries = {};
+            for groupName = obj.GroupPropertyNames
+                containerObj = obj.(groupName);
+                if containerObj.isKey(name)
+                    entries{end+1} = containerObj.get(name); %#ok<AGROW>
+                end
+            end
+            % Identity, not equality: equal but separate objects would
+            % still be written twice to the same location.
+            tf = all(cellfun(@(entry) isa(entry, 'handle') && entry == entries{1}, entries));
+        end
+
         function result = getClassNamesForAllowedGroupTypes(obj)
         % getAllowedGroupTypes - Resolve full class names for the allowed group types.
             groupPropertyNames = obj.GroupPropertyNames;
@@ -445,14 +486,44 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
 
     % Dynamic property getter methods
     methods (Access = private)
-        function value = getDynamicPropertyValueFromSet(obj, name, groupName)
-            % Get the value from the Set
-            value = obj.(groupName).get(name);
+        function value = getDynamicPropertyValueFromSet(obj, name)
+            % Get the value from the first Set that holds the name. Every
+            % Set that holds it holds the same object.
+            for groupName = obj.GroupPropertyNames
+                if obj.(groupName).isKey(name)
+                    value = obj.(groupName).get(name);
+                    return
+                end
+            end
         end
-                
-        function value = setDynamicPropertyValueToSet(obj, name, value, groupName)
-            % Set the value to the Set of the contained subgroup
-            obj.(groupName).set(name, value);
+
+        function value = setDynamicPropertyValueToSet(obj, name, value)
+            % Set the value in every Set that holds the name, so they keep
+            % holding the same object. A Set whose type constraint the new
+            % value does not meet no longer holds the name.
+            groupsHoldingName = obj.GroupPropertyNames( ...
+                arrayfun(@(groupName) obj.(groupName).isKey(name), obj.GroupPropertyNames));
+
+            isAccepted = false(size(groupsHoldingName));
+            for iGroup = 1:numel(groupsHoldingName)
+                try
+                    obj.(groupsHoldingName(iGroup)).set(name, value, ...
+                        'FailOnInvalidType', true);
+                    isAccepted(iGroup) = true;
+                catch ME
+                    if ~strcmp(ME.identifier, 'NWB:Set:FailedValidation')
+                        rethrow(ME)
+                    end
+                    validationError = ME;
+                end
+            end
+
+            if ~any(isAccepted)
+                throw(validationError)
+            end
+            for groupName = groupsHoldingName(~isAccepted)
+                obj.(groupName).remove(name);
+            end
         end
 
         function value = getDynamicPropertyValueFromAnon(obj, groupName)
@@ -469,7 +540,9 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
 
         function onSetEntryRemoved(obj, name, ~)
         % onSetEntryRemoved - Handle entries being removed from a contained Set
-            obj.deleteDynamicProperty(name)
+            if ~obj.nameExists(name)
+                obj.deleteDynamicProperty(name)
+            end
         end
     end
 
