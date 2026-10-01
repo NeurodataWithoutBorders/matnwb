@@ -66,6 +66,41 @@ classdef dynamicTableRaggedArrayTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(table.vectordata.get('tags_index').data.load(), uint64([3; 4]));
         end
 
+        function testAddRaggedArrayWithObjectViewRowsRoundTrip(testCase)
+            % Each trial references the TimeSeries recorded during it, with
+            % [] for a trial that has none.
+            raw1 = types.core.TimeSeries('description', 'raw 1', 'data', [1 2 3], ...
+                'data_unit', 'V', 'starting_time', 0, 'starting_time_rate', 1);
+            raw3 = types.core.TimeSeries('description', 'raw 3', 'data', [4 5 6], ...
+                'data_unit', 'V', 'starting_time', 0, 'starting_time_rate', 1);
+            trials = types.core.TimeIntervals('description', 'trials', ...
+                'colnames', {'start_time', 'stop_time'});
+            trials.addRow('start_time', 0, 'stop_time', 1);
+            trials.addRow('start_time', 2, 'stop_time', 3);
+            trials.addRow('start_time', 4, 'stop_time', 5);
+            trials.addRaggedArray('raw_data', ...
+                {types.untyped.ObjectView(raw1), [], types.untyped.ObjectView(raw3)}, ...
+                'description', 'raw data of each trial');
+
+            nwb = NwbFile( ...
+                'identifier', 'ragged_object_test', ...
+                'session_description', 'test', ...
+                'session_start_time', datetime(2024, 1, 1, 'TimeZone', 'local'));
+            nwb.acquisition.set('raw1', raw1);
+            nwb.acquisition.set('raw3', raw3);
+            nwb.intervals_trials = trials;
+            fileName = testCase.getRandomFilename();
+            nwbExport(nwb, fileName);
+
+            back = nwbRead(fileName, 'ignorecache');
+            references = back.intervals_trials.vectordata.get('raw_data').data;
+            testCase.verifyClass(references, 'types.untyped.ObjectView');
+            testCase.verifyEqual({references.path}, {'/acquisition/raw1', '/acquisition/raw3'});
+            testCase.verifyEqual( ...
+                back.intervals_trials.vectordata.get('raw_data_index').data.load(), ...
+                uint64([1; 1; 2]));
+        end
+
         function testAddRaggedArrayToTableWithIdsOnly(testCase)
             % Tables such as those in the icephys hierarchy get their ids in
             % the constructor and their ragged column afterwards.
