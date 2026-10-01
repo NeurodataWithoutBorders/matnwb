@@ -455,6 +455,16 @@ function value = validateAnyType(value)
         return
     end
 
+    % Every member type recorded for a compound dataset in a file is a basic
+    % type, so only nesting needs checking.
+    if isa(value, 'types.untyped.DataStub') && value.isCompoundType()
+        memberTypes = struct2cell(value.dataType);
+        assert(~any(cellfun(@isstruct, memberTypes)), ...
+            'NWB:CheckDType:NestedCompoundNotSupported', ...
+            'Nested compound values are not supported')
+        return
+    end
+
     if isWrapped(value, 'any')
         unWrappedValue = unwrapValue(value);
         try
