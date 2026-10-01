@@ -1,6 +1,10 @@
 classdef CheckDtypeTest < matlab.unittest.TestCase
 % CheckDtypeTest - Unit test for functions in +types namespace.
 
+    properties (TestParameter)
+        NumericOrLogicalType = {'double', 'single', 'uint32', 'int64', 'logical'}
+    end
+
     methods (Test)
 
         function testCompoundTypes(testCase)
@@ -202,9 +206,59 @@ classdef CheckDtypeTest < matlab.unittest.TestCase
                 @() types.util.checkDtype('invalidValue', 'any', {struct()}), ...
                 'NWB:CheckDType:InvalidType')
         end
+
+        function testNumericDataStubIsValidatedWithoutReadingFile(testCase, NumericOrLogicalType)
+            % The stub points to a file that does not exist, so validation
+            % only succeeds if it uses the recorded data type.
+            stub = testCase.createStubForMissingFile(NumericOrLogicalType);
+
+            value = testCase.verifyWarningFree( ...
+                @() types.util.checkDtype('data', NumericOrLogicalType, stub));
+            testCase.verifySameHandle(value, stub)
+        end
+
+        function testAnyDtypeAllowsCompoundDataStubWithoutReadingFile(testCase)
+            memberTypes = struct('x', 'uint32', 'y', 'uint32', 'weight', 'single');
+            stub = testCase.createStubForMissingFile(memberTypes);
+
+            value = testCase.verifyWarningFree( ...
+                @() types.util.checkDtype('data', 'any', stub));
+            testCase.verifySameHandle(value, stub)
+        end
+
+        function testAnyDtypeRejectsNestedCompoundDataStub(testCase)
+            memberTypes = struct('x', 'uint32', 'nested', struct('y', 'uint32'));
+            stub = testCase.createStubForMissingFile(memberTypes);
+
+            testCase.verifyError( ...
+                @() types.util.checkDtype('data', 'any', stub), ...
+                'NWB:CheckDType:NestedCompoundNotSupported')
+        end
+
+        function testNumericDataStubOfWrongTypeWarns(testCase)
+            warningId = 'NWB:CheckDataType:NeedsManualConversion';
+            previousWarningState = warning('on', warningId);
+            testCase.addTeardown(@warning, previousWarningState)
+
+            stub = testCase.createStubForMissingFile('double');
+
+            value = testCase.verifyWarning( ...
+                @() types.util.checkDtype('data', 'int32', stub), warningId);
+            testCase.verifySameHandle(value, stub)
+        end
     end
 
     methods (Static)
+        function stub = createStubForMissingFile(dataType)
+            % Built the way nwbRead builds stubs, with the size and data
+            % type recorded when the file was read.
+            filename = tempname + ".nwb";
+            datasetPath = "/data";
+            lazyArray = io.backend.hdf5.HDF5LazyArray( ...
+                filename, datasetPath, [10, 1], dataType);
+            stub = types.untyped.DataStub(filename, datasetPath, [], [], lazyArray);
+        end
+
         function [structVal, tableVal, mapVal] = getCompoundValues(varargin)
 
             structVal = struct(varargin{:});
