@@ -358,6 +358,9 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
                 fullpath = 'root';
             end
 
+            previousWarningState = warning('error', 'NWB:CheckDataType:NeedsManualConversion');
+            cleanupWarningState = onCleanup(@() warning(previousWarningState));
+
             propertyNames = properties(obj);
             for iProperty = 1:numel(propertyNames)
                 propertyName = propertyNames{iProperty};
@@ -368,8 +371,6 @@ classdef MetaClass < handle & matlab.mixin.CustomDisplay
                 % validator. An empty value represents an unset optional
                 % property, which is not written on export.
                 if ~isempty(propertyValue) && ismethod(obj, validatorName)
-                    warnState = warning('error', 'NWB:CheckDataType:NeedsManualConversion');
-                    warnCleanupObj = onCleanup(@() warning(warnState));
                     try
                         try
                             validatedValue = feval(validatorName, obj, propertyValue);
