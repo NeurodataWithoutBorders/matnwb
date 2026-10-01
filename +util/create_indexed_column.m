@@ -32,7 +32,9 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %       DATA_VECTOR.data keeps the class, for example a column of ObjectView
 %       references to the TimeSeries recorded during each trial.
 %   A column holds elements of one kind: numeric, text, compound or object
-%   references.
+%   references. The column is built in memory, so a row cannot be a DataPipe
+%   or a DataStub, and it cannot hold SoftLinks: reference objects with
+%   ObjectViews instead.
 %   All array rows must share elementDims. Trailing dimensions of 1 may be
 %   omitted, as MATLAB omits them from size: the number of element
 %   dimensions is the largest any row shows, and rows with fewer dimensions
@@ -388,7 +390,7 @@ function layout = findLayout(rows, depth)
         'hasObject', false, 'objectClass', "", ...
         'allStrings', true, 'allStructArrays', true);
     for iRow = 1:numel(rows)
-        scan = scanItem(rows{iRow}, depth, depth == 1, scan);
+        scan = scanItem(rows{iRow}, depth, depth == 1, scan, sprintf('DATA{%d}', iRow));
     end
 
     kinds = ["numeric", "text", "compound", "object"];
@@ -422,7 +424,8 @@ function layout = findLayout(rows, depth)
         scan.firstItem, scan.firstLevel, numElementDims, layout.useShortcut);
 end
 
-function scan = scanItem(item, level, vectorsAreScalars, scan)
+function scan = scanItem(item, level, vectorsAreScalars, scan, label)
+    rejectUnstorableClass(item, label, "NWB:CreateIndexedColumn:InvalidRow");
     if level == 1 && isTextRow(item)
         if ~isempty(item)
             scan.hasText = true;
@@ -450,7 +453,8 @@ function scan = scanItem(item, level, vectorsAreScalars, scan)
         % A cell at level 1 is rejected by flattenItem.
         if level >= 2
             for iEntry = 1:numel(item)
-                scan = scanItem(item{iEntry}, level - 1, false, scan);
+                scan = scanItem(item{iEntry}, level - 1, false, scan, ...
+                    sprintf('%s{%d}', label, iEntry));
             end
         end
         return
@@ -493,6 +497,7 @@ end
 
 function [flatData, numElements] = normalizeFlatData(data)
     % Put flat DATA in the form the column stores and count its elements.
+    rejectUnstorableClass(data, 'DATA', "NWB:CreateIndexedColumn:InvalidData");
     if isnumeric(data) || islogical(data)
         if isvector(data) || isempty(data)
             flatData = data(:);
@@ -628,4 +633,19 @@ function tf = isObjectRow(item)
     % An array of objects such as types.untyped.ObjectView references. A
     % table is an object too, but it is a compound row.
     tf = isobject(item) && ~istable(item);
+end
+
+function rejectUnstorableClass(item, label, errorId)
+    % The column is built in memory, so lazily read or chunked data cannot
+    % be an element, and a dataset cannot hold links.
+    if isa(item, 'types.untyped.DataPipe') || isa(item, 'types.untyped.DataStub')
+        error(errorId, ...
+            "%s is a %s, but the column is built in memory. Give the data as an " + ...
+            "array (load() a DataStub), or build the VectorData and VectorIndex " + ...
+            "with DataPipes directly.", label, class(item));
+    elseif isa(item, 'types.untyped.SoftLink')
+        error(errorId, ...
+            "%s is a types.untyped.SoftLink, but a column cannot hold links. " + ...
+            "Reference objects with types.untyped.ObjectView instead.", label);
+    end
 end
