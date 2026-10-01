@@ -492,12 +492,12 @@ for i = 1:length(unitIds)
 
     % Collect waveform snippets and per unit event count for 
     % building nested ragged vector.
-    waveform_snippets{i} = waveforms; % [numWaveforms x numSamples]
+    waveform_snippets{i} = waveforms.'; % [numSamples x numWaveforms]
 
     % Collect this unit's mean and std waveform; 
     % added as a column after the loop.
-    waveform_means{i} = mean(waveforms, 1).'; % [nSamples x 1]
-    waveform_stds{i} = std(waveforms, 0, 1).'; % [nSamples x 1]
+    waveform_means{i} = mean(waveforms, 1).'; % [numSamples x 1]
+    waveform_stds{i} = std(waveforms, 0, 1).'; % [numSamples x 1]
 end
 
 nwb.units.addDoublyRaggedArray(...
@@ -507,7 +507,7 @@ nwb.units.waveforms_sampling_rate = 19531.25; % from data descriptor
 
 % Add the per-unit mean waveforms as a single fixed-shape column. Building it
 % here (rather than via addRow) keeps waveform_mean as a plain 2-D dataset
-% ([nUnits x nSamples] on disk, no index), as required by the schema.
+% ([numUnits x numSamples] on disk, no index), as required by the schema.
 nwb.units.waveform_mean = types.hdmf_common.VectorData( ...
     'description', 'Mean spike waveform for each unit', ...
     'data', [waveform_means{:}]); % [numSamples x numUnits]
@@ -521,14 +521,16 @@ nwb.units.waveform_sd = types.hdmf_common.VectorData( ...
 % other, refer to <https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ecephys.html#13 
 % this diagram> from the Extracellular Electrophysiology Tutorial. 
 % 
-% Advanced note: if a unit was present on more than one electrode, each spike 
+% *Advanced note*: if a unit was present on more than one electrode, each spike 
 % has one waveform _per electrode_. In that case, build each unit's entry as a 
-% nested cell — |data{unit}{spike}| a |[numElectrodes x numSamples]| matrix (one 
-% row per electrode) — and pass it to |addDoublyRaggedArray|. The row order must 
-% match the electrodes listed in that unit's |electrodes| entry (as the NWB schema 
-% requires). Here each unit was recorded on a single electrode, so each spike 
-% has exactly one waveform and the simpler |[numSpikes x numSamples]| form used 
-% above is sufficient.
+% nested cell, where |data{unit}{spike}| is a |[numSamples x numElectrodes]| matrix 
+% with one column per electrode, or, when every spike of the unit was recorded 
+% on the same electrodes, as one |[numSamples x numElectrodes x numSpikes]| array, 
+% and pass it to |addDoublyRaggedArray|. The column order must match the electrodes 
+% listed in that unit's |electrodes| entry, as the NWB schema requires. Here each 
+% unit was recorded on a single electrode, so each spike has exactly one waveform 
+% and the simpler |[numSamples x numSpikes]| form used above is sufficient, with 
+% one column per spike.
 %% Raw Acquisition Data
 % Each ALM-3 session is associated with a large number of raw voltage data grouped 
 % by trial ID. To map this data to NWB, each trial is created as its own *ElectricalSeries* 
@@ -546,10 +548,6 @@ rawfiles = dir(untarLoc);
 rawfiles = fullfile(untarLoc, {rawfiles(~[rawfiles.isdir]).name});
 
 nrows = length(nwb.general_extracellular_ephys_electrodes.id.data);
-tablereg = types.hdmf_common.DynamicTableRegion( ...
-    'description', 'Relevent electrodes for this electrical series', ...
-    'table', types.untyped.ObjectView(electrodesTable), ...
-    'data', (1:nrows) - 1);
 objrefs = cell(size(rawfiles));
 
 endTimestamps = trial_intervals.start_time.data;
@@ -571,12 +569,20 @@ for i = 1:length(rawfiles)
     else
         nvPairs = {'timestamps', rawdata.TimeStamps};
     end
+
+    % Each ElectricalSeries owns its electrodes region: a neurodata object
+    % has one location in the file, so the region cannot be shared.
+    electrodesRegion = types.hdmf_common.DynamicTableRegion( ...
+        'description', 'Relevant electrodes for this electrical series', ...
+        'table', types.untyped.ObjectView(electrodesTable), ...
+        'data', (1:nrows) - 1);
     
     electricalSeries = types.core.ElectricalSeries( ...
         'data', transpose(rawdata.ch_MUA), ... % Must be shape: numChannels x numTimepoints
         'description', ['Raw voltage acquisition for trial ' tnumstr], ...
-        'electrodes', tablereg, ...
+        'electrodes', electrodesRegion, ...
         nvPairs{:});
+    
     tname = ['trial ' tnumstr];
     nwb.acquisition.set(tname, electricalSeries);
     
