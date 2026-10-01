@@ -186,14 +186,41 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
 
         function testObjectRowsMustShareAClassAndBeVectors(testCase)
             seriesView = types.untyped.ObjectView(types.core.TimeSeries('description', 'raw'));
-            deviceLink = types.untyped.SoftLink(types.core.Device());
+            timestamp = datetime(2024, 1, 1);
 
-            testCase.verifyError(@() util.create_indexed_column({seriesView, deviceLink}), ...
+            testCase.verifyError(@() util.create_indexed_column({seriesView, timestamp}), ...
                 'NWB:CreateIndexedColumn:InconsistentElementType');
             testCase.verifyError(@() util.create_indexed_column({seriesView, [1 2]}), ...
                 'NWB:CreateIndexedColumn:InconsistentElementType');
             testCase.verifyError(@() util.create_indexed_column({repmat(seriesView, 2, 2)}), ...
                 'NWB:CreateIndexedColumn:InvalidRow');
+        end
+
+        function testPipesStubsAndLinksAreRejected(testCase)
+            % The column is built in memory, and a dataset cannot hold links.
+            pipe = types.untyped.DataPipe('data', (1:3)', 'maxSize', Inf);
+            link = types.untyped.SoftLink(types.core.Device());
+            nwb = tests.factory.NWBFile();
+            nwb.acquisition.set('series', types.core.TimeSeries('description', 'd', ...
+                'data', (1:3)', 'data_unit', 'V', 'starting_time', 0, 'starting_time_rate', 1));
+            fileName = testCase.getRandomFilename();
+            nwbExport(nwb, fileName);
+            stub = nwbRead(fileName, 'ignorecache').acquisition.get('series').data;
+
+            testCase.verifyError(@() util.create_indexed_column({pipe, [4; 5]}), ...
+                'NWB:CreateIndexedColumn:InvalidRow');
+            testCase.verifyError(@() util.create_indexed_column({{pipe}}, 'Depth', 2), ...
+                'NWB:CreateIndexedColumn:InvalidRow');
+            testCase.verifyError(@() util.create_indexed_column({stub, [4; 5]}), ...
+                'NWB:CreateIndexedColumn:InvalidRow');
+            testCase.verifyError(@() util.create_indexed_column({link, []}), ...
+                'NWB:CreateIndexedColumn:InvalidRow');
+            testCase.verifyError( ...
+                @() util.create_indexed_column(pipe, 'd', 'ElementsPerRow', [2 1]), ...
+                'NWB:CreateIndexedColumn:InvalidData');
+            testCase.verifyError( ...
+                @() util.create_indexed_column(stub, 'd', 'ElementsPerRow', [2 1]), ...
+                'NWB:CreateIndexedColumn:InvalidData');
         end
 
         function testTextRowsAtDepth2(testCase)
