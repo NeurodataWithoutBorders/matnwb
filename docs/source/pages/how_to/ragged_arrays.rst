@@ -94,8 +94,8 @@ The values are 0-based row indices into the referenced table.
 
 Text and compound columns
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-A row can also hold text or compound elements. Each column holds one kind of element:
-numeric, text or compound.
+A row can also hold text, compound elements or object references. Each column holds one
+kind of element: numeric, text, compound or object reference.
 
 For text, give each row as a string vector or a cell vector of character vectors, with
 one element per entry. A character vector is a single element. For example, to tag the
@@ -126,6 +126,19 @@ The ``pixel_mask`` column holds all five pixels in one table, and ``pixel_mask_i
 struct whose fields are equal-length columns. The column is a struct array when every row
 is a struct array, and a table otherwise.
 
+An object reference links a row to another object in the file, such as the
+:class:`types.core.TimeSeries` recorded during a trial. Give each row as a vector of
+:class:`types.untyped.ObjectView` objects, with ``[]`` for a row that references nothing:
+
+.. literalinclude:: examples/ragged_arrays_examples.m
+   :language: matlab
+   :start-after: % snippet: object-reference-rows
+   :end-before: % end snippet
+   :dedent:
+
+The ``raw_data`` column holds the two references, and ``raw_data_index`` is ``[1 1 2]``:
+trial 2 owns no reference.
+
 Flat data with ``ElementsPerRow``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Your data may already hold all rows in one array, such as the pixels of every ROI from a
@@ -140,8 +153,8 @@ number of elements in each row:
    :dedent:
 
 This builds the same ``pixel_mask`` column as the per-ROI tables above. The flat data can
-be a numeric vector, a numeric ``[elementDims x numElements]`` array, text, or compound
-data, with the elements of all rows in row order. It keeps its class: a string array gives
+be a numeric vector, a numeric ``[elementDims x numElements]`` array, text, compound data
+or a vector of object references, with the elements of all rows in row order. It keeps its class: a string array gives
 a string column, and a struct array a struct column. The sum of ``ElementsPerRow`` must
 equal the number of elements. ``ElementsPerRow`` builds ragged columns only
 (``Depth`` 1).

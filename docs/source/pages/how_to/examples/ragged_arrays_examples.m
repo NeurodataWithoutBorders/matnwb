@@ -55,6 +55,23 @@ function ragged_arrays_examples()
     assert(isequal(planeSegmentation.pixel_mask.data, [roi1; roi2]))
     assert(isequal(planeSegmentation.pixel_mask_index.data(:).', uint64([3 5])))
 
+    % snippet: object-reference-rows
+    rawTrial1 = types.core.TimeSeries('description', 'raw data of trial 1');
+    rawTrial3 = types.core.TimeSeries('description', 'raw data of trial 3');
+    trials = types.core.TimeIntervals('description', 'trials', ...
+        'colnames', {'start_time', 'stop_time'});
+    trials.addRow('start_time', 0.0, 'stop_time', 1.0);
+    trials.addRow('start_time', 2.0, 'stop_time', 3.0);
+    trials.addRow('start_time', 4.0, 'stop_time', 5.0);
+    trials.addRaggedArray('raw_data', ...
+        {types.untyped.ObjectView(rawTrial1), [], types.untyped.ObjectView(rawTrial3)}, ...
+        'description', 'raw data recorded during each trial');
+    % end snippet
+    references = trials.vectordata.get('raw_data').data;
+    assert(numel(references) == 2 && references(1).target == rawTrial1 ...
+        && references(2).target == rawTrial3)
+    assert(isequal(trials.vectordata.get('raw_data_index').data(:).', uint64([1 1 2])))
+
     % ---- Doubly-ragged, single electrode per unit ----
     % Each unit's matrix is [numSamples x numWaveforms], one waveform per
     % column; with one electrode, numWaveforms is the number of spikes.

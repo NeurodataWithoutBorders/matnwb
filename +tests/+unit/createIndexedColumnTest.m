@@ -160,6 +160,42 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(index.data, uint64([2; 2; 3]));
         end
 
+        function testObjectViewRowsKeepTheirClass(testCase)
+            % Rows of object references, with [] for a row that references
+            % nothing, as when linking each trial to its raw data.
+            seriesView = types.untyped.ObjectView(types.core.TimeSeries('description', 'raw'));
+            deviceView = types.untyped.ObjectView(types.core.Device());
+
+            [vector, index] = util.create_indexed_column( ...
+                {seriesView, [], [seriesView; deviceView]});
+
+            testCase.verifyEqual(vector.data, [seriesView; seriesView; deviceView]);
+            testCase.verifyEqual(index.data, uint64([1; 1; 3]));
+        end
+
+        function testFlatObjectDataWithElementsPerRow(testCase)
+            seriesView = types.untyped.ObjectView(types.core.TimeSeries('description', 'raw'));
+            deviceView = types.untyped.ObjectView(types.core.Device());
+
+            [vector, index] = util.create_indexed_column( ...
+                [seriesView; seriesView; deviceView], 'refs', 'ElementsPerRow', [1 0 2]);
+
+            testCase.verifyEqual(vector.data, [seriesView; seriesView; deviceView]);
+            testCase.verifyEqual(index.data, uint64([1; 1; 3]));
+        end
+
+        function testObjectRowsMustShareAClassAndBeVectors(testCase)
+            seriesView = types.untyped.ObjectView(types.core.TimeSeries('description', 'raw'));
+            deviceLink = types.untyped.SoftLink(types.core.Device());
+
+            testCase.verifyError(@() util.create_indexed_column({seriesView, deviceLink}), ...
+                'NWB:CreateIndexedColumn:InconsistentElementType');
+            testCase.verifyError(@() util.create_indexed_column({seriesView, [1 2]}), ...
+                'NWB:CreateIndexedColumn:InconsistentElementType');
+            testCase.verifyError(@() util.create_indexed_column({repmat(seriesView, 2, 2)}), ...
+                'NWB:CreateIndexedColumn:InvalidRow');
+        end
+
         function testTextRowsAtDepth2(testCase)
             [vector, index, indexIndex] = util.create_indexed_column( ...
                 {{{'a', 'b'}, {'c'}}, {{'d'}}}, 'Depth', 2);
