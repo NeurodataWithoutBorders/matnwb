@@ -84,6 +84,37 @@ classdef DynamicTableRaggedReadTest < tests.abstract.NwbTestCase
             testCase.verifyEmptyRowIsSameAloneAndWithOtherRows(nwbIn.units)
         end
 
+        function testGetRowWhenColumnHasNoElements(testCase)
+            % Every row of the column is empty, so its dataset has no
+            % elements. An extendable dataset with nothing appended is
+            % written that way.
+            amplitudes = types.hdmf_common.VectorData( ...
+                'description', 'amplitudes', ...
+                'data', types.untyped.DataPipe('maxSize', Inf, 'dataType', 'double'));
+            amplitudesIndex = types.hdmf_common.VectorIndex( ...
+                'description', 'index into amplitudes', ...
+                'data', uint64([0; 0]), ...
+                'target', types.untyped.ObjectView(amplitudes));
+            nwb = tests.factory.NWBFile();
+            nwb.acquisition.set('rows_without_amplitudes', types.hdmf_common.DynamicTable( ...
+                'description', 'table whose rows have no amplitudes', ...
+                'colnames', {'amplitudes'}, ...
+                'amplitudes', amplitudes, ...
+                'amplitudes_index', amplitudesIndex, ...
+                'id', types.hdmf_common.ElementIdentifiers('data', int64([0; 1]))));
+            fileName = testCase.getRandomFilename();
+            nwbExport(nwb, fileName);
+            nwbIn = nwbRead(fileName, 'ignorecache');
+            tableIn = nwbIn.acquisition.get('rows_without_amplitudes');
+
+            vector = tableIn.vectordata.get('amplitudes');
+            testCase.assertClass(vector.data, 'types.untyped.DataPipe')
+            testCase.verifyRowsHaveNoAmplitudes(tableIn)
+
+            vector.data = types.untyped.DataStub(fileName, '/acquisition/rows_without_amplitudes/amplitudes');
+            testCase.verifyRowsHaveNoAmplitudes(tableIn)
+        end
+
         function testGetRowReadsEachLevelOnce(testCase)
             [units, spies] = testCase.readUnitsWithSpies();
 
@@ -124,6 +155,12 @@ classdef DynamicTableRaggedReadTest < tests.abstract.NwbTestCase
                 spy.reset()
                 spies.(columnName) = spy;
             end
+        end
+
+        function verifyRowsHaveNoAmplitudes(testCase, dynamicTable)
+            rows = dynamicTable.getRow(1:2);
+            testCase.verifyEqual(rows.amplitudes, {zeros(0, 0); zeros(0, 0)});
+            testCase.verifyEqual(height(dynamicTable.toTable()), 2);
         end
 
         function verifyEmptyRowIsSameAloneAndWithOtherRows(testCase, units)
