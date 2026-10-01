@@ -236,11 +236,14 @@ classdef CheckDtypeTest < matlab.unittest.TestCase
         end
 
         function testNumericDataStubOfWrongTypeWarns(testCase)
+            warningId = 'NWB:CheckDataType:NeedsManualConversion';
+            previousWarningState = warning('on', warningId);
+            testCase.addTeardown(@warning, previousWarningState)
+
             stub = testCase.createStubForMissingFile('double');
 
             value = testCase.verifyWarning( ...
-                @() types.util.checkDtype('data', 'int32', stub), ...
-                'NWB:CheckDataType:NeedsManualConversion');
+                @() types.util.checkDtype('data', 'int32', stub), warningId);
             testCase.verifySameHandle(value, stub)
         end
     end
