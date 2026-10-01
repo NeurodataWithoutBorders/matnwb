@@ -27,7 +27,12 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %       every compound row is a struct array, and a table otherwise; either
 %       is written as a compound dataset (for example
 %       PlaneSegmentation.pixel_mask).
-%   A column holds elements of one kind: numeric, text or compound.
+%     - object references: an array of objects such as
+%       types.untyped.ObjectView, as a vector, one element per object.
+%       DATA_VECTOR.data keeps the class, for example a column of ObjectView
+%       references to the TimeSeries recorded during each trial.
+%   A column holds elements of one kind: numeric, text, compound or object
+%   references.
 %   All array rows must share elementDims. Trailing dimensions of 1 may be
 %   omitted, as MATLAB omits them from size: the number of element
 %   dimensions is the largest any row shows, and rows with fewer dimensions
@@ -95,9 +100,9 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %   COUNTS(i) is the number of elements in row i. FLATDATA is a numeric
 %   vector (scalar elements), a numeric array [elementDims x nElements], text
 %   (a cell array of character vectors or a string array), or compound data
-%   (a table, a struct array or a scalar struct of columns). It keeps its
-%   class as rows do: a string array stays a string column and a struct array
-%   a struct column. SUM(COUNTS) must equal the number of elements. This form
+%   (a table, a struct array or a scalar struct of columns), or a vector of
+%   object references. It keeps its class as rows do: a string array stays a
+%   string column and a struct array a struct column. SUM(COUNTS) must equal the number of elements. This form
 %   builds a column of depth 1.
 %   EXAMPLE (pixel masks of 2 ROIs with 3 and 2 pixels):
 %     pixels = table(uint32([1;2;3;7;8]), uint32([4;4;4;9;9]), single(ones(5,1)), ...
@@ -263,11 +268,28 @@ function [chunk, ownCount, innerCounts] = flattenItem(item, level, layout, label
         return
     end
 
+    if layout.kind == "object" && level == 1
+        if ~isObjectRow(item) || string(class(item)) ~= layout.objectClass
+            error("NWB:CreateIndexedColumn:InconsistentElementType", ...
+                "%s must be an array of %s objects like the other rows of the column. " + ...
+                "It is a %s.", label, layout.objectClass, class(item));
+        end
+        if ~isvector(item)
+            error("NWB:CreateIndexedColumn:InvalidRow", ...
+                "%s must be a vector of objects. It is a %s of size [%s].", ...
+                label, class(item), join(string(size(item)), " "));
+        end
+        chunk = item(:);
+        ownCount = numel(item);
+        return
+    end
+
     if iscell(item)
         if level == 1
             error("NWB:CreateIndexedColumn:InvalidRow", ...
                 "%s is a cell array, but at the innermost level a row must be a " + ...
-                "numeric or logical array or text. Increase Depth for nested rows.", label);
+                "numeric or logical array, text, compound data or an array of " + ...
+                "objects. Increase Depth for nested rows.", label);
         end
         numEntries = numel(item);
         chunks = cell(1, numEntries);
@@ -363,20 +385,21 @@ function layout = findLayout(rows, depth)
     scan = struct('maxElementDims', -Inf, 'shortcutAllowed', true, ...
         'firstItem', [], 'firstLevel', 0, ...
         'hasNumeric', false, 'hasText', false, 'hasCompound', false, ...
+        'hasObject', false, 'objectClass', "", ...
         'allStrings', true, 'allStructArrays', true);
     for iRow = 1:numel(rows)
         scan = scanItem(rows{iRow}, depth, depth == 1, scan);
     end
 
-    kinds = ["numeric", "text", "compound"];
-    presentKinds = kinds([scan.hasNumeric, scan.hasText, scan.hasCompound]);
+    kinds = ["numeric", "text", "compound", "object"];
+    presentKinds = kinds([scan.hasNumeric, scan.hasText, scan.hasCompound, scan.hasObject]);
     if numel(presentKinds) > 1
         error("NWB:CreateIndexedColumn:InconsistentElementType", ...
             "A column holds elements of one kind, but DATA has %s elements.", ...
             strjoin(presentKinds, " and "));
     end
     layout = struct('elementDims', [], 'useShortcut', false, 'kind', "numeric", ...
-        'textClass', "cellstr", 'compoundClass', "table");
+        'textClass', "cellstr", 'compoundClass', "table", 'objectClass', scan.objectClass);
     if ~isempty(presentKinds)
         layout.kind = presentKinds;
     end
@@ -411,6 +434,15 @@ function scan = scanItem(item, level, vectorsAreScalars, scan)
         if ~isempty(item)
             scan.hasCompound = true;
             scan.allStructArrays = scan.allStructArrays && isStructArrayRow(item);
+        end
+        return
+    end
+    if level == 1 && isObjectRow(item)
+        if ~isempty(item)
+            scan.hasObject = true;
+            if scan.objectClass == ""
+                scan.objectClass = string(class(item));
+            end
         end
         return
     end
@@ -478,10 +510,13 @@ function [flatData, numElements] = normalizeFlatData(data)
     elseif isCompoundRow(data)
         [columns, numElements] = compoundColumns(data, 'DATA');
         flatData = struct2table(columns);
+    elseif isObjectRow(data) && (isvector(data) || isempty(data))
+        flatData = data(:);
+        numElements = numel(flatData);
     else
         error("NWB:CreateIndexedColumn:InvalidData", ...
-            "Flat DATA must be numeric, logical, text or compound data. It is a %s.", ...
-            class(data));
+            "Flat DATA must be numeric, logical, text or compound data, or a vector " + ...
+            "of objects. It is a %s.", class(data));
     end
 end
 
@@ -587,4 +622,10 @@ end
 
 function tf = isTextRow(item)
     tf = iscellstr(item) || isstring(item) || ischar(item);
+end
+
+function tf = isObjectRow(item)
+    % An array of objects such as types.untyped.ObjectView references. A
+    % table is an object too, but it is a compound row.
+    tf = isobject(item) && ~istable(item);
 end
