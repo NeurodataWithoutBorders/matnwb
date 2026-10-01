@@ -283,7 +283,7 @@ ecephys_module.nwbdatainterface.set('theta', decomp_series);
 % |*DynamicTable*|> class. The default <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Units.html 
 % |*Units*|> table is located at |/units| in the HDF5 file. You can add columns 
 % to the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Units.html 
-% |*Units*|> table just like you did for |electrodes| and |trials| (see <./convertTrials.m 
+% |*Units*|> table just like you did for |electrodes| and |trials| (see <./convertTrials.mlx 
 % convertTrials>). Here, we generate some random spike time data and populate 
 % the table. Note: Spike times of a <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/core/Units.html 
 % |*Units*|> table should be sorted in ascending order.
