@@ -1,4 +1,10 @@
-function Reference = parseReference(datasetId, typeId, data)
+function Reference = parseReference(datasetId, typeId, data, targetResolver)
+    % targetResolver (optional) resolves the path each reference points to.
+    % Without one, every reference is resolved with H5R.get_name, which
+    % searches the whole file. See io.backend.hdf5.ReferenceTargetResolver.
+    if nargin < 4
+        targetResolver = [];
+    end
     referenceSize = size(data);
     %first dimension is always the raw buffer size
     referenceSize = referenceSize(2:end);
@@ -12,13 +18,18 @@ function Reference = parseReference(datasetId, typeId, data)
         referenceType = H5ML.get_constant_value('H5R_DATASET_REGION');
     end
     for iReference = 1:totalNumReferences
-        Reference(iReference) = parseSingleReference(datasetId, referenceType, data(:,iReference));
+        Reference(iReference) = parseSingleReference( ...
+            datasetId, referenceType, data(:,iReference), targetResolver);
     end
     Reference = reshape(Reference, referenceSize);
 end
 
-function Reference = parseSingleReference(datasetId, referenceType, data)
-    target = H5R.get_name(datasetId, referenceType, data);
+function Reference = parseSingleReference(datasetId, referenceType, data, targetResolver)
+    if isempty(targetResolver)
+        target = H5R.get_name(datasetId, referenceType, data);
+    else
+        target = targetResolver.resolve(datasetId, referenceType, data);
+    end
 
     %% H5R_OBJECT
     if referenceType == H5ML.get_constant_value('H5R_OBJECT')
