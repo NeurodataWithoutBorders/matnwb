@@ -61,6 +61,22 @@ classdef MetaClassValidatePropertiesTest < matlab.unittest.TestCase
                 'NWB:Export:InvalidPropertyValue')
         end
 
+        function testWarningStateIsRestoredAfterValidation(testCase)
+            warningId = 'NWB:CheckDataType:NeedsManualConversion';
+            previousWarningState = warning('on', warningId);
+            testCase.addTeardown(@warning, previousWarningState)
+
+            % Two set properties, so their validators run one after another.
+            testType = tests.unit.types.doubles.TypeWithFailingValidator();
+            testType.validProperty = 42;
+            testType.datetimeProperty = {datetime(2020, 1, 1)};
+
+            testType.runValidateProperties('/some/path')
+
+            warningState = warning('query', warningId);
+            testCase.verifyEqual(warningState.state, 'on')
+        end
+
         function testDatetimeFormatterNormalizationPasses(testCase)
             testType = tests.unit.types.doubles.TypeWithFailingValidator();
             testType.datetimeProperty = {datetime(2020, 1, 1, ...
