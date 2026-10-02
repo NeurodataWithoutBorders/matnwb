@@ -94,8 +94,7 @@ function data = load_mat_style(obj, varargin)
     %% Reshape Data
     expectedSize = getExpectedSize(dataDimensions, userSelection);
     openSelectionIndices = find(cellfun('isclass', userSelection, 'char'));
-    % A for loop iterates over the columns of its range, so the positions
-    % must be a row to be visited one at a time.
+    % Ensure openSelectionIndices is a row vector before using it for the loop index.
     openSelectionIndices = reshape(openSelectionIndices, 1, []);
     for iDimension = openSelectionIndices
         % for open selection ':', select the entire range of that dimension.
