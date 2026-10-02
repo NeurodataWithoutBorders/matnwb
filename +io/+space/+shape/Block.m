@@ -13,15 +13,18 @@ classdef Block < io.space.Shape
     end
     
     methods
-        function obj = Block(varargin)
-            p = inputParser;
-            addParameter(p, 'start', 1, @(x)isscalar(x) && isnumeric(x) && x >= 0);
-            addParameter(p, 'step', 1, @(x)isscalar(x) && isnumeric(x) && x >= 0);
-            addParameter(p, 'stop', 1, @(x)isscalar(x) && isnumeric(x) && x >= 0);
-            parse(p, varargin{:});
-            obj.start = p.Results.start;
-            obj.step = p.Results.step;
-            obj.stop = p.Results.stop;
+        function obj = Block(options)
+            % The selection of a dataset with many runs builds thousands of
+            % blocks, so the constructor validates with an arguments block,
+            % which costs a few microseconds per call.
+            arguments
+                options.start (1,1) {mustBeNumeric, mustBeNonnegative} = 1
+                options.step (1,1) {mustBeNumeric, mustBeNonnegative} = 1
+                options.stop (1,1) {mustBeNumeric, mustBeNonnegative} = 1
+            end
+            obj.start = options.start;
+            obj.step = options.step;
+            obj.stop = options.stop;
         end
     end
     
