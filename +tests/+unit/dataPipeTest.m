@@ -480,6 +480,29 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             tf = dynamicFilter.isInDcpl(dcpl);
             testCase.verifyTrue(tf)
         end
+
+        function testLoadSelectionsMatchesIndexing(testCase)
+            selections = {{':', 2:3}, {1:2, 5}, {':', 7:8}};
+            pipe = types.untyped.DataPipe('data', reshape(1:32, 4, 8), 'maxSize', [4, Inf], 'axis', 2);
+            testCase.verifySelectionsMatchIndexing(pipe, selections)
+
+            fid = H5F.create('testLoadSelections.h5');
+            pipe.export(fid, '/test_data', {});
+            H5F.close(fid);
+            testCase.assertTrue(pipe.isBound)
+            testCase.verifySelectionsMatchIndexing(pipe, selections)
+        end
+    end
+
+    methods (Access = private)
+        function verifySelectionsMatchIndexing(testCase, pipe, selections)
+            actual = pipe.loadSelections(selections);
+            testCase.verifySize(actual, size(selections));
+            for iSelection = 1:numel(selections)
+                testCase.verifyEqual(actual{iSelection}, pipe(selections{iSelection}{:}), ...
+                    sprintf('Selection %d differs from indexing the DataPipe.', iSelection));
+            end
+        end
     end
 end
 
