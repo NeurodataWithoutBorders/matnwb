@@ -66,19 +66,11 @@ function data = load_mat_style(obj, varargin)
             dataDimensions = [dataDimensions, 1];
         end
 
+        [points{:}] = ind2sub(dataDimensions, orderedSelection);
         readSpaceId = H5S.copy(spaceId);
         H5S.select_none(readSpaceId);
-        isOneRun = orderedSelection(end) - orderedSelection(1) + 1 == numel(orderedSelection);
-        if isscalar(obj.dims) && isOneRun
-            % One contiguous run of a one-dimensional dataset is a single
-            % hyperslab, which HDF5 selects faster than one point per element.
-            H5S.select_hyperslab(readSpaceId, 'H5S_SELECT_SET', ...
-                orderedSelection(1) - 1, [], numel(orderedSelection), []);
-        else
-            [points{:}] = ind2sub(dataDimensions, orderedSelection);
-            H5S.select_elements(readSpaceId, 'H5S_SELECT_SET', ...
-                cell2mat(flipud(points)) - 1);
-        end
+        H5S.select_elements(readSpaceId, 'H5S_SELECT_SET', ...
+            cell2mat(flipud(points)) - 1);
         memorySpaceId = H5S.create_simple(length(selectionDimensions), ...
             selectionDimensions, selectionDimensions);
     else
