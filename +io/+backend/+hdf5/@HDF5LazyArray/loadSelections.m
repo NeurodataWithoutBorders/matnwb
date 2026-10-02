@@ -1,14 +1,15 @@
 function data = loadSelections(obj, selections)
-    % LOADSELECTIONS read several selections in one pass over the dataset.
-    % DATA = LOADSELECTIONS(OBJ, SELECTIONS) returns a cell array of the same
-    %   size as SELECTIONS, with the data of each selection as load_mat_style
-    %   returns it. SELECTIONS is a cell array with one cell array of
-    %   MATLAB-style subscripts per selection.
-    %
-    %   A selection of a numeric dataset with one subscript per dimension,
-    %   each ':' or a contiguous ascending range, is read as one hyperslab.
-    %   All such selections are read with the file and dataset opened once.
-    %   Other selections are read with load_mat_style.
+% LOADSELECTIONS read several selections in one pass over the dataset.
+% DATA = LOADSELECTIONS(OBJ, SELECTIONS) returns a cell array of the same
+%   size as SELECTIONS, with the data of each selection as load_mat_style
+%   returns it. SELECTIONS is a cell array with one cell array of
+%   MATLAB-style subscripts per selection.
+%
+%   A selection of a numeric dataset with one subscript per dimension,
+%   each ':' or a contiguous ascending range, is read as one hyperslab.
+%   All such selections are read with the file and dataset opened once.
+%   Other selections are read with load_mat_style.
+
     arguments
         obj
         selections cell
@@ -55,8 +56,8 @@ function data = loadSelections(obj, selections)
 end
 
 function tf = isNumericDataset(datasetId)
-    % Integer and floating-point values need no conversion after the read;
-    % load_mat_style converts every other class.
+% Integer and floating-point values need no conversion after the read;
+% load_mat_style converts every other class.
     typeId = H5D.get_type(datasetId);
     typeClass = H5T.get_class(typeId);
     H5T.close(typeId);
@@ -65,8 +66,8 @@ function tf = isNumericDataset(datasetId)
 end
 
 function tf = isHyperslabSelection(selection, dataDimensions)
-    % A single subscript is a linear index, which load_mat_style reads as a
-    % point selection and shapes by its own rules, so it is not a hyperslab.
+% A single subscript is a linear index, which load_mat_style reads as a
+% point selection and shapes by its own rules, so it is not a hyperslab.
     tf = iscell(selection) && numel(dataDimensions) > 1 ...
         && numel(selection) == numel(dataDimensions) && all(dataDimensions > 0);
     for iDimension = 1:numel(selection)
@@ -86,7 +87,7 @@ function tf = isHyperslabSelection(selection, dataDimensions)
 end
 
 function [start, count] = getHyperslab(selection, dataDimensions)
-    % First element (1-based) and number of elements in each dimension.
+% First element (1-based) and number of elements in each dimension.
     start = ones(size(dataDimensions));
     count = dataDimensions;
     for iDimension = 1:numel(selection)
