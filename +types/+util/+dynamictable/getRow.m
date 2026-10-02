@@ -277,7 +277,9 @@ function rowValues = readDataRows(dataVector, starts, stops, elements)
 % it takes time that grows faster than linearly with the number of runs, so
 % each run is read in a call of its own.
 [numSubscripts, rowAxis] = getRowDimension(dataVector);
-% A DataPipe reads through its load method before and after export.
+% A DataPipe is indexed through its subsref, which reads from the file once
+% the pipe is bound to it and from the pipe's own data before that. Both are
+% read in blocks, like a DataStub.
 isFileBacked = isa(dataVector.data, 'types.untyped.DataStub') ...
     || isa(dataVector.data, 'types.untyped.DataPipe');
 
