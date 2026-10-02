@@ -94,7 +94,7 @@ function data = load_mat_style(obj, varargin)
     %% Reshape Data
     expectedSize = getExpectedSize(dataDimensions, userSelection);
     openSelectionIndices = find(cellfun('isclass', userSelection, 'char'));
-    for iDimension = 1:length(openSelectionIndices)
+    for iDimension = openSelectionIndices
         % for open selection ':', select the entire range of that dimension.
         userSelection{iDimension} = 1:dataDimensions(iDimension);
     end
@@ -188,7 +188,7 @@ function reordered = reorderLoadedData(data, selections)
     isSelectionNormal = false(size(selections)); % that is, without duplicates or out of order.
     for i = 1:length(indexKey)
         indexKey{i} = unique(selections{i});
-        isSelectionNormal = isequal(indexKey{i}, selections{i});
+        isSelectionNormal(i) = isequal(indexKey{i}, selections{i});
     end
     if all(isSelectionNormal)
         reordered = data;
