@@ -3,13 +3,20 @@ function data = load_mat_style(obj, varargin)
     % LOAD_MAT_STYLE(...) where each argument is an index into the dimension or ':'
     %   indicating load all of dimension. The dimension ordering is
     %   MATLAB, not HDF5 for this function.
+    %
+    %   A selection with two or more subscripts becomes one hyperslab per
+    %   combination of the shapes of its dimensions (see io.space.findShapes
+    %   and io.space.getReadSpace). HDF5 merges each hyperslab into the
+    %   selection built so far, so the time to build a selection grows with
+    %   the square of its hyperslab count. A selection with more than
+    %   MaxHyperslabsPerRead hyperslabs is read in groups along the dimension
+    %   with the most shapes, and the groups are joined in memory.
     assert(length(varargin) <= length(obj.dims), 'NWB:DataStub:Load:TooManyDimensions', ...
         'Too many dimensions specified (got %d, expected %d)', ...
         length(varargin), length(obj.dims));
 
     %% Select from Space
     dataDimensions = obj.dims;
-    spaceId = obj.getSpace();
     userSelection = varargin;
 
     selectionErrorId = 'NWB:DataStub:Load:InvalidSelection';
@@ -67,7 +74,9 @@ function data = load_mat_style(obj, varargin)
         end
 
         [points{:}] = ind2sub(dataDimensions, orderedSelection);
+        spaceId = obj.getSpace();
         readSpaceId = H5S.copy(spaceId);
+        H5S.close(spaceId);
         H5S.select_none(readSpaceId);
         H5S.select_elements(readSpaceId, 'H5S_SELECT_SET', ...
             cell2mat(flipud(points)) - 1);
@@ -76,41 +85,78 @@ function data = load_mat_style(obj, varargin)
     else
         % multidimensional index selection
         shapes = io.space.segmentSelection(userSelection, dataDimensions);
-        [readSpaceId, memorySpaceId] = io.space.getReadSpace(shapes, spaceId);
+        if prod(cellfun('length', shapes)) > obj.MaxHyperslabsPerRead
+            data = readInGroups(obj, userSelection, dataDimensions, shapes);
+            return
+        end
+        [readSpaceId, memorySpaceId] = getReadSpace(obj, shapes);
     end
-    H5S.close(spaceId);
 
-    %% Read Data
+    data = readSelection(obj, readSpaceId, memorySpaceId);
+    data = reshapeLoadedData(data, dataDimensions, userSelection);
+end
+
+function data = readInGroups(obj, userSelection, dataDimensions, shapes)
+    % readInGroups - Read a selection with many hyperslabs as several reads along one dimension.
+    %
+    % The sorted unique indices of the dimension with the most shapes are
+    % split into groups of whole runs, so that each group selects at most
+    % MaxHyperslabsPerRead hyperslabs together with the other dimensions.
+    % Every group is read and reshaped like a whole selection and the groups
+    % are joined along the split dimension in increasing order. Reading a
+    % group puts the other dimensions in the requested order, so only the
+    % split dimension is reordered afterwards when its subscript is unsorted
+    % or has repeated indices.
+    numShapes = cellfun('length', shapes);
+    [~, splitDimension] = max(numShapes);
+    hyperslabsPerShape = prod(numShapes)/numShapes(splitDimension);
+    runsPerGroup = max(1, floor(obj.MaxHyperslabsPerRead/hyperslabsPerShape));
+
+    indices = reshape(unique(userSelection{splitDimension}), 1, []);
+    runFirst = find([true, diff(indices) > 1]);
+    groupFirst = runFirst(1:runsPerGroup:end);
+    groupLast = [groupFirst(2:end) - 1, numel(indices)];
+
+    groups = cell(1, numel(groupFirst));
+    for iGroup = 1:numel(groups)
+        groupSelection = userSelection;
+        groupSelection{splitDimension} = indices(groupFirst(iGroup):groupLast(iGroup));
+        groupShapes = shapes;
+        groupShapes{splitDimension} = io.space.findShapes(groupSelection{splitDimension});
+
+        [readSpaceId, memorySpaceId] = getReadSpace(obj, groupShapes);
+        groupData = readSelection(obj, readSpaceId, memorySpaceId);
+        groups{iGroup} = reshapeLoadedData(groupData, dataDimensions, groupSelection);
+    end
+    data = cat(splitDimension, groups{:});
+
+    [~, positions] = ismember(userSelection{splitDimension}, indices);
+    positions = reshape(positions, 1, []);
+    if ~isequal(positions, 1:numel(indices))
+        subscripts = repmat({':'}, 1, max(ndims(data), splitDimension));
+        subscripts{splitDimension} = positions;
+        data = data(subscripts{:});
+    end
+end
+
+function [readSpaceId, memorySpaceId] = getReadSpace(obj, shapes)
+    % getReadSpace - File and memory dataspaces that select the given shapes.
+    spaceId = obj.getSpace();
+    [readSpaceId, memorySpaceId] = io.space.getReadSpace(shapes, spaceId);
+    H5S.close(spaceId);
+end
+
+function data = readSelection(obj, readSpaceId, memorySpaceId)
+    % readSelection - Read the selected elements of the dataset and convert them to MATLAB types.
     fileId = H5F.open(obj.Filename);
     datasetId = H5D.open(fileId, obj.DatasetPath);
     data = H5D.read(datasetId, 'H5ML_DEFAULT', memorySpaceId, readSpaceId, 'H5P_DEFAULT');
 
-    %% Retype Data
     data = hdf2mat(datasetId, data);
     H5D.close(datasetId);
     H5F.close(fileId);
     H5S.close(memorySpaceId);
-
-    %% Reshape Data
-    expectedSize = getExpectedSize(dataDimensions, userSelection);
-    openSelectionIndices = find(cellfun('isclass', userSelection, 'char'));
-    for iDimension = 1:length(openSelectionIndices)
-        % for open selection ':', select the entire range of that dimension.
-        userSelection{iDimension} = 1:dataDimensions(iDimension);
-    end
-
-    if isstruct(data)
-        % for compound datatypes, reshape for all data in the
-        % struct.
-        fieldNames = fieldnames(data);
-        for iField = 1:length(fieldNames)
-            name = fieldNames{iField};
-            data.(name) = reshape(reorderLoadedData(data.(name), userSelection), expectedSize);
-        end
-        data = struct2table(data);
-    else
-        data = reshape(reorderLoadedData(data, userSelection), expectedSize);
-    end
+    H5S.close(readSpaceId);
 end
 
 function data = hdf2mat(datasetId, data)
@@ -136,6 +182,29 @@ function data = hdf2mat(datasetId, data)
     end
 
     H5T.close(typeId);
+end
+
+function data = reshapeLoadedData(data, dataDimensions, userSelection)
+    % reshapeLoadedData - Put the read data in the shape and order of the selection.
+    expectedSize = getExpectedSize(dataDimensions, userSelection);
+    openSelectionIndices = find(cellfun('isclass', userSelection, 'char'));
+    for iDimension = 1:length(openSelectionIndices)
+        % for open selection ':', select the entire range of that dimension.
+        userSelection{iDimension} = 1:dataDimensions(iDimension);
+    end
+
+    if isstruct(data)
+        % for compound datatypes, reshape for all data in the
+        % struct.
+        fieldNames = fieldnames(data);
+        for iField = 1:length(fieldNames)
+            name = fieldNames{iField};
+            data.(name) = reshape(reorderLoadedData(data.(name), userSelection), expectedSize);
+        end
+        data = struct2table(data);
+    else
+        data = reshape(reorderLoadedData(data, userSelection), expectedSize);
+    end
 end
 
 function expectedSize = getExpectedSize(dataDimensions, userSelection)

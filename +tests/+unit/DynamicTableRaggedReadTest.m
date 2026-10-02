@@ -126,6 +126,20 @@ classdef DynamicTableRaggedReadTest < tests.abstract.NwbTestCase
             end
         end
 
+        function testGetRowWithGapsReadsEachLevelOnce(testCase)
+            % Units 1 and 4 are separated by units 2 and 3, and the waveforms
+            % column is multi-dimensional, so the requested elements of each
+            % level have a gap between them.
+            [units, spies] = testCase.readUnitsWithSpies();
+
+            units.getRow([1 4], 'columns', {'waveforms'});
+
+            for columnName = string(fieldnames(spies))'
+                testCase.verifyEqual(spies.(columnName).LoadCount, 1, ...
+                    sprintf('Expected one read of "%s".', columnName));
+            end
+        end
+
         function testGetRowReadsOnlyRequestedElements(testCase)
             % Units 1 and 4 hold spikes 1-3 and 6-10, whose waveforms are
             % columns 1-6 and 11-20 of the data. Unit 3 lies between them.

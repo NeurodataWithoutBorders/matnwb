@@ -160,10 +160,9 @@ function selected = getRaggedRows(vectors, rowIndices)
 % vectors lists the column's VectorData first and its VectorIndex objects
 % after it, the outermost index last. Each index level is read in one call,
 % for exactly the index elements the requested rows need. Data in a file is
-% read for exactly the elements of the requested rows, in one call or in one
-% call per contiguous run of elements, and the rows are then taken from
-% those reads in memory. Data in memory is indexed once per row (see
-% readDataRows).
+% read in one call for exactly the elements of the requested rows, and the
+% rows are then taken from that read in memory. Data in memory is indexed
+% once per row (see readDataRows).
 %
 % selected is a cell array with one cell per requested row. For a doubly
 % ragged column, each cell holds a cell array with one cell per element.
@@ -248,12 +247,8 @@ function rowValues = readDataRows(dataVector, starts, stops, elements)
 % the elements of all rows.
 %
 % A column in memory is indexed once per row, which copies each element
-% once. A column in a file is read in as few calls as possible, and the rows
-% are then taken from those reads in memory. A column indexed with one
-% subscript reads any set of elements in one call. With more subscripts, a
-% selection with gaps becomes one hyperslab per contiguous run, and building
-% it takes time that grows faster than linearly with the number of runs, so
-% each run is read in a call of its own.
+% once. A column in a file is read in one call for the elements of all rows,
+% and the rows are then taken from that read in memory.
 [rank, rowAxis] = getRowDimension(dataVector);
 % A DataPipe is indexed through its subsref, which reads from the file once
 % the pipe is bound to it and from the pipe's own data before that. Both are
@@ -263,25 +258,13 @@ isFileBacked = isa(dataVector.data, 'types.untyped.DataStub') ...
 
 if isFileBacked
     elements = unique(elements);
-    numElements = numel(elements);
-    if numElements == 0
-        [runFirst, runLast] = deal(zeros(1, 0));
-    elseif rank == 1
-        [runFirst, runLast] = deal(1, numElements);
+    if isempty(elements)
+        % Every row is empty, and the empty rows are read by readEmptyRow.
+        block = [];
     else
-        runFirst = find([true, diff(elements) > 1]);
-        runLast = [runFirst(2:end) - 1, numElements];
+        block = readRows(dataVector, elements);
     end
-
-    blocks = cell(size(runFirst));
-    for iRun = 1:numel(runFirst)
-        blocks{iRun} = readRows(dataVector, elements(runFirst(iRun):runLast(iRun)));
-    end
-    % runOfPosition(k) is the run that holds elements(k).
-    runOfPosition = zeros(1, numElements);
-    runOfPosition(runFirst) = 1;
-    runOfPosition = cumsum(runOfPosition);
-    % The elements of a row are consecutive in elements and lie in one run.
+    % The elements of a row are consecutive in elements.
     [~, startPositions] = ismember(starts, elements);
 end
 
@@ -298,13 +281,12 @@ for iRow = 1:numel(starts)
         continue
     end
     if isFileBacked
-        iRun = runOfPosition(startPositions(iRow));
-        blockRows = startPositions(iRow) - runFirst(iRun) + 1 + (0:(stops(iRow) - starts(iRow)));
-        block = indexRows(blocks{iRun}, blockRows, rank, rowAxis);
+        blockRows = startPositions(iRow) + (0:(stops(iRow) - starts(iRow)));
+        rowBlock = indexRows(block, blockRows, rank, rowAxis);
     else
-        block = indexRows(dataVector.data, starts(iRow):stops(iRow), rank, rowAxis);
+        rowBlock = indexRows(dataVector.data, starts(iRow):stops(iRow), rank, rowAxis);
     end
-    rowValues{iRow} = orientRows(dataVector, block);
+    rowValues{iRow} = orientRows(dataVector, rowBlock);
 end
 end
 
