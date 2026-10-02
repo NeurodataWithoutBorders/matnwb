@@ -97,7 +97,7 @@ classdef HDF5LazyArrayTest < matlab.unittest.TestCase
 
             actual = lazyArray.loadSelections(selections);
 
-            testCase.verifyEqual(lazyArray.LoadCount, 1, ...
+            testCase.verifyEqual(lazyArray.LoadMatStyleCount, 0, ...
                 'Expected hyperslab selections to be read without load_mat_style.');
             testCase.verifySelectionsMatchLoadMatStyle(lazyArray, selections, actual)
         end
@@ -109,7 +109,7 @@ classdef HDF5LazyArrayTest < matlab.unittest.TestCase
 
             actual = lazyArray.loadSelections(selections);
 
-            testCase.verifyEqual(lazyArray.LoadCount, 1 + numel(selections), ...
+            testCase.verifyEqual(lazyArray.LoadMatStyleCount, numel(selections), ...
                 'Expected each selection to be read with load_mat_style.');
             testCase.verifySelectionsMatchLoadMatStyle(lazyArray, selections, actual)
         end
