@@ -1,6 +1,14 @@
 classdef HDF5LazyArray < io.backend.base.LazyArray
 % HDF5LazyArray - HDF5-backed lazy dataset access implementation.
 
+    properties (Constant)
+        % MaxHyperslabsPerRead - Most hyperslabs combined into one read
+        % selection. HDF5 merges each hyperslab into the selection built so
+        % far, so the time to build a selection grows with the square of its
+        % hyperslab count; a selection with more hyperslabs is read in groups.
+        MaxHyperslabsPerRead = 1000
+    end
+
     methods
         function obj = HDF5LazyArray(filename, path, dims, dataType)
             arguments
