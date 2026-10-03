@@ -39,7 +39,7 @@ classdef Zarr3ReaderTest < matlab.unittest.TestCase
             testCase.verifyEqual(nodeInfo.Links(1).Type, 'soft link');
             testCase.verifyEqual(string(nodeInfo.Links(1).Value{1}), "/general/devices/array");
 
-            % The reserved zarr_link attribute must not leak into Attributes.
+            % The reserved _LINKS attribute must not leak into Attributes.
             testCase.verifyEmpty(nodeInfo.Attributes);
         end
 
@@ -178,7 +178,7 @@ classdef Zarr3ReaderTest < matlab.unittest.TestCase
         % types.untyped.ExternalLink.deref asks the reader whether a linked
         % dataset holds references, to decide between parsing it and
         % returning a lazy stub. Zarr encodes that as hdmf-zarr's
-        % zarr_dtype:"object" rather than a datatype class, which is why the
+        % _DTYPE:"object_reference" rather than a datatype class, which is why the
         % question belongs to the backend.
             reader = io.backend.zarr3.Zarr3Reader(testCase.FixturePath);
 
@@ -209,8 +209,8 @@ classdef Zarr3ReaderTest < matlab.unittest.TestCase
             testCase.verifyTrue(all(string({datasetValue.path}) == ...
                 "/general/extracellular_ephys/shank0"));
 
-            % The reserved zarr_dtype marker must not leak into Attributes.
-            testCase.verifyFalse(any(strcmp({datasetInfo.Attributes.Name}, 'zarr_dtype')));
+            % The reserved _DTYPE marker must not leak into Attributes.
+            testCase.verifyFalse(any(strcmp({datasetInfo.Attributes.Name}, '_DTYPE')));
         end
 
         function readCompoundDatasetReturnsCompoundDataStub(testCase)
@@ -295,10 +295,10 @@ classdef Zarr3ReaderTest < matlab.unittest.TestCase
         end
 
         function readScalarMarkedDatasetReturnsBareValue(testCase)
-        % hdmf-zarr represents an NWB scalar property as a rank-1, length-1
-        % array tagged zarr_dtype:"scalar"; the tag, not the shape, is what
-        % makes the reader return a bare value (see the corresponding
-        % comment in readDatasetValue).
+        % hdmf-zarr before 0.14 represented an NWB scalar property as a
+        % rank-1, length-1 array tagged zarr_dtype:"scalar"; the tag, not the
+        % shape, is what makes the reader return a bare value (see the
+        % corresponding comment in readDatasetValue).
             reader = io.backend.zarr3.Zarr3Reader(testCase.FixturePath);
             datasetInfo = reader.readNodeInfo("/general/session_id");
             testCase.verifyEqual(datasetInfo.Datatype, 'scalar');
@@ -342,9 +342,9 @@ classdef Zarr3ReaderTest < matlab.unittest.TestCase
         end
 
         function readCompoundDatasetDecodesReferenceField(testCase)
-        % A compound field tagged "object" via the array's zarr_dtype
-        % attribute holds JSON reference records; the reader must declare it
-        % as ObjectView in the type descriptor and decode it on load.
+        % A compound field listed in the array's _REFERENCE_FIELDS attribute
+        % holds reference target paths; the reader must declare it as
+        % ObjectView in the type descriptor and decode it on load.
             reader = io.backend.zarr3.Zarr3Reader(testCase.FixturePath);
             referencePath = "/intervals/trials/timeseries";
             datasetInfo = reader.readNodeInfo(referencePath);

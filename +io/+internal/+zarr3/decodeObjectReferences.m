@@ -7,10 +7,11 @@ function objectViews = decodeObjectReferences(value)
 % types.util.checkDtype requires -- a cell array of ObjectView is not an
 % accepted dtype.
 %
-% value may be any on-disk form accepted by hdmf.zarr.Reference.decode: JSON
-% string(s), i.e. the elements of a zarr_dtype:"object" dataset or of an
-% "object"-tagged compound field; the attribute form struct
-% {zarr_dtype:"object", value:<record>}; or a bare reference record struct.
+% value may be any on-disk form accepted by hdmf.zarr.Reference.decode: the
+% text elements of a reference dataset or of a compound reference field
+% (target paths, or JSON records in stores written before hdmf-zarr 0.14);
+% an attribute-form reference ({"_REFERENCE": <record>}, or the older
+% {"zarr_dtype": "object", "value": <record>}); or a bare reference record.
 %
 % types.untyped.ObjectView can only address nodes within the file being read,
 % so a reference whose source is another store raises

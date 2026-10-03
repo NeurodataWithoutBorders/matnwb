@@ -1,11 +1,10 @@
 function attributeName = getSpecLocAttributeName()
-% getSpecLocAttributeName - Struct field name of hdmf-zarr's ".specloc".
+% getSpecLocAttributeName - Name of hdmf-zarr's ".specloc" root attribute.
 %
 % hdmf-zarr names the cached-specifications group in a root attribute called
-% ".specloc". That is not a valid MATLAB identifier, so jsondecode renames it
-% when zarr-matlab parses the store metadata into an attributes struct. This
-% returns the renamed field, so the mangling is derived in one place rather
-% than hardcoded wherever the attribute is read.
+% ".specloc". The name is kept in one place because both the reader, which
+% follows it, and io.internal.zarr3.convertAttributes, which keeps it out of
+% the schema attributes, need it.
 
-    attributeName = matlab.lang.makeValidName(".specloc");
+    attributeName = ".specloc";
 end
