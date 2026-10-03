@@ -13,8 +13,8 @@ function mustBeFile(filePath)
         filePath (1,1) string
     end
 
-    % Skip check for s3 uris to support reading remote files
-    if startsWith(filePath, "s3://")
+    % Skip the check for remote files (s3:// URIs and http(s) URLs)
+    if startsWith(filePath, "s3://") || matnwb.common.isUrl(filePath)
         return
     end
 

@@ -135,7 +135,7 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
         function arrayNode = resolveArray(obj)
             if isempty(obj.ArrayNode)
                 relativePath = io.internal.zarr3.stripLeadingSlash(obj.DatasetPath);
-                obj.ArrayNode = zarr.open(obj.Filename, Path=relativePath);
+                obj.ArrayNode = io.internal.zarr3.openNode(obj.Filename, relativePath);
             end
             arrayNode = obj.ArrayNode;
         end
