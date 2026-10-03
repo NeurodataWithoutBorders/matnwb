@@ -71,21 +71,24 @@ function datasetInfo = buildDatasetInfo(arrayNode, leafName)
 
     % Two hdmf-zarr semantic markers have no native Zarr v3 equivalent and
     % override Datatype so io.backend.zarr3.Zarr3Reader can dispatch on them:
-    % "object" - a dataset of object references (string array of JSON
-    %     reference records tagged zarr_dtype:"object"; detected by
-    %     hdmf.zarr.isReferenceArray, decoded by hdmf.zarr.Reference).
-    % "scalar" - hdmf-zarr represents an NWB scalar property (e.g.
-    %     identifier, session_description) as a rank-1, length-1 Zarr
-    %     array tagged zarr_dtype:"scalar" rather than a true rank-0 array,
-    %     so shape alone cannot distinguish it from a genuine one-row
-    %     VectorData column (e.g. a DynamicTable that happens to have a
-    %     single row) -- both have Dataspace.Size == 1. Reading the latter
+    % "object" - a dataset of object references (a string array of target
+    %     paths tagged _DTYPE:"object_reference", or of JSON reference
+    %     records tagged zarr_dtype:"object" in stores written before
+    %     hdmf-zarr 0.14; detected by hdmf.zarr.isReferenceArray, decoded by
+    %     hdmf.zarr.Reference).
+    % "scalar" - stores written before hdmf-zarr 0.14 represent an NWB
+    %     scalar property (e.g. identifier, session_description) as a
+    %     rank-1, length-1 Zarr array tagged zarr_dtype:"scalar" rather than
+    %     a rank-0 array, so shape alone cannot distinguish it from a genuine
+    %     one-row VectorData column (e.g. a DynamicTable that happens to have
+    %     a single row) -- both have Dataspace.Size == 1. Reading the latter
     %     eagerly as a bare scalar would silently collapse a 1-element
     %     char/string column, whose stray character count would then be
     %     misread as a table row count by DynamicTable height checks.
-    % Any other zarr_dtype hint (a plain dtype name, or the per-field
-    % descriptor list of a "structured" array) is redundant with the native
-    % Zarr v3 data_type and ignored; the attribute itself is reserved and
+    %     hdmf-zarr 0.14 writes scalars as rank-0 arrays, which the empty
+    %     shape above already marks.
+    % Any other _DTYPE or zarr_dtype hint is redundant with the native Zarr
+    % v3 data_type and ignored; the attributes themselves are reserved and
     % filtered out of Attributes by io.internal.zarr3.convertAttributes.
     if hdmf.zarr.isReferenceArray(arrayNode)
         datasetInfo.Datatype = 'object';
@@ -97,13 +100,10 @@ function datasetInfo = buildDatasetInfo(arrayNode, leafName)
 end
 
 function tf = isScalarMarked(attrs)
-% isScalarMarked - True if attrs carries hdmf-zarr's zarr_dtype:"scalar" hint.
-    tf = false;
-    if ~isfield(attrs, 'zarr_dtype')
-        return
-    end
-    zarrDtype = attrs.zarr_dtype;
-    tf = (ischar(zarrDtype) || isstring(zarrDtype)) && string(zarrDtype) == "scalar";
+% isScalarMarked - True if attrs carries the zarr_dtype:"scalar" hint.
+    [hasDtype, zarrDtype] = io.internal.zarr3.getAttribute(attrs, "zarr_dtype");
+    tf = hasDtype && (ischar(zarrDtype) || isstring(zarrDtype)) ...
+        && string(zarrDtype) == "scalar";
 end
 
 function joinedPath = joinPath(parentPath, childName)

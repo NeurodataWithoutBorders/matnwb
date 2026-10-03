@@ -2,89 +2,147 @@ function [attributes, links] = convertAttributes(rawAttributes)
 % convertAttributes - Convert zarr-matlab attrs into h5info-like structures.
 %
 % [attributes, links] = convertAttributes(rawAttributes) converts the
-% attrs struct exposed by a zarr.Group or zarr.Array (as returned by
-% zarr-matlab) into:
+% attributes dictionary exposed by a zarr.Group or zarr.Array (its attrs
+% property) into:
 %
 %     attributes - struct array with fields Name, Datatype, Dataspace,
 %       Value, matching the shape produced by h5info. An attribute holding
-%       an hdmf-zarr object reference (the {zarr_dtype:"object", value:...}
-%       form; see hdmf.zarr.Reference) is tagged with Datatype
-%       "object reference" and keeps the raw record as its Value, which
-%       io.backend.zarr3.Zarr3Reader.readAttributeValue decodes.
+%       an hdmf-zarr object reference (the {"_REFERENCE": <record>} form, or
+%       the {"zarr_dtype": "object", "value": <record>} form of stores
+%       written before hdmf-zarr 0.14; see hdmf.zarr.Reference) is tagged
+%       with Datatype "object reference" and keeps the raw record as its
+%       Value, which io.backend.zarr3.Zarr3Reader.readAttributeValue decodes.
 %
 %     links - struct array with fields Name, Type, Value, converted from the
-%       hdmf-zarr "zarr_link" attribute (decoded by hdmf.zarr.Link).
-%       Non-group nodes never carry links, but the reserved attribute is
-%       filtered out regardless.
+%       hdmf-zarr "_LINKS" attribute, or the "zarr_link" attribute of older
+%       stores (decoded by hdmf.zarr.Link). Non-group nodes never carry
+%       links, but the reserved attributes are filtered out regardless.
 %
-% The hdmf-zarr bookkeeping attributes (zarr_link, zarr_dtype, .specloc,
+% The hdmf-zarr bookkeeping attributes (_LINKS, _DTYPE, _REFERENCE_FIELDS,
+% their pre-0.14 names zarr_link and zarr_dtype, .specloc, and
 % _ARRAY_DIMENSIONS) are not schema attributes and are never promoted to
 % the attributes output.
 %
-% This convention matches the shape produced by h5info, so that the same
-% downstream parsing code (io.parseGroup, io.parseAttributes) can consume
-% node info from any backend.
+% Attribute values are returned in the form h5info gives for the same data,
+% so that the same downstream parsing code (io.parseGroup,
+% io.parseAttributes) can consume node info from any backend: text as char,
+% a list of text as a cellstr, and a list of numbers or logicals as a column
+% vector. zarr-matlab instead decodes every JSON string to a string scalar
+% and every JSON array to a cell.
 %
 % See also hdmf.zarr.Link, hdmf.zarr.Reference
 
     attributes = emptyAttributeStruct();
     links = emptyLinkStruct();
 
-    if isempty(rawAttributes) || ~isstruct(rawAttributes)
+    if ~isa(rawAttributes, "dictionary") || numEntries(rawAttributes) == 0
         return
     end
 
     links = convertLinks(hdmf.zarr.Link.fromAttributes(rawAttributes));
 
-    fieldNames = fieldnames(rawAttributes);
-    for iField = 1:numel(fieldNames)
-        name = fieldNames{iField};
-        value = rawAttributes.(name);
-
+    attributeNames = keys(rawAttributes);
+    for iAttribute = 1:numel(attributeNames)
+        name = attributeNames(iAttribute);
         if isReservedAttribute(name)
             continue
         end
 
-        if iscell(value) && ~isscalar(value)
-            % struct(...,'Value',value) would otherwise expand a non-scalar
-            % cell into a non-scalar struct array (one element per cell
-            % entry) instead of a single attribute whose Value is the cell.
+        value = rawAttributes{name};
+        if isObjectReferenceValue(value)
+            datatype = 'object reference';
+        else
+            datatype = [];
+            value = normalizeValue(value);
+        end
+
+        if iscell(value)
+            % struct(...,'Value',value) would otherwise expand a cell into a
+            % struct array (one element per cell entry) instead of a single
+            % attribute whose Value is the cell.
             value = {value};
         end
 
-        attribute = struct('Name', name, 'Datatype', [], 'Dataspace', [], 'Value', value);
-        if isObjectReferenceValue(value)
-            attribute.Datatype = 'object reference';
-        end
-        attributes(end+1) = attribute; %#ok<AGROW>
+        attributes(end+1) = struct('Name', char(name), 'Datatype', datatype, ...
+            'Dataspace', [], 'Value', value); %#ok<AGROW>
     end
 end
 
 function tf = isReservedAttribute(name)
 % isReservedAttribute - True for hdmf-zarr bookkeeping attributes.
 %
-% Names are as they appear after jsondecode, which renames keys that are not
-% valid MATLAB identifiers: ".specloc" (the root attribute naming the cached
-% specifications group, read by io.backend.zarr3.Zarr3Reader) becomes
-% "x_specloc", and "_ARRAY_DIMENSIONS" (xarray dimension names) becomes
-% "x_ARRAY_DIMENSIONS".
+% "_ARRAY_DIMENSIONS" holds xarray dimension names; ".specloc" names the
+% cached specifications group and is read by io.backend.zarr3.Zarr3Reader.
 
-    reservedNames = ["zarr_link", "zarr_dtype", ...
-        io.internal.zarr3.getSpecLocAttributeName(), ...
-        matlab.lang.makeValidName("_ARRAY_DIMENSIONS")];
-    tf = any(strcmp(name, reservedNames));
+    reservedNames = ["_LINKS", "_DTYPE", "_REFERENCE_FIELDS", ...
+        "zarr_link", "zarr_dtype", ...
+        io.internal.zarr3.getSpecLocAttributeName(), "_ARRAY_DIMENSIONS"];
+    tf = any(name == reservedNames);
 end
 
 function tf = isObjectReferenceValue(value)
 % isObjectReferenceValue - True for the attribute form of a reference.
 %
-% The attribute form of an hdmf-zarr object reference is
-% {zarr_dtype:"object", value:<record>}, the shape
-% hdmf.zarr.Reference.encodeAttribute produces.
+% hdmf-zarr 0.14 wraps a reference stored in an attribute as
+% {"_REFERENCE": <record>}; earlier versions wrote
+% {"zarr_dtype": "object", "value": <record>}.
 
-    tf = isstruct(value) && isscalar(value) ...
-        && isfield(value, 'zarr_dtype') ...
-        && strcmp(string(value.zarr_dtype), "object");
+    tf = io.internal.zarr3.getAttribute(value, "_REFERENCE");
+    if ~tf
+        [hasLegacyDtype, legacyDtype] = io.internal.zarr3.getAttribute(value, "zarr_dtype");
+        tf = hasLegacyDtype && io.internal.zarr3.getAttribute(value, "value") ...
+            && isTextScalar(legacyDtype) && string(legacyDtype) == "object";
+    end
+end
+
+function value = normalizeValue(value)
+% normalizeValue - Convert a zarr-matlab attribute value to its h5info form.
+%
+% A cell whose elements are all text becomes a cellstr, and one whose
+% elements are all numeric (or all logical) scalars becomes a column vector.
+% A list of equally long numeric lists becomes a matrix with one row per
+% inner list, as jsondecode reads it. Anything else -- a mixed list, a
+% nested object -- is returned unchanged.
+
+    if isstring(value) && isscalar(value)
+        value = char(value);
+        return
+    end
+    if ~iscell(value)
+        return
+    end
+    if isempty(value)
+        value = [];
+        return
+    end
+
+    elements = cellfun(@normalizeValue, value, "UniformOutput", false);
+    if all(cellfun(@ischar, elements))
+        value = elements;
+    elseif all(cellfun(@isNumericScalar, elements)) || all(cellfun(@isLogicalScalar, elements))
+        value = vertcat(elements{:});
+    elseif all(cellfun(@isNumericColumn, elements)) ...
+            && isscalar(unique(cellfun(@numel, elements)))
+        rows = cellfun(@transpose, elements, "UniformOutput", false);
+        value = vertcat(rows{:});
+    end
+end
+
+function tf = isNumericScalar(value)
+    tf = isnumeric(value) && isscalar(value);
+end
+
+function tf = isLogicalScalar(value)
+    tf = islogical(value) && isscalar(value);
+end
+
+function tf = isNumericColumn(value)
+    tf = isnumeric(value) && iscolumn(value);
+end
+
+function tf = isTextScalar(value)
+    tf = (ischar(value) && (isrow(value) || isempty(value))) ...
+        || (isstring(value) && isscalar(value));
 end
 
 function links = convertLinks(hdmfLinks)

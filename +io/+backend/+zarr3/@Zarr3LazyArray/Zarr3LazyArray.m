@@ -46,7 +46,7 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
         end
 
         function dataType = resolveDataType(obj)
-            % For a "structured" (compound) array, dataType is a compound
+            % For a structured (compound) array, dataType is a compound
             % type descriptor struct (see
             % io.internal.zarr3.getCompoundTypeDescriptor), not a plain
             % class name -- required by
@@ -57,7 +57,7 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
             % constructed directly without one.
             arrayNode = obj.resolveArray();
             info = zarr.internal.dtype_info(arrayNode.meta.dataType, arrayNode.meta.dataTypeConfig);
-            if info.zarrType == "structured"
+            if info.isStructured
                 dataType = io.internal.zarr3.getCompoundTypeDescriptor(info, obj.getObjectReferenceFields());
             else
                 dataType = char(info.matlabClass);

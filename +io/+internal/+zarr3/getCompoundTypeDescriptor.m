@@ -10,8 +10,8 @@ function typeDescriptor = getCompoundTypeDescriptor(info, objectReferenceFields)
 % MATLAB class name otherwise, e.g. 'int32' -- with text reported as 'char'
 % (see matlabClassName below).
 %
-% info is a zarr.internal.dtype_info struct for a "structured" dtype
-% (info.zarrType == "structured").
+% info is a zarr.internal.dtype_info struct for a structured dtype
+% (info.isStructured).
 
     arguments
         info (1,1) struct
