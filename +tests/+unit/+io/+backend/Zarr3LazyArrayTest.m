@@ -159,6 +159,34 @@ classdef Zarr3LazyArrayTest < matlab.unittest.TestCase
             testCase.verifyEqual(lazyArray.load_mat_style([1 2]), [0 0]);
         end
 
+        function scatteredSelectionInSparseDatasetReadsPoints(testCase)
+        % Two elements at opposite corners of a 1e6 x 1e6 array are bounded
+        % by the whole array, which could never be allocated, so they must
+        % still be read one at a time.
+            import matlab.unittest.fixtures.TemporaryFolderFixture
+            folderFixture = testCase.applyFixture(TemporaryFolderFixture);
+            storePath = string(fullfile(folderFixture.Folder, "sparse.zarr"));
+            zarr.create(storePath, [1e6 1e6], "double", Path="huge", ChunkShape=[10 10]);
+            lazyArray = io.backend.zarr3.Zarr3LazyArray(storePath, "/huge");
+
+            testCase.verifyEqual(lazyArray.load_mat_style([1 1e12]), [0 0]);
+        end
+
+        function contiguousRangeAcrossChunksMatchesData(testCase)
+        % A contiguous range of a chunked 1-D dataset is read as one
+        % hyperslab spanning several chunks; the values must come back in
+        % order, as a column like indexing a column vector gives.
+            import matlab.unittest.fixtures.TemporaryFolderFixture
+            folderFixture = testCase.applyFixture(TemporaryFolderFixture);
+            storePath = string(fullfile(folderFixture.Folder, "ragged.zarr"));
+            values = (1:1000)' / 10;
+            zarr.create(storePath, 1000, "double", Path="data", ChunkShape=64).write(values);
+            lazyArray = io.backend.zarr3.Zarr3LazyArray(storePath, "/data");
+
+            testCase.verifyEqual(lazyArray.load_mat_style(100:300), values(100:300));
+            testCase.verifyEqual(lazyArray.load_mat_style((100:300)'), values(100:300));
+        end
+
         function compoundTextFieldsReadBackAsCellstr(testCase)
         % zarr-matlab returns Zarr text as a MATLAB string, but
         % io.parseCompound gives a cellstr column for an HDF5 compound's
