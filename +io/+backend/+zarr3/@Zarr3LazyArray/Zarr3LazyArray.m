@@ -23,6 +23,15 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
         ObjectReferenceFields (1,:) string = string.empty(1, 0)
     end
 
+    properties (Constant, Access = private)
+        % A linear selection is read as the hyperslab that bounds it when that
+        % hyperslab holds at most MaxBoundingBoxOverread times as many
+        % elements as the selection, or at most MinBoundingBoxElements.
+        % Otherwise its elements are read one at a time.
+        MaxBoundingBoxOverread = 4
+        MinBoundingBoxElements = 1e5
+    end
+
     methods
         function obj = Zarr3LazyArray(filename, datasetPath, dims, dataType, objectReferenceFields)
             arguments
@@ -245,11 +254,14 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
         % readLinearSelection - Read the elements named by linear indices.
         %
         % MATLAB linear indexing into an N-D array has no Zarr equivalent:
-        % zarr.Array.read takes a contiguous hyperslab, so the indices are
-        % converted to per-dimension subscripts and read one element at a
-        % time. Reading N elements costs N reads, but the alternative for a
-        % scattered selection is the bounding box that spans it, which for a
-        % large sparse dataset is the whole array.
+        % zarr.Array.read takes a contiguous hyperslab. The indices are
+        % converted to per-dimension subscripts, and the hyperslab that
+        % bounds them is read in one call when it is not much larger than
+        % the selection -- the common case of a contiguous range, such as
+        % the rows of a ragged column that DynamicTable.getRow reads.
+        % Otherwise each element is read on its own: every element read
+        % decodes a whole chunk, but for a scattered selection the bounding
+        % hyperslab can be the whole of a large sparse dataset.
         %
         % This path matters beyond user indexing: types.util.checkDtype
         % samples a dataset with load(1) to determine its type, so without
@@ -286,11 +298,27 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
             subscripts = cell(1, numel(dataDimensions));
             [subscripts{:}] = ind2sub(dataDimensions, uniqueIndices);
             subscripts = cell2mat(subscripts);
+            subscripts = subscripts(:, 1:rank);
 
-            uniqueValues = obj.readPoint(subscripts(1, 1:rank));
-            uniqueValues = repmat(uniqueValues, numel(uniqueIndices), 1);
-            for iIndex = 2:numel(uniqueIndices)
-                uniqueValues(iIndex) = obj.readPoint(subscripts(iIndex, 1:rank));
+            lowest = min(subscripts, [], 1);
+            boxSize = max(subscripts, [], 1) - lowest + 1;
+            maxBoxElements = max(obj.MaxBoundingBoxOverread * numel(uniqueIndices), ...
+                obj.MinBoundingBoxElements);
+            if prod(boxSize) <= maxBoxElements
+                box = obj.readPartialData(lowest, boxSize, ones(1, rank));
+                localSubscripts = num2cell(subscripts - lowest + 1, 1);
+                if rank == 1
+                    uniqueValues = box(localSubscripts{1});
+                else
+                    uniqueValues = box(sub2ind(boxSize, localSubscripts{:}));
+                end
+                uniqueValues = uniqueValues(:);
+            else
+                uniqueValues = obj.readPoint(subscripts(1, :));
+                uniqueValues = repmat(uniqueValues, numel(uniqueIndices), 1);
+                for iIndex = 2:numel(uniqueIndices)
+                    uniqueValues(iIndex) = obj.readPoint(subscripts(iIndex, :));
+                end
             end
 
             % Restore the caller's order, and any duplicate indices, from
