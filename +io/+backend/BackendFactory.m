@@ -33,10 +33,13 @@ classdef BackendFactory
 
             switch storageBackend
                 case "auto"
-                    if io.backend.BackendFactory.isHDF5File(filename)
-                        reader = io.backend.hdf5.HDF5Reader(filename);
-                    elseif io.backend.BackendFactory.isZarr3Directory(filename)
+                    % Zarr is tested first: isfile is true for some store
+                    % URLs (a server may redirect the store folder to a
+                    % listing), which would send them to H5F.open.
+                    if io.backend.BackendFactory.isZarr3Store(filename)
                         reader = io.backend.zarr3.Zarr3Reader(filename);
+                    elseif io.backend.BackendFactory.isHDF5File(filename)
+                        reader = io.backend.hdf5.HDF5Reader(filename);
                     else
                         error("NWB:BackendFactory:UnsupportedFormat", ...
                             "No supported reader found for `%s`.", filename)
@@ -48,9 +51,9 @@ classdef BackendFactory
                     end
                     reader = io.backend.hdf5.HDF5Reader(filename);
                 case "zarr3"
-                    if ~io.backend.BackendFactory.isZarr3Directory(filename)
+                    if ~io.backend.BackendFactory.isZarr3Store(filename)
                         error("NWB:BackendFactory:InvalidZarr3", ...
-                            "`%s` is not a supported local Zarr v3 directory store.", filename)
+                            "`%s` is not a Zarr v3 store (a local directory or an http(s) URL).", filename)
                     end
                     reader = io.backend.zarr3.Zarr3Reader(filename);
                 otherwise
@@ -72,10 +75,11 @@ classdef BackendFactory
 
             switch storageBackend
                 case "auto"
-                    if io.backend.BackendFactory.isHDF5File(filename)
-                        lazyArray = io.backend.hdf5.HDF5LazyArray(filename, datasetPath, dims, dataType);
-                    elseif io.backend.BackendFactory.isZarr3Directory(filename)
+                    % Zarr is tested first, for the reason given in createReader.
+                    if io.backend.BackendFactory.isZarr3Store(filename)
                         lazyArray = io.backend.zarr3.Zarr3LazyArray(filename, datasetPath, dims, dataType);
+                    elseif io.backend.BackendFactory.isHDF5File(filename)
+                        lazyArray = io.backend.hdf5.HDF5LazyArray(filename, datasetPath, dims, dataType);
                     else
                         error("NWB:BackendFactory:UnsupportedFormat", ...
                             "No supported lazy array backend found for `%s`.", filename)
@@ -87,9 +91,9 @@ classdef BackendFactory
                     end
                     lazyArray = io.backend.hdf5.HDF5LazyArray(filename, datasetPath, dims, dataType);
                 case "zarr3"
-                    if ~io.backend.BackendFactory.isZarr3Directory(filename)
+                    if ~io.backend.BackendFactory.isZarr3Store(filename)
                         error("NWB:BackendFactory:InvalidZarr3", ...
-                            "`%s` is not a supported local Zarr v3 directory store.", filename)
+                            "`%s` is not a Zarr v3 store (a local directory or an http(s) URL).", filename)
                     end
                     lazyArray = io.backend.zarr3.Zarr3LazyArray(filename, datasetPath, dims, dataType);
                 otherwise
@@ -122,29 +126,34 @@ classdef BackendFactory
             end
         end
 
-        function tf = isZarr3Directory(filename)
+        function tf = isZarr3Store(filename)
+        % isZarr3Store - True for a ".zarr" store whose root declares Zarr v3.
+        %
+        % The store is a local directory, or an http(s) URL whose root
+        % metadata is fetched over HTTP.
             arguments
                 filename (1,1) string
             end
 
             tf = false;
-            if startsWith(filename, "s3://", "IgnoreCase", true) || ~isfolder(filename)
-                return
-            end
-
             if ~endsWith(filename, ".zarr", "IgnoreCase", true)
                 return
             end
 
-            rootMetadataFile = fullfile(filename, "zarr.json");
-            if ~isfile(rootMetadataFile)
-                return
-            end
-
             try
-                rootMetadata = jsondecode(fileread(rootMetadataFile));
+                if matnwb.common.isUrl(filename)
+                    rootMetadataText = webread(filename + "/zarr.json", ...
+                        weboptions("ContentType", "text"));
+                elseif isfolder(filename)
+                    rootMetadataText = fileread(fullfile(filename, "zarr.json"));
+                else
+                    return
+                end
+                rootMetadata = jsondecode(rootMetadataText);
                 tf = isfield(rootMetadata, "zarr_format") && isequal(rootMetadata.zarr_format, 3);
             catch
+                % An unreadable or missing zarr.json, or one that is not
+                % JSON, means this is not a Zarr v3 store.
                 tf = false;
             end
         end

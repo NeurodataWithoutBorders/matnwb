@@ -44,7 +44,9 @@ classdef ExternalLink < handle
                 targetFilename = link.resolveTargetFilename();
                 % A store is a file for some backends and a directory for
                 % others, so existence is checked without assuming either.
-                assert(isfile(targetFilename) || isfolder(targetFilename), ...
+                % A URL is not checked here: creating its reader fetches it.
+                assert(matnwb.common.isUrl(targetFilename) ...
+                    || isfile(targetFilename) || isfolder(targetFilename), ...
                     'NWB:ExternalLink:TargetNotFound', ...
                     '%s does not exist.', targetFilename);
 
@@ -139,17 +141,46 @@ classdef ExternalLink < handle
             % read from a file; otherwise it is returned as given and
             % resolves against the working directory.
             targetFilename = obj.filename;
-            if ~isempty(obj.BasePath) && ~isAbsolutePath(targetFilename)
+            if isempty(obj.BasePath) || isAbsolutePath(targetFilename)
+                return
+            end
+            if matnwb.common.isUrl(obj.BasePath)
+                targetFilename = resolveRelativeUrl(obj.BasePath, targetFilename);
+            else
                 targetFilename = char(fullfile(obj.BasePath, targetFilename));
             end
         end
     end
 end
 
+function url = resolveRelativeUrl(baseUrl, relativePath)
+% resolveRelativeUrl - Join a relative path onto a URL, applying "." and "..".
+%
+% fullfile cannot be used for a URL: it collapses the "//" after the scheme.
+    parts = regexp(char(baseUrl), '^(https?://[^/]+)(.*)$', 'tokens', 'once', 'ignorecase');
+    segments = split(string(parts{2}), "/");
+    segments(segments == "") = [];
+    for segment = reshape(split(string(relativePath), ["/", "\"]), 1, [])
+        if segment == "" || segment == "."
+            continue
+        elseif segment == ".."
+            if ~isempty(segments)
+                segments(end) = [];
+            end
+        else
+            segments(end+1) = segment; %#ok<AGROW>
+        end
+    end
+    url = char(string(parts{1}) + "/" + strjoin(segments, "/"));
+end
+
 function tf = isAbsolutePath(pathName)
 % A link target written on another platform may use either separator, so
-% both are accepted when testing for a Windows drive or UNC prefix.
-if ispc
+% both are accepted when testing for a Windows drive or UNC prefix. A URL is
+% absolute.
+if matnwb.common.isUrl(pathName)
+    tf = true;
+elseif ispc
     tf = ~isempty(regexp(pathName, '^([A-Za-z]:[\\/]|[\\/][\\/])', 'once'));
 else
     tf = startsWith(pathName, '/');

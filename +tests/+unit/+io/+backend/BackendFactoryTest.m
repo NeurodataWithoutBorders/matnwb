@@ -152,7 +152,7 @@ classdef BackendFactoryTest < matlab.unittest.TestCase
         end
 
         function zarr3DetectionRejectsMalformedStores(testCase)
-        % Each store fails a different check in isZarr3Directory: a path
+        % Each store fails a different check in isZarr3Store: a path
         % that is not a folder, a .zarr folder without root metadata, and
         % root metadata that is not valid JSON.
             testCase.verifyError( ...

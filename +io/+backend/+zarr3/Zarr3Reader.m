@@ -1,5 +1,8 @@
 classdef Zarr3Reader < io.backend.base.Reader
-% Zarr3Reader - Reader implementation for local Zarr v3 stores.
+% Zarr3Reader - Reader implementation for Zarr v3 stores.
+%
+% The store is a local directory or an http(s) URL (see
+% io.internal.zarr3.openNode).
 %
 % This reader is backed by the zarr-matlab package
 % (https://github.com/catalystneuro/zarr-matlab), which must be on the
@@ -131,7 +134,12 @@ classdef Zarr3Reader < io.backend.base.Reader
         % applies yields one extra ".." (see os.path.relpath in hdmf-zarr's
         % backend.py, and the discussion on issue #865). Returned as an
         % absolute path so a link dereferenced after the working directory
-        % has changed still resolves correctly.
+        % has changed still resolves correctly. A store read over HTTP is
+        % its own base: a relative source resolves against its URL.
+            if matnwb.common.isUrl(obj.Filename)
+                base = strip(obj.Filename, "right", "/");
+                return
+            end
             [isResolved, fileInfo] = fileattrib(char(obj.Filename));
             assert(isResolved, ...
                 'NWB:Backend:Reader:FileNotFound', ...
@@ -190,7 +198,7 @@ classdef Zarr3Reader < io.backend.base.Reader
         function ensureMetadataCache(obj)
             if isempty(obj.RootGroup)
                 io.backend.zarr3.internal.ensureAvailable()
-                obj.RootGroup = zarr.open(obj.Filename);
+                obj.RootGroup = io.internal.zarr3.openNode(obj.Filename);
                 [obj.RootInfoCache, obj.NodeInfoMap] = io.internal.zarr3.buildNodeInfo(obj.RootGroup);
                 obj.RootInfoCache.Filename = char(obj.Filename);
             end
@@ -222,7 +230,7 @@ classdef Zarr3Reader < io.backend.base.Reader
 
         function datasetValue = readEagerValue(obj, datasetPath)
             relativePath = io.internal.zarr3.stripLeadingSlash(datasetPath);
-            arrayNode = zarr.open(obj.Filename, Path=relativePath);
+            arrayNode = io.internal.zarr3.openNode(obj.Filename, relativePath);
             datasetValue = arrayNode.read();
 
             if isstring(datasetValue) && isscalar(datasetValue)
@@ -247,7 +255,7 @@ classdef Zarr3Reader < io.backend.base.Reader
         % path).
 
             relativePath = io.internal.zarr3.stripLeadingSlash(datasetPath);
-            arrayNode = zarr.open(obj.Filename, Path=relativePath);
+            arrayNode = io.internal.zarr3.openNode(obj.Filename, relativePath);
             info = zarr.internal.dtype_info(arrayNode.meta.dataType, arrayNode.meta.dataTypeConfig);
             objectReferenceFields = io.internal.zarr3.getObjectReferenceFields(arrayNode.attrs);
             typeDescriptor = io.internal.zarr3.getCompoundTypeDescriptor(info, objectReferenceFields);
@@ -269,7 +277,7 @@ classdef Zarr3Reader < io.backend.base.Reader
         % "string".
 
             relativePath = io.internal.zarr3.stripLeadingSlash(datasetPath);
-            arrayNode = zarr.open(obj.Filename, Path=relativePath);
+            arrayNode = io.internal.zarr3.openNode(obj.Filename, relativePath);
             rawValues = string(arrayNode.read());
             datasetValue = io.internal.zarr3.decodeObjectReferences(rawValues);
         end
