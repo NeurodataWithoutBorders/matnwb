@@ -5,7 +5,8 @@ function cacheFolder = getCacheFolder()
 %   folder where generated classes are kept, one subfolder per namespace
 %   version. The folder is set by the "GeneratedTypesCacheFolder"
 %   preference in the "matnwb" group. Without the preference, the folder
-%   is "generated-types-cache" in the matnwb root directory.
+%   is "generated-types-cache" in the matnwb root directory. The entries
+%   are in its "resources" subfolder (see generateNamespaces).
 %
 %   Example - Keep the cache outside the matnwb installation:
 %

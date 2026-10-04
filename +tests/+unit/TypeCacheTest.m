@@ -109,7 +109,7 @@ classdef TypeCacheTest < matlab.unittest.TestCase
             parentInfo = testCase.parseParentNamespace("0.1.0", "Parent doc.");
             testCase.generate(parentInfo)
             testCase.addMarkerToCacheEntry("test-cache", "0.1.0", "CacheParent")
-            delete(fullfile(testCase.CacheFolder, "test-cache", "0.1.0", "record.json"))
+            delete(fullfile(testCase.CacheFolder, "resources", "test-cache", "0.1.0", "record.json"))
 
             testCase.generate(parentInfo)
 
@@ -131,6 +131,16 @@ classdef TypeCacheTest < matlab.unittest.TestCase
                 IncludeExtraType=true))
             testCase.verifyTrue(isfile(extraClassPath), ...
                 "Expected switching back to restore the class.")
+        end
+
+        function testCachedClassesAreNotAddedByGenpath(testCase)
+            testCase.generate(testCase.parseParentNamespace("0.1.0", "Parent doc."))
+
+            pathFolders = split(string(genpath(testCase.CacheFolder)), pathsep);
+            pathFolders(pathFolders == "") = [];
+
+            testCase.verifyEqual(pathFolders, string(testCase.CacheFolder), ...
+                "Expected genpath to skip the folders that hold cached classes.")
         end
 
         function testSpecHashIsIndependentOfSourceFormat(testCase)
@@ -220,7 +230,7 @@ classdef TypeCacheTest < matlab.unittest.TestCase
         end
 
         function addMarkerToCacheEntry(testCase, namespaceName, version, className)
-            classPath = fullfile(testCase.CacheFolder, namespaceName, version, ...
+            classPath = fullfile(testCase.CacheFolder, "resources", namespaceName, version, ...
                 "+types", "+" + misc.str2validName(char(namespaceName)), className + ".m");
             testCase.assertTrue(isfile(classPath), "Expected a cache entry for " + className + ".")
             writeText(classPath, newline + testCase.Marker + newline, "a")

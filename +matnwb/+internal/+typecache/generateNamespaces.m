@@ -7,8 +7,11 @@ function generateNamespaces(namespaceInfoList, saveDir)
 %   namespaceInfoList is a struct array as returned by spec.generate.
 %
 %   Classes for a namespace are generated once and kept in the cache folder
-%   (see matnwb.internal.typecache.getCacheFolder), in one subfolder per
-%   namespace name and version. When the cached classes were made from the
+%   (see matnwb.internal.typecache.getCacheFolder), in the subfolder
+%   resources/<namespace>/<version>. Each entry holds a +types folder, and
+%   genpath skips folders named "resources", so adding a folder that
+%   contains the cache with addpath(genpath(...)) does not put the cached
+%   classes on the path. When the cached classes were made from the
 %   same specification, by the same generator and against the same
 %   dependencies, they are copied into saveDir instead of being generated
 %   again. Otherwise the classes are generated into saveDir and the cache
@@ -39,7 +42,7 @@ function generateNamespaces(namespaceInfoList, saveDir)
         cacheKey = composeCacheKey(specHash, generatorHash, dependencyKeys);
         cacheKeys(name) = cacheKey;
 
-        entryFolder = fullfile(cacheFolder, name, namespaceInfo.version);
+        entryFolder = fullfile(cacheFolder, "resources", name, namespaceInfo.version);
         if readCacheKey(entryFolder) == cacheKey
             copyFromCache(entryFolder, name, saveDir)
         else
