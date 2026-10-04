@@ -46,6 +46,7 @@ function generateNamespaces(namespaceInfoList, saveDir)
 
     % Cache keys of the namespaces handled so far, used for their dependents.
     cacheKeys = containers.Map();
+    replacedLoadedVersions = strings(1, 0);
 
     for iNamespace = 1:numel(namespaceInfoList)
         namespaceInfo = namespaceInfoList(iNamespace);
@@ -55,6 +56,9 @@ function generateNamespaces(namespaceInfoList, saveDir)
         specHash = matnwb.internal.typecache.computeSpecHash(namespaceInfo);
         cacheKey = composeCacheKey(specHash, generatorHash, dependencyKeys);
         cacheKeys(name) = cacheKey;
+
+        replacedLoadedVersions(end+1) = describeLoadedVersionReplacement( ...
+            name, namespaceInfo.version, saveDir); %#ok<AGROW>
 
         versionFolder = fullfile(cacheFolder, "resources", name, namespaceInfo.version);
         entryFolder = fullfile(versionFolder, extractBefore(cacheKey, entryKeyLength + 1));
@@ -77,6 +81,17 @@ function generateNamespaces(namespaceInfoList, saveDir)
     end
     matnwb.internal.typecache.writeFunctionSignatures(saveDir)
     rehash()
+
+    replacedLoadedVersions(replacedLoadedVersions == "") = [];
+    if ~isempty(replacedLoadedVersions)
+        % MATLAB redefines the loaded classes without a warning of its own.
+        warning("NWB:TypeCache:LoadedClassesReplaced", ...
+            "Classes that were loaded in this MATLAB session were replaced with another version:\n%s\n" + ...
+            "Objects created before this point now use the classes of the new version, and lose the " + ...
+            "values of properties that version does not define. Save or export the objects you need " + ...
+            "before switching to another schema version.", ...
+            strjoin("  " + replacedLoadedVersions, newline))
+    end
 end
 
 function namespaceInfoList = sortByDependency(namespaceInfoList)
@@ -149,6 +164,52 @@ function cacheKey = composeCacheKey(specHash, generatorHash, dependencyKeys)
     lines = ["spec:" + specHash, "generator:" + generatorHash, ...
         "dependency:" + sort(dependencyKeys(:))'];
     cacheKey = matnwb.internal.typecache.computeSha256(strjoin(lines, newline));
+end
+
+function description = describeLoadedVersionReplacement(name, newVersion, saveDir)
+% describeLoadedVersionReplacement - Describe a version switch of classes that are in use.
+%
+%   Returns "<name> <previous version> -> <new version>" when MATLAB has
+%   loaded classes of the namespace from saveDir and saveDir holds another
+%   version than newVersion, and "" otherwise. Replacing the classes then
+%   changes objects created earlier: they take the class definitions of the
+%   new version, and lose the values of properties it does not define.
+
+    description = "";
+    previousVersion = readGeneratedVersion(name, saveDir);
+    if previousVersion == "" || previousVersion == newVersion
+        return
+    end
+
+    [~, ~, loadedClassNames] = inmem();
+    classPrefix = "types." + misc.str2validName(char(name)) + ".";
+    loadedClassNames = string(loadedClassNames(startsWith(loadedClassNames, classPrefix)));
+    if isempty(loadedClassNames)
+        return
+    end
+
+    % Classes of the same name may be loaded from another folder on the path.
+    loadedClassFolder = fileparts(which(loadedClassNames(1)));
+    if ~strcmp(getCanonicalPath(loadedClassFolder), getCanonicalPath(getTypesFolder(saveDir, name)))
+        return
+    end
+
+    description = sprintf("%s %s -> %s", name, previousVersion, newVersion);
+end
+
+function version = readGeneratedVersion(name, saveDir)
+% readGeneratedVersion - Read the version of a namespace in saveDir, or "" if there is none.
+    cachePath = fullfile(saveDir, "namespaces", name + ".mat");
+    if isfile(cachePath)
+        cache = load(cachePath, "version");
+        version = string(cache.version);
+    else
+        version = "";
+    end
+end
+
+function canonicalPath = getCanonicalPath(folderPath)
+    canonicalPath = string(java.io.File(folderPath).getCanonicalPath());
 end
 
 function cacheKey = readCacheKey(entryFolder)
