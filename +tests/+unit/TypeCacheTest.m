@@ -197,6 +197,47 @@ classdef TypeCacheTest < matlab.unittest.TestCase
                 "Expected generateExtension to copy the class from the cache.")
         end
 
+        function testSignaturesFileListsConstructorArguments(testCase)
+            parentInfo = testCase.parseParentNamespace("0.1.0", "Parent doc.");
+            testCase.generate([parentInfo, testCase.parseChildNamespace()])
+
+            signatureText = testCase.readSignaturesFile();
+            childEntry = extractAfter(signatureText, """types.test_cache_child.CacheChild""");
+            % Each entry ends with a closing brace at the start of a line.
+            childEntry = extractBefore(childEntry, newline + "}");
+
+            testCase.verifySubstring(childEntry, """name"": ""note""", ...
+                "Expected an inherited property that can be set.")
+            testCase.verifyFalse(contains(childEntry, """fixed_note"""), ...
+                "Expected a read-only property to be left out.")
+            testCase.verifyFalse(contains(childEntry, """cacheparent"""), ...
+                "Expected a property holding a set of typed members to be left out.")
+        end
+
+        function testSignaturesFileIsValidJson(testCase)
+            testCase.generate(testCase.parseParentNamespace("0.1.0", "Parent doc."))
+            testCase.verifyWarningFree(@() jsondecode(testCase.readSignaturesFile()))
+        end
+
+        function testSignaturesFileCopiedFromCacheMatchesGenerated(testCase)
+            parentInfo = testCase.parseParentNamespace("0.1.0", "Parent doc.");
+            testCase.generate(parentInfo)
+            generatedText = testCase.readSignaturesFile();
+            nwbClearGenerated(testCase.SaveFolder);
+
+            testCase.generate(parentInfo)
+
+            testCase.verifyEqual(testCase.readSignaturesFile(), generatedText)
+        end
+
+        function testClearingTypesRemovesSignatures(testCase)
+            testCase.generate(testCase.parseParentNamespace("0.1.0", "Parent doc."))
+
+            nwbClearGenerated(testCase.SaveFolder);
+
+            testCase.verifyFalse(contains(testCase.readSignaturesFile(), "types.test_cache.CacheParent"))
+        end
+
         function testSpecHashIsIndependentOfSourceFormat(testCase)
             yamlInfo = testCase.parseParentNamespace("0.1.0", "Parent doc.");
 
@@ -209,7 +250,11 @@ classdef TypeCacheTest < matlab.unittest.TestCase
                 "schema", {{struct("source", "test-cache.extensions")}})}}));
             schemaJson = jsonencode(struct("groups", {{struct( ...
                 "neurodata_type_def", "CacheParent", ...
-                "doc", "Parent doc.")}}));
+                "doc", "Parent doc.", ...
+                "attributes", {{ ...
+                    struct("name", "note", "dtype", "text", "doc", "A note that can be set."), ...
+                    struct("name", "fixed_note", "dtype", "text", "value", "fixed", ...
+                        "doc", "A note with a fixed value.")}})}}));
             jsonInfo = spec.generate(namespaceJson, ...
                 containers.Map({'test-cache.extensions'}, {schemaJson}));
 
@@ -236,6 +281,14 @@ classdef TypeCacheTest < matlab.unittest.TestCase
                 "groups:"
                 "- neurodata_type_def: CacheParent"
                 "  doc: " + typeDoc
+                "  attributes:"
+                "  - name: note"
+                "    dtype: text"
+                "    doc: A note that can be set."
+                "  - name: fixed_note"
+                "    dtype: text"
+                "    value: fixed"
+                "    doc: A note with a fixed value."
                 ];
             if options.IncludeExtraType
                 schemaLines = [schemaLines; [
@@ -260,6 +313,10 @@ classdef TypeCacheTest < matlab.unittest.TestCase
                 "- neurodata_type_def: CacheChild"
                 "  neurodata_type_inc: CacheParent"
                 "  doc: Child doc."
+                "  groups:"
+                "  - neurodata_type_inc: CacheParent"
+                "    quantity: '*'"
+                "    doc: Any number of parent objects."
                 ];
             namespaceLines = [
                 "namespaces:"
@@ -304,6 +361,11 @@ classdef TypeCacheTest < matlab.unittest.TestCase
                 "+types", "+" + misc.str2validName(char(namespaceName)), className + ".m");
             testCase.assertTrue(isfile(classPath), "Expected a cache entry for " + className + ".")
             writeText(classPath, newline + testCase.Marker + newline, "a")
+        end
+
+        function signatureText = readSignaturesFile(testCase)
+            signatureText = string(fileread( ...
+                fullfile(testCase.SaveFolder, "resources", "functionSignatures.json")));
         end
 
         function tf = hasMarker(testCase, namespaceName, className)
