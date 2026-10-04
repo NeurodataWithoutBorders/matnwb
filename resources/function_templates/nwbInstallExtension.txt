@@ -1,11 +1,17 @@
-function nwbInstallExtension(extensionNames, options)
+function nwbInstallExtension(extensionNames, version, options)
 % NWBINSTALLEXTENSION - Installs a specified NWB extension.
 %
 % Syntax:
 %  NWBINSTALLEXTENSION(extensionNames) installs Neurodata Without Borders 
 %  (NWB) extensions to extend the functionality of the core NWB schemas. 
 %  extensionNames is a scalar string or a string array, containing the name
-%  of one or more extensions from the Neurodata Extensions Catalog
+%  of one or more extensions from the Neurodata Extensions Catalog. The
+%  latest release of each extension is installed.
+%
+%  NWBINSTALLEXTENSION(extensionName, version) installs the given release
+%  of one extension, for example "0.2.1".
+%
+%  Releases are downloaded from the Python Package Index (PyPI).
 %
 % Valid Extension Names (from https://nwb-extensions.github.io):
 {{extensionNamesDoc}}
@@ -15,6 +21,10 @@ function nwbInstallExtension(extensionNames, options)
 %
 %    nwbInstallExtension("ndx-miniscope")
 %
+%  Example 2 - Install release 0.2.2 of "ndx-miniscope"::
+%
+%    nwbInstallExtension("ndx-miniscope", "0.2.2")
+%
 % See also:
 %   matnwb.extension.listExtensions, matnwb.extension.installExtension
 
@@ -23,6 +33,7 @@ function nwbInstallExtension(extensionNames, options)
 {{extensionNames}} ...
             ] ...
         )} = []
+        version (1,1) string = "latest"
         options.savedir (1,1) string = misc.getMatnwbDir()
     end
     if isempty(extensionNames)
@@ -31,8 +42,11 @@ function nwbInstallExtension(extensionNames, options)
         error('NWB:InstallExtension:MissingArgument', ...
             'Please specify the name of an extension. Available extensions:\n\n%s\n', extensionList)
     else
+        assert(isscalar(extensionNames) || version == "latest", ...
+            'NWB:InstallExtension:VersionForMultipleExtensions', ...
+            'A version can only be given when installing one extension.')
         for extensionName = extensionNames
-            matnwb.extension.installExtension(extensionName, 'savedir', options.savedir)
+            matnwb.extension.installExtension(extensionName, version, 'savedir', options.savedir)
         end
     end
 end
