@@ -78,6 +78,30 @@ classdef Zarr3HttpReaderTest < matlab.unittest.TestCase
             testCase.verifyEqual(dataStub.load(), expected);
         end
 
+        function readingDatasetsFetchesNoFurtherMetadata(testCase)
+        % The root's consolidated metadata describes every array, so
+        % reading a dataset -- eagerly, as references, or through a
+        % DataStub -- fetches chunks only, not the array's zarr.json.
+            reader = io.backend.zarr3.Zarr3Reader(testCase.StoreUrl);
+            reader.readRootInfo();
+            requestsBefore = numel(testCase.Server.readRequestLog());
+
+            paths = ["/identifier", "/general/extracellular_ephys/electrodes/group", ...
+                "/acquisition/es/data", "/processing/ophys/PlaneSegmentation/pixel_mask"];
+            for datasetPath = paths
+                value = reader.readDatasetValue(reader.readNodeInfo(datasetPath), datasetPath);
+                if isa(value, "types.untyped.DataStub")
+                    value.load();
+                end
+            end
+
+            requests = testCase.Server.readRequestLog();
+            requests = requests(requestsBefore+1:end);
+            testCase.verifyNotEmpty(requests);
+            testCase.verifyFalse(any(endsWith(requests, "zarr.json")), ...
+                "Reading datasets fetched metadata: " + strjoin(requests(endsWith(requests, "zarr.json")), ", "));
+        end
+
         function readsReferencesOverHttp(testCase)
             reader = io.backend.zarr3.Zarr3Reader(testCase.StoreUrl);
             columnPath = "/general/extracellular_ephys/electrodes/group";
