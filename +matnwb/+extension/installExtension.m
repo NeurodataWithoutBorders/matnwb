@@ -12,15 +12,18 @@ function installExtension(extensionName, version, options)
 %   Releases are downloaded from the Python Package Index (PyPI), where
 %   NWB extensions are published with their specification files. Downloads
 %   are kept in the "NWB-Extension-Source" folder in the user path.
+%
+%   The NWB extensions that the release requires are installed first, at
+%   the version it pins or the latest version that meets its conditions.
+%   A required extension that is already installed at a suitable version
+%   is kept; one at another version is replaced. Required extensions do
+%   not have to be in the Neurodata Extensions Catalog.
 
     arguments
         extensionName (1,1) string
         version (1,1) string = "latest"
         options.savedir (1,1) string = misc.getMatnwbDir()
     end
-
-    import matnwb.extension.internal.getPypiRelease
-    import matnwb.extension.internal.downloadRelease
 
     downloadFolder = fullfile(userpath, "NWB-Extension-Source");
     if ~isfolder(downloadFolder); mkdir(downloadFolder); end
@@ -34,9 +37,6 @@ function installExtension(extensionName, version, options)
         'NWB:InstallExtension:ExtensionNotFound', ...
         'Extension "%s" was not found in the extension catalog:\n', extensionList)
 
-    release = getPypiRelease(extensionName, version);
-    namespaceFilePath = downloadRelease(release, downloadFolder);
-
-    generateExtension(namespaceFilePath, 'savedir', options.savedir);
-    fprintf("Installed extension ""%s"" version %s.\n", extensionName, release.Version)
+    matnwb.extension.internal.installRelease( ...
+        extensionName, version, options.savedir, downloadFolder)
 end
