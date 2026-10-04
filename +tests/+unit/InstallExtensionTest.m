@@ -96,6 +96,24 @@ classdef InstallExtensionTest < tests.abstract.NwbTestCase
             testCase.verifySubstring(output, 'may not work with version 0.2.0: ndx-fiber-photometry')
         end
 
+        function testVersionChoicesListReleases(testCase)
+            versions = matnwb.extension.internal.listVersionChoices("ndx-miniscope");
+            testCase.verifyClass(versions, 'cell')
+            testCase.verifyTrue(ismember('0.2.2', versions))
+        end
+
+        function testVersionChoicesAreEmptyWithoutOneKnownName(testCase)
+            testCase.verifyEmpty(matnwb.extension.internal.listVersionChoices(["ndx-miniscope", "ndx-ecog"]))
+            testCase.verifyEmpty(matnwb.extension.internal.listVersionChoices("ndx-no-such-extension-exists"))
+            testCase.verifyEmpty(matnwb.extension.internal.listVersionChoices(42))
+        end
+
+        function testExtensionChoicesListCatalog(testCase)
+            names = matnwb.extension.internal.listExtensionChoices();
+            testCase.verifyClass(names, 'cell')
+            testCase.verifyTrue(ismember('ndx-miniscope', names))
+        end
+
         function testInstallExtensionWithoutWheel(testCase)
             % ndx-ecg is published on PyPI as a source distribution only.
             testCase.addTeardown(@() testCase.clearExtension("ndx-ecg"))

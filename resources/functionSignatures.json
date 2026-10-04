@@ -49,6 +49,15 @@
       }
     ]
   },
+  "nwbInstallExtension":
+  {
+    "inputs":
+    [
+      {"name":"extensionNames", "kind":"required", "type":"choices=matnwb.extension.internal.listExtensionChoices()", "purpose":"Name of an extension in the Neurodata Extensions Catalog"},
+      {"name":"version", "kind":"ordered", "type":"choices=matnwb.extension.internal.listVersionChoices(extensionNames)", "purpose":"Release of the extension to install, such as \"0.2.1\""},
+      {"name":"savedir", "kind":"namevalue", "type":"folder", "purpose":"Output folder for generated classes"}
+    ]
+  },
   "nwbRead":
   {
     "inputs":
