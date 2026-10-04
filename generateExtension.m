@@ -13,6 +13,12 @@ function generateExtension(namespaceFilePath, options)
 %  Output files are placed in a ``+types`` subdirectory in the
 %  matnwb root directory directory.
 %
+%  Generated classes are also kept in a cache folder, one entry per
+%  namespace version. When classes for the same specification were
+%  generated before, by the same version of the generator and against the
+%  same dependencies, they are copied from the cache instead of being
+%  generated again. See generateCore for where the cache folder is.
+%
 % Input Arguments:
 %  - namespaceFilePath (string) - 
 %    Filepath pointing to a schema extension namespace file. This is a
@@ -45,21 +51,14 @@ function generateExtension(namespaceFilePath, options)
         'Please provide the file path to at least one namespace specification file.' ...
         )
 
+    namespaceInfoList = cell(size(namespaceFilePath));
     for iNamespaceFiles = 1:length(namespaceFilePath)
-
         source = namespaceFilePath{iNamespaceFiles};
         namespaceText = fileread(source);
-                
         [namespaceRootFolder, ~, ~] = fileparts(source);
-        parsedNamespaceList = spec.generate(namespaceText, namespaceRootFolder);
-        
-        for iNamespace = 1:length(parsedNamespaceList)
-            parsedNamespace = parsedNamespaceList(iNamespace);
-            spec.saveCache(parsedNamespace, options.savedir);
-            file.writeNamespace(parsedNamespace.name, options.savedir);
-        end
+        namespaceInfoList{iNamespaceFiles} = spec.generate(namespaceText, namespaceRootFolder);
     end
-    rehash()
+    matnwb.internal.typecache.generateNamespaces([namespaceInfoList{:}], options.savedir)
 end
 
 function mustBeYamlFile(filePath)

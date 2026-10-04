@@ -185,6 +185,18 @@ classdef TypeCacheTest < matlab.unittest.TestCase
                 "Expected genpath to skip the folders that hold cached classes.")
         end
 
+        function testGenerateExtensionCopiesFromCache(testCase)
+            testCase.parseParentNamespace("0.1.0", "Parent doc.");
+            namespaceFile = fullfile(testCase.SchemaFolder, "test-cache", "test-cache.namespace.yaml");
+            generateExtension(namespaceFile, "savedir", testCase.SaveFolder)
+            testCase.addMarkerToCacheEntry("test-cache", "0.1.0", "CacheParent")
+
+            generateExtension(namespaceFile, "savedir", testCase.SaveFolder)
+
+            testCase.verifyTrue(testCase.hasMarker("test-cache", "CacheParent"), ...
+                "Expected generateExtension to copy the class from the cache.")
+        end
+
         function testSpecHashIsIndependentOfSourceFormat(testCase)
             yamlInfo = testCase.parseParentNamespace("0.1.0", "Parent doc.");
 
@@ -268,6 +280,7 @@ classdef TypeCacheTest < matlab.unittest.TestCase
             end
             writeText(fullfile(namespaceFolder, name + ".extensions.yaml"), strjoin(schemaLines, newline), "w")
             namespaceText = strjoin(namespaceLines, newline);
+            writeText(fullfile(namespaceFolder, name + ".namespace.yaml"), namespaceText, "w")
             namespaceInfo = spec.generate(char(namespaceText), namespaceFolder);
         end
 
