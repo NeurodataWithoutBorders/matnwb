@@ -21,7 +21,12 @@ classdef Zarr3HttpReaderTest < matlab.unittest.TestCase
 
             testCase.applyFixture(PathFixture(tests.util.getZarr3DependencyPaths()));
             folderFixture = testCase.applyFixture(TemporaryFolderFixture);
-            tests.fixtures.createZarr3TestFile(folderFixture.Folder);
+            fixturePath = tests.fixtures.createZarr3TestFile(folderFixture.Folder);
+            % An array of several chunks, which is read on demand rather than
+            % fetched up front with the small arrays.
+            zarr.create(fixturePath, 300, "double", Path="scratch/multichunk", ...
+                ChunkShape=100).write((1:300)');
+            zarr.consolidate_metadata(zarr.stores.LocalStore(fixturePath));
 
             testCase.Server = testCase.applyFixture( ...
                 tests.fixtures.HttpServerFixture(folderFixture.Folder));
@@ -78,15 +83,16 @@ classdef Zarr3HttpReaderTest < matlab.unittest.TestCase
             testCase.verifyEqual(dataStub.load(), expected);
         end
 
-        function readingDatasetsFetchesNoFurtherMetadata(testCase)
-        % The root's consolidated metadata describes every array, so
-        % reading a dataset -- eagerly, as references, or through a
-        % DataStub -- fetches chunks only, not the array's zarr.json.
+        function smallDatasetsAreReadFromPrefetchedChunks(testCase)
+        % Opening the store fetches the chunks of every small array, so
+        % reading one -- eagerly, as references, or through a DataStub --
+        % needs no further request.
             reader = io.backend.zarr3.Zarr3Reader(testCase.StoreUrl);
             reader.readRootInfo();
             requestsBefore = numel(testCase.Server.readRequestLog());
 
-            paths = ["/identifier", "/general/extracellular_ephys/electrodes/group", ...
+            paths = ["/identifier", "/general/session_id", ...
+                "/general/extracellular_ephys/electrodes/group", ...
                 "/acquisition/es/data", "/processing/ophys/PlaneSegmentation/pixel_mask"];
             for datasetPath = paths
                 value = reader.readDatasetValue(reader.readNodeInfo(datasetPath), datasetPath);
@@ -96,10 +102,24 @@ classdef Zarr3HttpReaderTest < matlab.unittest.TestCase
             end
 
             requests = testCase.Server.readRequestLog();
+            testCase.verifyEmpty(requests(requestsBefore+1:end));
+        end
+
+        function largeDatasetFetchesChunksOnly(testCase)
+        % An array of several chunks is not fetched up front. Loading it
+        % fetches its chunks but not its zarr.json: the root's consolidated
+        % metadata describes it.
+            reader = io.backend.zarr3.Zarr3Reader(testCase.StoreUrl);
+            datasetPath = "/scratch/multichunk";
+            dataStub = reader.readDatasetValue(reader.readNodeInfo(datasetPath), datasetPath);
+            requestsBefore = numel(testCase.Server.readRequestLog());
+
+            testCase.verifyEqual(dataStub.load(), (1:300)');
+
+            requests = testCase.Server.readRequestLog();
             requests = requests(requestsBefore+1:end);
-            testCase.verifyNotEmpty(requests);
-            testCase.verifyFalse(any(endsWith(requests, "zarr.json")), ...
-                "Reading datasets fetched metadata: " + strjoin(requests(endsWith(requests, "zarr.json")), ", "));
+            testCase.verifyEqual(sort(requests), ...
+                "200 /fixture.zarr/scratch/multichunk/c/" + ["0"; "1"; "2"]);
         end
 
         function readsReferencesOverHttp(testCase)
