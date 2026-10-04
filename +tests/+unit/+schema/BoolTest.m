@@ -23,5 +23,10 @@ classdef BoolTest < tests.unit.abstract.SchemaTest
             nwbActual = nwbRead('test.nwb', 'ignorecache');
             tests.util.verifyContainerEqual(testCase, nwbActual, nwb);
         end
+
+        function testDefaultValue(testCase)
+            boolContainer = types.bool.BoolContainer('data', true, 'attribute', true);
+            testCase.verifyEqual(boolContainer.attribute_with_default, false)
+        end
     end
 end

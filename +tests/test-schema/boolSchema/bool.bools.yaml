@@ -10,3 +10,8 @@ groups:
     - name: attribute
       dtype: bool
       doc: bool as attribute
+    - name: attribute_with_default
+      dtype: bool
+      default_value: false
+      required: false
+      doc: bool attribute with a default value
