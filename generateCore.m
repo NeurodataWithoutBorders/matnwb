@@ -19,6 +19,15 @@ function generateCore(version, options)
 %  Output files are placed in a ``+types`` subdirectory in the
 %  matnwb root directory directory.
 %
+%  Generated classes are also kept in a cache folder, one entry per
+%  namespace version. When classes for the same specification were
+%  generated before, by the same version of the generator, they are copied
+%  from the cache instead of being generated again. The cache folder is
+%  ``generated-types-cache`` in the matnwb root directory, or the folder set
+%  with the ``GeneratedTypesCacheFolder`` preference::
+%
+%     setpref("matnwb", "GeneratedTypesCacheFolder", cacheFolder)
+%
 % Usage:
 %  Example 1 - Generate core schemas for the latest version of NWB::
 %
