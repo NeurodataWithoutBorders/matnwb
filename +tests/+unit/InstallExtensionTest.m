@@ -120,6 +120,12 @@ classdef InstallExtensionTest < tests.abstract.NwbTestCase
                 'NWB:InstallExtension:UnknownExtension')
         end
 
+        function testInstallExtensionRejectsNameOutsideCatalog(testCase)
+            testCase.verifyError( ...
+                @() matnwb.extension.installExtension("ndx-not-in-the-catalog"), ...
+                'NWB:InstallExtension:ExtensionNotFound')
+        end
+
         function testInstallExtensionWithoutWheel(testCase)
             % ndx-ecg is published on PyPI as a source distribution only.
             testCase.addTeardown(@() testCase.clearExtension("ndx-ecg"))
