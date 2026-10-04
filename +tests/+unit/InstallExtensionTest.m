@@ -108,10 +108,16 @@ classdef InstallExtensionTest < tests.abstract.NwbTestCase
             testCase.verifyEmpty(matnwb.extension.internal.listVersionChoices(42))
         end
 
-        function testExtensionChoicesListCatalog(testCase)
-            names = matnwb.extension.internal.listExtensionChoices();
-            testCase.verifyClass(names, 'cell')
-            testCase.verifyTrue(ismember('ndx-miniscope', names))
+        function testCatalogExtensionListsNames(testCase)
+            names = matnwb.extension.CatalogExtension.listNames();
+            testCase.verifyClass(names, 'string')
+            testCase.verifyTrue(ismember("ndx-miniscope", names))
+            testCase.verifyEqual(matnwb.extension.CatalogExtension.ndx_miniscope.Name, "ndx-miniscope")
+        end
+
+        function testUnknownExtensionNameFails(testCase)
+            testCase.verifyError(@() nwbInstallExtension("ndx-not-in-the-catalog"), ...
+                'NWB:InstallExtension:UnknownExtension')
         end
 
         function testInstallExtensionWithoutWheel(testCase)

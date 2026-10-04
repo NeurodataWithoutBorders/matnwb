@@ -1,28 +1,38 @@
 function matnwb_createNwbInstallExtension()
-% matnwb_createNwbInstallExtension - Create nwbInstallExtension from template
+% matnwb_createNwbInstallExtension - Create nwbInstallExtension and CatalogExtension from templates
 %
-%   Running this function will update the nwbInstallExtension function in
-%   the root directory of the matnwb package. It will update the list of 
-%   available extension names in the nwbInstallExtension function's arguments 
-%   block and docstring based on the available records in the neurodata 
-%   extensions catalog
+%   Running this function updates two files from the records in the
+%   neurodata extensions catalog:
+%
+%   - nwbInstallExtension.m in the root directory of the matnwb package,
+%     whose docstring lists the available extension names.
+%   - +matnwb/+extension/CatalogExtension.m, an enumeration with one member
+%     per extension. nwbInstallExtension validates its first argument
+%     against it, and MATLAB suggests its names for that argument.
 
     matnwbRootDir = misc.getMatnwbDir();
-    fcnTemplate = fileread(fullfile(matnwbRootDir, ...
-        'resources', 'function_templates', 'nwbInstallExtension.txt'));
+    templateFolder = fullfile(matnwbRootDir, 'resources', 'function_templates');
 
     extensionTable = matnwb.extension.listExtensions();
     extensionNames = extensionTable.name;
 
-    indentStr = repmat(' ', 1, 12);
-    extensionNamesStr = compose("%s""%s""", indentStr, extensionNames);
-    extensionNamesStr = strjoin(extensionNamesStr, ", ..." + newline);
-    fcnStr = replace(fcnTemplate, "{{extensionNames}}", extensionNamesStr);
+    fcnTemplate = fileread(fullfile(templateFolder, 'nwbInstallExtension.txt'));
     extensionNamesStr = compose("%%  - ""%s""", extensionNames);
     extensionNamesStr = strjoin(extensionNamesStr, newline);
-    fcnStr = replace(fcnStr, "{{extensionNamesDoc}}", extensionNamesStr);
+    fcnStr = replace(fcnTemplate, "{{extensionNamesDoc}}", extensionNamesStr);
+    writeFile(fullfile(matnwbRootDir, 'nwbInstallExtension.m'), fcnStr)
 
-    fid = fopen(fullfile(matnwbRootDir, 'nwbInstallExtension.m'), "wt");
-    fwrite(fid, fcnStr);
+    classTemplate = fileread(fullfile(templateFolder, 'CatalogExtension.txt'));
+    memberNames = matlab.lang.makeValidName(extensionNames);
+    indentStr = repmat(' ', 1, 8);
+    membersStr = compose("%s%s (""%s"")", indentStr, memberNames, extensionNames);
+    membersStr = strjoin(membersStr, newline);
+    classStr = replace(classTemplate, "{{enumerationMembers}}", membersStr);
+    writeFile(fullfile(matnwbRootDir, '+matnwb', '+extension', 'CatalogExtension.m'), classStr)
+end
+
+function writeFile(filePath, text)
+    fid = fopen(filePath, "wt");
+    fwrite(fid, text);
     fclose(fid);
 end

@@ -9,8 +9,11 @@ function versions = listVersionChoices(extensionName)
 %
 %   MATLAB evaluates the function while the user types, so it never
 %   throws: it returns an empty cell array when extensionName is not one
-%   name or PyPI cannot be reached. Results are kept for the MATLAB
-%   session, so each extension is looked up once.
+%   name or PyPI does not answer within two seconds. Results are kept for
+%   the MATLAB session, so each extension is looked up once.
+
+    % Suggestions wait for this function, so a slow answer would stall typing.
+    timeoutSeconds = 2;
 
     persistent versionsByName
     if isempty(versionsByName)
@@ -29,7 +32,8 @@ function versions = listVersionChoices(extensionName)
     end
 
     try
-        versions = cellstr(matnwb.extension.internal.listPypiVersions(extensionName));
+        versions = cellstr(matnwb.extension.internal.listPypiVersions( ...
+            extensionName, "Timeout", timeoutSeconds));
     catch
         % No network or no answer from PyPI: offer no suggestions this time.
         return
