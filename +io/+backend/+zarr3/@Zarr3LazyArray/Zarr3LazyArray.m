@@ -8,9 +8,11 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
 % MATLAB column vector.
 
     properties (Access = private)
-        % ArrayNode - zarr.Array for the wrapped dataset. Opened lazily by
-        % resolveArray on first read and cached, so that repeated reads
-        % reuse a single open array rather than reopening the store.
+        % ArrayNode - zarr.Array for the wrapped dataset. Supplied by
+        % io.backend.zarr3.Zarr3Reader, which opens it from the store's
+        % consolidated metadata; otherwise opened by resolveArray on first
+        % read. Cached, so that repeated reads reuse a single open array
+        % rather than reopening the store.
         ArrayNode = []
 
         % ObjectReferenceFields - Names of the compound fields that hold
@@ -33,16 +35,21 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
     end
 
     methods
-        function obj = Zarr3LazyArray(filename, datasetPath, dims, dataType, objectReferenceFields)
+        function obj = Zarr3LazyArray(filename, datasetPath, dims, dataType, objectReferenceFields, options)
             arguments
                 filename (1,1) string
                 datasetPath (1,1) string
                 dims double = []
                 dataType = []
                 objectReferenceFields (1,:) string = string.empty(1, 0)
+                % ArrayNode - The dataset's zarr.Array, if already open. Its
+                % class, not its size, is validated: zarr.Array redefines
+                % size to report the dataset's shape.
+                options.ArrayNode {mustBeA(options.ArrayNode, ["zarr.Array", "double"])} = []
             end
             obj@io.backend.base.LazyArray(filename, datasetPath, dims, dataType);
             obj.ObjectReferenceFields = objectReferenceFields;
+            obj.ArrayNode = options.ArrayNode;
         end
 
         function refreshSizeInfo(obj)

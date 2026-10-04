@@ -187,7 +187,8 @@ classdef Zarr3Reader < io.backend.base.Reader
             else
                 matlabDataType = io.internal.zarr3.getMatlabDataType(datasetInfo.Datatype);
                 lazyArray = io.backend.zarr3.Zarr3LazyArray(...
-                    obj.Filename, datasetPath, dataDimensions, matlabDataType);
+                    obj.Filename, datasetPath, dataDimensions, matlabDataType, ...
+                    ArrayNode=obj.openArray(datasetPath));
                 datasetValue = types.untyped.DataStub(...
                     obj.Filename, datasetPath, [], [], lazyArray);
             end
@@ -202,6 +203,17 @@ classdef Zarr3Reader < io.backend.base.Reader
                 [obj.RootInfoCache, obj.NodeInfoMap] = io.internal.zarr3.buildNodeInfo(obj.RootGroup);
                 obj.RootInfoCache.Filename = char(obj.Filename);
             end
+        end
+
+        function arrayNode = openArray(obj, datasetPath)
+        % openArray - Open a dataset through the root group.
+        %
+        % The root group holds the store's consolidated metadata, so the
+        % array is opened without fetching its zarr.json again, which over
+        % HTTP saves a request per dataset. zarr.Group.item reads the store
+        % only for a node the consolidated metadata does not describe.
+            obj.ensureMetadataCache();
+            arrayNode = obj.RootGroup.item(io.internal.zarr3.stripLeadingSlash(datasetPath));
         end
 
         function normalizedPath = normalizeNodePath(~, nodePath)
@@ -229,9 +241,7 @@ classdef Zarr3Reader < io.backend.base.Reader
         end
 
         function datasetValue = readEagerValue(obj, datasetPath)
-            relativePath = io.internal.zarr3.stripLeadingSlash(datasetPath);
-            arrayNode = io.internal.zarr3.openNode(obj.Filename, relativePath);
-            datasetValue = arrayNode.read();
+            datasetValue = obj.openArray(datasetPath).read();
 
             if isstring(datasetValue) && isscalar(datasetValue)
                 datasetValue = char(datasetValue);
@@ -254,14 +264,14 @@ classdef Zarr3Reader < io.backend.base.Reader
         % types.util.checkDtype>checkDtypeForCompoundDataset's DataStub fast
         % path).
 
-            relativePath = io.internal.zarr3.stripLeadingSlash(datasetPath);
-            arrayNode = io.internal.zarr3.openNode(obj.Filename, relativePath);
+            arrayNode = obj.openArray(datasetPath);
             info = zarr.internal.dtype_info(arrayNode.meta.dataType, arrayNode.meta.dataTypeConfig);
             objectReferenceFields = io.internal.zarr3.getObjectReferenceFields(arrayNode.attrs);
             typeDescriptor = io.internal.zarr3.getCompoundTypeDescriptor(info, objectReferenceFields);
 
             lazyArray = io.backend.zarr3.Zarr3LazyArray(...
-                obj.Filename, datasetPath, dataDimensions, typeDescriptor, objectReferenceFields);
+                obj.Filename, datasetPath, dataDimensions, typeDescriptor, objectReferenceFields, ...
+                ArrayNode=arrayNode);
             datasetValue = types.untyped.DataStub(...
                 obj.Filename, datasetPath, [], [], lazyArray);
         end
@@ -276,9 +286,7 @@ classdef Zarr3Reader < io.backend.base.Reader
         % these itself since the array's own Zarr v3 data_type is plain
         % "string".
 
-            relativePath = io.internal.zarr3.stripLeadingSlash(datasetPath);
-            arrayNode = io.internal.zarr3.openNode(obj.Filename, relativePath);
-            rawValues = string(arrayNode.read());
+            rawValues = string(obj.openArray(datasetPath).read());
             datasetValue = io.internal.zarr3.decodeObjectReferences(rawValues);
         end
     end
