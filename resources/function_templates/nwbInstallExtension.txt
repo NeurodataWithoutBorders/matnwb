@@ -49,9 +49,13 @@ end
 
 function mustBeCatalogExtension(extensionNames)
 % mustBeCatalogExtension - Validate that names are extensions in the catalog.
-    catalogNames = matnwb.extension.CatalogExtension.listNames();
-    unknownNames = extensionNames(~ismember(extensionNames, catalogNames));
+%
+%   Names missing from matnwb.extension.CatalogExtension are looked up in
+%   the online catalog, so extensions added to the catalog after this
+%   version of matnwb are accepted.
+    unknownNames = extensionNames(~matnwb.extension.internal.isCatalogExtension(extensionNames));
     if ~isempty(unknownNames)
+        catalogNames = matnwb.extension.CatalogExtension.listNames();
         error('NWB:InstallExtension:UnknownExtension', ...
             'Unknown extension: %s. Use one of the extensions in the catalog:\n\n%s\n', ...
             strjoin(unknownNames, ', '), join(compose("  %s", catalogNames), newline))

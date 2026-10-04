@@ -120,6 +120,11 @@ classdef InstallExtensionTest < tests.abstract.NwbTestCase
                 'NWB:InstallExtension:UnknownExtension')
         end
 
+        function testIsCatalogExtension(testCase)
+            tf = matnwb.extension.internal.isCatalogExtension(["ndx-miniscope", "ndx-not-in-the-catalog"]);
+            testCase.verifyEqual(tf, [true, false])
+        end
+
         function testInstallExtensionRejectsNameOutsideCatalog(testCase)
             testCase.verifyError( ...
                 @() matnwb.extension.installExtension("ndx-not-in-the-catalog"), ...
