@@ -106,6 +106,11 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
                 return
             end
 
+            if obj.isEmptySubscriptSelection(varargin)
+                data = obj.readEmptySelection(varargin);
+                return
+            end
+
             [isSupported, fullSelection] = obj.tryBuildRegularSelection(varargin);
             if isSupported
                 [start, count, stride] = obj.selectionToReadParameters(fullSelection);
@@ -332,6 +337,27 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
         % readPoint - Read the single element at a subscript vector.
             value = obj.readPartialData(subscript, ones(1, numel(subscript)), ...
                 ones(1, numel(subscript)));
+        end
+
+        function tf = isEmptySubscriptSelection(obj, userSelection)
+        % isEmptySubscriptSelection - True when a subscript selects nothing.
+        %
+        % An empty subscript is not a regular selection, so without this
+        % check it would take the full-read path, which reads the whole
+        % dataset to return no elements. DynamicTable.getRow passes one for
+        % an empty row of a ragged column of two or more dimensions.
+        % Compound datasets keep the full-read path (see isLinearSelection).
+            tf = ~isstruct(obj.dataType) ...
+                && any(cellfun(@(subscript) isnumeric(subscript) && isempty(subscript), userSelection));
+        end
+
+        function data = readEmptySelection(obj, userSelection)
+        % readEmptySelection - An empty array of the selection's shape and class.
+        %
+        % The class is taken from the first element, read on its own, as
+        % readLinearSelection does for an empty linear selection.
+            sample = obj.readPoint(ones(1, numel(obj.dims)));
+            data = repmat(sample(1), obj.getExpectedSize(userSelection));
         end
 
         function [isSupported, fullSelection] = tryBuildRegularSelection(obj, userSelection)

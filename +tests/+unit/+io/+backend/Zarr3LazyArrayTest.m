@@ -187,6 +187,22 @@ classdef Zarr3LazyArrayTest < matlab.unittest.TestCase
             testCase.verifyEqual(lazyArray.load_mat_style((100:300)'), values(100:300));
         end
 
+        function emptySubscriptReadsOneElement(testCase)
+        % An empty row of a ragged column selects nothing along one
+        % dimension; the result must be an empty array of the right shape
+        % and class, read without materialising the dataset.
+            import matlab.unittest.fixtures.TemporaryFolderFixture
+            folderFixture = testCase.applyFixture(TemporaryFolderFixture);
+            storePath = string(fullfile(folderFixture.Folder, "sparse.zarr"));
+            zarr.create(storePath, [1e6 1e6], "single", Path="huge", ChunkShape=[10 10]);
+            lazyArray = io.backend.zarr3.Zarr3LazyArray(storePath, "/huge");
+
+            emptyColumns = lazyArray.load_mat_style(':', 1:0);
+
+            testCase.verifySize(emptyColumns, [1e6 0]);
+            testCase.verifyClass(emptyColumns, "single");
+        end
+
         function compoundTextFieldsReadBackAsCellstr(testCase)
         % zarr-matlab returns Zarr text as a MATLAB string, but
         % io.parseCompound gives a cellstr column for an HDF5 compound's
