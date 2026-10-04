@@ -37,6 +37,13 @@ classdef Zarr3Reader < io.backend.base.Reader
 % io.internal.zarr3.getObjectReferenceFields) holds references in the same
 % form as a reference dataset and is decoded the same way.
 
+    properties (Constant, Access = private)
+        % MaxPrefetchElements - Largest single-chunk array whose chunk is
+        % fetched up front when the store is read over HTTP (see
+        % smallArrayChunkKeys).
+        MaxPrefetchElements = 1e5
+    end
+
     properties (Access = private)
         % RootGroup - zarr.Group at the root of the store. Entry point for
         % walking the hierarchy, and the source of the root attributes that
@@ -199,9 +206,45 @@ classdef Zarr3Reader < io.backend.base.Reader
         function ensureMetadataCache(obj)
             if isempty(obj.RootGroup)
                 io.backend.zarr3.internal.ensureAvailable()
-                obj.RootGroup = io.internal.zarr3.openNode(obj.Filename);
+                store = io.internal.zarr3.createStore(obj.Filename);
+                if matnwb.common.isUrl(obj.Filename)
+                    store = io.backend.zarr3.internal.PrefetchStore(store);
+                end
+                obj.RootGroup = zarr.open(store);
                 [obj.RootInfoCache, obj.NodeInfoMap] = io.internal.zarr3.buildNodeInfo(obj.RootGroup);
                 obj.RootInfoCache.Filename = char(obj.Filename);
+                if isa(store, "io.backend.zarr3.internal.PrefetchStore")
+                    store.prefetch(obj.smallArrayChunkKeys());
+                end
+            end
+        end
+
+        function chunkKeys = smallArrayChunkKeys(obj)
+        % smallArrayChunkKeys - Store keys of the chunks of every small array.
+        %
+        % nwbRead reads most small arrays while it parses a store: scalars,
+        % the cached specifications, id columns and other short columns,
+        % reference datasets. Over HTTP each read is a round trip, so their
+        % chunks are fetched together up front. An array counts as small
+        % when it is a single chunk of at most MaxPrefetchElements elements;
+        % larger arrays are read on demand.
+            chunkKeys = strings(0, 1);
+            nodePaths = string(keys(obj.NodeInfoMap));
+            nodeInfos = values(obj.NodeInfoMap);
+            for iNode = 1:numel(nodePaths)
+                nodeInfo = nodeInfos{iNode};
+                if ~isfield(nodeInfo, "Dataspace")
+                    continue  % a group
+                end
+                shape = double(nodeInfo.Dataspace.Size);
+                chunkShape = double(nodeInfo.ChunkSize);
+                isSingleChunk = all(shape <= chunkShape);
+                if prod(shape) > obj.MaxPrefetchElements || ~isSingleChunk || any(shape == 0)
+                    continue
+                end
+                arrayNode = obj.openArray(nodePaths(iNode));
+                chunkKeys(end+1, 1) = io.internal.zarr3.stripLeadingSlash(nodePaths(iNode)) ...
+                    + "/" + arrayNode.meta.chunkKey(zeros(1, numel(shape))); %#ok<AGROW>
             end
         end
 
