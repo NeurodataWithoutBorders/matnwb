@@ -62,6 +62,14 @@ classdef HDF5LazyArrayTest < matlab.unittest.TestCase
             testCase.verifyEqual(lazyArray.load_mat_style(1:2, Subscript, 2), data(1:2, Subscript, 2));
             testCase.verifyEqual(lazyArray.load_mat_style(Subscript, Subscript, ':'), data(Subscript, Subscript, :));
         end
+
+        function reorderedFirstSubscriptBeforeFoldedColon(testCase, Subscript)
+            % The trailing ':' spans the second and third dimensions.
+            data = reshape(1:(4*5*3), 4, 5, 3);
+            lazyArray = testCase.writeLazyArray(data);
+
+            testCase.verifyEqual(lazyArray.load_mat_style(Subscript, ':'), data(Subscript, :));
+        end
     end
 
     methods (Access = private)

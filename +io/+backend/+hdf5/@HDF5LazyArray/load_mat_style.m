@@ -98,7 +98,13 @@ function data = load_mat_style(obj, varargin)
     openSelectionIndices = reshape(openSelectionIndices, 1, []);
     for iDimension = openSelectionIndices
         % for open selection ':', select the entire range of that dimension.
-        userSelection{iDimension} = 1:dataDimensions(iDimension);
+        if iDimension == length(userSelection)
+            % A trailing ':' spans every remaining dimension, folded into
+            % one as in getExpectedSize.
+            userSelection{iDimension} = 1:prod(dataDimensions(iDimension:end));
+        else
+            userSelection{iDimension} = 1:dataDimensions(iDimension);
+        end
     end
 
     if isstruct(data)
