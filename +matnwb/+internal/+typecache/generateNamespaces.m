@@ -8,10 +8,17 @@ function generateNamespaces(namespaceInfoList, saveDir)
 %
 %   Classes for a namespace are generated once and kept in the cache folder
 %   (see matnwb.internal.typecache.getCacheFolder), in the subfolder
-%   resources/<namespace>/<version>. Each entry holds a +types folder, and
-%   genpath skips folders named "resources", so adding a folder that
-%   contains the cache with addpath(genpath(...)) does not put the cached
-%   classes on the path. When the cached classes were made from the
+%   resources/<namespace>/<version>/<key>, where <key> is the start of the
+%   cache key. Each entry holds a +types folder, and genpath skips folders
+%   named "resources", so adding a folder that contains the cache with
+%   addpath(genpath(...)) does not put the cached classes on the path.
+%
+%   Several entries can exist for one namespace version: the same version
+%   can be generated from different specifications (the copy bundled with
+%   matnwb and the copy embedded in a file by another writer), against
+%   different dependencies, or by different versions of the generator. At
+%   most three entries are kept per namespace version; writing a fourth
+%   removes the one that was used least recently. When the cached classes were made from the
 %   same specification, by the same generator and against the same
 %   dependencies, they are copied into saveDir instead of being generated
 %   again. Otherwise the classes are generated into saveDir and the cache
@@ -25,6 +32,13 @@ function generateNamespaces(namespaceInfoList, saveDir)
         namespaceInfoList (1,:) struct
         saveDir (1,1) string
     end
+
+    % Entries kept per namespace version. Enough for a few variants in use at
+    % the same time, while bounding the growth of the cache.
+    maxEntriesPerVersion = 3;
+    % Characters of the cache key used as the entry folder name. The record
+    % in the folder holds the full key, which a hit must match.
+    entryKeyLength = 12;
 
     namespaceInfoList = sortByDependency(namespaceInfoList);
     generatorHash = matnwb.internal.typecache.computeGeneratorHash();
@@ -42,9 +56,11 @@ function generateNamespaces(namespaceInfoList, saveDir)
         cacheKey = composeCacheKey(specHash, generatorHash, dependencyKeys);
         cacheKeys(name) = cacheKey;
 
-        entryFolder = fullfile(cacheFolder, "resources", name, namespaceInfo.version);
+        versionFolder = fullfile(cacheFolder, "resources", name, namespaceInfo.version);
+        entryFolder = fullfile(versionFolder, extractBefore(cacheKey, entryKeyLength + 1));
         if readCacheKey(entryFolder) == cacheKey
             copyFromCache(entryFolder, name, saveDir)
+            markAsUsed(entryFolder)
         else
             generateIntoSaveDir(namespaceInfo, saveDir)
             record = struct( ...
@@ -55,6 +71,8 @@ function generateNamespaces(namespaceInfoList, saveDir)
                 "GeneratorHash", generatorHash, ...
                 "Dependencies", {namespaceInfo.dependencies});
             copyToCache(entryFolder, name, saveDir, record)
+            markAsUsed(entryFolder)
+            removeLeastRecentlyUsed(versionFolder, maxEntriesPerVersion)
         end
     end
     rehash()
@@ -172,7 +190,10 @@ function copyFromCache(entryFolder, name, saveDir)
 end
 
 function copyToCache(entryFolder, name, saveDir, record)
-% copyToCache - Replace a cache entry with the classes just generated in saveDir.
+% copyToCache - Store the classes just generated in saveDir as a cache entry.
+%
+%   An existing folder for the entry is incomplete (readCacheKey found no
+%   matching record), so it is replaced.
 
     removeFolderIfPresent(entryFolder)
     mkdir(entryFolder)
@@ -183,6 +204,42 @@ function copyToCache(entryFolder, name, saveDir, record)
     fileId = fopen(fullfile(entryFolder, "record.json"), "w");
     fileCleanup = onCleanup(@() fclose(fileId));
     fwrite(fileId, jsonencode(record, "PrettyPrint", true), "char");
+end
+
+function markAsUsed(entryFolder)
+% markAsUsed - Record the time an entry was last written or copied from.
+%
+%   The time is stored as text, because file modification times can have
+%   a resolution of a second, which cannot order entries used in quick
+%   succession.
+    fileId = fopen(fullfile(entryFolder, "last-used.txt"), "w");
+    fileCleanup = onCleanup(@() fclose(fileId));
+    fprintf(fileId, "%.6f", posixtime(datetime("now")));
+end
+
+function removeLeastRecentlyUsed(versionFolder, maxEntryCount)
+% removeLeastRecentlyUsed - Keep only the most recently used entries of a namespace version.
+%
+%   An entry without a time of last use, such as an incomplete one, counts
+%   as the least recently used.
+    listing = dir(versionFolder);
+    listing = listing([listing.isdir] & ~ismember({listing.name}, {'.', '..'}));
+    if numel(listing) <= maxEntryCount
+        return
+    end
+
+    entryFolders = string(fullfile(versionFolder, {listing.name}));
+    lastUsedTimes = zeros(size(entryFolders));
+    for iEntry = 1:numel(entryFolders)
+        lastUsedPath = fullfile(entryFolders(iEntry), "last-used.txt");
+        if isfile(lastUsedPath)
+            lastUsedTimes(iEntry) = str2double(fileread(lastUsedPath));
+        end
+    end
+    [~, newestFirst] = sort(lastUsedTimes, "descend");
+    for iEntry = newestFirst(maxEntryCount+1:end)
+        rmdir(entryFolders(iEntry), "s")
+    end
 end
 
 function typesFolder = getTypesFolder(rootFolder, namespaceName)
