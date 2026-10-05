@@ -14,6 +14,9 @@ end
 properties (Constant, Access = private)
     DeclaredSchemaColumns = ["meaning", "value"];
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["target"];
+end
 
 methods
     function obj = MeaningsTable(varargin)
