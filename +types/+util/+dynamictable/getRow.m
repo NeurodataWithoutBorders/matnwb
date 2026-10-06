@@ -1,14 +1,20 @@
 function subTable = getRow(DynamicTable, rowIndices, options)
-%GETROW get row for dynamictable
-% Index is a scalar 0-based index of the expected row.
-% optional keyword argument "columns" allows for only grabbing certain
-%   columns instead of returning all columns.
-% optional keyword argument "categories" allows for only grabbing certain
-%   categories from an AlignedDynamicTable.
-% optional keyword `id` allows for row filtering by user-defined `id`
-%   instead of row index.
-% The returned value is a set of output arguments in the order of
-% `colnames` or "columns" keyword argument if one exists.
+%GETROW Get rows of a DynamicTable as a MATLAB table.
+%
+% rowIndices is a vector of 1-based row indices. Columns stored in a file
+% are read for the requested rows only. Looking rows up by id reads the
+% whole id column.
+%
+% Name-value arguments:
+%   "columns"    - Names of the columns to return. Defaults to every column,
+%                  in the order of the table's colnames property.
+%   "categories" - Names of the categories of an AlignedDynamicTable to
+%                  return, each as a nested table. Defaults to every category.
+%   "useId"      - When true, rowIndices lists values of the table's id
+%                  column instead of row indices.
+%
+% subTable has one row per requested row, one variable per requested column
+% and then one variable per requested category.
 
 arguments
     DynamicTable (1,1) {matnwb.common.validation.mustBeDynamicTable}
@@ -36,6 +42,8 @@ end
 for iColumn = 1:length(columns)
     columnName = columns{iColumn};
 
+    % Collect the column and the chain of VectorIndex columns above it, the
+    % column first and the outermost index last.
     vectorChainNames = {columnName};
     while true
         name = types.util.dynamictable.getIndex(DynamicTable, vectorChainNames{end});
@@ -52,8 +60,9 @@ for iColumn = 1:length(columns)
             % keep column vectors as is
         elseif isrow(columnData{iColumn})
             columnData{iColumn} = columnData{iColumn} .'; % transpose row vectors
-        elseif ndims(columnData{iColumn}) >= 2 % i.e nd array where ndims >= 2
-            % permute arrays to place last dimension first
+        elseif ndims(columnData{iColumn}) >= 2
+            % Move the dimension that spans the table rows first. The rows
+            % must lie along the first or the last dimension.
             arraySize = size(columnData{iColumn});
             numRows = numel(rowIndices);
 
@@ -83,15 +92,15 @@ for iColumn = 1:length(columns)
         end
     end
 
-    % cell-wrap single multidimensional matrices to prevent invalid
-    % MATLAB tables
+    % A single row holding an array is wrapped in a cell, or table() would
+    % spread the array over several rows.
     if isscalar(rowIndices) && ~iscell(columnData{iColumn}) ...
             && ~istable(columnData{iColumn}) && ~isscalar(columnData{iColumn})
         columnData{iColumn} = columnData(iColumn);
     end
 
-    % convert compound data type scalar struct into an array of
-    % structs.
+    % A compound column in memory is a scalar struct with one array per
+    % member. Split it into a struct array with one element per row.
     if isscalar(columnData{iColumn}) && isstruct(columnData{iColumn})
         compoundMemberNames = fieldnames(columnData{iColumn});
         scalarStruct = columnData{iColumn};
@@ -137,8 +146,15 @@ end
 end
 
 function columnRows = getColumnRows(DynamicTable, vectorChainNames, rowIndices)
-% recursive function which consumes vectorChainNames and produces a nested
-% cell array.
+% getColumnRows - Get the requested rows of a column.
+%
+% vectorChainNames lists the column name first and the names of its
+% VectorIndex columns after it, the outermost index last. A column without
+% an index returns its rows as an array, or as a struct or table with one
+% array per member for a compound column. A ragged column returns a cell
+% array with one cell per row, nested once per index level: the outermost
+% index gives the element range of each row, and the function recurses into
+% the chain below it for the elements of that range.
 column = vectorChainNames{end};
 if isprop(DynamicTable, column)
     Vector = DynamicTable.(column);
@@ -157,16 +173,17 @@ if isscalar(vectorChainNames)
             dataSize = Vector.data.internal.maxSize;
         end
         if length(dataSize) == 2 && dataSize(2) == 1
-            % catch row vector
+            % A column vector is indexed with one subscript.
             numSubscripts = 1;
         else
             numSubscripts = length(dataSize);
         end
     else
         if iscolumn(Vector.data)
-            %catch row vector
+            % A column vector is indexed with one subscript.
             numSubscripts = 1;
         elseif istable(Vector.data)
+            % A compound column held as a table is indexed by row only.
             numSubscripts = 1;
         else
             numSubscripts = ndims(Vector.data);
@@ -198,8 +215,8 @@ if isscalar(vectorChainNames)
         columnRows = Vector.data(subscripts{:});
     end
 
-    % shift dimensions of non-row vectors. otherwise will result in
-    % invalid MATLAB table with uneven column height
+    % A DataPipe can hold its rows along any axis. The table needs them along
+    % the first axis, or its variables would have unequal heights.
     if isa(Vector.data, 'types.untyped.DataPipe')
         columnRows = permute(columnRows, ...
             circshift(1:ndims(columnRows), -(Vector.data.axis-1)));
@@ -238,6 +255,7 @@ end
 end
 
 function rowIndices = getRowIndicesById(DynamicTable, requestedIds)
+% getRowIndicesById - Row index of each requested value of the id column.
 if isa(DynamicTable.id.data, 'types.untyped.DataStub')...
         || isa(DynamicTable.id.data, 'types.untyped.DataPipe')
     ids = DynamicTable.id.data.load();
@@ -250,6 +268,7 @@ assert(all(isIdFound), 'NWB:DynamicTable:GetRow:InvalidId',...
 end
 
 function validateRowIndices(dynamicTable, rowIndices)
+% validateRowIndices - Error when a row index exceeds the table height.
     tableHeight = types.util.dynamictable.internal.getTableHeight(dynamicTable);
 
     assert(all(rowIndices <= tableHeight), ...
@@ -259,6 +278,8 @@ function validateRowIndices(dynamicTable, rowIndices)
 end
 
 function ME = createInvalidShapeError(columnName)
+% createInvalidShapeError - Error for a column whose array does not have the table rows along
+% its first or last dimension.
     ME = MException('NWB:DynamicTable:InvalidVectorDataShape', ...
             sprintf( ['Array data for column "%s" has a shape which does ', ...
                       'not match the number of rows in the dynamic table.'], columnName ));
