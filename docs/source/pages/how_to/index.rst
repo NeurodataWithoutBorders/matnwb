@@ -5,6 +5,7 @@ Work with Data
 
    working_with_containers
    reading_data_in_units
+   ragged_arrays
 
 Use Extensions
 ==============
