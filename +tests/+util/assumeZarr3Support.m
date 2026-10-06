@@ -16,7 +16,7 @@ function assumeZarr3Support(testCase)
     % work today and stop working well within its own contract, which would
     % surface here as an unexplained MatNWB regression. Checked before the
     % packages, so an unsupported release reports itself as the reason.
-    minimumRelease = "R2022b";
+    minimumRelease = "R2023a";
     testCase.assumeFalse(isMATLABReleaseOlderThan(minimumRelease), ...
         "zarr-matlab requires MATLAB " + minimumRelease + " or newer.")
 
