@@ -214,6 +214,62 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
             % testCase.verifyEmpty(dtr_table.vectordata) %todo when PR merged
             testCase.verifyEqual(size(dtr_table.vectordata), uint64([0,1]))
         end
+
+        function testClearRemovesColumnsAndIds(testCase)
+            dynamicTable = tests.factory.DynamicTable(NumRows=3, NumColumns=2);
+
+            dynamicTable.clear()
+
+            testCase.verifyFalse(dynamicTable.isDynamicProperty('ColumnA'));
+            testCase.verifyFalse(dynamicTable.isDynamicProperty('ColumnB'));
+            testCase.verifyEmpty(dynamicTable.id.data);
+            testCase.verifyEqual(dynamicTable.colnames, {'ColumnA', 'ColumnB'});
+        end
+
+        function testClearResetsSchemaDefinedColumns(testCase)
+            [spikeTimes, spikeTimesIndex] = util.create_indexed_column({[1, 2, 3], [4, 5]});
+            units = types.core.Units( ...
+                'description', 'test units table', ...
+                'colnames', {'spike_times'}, ...
+                'spike_times', spikeTimes, ...
+                'spike_times_index', spikeTimesIndex);
+
+            units.clear()
+
+            testCase.verifyEmpty(units.spike_times);
+            testCase.verifyEmpty(units.spike_times_index);
+            testCase.verifyEmpty(units.id.data);
+        end
+
+        function testAddRowAfterClear(testCase)
+            dynamicTable = tests.factory.DynamicTable(NumRows=3, NumColumns=2);
+            dynamicTable.clear()
+
+            dynamicTable.addRow('ColumnA', 1, 'ColumnB', 2);
+
+            testCase.verifyTrue(dynamicTable.isDynamicProperty('ColumnA'));
+            matlabTable = dynamicTable.toTable();
+            testCase.verifySize(matlabTable, [1, 3]);
+            testCase.verifyEqual(matlabTable.ColumnA, 1);
+            testCase.verifyEqual(matlabTable.ColumnB, 2);
+        end
+
+        function testExportAfterClearAndAddRow(testCase)
+            fileName = testCase.getRandomFilename();
+            dynamicTable = tests.factory.DynamicTable(NumRows=3, NumColumns=2);
+            dynamicTable.clear()
+            dynamicTable.addRow('ColumnA', 1, 'ColumnB', 2);
+
+            nwb = tests.factory.NWBFile();
+            nwb.acquisition.set('DynamicTable', dynamicTable);
+            nwbExport(nwb, fileName);
+
+            nwbIn = nwbRead(fileName, 'ignorecache');
+            matlabTable = nwbIn.acquisition.get('DynamicTable').toTable();
+            testCase.verifySize(matlabTable, [1, 3]);
+            testCase.verifyEqual(matlabTable.ColumnA, 1);
+            testCase.verifyEqual(matlabTable.ColumnB, 2);
+        end
         
         function testClearDynamicTableV2_1(testCase)
         

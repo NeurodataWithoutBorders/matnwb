@@ -182,11 +182,23 @@ classdef (Abstract) DynamicTableBase < handle
         end
 
         function clear(obj)
-        % clear - Remove all row and column data from the DynamicTable.
+        % clear - Remove all rows and column data from the DynamicTable.
         %
-        % Resets the table to an empty state: all VectorData columns,
-        % VectorIndex columns, and row ids are cleared. The colnames
-        % property is preserved.
+        % Syntax:
+        %  dynamicTable.clear() removes all column objects and the row ids
+        %  of the table.
+        %
+        % The following is removed:
+        %  - Every VectorData and VectorIndex column, both columns defined
+        %    by the schema (for example `start_time` of a TimeIntervals
+        %    table) and columns added by the user.
+        %  - All row ids. The `id` property is reset to an
+        %    ElementIdentifiers object without data.
+        %
+        % The following is preserved:
+        %  - The `colnames` property, so rows can be added to the same
+        %    columns again with addRow.
+        %  - The `description` and other attributes of the table.
 
             types.util.dynamictable.clear(obj);
         end
