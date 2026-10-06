@@ -58,7 +58,7 @@ If you wish to read from an NWB file, you can do so using the `nwbRead` command:
 nwbFile = nwbRead('/path/to/file.nwb');
 ```
 
-The returned NwbFile object provides an in-memory view of the underlying NWB data. For more information, see the [MatNWB Documentation](https://matnwb.readthedocs.io/en/latest/pages/getting_started/file_read.html#reading-with-matnwb)
+The returned NwbFile object provides an in-memory view of the underlying NWB data. For more information, see the [MatNWB Documentation](https://matnwb.readthedocs.io/en/latest/pages/concepts/file_read.html)
 
 `nwbRead` also reads NWB files stored as Zarr v3 stores, from a directory or an http(s) URL, when the [zarr-matlab](https://github.com/catalystneuro/zarr-matlab) and [hdmf-zarr-matlab](https://github.com/catalystneuro/hdmf-zarr-matlab) packages are installed. See [Reading NWB Files Stored as Zarr](https://matnwb.readthedocs.io/en/latest/pages/how_to/reading_zarr_stores.html).
 
