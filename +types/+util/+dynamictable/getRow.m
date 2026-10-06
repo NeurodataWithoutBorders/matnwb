@@ -183,7 +183,7 @@ function selected = getRaggedRows(vectorChain, rowIndices)
 % after it, the outermost index last. Each index level is read in one call,
 % for exactly the index elements the requested rows need. Data in a file is
 % read for exactly the elements of the requested rows, in one call or in one
-% call per contiguous run of elements, and the rows are then taken from
+% call per stretch of consecutive elements, and the rows are then taken from
 % those reads in memory. Data in memory is indexed once per row (see
 % readDataRows).
 %
@@ -215,7 +215,8 @@ end
 
 rowValues = readDataRows(vectorChain{1}, rowStarts{2}, rowStops{2}, levelRows);
 
-% Nest the rows of each level under their rows in the level above.
+% Nest the rows of each level under their rows in the level above. An empty
+% row has a stop below its start.
 for iLevel = 3:numLevels
     rowLengths = max(rowStops{iLevel} - rowStarts{iLevel} + 1, 0);
     rowValues = mat2cell(rowValues, rowLengths(:), 1);
@@ -234,10 +235,15 @@ if isempty(rowIndices)
     return
 end
 
+% Each row needs index(r) and index(r-1), so neighbouring rows share
+% elements. The selection is read sorted and without duplicates, which
+% keeps the HDF5 reader on its fast path. index(0) is not stored.
 rowsToRead = unique([rowIndices, rowIndices - 1]);
 rowsToRead(rowsToRead == 0) = [];
 indexValues = readIndexValues(indexVector, rowsToRead);
 
+% Look up each row's stop, and its previous row's stop, in the single read.
+% Row 1 has no previous row and keeps its default start of 1.
 [~, stopPositions] = ismember(rowIndices, rowsToRead);
 stops = reshape(indexValues(stopPositions), size(rowIndices));
 hasPreviousRow = rowIndices > 1;
@@ -273,9 +279,10 @@ function rowValues = readDataRows(dataVector, starts, stops, elements)
 % once. A column in a file is read in as few calls as possible, and the rows
 % are then taken from those reads in memory. A column indexed with one
 % subscript reads any set of elements in one call. With more subscripts, a
-% selection with gaps becomes one hyperslab per contiguous run, and building
-% it takes time that grows faster than linearly with the number of runs, so
-% each run is read in a call of its own.
+% selection with gaps becomes one hyperslab per stretch of consecutive
+% elements, and building it takes time that grows faster than linearly with
+% the number of stretches, so each stretch is read in a call of its own.
+% A run is the set of elements read by one call.
 [numSubscripts, rowAxis] = getRowDimension(dataVector);
 % A DataPipe is indexed through its subsref, which reads from the file once
 % the pipe is bound to it and from the pipe's own data before that. Both are
@@ -286,6 +293,8 @@ isFileBacked = isa(dataVector.data, 'types.untyped.DataStub') ...
 if isFileBacked
     elements = unique(elements);
     numElements = numel(elements);
+    % runFirst(j) and runLast(j) are the positions in elements of the first
+    % and last element of run j.
     if numElements == 0
         [runFirst, runLast] = deal(zeros(1, 0));
     elseif numSubscripts == 1
@@ -321,6 +330,7 @@ for iRow = 1:numel(starts)
     end
     if isFileBacked
         iRun = runOfPosition(startPositions(iRow));
+        % The row's elements as positions in the block of its run.
         blockRows = startPositions(iRow) - runFirst(iRun) + 1 + (0:(stops(iRow) - starts(iRow)));
         block = selectRows(blocks{iRun}, blockRows, numSubscripts, rowAxis);
     else
