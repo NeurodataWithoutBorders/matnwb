@@ -4,6 +4,7 @@ classdef Pipe < handle
     methods (Abstract)
         pipe = write(obj, fid, fullpath);
         append(obj, data);
+        axisLength = getAppendAxisLength(obj);
         tf = hasPipeProperty(obj, type);
         property = getPipeProperty(obj, type);
         setPipeProperty(obj, property);
