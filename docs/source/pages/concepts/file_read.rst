@@ -23,7 +23,7 @@ The returned :class:`NwbFile` object is the primary access point for all the dat
     To learn how to load data from non-scalar or multidimensional datasets into memory, see :ref:`DataStubs and DataPipes<matnwb-read-untyped-datastub-datapipe>`.
 
 .. note::
-    The :func:`nwbRead` function currently does not support reading NWB files stored in Zarr format.
+    :func:`nwbRead` also reads NWB files stored as Zarr v3 stores, from a directory or from a URL, once the packages described in :ref:`installation-zarr` are installed. See :doc:`/pages/how_to/reading_zarr_stores`.
 
 **Next steps**
 

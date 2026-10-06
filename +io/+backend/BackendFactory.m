@@ -33,7 +33,12 @@ classdef BackendFactory
 
             switch storageBackend
                 case "auto"
-                    if io.backend.BackendFactory.isHDF5File(filename)
+                    % Zarr is tested first: isfile is true for some store
+                    % URLs (a server may redirect the store folder to a
+                    % listing), which would send them to H5F.open.
+                    if io.backend.BackendFactory.isZarr3Store(filename)
+                        reader = io.backend.zarr3.Zarr3Reader(filename);
+                    elseif io.backend.BackendFactory.isHDF5File(filename)
                         reader = io.backend.hdf5.HDF5Reader(filename);
                     else
                         error("NWB:BackendFactory:UnsupportedFormat", ...
@@ -45,6 +50,12 @@ classdef BackendFactory
                             "`%s` is not a valid HDF5 file.", filename)
                     end
                     reader = io.backend.hdf5.HDF5Reader(filename);
+                case "zarr3"
+                    if ~io.backend.BackendFactory.isZarr3Store(filename)
+                        error("NWB:BackendFactory:InvalidZarr3", ...
+                            "`%s` is not a Zarr v3 store (a local directory or an http(s) URL).", filename)
+                    end
+                    reader = io.backend.zarr3.Zarr3Reader(filename);
                 otherwise
                     error("NWB:BackendFactory:UnsupportedBackend", ...
                         "Unsupported backend `%s`.", storageBackend)
@@ -64,7 +75,10 @@ classdef BackendFactory
 
             switch storageBackend
                 case "auto"
-                    if io.backend.BackendFactory.isHDF5File(filename)
+                    % Zarr is tested first, for the reason given in createReader.
+                    if io.backend.BackendFactory.isZarr3Store(filename)
+                        lazyArray = io.backend.zarr3.Zarr3LazyArray(filename, datasetPath, dims, dataType);
+                    elseif io.backend.BackendFactory.isHDF5File(filename)
                         lazyArray = io.backend.hdf5.HDF5LazyArray(filename, datasetPath, dims, dataType);
                     else
                         error("NWB:BackendFactory:UnsupportedFormat", ...
@@ -76,6 +90,12 @@ classdef BackendFactory
                             "`%s` is not a valid HDF5 file.", filename)
                     end
                     lazyArray = io.backend.hdf5.HDF5LazyArray(filename, datasetPath, dims, dataType);
+                case "zarr3"
+                    if ~io.backend.BackendFactory.isZarr3Store(filename)
+                        error("NWB:BackendFactory:InvalidZarr3", ...
+                            "`%s` is not a Zarr v3 store (a local directory or an http(s) URL).", filename)
+                    end
+                    lazyArray = io.backend.zarr3.Zarr3LazyArray(filename, datasetPath, dims, dataType);
                 otherwise
                     error("NWB:BackendFactory:UnsupportedBackend", ...
                         "Unsupported backend `%s`.", storageBackend)
@@ -103,6 +123,38 @@ classdef BackendFactory
                 catch
                     tf = false;
                 end
+            end
+        end
+
+        function tf = isZarr3Store(filename)
+        % isZarr3Store - True for a ".zarr" store whose root declares Zarr v3.
+        %
+        % The store is a local directory, or an http(s) URL whose root
+        % metadata is fetched over HTTP.
+            arguments
+                filename (1,1) string
+            end
+
+            tf = false;
+            if ~endsWith(filename, ".zarr", "IgnoreCase", true)
+                return
+            end
+
+            try
+                if matnwb.common.isUrl(filename)
+                    rootMetadataText = webread(filename + "/zarr.json", ...
+                        weboptions("ContentType", "text"));
+                elseif isfolder(filename)
+                    rootMetadataText = fileread(fullfile(filename, "zarr.json"));
+                else
+                    return
+                end
+                rootMetadata = jsondecode(rootMetadataText);
+                tf = isfield(rootMetadata, "zarr_format") && isequal(rootMetadata.zarr_format, 3);
+            catch
+                % An unreadable or missing zarr.json, or one that is not
+                % JSON, means this is not a Zarr v3 store.
+                tf = false;
             end
         end
     end

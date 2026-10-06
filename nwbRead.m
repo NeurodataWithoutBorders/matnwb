@@ -14,7 +14,9 @@ function nwb = nwbRead(filename, flags, options)
 %
 % Input Arguments:
 %  - filename (string) -
-%    Filepath pointing to an NWB file.
+%    Path to an NWB file, or to a Zarr v3 store holding an NWB file: a
+%    directory with a ".zarr" suffix, or the http(s) URL of one. Reading a
+%    Zarr store requires the zarr-matlab and hdmf-zarr-matlab packages.
 %
 %  - flags (string) -
 %    Flag for setting the mode for the NWBREAD operation. Available options are:
@@ -28,7 +30,9 @@ function nwb = nwbRead(filename, flags, options)
 %      A folder to save generated classes for NWB types.
 %
 %    - StorageBackend (string) -
-%      Storage backend used for reading. Default: "auto".
+%      Storage backend used for reading: "auto" detects it from the file,
+%      "hdf5" (or "h5") requires an HDF5 file, and "zarr3" requires a Zarr
+%      v3 store. Default: "auto".
 %
 % Output Arguments:
 %  - nwb (NwbFile) - Nwb file object
@@ -48,6 +52,10 @@ function nwb = nwbRead(filename, flags, options)
 %  Example 3 - Read an NWB file and generate classes for NWB types in the current working directory::
 %
 %    nwb = nwbRead('data.nwb', 'savedir', '.');
+%
+%  Example 4 - Read an NWB file stored as a Zarr store::
+%
+%    nwb = nwbRead('data.nwb.zarr');
 %
 % See also:
 %   generateCore, generateExtension, NwbFile, nwbExport
@@ -95,7 +103,7 @@ function nwb = nwbRead(filename, flags, options)
 
     parseExclusions = io.internal.defaultParseExclusions();
     if ~isempty(specLocation)
-        parseExclusions.groups{end+1} = specLocation;
+        parseExclusions.groups{end+1} = char(specLocation);
     end
     
     softLinkWarningResetObj = types.untyped.SoftLink.disablePathDeprecationWarning(); %#ok<NASGU>
