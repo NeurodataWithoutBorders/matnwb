@@ -455,8 +455,10 @@ function value = validateAnyType(value)
         return
     end
 
-    % Every member type recorded for a compound dataset in a file is a basic
-    % type, so only nesting needs checking.
+    % The member types recorded for a compound dataset in a file are numeric,
+    % logical, text ('char'), enum ('cell') or reference types, all of which
+    % dtype 'any' accepts. Only a nested compound (a struct) is not supported,
+    % so that is the one thing to check, without reading from the file.
     if isa(value, 'types.untyped.DataStub') && value.isCompoundType()
         memberTypes = struct2cell(value.dataType);
         assert(~any(cellfun(@isstruct, memberTypes)), ...
