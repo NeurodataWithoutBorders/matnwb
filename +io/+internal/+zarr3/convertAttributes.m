@@ -7,21 +7,19 @@ function [attributes, links] = convertAttributes(rawAttributes)
 %
 %     attributes - struct array with fields Name, Datatype, Dataspace,
 %       Value, matching the shape produced by h5info. An attribute holding
-%       an hdmf-zarr object reference (the {"_REFERENCE": <record>} form, or
-%       the {"zarr_dtype": "object", "value": <record>} form of stores
-%       written before hdmf-zarr 0.14; see hdmf.zarr.Reference) is tagged
-%       with Datatype "object reference" and keeps the raw record as its
-%       Value, which io.backend.zarr3.Zarr3Reader.readAttributeValue decodes.
+%       an hdmf-zarr object reference, the {"_REFERENCE": <record>} form
+%       (see hdmf.zarr.Reference), is tagged with Datatype "object
+%       reference" and keeps the raw record as its Value, which
+%       io.backend.zarr3.Zarr3Reader.readAttributeValue decodes.
 %
 %     links - struct array with fields Name, Type, Value, converted from the
-%       hdmf-zarr "_LINKS" attribute, or the "zarr_link" attribute of older
-%       stores (decoded by hdmf.zarr.Link). Non-group nodes never carry
-%       links, but the reserved attributes are filtered out regardless.
+%       hdmf-zarr "_LINKS" attribute (decoded by hdmf.zarr.Link). Non-group
+%       nodes never carry links, but the reserved attributes are filtered
+%       out regardless.
 %
 % The hdmf-zarr bookkeeping attributes (_LINKS, _DTYPE, _REFERENCE_FIELDS,
-% their pre-0.14 names zarr_link and zarr_dtype, .specloc, and
-% _ARRAY_DIMENSIONS) are not schema attributes and are never promoted to
-% the attributes output.
+% .specloc, and _ARRAY_DIMENSIONS) are not schema attributes and are never
+% promoted to the attributes output.
 %
 % Attribute values are returned in the form h5info gives for the same data,
 % so that the same downstream parsing code (io.parseGroup,
@@ -75,7 +73,6 @@ function tf = isReservedAttribute(name)
 % cached specifications group and is read by io.backend.zarr3.Zarr3Reader.
 
     reservedNames = ["_LINKS", "_DTYPE", "_REFERENCE_FIELDS", ...
-        "zarr_link", "zarr_dtype", ...
         io.internal.zarr3.getSpecLocAttributeName(), "_ARRAY_DIMENSIONS"];
     tf = any(name == reservedNames);
 end
@@ -83,16 +80,10 @@ end
 function tf = isObjectReferenceValue(value)
 % isObjectReferenceValue - True for the attribute form of a reference.
 %
-% hdmf-zarr 0.14 wraps a reference stored in an attribute as
-% {"_REFERENCE": <record>}; earlier versions wrote
-% {"zarr_dtype": "object", "value": <record>}.
+% hdmf-zarr wraps a reference stored in an attribute as
+% {"_REFERENCE": <record>}.
 
     tf = io.internal.zarr3.getAttribute(value, "_REFERENCE");
-    if ~tf
-        [hasLegacyDtype, legacyDtype] = io.internal.zarr3.getAttribute(value, "zarr_dtype");
-        tf = hasLegacyDtype && io.internal.zarr3.getAttribute(value, "value") ...
-            && isTextScalar(legacyDtype) && string(legacyDtype) == "object";
-    end
 end
 
 function value = normalizeValue(value)
@@ -138,11 +129,6 @@ end
 
 function tf = isNumericColumn(value)
     tf = isnumeric(value) && iscolumn(value);
-end
-
-function tf = isTextScalar(value)
-    tf = (ischar(value) && (isrow(value) || isempty(value))) ...
-        || (isstring(value) && isscalar(value));
 end
 
 function links = convertLinks(hdmfLinks)

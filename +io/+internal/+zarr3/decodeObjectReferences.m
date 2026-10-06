@@ -8,10 +8,9 @@ function objectViews = decodeObjectReferences(value)
 % accepted dtype.
 %
 % value may be any on-disk form accepted by hdmf.zarr.Reference.decode: the
-% text elements of a reference dataset or of a compound reference field
-% (target paths, or JSON records in stores written before hdmf-zarr 0.14);
-% an attribute-form reference ({"_REFERENCE": <record>}, or the older
-% {"zarr_dtype": "object", "value": <record>}); or a bare reference record.
+% target-path text elements of a reference dataset or of a compound
+% reference field; an attribute-form reference ({"_REFERENCE": <record>});
+% or a bare reference record.
 %
 % types.untyped.ObjectView can only address nodes within the file being read,
 % so a reference whose source is another store raises

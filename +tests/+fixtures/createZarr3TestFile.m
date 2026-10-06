@@ -10,9 +10,7 @@ function fixturePath = createZarr3TestFile(rootFolder)
 % hdmf-zarr's storage layout in that package's own CI -- so
 % io.backend.zarr3.Zarr3Reader is tested against the real on-disk
 % conventions rather than against its own writer. The store follows the
-% hdmf-zarr 0.14 layout, except for one dataset that carries the
-% zarr_dtype:"scalar" marker of earlier versions, which the reader still
-% honours.
+% hdmf-zarr 0.14 layout.
 
     arguments
         rootFolder (1,1) string
@@ -48,12 +46,6 @@ function fixturePath = createZarr3TestFile(rootFolder)
     unitsGroup.createGroup("spike_times_index");
 
     generalGroup = root.createGroup("general");
-    % hdmf-zarr before 0.14 represented an NWB scalar property as a rank-1,
-    % length-1 array tagged zarr_dtype:"scalar" -- indistinguishable by
-    % shape from a one-row column, so the tag is what makes the reader
-    % return a bare value (see io.internal.zarr3.buildNodeInfo).
-    generalGroup.createArray("session_id", 1, "string", ...
-        Attributes=struct('zarr_dtype', 'scalar')).write("sess-01");
 
     electrophysGroup = generalGroup.createGroup("extracellular_ephys");
     electrodesGroup = electrophysGroup.createGroup("electrodes");
@@ -69,7 +61,11 @@ function fixturePath = createZarr3TestFile(rootFolder)
     ophysGroup.createGroup("PlaneSegmentation");
 
     intervalsGroup = root.createGroup("intervals");
-    intervalsGroup.createGroup("trials");
+    trialsGroup = intervalsGroup.createGroup("trials");
+    % A one-row column. Its shape, [1], is also the element count of a
+    % scalar's value, and only a rank-0 array is a scalar: the reader must
+    % keep this a lazy dataset (see io.backend.zarr3.Zarr3Reader).
+    trialsGroup.createArray("id", 1, "int64").write(int64(0));
 
     % hdmf-zarr conventions: links, object references and compound datasets.
     hdmfFile = hdmf.zarr.File(root.store);

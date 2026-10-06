@@ -24,9 +24,6 @@ classdef Zarr3Reader < io.backend.base.Reader
 %     via io.internal.zarr3.decodeObjectReferences;
 % - the root ".specloc" attribute names the cached specifications
 %     group (io.internal.zarr3.getSpecLocAttributeName).
-% Stores written before hdmf-zarr 0.14 use the older forms of the same
-% conventions (zarr_link, zarr_dtype, JSON reference records), which are
-% read as well.
 %
 % A compound (struct/table) dataset -- a Zarr v3 "struct" data_type (named
 % "structured" by zarr-python before 3.4), e.g. PlaneSegmentation's
@@ -170,15 +167,13 @@ classdef Zarr3Reader < io.backend.base.Reader
             % zarr-python 3.4 names the structured data type "struct";
             % earlier versions wrote "structured".
             isStructuredArray = any(strcmp(datasetInfo.Datatype, ["struct", "structured"]));
-            % A true rank-0 array, or one explicitly marked "scalar" by the
-            % zarr_dtype hint of stores written before hdmf-zarr 0.14 (see
-            % io.internal.zarr3.buildNodeInfo), is read eagerly.
-            % Dataspace.Size == 1 alone is NOT a reliable scalar signal: it
-            % is also the shape of a one-row VectorData column (e.g. a
-            % DynamicTable with a single row) -- collapsing that to a bare
-            % value would silently corrupt it (a char column's character
-            % count would be misread as its row count downstream).
-            isScalarMarked = isempty(dataDimensions) || strcmp(datasetInfo.Datatype, "scalar");
+            % A rank-0 array, which is how hdmf-zarr stores an NWB scalar
+            % property, is read eagerly. Dataspace.Size == 1 is NOT a scalar
+            % signal: it is also the shape of a one-row VectorData column
+            % (e.g. a DynamicTable with a single row) -- collapsing that to
+            % a bare value would silently corrupt it (a char column's
+            % character count would be misread as its row count downstream).
+            isScalar = isempty(dataDimensions);
             if isObjectReferenceArray
                 datasetValue = obj.readObjectArrayValue(datasetPath);
             elseif isStructuredArray
@@ -187,7 +182,7 @@ classdef Zarr3Reader < io.backend.base.Reader
                 % single record, e.g. shape [1]) without being a "scalar"
                 % dataset in the ordinary sense.
                 datasetValue = obj.readStructuredValue(datasetPath, dataDimensions);
-            elseif isScalarMarked
+            elseif isScalar
                 datasetValue = obj.readEagerValue(datasetPath);
             elseif any(dataDimensions == 0)
                 datasetValue = [];
