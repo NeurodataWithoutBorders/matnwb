@@ -131,6 +131,9 @@ end
 function valueAsStr = formatValueAsString(value)
     if isnumeric(value)
         valueAsStr = num2str(value);
+    elseif islogical(value)
+        % A schema bool (true/false) is parsed as logical, which is not numeric.
+        valueAsStr = mat2str(value);
     elseif ischar(value)
         valueAsStr = sprintf("""%s""", value);
     else
