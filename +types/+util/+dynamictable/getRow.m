@@ -1,4 +1,4 @@
-function subTable = getRow(DynamicTable, ind, varargin)
+function subTable = getRow(DynamicTable, rowIndices, varargin)
 %GETROW get row for dynamictable
 % Index is a scalar 0-based index of the expected row.
 % optional keyword argument "columns" allows for only grabbing certain
@@ -12,7 +12,7 @@ function subTable = getRow(DynamicTable, ind, varargin)
 
 validateattributes(DynamicTable,...
     {'types.core.DynamicTable', 'types.hdmf_common.DynamicTable'}, {'scalar'});
-validateattributes(ind, {'numeric'}, {'integer', 'vector'});
+validateattributes(rowIndices, {'numeric'}, {'integer', 'vector'});
 
 p = inputParser;
 addParameter(p, 'columns', DynamicTable.colnames, @(x)isempty(x)||iscellstr(x))
@@ -28,107 +28,108 @@ parse(p, varargin{:});
 % Names read from a file are column cell arrays.
 columns = reshape(p.Results.columns, 1, []);
 categories = reshape(p.Results.categories, 1, []);
-row = cell(1, numel(columns) + numel(categories));
+columnData = cell(1, numel(columns) + numel(categories));
 
 if p.Results.useId
     assert(~isempty(DynamicTable.id), ...
         'NWB:DynamicTable:GetRow:MissingId', ...
         'Cannot retrieve rows by `id` because the DynamicTable has no `id` column.');
-    ind = getIndById(DynamicTable, ind);
+    rowIndices = getRowIndicesById(DynamicTable, rowIndices);
 else
-    validateattributes(ind, {'numeric'}, {'positive', 'vector'});
-    validateRowIndices(DynamicTable, ind);
+    validateattributes(rowIndices, {'numeric'}, {'positive', 'vector'});
+    validateRowIndices(DynamicTable, rowIndices);
 end
 
-for i = 1:length(columns)
-    cn = columns{i};
+for iColumn = 1:length(columns)
+    columnName = columns{iColumn};
 
-    indexNames = {cn};
+    vectorChainNames = {columnName};
     while true
-        name = types.util.dynamictable.getIndex(DynamicTable, indexNames{end});
+        name = types.util.dynamictable.getIndex(DynamicTable, vectorChainNames{end});
         if isempty(name)
             break;
         end
-        indexNames{end+1} = name;
+        vectorChainNames{end+1} = name;
     end
 
-    row{i} = select(DynamicTable, indexNames, ind);
+    columnData{iColumn} = getColumnRows(DynamicTable, vectorChainNames, rowIndices);
 
-    if ~istable(row{i})
-        if iscolumn(row{i})
+    if ~istable(columnData{iColumn})
+        if iscolumn(columnData{iColumn})
             % keep column vectors as is
-        elseif isrow(row{i})
-            row{i} = row{i} .'; % transpose row vectors
-        elseif ndims(row{i}) >= 2 % i.e nd array where ndims >= 2
+        elseif isrow(columnData{iColumn})
+            columnData{iColumn} = columnData{iColumn} .'; % transpose row vectors
+        elseif ndims(columnData{iColumn}) >= 2 % i.e nd array where ndims >= 2
             % permute arrays to place last dimension first
-            array_size = size(row{i});
-            num_rows = numel(ind);
+            arraySize = size(columnData{iColumn});
+            numRows = numel(rowIndices);
 
-            is_row_dim = array_size == num_rows;
-            if sum(is_row_dim) == 1
-                if ~(is_row_dim(1) || is_row_dim(end))
-                    throw( InvalidVectorDataShapeError(cn) )
+            isRowDimension = arraySize == numRows;
+            if sum(isRowDimension) == 1
+                if ~(isRowDimension(1) || isRowDimension(end))
+                    throw( createInvalidShapeError(columnName) )
                 end
-            elseif sum(is_row_dim) > 1
-                if is_row_dim(1) && is_row_dim(end)
+            elseif sum(isRowDimension) > 1
+                if isRowDimension(1) && isRowDimension(end)
                     % Last dimension takes precedence
-                    is_row_dim(1:end-1) = false;
+                    isRowDimension(1:end-1) = false;
                     warning('NWB:DynamicTable:VectorDataAmbiguousSize', ...
                         ['The length of the first and last dimensions of ', ...
                          'VectorData for column "%s" match the number of ', ...
                          'rows in the dynamic table. Data is rearranged based on ', ...
-                         'the last dimension, assuming it corresponds with the table rows.'], cn) 
-                elseif is_row_dim(1)
-                    is_row_dim(2:end) = false;
-                elseif is_row_dim(end)
-                    is_row_dim(1:end-1) = false;
+                         'the last dimension, assuming it corresponds with the table rows.'], columnName) 
+                elseif isRowDimension(1)
+                    isRowDimension(2:end) = false;
+                elseif isRowDimension(end)
+                    isRowDimension(1:end-1) = false;
                 else
-                    throw( InvalidVectorDataShapeError(cn) )
+                    throw( createInvalidShapeError(columnName) )
                 end
             end
-            row{i} = permute( row{i}, [find(is_row_dim), find(~is_row_dim)]);
+            columnData{iColumn} = permute( columnData{iColumn}, [find(isRowDimension), find(~isRowDimension)]);
         end
     end
 
     % cell-wrap single multidimensional matrices to prevent invalid
     % MATLAB tables
-    if isscalar(ind) && ~iscell(row{i}) && ~istable(row{i}) && ~isscalar(row{i})
-        row{i} = row(i);
+    if isscalar(rowIndices) && ~iscell(columnData{iColumn}) ...
+            && ~istable(columnData{iColumn}) && ~isscalar(columnData{iColumn})
+        columnData{iColumn} = columnData(iColumn);
     end
 
     % convert compound data type scalar struct into an array of
     % structs.
-    if isscalar(row{i}) && isstruct(row{i})
-        structNames = fieldnames(row{i});
-        scalarStruct = row{i};
-        rowStruct = row{i}; % same as scalarStruct to maintain the field names.
-        for iRow = 1:length(ind)
-            for iField = 1:length(structNames)
-                fieldName = structNames{iField};
+    if isscalar(columnData{iColumn}) && isstruct(columnData{iColumn})
+        compoundMemberNames = fieldnames(columnData{iColumn});
+        scalarStruct = columnData{iColumn};
+        rowStruct = columnData{iColumn}; % same as scalarStruct to maintain the field names.
+        for iRow = 1:length(rowIndices)
+            for iField = 1:length(compoundMemberNames)
+                fieldName = compoundMemberNames{iField};
                 fieldData = scalarStruct.(fieldName);
                 rowStruct(iRow).(fieldName) = fieldData(iRow);
             end
         end
-        row{i} = rowStruct .';
+        columnData{iColumn} = rowStruct .';
     end
 end
 for iCategory = 1:numel(categories)
     categoryTable = DynamicTable.getCategory(categories{iCategory});
-    row{numel(columns) + iCategory} = categoryTable.getRow(ind);
+    columnData{numel(columns) + iCategory} = categoryTable.getRow(rowIndices);
 end
 
 variableNames = [columns, categories];
 if isempty(variableNames)
-    subTable = table('Size', [numel(ind), 0], 'VariableTypes', {}, 'VariableNames', {});
+    subTable = table('Size', [numel(rowIndices), 0], 'VariableTypes', {}, 'VariableNames', {});
 else
-    subTable = table(row{:}, 'VariableNames', variableNames);
+    subTable = table(columnData{:}, 'VariableNames', variableNames);
 end
 end
 
-function selected = select(DynamicTable, colIndStack, matInd)
-% recursive function which consumes the colIndStack and produces a nested
+function columnRows = getColumnRows(DynamicTable, vectorChainNames, rowIndices)
+% recursive function which consumes vectorChainNames and produces a nested
 % cell array.
-column = colIndStack{end};
+column = vectorChainNames{end};
 if isprop(DynamicTable, column)
     Vector = DynamicTable.(column);
 elseif isprop(DynamicTable, 'vectorindex') && DynamicTable.vectorindex.isKey(column) % Schema version < 2.3.0
@@ -137,73 +138,73 @@ else
     Vector = DynamicTable.vectordata.get(column);
 end
 
-if isscalar(colIndStack)
+if isscalar(vectorChainNames)
     if isa(Vector.data, 'types.untyped.DataStub') || ...
             isa(Vector.data,'types.untyped.DataPipe')
         if isa(Vector.data, 'types.untyped.DataStub')
-            refProp = Vector.data.dims;
+            dataSize = Vector.data.dims;
         else
-            refProp = Vector.data.internal.maxSize;
+            dataSize = Vector.data.internal.maxSize;
         end
-        if length(refProp) == 2 && refProp(2) == 1
+        if length(dataSize) == 2 && dataSize(2) == 1
             % catch row vector
-            rank = 1;
+            numSubscripts = 1;
         else
-            rank = length(refProp);
+            numSubscripts = length(dataSize);
         end
     else
         if iscolumn(Vector.data)
             %catch row vector
-            rank = 1;
+            numSubscripts = 1;
         elseif istable(Vector.data)
-            rank = 1;
+            numSubscripts = 1;
         else
-            rank = ndims(Vector.data);
+            numSubscripts = ndims(Vector.data);
         end
     end
     
-    selectInd = repmat({':'}, 1, rank);
+    subscripts = repmat({':'}, 1, numSubscripts);
     if isa(Vector.data, 'types.untyped.DataPipe')
-        selectInd{Vector.data.axis} = matInd;
+        subscripts{Vector.data.axis} = rowIndices;
     else
-        selectInd{end} = matInd;
+        subscripts{end} = rowIndices;
     end
     
     if (isstruct(Vector.data) && isscalar(Vector.data)) || istable(Vector.data)
         if istable(Vector.data)
-            selected = table();
+            columnRows = table();
             fields = Vector.data.Properties.VariableNames;
         else
-            selected = struct();
+            columnRows = struct();
             fields = fieldnames(Vector.data);
         end
         
-        for i = 1:length(fields)
-            fieldName = fields{i};
-            columnData = Vector.data.(fieldName);
-            selected.(fieldName) = columnData(selectInd{:});
+        for iField = 1:length(fields)
+            fieldName = fields{iField};
+            memberData = Vector.data.(fieldName);
+            columnRows.(fieldName) = memberData(subscripts{:});
         end
     else
-        selected = Vector.data(selectInd{:});
+        columnRows = Vector.data(subscripts{:});
     end
 
     % shift dimensions of non-row vectors. otherwise will result in
     % invalid MATLAB table with uneven column height
     if isa(Vector.data, 'types.untyped.DataPipe')
-        selected = permute(selected, ...
-            circshift(1:ndims(selected), -(Vector.data.axis-1)));
+        columnRows = permute(columnRows, ...
+            circshift(1:ndims(columnRows), -(Vector.data.axis-1)));
     end
 else
     assert(isa(Vector, 'types.hdmf_common.VectorIndex') || isa(Vector, 'types.core.VectorIndex'),...
         'NWB:DynamicTable:GetRow:InternalError',...
         'Internal VectorIndex Stack is not using VectorIndex objects!');
     if isa(Vector.data, 'types.untyped.DataStub') || isa(Vector.data, 'types.untyped.DataPipe')
-        stopInds = uint64(Vector.data.load(matInd));
+        stopInds = uint64(Vector.data.load(rowIndices));
     else
-        stopInds = uint64(Vector.data(matInd));
+        stopInds = uint64(Vector.data(rowIndices));
     end
 
-    startIndInd = matInd - 1;
+    startIndInd = rowIndices - 1;
     zeroMask = startIndInd == 0;
     startInds = zeros(size(startIndInd));
     if ~isempty(startIndInd(~zeroMask))
@@ -215,26 +216,26 @@ else
     end
     startInds = startInds + 1;
 
-    selected = cell(length(matInd), 1);
-    for iRange = 1:length(matInd)
+    columnRows = cell(length(rowIndices), 1);
+    for iRange = 1:length(rowIndices)
         startInd = startInds(iRange);
         stopInd = stopInds(iRange);
-        selected{iRange} = select(DynamicTable,...
-            colIndStack(1:(end-1)),...
+        columnRows{iRange} = getColumnRows(DynamicTable,...
+            vectorChainNames(1:(end-1)),...
             startInd:stopInd);
     end
 end
 end
 
-function ind = getIndById(DynamicTable, id)
+function rowIndices = getRowIndicesById(DynamicTable, requestedIds)
 if isa(DynamicTable.id.data, 'types.untyped.DataStub')...
         || isa(DynamicTable.id.data, 'types.untyped.DataPipe')
     ids = DynamicTable.id.data.load();
 else
     ids = DynamicTable.id.data;
 end
-[idMatch, ind] = ismember(id, ids);
-assert(all(idMatch), 'NWB:DynamicTable:GetRow:InvalidId',...
+[isIdFound, rowIndices] = ismember(requestedIds, ids);
+assert(all(isIdFound), 'NWB:DynamicTable:GetRow:InvalidId',...
     'Invalid ids found. If you wish to use row indices directly, remove the `useId` flag.');
 end
 
@@ -247,8 +248,8 @@ function validateRowIndices(dynamicTable, rowIndices)
         strjoin(compose('%d', rowIndices(rowIndices > tableHeight) ), ', '), tableHeight);
 end
 
-function ME = InvalidVectorDataShapeError(column_name)
+function ME = createInvalidShapeError(columnName)
     ME = MException('NWB:DynamicTable:InvalidVectorDataShape', ...
-            sprintf( ['Array data for column "%s" has a shape which do ', ...
-                      'not match the number of rows in the dynamic table.'], column_name ));
+            sprintf( ['Array data for column "%s" has a shape which does ', ...
+                      'not match the number of rows in the dynamic table.'], columnName ));
 end
