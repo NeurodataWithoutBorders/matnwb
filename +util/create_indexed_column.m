@@ -32,7 +32,9 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %       DATA_VECTOR.data keeps the class, for example a column of ObjectView
 %       references to the TimeSeries recorded during each trial.
 %   A column holds elements of one kind: numeric, text, compound or object
-%   references. The column is built in memory, so a row cannot be a DataPipe
+%   references. Numeric rows must all be of the same class (for example all
+%   int32, not int32 and double), as the column keeps that class. The
+%   column is built in memory, so a row cannot be a DataPipe
 %   or a DataStub, and it cannot hold SoftLinks: reference objects with
 %   ObjectViews instead.
 %   All array rows must share elementDims. Trailing dimensions of 1 may be
@@ -386,7 +388,8 @@ function layout = findLayout(rows, depth)
     % having more dimensions than its level.
     scan = struct('maxElementDims', -Inf, 'shortcutAllowed', true, ...
         'firstItem', [], 'firstLevel', 0, ...
-        'hasNumeric', false, 'hasText', false, 'hasCompound', false, ...
+        'hasNumeric', false, 'numericClass', "", ...
+        'hasText', false, 'hasCompound', false, ...
         'hasObject', false, 'objectClass', "", ...
         'allStrings', true, 'allStructArrays', true);
     for iRow = 1:numel(rows)
@@ -462,7 +465,19 @@ function scan = scanItem(item, level, vectorsAreScalars, scan, label)
     if ~(isnumeric(item) || islogical(item))
         return
     end
-    scan.hasNumeric = scan.hasNumeric || ~isempty(item);
+    if ~isempty(item)
+        scan.hasNumeric = true;
+        % Rows of different numeric classes are not combined, as the values
+        % of one class would be converted to the other.
+        itemClass = string(class(item));
+        if scan.numericClass == ""
+            scan.numericClass = itemClass;
+        elseif itemClass ~= scan.numericClass
+            error("NWB:CreateIndexedColumn:InconsistentElementType", ...
+                "%s must hold %s elements like the other rows of the column. " + ...
+                "It holds %s elements.", label, scan.numericClass, itemClass);
+        end
+    end
     if vectorsAreScalars && isvector(item)
         return
     end
