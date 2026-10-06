@@ -649,6 +649,43 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
                 'NWB:DynamicTable:CheckConfig:ColumnNamesMismatch');
         end
 
+        function testCheckConfigAllowsEnumElementsOutsideColnames(testCase)
+            % The elements are stored in the table as `cell_type_elements`
+            % and are not a column of the table.
+            dynamicTable = testCase.createDynamicTableWithEnumColumn( ...
+                ColumnName='cell_type', ...
+                Elements={'a'; 'b'}, ...
+                Data=uint8([0; 1; 1]));
+
+            testCase.verifyWarningFree( ...
+                @() types.util.dynamictable.checkConfig(dynamicTable));
+            testCase.verifyEqual(dynamicTable.colnames, {'cell_type'});
+        end
+
+        function testExportTableWithEnumColumn(testCase)
+            % The elements are stored in the table as `cell_type_elements`
+            % and are not a column of the table.
+            dynamicTable = testCase.createDynamicTableWithEnumColumn( ...
+                ColumnName='cell_type', ...
+                Elements={'a'; 'b'}, ...
+                Data=uint8([0; 1; 1]));
+
+            fileName = testCase.getRandomFilename();
+            nwb = tests.factory.NWBFile();
+            nwb.acquisition.set('DynamicTable', dynamicTable);
+            nwbExport(nwb, fileName);
+
+            nwbIn = testCase.verifyWarningFree(@() nwbRead(fileName, 'ignorecache'));
+            readTable = nwbIn.acquisition.get('DynamicTable');
+            enumColumn = readTable.vectordata.get('cell_type');
+            elements = readTable.vectordata.get('cell_type_elements');
+            testCase.verifyEqual(readTable.colnames, {'cell_type'});
+            testCase.verifyEqual(enumColumn.data.load(), uint8([0; 1; 1]));
+            testCase.verifyEqual(enumColumn.elements.path, ...
+                '/acquisition/DynamicTable/cell_type_elements');
+            testCase.verifyEqual(elements.data.load(), {'a'; 'b'});
+        end
+
         function testGetTableHeightReportsUnestablishedEmptyTable(testCase)
             dynamicTable = types.hdmf_common.DynamicTable( ...
                 'description', 'empty table');
@@ -735,6 +772,30 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
     methods (Static, Access=private)
         
         % Non-test functions
+        function dynamicTable = createDynamicTableWithEnumColumn(options)
+            % Create a table with one EnumData column. Its elements are
+            % stored next to the column under the name of the column
+            % followed by `_elements`.
+            arguments
+                options.ColumnName (1,:) char
+                options.Elements (:,1) cell % values that the column can take
+                options.Data (:,1) uint8 % zero-based index into Elements, one per row
+            end
+
+            elements = types.hdmf_common.VectorData( ...
+                'description', 'fixed set of elements referenced by the enum column', ...
+                'data', options.Elements);
+            enumColumn = types.hdmf_experimental.EnumData( ...
+                'description', 'categorical column', ...
+                'data', options.Data, ...
+                'elements', types.untyped.ObjectView(elements));
+
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'test table with an EnumData column');
+            dynamicTable.vectordata.set([options.ColumnName, '_elements'], elements);
+            dynamicTable.addColumn(options.ColumnName, enumColumn);
+        end
+
         function dtr_table = createDynamicTableWithTableRegionReferences()
             % Create a dynamic table with two columns, where the data of each column is 
             % a dynamic table region referencing another dynamic table.
