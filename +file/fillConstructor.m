@@ -36,7 +36,13 @@ function functionString = fillConstructor(name, parentname, defaults, props, nam
     elseif file.internal.isDescendantOf(name, namespace, 'DynamicTable')
         constructorElements{end+1} = '    obj.ensureDynamicTableConsistency();';
     end
-    
+
+    % Give every unset table of a HERD an empty value so the object is
+    % exportable as constructed
+    if file.internal.isDescendantOf(name, namespace, 'HERD')
+        constructorElements{end+1} = '    obj.ensureTablesInitialized();';
+    end
+
     constructorElements{end+1} = 'end';
     functionBody = strjoin(constructorElements, newline());
 

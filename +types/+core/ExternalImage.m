@@ -13,6 +13,9 @@ end
 properties
     image_mode; %  (char) Image mode (color mode) of the image, e.g., "RGB", "RGBA", "grayscale", and "LA".
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["image_format", "image_mode"];
+end
 
 methods
     function obj = ExternalImage(varargin)

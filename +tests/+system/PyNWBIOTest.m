@@ -23,7 +23,10 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
                 testCase.assertFail(cmdout);
             end
             filename = ['PyNWB.' testCase.className() '.testOutToMatNWB.nwb'];
-            pyfile = nwbRead(filename, 'savedir', '.');
+            % Regenerating classes from the embedded schema requires that no
+            % generated types are on the path and no objects exist in memory.
+            % Both are violated here (see setupMethod), so use ignorecache.
+            pyfile = nwbRead(filename, 'ignorecache');
             pycontainer = testCase.getContainer(pyfile);
             matcontainer = testCase.getContainer(testCase.file);
             nwbExport(testCase.file, 'temp.nwb'); % hack to fill out ObjectView container paths.

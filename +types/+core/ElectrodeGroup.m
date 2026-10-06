@@ -13,7 +13,10 @@ properties
 end
 % OPTIONAL PROPERTIES
 properties
-    position; %  (Table with columns: (x = single, y = single, z = single)) stereotaxic or common framework coordinates
+    position; %  (Table with columns: (x = single, y = single, z = single)) Stereotaxic or common framework coordinates of the electrode group position.
+end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["description", "location", "position"];
 end
 
 methods
@@ -32,7 +35,7 @@ methods
         %
         %  - location (char) - Location of electrode group. Specify the area, layer, comments on estimation of area/layer, etc. Use standard atlas names for anatomical regions when possible.
         %
-        %  - position (Table with columns: (single, single, single)) - stereotaxic or common framework coordinates
+        %  - position (Table with columns: (single, single, single)) - Stereotaxic or common framework coordinates of the electrode group position.
         %
         % Output Arguments:
         %  - electrodeGroup (types.core.ElectrodeGroup) - An ElectrodeGroup object

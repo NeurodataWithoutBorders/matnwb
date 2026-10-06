@@ -12,6 +12,7 @@ General Tutorials
    convertTrials
    dynamic_tables
    scratch
+   externalResources
 
 Domain-Specific Tutorials
 =========================

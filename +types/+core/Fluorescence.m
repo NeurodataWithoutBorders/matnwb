@@ -1,5 +1,5 @@
 classdef Fluorescence < types.core.NWBDataInterface & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups
-% FLUORESCENCE - Fluorescence information about a region of interest (ROI). Storage hierarchy of fluorescence should be the same as for segmentation (ie, same names for ROIs and for image planes).
+% FLUORESCENCE - Fluorescence information about a region of interest (ROI). Storage hierarchy of fluorescence should be the same as for segmentation (i.e., same names for ROIs and for image planes).
 %
 % Required Properties:
 %  roiresponseseries

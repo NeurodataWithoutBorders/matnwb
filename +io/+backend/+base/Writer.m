@@ -81,6 +81,34 @@ classdef Writer < handle
             io.backend.base.Writer.throwNotImplemented("writeAttribute")
         end
 
+        function copyDatasetFromFile(obj, sourceFilename, sourcePath, destinationPath) %#ok<INUSD>
+        % copyDatasetFromFile - Copy a dataset from another file into this file.
+        %
+        % Copies the dataset at sourcePath inside the file sourceFilename,
+        % together with its attributes, to destinationPath in the file this
+        % writer targets. Used to carry data that is still stored in a
+        % source file (types.untyped.DataStub) over to the file being
+        % exported.
+        %
+        % The copy is skipped when the source and the destination are the
+        % same store: a dataset re-exported to the file it came from is
+        % already in place. It is also skipped when destinationPath is
+        % already occupied, so that a second export pass over the same
+        % object does not disturb data copied by the first (see
+        % NwbFile.resolveReferences). Implementations may substitute an
+        % element-wise rewrite for a raw copy when their storage layer
+        % cannot copy the dataset faithfully; see the compound-reference
+        % workaround in io.backend.hdf5.HDF5Writer.
+        %
+        % Input Arguments:
+        %   obj - Writer instance targeting the destination file.
+        %   sourceFilename - Name of the file holding the source dataset.
+        %   sourcePath - Path of the dataset inside the source file.
+        %   destinationPath - Path the dataset is copied to in this file.
+
+            io.backend.base.Writer.throwNotImplemented("copyDatasetFromFile")
+        end
+
         function writeSoftLink(obj, linkPath, targetPath) %#ok<INUSD>
             % writeSoftLink - Create a link to another location in this file.
             %
@@ -101,6 +129,32 @@ classdef Writer < handle
             % a relative path is recorded relative to this file, which is
             % how a linked pair of files stays movable together.
             io.backend.base.Writer.throwNotImplemented("writeExternalLink")
+        end
+
+        function validateReferenceResolvable(obj, referenceValue) %#ok<INUSD>
+        % validateReferenceResolvable - Verify a reference target is resolvable.
+        %
+        % Probes whether the target of each ObjectView or RegionView in
+        % referenceValue can be resolved in the file as written so far,
+        % without writing anything. Returns silently when every target is
+        % resolvable.
+        %
+        % Throws an error with identifier 'NWB:getRefData:InvalidPath'
+        % when a target path does not (yet) exist in the file. Export
+        % code treats that identifier, and 'NWB:ObjectView:MissingPath'
+        % raised while resolving a view's own path, as "defer this object
+        % to a second export pass once its target exists" (see
+        % types.untyped.MetaClass.export and NwbFile.resolveReferences),
+        % so implementations must let both propagate unchanged. For a
+        % RegionView the probe must also verify that the referenced
+        % dataset itself can be opened, not merely that its path exists.
+        %
+        % Input Arguments:
+        %   obj - Writer instance used to probe the file written so far.
+        %   referenceValue - Array of types.untyped.ObjectView or
+        %       types.untyped.RegionView whose targets are probed.
+
+            io.backend.base.Writer.throwNotImplemented("validateReferenceResolvable")
         end
 
         function specLocation = getEmbeddedSpecLocation(obj) %#ok<MANU>

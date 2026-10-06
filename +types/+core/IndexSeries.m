@@ -1,5 +1,5 @@
 classdef IndexSeries < types.core.TimeSeries & types.untyped.GroupClass
-% INDEXSERIES - Stores indices that reference images defined in other containers. The primary purpose of the IndexSeries is to allow images stored in an Images container to be referenced in a specific sequence through the 'indexed_images' link. This approach avoids duplicating image data when the same image needs to be presented multiple times or when images need to be shown in a different order than they are stored. Since images in an Images container do not have an inherent order, the Images container needs to include an 'order_of_images' dataset (of type ImageReferences) when being referenced by an IndexSeries. This dataset establishes the ordered sequence that the indices in IndexSeries refer to. The 'data' field stores the index into this ordered sequence, and the 'timestamps' array indicates the precise presentation time of each indexed image during an experiment. This can be used for displaying individual images or creating movie segments by referencing a sequence of images with the appropriate timestamps. While IndexSeries can also reference frames from an ImageSeries through the 'indexed_timeseries' link, this usage is discouraged and will be deprecated in favor of using Images containers with 'order_of_images'.
+% INDEXSERIES - Stores indices that reference images defined in other containers. The primary purpose of the IndexSeries is to allow images stored in an Images container to be referenced in a specific sequence through the 'indexed_images' link. This approach avoids duplicating image data when the same image needs to be presented multiple times or when images need to be shown in a different order than they are stored. Since images in an Images container do not have an inherent order, the Images container needs to include an 'order_of_images' dataset (of type ImageReferences) whenever it is referenced by an IndexSeries. This dataset establishes the ordered sequence that the indices in IndexSeries refer to. The 'data' field stores the index into this ordered sequence, and the 'timestamps' array indicates the precise presentation time of each indexed image during an experiment. This can be used for displaying individual images or creating movie segments by referencing a sequence of images with the appropriate timestamps. While IndexSeries can also reference frames from an ImageSeries through the 'indexed_timeseries' link, this usage is discouraged and will be deprecated in favor of using Images containers with 'order_of_images'.
 %
 % Required Properties:
 %  data
@@ -7,7 +7,7 @@ classdef IndexSeries < types.core.TimeSeries & types.untyped.GroupClass
 
 % OPTIONAL PROPERTIES
 properties
-    indexed_images; %  (Images) Link to Images object containing an ordered set of images that are indexed. The Images object must contain a 'ordered_images' dataset specifying the order of the images in the Images type.
+    indexed_images; %  (Images) Link to Images object containing an ordered set of images that are indexed. The Images object must contain an 'order_of_images' dataset specifying the order of the images in the Images type.
     indexed_timeseries; %  (ImageSeries) Link to ImageSeries object containing images that are indexed. Use of this link is discouraged and will be deprecated. Link to an Images type instead.
 end
 
@@ -23,7 +23,7 @@ methods
         % Input Arguments (Name-Value Arguments):
         %  - comments (char) - Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string.
         %
-        %  - control (uint8) - Numerical labels that apply to each time point in data for the purpose of querying and slicing data by these values. If present, the length of this array should be the same size as the first dimension of data.
+        %  - control (uint8) - Numerical labels that apply to each time point in data for the purpose of querying and slicing data by these values. If present, the length of this array should be the same as the length of the first dimension of data.
         %
         %  - control_description (char) - Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0.
         %
@@ -39,7 +39,7 @@ methods
         %
         %  - description (char) - Description of the time series.
         %
-        %  - indexed_images (Images) - Link to Images object containing an ordered set of images that are indexed. The Images object must contain a 'ordered_images' dataset specifying the order of the images in the Images type.
+        %  - indexed_images (Images) - Link to Images object containing an ordered set of images that are indexed. The Images object must contain an 'order_of_images' dataset specifying the order of the images in the Images type.
         %
         %  - indexed_timeseries (ImageSeries) - Link to ImageSeries object containing images that are indexed. Use of this link is discouraged and will be deprecated. Link to an Images type instead.
         %
@@ -47,7 +47,7 @@ methods
         %
         %  - starting_time_rate (single) - Sampling rate, in Hz.
         %
-        %  - timestamps (double) - Timestamps for samples stored in data, in seconds, relative to the common experiment master-clock stored in NWBFile.timestamps_reference_time.
+        %  - timestamps (double) - Timestamps for samples stored in data, in seconds, relative to the common experiment master clock stored in NWBFile.timestamps_reference_time.
         %
         % Output Arguments:
         %  - indexSeries (types.core.IndexSeries) - An IndexSeries object

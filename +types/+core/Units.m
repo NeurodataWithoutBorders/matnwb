@@ -1,34 +1,34 @@
 classdef Units < types.hdmf_common.DynamicTable & types.untyped.GroupClass
-% UNITS - Data about spiking units. Event times of observed units (e.g. cell, synapse, etc.) should be concatenated and stored in spike_times.
+% UNITS - Data about spiking units. Event times of observed units (e.g., cell, synapse, etc.) should be concatenated and stored in spike_times.
 %
 % Required Properties:
 %  colnames, description, id
 
 
-% READONLY PROPERTIES
-properties(SetAccess = protected)
-    waveform_mean_unit = "volts"; %  (char) Unit of measurement. This value is fixed to 'volts'.
-    waveform_sd_unit = "volts"; %  (char) Unit of measurement. This value is fixed to 'volts'.
-    waveforms_unit = "volts"; %  (char) Unit of measurement. This value is fixed to 'volts'.
-end
 % OPTIONAL PROPERTIES
 properties
     electrode_group; %  (VectorData) Electrode group that each spike unit came from.
     electrodes; %  (DynamicTableRegion) Electrode that each spike unit came from, specified using a DynamicTableRegion.
     electrodes_index; %  (VectorIndex) Index into electrodes.
-    obs_intervals; %  (VectorData) Observation intervals for each unit, in seconds, relative to the session reference time (i.e. session_start_time or, if defined, timestamps_reference_time). Intervals should be in ascending order and non-overlapping.
+    obs_intervals; %  (VectorData) Observation intervals for each unit, in seconds, relative to the session reference time (i.e., session_start_time or, if defined, timestamps_reference_time). Intervals should be in ascending order and non-overlapping.
     obs_intervals_index; %  (VectorIndex) Index into the obs_intervals dataset.
-    spike_times; %  (VectorData) Spike times for each unit, in seconds, relative to the session reference time (i.e. session_start_time or, if defined, timestamps_reference_time). Times should be stored in ascending order.
+    spike_times; %  (VectorData) Spike times for each unit, in seconds, relative to the session reference time (i.e., session_start_time or, if defined, timestamps_reference_time). Times should be stored in ascending order.
     spike_times_index; %  (VectorIndex) Index into the spike_times dataset.
     spike_times_resolution; %  (double) The temporal resolution of the spike times, in seconds. This is typically the sampling period (1/sampling_rate) of the acquisition data from which spikes were extracted. If the acquisition data was downsampled before spike sorting, the resolution should be based on the downsampled sampling rate (lower sampling rate, larger resolution value). If interpolation was applied during spike sorting, then spike times may fall between samples of the acquisition data, so the resolution should be the interpolation step size (higher sampling rate, smaller resolution value).
     waveform_mean; %  (VectorData) Spike waveform mean for each spike unit.
     waveform_mean_sampling_rate; %  (single) Sampling rate, in hertz.
+    waveform_mean_time_before_peak_in_ms; %  (single) Time, in milliseconds, from the start of the waveform to the spike peak. The peak is the alignment point used during spike sorting, typically the sample of maximum absolute amplitude. The same value applies to every unit in the table. Together with 'sampling_rate' and the number of samples, this fully specifies where each waveform sample falls relative to the spike event.
+    waveform_mean_unit = "volts"; %  (char) Unit of measurement. The default value is 'volts'.
     waveform_sd; %  (VectorData) Spike waveform standard deviation for each spike unit.
     waveform_sd_sampling_rate; %  (single) Sampling rate, in hertz.
+    waveform_sd_time_before_peak_in_ms; %  (single) Time, in milliseconds, from the start of the waveform to the spike peak. The peak is the alignment point used during spike sorting, typically the sample of maximum absolute amplitude. The same value applies to every unit in the table. Together with 'sampling_rate' and the number of samples, this fully specifies where each waveform sample falls relative to the spike event.
+    waveform_sd_unit = "volts"; %  (char) Unit of measurement. The default value is 'volts'.
     waveforms; %  (VectorData) Individual waveforms for each spike on each electrode. This is a doubly indexed column. The 'waveforms_index' column indexes which waveforms in this column belong to the same spike event for a given unit, where each waveform was recorded from a different electrode. The 'waveforms_index_index' column indexes the 'waveforms_index' column to indicate which spike events belong to a given unit. For example, if the 'waveforms_index_index' column has values [2, 5, 6], then the first 2 elements of the 'waveforms_index' column correspond to the 2 spike events of the first unit, the next 3 elements of the 'waveforms_index' column correspond to the 3 spike events of the second unit, and the next 1 element of the 'waveforms_index' column corresponds to the 1 spike event of the third unit. If the 'waveforms_index' column has values [3, 6, 8, 10, 12, 13], then the first 3 elements of the 'waveforms' column contain the 3 spike waveforms that were recorded from 3 different electrodes for the first spike time of the first unit. See https://nwb-schema.readthedocs.io/en/stable/format_description.html#doubly-ragged-arrays for a graphical representation of this example. When there is only one electrode for each unit (i.e., each spike time is associated with a single waveform), then the 'waveforms_index' column will have values 1, 2, ..., N, where N is the number of spike events. The number of electrodes for each spike event should be the same within a given unit. The 'electrodes' column should be used to indicate which electrodes are associated with each unit, and the order of the waveforms within a given unit x spike event should be the same as the order of the electrodes referenced in the 'electrodes' column of this table. The number of samples for each waveform must be the same.
     waveforms_index; %  (VectorIndex) Index into the 'waveforms' dataset. One value for every spike event. See 'waveforms' for more detail.
     waveforms_index_index; %  (VectorIndex) Index into the 'waveforms_index' dataset. One value for every unit (row in the table). See 'waveforms' for more detail.
     waveforms_sampling_rate; %  (single) Sampling rate, in hertz.
+    waveforms_time_before_peak_in_ms; %  (single) Time, in milliseconds, from the start of the waveform to the spike peak. The peak is the alignment point used during spike sorting, typically the sample of maximum absolute amplitude. The same value applies to every waveform in the table. Together with 'sampling_rate' and the number of samples, this fully specifies where each waveform sample falls relative to the spike event.
+    waveforms_unit = "volts"; %  (char) Unit of measurement. The default value is 'volts'.
 end
 properties (Constant, Access = private)
     DeclaredSchemaColumns = ["electrode_group", "electrodes", "electrodes_index", "obs_intervals", "obs_intervals_index", "spike_times", "spike_times_index", "waveform_mean", "waveform_sd", "waveforms", "waveforms_index", "waveforms_index_index"];
@@ -58,11 +58,11 @@ methods
         %
         %  - meanings_tables (MeaningsTable) - MeaningsTable objects that provide meanings for values in VectorData columns within this DynamicTable. Tables should be named according to the column they provide meanings for with a "_meanings" suffix. e.g., if a VectorData column is named "stimulus_type", the corresponding MeaningsTable should be named "stimulus_type_meanings".
         %
-        %  - obs_intervals (VectorData) - Observation intervals for each unit, in seconds, relative to the session reference time (i.e. session_start_time or, if defined, timestamps_reference_time). Intervals should be in ascending order and non-overlapping.
+        %  - obs_intervals (VectorData) - Observation intervals for each unit, in seconds, relative to the session reference time (i.e., session_start_time or, if defined, timestamps_reference_time). Intervals should be in ascending order and non-overlapping.
         %
         %  - obs_intervals_index (VectorIndex) - Index into the obs_intervals dataset.
         %
-        %  - spike_times (VectorData) - Spike times for each unit, in seconds, relative to the session reference time (i.e. session_start_time or, if defined, timestamps_reference_time). Times should be stored in ascending order.
+        %  - spike_times (VectorData) - Spike times for each unit, in seconds, relative to the session reference time (i.e., session_start_time or, if defined, timestamps_reference_time). Times should be stored in ascending order.
         %
         %  - spike_times_index (VectorIndex) - Index into the spike_times dataset.
         %
@@ -74,9 +74,17 @@ methods
         %
         %  - waveform_mean_sampling_rate (single) - Sampling rate, in hertz.
         %
+        %  - waveform_mean_time_before_peak_in_ms (single) - Time, in milliseconds, from the start of the waveform to the spike peak. The peak is the alignment point used during spike sorting, typically the sample of maximum absolute amplitude. The same value applies to every unit in the table. Together with 'sampling_rate' and the number of samples, this fully specifies where each waveform sample falls relative to the spike event.
+        %
+        %  - waveform_mean_unit (char) - Unit of measurement. The default value is 'volts'.
+        %
         %  - waveform_sd (VectorData) - Spike waveform standard deviation for each spike unit.
         %
         %  - waveform_sd_sampling_rate (single) - Sampling rate, in hertz.
+        %
+        %  - waveform_sd_time_before_peak_in_ms (single) - Time, in milliseconds, from the start of the waveform to the spike peak. The peak is the alignment point used during spike sorting, typically the sample of maximum absolute amplitude. The same value applies to every unit in the table. Together with 'sampling_rate' and the number of samples, this fully specifies where each waveform sample falls relative to the spike event.
+        %
+        %  - waveform_sd_unit (char) - Unit of measurement. The default value is 'volts'.
         %
         %  - waveforms (VectorData) - Individual waveforms for each spike on each electrode. This is a doubly indexed column. The 'waveforms_index' column indexes which waveforms in this column belong to the same spike event for a given unit, where each waveform was recorded from a different electrode. The 'waveforms_index_index' column indexes the 'waveforms_index' column to indicate which spike events belong to a given unit. For example, if the 'waveforms_index_index' column has values [2, 5, 6], then the first 2 elements of the 'waveforms_index' column correspond to the 2 spike events of the first unit, the next 3 elements of the 'waveforms_index' column correspond to the 3 spike events of the second unit, and the next 1 element of the 'waveforms_index' column corresponds to the 1 spike event of the third unit. If the 'waveforms_index' column has values [3, 6, 8, 10, 12, 13], then the first 3 elements of the 'waveforms' column contain the 3 spike waveforms that were recorded from 3 different electrodes for the first spike time of the first unit. See https://nwb-schema.readthedocs.io/en/stable/format_description.html#doubly-ragged-arrays for a graphical representation of this example. When there is only one electrode for each unit (i.e., each spike time is associated with a single waveform), then the 'waveforms_index' column will have values 1, 2, ..., N, where N is the number of spike events. The number of electrodes for each spike event should be the same within a given unit. The 'electrodes' column should be used to indicate which electrodes are associated with each unit, and the order of the waveforms within a given unit x spike event should be the same as the order of the electrodes referenced in the 'electrodes' column of this table. The number of samples for each waveform must be the same.
         %
@@ -85,6 +93,10 @@ methods
         %  - waveforms_index_index (VectorIndex) - Index into the 'waveforms_index' dataset. One value for every unit (row in the table). See 'waveforms' for more detail.
         %
         %  - waveforms_sampling_rate (single) - Sampling rate, in hertz.
+        %
+        %  - waveforms_time_before_peak_in_ms (single) - Time, in milliseconds, from the start of the waveform to the spike peak. The peak is the alignment point used during spike sorting, typically the sample of maximum absolute amplitude. The same value applies to every waveform in the table. Together with 'sampling_rate' and the number of samples, this fully specifies where each waveform sample falls relative to the spike event.
+        %
+        %  - waveforms_unit (char) - Unit of measurement. The default value is 'volts'.
         %
         % Output Arguments:
         %  - units (types.core.Units) - A Units object
@@ -107,14 +119,17 @@ methods
         addParameter(p, 'spike_times_resolution',[]);
         addParameter(p, 'waveform_mean',[]);
         addParameter(p, 'waveform_mean_sampling_rate',[]);
+        addParameter(p, 'waveform_mean_time_before_peak_in_ms',[]);
         addParameter(p, 'waveform_mean_unit',[]);
         addParameter(p, 'waveform_sd',[]);
         addParameter(p, 'waveform_sd_sampling_rate',[]);
+        addParameter(p, 'waveform_sd_time_before_peak_in_ms',[]);
         addParameter(p, 'waveform_sd_unit',[]);
         addParameter(p, 'waveforms',[]);
         addParameter(p, 'waveforms_index',[]);
         addParameter(p, 'waveforms_index_index',[]);
         addParameter(p, 'waveforms_sampling_rate',[]);
+        addParameter(p, 'waveforms_time_before_peak_in_ms',[]);
         addParameter(p, 'waveforms_unit',[]);
         misc.parseSkipInvalidName(p, varargin);
         obj.electrode_group = p.Results.electrode_group;
@@ -127,14 +142,17 @@ methods
         obj.spike_times_resolution = p.Results.spike_times_resolution;
         obj.waveform_mean = p.Results.waveform_mean;
         obj.waveform_mean_sampling_rate = p.Results.waveform_mean_sampling_rate;
+        obj.waveform_mean_time_before_peak_in_ms = p.Results.waveform_mean_time_before_peak_in_ms;
         obj.waveform_mean_unit = p.Results.waveform_mean_unit;
         obj.waveform_sd = p.Results.waveform_sd;
         obj.waveform_sd_sampling_rate = p.Results.waveform_sd_sampling_rate;
+        obj.waveform_sd_time_before_peak_in_ms = p.Results.waveform_sd_time_before_peak_in_ms;
         obj.waveform_sd_unit = p.Results.waveform_sd_unit;
         obj.waveforms = p.Results.waveforms;
         obj.waveforms_index = p.Results.waveforms_index;
         obj.waveforms_index_index = p.Results.waveforms_index_index;
         obj.waveforms_sampling_rate = p.Results.waveforms_sampling_rate;
+        obj.waveforms_time_before_peak_in_ms = p.Results.waveforms_time_before_peak_in_ms;
         obj.waveforms_unit = p.Results.waveforms_unit;
         
         % Only execute validation/setup code when called directly in this class's
@@ -209,6 +227,24 @@ methods
             obj.warnIfAttributeDependencyMissing('waveform_mean_sampling_rate', 'waveform_mean')
         end
     end
+    function set.waveform_mean_time_before_peak_in_ms(obj, val)
+        obj.waveform_mean_time_before_peak_in_ms = obj.validate_waveform_mean_time_before_peak_in_ms(val);
+        obj.postset_waveform_mean_time_before_peak_in_ms()
+    end
+    function postset_waveform_mean_time_before_peak_in_ms(obj)
+        if isempty(obj.waveform_mean) && ~isempty(obj.waveform_mean_time_before_peak_in_ms)
+            obj.warnIfAttributeDependencyMissing('waveform_mean_time_before_peak_in_ms', 'waveform_mean')
+        end
+    end
+    function set.waveform_mean_unit(obj, val)
+        obj.waveform_mean_unit = obj.validate_waveform_mean_unit(val);
+        obj.postset_waveform_mean_unit()
+    end
+    function postset_waveform_mean_unit(obj)
+        if isempty(obj.waveform_mean) && ~isempty(obj.waveform_mean_unit)
+            obj.warnIfAttributeDependencyMissing('waveform_mean_unit', 'waveform_mean')
+        end
+    end
     function set.waveform_sd(obj, val)
         obj.waveform_sd = obj.validate_waveform_sd(val);
         obj.postset_waveform_sd()
@@ -223,6 +259,24 @@ methods
     function postset_waveform_sd_sampling_rate(obj)
         if isempty(obj.waveform_sd) && ~isempty(obj.waveform_sd_sampling_rate)
             obj.warnIfAttributeDependencyMissing('waveform_sd_sampling_rate', 'waveform_sd')
+        end
+    end
+    function set.waveform_sd_time_before_peak_in_ms(obj, val)
+        obj.waveform_sd_time_before_peak_in_ms = obj.validate_waveform_sd_time_before_peak_in_ms(val);
+        obj.postset_waveform_sd_time_before_peak_in_ms()
+    end
+    function postset_waveform_sd_time_before_peak_in_ms(obj)
+        if isempty(obj.waveform_sd) && ~isempty(obj.waveform_sd_time_before_peak_in_ms)
+            obj.warnIfAttributeDependencyMissing('waveform_sd_time_before_peak_in_ms', 'waveform_sd')
+        end
+    end
+    function set.waveform_sd_unit(obj, val)
+        obj.waveform_sd_unit = obj.validate_waveform_sd_unit(val);
+        obj.postset_waveform_sd_unit()
+    end
+    function postset_waveform_sd_unit(obj)
+        if isempty(obj.waveform_sd) && ~isempty(obj.waveform_sd_unit)
+            obj.warnIfAttributeDependencyMissing('waveform_sd_unit', 'waveform_sd')
         end
     end
     function set.waveforms(obj, val)
@@ -245,6 +299,24 @@ methods
     function postset_waveforms_sampling_rate(obj)
         if isempty(obj.waveforms) && ~isempty(obj.waveforms_sampling_rate)
             obj.warnIfAttributeDependencyMissing('waveforms_sampling_rate', 'waveforms')
+        end
+    end
+    function set.waveforms_time_before_peak_in_ms(obj, val)
+        obj.waveforms_time_before_peak_in_ms = obj.validate_waveforms_time_before_peak_in_ms(val);
+        obj.postset_waveforms_time_before_peak_in_ms()
+    end
+    function postset_waveforms_time_before_peak_in_ms(obj)
+        if isempty(obj.waveforms) && ~isempty(obj.waveforms_time_before_peak_in_ms)
+            obj.warnIfAttributeDependencyMissing('waveforms_time_before_peak_in_ms', 'waveforms')
+        end
+    end
+    function set.waveforms_unit(obj, val)
+        obj.waveforms_unit = obj.validate_waveforms_unit(val);
+        obj.postset_waveforms_unit()
+    end
+    function postset_waveforms_unit(obj)
+        if isempty(obj.waveforms) && ~isempty(obj.waveforms_unit)
+            obj.warnIfAttributeDependencyMissing('waveforms_unit', 'waveforms')
         end
     end
     %% VALIDATORS
@@ -304,6 +376,14 @@ methods
         val = types.util.checkDtype('waveform_mean_sampling_rate', 'single', val);
         types.util.validateShape('waveform_mean_sampling_rate', {[1]}, val)
     end
+    function val = validate_waveform_mean_time_before_peak_in_ms(obj, val)
+        val = types.util.checkDtype('waveform_mean_time_before_peak_in_ms', 'single', val);
+        types.util.validateShape('waveform_mean_time_before_peak_in_ms', {[1]}, val)
+    end
+    function val = validate_waveform_mean_unit(obj, val)
+        val = types.util.checkDtype('waveform_mean_unit', 'char', val);
+        types.util.validateShape('waveform_mean_unit', {[1]}, val)
+    end
     function val = validate_waveform_sd(obj, val)
         types.util.checkType('waveform_sd', 'types.hdmf_common.VectorData', val);
         if ~isempty(val)
@@ -316,6 +396,14 @@ methods
     function val = validate_waveform_sd_sampling_rate(obj, val)
         val = types.util.checkDtype('waveform_sd_sampling_rate', 'single', val);
         types.util.validateShape('waveform_sd_sampling_rate', {[1]}, val)
+    end
+    function val = validate_waveform_sd_time_before_peak_in_ms(obj, val)
+        val = types.util.checkDtype('waveform_sd_time_before_peak_in_ms', 'single', val);
+        types.util.validateShape('waveform_sd_time_before_peak_in_ms', {[1]}, val)
+    end
+    function val = validate_waveform_sd_unit(obj, val)
+        val = types.util.checkDtype('waveform_sd_unit', 'char', val);
+        types.util.validateShape('waveform_sd_unit', {[1]}, val)
     end
     function val = validate_waveforms(obj, val)
         types.util.checkType('waveforms', 'types.hdmf_common.VectorData', val);
@@ -335,6 +423,14 @@ methods
     function val = validate_waveforms_sampling_rate(obj, val)
         val = types.util.checkDtype('waveforms_sampling_rate', 'single', val);
         types.util.validateShape('waveforms_sampling_rate', {[1]}, val)
+    end
+    function val = validate_waveforms_time_before_peak_in_ms(obj, val)
+        val = types.util.checkDtype('waveforms_time_before_peak_in_ms', 'single', val);
+        types.util.validateShape('waveforms_time_before_peak_in_ms', {[1]}, val)
+    end
+    function val = validate_waveforms_unit(obj, val)
+        val = types.util.checkDtype('waveforms_unit', 'char', val);
+        types.util.validateShape('waveforms_unit', {[1]}, val)
     end
     %% EXPORT
     function refs = export(obj, writer, fullpath, refs)
@@ -372,6 +468,9 @@ methods
         if ~isempty(obj.waveform_mean) && ~isa(obj.waveform_mean, 'types.untyped.SoftLink') && ~isa(obj.waveform_mean, 'types.untyped.ExternalLink') && ~isempty(obj.waveform_mean_sampling_rate)
             writer.writeAttribute([fullpath '/waveform_mean/sampling_rate'], obj.waveform_mean_sampling_rate);
         end
+        if ~isempty(obj.waveform_mean) && ~isa(obj.waveform_mean, 'types.untyped.SoftLink') && ~isa(obj.waveform_mean, 'types.untyped.ExternalLink') && ~isempty(obj.waveform_mean_time_before_peak_in_ms)
+            writer.writeAttribute([fullpath '/waveform_mean/time_before_peak_in_ms'], obj.waveform_mean_time_before_peak_in_ms);
+        end
         if ~isempty(obj.waveform_mean) && ~isa(obj.waveform_mean, 'types.untyped.SoftLink') && ~isa(obj.waveform_mean, 'types.untyped.ExternalLink') && ~isempty(obj.waveform_mean_unit)
             writer.writeAttribute([fullpath '/waveform_mean/unit'], obj.waveform_mean_unit);
         end
@@ -380,6 +479,9 @@ methods
         end
         if ~isempty(obj.waveform_sd) && ~isa(obj.waveform_sd, 'types.untyped.SoftLink') && ~isa(obj.waveform_sd, 'types.untyped.ExternalLink') && ~isempty(obj.waveform_sd_sampling_rate)
             writer.writeAttribute([fullpath '/waveform_sd/sampling_rate'], obj.waveform_sd_sampling_rate);
+        end
+        if ~isempty(obj.waveform_sd) && ~isa(obj.waveform_sd, 'types.untyped.SoftLink') && ~isa(obj.waveform_sd, 'types.untyped.ExternalLink') && ~isempty(obj.waveform_sd_time_before_peak_in_ms)
+            writer.writeAttribute([fullpath '/waveform_sd/time_before_peak_in_ms'], obj.waveform_sd_time_before_peak_in_ms);
         end
         if ~isempty(obj.waveform_sd) && ~isa(obj.waveform_sd, 'types.untyped.SoftLink') && ~isa(obj.waveform_sd, 'types.untyped.ExternalLink') && ~isempty(obj.waveform_sd_unit)
             writer.writeAttribute([fullpath '/waveform_sd/unit'], obj.waveform_sd_unit);
@@ -395,6 +497,9 @@ methods
         end
         if ~isempty(obj.waveforms) && ~isa(obj.waveforms, 'types.untyped.SoftLink') && ~isa(obj.waveforms, 'types.untyped.ExternalLink') && ~isempty(obj.waveforms_sampling_rate)
             writer.writeAttribute([fullpath '/waveforms/sampling_rate'], obj.waveforms_sampling_rate);
+        end
+        if ~isempty(obj.waveforms) && ~isa(obj.waveforms, 'types.untyped.SoftLink') && ~isa(obj.waveforms, 'types.untyped.ExternalLink') && ~isempty(obj.waveforms_time_before_peak_in_ms)
+            writer.writeAttribute([fullpath '/waveforms/time_before_peak_in_ms'], obj.waveforms_time_before_peak_in_ms);
         end
         if ~isempty(obj.waveforms) && ~isa(obj.waveforms, 'types.untyped.SoftLink') && ~isa(obj.waveforms, 'types.untyped.ExternalLink') && ~isempty(obj.waveforms_unit)
             writer.writeAttribute([fullpath '/waveforms/unit'], obj.waveforms_unit);
