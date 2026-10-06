@@ -13,6 +13,9 @@ end
 properties
     stimulus_template; %  (TimeSeriesReferenceVectorData) Column storing the reference to the stimulus template for the recording (rows).
 end
+properties (Constant, Access = private)
+    DeclaredSchemaColumns = ["stimulus", "stimulus_template"];
+end
 
 methods
     function obj = IntracellularStimuliTable(varargin)
@@ -58,6 +61,7 @@ methods
         if strcmp(class(obj), 'types.core.IntracellularStimuliTable') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
+            obj.setupHasUnnamedGroupsMixin();
             obj.ensureDynamicTableConsistency();
         end
     end

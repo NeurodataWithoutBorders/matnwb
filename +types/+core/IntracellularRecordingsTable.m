@@ -11,9 +11,11 @@ properties
     responses; % REQUIRED (IntracellularResponsesTable) Table for storing intracellular response related metadata.
     stimuli; % REQUIRED (IntracellularStimuliTable) Table for storing intracellular stimulus related metadata.
 end
-
 properties (Constant, Access = private)
     DeclaredSchemaCategories = ["electrodes", "responses", "stimuli"];
+end
+properties (Constant, Access = private)
+    DeclaredSchemaColumns = string.empty(1, 0);
 end
 
 methods
@@ -68,6 +70,7 @@ methods
         if strcmp(class(obj), 'types.core.IntracellularRecordingsTable') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
+            obj.setupHasUnnamedGroupsMixin();
             obj.ensureAlignedTableConsistency();
         end
     end

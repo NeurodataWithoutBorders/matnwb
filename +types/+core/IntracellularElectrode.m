@@ -7,18 +7,21 @@ classdef IntracellularElectrode < types.core.NWBContainer & types.untyped.GroupC
 
 % REQUIRED PROPERTIES
 properties
-    description; % REQUIRED (char) Description of electrode (e.g.,  whole-cell, sharp, etc.).
+    description; % REQUIRED (char) Description of electrode (e.g., whole-cell, sharp, etc.).
     device; % REQUIRED (Device) Device that was used to record from this electrode.
 end
 % OPTIONAL PROPERTIES
 properties
-    cell_id; %  (char) unique ID of the cell
+    cell_id; %  (char) Unique identifier of the cell.
     filtering; %  (char) Electrode specific filtering.
     initial_access_resistance; %  (char) Initial access resistance.
     location; %  (char) Location of the electrode. Specify the area, layer, comments on estimation of area/layer, stereotaxic coordinates if in vivo, etc. Use standard atlas names for anatomical regions when possible.
     resistance; %  (char) Electrode resistance, in ohms.
     seal; %  (char) Information about seal used for recording.
     slice; %  (char) Information about slice used for recording.
+end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["cell_id", "description", "filtering", "initial_access_resistance", "location", "resistance", "seal", "slice"];
 end
 
 methods
@@ -31,9 +34,9 @@ methods
         %  intracellularElectrode = types.core.INTRACELLULARELECTRODE(Name, Value) creates an IntracellularElectrode object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
-        %  - cell_id (char) - unique ID of the cell
+        %  - cell_id (char) - Unique identifier of the cell.
         %
-        %  - description (char) - Description of electrode (e.g.,  whole-cell, sharp, etc.).
+        %  - description (char) - Description of electrode (e.g., whole-cell, sharp, etc.).
         %
         %  - device (Device) - Device that was used to record from this electrode.
         %

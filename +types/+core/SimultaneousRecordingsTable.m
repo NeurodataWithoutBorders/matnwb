@@ -10,6 +10,9 @@ properties
     recordings; % REQUIRED (DynamicTableRegion) A reference to one or more rows in the IntracellularRecordingsTable table.
     recordings_index; % REQUIRED (VectorIndex) Index dataset for the recordings column.
 end
+properties (Constant, Access = private)
+    DeclaredSchemaColumns = ["recordings", "recordings_index"];
+end
 
 methods
     function obj = SimultaneousRecordingsTable(varargin)
@@ -56,6 +59,7 @@ methods
         if strcmp(class(obj), 'types.core.SimultaneousRecordingsTable') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
+            obj.setupHasUnnamedGroupsMixin();
             obj.ensureDynamicTableConsistency();
         end
     end

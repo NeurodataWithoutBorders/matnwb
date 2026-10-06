@@ -1,5 +1,5 @@
 classdef TimestampVectorData < types.hdmf_common.VectorData & types.untyped.DatasetClass
-% TIMESTAMPVECTORDATA - A 1-dimensional VectorData that stores timestamps in seconds from the session start time. Timestamp are not required to be sorted in time.
+% TIMESTAMPVECTORDATA - A 1-D VectorData that stores timestamps in seconds from the session start time. Timestamps are not required to be sorted in time.
 %
 % Required Properties:
 %  data, description
@@ -12,6 +12,9 @@ end
 % OPTIONAL PROPERTIES
 properties
     resolution; %  (single) The temporal resolution of the timestamps, in seconds. This is typically the sampling period (1 / sampling_rate), also known as the clock period, of the data acquisition system from which the timestamps were recorded or derived.
+end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["resolution", "unit"];
 end
 
 methods

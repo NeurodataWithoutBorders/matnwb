@@ -87,23 +87,21 @@ function nwb = nwbRead(filename, flags, options)
                 end
             end
         else
-            generateEmbeddedSpec(filename, specLocation, 'savedir', options.savedir);
+            generateEmbeddedSpec(reader, specLocation, 'savedir', options.savedir);
         end
     else
         warnIfSchemaVersionsMismatch(schemaVersionOfFile, schemaVersionActive)
     end
 
-    blackList = struct(...
-        'attributes', {{'.specloc', 'object_id'}},...
-        'groups', {{}});
+    parseExclusions = io.internal.defaultParseExclusions();
     if ~isempty(specLocation)
-        blackList.groups{end+1} = specLocation;
+        parseExclusions.groups{end+1} = specLocation;
     end
     
     softLinkWarningResetObj = types.untyped.SoftLink.disablePathDeprecationWarning(); %#ok<NASGU>
 
     try
-        nwb = io.parseGroup(filename, reader.readRootInfo(), blackList, reader);
+        nwb = io.parseGroup(filename, reader.readRootInfo(), parseExclusions, reader);
     catch ME
         if isSchemaVersionMismatch ...
                 && strcmp(ME.identifier, 'MATLAB:class:RequireSuperClass')
@@ -119,15 +117,15 @@ function nwb = nwbRead(filename, flags, options)
     nwb.resolveSoftLinks()
 end
 
-function generateEmbeddedSpec(filename, specLocation, options)
+function generateEmbeddedSpec(reader, specLocation, options)
 % generateEmbeddedSpec - Generate embedded specifications / namespaces
     arguments
-        filename (1,1) string {matnwb.common.compatibility.mustBeFile}
+        reader (1,1) io.backend.base.Reader
         specLocation (1,1) string
         options.savedir (1,1) string = misc.getMatnwbDir(); % {matnwb.common.compatibility.mustBeFolder} ?
     end
 
-    specs = io.spec.readEmbeddedSpecifications(filename, specLocation);
+    specs = io.spec.readEmbeddedSpecifications(reader, specLocation);
     specNames = cell(size(specs));
 
     for iSpec = 1:numel(specs)

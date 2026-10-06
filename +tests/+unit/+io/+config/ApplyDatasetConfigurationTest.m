@@ -29,7 +29,7 @@ classdef ApplyDatasetConfigurationTest < tests.abstract.NwbTestCase
         end
     end
     
-    methods (Test, TestTags={'UsesDynamicallyLoadedFilters'})
+    methods (Test, TestTags={'RequiresDynamicallyLoadedFilters'})
         function testCustomConfiguration(testCase)
             nwbFile = tests.factory.NWBFile();
             

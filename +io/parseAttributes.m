@@ -1,8 +1,8 @@
-function [args, type] = parseAttributes(filename, attributes, context, Blacklist, reader)
+function [args, type] = parseAttributes(filename, attributes, context, exclusions, reader)
 % parseAttributes - Parse an attribute info structure
 %
 % Syntax:
-%   [args, type] = io.parseAttributes(filename, attributes, context, Blacklist)
+%   [args, type] = io.parseAttributes(filename, attributes, context, exclusions)
 %   This function parses a given attribute info structure and returns a 
 %   containers.Map of valid attributes along with neurodata type info if it 
 %   exists.
@@ -11,7 +11,7 @@ function [args, type] = parseAttributes(filename, attributes, context, Blacklist
 %   filename   - The name of the file containing attributes.
 %   attributes - The attributes to be parsed.
 %   context    - The context (h5 location) in which the attributes are located.
-%   Blacklist  - A list of attributes to be excluded from the parsing.
+%   exclusions - Attribute and group names to be excluded from the parsing.
 %
 % Output Arguments:
 %   args - A containers.Map of all valid attributes.
@@ -33,11 +33,11 @@ end
 names = {attributes.Name};
 
 % We already got type information (if present), so we add type-specific 
-% attributes to the blacklist before parsing the rest of the attribute list
-Blacklist.attributes = [Blacklist.attributes, {'neurodata_type', 'namespace'}];
+% attributes to the exclusions before parsing the rest of the attribute list
+exclusions.attributes = [exclusions.attributes, {'neurodata_type', 'namespace'}];
 
-blacklistMask = ismember(names, Blacklist.attributes);
-attributes(blacklistMask) = [];
+excludedMask = ismember(names, exclusions.attributes);
+attributes(excludedMask) = [];
 for i=1:length(attributes)
     attr = attributes(i);
     args(attr.Name) = reader.readAttributeValue(attr, context);

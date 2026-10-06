@@ -83,6 +83,87 @@ classdef (Abstract) AlignedDynamicTableBase < matnwb.neurodata.DynamicTableBase
 
             categoryTable = obj.getCategoryTable(categoryName);
         end
+
+        function clear(obj)
+        % clear - Remove all rows and column data from the AlignedDynamicTable.
+        %
+        % Syntax:
+        %  alignedDynamicTable.clear() removes all column objects and the
+        %  row ids of the table and of each of its category tables.
+        %
+        % The table itself is cleared like a DynamicTable: its columns and
+        % row ids are removed and its `colnames` property is preserved.
+        %
+        % Every category table is cleared in the same way, so the table and
+        % its categories all have zero rows afterwards. The category tables
+        % remain part of the table and the `categories` property is
+        % preserved. Each category table keeps its own `colnames` and
+        % `description`.
+        %
+        % Note:
+        %  A category table is a handle object. Clearing the
+        %  AlignedDynamicTable also clears the category table for any
+        %  other variable that refers to it.
+
+            arguments
+                obj (1,1) matnwb.neurodata.AlignedDynamicTableBase
+            end
+
+            clear@matnwb.neurodata.DynamicTableBase(obj)
+
+            categoryNames = obj.getMaterializedCategoryNames();
+            for iCategory = 1:numel(categoryNames)
+                categoryTable = obj.getCategoryTable(categoryNames{iCategory});
+                categoryTable.clear()
+            end
+        end
+    
+        function row = getRow(obj, rowIndices, options)
+        % getRow - Return one or more AlignedDynamicTable rows.
+        %
+        % Syntax:
+        %  alignedDynamicTable.getRow(rowIndices) return one or more rows of the
+        %  table given a scalar row index or a list of row indices.
+        %
+        %  alignedDynamicTable.getRow(rowIndices, Name, Value) get rows providing 
+        %  optional name-value pairs for customization (see Input Arguments).
+        %
+        % Input Arguments:
+        %  - rowIndices (double) -
+        %    A scalar index or a vector of row indices for rows to extract.
+        %    Must be positive integers, respecting the row count of the table.
+        %
+        %  - options (name-value pairs) -
+        %    Optional name-value pairs. Available options:
+        %
+        %    - columns (string) -
+        %      A list of names of columns to retrieve. Allows for only 
+        %      grabbing certain columns instead of returning all columns.
+        %
+        %    - categories (string) -
+        %      A list of category table names to include as nested tables.
+        %
+        %    - useId (logical) -
+        %      If true, rowIndices refer to the table's id column instead
+        %      of the MATLAB-based row indices.
+        %
+        % Output Arguments:
+        %  - row (table) -
+        %    A table of specified rows, with columns ordered according to
+        %    the DynamicTable's colnames property, or the values given for 
+        %    the "columns" option if provided.
+
+            arguments
+                obj (1,1) {matnwb.common.validation.mustBeDynamicTable}
+                rowIndices (1,:) double {mustBeInteger}
+                options.columns (1,:)
+                options.categories
+                options.useId (1,1) logical
+            end
+
+            nvPairs = namedargs2cell(options);
+            row = types.util.dynamictable.getRow(obj, rowIndices, nvPairs{:});
+        end
     end
 
     % Hidden because this method is normally called by generated
@@ -141,7 +222,7 @@ classdef (Abstract) AlignedDynamicTableBase < matnwb.neurodata.DynamicTableBase
 
             unmaterializedCategoryNames = setdiff(categoryNames, categoryTableNames, 'stable');
             if ~isempty(unmaterializedCategoryNames) && parentHasHeight && parentHeight > 0
-                classShortName = obj.TypeName;
+                classShortName = obj.getTypeShortName();
                 obj.handleCategoryNamesMismatch( ...
                     ['The `categories` property lists category table(s) that have not ', ...
                     'been added to the %s: %s.\n', ...
@@ -153,6 +234,51 @@ classdef (Abstract) AlignedDynamicTableBase < matnwb.neurodata.DynamicTableBase
                 'NWB:AlignedDynamicTable:ValidateAlignedTableConsistency:InvalidCategoryShape', ...
                 ['Invalid AlignedDynamicTable: all category tables must have the ', ...
                 'same height as the parent table.'])
+        end
+    end
+
+    methods (Access = {?matnwb.mixin.HasUnnamedGroups, ?matnwb.neurodata.AlignedDynamicTableBase})
+        function wasHandled = handleUnnamedGroupAdd(obj, groupName, name, value)
+        % handleUnnamedGroupAdd - Route unnamed category additions through addCategory.
+
+            arguments
+                obj (1,1) matnwb.neurodata.AlignedDynamicTableBase
+                groupName (1,1) string
+                name (1,1) string
+                value
+            end
+            
+            wasHandled = handleUnnamedGroupAdd@matnwb.neurodata.DynamicTableBase(obj, groupName, name, value);
+            if wasHandled
+                return
+            end
+
+            if groupName ~= "dynamictable"
+                return
+            end
+
+            if ~isa(value, 'types.hdmf_common.DynamicTable') && ...
+                    ~isa(value, 'types.core.DynamicTable')
+                return
+            end
+
+            obj.addCategory(name, value)
+            wasHandled = true;
+        end
+
+        function tip = getCustomUnnamedGroupAddTip(obj, groupName)
+        % getCustomUnnamedGroupAddTip - Display the preferred category add method.
+
+            arguments
+                obj
+                groupName (1,1) string
+            end
+
+            if groupName == "dynamictable"
+                tip = "Tip: Use the 'addCategory' method to add category tables.";
+            else
+                tip = getCustomUnnamedGroupAddTip@matnwb.neurodata.DynamicTableBase(obj, groupName);
+            end
         end
     end
 

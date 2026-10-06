@@ -38,4 +38,21 @@ classdef Anon < handle
             tf = strcmp(obj.name, name);
         end
     end
+
+    % Methods mirroring Set methods.
+    methods 
+        function name = getPropertyName(obj, name)
+        % getPropertyName - Get property name given the actual name of an entry
+            assert(strcmp(obj.name, name), ...
+                'NWB:Anon:InvalidName', ...
+                'name `%s` is not part of Anon', name);
+        end
+
+        function value = get(obj, name)
+            assert(strcmp(obj.name, name), ...
+                'NWB:Anon:InvalidName', ...
+                'name `%s` is not part of Anon', name);
+            value = obj.value;
+        end
+    end
 end

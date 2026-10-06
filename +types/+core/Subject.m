@@ -12,11 +12,14 @@ properties
     date_of_birth; %  (datetime) Date of birth of subject. Can be supplied instead of 'age'.
     description; %  (char) Description of subject and where subject came from (e.g., breeder, if animal).
     genotype; %  (char) Genetic strain. If absent, assume Wild Type (WT).
-    sex; %  (char) Gender of subject.
+    sex; %  (char) Biological sex of subject.
     species; %  (char) Species of subject.
     strain; %  (char) Strain of subject.
     subject_id; %  (char) ID of animal/person used/participating in experiment (lab convention).
     weight; %  (char) Weight at time of experiment, at time of surgery and at other important times.
+end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["age", "age/reference", "date_of_birth", "description", "genotype", "sex", "species", "strain", "subject_id", "weight"];
 end
 
 methods
@@ -39,7 +42,7 @@ methods
         %
         %  - genotype (char) - Genetic strain. If absent, assume Wild Type (WT).
         %
-        %  - sex (char) - Gender of subject.
+        %  - sex (char) - Biological sex of subject.
         %
         %  - species (char) - Species of subject.
         %

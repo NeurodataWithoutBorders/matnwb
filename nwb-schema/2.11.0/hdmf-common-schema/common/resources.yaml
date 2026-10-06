@@ -1,0 +1,105 @@
+# hdmf-schema-language=2.0.2
+groups:
+- data_type_def: HERD
+  data_type_inc: Container
+  doc: "HDMF External Resources Data Structure. A set of six tables for tracking external resource references in a file or across multiple files."
+  datasets:
+  - data_type_inc: Data
+    name: keys
+    doc: A table for storing user terms that are used to refer to external resources.
+    dtype:
+    - name: key
+      dtype: text
+      doc: The user term that maps to one or more resources in the `resources` table, e.g., "human".
+    dims:
+    - num_rows
+    shape:
+    - null
+
+  - data_type_inc: Data
+    name: files
+    doc: A table for storing object ids of files used in external resources.
+    dtype:
+    - name: file_object_id
+      dtype: text
+      doc: The object id (UUID) of a file that contains objects that refers to external resources.
+    dims:
+    - num_rows
+    shape:
+    - null
+
+  - data_type_inc: Data
+    name: entities
+    doc: A table for mapping user terms (i.e., keys) to resource entities.
+    dtype:
+    - name: entity_id
+      dtype: text
+      doc: "The compact uniform resource identifier (CURIE) of the entity, in the form
+        [prefix]:[unique local identifier], e.g., 'NCBI_TAXON:9606'."
+    - name: entity_uri
+      dtype: text
+      doc: "The URI for the entity this reference applies to. This can be an empty string.
+        e.g., https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=info&id=9606"
+    dims:
+    - num_rows
+    shape:
+    - null
+
+  - data_type_inc: Data
+    name: objects
+    doc: A table for identifying which objects in a file contain references to external resources.
+    dtype:
+    - name: files_idx
+      dtype: uint
+      doc: The row index to the file in the `files` table containing the object.
+    - name: object_id
+      dtype: text
+      doc: The object id (UUID) of the object.
+    - name: object_type
+      dtype: text
+      doc: The data type of the object.
+    - name: relative_path
+      dtype: text
+      doc: The relative path from the data object with the `object_id` to the dataset or attribute
+        with the value(s) that is associated with an external resource. This can be an empty
+        string if the object is a dataset that contains the value(s) that is associated
+        with an external resource.
+    - name: field
+      dtype: text
+      doc: The field within the compound data type using an external resource. This is used only if
+        the dataset or attribute is a compound data type; otherwise this should be an empty
+        string.
+    dims:
+    - num_rows
+    shape:
+    - null
+
+  - data_type_inc: Data
+    name: object_keys
+    doc: A table for identifying which objects use which keys.
+    dtype:
+    - name: objects_idx
+      dtype: uint
+      doc: The row index to the object in the `objects` table that holds the key
+    - name: keys_idx
+      dtype: uint
+      doc: The row index to the key in the `keys` table.
+    dims:
+    - num_rows
+    shape:
+    - null
+
+  - data_type_inc: Data
+    name: entity_keys
+    doc: A table for identifying which keys use which entity.
+    dtype:
+    - name: entities_idx
+      dtype: uint
+      doc: The row index to the entity in the `entities` table.
+    - name: keys_idx
+      dtype: uint
+      doc: The row index to the key in the `keys` table.
+    dims:
+    - num_rows
+    shape:
+    - null

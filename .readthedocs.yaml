@@ -6,6 +6,7 @@ build:
     python: "3.10"
   jobs:
     pre_build:
+      - rm -rf +tests tools tutorials # not part of published API docs; fewer .m files for autodoc to scan
       - python docs/source/sphinx_extensions/copy_files.py
 
     post_build:
@@ -17,3 +18,4 @@ python:
 
 sphinx:
   configuration: docs/source/conf.py
+  fail_on_warning: true

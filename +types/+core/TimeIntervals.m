@@ -17,6 +17,9 @@ properties
     timeseries; %  (TimeSeriesReferenceVectorData) An index into a TimeSeries object.
     timeseries_index; %  (VectorIndex) Index for timeseries.
 end
+properties (Constant, Access = private)
+    DeclaredSchemaColumns = ["start_time", "stop_time", "tags", "tags_index", "timeseries", "timeseries_index"];
+end
 
 methods
     function obj = TimeIntervals(varargin)
@@ -79,6 +82,7 @@ methods
         if strcmp(class(obj), 'types.core.TimeIntervals') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
+            obj.setupHasUnnamedGroupsMixin();
             obj.ensureDynamicTableConsistency();
         end
     end

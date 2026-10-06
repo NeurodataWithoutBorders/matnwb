@@ -4,7 +4,7 @@ function TypeMap = getTypeMap(DynamicTable)
 TypeMap = containers.Map;
 if isempty(DynamicTable.id.data)...
         || (isa(DynamicTable.id.data, 'types.untyped.DataPipe')...
-            && 0 == DynamicTable.id.data.offset)
+            && 0 == DynamicTable.id.data.getAppendAxisLength())
     return;
 end
 TypeStruct = struct('type', '', 'dims', [0, 0]);
@@ -14,6 +14,17 @@ for i = 1:length(DynamicTable.colnames)
         colVecData = DynamicTable.(colnm);
     else
         colVecData = DynamicTable.vectordata.get(colnm);
+    end
+
+    if isa(colVecData.data, 'types.untyped.DataPipe')
+        hasElements = ~any(size(colVecData.data) == 0);
+    else
+        hasElements = ~isempty(colVecData.data);
+    end
+    if ~hasElements
+        % A column whose rows are all empty has no element to take the type
+        % from.
+        continue;
     end
 
     if isa(colVecData.data, 'types.untyped.DataPipe')

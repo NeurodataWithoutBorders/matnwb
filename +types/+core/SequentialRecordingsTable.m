@@ -11,6 +11,9 @@ properties
     simultaneous_recordings_index; % REQUIRED (VectorIndex) Index dataset for the simultaneous_recordings column.
     stimulus_type; % REQUIRED (VectorData) The type of stimulus used for the sequential recording.
 end
+properties (Constant, Access = private)
+    DeclaredSchemaColumns = ["simultaneous_recordings", "simultaneous_recordings_index", "stimulus_type"];
+end
 
 methods
     function obj = SequentialRecordingsTable(varargin)
@@ -61,6 +64,7 @@ methods
         if strcmp(class(obj), 'types.core.SequentialRecordingsTable') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
+            obj.setupHasUnnamedGroupsMixin();
             obj.ensureDynamicTableConsistency();
         end
     end

@@ -1,5 +1,5 @@
 classdef Position < types.core.NWBDataInterface & types.untyped.GroupClass & matnwb.mixin.HasUnnamedGroups
-% POSITION - Position data, whether along the x, x/y or x/y/z axis.
+% POSITION - Position data, whether along the x, x/y, or x/y/z axes.
 %
 % Required Properties:
 %  spatialseries
@@ -9,8 +9,8 @@ classdef Position < types.core.NWBDataInterface & types.untyped.GroupClass & mat
 properties
     spatialseries; % REQUIRED (SpatialSeries) SpatialSeries object containing position data.
 end
-properties (Access = protected)
-    GroupPropertyNames = {'spatialseries'}
+properties (Constant, Access = private)
+    GroupPropertyNames = ["spatialseries"];
 end
 
 methods

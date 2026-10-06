@@ -21,6 +21,53 @@ classdef HDF5Reader < io.backend.base.Reader
             node = h5info(obj.Filename);
         end
 
+        function tf = isReferenceDataset(~, datasetInfo)
+            tf = strcmp(datasetInfo.Datatype.Class, 'H5T_REFERENCE');
+        end
+
+        function base = getExternalLinkBase(obj)
+            % HDF5 resolves a relative external-link target against the
+            % directory containing the linking file. The directory is
+            % returned as an absolute path so a link dereferenced after
+            % the working directory has changed still resolves correctly.
+            [isResolved, fileInfo] = fileattrib(char(obj.Filename));
+            assert(isResolved, ...
+                'NWB:Backend:Reader:FileNotFound', ...
+                'Could not resolve the location of `%s`.', obj.Filename);
+            base = string(fileparts(fileInfo.Name));
+        end
+
+        function linkInfo = readLinkInfo(obj, linkPath)
+            arguments
+                obj
+                linkPath (1,1) string
+            end
+            propertyListId = 'H5P_DEFAULT';
+            fileId = H5F.open(obj.Filename, 'H5F_ACC_RDONLY', propertyListId);
+            fileCleanup = onCleanup(@() H5F.close(fileId));
+
+            rawInfo = H5L.get_info(fileId, char(linkPath), propertyListId);
+            isExternal = rawInfo.type == H5ML.get_constant_value('H5L_TYPE_EXTERNAL');
+            isSoft = rawInfo.type == H5ML.get_constant_value('H5L_TYPE_SOFT');
+            assert(isExternal || isSoft, ...
+                'NWB:Backend:Reader:UnsupportedLinkType', ...
+                'The node at "%s" in "%s" is not a soft or external link.', ...
+                linkPath, obj.Filename);
+
+            % H5L.get_val returns {targetPath} for a soft link and
+            % {targetFilename, targetPath} for an external one.
+            rawValue = H5L.get_val(fileId, char(linkPath), propertyListId);
+            if isExternal
+                linkInfo = struct('type', "external link", ...
+                    'targetFilename', string(rawValue{1}), ...
+                    'targetPath', string(rawValue{2}));
+            else
+                linkInfo = struct('type', "soft link", ...
+                    'targetFilename', "", ...
+                    'targetPath', string(rawValue{1}));
+            end
+        end
+
         function node = readNodeInfo(obj, nodePath)
             arguments
                 obj
@@ -83,7 +130,7 @@ classdef HDF5Reader < io.backend.base.Reader
             % when appropriate
             datatype = datasetInfo.Datatype;
             dataspace = datasetInfo.Dataspace;
-            if strcmp(datatype.Class, 'H5T_REFERENCE')
+            if obj.isReferenceDataset(datasetInfo)
                 % Load all H5T references. This is required, unfortunately also a
                 % bottleneck
                 tid = H5D.get_type(did);
@@ -127,9 +174,14 @@ classdef HDF5Reader < io.backend.base.Reader
                 classId = H5T.get_class(tid);
                 isNumeric = classId == H5ML.get_constant_value('H5T_INTEGER') ...
                     || classId == H5ML.get_constant_value('H5T_FLOAT');
+                % A compound dataset is stubbed even when it holds no rows.
+                % Its member names and types are part of its structure, and
+                % collapsing it to [] would drop them along with the evidence
+                % that the dataset exists at all.
+                isCompound = classId == H5ML.get_constant_value('H5T_COMPOUND');
                 if isChunked && isNumeric
                     datasetValue = types.untyped.DataPipe('filename', obj.Filename, 'path', datasetPath);
-                elseif any(dataspace.Size == 0)
+                elseif any(dataspace.Size == 0) && ~isCompound
                     datasetValue = [];
                 else
                     matlabDataType = io.internal.h5.datatype.datatypeInfoToMatlabType(datatype, datasetInfo.Name);

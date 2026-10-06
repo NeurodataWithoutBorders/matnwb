@@ -1,0 +1,9 @@
+function tf = isSchemaDefinedTableCategory(propertyInfo, namespace)
+% isSchemaDefinedTableCategory - Determine whether a property stores a 
+% schema-defined AlignedDynamicTable category.
+
+    tf = isa(propertyInfo, 'file.Group') ...
+        && ~propertyInfo.isConstrainedSet ...
+        && ~isempty(propertyInfo.type) ...
+        && file.internal.isDescendantOf(propertyInfo.type, namespace, 'DynamicTable');
+end

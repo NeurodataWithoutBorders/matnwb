@@ -203,11 +203,14 @@ trials.addRow('start_time', 1.5, 'stop_time', 2.0, 'correct', true)
 trials.addRow('start_time', 2.5, 'stop_time', 3.0, 'correct', false)
 
 trials.toTable() % visualize the table
+%% 
+% Adding trials to the NWB file:
+
+% Alternative A - There is only one trials table:
 nwb.intervals_trials = trials;
 
-% If you have multiple trials tables, you will need to use custom names for
-% each one:
-nwb.intervals.set('custom_intervals_table_name', trials);
+% Alternative B - If you have multiple trials tables, give each a custom name:
+%   nwb.intervals.set('CustomIntervals', someOtherTrialsTable);
 %% Write
 % Now, to write the NWB file that we have built so far:
 

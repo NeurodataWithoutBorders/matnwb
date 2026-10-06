@@ -88,6 +88,70 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
                 'NWB:DynamicTable:GetRow:RowOutOfBounds');
         end
 
+        function testAddEmptyRowToRaggedColumn(testCase)
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'test table with a ragged column', ...
+                'colnames', {'spike_times'});
+
+            dynamicTable.addRow('spike_times', [1, 2, 3]);
+            dynamicTable.addRow('spike_times', []);
+            dynamicTable.addRow('spike_times', [4, 5]);
+
+            % The empty row ends where the row before it ends.
+            columnIndex = dynamicTable.vectordata.get('spike_times_index');
+            testCase.verifyEqual(columnIndex.data, uint64([3; 3; 5]));
+            testCase.verifyEqual(dynamicTable.id.data, int64([0; 1; 2]));
+            testCase.verifyEmpty(dynamicTable.getRow(2).spike_times{1});
+            testCase.verifyEqual(dynamicTable.getRow(3).spike_times{1}, [4, 5]);
+        end
+
+        function testAddEmptyRowAsFirstRowOfColumn(testCase)
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'test table with a ragged column', ...
+                'colnames', {'spike_times'});
+
+            dynamicTable.addRow('spike_times', []);
+            dynamicTable.addRow('spike_times', [4, 5]);
+
+            % The column is ragged from the first row, which ends at
+            % element 0.
+            columnIndex = dynamicTable.vectordata.get('spike_times_index');
+            testCase.verifyEqual(columnIndex.data, uint64([0; 2]));
+            testCase.verifyEqual(dynamicTable.id.data, int64([0; 1]));
+            testCase.verifyEmpty(dynamicTable.getRow(1).spike_times{1});
+            testCase.verifyEqual(dynamicTable.getRow(2).spike_times{1}, [4, 5]);
+        end
+
+        function testAddEmptyRowToRaggedTextColumn(testCase)
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'test table with a ragged text column', ...
+                'colnames', {'tags'});
+
+            dynamicTable.addRow('tags', {'a', 'b'});
+            dynamicTable.addRow('tags', {});
+            dynamicTable.addRow('tags', {'c'});
+
+            columnIndex = dynamicTable.vectordata.get('tags_index');
+            testCase.verifyEqual(columnIndex.data, uint64([2; 2; 3]));
+            testCase.verifyEqual(dynamicTable.id.data, int64([0; 1; 2]));
+        end
+
+        function testAddEmptyRowMakesColumnRagged(testCase)
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'test table with one value per row', ...
+                'colnames', {'columnA'});
+
+            dynamicTable.addRow('columnA', 1);
+            dynamicTable.addRow('columnA', 2);
+            dynamicTable.addRow('columnA', []);
+
+            % Each existing row becomes a ragged row of one element, and the
+            % empty row adds none.
+            columnIndex = dynamicTable.vectordata.get('columnA_index');
+            testCase.verifyEqual(columnIndex.data, uint64([1; 2; 2]));
+            testCase.verifyEqual(dynamicTable.id.data, int64([0; 1; 2]));
+        end
+
         function testNwbToTableWithReferencedTablesAsRowIndices(testCase)
             % The default mode for the toTable() method is to return the row indices
             % for dynamic table regions. This test verifies that the data type of
@@ -149,6 +213,62 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
         
             % testCase.verifyEmpty(dtr_table.vectordata) %todo when PR merged
             testCase.verifyEqual(size(dtr_table.vectordata), uint64([0,1]))
+        end
+
+        function testClearRemovesColumnsAndIds(testCase)
+            dynamicTable = tests.factory.DynamicTable(NumRows=3, NumColumns=2);
+
+            dynamicTable.clear()
+
+            testCase.verifyFalse(dynamicTable.isDynamicProperty('ColumnA'));
+            testCase.verifyFalse(dynamicTable.isDynamicProperty('ColumnB'));
+            testCase.verifyEmpty(dynamicTable.id.data);
+            testCase.verifyEqual(dynamicTable.colnames, {'ColumnA', 'ColumnB'});
+        end
+
+        function testClearResetsSchemaDefinedColumns(testCase)
+            [spikeTimes, spikeTimesIndex] = util.create_indexed_column({[1, 2, 3], [4, 5]});
+            units = types.core.Units( ...
+                'description', 'test units table', ...
+                'colnames', {'spike_times'}, ...
+                'spike_times', spikeTimes, ...
+                'spike_times_index', spikeTimesIndex);
+
+            units.clear()
+
+            testCase.verifyEmpty(units.spike_times);
+            testCase.verifyEmpty(units.spike_times_index);
+            testCase.verifyEmpty(units.id.data);
+        end
+
+        function testAddRowAfterClear(testCase)
+            dynamicTable = tests.factory.DynamicTable(NumRows=3, NumColumns=2);
+            dynamicTable.clear()
+
+            dynamicTable.addRow('ColumnA', 1, 'ColumnB', 2);
+
+            testCase.verifyTrue(dynamicTable.isDynamicProperty('ColumnA'));
+            matlabTable = dynamicTable.toTable();
+            testCase.verifySize(matlabTable, [1, 3]);
+            testCase.verifyEqual(matlabTable.ColumnA, 1);
+            testCase.verifyEqual(matlabTable.ColumnB, 2);
+        end
+
+        function testExportAfterClearAndAddRow(testCase)
+            fileName = testCase.getRandomFilename();
+            dynamicTable = tests.factory.DynamicTable(NumRows=3, NumColumns=2);
+            dynamicTable.clear()
+            dynamicTable.addRow('ColumnA', 1, 'ColumnB', 2);
+
+            nwb = tests.factory.NWBFile();
+            nwb.acquisition.set('DynamicTable', dynamicTable);
+            nwbExport(nwb, fileName);
+
+            nwbIn = nwbRead(fileName, 'ignorecache');
+            matlabTable = nwbIn.acquisition.get('DynamicTable').toTable();
+            testCase.verifySize(matlabTable, [1, 3]);
+            testCase.verifyEqual(matlabTable.ColumnA, 1);
+            testCase.verifyEqual(matlabTable.ColumnB, 2);
         end
         
         function testClearDynamicTableV2_1(testCase)
@@ -222,6 +342,21 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
             testCase.verifyClass(T, 'table')
         end
 
+        function testToTableWithRowVectorId(testCase)
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'test table with row vector ids', ...
+                'colnames', {'columnA'}, ...
+                'columnA', types.hdmf_common.VectorData( ...
+                    'description', 'first column', ...
+                    'data', (1:4)'), ...
+                'id', types.hdmf_common.ElementIdentifiers('data', 0:3));
+
+            matlabTable = dynamicTable.toTable();
+
+            testCase.verifySize(matlabTable, [4, 2]);
+            testCase.verifyEqual(matlabTable.id, int64((0:3)'));
+        end
+
         function testCheckConfigUsesLastDimForBoundDataPipe(testCase)
             fileName = strrep(testCase.getRandomFilename(), '.nwb', '.h5');
             datasetName = "/image_mask";
@@ -236,9 +371,12 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
             dataPipe.export(fileId, datasetName, {});
             H5F.close(fileId);
 
-            boundPipe = testCase.verifyWarning( ...
-                @() types.untyped.DataPipe('filename', fileName, 'path', datasetName), ...
-                'NWB:BoundPipe:InvalidPipeShape');
+            % Reading a bound pipe with multiple unlimited dimensions must
+            % not warn; the append axis defaults to the last (trailing)
+            % dimension, and any ambiguity notice is deferred to append time.
+            boundPipe = testCase.verifyWarningFree( ...
+                @() types.untyped.DataPipe('filename', fileName, 'path', datasetName));
+            testCase.verifyEqual(boundPipe.axis, 3);
 
             imageMaskColumn = types.hdmf_common.VectorData( ...
                 'description', 'Image masks for each ROI', ...
@@ -369,7 +507,9 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
 
             testCase.verifyEqual(timeIntervals.colnames, {'custom_col'});
             testCase.verifyTrue(timeIntervals.vectordata.isKey('custom_col'));
-            testCase.verifyFalse(isprop(timeIntervals, 'custom_col'));
+            
+            % Verify it is added as dynamic property by the HasUnnamedGroups mixin
+            testCase.verifyTrue(timeIntervals.isDynamicProperty('custom_col'));
         end
 
         function testAddColumnUsesSchemaPropertyForTimeSeriesReferenceColumn(testCase)
@@ -384,6 +524,29 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(timeIntervals.colnames, {'timeseries'});
             testCase.verifyEqual(timeIntervals.timeseries, timeseriesColumn);
             testCase.verifyFalse(timeIntervals.vectordata.isKey('timeseries'));
+        end
+
+        function testAddColumnUsesSchemaPropertiesForRaggedSchemaColumn(testCase)
+            timeIntervals = types.core.TimeIntervals( ...
+                'description', 'test time intervals');
+
+            tags = types.hdmf_common.VectorData( ...
+                'description', 'tags', ...
+                'data', {'a'; 'b'; 'c'});
+            tagsIndex = types.hdmf_common.VectorIndex( ...
+                'description', 'tag indices', ...
+                'data', uint64([2; 3]), ...
+                'target', types.untyped.ObjectView(tags));
+
+            timeIntervals.addColumn('tags', tags, 'tags_index', tagsIndex);
+
+            % Both halves of a ragged schema column are stored on their
+            % generated property, but only the data column is a colname.
+            testCase.verifyEqual(timeIntervals.tags, tags);
+            testCase.verifyEqual(timeIntervals.tags_index, tagsIndex);
+            testCase.verifyFalse(timeIntervals.vectordata.isKey('tags'));
+            testCase.verifyFalse(timeIntervals.vectordata.isKey('tags_index'));
+            testCase.verifyEqual(timeIntervals.colnames, {'tags'});
         end
 
         function testAddColumnWrongTypeForSchemaPropertyKeepsPropertyRouting(testCase)
@@ -444,6 +607,76 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
                 'NWB:DynamicTable:AddColumn:MissingRows');
         end
 
+        function testAddRaggedRowToUnboundDataPipeColumn(testCase)
+            % Each element of the ragged column is a 3x2 matrix. The table
+            % starts with one row of 5 elements.
+            dynamicTable = testCase.createTableWithRaggedDataPipeColumn( ...
+                FirstRow=rand(3, 2, 5), ...
+                Id=int64(0));
+
+            dynamicTable.addRow('randomvalues', rand(3, 2, 6));
+
+            % The index of the new row is the total number of elements, 5+6.
+            dataPipe = dynamicTable.vectordata.get('randomvalues').data;
+            indexPipe = dynamicTable.vectordata.get('randomvalues_index').data;
+            testCase.verifyEqual(indexPipe.load(), uint64([5; 11]));
+            testCase.verifyEqual(size(dataPipe), [3, 2, 11]);
+        end
+
+        function testAddRaggedRowToBoundDataPipeColumn(testCase)
+            % Each element of the ragged column is a 3x2 matrix. The table
+            % starts with one row of 5 elements. The ids are in a DataPipe
+            % so that a row can be added after the table is read from file.
+            dynamicTable = testCase.createTableWithRaggedDataPipeColumn( ...
+                FirstRow=rand(3, 2, 5), ...
+                Id=types.untyped.DataPipe('data', int64(0), 'maxSize', Inf));
+
+            fileName = testCase.getRandomFilename();
+            nwb = tests.factory.NWBFile();
+            nwb.acquisition.set('DynamicTable', dynamicTable);
+            nwbExport(nwb, fileName);
+
+            nwbIn = nwbRead(fileName, 'ignorecache');
+            readTable = nwbIn.acquisition.get('DynamicTable');
+            readTable.addRow('randomvalues', rand(3, 2, 6));
+
+            % A bound pipe writes the added row to the file, so the result
+            % is verified on a fresh read. The index of the new row is the
+            % total number of elements, 5+6.
+            nwbReread = nwbRead(fileName, 'ignorecache');
+            rereadTable = nwbReread.acquisition.get('DynamicTable');
+            dataPipe = rereadTable.vectordata.get('randomvalues').data;
+            indexPipe = rereadTable.vectordata.get('randomvalues_index').data;
+            testCase.verifyEqual(indexPipe.load(), uint64([5; 11]));
+            testCase.verifyEqual(size(dataPipe), [3, 2, 11]);
+        end
+
+        function testAddRaggedRowRejectsValueBeyondIndexDataPipeType(testCase)
+            % The index pipe stores uint8 values, which end at 255.
+            columnData = types.hdmf_common.VectorData( ...
+                'description', 'ragged column', ...
+                'data', types.untyped.DataPipe( ...
+                    'data', (1:250)', ...
+                    'maxSize', Inf));
+            columnIndex = types.hdmf_common.VectorIndex( ...
+                'description', 'index into the ragged column', ...
+                'target', types.untyped.ObjectView(columnData), ...
+                'data', types.untyped.DataPipe( ...
+                    'data', uint8(250), ...
+                    'maxSize', Inf));
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'test table with a narrow index DataPipe', ...
+                'colnames', {'columnA'}, ...
+                'columnA', columnData, ...
+                'columnA_index', columnIndex, ...
+                'id', types.hdmf_common.ElementIdentifiers('data', int64(0)));
+
+            testCase.verifyError( ...
+                @() dynamicTable.addRow('columnA', (1:50)'), ...
+                'NWB:DynamicTable:AddRow:IndexOverflow');
+            testCase.verifyEqual(columnIndex.data.load(), uint8(250));
+        end
+
         function testDuplicateColnamesFailValidation(testCase)
             try
                 types.hdmf_common.DynamicTable( ...
@@ -486,6 +719,43 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
                 'NWB:DynamicTable:CheckConfig:ColumnNamesMismatch');
         end
 
+        function testCheckConfigAllowsEnumElementsOutsideColnames(testCase)
+            % The elements are stored in the table as `cell_type_elements`
+            % and are not a column of the table.
+            dynamicTable = testCase.createDynamicTableWithEnumColumn( ...
+                ColumnName='cell_type', ...
+                Elements={'a'; 'b'}, ...
+                Data=uint8([0; 1; 1]));
+
+            testCase.verifyWarningFree( ...
+                @() types.util.dynamictable.checkConfig(dynamicTable));
+            testCase.verifyEqual(dynamicTable.colnames, {'cell_type'});
+        end
+
+        function testExportTableWithEnumColumn(testCase)
+            % The elements are stored in the table as `cell_type_elements`
+            % and are not a column of the table.
+            dynamicTable = testCase.createDynamicTableWithEnumColumn( ...
+                ColumnName='cell_type', ...
+                Elements={'a'; 'b'}, ...
+                Data=uint8([0; 1; 1]));
+
+            fileName = testCase.getRandomFilename();
+            nwb = tests.factory.NWBFile();
+            nwb.acquisition.set('DynamicTable', dynamicTable);
+            nwbExport(nwb, fileName);
+
+            nwbIn = testCase.verifyWarningFree(@() nwbRead(fileName, 'ignorecache'));
+            readTable = nwbIn.acquisition.get('DynamicTable');
+            enumColumn = readTable.vectordata.get('cell_type');
+            elements = readTable.vectordata.get('cell_type_elements');
+            testCase.verifyEqual(readTable.colnames, {'cell_type'});
+            testCase.verifyEqual(enumColumn.data.load(), uint8([0; 1; 1]));
+            testCase.verifyEqual(enumColumn.elements.path, ...
+                '/acquisition/DynamicTable/cell_type_elements');
+            testCase.verifyEqual(elements.data.load(), {'a'; 'b'});
+        end
+
         function testGetTableHeightReportsUnestablishedEmptyTable(testCase)
             dynamicTable = types.hdmf_common.DynamicTable( ...
                 'description', 'empty table');
@@ -516,6 +786,83 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(columnHeight, 3)
             testCase.verifyEqual(tableHeight, 3)
             testCase.verifyTrue(hasEstablishedHeight)
+        end
+
+        function testAddRowToUnboundDataPipeTableAssignsNextId(testCase)
+            timeIntervals = testCase.createTimeIntervalsWithUnboundDataPipes( ...
+                StartTime=1, ...
+                Id=int64(0));
+
+            timeIntervals.addRow('start_time', 2);
+
+            testCase.verifyEqual(timeIntervals.id.data.load(), int64([0; 1]));
+            testCase.verifyEqual(timeIntervals.start_time.data.load(), [1; 2]);
+        end
+
+        function testAddRowToUnboundDataPipeTableAcceptsExplicitId(testCase)
+            timeIntervals = testCase.createTimeIntervalsWithUnboundDataPipes( ...
+                StartTime=1, ...
+                Id=int64(0));
+
+            % The id is passed as a double and stored in the int64 id pipe.
+            timeIntervals.addRow('start_time', 2, 'id', 10);
+
+            testCase.verifyEqual(timeIntervals.id.data.load(), int64([0; 10]));
+        end
+
+        function testAddRowToUnboundDataPipeTableRejectsIdOutsideType(testCase)
+            timeIntervals = testCase.createTimeIntervalsWithUnboundDataPipes( ...
+                StartTime=1, ...
+                Id=int32(0));
+
+            % The id is one above the largest value an int32 id pipe can hold.
+            idAboveTypeRange = double(intmax('int32')) + 1;
+            testCase.verifyError( ...
+                @() timeIntervals.addRow('start_time', 2, 'id', idAboveTypeRange), ...
+                'NWB:DynamicTable:AddRow:IdOverflow');
+            testCase.verifyEqual(timeIntervals.id.data.load(), int32(0));
+            testCase.verifyEqual(timeIntervals.start_time.data.load(), 1);
+        end
+
+        function testAddRowToUnboundDataPipeColumnConvertsValueType(testCase)
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'test table with an integer DataPipe column', ...
+                'colnames', {'count'}, ...
+                'count', types.hdmf_common.VectorData( ...
+                    'description', 'integer column', ...
+                    'data', types.untyped.DataPipe( ...
+                        'data', int64(1), ...
+                        'maxSize', Inf)), ...
+                'id', types.hdmf_common.ElementIdentifiers( ...
+                    'data', types.untyped.DataPipe( ...
+                        'data', int64(0), ...
+                        'maxSize', Inf)));
+
+            dynamicTable.addRow('count', 2);
+
+            countPipe = dynamicTable.vectordata.get('count').data;
+            testCase.verifyEqual(countPipe.load(), int64([1; 2]));
+        end
+
+        function testFirstRaggedRowOnUnboundDataPipeColumnIndexesExistingRows(testCase)
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'test table with an unbound DataPipe column', ...
+                'colnames', {'columnA'}, ...
+                'columnA', types.hdmf_common.VectorData( ...
+                    'description', 'expandable column', ...
+                    'data', types.untyped.DataPipe( ...
+                        'data', [1; 2], ...
+                        'maxSize', Inf)), ...
+                'id', types.hdmf_common.ElementIdentifiers( ...
+                    'data', int64([0; 1])));
+
+            dynamicTable.addRow('columnA', [3; 4; 5]);
+
+            % Each existing row becomes a ragged row of one element, and the
+            % new row holds three.
+            columnIndex = dynamicTable.vectordata.get('columnA_index');
+            testCase.verifyEqual(columnIndex.data, uint64([1; 2; 5]));
+            testCase.verifyEqual(dynamicTable.id.data, int64([0; 1; 2]));
         end
 
         function testInitDynamicTableIdFillsExistingEmptyId(testCase)
@@ -572,6 +919,30 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
     methods (Static, Access=private)
         
         % Non-test functions
+        function dynamicTable = createDynamicTableWithEnumColumn(options)
+            % Create a table with one EnumData column. Its elements are
+            % stored next to the column under the name of the column
+            % followed by `_elements`.
+            arguments
+                options.ColumnName (1,:) char
+                options.Elements (:,1) cell % values that the column can take
+                options.Data (:,1) uint8 % zero-based index into Elements, one per row
+            end
+
+            elements = types.hdmf_common.VectorData( ...
+                'description', 'fixed set of elements referenced by the enum column', ...
+                'data', options.Elements);
+            enumColumn = types.hdmf_experimental.EnumData( ...
+                'description', 'categorical column', ...
+                'data', options.Data, ...
+                'elements', types.untyped.ObjectView(elements));
+
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'test table with an EnumData column');
+            dynamicTable.vectordata.set([options.ColumnName, '_elements'], elements);
+            dynamicTable.addColumn(options.ColumnName, enumColumn);
+        end
+
         function dtr_table = createDynamicTableWithTableRegionReferences()
             % Create a dynamic table with two columns, where the data of each column is 
             % a dynamic table region referencing another dynamic table.
@@ -601,6 +972,39 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
             );
         end
 
+        function dynamicTable = createTableWithRaggedDataPipeColumn(options)
+            % Create a one-row table with the ragged column `randomvalues`
+            % and its index `randomvalues_index`, both backed by a DataPipe
+            % that extends along the third dimension.
+            arguments
+                options.FirstRow (:,:,:) double % elements of the first row, along the third dimension
+                options.Id % data of the id column
+            end
+
+            elementSize = size(options.FirstRow, [1, 2]);
+            numElements = size(options.FirstRow, 3);
+
+            randomValues = types.hdmf_common.VectorData( ...
+                'description', 'ragged multidimensional column', ...
+                'data', types.untyped.DataPipe( ...
+                    'data', options.FirstRow, ...
+                    'maxSize', [elementSize, Inf], ...
+                    'axis', 3));
+            randomValuesIndex = types.hdmf_common.VectorIndex( ...
+                'description', 'index into the ragged column', ...
+                'target', types.untyped.ObjectView(randomValues), ...
+                'data', types.untyped.DataPipe( ...
+                    'data', uint64(numElements), ...
+                    'maxSize', Inf));
+
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'test table with a ragged DataPipe column', ...
+                'colnames', {'randomvalues'}, ...
+                'randomvalues', randomValues, ...
+                'randomvalues_index', randomValuesIndex, ...
+                'id', types.hdmf_common.ElementIdentifiers('data', options.Id));
+        end
+
         function dynamicTable = createDynamicTable()
             numTableRows = 10;
             
@@ -619,6 +1023,28 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
                 'columnA', columnA, ...
                 'columnB', columnB, ...
                 'id', idColumn);
+        end
+
+        function timeIntervals = createTimeIntervalsWithUnboundDataPipes(options)
+            % Create a table where the `start_time` column and the ids are
+            % DataPipes that have not been exported.
+            arguments
+                options.StartTime % data of the start_time column
+                options.Id % data of the id column
+            end
+
+            timeIntervals = types.core.TimeIntervals( ...
+                'description', 'test table with unbound DataPipes', ...
+                'colnames', {'start_time'}, ...
+                'start_time', types.hdmf_common.VectorData( ...
+                    'description', 'start time column', ...
+                    'data', types.untyped.DataPipe( ...
+                        'data', options.StartTime, ...
+                        'maxSize', Inf)), ...
+                'id', types.hdmf_common.ElementIdentifiers( ...
+                    'data', types.untyped.DataPipe( ...
+                        'data', options.Id, ...
+                        'maxSize', Inf)));
         end
     end
 end

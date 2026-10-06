@@ -46,9 +46,22 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
 % are no schemas in NWB where Anon sets are used, and this class therefore 
 % does not support contained Anon sets.
 
-    properties (Abstract, Access = protected, Transient)
+    properties (Access = private, Dependent, Transient)
         % GroupPropertyNames - String array of property names that contain Sets
         GroupPropertyNames (1,:) string
+        
+        % NonDynamicPropertyNames - String array of class-defined (non-dynamic)
+        % property names, i.e. properties declared in the classdef rather than
+        % added at runtime as dynamic properties
+        NonDynamicPropertyNames (1,:) string
+    end
+
+    properties (Access = private)
+        % GroupPropertyNames_ - Cached value backing the dependent property GroupPropertyNames
+        GroupPropertyNames_ (1,:) string
+
+        % NonDynamicPropertyNames_ - Cached value backing the dependent property NonDynamicPropertyNames
+        NonDynamicPropertyNames_ (1,:) string
     end
     
     properties (Access = private, Transient)
@@ -76,7 +89,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             end
 
             if obj.nameExists(name)
-                throwAsCaller(getNameExistsException(name, obj.TypeName))
+                throwAsCaller(getNameExistsException(name, obj.getTypeShortName()))
             end
 
             wasSuccess = false;
@@ -88,6 +101,11 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                 end
 
                 try
+                    if obj.tryHandleUnnamedGroupAdd(groupName, name, value)
+                        wasSuccess = true;
+                        break
+                    end
+
                     currentSet.set(name, value, ...
                         'FailOnInvalidType', true);
                     wasSuccess = true;
@@ -153,6 +171,25 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             obj.assignContainedSetCallbackFunctions()
         end
     end
+
+    % Getter methods
+    methods
+        function value = get.GroupPropertyNames(obj)
+            if isempty(obj.GroupPropertyNames_)
+                className = class(obj);
+                obj.GroupPropertyNames_ = obj.getGroupPropertyNamesAcrossTypeHierarchy(className);
+            end
+            value = obj.GroupPropertyNames_;
+        end
+
+        function value = get.NonDynamicPropertyNames(obj)
+            if isempty(obj.NonDynamicPropertyNames_)
+                obj.NonDynamicPropertyNames_ = obj.getNonDynamicProperties();
+            end
+            value = obj.NonDynamicPropertyNames_;
+        end
+    end
+
     methods (Access = private)
         function initializeDynamicProperties(obj)
         % initializeDynamicProperties - Init dynamic properties from set entries
@@ -191,9 +228,20 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
         end
     end
 
+    % Hidden utility method
+    methods (Hidden)
+        function tf = isDynamicProperty(obj, name)
+        % isDynamicProperty - Is name a runtime-added dynamic property on this object
+            arguments
+                obj matnwb.mixin.HasUnnamedGroups
+                name (1,1) string
+            end
+            tf = obj.PropertyManager.existPropertyName(name);
+        end
+    end
+
     % Internal utility methods
     methods (Access = private)
-        
         function tf = isContainerLike(obj)
         % isContainerLike - Whether neurodata type is purely a container
         % for other data objects
@@ -202,10 +250,10 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
         % properties for storing other neurodata types, i.e properties
         % containing types.untyped.Set objects
             
-            staticProperties = obj.getStaticProperties();
+            nonDynamicProperties = obj.NonDynamicPropertyNames;
             groupProperties = obj.GroupPropertyNames;
 
-            tf = isempty(setdiff(staticProperties, groupProperties));
+            tf = isempty(setdiff(nonDynamicProperties, groupProperties));
         end
 
         function T = getTableWithAliasNames(obj)
@@ -238,11 +286,33 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             n = sum(nPerGroup);
         end
         
-        function staticProperties = getStaticProperties(obj)
+        function nonDynamicProperties = getNonDynamicProperties(obj)
             allProperties = properties(obj);
             dynamicPropNames = obj.PropertyManager.getAllPropertyNames();
 
-            staticProperties = setdiff(allProperties, dynamicPropNames);
+            nonDynamicProperties = setdiff(allProperties, dynamicPropNames);
+        end
+
+        function wasHandled = tryHandleUnnamedGroupAdd(obj, groupName, name, value)
+        % tryHandleUnnamedGroupAdd - Call optional type-specific add hook.
+            wasHandled = false;
+            if obj.hasMethod('handleUnnamedGroupAdd')
+                wasHandled = obj.handleUnnamedGroupAdd(groupName, name, value);
+            end
+        end
+
+        function tip = getAddTipForUnnamedGroup(obj, groupName)
+        % getAddTipForUnnamedGroup - Resolve display tip for adding entries.
+            if obj.hasMethod('getCustomUnnamedGroupAddTip')
+                tip = obj.getCustomUnnamedGroupAddTip(groupName);
+            else
+                tip = "Tip: Use the 'add' method to add data objects to this group.";
+            end
+        end
+
+        function tf = hasMethod(obj, methodName)
+            metaClass = metaclass(obj);
+            tf = any(strcmp({metaClass.MethodList.Name}, methodName));
         end
     end
 
@@ -385,7 +455,6 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
             obj.(groupName).set(name, value);
         end
 
-
         function value = getDynamicPropertyValueFromAnon(obj, groupName)
             value = obj.(groupName).value;
         end
@@ -491,7 +560,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                         end
                     else
                         title = "<strong>" + groupName + ":</strong> (no entries)" + ...
-                            sprintf('\n    Tip: Use the ''add'' method to add data objects to this group.');
+                            sprintf('\n    %s', obj.getAddTipForUnnamedGroup(groupName));
                     end
                     
                     % Add this group to the property groups
@@ -511,8 +580,37 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
         % displayAliasWarning - Display warning if any names have aliases
             T = getTableWithAliasNames(obj);
             if ~isempty(T)
-                types.untyped.internal.displayAliasWarning(T, obj.TypeName)
+                types.untyped.internal.displayAliasWarning(T, obj.getTypeShortName())
             end
+        end
+    end
+
+    methods (Static, Access = protected)
+        function groupPropertyNames = getGroupPropertyNamesAcrossTypeHierarchy(nwbTypeName)
+        % getGroupPropertyNamesAcrossTypeHierarchy - Retrieve property names of unnamed groups for a specific NWB type
+        %
+        % Syntax:
+        %   groupTypes = getGroupPropertyNamesAcrossTypeHierarchy(nwbTypeName) 
+        %   This function retrieves property names of unnamed groups associated with 
+        %   the specified NWB type name, traversing the class hierarchy to also include
+        %   property names of unnamed groups for parent types.
+        %
+        % Input Arguments:
+        %   nwbTypeName (1,1) string - The name of the NWB type for which property 
+        %   names of unnamed groups are to be retrieved.
+        %
+        % Output Arguments:
+        %   groupPropertyNames - An array of property names of unnamed groups 
+        %   associated with the specified NWB type.
+        
+            arguments
+                nwbTypeName (1,1) string
+            end
+
+            import matnwb.neurodata.internal.collectConstantPropertiesAcrossHierarchy
+
+            groupPropertyNames = collectConstantPropertiesAcrossHierarchy(...
+                nwbTypeName, 'GroupPropertyNames');
         end
     end
 end

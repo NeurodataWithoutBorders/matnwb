@@ -18,8 +18,7 @@ function mustBeValidSchemaVersion(versionNumber)
 
     % Validate supported schema version
     if isempty(schemaVersionNumbers)
-        schemaListing = dir(fullfile(misc.getMatnwbDir(), 'nwb-schema'));
-        schemaVersionNumbers = setdiff({schemaListing.name}, {'.', '..'});
+        schemaVersionNumbers = matnwb.common.listSchemaVersions();
     end
     
     if ~any(strcmp(versionNumber, schemaVersionNumbers))

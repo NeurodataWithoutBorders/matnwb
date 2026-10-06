@@ -14,6 +14,28 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             testCase.verifyEqual(alignedTable.id.data, int64((0:2)'))
         end
 
+        function testAddRoutesCustomCategoryThroughAddCategory(testCase)
+            alignedTable = tests.system.AlignedDynamicTableTest.createAlignedTable();
+            categoryTable = tests.system.AlignedDynamicTableTest.createTableWithHeight(3);
+
+            alignedTable.add("custom", categoryTable)
+
+            testCase.verifyTrue(alignedTable.dynamictable.isKey("custom"))
+            testCase.verifyEqual(alignedTable.categories, {'custom'})
+            testCase.verifyEqual(alignedTable.id.data, int64((0:2)'))
+        end
+
+        function testDisplayTipRecommendsAddCategory(testCase)
+            % Verify "groups" display mode
+            testCase.applyFixture( ...
+                tests.fixtures.PreferenceFixture('matnwb', 'ContainerDisplayMode', 'groups'))
+
+            displayText = evalc( ...
+                'disp(tests.system.AlignedDynamicTableTest.createAlignedTable())');
+
+            testCase.verifyTrue(contains(displayText, "Use the 'addCategory' method"))
+        end
+
         function testAddEmptyTableInitializesParentAndCategoryId(testCase)
             alignedTable = tests.system.AlignedDynamicTableTest.createAlignedTable();
             categoryTable = tests.system.AlignedDynamicTableTest.createEmptyTable();
@@ -56,6 +78,57 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             alignedTable.addCategory("custom", categoryTable)
 
             testCase.verifyTrue(alignedTable.getCategory("custom") == categoryTable)
+        end
+
+        function testClearAlsoClearsCustomCategoryTable(testCase)
+            alignedTable = tests.system.AlignedDynamicTableTest.createAlignedTable();
+            categoryTable = tests.factory.DynamicTable(NumRows=3, NumColumns=1);
+            alignedTable.addCategory("custom", categoryTable)
+
+            alignedTable.clear()
+
+            testCase.verifyEmpty(alignedTable.id.data)
+            testCase.verifyEmpty(categoryTable.id.data)
+            testCase.verifyEqual(categoryTable.vectordata.Count, uint64(0))
+
+            % The category stays registered and keeps its column names.
+            testCase.verifyEqual(alignedTable.categories, {'custom'})
+            testCase.verifyTrue(alignedTable.getCategory("custom") == categoryTable)
+            testCase.verifyEqual(categoryTable.colnames, {'ColumnA'})
+            testCase.verifyWarningFree(@() alignedTable.ensureAlignedTableConsistency())
+        end
+
+        function testClearAlsoClearsSchemaCategoryTable(testCase)
+            alignedTable = tests.system.AlignedDynamicTableTest.createSchemaAlignedTable();
+            electrodesTable = tests.system.AlignedDynamicTableTest.createElectrodesTableWithHeight(3);
+            alignedTable.addCategory("electrodes", electrodesTable)
+
+            alignedTable.clear()
+
+            testCase.verifyEmpty(alignedTable.id.data)
+            testCase.verifyEmpty(electrodesTable.id.data)
+            testCase.verifyTrue(alignedTable.electrodes == electrodesTable)
+            testCase.verifyEqual(alignedTable.categories, {'electrodes'})
+        end
+
+        function testAddRowsAfterClearKeepsCategoryAligned(testCase)
+            alignedTable = types.hdmf_common.AlignedDynamicTable( ...
+                'description', 'parent table', ...
+                'colnames', {'x'}, ...
+                'x', types.hdmf_common.VectorData( ...
+                    'description', 'parent column', ...
+                    'data', (1:3)'));
+            categoryTable = tests.factory.DynamicTable(NumRows=3, NumColumns=1);
+            alignedTable.addCategory("custom", categoryTable)
+            alignedTable.clear()
+
+            alignedTable.addRow('x', 10);
+            categoryTable.addRow('ColumnA', 20);
+
+            matlabTable = alignedTable.toTable();
+            testCase.verifyEqual(height(matlabTable), 1)
+            testCase.verifyEqual(matlabTable.x, 10)
+            testCase.verifyEqual(matlabTable.custom.ColumnA, 20)
         end
 
         function testAddCustomCategoryRejectsExistingCategory(testCase)
@@ -137,7 +210,6 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                 @() alignedTable.getCategory("electrodes"), ...
                 'NWB:AlignedDynamicTable:CategoryNotFound')
         end
-
 
         function testGetCategoryRejectsMissingCustomCategory(testCase)
             alignedTable = tests.system.AlignedDynamicTableTest.createSchemaAlignedTable();
@@ -249,6 +321,126 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             alignedTable.addCategory("custom", categoryTable)
 
             testCase.verifyEqual(alignedTable.categories, {'custom'})
+        end
+    
+        function testGetRowIncludesSelectedCategoryRows(testCase)
+            alignedTable = tests.system.AlignedDynamicTableTest.createAlignedTable();
+            categoryTable = tests.factory.DynamicTable(NumRows=3, NumColumns=1);
+
+            alignedTable.addCategory("custom", categoryTable)
+
+            selectedRows = alignedTable.getRow([1, 3]);
+            expectedCategoryRows = categoryTable.getRow([1, 3]);
+
+            testCase.verifyEqual(selectedRows.custom, expectedCategoryRows)
+        end
+
+        function testGetRowSelectsRequestedCategories(testCase)
+            alignedTable = tests.system.AlignedDynamicTableTest.createAlignedTable();
+            firstCategory = tests.factory.DynamicTable(NumRows=3, NumColumns=1);
+            secondCategory = tests.factory.DynamicTable(NumRows=3, NumColumns=1);
+            alignedTable.addCategory( ...
+                "first", firstCategory, ...
+                "second", secondCategory)
+
+            selectedRows = alignedTable.getRow(1, 'categories', {'second'});
+
+            testCase.verifyEqual(selectedRows.Properties.VariableNames, {'second'})
+            testCase.verifyEqual(selectedRows.second, secondCategory.getRow(1))
+        end
+
+        function testGetRowSelectsCategoryRowsByParentId(testCase)
+            alignedTable = tests.system.AlignedDynamicTableTest.createAlignedTableWithId( ...
+                int64([10; 20; 30]));
+            categoryTable = tests.factory.DynamicTable(NumRows=3, NumColumns=1);
+            alignedTable.addCategory("custom", categoryTable)
+
+            selectedRow = alignedTable.getRow(20, 'useId', true);
+
+            testCase.verifyEqual(selectedRow.custom, categoryTable.getRow(2))
+        end
+
+        function testToTableIncludesCategoryAsNestedTable(testCase)
+            alignedTable = tests.system.AlignedDynamicTableTest.createAlignedTable();
+            categoryTable = tests.factory.DynamicTable(NumRows=3, NumColumns=1);
+            alignedTable.addCategory("custom", categoryTable)
+            expectedCategoryTable = removevars(categoryTable.toTable(), 'id');
+
+            matlabTable = alignedTable.toTable();
+
+            testCase.verifyEqual(matlabTable.custom, expectedCategoryTable)
+        end
+
+        function testGetRowAfterRoundTrip(testCase)
+            % `colnames` and `categories` are column cell arrays after a
+            % read. With two columns and one category they have different
+            % lengths.
+            readTable = testCase.roundTripAlignedTable( ...
+                ColumnNames={'x', 'y'}, ...
+                CategoryNames={'first'}, ...
+                NumRows=3);
+
+            selectedRows = readTable.getRow([1, 3]);
+
+            testCase.verifyEqual(selectedRows.Properties.VariableNames, ...
+                {'x', 'y', 'first'})
+            testCase.verifyEqual(height(selectedRows), 2)
+        end
+
+        function testToTableAfterRoundTrip(testCase)
+            % `colnames` and `categories` are column cell arrays after a
+            % read. With two columns and one category they have different
+            % lengths.
+            readTable = testCase.roundTripAlignedTable( ...
+                ColumnNames={'x', 'y'}, ...
+                CategoryNames={'first'}, ...
+                NumRows=3);
+
+            matlabTable = readTable.toTable();
+
+            testCase.verifyEqual(matlabTable.Properties.VariableNames, ...
+                {'id', 'x', 'y', 'first'})
+            testCase.verifyEqual(height(matlabTable), 3)
+        end
+    end
+
+    methods (Access = private)
+        function readTable = roundTripAlignedTable(testCase, options)
+            % Export an AlignedDynamicTable with the given columns and
+            % categories to a file and return the table read from that file.
+            arguments
+                testCase
+                options.ColumnNames (1,:) cell
+                options.CategoryNames (1,:) cell
+                options.NumRows (1,1) double
+            end
+
+            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
+
+            columns = cell(1, numel(options.ColumnNames));
+            for iColumn = 1:numel(options.ColumnNames)
+                columns{iColumn} = types.hdmf_common.VectorData( ...
+                    'description', 'parent column', ...
+                    'data', (1:options.NumRows)');
+            end
+            columnNvPairs = [options.ColumnNames; columns];
+
+            alignedTable = types.hdmf_common.AlignedDynamicTable( ...
+                'description', 'parent table', ...
+                'colnames', options.ColumnNames, ...
+                columnNvPairs{:});
+            for iCategory = 1:numel(options.CategoryNames)
+                alignedTable.addCategory(options.CategoryNames{iCategory}, ...
+                    tests.factory.DynamicTable(NumRows=options.NumRows, NumColumns=1))
+            end
+
+            fileName = 'alignedTable.nwb';
+            nwb = tests.factory.NWBFile();
+            nwb.acquisition.set('AlignedTable', alignedTable);
+            nwbExport(nwb, fileName);
+
+            nwbIn = nwbRead(fileName, 'ignorecache');
+            readTable = nwbIn.acquisition.get('AlignedTable');
         end
     end
 

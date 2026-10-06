@@ -9,7 +9,6 @@ function data = load_mat_style(obj, varargin)
 
     %% Select from Space
     dataDimensions = obj.dims;
-    spaceId = obj.getSpace();
     userSelection = varargin;
 
     selectionErrorId = 'NWB:DataStub:Load:InvalidSelection';
@@ -41,8 +40,15 @@ function data = load_mat_style(obj, varargin)
         data = obj.load_mat_style(1);
         data = getEmptyRepresentation(data);
         return
+    end
 
-    elseif isscalar(userSelection) && ~ischar(userSelection{1})
+    % The dataspace and the read use the same open dataset, so each call
+    % opens the file once.
+    fileId = H5F.open(obj.Filename);
+    datasetId = H5D.open(fileId, obj.DatasetPath);
+    spaceId = H5D.get_space(datasetId);
+
+    if isscalar(userSelection) && ~ischar(userSelection{1})
         % linear index into the fast dimension.
         orderedSelection = unique(userSelection{1});
 
@@ -66,11 +72,20 @@ function data = load_mat_style(obj, varargin)
             dataDimensions = [dataDimensions, 1];
         end
 
-        [points{:}] = ind2sub(dataDimensions, orderedSelection);
         readSpaceId = H5S.copy(spaceId);
         H5S.select_none(readSpaceId);
-        H5S.select_elements(readSpaceId, 'H5S_SELECT_SET', ...
-            cell2mat(flipud(points)) - 1);
+        isOneRun = orderedSelection(end) - orderedSelection(1) + 1 == numel(orderedSelection);
+        if isscalar(obj.dims) && isOneRun
+            % One contiguous run of a one-dimensional dataset is a single
+            % hyperslab, which HDF5 selects faster than one point per element.
+            % The selection can be of any integer class, and H5S takes doubles.
+            H5S.select_hyperslab(readSpaceId, 'H5S_SELECT_SET', ...
+                double(orderedSelection(1)) - 1, [], numel(orderedSelection), []);
+        else
+            [points{:}] = ind2sub(dataDimensions, orderedSelection);
+            H5S.select_elements(readSpaceId, 'H5S_SELECT_SET', ...
+                cell2mat(flipud(points)) - 1);
+        end
         memorySpaceId = H5S.create_simple(length(selectionDimensions), ...
             selectionDimensions, selectionDimensions);
     else
@@ -81,8 +96,6 @@ function data = load_mat_style(obj, varargin)
     H5S.close(spaceId);
 
     %% Read Data
-    fileId = H5F.open(obj.Filename);
-    datasetId = H5D.open(fileId, obj.DatasetPath);
     data = H5D.read(datasetId, 'H5ML_DEFAULT', memorySpaceId, readSpaceId, 'H5P_DEFAULT');
 
     %% Retype Data
@@ -94,9 +107,17 @@ function data = load_mat_style(obj, varargin)
     %% Reshape Data
     expectedSize = getExpectedSize(dataDimensions, userSelection);
     openSelectionIndices = find(cellfun('isclass', userSelection, 'char'));
-    for iDimension = 1:length(openSelectionIndices)
+    % Ensure openSelectionIndices is a row vector before using it for the loop index.
+    openSelectionIndices = reshape(openSelectionIndices, 1, []);
+    for iDimension = openSelectionIndices
         % for open selection ':', select the entire range of that dimension.
-        userSelection{iDimension} = 1:dataDimensions(iDimension);
+        if iDimension == length(userSelection)
+            % A trailing ':' spans every remaining dimension, folded into
+            % one as in getExpectedSize.
+            userSelection{iDimension} = 1:prod(dataDimensions(iDimension:end));
+        else
+            userSelection{iDimension} = 1:dataDimensions(iDimension);
+        end
     end
 
     if isstruct(data)
@@ -188,7 +209,7 @@ function reordered = reorderLoadedData(data, selections)
     isSelectionNormal = false(size(selections)); % that is, without duplicates or out of order.
     for i = 1:length(indexKey)
         indexKey{i} = unique(selections{i});
-        isSelectionNormal = isequal(indexKey{i}, selections{i});
+        isSelectionNormal(i) = isequal(indexKey{i}, selections{i});
     end
     if all(isSelectionNormal)
         reordered = data;

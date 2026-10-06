@@ -40,6 +40,16 @@ function addRawData(DynamicTable, column, data)
         depth = getNestedDataDepth(data);
     end
 
+    % A column that already has a VectorIndex keeps its number of index
+    % levels: adding a level would regroup the rows already stored, each
+    % becoming a single sub-group of the new level.
+    numIndexLevels = length(indexChain) - 1;
+    assert(numIndexLevels == 0 || depth <= length(indexChain), ...
+        'NWB:DynamicTable:AddRow:TooManyIndexLevels', ...
+        ['The value for column `%s` needs %d index levels, but the column has %d. ' ...
+        'Check that the value is not wrapped in an extra cell array.'], ...
+        column, depth - 1, numIndexLevels);
+
     % add indices until it matches depth.
     for iVec = (length(indexChain)+1):depth
         indexChain{iVec} = types.util.dynamictable.addVecInd(DynamicTable, indexChain{end});
@@ -123,7 +133,12 @@ function depth = getNestedDataDepth(data, varargin)
     else
         isMultiRow = 1 < size(subData, p.Results.dataPipeDimension);
     end
-    if isMultiRow
+
+    % A value without elements is a row of a ragged column that holds no
+    % elements. Like a row of several elements, it needs an index. An empty
+    % character vector is one element, an empty text value.
+    isEmptyRow = isempty(subData) && ~ischar(subData);
+    if isMultiRow || isEmptyRow
         depth = depth + 1;
     end
 end
@@ -149,15 +164,24 @@ function numRows = nestedAdd(DynamicTable, indChain, data)
             numRows = nestedAdd(DynamicTable, indChain(2:end), data);
         end
 
-        add2Index(Vector, numRows);
+        add2Index(Vector, numRows, name);
     else
+        if isempty(data)
+            % A row without elements adds nothing to the column.
+            numRows = 0;
+            return
+        end
+
         if ischar(data)
             data = mat2cell(data, ones(size(data, 1), 1));
         end % char matrices converted to cell arrays containing character vectors.
 
         if isa(Vector.data, 'types.untyped.DataPipe')
+            % A VectorIndex above this column advances by the number of
+            % elements this call adds, not by the total length of the pipe.
+            lengthBefore = Vector.data.getAppendAxisLength();
             Vector.data.append(data);
-            numRows = size(Vector.data, Vector.data.axis);
+            numRows = Vector.data.getAppendAxisLength() - lengthBefore;
         else
             numRows = add2MemData(Vector, data);
         end
@@ -184,13 +208,20 @@ function numRows = add2MemData(VectorData, data)
         numRows = size(data, 2);
     else % vector data
         catDim = find(size(appendBasis) > 1);
+        % A vector value is a list of scalar elements, so its orientation
+        % carries no meaning. Match it to the stored vector.
+        if isvector(data)
+            vectorShape = [1, 1];
+            vectorShape(catDim) = numel(data);
+            data = reshape(data, vectorShape);
+        end
         numRows = length(data);
     end
 
     VectorData.data = cat(catDim, VectorData.data, data);
 end
 
-function add2Index(VectorIndex, numElem)
+function add2Index(VectorIndex, numElem, indexName)
     raggedOffset = 0;
     if isa(VectorIndex.data, 'types.untyped.DataPipe')
         if isa(VectorIndex.data.internal, 'types.untyped.datapipe.BlueprintPipe')...
@@ -206,7 +237,17 @@ function add2Index(VectorIndex, numElem)
 
     data = double(raggedOffset) + numElem;
     if isa(VectorIndex.data, 'types.untyped.DataPipe')
-        VectorIndex.data.append(data);
+        % A pipe keeps its data type, so the new value is cast to that
+        % type. An unbound pipe only accepts values of its own data type.
+        indexDataType = VectorIndex.data.dataType;
+        isIntegerType = startsWith(indexDataType, {'int', 'uint'});
+        assert(~isIntegerType || data <= intmax(indexDataType), ...
+            'NWB:DynamicTable:AddRow:IndexOverflow', ...
+            ['The DataPipe of `%s` stores `%s` values and cannot hold the index ' ...
+            'value %d. Create the DataPipe of the VectorIndex with a wider ' ...
+            'data type, for example `uint64`.'], ...
+            indexName, indexDataType, data);
+        VectorIndex.data.append(cast(data, indexDataType));
     else
         VectorIndex.data = [double(VectorIndex.data); data];
     end

@@ -1,5 +1,5 @@
 classdef DurationVectorData < types.hdmf_common.VectorData & types.untyped.DatasetClass
-% DURATIONVECTORDATA - A 1-dimensional VectorData that stores durations in seconds.
+% DURATIONVECTORDATA - A 1-D VectorData that stores durations in seconds.
 %
 % Required Properties:
 %  data, description
@@ -12,6 +12,9 @@ end
 % OPTIONAL PROPERTIES
 properties
     resolution; %  (single) The temporal resolution of the durations, in seconds. This is typically the sampling period (1 / sampling_rate), also known as the clock period, of the data acquisition system from which the durations were recorded or derived.
+end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["resolution", "unit"];
 end
 
 methods

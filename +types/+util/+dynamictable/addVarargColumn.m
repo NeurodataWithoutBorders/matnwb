@@ -7,10 +7,11 @@ p.StructExpand = false;
 parse(p, varargin{:});
 newColNames = DynamicTable.validate_colnames(fieldnames(p.Unmatched));
 newVectorData = p.Unmatched;
-storageTargets = resolveStorageTargets(DynamicTable, newColNames, struct2cell(newVectorData));
+[storageTargets, storageNames] = resolveStorageTargets(DynamicTable, newColNames);
 
 % Check if any of the new columns already exist in the table
-existingCols = getExistingColumns(DynamicTable, newColNames, storageTargets);
+existingCols = getExistingColumns( ...
+    DynamicTable, newColNames, storageTargets, storageNames);
 assert(isempty(existingCols), ...
     'NWB:DynamicTable:AddColumn:ColumnExists', ...
     'Column(s) { %s } already exist in the table', strjoin(existingCols, ', '));
@@ -56,20 +57,24 @@ for i = 1:length(newColNames)
 
         validateColumnHeight(new_cn, currentColumnHeight, tableHeight)
     end
-    assignColumn(DynamicTable, new_cn, new_cv, storageTargets{i});
+    assignColumn( ...
+        DynamicTable, new_cn, new_cv, storageTargets{i}, storageNames{i});
     updateColnames(DynamicTable, new_cn, new_cv)
 end
 end
 
-function storageTargets = resolveStorageTargets(dynamicTable, columnNames, columnData)
+function [storageTargets, storageNames] = resolveStorageTargets(dynamicTable, columnNames)
     storageTargets = cell(size(columnNames));
+    storageNames = cell(size(columnNames));
     for i = 1:length(columnNames)
-        storageTargets{i} = types.util.dynamictable.resolveColumnStorage( ...
-            dynamicTable, columnNames{i}, columnData{i});
+        [storageTargets{i}, storageNames{i}] = ...
+            types.util.dynamictable.resolveColumnStorage( ...
+                dynamicTable, columnNames{i});
     end
 end
 
-function existingCols = getExistingColumns(dynamicTable, newColNames, storageTargets)
+function existingCols = getExistingColumns( ...
+        dynamicTable, newColNames, storageTargets, storageNames)
     existingCols = {};
     
     if ~isempty(dynamicTable.colnames)
@@ -84,7 +89,7 @@ function existingCols = getExistingColumns(dynamicTable, newColNames, storageTar
     
         switch storageTargets{i}
             case 'property'
-                if ~isempty(dynamicTable.(newColumnName))
+                if ~isempty(dynamicTable.(storageNames{i}))
                     existingCols{end+1} = newColumnName; %#ok<AGROW>
                 end
             case 'vectordata'
@@ -96,7 +101,8 @@ function existingCols = getExistingColumns(dynamicTable, newColNames, storageTar
     end
 end
 
-function assignColumn(DynamicTable, columnName, columnValue, storageTarget)
+function assignColumn( ...
+        DynamicTable, columnName, columnValue, storageTarget, storageName)
     assert(any(strcmp(storageTarget, {'property', 'vectordata'})), ...
         'NWB:DynamicTable:AddColumn:InternalError', ...
         'Unrecognized storage target `%s` for column `%s`.', ...
@@ -104,9 +110,9 @@ function assignColumn(DynamicTable, columnName, columnValue, storageTarget)
     
     switch storageTarget
         case 'property'
-            DynamicTable.(columnName) = columnValue;
+            DynamicTable.(storageName) = columnValue;
         case 'vectordata'
-            DynamicTable.vectordata.set(columnName, columnValue);
+            DynamicTable.vectordata.set(storageName, columnValue);
     end
 end
 

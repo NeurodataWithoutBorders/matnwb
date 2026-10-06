@@ -1,19 +1,25 @@
-function validateEmbeddedSpecifications(h5_file_id, expectedNamespaceNames)
+function validateEmbeddedSpecifications(writer, expectedNamespaceNames)
 % validateEmbeddedSpecifications - Validate the embedded specifications
 %
 % This function does two things:
 %   1) Displays a warning if specifications of expected namespaces
-%      are not embedded in the file. 
+%      are not embedded in the file.
 %        E.g if cached namespaces were cleared prior to export.
-%   
-%   2) Deletes specifications for unused namespaces that are embedded. 
+%
+%   2) Deletes specifications for unused namespaces that are embedded.
 %      - E.g. If neurodata type from an embedded namespace was removed and the
 %        file was re-exported
+%
+% Backend-agnostic: only uses the io.backend.base.Writer interface, so
+% this works for any registered storage backend, not just HDF5.
 
-% NB: Input h5_file_id must point to a file opened with write access
+    arguments
+        writer (1,1) io.backend.base.Writer
+        expectedNamespaceNames
+    end
 
-    specLocation = io.spec.internal.readEmbeddedSpecLocation(h5_file_id);
-    embeddedNamespaceNames = io.internal.h5.listGroupNames(h5_file_id, specLocation);
+    specLocation = writer.getEmbeddedSpecLocation();
+    embeddedNamespaceNames = writer.listChildGroupNames(specLocation);
 
     checkMissingNamespaces(expectedNamespaceNames, embeddedNamespaceNames)
 
@@ -21,7 +27,7 @@ function validateEmbeddedSpecifications(h5_file_id, expectedNamespaceNames)
         expectedNamespaceNames, embeddedNamespaceNames);
 
     if ~isempty(unusedNamespaces)
-        deleteUnusedNamespaces(h5_file_id, unusedNamespaces, specLocation)
+        deleteUnusedNamespaces(writer, unusedNamespaces, specLocation)
     end
 end
 
@@ -45,10 +51,10 @@ function unusedNamespaces = checkUnusedNamespaces(expectedNamespaceNames, embedd
     unusedNamespaces = setdiff(embeddedNamespaceNames, expectedNamespaceNames);
 end
 
-function deleteUnusedNamespaces(fileId, unusedNamespaces, specRootLocation)
+function deleteUnusedNamespaces(writer, unusedNamespaces, specRootLocation)
     for i = 1:numel(unusedNamespaces)
         thisName = unusedNamespaces{i};
         namespaceSpecLocation = strjoin( {specRootLocation, thisName}, '/');
-        io.internal.h5.deleteGroup(fileId, namespaceSpecLocation)
+        writer.deleteGroup(namespaceSpecLocation)
     end
 end

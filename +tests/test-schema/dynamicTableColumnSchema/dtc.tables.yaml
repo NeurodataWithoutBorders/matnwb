@@ -1,0 +1,14 @@
+groups:
+- neurodata_type_def: MixedDatasetTable
+  neurodata_type_inc: DynamicTable
+  doc: DynamicTable containing a column dataset and a non-column dataset.
+  datasets:
+  - name: schema_column
+    neurodata_type_inc: VectorData
+    doc: A schema-defined table column.
+    quantity: '?'
+  - name: table_metadata
+    neurodata_type_inc: Data
+    dtype: text
+    doc: Dataset metadata that is not a table column.
+    quantity: '?'

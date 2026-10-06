@@ -69,7 +69,13 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture, tests.fixtur
         end
     end
     
-    methods (Test)
+    % Tagged UsesPythonWhenAvailable, not RequiresPython. The RequiresPython
+    % tag drives the SKIP_PYNWB_TESTS exclusion in nwbtest, which would drop
+    % this class entirely on MATLAB releases pinned to Python 3.9 and stop the
+    % tutorials from running there at all. The pynwb and nwbinspector checks
+    % below gate themselves on the environment variables instead, so the
+    % tutorials keep running when Python is unavailable.
+    methods (Test, TestTags = {'UsesPythonWhenAvailable'})
         function testTutorial(testCase, tutorialFile) %#ok<INUSD>
             warningCleanup = testCase.suppressExternalVideosWarning(); %#ok<NASGU>
 

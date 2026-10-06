@@ -9,6 +9,9 @@ classdef VectorIndex < types.hdmf_common.VectorData & types.untyped.DatasetClass
 properties
     target; % REQUIRED (Object reference to VectorData) Reference to the target dataset that this index applies to.
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["target"];
+end
 
 methods
     function obj = VectorIndex(varargin)

@@ -53,7 +53,17 @@ Supporting packages:
 ## Setting up Python-dependent tests
 
 Some tests use Python for PyNWB interoperability and NWB file validation.
-These tests are tagged `UsesPython` and require additional setup.
+These tests are tagged and require additional setup. Two tags describe how
+strongly a test depends on Python:
+
+| Tag | Meaning |
+|---|---|
+| `RequiresPython` | The test cannot run without Python. `nwbtest` excludes it when `SKIP_PYNWB_TESTS=1`. |
+| `UsesPythonWhenAvailable` | The test has a Python component but runs without it. `nwbtest` never excludes it; the test skips its own Python checks when `SKIP_PYNWB_TESTS=1`. |
+
+`TutorialTest` carries `UsesPythonWhenAvailable`: it runs every tutorial
+livescript regardless of Python, and additionally reads each generated NWB file
+back with PyNWB and inspects it with NWBInspector when those are available.
 
 ### 1. Install Python packages
 
@@ -123,7 +133,7 @@ variables at test startup. If `nwbtest.env` does not exist, it falls back to
 
 ### Skipping Python tests
 
-If Python is not available or not needed, skip all Python-dependent tests:
+If Python is not available or not needed, skip the tests that require it:
 
 ```matlab
 setenv('SKIP_PYNWB_TESTS', '1')
@@ -132,9 +142,12 @@ nwbtest()
 
 Or set `SKIP_PYNWB_TESTS=1` in your `nwbtest.env` file.
 
+This drops the whole test suite for classes tagged `RequiresPython`. Classes tagged
+`UsesPythonWhenAvailable` still run, minus their Python checks.
+
 ## Setting up dynamically loaded HDF5 filter tests
 
-Tests tagged `UsesDynamicallyLoadedFilters` require MATLAB R2022a or newer and
+Tests tagged `RequiresDynamicallyLoadedFilters` need MATLAB R2022a or newer and
 HDF5 filter plugins to be available. The easiest way to set this up is via the
 `hdf5plugin` Python package.
 
@@ -167,8 +180,17 @@ _System Properties > Advanced > Environment Variables_ and restart MATLAB.
 
 - Test classes inherit from `matlab.unittest.TestCase` (or `tests.abstract.NwbTestCase` for tests that need generated NWB types)
 - Test method names start with `test` (e.g., `testSmoke`, `testRoundTrip`)
-- Python-dependent tests are tagged `UsesPython`
-- Tests requiring dynamically loaded HDF5 filters are tagged `UsesDynamicallyLoadedFilters` (MATLAB R2022a+)
+- Tests that require Python are tagged `RequiresPython`; tests with an optional Python component are tagged `UsesPythonWhenAvailable` (see [Setting up Python-dependent tests](#setting-up-python-dependent-tests))
+- Tests requiring dynamically loaded HDF5 filters are tagged `RequiresDynamicallyLoadedFilters` (MATLAB R2022a+)
+
+A tag name states how strongly the test depends on the thing it names. A
+`Requires*` tag means `nwbtest` drops the test entirely when that dependency is
+unavailable, so a test that degrades gracefully on its own must not carry one.
+
+The weekly `PyNWB dev branch compatibility` workflow selects both Python tags,
+so a test with an optional Python component is checked against the pynwb and
+nwbinspector dev branches without being excluded on releases where Python is
+unavailable.
 
 ### Placing `TestTags` on the `methods` block, not the classdef
 
@@ -179,14 +201,14 @@ issue with the MATLAB domain for Sphinx documentation generation
 
 ```matlab
 % Correct
-methods (Test, TestTags = {'UsesPython'})
+methods (Test, TestTags = {'RequiresPython'})
     function testSomething(testCase)
         ...
     end
 end
 
 % Avoid
-classdef (TestTags = {'UsesPython'}) MyTest < matlab.unittest.TestCase
+classdef (TestTags = {'RequiresPython'}) MyTest < matlab.unittest.TestCase
     ...
 end
 ```

@@ -9,6 +9,9 @@ classdef VectorData < types.hdmf_common.Data & types.untyped.DatasetClass
 properties
     description; % REQUIRED (char) Description of what these vectors represent.
 end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["description"];
+end
 
 methods
     function obj = VectorData(varargin)

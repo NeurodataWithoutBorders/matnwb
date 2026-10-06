@@ -1,5 +1,5 @@
 classdef ElectrodesTable < types.hdmf_common.DynamicTable & types.untyped.GroupClass
-% ELECTRODESTABLE - A table of all electrodes (i.e. channels) used for recording. Introduced in NWB 2.8.0. Replaces the "electrodes" table (neurodata_type_inc DynamicTable, no neurodata_type_def) that is part of NWBFile.
+% ELECTRODESTABLE - A table of all electrodes (i.e., channels) used for recording. Introduced in NWB 2.8.0. Replaces the "electrodes" table (neurodata_type_inc DynamicTable, no neurodata_type_def) that is part of NWBFile.
 %
 % Required Properties:
 %  colnames, description, group, id, location
@@ -22,6 +22,9 @@ properties
     x; %  (VectorData) x coordinate of the channel location in the brain (+x is posterior). Units should be specified in microns.
     y; %  (VectorData) y coordinate of the channel location in the brain (+y is inferior). Units should be specified in microns.
     z; %  (VectorData) z coordinate of the channel location in the brain (+z is right). Units should be specified in microns.
+end
+properties (Constant, Access = private)
+    DeclaredSchemaColumns = ["filtering", "group", "group_name", "imp", "location", "reference", "rel_x", "rel_y", "rel_z", "x", "y", "z"];
 end
 
 methods
@@ -109,6 +112,7 @@ methods
         if strcmp(class(obj), 'types.core.ElectrodesTable') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
+            obj.setupHasUnnamedGroupsMixin();
             obj.ensureDynamicTableConsistency();
         end
     end

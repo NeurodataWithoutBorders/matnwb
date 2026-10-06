@@ -3,116 +3,155 @@ classdef ExternalLink < handle
         filename;
         path;
     end
-    
+
+    properties (Hidden, SetAccess = private)
+        % Base location a relative `filename` resolves against, captured
+        % from the backend reader when the link is read from a file. Left
+        % empty for user-constructed links, which keep resolving against
+        % the working directory.
+        BasePath = '';
+    end
+
     methods
-        function obj = ExternalLink(filename, path)
+        function obj = ExternalLink(filename, path, basePath)
             validateattributes(filename, {'char', 'string'}, {'scalartext'} ...
                 , 'types.untyped.ExternalLink', 'filename', 1);
             validateattributes(path, {'char', 'string'}, {'scalartext'} ...
                 , 'types.untyped.ExternalLink', 'path', 2);
             obj.filename = char(filename);
             obj.path = char(path);
+            if nargin > 2
+                validateattributes(basePath, {'char', 'string'}, {'scalartext'} ...
+                    , 'types.untyped.ExternalLink', 'basePath', 3);
+                obj.BasePath = char(basePath);
+            end
         end
         
         function data = deref(obj)
             data = cell(size(obj));
-            for i = 1:numel(obj)
-                data{i} = scalar_deref(obj(i));
+            for iLink = 1:numel(obj)
+                data{iLink} = scalarDeref(obj(iLink));
             end
-            
+
             if isscalar(data)
                 data = data{1};
             end
-            
-            function data = scalar_deref(Link)
-                % if path is valid hdf5 path, then returns either a Nwb Object, DataStub, or Link Object
-                % otherwise errors, probably.
-                assert(ischar(Link.filename), 'expecting filename to be a char array.');
-                assert(isfile(Link.filename), '%s does not exist.', Link.filename);
-                
-                fid = H5F.open(Link.filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
-                LinkedInfo = h5info(Link.filename, Link.path);
-                loc = [Link.filename Link.path];
-                
-                if isfield(LinkedInfo, 'Attributes')
-                    attr_names = {LinkedInfo.Attributes.Name};
-                    is_typed = any(strcmp(attr_names, 'neurodata_type')...
-                        | strcmp(attr_names, 'namespace'));
+
+            function data = scalarDeref(link)
+                % Returns an NWB object, DataStub, or Link object for a
+                % valid target path; errors otherwise.
+                assert(ischar(link.filename), 'expecting filename to be a char array.');
+                targetFilename = link.resolveTargetFilename();
+                % A store is a file for some backends and a directory for
+                % others, so existence is checked without assuming either.
+                assert(isfile(targetFilename) || isfolder(targetFilename), ...
+                    'NWB:ExternalLink:TargetNotFound', ...
+                    '%s does not exist.', targetFilename);
+
+                reader = io.backend.BackendFactory.createReader(targetFilename);
+                linkedInfo = reader.readNodeInfo(link.path);
+                location = [targetFilename link.path];
+
+                % The field names tested below are h5info's, which
+                % io.backend.base.Reader.readNodeInfo mirrors for every
+                % backend, so the node classification stays backend neutral.
+                if isfield(linkedInfo, 'Attributes')
+                    attributeNames = {linkedInfo.Attributes.Name};
+                    isTyped = any(strcmp(attributeNames, 'neurodata_type')...
+                        | strcmp(attributeNames, 'namespace'));
                 else
-                    is_typed = false;
+                    isTyped = false;
                 end
-                
-                is_dataset = all(isfield(LinkedInfo, {...
+
+                isDataset = all(isfield(linkedInfo, {...
                     'FillValue',...
                     'ChunkSize',...
                     'Dataspace',...
                     'Datatype',...
                     'Filters',...
                     'Attributes'}));
-                is_group = all(isfield(LinkedInfo, {...
+                % 'Datatypes' is deliberately not required: it holds HDF5
+                % named datatypes, which have no equivalent in other
+                % backends, and nothing reads it. Groups, Datasets and Links
+                % already tell a group apart from a dataset or a link.
+                isGroup = all(isfield(linkedInfo, {...
                     'Groups',...
                     'Datasets',...
-                    'Datatypes',...
                     'Links',...
                     'Attributes'}));
-                is_link = all(isfield(LinkedInfo, {...
+                isLink = all(isfield(linkedInfo, {...
                     'Type',...
                     'Value'
                     }));
-                assert(is_dataset || is_group || is_link,...
-                    'NWB:ExternalLink:UnknownHdfType',...
-                    'Unsupported HDF externally linked type (not a group, dataset, or link!');
-                assert(1 == sum([is_dataset is_group is_link]),...
-                    'NWB:ExternalLink:AmbiguousHdfType',...
-                    'Externally linked HDF type is ambiguous! (cannot discern between group, dataset, or link!)');
-                
-                if is_dataset
+                assert(isDataset || isGroup || isLink,...
+                    'NWB:ExternalLink:UnknownNodeType',...
+                    'Unsupported externally linked type (not a group, dataset, or link!');
+                assert(1 == sum([isDataset isGroup isLink]),...
+                    'NWB:ExternalLink:AmbiguousNodeType',...
+                    'Externally linked type is ambiguous! (cannot discern between group, dataset, or link!)');
+
+                if isDataset
                     % typed objects and references are handled by io.parseDataset
-                    is_reference = strcmp(LinkedInfo.Datatype.Class, 'H5T_REFERENCE');
-                    if is_typed || is_reference
-                        parsed = io.parseDataset(Link.filename, LinkedInfo, Link.path);
-                        data = parsed(LinkedInfo.Name);
+                    isReference = reader.isReferenceDataset(linkedInfo);
+                    if isTyped || isReference
+                        parsed = io.parseDataset(targetFilename, linkedInfo, link.path, ...
+                            io.internal.defaultParseExclusions(), reader);
+                        data = parsed(linkedInfo.Name);
                     else
-                        data = types.untyped.DataStub(Link.filename, Link.path);
+                        data = types.untyped.DataStub(targetFilename, link.path);
                     end
-                elseif is_group
-                    assert(is_typed,...
+                elseif isGroup
+                    assert(isTyped,...
                         'NWB:ExternalLink:UntypedGroup',...
                         ['MatNWB cannot return a non-typed group. Please return the parent '...
-                        'typed object that contains `%s`'], loc);
-                    data = io.parseGroup(Link.filename, LinkedInfo);
+                        'typed object that contains `%s`'], location);
+                    data = io.parseGroup(targetFilename, linkedInfo, ...
+                        io.internal.defaultParseExclusions(), reader);
                 else % link
-                    data = deref_link(fid, Link);
+                    data = derefLink(reader, link);
                 end
-                H5F.close(fid);
             end
-            
-            function data = deref_link(fid, Link)
-                linfo = H5L.get_info(fid, Link.path, 'H5P_DEFAULT');
-                is_external = linfo.type == H5ML.get_constant_value('H5L_TYPE_EXTERNAL');
-                is_soft = linfo.type == H5ML.get_constant_value('H5L_TYPE_SOFT');
-                assert(is_external || is_soft,...
-                    ['Unsupported link type in %s, with name %s.  '...
-                    'Links must be external or soft.'],...
-                    Link.filename, Link.path);
-                
-                link_val = H5L.get_val(fid, Link.path, 'H5P_DEFAULT');
-                if is_external
-                    data = types.untyped.ExternalLink(link_val{:});
+
+            function data = derefLink(reader, link)
+                linkInfo = reader.readLinkInfo(link.path);
+                if linkInfo.type == "external link"
+                    % The chained link lives in the target file, so its
+                    % relative filename resolves against that file's base.
+                    data = types.untyped.ExternalLink(...
+                        linkInfo.targetFilename, linkInfo.targetPath, ...
+                        reader.getExternalLinkBase());
                 else
-                    data = types.untyped.SoftLink(link_val{:});
+                    data = types.untyped.SoftLink(linkInfo.targetPath);
                 end
             end
         end
         
         function refs = export(obj, writer, fullpath, refs)
+            if nargin < 4; refs = {}; end
             writer = io.backend.base.Writer.ensure(writer);
-            fileId = writer.FileId;
-            plist = 'H5P_DEFAULT';
-            if H5L.exists(fileId, fullpath, plist)
-                H5L.delete(fileId, fullpath, plist);
-            end
-            H5L.create_external(obj.filename, obj.path, fileId, fullpath, plist, plist);
+            writer.writeExternalLink(fullpath, obj.filename, obj.path);
         end
     end
+
+    methods (Access = private)
+        function targetFilename = resolveTargetFilename(obj)
+            % A relative target resolves against BasePath when the link was
+            % read from a file; otherwise it is returned as given and
+            % resolves against the working directory.
+            targetFilename = obj.filename;
+            if ~isempty(obj.BasePath) && ~isAbsolutePath(targetFilename)
+                targetFilename = char(fullfile(obj.BasePath, targetFilename));
+            end
+        end
+    end
+end
+
+function tf = isAbsolutePath(pathName)
+% A link target written on another platform may use either separator, so
+% both are accepted when testing for a Windows drive or UNC prefix.
+if ispc
+    tf = ~isempty(regexp(pathName, '^([A-Za-z]:[\\/]|[\\/][\\/])', 'once'));
+else
+    tf = startsWith(pathName, '/');
+end
 end

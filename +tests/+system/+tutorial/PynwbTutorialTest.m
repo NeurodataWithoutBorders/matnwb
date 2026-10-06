@@ -57,7 +57,7 @@ classdef (SharedTestFixtures = {tests.fixtures.SetEnvironmentVariableFixture}) .
         end
     end
 
-    methods (Test, TestTags = {'UsesPython'})
+    methods (Test, TestTags = {'RequiresPython'})
         function testTutorial(testCase, TutorialFile)
             testCase.suppressKnownWarning(TutorialFile)
             galleryFolder = fullfile(pwd, 'docs', 'gallery');

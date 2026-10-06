@@ -182,17 +182,42 @@ classdef (Abstract) DynamicTableBase < handle
         end
 
         function clear(obj)
-        % clear - Remove all row and column data from the DynamicTable.
+        % clear - Remove all rows and column data from the DynamicTable.
         %
-        % Resets the table to an empty state: all VectorData columns,
-        % VectorIndex columns, and row ids are cleared. The colnames
-        % property is preserved.
+        % Syntax:
+        %  dynamicTable.clear() removes all column objects and the row ids
+        %  of the table.
+        %
+        % The following is removed:
+        %  - Every VectorData and VectorIndex column, both columns defined
+        %    by the schema (for example `start_time` of a TimeIntervals
+        %    table) and columns added by the user.
+        %  - All row ids. The `id` property is reset to an
+        %    ElementIdentifiers object without data.
+        %
+        % The following is preserved:
+        %  - The `colnames` property, so rows can be added to the same
+        %    columns again with addRow.
+        %  - The `description` and other attributes of the table.
 
             types.util.dynamictable.clear(obj);
         end
     end
     
     methods (Hidden)
+        function columnNames = getSchemaDefinedColumns(obj)
+        % getSchemaDefinedColumns - Return schema-defined column names.
+        %
+        % Generated DynamicTable classes declare their local schema column
+        % names as private constants. Aggregate them across the generated
+        % neurodata type hierarchy so inherited columns are included.
+
+            import matnwb.neurodata.internal.collectConstantPropertiesAcrossHierarchy
+
+            columnNames = collectConstantPropertiesAcrossHierarchy( ...
+                class(obj), 'DeclaredSchemaColumns');
+        end
+
         function ensureDynamicTableConsistency(obj)
         % ensureDynamicTableConsistency - Ensure DynamicTable column consistency.
         %
@@ -205,6 +230,47 @@ classdef (Abstract) DynamicTableBase < handle
         end
     end
 
+    methods (Access = {?matnwb.mixin.HasUnnamedGroups, ?matnwb.neurodata.AlignedDynamicTableBase})
+        function wasHandled = handleUnnamedGroupAdd(obj, groupName, name, value)
+        % handleUnnamedGroupAdd - Route vectordata additions through addColumn.
+
+            arguments
+                obj (1,1) matnwb.neurodata.DynamicTableBase
+                groupName (1,1) string
+                name (1,1) string
+                value
+            end
+
+            wasHandled = false;
+
+            if groupName ~= "vectordata"
+                return
+            end
+
+            if ~isa(value, 'types.hdmf_common.VectorData') && ~isa(value, 'types.core.VectorData')
+                return
+            end
+
+            obj.addColumn(name, value)
+            wasHandled = true;
+        end
+
+        function tip = getCustomUnnamedGroupAddTip(~, groupName)
+        % getCustomUnnamedGroupAddTip - Display the preferred column add method.
+
+            arguments
+                ~
+                groupName (1,1) string
+            end
+
+            if groupName == "vectordata"
+                tip = "Tip: Use the 'addColumn' method to add column data.";
+            else
+                tip = "Tip: Use the 'add' method to add data objects to this group.";
+            end
+        end
+    end
+
     methods (Access = private)
         function assertIsEditable(obj, errorID)
             arguments
@@ -212,9 +278,10 @@ classdef (Abstract) DynamicTableBase < handle
                 errorID (1,1) string = "NWB:DynamicTable:Uneditable"
             end
 
-            isEditable = ~isa(obj.id.data, 'types.untyped.DataStub');
+            % A table without an id object has no rows on file.
+            isEditable = isempty(obj.id) || ~isa(obj.id.data, 'types.untyped.DataStub');
 
-            assert(isEditable, errorID, ... 
+            assert(isEditable, errorID, ...
                 ['Cannot write to on-file Dynamic Tables without enabling data pipes. '...
                 'If this was produced with pynwb, please enable chunking for this table.']);
         end

@@ -110,6 +110,20 @@ classdef BlueprintPipe < types.untyped.datapipe.Pipe
             end
             obj.data = cat(concatenationDimension, obj.data, data);
         end
+
+        function axisLength = getAppendAxisLength(obj)
+            % The offset plus the queued data. A queued vector counts with
+            % its number of elements, because append extends a vector along
+            % its own orientation and not along obj.axis.
+            if isempty(obj.data)
+                queuedLength = 0;
+            elseif ~isscalar(obj.data) && isvector(obj.data)
+                queuedLength = length(obj.data);
+            else
+                queuedLength = size(obj.data, obj.axis);
+            end
+            axisLength = obj.offset + queuedLength;
+        end
         
         function setPipeProperty(obj, prop)
             assert(isa(prop, 'types.untyped.datapipe.Property'),...

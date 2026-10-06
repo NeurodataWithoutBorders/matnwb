@@ -15,6 +15,12 @@ properties
     duration; %  (DurationVectorData) Optional column containing the duration of each event, in seconds. A value of NaN can be used for events without a duration or with a duration that is not yet specified.
     source_description; %  (char) Optional short text description of where the events came from, applying to every row in the table. For example, "Acquisition system" for events emitted directly by the acquisition system (e.g., TTL edges or hardware event channels); "Thresholding of analog signal ANALOG1 at 3 V" for events produced by a detection algorithm run on acquired data; or "Manual video review" for events added by a human annotator. This is a free-text label of origin only; use `description` for the longer narrative of how the event times were computed (channels used, encoding scheme, algorithm parameters, etc.).
 end
+properties (Constant, Access = private)
+    DeclaredSchemaColumns = ["annotation", "duration", "timestamp"];
+end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["source_description"];
+end
 
 methods
     function obj = EventsTable(varargin)
@@ -69,6 +75,7 @@ methods
         if strcmp(class(obj), 'types.core.EventsTable') %#ok<STISA>
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
             types.util.checkUnset(obj, unique(cellStringArguments));
+            obj.setupHasUnnamedGroupsMixin();
             obj.ensureDynamicTableConsistency();
         end
     end

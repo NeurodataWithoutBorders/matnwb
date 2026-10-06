@@ -1,5 +1,5 @@
 classdef Clustering < types.core.NWBDataInterface & types.untyped.GroupClass
-% CLUSTERING - DEPRECATED Clustered spike data, whether from automatic clustering tools (e.g., klustakwik) or as a result of manual sorting.
+% CLUSTERING - DEPRECATED. Clustered spike data, whether from automatic clustering tools (e.g., klustakwik) or as a result of manual sorting.
 %
 % Required Properties:
 %  description, num, peak_over_rms, times
@@ -7,10 +7,13 @@ classdef Clustering < types.core.NWBDataInterface & types.untyped.GroupClass
 
 % REQUIRED PROPERTIES
 properties
-    description; % REQUIRED (char) Description of clusters or clustering, (e.g. cluster 0 is noise, clusters curated using Klusters, etc)
+    description; % REQUIRED (char) Description of clusters or clustering (e.g., cluster 0 is noise, clusters curated using Klusters, etc.).
     num; % REQUIRED (int32) Cluster number of each event
     peak_over_rms; % REQUIRED (single) Maximum ratio of waveform peak to RMS on any channel in the cluster (provides a basic clustering metric).
     times; % REQUIRED (double) Times of clustered events, in seconds. This may be a link to times field in associated FeatureExtraction module.
+end
+properties (Constant, Access = private)
+    SchemaRelativePaths = ["description", "num", "peak_over_rms", "times"];
 end
 
 methods
@@ -23,7 +26,7 @@ methods
         %  clustering = types.core.CLUSTERING(Name, Value) creates a Clustering object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
-        %  - description (char) - Description of clusters or clustering, (e.g. cluster 0 is noise, clusters curated using Klusters, etc)
+        %  - description (char) - Description of clusters or clustering (e.g., cluster 0 is noise, clusters curated using Klusters, etc.).
         %
         %  - num (int32) - Cluster number of each event
         %

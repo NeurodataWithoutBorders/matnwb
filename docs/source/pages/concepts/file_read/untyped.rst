@@ -86,7 +86,7 @@ DataStubs and DataPipes
 When working with NWB files, datasets can be very large (gigabytes or more). Loading all this data into memory at once would be impractical or impossible. MatNWB uses two types to handle on-disk data efficiently: **DataStubs** and **DataPipes**.
 
 DataStubs (Read only)
-^^^^^^^^^^^^^^^^^^^^^
+---------------------
 
 A **DataStub** (``types.untyped.DataStub``) represents a read-only reference to data stored in an NWB file. When you read an NWB file, non-scalar and multi-dimensional datasets are automatically represented as DataStubs rather than loaded into memory.
 
@@ -102,7 +102,7 @@ Key characteristics:
 You'll encounter DataStubs whenever you read existing NWB files containing non-scalar or multi-dimensional datasets.
 
 DataPipes (read and write)
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------
 
 A **DataPipe** (``types.untyped.DataPipe``) extends the concept of lazy data access to support **writing** as well as reading. While DataStubs are created automatically when reading files, you create DataPipes explicitly when writing data.
 

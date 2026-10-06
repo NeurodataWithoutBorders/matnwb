@@ -1,8 +1,13 @@
 function mapping = getBasicDTypeMap()
 % getBasicDTypeMap - Map basic HDMF dtypes onto MATLAB types
 %
-% Reference:
-% https://github.com/hdmf-dev/hdmf/blob/5.1.0/src/hdmf/spec/spec.py#L31-L48
+% `int` and `uint` map to the 8-bit types per the HDMF Schema Language
+% dtype table (https://hdmf-schema-language.readthedocs.io/en/latest/description.html#dtype),
+% which redefined them from int32/uint32 to int8/uint8 in version 3.0
+% (https://github.com/hdmf-dev/hdmf-schema-language/pull/38). As of this
+% writing, HDMF's own `hdmf.spec.spec.DtypeHelper` has not been updated to
+% match and still uses the pre-3.0 int32/uint32 meaning
+% (https://github.com/hdmf-dev/hdmf-schema-language/issues/50).
 
     try
         mapping = dictionary();

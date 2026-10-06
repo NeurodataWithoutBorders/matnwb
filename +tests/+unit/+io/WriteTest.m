@@ -95,34 +95,105 @@ classdef WriteTest < matlab.unittest.TestCase
         end
         
         function testWriteCompoundMap(testCase)
-            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture)
             fid = H5F.create('test.h5');
             data = containers.Map({'a', 'b'}, 1:2);
             io.writeCompound(fid, '/map_data', data)
             H5F.close(fid);
+
+            readData = h5read('test.h5', '/map_data');
+            testCase.verifyEqual(readData.a, 1)
+            testCase.verifyEqual(readData.b, 2)
         end
         
-        function testWriteCompoundEmpty(testCase)
-            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture)
+        function testWriteCompoundWithoutFields(testCase)
+            % A compound type needs at least one member, so data carrying no
+            % fields cannot be written at all. Every input kind is normalized
+            % before the check, so all three reach it.
             fid = H5F.create('test.h5');
-            data = struct;
-            testCase.verifyError(...
-                @(varargin) io.writeCompound(fid, '/map_data', data), ...
-                'MATLAB:imagesci:hdf5lib:libraryError')
+            inputs = {struct, table(), containers.Map};
+            for iInput = 1:numel(inputs)
+                testCase.verifyError(...
+                    @(varargin) io.writeCompound(fid, '/no_fields', inputs{iInput}), ...
+                    'NWB:WriteCompound:NoFields')
+            end
             H5F.close(fid);
         end
         
-        function testWriteCompoundScalar(testCase)
-            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture)
+        function testWriteCompoundZeroRowTableKeepsColumnTypes(testCase)
+            % A zero-row table still has to write each column with its own
+            % type. table2struct cannot express that, so writeCompound reads
+            % the columns directly in this case.
             fid = H5F.create('test.h5');
-            data = struct('a','b');
-            io.writeCompound(fid, '/map_data', data)
+            data = table(uint32.empty(0, 1), cell(0, 1), zeros(0, 1), false(0, 1), ...
+                'VariableNames', {'index', 'name', 'value', 'flag'});
+            io.writeCompound(fid, '/empty_data', data, 'forceArray')
+            H5F.close(fid);
+
+            info = h5info('test.h5', '/empty_data');
+            testCase.verifyEqual(info.Dataspace.Size, 0)
+            memberTypes = {info.Datatype.Type.Member.Datatype};
+            testCase.verifyEqual(memberTypes{1}.Class, 'H5T_INTEGER')
+            testCase.verifyEqual(memberTypes{2}.Class, 'H5T_STRING')
+            testCase.verifyEqual(memberTypes{3}.Class, 'H5T_FLOAT')
+            testCase.verifyEqual(memberTypes{4}.Class, 'H5T_ENUM')
+
+            readData = h5read('test.h5', '/empty_data');
+            testCase.verifyClass(readData.index, 'uint32')
+            testCase.verifyEmpty(readData.index)
+        end
+
+        function testWriteCompoundZeroRowTableAcceptsEveryColumnClass(testCase)
+            % A member type can only be derived from an empty column for some
+            % classes. The rest fall back to the string member type they were
+            % already given, rather than erroring. Each column is placed first
+            % because the row count is read off the first field.
+            columns = { ...
+                'chardata',    char.empty(0, 1); ...
+                'stringdata',  string.empty(0, 1); ...
+                'cellstrdata', cell(0, 1); ...
+                'int64data',   int64.empty(0, 1); ...
+                'singledata',  single.empty(0, 1)};
+
+            for iColumn = 1:size(columns, 1)
+                columnName = columns{iColumn, 1};
+                data = table(columns{iColumn, 2}, uint32.empty(0, 1), ...
+                    'VariableNames', {columnName, 'idx'});
+
+                fileName = sprintf('%s.h5', columnName);
+                fid = H5F.create(fileName);
+                io.writeCompound(fid, '/d', data, 'forceArray')
+                H5F.close(fid);
+
+                info = h5info(fileName, '/d');
+                testCase.verifyEqual(info.Dataspace.Size, 0, ...
+                    sprintf('A zero-row "%s" column should write no rows.', columnName))
+            end
+        end
+
+        function testWriteCompoundZeroRowTableRejectsReferenceColumn(testCase)
+            % A member type cannot be derived from an empty reference column,
+            % and the string fallback would commit a member type that
+            % contradicts the schema, so the write is rejected.
+            fid = H5F.create('test.h5');
+            data = table(types.untyped.ObjectView.empty(0, 1), uint32.empty(0, 1), ...
+                'VariableNames', {'reference', 'idx'});
+            testCase.verifyError(...
+                @() io.writeCompound(fid, '/ref_data', data, 'forceArray'), ...
+                'NWB:WriteCompound:EmptyReferenceColumn')
             H5F.close(fid);
         end
 
-        function testWriteCompoundNonScalar(testCase)
-            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture)
-            
+        function testWriteCompoundScalar(testCase)
+            fid = H5F.create('test.h5');
+            data = struct('a','b');
+            io.writeCompound(fid, '/scalar_data', data)
+            H5F.close(fid);
+
+            info = h5info('test.h5', '/scalar_data');
+            testCase.verifyEqual(info.Dataspace.Type, 'scalar')
+        end
+
+        function testWriteCompoundNonScalar(testCase)            
             numRows = 5;
             numericVector = rand(numRows, 1);
             charVector = char(randi([65 90], numRows, 1));
@@ -130,8 +201,12 @@ classdef WriteTest < matlab.unittest.TestCase
             data = table(numericVector, charVector);
                         
             fid = H5F.create('test.h5');
-            io.writeCompound(fid, '/map_data', data)
+            io.writeCompound(fid, '/nonscalar_data', data)
             H5F.close(fid);
+            
+            info = h5info('test.h5', '/nonscalar_data');
+            testCase.verifyEqual(info.Dataspace.Type, 'simple')
+            testCase.verifyEqual(info.Dataspace.Size, numRows)
         end
 
         function testWriteCompoundOverWrite(testCase)
@@ -150,7 +225,7 @@ classdef WriteTest < matlab.unittest.TestCase
             newData = cat(1, initialData, struct('a', 2, 'b', false, 'c', 'new test'));
             testCase.verifyWarning(...
                 @(varargin) io.writeCompound(fid, fullPath, newData), ...
-                'NWB:WriteCompund:ContinuousCompoundResize' ...
+                'NWB:WriteCompound:ContinuousCompoundResize' ...
                 )
         end
 
@@ -223,5 +298,87 @@ classdef WriteTest < matlab.unittest.TestCase
             testCase.verifyTrue(strcmp(S.Links.Type, 'soft link'))
             testCase.verifyTrue(strcmp(S.Links.Value{1}, targetPath))
         end
-    end 
+
+        function testWriteObjectReferenceWithLeadingNull(testCase)
+            % Regression test: a reference column whose first element is a
+            % null (empty) reference must export. On HDF5 1.14+ (MATLAB
+            % R2024a and newer) H5D.write rejects a leading null reference
+            % when the whole buffer is written at once, so io.writeDataset
+            % writes only the non-null references and leaves the null slots
+            % as the dataset's zero fill value.
+            filename = 'temp_leading_null_ref.h5';
+            fid = H5F.create(filename, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
+            fileCleanupObj = onCleanup(@() H5F.close(fid)); %#ok<NASGU>
+
+            % Targets that the references point to.
+            io.writeDataset(fid, '/target_one', rand(3, 1));
+            io.writeDataset(fid, '/target_two', rand(3, 1));
+
+            % References with a null in the first and a middle position.
+            references = [ ...
+                types.untyped.ObjectView(''); ...
+                types.untyped.ObjectView('/target_one'); ...
+                types.untyped.ObjectView(''); ...
+                types.untyped.ObjectView('/target_two')];
+
+            io.writeDataset(fid, '/references', references);
+
+            % Null slots read back as null references; valid slots resolve.
+            did = H5D.open(fid, '/references');
+            didCleanupObj = onCleanup(@() H5D.close(did)); %#ok<NASGU>
+            referenceBuffer = H5D.read(did);
+            isNullReference = all(referenceBuffer == 0, 1);
+            testCase.verifyEqual(isNullReference, logical([1 0 1 0]))
+            testCase.verifyEqual( ...
+                H5R.get_name(did, 'H5R_OBJECT', referenceBuffer(:, 2)), '/target_one')
+            testCase.verifyEqual( ...
+                H5R.get_name(did, 'H5R_OBJECT', referenceBuffer(:, 4)), '/target_two')
+        end
+
+        function testWriteObjectReferenceAllNull(testCase)
+            % A reference column that is entirely null references should
+            % export and read back as all null references.
+            filename = 'temp_all_null_ref.h5';
+            fid = H5F.create(filename, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
+            fileCleanupObj = onCleanup(@() H5F.close(fid)); %#ok<NASGU>
+
+            references = [types.untyped.ObjectView(''); types.untyped.ObjectView('')];
+            io.writeDataset(fid, '/references', references);
+
+            did = H5D.open(fid, '/references');
+            didCleanupObj = onCleanup(@() H5D.close(did)); %#ok<NASGU>
+            referenceBuffer = H5D.read(did);
+            testCase.verifyTrue(all(referenceBuffer(:) == 0))
+            testCase.verifyEqual(size(referenceBuffer, 2), 2)
+        end
+
+        function testWriteObjectReferenceNoNull(testCase)
+            % A reference column with no null references (the common case)
+            % must be written in full and resolve on read-back. Guards against
+            % the non-null path being skipped when null slots are handled
+            % separately.
+            filename = 'temp_no_null_ref.h5';
+            fid = H5F.create(filename, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
+            fileCleanupObj = onCleanup(@() H5F.close(fid)); %#ok<NASGU>
+
+            % Targets that the references point to.
+            io.writeDataset(fid, '/target_one', rand(3, 1));
+            io.writeDataset(fid, '/target_two', rand(3, 1));
+
+            references = [ ...
+                types.untyped.ObjectView('/target_one'); ...
+                types.untyped.ObjectView('/target_two')];
+            io.writeDataset(fid, '/references', references);
+
+            did = H5D.open(fid, '/references');
+            didCleanupObj = onCleanup(@() H5D.close(did)); %#ok<NASGU>
+            referenceBuffer = H5D.read(did);
+            % No slot is a null reference and both resolve to their targets.
+            testCase.verifyFalse(any(all(referenceBuffer == 0, 1)))
+            testCase.verifyEqual( ...
+                H5R.get_name(did, 'H5R_OBJECT', referenceBuffer(:, 1)), '/target_one')
+            testCase.verifyEqual( ...
+                H5R.get_name(did, 'H5R_OBJECT', referenceBuffer(:, 2)), '/target_two')
+        end
+    end
 end
