@@ -1,4 +1,4 @@
-function subTable = getRow(DynamicTable, rowIndices, varargin)
+function subTable = getRow(DynamicTable, rowIndices, options)
 %GETROW get row for dynamictable
 % Index is a scalar 0-based index of the expected row.
 % optional keyword argument "columns" allows for only grabbing certain
@@ -10,27 +10,20 @@ function subTable = getRow(DynamicTable, rowIndices, varargin)
 % The returned value is a set of output arguments in the order of
 % `colnames` or "columns" keyword argument if one exists.
 
-validateattributes(DynamicTable,...
-    {'types.core.DynamicTable', 'types.hdmf_common.DynamicTable'}, {'scalar'});
-validateattributes(rowIndices, {'numeric'}, {'integer', 'vector'});
-
-p = inputParser;
-addParameter(p, 'columns', DynamicTable.colnames, @(x)isempty(x)||iscellstr(x))
-if isa(DynamicTable, 'matnwb.neurodata.AlignedDynamicTableBase')
-    defaultCategories = DynamicTable.categories;
-else
-    defaultCategories = {};
+arguments
+    DynamicTable (1,1) {matnwb.common.validation.mustBeDynamicTable}
+    rowIndices (1,:) {mustBeNumeric, mustBeInteger}
+    options.columns {mustBeCellstrOrEmpty} = DynamicTable.colnames
+    options.categories {mustBeCellstrOrEmpty} = getDefaultCategories(DynamicTable)
+    options.useId (1,1) logical = false
 end
-addParameter(p, 'categories', defaultCategories, @(x)isempty(x)||iscellstr(x))
-addParameter(p, 'useId', false, @(x)islogical(x));
-parse(p, varargin{:});
 
 % Names read from a file are column cell arrays.
-columns = reshape(p.Results.columns, 1, []);
-categories = reshape(p.Results.categories, 1, []);
+columns = reshape(options.columns, 1, []);
+categories = reshape(options.categories, 1, []);
 columnData = cell(1, numel(columns) + numel(categories));
 
-if p.Results.useId
+if options.useId
     assert(~isempty(DynamicTable.id), ...
         'NWB:DynamicTable:GetRow:MissingId', ...
         'Cannot retrieve rows by `id` because the DynamicTable has no `id` column.');
@@ -123,6 +116,23 @@ if isempty(variableNames)
     subTable = table('Size', [numel(rowIndices), 0], 'VariableTypes', {}, 'VariableNames', {});
 else
     subTable = table(columnData{:}, 'VariableNames', variableNames);
+end
+end
+
+function categories = getDefaultCategories(DynamicTable)
+% getDefaultCategories - Every category of an AlignedDynamicTable, none for other tables.
+if isa(DynamicTable, 'matnwb.neurodata.AlignedDynamicTableBase')
+    categories = DynamicTable.categories;
+else
+    categories = {};
+end
+end
+
+function mustBeCellstrOrEmpty(value)
+% mustBeCellstrOrEmpty - Validate that value is empty or a cell array of character vectors.
+if ~(isempty(value) || iscellstr(value))
+    error('NWB:DynamicTable:GetRow:InvalidNames', ...
+        'Value must be empty or a cell array of character vectors.');
 end
 end
 
