@@ -110,8 +110,9 @@ classdef GetCompoundTypeDescriptorTest < matlab.unittest.TestCase
 
         function ignoresDeclaredFieldThatIsNotInTheDtype(testCase)
         % The reference list and the dtype are read from two independent
-        % sources (the "zarr_dtype" attribute and the array metadata), so a
-        % name present in one but not the other must not error.
+        % sources (the "_REFERENCE_FIELDS" attribute and the array
+        % metadata), so a name present in one but not the other must not
+        % error.
             info = tests.unit.io.internal.zarr3.GetCompoundTypeDescriptorTest.buildDtypeInfo(...
                 ["idx_start", "count"], ["int32", "int32"]);
 

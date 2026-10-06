@@ -294,18 +294,19 @@ classdef Zarr3ReaderTest < matlab.unittest.TestCase
             testCase.verifyEqual(string(attributeValue), "2.7.0");
         end
 
-        function readScalarMarkedDatasetReturnsBareValue(testCase)
-        % hdmf-zarr before 0.14 represented an NWB scalar property as a
-        % rank-1, length-1 array tagged zarr_dtype:"scalar"; the tag, not the
-        % shape, is what makes the reader return a bare value (see the
-        % corresponding comment in readDatasetValue).
+        function oneRowColumnStaysLazy(testCase)
+        % A one-row column has shape [1], which is also the element count of
+        % a scalar's value; only a rank-0 array is a scalar. Collapsing the
+        % column to a bare value would corrupt it: a char column's character
+        % count would be misread as its row count downstream.
             reader = io.backend.zarr3.Zarr3Reader(testCase.FixturePath);
-            datasetInfo = reader.readNodeInfo("/general/session_id");
-            testCase.verifyEqual(datasetInfo.Datatype, 'scalar');
+            datasetInfo = reader.readNodeInfo("/intervals/trials/id");
 
-            datasetValue = reader.readDatasetValue(datasetInfo, "/general/session_id");
+            datasetValue = reader.readDatasetValue(datasetInfo, "/intervals/trials/id");
 
-            testCase.verifyEqual(datasetValue, 'sess-01');
+            testCase.verifyClass(datasetValue, "types.untyped.DataStub");
+            testCase.verifyEqual(datasetValue.dims, 1);
+            testCase.verifyEqual(datasetValue.load(), int64(0));
         end
 
         function readEmptyDatasetReturnsEmpty(testCase)
