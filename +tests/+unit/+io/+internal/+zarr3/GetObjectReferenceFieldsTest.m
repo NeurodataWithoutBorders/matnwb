@@ -12,6 +12,16 @@ classdef GetObjectReferenceFieldsTest < matlab.unittest.TestCase
 % field names; earlier versions wrote "zarr_dtype", a list of
 % {"name", "dtype"} objects.
 
+    methods (TestClassSetup)
+        function requireDictionaryBraceIndexing(testCase)
+        % The function under test reads the attributes dictionary with brace
+        % indexing, which MATLAB added in R2023a, the release zarr-matlab
+        % requires as well (see tests.util.assumeZarr3Support).
+            testCase.assumeFalse(isMATLABReleaseOlderThan("R2023a"), ...
+                "dictionary brace indexing requires MATLAB R2023a or newer.")
+        end
+    end
+
     methods (Static, Access = private)
         function attrs = buildAttributes(referenceFields)
         % buildAttributes - Attributes carrying _REFERENCE_FIELDS.
