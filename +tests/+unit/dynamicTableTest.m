@@ -638,6 +638,20 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(timeIntervals.id.data.load(), int64([0; 10]));
         end
 
+        function testAddRowToUnboundDataPipeTableRejectsIdOutsideType(testCase)
+            timeIntervals = testCase.createTimeIntervalsWithUnboundDataPipes( ...
+                StartTime=1, ...
+                Id=int32(0));
+
+            % The id is one above the largest value an int32 id pipe can hold.
+            idAboveTypeRange = double(intmax('int32')) + 1;
+            testCase.verifyError( ...
+                @() timeIntervals.addRow('start_time', 2, 'id', idAboveTypeRange), ...
+                'NWB:DynamicTable:AddRow:IdOverflow');
+            testCase.verifyEqual(timeIntervals.id.data.load(), int32(0));
+            testCase.verifyEqual(timeIntervals.start_time.data.load(), 1);
+        end
+
         function testAddRowToUnboundDataPipeColumnConvertsValueType(testCase)
             dynamicTable = types.hdmf_common.DynamicTable( ...
                 'description', 'test table with an integer DataPipe column', ...
