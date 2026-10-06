@@ -4,7 +4,7 @@ function TypeMap = getTypeMap(DynamicTable)
 TypeMap = containers.Map;
 if isempty(DynamicTable.id.data)...
         || (isa(DynamicTable.id.data, 'types.untyped.DataPipe')...
-            && 0 == DynamicTable.id.data.offset)
+            && 0 == DynamicTable.id.data.getAppendAxisLength())
     return;
 end
 TypeStruct = struct('type', '', 'dims', [0, 0]);

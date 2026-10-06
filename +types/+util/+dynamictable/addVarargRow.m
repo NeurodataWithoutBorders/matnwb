@@ -45,8 +45,29 @@ function addVarargRow(DynamicTable, varargin)
         'Missing columns { %s }', strjoin(missingColumns, ', '));
 
     specifiesId = ~any(strcmp(p.UsingDefaults, 'id'));
+    isIdDataPipe = isa(DynamicTable.id.data, 'types.untyped.DataPipe');
     if specifiesId
         validateattributes(p.Results.id, {'numeric'}, {'scalar'});
+        newId = p.Results.id;
+    elseif isIdDataPipe
+        newId = DynamicTable.id.data.getAppendAxisLength();
+    else
+        newId = length(DynamicTable.id.data);
+    end
+
+    if isIdDataPipe
+        % A pipe keeps its data type, so the id is cast to that type. The
+        % id is checked before any column is appended, so that a rejected
+        % id leaves the table unchanged.
+        idDataType = DynamicTable.id.data.dataType;
+        isIntegerType = startsWith(idDataType, {'int', 'uint'});
+        assert(~isIntegerType ...
+            || (newId >= intmin(idDataType) && newId <= intmax(idDataType)), ...
+            'NWB:DynamicTable:AddRow:IdOverflow', ...
+            ['The DataPipe of `id` stores `%s` values and cannot hold the id %d. ' ...
+            'Create the DataPipe of the ElementIdentifiers with a wider data type, ' ...
+            'for example `int64`.'], ...
+            idDataType, newId);
     end
 
     TypeMap = types.util.dynamictable.getTypeMap(DynamicTable);
@@ -61,16 +82,9 @@ function addVarargRow(DynamicTable, varargin)
         types.util.dynamictable.addRawData(DynamicTable, rn, rv);
     end
 
-    if specifiesId
-        newId = p.Results.id;
-    elseif isa(DynamicTable.id.data, 'types.untyped.DataPipe')
-        newId = DynamicTable.id.data.offset;
-    else
-        newId = length(DynamicTable.id.data);
-    end
-
-    if isa(DynamicTable.id.data, 'types.untyped.DataPipe')
-        DynamicTable.id.data.append(newId);
+    if isIdDataPipe
+        % An unbound pipe only accepts values of its own data type.
+        DynamicTable.id.data.append(cast(newId, idDataType));
     else
         DynamicTable.id.data = [double(DynamicTable.id.data); newId];
     end

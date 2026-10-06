@@ -25,7 +25,8 @@ function [columnHeight, hasEstablishedHeight] = getDataHeight(data)
             columnHeight = dataDims(end);
             hasEstablishedHeight = true;
         else
-            [columnHeight, hasEstablishedHeight] = getUnboundDataPipeHeight(data);
+            columnHeight = data.getAppendAxisLength();
+            hasEstablishedHeight = columnHeight > 0;
         end
     elseif isa(data, 'types.untyped.DataStub')
         columnHeight = data.dims(end);
@@ -52,23 +53,5 @@ function [columnHeight, hasEstablishedHeight] = getDataHeight(data)
     else
         columnHeight = size(data, find(1 < size(data)));
         hasEstablishedHeight = true;
-    end
-end
-
-function [columnHeight, hasEstablishedHeight] = getUnboundDataPipeHeight(dataPipe)
-    dataHeight = getQueuedDataHeight(dataPipe);
-    columnHeight = dataPipe.offset + dataHeight;
-    hasEstablishedHeight = columnHeight > 0;
-end
-
-function dataHeight = getQueuedDataHeight(dataPipe)
-    if isempty(dataPipe.internal.data)
-        dataHeight = 0;
-    elseif ~isscalar(dataPipe.internal.data) && isvector(dataPipe.internal.data)
-        % DataPipe axis can be misleading for vectors because vectors are
-        % coerced to vertical arrays when bound to file.
-        dataHeight = length(dataPipe.internal.data);
-    else
-        dataHeight = size(dataPipe.internal.data, dataPipe.axis);
     end
 end
