@@ -25,6 +25,9 @@ Prerequisites
 .. note::
    Dynamically loaded filters for dataset compression are supported only in MATLAB R2022a or later.
 
+.. note::
+   Reading NWB files stored as Zarr requires MATLAB R2023a or later and two additional packages, see `Optional: reading NWB files stored as Zarr`_.
+
 Choose an installation method
 -----------------------------
 
@@ -101,6 +104,37 @@ Run this quick check in MATLAB to verify that MatNWB is installed:
    versionInfo = ver("matnwb")
    
 You should see a structure with MatNWB version information. NB. If your matnwb folder has a different name, replace "matnwb" with the actual name of your matnwb folder
+
+
+.. _installation-zarr:
+
+Optional: reading NWB files stored as Zarr
+------------------------------------------
+
+Reading an NWB file stored as a Zarr v3 store (see :doc:`/pages/how_to/reading_zarr_stores`) needs MATLAB R2023a or newer and two packages that are installed separately from MatNWB:
+
+- `zarr-matlab <https://github.com/catalystneuro/zarr-matlab>`_, which reads Zarr v3 stores, and
+- `hdmf-zarr-matlab <https://github.com/catalystneuro/hdmf-zarr-matlab>`_, which implements the storage conventions NWB files use on top of Zarr.
+
+Clone both and add their root folders (the folders containing ``+zarr`` and ``+hdmf``) to your MATLAB path:
+
+.. code-block:: matlab
+
+   !git clone https://github.com/catalystneuro/zarr-matlab.git
+   !git clone https://github.com/catalystneuro/hdmf-zarr-matlab.git
+   addpath("zarr-matlab", "hdmf-zarr-matlab")
+   % Optional: persist for future MATLAB sessions
+   savepath()
+
+hdmf-zarr compresses data with ``zstd`` by default, and zarr-matlab decodes ``zstd`` through compiled MEX codecs. Build them once; this needs a C compiler that MATLAB can use (see ``mex -setup C``) and the ``libzstd`` and ``libblosc`` libraries, for example from Homebrew on macOS:
+
+.. code-block:: matlab
+
+   run("zarr-matlab/tools/build_mex.m")
+
+Without the codecs, everything else in a store reads, but a ``zstd``-compressed dataset errors with a message naming the missing codec. See the `zarr-matlab README <https://github.com/catalystneuro/zarr-matlab#installation>`_ for details.
+
+To verify, read a Zarr store with :func:`nwbRead`. If a package is missing, :func:`nwbRead` errors with ``NWB:Zarr3:DependencyMissing`` and names it.
 
 
 Update or uninstall
