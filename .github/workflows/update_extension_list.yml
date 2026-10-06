@@ -45,3 +45,24 @@ jobs:
           else
             echo "Nothing to commit"
           fi
+
+  # Install the latest release of every catalog extension, each in its own
+  # folder, and show the versions and results in the job summary. Kept as a
+  # separate job so that a failing extension does not block the list update.
+  test_extension_installation:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Install MATLAB
+        uses: matlab-actions/setup-matlab@v3
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install every extension in the catalog
+        uses: matlab-actions/run-command@v3
+        with:
+          command: |
+            addpath(genpath("tools"));
+            matnwb_testExtensionInstallation(getenv("GITHUB_STEP_SUMMARY"));
