@@ -96,6 +96,41 @@ classdef InstallExtensionTest < tests.abstract.NwbTestCase
             testCase.verifySubstring(output, 'may not work with version 0.2.0: ndx-fiber-photometry')
         end
 
+        function testVersionChoicesListReleases(testCase)
+            versions = matnwb.extension.internal.listVersionChoices("ndx-miniscope");
+            testCase.verifyClass(versions, 'cell')
+            testCase.verifyTrue(ismember('0.2.2', versions))
+        end
+
+        function testVersionChoicesAreEmptyWithoutOneKnownName(testCase)
+            testCase.verifyEmpty(matnwb.extension.internal.listVersionChoices(["ndx-miniscope", "ndx-ecog"]))
+            testCase.verifyEmpty(matnwb.extension.internal.listVersionChoices("ndx-no-such-extension-exists"))
+            testCase.verifyEmpty(matnwb.extension.internal.listVersionChoices(42))
+        end
+
+        function testCatalogExtensionListsNames(testCase)
+            names = matnwb.extension.CatalogExtension.listNames();
+            testCase.verifyClass(names, 'string')
+            testCase.verifyTrue(ismember("ndx-miniscope", names))
+            testCase.verifyEqual(matnwb.extension.CatalogExtension.ndx_miniscope.Name, "ndx-miniscope")
+        end
+
+        function testUnknownExtensionNameFails(testCase)
+            testCase.verifyError(@() nwbInstallExtension("ndx-not-in-the-catalog"), ...
+                'NWB:InstallExtension:UnknownExtension')
+        end
+
+        function testIsCatalogExtension(testCase)
+            tf = matnwb.extension.internal.isCatalogExtension(["ndx-miniscope", "ndx-not-in-the-catalog"]);
+            testCase.verifyEqual(tf, [true, false])
+        end
+
+        function testInstallExtensionRejectsNameOutsideCatalog(testCase)
+            testCase.verifyError( ...
+                @() matnwb.extension.installExtension("ndx-not-in-the-catalog"), ...
+                'NWB:InstallExtension:ExtensionNotFound')
+        end
+
         function testInstallExtensionWithoutWheel(testCase)
             % ndx-ecg is published on PyPI as a source distribution only.
             testCase.addTeardown(@() testCase.clearExtension("ndx-ecg"))

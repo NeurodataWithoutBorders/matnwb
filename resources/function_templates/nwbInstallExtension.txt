@@ -29,16 +29,12 @@ function nwbInstallExtension(extensionNames, version, options)
 %   matnwb.extension.listExtensions, matnwb.extension.installExtension
 
     arguments
-        extensionNames (1,:) string {mustBeMember(extensionNames, [...
-{{extensionNames}} ...
-            ] ...
-        )} = []
+        extensionNames (1,:) string {mustBeCatalogExtension} = []
         version (1,1) string = "latest"
         options.savedir (1,1) string = misc.getMatnwbDir()
     end
     if isempty(extensionNames)
-        T = matnwb.extension.listExtensions();
-        extensionList = join( compose("  %s", [T.name]), newline );
+        extensionList = join( compose("  %s", matnwb.extension.CatalogExtension.listNames()), newline );
         error('NWB:InstallExtension:MissingArgument', ...
             'Please specify the name of an extension. Available extensions:\n\n%s\n', extensionList)
     else
@@ -48,5 +44,20 @@ function nwbInstallExtension(extensionNames, version, options)
         for extensionName = extensionNames
             matnwb.extension.installExtension(extensionName, version, 'savedir', options.savedir)
         end
+    end
+end
+
+function mustBeCatalogExtension(extensionNames)
+% mustBeCatalogExtension - Validate that names are extensions in the catalog.
+%
+%   Names missing from matnwb.extension.CatalogExtension are looked up in
+%   the online catalog, so extensions added to the catalog after this
+%   version of matnwb are accepted.
+    unknownNames = extensionNames(~matnwb.extension.internal.isCatalogExtension(extensionNames));
+    if ~isempty(unknownNames)
+        catalogNames = matnwb.extension.CatalogExtension.listNames();
+        error('NWB:InstallExtension:UnknownExtension', ...
+            'Unknown extension: %s. Use one of the extensions in the catalog:\n\n%s\n', ...
+            strjoin(unknownNames, ', '), join(compose("  %s", catalogNames), newline))
     end
 end
