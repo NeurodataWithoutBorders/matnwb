@@ -370,6 +370,78 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
 
             testCase.verifyEqual(matlabTable.custom, expectedCategoryTable)
         end
+
+        function testGetRowAfterRoundTrip(testCase)
+            % `colnames` and `categories` are column cell arrays after a
+            % read. With two columns and one category they have different
+            % lengths.
+            readTable = testCase.roundTripAlignedTable( ...
+                ColumnNames={'x', 'y'}, ...
+                CategoryNames={'first'}, ...
+                NumRows=3);
+
+            selectedRows = readTable.getRow([1, 3]);
+
+            testCase.verifyEqual(selectedRows.Properties.VariableNames, ...
+                {'x', 'y', 'first'})
+            testCase.verifyEqual(height(selectedRows), 2)
+        end
+
+        function testToTableAfterRoundTrip(testCase)
+            % `colnames` and `categories` are column cell arrays after a
+            % read. With two columns and one category they have different
+            % lengths.
+            readTable = testCase.roundTripAlignedTable( ...
+                ColumnNames={'x', 'y'}, ...
+                CategoryNames={'first'}, ...
+                NumRows=3);
+
+            matlabTable = readTable.toTable();
+
+            testCase.verifyEqual(matlabTable.Properties.VariableNames, ...
+                {'id', 'x', 'y', 'first'})
+            testCase.verifyEqual(height(matlabTable), 3)
+        end
+    end
+
+    methods (Access = private)
+        function readTable = roundTripAlignedTable(testCase, options)
+            % Export an AlignedDynamicTable with the given columns and
+            % categories to a file and return the table read from that file.
+            arguments
+                testCase
+                options.ColumnNames (1,:) cell
+                options.CategoryNames (1,:) cell
+                options.NumRows (1,1) double
+            end
+
+            testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
+
+            columns = cell(1, numel(options.ColumnNames));
+            for iColumn = 1:numel(options.ColumnNames)
+                columns{iColumn} = types.hdmf_common.VectorData( ...
+                    'description', 'parent column', ...
+                    'data', (1:options.NumRows)');
+            end
+            columnNvPairs = [options.ColumnNames; columns];
+
+            alignedTable = types.hdmf_common.AlignedDynamicTable( ...
+                'description', 'parent table', ...
+                'colnames', options.ColumnNames, ...
+                columnNvPairs{:});
+            for iCategory = 1:numel(options.CategoryNames)
+                alignedTable.addCategory(options.CategoryNames{iCategory}, ...
+                    tests.factory.DynamicTable(NumRows=options.NumRows, NumColumns=1))
+            end
+
+            fileName = 'alignedTable.nwb';
+            nwb = tests.factory.NWBFile();
+            nwb.acquisition.set('AlignedTable', alignedTable);
+            nwbExport(nwb, fileName);
+
+            nwbIn = nwbRead(fileName, 'ignorecache');
+            readTable = nwbIn.acquisition.get('AlignedTable');
+        end
     end
 
     methods (Static, Access = private)

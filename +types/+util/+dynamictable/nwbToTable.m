@@ -52,11 +52,12 @@ matlabTable = table( ...
 );
 
 % deal with DynamicTableRegion columns when index is false
-[columns, remainingColumns] = deal(DynamicTable.colnames);
+% Names read from a file are column cell arrays.
+[columns, remainingColumns] = deal(reshape(DynamicTable.colnames, 1, []));
 columnDescriptions = types.util.dynamictable.internal.getColumnDescriptions( ...
     DynamicTable, columns);
 if isa(DynamicTable, 'matnwb.neurodata.AlignedDynamicTableBase')
-    categories = DynamicTable.categories;
+    categories = reshape(DynamicTable.categories, 1, []);
 else
     categories = {};
 end
@@ -109,7 +110,6 @@ if ~isempty(categories)
 end
 
 % Update the columns order to be the same as the original
-if iscolumn(columns); columns = transpose(columns); end
 matlabTable = matlabTable(:, [{'id'}, columns]);
 
 % Add variable descriptions
