@@ -20,11 +20,12 @@ function [data_vector, data_index] = create_indexed_column(data, description, ta
 %       object. DATA_VECTOR.data keeps the class: a string column, a character
 %       column, a struct column or an object column.
 %     - [] for a row with no elements.
-%   All rows must hold elements of the same type, and struct rows the same
-%   fields. All array rows must share elementDims, which is taken from the first row
-%   that is not a vector. A row holding a single element may be given with
-%   its trailing dimension of 1 omitted (a column vector [k x 1] when elements
-%   are k-sample vectors, a [k x m] matrix when elements are [k x m]).
+%   All rows must hold elements of the same class (for example all int32,
+%   not int32 and double), and struct rows the same fields. All array rows
+%   must share elementDims, which is taken from the first row that is not a
+%   vector. A row holding a single element may be given with its trailing
+%   dimension of 1 omitted (a column vector [k x 1] when elements are
+%   k-sample vectors, a [k x m] matrix when elements are [k x m]).
 %   EXAMPLE: [data_vector, data_index] = util.create_indexed_column({[1,2,3], [1,2,3,4]})
 %     data_vector.data is [1;2;3;1;2;3;4] and data_index.data is [3;7].
 %   EXAMPLE: [data_vector, data_index] = util.create_indexed_column({rand(4,2), rand(4,3)})
@@ -74,7 +75,9 @@ function [flatData, bounds] = flattenRows(rows)
     for iRow = 1:numRows
         row = rows{iRow};
         if isnumeric(row) || islogical(row)
-            rowType = "numeric";
+            % Rows of different numeric classes are not combined, as the
+            % values of one class would be converted to the other.
+            rowType = string(class(row));
         elseif (isstring(row) || ischar(row) || isstruct(row) || isObjectArray(row)) ...
                 && (isvector(row) || isempty(row))
             rowType = string(class(row));

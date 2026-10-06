@@ -130,8 +130,19 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(index.data, uint64([1; 1; 3]));
         end
 
+        function testIntegerRowsKeepTheirClass(testCase)
+            [vector, index] = util.create_indexed_column({int32([1 2]), int32(3)});
+
+            testCase.verifyEqual(vector.data, int32([1; 2; 3]));
+            testCase.verifyEqual(index.data, uint64([2; 3]));
+        end
+
         function testMixedRowTypesErrors(testCase)
             testCase.verifyError(@() util.create_indexed_column({[1 2], "a"}), ...
+                'NWB:CreateIndexedColumn:InconsistentElementType');
+            % Rows of different numeric classes would convert values silently
+            % (3.5 would become int32(4)), so they are rejected.
+            testCase.verifyError(@() util.create_indexed_column({int32([1 2]), 3.5}), ...
                 'NWB:CreateIndexedColumn:InconsistentElementType');
             testCase.verifyError( ...
                 @() util.create_indexed_column({struct('x', 1), struct('y', 2)}), ...
