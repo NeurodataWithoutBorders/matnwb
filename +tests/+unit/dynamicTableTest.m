@@ -88,6 +88,70 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
                 'NWB:DynamicTable:GetRow:RowOutOfBounds');
         end
 
+        function testAddEmptyRowToRaggedColumn(testCase)
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'test table with a ragged column', ...
+                'colnames', {'spike_times'});
+
+            dynamicTable.addRow('spike_times', [1, 2, 3]);
+            dynamicTable.addRow('spike_times', []);
+            dynamicTable.addRow('spike_times', [4, 5]);
+
+            % The empty row ends where the row before it ends.
+            columnIndex = dynamicTable.vectordata.get('spike_times_index');
+            testCase.verifyEqual(columnIndex.data, uint64([3; 3; 5]));
+            testCase.verifyEqual(dynamicTable.id.data, int64([0; 1; 2]));
+            testCase.verifyEmpty(dynamicTable.getRow(2).spike_times{1});
+            testCase.verifyEqual(dynamicTable.getRow(3).spike_times{1}, [4, 5]);
+        end
+
+        function testAddEmptyRowAsFirstRowOfColumn(testCase)
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'test table with a ragged column', ...
+                'colnames', {'spike_times'});
+
+            dynamicTable.addRow('spike_times', []);
+            dynamicTable.addRow('spike_times', [4, 5]);
+
+            % The column is ragged from the first row, which ends at
+            % element 0.
+            columnIndex = dynamicTable.vectordata.get('spike_times_index');
+            testCase.verifyEqual(columnIndex.data, uint64([0; 2]));
+            testCase.verifyEqual(dynamicTable.id.data, int64([0; 1]));
+            testCase.verifyEmpty(dynamicTable.getRow(1).spike_times{1});
+            testCase.verifyEqual(dynamicTable.getRow(2).spike_times{1}, [4, 5]);
+        end
+
+        function testAddEmptyRowToRaggedTextColumn(testCase)
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'test table with a ragged text column', ...
+                'colnames', {'tags'});
+
+            dynamicTable.addRow('tags', {'a', 'b'});
+            dynamicTable.addRow('tags', {});
+            dynamicTable.addRow('tags', {'c'});
+
+            columnIndex = dynamicTable.vectordata.get('tags_index');
+            testCase.verifyEqual(columnIndex.data, uint64([2; 2; 3]));
+            testCase.verifyEqual(dynamicTable.id.data, int64([0; 1; 2]));
+        end
+
+        function testAddEmptyRowMakesColumnRagged(testCase)
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'test table with one value per row', ...
+                'colnames', {'columnA'});
+
+            dynamicTable.addRow('columnA', 1);
+            dynamicTable.addRow('columnA', 2);
+            dynamicTable.addRow('columnA', []);
+
+            % Each existing row becomes a ragged row of one element, and the
+            % empty row adds none.
+            columnIndex = dynamicTable.vectordata.get('columnA_index');
+            testCase.verifyEqual(columnIndex.data, uint64([1; 2; 2]));
+            testCase.verifyEqual(dynamicTable.id.data, int64([0; 1; 2]));
+        end
+
         function testNwbToTableWithReferencedTablesAsRowIndices(testCase)
             % The default mode for the toTable() method is to return the row indices
             % for dynamic table regions. This test verifies that the data type of
