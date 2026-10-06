@@ -278,9 +278,10 @@ classdef (Abstract) DynamicTableBase < handle
                 errorID (1,1) string = "NWB:DynamicTable:Uneditable"
             end
 
-            isEditable = ~isa(obj.id.data, 'types.untyped.DataStub');
+            % A table without an id object has no rows on file.
+            isEditable = isempty(obj.id) || ~isa(obj.id.data, 'types.untyped.DataStub');
 
-            assert(isEditable, errorID, ... 
+            assert(isEditable, errorID, ...
                 ['Cannot write to on-file Dynamic Tables without enabling data pipes. '...
                 'If this was produced with pynwb, please enable chunking for this table.']);
         end

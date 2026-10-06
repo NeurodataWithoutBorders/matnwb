@@ -40,6 +40,16 @@ function addRawData(DynamicTable, column, data)
         depth = getNestedDataDepth(data);
     end
 
+    % A column that already has a VectorIndex keeps its number of index
+    % levels: adding a level would regroup the rows already stored, each
+    % becoming a single sub-group of the new level.
+    numIndexLevels = length(indexChain) - 1;
+    assert(numIndexLevels == 0 || depth <= length(indexChain), ...
+        'NWB:DynamicTable:AddRow:TooManyIndexLevels', ...
+        ['The value for column `%s` needs %d index levels, but the column has %d. ' ...
+        'Check that the value is not wrapped in an extra cell array.'], ...
+        column, depth - 1, numIndexLevels);
+
     % add indices until it matches depth.
     for iVec = (length(indexChain)+1):depth
         indexChain{iVec} = types.util.dynamictable.addVecInd(DynamicTable, indexChain{end});
@@ -195,6 +205,13 @@ function numRows = add2MemData(VectorData, data)
         numRows = size(data, 2);
     else % vector data
         catDim = find(size(appendBasis) > 1);
+        % A vector value is a list of scalar elements, so its orientation
+        % carries no meaning. Match it to the stored vector.
+        if isvector(data)
+            vectorShape = [1, 1];
+            vectorShape(catDim) = numel(data);
+            data = reshape(data, vectorShape);
+        end
         numRows = length(data);
     end
 
