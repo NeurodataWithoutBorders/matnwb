@@ -46,29 +46,35 @@ classdef InstallExtensionTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(metadata.name, extensionName)
         end
 
-        function testDownloadUnknownRepository(testCase)
-            repositoryUrl = "https://www.unknown-repo.com/anon/my_nwb_extension";
-            testCase.verifyError(...
-                @() matnwb.extension.internal.downloadExtensionRepository(repositoryUrl, "", "my_nwb_extension"), ...
-                 'NWB:InstallExtension:UnsupportedRepository');
+        function testInstallSpecificVersion(testCase)
+            typesOutputFolder = testCase.getTypesOutputFolder();
+            evalc('matnwb.extension.installExtension("ndx-miniscope", "0.2.2", "savedir", typesOutputFolder)');
+
+            namespaceInfo = spec.loadCache("ndx-miniscope", "savedir", typesOutputFolder);
+            testCase.verifyEqual(string(namespaceInfo.version), "0.2.2")
         end
 
-        function testBuildRepoDownloadUrl(testCase)
+        function testInstallUnknownVersionFails(testCase)
+            testCase.verifyError( ...
+                @() matnwb.extension.installExtension("ndx-miniscope", "99.0.0", ...
+                    "savedir", testCase.getTypesOutputFolder()), ...
+                'NWB:InstallExtension:VersionNotFound')
+        end
 
-            import matnwb.extension.internal.buildRepoDownloadUrl
+        function testVersionWithSeveralExtensionsFails(testCase)
+            testCase.verifyError( ...
+                @() nwbInstallExtension(["ndx-miniscope", "ndx-ecog"], "0.1.0"), ...
+                'NWB:InstallExtension:VersionForMultipleExtensions')
+        end
 
-            repoUrl = buildRepoDownloadUrl('https://github.com/user/test', 'main');
-            testCase.verifyEqual(repoUrl, 'https://github.com/user/test/archive/refs/heads/main.zip')
+        function testInstallExtensionWithoutWheel(testCase)
+            % ndx-ecg is published on PyPI as a source distribution only.
+            testCase.addTeardown(@() testCase.clearExtension("ndx-ecg"))
+            testCase.installExtension("ndx-ecg");
 
-            repoUrl = buildRepoDownloadUrl('https://github.com/user/test/', 'main');
-            testCase.verifyEqual(repoUrl, 'https://github.com/user/test/archive/refs/heads/main.zip')
-
-            repoUrl = buildRepoDownloadUrl('https://gitlab.com/user/test', 'main');
-            testCase.verifyEqual(repoUrl, 'https://gitlab.com/user/test/-/archive/main/test-main.zip')
-
-            testCase.verifyError(...
-                @() buildRepoDownloadUrl('https://unsupported.com/user/test', 'main'), ...
-                'NWB:BuildRepoDownloadUrl:UnsupportedRepository')
+            extensionTypesFolder = fullfile(testCase.getTypesOutputFolder(), "+types", "+ndx_ecg");
+            testCase.verifyTrue(isfolder(extensionTypesFolder), ...
+                'Folder with extension types does not exist')
         end
     end
 end
