@@ -22,9 +22,10 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
 %   - A name may appear in several groups if every occurrence is the same
 %     object. This happens when an object's type matches more than one
 %     group, for example an entry of a subtype that also satisfies a group
-%     inherited from a parent type. The object has one location in the file
-%     and is written once, so it gets one property, and assigning to that
-%     property updates every group that holds the name.
+%     inherited from a parent type. The object has one location in the
+%     file: each group exports it to that same location, so the file holds
+%     one copy. It gets one property, and assigning to that property
+%     updates every group that holds the name.
 %   - Different objects may not share a name, because both would be
 %     written to the same location in the file. Adding one raises
 %     NWB:HasUnnamedGroups:DuplicateEntry and leaves it out of the group.
@@ -294,13 +295,15 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
         end
     
         function n = numEntries(obj)
-            nPerGroup = zeros(1, numel(obj.GroupPropertyNames));
+            % Count names, not group memberships: an object held by several
+            % groups under one name is one entry.
+            namesPerGroup = cell(1, numel(obj.GroupPropertyNames));
 
             for i = 1:numel(obj.GroupPropertyNames)
                 groupName = obj.GroupPropertyNames(i);
-                nPerGroup(i) = obj.(groupName).Count;
+                namesPerGroup{i} = string(obj.(groupName).keys());
             end
-            n = sum(nPerGroup);
+            n = numel(unique([namesPerGroup{:}]));
         end
         
         function nonDynamicProperties = getNonDynamicProperties(obj)
@@ -412,7 +415,7 @@ classdef HasUnnamedGroups < matlab.mixin.CustomDisplay & dynamicprops & handle
                         'in another group. Objects with the same name would ', ...
                         'be written to the same location in the file, so the ', ...
                         'entry was removed from group `%s`. Use a different ', ...
-                        'name, or add the same object.'], ...
+                        'name.'], ...
                         name, groupName)
                 end
 

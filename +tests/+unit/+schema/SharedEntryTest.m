@@ -71,6 +71,16 @@ classdef SharedEntryTest < tests.unit.abstract.SchemaTest
             testCase.verifyFalse(plane.opticalchannelsubtype.isKey('GFP'))
         end
 
+        function testAssigningValueNoGroupAcceptsErrors(testCase)
+            channel = testCase.createSubtypeChannel();
+            plane = testCase.createPlane('GFP', channel);
+
+            testCase.verifyError(@() setGFP(plane, types.core.Device()), ...
+                'NWB:Set:FailedValidation')
+            testCase.verifySameHandle(plane.opticalchannel.get('GFP'), channel)
+            testCase.verifySameHandle(plane.opticalchannelsubtype.get('GFP'), channel)
+        end
+
         function testRoundTripWritesSharedEntryOnce(testCase)
             device = types.core.Device();
             channel = testCase.createSubtypeChannel();
@@ -121,4 +131,8 @@ classdef SharedEntryTest < tests.unit.abstract.SchemaTest
                 'emission_lambda', 525);
         end
     end
+end
+
+function setGFP(plane, value)
+    plane.GFP = value;
 end
