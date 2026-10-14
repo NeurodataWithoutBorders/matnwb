@@ -15,8 +15,41 @@ classdef HDF5ReaderTest < matlab.unittest.TestCase
             reader = io.backend.hdf5.HDF5Reader(filename);
             rootInfo = reader.readRootInfo();
 
-            testCase.verifyEqual(rootInfo.Name, '/');
+            testCase.verifyClass(rootInfo, 'io.backend.model.GroupInfo');
+            testCase.verifyEqual(rootInfo.Path, '/');
             testCase.verifyEqual(reader.getSchemaVersion(), util.getSchemaVersion(filename));
+        end
+
+        function readRootInfoDescribesHierarchy(testCase)
+            writer = io.backend.hdf5.HDF5Writer("reader-hierarchy.nwb", "overwrite");
+            writer.writeGroup('/group');
+            writer.writeAttribute('/group/label', 'a group');
+            writer.writeValue('/group/values', [1 2 3]);
+            writer.writeAttribute('/group/values/unit', 'volts');
+            writer.writeSoftLink('/group/soft', '/group/values');
+            writer.writeExternalLink('/group/external', 'other.nwb', '/data');
+            writer.close();
+
+            reader = io.backend.hdf5.HDF5Reader("reader-hierarchy.nwb");
+            rootInfo = reader.readRootInfo();
+
+            groupInfo = rootInfo.Groups;
+            testCase.verifyEqual(groupInfo.Path, '/group');
+            testCase.verifyEqual(groupInfo.Name, 'group');
+            testCase.verifyEqual(groupInfo.Attributes.Name, 'label');
+            testCase.verifyEqual(groupInfo.Attributes.Value, 'a group');
+
+            datasetInfo = groupInfo.Datasets;
+            testCase.verifyEqual(datasetInfo.Name, 'values');
+            testCase.verifyEqual(datasetInfo.Attributes.Name, 'unit');
+            testCase.verifyEqual(datasetInfo.Attributes.Value, 'volts');
+
+            [~, order] = sort({groupInfo.Links.Name});
+            links = groupInfo.Links(order);
+            testCase.verifyEqual({links.Name}, {'external', 'soft'});
+            testCase.verifyEqual({links.Type}, {'external link', 'soft link'});
+            testCase.verifyEqual({links.TargetPath}, {'/data', '/group/values'});
+            testCase.verifyEqual({links.TargetFile}, {'other.nwb', ''});
         end
 
         function readDatasetValueReadsScalarDatasetEagerly(testCase)
@@ -44,53 +77,52 @@ classdef HDF5ReaderTest < matlab.unittest.TestCase
             testCase.verifyEqual(reader.getExternalLinkBase(), string(folderInfo.Name));
         end
 
-        function readLinkInfoReturnsSoftLinkTarget(testCase)
-            import matlab.unittest.fixtures.WorkingFolderFixture
-            testCase.applyFixture(WorkingFolderFixture);
-
+        function readNodeInfoDescribesSoftLinkWithoutFollowingIt(testCase)
             writer = io.backend.hdf5.HDF5Writer("reader-softlink.nwb", "overwrite");
             writer.writeGroup('/target');
             writer.writeSoftLink('/link', '/target');
             writer.close();
 
             reader = io.backend.hdf5.HDF5Reader("reader-softlink.nwb");
-            linkInfo = reader.readLinkInfo("/link");
+            linkInfo = reader.readNodeInfo("/link");
 
-            testCase.verifyEqual(linkInfo.type, "soft link");
-            testCase.verifyEqual(linkInfo.targetPath, "/target");
-            testCase.verifyEqual(linkInfo.targetFilename, "");
+            testCase.verifyClass(linkInfo, 'io.backend.model.LinkInfo');
+            testCase.verifyEqual(linkInfo.Name, 'link');
+            testCase.verifyEqual(linkInfo.Type, 'soft link');
+            testCase.verifyEqual(linkInfo.TargetPath, '/target');
+            testCase.verifyEqual(linkInfo.TargetFile, '');
         end
 
-        function readLinkInfoReturnsExternalLinkTarget(testCase)
-            import matlab.unittest.fixtures.WorkingFolderFixture
-            testCase.applyFixture(WorkingFolderFixture);
-
+        function readNodeInfoDescribesExternalLink(testCase)
             writer = io.backend.hdf5.HDF5Writer("reader-external.nwb", "overwrite");
             writer.writeExternalLink('/elink', 'other.nwb', '/data');
             writer.close();
 
             reader = io.backend.hdf5.HDF5Reader("reader-external.nwb");
-            linkInfo = reader.readLinkInfo("/elink");
+            linkInfo = reader.readNodeInfo("/elink");
 
-            testCase.verifyEqual(linkInfo.type, "external link");
-            testCase.verifyEqual(linkInfo.targetFilename, "other.nwb");
-            testCase.verifyEqual(linkInfo.targetPath, "/data");
+            testCase.verifyClass(linkInfo, 'io.backend.model.LinkInfo');
+            testCase.verifyEqual(linkInfo.Type, 'external link');
+            testCase.verifyEqual(linkInfo.TargetFile, 'other.nwb');
+            testCase.verifyEqual(linkInfo.TargetPath, '/data');
         end
 
-        function readLinkInfoRejectsNodeThatIsNotALink(testCase)
-            import matlab.unittest.fixtures.WorkingFolderFixture
-            testCase.applyFixture(WorkingFolderFixture);
-
-            writer = io.backend.hdf5.HDF5Writer("reader-nolink.nwb", "overwrite");
+        function readNodeInfoDescribesGroupAndDataset(testCase)
+            writer = io.backend.hdf5.HDF5Writer("reader-nodes.nwb", "overwrite");
             writer.writeGroup('/plain');
+            writer.writeValue('/plain/values', [1 2 3]);
             writer.close();
 
-            reader = io.backend.hdf5.HDF5Reader("reader-nolink.nwb");
+            reader = io.backend.hdf5.HDF5Reader("reader-nodes.nwb");
 
-            testCase.verifyError(@() reader.readLinkInfo("/plain"), ...
-                'NWB:Backend:Reader:UnsupportedLinkType');
+            groupInfo = reader.readNodeInfo("/plain");
+            testCase.verifyClass(groupInfo, 'io.backend.model.GroupInfo');
+            testCase.verifyEqual(groupInfo.Path, '/plain');
+
+            datasetInfo = reader.readNodeInfo("/plain/values");
+            testCase.verifyClass(datasetInfo, 'io.backend.model.DatasetInfo');
+            testCase.verifyEqual(datasetInfo.Name, 'values');
         end
-
 
         function isReferenceDatasetIdentifiesReferenceDatasets(testCase)
         % ExternalLink.deref routes a dataset either through io.parseDataset
@@ -109,12 +141,12 @@ classdef HDF5ReaderTest < matlab.unittest.TestCase
 
             reader = io.backend.hdf5.HDF5Reader('reference-probe.nwb');
 
-            referenceInfo = h5info('reference-probe.nwb', ...
-                '/general/extracellular_ephys/electrodes/group');
+            referenceInfo = reader.readNodeInfo( ...
+                "/general/extracellular_ephys/electrodes/group");
             testCase.verifyTrue(reader.isReferenceDataset(referenceInfo));
 
-            plainInfo = h5info('reference-probe.nwb', ...
-                '/general/extracellular_ephys/electrodes/group_name');
+            plainInfo = reader.readNodeInfo( ...
+                "/general/extracellular_ephys/electrodes/group_name");
             testCase.verifyFalse(reader.isReferenceDataset(plainInfo));
         end
 
