@@ -6,7 +6,7 @@ function typeDescriptor = getCompoundTypeDescriptor(info, objectReferenceFields)
 % per info.fields entry (same name, same order -- checkDtype's
 % validateCompoundTypeDescriptor requires exact field order), whose value is
 % either 'types.untyped.ObjectView', when objectReferenceFields names that
-% field (see io.internal.zarr3.getObjectReferenceFields), or the field's
+% field (see io.backend.zarr3.internal.getObjectReferenceFields), or the field's
 % MATLAB class name otherwise, e.g. 'int32' -- with text reported as 'char'
 % (see matlabClassName below).
 %

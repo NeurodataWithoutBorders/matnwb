@@ -35,7 +35,7 @@ function fixturePath = createZarr3TestFile(rootFolder)
     esGroup.createArray("data", [29 4], "single").write(reshape(single(1:116), [4 29]).');
 
     % A rank-3 dataset (numpy order [4 3 2] -> MatNWB dims [2 3 4]), for the
-    % rank >= 3 axis reversal (io.internal.zarr3.normalizeDatasetDimensions
+    % rank >= 3 axis reversal (io.backend.zarr3.internal.normalizeDatasetDimensions
     % uses permute rather than transpose there) and for selections naming
     % fewer subscripts than the rank.
     volumeGroup = acquisitionGroup.createGroup("vol");
@@ -142,7 +142,7 @@ function writeTimeseriesReferences(hdmfFile, arrayPath)
 % TimeSeriesReferenceVectorData column (idx_start int32, count int32,
 % timeseries -> object reference). hdmf-zarr stores the reference field as
 % text holding the target path and lists it in the dataset's
-% _REFERENCE_FIELDS attribute (see io.internal.zarr3.getObjectReferenceFields),
+% _REFERENCE_FIELDS attribute (see io.backend.zarr3.internal.getObjectReferenceFields),
 % which is how it emulates an HDF5 compound with a reference member.
 
     target = hdmf.zarr.Reference("/acquisition/es");

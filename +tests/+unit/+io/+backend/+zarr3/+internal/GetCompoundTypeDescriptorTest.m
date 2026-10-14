@@ -23,19 +23,19 @@ classdef GetCompoundTypeDescriptorTest < matlab.unittest.TestCase
 
     methods (Test)
         function mapsReferenceFieldToObjectView(testCase)
-            info = tests.unit.io.internal.zarr3.GetCompoundTypeDescriptorTest.buildDtypeInfo(...
+            info = tests.unit.io.backend.zarr3.internal.GetCompoundTypeDescriptorTest.buildDtypeInfo(...
                 ["idx_start", "count", "timeseries"], ["int32", "int32", "string"]);
 
-            typeDescriptor = io.internal.zarr3.getCompoundTypeDescriptor(info, "timeseries");
+            typeDescriptor = io.backend.zarr3.internal.getCompoundTypeDescriptor(info, "timeseries");
 
             testCase.verifyEqual(typeDescriptor.timeseries, 'types.untyped.ObjectView');
         end
 
         function mapsRemainingFieldsToMatlabClass(testCase)
-            info = tests.unit.io.internal.zarr3.GetCompoundTypeDescriptorTest.buildDtypeInfo(...
+            info = tests.unit.io.backend.zarr3.internal.GetCompoundTypeDescriptorTest.buildDtypeInfo(...
                 ["idx_start", "count", "timeseries"], ["int32", "int32", "string"]);
 
-            typeDescriptor = io.internal.zarr3.getCompoundTypeDescriptor(info, "timeseries");
+            typeDescriptor = io.backend.zarr3.internal.getCompoundTypeDescriptor(info, "timeseries");
 
             testCase.verifyEqual(typeDescriptor.idx_start, 'int32');
             testCase.verifyEqual(typeDescriptor.count, 'int32');
@@ -44,10 +44,10 @@ classdef GetCompoundTypeDescriptorTest < matlab.unittest.TestCase
         function preservesFieldOrder(testCase)
         % types.util.checkDtype>validateCompoundTypeDescriptor requires the
         % descriptor's fields to match the dataset's field order exactly.
-            info = tests.unit.io.internal.zarr3.GetCompoundTypeDescriptorTest.buildDtypeInfo(...
+            info = tests.unit.io.backend.zarr3.internal.GetCompoundTypeDescriptorTest.buildDtypeInfo(...
                 ["idx_start", "count", "timeseries"], ["int32", "int32", "string"]);
 
-            typeDescriptor = io.internal.zarr3.getCompoundTypeDescriptor(info, "timeseries");
+            typeDescriptor = io.backend.zarr3.internal.getCompoundTypeDescriptor(info, "timeseries");
 
             testCase.verifyEqual(fieldnames(typeDescriptor), ...
                 {'idx_start'; 'count'; 'timeseries'});
@@ -57,10 +57,10 @@ classdef GetCompoundTypeDescriptorTest < matlab.unittest.TestCase
         % A reference-free compound dataset keeps its underlying classes --
         % notably a text field stays literal text rather than becoming an
         % ObjectView.
-            info = tests.unit.io.internal.zarr3.GetCompoundTypeDescriptorTest.buildDtypeInfo(...
+            info = tests.unit.io.backend.zarr3.internal.GetCompoundTypeDescriptorTest.buildDtypeInfo(...
                 ["label", "weight"], ["string", "double"]);
 
-            typeDescriptor = io.internal.zarr3.getCompoundTypeDescriptor(info, string.empty(1, 0));
+            typeDescriptor = io.backend.zarr3.internal.getCompoundTypeDescriptor(info, string.empty(1, 0));
 
             testCase.verifyEqual(typeDescriptor.label, 'char');
             testCase.verifyEqual(typeDescriptor.weight, 'double');
@@ -74,10 +74,10 @@ classdef GetCompoundTypeDescriptorTest < matlab.unittest.TestCase
         % types.util.checkDtype>validateCompoundTypeDescriptor compares
         % descriptor entries by name, a descriptor saying 'string' makes an
         % otherwise valid file unreadable.
-            info = tests.unit.io.internal.zarr3.GetCompoundTypeDescriptorTest.buildDtypeInfo(...
+            info = tests.unit.io.backend.zarr3.internal.GetCompoundTypeDescriptorTest.buildDtypeInfo(...
                 ["entity_id", "entity_uri"], ["string", "string"]);
 
-            typeDescriptor = io.internal.zarr3.getCompoundTypeDescriptor(...
+            typeDescriptor = io.backend.zarr3.internal.getCompoundTypeDescriptor(...
                 info, string.empty(1, 0));
 
             testCase.verifyEqual(typeDescriptor.entity_id, 'char');
@@ -86,10 +86,10 @@ classdef GetCompoundTypeDescriptorTest < matlab.unittest.TestCase
 
         function leavesNonTextClassesUnchanged(testCase)
         % The text mapping must not disturb any other class name.
-            info = tests.unit.io.internal.zarr3.GetCompoundTypeDescriptorTest.buildDtypeInfo(...
+            info = tests.unit.io.backend.zarr3.internal.GetCompoundTypeDescriptorTest.buildDtypeInfo(...
                 ["a", "b", "c", "d"], ["int32", "double", "logical", "uint64"]);
 
-            typeDescriptor = io.internal.zarr3.getCompoundTypeDescriptor(...
+            typeDescriptor = io.backend.zarr3.internal.getCompoundTypeDescriptor(...
                 info, string.empty(1, 0));
 
             testCase.verifyEqual(struct2cell(typeDescriptor), ...
@@ -97,10 +97,10 @@ classdef GetCompoundTypeDescriptorTest < matlab.unittest.TestCase
         end
 
         function mapsMultipleReferenceFields(testCase)
-            info = tests.unit.io.internal.zarr3.GetCompoundTypeDescriptorTest.buildDtypeInfo(...
+            info = tests.unit.io.backend.zarr3.internal.GetCompoundTypeDescriptorTest.buildDtypeInfo(...
                 ["x", "first_ref", "second_ref"], ["double", "string", "string"]);
 
-            typeDescriptor = io.internal.zarr3.getCompoundTypeDescriptor(...
+            typeDescriptor = io.backend.zarr3.internal.getCompoundTypeDescriptor(...
                 info, ["first_ref", "second_ref"]);
 
             testCase.verifyEqual(typeDescriptor.x, 'double');
@@ -113,10 +113,10 @@ classdef GetCompoundTypeDescriptorTest < matlab.unittest.TestCase
         % sources (the "_REFERENCE_FIELDS" attribute and the array
         % metadata), so a name present in one but not the other must not
         % error.
-            info = tests.unit.io.internal.zarr3.GetCompoundTypeDescriptorTest.buildDtypeInfo(...
+            info = tests.unit.io.backend.zarr3.internal.GetCompoundTypeDescriptorTest.buildDtypeInfo(...
                 ["idx_start", "count"], ["int32", "int32"]);
 
-            typeDescriptor = io.internal.zarr3.getCompoundTypeDescriptor(info, "timeseries");
+            typeDescriptor = io.backend.zarr3.internal.getCompoundTypeDescriptor(info, "timeseries");
 
             testCase.verifyEqual(fieldnames(typeDescriptor), {'idx_start'; 'count'});
         end

@@ -63,7 +63,7 @@ function tf = isReservedAttribute(name)
 % cached specifications group and is read by io.backend.zarr3.Zarr3Reader.
 
     reservedNames = ["_LINKS", "_DTYPE", "_REFERENCE_FIELDS", ...
-        io.internal.zarr3.getSpecLocAttributeName(), "_ARRAY_DIMENSIONS"];
+        io.backend.zarr3.internal.getSpecLocAttributeName(), "_ARRAY_DIMENSIONS"];
     tf = any(name == reservedNames);
 end
 
@@ -73,7 +73,7 @@ function tf = isObjectReferenceValue(value)
 % hdmf-zarr wraps a reference stored in an attribute as
 % {"_REFERENCE": <record>}.
 
-    tf = io.internal.zarr3.getAttribute(value, "_REFERENCE");
+    tf = io.backend.zarr3.internal.getAttribute(value, "_REFERENCE");
 end
 
 function value = normalizeValue(value)

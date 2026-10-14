@@ -2,7 +2,7 @@ classdef Zarr3Reader < io.backend.base.Reader
 % Zarr3Reader - Reader implementation for Zarr v3 stores.
 %
 % The store is a local directory or an http(s) URL (see
-% io.internal.zarr3.openNode).
+% io.backend.zarr3.internal.openNode).
 %
 % This reader is backed by the zarr-matlab package
 % (https://github.com/catalystneuro/zarr-matlab), which must be on the
@@ -16,15 +16,15 @@ classdef Zarr3Reader < io.backend.base.Reader
 % be on the MATLAB path:
 % - group links are records in the "_LINKS" attribute (hdmf.zarr.Link),
 %     described as io.backend.model.LinkInfo by
-%     io.internal.zarr3.convertAttributes;
+%     io.backend.zarr3.internal.convertAttributes;
 % - an object reference is a {source, path} record (hdmf.zarr.Reference),
 %     stored as {"_REFERENCE": <record>} in an attribute, or as the
 %     target-path elements of a dataset tagged _DTYPE:"object_reference"
 %     (hdmf.zarr.isReferenceArray), e.g. a DynamicTable column of
 %     ElectrodeGroup references. Both decode to types.untyped.ObjectView
-%     via io.internal.zarr3.decodeObjectReferences;
+%     via io.backend.zarr3.internal.decodeObjectReferences;
 % - the root ".specloc" attribute names the cached specifications
-%     group (io.internal.zarr3.getSpecLocAttributeName).
+%     group (io.backend.zarr3.internal.getSpecLocAttributeName).
 %
 % A compound (struct/table) dataset -- a Zarr v3 "struct" data_type (named
 % "structured" by zarr-python before 3.4), e.g. PlaneSegmentation's
@@ -32,7 +32,7 @@ classdef Zarr3Reader < io.backend.base.Reader
 % response/stimulus columns -- is backed by
 % io.backend.zarr3.Zarr3LazyArray; a field listed in the array's
 % "_REFERENCE_FIELDS" attribute (see
-% io.internal.zarr3.getObjectReferenceFields) holds references in the same
+% io.backend.zarr3.internal.getObjectReferenceFields) holds references in the same
 % form as a reference dataset and is decoded the same way.
 
     properties (Constant, Access = private)
@@ -54,7 +54,7 @@ classdef Zarr3Reader < io.backend.base.Reader
 
         % NodeInfoMap - containers.Map from absolute node path (char, leading
         % '/') to the io.backend.model description of that node, backing
-        % readNodeInfo (see io.internal.zarr3.buildNodeInfo).
+        % readNodeInfo (see io.backend.zarr3.internal.buildNodeInfo).
         %
         % A containers.Map is a handle, so it must not be created as a
         % property default: that would share one map across every
@@ -112,7 +112,7 @@ classdef Zarr3Reader < io.backend.base.Reader
 
         function version = getSchemaVersion(obj)
             obj.ensureMetadataCache();
-            [hasVersion, version] = io.internal.zarr3.getAttribute(...
+            [hasVersion, version] = io.backend.zarr3.internal.getAttribute(...
                 obj.RootGroup.attrs, "nwb_version");
             if hasVersion
                 version = string(version);
@@ -129,8 +129,8 @@ classdef Zarr3Reader < io.backend.base.Reader
             % ".specloc" attribute; fall back to the conventional group name
             % when a writer omitted it.
             specLocation = "";
-            [hasSpecLoc, specLocValue] = io.internal.zarr3.getAttribute(...
-                obj.RootGroup.attrs, io.internal.zarr3.getSpecLocAttributeName());
+            [hasSpecLoc, specLocValue] = io.backend.zarr3.internal.getAttribute(...
+                obj.RootGroup.attrs, io.backend.zarr3.internal.getSpecLocAttributeName());
             if hasSpecLoc
                 specLocation = string(specLocValue);
             end
@@ -165,7 +165,7 @@ classdef Zarr3Reader < io.backend.base.Reader
 
         function attributeValue = readAttributeValue(~, attributeInfo, ~)
             if attributeInfo.BackendInfo.IsReference
-                attributeValue = io.internal.zarr3.decodeObjectReferences(attributeInfo.Value);
+                attributeValue = io.backend.zarr3.internal.decodeObjectReferences(attributeInfo.Value);
             else
                 attributeValue = attributeInfo.Value;
             end
@@ -198,7 +198,7 @@ classdef Zarr3Reader < io.backend.base.Reader
         %
         % Zarr v3 has no native reference type. hdmf-zarr marks such a
         % dataset with a _DTYPE of "object_reference", which
-        % io.internal.zarr3.buildNodeInfo records as the dataset's Kind
+        % io.backend.zarr3.internal.buildNodeInfo records as the dataset's Kind
         % (see hdmf.zarr.isReferenceArray).
             tf = datasetInfo.BackendInfo.Kind == "reference";
         end
@@ -227,7 +227,7 @@ classdef Zarr3Reader < io.backend.base.Reader
             elseif any(dataDimensions == 0)
                 datasetValue = [];
             else
-                matlabDataType = io.internal.zarr3.getMatlabDataType(datasetInfo.BackendInfo.DataType);
+                matlabDataType = io.backend.zarr3.internal.getMatlabDataType(datasetInfo.BackendInfo.DataType);
                 lazyArray = io.backend.zarr3.Zarr3LazyArray(...
                     obj.Filename, datasetPath, dataDimensions, matlabDataType, ...
                     ArrayNode=obj.openArray(datasetPath));
@@ -241,12 +241,12 @@ classdef Zarr3Reader < io.backend.base.Reader
         function ensureMetadataCache(obj)
             if isempty(obj.RootGroup)
                 io.backend.zarr3.internal.ensureAvailable()
-                store = io.internal.zarr3.createStore(obj.Filename);
+                store = io.backend.zarr3.internal.createStore(obj.Filename);
                 if matnwb.common.isUrl(obj.Filename)
                     store = io.backend.zarr3.internal.PrefetchStore(store);
                 end
                 obj.RootGroup = zarr.open(store);
-                [obj.RootInfoCache, obj.NodeInfoMap] = io.internal.zarr3.buildNodeInfo(obj.RootGroup);
+                [obj.RootInfoCache, obj.NodeInfoMap] = io.backend.zarr3.internal.buildNodeInfo(obj.RootGroup);
                 if isa(store, "io.backend.zarr3.internal.PrefetchStore")
                     store.prefetch(obj.smallArrayChunkKeys());
                 end
@@ -277,7 +277,7 @@ classdef Zarr3Reader < io.backend.base.Reader
                     continue
                 end
                 arrayNode = obj.openArray(nodePaths(iNode));
-                chunkKeys(end+1, 1) = io.internal.zarr3.stripLeadingSlash(nodePaths(iNode)) ...
+                chunkKeys(end+1, 1) = io.backend.zarr3.internal.stripLeadingSlash(nodePaths(iNode)) ...
                     + "/" + arrayNode.meta.chunkKey(zeros(1, numel(shape))); %#ok<AGROW>
             end
         end
@@ -290,7 +290,7 @@ classdef Zarr3Reader < io.backend.base.Reader
         % HTTP saves a request per dataset. zarr.Group.item reads the store
         % only for a node the consolidated metadata does not describe.
             obj.ensureMetadataCache();
-            arrayNode = obj.RootGroup.item(io.internal.zarr3.stripLeadingSlash(datasetPath));
+            arrayNode = obj.RootGroup.item(io.backend.zarr3.internal.stripLeadingSlash(datasetPath));
         end
 
         function normalizedPath = normalizeNodePath(~, nodePath)
@@ -305,7 +305,7 @@ classdef Zarr3Reader < io.backend.base.Reader
         function dataDimensions = getDatasetDims(~, datasetInfo)
             % Shape is the raw (Zarr/numpy-order) shape; reverse it for
             % rank >= 2 to match MatNWB's H5-style dims convention (see
-            % io.internal.zarr3.normalizeDatasetDimensions).
+            % io.backend.zarr3.internal.normalizeDatasetDimensions).
             dataDimensions = datasetInfo.BackendInfo.Shape;
             if numel(dataDimensions) >= 2
                 dataDimensions = fliplr(dataDimensions);
@@ -329,7 +329,7 @@ classdef Zarr3Reader < io.backend.base.Reader
         % dataType is a compound type descriptor struct (field name -> MATLAB
         % class name, or 'types.untyped.ObjectView' for a field the array's
         % attributes declare a reference; see
-        % io.internal.zarr3.getCompoundTypeDescriptor) rather than a plain
+        % io.backend.zarr3.internal.getCompoundTypeDescriptor) rather than a plain
         % class name, matching what types.util.checkDtype and
         % types.untyped.DataStub.isCompoundType expect. This alone is enough
         % for schema validation to succeed without loading any data (see
@@ -338,8 +338,8 @@ classdef Zarr3Reader < io.backend.base.Reader
 
             arrayNode = obj.openArray(datasetPath);
             info = zarr.internal.dtype_info(arrayNode.meta.dataType, arrayNode.meta.dataTypeConfig);
-            objectReferenceFields = io.internal.zarr3.getObjectReferenceFields(arrayNode.attrs);
-            typeDescriptor = io.internal.zarr3.getCompoundTypeDescriptor(info, objectReferenceFields);
+            objectReferenceFields = io.backend.zarr3.internal.getObjectReferenceFields(arrayNode.attrs);
+            typeDescriptor = io.backend.zarr3.internal.getCompoundTypeDescriptor(info, objectReferenceFields);
 
             lazyArray = io.backend.zarr3.Zarr3LazyArray(...
                 obj.Filename, datasetPath, dataDimensions, typeDescriptor, objectReferenceFields, ...
@@ -352,14 +352,14 @@ classdef Zarr3Reader < io.backend.base.Reader
         % readObjectArrayValue - Decode a dataset of object references.
         %
         % Decodes a dataset whose Kind is "reference" (see
-        % io.internal.zarr3.buildNodeInfo) into a types.untyped.ObjectView
+        % io.backend.zarr3.internal.buildNodeInfo) into a types.untyped.ObjectView
         % array. Each element is a zarr "string" holding a reference in a
         % form hdmf.zarr.Reference decodes; zarr-matlab does not decode
         % these itself since the array's own Zarr v3 data_type is plain
         % "string".
 
             rawValues = string(obj.openArray(datasetPath).read());
-            datasetValue = io.internal.zarr3.decodeObjectReferences(rawValues);
+            datasetValue = io.backend.zarr3.internal.decodeObjectReferences(rawValues);
         end
     end
 end

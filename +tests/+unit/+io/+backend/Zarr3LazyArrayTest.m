@@ -305,7 +305,7 @@ classdef Zarr3LazyArrayTest < matlab.unittest.TestCase
 
         function rank3DatasetReversesAxesAndPadsSelection(testCase)
         % Rank >= 3 exercises the permute branch of
-        % io.internal.zarr3.normalizeDatasetDimensions (rank 2 uses a plain
+        % io.backend.zarr3.internal.normalizeDatasetDimensions (rank 2 uses a plain
         % transpose), and a selection naming fewer subscripts than the rank
         % reads index 1 of each unnamed trailing dimension -- matching
         % io.backend.hdf5.@HDF5LazyArray/load_mat_style, not MATLAB's

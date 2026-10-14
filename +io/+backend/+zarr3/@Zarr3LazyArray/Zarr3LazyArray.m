@@ -3,7 +3,7 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
 %
 % Zarr v3 stores may be written by Python NWB tools using numpy/row-major
 % shape order. For rank >= 2 arrays, dims and data are reversed to match
-% MatNWB's H5-style convention (see io.internal.zarr3.normalizeDatasetDimensions).
+% MatNWB's H5-style convention (see io.backend.zarr3.internal.normalizeDatasetDimensions).
 % A rank-1 array needs no correction: zarr-matlab already returns it as a
 % MATLAB column vector.
 
@@ -21,7 +21,7 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
         % which has already read them; getObjectReferenceFields falls back
         % to reading them from the array when a Zarr3LazyArray is
         % constructed directly (see
-        % io.internal.zarr3.getObjectReferenceFields).
+        % io.backend.zarr3.internal.getObjectReferenceFields).
         ObjectReferenceFields (1,:) string = string.empty(1, 0)
     end
 
@@ -64,7 +64,7 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
         function dataType = resolveDataType(obj)
             % For a structured (compound) array, dataType is a compound
             % type descriptor struct (see
-            % io.internal.zarr3.getCompoundTypeDescriptor), not a plain
+            % io.backend.zarr3.internal.getCompoundTypeDescriptor), not a plain
             % class name -- required by
             % types.util.checkDtype/types.untyped.DataStub.isCompoundType.
             % io.backend.zarr3.Zarr3Reader normally passes this in at
@@ -74,7 +74,7 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
             arrayNode = obj.resolveArray();
             info = zarr.internal.dtype_info(arrayNode.meta.dataType, arrayNode.meta.dataTypeConfig);
             if info.isStructured
-                dataType = io.internal.zarr3.getCompoundTypeDescriptor(info, obj.getObjectReferenceFields());
+                dataType = io.backend.zarr3.internal.getCompoundTypeDescriptor(info, obj.getObjectReferenceFields());
             else
                 dataType = char(info.matlabClass);
             end
@@ -146,8 +146,8 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
     methods (Access = private)
         function arrayNode = resolveArray(obj)
             if isempty(obj.ArrayNode)
-                relativePath = io.internal.zarr3.stripLeadingSlash(obj.DatasetPath);
-                obj.ArrayNode = io.internal.zarr3.openNode(obj.Filename, relativePath);
+                relativePath = io.backend.zarr3.internal.stripLeadingSlash(obj.DatasetPath);
+                obj.ArrayNode = io.backend.zarr3.internal.openNode(obj.Filename, relativePath);
             end
             arrayNode = obj.ArrayNode;
         end
@@ -156,7 +156,7 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
             if ~isempty(obj.ObjectReferenceFields)
                 referenceFields = obj.ObjectReferenceFields;
             else
-                referenceFields = io.internal.zarr3.getObjectReferenceFields(obj.resolveArray().attrs);
+                referenceFields = io.backend.zarr3.internal.getObjectReferenceFields(obj.resolveArray().attrs);
             end
         end
 
@@ -167,9 +167,9 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
         % into the "struct of arrays" shape (one scalar struct, each field an
         % Nx1 array) that io.backend.hdf5.@HDF5LazyArray/load_h5_style.m
         % produces via io.parseCompound. Any field that holds an object
-        % reference (see io.internal.zarr3.getObjectReferenceFields) is
+        % reference (see io.backend.zarr3.internal.getObjectReferenceFields) is
         % decoded into a types.untyped.ObjectView array along the way (see
-        % io.internal.zarr3.decodeObjectReferences), and text is returned as
+        % io.backend.zarr3.internal.decodeObjectReferences), and text is returned as
         % cellstr so that a compound dataset reads back as the same MATLAB
         % types on either backend.
 
@@ -185,14 +185,14 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
                 name = fieldNames{iField};
                 rawValues = {data.(name)};
                 if ismember(name, referenceFields)
-                    objectViews = io.internal.zarr3.decodeObjectReferences(string(rawValues));
+                    objectViews = io.backend.zarr3.internal.decodeObjectReferences(string(rawValues));
                     converted.(name) = reshape(objectViews, n, 1);
                 elseif ~isempty(rawValues) && isstring(rawValues{1})
                     % zarr-matlab returns both Zarr text types as MATLAB
                     % strings. io.parseCompound yields a cellstr column for
                     % an HDF5 compound's variable-length string field, and
                     % the type descriptor reports these fields as 'char'
-                    % (see io.internal.zarr3.getCompoundTypeDescriptor), so
+                    % (see io.backend.zarr3.internal.getCompoundTypeDescriptor), so
                     % convert to keep the value and its declared type
                     % consistent with the HDF5 backend.
                     converted.(name) = reshape(cellstr(string(rawValues)), n, 1);
@@ -206,7 +206,7 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
         function data = readAllData(obj)
             arrayNode = obj.resolveArray();
             data = arrayNode.read();
-            data = io.internal.zarr3.normalizeDatasetDimensions(data, numel(arrayNode.shape));
+            data = io.backend.zarr3.internal.normalizeDatasetDimensions(data, numel(arrayNode.shape));
             data = obj.postProcessCompound(data);
         end
 
@@ -244,7 +244,7 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
                 end
                 data = boxed(selection{:});
             end
-            data = io.internal.zarr3.normalizeDatasetDimensions(data, rank);
+            data = io.backend.zarr3.internal.normalizeDatasetDimensions(data, rank);
             data = obj.postProcessCompound(data);
         end
 

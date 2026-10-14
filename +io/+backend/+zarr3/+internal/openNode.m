@@ -13,5 +13,5 @@ function node = openNode(location, nodePath)
         nodePath (1,1) string = ""
     end
 
-    node = zarr.open(io.internal.zarr3.createStore(location), Path=nodePath);
+    node = zarr.open(io.backend.zarr3.internal.createStore(location), Path=nodePath);
 end

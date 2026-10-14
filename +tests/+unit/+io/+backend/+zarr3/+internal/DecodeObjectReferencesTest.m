@@ -1,6 +1,6 @@
 classdef DecodeObjectReferencesTest < matlab.unittest.TestCase
 % DecodeObjectReferencesTest - Unit tests for
-% io.internal.zarr3.decodeObjectReferences.
+% io.backend.zarr3.internal.decodeObjectReferences.
 %
 % The in-store decoding paths are exercised through Zarr3ReaderTest and
 % Zarr3LazyArrayTest; this class covers the rejection of references that
@@ -24,7 +24,7 @@ classdef DecodeObjectReferencesTest < matlab.unittest.TestCase
                 'path', '/acquisition/es')));
 
             testCase.verifyError(...
-                @() io.internal.zarr3.decodeObjectReferences(externalRecord), ...
+                @() io.backend.zarr3.internal.decodeObjectReferences(externalRecord), ...
                 "NWB:Zarr3:UnsupportedExternalReference");
         end
     end

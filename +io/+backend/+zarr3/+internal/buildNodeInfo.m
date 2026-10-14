@@ -26,7 +26,7 @@ function [rootInfo, nodeInfoMap] = buildNodeInfo(rootGroup)
 end
 
 function groupInfo = buildGroupInfo(group, groupPath, nodeInfoMap)
-    [attributes, links] = io.internal.zarr3.convertAttributes(group.attrs);
+    [attributes, links] = io.backend.zarr3.internal.convertAttributes(group.attrs);
     for iLink = 1:numel(links)
         linkPath = joinPath(groupPath, links(iLink).Name);
         nodeInfoMap(char(linkPath)) = links(iLink);
@@ -66,7 +66,7 @@ function datasetInfo = buildDatasetInfo(arrayNode, leafName)
     % hdmf.zarr.Reference). Any other _DTYPE hint is redundant with the
     % native Zarr v3 data_type and ignored; the attribute itself is
     % reserved and filtered out of the attributes by
-    % io.internal.zarr3.convertAttributes. zarr-python 3.4 names the
+    % io.backend.zarr3.internal.convertAttributes. zarr-python 3.4 names the
     % structured data type "struct"; earlier versions wrote "structured".
     if hdmf.zarr.isReferenceArray(arrayNode)
         kind = "reference";
@@ -82,7 +82,7 @@ function datasetInfo = buildDatasetInfo(arrayNode, leafName)
         'DataType', dataType, ...
         'Kind', kind);
     datasetInfo = io.backend.model.DatasetInfo(leafName, ...
-        io.internal.zarr3.convertAttributes(arrayNode.attrs), backendInfo);
+        io.backend.zarr3.internal.convertAttributes(arrayNode.attrs), backendInfo);
 end
 
 function joinedPath = joinPath(parentPath, childName)

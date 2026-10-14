@@ -31,19 +31,19 @@ classdef GetObjectReferenceFieldsTest < matlab.unittest.TestCase
         function returnsListedReferenceField(testCase)
         % A TimeSeriesReferenceVectorData column: only "timeseries" is a
         % reference. A one-element list must still be read as a list.
-            attrs = tests.unit.io.internal.zarr3.GetObjectReferenceFieldsTest.buildAttributes(...
+            attrs = tests.unit.io.backend.zarr3.internal.GetObjectReferenceFieldsTest.buildAttributes(...
                 "timeseries");
 
-            referenceFields = io.internal.zarr3.getObjectReferenceFields(attrs);
+            referenceFields = io.backend.zarr3.internal.getObjectReferenceFields(attrs);
 
             testCase.verifyEqual(referenceFields, "timeseries");
         end
 
         function returnsEveryListedFieldInOrder(testCase)
-            attrs = tests.unit.io.internal.zarr3.GetObjectReferenceFieldsTest.buildAttributes(...
+            attrs = tests.unit.io.backend.zarr3.internal.GetObjectReferenceFieldsTest.buildAttributes(...
                 ["first_ref", "second_ref"]);
 
-            referenceFields = io.internal.zarr3.getObjectReferenceFields(attrs);
+            referenceFields = io.backend.zarr3.internal.getObjectReferenceFields(attrs);
 
             testCase.verifyEqual(referenceFields, ["first_ref", "second_ref"]);
         end
@@ -51,7 +51,7 @@ classdef GetObjectReferenceFieldsTest < matlab.unittest.TestCase
         function returnsEmptyWhenAttributeIsAbsent(testCase)
         % hdmf-zarr writes no _REFERENCE_FIELDS for a compound dataset
         % without reference fields, e.g. a TimeIntervals start/stop pair.
-            referenceFields = io.internal.zarr3.getObjectReferenceFields(...
+            referenceFields = io.backend.zarr3.internal.getObjectReferenceFields(...
                 dictionary(string.empty, {}));
 
             testCase.verifyEmpty(referenceFields);
@@ -60,10 +60,10 @@ classdef GetObjectReferenceFieldsTest < matlab.unittest.TestCase
         function emptyResultIsRowShapedString(testCase)
         % The result feeds arguments blocks validated as (1,:) string -- in
         % io.backend.zarr3.Zarr3LazyArray and
-        % io.internal.zarr3.getCompoundTypeDescriptor. MATLAB accepts a 0x0
+        % io.backend.zarr3.internal.getCompoundTypeDescriptor. MATLAB accepts a 0x0
         % empty for that validation, so this pins the shape as a contract of
         % this function rather than as a guard against a downstream error.
-            referenceFields = io.internal.zarr3.getObjectReferenceFields(...
+            referenceFields = io.backend.zarr3.internal.getObjectReferenceFields(...
                 dictionary(string.empty, {}));
 
             testCase.verifyClass(referenceFields, "string");
@@ -76,7 +76,7 @@ classdef GetObjectReferenceFieldsTest < matlab.unittest.TestCase
         % true for every code path, not just the common one.
             attrs = dictionary("_REFERENCE_FIELDS", {cell(0, 1)});
 
-            referenceFields = io.internal.zarr3.getObjectReferenceFields(attrs);
+            referenceFields = io.backend.zarr3.internal.getObjectReferenceFields(attrs);
 
             testCase.verifyClass(referenceFields, "string");
             testCase.verifySize(referenceFields, [1 0]);
@@ -85,7 +85,7 @@ classdef GetObjectReferenceFieldsTest < matlab.unittest.TestCase
         function resultIsAcceptedByCompoundArgumentValidation(testCase)
         % Guards the contract the previous tests describe, by exercising the
         % consumer that declares it.
-            referenceFields = io.internal.zarr3.getObjectReferenceFields(...
+            referenceFields = io.backend.zarr3.internal.getObjectReferenceFields(...
                 dictionary(string.empty, {}));
 
             testCase.verifyWarningFree(@() io.backend.zarr3.Zarr3LazyArray(...

@@ -8,11 +8,11 @@ function referenceFields = getObjectReferenceFields(attrs)
 % without reference fields carries no such attribute.
 %
 % The named fields are decoded into types.untyped.ObjectView by
-% io.internal.zarr3.decodeObjectReferences.
+% io.backend.zarr3.internal.decodeObjectReferences.
 
     referenceFields = string.empty(1, 0);
 
-    [hasReferenceFields, fieldNames] = io.internal.zarr3.getAttribute(attrs, "_REFERENCE_FIELDS");
+    [hasReferenceFields, fieldNames] = io.backend.zarr3.internal.getAttribute(attrs, "_REFERENCE_FIELDS");
     if hasReferenceFields && ~isempty(fieldNames)
         referenceFields = reshape(string(fieldNames), 1, []);
     end

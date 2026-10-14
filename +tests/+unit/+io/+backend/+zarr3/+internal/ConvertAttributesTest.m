@@ -1,5 +1,5 @@
 classdef ConvertAttributesTest < matlab.unittest.TestCase
-% ConvertAttributesTest - Unit tests for io.internal.zarr3.convertAttributes.
+% ConvertAttributesTest - Unit tests for io.backend.zarr3.internal.convertAttributes.
 %
 % Only the inputs the fixture-driven reader tests do not produce are
 % covered here: value conversion and the reserved attribute names. Links
@@ -22,7 +22,7 @@ classdef ConvertAttributesTest < matlab.unittest.TestCase
 
     methods (Test)
         function nonDictionaryInputYieldsEmptyOutputs(testCase)
-            [attributes, links] = io.internal.zarr3.convertAttributes([]);
+            [attributes, links] = io.backend.zarr3.internal.convertAttributes([]);
 
             testCase.verifyEmpty(attributes);
             testCase.verifyEmpty(links);
@@ -35,7 +35,7 @@ classdef ConvertAttributesTest < matlab.unittest.TestCase
         % cellstr like h5info gives.
             rawAttributes = dictionary("keywords", {{"first"; "second"}});
 
-            attributes = io.internal.zarr3.convertAttributes(rawAttributes);
+            attributes = io.backend.zarr3.internal.convertAttributes(rawAttributes);
 
             testCase.verifyEqual(numel(attributes), 1);
             testCase.verifyEqual(attributes(1).Name, 'keywords');
@@ -46,7 +46,7 @@ classdef ConvertAttributesTest < matlab.unittest.TestCase
         % A DynamicTable with one column still has a list of colnames.
             rawAttributes = dictionary("colnames", {{"x"}});
 
-            attributes = io.internal.zarr3.convertAttributes(rawAttributes);
+            attributes = io.backend.zarr3.internal.convertAttributes(rawAttributes);
 
             testCase.verifyEqual(attributes(1).Value, {'x'});
         end
@@ -54,7 +54,7 @@ classdef ConvertAttributesTest < matlab.unittest.TestCase
         function textBecomesChar(testCase)
             rawAttributes = dictionary("description", {"a description"});
 
-            attributes = io.internal.zarr3.convertAttributes(rawAttributes);
+            attributes = io.backend.zarr3.internal.convertAttributes(rawAttributes);
 
             testCase.verifyEqual(attributes(1).Value, 'a description');
             testCase.verifyFalse(attributes(1).BackendInfo.IsReference);
@@ -63,7 +63,7 @@ classdef ConvertAttributesTest < matlab.unittest.TestCase
         function numericListBecomesColumnVector(testCase)
             rawAttributes = dictionary("resolution", {{1; 2; 3}});
 
-            attributes = io.internal.zarr3.convertAttributes(rawAttributes);
+            attributes = io.backend.zarr3.internal.convertAttributes(rawAttributes);
 
             testCase.verifyEqual(attributes(1).Value, [1; 2; 3]);
         end
@@ -72,7 +72,7 @@ classdef ConvertAttributesTest < matlab.unittest.TestCase
         % One row per inner list, as jsondecode reads [[1, 2], [3, 4]].
             rawAttributes = dictionary("matrix", {{{1; 2}; {3; 4}}});
 
-            attributes = io.internal.zarr3.convertAttributes(rawAttributes);
+            attributes = io.backend.zarr3.internal.convertAttributes(rawAttributes);
 
             testCase.verifyEqual(attributes(1).Value, [1 2; 3 4]);
         end
@@ -80,7 +80,7 @@ classdef ConvertAttributesTest < matlab.unittest.TestCase
         function emptyListBecomesEmpty(testCase)
             rawAttributes = dictionary("colnames", {cell(0, 1)});
 
-            attributes = io.internal.zarr3.convertAttributes(rawAttributes);
+            attributes = io.backend.zarr3.internal.convertAttributes(rawAttributes);
 
             testCase.verifyEmpty(attributes(1).Value);
         end
@@ -92,7 +92,7 @@ classdef ConvertAttributesTest < matlab.unittest.TestCase
                 [{cell(0, 1), "str", cell(0, 1), "specifications", cell(0, 1)}, ...
                 {"kept"}]);
 
-            attributes = io.internal.zarr3.convertAttributes(rawAttributes);
+            attributes = io.backend.zarr3.internal.convertAttributes(rawAttributes);
 
             testCase.verifyEqual({attributes.Name}, {'description'});
         end
