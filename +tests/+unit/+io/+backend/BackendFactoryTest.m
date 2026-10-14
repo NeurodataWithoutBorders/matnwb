@@ -176,8 +176,16 @@ classdef BackendFactoryTest < matlab.unittest.TestCase
                 "NWB:BackendFactory:UnsupportedBackend");
         end
 
+        function zarr3DetectionDoesNotDependOnStoreName(testCase)
+            storePath = testCase.createValidZarr3Store("store-without-suffix");
+
+            reader = io.backend.BackendFactory.createReader(storePath);
+
+            testCase.verifyClass(reader, "io.backend.zarr3.Zarr3Reader");
+        end
+
         function zarr3DetectionRejectsMalformedStores(testCase)
-        % Each store fails a different check in isZarr3Store: a path
+        % Each store fails a different check in Zarr3Reader.canOpen: a path
         % that is not a folder, a .zarr folder without root metadata, and
         % root metadata that is not valid JSON.
             testCase.verifyError( ...

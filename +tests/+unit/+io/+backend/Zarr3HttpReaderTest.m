@@ -42,9 +42,8 @@ classdef Zarr3HttpReaderTest < matlab.unittest.TestCase
         end
 
         function detectingStoreUrlRequestsOnlyItsRootMetadata(testCase)
-        % isfile is true for a store URL that the server redirects to a
-        % folder listing, so detection that tried HDF5 first would request
-        % the store folder and pass the URL to H5F.open.
+        % The Zarr probe answers before any other backend's probe sees the
+        % URL, so detection costs one request.
             requestsBefore = numel(testCase.Server.readRequestLog());
 
             io.backend.BackendFactory.createReader(testCase.StoreUrl);
@@ -130,6 +129,12 @@ classdef Zarr3HttpReaderTest < matlab.unittest.TestCase
             references = reader.readDatasetValue(datasetInfo, columnPath);
 
             testCase.verifyTrue(all(string({references.path}) == "/general/extracellular_ephys/shank0"));
+        end
+
+        function storeUrlWithTrailingSlashIsDetected(testCase)
+            reader = io.backend.BackendFactory.createReader(testCase.StoreUrl + "/");
+
+            testCase.verifyClass(reader, "io.backend.zarr3.Zarr3Reader");
         end
 
         function externalLinkBaseIsTheStoreUrl(testCase)

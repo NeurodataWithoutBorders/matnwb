@@ -64,6 +64,47 @@ classdef Zarr3Reader < io.backend.base.Reader
         NodeInfoMap = []
     end
 
+    methods (Static)
+        function tf = canOpen(location)
+        % canOpen - Whether location is a Zarr v3 store.
+        %
+        % A store is a local folder, or an http(s) URL, whose root
+        % zarr.json declares zarr_format 3. The probe reads only that file
+        % and does not need zarr-matlab, so a store is recognised even when
+        % the package is missing and the reader can report it.
+            arguments
+                location (1,1) string
+            end
+
+            tf = false;
+            isRemote = matnwb.common.isUrl(location);
+            if isRemote
+                rootMetadataLocation = strip(location, "right", "/") + "/zarr.json";
+            else
+                rootMetadataLocation = fullfile(location, "zarr.json");
+                if ~isfile(rootMetadataLocation)
+                    return
+                end
+            end
+
+            try
+                if isRemote
+                    rootMetadataText = webread(rootMetadataLocation, ...
+                        weboptions("ContentType", "text"));
+                else
+                    rootMetadataText = fileread(rootMetadataLocation);
+                end
+                rootMetadata = jsondecode(rootMetadataText);
+            catch
+                % A zarr.json that cannot be fetched, or that is not JSON,
+                % means the location is not a Zarr store.
+                return
+            end
+            tf = isstruct(rootMetadata) && isfield(rootMetadata, "zarr_format") ...
+                && isequal(rootMetadata.zarr_format, 3);
+        end
+    end
+
     methods
         function obj = Zarr3Reader(filename)
             obj@io.backend.base.Reader(filename);
