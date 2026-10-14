@@ -1,5 +1,9 @@
 classdef BackendFactory
     % BackendFactory - Factory for creating storage backend components.
+    %
+    % A reader or lazy array is created by the backend that can open the
+    % file. With StorageBackend "auto", the backends are asked in the order
+    % listBackends gives, and the first that can open the file is used.
 
     methods (Static)
         function writer = createWriter(fileReference, options)
@@ -29,26 +33,8 @@ classdef BackendFactory
                 options.StorageBackend (1,1) string = "auto"
             end
 
-            storageBackend = io.backend.BackendFactory.normalizeStorageBackend(options.StorageBackend);
-
-            switch storageBackend
-                case "auto"
-                    if io.backend.BackendFactory.isHDF5File(filename)
-                        reader = io.backend.hdf5.HDF5Reader(filename);
-                    else
-                        error("NWB:BackendFactory:UnsupportedFormat", ...
-                            "No supported reader found for `%s`.", filename)
-                    end
-                case "hdf5"
-                    if ~io.backend.BackendFactory.isHDF5File(filename)
-                        error("NWB:BackendFactory:InvalidHDF5", ...
-                            "`%s` is not a valid HDF5 file.", filename)
-                    end
-                    reader = io.backend.hdf5.HDF5Reader(filename);
-                otherwise
-                    error("NWB:BackendFactory:UnsupportedBackend", ...
-                        "Unsupported backend `%s`.", storageBackend)
-            end
+            backend = io.backend.BackendFactory.resolveBackend(filename, options.StorageBackend);
+            reader = backend.CreateReader(filename);
         end
 
         function lazyArray = createLazyArray(filename, datasetPath, dims, dataType, options)
@@ -60,26 +46,8 @@ classdef BackendFactory
                 options.StorageBackend (1,1) string = "auto"
             end
 
-            storageBackend = io.backend.BackendFactory.normalizeStorageBackend(options.StorageBackend);
-
-            switch storageBackend
-                case "auto"
-                    if io.backend.BackendFactory.isHDF5File(filename)
-                        lazyArray = io.backend.hdf5.HDF5LazyArray(filename, datasetPath, dims, dataType);
-                    else
-                        error("NWB:BackendFactory:UnsupportedFormat", ...
-                            "No supported lazy array backend found for `%s`.", filename)
-                    end
-                case "hdf5"
-                    if ~io.backend.BackendFactory.isHDF5File(filename)
-                        error("NWB:BackendFactory:InvalidHDF5", ...
-                            "`%s` is not a valid HDF5 file.", filename)
-                    end
-                    lazyArray = io.backend.hdf5.HDF5LazyArray(filename, datasetPath, dims, dataType);
-                otherwise
-                    error("NWB:BackendFactory:UnsupportedBackend", ...
-                        "Unsupported backend `%s`.", storageBackend)
-            end
+            backend = io.backend.BackendFactory.resolveBackend(filename, options.StorageBackend);
+            lazyArray = backend.CreateLazyArray(filename, datasetPath, dims, dataType);
         end
 
         function storageBackend = normalizeStorageBackend(storageBackend)
@@ -88,21 +56,58 @@ classdef BackendFactory
                 storageBackend = "hdf5";
             end
         end
+    end
 
-        function tf = isHDF5File(filename)
-            arguments
-                filename (1,1) string
+    methods (Static, Access = private)
+        function backends = listBackends()
+        % listBackends - Storage backends available for reading, in the
+        % order StorageBackend "auto" tries them.
+        %
+        % Each backend is described by:
+        %  - Name - Value of the StorageBackend option that selects it.
+        %  - Label - Format name used in error identifiers and messages.
+        %  - CanOpen - Function that reports whether the backend can open
+        %    a file, without reading more than it needs to decide.
+        %  - CreateReader - Constructor of the backend's reader.
+        %  - CreateLazyArray - Constructor of the backend's lazy array.
+            hdf5 = struct( ...
+                'Name', "hdf5", ...
+                'Label', "HDF5", ...
+                'CanOpen', @io.backend.hdf5.HDF5Reader.canOpen, ...
+                'CreateReader', @io.backend.hdf5.HDF5Reader, ...
+                'CreateLazyArray', @io.backend.hdf5.HDF5LazyArray);
+            backends = hdf5;
+        end
+
+        function backend = resolveBackend(filename, storageBackend)
+        % resolveBackend - Backend that opens filename for a StorageBackend value.
+        %
+        % With "auto", the first backend that can open the file is used.
+        % A named backend is used only if it can open the file.
+            storageBackend = io.backend.BackendFactory.normalizeStorageBackend(storageBackend);
+            backends = io.backend.BackendFactory.listBackends();
+
+            if storageBackend == "auto"
+                for iBackend = 1:numel(backends)
+                    if backends(iBackend).CanOpen(filename)
+                        backend = backends(iBackend);
+                        return
+                    end
+                end
+                error("NWB:BackendFactory:UnsupportedFormat", ...
+                    "No supported storage backend found for `%s`.", filename)
             end
 
-            tf = false; 
-            if isfile(filename)
-                try
-                    fid = H5F.open(filename, "H5F_ACC_RDONLY", "H5P_DEFAULT");
-                    H5F.close(fid);
-                    tf = true;
-                catch
-                    tf = false;
-                end
+            isSelected = [backends.Name] == storageBackend;
+            if ~any(isSelected)
+                error("NWB:BackendFactory:UnsupportedBackend", ...
+                    "Unsupported backend `%s`.", storageBackend)
+            end
+            backend = backends(isSelected);
+            if ~backend.CanOpen(filename)
+                error("NWB:BackendFactory:Invalid" + backend.Label, ...
+                    "`%s` cannot be opened by the `%s` storage backend.", ...
+                    filename, backend.Name)
             end
         end
     end
