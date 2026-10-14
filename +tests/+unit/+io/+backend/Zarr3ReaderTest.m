@@ -23,21 +23,22 @@ classdef Zarr3ReaderTest < matlab.unittest.TestCase
             reader = io.backend.zarr3.Zarr3Reader(testCase.FixturePath);
             rootInfo = reader.readRootInfo();
 
-            testCase.verifyEqual(rootInfo.Name, '/');
+            testCase.verifyClass(rootInfo, 'io.backend.model.GroupInfo');
+            testCase.verifyEqual(rootInfo.Path, '/');
             testCase.verifyEqual(reader.getSchemaVersion(), "2.7.0");
             testCase.verifyEqual(reader.getEmbeddedSpecLocation(), "/specifications");
-            testCase.verifyTrue(any(strcmp({rootInfo.Groups.Name}, '/general')));
+            testCase.verifyTrue(any(strcmp({rootInfo.Groups.Name}, 'general')));
         end
 
         function readNodeInfoIncludesLinks(testCase)
             reader = io.backend.zarr3.Zarr3Reader(testCase.FixturePath);
             nodeInfo = reader.readNodeInfo("/general/extracellular_ephys/shank0");
 
-            testCase.verifyEqual(nodeInfo.Name, '/general/extracellular_ephys/shank0');
+            testCase.verifyEqual(nodeInfo.Path, '/general/extracellular_ephys/shank0');
             testCase.verifyEqual(numel(nodeInfo.Links), 1);
             testCase.verifyEqual(nodeInfo.Links(1).Name, 'device');
             testCase.verifyEqual(nodeInfo.Links(1).Type, 'soft link');
-            testCase.verifyEqual(string(nodeInfo.Links(1).Value{1}), "/general/devices/array");
+            testCase.verifyEqual(nodeInfo.Links(1).TargetPath, '/general/devices/array');
 
             % The reserved _LINKS attribute must not leak into Attributes.
             testCase.verifyEmpty(nodeInfo.Attributes);
@@ -50,8 +51,19 @@ classdef Zarr3ReaderTest < matlab.unittest.TestCase
             testCase.verifyEqual(numel(nodeInfo.Links), 1);
             testCase.verifyEqual(nodeInfo.Links(1).Name, 'external_series');
             testCase.verifyEqual(nodeInfo.Links(1).Type, 'external link');
-            testCase.verifyEqual(string(nodeInfo.Links(1).Value), ...
-                ["other_session.nwb.zarr", "/acquisition/es"]);
+            testCase.verifyEqual(nodeInfo.Links(1).TargetFile, 'other_session.nwb.zarr');
+            testCase.verifyEqual(nodeInfo.Links(1).TargetPath, '/acquisition/es');
+        end
+
+        function readNodeInfoDescribesLinkWithoutFollowingIt(testCase)
+            reader = io.backend.zarr3.Zarr3Reader(testCase.FixturePath);
+
+            linkInfo = reader.readNodeInfo("/general/extracellular_ephys/shank0/device");
+
+            testCase.verifyClass(linkInfo, 'io.backend.model.LinkInfo');
+            testCase.verifyEqual(linkInfo.Name, 'device');
+            testCase.verifyEqual(linkInfo.Type, 'soft link');
+            testCase.verifyEqual(linkInfo.TargetPath, '/general/devices/array');
         end
 
         function readAttributeValueConvertsObjectReference(testCase)
@@ -136,8 +148,7 @@ classdef Zarr3ReaderTest < matlab.unittest.TestCase
         function externalLinkToUntypedGroupIsReported(testCase)
         % An untyped group cannot be returned on its own, and deref says so
         % by name. Reaching that specific error is what proves the node was
-        % recognised as a group at all: a classification that does not fit
-        % this backend fails earlier, with UnknownNodeType.
+        % recognised as a group.
             link = testCase.readScratchLink("linked_group");
 
             testCase.verifyError(@() link.deref(), ...
@@ -174,6 +185,22 @@ classdef Zarr3ReaderTest < matlab.unittest.TestCase
             testCase.verifyEqual(target.load(), int64([7; 8; 9]));
         end
 
+        function externalLinkToLinkReturnsChainedLink(testCase)
+        % A link whose target is itself an external link dereferences to
+        % that link, whose relative source resolves against the store that
+        % holds it.
+            import matlab.unittest.fixtures.WorkingFolderFixture
+            testCase.applyFixture(WorkingFolderFixture);
+            outerLink = types.untyped.ExternalLink(char(testCase.FixturePath), ...
+                '/scratch/linked_data_relative');
+
+            chainedLink = outerLink.deref();
+
+            testCase.assertClass(chainedLink, "types.untyped.ExternalLink");
+            testCase.verifyEqual(chainedLink.filename, '../external_target.zarr');
+            testCase.verifyEqual(chainedLink.deref().load(), int64([7; 8; 9]));
+        end
+
         function isReferenceDatasetIdentifiesReferenceDatasets(testCase)
         % types.untyped.ExternalLink.deref asks the reader whether a linked
         % dataset holds references, to decide between parsing it and
@@ -201,7 +228,7 @@ classdef Zarr3ReaderTest < matlab.unittest.TestCase
             reader = io.backend.zarr3.Zarr3Reader(testCase.FixturePath);
             groupColumnPath = "/general/extracellular_ephys/electrodes/group";
             datasetInfo = reader.readNodeInfo(groupColumnPath);
-            testCase.verifyEqual(datasetInfo.Datatype, 'object');
+            testCase.verifyTrue(reader.isReferenceDataset(datasetInfo));
 
             datasetValue = reader.readDatasetValue(datasetInfo, groupColumnPath);
             testCase.verifyClass(datasetValue, "types.untyped.ObjectView");
@@ -248,10 +275,10 @@ classdef Zarr3ReaderTest < matlab.unittest.TestCase
             reader = io.backend.zarr3.Zarr3Reader(testCase.FixturePath);
 
             rootInfo = reader.readNodeInfo("");
-            testCase.verifyEqual(rootInfo.Name, '/');
+            testCase.verifyEqual(rootInfo.Path, '/');
 
             unitsInfo = reader.readNodeInfo("units");
-            testCase.verifyEqual(unitsInfo.Name, '/units');
+            testCase.verifyEqual(unitsInfo.Path, '/units');
         end
 
         function missingSchemaVersionErrors(testCase)
@@ -318,17 +345,6 @@ classdef Zarr3ReaderTest < matlab.unittest.TestCase
             testCase.verifyEmpty(datasetValue);
         end
 
-        function readDatasetValueToleratesMissingDataspace(testCase)
-        % A node info struct without a Dataspace field reads as a scalar;
-        % the reader must not assume the field exists.
-            reader = io.backend.zarr3.Zarr3Reader(testCase.FixturePath);
-            datasetInfo = struct('Datatype', 'string');
-
-            datasetValue = reader.readDatasetValue(datasetInfo, "/identifier");
-
-            testCase.verifyEqual(datasetValue, 'ZARR3_FIXTURE');
-        end
-
         function readEagerValueUnwrapsScalarCell(testCase)
         % zarr-matlab reads a variable_length_bytes array back as a cell of
         % uint8 vectors; for a rank-0 dataset the eager path unwraps the
@@ -374,7 +390,7 @@ classdef Zarr3ReaderTest < matlab.unittest.TestCase
             nodeInfo = reader.readNodeInfo("/scratch");
             record = nodeInfo.Links(strcmp({nodeInfo.Links.Name}, linkName));
             testCase.assertEqual(record.Type, 'external link');
-            link = types.untyped.ExternalLink(record.Value{1}, record.Value{2}, ...
+            link = types.untyped.ExternalLink(record.TargetFile, record.TargetPath, ...
                 reader.getExternalLinkBase());
         end
     end

@@ -15,7 +15,8 @@ classdef Zarr3Reader < io.backend.base.Reader
 % (https://github.com/catalystneuro/hdmf-zarr-matlab), which must also
 % be on the MATLAB path:
 % - group links are records in the "_LINKS" attribute (hdmf.zarr.Link),
-%     surfaced as h5info-style Links by io.internal.zarr3.convertAttributes;
+%     described as io.backend.model.LinkInfo by
+%     io.internal.zarr3.convertAttributes;
 % - an object reference is a {source, path} record (hdmf.zarr.Reference),
 %     stored as {"_REFERENCE": <record>} in an attribute, or as the
 %     target-path elements of a dataset tagged _DTYPE:"object_reference"
@@ -47,17 +48,18 @@ classdef Zarr3Reader < io.backend.base.Reader
         % carry nwb_version and the cached-specification location.
         RootGroup = []
 
-        % RootInfoCache - h5info-style struct describing the root node,
-        % returned by readRootInfo.
+        % RootInfoCache - io.backend.model.GroupInfo describing the root
+        % group, returned by readRootInfo.
         RootInfoCache = []
 
         % NodeInfoMap - containers.Map from absolute node path (char, leading
-        % '/') to that node's h5info-style struct, backing readNodeInfo.
+        % '/') to the io.backend.model description of that node, backing
+        % readNodeInfo (see io.internal.zarr3.buildNodeInfo).
         %
         % A containers.Map is a handle, so it must not be created as a
         % property default: that would share one map across every
         % Zarr3Reader instance. It is built in ensureMetadataCache instead,
-        % which populates all four of these properties in one pass so the
+        % which populates all three of these properties in one pass so the
         % store is walked only once per reader.
         NodeInfoMap = []
     end
@@ -121,8 +123,7 @@ classdef Zarr3Reader < io.backend.base.Reader
         end
 
         function attributeValue = readAttributeValue(~, attributeInfo, ~)
-            if (ischar(attributeInfo.Datatype) || isstring(attributeInfo.Datatype)) ...
-                    && strcmp(attributeInfo.Datatype, "object reference")
+            if attributeInfo.BackendInfo.IsReference
                 attributeValue = io.internal.zarr3.decodeObjectReferences(attributeInfo.Value);
             else
                 attributeValue = attributeInfo.Value;
@@ -156,19 +157,17 @@ classdef Zarr3Reader < io.backend.base.Reader
         %
         % Zarr v3 has no native reference type. hdmf-zarr marks such a
         % dataset with a _DTYPE of "object_reference", which
-        % io.internal.zarr3.buildNodeInfo surfaces as the node's Datatype
+        % io.internal.zarr3.buildNodeInfo records as the dataset's Kind
         % (see hdmf.zarr.isReferenceArray).
-            tf = strcmp(datasetInfo.Datatype, "object");
+            tf = datasetInfo.BackendInfo.Kind == "reference";
         end
 
         function datasetValue = readDatasetValue(obj, datasetInfo, datasetPath)
             dataDimensions = obj.getDatasetDims(datasetInfo);
             isObjectReferenceArray = obj.isReferenceDataset(datasetInfo);
-            % zarr-python 3.4 names the structured data type "struct";
-            % earlier versions wrote "structured".
-            isStructuredArray = any(strcmp(datasetInfo.Datatype, ["struct", "structured"]));
+            isStructuredArray = datasetInfo.BackendInfo.Kind == "compound";
             % A rank-0 array, which is how hdmf-zarr stores an NWB scalar
-            % property, is read eagerly. Dataspace.Size == 1 is NOT a scalar
+            % property, is read eagerly. A shape of [1] is NOT a scalar
             % signal: it is also the shape of a one-row VectorData column
             % (e.g. a DynamicTable with a single row) -- collapsing that to
             % a bare value would silently corrupt it (a char column's
@@ -187,7 +186,7 @@ classdef Zarr3Reader < io.backend.base.Reader
             elseif any(dataDimensions == 0)
                 datasetValue = [];
             else
-                matlabDataType = io.internal.zarr3.getMatlabDataType(datasetInfo.Datatype);
+                matlabDataType = io.internal.zarr3.getMatlabDataType(datasetInfo.BackendInfo.DataType);
                 lazyArray = io.backend.zarr3.Zarr3LazyArray(...
                     obj.Filename, datasetPath, dataDimensions, matlabDataType, ...
                     ArrayNode=obj.openArray(datasetPath));
@@ -207,7 +206,6 @@ classdef Zarr3Reader < io.backend.base.Reader
                 end
                 obj.RootGroup = zarr.open(store);
                 [obj.RootInfoCache, obj.NodeInfoMap] = io.internal.zarr3.buildNodeInfo(obj.RootGroup);
-                obj.RootInfoCache.Filename = char(obj.Filename);
                 if isa(store, "io.backend.zarr3.internal.PrefetchStore")
                     store.prefetch(obj.smallArrayChunkKeys());
                 end
@@ -228,11 +226,11 @@ classdef Zarr3Reader < io.backend.base.Reader
             nodeInfos = values(obj.NodeInfoMap);
             for iNode = 1:numel(nodePaths)
                 nodeInfo = nodeInfos{iNode};
-                if ~isfield(nodeInfo, "Dataspace")
-                    continue  % a group
+                if ~isa(nodeInfo, "io.backend.model.DatasetInfo")
+                    continue  % a group or a link
                 end
-                shape = double(nodeInfo.Dataspace.Size);
-                chunkShape = double(nodeInfo.ChunkSize);
+                shape = nodeInfo.BackendInfo.Shape;
+                chunkShape = nodeInfo.BackendInfo.ChunkShape;
                 isSingleChunk = all(shape <= chunkShape);
                 if prod(shape) > obj.MaxPrefetchElements || ~isSingleChunk || any(shape == 0)
                     continue
@@ -264,15 +262,10 @@ classdef Zarr3Reader < io.backend.base.Reader
         end
 
         function dataDimensions = getDatasetDims(~, datasetInfo)
-            % Dataspace.Size is the raw (Zarr/numpy-order) shape; reverse it
-            % for rank >= 2 to match MatNWB's H5-style dims convention (see
+            % Shape is the raw (Zarr/numpy-order) shape; reverse it for
+            % rank >= 2 to match MatNWB's H5-style dims convention (see
             % io.internal.zarr3.normalizeDatasetDimensions).
-            if isfield(datasetInfo, "Dataspace") && isfield(datasetInfo.Dataspace, "Size")
-                dataDimensions = double(datasetInfo.Dataspace.Size);
-            else
-                dataDimensions = [];
-            end
-
+            dataDimensions = datasetInfo.BackendInfo.Shape;
             if numel(dataDimensions) >= 2
                 dataDimensions = fliplr(dataDimensions);
             end
@@ -317,7 +310,7 @@ classdef Zarr3Reader < io.backend.base.Reader
         function datasetValue = readObjectArrayValue(obj, datasetPath)
         % readObjectArrayValue - Decode a dataset of object references.
         %
-        % Decodes a dataset whose Datatype is "object" (see
+        % Decodes a dataset whose Kind is "reference" (see
         % io.internal.zarr3.buildNodeInfo) into a types.untyped.ObjectView
         % array. Each element is a zarr "string" holding a reference in a
         % form hdmf.zarr.Reference decodes; zarr-matlab does not decode

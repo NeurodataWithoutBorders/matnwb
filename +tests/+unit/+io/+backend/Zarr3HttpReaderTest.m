@@ -145,7 +145,7 @@ classdef Zarr3HttpReaderTest < matlab.unittest.TestCase
             reader = io.backend.zarr3.Zarr3Reader(testCase.StoreUrl);
             nodeInfo = reader.readNodeInfo("/scratch");
             record = nodeInfo.Links(strcmp({nodeInfo.Links.Name}, 'linked_data_relative'));
-            link = types.untyped.ExternalLink(record.Value{1}, record.Value{2}, ...
+            link = types.untyped.ExternalLink(record.TargetFile, record.TargetPath, ...
                 reader.getExternalLinkBase());
 
             target = link.deref();

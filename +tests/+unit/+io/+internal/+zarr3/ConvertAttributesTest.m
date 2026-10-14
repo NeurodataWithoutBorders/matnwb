@@ -26,15 +26,13 @@ classdef ConvertAttributesTest < matlab.unittest.TestCase
 
             testCase.verifyEmpty(attributes);
             testCase.verifyEmpty(links);
-            testCase.verifyEqual(fieldnames(attributes), ...
-                {'Name'; 'Datatype'; 'Dataspace'; 'Value'});
-            testCase.verifyEqual(fieldnames(links), {'Name'; 'Type'; 'Value'});
+            testCase.verifyClass(attributes, 'io.backend.model.AttributeInfo');
+            testCase.verifyClass(links, 'io.backend.model.LinkInfo');
         end
 
         function textListBecomesOneCellstrAttribute(testCase)
-        % struct(..., 'Value', value) expands a cell into a struct array;
-        % the conversion must keep it as one attribute whose Value is the
-        % whole list, as a cellstr like h5info gives.
+        % A list is one attribute whose Value is the whole list, as a
+        % cellstr like h5info gives.
             rawAttributes = dictionary("keywords", {{"first"; "second"}});
 
             attributes = io.internal.zarr3.convertAttributes(rawAttributes);
@@ -59,6 +57,7 @@ classdef ConvertAttributesTest < matlab.unittest.TestCase
             attributes = io.internal.zarr3.convertAttributes(rawAttributes);
 
             testCase.verifyEqual(attributes(1).Value, 'a description');
+            testCase.verifyFalse(attributes(1).BackendInfo.IsReference);
         end
 
         function numericListBecomesColumnVector(testCase)

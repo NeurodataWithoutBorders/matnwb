@@ -1,18 +1,18 @@
 function [attributes, links] = convertAttributes(rawAttributes)
-% convertAttributes - Convert zarr-matlab attrs into h5info-like structures.
+% convertAttributes - Describe the attributes and links of a zarr-matlab node.
 %
 % [attributes, links] = convertAttributes(rawAttributes) converts the
 % attributes dictionary exposed by a zarr.Group or zarr.Array (its attrs
 % property) into:
 %
-%     attributes - struct array with fields Name, Datatype, Dataspace,
-%       Value, matching the shape produced by h5info. An attribute holding
+%     attributes - io.backend.model.AttributeInfo array. The BackendInfo of
+%       each is a struct with the field IsReference. An attribute holding
 %       an hdmf-zarr object reference, the {"_REFERENCE": <record>} form
-%       (see hdmf.zarr.Reference), is tagged with Datatype "object
-%       reference" and keeps the raw record as its Value, which
+%       (see hdmf.zarr.Reference), has IsReference true and keeps the raw
+%       record as its Value, which
 %       io.backend.zarr3.Zarr3Reader.readAttributeValue decodes.
 %
-%     links - struct array with fields Name, Type, Value, converted from the
+%     links - io.backend.model.LinkInfo array, converted from the
 %       hdmf-zarr "_LINKS" attribute (decoded by hdmf.zarr.Link). Non-group
 %       nodes never carry links, but the reserved attributes are filtered
 %       out regardless.
@@ -21,17 +21,16 @@ function [attributes, links] = convertAttributes(rawAttributes)
 % .specloc, and _ARRAY_DIMENSIONS) are not schema attributes and are never
 % promoted to the attributes output.
 %
-% Attribute values are returned in the form h5info gives for the same data,
-% so that the same downstream parsing code (io.parseGroup,
-% io.parseAttributes) can consume node info from any backend: text as char,
-% a list of text as a cellstr, and a list of numbers or logicals as a column
-% vector. zarr-matlab instead decodes every JSON string to a string scalar
-% and every JSON array to a cell.
+% Attribute values are returned in the form the parse functions read for
+% every backend (io.parseGroup, io.parseAttributes, io.getNeurodataTypeInfo):
+% text as char, a list of text as a cellstr, and a list of numbers or
+% logicals as a column vector. zarr-matlab instead decodes every JSON
+% string to a string scalar and every JSON array to a cell.
 %
 % See also hdmf.zarr.Link, hdmf.zarr.Reference
 
-    attributes = emptyAttributeStruct();
-    links = emptyLinkStruct();
+    attributes = io.backend.model.AttributeInfo.empty(0, 1);
+    links = io.backend.model.LinkInfo.empty(0, 1);
 
     if ~isa(rawAttributes, "dictionary") || numEntries(rawAttributes) == 0
         return
@@ -47,22 +46,13 @@ function [attributes, links] = convertAttributes(rawAttributes)
         end
 
         value = rawAttributes{name};
-        if isObjectReferenceValue(value)
-            datatype = 'object reference';
-        else
-            datatype = [];
+        isReference = isObjectReferenceValue(value);
+        if ~isReference
             value = normalizeValue(value);
         end
 
-        if iscell(value)
-            % struct(...,'Value',value) would otherwise expand a cell into a
-            % struct array (one element per cell entry) instead of a single
-            % attribute whose Value is the cell.
-            value = {value};
-        end
-
-        attributes(end+1) = struct('Name', char(name), 'Datatype', datatype, ...
-            'Dataspace', [], 'Value', value); %#ok<AGROW>
+        attributes(end+1, 1) = io.backend.model.AttributeInfo(name, value, ...
+            struct('IsReference', isReference)); %#ok<AGROW>
     end
 end
 
@@ -87,7 +77,7 @@ function tf = isObjectReferenceValue(value)
 end
 
 function value = normalizeValue(value)
-% normalizeValue - Convert a zarr-matlab attribute value to its h5info form.
+% normalizeValue - Convert a zarr-matlab attribute value to its MATLAB form.
 %
 % A cell whose elements are all text becomes a cellstr, and one whose
 % elements are all numeric (or all logical) scalars becomes a column vector.
@@ -132,30 +122,17 @@ function tf = isNumericColumn(value)
 end
 
 function links = convertLinks(hdmfLinks)
-% convertLinks - Map hdmf.zarr.Link objects onto h5info's Links struct.
-%
-% Produces the shape (Name, Type, Value) io.parseGroup expects: a soft link's
-% Value is {path}; an external link's Value is {source, path}.
+% convertLinks - Describe hdmf.zarr.Link objects as io.backend.model.LinkInfo.
 
-    links = emptyLinkStruct();
-    for iLink = 1:numel(hdmfLinks)
+    links = io.backend.model.LinkInfo.empty(0, 1);
+    for iLink = numel(hdmfLinks):-1:1
+        name = hdmfLinks(iLink).Name;
         target = hdmfLinks(iLink).Target;
-        link = struct('Name', char(hdmfLinks(iLink).Name), 'Type', '', 'Value', []);
         if target.isExternal()
-            link.Type = 'external link';
-            link.Value = {char(target.Source), char(target.Path)};
+            links(iLink, 1) = io.backend.model.LinkInfo(name, 'external link', ...
+                target.Path, target.Source);
         else
-            link.Type = 'soft link';
-            link.Value = {char(target.Path)};
+            links(iLink, 1) = io.backend.model.LinkInfo(name, 'soft link', target.Path);
         end
-        links(end+1) = link; %#ok<AGROW>
     end
-end
-
-function attributeStruct = emptyAttributeStruct()
-    attributeStruct = struct('Name', {}, 'Datatype', {}, 'Dataspace', {}, 'Value', {});
-end
-
-function linkStruct = emptyLinkStruct()
-    linkStruct = struct('Name', {}, 'Type', {}, 'Value', {});
 end
