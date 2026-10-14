@@ -139,11 +139,10 @@ classdef Zarr3LazyArrayTest < matlab.unittest.TestCase
         end
 
         function singleElementReadDoesNotMaterialiseSparseDataset(testCase)
-        % Regression test: a single subscript used to be rejected by
-        % tryBuildRegularSelection and fall through to a full read, so
-        % probing a large sparse dataset -- which types.util.checkDtype does
-        % via load(1) on every "any" dtype -- tried to allocate the whole
-        % array and failed on the MATLAB array size limit.
+        % A single subscript must not read the whole dataset:
+        % types.util.checkDtype probes every "any" dtype with load(1), and
+        % for a large sparse dataset a full read would allocate an array
+        % beyond MATLAB's size limit.
             import matlab.unittest.fixtures.TemporaryFolderFixture
             folderFixture = testCase.applyFixture(TemporaryFolderFixture);
             storePath = string(fullfile(folderFixture.Folder, "sparse.zarr"));
@@ -257,15 +256,11 @@ classdef Zarr3LazyArrayTest < matlab.unittest.TestCase
             testCase.verifyEqual(height(allRecords), 3);
         end
 
-        function compoundRegularSelectionUsesPartialRead(testCase)
-        % Two subscripts route through the regular-selection partial read
-        % (a lone subscript cannot: compound datasets are excluded from the
-        % linear-selection path), and the selected records must still come
-        % back as a table.
+        function compoundSelectionReturnsSelectedRecordsAsTable(testCase)
             lazyArray = io.backend.zarr3.Zarr3LazyArray(...
                 testCase.FixturePath, "/processing/ophys/PlaneSegmentation/pixel_mask");
 
-            selectedRecords = lazyArray.load_mat_style(2:3, 1);
+            selectedRecords = lazyArray.load_mat_style(2:3);
 
             testCase.verifyClass(selectedRecords, "table");
             testCase.verifyEqual(selectedRecords.x, uint32([1; 2]));
@@ -290,25 +285,22 @@ classdef Zarr3LazyArrayTest < matlab.unittest.TestCase
             testCase.verifyEqual(lazyArray.load_mat_style(':'), fullData(:));
         end
 
-        function logicalSelectionFallsBackToFullRead(testCase)
-        % A logical mask is valid MATLAB indexing but has no hyperslab
-        % equivalent, so it must take the full-read fallback.
+        function logicalSelectionIsRejected(testCase)
+        % Subscripts are positive indices on every backend; a logical mask
+        % is rejected as it is for HDF5.
             lazyArray = io.backend.zarr3.Zarr3LazyArray(...
                 testCase.FixturePath, testCase.DatasetPath);
-            fullData = lazyArray.load_h5_style();
-            rowMask = logical([1 0 1 1]);
 
-            testCase.verifyEqual(...
-                lazyArray.load_mat_style(rowMask, 1:29), ...
-                fullData(rowMask, 1:29));
+            testCase.verifyError(...
+                @() lazyArray.load_mat_style(logical([1 0 1 1]), 1:29), ...
+                'NWB:DataStub:Load:InvalidSelection');
         end
 
         function rank3DatasetReversesAxesAndPadsSelection(testCase)
-        % Rank >= 3 exercises the permute branch of
-        % io.backend.zarr3.internal.normalizeDatasetDimensions (rank 2 uses a plain
-        % transpose), and a selection naming fewer subscripts than the rank
-        % reads index 1 of each unnamed trailing dimension -- matching
-        % io.backend.hdf5.@HDF5LazyArray/load_mat_style, not MATLAB's
+        % Rank >= 3 exercises a reversal that is not a transpose, and a
+        % selection naming fewer subscripts than the rank reads index 1 of
+        % each unnamed trailing dimension -- the rule of
+        % io.backend.base.LazyArray.load_mat_style, not MATLAB's
         % trailing-dimension folding.
             lazyArray = io.backend.zarr3.Zarr3LazyArray(...
                 testCase.FixturePath, "/acquisition/vol/data");

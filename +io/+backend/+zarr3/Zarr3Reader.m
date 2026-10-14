@@ -204,7 +204,7 @@ classdef Zarr3Reader < io.backend.base.Reader
         end
 
         function datasetValue = readDatasetValue(obj, datasetInfo, datasetPath)
-            dataDimensions = obj.getDatasetDims(datasetInfo);
+            shape = datasetInfo.BackendInfo.Shape;
             isObjectReferenceArray = obj.isReferenceDataset(datasetInfo);
             isStructuredArray = datasetInfo.BackendInfo.Kind == "compound";
             % A rank-0 array, which is how hdmf-zarr stores an NWB scalar
@@ -213,23 +213,23 @@ classdef Zarr3Reader < io.backend.base.Reader
             % (e.g. a DynamicTable with a single row) -- collapsing that to
             % a bare value would silently corrupt it (a char column's
             % character count would be misread as its row count downstream).
-            isScalar = isempty(dataDimensions);
+            isScalar = isempty(shape);
             if isObjectReferenceArray
                 datasetValue = obj.readObjectArrayValue(datasetPath);
             elseif isStructuredArray
                 % Checked ahead of the scalar/eager branch below: a
-                % structured array can have prod(dataDimensions) == 1 (a
-                % single record, e.g. shape [1]) without being a "scalar"
-                % dataset in the ordinary sense.
-                datasetValue = obj.readStructuredValue(datasetPath, dataDimensions);
+                % structured array can have prod(shape) == 1 (a single
+                % record, e.g. shape [1]) without being a "scalar" dataset in
+                % the ordinary sense.
+                datasetValue = obj.readStructuredValue(datasetPath);
             elseif isScalar
                 datasetValue = obj.readEagerValue(datasetPath);
-            elseif any(dataDimensions == 0)
+            elseif any(shape == 0)
                 datasetValue = [];
             else
                 matlabDataType = io.backend.zarr3.internal.getMatlabDataType(datasetInfo.BackendInfo.DataType);
                 lazyArray = io.backend.zarr3.Zarr3LazyArray(...
-                    obj.Filename, datasetPath, dataDimensions, matlabDataType, ...
+                    obj.Filename, datasetPath, [], matlabDataType, ...
                     ArrayNode=obj.openArray(datasetPath));
                 datasetValue = types.untyped.DataStub(...
                     obj.Filename, datasetPath, [], [], lazyArray);
@@ -302,16 +302,6 @@ classdef Zarr3Reader < io.backend.base.Reader
             end
         end
 
-        function dataDimensions = getDatasetDims(~, datasetInfo)
-            % Shape is the raw (Zarr/numpy-order) shape; reverse it for
-            % rank >= 2 to match MatNWB's H5-style dims convention (see
-            % io.backend.zarr3.internal.normalizeDatasetDimensions).
-            dataDimensions = datasetInfo.BackendInfo.Shape;
-            if numel(dataDimensions) >= 2
-                dataDimensions = fliplr(dataDimensions);
-            end
-        end
-
         function datasetValue = readEagerValue(obj, datasetPath)
             datasetValue = obj.openArray(datasetPath).read();
 
@@ -322,7 +312,7 @@ classdef Zarr3Reader < io.backend.base.Reader
             end
         end
 
-        function datasetValue = readStructuredValue(obj, datasetPath, dataDimensions)
+        function datasetValue = readStructuredValue(obj, datasetPath)
         % readStructuredValue - Wrap a compound array in a DataStub.
         %
         % The DataStub is backed by io.backend.zarr3.Zarr3LazyArray, and its
@@ -342,7 +332,7 @@ classdef Zarr3Reader < io.backend.base.Reader
             typeDescriptor = io.backend.zarr3.internal.getCompoundTypeDescriptor(info, objectReferenceFields);
 
             lazyArray = io.backend.zarr3.Zarr3LazyArray(...
-                obj.Filename, datasetPath, dataDimensions, typeDescriptor, objectReferenceFields, ...
+                obj.Filename, datasetPath, [], typeDescriptor, objectReferenceFields, ...
                 ArrayNode=arrayNode);
             datasetValue = types.untyped.DataStub(...
                 obj.Filename, datasetPath, [], [], lazyArray);

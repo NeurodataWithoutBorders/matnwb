@@ -1,11 +1,16 @@
 classdef Zarr3LazyArray < io.backend.base.LazyArray
 % Zarr3LazyArray - Zarr v3-backed lazy dataset access implementation.
 %
-% Zarr v3 stores may be written by Python NWB tools using numpy/row-major
-% shape order. For rank >= 2 arrays, dims and data are reversed to match
-% MatNWB's H5-style convention (see io.backend.zarr3.internal.normalizeDatasetDimensions).
-% A rank-1 array needs no correction: zarr-matlab already returns it as a
-% MATLAB column vector.
+% Zarr v3 stores written by Python NWB tools keep numpy's row-major shape
+% order, and zarr-matlab reads them in that order, so the storage order is
+% the reverse of MatNWB's (see isStorageOrderReversed): the base class
+% reverses the dims, the subscripts and the data of rank 2 and higher
+% arrays. A rank-1 array is the same in either order.
+%
+% zarr.Array.read reads a contiguous hyperslab, decoding every chunk it
+% touches, so a selection is read through the hyperslab that bounds it and
+% a scattered linear selection element by element (see
+% getBoundingBoxLimits).
 
     properties (Access = private)
         % ArrayNode - zarr.Array for the wrapped dataset. Supplied by
@@ -23,15 +28,6 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
         % constructed directly (see
         % io.backend.zarr3.internal.getObjectReferenceFields).
         ObjectReferenceFields (1,:) string = string.empty(1, 0)
-    end
-
-    properties (Constant, Access = private)
-        % A linear selection is read as the hyperslab that bounds it when that
-        % hyperslab holds at most MaxBoundingBoxOverread times as many
-        % elements as the selection, or at most MinBoundingBoxElements.
-        % Otherwise its elements are read one at a time.
-        MaxBoundingBoxOverread = 4
-        MinBoundingBoxElements = 1e5
     end
 
     methods
@@ -53,11 +49,7 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
         end
 
         function refreshSizeInfo(obj)
-            arrayNode = obj.resolveArray();
-            dims = double(arrayNode.shape);
-            if numel(dims) >= 2
-                dims = fliplr(dims);
-            end
+            dims = obj.toMatnwbOrder(double(obj.resolveArray().shape));
             obj.setSizeInfo(dims, dims);
         end
 
@@ -81,65 +73,76 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
         end
 
         function data = load_h5_style(obj, varargin)
+            rank = numel(obj.dims);
             if isempty(varargin)
-                data = obj.readAllData();
+                data = obj.readHyperslab(ones(1, rank), inf(1, rank));
                 return
             end
 
             assert(length(varargin) ~= 1, 'NWB:DataStub:InvalidNumArguments',...
                 'calling load_h5_style with a single space id is no longer supported.');
+            data = obj.readHyperslab(varargin{:});
+        end
+    end
 
-            start = varargin{1};
-            count = varargin{2};
-            if length(varargin) >= 3
-                stride = varargin{3};
-            else
-                stride = ones(size(start));
+    methods (Access = protected)
+        function data = readSubscripts(obj, selection)
+        % readSubscripts - Read every combination of per-dimension indices.
+        %
+        % The hyperslab that bounds the selection is read, and the selected
+        % indices are taken from it. A selection of every index is read
+        % without bounds.
+            arrayNode = obj.resolveArray();
+            if all(cellfun(@ischar, selection))
+                data = obj.postProcessCompound(arrayNode.read());
+                return
             end
-            data = obj.readPartialData(start, count, stride);
+            if any(cellfun(@(indices) ~ischar(indices) && isempty(indices), selection))
+                data = obj.readEmptySelection(selection);
+                return
+            end
+
+            shape = double(arrayNode.shape);
+            start = ones(1, numel(selection));
+            count = shape;
+            localSelection = selection;
+            for iDimension = 1:numel(selection)
+                indices = selection{iDimension};
+                if ~ischar(indices)
+                    start(iDimension) = indices(1);
+                    count(iDimension) = indices(end) - indices(1) + 1;
+                    localSelection{iDimension} = indices - indices(1) + 1;
+                end
+            end
+            box = arrayNode.read(start, count);
+            data = obj.postProcessCompound(box(localSelection{:}));
         end
 
-        function data = load_mat_style(obj, varargin)
-            if isempty(varargin)
-                data = obj.readAllData();
-                if isstruct(data)
-                    data = struct2table(data);
-                end
-                return
+        function values = readPoints(obj, subscripts)
+        % readPoints - Read single elements, one read per element.
+            arrayNode = obj.resolveArray();
+            numPoints = size(subscripts, 1);
+            unitCount = ones(1, size(subscripts, 2));
+            points = cell(numPoints, 1);
+            for iPoint = 1:numPoints
+                points{iPoint} = arrayNode.read(subscripts(iPoint, :), unitCount);
             end
+            values = obj.postProcessCompound(vertcat(points{:}));
+        end
 
-            if obj.isLinearSelection(varargin)
-                data = obj.readLinearSelection(varargin{1});
-                return
-            end
+        function tf = isStorageOrderReversed(~)
+            tf = true;
+        end
 
-            if obj.isEmptySubscriptSelection(varargin)
-                data = obj.readEmptySelection(varargin);
-                return
-            end
-
-            [isSupported, fullSelection] = obj.tryBuildRegularSelection(varargin);
-            if isSupported
-                [start, count, stride] = obj.selectionToReadParameters(fullSelection);
-                data = obj.readPartialData(start, count, stride);
-                if isstruct(data)
-                    % Record selection already happened during the partial
-                    % read; matching io.backend.hdf5.@HDF5LazyArray's
-                    % compound convention, the selected records are
-                    % returned as a table rather than reshaped further.
-                    data = struct2table(data);
-                else
-                    data = obj.applySelectionShape(data, varargin);
-                end
-            else
-                data = obj.readAllData();
-                if isstruct(data)
-                    data = struct2table(data);
-                    data = data(varargin{:}, :);
-                else
-                    data = data(varargin{:});
-                end
-            end
+        function [maxOverread, minElements] = getBoundingBoxLimits(~)
+        % getBoundingBoxLimits - When a linear selection is read as a box.
+        %
+        % Reading an element decodes its whole chunk, so a box that holds
+        % up to four times the selection, or up to 1e5 elements, is
+        % cheaper than reading its elements one by one. A larger box can
+        % be most of a large sparse dataset.
+            maxOverread = 4;
+            minElements = 1e5;
         end
     end
 
@@ -203,274 +206,25 @@ classdef Zarr3LazyArray < io.backend.base.LazyArray
             data = converted;
         end
 
-        function data = readAllData(obj)
-            arrayNode = obj.resolveArray();
-            data = arrayNode.read();
-            data = io.backend.zarr3.internal.normalizeDatasetDimensions(data, numel(arrayNode.shape));
-            data = obj.postProcessCompound(data);
-        end
-
-        function data = readPartialData(obj, start, count, stride)
-            arrayNode = obj.resolveArray();
-            if any(isinf(count))
-                count(isinf(count)) = obj.dims(isinf(count)) - start(isinf(count)) + 1;
-            end
-
-            % start/count/stride arrive in MatNWB's H5-style dims order
-            % (obj.dims); reverse to raw Zarr/numpy order for rank >= 2
-            % before calling zarr.Array.read (see refreshSizeInfo).
-            rank = numel(start);
-            if rank >= 2
-                rawStart = fliplr(start);
-                rawCount = fliplr(count);
-                rawStride = fliplr(stride);
-            else
-                rawStart = start;
-                rawCount = count;
-                rawStride = stride;
-            end
-
-            if all(rawStride == 1)
-                data = arrayNode.read(rawStart, rawCount);
-            else
-                % zarr.Array.read has no native stride support: read the
-                % contiguous bounding box spanning the strided selection,
-                % then subselect the stride in MATLAB.
-                boxedSpan = (rawCount - 1) .* rawStride + 1;
-                boxed = arrayNode.read(rawStart, boxedSpan);
-                selection = cell(1, numel(rawStart));
-                for iDimension = 1:numel(rawStart)
-                    selection{iDimension} = 1:rawStride(iDimension):boxedSpan(iDimension);
-                end
-                data = boxed(selection{:});
-            end
-            data = io.backend.zarr3.internal.normalizeDatasetDimensions(data, rank);
-            data = obj.postProcessCompound(data);
-        end
-
-        function tf = isLinearSelection(obj, userSelection)
-        % isLinearSelection - True for a single numeric subscript, data(k).
-        %
-        % Compound datasets are excluded: their records are assembled by
-        % postProcessCompound and returned as a table, which the
-        % element-at-a-time read below does not reproduce. They stay on the
-        % full-read path, which is tolerable because NWB compound datasets
-        % (pixel_mask, TimeSeriesReferenceVectorData columns) are small.
-
-            tf = isscalar(userSelection) ...
-                && isnumeric(userSelection{1}) ...
-                && ~isstruct(obj.dataType);
-        end
-
-        function data = readLinearSelection(obj, linearIndices)
-        % readLinearSelection - Read the elements named by linear indices.
-        %
-        % MATLAB linear indexing into an N-D array has no Zarr equivalent:
-        % zarr.Array.read takes a contiguous hyperslab. The indices are
-        % converted to per-dimension subscripts, and the hyperslab that
-        % bounds them is read in one call when it is not much larger than
-        % the selection -- the common case of a contiguous range, such as
-        % the rows of a ragged column that DynamicTable.getRow reads.
-        % Otherwise each element is read on its own: every element read
-        % decodes a whole chunk, but for a scattered selection the bounding
-        % hyperslab can be the whole of a large sparse dataset.
-        %
-        % This path matters beyond user indexing: types.util.checkDtype
-        % samples a dataset with load(1) to determine its type, so without
-        % it every read of an "any"-dtype dataset materialises the array
-        % (see io.backend.hdf5.@HDF5LazyArray/load_mat_style, which serves
-        % the same selection with an H5S_SELECT_ELEMENTS point read).
-
-            dataDimensions = obj.dims;
-            assert(all(linearIndices(:) > 0 & linearIndices(:) == floor(linearIndices(:))), ...
-                'NWB:DataStub:Load:InvalidSelection', ...
-                'DataStub linear indices must be positive integer values');
-            assert(all(linearIndices(:) <= prod(dataDimensions)), ...
-                'NWB:DataStub:Load:InvalidSelection', ...
-                ['DataStub linear indices must be less than or equal to the ' ...
-                'number of elements %u'], prod(dataDimensions));
-
-            rank = numel(dataDimensions);
-            if isscalar(dataDimensions)
-                % From R2024b ind2sub requires two or more dimensions; a
-                % scalar size refers to the row dimension, matching what
-                % io.backend.hdf5.@HDF5LazyArray/load_mat_style assumes.
-                dataDimensions = [dataDimensions, 1];
-            end
-
-            uniqueIndices = unique(linearIndices(:));
-            if isempty(uniqueIndices)
-                % Nothing selected: take the type from the first element so
-                % that an empty of the right class is returned.
-                sample = obj.readPoint(ones(1, rank));
-                data = sample([]);
-                return
-            end
-
-            subscripts = cell(1, numel(dataDimensions));
-            [subscripts{:}] = ind2sub(dataDimensions, uniqueIndices);
-            subscripts = cell2mat(subscripts);
-            subscripts = subscripts(:, 1:rank);
-
-            lowest = min(subscripts, [], 1);
-            boxSize = max(subscripts, [], 1) - lowest + 1;
-            maxBoxElements = max(obj.MaxBoundingBoxOverread * numel(uniqueIndices), ...
-                obj.MinBoundingBoxElements);
-            if prod(boxSize) <= maxBoxElements
-                box = obj.readPartialData(lowest, boxSize, ones(1, rank));
-                localSubscripts = num2cell(subscripts - lowest + 1, 1);
-                if rank == 1
-                    uniqueValues = box(localSubscripts{1});
-                else
-                    uniqueValues = box(sub2ind(boxSize, localSubscripts{:}));
-                end
-                uniqueValues = uniqueValues(:);
-            else
-                uniqueValues = obj.readPoint(subscripts(1, :));
-                uniqueValues = repmat(uniqueValues, numel(uniqueIndices), 1);
-                for iIndex = 2:numel(uniqueIndices)
-                    uniqueValues(iIndex) = obj.readPoint(subscripts(iIndex, :));
-                end
-            end
-
-            % Restore the caller's order, and any duplicate indices, from
-            % the sorted unique set that was actually read.
-            [~, positions] = ismember(linearIndices, uniqueIndices);
-            data = uniqueValues(positions);
-            data = obj.applySelectionShape(data, {linearIndices});
-        end
-
-        function value = readPoint(obj, subscript)
-        % readPoint - Read the single element at a subscript vector.
-            value = obj.readPartialData(subscript, ones(1, numel(subscript)), ...
-                ones(1, numel(subscript)));
-        end
-
-        function tf = isEmptySubscriptSelection(obj, userSelection)
-        % isEmptySubscriptSelection - True when a subscript selects nothing.
-        %
-        % An empty subscript is not a regular selection, so without this
-        % check it would take the full-read path, which reads the whole
-        % dataset to return no elements. DynamicTable.getRow passes one for
-        % an empty row of a ragged column of two or more dimensions.
-        % Compound datasets keep the full-read path (see isLinearSelection).
-            tf = ~isstruct(obj.dataType) ...
-                && any(cellfun(@(subscript) isnumeric(subscript) && isempty(subscript), userSelection));
-        end
-
-        function data = readEmptySelection(obj, userSelection)
+        function data = readEmptySelection(obj, selection)
         % readEmptySelection - An empty array of the selection's shape and class.
         %
-        % The class is taken from the first element, read on its own, as
-        % readLinearSelection does for an empty linear selection.
-            sample = obj.readPoint(ones(1, numel(obj.dims)));
-            data = repmat(sample(1), obj.getExpectedSize(userSelection));
-        end
-
-        function [isSupported, fullSelection] = tryBuildRegularSelection(obj, userSelection)
-            dataDimensions = obj.dims;
-            isSupported = true;
-            fullSelection = cell(1, length(dataDimensions));
-
-            if isscalar(userSelection) && isempty(userSelection{1})
-                isSupported = false;
-                return
-            end
-
-            if isscalar(userSelection) && ~ischar(userSelection{1})
-                isSupported = false;
-                return
-            end
-
-            isDanglingGroup = ischar(userSelection{end});
-            for iDimension = 1:length(dataDimensions)
-                if iDimension > length(userSelection) && ~isDanglingGroup
-                    fullSelection{iDimension} = 1;
-                elseif (iDimension > length(userSelection) && isDanglingGroup) ...
-                        || ischar(userSelection{iDimension})
-                    fullSelection{iDimension} = 1:dataDimensions(iDimension);
-                else
-                    selection = userSelection{iDimension};
-                    if ~obj.isRegularAscendingSelection(selection)
-                        isSupported = false;
-                        return
-                    end
-                    fullSelection{iDimension} = selection;
-                end
-            end
-        end
-
-        function tf = isRegularAscendingSelection(~, selection)
-            tf = isnumeric(selection) ...
-                && isreal(selection) ...
-                && all(isfinite(selection)) ...
-                && all(selection > 0) ...
-                && all(selection == floor(selection));
-            if ~tf
-                return
-            end
-            if isscalar(selection)
-                return
-            end
-
-            stepSizes = diff(selection);
-            tf = all(stepSizes > 0) && isscalar(unique(stepSizes));
-        end
-
-        function [start, count, stride] = selectionToReadParameters(~, selection)
-            start = zeros(1, numel(selection));
-            count = zeros(1, numel(selection));
-            stride = ones(1, numel(selection));
-
+        % The class is taken from the first element, read on its own.
+            arrayNode = obj.resolveArray();
+            shape = double(arrayNode.shape);
+            sample = obj.postProcessCompound(arrayNode.read(ones(1, numel(shape)), ones(1, numel(shape))));
+            outputSize = shape;
             for iDimension = 1:numel(selection)
-                currentSelection = selection{iDimension};
-                start(iDimension) = currentSelection(1);
-                count(iDimension) = numel(currentSelection);
-                if numel(currentSelection) > 1
-                    stride(iDimension) = currentSelection(2) - currentSelection(1);
+                if ~ischar(selection{iDimension})
+                    outputSize(iDimension) = numel(selection{iDimension});
                 end
             end
-        end
-
-        function data = applySelectionShape(obj, data, userSelection)
-            expectedSize = obj.getExpectedSize(userSelection);
-            if isequal(size(data), expectedSize)
-                return
-            end
-            data = reshape(data, expectedSize);
-        end
-
-        function expectedSize = getExpectedSize(obj, userSelection)
-            dataDimensions = obj.dims;
-            expectedSize = dataDimensions;
-            for iSelection = 1:length(userSelection)
-                if ~ischar(userSelection{iSelection})
-                    expectedSize(iSelection) = length(userSelection{iSelection});
-                end
-            end
-
-            if ischar(userSelection{end})
-                selectedDimensionIndex = length(userSelection);
-                expectedSize = [expectedSize(1:(selectedDimensionIndex-1)), ...
-                    prod(dataDimensions(selectedDimensionIndex:end))];
+            outputSize = [outputSize, ones(1, 2 - numel(outputSize))];
+            if isstruct(sample)
+                data = structfun(@(values) repmat(values(1), outputSize), sample, ...
+                    'UniformOutput', false);
             else
-                expectedSize = expectedSize(1:length(userSelection));
-            end
-
-            if isscalar(userSelection) && isscalar(expectedSize)
-                if 1 < sum(1 < dataDimensions)
-                    if ~ischar(userSelection{1}) && isrow(userSelection{1})
-                        expectedSize = [1 expectedSize];
-                    else
-                        expectedSize = [expectedSize 1];
-                    end
-                else
-                    if dataDimensions(1) == 1
-                        expectedSize = [1 expectedSize];
-                    else
-                        expectedSize = [expectedSize 1];
-                    end
-                end
+                data = repmat(sample(1), outputSize);
             end
         end
     end

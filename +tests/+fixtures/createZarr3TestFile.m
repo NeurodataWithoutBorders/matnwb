@@ -34,10 +34,9 @@ function fixturePath = createZarr3TestFile(rootFolder)
     % (channels x timepoints) dims read by Zarr3ReaderTest/Zarr3LazyArrayTest.
     esGroup.createArray("data", [29 4], "single").write(reshape(single(1:116), [4 29]).');
 
-    % A rank-3 dataset (numpy order [4 3 2] -> MatNWB dims [2 3 4]), for the
-    % rank >= 3 axis reversal (io.backend.zarr3.internal.normalizeDatasetDimensions
-    % uses permute rather than transpose there) and for selections naming
-    % fewer subscripts than the rank.
+    % A rank-3 dataset (numpy order [4 3 2] -> MatNWB dims [2 3 4]), for an
+    % axis reversal that is not a transpose and for selections naming fewer
+    % subscripts than the rank.
     volumeGroup = acquisitionGroup.createGroup("vol");
     volumeGroup.createArray("data", [4 3 2], "double").write(reshape(1:24, [4 3 2]));
 
