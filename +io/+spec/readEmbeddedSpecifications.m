@@ -31,8 +31,7 @@ function specs = readEmbeddedSpecifications(reader, specLocation)
         namespaceGroupInfo = specInfo.Groups(iGroup);
         location = namespaceGroupInfo.Groups(1);
 
-        namespaceName = split(namespaceGroupInfo.Name, '/');
-        namespaceName = namespaceName{end};
+        namespaceName = namespaceGroupInfo.Name;
 
         datasetNames = {location.Datasets.Name};
         if ~any(strcmp('namespace', datasetNames))
@@ -45,7 +44,7 @@ function specs = readEmbeddedSpecifications(reader, specLocation)
         schemaMap = containers.Map;
         for iDataset = 1:length(datasetNames)
             datasetName = datasetNames{iDataset};
-            datasetPath = strcat(location.Name, '/', datasetName);
+            datasetPath = strcat(location.Path, '/', datasetName);
             datasetValue = reader.readDatasetValue(location.Datasets(iDataset), datasetPath);
             if strcmp('namespace', datasetName)
                 namespaceText = datasetValue;
