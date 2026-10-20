@@ -3,6 +3,21 @@ classdef HDF5Reader < io.backend.base.Reader
     %
     % This reader is intentionally thin and delegates to the existing HDF5
     % utility functions used by matnwb today.
+    %
+    % A reader keeps the tree returned by readRootInfo and the object
+    % addresses used to resolve references (see
+    % io.backend.hdf5.ReferenceTargetResolver) for as long as it exists. A
+    % reader should therefore be used for a single read, and not across
+    % writes to the file.
+
+    properties (Access = private)
+        % RootInfo - h5info tree of the whole file, set by readRootInfo.
+        RootInfo = []
+
+        % ReferenceResolver - Resolves reference targets for this file.
+        % Created on the first reference read.
+        ReferenceResolver = []
+    end
 
     methods
         function obj = HDF5Reader(filename)
@@ -19,6 +34,7 @@ classdef HDF5Reader < io.backend.base.Reader
 
         function node = readRootInfo(obj)
             node = h5info(obj.Filename);
+            obj.RootInfo = node;
         end
 
         function tf = isReferenceDataset(~, datasetInfo)
@@ -98,7 +114,8 @@ classdef HDF5Reader < io.backend.base.Reader
                     fid = H5F.open(obj.Filename, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
                     aid = H5A.open_by_name(fid, context, attributeInfo.Name);
                     tid = H5A.get_type(aid);
-                    attributeValue = io.parseReference(aid, tid, attributeInfo.Value);
+                    attributeValue = io.parseReference(aid, tid, attributeInfo.Value, ...
+                        obj.getReferenceResolver());
                     H5T.close(tid);
                     H5A.close(aid);
                     H5F.close(fid);
@@ -134,7 +151,8 @@ classdef HDF5Reader < io.backend.base.Reader
                 % Load all H5T references. This is required, unfortunately also a
                 % bottleneck
                 tid = H5D.get_type(did);
-                datasetValue = io.parseReference(did, tid, H5D.read(did));
+                datasetValue = io.parseReference(did, tid, H5D.read(did), ...
+                    obj.getReferenceResolver());
                 H5T.close(tid);
             elseif strcmp(dataspace.Type, 'scalar')
                 datasetValue = H5D.read(did);
@@ -163,7 +181,8 @@ classdef HDF5Reader < io.backend.base.Reader
                         end
                     case 'H5T_COMPOUND'
                         isScalar = true;
-                        datasetValue = io.parseCompound(did, datasetValue, isScalar);
+                        datasetValue = io.parseCompound(did, datasetValue, isScalar, ...
+                            obj.getReferenceResolver());
                 end
             else % non scalar
                 sid = H5D.get_space(did);
@@ -194,6 +213,24 @@ classdef HDF5Reader < io.backend.base.Reader
                 H5P.close(pid);
                 H5S.close(sid);
             end
+        end
+    end
+
+    methods (Access = private)
+        function resolver = getReferenceResolver(obj)
+            if isempty(obj.ReferenceResolver)
+                obj.ReferenceResolver = io.backend.hdf5.ReferenceTargetResolver( ...
+                    @() obj.listObjectPaths());
+            end
+            resolver = obj.ReferenceResolver;
+        end
+
+        function objectPaths = listObjectPaths(obj)
+            rootInfo = obj.RootInfo;
+            if isempty(rootInfo)
+                rootInfo = h5info(obj.Filename);
+            end
+            objectPaths = io.backend.hdf5.ReferenceTargetResolver.listObjectPaths(rootInfo);
         end
     end
 end

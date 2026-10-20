@@ -1,7 +1,9 @@
-function data = parseCompound(datasetId, data, isScalar)
+function data = parseCompound(datasetId, data, isScalar, targetResolver)
     %did is the dataset_id for the containing dataset
     %data should be a scalar struct with fields as columns
+    %targetResolver (optional) is passed on to io.parseReference
     if nargin < 3; isScalar = false; end
+    if nargin < 4; targetResolver = []; end
     typeId = H5D.get_type(datasetId);
     if isempty(data)
         % A dataset holding no rows is read back as a 0x0 struct without any
@@ -48,7 +50,7 @@ function data = parseCompound(datasetId, data, isScalar)
         name = referenceFieldName{iFieldName};
         rawReference = data.(name);
         rawTypeId = referenceTypeId{iFieldName};
-        data.(name) = io.parseReference(datasetId, rawTypeId, rawReference);
+        data.(name) = io.parseReference(datasetId, rawTypeId, rawReference, targetResolver);
     end
 
     % Close type ids
