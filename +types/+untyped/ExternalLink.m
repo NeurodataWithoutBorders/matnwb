@@ -52,45 +52,16 @@ classdef ExternalLink < handle
                 linkedInfo = reader.readNodeInfo(link.path);
                 location = [targetFilename link.path];
 
-                % The field names tested below are h5info's, which
-                % io.backend.base.Reader.readNodeInfo mirrors for every
-                % backend, so the node classification stays backend neutral.
-                if isfield(linkedInfo, 'Attributes')
-                    attributeNames = {linkedInfo.Attributes.Name};
-                    isTyped = any(strcmp(attributeNames, 'neurodata_type')...
-                        | strcmp(attributeNames, 'namespace'));
-                else
-                    isTyped = false;
+                if isa(linkedInfo, 'io.backend.model.LinkInfo')
+                    data = derefLink(reader, linkedInfo);
+                    return
                 end
 
-                isDataset = all(isfield(linkedInfo, {...
-                    'FillValue',...
-                    'ChunkSize',...
-                    'Dataspace',...
-                    'Datatype',...
-                    'Filters',...
-                    'Attributes'}));
-                % 'Datatypes' is deliberately not required: it holds HDF5
-                % named datatypes, which have no equivalent in other
-                % backends, and nothing reads it. Groups, Datasets and Links
-                % already tell a group apart from a dataset or a link.
-                isGroup = all(isfield(linkedInfo, {...
-                    'Groups',...
-                    'Datasets',...
-                    'Links',...
-                    'Attributes'}));
-                isLink = all(isfield(linkedInfo, {...
-                    'Type',...
-                    'Value'
-                    }));
-                assert(isDataset || isGroup || isLink,...
-                    'NWB:ExternalLink:UnknownNodeType',...
-                    'Unsupported externally linked type (not a group, dataset, or link!');
-                assert(1 == sum([isDataset isGroup isLink]),...
-                    'NWB:ExternalLink:AmbiguousNodeType',...
-                    'Externally linked type is ambiguous! (cannot discern between group, dataset, or link!)');
+                attributeNames = {linkedInfo.Attributes.Name};
+                isTyped = any(strcmp(attributeNames, 'neurodata_type')...
+                    | strcmp(attributeNames, 'namespace'));
 
-                if isDataset
+                if isa(linkedInfo, 'io.backend.model.DatasetInfo')
                     % typed objects and references are handled by io.parseDataset
                     isReference = reader.isReferenceDataset(linkedInfo);
                     if isTyped || isReference
@@ -100,28 +71,25 @@ classdef ExternalLink < handle
                     else
                         data = types.untyped.DataStub(targetFilename, link.path);
                     end
-                elseif isGroup
+                else % group
                     assert(isTyped,...
                         'NWB:ExternalLink:UntypedGroup',...
                         ['MatNWB cannot return a non-typed group. Please return the parent '...
                         'typed object that contains `%s`'], location);
                     data = io.parseGroup(targetFilename, linkedInfo, ...
                         io.internal.defaultParseExclusions(), reader);
-                else % link
-                    data = derefLink(reader, link);
                 end
             end
 
-            function data = derefLink(reader, link)
-                linkInfo = reader.readLinkInfo(link.path);
-                if linkInfo.type == "external link"
+            function data = derefLink(reader, linkInfo)
+                if strcmp(linkInfo.Type, 'external link')
                     % The chained link lives in the target file, so its
                     % relative filename resolves against that file's base.
                     data = types.untyped.ExternalLink(...
-                        linkInfo.targetFilename, linkInfo.targetPath, ...
+                        linkInfo.TargetFile, linkInfo.TargetPath, ...
                         reader.getExternalLinkBase());
                 else
-                    data = types.untyped.SoftLink(linkInfo.targetPath);
+                    data = types.untyped.SoftLink(linkInfo.TargetPath);
                 end
             end
         end
