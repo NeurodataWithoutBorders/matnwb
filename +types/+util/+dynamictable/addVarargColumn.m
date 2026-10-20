@@ -20,8 +20,9 @@ assert(isempty(existingCols), ...
 isFirstColumn = isempty(DynamicTable.colnames) && ...
     (isempty(DynamicTable.id) || isempty(DynamicTable.id.data));
 
-% get current table height - assume id length reflects table height
-if ~isempty(DynamicTable.colnames)
+% The id column sets the table height whenever the table has ids, including a
+% table that has ids but no columns yet.
+if ~isFirstColumn
     tableHeight = types.util.dynamictable.internal.getColumnHeight(DynamicTable.id);
 end
 
@@ -45,18 +46,15 @@ for i = 1:length(newColNames)
     new_cn = newColNames{i};
     new_cv = newVectorData.(new_cn);
     % check height match before adding column
-    if ~isempty(DynamicTable.colnames)
-        indexName = getIndexInSet(newVectorData,new_cn);
-
-        if isempty(indexName)
-            heightColumn = new_cv;
-        else
-            heightColumn = newVectorData.(indexName);
-        end
-        currentColumnHeight = types.util.dynamictable.internal.getColumnHeight(heightColumn);
-
-        validateColumnHeight(new_cn, currentColumnHeight, tableHeight)
+    indexName = getIndexInSet(newVectorData,new_cn);
+    if isempty(indexName)
+        heightColumn = new_cv;
+    else
+        heightColumn = newVectorData.(indexName);
     end
+    currentColumnHeight = types.util.dynamictable.internal.getColumnHeight(heightColumn);
+    validateColumnHeight(new_cn, currentColumnHeight, tableHeight)
+
     assignColumn( ...
         DynamicTable, new_cn, new_cv, storageTargets{i}, storageNames{i});
     updateColnames(DynamicTable, new_cn, new_cv)
@@ -141,8 +139,14 @@ function indexName = getIndexInSet(inputStruct, inputName)
     for i = 1:length(columnNames)
         T.vectordata.set(columnNames{i},inputStruct.(columnNames{i}));
     end
-    % use dynamic table function to get index name
-    indexName = types.util.dynamictable.getIndex(T, inputName);
+    % Follow the chain of indices to the outermost one. Its length is the
+    % number of table rows, whatever the depth of the ragged column.
+    indexName = '';
+    nextName = types.util.dynamictable.getIndex(T, inputName);
+    while ~isempty(nextName)
+        indexName = nextName;
+        nextName = types.util.dynamictable.getIndex(T, nextName);
+    end
 end
 
 function validateColumnHeight(columnName, currentColumnHeight, tableHeight)

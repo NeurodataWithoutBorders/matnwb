@@ -8,7 +8,7 @@ This page covers the advanced concepts behind how MatNWB works with NWB schemas 
 What are NWB Schemas?
 ---------------------
 
-`NWB schemas <https://nwb-schema.readthedocs.io/en/latest/format_description.html#>`_: are formal specifications that define:
+:nwb-format-description:`NWB schemas <overview>`: are formal specifications that define:
 
 - **Data types** and their properties
 - **Relationships** between different data types  
