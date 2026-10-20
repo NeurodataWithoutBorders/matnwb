@@ -50,6 +50,8 @@ function clearedNamespaceNames = nwbClearGenerated(targetFolder, options)
         end
     end
 
+    matnwb.internal.typecache.writeFunctionSignatures(targetFolder)
+
     if nargout == 1 % Return names of cleared namespaces
         [~, clearedNamespaceNames] = fileparts(generatedPaths);
         clearedNamespaceNames = strrep(clearedNamespaceNames, '+', '');
