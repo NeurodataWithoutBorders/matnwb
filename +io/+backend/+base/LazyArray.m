@@ -105,6 +105,30 @@ classdef LazyArray < handle
         end
     end
 
+    methods % Can be overridden by subclasses
+        function data = loadSelections(obj, selections)
+        % loadSelections - Read several selections, each as load_mat_style would.
+        %
+        % This implementation calls load_mat_style once per selection.
+        % Backends that can read several selections in one pass over the
+        % dataset override it.
+        %
+        % Input Arguments:
+        %   obj        - LazyArray instance to read from.
+        %   selections - Cell array with one cell array of subscripts per
+        %                selection, for example {{':', 1:3}, {':', 7:9}}.
+        %
+        % Output Arguments:
+        %   data - Cell array of the same size as selections, with the data
+        %          of each selection.
+
+            data = cell(size(selections));
+            for iSelection = 1:numel(selections)
+                data{iSelection} = obj.load_mat_style(selections{iSelection}{:});
+            end
+        end
+    end
+
     methods (Static, Access = private)
         function throwNotImplemented(methodName)
             error("NWB:Backend:LazyArray:NotImplemented", ...

@@ -263,7 +263,35 @@ classdef (Sealed) DataPipe < handle
         function data = load(obj, varargin)
             data = obj.internal.load(varargin{:});
         end
-        
+
+        function data = loadSelections(obj, selections)
+        %LOADSELECTIONS Read several selections in one pass over the data.
+        %   DATA = LOADSELECTIONS(SELECTIONS) reads each selection as
+        %   indexing the DataPipe with it would, and returns the results in
+        %   a cell array of the same size as SELECTIONS. SELECTIONS is a
+        %   cell array with one cell array of subscripts per selection, for
+        %   example {{':', 1:3}, {':', 7:9}}. A bound DataPipe reads them
+        %   from its dataset in one pass; an unbound DataPipe indexes its
+        %   data once per selection.
+
+            arguments
+                obj
+                selections cell
+            end
+
+            if isa(obj.internal, 'types.untyped.datapipe.BoundPipe')
+                data = obj.internal.stub.loadSelections(selections);
+            elseif isa(obj.internal, 'types.untyped.datapipe.BlueprintPipe')
+                data = cell(size(selections));
+                for iSelection = 1:numel(selections)
+                    data{iSelection} = obj.internal.data(selections{iSelection}{:});
+                end
+            else
+                error('NWB:DataPipe:InvalidState', ...
+                    'datapipe `internal` property is not a bound or a blueprint pipe.');
+            end
+        end
+
         function data = append(obj, data)
             obj.internal.append(data);
         end
