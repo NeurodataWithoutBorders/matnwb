@@ -126,7 +126,7 @@ function generateEmbeddedSpec(reader, specLocation, options)
     end
 
     specs = io.spec.readEmbeddedSpecifications(reader, specLocation);
-    specNames = cell(size(specs));
+    namespaceInfoList = cell(size(specs));
 
     for iSpec = 1:numel(specs)
         namespaceName = specs{iSpec}.namespaceName;
@@ -147,32 +147,10 @@ function generateEmbeddedSpec(reader, specLocation, options)
             'Namespace `%s` not found in specification. Perhaps an extension should be generated?', ...
             namespaceName);
 
-        parsedNamespace = parsedNamespace(isMatch);
-        
-        spec.saveCache(parsedNamespace, options.savedir);
-        specNames{iSpec} = parsedNamespace.name;
+        namespaceInfoList{iSpec} = parsedNamespace(isMatch);
     end
-    
-    missingNames = cell(size(specNames));
-    for iName = 1:length(specNames)
-        name = specNames{iName};
-        try
-            file.writeNamespace(name, options.savedir);
-        catch ME
-            % Todo: Can this actually happen?
-            if strcmp(ME.identifier, 'NWB:Namespace:CacheMissing')
-                missingNames{iName} = name;
-            else
-                rethrow(ME);
-            end
-        end
-    end
-    rehash()
 
-    missingNames(cellfun('isempty', missingNames)) = [];
-    assert(isempty(missingNames), 'NWB:Namespace:DependencyMissing',...
-        'Missing generated caches and dependent caches for the following namespaces:\n%s',...
-        misc.cellPrettyPrint(missingNames));
+    matnwb.internal.typecache.generateNamespaces([namespaceInfoList{:}], options.savedir)
 end
 
 function warnIfUnsupportedSchemaVersion(schemaVersionOfFile)
