@@ -1,0 +1,6 @@
+namespaces:
+- full_name: Entries shared by an inherited group and a subtype group
+  name: ses
+  schema:
+  - namespace: core
+  - source: ses.types.yaml

@@ -1,0 +1,11 @@
+groups:
+- neurodata_type_def: OpticalChannelSubtype
+  neurodata_type_inc: OpticalChannel
+  doc: An optical channel subtype.
+- neurodata_type_def: ImagingPlaneWithSubtypeChannels
+  neurodata_type_inc: ImagingPlane
+  doc: An imaging plane with a group for optical channel subtypes, in addition to the inherited optical channel group.
+  groups:
+  - neurodata_type_inc: OpticalChannelSubtype
+    doc: Optical channels of the subtype.
+    quantity: '*'
