@@ -371,6 +371,18 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             testCase.verifyEqual(matlabTable.custom, expectedCategoryTable)
         end
 
+        function testToTableWithStringCategoryDescription(testCase)
+            alignedTable = tests.system.AlignedDynamicTableTest.createAlignedTable();
+            categoryTable = tests.factory.DynamicTable(NumRows=3, NumColumns=1);
+            categoryTable.description = "custom category";
+            alignedTable.addCategory("custom", categoryTable)
+
+            matlabTable = alignedTable.toTable();
+
+            testCase.verifyEqual(matlabTable.Properties.VariableDescriptions, ...
+                {'', 'custom category'});
+        end
+
         function testGetRowAfterRoundTrip(testCase)
             % `colnames` and `categories` are column cell arrays after a
             % read. With two columns and one category they have different

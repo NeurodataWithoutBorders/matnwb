@@ -1,5 +1,9 @@
 function columnDescriptions = getColumnDescriptions(dynamicTable, columnNames)
 %getColumnDescriptions - Return descriptions for DynamicTable columns.
+%
+%   columnDescriptions is a row cell array of character vectors, the form
+%   the VariableDescriptions property of a MATLAB table takes. A description
+%   held as a string scalar is converted.
 
     arguments
         dynamicTable (1,1) {matnwb.common.validation.mustBeDynamicTable}
@@ -17,6 +21,6 @@ function columnDescriptions = getColumnDescriptions(dynamicTable, columnNames)
         else
             column = dynamicTable.vectordata.get(columnName);
         end
-        columnDescriptions{iColumn} = column.description;
+        columnDescriptions{iColumn} = char(column.description);
     end
 end
