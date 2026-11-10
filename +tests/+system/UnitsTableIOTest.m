@@ -1,7 +1,7 @@
 classdef UnitsTableIOTest < tests.system.PyNWBIOTest
     properties (ClassSetupParameter)
-        % Both addDoublyRaggedArray input forms must store the same waveforms
-        % layout as PyNWB's Units.add_unit.
+        % Both input forms of addRaggedArray with Depth 2 must store the same
+        % waveforms layout as PyNWB's Units.add_unit.
         WaveformInput = struct( ...
             "CellPerSpike", "cell", ...
             "ArrayPerUnit", "array")
