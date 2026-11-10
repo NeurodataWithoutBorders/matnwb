@@ -437,6 +437,19 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(dynamicTable.id.data, int64((0:numRows-1)'));
         end
 
+        function testAddColumnRejectsVectorIndexTargetingItself(testCase)
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'empty test table');
+            vectorIndex = types.hdmf_common.VectorIndex( ...
+                'description', 'index that targets itself', ...
+                'data', uint64(1));
+            vectorIndex.target = types.untyped.ObjectView(vectorIndex);
+
+            testCase.verifyError( ...
+                @() dynamicTable.addColumn('raggedCol_index', vectorIndex), ...
+                'NWB:DynamicTable:CheckConfig:InfiniteReferenceLoop');
+        end
+
         function testAddRaggedColumnToTableWithIdsOnly(testCase)
             % A table can get its ids before its first column. The ids then
             % set the height, which the outermost index of a ragged column

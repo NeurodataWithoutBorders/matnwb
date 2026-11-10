@@ -140,12 +140,13 @@ function indexName = getIndexInSet(inputStruct, inputName)
         T.vectordata.set(columnNames{i},inputStruct.(columnNames{i}));
     end
     % Follow the chain of indices to the outermost one. Its length is the
-    % number of table rows, whatever the depth of the ragged column.
-    indexName = '';
-    nextName = types.util.dynamictable.getIndex(T, inputName);
-    while ~isempty(nextName)
-        indexName = nextName;
-        nextName = types.util.dynamictable.getIndex(T, nextName);
+    % number of table rows, whatever the depth of the ragged column. A
+    % column without an index resolves to itself.
+    outermostName = types.util.dynamictable.internal.getOutermostIndexColumnName(T, inputName);
+    if strcmp(outermostName, inputName)
+        indexName = '';
+    else
+        indexName = outermostName;
     end
 end
 
