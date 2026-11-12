@@ -167,13 +167,13 @@ end
 
 function vector = getColumnVector(DynamicTable, columnName)
 % getColumnVector - Get the VectorData or VectorIndex object of a column by name.
-if isprop(DynamicTable, columnName)
-    vector = DynamicTable.(columnName);
-elseif isprop(DynamicTable, 'vectorindex') && DynamicTable.vectorindex.isKey(columnName) % Schema version < 2.3.0
-    vector = DynamicTable.vectorindex.get(columnName);
-else
-    vector = DynamicTable.vectordata.get(columnName);
-end
+    if isprop(DynamicTable, columnName)
+        vector = DynamicTable.(columnName);
+    elseif isprop(DynamicTable, 'vectorindex') && DynamicTable.vectorindex.isKey(columnName) % Schema version < 2.3.0
+        vector = DynamicTable.vectorindex.get(columnName);
+    else
+        vector = DynamicTable.vectordata.get(columnName);
+    end
 end
 
 function selected = getRaggedRows(vectorChain, rowIndices)
@@ -190,38 +190,38 @@ function selected = getRaggedRows(vectorChain, rowIndices)
 % selected is a cell array with one cell per requested row. For a doubly
 % ragged column, each cell holds a cell array with one cell per element.
 
-% Row indices are shifted by subtraction, which saturates for unsigned integers.
-rowIndices = double(reshape(rowIndices, 1, []));
+    % Row indices are shifted by subtraction, which saturates for unsigned integers.
+    rowIndices = double(reshape(rowIndices, 1, []));
 
-numLevels = numel(vectorChain);
-% rowStarts{iLevel} and rowStops{iLevel} give the element range, in the
-% level below, of each row requested from level iLevel.
-rowStarts = cell(1, numLevels);
-rowStops = cell(1, numLevels);
+    numLevels = numel(vectorChain);
+    % rowStarts{iLevel} and rowStops{iLevel} give the element range, in the
+    % level below, of each row requested from level iLevel.
+    rowStarts = cell(1, numLevels);
+    rowStops = cell(1, numLevels);
 
-% Read the index levels from the outermost down. levelRows lists the rows
-% requested from the current level in output order, and after the loop the
-% data elements requested from the column.
-levelRows = rowIndices;
-for iLevel = numLevels:-1:2
-    indexVector = vectorChain{iLevel};
-    assert(isa(indexVector, 'types.hdmf_common.VectorIndex') || isa(indexVector, 'types.core.VectorIndex'), ...
-        'NWB:DynamicTable:GetRow:InternalError', ...
-        'Internal VectorIndex Stack is not using VectorIndex objects!');
+    % Read the index levels from the outermost down. levelRows lists the rows
+    % requested from the current level in output order, and after the loop the
+    % data elements requested from the column.
+    levelRows = rowIndices;
+    for iLevel = numLevels:-1:2
+        indexVector = vectorChain{iLevel};
+        assert(isa(indexVector, 'types.hdmf_common.VectorIndex') || isa(indexVector, 'types.core.VectorIndex'), ...
+            'NWB:DynamicTable:GetRow:InternalError', ...
+            'Internal VectorIndex Stack is not using VectorIndex objects!');
 
-    [rowStarts{iLevel}, rowStops{iLevel}] = readElementRanges(indexVector, levelRows);
-    levelRows = expandRanges(rowStarts{iLevel}, rowStops{iLevel});
-end
+        [rowStarts{iLevel}, rowStops{iLevel}] = readElementRanges(indexVector, levelRows);
+        levelRows = expandRanges(rowStarts{iLevel}, rowStops{iLevel});
+    end
 
-rowValues = readDataRows(vectorChain{1}, rowStarts{2}, rowStops{2}, levelRows);
+    rowValues = readDataRows(vectorChain{1}, rowStarts{2}, rowStops{2}, levelRows);
 
-% Nest the rows of each level under their rows in the level above. An empty
-% row has a stop below its start.
-for iLevel = 3:numLevels
-    rowLengths = max(rowStops{iLevel} - rowStarts{iLevel} + 1, 0);
-    rowValues = mat2cell(rowValues, rowLengths(:), 1);
-end
-selected = rowValues;
+    % Nest the rows of each level under their rows in the level above. An empty
+    % row has a stop below its start.
+    for iLevel = 3:numLevels
+        rowLengths = max(rowStops{iLevel} - rowStarts{iLevel} + 1, 0);
+        rowValues = mat2cell(rowValues, rowLengths(:), 1);
+    end
+    selected = rowValues;
 end
 
 function [starts, stops] = readElementRanges(indexVector, rowIndices)
@@ -229,44 +229,44 @@ function [starts, stops] = readElementRanges(indexVector, rowIndices)
 %
 % Row r spans elements index(r-1)+1 through index(r) of the level below,
 % where index(0) is 0. The index values of all rows are read in one call.
-starts = ones(size(rowIndices));
-stops = zeros(size(rowIndices));
-if isempty(rowIndices)
-    return
-end
+    starts = ones(size(rowIndices));
+    stops = zeros(size(rowIndices));
+    if isempty(rowIndices)
+        return
+    end
 
-% Each row needs index(r) and index(r-1), so neighbouring rows share
-% elements. The selection is read sorted and without duplicates, which
-% keeps the HDF5 reader on its fast path. index(0) is not stored.
-rowsToRead = unique([rowIndices, rowIndices - 1]);
-rowsToRead(rowsToRead == 0) = [];
-indexValues = readIndexValues(indexVector, rowsToRead);
+    % Each row needs index(r) and index(r-1), so neighbouring rows share
+    % elements. The selection is read sorted and without duplicates, which
+    % keeps the HDF5 reader on its fast path. index(0) is not stored.
+    rowsToRead = unique([rowIndices, rowIndices - 1]);
+    rowsToRead(rowsToRead == 0) = [];
+    indexValues = readIndexValues(indexVector, rowsToRead);
 
-% Look up each row's stop, and its previous row's stop, in the single read.
-% Row 1 has no previous row and keeps its default start of 1.
-[~, stopPositions] = ismember(rowIndices, rowsToRead);
-stops = reshape(indexValues(stopPositions), size(rowIndices));
-hasPreviousRow = rowIndices > 1;
-[~, previousPositions] = ismember(rowIndices(hasPreviousRow) - 1, rowsToRead);
-starts(hasPreviousRow) = indexValues(previousPositions) + 1;
+    % Look up each row's stop, and its previous row's stop, in the single read.
+    % Row 1 has no previous row and keeps its default start of 1.
+    [~, stopPositions] = ismember(rowIndices, rowsToRead);
+    stops = reshape(indexValues(stopPositions), size(rowIndices));
+    hasPreviousRow = rowIndices > 1;
+    [~, previousPositions] = ismember(rowIndices(hasPreviousRow) - 1, rowsToRead);
+    starts(hasPreviousRow) = indexValues(previousPositions) + 1;
 end
 
 function elements = expandRanges(starts, stops)
 % expandRanges - Concatenate the ranges starts(i):stops(i) into one row vector.
-hasElements = starts <= stops;
-starts = starts(hasElements);
-stops = stops(hasElements);
-if isempty(starts)
-    elements = zeros(1, 0);
-    return
-end
+    hasElements = starts <= stops;
+    starts = starts(hasElements);
+    stops = stops(hasElements);
+    if isempty(starts)
+        elements = zeros(1, 0);
+        return
+    end
 
-% Consecutive elements differ by 1 within a range. The first element of a
-% range differs from the last element of the range before it by the gap.
-steps = ones(1, sum(stops - starts + 1));
-rangeFirst = cumsum([1, stops(1:end-1) - starts(1:end-1) + 1]);
-steps(rangeFirst) = [starts(1), starts(2:end) - stops(1:end-1)];
-elements = cumsum(steps);
+    % Consecutive elements differ by 1 within a range. The first element of a
+    % range differs from the last element of the range before it by the gap.
+    steps = ones(1, sum(stops - starts + 1));
+    rangeFirst = cumsum([1, stops(1:end-1) - starts(1:end-1) + 1]);
+    steps(rangeFirst) = [starts(1), starts(2:end) - stops(1:end-1)];
+    elements = cumsum(steps);
 end
 
 function rowValues = readDataRows(dataVector, starts, stops, elements)
@@ -283,61 +283,61 @@ function rowValues = readDataRows(dataVector, starts, stops, elements)
 % elements, and building it takes time that grows faster than linearly with
 % the number of stretches, so each stretch is read in a call of its own.
 % A run is the set of elements read by one call.
-[numSubscripts, rowAxis] = getRowDimension(dataVector);
-% A DataPipe is indexed through its subsref, which reads from the file once
-% the pipe is bound to it and from the pipe's own data before that. Both are
-% read in blocks, like a DataStub.
-isFileBacked = isa(dataVector.data, 'types.untyped.DataStub') ...
-    || isa(dataVector.data, 'types.untyped.DataPipe');
+    [numSubscripts, rowAxis] = getRowDimension(dataVector);
+    % A DataPipe is indexed through its subsref, which reads from the file once
+    % the pipe is bound to it and from the pipe's own data before that. Both are
+    % read in blocks, like a DataStub.
+    isFileBacked = isa(dataVector.data, 'types.untyped.DataStub') ...
+        || isa(dataVector.data, 'types.untyped.DataPipe');
 
-if isFileBacked
-    elements = unique(elements);
-    numElements = numel(elements);
-    % runFirst(j) and runLast(j) are the positions in elements of the first
-    % and last element of run j.
-    if numElements == 0
-        [runFirst, runLast] = deal(zeros(1, 0));
-    elseif numSubscripts == 1
-        [runFirst, runLast] = deal(1, numElements);
-    else
-        runFirst = find([true, diff(elements) > 1]);
-        runLast = [runFirst(2:end) - 1, numElements];
-    end
-
-    blocks = cell(size(runFirst));
-    for iRun = 1:numel(runFirst)
-        blocks{iRun} = readRows(dataVector, elements(runFirst(iRun):runLast(iRun)));
-    end
-    % runOfPosition(k) is the run that holds elements(k).
-    runOfPosition = zeros(1, numElements);
-    runOfPosition(runFirst) = 1;
-    runOfPosition = cumsum(runOfPosition);
-    % The elements of a row are consecutive in elements and lie in one run.
-    [~, startPositions] = ismember(starts, elements);
-end
-
-isEmptyRow = starts > stops;
-emptyRow = [];
-if any(isEmptyRow)
-    emptyRow = readEmptyRow(dataVector);
-end
-
-rowValues = cell(numel(starts), 1);
-for iRow = 1:numel(starts)
-    if isEmptyRow(iRow)
-        rowValues{iRow} = emptyRow;
-        continue
-    end
     if isFileBacked
-        iRun = runOfPosition(startPositions(iRow));
-        % The row's elements as positions in the block of its run.
-        blockRows = startPositions(iRow) - runFirst(iRun) + 1 + (0:(stops(iRow) - starts(iRow)));
-        block = selectRows(blocks{iRun}, blockRows, numSubscripts, rowAxis);
-    else
-        block = selectRows(dataVector.data, starts(iRow):stops(iRow), numSubscripts, rowAxis);
+        elements = unique(elements);
+        numElements = numel(elements);
+        % runFirst(j) and runLast(j) are the positions in elements of the first
+        % and last element of run j.
+        if numElements == 0
+            [runFirst, runLast] = deal(zeros(1, 0));
+        elseif numSubscripts == 1
+            [runFirst, runLast] = deal(1, numElements);
+        else
+            runFirst = find([true, diff(elements) > 1]);
+            runLast = [runFirst(2:end) - 1, numElements];
+        end
+
+        blocks = cell(size(runFirst));
+        for iRun = 1:numel(runFirst)
+            blocks{iRun} = readRows(dataVector, elements(runFirst(iRun):runLast(iRun)));
+        end
+        % runOfPosition(k) is the run that holds elements(k).
+        runOfPosition = zeros(1, numElements);
+        runOfPosition(runFirst) = 1;
+        runOfPosition = cumsum(runOfPosition);
+        % The elements of a row are consecutive in elements and lie in one run.
+        [~, startPositions] = ismember(starts, elements);
     end
-    rowValues{iRow} = orientRows(dataVector, block);
-end
+
+    isEmptyRow = starts > stops;
+    emptyRow = [];
+    if any(isEmptyRow)
+        emptyRow = readEmptyRow(dataVector);
+    end
+
+    rowValues = cell(numel(starts), 1);
+    for iRow = 1:numel(starts)
+        if isEmptyRow(iRow)
+            rowValues{iRow} = emptyRow;
+            continue
+        end
+        if isFileBacked
+            iRun = runOfPosition(startPositions(iRow));
+            % The row's elements as positions in the block of its run.
+            blockRows = startPositions(iRow) - runFirst(iRun) + 1 + (0:(stops(iRow) - starts(iRow)));
+            block = selectRows(blocks{iRun}, blockRows, numSubscripts, rowAxis);
+        else
+            block = selectRows(dataVector.data, starts(iRow):stops(iRow), numSubscripts, rowAxis);
+        end
+        rowValues{iRow} = orientRows(dataVector, block);
+    end
 end
 
 function emptyRow = readEmptyRow(dataVector)
@@ -348,21 +348,21 @@ function emptyRow = readEmptyRow(dataVector)
 % A file-backed column reads its first element to learn the type of an
 % empty selection, so a dataset without elements gets an empty of its data
 % type instead.
-data = dataVector.data;
-if isa(data, 'types.untyped.DataStub')
-    isEmptyDataset = any(data.dims == 0);
-elseif isa(data, 'types.untyped.DataPipe') && data.isBound
-    isEmptyDataset = any(size(data) == 0);
-else
-    % Indexing in-memory data with an empty selection needs no elements.
-    isEmptyDataset = false;
-end
+    data = dataVector.data;
+    if isa(data, 'types.untyped.DataStub')
+        isEmptyDataset = any(data.dims == 0);
+    elseif isa(data, 'types.untyped.DataPipe') && data.isBound
+        isEmptyDataset = any(size(data) == 0);
+    else
+        % Indexing in-memory data with an empty selection needs no elements.
+        isEmptyDataset = false;
+    end
 
-if isEmptyDataset
-    emptyRow = orientRows(dataVector, createEmptyValue(data.dataType));
-else
-    emptyRow = orientRows(dataVector, readRows(dataVector, zeros(1, 0)));
-end
+    if isEmptyDataset
+        emptyRow = orientRows(dataVector, createEmptyValue(data.dataType));
+    else
+        emptyRow = orientRows(dataVector, readRows(dataVector, zeros(1, 0)));
+    end
 end
 
 function value = createEmptyValue(dataType)
@@ -371,16 +371,17 @@ function value = createEmptyValue(dataType)
 % A compound dataset is read as a table with one variable per member, and
 % every other dataset as an array. The empty array is 0x0, the shape an
 % empty selection of a file-backed column has.
-if isstruct(dataType)
-    compoundMemberNames = fieldnames(dataType);
-    compoundMembers = struct();
-    for iMember = 1:numel(compoundMemberNames)
-        compoundMembers.(compoundMemberNames{iMember}) = createEmptyArray(dataType.(compoundMemberNames{iMember}), 1);
+    if isstruct(dataType)
+        compoundMemberNames = fieldnames(dataType);
+        compoundMembers = struct();
+        for iMember = 1:numel(compoundMemberNames)
+            compoundMembers.(compoundMemberNames{iMember}) = ...
+                createEmptyArray(dataType.(compoundMemberNames{iMember}), 1);
+        end
+        value = struct2table(compoundMembers);
+    else
+        value = createEmptyArray(dataType, 0);
     end
-    value = struct2table(compoundMembers);
-else
-    value = createEmptyArray(dataType, 0);
-end
 end
 
 function value = createEmptyArray(matlabType, numColumns)
@@ -388,33 +389,33 @@ function value = createEmptyArray(matlabType, numColumns)
 %
 % The types follow io.parseCompound, which builds the columns of a
 % compound dataset without rows the same way.
-switch matlabType
-    case {'char', 'cell'}
-        % Text and non-boolean enums are read as cell arrays.
-        value = cell(0, numColumns);
-    case 'logical'
-        value = false(0, numColumns);
-    otherwise
-        % Numeric types and the reference classes construct an empty
-        % instance from their class name.
-        value = feval([matlabType '.empty'], 0, numColumns);
-end
+    switch matlabType
+        case {'char', 'cell'}
+            % Text and non-boolean enums are read as cell arrays.
+            value = cell(0, numColumns);
+        case 'logical'
+            value = false(0, numColumns);
+        otherwise
+            % Numeric types and the reference classes construct an empty
+            % instance from their class name.
+            value = feval([matlabType '.empty'], 0, numColumns);
+    end
 end
 
 function values = readIndexValues(indexVector, rowsToRead)
 % readIndexValues - Read elements of a VectorIndex as a double column vector.
-if isa(indexVector.data, 'types.untyped.DataStub') || isa(indexVector.data, 'types.untyped.DataPipe')
-    values = indexVector.data.load(rowsToRead);
-else
-    values = indexVector.data(rowsToRead);
-end
-values = double(values(:));
+    if isa(indexVector.data, 'types.untyped.DataStub') || isa(indexVector.data, 'types.untyped.DataPipe')
+        values = indexVector.data.load(rowsToRead);
+    else
+        values = indexVector.data(rowsToRead);
+    end
+    values = double(values(:));
 end
 
 function block = readRows(vector, rowIndices)
 % readRows - Read rows of a column, leaving the rows along the column's row axis.
-[numSubscripts, rowAxis] = getRowDimension(vector);
-block = selectRows(vector.data, rowIndices, numSubscripts, rowAxis);
+    [numSubscripts, rowAxis] = getRowDimension(vector);
+    block = selectRows(vector.data, rowIndices, numSubscripts, rowAxis);
 end
 
 function selected = orientRows(vector, block)
@@ -422,45 +423,45 @@ function selected = orientRows(vector, block)
 %
 % A DataPipe can hold its rows along any axis. The table needs them along
 % the first axis, or its variables would have unequal heights.
-if isa(vector.data, 'types.untyped.DataPipe')
-    selected = permute(block, circshift(1:ndims(block), -(vector.data.axis-1)));
-else
-    selected = block;
-end
+    if isa(vector.data, 'types.untyped.DataPipe')
+        selected = permute(block, circshift(1:ndims(block), -(vector.data.axis-1)));
+    else
+        selected = block;
+    end
 end
 
 function [numSubscripts, rowAxis] = getRowDimension(vector)
 % getRowDimension - Number of subscripts used to index a column, and the one that selects rows.
-data = vector.data;
-if isa(data, 'types.untyped.DataStub') || isa(data, 'types.untyped.DataPipe')
-    if isa(data, 'types.untyped.DataStub')
-        dataSize = data.dims;
+    data = vector.data;
+    if isa(data, 'types.untyped.DataStub') || isa(data, 'types.untyped.DataPipe')
+        if isa(data, 'types.untyped.DataStub')
+            dataSize = data.dims;
+        else
+            dataSize = data.internal.maxSize;
+        end
+        if length(dataSize) == 2 && dataSize(2) == 1
+            % A column vector is indexed with one subscript.
+            numSubscripts = 1;
+        else
+            numSubscripts = length(dataSize);
+        end
     else
-        dataSize = data.internal.maxSize;
+        if iscolumn(data)
+            % A column vector is indexed with one subscript.
+            numSubscripts = 1;
+        elseif istable(data)
+            % A compound column held as a table is indexed by row only.
+            numSubscripts = 1;
+        else
+            numSubscripts = ndims(data);
+        end
     end
-    if length(dataSize) == 2 && dataSize(2) == 1
-        % A column vector is indexed with one subscript.
-        numSubscripts = 1;
-    else
-        numSubscripts = length(dataSize);
-    end
-else
-    if iscolumn(data)
-        % A column vector is indexed with one subscript.
-        numSubscripts = 1;
-    elseif istable(data)
-        % A compound column held as a table is indexed by row only.
-        numSubscripts = 1;
-    else
-        numSubscripts = ndims(data);
-    end
-end
 
-if isa(data, 'types.untyped.DataPipe')
-    rowAxis = data.axis;
-else
-    rowAxis = numSubscripts;
-end
+    if isa(data, 'types.untyped.DataPipe')
+        rowAxis = data.axis;
+    else
+        rowAxis = numSubscripts;
+    end
 end
 
 function selected = selectRows(data, rowIndices, numSubscripts, rowAxis)
@@ -468,26 +469,26 @@ function selected = selectRows(data, rowIndices, numSubscripts, rowAxis)
 %
 % The same indexing reads rows from the column and takes rows from a block
 % already read from it.
-subscripts = repmat({':'}, 1, numSubscripts);
-subscripts{rowAxis} = rowIndices;
+    subscripts = repmat({':'}, 1, numSubscripts);
+    subscripts{rowAxis} = rowIndices;
 
-if (isstruct(data) && isscalar(data)) || istable(data)
-    if istable(data)
-        selected = table();
-        fields = data.Properties.VariableNames;
+    if (isstruct(data) && isscalar(data)) || istable(data)
+        if istable(data)
+            selected = table();
+            fields = data.Properties.VariableNames;
+        else
+            selected = struct();
+            fields = fieldnames(data);
+        end
+
+        for iField = 1:length(fields)
+            fieldName = fields{iField};
+            memberData = data.(fieldName);
+            selected.(fieldName) = memberData(subscripts{:});
+        end
     else
-        selected = struct();
-        fields = fieldnames(data);
+        selected = data(subscripts{:});
     end
-
-    for iField = 1:length(fields)
-        fieldName = fields{iField};
-        memberData = data.(fieldName);
-        selected.(fieldName) = memberData(subscripts{:});
-    end
-else
-    selected = data(subscripts{:});
-end
 end
 
 function rowIndices = getRowIndicesById(DynamicTable, requestedIds)
