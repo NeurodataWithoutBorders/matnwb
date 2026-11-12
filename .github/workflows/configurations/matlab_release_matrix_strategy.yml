@@ -59,3 +59,8 @@
   macos-runner: macos-latest
   skip-pynwb-tests: '0'
   skip-nwbinspector-test: '0'
+- matlab-version: R2026b
+  python-version: '3.14'
+  macos-runner: macos-latest
+  skip-pynwb-tests: '0'
+  skip-nwbinspector-test: '0'
