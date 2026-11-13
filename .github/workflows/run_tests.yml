@@ -79,7 +79,12 @@ jobs:
   run_tests:
     name: Run MATLAB tests (${{ matrix.matlab-version }})
     needs: set_matrix
-    runs-on: ubuntu-latest
+    # Pinned to the newest Ubuntu image that every MATLAB release in the test
+    # matrix runs on. ubuntu-latest moves to a new Ubuntu version that older
+    # releases are not validated on: on ubuntu-26.04, actions/setup-python has
+    # no Python 3.9 (used for R2021a-R2022a), and the Python interface of
+    # R2022b-R2024b fails to start. Keep in sync with prepare_release.yml.
+    runs-on: ubuntu-24.04
     env:
       # Cache only the release draft PRs actually use. GitHub scopes caches per
       # branch: a PR can read entries written on the default branch, but not

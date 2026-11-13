@@ -84,10 +84,14 @@ jobs:
           # One job per MATLAB release and platform. The macOS runner is
           # release-specific, so the combinations are listed explicitly instead
           # of being generated as a cross product of `os` and `matlab-version`.
+          #
+          # The Ubuntu image is pinned to the newest one that every MATLAB
+          # release in the matrix runs on, see the run_tests job of
+          # run_tests.yml. Keep the two in sync.
           matrix=$(yq -o=json '{
               "include": [
                 .[] as $release
-                  | ["windows-latest", "ubuntu-latest", $release.macos-runner]
+                  | ["windows-latest", "ubuntu-24.04", $release.macos-runner]
                   | .[] as $os
                   | ($release * {"os": $os} | del(.macos-runner))
               ]
