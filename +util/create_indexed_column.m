@@ -33,9 +33,10 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %       references to the TimeSeries recorded during each trial.
 %   A column holds elements of one kind: numeric, text, compound or object
 %   references. Numeric rows must all be of the same class (for example all
-%   int32, not int32 and double), as the column keeps that class. The
-%   column is built in memory, so a row cannot be a DataPipe
-%   or a DataStub, and it cannot hold SoftLinks: reference objects with
+%   int32, not int32 and double), as the column keeps that class. The same
+%   holds for each numeric field of compound rows that are stored as a
+%   table. The column is built in memory, so a row cannot be a DataPipe or
+%   a DataStub, and it cannot hold SoftLinks: reference objects with
 %   ObjectViews instead.
 %   All array rows must share elementDims. Trailing dimensions of 1 may be
 %   omitted, as MATLAB omits them from size: the number of element
@@ -593,6 +594,15 @@ function joined = joinCompoundColumns(chunks)
     joined = struct();
     for iName = 1:numel(names)
         parts = cellfun(@(chunk) chunk.(names{iName}), chunks, 'UniformOutput', false);
+        % Numeric parts of different classes are not combined, as the values
+        % of one class would be converted to the other.
+        partClasses = unique(string(cellfun(@class, parts, 'UniformOutput', false)), 'stable');
+        hasNumericPart = any(cellfun(@(part) isnumeric(part) || islogical(part), parts));
+        if hasNumericPart && ~isscalar(partClasses)
+            error("NWB:CreateIndexedColumn:InconsistentElementType", ...
+                "All compound elements must hold the field ""%s"" in the same class, " + ...
+                "but the rows hold %s.", names{iName}, strjoin(partClasses, " and "));
+        end
         joined.(names{iName}) = vertcat(parts{:});
     end
 end

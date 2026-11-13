@@ -40,6 +40,16 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
                 'NWB:CreateIndexedColumn:InconsistentElementShape');
         end
 
+        function testCompoundFieldsOfDifferentClassesError(testCase)
+            % A numeric field keeps its class, as a numeric column does:
+            % joining uint8 and double values would convert the doubles.
+            roi1 = table(uint8([1; 2]), 'VariableNames', {'x'});
+            roi2 = table(300.7, 'VariableNames', {'x'});
+
+            testCase.verifyError(@() util.create_indexed_column({roi1, roi2}), ...
+                'NWB:CreateIndexedColumn:InconsistentElementType');
+        end
+
         function testCompoundAndNumericRowsErrors(testCase)
             roi = table(uint32(1), single(1), 'VariableNames', {'x', 'weight'});
 
