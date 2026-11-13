@@ -182,9 +182,9 @@ function selected = getRaggedRows(vectorChain, rowIndices)
 % vectorChain lists the column's VectorData first and its VectorIndex objects
 % after it, the outermost index last. Each index level is read in one call,
 % for exactly the index elements the requested rows need. Data in a file is
-% read in one call for exactly the elements of the requested rows, and the
-% rows are then taken from that read in memory. Data in memory is indexed
-% once per row (see readDataRows).
+% read in one call for exactly the elements of the requested rows, and that
+% read is then split into rows in memory. Data in memory is indexed once per
+% row (see readDataRows).
 %
 % selected is a cell array with one cell per requested row. For a doubly
 % ragged column, each cell holds a cell array with one cell per element.
@@ -227,7 +227,8 @@ function [starts, stops] = readElementRanges(indexVector, rowIndices)
 % readElementRanges - Element range of VectorIndex rows in the level below.
 %
 % Row r spans elements index(r-1)+1 through index(r) of the level below,
-% where index(0) is 0. The index values of all rows are read in one call.
+% where index(0) is 0. The index values of the requested rows, and of the
+% row before each, are read in one call.
     starts = ones(size(rowIndices));
     stops = zeros(size(rowIndices));
     if isempty(rowIndices)
@@ -272,11 +273,11 @@ function rowValues = readDataRows(dataVector, starts, stops, elements)
 % readDataRows - Get the data of ragged rows, one cell per row.
 %
 % Row i holds data elements starts(i) through stops(i), and elements lists
-% the elements of all rows.
+% the elements of the requested rows.
 %
 % A column in memory is indexed once per row, which copies each element
-% once. A column in a file is read in one call for the elements of all rows,
-% and the rows are then taken from that read in memory.
+% once. A column in a file is read in one call for exactly the elements of
+% the requested rows, and that read is then split into rows in memory.
     [numSubscripts, rowAxis] = getRowDimension(dataVector);
     % A DataPipe is indexed through its subsref, which reads from the file once
     % the pipe is bound to it and from the pipe's own data before that. Both are
