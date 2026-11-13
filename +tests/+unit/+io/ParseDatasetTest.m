@@ -30,7 +30,7 @@ classdef ParseDatasetTest < matlab.unittest.TestCase
             h5writeatt(filename, datasetPath, 'description', 'left for caller');
             h5writeatt(filename, datasetPath, 'unit', 'a.u.');
 
-            info = h5info(filename, datasetPath);
+            info = readNodeInfo(io.backend.hdf5.HDF5Reader(filename), datasetPath);
             parsed = io.parseDataset(filename, info, datasetPath);
 
             testCase.verifyEqual(parsed('plain_data'), int32(42));
@@ -59,7 +59,7 @@ classdef ParseDatasetTest < matlab.unittest.TestCase
             h5writeatt(filename, datasetPath, 'description', 'typed dataset');
             h5writeatt(filename, datasetPath, 'extra_attribute', 'keep me');
 
-            info = h5info(filename, datasetPath);
+            info = readNodeInfo(io.backend.hdf5.HDF5Reader(filename), datasetPath);
             parsed = io.parseDataset(filename, info, datasetPath);
             parsedDataset = parsed('typed_data');
 
@@ -108,7 +108,7 @@ classdef ParseDatasetTest < matlab.unittest.TestCase
             clear fileCleanup;
             
             % Parse the dataset
-            info = h5info(filename, datasetPath);
+            info = readNodeInfo(io.backend.hdf5.HDF5Reader(filename), datasetPath);
             parsed = io.parseDataset(filename, info, datasetPath);
             data = parsed('boolean_data');
 
@@ -151,7 +151,7 @@ classdef ParseDatasetTest < matlab.unittest.TestCase
             clear fileCleanup;
             
             % Parse the dataset
-            info = h5info(filename, datasetPath);
+            info = readNodeInfo(io.backend.hdf5.HDF5Reader(filename), datasetPath);
             parsed = io.parseDataset(filename, info, datasetPath);
             data = parsed('boolean_array');
 
@@ -195,7 +195,7 @@ classdef ParseDatasetTest < matlab.unittest.TestCase
             clear fileCleanup;
             
             % Parse the dataset and verify warning is issued
-            info = h5info(filename, datasetPath);
+            info = readNodeInfo(io.backend.hdf5.HDF5Reader(filename), datasetPath);
 
             parsed = testCase.verifyWarning(...
                 @() io.parseDataset(filename, info, datasetPath), ...
@@ -241,7 +241,7 @@ classdef ParseDatasetTest < matlab.unittest.TestCase
             clear fileCleanup;
             
             % Parse the dataset and verify warning
-            info = h5info(filename, datasetPath);
+            info = readNodeInfo(io.backend.hdf5.HDF5Reader(filename), datasetPath);
             
             testCase.verifyWarning(...
                 @() io.parseDataset(filename, info, datasetPath), ...
@@ -294,7 +294,7 @@ classdef ParseDatasetTest < matlab.unittest.TestCase
             clear fileCleanup;
             
             % Parse the dataset
-            info = h5info(filename, datasetPath);
+            info = readNodeInfo(io.backend.hdf5.HDF5Reader(filename), datasetPath);
             parsed = io.parseDataset(filename, info, datasetPath);
             data = parsed('false_data');
 
@@ -342,7 +342,7 @@ classdef ParseDatasetTest < matlab.unittest.TestCase
             clear fileCleanup;
             
             % Parse attributes and verify warning is issued
-            info = h5info(filename, datasetPath);
+            info = readNodeInfo(io.backend.hdf5.HDF5Reader(filename), datasetPath);
             blacklist = struct('attributes', {{}}, 'groups', {{}});
 
             % Verify that a warning is issued when parsing attributes

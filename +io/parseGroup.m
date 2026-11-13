@@ -1,5 +1,6 @@
 function parsed = parseGroup(filename, info, exclusions, reader)
-% NOTE, group name is in path format so we need to parse that out.
+% parseGroup - Parse a group described by an io.backend.model.GroupInfo.
+%
 % parsed is either a containers.Map containing properties mapped to values OR a
 % typed value
 if nargin < 3
@@ -11,15 +12,14 @@ end
 
 links = containers.Map;
 refs = containers.Map;
-[~, root] = io.pathParts(info.Name);
 [attributeProperties, Type] =...
-    io.parseAttributes(filename, info.Attributes, info.Name, exclusions, reader);
+    io.parseAttributes(filename, info.Attributes, info.Path, exclusions, reader);
 
 %parse datasets
 datasetProperties = containers.Map;
 for i=1:length(info.Datasets)
     datasetInfo = info.Datasets(i);
-    fullPath = [info.Name '/' datasetInfo.Name];
+    fullPath = [info.Path '/' datasetInfo.Name];
     datasetProperties = [datasetProperties; ...
         io.parseDataset(filename, datasetInfo, fullPath, exclusions, reader)]; %#ok<AGROW>
 end
@@ -28,38 +28,37 @@ end
 groupProperties = containers.Map;
 for i=1:length(info.Groups)
     group = info.Groups(i);
-    if any(strcmp(group.Name, exclusions.groups))
+    if any(strcmp(group.Path, exclusions.groups))
         continue;
     end
-    [~, gname] = io.pathParts(group.Name);
     subg = io.parseGroup(filename, group, exclusions, reader);
-    groupProperties(gname) = subg;
+    groupProperties(group.Name) = subg;
 end
 
 %create link stub
 linkProperties = containers.Map;
 for i=1:length(info.Links)
     link = info.Links(i);
-    fullPath = [info.Name '/' link.Name];
+    fullPath = [info.Path '/' link.Name];
     assert( io.internal.h5.isValidLinkType(link.Type), ...
         'NWB:ParseGroup:UnsupportedLinkType', ...
         ['An unsupported link type ("%s") is present at the location: %s. ', ...
         'Please report!'], link.Type, fullPath)
     switch link.Type
         case {'soft link', 'hard link'}
-            S = reader.readNodeInfo(string(link.Value{1}));
+            S = reader.readNodeInfo(link.TargetPath);
             % Suggested improvement: Use info structure if Link is located in the group (or
             % subgroup) which is currently being parsed.
 
             typeInfo = io.getNeurodataTypeInfo(S.Attributes);
             fullTargetTypeName = typeInfo.typename;
 
-            lnk = types.untyped.SoftLink(link.Value{1}, fullTargetTypeName);
+            lnk = types.untyped.SoftLink(link.TargetPath, fullTargetTypeName);
         case 'external link'
             % A relative target filename resolves against a backend-specific
             % base (see io.backend.base.Reader.getExternalLinkBase), captured
             % here so the link stays valid if the working directory changes.
-            lnk = types.untyped.ExternalLink(link.Value{:}, ...
+            lnk = types.untyped.ExternalLink(link.TargetFile, link.TargetPath, ...
                 reader.getExternalLinkBase());
     end
     linkProperties(link.Name) = lnk;
@@ -87,18 +86,18 @@ else
 
     %construct as kwargs and instantiate object
     kwargs = io.map2kwargs(typeProperties);
-    if isempty(root)
+    if isempty(info.Name)
         %we are root
         if strcmp(Type.name, 'NWBFile')
             parsed = NwbFile(kwargs{:});
         else
             file.cloneNwbFileClass(Type.name, Type.typename);
-            parsed = io.createParsedType(info.Name, Type.typename, kwargs{:});
+            parsed = io.createParsedType(info.Path, Type.typename, kwargs{:});
         end
         
         return;
     end
-    parsed = io.createParsedType(info.Name, Type.typename, kwargs{:});
+    parsed = io.createParsedType(info.Path, Type.typename, kwargs{:});
 end
 end
 

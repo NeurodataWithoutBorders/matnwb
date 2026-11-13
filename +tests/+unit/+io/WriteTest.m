@@ -37,9 +37,9 @@ classdef WriteTest < matlab.unittest.TestCase
                 'attributes', {{'.specloc', 'object_id'}},...
                 'groups', {{}});   
             
-            S = h5info(filename);
+            rootInfo = readRootInfo(io.backend.hdf5.HDF5Reader(filename));
             [attributeProperties, ~] =...
-                io.parseAttributes(filename, S.Attributes, S.Name, blackList);
+                io.parseAttributes(filename, rootInfo.Attributes, rootInfo.Path, blackList);
             testCase.verifyTrue(attributeProperties('test'))
         end
         

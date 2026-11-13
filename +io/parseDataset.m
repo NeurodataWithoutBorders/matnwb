@@ -1,15 +1,16 @@
 function parsed = parseDataset(filename, datasetInfo, datasetPath, exclusions, reader)
-% parseDataset - Read an HDF5 dataset and return it as named map entries.
+% parseDataset - Read a dataset and return it as named map entries.
 %
 % Syntax:
 %  parsed = io.parseDataset(filename, datasetInfo, datasetPath, exclusions, reader) 
-%  parses the dataset identified by datasetPath in the HDF5 file filename using 
+%  parses the dataset identified by datasetPath in the file filename using 
 %  metadata from datasetInfo.
 %
 % Input arguments:
-%  - filename  - Path to the HDF5 file.
-%  - datasetInfo - Dataset metadata structure, typically obtained from h5info.
-%  - datasetPath - Full HDF5 path to the dataset.
+%  - filename  - Path to the file.
+%  - datasetInfo - io.backend.model.DatasetInfo describing the dataset, as
+%    returned by the reader's readNodeInfo.
+%  - datasetPath - Full path to the dataset.
 %  - exclusions - Attribute and group names to exclude when parsing.
 %  - reader - An object of an NWB reader class (io.backend.base.Reader)
 %
@@ -30,17 +31,17 @@ function parsed = parseDataset(filename, datasetInfo, datasetPath, exclusions, r
 %    names match public properties of the neurodata type class. Consumed
 %    attributes are used to construct the typed object and are not
 %    promoted into the output map.
-%  - HDF5 reference datasets are fully read and resolved.
-%  - Scalar datasets are read eagerly and postprocessed according to their
-%    datatype.
-%  - For non-scalar datasets, chunked numeric datasets are represented as
-%    DataPipe, other non-empty datasets as DataStub, and empty datasets as
-%    []. A compound dataset is represented as a DataStub whether or not it
-%    holds any rows, so that its member names and types survive the read.
+%  - The dataset value comes from the reader's readDatasetValue. For HDF5,
+%    reference datasets are fully read and resolved, scalar datasets are
+%    read eagerly and postprocessed according to their datatype, chunked
+%    numeric datasets are represented as DataPipe, other non-empty
+%    datasets as DataStub, and empty datasets as []. A compound dataset is
+%    represented as a DataStub whether or not it holds any rows, so that
+%    its member names and types survive the read.
 
     arguments
         filename (1,:) char
-        datasetInfo struct
+        datasetInfo (1,1) io.backend.model.DatasetInfo
         datasetPath (1,:) char
         exclusions struct = io.internal.defaultParseExclusions()
         reader io.backend.base.Reader = io.backend.BackendFactory.createReader(filename);

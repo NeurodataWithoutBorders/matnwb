@@ -2,7 +2,10 @@ classdef HDF5Reader < io.backend.base.Reader
     % HDF5Reader - HDF5 implementation of the backend reader interface.
     %
     % This reader is intentionally thin and delegates to the existing HDF5
-    % utility functions used by matnwb today.
+    % utility functions used by matnwb today. Nodes are described from
+    % h5info output; the BackendInfo of a DatasetInfo is a struct with the
+    % h5info Datatype and Dataspace, and the BackendInfo of an
+    % AttributeInfo is the h5info Datatype.
 
     methods
         function obj = HDF5Reader(filename)
@@ -18,11 +21,11 @@ classdef HDF5Reader < io.backend.base.Reader
         end
 
         function node = readRootInfo(obj)
-            node = h5info(obj.Filename);
+            node = toGroupInfo(h5info(obj.Filename));
         end
 
         function tf = isReferenceDataset(~, datasetInfo)
-            tf = strcmp(datasetInfo.Datatype.Class, 'H5T_REFERENCE');
+            tf = strcmp(datasetInfo.BackendInfo.Datatype.Class, 'H5T_REFERENCE');
         end
 
         function base = getExternalLinkBase(obj)
@@ -37,47 +40,26 @@ classdef HDF5Reader < io.backend.base.Reader
             base = string(fileparts(fileInfo.Name));
         end
 
-        function linkInfo = readLinkInfo(obj, linkPath)
-            arguments
-                obj
-                linkPath (1,1) string
-            end
-            propertyListId = 'H5P_DEFAULT';
-            fileId = H5F.open(obj.Filename, 'H5F_ACC_RDONLY', propertyListId);
-            fileCleanup = onCleanup(@() H5F.close(fileId));
-
-            rawInfo = H5L.get_info(fileId, char(linkPath), propertyListId);
-            isExternal = rawInfo.type == H5ML.get_constant_value('H5L_TYPE_EXTERNAL');
-            isSoft = rawInfo.type == H5ML.get_constant_value('H5L_TYPE_SOFT');
-            assert(isExternal || isSoft, ...
-                'NWB:Backend:Reader:UnsupportedLinkType', ...
-                'The node at "%s" in "%s" is not a soft or external link.', ...
-                linkPath, obj.Filename);
-
-            % H5L.get_val returns {targetPath} for a soft link and
-            % {targetFilename, targetPath} for an external one.
-            rawValue = H5L.get_val(fileId, char(linkPath), propertyListId);
-            if isExternal
-                linkInfo = struct('type', "external link", ...
-                    'targetFilename', string(rawValue{1}), ...
-                    'targetPath', string(rawValue{2}));
-            else
-                linkInfo = struct('type', "soft link", ...
-                    'targetFilename', "", ...
-                    'targetPath', string(rawValue{1}));
-            end
-        end
-
         function node = readNodeInfo(obj, nodePath)
             arguments
                 obj
                 nodePath (1,1) string
             end
-            node = h5info(obj.Filename, char(nodePath));
+            % h5info describes a link at nodePath without following it.
+            h5Info = h5info(obj.Filename, char(nodePath));
+            if isfield(h5Info, 'Groups')
+                node = toGroupInfo(h5Info);
+            elseif isfield(h5Info, 'Datatype')
+                node = toDatasetInfo(h5Info);
+            else
+                [~, linkName] = io.pathParts(char(nodePath));
+                node = toLinkInfo(h5Info, linkName);
+            end
         end
 
         function attributeValue = readAttributeValue(obj, attributeInfo, context)
-            switch attributeInfo.Datatype.Class % Normalize/postprocess some HDF5 classes
+            datatype = attributeInfo.BackendInfo;
+            switch datatype.Class % Normalize/postprocess some HDF5 classes
                 case 'H5T_STRING'
                     % H5 String type attributes are loaded differently in releases 
                     % prior to MATLAB R2020a. For details, see:
@@ -103,15 +85,15 @@ classdef HDF5Reader < io.backend.base.Reader
                     H5A.close(aid);
                     H5F.close(fid);
                 case 'H5T_ENUM'
-                    if io.isBool(attributeInfo.Datatype.Type)
+                    if io.isBool(datatype.Type)
                         attributeValue = io.internal.h5.postprocess.toLogical(attributeInfo.Value);
                     else
                         warning('NWB:Attribute:UnknownEnum', ...
                             ['Encountered unknown enum under field `%s` with %d members. ' ...
                             'Will be read as cell array of characters.'], ...
-                            attributeInfo.Name, length(attributeInfo.Datatype.Type.Member));
+                            attributeInfo.Name, length(datatype.Type.Member));
                         attributeValue = io.internal.h5.postprocess.toEnumCellStr( ...
-                            attributeInfo.Value, attributeInfo.Datatype.Type);
+                            attributeInfo.Value, datatype.Type);
                     end
                 otherwise
                     attributeValue = attributeInfo.Value;
@@ -128,8 +110,8 @@ classdef HDF5Reader < io.backend.base.Reader
 
             % Read and postprocess the dataset value, or create a lazy data proxy
             % when appropriate
-            datatype = datasetInfo.Datatype;
-            dataspace = datasetInfo.Dataspace;
+            datatype = datasetInfo.BackendInfo.Datatype;
+            dataspace = datasetInfo.BackendInfo.Dataspace;
             if obj.isReferenceDataset(datasetInfo)
                 % Load all H5T references. This is required, unfortunately also a
                 % bottleneck
@@ -195,5 +177,64 @@ classdef HDF5Reader < io.backend.base.Reader
                 H5S.close(sid);
             end
         end
+    end
+end
+
+function groupInfo = toGroupInfo(h5Group)
+% toGroupInfo - Describe a group from its h5info struct, recursively.
+    groups = io.backend.model.GroupInfo.empty(0, 1);
+    for iGroup = numel(h5Group.Groups):-1:1
+        groups(iGroup, 1) = toGroupInfo(h5Group.Groups(iGroup));
+    end
+    datasets = io.backend.model.DatasetInfo.empty(0, 1);
+    for iDataset = numel(h5Group.Datasets):-1:1
+        datasets(iDataset, 1) = toDatasetInfo(h5Group.Datasets(iDataset));
+    end
+    links = io.backend.model.LinkInfo.empty(0, 1);
+    for iLink = numel(h5Group.Links):-1:1
+        h5Link = h5Group.Links(iLink);
+        links(iLink, 1) = toLinkInfo(h5Link, h5Link.Name);
+    end
+    groupInfo = io.backend.model.GroupInfo(h5Group.Name, Groups=groups, ...
+        Datasets=datasets, Links=links, ...
+        Attributes=toAttributeInfo(h5Group.Attributes));
+end
+
+function datasetInfo = toDatasetInfo(h5Dataset)
+% toDatasetInfo - Describe a dataset from its h5info struct.
+    backendInfo = struct( ...
+        'Datatype', h5Dataset.Datatype, ...
+        'Dataspace', h5Dataset.Dataspace);
+    datasetInfo = io.backend.model.DatasetInfo(h5Dataset.Name, ...
+        toAttributeInfo(h5Dataset.Attributes), backendInfo);
+end
+
+function linkInfo = toLinkInfo(h5Link, linkName)
+% toLinkInfo - Describe a link from its h5info struct.
+%
+% h5info gives the target of a soft or hard link as {targetPath} and that
+% of an external link as {targetFile; targetPath}. Any other link type is
+% described by its type only, which io.parseGroup rejects.
+    switch h5Link.Type
+        case {'soft link', 'hard link'}
+            linkInfo = io.backend.model.LinkInfo(linkName, h5Link.Type, ...
+                h5Link.Value{1});
+        case 'external link'
+            linkInfo = io.backend.model.LinkInfo(linkName, h5Link.Type, ...
+                h5Link.Value{2}, h5Link.Value{1});
+        otherwise
+            linkInfo = io.backend.model.LinkInfo(linkName, h5Link.Type);
+    end
+end
+
+function attributes = toAttributeInfo(h5Attributes)
+% toAttributeInfo - Describe attributes from their h5info structs.
+%
+% h5info gives [] for a node without attributes.
+    if isempty(h5Attributes)
+        attributes = io.backend.model.AttributeInfo.empty(0, 1);
+    else
+        attributes = io.backend.model.AttributeInfo.fromLists( ...
+            {h5Attributes.Name}, {h5Attributes.Value}, {h5Attributes.Datatype});
     end
 end
