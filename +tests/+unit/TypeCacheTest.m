@@ -238,6 +238,30 @@ classdef TypeCacheTest < matlab.unittest.TestCase
             testCase.verifyFalse(contains(testCase.readSignaturesFile(), "types.test_cache.CacheParent"))
         end
 
+        function testSwitchingVersionWithLoadedClassesWarns(testCase)
+            testCase.generate(testCase.parseParentNamespace("0.1.0", "Parent doc."))
+            testCase.loadParentClass()
+
+            testCase.verifyWarning( ...
+                @() testCase.generate(testCase.parseParentNamespace("0.2.0", "Parent doc.")), ...
+                "NWB:TypeCache:LoadedClassesReplaced")
+        end
+
+        function testRegeneratingSameVersionWithLoadedClassesDoesNotWarn(testCase)
+            testCase.generate(testCase.parseParentNamespace("0.1.0", "Parent doc."))
+            testCase.loadParentClass()
+
+            testCase.verifyWarningFree( ...
+                @() testCase.generate(testCase.parseParentNamespace("0.1.0", "Changed parent doc.")))
+        end
+
+        function testSwitchingVersionWithoutLoadedClassesDoesNotWarn(testCase)
+            testCase.generate(testCase.parseParentNamespace("0.1.0", "Parent doc."))
+
+            testCase.verifyWarningFree( ...
+                @() testCase.generate(testCase.parseParentNamespace("0.2.0", "Parent doc.")))
+        end
+
         function testSpecHashIsIndependentOfSourceFormat(testCase)
             yamlInfo = testCase.parseParentNamespace("0.1.0", "Parent doc.");
 
@@ -363,6 +387,14 @@ classdef TypeCacheTest < matlab.unittest.TestCase
             writeText(classPath, newline + testCase.Marker + newline, "a")
         end
 
+        function loadParentClass(testCase)
+        % loadParentClass - Load the generated CacheParent class into memory.
+            testCase.applyFixture(matlab.unittest.fixtures.PathFixture(testCase.SaveFolder))
+            createParentObject()
+            % Remove the class definition before its folder is deleted.
+            testCase.addTeardown(@() clear("types.test_cache.CacheParent"))
+        end
+
         function signatureText = readSignaturesFile(testCase)
             signatureText = string(fileread( ...
                 fullfile(testCase.SaveFolder, "resources", "functionSignatures.json")));
@@ -385,4 +417,9 @@ function writeText(filePath, text, permission)
     fileId = fopen(filePath, permission);
     fileCleanup = onCleanup(@() fclose(fileId));
     fwrite(fileId, char(text), "char");
+end
+
+function createParentObject()
+% createParentObject - Create an object so MATLAB loads its class, then discard it.
+    types.test_cache.CacheParent();
 end
