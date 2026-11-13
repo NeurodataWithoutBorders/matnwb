@@ -252,7 +252,7 @@ function [flatData, counts] = flattenRows(rows, depth, elementsPerSubGroup)
             layout.elementsPerSubGroup = elementsPerSubGroup(iRow);
         end
         [chunks{iRow}, rowCounts(iRow), rowInnerCounts{iRow}] = flattenItem( ...
-            rows{iRow}, depth, layout, sprintf('DATA{%d}', iRow));
+            rows{iRow}, depth, layout, iRow);
     end
 
     flatData = concatenateChunks(chunks, layout);
@@ -267,7 +267,7 @@ function [flatData, counts] = flattenRows(rows, depth, elementsPerSubGroup)
     end
 end
 
-function [chunk, ownCount, innerCounts] = flattenItem(item, level, layout, label)
+function [chunk, ownCount, innerCounts] = flattenItem(item, level, layout, indexPath)
     % CHUNK holds the item's elements as [elementDims x nElements] (a column
     % in scalar mode, a string or cellstr column for text, a struct column or
     % a scalar struct of columns for compound elements). OWNCOUNT is the
@@ -287,18 +287,18 @@ function [chunk, ownCount, innerCounts] = flattenItem(item, level, layout, label
             error("NWB:CreateIndexedColumn:InconsistentElementType", ...
                 "%s must be compound data (a table, a struct array or a scalar struct " + ...
                 "of columns) like the other rows of the column. It is a %s.", ...
-                label, class(item));
+                formatLabel(indexPath), class(item));
         end
         if isstruct(item) && ~isscalar(item) && ~isvector(item)
             error("NWB:CreateIndexedColumn:InvalidRow", ...
                 "%s must be a vector of structs. It is a struct array of size [%s].", ...
-                label, join(string(size(item)), " "));
+                formatLabel(indexPath), join(string(size(item)), " "));
         end
         if layout.compoundClass == "struct"
             chunk = item(:);
             ownCount = numel(item);
         else
-            [chunk, ownCount] = compoundColumns(item, label);
+            [chunk, ownCount] = compoundColumns(item, indexPath);
         end
         return
     end
@@ -308,12 +308,12 @@ function [chunk, ownCount, innerCounts] = flattenItem(item, level, layout, label
             error("NWB:CreateIndexedColumn:InconsistentElementType", ...
                 "%s must be text (a cell array of character vectors, a string array or " + ...
                 "a character vector) like the other rows of the column. It is a %s.", ...
-                label, class(item));
+                formatLabel(indexPath), class(item));
         end
         if ~isvector(item)
             error("NWB:CreateIndexedColumn:InvalidRow", ...
                 "%s must be a vector of text elements. It is a %s of size [%s].", ...
-                label, class(item), join(string(size(item)), " "));
+                formatLabel(indexPath), class(item), join(string(size(item)), " "));
         end
         if layout.textClass == "string"
             chunk = item(:);
@@ -330,12 +330,12 @@ function [chunk, ownCount, innerCounts] = flattenItem(item, level, layout, label
         if ~isObjectRow(item) || string(class(item)) ~= layout.objectClass
             error("NWB:CreateIndexedColumn:InconsistentElementType", ...
                 "%s must be an array of %s objects like the other rows of the column. " + ...
-                "It is a %s.", label, layout.objectClass, class(item));
+                "It is a %s.", formatLabel(indexPath), layout.objectClass, class(item));
         end
         if ~isvector(item)
             error("NWB:CreateIndexedColumn:InvalidRow", ...
                 "%s must be a vector of objects. It is a %s of size [%s].", ...
-                label, class(item), join(string(size(item)), " "));
+                formatLabel(indexPath), class(item), join(string(size(item)), " "));
         end
         chunk = item(:);
         ownCount = numel(item);
@@ -347,7 +347,7 @@ function [chunk, ownCount, innerCounts] = flattenItem(item, level, layout, label
             error("NWB:CreateIndexedColumn:InvalidRow", ...
                 "%s is a cell array, but at the innermost level a row must be a " + ...
                 "numeric or logical array, text, compound data or an array of " + ...
-                "objects. Increase Depth for nested rows.", label);
+                "objects. Increase Depth for nested rows.", formatLabel(indexPath));
         end
         numEntries = numel(item);
         chunks = cell(1, numEntries);
@@ -355,7 +355,7 @@ function [chunk, ownCount, innerCounts] = flattenItem(item, level, layout, label
         entryInnerCounts = cell(1, numEntries);
         for iEntry = 1:numEntries
             [chunks{iEntry}, entryCounts(iEntry), entryInnerCounts{iEntry}] = flattenItem( ...
-                item{iEntry}, level - 1, layout, sprintf('%s{%d}', label, iEntry));
+                item{iEntry}, level - 1, layout, [indexPath, iEntry]);
         end
         chunk = concatenateChunks(chunks, layout);
         ownCount = numEntries;
@@ -370,7 +370,7 @@ function [chunk, ownCount, innerCounts] = flattenItem(item, level, layout, label
     if ~(isnumeric(item) || islogical(item))
         error("NWB:CreateIndexedColumn:InvalidRow", ...
             "%s must be a numeric or logical array%s. It is a %s.", ...
-            label, cellHint(level), class(item));
+            formatLabel(indexPath), cellHint(level), class(item));
     end
 
     if isempty(elementDims)
@@ -395,10 +395,10 @@ function [chunk, ownCount, innerCounts] = flattenItem(item, level, layout, label
             "All elements must have the same shape. Expected elements of shape [%s], " + ...
             "but %s has size [%s]. Give a numeric row as [elementShape x ...] with the " + ...
             "ragged axes last.", ...
-            join(string(elementDims), " "), label, join(string(size(item)), " "));
+            join(string(elementDims), " "), formatLabel(indexPath), join(string(size(item)), " "));
     end
     if level == 2 && ~isempty(layout.elementsPerSubGroup)
-        levelSizes = regroupElements(levelSizes, layout.elementsPerSubGroup, item, label);
+        levelSizes = regroupElements(levelSizes, layout.elementsPerSubGroup, item, indexPath);
     end
 
     % Merging the trailing ragged dimensions lists the entries of the first
@@ -429,7 +429,7 @@ function [elementDims, levelSizes] = splitDims(item, level, numElementDims, useS
     end
 end
 
-function levelSizes = regroupElements(levelSizes, elementsPerSubGroup, item, label)
+function levelSizes = regroupElements(levelSizes, elementsPerSubGroup, item, indexPath)
     % LEVELSIZES is [nElements, nSubGroups] as the size of ITEM states them. A
     % row given as [elementDims x nElements] states all its elements as one
     % sub-group; they are divided into sub-groups of ELEMENTSPERSUBGROUP
@@ -448,7 +448,7 @@ function levelSizes = regroupElements(levelSizes, elementsPerSubGroup, item, lab
         "%s has size [%s], which does not divide into sub-groups of %d element(s). " + ...
         "With ElementsPerSubGroup, give a numeric row as [elementShape x nElements] " + ...
         "with nElements a multiple of %d, or as [elementShape x %d x nSubGroups].", ...
-        label, join(string(size(item)), " "), elementsPerSubGroup, ...
+        formatLabel(indexPath), join(string(size(item)), " "), elementsPerSubGroup, ...
         elementsPerSubGroup, elementsPerSubGroup);
 end
 
@@ -476,7 +476,7 @@ function layout = findLayout(rows, depth, hasElementsPerSubGroup)
         'hasObject', false, 'objectClass', "", ...
         'allStrings', true, 'allStructArrays', true);
     for iRow = 1:numel(rows)
-        scan = scanItem(rows{iRow}, depth, depth == 1, scan, sprintf('DATA{%d}', iRow));
+        scan = scanItem(rows{iRow}, depth, depth == 1, scan, iRow);
     end
 
     kinds = ["numeric", "text", "compound", "object"];
@@ -532,8 +532,8 @@ function layout = findLayout(rows, depth, hasElementsPerSubGroup)
     layout.elementDims = elementDims;
 end
 
-function scan = scanItem(item, level, vectorsAreScalars, scan, label)
-    rejectUnstorableClass(item, label, "NWB:CreateIndexedColumn:InvalidRow");
+function scan = scanItem(item, level, vectorsAreScalars, scan, indexPath)
+    rejectUnstorableClass(item, indexPath, "NWB:CreateIndexedColumn:InvalidRow");
     if level == 1 && isTextRow(item)
         if ~isempty(item)
             scan.hasText = true;
@@ -561,8 +561,7 @@ function scan = scanItem(item, level, vectorsAreScalars, scan, label)
         % A cell at level 1 is rejected by flattenItem.
         if level >= 2
             for iEntry = 1:numel(item)
-                scan = scanItem(item{iEntry}, level - 1, false, scan, ...
-                    sprintf('%s{%d}', label, iEntry));
+                scan = scanItem(item{iEntry}, level - 1, false, scan, [indexPath, iEntry]);
             end
         end
         return
@@ -580,7 +579,7 @@ function scan = scanItem(item, level, vectorsAreScalars, scan, label)
         elseif itemClass ~= scan.numericClass
             error("NWB:CreateIndexedColumn:InconsistentElementType", ...
                 "%s must hold %s elements like the other rows of the column. " + ...
-                "It holds %s elements.", label, scan.numericClass, itemClass);
+                "It holds %s elements.", formatLabel(indexPath), scan.numericClass, itemClass);
         end
     end
     if vectorsAreScalars && isvector(item)
@@ -621,7 +620,7 @@ end
 
 function [flatData, numElements] = normalizeFlatData(data)
     % Put flat DATA in the form the column stores and count its elements.
-    rejectUnstorableClass(data, 'DATA', "NWB:CreateIndexedColumn:InvalidData");
+    rejectUnstorableClass(data, [], "NWB:CreateIndexedColumn:InvalidData");
     if isnumeric(data) || islogical(data)
         if isvector(data) || isempty(data)
             flatData = data(:);
@@ -637,7 +636,7 @@ function [flatData, numElements] = normalizeFlatData(data)
         flatData = data(:);
         numElements = numel(flatData);
     elseif isCompoundRow(data)
-        [columns, numElements] = compoundColumns(data, 'DATA');
+        [columns, numElements] = compoundColumns(data, []);
         flatData = struct2table(columns);
     elseif isObjectRow(data) && (isvector(data) || isempty(data))
         flatData = data(:);
@@ -649,7 +648,7 @@ function [flatData, numElements] = normalizeFlatData(data)
     end
 end
 
-function [columns, numElements] = compoundColumns(item, label)
+function [columns, numElements] = compoundColumns(item, indexPath)
     % Compound elements as a scalar struct with one column per field, whether
     % they were given as a table, a struct array or a scalar struct of columns.
     if istable(item)
@@ -664,7 +663,7 @@ function [columns, numElements] = compoundColumns(item, label)
             if ~all(cellfun(@(value) isscalar(value) || ischar(value), values))
                 error("NWB:CreateIndexedColumn:InconsistentElementShape", ...
                     "In %s, every element of a struct array must have scalar fields. " + ...
-                    "Give columns of values as a scalar struct instead.", label);
+                    "Give columns of values as a scalar struct instead.", formatLabel(indexPath));
             end
             if all(cellfun(@ischar, values))
                 columns.(names{iName}) = values(:);
@@ -676,7 +675,7 @@ function [columns, numElements] = compoundColumns(item, label)
     lengths = structfun(@numel, columns);
     if isempty(lengths) || any(lengths ~= lengths(1))
         error("NWB:CreateIndexedColumn:InconsistentElementShape", ...
-            "%s must have fields of equal length, one entry per compound element.", label);
+            "%s must have fields of equal length, one entry per compound element.", formatLabel(indexPath));
     end
     numElements = lengths(1);
 end
@@ -768,17 +767,28 @@ function tf = isObjectRow(item)
     tf = isobject(item) && ~istable(item);
 end
 
-function rejectUnstorableClass(item, label, errorId)
+function label = formatLabel(indexPath)
+    % The position of an item in DATA as text for an error message, such as
+    % DATA{3}{2} for the second sub-group of row 3. An empty INDEXPATH is
+    % DATA itself. Callers pass the position as numbers and format it only
+    % when they raise an error, as a column can hold millions of items.
+    label = 'DATA';
+    if ~isempty(indexPath)
+        label = [label, sprintf('{%d}', indexPath)];
+    end
+end
+
+function rejectUnstorableClass(item, indexPath, errorId)
     % The column is built in memory, so lazily read or chunked data cannot
     % be an element, and a dataset cannot hold links.
     if isa(item, 'types.untyped.DataPipe') || isa(item, 'types.untyped.DataStub')
         error(errorId, ...
             "%s is a %s, but the column is built in memory. Give the data as an " + ...
             "array (load() a DataStub), or build the VectorData and VectorIndex " + ...
-            "with DataPipes directly.", label, class(item));
+            "with DataPipes directly.", formatLabel(indexPath), class(item));
     elseif isa(item, 'types.untyped.SoftLink')
         error(errorId, ...
             "%s is a types.untyped.SoftLink, but a column cannot hold links. " + ...
-            "Reference objects with types.untyped.ObjectView instead.", label);
+            "Reference objects with types.untyped.ObjectView instead.", formatLabel(indexPath));
     end
 end
