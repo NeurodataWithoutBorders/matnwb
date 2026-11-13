@@ -158,7 +158,8 @@ classdef HDF5LazyArrayTest < matlab.unittest.TestCase
 
     methods (Access = private)
         function lazyArray = writeLazyArray(~, data)
-            % writeLazyArray - Write data to a dataset in a new file and return a lazy array for it.
+        % writeLazyArray - Write data to a dataset in a new file and return a lazy array for it.
+
             filename = [tempname(pwd), '.h5'];
             h5create(filename, "/data", size(data));
             h5write(filename, "/data", data);
