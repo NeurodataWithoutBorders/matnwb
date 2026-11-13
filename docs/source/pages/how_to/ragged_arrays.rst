@@ -52,13 +52,12 @@ doubly-ragged column.
 
 Data orientation
 ----------------
-Every array you pass to ``addRaggedArray`` uses the same orientation as the ``data``
-property of any MatNWB dataset: the schema's dimensions reversed, so the ragged axis
-comes **last**. For ``waveforms``, whose schema shape is ``[num_waveforms, num_samples]``,
-that means ``[num_samples x num_waveforms]`` with one waveform per column. What you pass
-for a row or a spike event is exactly the slice of ``waveforms.data`` that will hold it.
-This is the same rule as for a :class:`types.core.TimeSeries` ``data`` array, and the same
-rule that maps a PyNWB array to MatNWB: reverse its dimensions.
+Give every array in the orientation of the ``data`` property of a MatNWB dataset: the
+schema's dimensions reversed, so the ragged axis comes **last**. For ``waveforms``, whose
+schema shape is ``[num_waveforms, num_samples]``, that is ``[num_samples x num_waveforms]``
+with one waveform per column. See
+:doc:`Dimension Ordering in MatNWB </pages/concepts/dimension_ordering>` for why MatNWB
+reverses the dimensions.
 
 Ragged arrays
 -------------
