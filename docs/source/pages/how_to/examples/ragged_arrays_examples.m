@@ -143,6 +143,23 @@ function ragged_arrays_examples()
     assert(isequal(units.waveforms_index_index.data(:).', uint64([2 6 7])))
     assert(isequal(units.waveforms.data(:, 11:13), b3))
 
+    % ---- Doubly-ragged, electrode count stated with ElementsPerSubGroup ----
+    % The same three units as plain [numSamples x numWaveforms] matrices,
+    % with the waveforms of the first spike first.
+    c1 = reshape(b1, numSamples, []);   % 2 spikes on 3 electrodes: 6 waveforms
+    c2 = reshape(b2, numSamples, []);   % 4 spikes on 1 electrode: 4 waveforms
+    c3 = b3;                            % 1 spike on 3 electrodes: 3 waveforms
+
+    % snippet: doubly-elements-per-sub-group
+    units = types.core.Units('colnames', {}, 'description', 'units');
+    units.addRaggedArray('waveforms', {c1, c2, c3}, ...
+        'description', 'spike waveforms', 'Depth', 2, ...
+        'ElementsPerSubGroup', [3 1 3]);
+    % end snippet
+    assert(isequal(units.waveforms.data, [c1, c2, c3]))
+    assert(isequal(units.waveforms_index.data(:).', uint64([3 6 7 8 9 10 13])))
+    assert(isequal(units.waveforms_index_index.data(:).', uint64([2 6 7])))
+
     % snippet: helper-functions
     [waveforms, waveformsIndex, waveformsIndexIndex] = ...
         util.create_indexed_column({unit1, unit2}, 'spike waveforms', 'Depth', 2);

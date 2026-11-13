@@ -166,6 +166,15 @@ classdef (Abstract) DynamicTableBase < handle
         %    column has depth 1. For example, pixel masks as one table of all
         %    pixels plus the number of pixels of each ROI.
         %
+        %  - ElementsPerSubGroup (positive integer | vector of positive integers) -
+        %    Number of elements in each sub-group of the numeric rows of a
+        %    column with Depth 2, as one value or one value per row. A row is
+        %    then [elementDims x nElements], with nElements a multiple of the
+        %    row's value, or [elementDims x value x nSubGroups]. For the Units
+        %    'waveforms' column this is the number of electrodes of each
+        %    unit. Without it, the number is read from the dimensions of the
+        %    rows.
+        %
         % See also util.create_indexed_column, addColumn, addDoublyRaggedArray
 
             arguments
@@ -176,6 +185,7 @@ classdef (Abstract) DynamicTableBase < handle
                 options.table = []
                 options.Depth (1,1) {mustBeInteger, mustBePositive} = 1
                 options.ElementsPerRow {mustBeNumeric, mustBeInteger, mustBeNonnegative}
+                options.ElementsPerSubGroup {mustBeNumeric, mustBeInteger, mustBePositive}
             end
 
             % The layout options are passed on only when they were given:
@@ -201,7 +211,8 @@ classdef (Abstract) DynamicTableBase < handle
         % addDoublyRaggedArray - Add a doubly-ragged-array column to the DynamicTable.
         %
         % Equivalent to addRaggedArray(columnName, data, 'Depth', 2). See
-        % addRaggedArray for the accepted forms of data.
+        % addRaggedArray for the accepted forms of data and for the
+        % description and ElementsPerSubGroup name-value arguments.
         %
         % See also addRaggedArray
 
@@ -210,10 +221,11 @@ classdef (Abstract) DynamicTableBase < handle
                 columnName (1,1) string
                 data cell
                 options.description (1,1) string = "no description"
+                options.ElementsPerSubGroup {mustBeNumeric, mustBeInteger, mustBePositive}
             end
 
-            obj.addRaggedArray(columnName, data, ...
-                'description', options.description, 'Depth', 2);
+            forwardedOptions = namedargs2cell(options);
+            obj.addRaggedArray(columnName, data, forwardedOptions{:}, 'Depth', 2);
         end
 
         function row = getRow(obj, rowIndices, options)

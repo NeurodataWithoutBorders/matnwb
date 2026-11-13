@@ -99,6 +99,25 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %     units.waveforms_index = wfIndex;
 %     units.waveforms_index_index = wfIndexIndex;
 %
+%   [__] = CREATE_INDEXED_COLUMN(DATA, __, 'Depth', 2, 'ElementsPerSubGroup', COUNTS)
+%   states the number of elements in each sub-group of the numeric rows, so
+%   that it is not read from their dimensions as described above. COUNTS is
+%   a positive integer, or a vector with one value per row. Numeric row i is
+%   then [elementDims x nElements], with the elements of the first sub-group
+%   first and nElements a multiple of COUNTS(i), or
+%   [elementDims x COUNTS(i) x nSubGroups]. A [k x m] row is m/COUNTS(i)
+%   sub-groups whatever the other rows are, and no dimension of 1 is needed.
+%   For Units.waveforms, COUNTS(i) is the number of electrodes of unit i.
+%   Elements are vectors unless a row shows more element dimensions, by
+%   being given in the second form or as a cell array. A row given as a cell
+%   array states its sub-groups itself and is not compared with COUNTS.
+%   EXAMPLE (2 spike events on 3 electrodes, then 4 spike events on 1 electrode):
+%     unit1 = rand(40, 6);   % [num_samples x (3 electrodes * 2 spike events)]
+%     unit2 = rand(40, 4);   % [num_samples x (1 electrode * 4 spike events)]
+%     [wf, wfIndex, wfIndexIndex] = util.create_indexed_column({unit1, unit2}, ...
+%         'spike waveforms', 'Depth', 2, 'ElementsPerSubGroup', [3 1]);
+%     wfIndex.data is [3;6;7;8;9;10] and wfIndexIndex.data is [2;6].
+%
 %   [DATA_VECTOR, DATA_INDEX] = CREATE_INDEXED_COLUMN(FLATDATA, __, 'ElementsPerRow', COUNTS)
 %   builds the same column from data that is already flat, without one array
 %   per row. FLATDATA holds the elements of all rows in row order, and
@@ -122,6 +141,7 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
         table = []
         options.Depth (1,1) {mustBeInteger, mustBePositive} = 1
         options.ElementsPerRow {mustBeNumeric, mustBeInteger, mustBeNonnegative}
+        options.ElementsPerSubGroup {mustBeNumeric, mustBeInteger, mustBePositive}
     end
 
     depth = options.Depth;
@@ -129,6 +149,11 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
         error("NWB:CreateIndexedColumn:TooManyOutputs", ...
             "A column of depth %d has %d outputs: the data vector and %d index level(s).", ...
             depth, depth + 1, depth);
+    end
+    hasElementsPerSubGroup = isfield(options, 'ElementsPerSubGroup');
+    if hasElementsPerSubGroup && depth ~= 2
+        error("NWB:CreateIndexedColumn:ElementsPerSubGroupNeedsDepth2", ...
+            "ElementsPerSubGroup applies to a column of depth 2, but Depth is %d.", depth);
     end
     if isempty(description)
         description = 'no description';
@@ -144,7 +169,11 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
                 "DATA must be a cell array with one cell per row. To give data that " + ...
                 "is already flat, also give ElementsPerRow.");
         end
-        [flatData, counts] = flattenRows(data, depth);
+        elementsPerSubGroup = [];
+        if hasElementsPerSubGroup
+            elementsPerSubGroup = expandToRows(options.ElementsPerSubGroup, numel(data));
+        end
+        [flatData, counts] = flattenRows(data, depth, elementsPerSubGroup);
     else
         if depth ~= 1
             error("NWB:CreateIndexedColumn:ElementsPerRowNeedsDepth1", ...
@@ -188,18 +217,38 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
     end
 end
 
-function [flatData, counts] = flattenRows(rows, depth)
+function elementsPerSubGroup = expandToRows(elementsPerSubGroup, numRows)
+    % One value per row, from a scalar or from a vector with one value per row.
+    if isscalar(elementsPerSubGroup)
+        elementsPerSubGroup = repmat(double(elementsPerSubGroup), numRows, 1);
+    elseif numel(elementsPerSubGroup) == numRows
+        elementsPerSubGroup = double(elementsPerSubGroup(:));
+    else
+        error("NWB:CreateIndexedColumn:ElementsPerSubGroupCountMismatch", ...
+            "ElementsPerSubGroup must be a scalar or hold one value per row. DATA " + ...
+            "has %d row(s), but ElementsPerSubGroup has %d value(s).", ...
+            numRows, numel(elementsPerSubGroup));
+    end
+end
+
+function [flatData, counts] = flattenRows(rows, depth, elementsPerSubGroup)
     % Concatenate the elements of all rows along the ragged (last) axis and
     % count the entries of every index level. COUNTS{k} lists, for each entry
     % of level k, how many level k-1 entries it holds (level 0 entries are the
-    % elements); COUNTS{depth} has one entry per row.
-    layout = findLayout(rows, depth);
+    % elements); COUNTS{depth} has one entry per row. ELEMENTSPERSUBGROUP
+    % holds one value per row, or is empty when the sub-groups of numeric
+    % rows are read from their dimensions.
+    hasElementsPerSubGroup = ~isempty(elementsPerSubGroup);
+    layout = findLayout(rows, depth, hasElementsPerSubGroup);
 
     numRows = numel(rows);
     chunks = cell(1, numRows);
     rowCounts = zeros(numRows, 1);
     rowInnerCounts = cell(1, numRows);
     for iRow = 1:numRows
+        if hasElementsPerSubGroup
+            layout.elementsPerSubGroup = elementsPerSubGroup(iRow);
+        end
         [chunks{iRow}, rowCounts(iRow), rowInnerCounts{iRow}] = flattenItem( ...
             rows{iRow}, depth, layout, sprintf('DATA{%d}', iRow));
     end
@@ -346,6 +395,9 @@ function [chunk, ownCount, innerCounts] = flattenItem(item, level, layout, label
             "ragged axes last.", ...
             join(string(elementDims), " "), label, join(string(size(item)), " "));
     end
+    if level == 2 && ~isempty(layout.elementsPerSubGroup)
+        levelSizes = regroupElements(levelSizes, layout.elementsPerSubGroup, item, label);
+    end
 
     % Merging the trailing ragged dimensions lists the entries of the first
     % sub-group first, which is the order the index levels describe.
@@ -375,7 +427,30 @@ function [elementDims, levelSizes] = splitDims(item, level, numElementDims, useS
     end
 end
 
-function layout = findLayout(rows, depth)
+function levelSizes = regroupElements(levelSizes, elementsPerSubGroup, item, label)
+    % LEVELSIZES is [nElements, nSubGroups] as the size of ITEM states them. A
+    % row given as [elementDims x nElements] states all its elements as one
+    % sub-group; they are divided into sub-groups of ELEMENTSPERSUBGROUP
+    % elements. A row given as [elementDims x nElements x nSubGroups] must
+    % state ELEMENTSPERSUBGROUP elements in each sub-group.
+    numElements = levelSizes(1);
+    numSubGroups = levelSizes(2);
+    if numElements == elementsPerSubGroup
+        return
+    end
+    if numSubGroups == 1 && mod(numElements, elementsPerSubGroup) == 0
+        levelSizes = [elementsPerSubGroup, numElements/elementsPerSubGroup];
+        return
+    end
+    error("NWB:CreateIndexedColumn:ElementsPerSubGroupMismatch", ...
+        "%s has size [%s], which does not divide into sub-groups of %d element(s). " + ...
+        "With ElementsPerSubGroup, give a numeric row as [elementShape x nElements] " + ...
+        "with nElements a multiple of %d, or as [elementShape x %d x nSubGroups].", ...
+        label, join(string(size(item)), " "), elementsPerSubGroup, ...
+        elementsPerSubGroup, elementsPerSubGroup);
+end
+
+function layout = findLayout(rows, depth, hasElementsPerSubGroup)
     % Decide how the items of ROWS are read. LAYOUT.KIND is "numeric", "text"
     % or "compound". LAYOUT.TEXTCLASS is "string" when every text row is a
     % string array and "cellstr" otherwise; LAYOUT.COMPOUNDCLASS is "struct"
@@ -385,10 +460,12 @@ function layout = findLayout(rows, depth)
     % when DEPTH is 1 and every row is a vector (the elements are scalars) or
     % when no row holds elements or declares sub-groups. As MATLAB drops
     % trailing dimensions of 1 from size, the number of element dimensions is
-    % the largest any item shows; splitDims pads shorter items to it. LAYOUT.USESHORTCUT is true
-    % when the column uses the [k x nSubGroups] form, which is only
-    % unambiguous while no item at level 2 or above shows the full form by
-    % having more dimensions than its level.
+    % the largest any item shows; splitDims pads shorter items to it.
+    % LAYOUT.USESHORTCUT is true when the column uses the [k x nSubGroups]
+    % form, which is only unambiguous while no item at level 2 or above shows
+    % the full form by having more dimensions than its level. With
+    % HASELEMENTSPERSUBGROUP the caller states the number of elements in the
+    % sub-groups of each numeric row, so the shortcut form is not used.
     scan = struct('maxElementDims', -Inf, 'shortcutAllowed', true, ...
         'firstItem', [], 'firstLevel', 0, ...
         'emptyArrayItem', [], 'emptyArrayLevel', 0, ...
@@ -408,7 +485,8 @@ function layout = findLayout(rows, depth)
             strjoin(presentKinds, " and "));
     end
     layout = struct('elementDims', [], 'useShortcut', false, 'kind', "numeric", ...
-        'textClass', "cellstr", 'compoundClass', "table", 'objectClass', scan.objectClass);
+        'textClass', "cellstr", 'compoundClass', "table", 'objectClass', scan.objectClass, ...
+        'elementsPerSubGroup', []);
     if ~isempty(presentKinds)
         layout.kind = presentKinds;
     end
@@ -430,9 +508,15 @@ function layout = findLayout(rows, depth)
         shapeItem = scan.emptyArrayItem;
         shapeLevel = scan.emptyArrayLevel;
     end
-    useShortcut = depth >= 2 && scan.shortcutAllowed && scan.maxElementDims <= 1;
+    useShortcut = ~hasElementsPerSubGroup && depth >= 2 ...
+        && scan.shortcutAllowed && scan.maxElementDims <= 1;
     if useShortcut
         numElementDims = 1;
+    elseif hasElementsPerSubGroup
+        % A [elementDims x nElements] row shows one dimension fewer than the
+        % full form, so a column of such rows shows no element dimension.
+        % Elements have at least one.
+        numElementDims = max(scan.maxElementDims, 1);
     else
         numElementDims = scan.maxElementDims;
     end

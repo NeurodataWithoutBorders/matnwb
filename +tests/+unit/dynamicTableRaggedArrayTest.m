@@ -185,6 +185,27 @@ classdef dynamicTableRaggedArrayTest < tests.abstract.NwbTestCase
             end
         end
 
+        function testElementsPerSubGroupIsPassedOn(testCase)
+            % 2 sub-groups of 3 elements, then 4 sub-groups of one element,
+            % through both methods.
+            unit1 = reshape(1:24, 4, 6);
+            unit2 = 100 + reshape(1:16, 4, 4);
+
+            viaDepth = types.hdmf_common.DynamicTable('description', 'test');
+            viaDepth.addRaggedArray('wf', {unit1, unit2}, ...
+                'Depth', 2, 'ElementsPerSubGroup', [3 1]);
+            viaAlias = types.hdmf_common.DynamicTable('description', 'test');
+            viaAlias.addDoublyRaggedArray('wf', {unit1, unit2}, 'ElementsPerSubGroup', [3 1]);
+
+            testCase.verifyEqual(viaDepth.vectordata.get('wf_index').data, ...
+                uint64([3; 6; 7; 8; 9; 10]));
+            testCase.verifyEqual(viaDepth.vectordata.get('wf_index_index').data, uint64([2; 6]));
+            for name = ["wf", "wf_index", "wf_index_index"]
+                testCase.verifyEqual(viaAlias.vectordata.get(name).data, ...
+                    viaDepth.vectordata.get(name).data);
+            end
+        end
+
         function testAddRaggedArrayToTableWithNoRows(testCase)
             % An empty ElementsPerRow is passed on as given: flat data for a
             % table with no rows.

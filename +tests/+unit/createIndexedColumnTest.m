@@ -621,6 +621,86 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(indexIndex.data, uint64([5; 7]));
         end
 
+        function testElementsPerSubGroupDividesMatrixRows(testCase)
+            % With the number of elements per sub-group stated, a matrix row
+            % needs no dimension of 1: 2 spike events on 3 electrodes, 4 on
+            % one electrode and 1 on 3 electrodes.
+            numSamples = 4;
+            unit1 = reshape(1:(6*numSamples), numSamples, 6);
+            unit2 = 100 + reshape(1:(4*numSamples), numSamples, 4);
+            unit3 = 200 + reshape(1:(3*numSamples), numSamples, 3);
+
+            [vector, index, indexIndex] = util.create_indexed_column( ...
+                {unit1, unit2, unit3}, 'Depth', 2, 'ElementsPerSubGroup', [3 1 3]);
+
+            testCase.verifyEqual(vector.data, [unit1, unit2, unit3]);
+            testCase.verifyEqual(index.data, uint64([3; 6; 7; 8; 9; 10; 13]));
+            testCase.verifyEqual(indexIndex.data, uint64([2; 6; 7]));
+        end
+
+        function testElementsPerSubGroupAcceptsFullFormRows(testCase)
+            % [num_samples x count x num_sub_groups] rows give the same
+            % column with the count stated as when it is read from their
+            % dimensions.
+            rows = {rand(4, 3, 2), rand(4, 1, 4), rand(4, 3)};
+
+            [vector, index, indexIndex] = util.create_indexed_column( ...
+                rows, 'Depth', 2, 'ElementsPerSubGroup', [3 1 3]);
+            [expectedVector, expectedIndex, expectedIndexIndex] = ...
+                util.create_indexed_column(rows, 'Depth', 2);
+
+            testCase.verifyEqual(vector.data, expectedVector.data);
+            testCase.verifyEqual(index.data, expectedIndex.data);
+            testCase.verifyEqual(indexIndex.data, expectedIndexIndex.data);
+        end
+
+        function testScalarElementsPerSubGroupAppliesToEveryRow(testCase)
+            % Every row is one sub-group of 3 elements. Without the count,
+            % matrix rows are read as 3 sub-groups of one element.
+            rows = {ones(4, 3), ones(4, 3)};
+
+            [~, index, indexIndex] = util.create_indexed_column( ...
+                rows, 'Depth', 2, 'ElementsPerSubGroup', 3);
+            testCase.verifyEqual(index.data, uint64([3; 6]));
+            testCase.verifyEqual(indexIndex.data, uint64([1; 2]));
+
+            [~, ~, indexIndex] = util.create_indexed_column(rows, 'Depth', 2);
+            testCase.verifyEqual(indexIndex.data, uint64([3; 6]));
+        end
+
+        function testElementsPerSubGroupLeavesCellRowsAsGiven(testCase)
+            % A cell row states its sub-groups itself, here of 2 and 3
+            % elements; an empty row has no sub-groups.
+            rows = {{ones(4, 2), ones(4, 3)}, ones(4, 6), []};
+
+            [~, index, indexIndex] = util.create_indexed_column( ...
+                rows, 'Depth', 2, 'ElementsPerSubGroup', 3);
+
+            testCase.verifyEqual(index.data, uint64([2; 5; 8; 11]));
+            testCase.verifyEqual(indexIndex.data, uint64([2; 4; 4]));
+        end
+
+        function testElementsPerSubGroupErrors(testCase)
+            testCase.verifyError( ...
+                @() util.create_indexed_column({[1 2]}, 'ElementsPerSubGroup', 1), ...
+                'NWB:CreateIndexedColumn:ElementsPerSubGroupNeedsDepth2');
+            % One value, or one value per row.
+            testCase.verifyError( ...
+                @() util.create_indexed_column({ones(4, 3), ones(4, 3)}, ...
+                    'Depth', 2, 'ElementsPerSubGroup', [3 3 3]), ...
+                'NWB:CreateIndexedColumn:ElementsPerSubGroupCountMismatch');
+            % 5 elements do not divide into sub-groups of 3.
+            testCase.verifyError( ...
+                @() util.create_indexed_column({ones(4, 5)}, ...
+                    'Depth', 2, 'ElementsPerSubGroup', 3), ...
+                'NWB:CreateIndexedColumn:ElementsPerSubGroupMismatch');
+            % A full-form row states 2 elements per sub-group, not 3.
+            testCase.verifyError( ...
+                @() util.create_indexed_column({ones(4, 2, 3)}, ...
+                    'Depth', 2, 'ElementsPerSubGroup', 3), ...
+                'NWB:CreateIndexedColumn:ElementsPerSubGroupMismatch');
+        end
+
         function testEmptyRowWithOtherElementShapeErrors(testCase)
             % An empty 3-D row declares sub-groups, so its element shape is
             % checked; an empty matrix is a row with no sub-groups.
