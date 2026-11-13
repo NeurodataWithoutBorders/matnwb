@@ -381,16 +381,17 @@ function layout = findLayout(rows, depth)
     % string array and "cellstr" otherwise; LAYOUT.COMPOUNDCLASS is "struct"
     % when every compound row is a struct array and "table" otherwise, so a
     % column keeps the class its rows were given in where that is possible.
-    % For numeric elements, LAYOUT.ELEMENTDIMS is the element
-    % shape, or [] when DEPTH is 1 and every row is a vector (the elements are
-    % scalars) or when no row holds elements. As MATLAB drops trailing dimensions of 1
-    % from size, the number of element dimensions is the largest any item
-    % shows; splitDims pads shorter items to it. LAYOUT.USESHORTCUT is true
+    % For numeric elements, LAYOUT.ELEMENTDIMS is the element shape, or []
+    % when DEPTH is 1 and every row is a vector (the elements are scalars) or
+    % when no row holds elements or declares sub-groups. As MATLAB drops
+    % trailing dimensions of 1 from size, the number of element dimensions is
+    % the largest any item shows; splitDims pads shorter items to it. LAYOUT.USESHORTCUT is true
     % when the column uses the [k x nSubGroups] form, which is only
     % unambiguous while no item at level 2 or above shows the full form by
     % having more dimensions than its level.
     scan = struct('maxElementDims', -Inf, 'shortcutAllowed', true, ...
         'firstItem', [], 'firstLevel', 0, ...
+        'emptyArrayItem', [], 'emptyArrayLevel', 0, ...
         'hasNumeric', false, 'numericClass', "", ...
         'hasText', false, 'hasCompound', false, ...
         'hasObject', false, 'objectClass', "", ...
@@ -417,17 +418,32 @@ function layout = findLayout(rows, depth)
     if scan.allStructArrays
         layout.compoundClass = "struct";
     end
-    if layout.kind ~= "numeric" || isempty(scan.firstItem)
+    if layout.kind ~= "numeric"
         return
     end
-    layout.useShortcut = depth >= 2 && scan.shortcutAllowed && scan.maxElementDims <= 1;
-    if layout.useShortcut
+    shapeItem = scan.firstItem;
+    shapeLevel = scan.firstLevel;
+    if isempty(shapeItem)
+        if scan.emptyArrayLevel == 0
+            return
+        end
+        shapeItem = scan.emptyArrayItem;
+        shapeLevel = scan.emptyArrayLevel;
+    end
+    useShortcut = depth >= 2 && scan.shortcutAllowed && scan.maxElementDims <= 1;
+    if useShortcut
         numElementDims = 1;
     else
         numElementDims = scan.maxElementDims;
     end
-    layout.elementDims = splitDims( ...
-        scan.firstItem, scan.firstLevel, numElementDims, layout.useShortcut);
+    elementDims = splitDims(shapeItem, shapeLevel, numElementDims, useShortcut);
+    if any(elementDims == 0)
+        % The array is empty along an element dimension, so it declares no
+        % entries to count.
+        return
+    end
+    layout.useShortcut = useShortcut;
+    layout.elementDims = elementDims;
 end
 
 function scan = scanItem(item, level, vectorsAreScalars, scan, label)
@@ -490,11 +506,15 @@ function scan = scanItem(item, level, vectorsAreScalars, scan, label)
     if level >= 2 && numDims > level
         scan.shortcutAllowed = false;
     end
-    % An empty array such as [k x 0 x n] still shows the layout, but only a
-    % non-empty item can supply the element shape.
+    % The first non-empty item supplies the element shape. An empty array that
+    % declares sub-groups, such as [k x 0 x n], supplies it when no row holds
+    % an element.
     if isempty(scan.firstItem) && ~isempty(item)
         scan.firstItem = item;
         scan.firstLevel = level;
+    elseif isempty(item) && level >= 2 && ~ismatrix(item) && scan.emptyArrayLevel == 0
+        scan.emptyArrayItem = item;
+        scan.emptyArrayLevel = level;
     end
 end
 

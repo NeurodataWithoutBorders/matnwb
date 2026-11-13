@@ -491,6 +491,17 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(indexIndex.data, uint64([2; 3]));
         end
 
+        function testDepth2EmptySubGroupsInColumnWithoutElements(testCase)
+            % The sub-groups of [num_samples x 0 x 3] are counted when no
+            % other row holds an element to take the element shape from.
+            [vector, index, indexIndex] = ...
+                util.create_indexed_column({zeros(4, 0, 3), []}, 'Depth', 2);
+
+            testCase.verifyEmpty(vector.data);
+            testCase.verifyEqual(index.data, uint64([0; 0; 0]));
+            testCase.verifyEqual(indexIndex.data, uint64([3; 3]));
+        end
+
         function testDepth2SingleSpikeRowAmongNDRows(testCase)
             % [num_samples x num_electrodes x num_spike_events] rows: a unit
             % with one spike event is [num_samples x num_electrodes], which is
