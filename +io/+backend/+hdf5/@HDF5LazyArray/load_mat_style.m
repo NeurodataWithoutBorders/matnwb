@@ -1,16 +1,17 @@
 function data = load_mat_style(obj, varargin)
-    % LOAD_MAT_STYLE load data in matlab index format.
-    % LOAD_MAT_STYLE(...) where each argument is an index into the dimension or ':'
-    %   indicating load all of dimension. The dimension ordering is
-    %   MATLAB, not HDF5 for this function.
-    %
-    %   A selection with two or more subscripts becomes one hyperslab per
-    %   combination of the shapes of its dimensions (see io.space.findShapes
-    %   and io.space.getReadSpace). HDF5 merges each hyperslab into the
-    %   selection built so far, so the time to build a selection grows with
-    %   the square of its hyperslab count. A selection with more than
-    %   MaxHyperslabsPerRead hyperslabs is read in groups along the dimension
-    %   with the most shapes, and the groups are joined in memory.
+% LOAD_MAT_STYLE load data in matlab index format.
+% LOAD_MAT_STYLE(...) where each argument is an index into the dimension or ':'
+%   indicating load all of dimension. The dimension ordering is
+%   MATLAB, not HDF5 for this function.
+%
+%   A selection with two or more subscripts becomes one hyperslab per
+%   combination of the shapes of its dimensions (see io.space.findShapes
+%   and io.space.getReadSpace). HDF5 merges each hyperslab into the
+%   selection built so far, so the time to build a selection grows with
+%   the square of its hyperslab count. A selection with more than
+%   MaxHyperslabsPerRead hyperslabs is read in groups along the dimension
+%   with the most shapes, and the groups are joined in memory.
+
     assert(length(varargin) <= length(obj.dims), 'NWB:DataStub:Load:TooManyDimensions', ...
         'Too many dimensions specified (got %d, expected %d)', ...
         length(varargin), length(obj.dims));
@@ -116,16 +117,17 @@ function data = load_mat_style(obj, varargin)
 end
 
 function data = readInGroups(obj, datasetId, userSelection, dataDimensions, shapes)
-    % readInGroups - Read a selection with many hyperslabs as several reads along one dimension.
-    %
-    % The sorted unique indices of the dimension with the most shapes are
-    % split into groups of whole runs, so that each group selects at most
-    % MaxHyperslabsPerRead hyperslabs together with the other dimensions.
-    % Every group is read and reshaped like a whole selection and the groups
-    % are joined along the split dimension in increasing order. Reading a
-    % group puts the other dimensions in the requested order, so only the
-    % split dimension is reordered afterwards when its subscript is unsorted
-    % or has repeated indices.
+% readInGroups - Read a selection with many hyperslabs as several reads along one dimension.
+%
+% The sorted unique indices of the dimension with the most shapes are
+% split into groups of whole runs, so that each group selects at most
+% MaxHyperslabsPerRead hyperslabs together with the other dimensions.
+% Every group is read and reshaped like a whole selection and the groups
+% are joined along the split dimension in increasing order. Reading a
+% group puts the other dimensions in the requested order, so only the
+% split dimension is reordered afterwards when its subscript is unsorted
+% or has repeated indices.
+
     numShapes = cellfun('length', shapes);
     [~, splitDimension] = max(numShapes);
     hyperslabsPerShape = prod(numShapes)/numShapes(splitDimension);
@@ -159,15 +161,17 @@ function data = readInGroups(obj, datasetId, userSelection, dataDimensions, shap
 end
 
 function [readSpaceId, memorySpaceId] = getReadSpace(datasetId, shapes)
-    % getReadSpace - File and memory dataspaces that select the given shapes.
+% getReadSpace - File and memory dataspaces that select the given shapes.
+
     spaceId = H5D.get_space(datasetId);
     [readSpaceId, memorySpaceId] = io.space.getReadSpace(shapes, spaceId);
     H5S.close(spaceId);
 end
 
 function data = readSelection(datasetId, readSpaceId, memorySpaceId)
-    % readSelection - Read the selected elements of an open dataset and convert them to MATLAB types.
-    % Closes the file and memory dataspaces, but not the dataset.
+% readSelection - Read the selected elements of an open dataset and convert them to MATLAB types.
+% Closes the file and memory dataspaces, but not the dataset.
+
     data = H5D.read(datasetId, 'H5ML_DEFAULT', memorySpaceId, readSpaceId, 'H5P_DEFAULT');
 
     data = hdf2mat(datasetId, data);
@@ -201,7 +205,8 @@ function data = hdf2mat(datasetId, data)
 end
 
 function data = reshapeLoadedData(data, dataDimensions, userSelection)
-    % reshapeLoadedData - Put the read data in the shape and order of the selection.
+% reshapeLoadedData - Put the read data in the shape and order of the selection.
+
     expectedSize = getExpectedSize(dataDimensions, userSelection);
     openSelectionIndices = find(cellfun('isclass', userSelection, 'char'));
     % Ensure openSelectionIndices is a row vector before using it for the loop index.

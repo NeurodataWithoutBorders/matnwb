@@ -216,7 +216,8 @@ classdef DynamicTableRaggedReadTest < tests.abstract.NwbTestCase
 
     methods (Access = private)
         function [units, spies] = readUnitsWithSpies(testCase)
-            % readUnitsWithSpies - Read the units table with a spy on each dataset of the waveforms column.
+        % readUnitsWithSpies - Read the units table with a spy on each dataset of the waveforms column.
+
             nwbIn = nwbRead(testCase.FileName, 'ignorecache');
             units = nwbIn.units;
             spies = struct();
