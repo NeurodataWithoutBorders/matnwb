@@ -94,6 +94,12 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %   Otherwise every [k x m] row is the shortcut form. The cell form is read
 %   the same way in either case. Text works in the cell form: each sub-group
 %   is a text row as described above.
+%   A column whose elements have more than one value needs at least two
+%   elements in total: the data of a single element, [elementDims x 1], is
+%   written without its last dimension and read back as a list of smaller
+%   elements. Such input raises NWB:CreateIndexedColumn:SingleElementColumn.
+%   To store such a column, build the VectorData directly with a DataPipe
+%   that states every dimension.
 %   EXAMPLE (waveforms of 2 units with 3 and 4 spikes on one electrode):
 %     unit1 = rand(40, 3); unit2 = rand(40, 4);   % [num_samples x num_spikes]
 %     [wf, wfIndex, wfIndexIndex] = util.create_indexed_column({unit1, unit2}, 'spike waveforms', 'Depth', 2);
@@ -264,6 +270,24 @@ function [flatData, counts] = flattenRows(rows, depth, elementsPerSubGroup)
     for iLevel = 1:depth - 1
         levelCounts = cellfun(@(inner) inner{iLevel}, rowInnerCounts, 'UniformOutput', false);
         counts{iLevel} = vertcat(levelCounts{:});
+    end
+
+    % The data of a column with one element is [elementDims x 1]. An array in
+    % memory is written without that last dimension: one 40-sample element
+    % is a [40 x 1] array, which becomes a dataset of 40 scalar elements, and
+    % the row reads back as one sample. A DataPipe states every dimension of
+    % the dataset, so it can hold such a column.
+    numElements = sum(counts{1});
+    if layout.kind == "numeric" && numElements == 1 && prod(layout.elementDims) > 1
+        elementShape = join(string(layout.elementDims), " ");
+        error("NWB:CreateIndexedColumn:SingleElementColumn", ...
+            "DATA holds a single element of shape [%s] in the whole column. Its data " + ...
+            "is written without the dimension for the number of elements and read " + ...
+            "back as %d smaller elements. To store such a column, build the " + ...
+            "VectorData and VectorIndex objects directly, with the data in a " + ...
+            "types.untyped.DataPipe that states every dimension " + ...
+            "('maxSize', [%s Inf], 'axis', %d).", ...
+            elementShape, layout.elementDims(end), elementShape, numel(layout.elementDims) + 1);
     end
 end
 

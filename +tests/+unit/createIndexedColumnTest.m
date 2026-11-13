@@ -732,6 +732,27 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
                 'NWB:CreateIndexedColumn:ElementsPerSubGroupMismatch');
         end
 
+        function testSingleMultiSampleElementInColumnErrors(testCase)
+            % One 40-sample element in the whole column would be stored as
+            % a [40 x 1] array, which is written and read as 40 scalars.
+            testCase.verifyError( ...
+                @() util.create_indexed_column({ones(40, 1)}, 'Depth', 2), ...
+                'NWB:CreateIndexedColumn:SingleElementColumn');
+            testCase.verifyError( ...
+                @() util.create_indexed_column({{ones(40, 1)}, {}}, 'Depth', 2), ...
+                'NWB:CreateIndexedColumn:SingleElementColumn');
+
+            % Two elements, or a single element with one value, are stored.
+            [vector, index] = util.create_indexed_column({ones(40, 2)}, 'Depth', 2);
+            testCase.verifySize(vector.data, [40, 2]);
+            testCase.verifyEqual(index.data, uint64([1; 2]));
+
+            [vector, index, indexIndex] = util.create_indexed_column({{5}}, 'Depth', 2);
+            testCase.verifyEqual(vector.data, 5);
+            testCase.verifyEqual(index.data, uint64(1));
+            testCase.verifyEqual(indexIndex.data, uint64(1));
+        end
+
         function testEmptyRowWithOtherElementShapeErrors(testCase)
             % An empty 3-D row declares sub-groups, so its element shape is
             % checked; an empty matrix is a row with no sub-groups.
