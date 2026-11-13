@@ -67,6 +67,35 @@ classdef InstallExtensionTest < tests.abstract.NwbTestCase
                 'NWB:InstallExtension:VersionForMultipleExtensions')
         end
 
+        function testInstallExtensionInstallsPinnedDependency(testCase)
+            % ndx-microscopy 0.3.0 requires ndx-ophys-devices==0.2.0, which
+            % defines types that later versions removed.
+            testCase.addTeardown(@() testCase.clearExtension("ndx-ophys-devices"))
+            testCase.addTeardown(@() testCase.clearExtension("ndx-microscopy"))
+            typesOutputFolder = testCase.getTypesOutputFolder();
+
+            evalc('matnwb.extension.installExtension("ndx-microscopy", "0.3.0", "savedir", typesOutputFolder)');
+
+            dependencyInfo = spec.loadCache("ndx-ophys-devices", "savedir", typesOutputFolder);
+            testCase.verifyEqual(string(dependencyInfo.version), "0.2.0")
+            testCase.verifyTrue(isfolder(fullfile(typesOutputFolder, "+types", "+ndx_microscopy")))
+        end
+
+        function testReplacingDependencyNamesInstalledDependents(testCase)
+            % ndx-fiber-photometry 0.2.3 requires ndx-ophys-devices>=0.3.1, and
+            % ndx-microscopy 0.3.0 requires ndx-ophys-devices==0.2.0.
+            testCase.addTeardown(@() testCase.clearExtension("ndx-ophys-devices"))
+            testCase.addTeardown(@() testCase.clearExtension("ndx-fiber-photometry"))
+            testCase.addTeardown(@() testCase.clearExtension("ndx-microscopy"))
+            typesOutputFolder = testCase.getTypesOutputFolder();
+            evalc('matnwb.extension.installExtension("ndx-fiber-photometry", "0.2.3", "savedir", typesOutputFolder)');
+
+            output = evalc('matnwb.extension.installExtension("ndx-microscopy", "0.3.0", "savedir", typesOutputFolder)');
+
+            testCase.verifySubstring(output, 'Replacing extension "ndx-ophys-devices" version 0.3.1 with version 0.2.0')
+            testCase.verifySubstring(output, 'may not work with version 0.2.0: ndx-fiber-photometry')
+        end
+
         function testInstallExtensionWithoutWheel(testCase)
             % ndx-ecg is published on PyPI as a source distribution only.
             testCase.addTeardown(@() testCase.clearExtension("ndx-ecg"))
