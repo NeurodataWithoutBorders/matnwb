@@ -12,18 +12,21 @@ function shapes = findShapes(indices)
 %   [1 2 3 7 10] needs several. A Block is a range start:step:stop and a
 %   Point a single index, so each shape fits in one hyperslab. A
 %   selection takes longer to build the more hyperslabs it has, so
-%   findShapes looks for few shapes, in two stages:
+%   findShapes looks for few shapes, in three stages:
 %
 %   1. When the indices average fewer than two per run of consecutive
-%      indices, as in 1:2:99, the longest evenly spaced stretches become
-%      Blocks with that spacing as their step.
-%   2. Each run of consecutive indices left becomes a Block with step 1,
-%      and each single index left a Point.
+%      indices, as in 1:2:99, the longest stretches of three or more
+%      evenly spaced indices become Blocks with that spacing as their
+%      step.
+%   2. The same search runs on the isolated indices, the ones in no run,
+%      so the stride in [1:10 200:2:400] becomes one Block.
+%   3. Each run of consecutive indices left becomes a Block with step 1,
+%      and each isolated index left a Point.
 %
 %   Examples:
-%     io.space.findShapes([5 1 2 3 3])   % Block 1:3, Point 5
-%     io.space.findShapes(1:2:99)        % Block 1:2:99
-%     io.space.findShapes([1 2 3 7 10])  % Block 1:3, Block 7:3:10
+%     io.space.findShapes([5 1 2 3 3])       % Block 1:3, Point 5
+%     io.space.findShapes(1:2:99)            % Block 1:2:99
+%     io.space.findShapes([1:10 200:2:400])  % Block 200:2:400, Block 1:10
 %
 %   See also io.space.segmentSelection, io.space.getReadSpace
 
@@ -38,38 +41,83 @@ assert(isvector(indices),...
     'Indices cannot be matrices.');
 indices = reshape(unique(indices), 1, []);
 
-minimumStrideCoverage = 0.25;
+[stridedBlocks, remaining] = findStridedBlocks(indices);
 
-shapes = {};
-remaining = indices;
-while ~isempty(remaining)
-    [runFirst, runLast] = findRuns(remaining);
-    isMostlyIsolated = numel(runFirst) > numel(remaining)/2;
-    if ~isMostlyIsolated
-        break;
-    end
-    stridedBlock = findOptimalBlock(remaining);
-    if stridedBlock.length < max(2, minimumStrideCoverage*numel(remaining))
-        break;
-    end
-    shapes{end+1} = stridedBlock; %#ok<AGROW>
-    remaining = setdiff(remaining, stridedBlock.range);
+% A stride mixed with runs, as in [1:10 200:2:400], is not found above: the
+% search starts at the smallest index, and it only runs while the indices
+% average fewer than two per run. Such a stride is found among the isolated
+% indices. When every index left is isolated, the search above has already
+% ended on this same set.
+isolated = findIsolatedIndices(remaining);
+if numel(isolated) < numel(remaining)
+    [isolatedStridedBlocks, unmatched] = findStridedBlocks(isolated);
+    remaining = setdiff(remaining, setdiff(isolated, unmatched));
+    stridedBlocks = [stridedBlocks, isolatedStridedBlocks];
 end
-if ~isempty(remaining)
-    shapes = [shapes, createRunShapes(remaining, runFirst, runLast)];
+
+shapes = [stridedBlocks, createRunShapes(remaining)];
 end
+
+function [blocks, remaining] = findStridedBlocks(indices)
+% findStridedBlocks - Strided blocks that each hold a large share of the indices.
+%
+% The search runs while the indices left average fewer than two per run of
+% consecutive indices. Each pass keeps the block that findOptimalBlock finds
+% and removes its indices from remaining. The search ends when that block is
+% shorter than minimumStrideLength or holds less than minimumStrideCoverage
+% of the indices left.
+
+    % Any two indices are evenly spaced, so a block of two would pair
+    % indices that have nothing to do with each other.
+    minimumStrideLength = 3;
+
+    % A strided block is kept only when it holds at least this fraction of the
+    % indices left. Each kept block then removes a quarter or more of them, so
+    % the search keeps at most log(n)/log(4/3) blocks for n indices, 48 for a
+    % million, and every pass scans all indices left. A smaller fraction keeps
+    % shorter strided blocks but allows more passes. A larger fraction leaves
+    % more strides to be read as one Point per index.
+    minimumStrideCoverage = 0.25;
+
+    blocks = {};
+    remaining = indices;
+    while ~isempty(remaining)
+        runFirst = findRuns(remaining);
+        isMostlyIsolated = numel(runFirst) > numel(remaining)/2;
+        if ~isMostlyIsolated
+            break;
+        end
+        stridedBlock = findOptimalBlock(remaining);
+        if stridedBlock.length < max(minimumStrideLength, minimumStrideCoverage*numel(remaining))
+            break;
+        end
+        blocks{end+1} = stridedBlock; %#ok<AGROW>
+        remaining = setdiff(remaining, stridedBlock.range);
+    end
 end
 
 function [runFirst, runLast] = findRuns(indices)
 % findRuns - Positions of the first and last index of each run of consecutive indices.
+    if isempty(indices)
+        runFirst = zeros(1, 0);
+        runLast = zeros(1, 0);
+        return
+    end
     runFirst = find([true, diff(indices) > 1]);
     runLast = [runFirst(2:end) - 1, numel(indices)];
 end
 
-function shapes = createRunShapes(indices, runFirst, runLast)
+function isolated = findIsolatedIndices(indices)
+% findIsolatedIndices - The indices that are in no run of two or more consecutive indices.
+    [runFirst, runLast] = findRuns(indices);
+    isolated = indices(runFirst(runFirst == runLast));
+end
+
+function shapes = createRunShapes(indices)
 % createRunShapes - One Block per run of consecutive indices and one Point per isolated index.
     import io.space.shape.Block;
     import io.space.shape.Point;
+    [runFirst, runLast] = findRuns(indices);
     shapes = cell(1, numel(runFirst));
     for iRun = 1:numel(runFirst)
         first = indices(runFirst(iRun));

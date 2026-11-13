@@ -53,6 +53,31 @@ classdef SpaceTest < matlab.unittest.TestCase
             testCase.verifyEqual([shapes{2}.index, shapes{4}.index], [8 20])
         end
 
+        function testStrideAfterRunBecomesOneStridedBlock(testCase)
+            % The run holds too few of the indices to be kept as a strided
+            % block, which ends the first search before it reaches the stride.
+            shapes = io.space.findShapes([1:10, 200:2:400]);
+
+            testCase.verifyEqual(getBlockSpecs(shapes), [200 2 400; 1 1 10])
+        end
+
+        function testStrideAmongLongRunsBecomesOneStridedBlock(testCase)
+            % Most indices are in runs, so only the search among the isolated
+            % indices looks for the stride.
+            shapes = io.space.findShapes([1:100, 105:110, 500:2:600]);
+
+            testCase.verifyEqual(getBlockSpecs(shapes), [500 2 600; 1 1 100; 105 1 110])
+        end
+
+        function testTwoIsolatedIndicesStayPoints(testCase)
+            % Any two indices are evenly spaced, so a strided block needs three.
+            shapes = io.space.findShapes([3 20]);
+
+            testCase.verifyEqual(cellfun(@class, shapes, 'UniformOutput', false), ...
+                repmat({'io.space.shape.Point'}, 1, 2))
+            testCase.verifyEqual([shapes{1}.index, shapes{2}.index], [3 20])
+        end
+
         function testUnsortedInputWithDuplicates(testCase)
             shapes = io.space.findShapes([12 10 1 2 3 11 3]');
 
