@@ -99,7 +99,12 @@ templates_path = [os.path.abspath(os.path.join(script_dir,'_templates'))]
 html_theme = "sphinx_rtd_theme"
 
 html_static_path = ['_static']
-html_js_files = ['js/iframe-autoheight.js']
+html_js_files = [
+    'js/iframe-autoheight.js',
+    # NWB Assistant chat widget (Open Science Assistant); see _static/js/nwb_assistant.js
+    'https://demo.osc.earth/osa-chat-widget.js',
+    'js/nwb_assistant.js',
+]
 html_logo = os.path.join(matlab_src_dir, 'logo', 'logo_matnwb_small.png')
 html_favicon = os.path.join(matlab_src_dir, 'logo', 'logo_favicon_32.png')
 html_theme_options = {
