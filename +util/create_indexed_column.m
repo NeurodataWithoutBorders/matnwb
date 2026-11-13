@@ -1,5 +1,5 @@
-function [data_vector, data_index] = create_indexed_column(data, description, table)
-%CREATE_INDEXED_COLUMN creates the index and vector NWB objects for storing
+function [data_vector, varargout] = create_indexed_column(data, description, table, options)
+%CREATE_INDEXED_COLUMN creates the vector and index NWB objects for storing
 %a ragged column in an NWB DynamicTable
 %
 %   [DATA_VECTOR, DATA_INDEX] = CREATE_INDEXED_COLUMN(DATA)
@@ -14,18 +14,38 @@ function [data_vector, data_index] = create_indexed_column(data, description, ta
 %       VectorData. Rows are concatenated along that last dimension, so
 %       DATA_VECTOR.data is [elementDims x totalElements]. On disk the ragged
 %       axis then comes first, as the schema requires.
-%     - a string array, character vector, struct array or array of objects
-%       (such as types.untyped.ObjectView references) that is a vector: a
-%       list of elements of that class, one per string, character, struct or
-%       object. DATA_VECTOR.data keeps the class: a string column, a character
-%       column, a struct column or an object column.
 %     - [] for a row with no elements.
-%   All rows must hold elements of the same class (for example all int32,
-%   not int32 and double), and struct rows the same fields. All array rows
-%   must share elementDims, which is taken from the first row that is not a
-%   vector. A row holding a single element may be given with its trailing
-%   dimension of 1 omitted (a column vector [k x 1] when elements are
-%   k-sample vectors, a [k x m] matrix when elements are [k x m]).
+%     - text: a string array, a cell array of character vectors or a
+%       character vector, as a vector. A string or cell array is a list of
+%       text elements, and a character vector is one text element. The
+%       empty character vector '' is a row with no elements, like []; give
+%       "" or {''} for one empty text element.
+%       DATA_VECTOR.data is a string column when every text row is a string
+%       array, and a column cell array of character vectors otherwise.
+%     - compound: a table holds one compound element per table row, a struct
+%       array (a vector) one element per struct, with one value in each
+%       field, and a scalar struct whose fields are equal-length columns one
+%       element per column entry. DATA_VECTOR.data is a struct column when
+%       every compound row is a struct array, and a table otherwise; either
+%       is written as a compound dataset (for example
+%       PlaneSegmentation.pixel_mask).
+%     - object references: an array of objects such as
+%       types.untyped.ObjectView, as a vector, one element per object.
+%       DATA_VECTOR.data keeps the class, for example a column of ObjectView
+%       references to the TimeSeries recorded during each trial.
+%   A column holds elements of one kind: numeric, text, compound or object
+%   references. Numeric rows must all be of the same class (for example all
+%   int32, not int32 and double), as the column keeps that class. The same
+%   holds for each numeric field of compound rows that are stored as a
+%   table. The column is built in memory, so a row cannot be a DataPipe or
+%   a DataStub, and it cannot hold SoftLinks: reference objects with
+%   ObjectViews instead.
+%   All array rows must share elementDims. Trailing dimensions of 1 may be
+%   omitted, as MATLAB omits them from size: the number of element
+%   dimensions is the largest any row shows, and rows with fewer dimensions
+%   are padded with ones. A row holding a single element is thus a column
+%   vector [k x 1] when elements are k-sample vectors, or a [k x m] matrix
+%   when elements are [k x m].
 %   EXAMPLE: [data_vector, data_index] = util.create_indexed_column({[1,2,3], [1,2,3,4]})
 %     data_vector.data is [1;2;3;1;2;3;4] and data_index.data is [3;7].
 %   EXAMPLE: [data_vector, data_index] = util.create_indexed_column({rand(4,2), rand(4,3)})
@@ -35,141 +55,740 @@ function [data_vector, data_index] = create_indexed_column(data, description, ta
 %   adds the string DESCRIPTION in the description field of the data vector
 %
 %   [DYNAMICTABLEREGION, DATA_INDEX] = CREATE_INDEXED_COLUMN(DATA, DESCRIPTION, TABLE)
-%   If TABLE is supplied as on ObjectView of an NWB DynamicTable, a
-%   DynamicTableRegion is instead output which references this table.
-%   DynamicTableRegions can be indexed just like DataVectors
+%   returns a DynamicTableRegion that references TABLE instead of a
+%   VectorData. TABLE is the DynamicTable object itself; the function wraps
+%   it in an ObjectView. The values in DATA are 0-based row indices into
+%   TABLE, and the DynamicTableRegion is indexed the same way as a VectorData.
+%
+%   [DATA_VECTOR, INDEX1, ..., INDEXn] = CREATE_INDEXED_COLUMN(__, 'Depth', n)
+%   builds a column with n levels of VectorIndex; n = 2 gives a doubly ragged
+%   column such as Units.waveforms. INDEX1 targets DATA_VECTOR and has one
+%   entry per innermost sub-group; every further index targets the one before
+%   it, and INDEXn has one entry per table row. Assign them to the column and
+%   its '<col>_index', '<col>_index_index', ... properties.
+%
+%   With 'Depth', n each cell of DATA is one of:
+%     - a cell array with one entry per sub-group, each entry being a row of
+%       depth n-1. For n = 2 that is a cell of [elementDims x nElements]
+%       arrays, one per sub-group. Vector entries follow the array rule here,
+%       not the scalar-list rule: a column vector [k x 1] is one k-sample
+%       element and a row vector [1 x m] is m single-sample elements.
+%     - a numeric array [elementDims x nElements x nSubGroups] (for n = 2):
+%       every sub-group holds nElements elements. For Units.waveforms this is
+%       [num_samples x num_electrodes x num_spike_events] per unit, which is
+%       the (num_spikes, num_electrodes, num_samples) array PyNWB's
+%       Units.add_unit takes with its dimensions reversed, as for any other
+%       MatNWB dataset. A unit with a single spike event is then
+%       [num_samples x num_electrodes], its trailing dimension of 1 omitted.
+%     - a numeric matrix [k x nSubGroups] (for n = 2): every sub-group holds a
+%       single k-sample element, as for spike waveforms on one electrode.
+%     - [] or {} for a row with no sub-groups, or [elementDims x 0 x nSubGroups]
+%       for nSubGroups sub-groups that hold no elements.
+%   MATLAB drops trailing dimensions of 1, so a [k x m] row fits both numeric
+%   forms, and DATA is read one way as a whole. If any numeric row has more
+%   than n dimensions, every numeric row is read in the full form with its
+%   omitted trailing dimensions of 1 restored: a [k x m] row is one sub-group
+%   of m elements (for Units.waveforms, one spike event on m electrodes), and
+%   a row with one element per sub-group must be given as [k x 1 x nSubGroups]
+%   (one electrode), since MATLAB keeps a dimension of 1 that is not the last.
+%   Otherwise every [k x m] row is the shortcut form. The cell form is read
+%   the same way in either case. Text works in the cell form: each sub-group
+%   is a text row as described above.
+%   EXAMPLE (waveforms of 2 units with 3 and 4 spikes on one electrode):
+%     unit1 = rand(40, 3); unit2 = rand(40, 4);   % [num_samples x num_spikes]
+%     [wf, wfIndex, wfIndexIndex] = util.create_indexed_column({unit1, unit2}, 'spike waveforms', 'Depth', 2);
+%     units.waveforms = wf;
+%     units.waveforms_index = wfIndex;
+%     units.waveforms_index_index = wfIndexIndex;
+%
+%   [__] = CREATE_INDEXED_COLUMN(DATA, __, 'Depth', 2, 'ElementsPerSubGroup', COUNTS)
+%   states the number of elements in each sub-group of the numeric rows, so
+%   that it is not read from their dimensions as described above. COUNTS is
+%   a positive integer, or a vector with one value per row. Numeric row i is
+%   then [elementDims x nElements], with the elements of the first sub-group
+%   first and nElements a multiple of COUNTS(i), or
+%   [elementDims x COUNTS(i) x nSubGroups]. A [k x m] row is m/COUNTS(i)
+%   sub-groups whatever the other rows are, and no dimension of 1 is needed.
+%   For Units.waveforms, COUNTS(i) is the number of electrodes of unit i.
+%   Elements are vectors unless a row shows more element dimensions, by
+%   being given in the second form or as a cell array. A row given as a cell
+%   array states its sub-groups itself and is not compared with COUNTS.
+%   EXAMPLE (2 spike events on 3 electrodes, then 4 spike events on 1 electrode):
+%     unit1 = rand(40, 6);   % [num_samples x (3 electrodes * 2 spike events)]
+%     unit2 = rand(40, 4);   % [num_samples x (1 electrode * 4 spike events)]
+%     [wf, wfIndex, wfIndexIndex] = util.create_indexed_column({unit1, unit2}, ...
+%         'spike waveforms', 'Depth', 2, 'ElementsPerSubGroup', [3 1]);
+%     wfIndex.data is [3;6;7;8;9;10] and wfIndexIndex.data is [2;6].
+%
+%   [DATA_VECTOR, DATA_INDEX] = CREATE_INDEXED_COLUMN(FLATDATA, __, 'ElementsPerRow', COUNTS)
+%   builds the same column from data that is already flat, without one array
+%   per row. FLATDATA holds the elements of all rows in row order, and
+%   COUNTS(i) is the number of elements in row i. FLATDATA is a numeric
+%   vector (scalar elements), a numeric array [elementDims x nElements], text
+%   (a cell array of character vectors or a string array), or compound data
+%   (a table, a struct array or a scalar struct of columns), or a vector of
+%   object references. It keeps its class as rows do: a string array stays a
+%   string column and a struct array a struct column. SUM(COUNTS) must equal the number of elements. This form
+%   builds a column of depth 1.
+%   EXAMPLE (pixel masks of 2 ROIs with 3 and 2 pixels):
+%     pixels = table(uint32([1;2;3;7;8]), uint32([4;4;4;9;9]), single(ones(5,1)), ...
+%         'VariableNames', {'x', 'y', 'weight'});
+%     [mask, maskIndex] = util.create_indexed_column(pixels, 'pixel masks', 'ElementsPerRow', [3 2]);
+%
+%   See also types.hdmf_common.DynamicTable/addRaggedArray
 
-if ~exist('description', 'var') || isempty(description)
-    description = 'no description';
-end
-
-[data, bounds] = flattenRows(data);
-
-if exist('table', 'var')
-    data_vector = types.hdmf_common.DynamicTableRegion( ...
-        'table', types.untyped.ObjectView(table), ...
-        'description', description, ...
-        'data', data ...
-    );
-else
-    data_vector = types.hdmf_common.VectorData( ...
-        'data', data, ...
-        'description', description ...
-    );
-end
-
-ov = types.untyped.ObjectView(data_vector);
-data_index = types.hdmf_common.VectorIndex( ...
-    'data', bounds, ...
-    'target', ov, ...
-    'description', 'indexes data' ...
-);
-end
-
-function [flatData, bounds] = flattenRows(rows)
-    % Concatenate the rows along the ragged (last) axis and count the elements
-    % of each row. BOUNDS is the cumulative element count, one entry per row.
-    numRows = numel(rows);
-    elementType = "";
-    structFields = {};
-    for iRow = 1:numRows
-        row = rows{iRow};
-        if isnumeric(row) || islogical(row)
-            % Rows of different numeric classes are not combined, as the
-            % values of one class would be converted to the other.
-            rowType = string(class(row));
-        elseif (isstring(row) || ischar(row) || isstruct(row) || isObjectArray(row)) ...
-                && (isvector(row) || isempty(row))
-            rowType = string(class(row));
-        else
-            error("NWB:CreateIndexedColumn:InvalidRow", ...
-                "Each cell of DATA must be a numeric or logical array, or a vector of " + ...
-                "strings, characters, structs or objects. Cell %d is a %s of size [%s].", ...
-                iRow, class(row), join(string(size(row)), " "));
-        end
-        if isempty(row)
-            continue
-        end
-        if elementType == ""
-            elementType = rowType;
-        elseif rowType ~= elementType
-            error("NWB:CreateIndexedColumn:InconsistentElementType", ...
-                "All rows must hold elements of the same type. Cell %d holds %s " + ...
-                "elements, but an earlier row holds %s elements.", iRow, rowType, elementType);
-        end
-        if isstruct(row)
-            if isempty(structFields)
-                structFields = fieldnames(row);
-            elseif ~isequal(sort(fieldnames(row)), sort(structFields))
-                error("NWB:CreateIndexedColumn:InconsistentElementShape", ...
-                    "All struct rows must have the same fields. Cell %d has fields " + ...
-                    "{%s}, but an earlier row has {%s}.", iRow, ...
-                    strjoin(fieldnames(row), ", "), strjoin(structFields, ", "));
-            end
-        end
+    arguments
+        data
+        description = ''
+        table = []
+        options.Depth (1,1) {mustBeInteger, mustBePositive} = 1
+        options.ElementsPerRow {mustBeNumeric, mustBeInteger, mustBeNonnegative}
+        options.ElementsPerSubGroup {mustBeNumeric, mustBeInteger, mustBePositive}
     end
 
-    elementDims = findElementDims(rows);
-    counts = zeros(numRows, 1);
-    chunks = cell(1, numRows);
-    for iRow = 1:numRows
-        row = rows{iRow};
-        if isempty(row)
-            counts(iRow) = 0;
-            chunks{iRow} = [];
-        elseif isempty(elementDims)
-            % Every row is a vector: a list of scalars, stacked into a column.
-            counts(iRow) = numel(row);
-            chunks{iRow} = row(:);
-            if isstruct(row)
-                % Concatenating structs needs the fields in the same order.
-                chunks{iRow} = orderfields(chunks{iRow}, structFields);
-            end
-        else
-            rowDims = size(row);
-            if isequal(rowDims, elementDims)
-                % A single element; MATLAB dropped the trailing dimension of 1.
-                counts(iRow) = 1;
-            elseif isequal(rowDims(1:end-1), elementDims)
-                counts(iRow) = rowDims(end);
-            else
-                error("NWB:CreateIndexedColumn:InconsistentElementShape", ...
-                    "All elements must have the same shape. Expected elements of " + ...
-                    "shape [%s], but row %d has size [%s]. Give the elements of a row " + ...
-                    "as [elementShape x nElements], with the ragged axis last.", ...
-                    join(string(elementDims), " "), iRow, join(string(rowDims), " "));
-            end
-            chunks{iRow} = row;
-        end
+    depth = options.Depth;
+    if nargout > depth + 1
+        error("NWB:CreateIndexedColumn:TooManyOutputs", ...
+            "A column of depth %d has %d outputs: the data vector and %d index level(s).", ...
+            depth, depth + 1, depth);
     end
-    bounds = uint64(cumsum(counts));
-
-    nonEmptyChunks = chunks(counts > 0);
-    if isempty(nonEmptyChunks)
-        flatData = [];
-    elseif isempty(elementDims)
-        flatData = vertcat(nonEmptyChunks{:});
+    hasElementsPerSubGroup = isfield(options, 'ElementsPerSubGroup');
+    if hasElementsPerSubGroup && depth ~= 2
+        error("NWB:CreateIndexedColumn:ElementsPerSubGroupNeedsDepth2", ...
+            "ElementsPerSubGroup applies to a column of depth 2, but Depth is %d.", depth);
+    end
+    if isempty(description)
+        description = 'no description';
     else
-        flatData = cat(numel(elementDims) + 1, nonEmptyChunks{:});
+        description = char(description);
+    end
+
+    % ElementsPerRow is empty for a table with no rows, so whether it was given
+    % decides the form of DATA, not whether it is empty.
+    if ~isfield(options, 'ElementsPerRow')
+        if ~iscell(data)
+            error("NWB:CreateIndexedColumn:InvalidData", ...
+                "DATA must be a cell array with one cell per row. To give data that " + ...
+                "is already flat, also give ElementsPerRow.");
+        end
+        elementsPerSubGroup = [];
+        if hasElementsPerSubGroup
+            elementsPerSubGroup = expandToRows(options.ElementsPerSubGroup, numel(data));
+        end
+        [flatData, counts] = flattenRows(data, depth, elementsPerSubGroup);
+    else
+        if depth ~= 1
+            error("NWB:CreateIndexedColumn:ElementsPerRowNeedsDepth1", ...
+                "ElementsPerRow builds a column of depth 1. Give the rows as a cell " + ...
+                "array to build a column of depth %d.", depth);
+        end
+        [flatData, numElements] = normalizeFlatData(data);
+        elementsPerRow = double(options.ElementsPerRow(:));
+        if sum(elementsPerRow) ~= numElements
+            error("NWB:CreateIndexedColumn:ElementCountMismatch", ...
+                "ElementsPerRow adds up to %d elements, but DATA holds %d.", ...
+                sum(elementsPerRow), numElements);
+        end
+        counts = {elementsPerRow};
+    end
+
+    if isempty(table)
+        data_vector = types.hdmf_common.VectorData( ...
+            'data', flatData, ...
+            'description', description ...
+        );
+    else
+        data_vector = types.hdmf_common.DynamicTableRegion( ...
+            'table', types.untyped.ObjectView(table), ...
+            'description', description, ...
+            'data', flatData ...
+        );
+    end
+
+    % Index level 1 targets the data vector; every further level targets the
+    % level below it.
+    target = data_vector;
+    varargout = cell(1, depth);
+    for iLevel = 1:depth
+        varargout{iLevel} = types.hdmf_common.VectorIndex( ...
+            'data', uint64(cumsum(counts{iLevel})), ...
+            'target', types.untyped.ObjectView(target), ...
+            'description', 'indexes data' ...
+        );
+        target = varargout{iLevel};
     end
 end
 
-function elementDims = findElementDims(rows)
-    % The element shape, taken from the first row that is not a vector. Empty
-    % when every row is a vector, i.e. the elements are scalars.
-    elementDims = [];
+function elementsPerSubGroup = expandToRows(elementsPerSubGroup, numRows)
+    % One value per row, from a scalar or from a vector with one value per row.
+    if isscalar(elementsPerSubGroup)
+        elementsPerSubGroup = repmat(double(elementsPerSubGroup), numRows, 1);
+    elseif numel(elementsPerSubGroup) == numRows
+        elementsPerSubGroup = double(elementsPerSubGroup(:));
+    else
+        error("NWB:CreateIndexedColumn:ElementsPerSubGroupCountMismatch", ...
+            "ElementsPerSubGroup must be a scalar or hold one value per row. DATA " + ...
+            "has %d row(s), but ElementsPerSubGroup has %d value(s).", ...
+            numRows, numel(elementsPerSubGroup));
+    end
+end
+
+function [flatData, counts] = flattenRows(rows, depth, elementsPerSubGroup)
+    % Concatenate the elements of all rows along the ragged (last) axis and
+    % count the entries of every index level. COUNTS{k} lists, for each entry
+    % of level k, how many level k-1 entries it holds (level 0 entries are the
+    % elements); COUNTS{depth} has one entry per row. ELEMENTSPERSUBGROUP
+    % holds one value per row, or is empty when the sub-groups of numeric
+    % rows are read from their dimensions.
+    hasElementsPerSubGroup = ~isempty(elementsPerSubGroup);
+    layout = findLayout(rows, depth, hasElementsPerSubGroup);
+
+    numRows = numel(rows);
+    chunks = cell(1, numRows);
+    rowCounts = zeros(numRows, 1);
+    rowInnerCounts = cell(1, numRows);
+    for iRow = 1:numRows
+        if hasElementsPerSubGroup
+            layout.elementsPerSubGroup = elementsPerSubGroup(iRow);
+        end
+        [chunks{iRow}, rowCounts(iRow), rowInnerCounts{iRow}] = flattenItem( ...
+            rows{iRow}, depth, layout, iRow);
+    end
+
+    flatData = concatenateChunks(chunks, layout);
+    if layout.kind == "compound" && layout.compoundClass == "table" && ~isempty(flatData)
+        flatData = struct2table(flatData);
+    end
+    counts = cell(1, depth);
+    counts{depth} = rowCounts;
+    for iLevel = 1:depth - 1
+        levelCounts = cellfun(@(inner) inner{iLevel}, rowInnerCounts, 'UniformOutput', false);
+        counts{iLevel} = vertcat(levelCounts{:});
+    end
+end
+
+function [chunk, ownCount, innerCounts] = flattenItem(item, level, layout, indexPath)
+    % CHUNK holds the item's elements as [elementDims x nElements] (a column
+    % in scalar mode, a string or cellstr column for text, a struct column or
+    % a scalar struct of columns for compound elements). OWNCOUNT is the
+    % number of level-(LEVEL-1) entries in the item, i.e. its elements when
+    % LEVEL is 1. INNERCOUNTS{k}, k < LEVEL, lists the counts of the level-k
+    % entries inside the item.
+    elementDims = layout.elementDims;
+    innerCounts = repmat({zeros(0, 1)}, 1, level - 1);
+    if isempty(item) && (iscell(item) || isempty(elementDims))
+        chunk = [];
+        ownCount = 0;
+        return
+    end
+
+    if layout.kind == "compound" && level == 1
+        if ~isCompoundRow(item)
+            error("NWB:CreateIndexedColumn:InconsistentElementType", ...
+                "%s must be compound data (a table, a struct array or a scalar struct " + ...
+                "of columns) like the other rows of the column. It is a %s.", ...
+                formatLabel(indexPath), class(item));
+        end
+        if isstruct(item) && ~isscalar(item) && ~isvector(item)
+            error("NWB:CreateIndexedColumn:InvalidRow", ...
+                "%s must be a vector of structs. It is a struct array of size [%s].", ...
+                formatLabel(indexPath), join(string(size(item)), " "));
+        end
+        if layout.compoundClass == "struct"
+            chunk = item(:);
+            ownCount = numel(item);
+        else
+            [chunk, ownCount] = compoundColumns(item, indexPath);
+        end
+        return
+    end
+
+    if layout.kind == "text" && level == 1
+        if ~isTextRow(item)
+            error("NWB:CreateIndexedColumn:InconsistentElementType", ...
+                "%s must be text (a cell array of character vectors, a string array or " + ...
+                "a character vector) like the other rows of the column. It is a %s.", ...
+                formatLabel(indexPath), class(item));
+        end
+        if ~isvector(item)
+            error("NWB:CreateIndexedColumn:InvalidRow", ...
+                "%s must be a vector of text elements. It is a %s of size [%s].", ...
+                formatLabel(indexPath), class(item), join(string(size(item)), " "));
+        end
+        if layout.textClass == "string"
+            chunk = item(:);
+        elseif ischar(item)
+            chunk = {item};
+        else
+            chunk = cellstr(item(:));
+        end
+        ownCount = numel(chunk);
+        return
+    end
+
+    if layout.kind == "object" && level == 1
+        if ~isObjectRow(item) || string(class(item)) ~= layout.objectClass
+            error("NWB:CreateIndexedColumn:InconsistentElementType", ...
+                "%s must be an array of %s objects like the other rows of the column. " + ...
+                "It is a %s.", formatLabel(indexPath), layout.objectClass, class(item));
+        end
+        if ~isvector(item)
+            error("NWB:CreateIndexedColumn:InvalidRow", ...
+                "%s must be a vector of objects. It is a %s of size [%s].", ...
+                formatLabel(indexPath), class(item), join(string(size(item)), " "));
+        end
+        chunk = item(:);
+        ownCount = numel(item);
+        return
+    end
+
+    if iscell(item)
+        if level == 1
+            error("NWB:CreateIndexedColumn:InvalidRow", ...
+                "%s is a cell array, but at the innermost level a row must be a " + ...
+                "numeric or logical array, text, compound data or an array of " + ...
+                "objects. Increase Depth for nested rows.", formatLabel(indexPath));
+        end
+        numEntries = numel(item);
+        chunks = cell(1, numEntries);
+        entryCounts = zeros(numEntries, 1);
+        entryInnerCounts = cell(1, numEntries);
+        for iEntry = 1:numEntries
+            [chunks{iEntry}, entryCounts(iEntry), entryInnerCounts{iEntry}] = flattenItem( ...
+                item{iEntry}, level - 1, layout, [indexPath, iEntry]);
+        end
+        chunk = concatenateChunks(chunks, layout);
+        ownCount = numEntries;
+        innerCounts{level - 1} = entryCounts;
+        for iLevel = 1:level - 2
+            levelCounts = cellfun(@(inner) inner{iLevel}, entryInnerCounts, 'UniformOutput', false);
+            innerCounts{iLevel} = vertcat(levelCounts{:});
+        end
+        return
+    end
+
+    if ~(isnumeric(item) || islogical(item))
+        error("NWB:CreateIndexedColumn:InvalidRow", ...
+            "%s must be a numeric or logical array%s. It is a %s.", ...
+            formatLabel(indexPath), cellHint(level), class(item));
+    end
+
+    if isempty(elementDims)
+        % Scalar mode: every row is a vector, so the elements are scalars.
+        chunk = item(:);
+        ownCount = numel(item);
+        return
+    end
+
+    [itemElementDims, levelSizes] = splitDims(item, level, numel(elementDims), layout.useShortcut);
+    if ~isequal(itemElementDims, elementDims)
+        if isempty(item) && ismatrix(item)
+            % An empty matrix such as [] or zeros(1, 0) has no entries at this
+            % level. An empty array with more dimensions declares entries,
+            % such as [k x 0 x n] for n sub-groups with no elements, so its
+            % element shape must match like any other row's.
+            chunk = [];
+            ownCount = 0;
+            return
+        end
+        error("NWB:CreateIndexedColumn:InconsistentElementShape", ...
+            "All elements must have the same shape. Expected elements of shape [%s], " + ...
+            "but %s has size [%s]. Give a numeric row as [elementShape x ...] with the " + ...
+            "ragged axes last.", ...
+            join(string(elementDims), " "), formatLabel(indexPath), join(string(size(item)), " "));
+    end
+    if level == 2 && ~isempty(layout.elementsPerSubGroup)
+        levelSizes = regroupElements(levelSizes, layout.elementsPerSubGroup, item, indexPath);
+    end
+
+    % Merging the trailing ragged dimensions lists the entries of the first
+    % sub-group first, which is the order the index levels describe.
+    chunk = reshape(item, [elementDims, prod(levelSizes)]);
+    ownCount = levelSizes(level);
+    for iLevel = 1:level - 1
+        innerCounts{iLevel} = repmat(levelSizes(iLevel), prod(levelSizes(iLevel + 1:level)), 1);
+    end
+end
+
+function [elementDims, levelSizes] = splitDims(item, level, numElementDims, useShortcut)
+    % Split the size of a numeric item into its element shape and the sizes of
+    % its LEVEL ragged dimensions, innermost first. MATLAB drops trailing
+    % dimensions of 1 from size, so the size is first padded with ones to the
+    % length the layout expects. An item with more dimensions than that keeps
+    % them in ELEMENTDIMS, where the caller's shape check rejects it.
+    dims = size(item);
+    if useShortcut && level >= 2
+        % [k x s2 x ... x sLEVEL]: one element per innermost entry.
+        dims(end + 1:level) = 1;
+        elementDims = dims(1:end - level + 1);
+        levelSizes = [1, dims(end - level + 2:end)];
+    else
+        dims(end + 1:numElementDims + level) = 1;
+        elementDims = dims(1:end - level);
+        levelSizes = dims(end - level + 1:end);
+    end
+end
+
+function levelSizes = regroupElements(levelSizes, elementsPerSubGroup, item, indexPath)
+    % LEVELSIZES is [nElements, nSubGroups] as the size of ITEM states them. A
+    % row given as [elementDims x nElements] states all its elements as one
+    % sub-group; they are divided into sub-groups of ELEMENTSPERSUBGROUP
+    % elements. A row given as [elementDims x nElements x nSubGroups] must
+    % state ELEMENTSPERSUBGROUP elements in each sub-group.
+    numElements = levelSizes(1);
+    numSubGroups = levelSizes(2);
+    if numElements == elementsPerSubGroup
+        return
+    end
+    if numSubGroups == 1 && mod(numElements, elementsPerSubGroup) == 0
+        levelSizes = [elementsPerSubGroup, numElements/elementsPerSubGroup];
+        return
+    end
+    error("NWB:CreateIndexedColumn:ElementsPerSubGroupMismatch", ...
+        "%s has size [%s], which does not divide into sub-groups of %d element(s). " + ...
+        "With ElementsPerSubGroup, give a numeric row as [elementShape x nElements] " + ...
+        "with nElements a multiple of %d, or as [elementShape x %d x nSubGroups].", ...
+        formatLabel(indexPath), join(string(size(item)), " "), elementsPerSubGroup, ...
+        elementsPerSubGroup, elementsPerSubGroup);
+end
+
+function layout = findLayout(rows, depth, hasElementsPerSubGroup)
+    % Decide how the items of ROWS are read. LAYOUT.KIND is "numeric", "text"
+    % or "compound". LAYOUT.TEXTCLASS is "string" when every text row is a
+    % string array and "cellstr" otherwise; LAYOUT.COMPOUNDCLASS is "struct"
+    % when every compound row is a struct array and "table" otherwise, so a
+    % column keeps the class its rows were given in where that is possible.
+    % For numeric elements, LAYOUT.ELEMENTDIMS is the element shape, or []
+    % when DEPTH is 1 and every row is a vector (the elements are scalars) or
+    % when no row holds elements or declares sub-groups. As MATLAB drops
+    % trailing dimensions of 1 from size, the number of element dimensions is
+    % the largest any item shows; splitDims pads shorter items to it.
+    % LAYOUT.USESHORTCUT is true when the column uses the [k x nSubGroups]
+    % form, which is only unambiguous while no item at level 2 or above shows
+    % the full form by having more dimensions than its level. With
+    % HASELEMENTSPERSUBGROUP the caller states the number of elements in the
+    % sub-groups of each numeric row, so the shortcut form is not used.
+    scan = struct('maxElementDims', -Inf, 'shortcutAllowed', true, ...
+        'firstItem', [], 'firstLevel', 0, ...
+        'emptyArrayItem', [], 'emptyArrayLevel', 0, ...
+        'hasNumeric', false, 'numericClass', "", ...
+        'hasText', false, 'hasCompound', false, ...
+        'hasObject', false, 'objectClass', "", ...
+        'allStrings', true, 'allStructArrays', true);
     for iRow = 1:numel(rows)
-        row = rows{iRow};
-        if ~isempty(row) && ~isvector(row)
-            rowDims = size(row);
-            elementDims = rowDims(1:end-1);
+        scan = scanItem(rows{iRow}, depth, depth == 1, scan, iRow);
+    end
+
+    kinds = ["numeric", "text", "compound", "object"];
+    presentKinds = kinds([scan.hasNumeric, scan.hasText, scan.hasCompound, scan.hasObject]);
+    if numel(presentKinds) > 1
+        error("NWB:CreateIndexedColumn:InconsistentElementType", ...
+            "A column holds elements of one kind, but DATA has %s elements.", ...
+            strjoin(presentKinds, " and "));
+    end
+    layout = struct('elementDims', [], 'useShortcut', false, 'kind', "numeric", ...
+        'textClass', "cellstr", 'compoundClass', "table", 'objectClass', scan.objectClass, ...
+        'elementsPerSubGroup', []);
+    if ~isempty(presentKinds)
+        layout.kind = presentKinds;
+    end
+    if scan.allStrings
+        layout.textClass = "string";
+    end
+    if scan.allStructArrays
+        layout.compoundClass = "struct";
+    end
+    if layout.kind ~= "numeric"
+        return
+    end
+    shapeItem = scan.firstItem;
+    shapeLevel = scan.firstLevel;
+    if isempty(shapeItem)
+        if scan.emptyArrayLevel == 0
+            return
+        end
+        shapeItem = scan.emptyArrayItem;
+        shapeLevel = scan.emptyArrayLevel;
+    end
+    useShortcut = ~hasElementsPerSubGroup && depth >= 2 ...
+        && scan.shortcutAllowed && scan.maxElementDims <= 1;
+    if useShortcut
+        numElementDims = 1;
+    elseif hasElementsPerSubGroup
+        % A [elementDims x nElements] row shows one dimension fewer than the
+        % full form, so a column of such rows shows no element dimension.
+        % Elements have at least one.
+        numElementDims = max(scan.maxElementDims, 1);
+    else
+        numElementDims = scan.maxElementDims;
+    end
+    elementDims = splitDims(shapeItem, shapeLevel, numElementDims, useShortcut);
+    if any(elementDims == 0)
+        % The array is empty along an element dimension, so it declares no
+        % entries to count.
+        return
+    end
+    layout.useShortcut = useShortcut;
+    layout.elementDims = elementDims;
+end
+
+function scan = scanItem(item, level, vectorsAreScalars, scan, indexPath)
+    rejectUnstorableClass(item, indexPath, "NWB:CreateIndexedColumn:InvalidRow");
+    if level == 1 && isTextRow(item)
+        if ~isempty(item)
+            scan.hasText = true;
+            scan.allStrings = scan.allStrings && isstring(item);
+        end
+        return
+    end
+    if level == 1 && isCompoundRow(item)
+        if ~isempty(item)
+            scan.hasCompound = true;
+            scan.allStructArrays = scan.allStructArrays && isStructArrayRow(item);
+        end
+        return
+    end
+    if level == 1 && isObjectRow(item)
+        if ~isempty(item)
+            scan.hasObject = true;
+            if scan.objectClass == ""
+                scan.objectClass = string(class(item));
+            end
+        end
+        return
+    end
+    if iscell(item)
+        % A cell at level 1 is rejected by flattenItem.
+        if level >= 2
+            for iEntry = 1:numel(item)
+                scan = scanItem(item{iEntry}, level - 1, false, scan, [indexPath, iEntry]);
+            end
+        end
+        return
+    end
+    if ~(isnumeric(item) || islogical(item))
+        return
+    end
+    if ~isempty(item)
+        scan.hasNumeric = true;
+        % Rows of different numeric classes are not combined, as the values
+        % of one class would be converted to the other.
+        itemClass = string(class(item));
+        if scan.numericClass == ""
+            scan.numericClass = itemClass;
+        elseif itemClass ~= scan.numericClass
+            error("NWB:CreateIndexedColumn:InconsistentElementType", ...
+                "%s must hold %s elements like the other rows of the column. " + ...
+                "It holds %s elements.", formatLabel(indexPath), scan.numericClass, itemClass);
+        end
+    end
+    if vectorsAreScalars && isvector(item)
+        return
+    end
+
+    numDims = ndims(item);
+    scan.maxElementDims = max(scan.maxElementDims, numDims - level);
+    if level >= 2 && numDims > level
+        scan.shortcutAllowed = false;
+    end
+    % The first non-empty item supplies the element shape. An empty array that
+    % declares sub-groups, such as [k x 0 x n], supplies it when no row holds
+    % an element.
+    if isempty(scan.firstItem) && ~isempty(item)
+        scan.firstItem = item;
+        scan.firstLevel = level;
+    elseif isempty(item) && level >= 2 && ~ismatrix(item) && scan.emptyArrayLevel == 0
+        scan.emptyArrayItem = item;
+        scan.emptyArrayLevel = level;
+    end
+end
+
+function data = concatenateChunks(chunks, layout)
+    nonEmptyChunks = chunks(~cellfun(@isempty, chunks));
+    if isempty(nonEmptyChunks)
+        data = [];
+        return
+    end
+    if layout.kind == "compound" && layout.compoundClass == "struct"
+        data = joinStructArrays(nonEmptyChunks);
+    elseif layout.kind == "compound"
+        data = joinCompoundColumns(nonEmptyChunks);
+    else
+        data = cat(numel(layout.elementDims) + 1, nonEmptyChunks{:});
+    end
+end
+
+function [flatData, numElements] = normalizeFlatData(data)
+    % Put flat DATA in the form the column stores and count its elements.
+    rejectUnstorableClass(data, [], "NWB:CreateIndexedColumn:InvalidData");
+    if isnumeric(data) || islogical(data)
+        if isvector(data) || isempty(data)
+            flatData = data(:);
+            numElements = numel(data);
+        else
+            flatData = data;
+            numElements = size(data, ndims(data));
+        end
+    elseif (iscellstr(data) || isstring(data)) && (isvector(data) || isempty(data))
+        flatData = data(:);
+        numElements = numel(flatData);
+    elseif isStructArrayRow(data) && (isvector(data) || isempty(data))
+        flatData = data(:);
+        numElements = numel(flatData);
+    elseif isCompoundRow(data)
+        [columns, numElements] = compoundColumns(data, []);
+        flatData = struct2table(columns);
+    elseif isObjectRow(data) && (isvector(data) || isempty(data))
+        flatData = data(:);
+        numElements = numel(flatData);
+    else
+        error("NWB:CreateIndexedColumn:InvalidData", ...
+            "Flat DATA must be numeric, logical, text or compound data, or a vector " + ...
+            "of objects. It is a %s.", class(data));
+    end
+end
+
+function [columns, numElements] = compoundColumns(item, indexPath)
+    % Compound elements as a scalar struct with one column per field, whether
+    % they were given as a table, a struct array or a scalar struct of columns.
+    if istable(item)
+        columns = table2struct(item, 'ToScalar', true);
+    elseif isscalar(item)
+        columns = structfun(@toColumn, item, 'UniformOutput', false);
+    else
+        columns = struct();
+        names = fieldnames(item);
+        for iName = 1:numel(names)
+            values = {item.(names{iName})};
+            if ~all(cellfun(@(value) isscalar(value) || ischar(value), values))
+                error("NWB:CreateIndexedColumn:InconsistentElementShape", ...
+                    "In %s, every element of a struct array must have scalar fields. " + ...
+                    "Give columns of values as a scalar struct instead.", formatLabel(indexPath));
+            end
+            if all(cellfun(@ischar, values))
+                columns.(names{iName}) = values(:);
+            else
+                columns.(names{iName}) = vertcat(values{:});
+            end
+        end
+    end
+    lengths = structfun(@numel, columns);
+    if isempty(lengths) || any(lengths ~= lengths(1))
+        error("NWB:CreateIndexedColumn:InconsistentElementShape", ...
+            "%s must have fields of equal length, one entry per compound element.", formatLabel(indexPath));
+    end
+    numElements = lengths(1);
+end
+
+function column = toColumn(value)
+    if ischar(value)
+        column = {value};
+    else
+        column = value(:);
+    end
+end
+
+function joined = joinCompoundColumns(chunks)
+    % Join scalar structs of columns field by field. Building one table at the
+    % end avoids creating a table for every row.
+    names = fieldnames(chunks{1});
+    for iChunk = 2:numel(chunks)
+        if ~isequal(sort(fieldnames(chunks{iChunk})), sort(names))
+            error("NWB:CreateIndexedColumn:InconsistentElementShape", ...
+                "All compound elements must have the same fields: %s.", strjoin(names, ", "));
+        end
+    end
+    joined = struct();
+    for iName = 1:numel(names)
+        parts = cellfun(@(chunk) chunk.(names{iName}), chunks, 'UniformOutput', false);
+        % Numeric parts of different classes are not combined, as the values
+        % of one class would be converted to the other.
+        partClasses = unique(string(cellfun(@class, parts, 'UniformOutput', false)), 'stable');
+        hasNumericPart = any(cellfun(@(part) isnumeric(part) || islogical(part), parts));
+        if hasNumericPart && ~isscalar(partClasses)
+            error("NWB:CreateIndexedColumn:InconsistentElementType", ...
+                "All compound elements must hold the field ""%s"" in the same class, " + ...
+                "but the rows hold %s.", names{iName}, strjoin(partClasses, " and "));
+        end
+        joined.(names{iName}) = vertcat(parts{:});
+    end
+end
+
+function joined = joinStructArrays(chunks)
+    % Concatenate struct columns, with the fields of every chunk in the order
+    % of the first, as concatenation requires.
+    names = fieldnames(chunks{1});
+    for iChunk = 1:numel(chunks)
+        if ~isequal(sort(fieldnames(chunks{iChunk})), sort(names))
+            error("NWB:CreateIndexedColumn:InconsistentElementShape", ...
+                "All compound elements must have the same fields: %s.", strjoin(names, ", "));
+        end
+        chunks{iChunk} = orderfields(chunks{iChunk}, names);
+    end
+    joined = vertcat(chunks{:});
+end
+
+function tf = isCompoundRow(item)
+    tf = istable(item) || isstruct(item);
+end
+
+function tf = isStructArrayRow(item)
+    % A struct array whose fields hold one value per struct, as opposed to a
+    % scalar struct whose fields are columns of values.
+    tf = isstruct(item);
+    if ~tf
+        return
+    end
+    names = fieldnames(item);
+    for iName = 1:numel(names)
+        values = {item.(names{iName})};
+        if ~all(cellfun(@(value) isscalar(value) || ischar(value), values))
+            tf = false;
             return
         end
     end
 end
 
-function tf = isObjectArray(row)
+function hint = cellHint(level)
+    if level > 1
+        hint = ' or a cell array of sub-groups';
+    else
+        hint = '';
+    end
+end
+
+function tf = isTextRow(item)
+    tf = iscellstr(item) || isstring(item) || ischar(item);
+end
+
+function tf = isObjectRow(item)
     % An array of objects such as types.untyped.ObjectView references. A
-    % table is an object too, but its rows are not elements of one class.
-    tf = isobject(row) && ~istable(row);
+    % table is an object too, but it is a compound row.
+    tf = isobject(item) && ~istable(item);
+end
+
+function label = formatLabel(indexPath)
+    % The position of an item in DATA as text for an error message, such as
+    % DATA{3}{2} for the second sub-group of row 3. An empty INDEXPATH is
+    % DATA itself. Callers pass the position as numbers and format it only
+    % when they raise an error, as a column can hold millions of items.
+    label = 'DATA';
+    if ~isempty(indexPath)
+        label = [label, sprintf('{%d}', indexPath)];
+    end
+end
+
+function rejectUnstorableClass(item, indexPath, errorId)
+    % The column is built in memory, so lazily read or chunked data cannot
+    % be an element, and a dataset cannot hold links.
+    if isa(item, 'types.untyped.DataPipe') || isa(item, 'types.untyped.DataStub')
+        error(errorId, ...
+            "%s is a %s, but the column is built in memory. Give the data as an " + ...
+            "array (load() a DataStub), or build the VectorData and VectorIndex " + ...
+            "with DataPipes directly.", formatLabel(indexPath), class(item));
+    elseif isa(item, 'types.untyped.SoftLink')
+        error(errorId, ...
+            "%s is a types.untyped.SoftLink, but a column cannot hold links. " + ...
+            "Reference objects with types.untyped.ObjectView instead.", formatLabel(indexPath));
+    end
 end
