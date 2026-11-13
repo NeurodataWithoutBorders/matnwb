@@ -306,6 +306,21 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(index.data, uint64([2; 2; 3]));
         end
 
+        function testEmptyArrayRowOfAnySizeHasNoElements(testCase)
+            % An empty row holds no elements whatever its size: it neither
+            % sets the element shape nor has to match it.
+            row1 = reshape(1:8, 4, 2);
+            row2 = 100 + reshape(1:12, 4, 3);
+
+            [vector, index] = util.create_indexed_column({row1, row2, zeros(4, 3, 0)});
+            testCase.verifyEqual(vector.data, [row1, row2]);
+            testCase.verifyEqual(index.data, uint64([2; 5; 5]));
+
+            [vector, index] = util.create_indexed_column({zeros(7, 0), row1, zeros(0, 3)});
+            testCase.verifyEqual(vector.data, row1);
+            testCase.verifyEqual(index.data, uint64([0; 2; 2]));
+        end
+
         function testMatrixRows(testCase)
             % Elements are 4-sample vectors, one per column, as in VectorData.data.
             row1 = reshape(1:8, 4, 2);          % 2 elements

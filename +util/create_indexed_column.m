@@ -14,7 +14,7 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %       VectorData. Rows are concatenated along that last dimension, so
 %       DATA_VECTOR.data is [elementDims x totalElements]. On disk the ragged
 %       axis then comes first, as the schema requires.
-%     - [] for a row with no elements.
+%     - [] or an empty array of any size for a row with no elements.
 %     - text: a string array, a cell array of character vectors or a
 %       character vector, as a vector. A string or cell array is a list of
 %       text elements, and a character vector is one text element. The
@@ -276,7 +276,9 @@ function [chunk, ownCount, innerCounts] = flattenItem(item, level, layout, index
     % entries inside the item.
     elementDims = layout.elementDims;
     innerCounts = repmat({zeros(0, 1)}, 1, level - 1);
-    if isempty(item) && (iscell(item) || isempty(elementDims))
+    % An innermost item without elements is a row or sub-group with no
+    % elements, whatever its size.
+    if isempty(item) && (iscell(item) || isempty(elementDims) || level == 1)
         chunk = [];
         ownCount = 0;
         return
@@ -581,6 +583,11 @@ function scan = scanItem(item, level, vectorsAreScalars, scan, indexPath)
                 "%s must hold %s elements like the other rows of the column. " + ...
                 "It holds %s elements.", formatLabel(indexPath), scan.numericClass, itemClass);
         end
+    end
+    if level == 1 && isempty(item)
+        % An innermost item without elements declares no element shape,
+        % whatever its size.
+        return
     end
     if vectorsAreScalars && isvector(item)
         return
