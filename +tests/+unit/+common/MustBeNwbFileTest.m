@@ -26,6 +26,11 @@ classdef MustBeNwbFileTest < matlab.unittest.TestCase
                 @() matnwb.common.mustBeNwbFile("s3://bucket/data.nwb"));
         end
 
+        function testAcceptsHttpUrl(testCase)
+            testCase.verifyWarningFree( ...
+                @() matnwb.common.mustBeNwbFile("https://example.org/data.nwb.zarr"));
+        end
+
         function testRejectsMissingLocation(testCase)
             testCase.verifyError(@() matnwb.common.mustBeNwbFile("missing.nwb"), ...
                 'NWB:validators:mustBeNwbFile');
