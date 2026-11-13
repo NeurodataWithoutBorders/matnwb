@@ -2,7 +2,9 @@ function matnwb_exportTutorials(options)
 % matnwb_exportTutorials - Export mlx tutorial files to the specified output format
 %
 % Note: This function will ignore the following live scripts:
-%  - basicUsage.mlx : depends on output from convertTrials.m
+%  - convertTrials.mlx : needs the CRCNS ALM-3 dataset, located through the
+%    CRCNS_ALM3_ROOT_PATH environment variable
+%  - basicUsage.mlx : depends on output from convertTrials.mlx
 %  - read_demo.mlx : depends on external data, potentially slow
 %  - remote_read.mlx : Uses nwbRead on s3 url, potentially very slow]
 %
@@ -28,7 +30,7 @@ function matnwb_exportTutorials(options)
         options.Expression (1,1) string = "*" % Filter by expression
         options.FileNames (1,:) string = string.empty % Filter by file names
         options.FilePaths (1,:) string = string.empty % Export specified files
-        options.IgnoreFiles (1,:) string = ["basicUsage", "read_demo", "remote_read"];
+        options.IgnoreFiles (1,:) string = ["convertTrials", "basicUsage", "read_demo", "remote_read"];
         options.RunLivescript (1,1) logical = true
     end
 
@@ -78,6 +80,8 @@ function matnwb_exportTutorials(options)
     % temporary folder which is cleaned up afterwards
     currentDir = pwd();
     cleanupWorkdir = onCleanup(@(fp) cd(currentDir));
+    recycleState = recycle('off');
+    recycleCleanupObj = onCleanup(@() recycle(recycleState));
 
     tempDir = fullfile(tempdir, 'nwbTutorials');
     if ~isfolder(tempDir); mkdir(tempDir); end

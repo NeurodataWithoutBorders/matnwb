@@ -34,7 +34,7 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture, tests.fixtur
     properties (Constant)
         SkippedTutorials = {...
             'basicUsage.mlx', ...  % depends on external data
-            'convertTrials.m', ... % depends on basicUsage output
+            'convertTrials.mlx', ... % depends on external data
             'formatStruct.m', ...  % Actually a utility script, not a tutorial
             'read_demo.mlx', ...   % depends on external data
             'read_demo_dandihub.mlx', ... % depends on external data
