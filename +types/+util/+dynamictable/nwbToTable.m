@@ -105,7 +105,7 @@ if ~isempty(categories)
             types.util.dynamictable.internal.getColumnDescriptions( ...
                 categoryTable, categoryTable.colnames);
         matlabTable.(currentCategory) = categoryRows;
-        columnDescriptions(end+1) = {categoryTable.description}; %#ok<AGROW>
+        columnDescriptions(end+1) = {char(categoryTable.description)}; %#ok<AGROW>
     end
 end
 
