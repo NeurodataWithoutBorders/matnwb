@@ -62,24 +62,24 @@ end
 
 function [runFirst, runLast] = findRuns(indices)
 % findRuns - Positions of the first and last index of each run of consecutive indices.
-runFirst = find([true, diff(indices) > 1]);
-runLast = [runFirst(2:end) - 1, numel(indices)];
+    runFirst = find([true, diff(indices) > 1]);
+    runLast = [runFirst(2:end) - 1, numel(indices)];
 end
 
 function shapes = createRunShapes(indices, runFirst, runLast)
 % createRunShapes - One Block per run of consecutive indices and one Point per isolated index.
-import io.space.shape.Block;
-import io.space.shape.Point;
-shapes = cell(1, numel(runFirst));
-for iRun = 1:numel(runFirst)
-    first = indices(runFirst(iRun));
-    last = indices(runLast(iRun));
-    if first == last
-        shapes{iRun} = Point(first);
-    else
-        shapes{iRun} = Block('start', first, 'stop', last);
+    import io.space.shape.Block;
+    import io.space.shape.Point;
+    shapes = cell(1, numel(runFirst));
+    for iRun = 1:numel(runFirst)
+        first = indices(runFirst(iRun));
+        last = indices(runLast(iRun));
+        if first == last
+            shapes{iRun} = Point(first);
+        else
+            shapes{iRun} = Block('start', first, 'stop', last);
+        end
     end
-end
 end
 
 function optimalBlock = findOptimalBlock(indices)
@@ -88,39 +88,39 @@ function optimalBlock = findOptimalBlock(indices)
 % Every stride from the first index to another index is tried, and the
 % longest unbroken stretch of matching indices is kept. The search stops
 % once a stride cannot produce a longer block than the best one so far.
-import io.space.shape.Block;
-if iscolumn(indices)
-    indices = indices .';
-end
-stop = 1;
-start = 1;
-step = 1;
-count = 0;
-for stepInd = 2:length(indices)
-    tempStep = indices(stepInd) - indices(1);
-    idealRange = indices(1):tempStep:indices(end);
-    if length(idealRange) <= count
-        break;
+    import io.space.shape.Block;
+    if iscolumn(indices)
+        indices = indices .';
     end
-    rangeMatches = ismembc(idealRange, indices);
-    startInd = find(rangeMatches, 1);
-    stopInd = find(rangeMatches, 1, 'last');
-    splitPoints = find(~rangeMatches(startInd:stopInd)) + startInd - 1;
-    if ~isempty(splitPoints)
-        subStarts = [startInd (splitPoints + 1)];
-        subStops = [(splitPoints - 1) stopInd];
-        segment = subStops - subStarts + 1;
-        [~, largestSegInd] = max(segment(:));
-        startInd = subStarts(largestSegInd);
-        stopInd = subStops(largestSegInd);
+    stop = 1;
+    start = 1;
+    step = 1;
+    count = 0;
+    for stepInd = 2:length(indices)
+        tempStep = indices(stepInd) - indices(1);
+        idealRange = indices(1):tempStep:indices(end);
+        if length(idealRange) <= count
+            break;
+        end
+        rangeMatches = ismembc(idealRange, indices);
+        startInd = find(rangeMatches, 1);
+        stopInd = find(rangeMatches, 1, 'last');
+        splitPoints = find(~rangeMatches(startInd:stopInd)) + startInd - 1;
+        if ~isempty(splitPoints)
+            subStarts = [startInd (splitPoints + 1)];
+            subStops = [(splitPoints - 1) stopInd];
+            segment = subStops - subStarts + 1;
+            [~, largestSegInd] = max(segment(:));
+            startInd = subStarts(largestSegInd);
+            stopInd = subStops(largestSegInd);
+        end
+        subCount = sum(rangeMatches(startInd:stopInd));
+        if subCount > count
+            start = idealRange(startInd);
+            stop = idealRange(stopInd);
+            step = tempStep;
+            count = subCount;
+        end
     end
-    subCount = sum(rangeMatches(startInd:stopInd));
-    if subCount > count
-        start = idealRange(startInd);
-        stop = idealRange(stopInd);
-        step = tempStep;
-        count = subCount;
-    end
-end
-optimalBlock = Block('start', start, 'step', step, 'stop', stop);
+    optimalBlock = Block('start', start, 'step', step, 'stop', stop);
 end
