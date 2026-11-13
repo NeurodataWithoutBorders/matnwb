@@ -82,8 +82,17 @@ Referencing another table
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Provide the ``table`` argument to store a
 :class:`types.hdmf_common.DynamicTableRegion` (a column of row references) instead of a
-plain :class:`types.hdmf_common.VectorData`. For example, to record which electrodes
-each unit was detected on (``electrodesTable`` is an existing electrodes table):
+plain :class:`types.hdmf_common.VectorData`. The example below records which electrodes
+each unit was detected on. Such a column references the electrodes table of your file. To
+run the example without one, create a table with three electrodes:
+
+.. literalinclude:: examples/ragged_arrays_examples.m
+   :language: matlab
+   :start-after: % snippet: electrodes-table
+   :end-before: % end snippet
+   :dedent:
+
+Then add the column to the ``units`` table from the first example:
 
 .. literalinclude:: examples/ragged_arrays_examples.m
    :language: matlab
