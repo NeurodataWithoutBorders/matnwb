@@ -7,6 +7,19 @@ classdef HDF5Reader < io.backend.base.Reader
     % h5info Datatype and Dataspace, and the BackendInfo of an
     % AttributeInfo is the h5info Datatype.
 
+    methods (Static)
+        function tf = canOpen(filename)
+        % canOpen - Whether filename is an HDF5 file.
+        %
+        % H5F.is_hdf5 reads the file signature without opening the file,
+        % and returns a negative value for a path that is not a file.
+            arguments
+                filename (1,1) string
+            end
+            tf = H5F.is_hdf5(char(filename)) > 0;
+        end
+    end
+
     methods
         function obj = HDF5Reader(filename)
             obj@io.backend.base.Reader(filename);

@@ -170,6 +170,17 @@ classdef nwbReadTest < tests.abstract.NwbTestCase
             testCase.verifyClass(nwb, 'NwbFile');
         end
 
+        function readFileWithoutNwbExtension(testCase)
+            % The storage backend is detected from the file contents, so an
+            % NWB file is read whatever its extension.
+            nwbExport(tests.factory.NWBFile(), "testReadWithoutNwbExtension.nwb")
+            copyfile("testReadWithoutNwbExtension.nwb", "testReadWithoutNwbExtension.h5")
+
+            nwb = nwbRead("testReadWithoutNwbExtension.h5", "ignorecache");
+
+            testCase.verifyClass(nwb, 'NwbFile');
+        end
+
         function testIgnoreCacheFlagForFileWithOtherNWBVersion(testCase)
             
             % Temporarily remove the generated types from path.
