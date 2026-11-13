@@ -11,6 +11,7 @@ end
 
 classes = keys(Namespace.registry);
 pregenerated = containers.Map; %generated nodes and props for faster dependency resolution
+signatureEntries = cell(1, 0);
 for i=1:length(classes)
     className = classes{i};
     [processed, classprops, inherited] = file.processClass(className, Namespace, pregenerated);
@@ -26,10 +27,27 @@ for i=1:length(classes)
         fileCleanupObj = onCleanup(@(id) fclose(fid));
         fwrite(fid, file.fillClass(className, Namespace, processed, ...
             classprops, inherited, superClassProps), 'char');
+        signatureEntries{end+1} = file.fillFunctionSignature( ...
+            className, classprops, Namespace, superClassProps); %#ok<AGROW>
     else
         % pass
     end
 end
+writeFunctionSignatureFragment(classFileDir, signatureEntries)
+end
+
+function writeFunctionSignatureFragment(classFileDir, signatureEntries)
+% writeFunctionSignatureFragment - Write the signature entries of a namespace.
+%
+%   The fragment is a JSON object with one entry per class. It is combined
+%   with the fragments of the other generated namespaces into the
+%   functionSignatures.json file that MATLAB reads (see
+%   matnwb.internal.typecache.writeFunctionSignatures).
+
+    fragmentText = sprintf('{\n%s\n}\n', strjoin(signatureEntries, sprintf(',\n')));
+    fid = fopen(fullfile(classFileDir, matnwb.common.constant.SIGNATUREFRAGMENTFILE), 'w', 'n', 'UTF-8');
+    fileCleanupObj = onCleanup(@() fclose(fid));
+    fprintf(fid, '%s', fragmentText);
 end
 
 function writeNamespaceVersion(classFileDir, version)

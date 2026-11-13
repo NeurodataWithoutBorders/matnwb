@@ -75,6 +75,7 @@ function generateNamespaces(namespaceInfoList, saveDir)
             removeLeastRecentlyUsed(versionFolder, maxEntriesPerVersion)
         end
     end
+    matnwb.internal.typecache.writeFunctionSignatures(saveDir)
     rehash()
 end
 

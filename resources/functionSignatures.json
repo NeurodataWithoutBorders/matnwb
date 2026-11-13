@@ -1,5 +1,5 @@
 {
-  "_schemaVersion": "1.0.0",
+"_schemaVersion": "1.0.0",
   "generateCore":
   {
     "inputs":
@@ -77,5 +77,3825 @@
       {"name":"nwbFileObjects", "kind":"required", "type":"NwbFile", "purpose":"An NWB file object or a list of NWB file objects"},
       {"name":"filePaths", "kind":"required", "type":"file=*.nwb", "purpose":"A filepath or a list of filepaths for exporting NWB file object(s)"}
     ]
-  }
+  },
+"types.core.AbstractFeatureSeries": {
+  "inputs": [
+    {
+      "name": "comments",
+      "kind": "namevalue",
+      "purpose": "Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string."
+    },
+    {
+      "name": "control",
+      "kind": "namevalue",
+      "purpose": "Numerical labels that apply to each time point in data for the purpose of querying and slicing data by these values. If present, the length of this array should be the same as the length of the first dimension of data."
+    },
+    {
+      "name": "control_description",
+      "kind": "namevalue",
+      "purpose": "Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0."
+    },
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Values of each feature at each time."
+    },
+    {
+      "name": "data_continuity",
+      "kind": "namevalue",
+      "purpose": "Optionally describe the continuity of the data. Can be \"continuous\", \"instantaneous\", or \"step\". For example, a voltage trace would be \"continuous\", because samples are recorded from a continuous process. An array of lick times would be \"instantaneous\", because the data represents distinct moments in time. Times of image presentations would be \"step\" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable. For storing instantaneous event information, it is recommended to use an EventsTable instead of a TimeSeries with continuity set to \"instantaneous\"."
+    },
+    {
+      "name": "data_conversion",
+      "kind": "namevalue",
+      "purpose": "Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data to the specified 'unit'. For example, if the data acquisition system stores values in this object as signed 16-bit integers (int16 range -32,768 to 32,767) that correspond to a 5V range (-2.5V to 2.5V), and the data acquisition system gain is 8000X, then the 'conversion' multiplier to get from raw data acquisition values to recorded volts is 2.5/32768/8000 = 9.5367e-9."
+    },
+    {
+      "name": "data_offset",
+      "kind": "namevalue",
+      "purpose": "Scalar to add to the data after scaling by 'conversion' to finalize its coercion to the specified 'unit'. Two common examples of this include (a) data stored in an unsigned type that requires a shift after scaling to re-center the data, and (b) specialized recording devices that naturally cause a scalar offset with respect to the true units."
+    },
+    {
+      "name": "data_resolution",
+      "kind": "namevalue",
+      "purpose": "Smallest meaningful difference between values in data, stored in the specified unit, e.g., the change in value of the least significant bit, or a larger number if signal noise is known to be present. If unknown, use -1.0."
+    },
+    {
+      "name": "data_unit",
+      "kind": "namevalue",
+      "purpose": "Since there can be different units for different features, store the units in 'feature_units'. The default value for this attribute is \"see 'feature_units'\"."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the time series."
+    },
+    {
+      "name": "feature_units",
+      "kind": "namevalue",
+      "purpose": "Units of each feature."
+    },
+    {
+      "name": "features",
+      "kind": "namevalue",
+      "purpose": "Description of the features represented in TimeSeries::data."
+    },
+    {
+      "name": "starting_time",
+      "kind": "namevalue",
+      "purpose": "Timestamp of the first sample in seconds. When timestamps are uniformly spaced, the timestamp of the first sample can be specified and all subsequent ones calculated from the sampling rate attribute."
+    },
+    {
+      "name": "starting_time_rate",
+      "kind": "namevalue",
+      "purpose": "Sampling rate, in Hz."
+    },
+    {
+      "name": "timestamps",
+      "kind": "namevalue",
+      "purpose": "Timestamps for samples stored in data, in seconds, relative to the common experiment master clock stored in NWBFile.timestamps_reference_time."
+    }
+  ]
+},
+"types.core.AnnotationSeries": {
+  "inputs": [
+    {
+      "name": "comments",
+      "kind": "namevalue",
+      "purpose": "Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string."
+    },
+    {
+      "name": "control",
+      "kind": "namevalue",
+      "purpose": "Numerical labels that apply to each time point in data for the purpose of querying and slicing data by these values. If present, the length of this array should be the same as the length of the first dimension of data."
+    },
+    {
+      "name": "control_description",
+      "kind": "namevalue",
+      "purpose": "Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0."
+    },
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Annotations made during an experiment."
+    },
+    {
+      "name": "data_continuity",
+      "kind": "namevalue",
+      "purpose": "Optionally describe the continuity of the data. Can be \"continuous\", \"instantaneous\", or \"step\". For example, a voltage trace would be \"continuous\", because samples are recorded from a continuous process. An array of lick times would be \"instantaneous\", because the data represents distinct moments in time. Times of image presentations would be \"step\" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable. For storing instantaneous event information, it is recommended to use an EventsTable instead of a TimeSeries with continuity set to \"instantaneous\"."
+    },
+    {
+      "name": "data_conversion",
+      "kind": "namevalue",
+      "purpose": "Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data to the specified 'unit'. For example, if the data acquisition system stores values in this object as signed 16-bit integers (int16 range -32,768 to 32,767) that correspond to a 5V range (-2.5V to 2.5V), and the data acquisition system gain is 8000X, then the 'conversion' multiplier to get from raw data acquisition values to recorded volts is 2.5/32768/8000 = 9.5367e-9."
+    },
+    {
+      "name": "data_offset",
+      "kind": "namevalue",
+      "purpose": "Scalar to add to the data after scaling by 'conversion' to finalize its coercion to the specified 'unit'. Two common examples of this include (a) data stored in an unsigned type that requires a shift after scaling to re-center the data, and (b) specialized recording devices that naturally cause a scalar offset with respect to the true units."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the time series."
+    },
+    {
+      "name": "starting_time",
+      "kind": "namevalue",
+      "purpose": "Timestamp of the first sample in seconds. When timestamps are uniformly spaced, the timestamp of the first sample can be specified and all subsequent ones calculated from the sampling rate attribute."
+    },
+    {
+      "name": "starting_time_rate",
+      "kind": "namevalue",
+      "purpose": "Sampling rate, in Hz."
+    },
+    {
+      "name": "timestamps",
+      "kind": "namevalue",
+      "purpose": "Timestamps for samples stored in data, in seconds, relative to the common experiment master clock stored in NWBFile.timestamps_reference_time."
+    }
+  ]
+},
+"types.core.BaseImage": {
+  "inputs": [
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Data property for dataset class (BaseImage)"
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the image."
+    }
+  ]
+},
+"types.core.BehavioralEpochs": {
+  "inputs": []
+},
+"types.core.BehavioralEvents": {
+  "inputs": []
+},
+"types.core.BehavioralTimeSeries": {
+  "inputs": []
+},
+"types.core.ClusterWaveforms": {
+  "inputs": [
+    {
+      "name": "clustering_interface",
+      "kind": "namevalue",
+      "purpose": "Link to Clustering interface that was the source of the clustered data."
+    },
+    {
+      "name": "waveform_filtering",
+      "kind": "namevalue",
+      "purpose": "Filtering applied to data before generating mean/sd"
+    },
+    {
+      "name": "waveform_mean",
+      "kind": "namevalue",
+      "purpose": "The mean waveform for each cluster, using the same indices for each wave as cluster numbers in the associated Clustering module (i.e., cluster 3 is in array slot [3]). Waveforms corresponding to gaps in cluster sequence should be empty (e.g., zero-filled)."
+    },
+    {
+      "name": "waveform_sd",
+      "kind": "namevalue",
+      "purpose": "Stdev of waveforms for each cluster, using the same indices as in mean."
+    }
+  ]
+},
+"types.core.Clustering": {
+  "inputs": [
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of clusters or clustering (e.g., cluster 0 is noise, clusters curated using Klusters, etc.)."
+    },
+    {
+      "name": "num",
+      "kind": "namevalue",
+      "purpose": "Cluster number of each event"
+    },
+    {
+      "name": "peak_over_rms",
+      "kind": "namevalue",
+      "purpose": "Maximum ratio of waveform peak to RMS on any channel in the cluster (provides a basic clustering metric)."
+    },
+    {
+      "name": "times",
+      "kind": "namevalue",
+      "purpose": "Times of clustered events, in seconds. This may be a link to times field in associated FeatureExtraction module."
+    }
+  ]
+},
+"types.core.CompassDirection": {
+  "inputs": []
+},
+"types.core.CorrectedImageStack": {
+  "inputs": [
+    {
+      "name": "corrected",
+      "kind": "namevalue",
+      "purpose": "Image stack with frames shifted to the common coordinates."
+    },
+    {
+      "name": "original",
+      "kind": "namevalue",
+      "purpose": "Link to ImageSeries object that is being registered."
+    },
+    {
+      "name": "xy_translation",
+      "kind": "namevalue",
+      "purpose": "Stores the x,y delta necessary to align each frame to the common coordinates, for example, to align each frame to a reference image."
+    }
+  ]
+},
+"types.core.CurrentClampSeries": {
+  "inputs": [
+    {
+      "name": "bias_current",
+      "kind": "namevalue",
+      "purpose": "Bias current, in amperes."
+    },
+    {
+      "name": "bridge_balance",
+      "kind": "namevalue",
+      "purpose": "Bridge balance, in ohms."
+    },
+    {
+      "name": "capacitance_compensation",
+      "kind": "namevalue",
+      "purpose": "Capacitance compensation, in farads."
+    },
+    {
+      "name": "comments",
+      "kind": "namevalue",
+      "purpose": "Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string."
+    },
+    {
+      "name": "control",
+      "kind": "namevalue",
+      "purpose": "Numerical labels that apply to each time point in data for the purpose of querying and slicing data by these values. If present, the length of this array should be the same as the length of the first dimension of data."
+    },
+    {
+      "name": "control_description",
+      "kind": "namevalue",
+      "purpose": "Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0."
+    },
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Recorded voltage."
+    },
+    {
+      "name": "data_continuity",
+      "kind": "namevalue",
+      "purpose": "Optionally describe the continuity of the data. Can be \"continuous\", \"instantaneous\", or \"step\". For example, a voltage trace would be \"continuous\", because samples are recorded from a continuous process. An array of lick times would be \"instantaneous\", because the data represents distinct moments in time. Times of image presentations would be \"step\" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable. For storing instantaneous event information, it is recommended to use an EventsTable instead of a TimeSeries with continuity set to \"instantaneous\"."
+    },
+    {
+      "name": "data_conversion",
+      "kind": "namevalue",
+      "purpose": "Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data to the specified 'unit'. For example, if the data acquisition system stores values in this object as signed 16-bit integers (int16 range -32,768 to 32,767) that correspond to a 5V range (-2.5V to 2.5V), and the data acquisition system gain is 8000X, then the 'conversion' multiplier to get from raw data acquisition values to recorded volts is 2.5/32768/8000 = 9.5367e-9."
+    },
+    {
+      "name": "data_offset",
+      "kind": "namevalue",
+      "purpose": "Scalar to add to the data after scaling by 'conversion' to finalize its coercion to the specified 'unit'. Two common examples of this include (a) data stored in an unsigned type that requires a shift after scaling to re-center the data, and (b) specialized recording devices that naturally cause a scalar offset with respect to the true units."
+    },
+    {
+      "name": "data_resolution",
+      "kind": "namevalue",
+      "purpose": "Smallest meaningful difference between values in data, stored in the specified unit, e.g., the change in value of the least significant bit, or a larger number if signal noise is known to be present. If unknown, use -1.0."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the time series."
+    },
+    {
+      "name": "electrode",
+      "kind": "namevalue",
+      "purpose": "Link to IntracellularElectrode object that describes the electrode that was used to apply or record this data."
+    },
+    {
+      "name": "gain",
+      "kind": "namevalue",
+      "purpose": "Gain of the recording, in units Volt/Amp (v-clamp) or Volt/Volt (c-clamp)."
+    },
+    {
+      "name": "starting_time",
+      "kind": "namevalue",
+      "purpose": "Timestamp of the first sample in seconds. When timestamps are uniformly spaced, the timestamp of the first sample can be specified and all subsequent ones calculated from the sampling rate attribute."
+    },
+    {
+      "name": "starting_time_rate",
+      "kind": "namevalue",
+      "purpose": "Sampling rate, in Hz."
+    },
+    {
+      "name": "stimulus_description",
+      "kind": "namevalue",
+      "purpose": "Protocol/stimulus name for this patch-clamp dataset."
+    },
+    {
+      "name": "sweep_number",
+      "kind": "namevalue",
+      "purpose": "Sweep number, allows users to group different PatchClampSeries together."
+    },
+    {
+      "name": "timestamps",
+      "kind": "namevalue",
+      "purpose": "Timestamps for samples stored in data, in seconds, relative to the common experiment master clock stored in NWBFile.timestamps_reference_time."
+    }
+  ]
+},
+"types.core.CurrentClampStimulusSeries": {
+  "inputs": [
+    {
+      "name": "comments",
+      "kind": "namevalue",
+      "purpose": "Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string."
+    },
+    {
+      "name": "control",
+      "kind": "namevalue",
+      "purpose": "Numerical labels that apply to each time point in data for the purpose of querying and slicing data by these values. If present, the length of this array should be the same as the length of the first dimension of data."
+    },
+    {
+      "name": "control_description",
+      "kind": "namevalue",
+      "purpose": "Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0."
+    },
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Stimulus current applied."
+    },
+    {
+      "name": "data_continuity",
+      "kind": "namevalue",
+      "purpose": "Optionally describe the continuity of the data. Can be \"continuous\", \"instantaneous\", or \"step\". For example, a voltage trace would be \"continuous\", because samples are recorded from a continuous process. An array of lick times would be \"instantaneous\", because the data represents distinct moments in time. Times of image presentations would be \"step\" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable. For storing instantaneous event information, it is recommended to use an EventsTable instead of a TimeSeries with continuity set to \"instantaneous\"."
+    },
+    {
+      "name": "data_conversion",
+      "kind": "namevalue",
+      "purpose": "Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data to the specified 'unit'. For example, if the data acquisition system stores values in this object as signed 16-bit integers (int16 range -32,768 to 32,767) that correspond to a 5V range (-2.5V to 2.5V), and the data acquisition system gain is 8000X, then the 'conversion' multiplier to get from raw data acquisition values to recorded volts is 2.5/32768/8000 = 9.5367e-9."
+    },
+    {
+      "name": "data_offset",
+      "kind": "namevalue",
+      "purpose": "Scalar to add to the data after scaling by 'conversion' to finalize its coercion to the specified 'unit'. Two common examples of this include (a) data stored in an unsigned type that requires a shift after scaling to re-center the data, and (b) specialized recording devices that naturally cause a scalar offset with respect to the true units."
+    },
+    {
+      "name": "data_resolution",
+      "kind": "namevalue",
+      "purpose": "Smallest meaningful difference between values in data, stored in the specified unit, e.g., the change in value of the least significant bit, or a larger number if signal noise is known to be present. If unknown, use -1.0."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the time series."
+    },
+    {
+      "name": "electrode",
+      "kind": "namevalue",
+      "purpose": "Link to IntracellularElectrode object that describes the electrode that was used to apply or record this data."
+    },
+    {
+      "name": "gain",
+      "kind": "namevalue",
+      "purpose": "Gain of the recording, in units Volt/Amp (v-clamp) or Volt/Volt (c-clamp)."
+    },
+    {
+      "name": "starting_time",
+      "kind": "namevalue",
+      "purpose": "Timestamp of the first sample in seconds. When timestamps are uniformly spaced, the timestamp of the first sample can be specified and all subsequent ones calculated from the sampling rate attribute."
+    },
+    {
+      "name": "starting_time_rate",
+      "kind": "namevalue",
+      "purpose": "Sampling rate, in Hz."
+    },
+    {
+      "name": "stimulus_description",
+      "kind": "namevalue",
+      "purpose": "Protocol/stimulus name for this patch-clamp dataset."
+    },
+    {
+      "name": "sweep_number",
+      "kind": "namevalue",
+      "purpose": "Sweep number, allows users to group different PatchClampSeries together."
+    },
+    {
+      "name": "timestamps",
+      "kind": "namevalue",
+      "purpose": "Timestamps for samples stored in data, in seconds, relative to the common experiment master clock stored in NWBFile.timestamps_reference_time."
+    }
+  ]
+},
+"types.core.DecompositionSeries": {
+  "inputs": [
+    {
+      "name": "bands",
+      "kind": "namevalue",
+      "purpose": "Table for describing the bands that this series was generated from."
+    },
+    {
+      "name": "comments",
+      "kind": "namevalue",
+      "purpose": "Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string."
+    },
+    {
+      "name": "control",
+      "kind": "namevalue",
+      "purpose": "Numerical labels that apply to each time point in data for the purpose of querying and slicing data by these values. If present, the length of this array should be the same as the length of the first dimension of data."
+    },
+    {
+      "name": "control_description",
+      "kind": "namevalue",
+      "purpose": "Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0."
+    },
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Data decomposed into frequency bands."
+    },
+    {
+      "name": "data_continuity",
+      "kind": "namevalue",
+      "purpose": "Optionally describe the continuity of the data. Can be \"continuous\", \"instantaneous\", or \"step\". For example, a voltage trace would be \"continuous\", because samples are recorded from a continuous process. An array of lick times would be \"instantaneous\", because the data represents distinct moments in time. Times of image presentations would be \"step\" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable. For storing instantaneous event information, it is recommended to use an EventsTable instead of a TimeSeries with continuity set to \"instantaneous\"."
+    },
+    {
+      "name": "data_conversion",
+      "kind": "namevalue",
+      "purpose": "Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data to the specified 'unit'. For example, if the data acquisition system stores values in this object as signed 16-bit integers (int16 range -32,768 to 32,767) that correspond to a 5V range (-2.5V to 2.5V), and the data acquisition system gain is 8000X, then the 'conversion' multiplier to get from raw data acquisition values to recorded volts is 2.5/32768/8000 = 9.5367e-9."
+    },
+    {
+      "name": "data_offset",
+      "kind": "namevalue",
+      "purpose": "Scalar to add to the data after scaling by 'conversion' to finalize its coercion to the specified 'unit'. Two common examples of this include (a) data stored in an unsigned type that requires a shift after scaling to re-center the data, and (b) specialized recording devices that naturally cause a scalar offset with respect to the true units."
+    },
+    {
+      "name": "data_resolution",
+      "kind": "namevalue",
+      "purpose": "Smallest meaningful difference between values in data, stored in the specified unit, e.g., the change in value of the least significant bit, or a larger number if signal noise is known to be present. If unknown, use -1.0."
+    },
+    {
+      "name": "data_unit",
+      "kind": "namevalue",
+      "purpose": "Base unit of measurement for working with the data. Actual stored values are not necessarily stored in these units. To access the data in these units, multiply 'data' by 'conversion'."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the time series."
+    },
+    {
+      "name": "metric",
+      "kind": "namevalue",
+      "purpose": "The metric used, e.g., phase, amplitude, power."
+    },
+    {
+      "name": "source_channels",
+      "kind": "namevalue",
+      "purpose": "DynamicTableRegion pointer to the channels that this decomposition series was generated from."
+    },
+    {
+      "name": "source_timeseries",
+      "kind": "namevalue",
+      "purpose": "Link to TimeSeries object that this data was calculated from. Metadata about electrodes and their position can be read from that ElectricalSeries so it is not necessary to store that information here."
+    },
+    {
+      "name": "starting_time",
+      "kind": "namevalue",
+      "purpose": "Timestamp of the first sample in seconds. When timestamps are uniformly spaced, the timestamp of the first sample can be specified and all subsequent ones calculated from the sampling rate attribute."
+    },
+    {
+      "name": "starting_time_rate",
+      "kind": "namevalue",
+      "purpose": "Sampling rate, in Hz."
+    },
+    {
+      "name": "timestamps",
+      "kind": "namevalue",
+      "purpose": "Timestamps for samples stored in data, in seconds, relative to the common experiment master clock stored in NWBFile.timestamps_reference_time."
+    }
+  ]
+},
+"types.core.Device": {
+  "inputs": [
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the device as free-form text. If there is any software/firmware associated with the device, the names and versions of those can be added to NWBFile.was_generated_by."
+    },
+    {
+      "name": "manufacturer",
+      "kind": "namevalue",
+      "purpose": "DEPRECATED. The name of the manufacturer of the device, e.g., Imec, Plexon, Thorlabs. Instead of using this field, store the value in DeviceModel.manufacturer and link to that DeviceModel from this Device."
+    },
+    {
+      "name": "model",
+      "kind": "namevalue",
+      "purpose": "The model of the device."
+    },
+    {
+      "name": "model_name",
+      "kind": "namevalue",
+      "purpose": "DEPRECATED. The model name of the device, e.g., Neuropixels 1.0, V-Probe, Bergamo III. Instead of using this field, create and add a new DeviceModel named the model name and link to that DeviceModel from this Device."
+    },
+    {
+      "name": "model_number",
+      "kind": "namevalue",
+      "purpose": "DEPRECATED. The model number (or part/product number) of the device, e.g., PRB_1_4_0480_1, PLX-VP-32-15SE(75)-(260-80)(460-10)-300-(1)CON/32m-V, BERGAMO. Instead of using this field, store the value in DeviceModel.model_number and link to that DeviceModel from this Device."
+    },
+    {
+      "name": "serial_number",
+      "kind": "namevalue",
+      "purpose": "The serial number of the device."
+    }
+  ]
+},
+"types.core.DeviceModel": {
+  "inputs": [
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the device model as free-form text."
+    },
+    {
+      "name": "manufacturer",
+      "kind": "namevalue",
+      "purpose": "The name of the manufacturer of the device model, e.g., Imec, Plexon, Thorlabs."
+    },
+    {
+      "name": "model_number",
+      "kind": "namevalue",
+      "purpose": "The model number (or part/product number) of the device, e.g., PRB_1_4_0480_1, PLX-VP-32-15SE(75)-(260-80)(460-10)-300-(1)CON/32m-V, BERGAMO."
+    }
+  ]
+},
+"types.core.DfOverF": {
+  "inputs": []
+},
+"types.core.DurationVectorData": {
+  "inputs": [
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Data property for dataset class (DurationVectorData)"
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of what these vectors represent."
+    },
+    {
+      "name": "resolution",
+      "kind": "namevalue",
+      "purpose": "The temporal resolution of the durations, in seconds. This is typically the sampling period (1 / sampling_rate), also known as the clock period, of the data acquisition system from which the durations were recorded or derived."
+    }
+  ]
+},
+"types.core.ElectricalSeries": {
+  "inputs": [
+    {
+      "name": "channel_conversion",
+      "kind": "namevalue",
+      "purpose": "Channel-specific conversion factor. Multiply the data in the 'data' dataset by these values along the channel axis (as indicated by axis attribute) AND by the global conversion factor in the 'conversion' attribute of 'data' to get the data values in Volts, i.e., data in Volts = data * data.conversion * channel_conversion. This approach allows for both global and per-channel data conversion factors needed to support the storage of electrical recordings as native values generated by data acquisition systems. If this dataset is not present, then there is no channel-specific conversion factor, i.e., it is 1 for all channels."
+    },
+    {
+      "name": "comments",
+      "kind": "namevalue",
+      "purpose": "Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string."
+    },
+    {
+      "name": "control",
+      "kind": "namevalue",
+      "purpose": "Numerical labels that apply to each time point in data for the purpose of querying and slicing data by these values. If present, the length of this array should be the same as the length of the first dimension of data."
+    },
+    {
+      "name": "control_description",
+      "kind": "namevalue",
+      "purpose": "Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0."
+    },
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Recorded voltage data."
+    },
+    {
+      "name": "data_continuity",
+      "kind": "namevalue",
+      "purpose": "Optionally describe the continuity of the data. Can be \"continuous\", \"instantaneous\", or \"step\". For example, a voltage trace would be \"continuous\", because samples are recorded from a continuous process. An array of lick times would be \"instantaneous\", because the data represents distinct moments in time. Times of image presentations would be \"step\" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable. For storing instantaneous event information, it is recommended to use an EventsTable instead of a TimeSeries with continuity set to \"instantaneous\"."
+    },
+    {
+      "name": "data_conversion",
+      "kind": "namevalue",
+      "purpose": "Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data to the specified 'unit'. For example, if the data acquisition system stores values in this object as signed 16-bit integers (int16 range -32,768 to 32,767) that correspond to a 5V range (-2.5V to 2.5V), and the data acquisition system gain is 8000X, then the 'conversion' multiplier to get from raw data acquisition values to recorded volts is 2.5/32768/8000 = 9.5367e-9."
+    },
+    {
+      "name": "data_offset",
+      "kind": "namevalue",
+      "purpose": "Scalar to add to the data after scaling by 'conversion' to finalize its coercion to the specified 'unit'. Two common examples of this include (a) data stored in an unsigned type that requires a shift after scaling to re-center the data, and (b) specialized recording devices that naturally cause a scalar offset with respect to the true units."
+    },
+    {
+      "name": "data_resolution",
+      "kind": "namevalue",
+      "purpose": "Smallest meaningful difference between values in data, stored in the specified unit, e.g., the change in value of the least significant bit, or a larger number if signal noise is known to be present. If unknown, use -1.0."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the time series."
+    },
+    {
+      "name": "electrodes",
+      "kind": "namevalue",
+      "purpose": "DynamicTableRegion pointer to the electrodes that this time series was generated from."
+    },
+    {
+      "name": "filtering",
+      "kind": "namevalue",
+      "purpose": "Filtering applied to all channels of the data. For example, if this ElectricalSeries represents high-pass-filtered data (also known as AP Band), then this value could be \"High-pass 4-pole Bessel filter at 500 Hz\". If this ElectricalSeries represents low-pass-filtered LFP data and the type of filter is unknown, then this value could be \"Low-pass filter at 300 Hz\". If a non-standard filter type is used, provide as much detail about the filter properties as possible."
+    },
+    {
+      "name": "starting_time",
+      "kind": "namevalue",
+      "purpose": "Timestamp of the first sample in seconds. When timestamps are uniformly spaced, the timestamp of the first sample can be specified and all subsequent ones calculated from the sampling rate attribute."
+    },
+    {
+      "name": "starting_time_rate",
+      "kind": "namevalue",
+      "purpose": "Sampling rate, in Hz."
+    },
+    {
+      "name": "timestamps",
+      "kind": "namevalue",
+      "purpose": "Timestamps for samples stored in data, in seconds, relative to the common experiment master clock stored in NWBFile.timestamps_reference_time."
+    }
+  ]
+},
+"types.core.ElectrodeGroup": {
+  "inputs": [
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of this electrode group."
+    },
+    {
+      "name": "device",
+      "kind": "namevalue",
+      "purpose": "Link to the device that was used to record from this electrode group."
+    },
+    {
+      "name": "location",
+      "kind": "namevalue",
+      "purpose": "Location of electrode group. Specify the area, layer, comments on estimation of area/layer, etc. Use standard atlas names for anatomical regions when possible."
+    },
+    {
+      "name": "position",
+      "kind": "namevalue",
+      "purpose": "Stereotaxic or common framework coordinates of the electrode group position."
+    }
+  ]
+},
+"types.core.ElectrodesTable": {
+  "inputs": [
+    {
+      "name": "colnames",
+      "kind": "namevalue",
+      "purpose": "The names of the columns in this table. This should be used to specify an order to the columns."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of what is in this dynamic table."
+    },
+    {
+      "name": "filtering",
+      "kind": "namevalue",
+      "purpose": "Description of hardware filtering, including the filter name and frequency cutoffs."
+    },
+    {
+      "name": "group",
+      "kind": "namevalue",
+      "purpose": "Reference to the ElectrodeGroup this electrode is a part of."
+    },
+    {
+      "name": "group_name",
+      "kind": "namevalue",
+      "purpose": "Name of the ElectrodeGroup this electrode is a part of."
+    },
+    {
+      "name": "id",
+      "kind": "namevalue",
+      "purpose": "Array of unique identifiers for the rows of this dynamic table."
+    },
+    {
+      "name": "imp",
+      "kind": "namevalue",
+      "purpose": "Impedance of the channel, in ohms."
+    },
+    {
+      "name": "location",
+      "kind": "namevalue",
+      "purpose": "Location of the electrode (channel). Specify the area, layer, comments on estimation of area/layer, stereotaxic coordinates if in vivo, etc. Use standard atlas names for anatomical regions when possible."
+    },
+    {
+      "name": "reference",
+      "kind": "namevalue",
+      "purpose": "Description of the reference electrode and/or reference scheme used for this electrode, e.g., \"stainless steel skull screw\" or \"online common average referencing\"."
+    },
+    {
+      "name": "rel_x",
+      "kind": "namevalue",
+      "purpose": "x coordinate in electrode group. Units should be specified in microns."
+    },
+    {
+      "name": "rel_y",
+      "kind": "namevalue",
+      "purpose": "y coordinate in electrode group. Units should be specified in microns."
+    },
+    {
+      "name": "rel_z",
+      "kind": "namevalue",
+      "purpose": "z coordinate in electrode group. Units should be specified in microns."
+    },
+    {
+      "name": "x",
+      "kind": "namevalue",
+      "purpose": "x coordinate of the channel location in the brain (+x is posterior). Units should be specified in microns."
+    },
+    {
+      "name": "y",
+      "kind": "namevalue",
+      "purpose": "y coordinate of the channel location in the brain (+y is inferior). Units should be specified in microns."
+    },
+    {
+      "name": "z",
+      "kind": "namevalue",
+      "purpose": "z coordinate of the channel location in the brain (+z is right). Units should be specified in microns."
+    }
+  ]
+},
+"types.core.EventDetection": {
+  "inputs": [
+    {
+      "name": "detection_method",
+      "kind": "namevalue",
+      "purpose": "Description of how events were detected, such as voltage threshold, or dV/dT threshold, as well as relevant values."
+    },
+    {
+      "name": "source_electricalseries",
+      "kind": "namevalue",
+      "purpose": "Link to the ElectricalSeries that this data was calculated from. Metadata about electrodes and their position can be read from that ElectricalSeries so it is not necessary to include that information here."
+    },
+    {
+      "name": "source_idx",
+      "kind": "namevalue",
+      "purpose": "Indices (zero-based) into the linked source ElectricalSeries::data array corresponding to the time of each event, or the time and channel of each event. ''description'' should define what is meant by time of event (e.g., .25 ms before action potential peak, zero-crossing time, etc.). The index points to each event from the raw data."
+    },
+    {
+      "name": "times",
+      "kind": "namevalue",
+      "purpose": "DEPRECATED. Timestamps of events, in seconds."
+    }
+  ]
+},
+"types.core.EventWaveform": {
+  "inputs": []
+},
+"types.core.EventsTable": {
+  "inputs": [
+    {
+      "name": "annotation",
+      "kind": "namevalue",
+      "purpose": "Column containing user annotations about events."
+    },
+    {
+      "name": "colnames",
+      "kind": "namevalue",
+      "purpose": "The names of the columns in this table. This should be used to specify an order to the columns."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "A description of the events stored in the table, including information about how the event times were computed, especially if the times are the result of processing or filtering raw data. For example, if the experimenter is encoding different types of events using a strobed or N-bit encoding, then the description should describe which channels were used and how the event time is computed, e.g., as the rise time of the first bit."
+    },
+    {
+      "name": "duration",
+      "kind": "namevalue",
+      "purpose": "Optional column containing the duration of each event, in seconds. A value of NaN can be used for events without a duration or with a duration that is not yet specified."
+    },
+    {
+      "name": "id",
+      "kind": "namevalue",
+      "purpose": "Array of unique identifiers for the rows of this dynamic table."
+    },
+    {
+      "name": "source_description",
+      "kind": "namevalue",
+      "purpose": "Optional short text description of where the events came from, applying to every row in the table. For example, \"Acquisition system\" for events emitted directly by the acquisition system (e.g., TTL edges or hardware event channels); \"Thresholding of analog signal ANALOG1 at 3 V\" for events produced by a detection algorithm run on acquired data; or \"Manual video review\" for events added by a human annotator. This is a free-text label of origin only; use `description` for the longer narrative of how the event times were computed (channels used, encoding scheme, algorithm parameters, etc.)."
+    },
+    {
+      "name": "timestamp",
+      "kind": "namevalue",
+      "purpose": "Column containing the time that each event occurred, in seconds, from the session start time."
+    }
+  ]
+},
+"types.core.ExperimentalConditionsTable": {
+  "inputs": [
+    {
+      "name": "colnames",
+      "kind": "namevalue",
+      "purpose": "The names of the columns in this table. This should be used to specify an order to the columns."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of what is in this dynamic table."
+    },
+    {
+      "name": "id",
+      "kind": "namevalue",
+      "purpose": "Array of unique identifiers for the rows of this dynamic table."
+    },
+    {
+      "name": "repetitions",
+      "kind": "namevalue",
+      "purpose": "A reference to one or more rows in the RepetitionsTable table."
+    },
+    {
+      "name": "repetitions_index",
+      "kind": "namevalue",
+      "purpose": "Index dataset for the repetitions column."
+    }
+  ]
+},
+"types.core.ExternalImage": {
+  "inputs": [
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Data property for dataset class (ExternalImage)"
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the image."
+    },
+    {
+      "name": "image_format",
+      "kind": "namevalue",
+      "purpose": "Common name of the image file format. Only widely readable, open file formats are allowed. Allowed values are \"PNG\", \"JPEG\", and \"GIF\"."
+    },
+    {
+      "name": "image_mode",
+      "kind": "namevalue",
+      "purpose": "Image mode (color mode) of the image, e.g., \"RGB\", \"RGBA\", \"grayscale\", and \"LA\"."
+    }
+  ]
+},
+"types.core.EyeTracking": {
+  "inputs": []
+},
+"types.core.FeatureExtraction": {
+  "inputs": [
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of features (e.g., ''PC1'') for each of the extracted features."
+    },
+    {
+      "name": "electrodes",
+      "kind": "namevalue",
+      "purpose": "DynamicTableRegion pointer to the electrodes that this time series was generated from."
+    },
+    {
+      "name": "features",
+      "kind": "namevalue",
+      "purpose": "Multi-dimensional array of features extracted from each event."
+    },
+    {
+      "name": "times",
+      "kind": "namevalue",
+      "purpose": "Times of events that features correspond to (can be a link)."
+    }
+  ]
+},
+"types.core.FilteredEphys": {
+  "inputs": []
+},
+"types.core.Fluorescence": {
+  "inputs": []
+},
+"types.core.FrequencyBandsTable": {
+  "inputs": [
+    {
+      "name": "band_limits",
+      "kind": "namevalue",
+      "purpose": "Low and high limit of each band in Hz. If it is a Gaussian filter, use 2 SD on either side of the center."
+    },
+    {
+      "name": "band_mean",
+      "kind": "namevalue",
+      "purpose": "The center frequency (mean) of each Gaussian filter, in Hz."
+    },
+    {
+      "name": "band_name",
+      "kind": "namevalue",
+      "purpose": "Name of the band, e.g., theta."
+    },
+    {
+      "name": "band_stdev",
+      "kind": "namevalue",
+      "purpose": "The standard deviation (bandwidth) of each Gaussian filter, in Hz."
+    },
+    {
+      "name": "colnames",
+      "kind": "namevalue",
+      "purpose": "The names of the columns in this table. This should be used to specify an order to the columns."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of what is in this dynamic table."
+    },
+    {
+      "name": "id",
+      "kind": "namevalue",
+      "purpose": "Array of unique identifiers for the rows of this dynamic table."
+    }
+  ]
+},
+"types.core.GrayscaleImage": {
+  "inputs": [
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Data property for dataset class (GrayscaleImage)"
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the image."
+    },
+    {
+      "name": "resolution",
+      "kind": "namevalue",
+      "purpose": "Pixel resolution of the image, in pixels per centimeter."
+    }
+  ]
+},
+"types.core.IZeroClampSeries": {
+  "inputs": [
+    {
+      "name": "comments",
+      "kind": "namevalue",
+      "purpose": "Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string."
+    },
+    {
+      "name": "control",
+      "kind": "namevalue",
+      "purpose": "Numerical labels that apply to each time point in data for the purpose of querying and slicing data by these values. If present, the length of this array should be the same as the length of the first dimension of data."
+    },
+    {
+      "name": "control_description",
+      "kind": "namevalue",
+      "purpose": "Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0."
+    },
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Recorded voltage."
+    },
+    {
+      "name": "data_continuity",
+      "kind": "namevalue",
+      "purpose": "Optionally describe the continuity of the data. Can be \"continuous\", \"instantaneous\", or \"step\". For example, a voltage trace would be \"continuous\", because samples are recorded from a continuous process. An array of lick times would be \"instantaneous\", because the data represents distinct moments in time. Times of image presentations would be \"step\" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable. For storing instantaneous event information, it is recommended to use an EventsTable instead of a TimeSeries with continuity set to \"instantaneous\"."
+    },
+    {
+      "name": "data_conversion",
+      "kind": "namevalue",
+      "purpose": "Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data to the specified 'unit'. For example, if the data acquisition system stores values in this object as signed 16-bit integers (int16 range -32,768 to 32,767) that correspond to a 5V range (-2.5V to 2.5V), and the data acquisition system gain is 8000X, then the 'conversion' multiplier to get from raw data acquisition values to recorded volts is 2.5/32768/8000 = 9.5367e-9."
+    },
+    {
+      "name": "data_offset",
+      "kind": "namevalue",
+      "purpose": "Scalar to add to the data after scaling by 'conversion' to finalize its coercion to the specified 'unit'. Two common examples of this include (a) data stored in an unsigned type that requires a shift after scaling to re-center the data, and (b) specialized recording devices that naturally cause a scalar offset with respect to the true units."
+    },
+    {
+      "name": "data_resolution",
+      "kind": "namevalue",
+      "purpose": "Smallest meaningful difference between values in data, stored in the specified unit, e.g., the change in value of the least significant bit, or a larger number if signal noise is known to be present. If unknown, use -1.0."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the time series."
+    },
+    {
+      "name": "electrode",
+      "kind": "namevalue",
+      "purpose": "Link to IntracellularElectrode object that describes the electrode that was used to apply or record this data."
+    },
+    {
+      "name": "gain",
+      "kind": "namevalue",
+      "purpose": "Gain of the recording, in units Volt/Amp (v-clamp) or Volt/Volt (c-clamp)."
+    },
+    {
+      "name": "starting_time",
+      "kind": "namevalue",
+      "purpose": "Timestamp of the first sample in seconds. When timestamps are uniformly spaced, the timestamp of the first sample can be specified and all subsequent ones calculated from the sampling rate attribute."
+    },
+    {
+      "name": "starting_time_rate",
+      "kind": "namevalue",
+      "purpose": "Sampling rate, in Hz."
+    },
+    {
+      "name": "sweep_number",
+      "kind": "namevalue",
+      "purpose": "Sweep number, allows users to group different PatchClampSeries together."
+    },
+    {
+      "name": "timestamps",
+      "kind": "namevalue",
+      "purpose": "Timestamps for samples stored in data, in seconds, relative to the common experiment master clock stored in NWBFile.timestamps_reference_time."
+    }
+  ]
+},
+"types.core.Image": {
+  "inputs": [
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Data property for dataset class (Image)"
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the image."
+    },
+    {
+      "name": "resolution",
+      "kind": "namevalue",
+      "purpose": "Pixel resolution of the image, in pixels per centimeter."
+    }
+  ]
+},
+"types.core.ImageMaskSeries": {
+  "inputs": [
+    {
+      "name": "comments",
+      "kind": "namevalue",
+      "purpose": "Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string."
+    },
+    {
+      "name": "control",
+      "kind": "namevalue",
+      "purpose": "Numerical labels that apply to each time point in data for the purpose of querying and slicing data by these values. If present, the length of this array should be the same as the length of the first dimension of data."
+    },
+    {
+      "name": "control_description",
+      "kind": "namevalue",
+      "purpose": "Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0."
+    },
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Binary data representing images across frames. If data are stored in an external file, this should be an empty 3-D array."
+    },
+    {
+      "name": "data_continuity",
+      "kind": "namevalue",
+      "purpose": "Optionally describe the continuity of the data. Can be \"continuous\", \"instantaneous\", or \"step\". For example, a voltage trace would be \"continuous\", because samples are recorded from a continuous process. An array of lick times would be \"instantaneous\", because the data represents distinct moments in time. Times of image presentations would be \"step\" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable. For storing instantaneous event information, it is recommended to use an EventsTable instead of a TimeSeries with continuity set to \"instantaneous\"."
+    },
+    {
+      "name": "data_conversion",
+      "kind": "namevalue",
+      "purpose": "Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data to the specified 'unit'. For example, if the data acquisition system stores values in this object as signed 16-bit integers (int16 range -32,768 to 32,767) that correspond to a 5V range (-2.5V to 2.5V), and the data acquisition system gain is 8000X, then the 'conversion' multiplier to get from raw data acquisition values to recorded volts is 2.5/32768/8000 = 9.5367e-9."
+    },
+    {
+      "name": "data_offset",
+      "kind": "namevalue",
+      "purpose": "Scalar to add to the data after scaling by 'conversion' to finalize its coercion to the specified 'unit'. Two common examples of this include (a) data stored in an unsigned type that requires a shift after scaling to re-center the data, and (b) specialized recording devices that naturally cause a scalar offset with respect to the true units."
+    },
+    {
+      "name": "data_resolution",
+      "kind": "namevalue",
+      "purpose": "Smallest meaningful difference between values in data, stored in the specified unit, e.g., the change in value of the least significant bit, or a larger number if signal noise is known to be present. If unknown, use -1.0."
+    },
+    {
+      "name": "data_unit",
+      "kind": "namevalue",
+      "purpose": "Base unit of measurement for working with the data. Actual stored values are not necessarily stored in these units. To access the data in these units, multiply 'data' by 'conversion' and add 'offset'."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the time series."
+    },
+    {
+      "name": "device",
+      "kind": "namevalue",
+      "purpose": "Link to the Device object that was used to capture these images."
+    },
+    {
+      "name": "dimension",
+      "kind": "namevalue",
+      "purpose": "Number of pixels on x, y, (and z) axes."
+    },
+    {
+      "name": "external_file",
+      "kind": "namevalue",
+      "purpose": "Paths to one or more external file(s). The field is only present if format='external'. This is only relevant if the image series is stored in the file system as one or more image file(s). This field should NOT be used if the image is stored in another NWB file and that file is linked to this file."
+    },
+    {
+      "name": "external_file_starting_frame",
+      "kind": "namevalue",
+      "purpose": "Each external image may contain one or more consecutive frames of the full ImageSeries. This attribute serves as an index to indicate which frames each file contains, to facilitate random access. The 'starting_frame' attribute, hence, contains a list of frame numbers within the full ImageSeries of the first frame of each file listed in the parent 'external_file' dataset. Zero-based indexing is used (hence, the first element will always be zero). For example, if the 'external_file' dataset has three paths to files and the first file has 5 frames, the second file has 10 frames, and the third file has 20 frames, then this attribute will have values [0, 5, 15]. If there is a single external file that holds all of the frames of the ImageSeries (and so there is a single element in the 'external_file' dataset), then this attribute should have value [0]."
+    },
+    {
+      "name": "format",
+      "kind": "namevalue",
+      "purpose": "Format of image. If this is 'external', then the attribute 'external_file' contains the path information to the image files. If this is 'raw', then the raw (single-channel) binary data is stored in the 'data' dataset. If this attribute is not present, then the default format='raw' case is assumed."
+    },
+    {
+      "name": "masked_imageseries",
+      "kind": "namevalue",
+      "purpose": "Link to ImageSeries object that this image mask is applied to."
+    },
+    {
+      "name": "num_samples",
+      "kind": "namevalue",
+      "purpose": "Total number of frames across all external files. This is required when format='external' and timing is described using starting_time and rate, since data is empty and its first dimension cannot be used to determine the number of frames. When timestamps is provided, len(timestamps) already serves this purpose."
+    },
+    {
+      "name": "starting_time",
+      "kind": "namevalue",
+      "purpose": "Timestamp of the first sample in seconds. When timestamps are uniformly spaced, the timestamp of the first sample can be specified and all subsequent ones calculated from the sampling rate attribute."
+    },
+    {
+      "name": "starting_time_rate",
+      "kind": "namevalue",
+      "purpose": "Sampling rate, in Hz."
+    },
+    {
+      "name": "timestamps",
+      "kind": "namevalue",
+      "purpose": "Timestamps for samples stored in data, in seconds, relative to the common experiment master clock stored in NWBFile.timestamps_reference_time."
+    }
+  ]
+},
+"types.core.ImageReferences": {
+  "inputs": [
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Data property for dataset class (ImageReferences)"
+    }
+  ]
+},
+"types.core.ImageSegmentation": {
+  "inputs": []
+},
+"types.core.ImageSeries": {
+  "inputs": [
+    {
+      "name": "comments",
+      "kind": "namevalue",
+      "purpose": "Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string."
+    },
+    {
+      "name": "control",
+      "kind": "namevalue",
+      "purpose": "Numerical labels that apply to each time point in data for the purpose of querying and slicing data by these values. If present, the length of this array should be the same as the length of the first dimension of data."
+    },
+    {
+      "name": "control_description",
+      "kind": "namevalue",
+      "purpose": "Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0."
+    },
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Binary data representing images across frames. If data are stored in an external file, this should be an empty 3-D array."
+    },
+    {
+      "name": "data_continuity",
+      "kind": "namevalue",
+      "purpose": "Optionally describe the continuity of the data. Can be \"continuous\", \"instantaneous\", or \"step\". For example, a voltage trace would be \"continuous\", because samples are recorded from a continuous process. An array of lick times would be \"instantaneous\", because the data represents distinct moments in time. Times of image presentations would be \"step\" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable. For storing instantaneous event information, it is recommended to use an EventsTable instead of a TimeSeries with continuity set to \"instantaneous\"."
+    },
+    {
+      "name": "data_conversion",
+      "kind": "namevalue",
+      "purpose": "Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data to the specified 'unit'. For example, if the data acquisition system stores values in this object as signed 16-bit integers (int16 range -32,768 to 32,767) that correspond to a 5V range (-2.5V to 2.5V), and the data acquisition system gain is 8000X, then the 'conversion' multiplier to get from raw data acquisition values to recorded volts is 2.5/32768/8000 = 9.5367e-9."
+    },
+    {
+      "name": "data_offset",
+      "kind": "namevalue",
+      "purpose": "Scalar to add to the data after scaling by 'conversion' to finalize its coercion to the specified 'unit'. Two common examples of this include (a) data stored in an unsigned type that requires a shift after scaling to re-center the data, and (b) specialized recording devices that naturally cause a scalar offset with respect to the true units."
+    },
+    {
+      "name": "data_resolution",
+      "kind": "namevalue",
+      "purpose": "Smallest meaningful difference between values in data, stored in the specified unit, e.g., the change in value of the least significant bit, or a larger number if signal noise is known to be present. If unknown, use -1.0."
+    },
+    {
+      "name": "data_unit",
+      "kind": "namevalue",
+      "purpose": "Base unit of measurement for working with the data. Actual stored values are not necessarily stored in these units. To access the data in these units, multiply 'data' by 'conversion' and add 'offset'."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the time series."
+    },
+    {
+      "name": "device",
+      "kind": "namevalue",
+      "purpose": "Link to the Device object that was used to capture these images."
+    },
+    {
+      "name": "dimension",
+      "kind": "namevalue",
+      "purpose": "Number of pixels on x, y, (and z) axes."
+    },
+    {
+      "name": "external_file",
+      "kind": "namevalue",
+      "purpose": "Paths to one or more external file(s). The field is only present if format='external'. This is only relevant if the image series is stored in the file system as one or more image file(s). This field should NOT be used if the image is stored in another NWB file and that file is linked to this file."
+    },
+    {
+      "name": "external_file_starting_frame",
+      "kind": "namevalue",
+      "purpose": "Each external image may contain one or more consecutive frames of the full ImageSeries. This attribute serves as an index to indicate which frames each file contains, to facilitate random access. The 'starting_frame' attribute, hence, contains a list of frame numbers within the full ImageSeries of the first frame of each file listed in the parent 'external_file' dataset. Zero-based indexing is used (hence, the first element will always be zero). For example, if the 'external_file' dataset has three paths to files and the first file has 5 frames, the second file has 10 frames, and the third file has 20 frames, then this attribute will have values [0, 5, 15]. If there is a single external file that holds all of the frames of the ImageSeries (and so there is a single element in the 'external_file' dataset), then this attribute should have value [0]."
+    },
+    {
+      "name": "format",
+      "kind": "namevalue",
+      "purpose": "Format of image. If this is 'external', then the attribute 'external_file' contains the path information to the image files. If this is 'raw', then the raw (single-channel) binary data is stored in the 'data' dataset. If this attribute is not present, then the default format='raw' case is assumed."
+    },
+    {
+      "name": "num_samples",
+      "kind": "namevalue",
+      "purpose": "Total number of frames across all external files. This is required when format='external' and timing is described using starting_time and rate, since data is empty and its first dimension cannot be used to determine the number of frames. When timestamps is provided, len(timestamps) already serves this purpose."
+    },
+    {
+      "name": "starting_time",
+      "kind": "namevalue",
+      "purpose": "Timestamp of the first sample in seconds. When timestamps are uniformly spaced, the timestamp of the first sample can be specified and all subsequent ones calculated from the sampling rate attribute."
+    },
+    {
+      "name": "starting_time_rate",
+      "kind": "namevalue",
+      "purpose": "Sampling rate, in Hz."
+    },
+    {
+      "name": "timestamps",
+      "kind": "namevalue",
+      "purpose": "Timestamps for samples stored in data, in seconds, relative to the common experiment master clock stored in NWBFile.timestamps_reference_time."
+    }
+  ]
+},
+"types.core.Images": {
+  "inputs": [
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of this collection of images."
+    },
+    {
+      "name": "order_of_images",
+      "kind": "namevalue",
+      "purpose": "Ordered dataset of references to BaseImage objects stored in the parent group. Each object in the Images group should be stored once and only once, so the dataset should have the same length as the number of images."
+    }
+  ]
+},
+"types.core.ImagingPlane": {
+  "inputs": [
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the imaging plane."
+    },
+    {
+      "name": "device",
+      "kind": "namevalue",
+      "purpose": "Link to the Device object (e.g., microscope) used to acquire images from this imaging plane."
+    },
+    {
+      "name": "excitation_lambda",
+      "kind": "namevalue",
+      "purpose": "Excitation wavelength, in nm."
+    },
+    {
+      "name": "grid_spacing",
+      "kind": "namevalue",
+      "purpose": "Space between pixels in (x, y) or voxels in (x, y, z) directions, in the specified unit. Assumes imaging plane is a regular grid. See also reference_frame to interpret the grid."
+    },
+    {
+      "name": "grid_spacing_unit",
+      "kind": "namevalue",
+      "purpose": "Measurement units for grid_spacing. The default value is 'meters'."
+    },
+    {
+      "name": "imaging_rate",
+      "kind": "namevalue",
+      "purpose": "Rate that images are acquired, in Hz. If the corresponding TimeSeries is present, the rate should be stored there instead."
+    },
+    {
+      "name": "indicator",
+      "kind": "namevalue",
+      "purpose": "Calcium indicator."
+    },
+    {
+      "name": "location",
+      "kind": "namevalue",
+      "purpose": "Location of the imaging plane. Specify the area, layer, comments on estimation of area/layer, stereotaxic coordinates if in vivo, etc. Use standard atlas names for anatomical regions when possible."
+    },
+    {
+      "name": "manifold",
+      "kind": "namevalue",
+      "purpose": "DEPRECATED. Physical position of each pixel. 'xyz' represents the position of the pixel relative to the defined coordinate space. Deprecated in favor of origin_coords and grid_spacing."
+    },
+    {
+      "name": "manifold_conversion",
+      "kind": "namevalue",
+      "purpose": "Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data to the specified 'unit'. For example, if the data acquisition system stores values in this object as pixels from x = -500 to 499, y = -500 to 499 that correspond to a 2 m x 2 m range, then the 'conversion' multiplier to get from raw data acquisition pixel units to meters is 2/1000."
+    },
+    {
+      "name": "manifold_unit",
+      "kind": "namevalue",
+      "purpose": "Base unit of measurement for working with the data. The default value is 'meters'."
+    },
+    {
+      "name": "origin_coords",
+      "kind": "namevalue",
+      "purpose": "Physical location of the first element of the imaging plane (0, 0) for 2-D data or (0, 0, 0) for 3-D data. See also reference_frame for what the physical location is relative to (e.g., bregma)."
+    },
+    {
+      "name": "origin_coords_unit",
+      "kind": "namevalue",
+      "purpose": "Measurement units for origin_coords. The default value is 'meters'."
+    },
+    {
+      "name": "reference_frame",
+      "kind": "namevalue",
+      "purpose": "Describes reference frame of origin_coords and grid_spacing. For example, this can be a text description of the anatomical location and orientation of the grid defined by origin_coords and grid_spacing or the vectors needed to transform or rotate the grid to a common anatomical axis (e.g., AP/DV/ML). This field is necessary to interpret origin_coords and grid_spacing. If origin_coords and grid_spacing are not present, then this field is not required. For example, if the microscope takes 10 x 10 x 2 images, where the first value of the data matrix (index (0, 0, 0)) corresponds to (-1.2, -0.6, -2) mm relative to bregma, the spacing between pixels is 0.2 mm in x, 0.2 mm in y and 0.5 mm in z, and larger numbers in x mean more anterior, larger numbers in y mean more rightward, and larger numbers in z mean more ventral, then enter the following -- origin_coords = (-1.2, -0.6, -2) grid_spacing = (0.2, 0.2, 0.5) reference_frame = \"Origin coordinates are relative to bregma. First dimension corresponds to anterior-posterior axis (larger index = more anterior). Second dimension corresponds to medial-lateral axis (larger index = more rightward). Third dimension corresponds to dorsal-ventral axis (larger index = more ventral).\""
+    }
+  ]
+},
+"types.core.ImagingRetinotopy": {
+  "inputs": [
+    {
+      "name": "axis_1_phase_map",
+      "kind": "namevalue",
+      "purpose": "Phase response to stimulus on the first measured axis."
+    },
+    {
+      "name": "axis_1_phase_map_dimension",
+      "kind": "namevalue",
+      "purpose": "Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width."
+    },
+    {
+      "name": "axis_1_phase_map_field_of_view",
+      "kind": "namevalue",
+      "purpose": "Size of viewing area, in meters."
+    },
+    {
+      "name": "axis_1_phase_map_unit",
+      "kind": "namevalue",
+      "purpose": "Unit that axis data is stored in (e.g., degrees)."
+    },
+    {
+      "name": "axis_1_power_map",
+      "kind": "namevalue",
+      "purpose": "Power response on the first measured axis. Response is scaled so 0.0 is no power in the response and 1.0 is maximum relative power."
+    },
+    {
+      "name": "axis_1_power_map_dimension",
+      "kind": "namevalue",
+      "purpose": "Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width."
+    },
+    {
+      "name": "axis_1_power_map_field_of_view",
+      "kind": "namevalue",
+      "purpose": "Size of viewing area, in meters."
+    },
+    {
+      "name": "axis_1_power_map_unit",
+      "kind": "namevalue",
+      "purpose": "Unit that axis data is stored in (e.g., degrees)."
+    },
+    {
+      "name": "axis_2_phase_map",
+      "kind": "namevalue",
+      "purpose": "Phase response to stimulus on the second measured axis."
+    },
+    {
+      "name": "axis_2_phase_map_dimension",
+      "kind": "namevalue",
+      "purpose": "Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width."
+    },
+    {
+      "name": "axis_2_phase_map_field_of_view",
+      "kind": "namevalue",
+      "purpose": "Size of viewing area, in meters."
+    },
+    {
+      "name": "axis_2_phase_map_unit",
+      "kind": "namevalue",
+      "purpose": "Unit that axis data is stored in (e.g., degrees)."
+    },
+    {
+      "name": "axis_2_power_map",
+      "kind": "namevalue",
+      "purpose": "Power response on the second measured axis. Response is scaled so 0.0 is no power in the response and 1.0 is maximum relative power."
+    },
+    {
+      "name": "axis_2_power_map_dimension",
+      "kind": "namevalue",
+      "purpose": "Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width."
+    },
+    {
+      "name": "axis_2_power_map_field_of_view",
+      "kind": "namevalue",
+      "purpose": "Size of viewing area, in meters."
+    },
+    {
+      "name": "axis_2_power_map_unit",
+      "kind": "namevalue",
+      "purpose": "Unit that axis data is stored in (e.g., degrees)."
+    },
+    {
+      "name": "axis_descriptions",
+      "kind": "namevalue",
+      "purpose": "Two-element array describing the contents of the two response axis fields. Description should be something like ['altitude', 'azimuth'] or ['radius', 'theta']."
+    },
+    {
+      "name": "focal_depth_image",
+      "kind": "namevalue",
+      "purpose": "Gray-scale image taken with the same settings/parameters (e.g., focal depth, wavelength) as data collection. Array format: [rows][columns]."
+    },
+    {
+      "name": "focal_depth_image_bits_per_pixel",
+      "kind": "namevalue",
+      "purpose": "Number of bits used to represent each value. This is necessary to determine maximum (white) pixel value."
+    },
+    {
+      "name": "focal_depth_image_dimension",
+      "kind": "namevalue",
+      "purpose": "Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width."
+    },
+    {
+      "name": "focal_depth_image_field_of_view",
+      "kind": "namevalue",
+      "purpose": "Size of viewing area, in meters."
+    },
+    {
+      "name": "focal_depth_image_focal_depth",
+      "kind": "namevalue",
+      "purpose": "Focal depth offset, in meters."
+    },
+    {
+      "name": "focal_depth_image_format",
+      "kind": "namevalue",
+      "purpose": "Format of image. Currently only 'raw' is supported."
+    },
+    {
+      "name": "sign_map",
+      "kind": "namevalue",
+      "purpose": "Sine of the angle between the direction of the gradient in axis_1 and axis_2."
+    },
+    {
+      "name": "sign_map_dimension",
+      "kind": "namevalue",
+      "purpose": "Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width."
+    },
+    {
+      "name": "sign_map_field_of_view",
+      "kind": "namevalue",
+      "purpose": "Size of viewing area, in meters."
+    },
+    {
+      "name": "vasculature_image",
+      "kind": "namevalue",
+      "purpose": "Gray-scale anatomical image of cortical surface. Array structure: [rows][columns]"
+    },
+    {
+      "name": "vasculature_image_bits_per_pixel",
+      "kind": "namevalue",
+      "purpose": "Number of bits used to represent each value. This is necessary to determine maximum (white) pixel value."
+    },
+    {
+      "name": "vasculature_image_dimension",
+      "kind": "namevalue",
+      "purpose": "Number of rows and columns in the image. NOTE: row, column representation is equivalent to height, width."
+    },
+    {
+      "name": "vasculature_image_field_of_view",
+      "kind": "namevalue",
+      "purpose": "Size of viewing area, in meters."
+    },
+    {
+      "name": "vasculature_image_format",
+      "kind": "namevalue",
+      "purpose": "Format of image. Currently only 'raw' is supported."
+    }
+  ]
+},
+"types.core.IndexSeries": {
+  "inputs": [
+    {
+      "name": "comments",
+      "kind": "namevalue",
+      "purpose": "Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string."
+    },
+    {
+      "name": "control",
+      "kind": "namevalue",
+      "purpose": "Numerical labels that apply to each time point in data for the purpose of querying and slicing data by these values. If present, the length of this array should be the same as the length of the first dimension of data."
+    },
+    {
+      "name": "control_description",
+      "kind": "namevalue",
+      "purpose": "Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0."
+    },
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Index of the image (using zero-indexing) in the linked Images object."
+    },
+    {
+      "name": "data_continuity",
+      "kind": "namevalue",
+      "purpose": "Optionally describe the continuity of the data. Can be \"continuous\", \"instantaneous\", or \"step\". For example, a voltage trace would be \"continuous\", because samples are recorded from a continuous process. An array of lick times would be \"instantaneous\", because the data represents distinct moments in time. Times of image presentations would be \"step\" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable. For storing instantaneous event information, it is recommended to use an EventsTable instead of a TimeSeries with continuity set to \"instantaneous\"."
+    },
+    {
+      "name": "data_conversion",
+      "kind": "namevalue",
+      "purpose": "This field is unused by IndexSeries."
+    },
+    {
+      "name": "data_offset",
+      "kind": "namevalue",
+      "purpose": "This field is unused by IndexSeries."
+    },
+    {
+      "name": "data_resolution",
+      "kind": "namevalue",
+      "purpose": "This field is unused by IndexSeries."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the time series."
+    },
+    {
+      "name": "indexed_images",
+      "kind": "namevalue",
+      "purpose": "Link to Images object containing an ordered set of images that are indexed. The Images object must contain an 'order_of_images' dataset specifying the order of the images in the Images type."
+    },
+    {
+      "name": "indexed_timeseries",
+      "kind": "namevalue",
+      "purpose": "Link to ImageSeries object containing images that are indexed. Use of this link is discouraged and will be deprecated. Link to an Images type instead."
+    },
+    {
+      "name": "starting_time",
+      "kind": "namevalue",
+      "purpose": "Timestamp of the first sample in seconds. When timestamps are uniformly spaced, the timestamp of the first sample can be specified and all subsequent ones calculated from the sampling rate attribute."
+    },
+    {
+      "name": "starting_time_rate",
+      "kind": "namevalue",
+      "purpose": "Sampling rate, in Hz."
+    },
+    {
+      "name": "timestamps",
+      "kind": "namevalue",
+      "purpose": "Timestamps for samples stored in data, in seconds, relative to the common experiment master clock stored in NWBFile.timestamps_reference_time."
+    }
+  ]
+},
+"types.core.IntervalSeries": {
+  "inputs": [
+    {
+      "name": "comments",
+      "kind": "namevalue",
+      "purpose": "Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string."
+    },
+    {
+      "name": "control",
+      "kind": "namevalue",
+      "purpose": "Numerical labels that apply to each time point in data for the purpose of querying and slicing data by these values. If present, the length of this array should be the same as the length of the first dimension of data."
+    },
+    {
+      "name": "control_description",
+      "kind": "namevalue",
+      "purpose": "Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0."
+    },
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Use values >0 if interval started, <0 if interval ended."
+    },
+    {
+      "name": "data_continuity",
+      "kind": "namevalue",
+      "purpose": "Optionally describe the continuity of the data. Can be \"continuous\", \"instantaneous\", or \"step\". For example, a voltage trace would be \"continuous\", because samples are recorded from a continuous process. An array of lick times would be \"instantaneous\", because the data represents distinct moments in time. Times of image presentations would be \"step\" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable. For storing instantaneous event information, it is recommended to use an EventsTable instead of a TimeSeries with continuity set to \"instantaneous\"."
+    },
+    {
+      "name": "data_conversion",
+      "kind": "namevalue",
+      "purpose": "Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data to the specified 'unit'. For example, if the data acquisition system stores values in this object as signed 16-bit integers (int16 range -32,768 to 32,767) that correspond to a 5V range (-2.5V to 2.5V), and the data acquisition system gain is 8000X, then the 'conversion' multiplier to get from raw data acquisition values to recorded volts is 2.5/32768/8000 = 9.5367e-9."
+    },
+    {
+      "name": "data_offset",
+      "kind": "namevalue",
+      "purpose": "Scalar to add to the data after scaling by 'conversion' to finalize its coercion to the specified 'unit'. Two common examples of this include (a) data stored in an unsigned type that requires a shift after scaling to re-center the data, and (b) specialized recording devices that naturally cause a scalar offset with respect to the true units."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the time series."
+    },
+    {
+      "name": "starting_time",
+      "kind": "namevalue",
+      "purpose": "Timestamp of the first sample in seconds. When timestamps are uniformly spaced, the timestamp of the first sample can be specified and all subsequent ones calculated from the sampling rate attribute."
+    },
+    {
+      "name": "starting_time_rate",
+      "kind": "namevalue",
+      "purpose": "Sampling rate, in Hz."
+    },
+    {
+      "name": "timestamps",
+      "kind": "namevalue",
+      "purpose": "Timestamps for samples stored in data, in seconds, relative to the common experiment master clock stored in NWBFile.timestamps_reference_time."
+    }
+  ]
+},
+"types.core.IntracellularElectrode": {
+  "inputs": [
+    {
+      "name": "cell_id",
+      "kind": "namevalue",
+      "purpose": "Unique identifier of the cell."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of electrode (e.g., whole-cell, sharp, etc.)."
+    },
+    {
+      "name": "device",
+      "kind": "namevalue",
+      "purpose": "Device that was used to record from this electrode."
+    },
+    {
+      "name": "filtering",
+      "kind": "namevalue",
+      "purpose": "Electrode specific filtering."
+    },
+    {
+      "name": "initial_access_resistance",
+      "kind": "namevalue",
+      "purpose": "Initial access resistance."
+    },
+    {
+      "name": "location",
+      "kind": "namevalue",
+      "purpose": "Location of the electrode. Specify the area, layer, comments on estimation of area/layer, stereotaxic coordinates if in vivo, etc. Use standard atlas names for anatomical regions when possible."
+    },
+    {
+      "name": "resistance",
+      "kind": "namevalue",
+      "purpose": "Electrode resistance, in ohms."
+    },
+    {
+      "name": "seal",
+      "kind": "namevalue",
+      "purpose": "Information about seal used for recording."
+    },
+    {
+      "name": "slice",
+      "kind": "namevalue",
+      "purpose": "Information about slice used for recording."
+    }
+  ]
+},
+"types.core.IntracellularElectrodesTable": {
+  "inputs": [
+    {
+      "name": "colnames",
+      "kind": "namevalue",
+      "purpose": "The names of the columns in this table. This should be used to specify an order to the columns."
+    },
+    {
+      "name": "electrode",
+      "kind": "namevalue",
+      "purpose": "Column for storing the reference to the intracellular electrode."
+    },
+    {
+      "name": "id",
+      "kind": "namevalue",
+      "purpose": "Array of unique identifiers for the rows of this dynamic table."
+    }
+  ]
+},
+"types.core.IntracellularRecordingsTable": {
+  "inputs": [
+    {
+      "name": "categories",
+      "kind": "namevalue",
+      "purpose": "The names of the categories in this AlignedDynamicTable. Each category is represented by one DynamicTable stored in the parent group. This attribute should be used to specify an order of categories and the category names must match the names of the corresponding DynamicTable in the group."
+    },
+    {
+      "name": "colnames",
+      "kind": "namevalue",
+      "purpose": "The names of the columns in this table. This should be used to specify an order to the columns."
+    },
+    {
+      "name": "electrodes",
+      "kind": "namevalue",
+      "purpose": "Table for storing intracellular electrode related metadata."
+    },
+    {
+      "name": "id",
+      "kind": "namevalue",
+      "purpose": "Array of unique identifiers for the rows of this dynamic table."
+    },
+    {
+      "name": "responses",
+      "kind": "namevalue",
+      "purpose": "Table for storing intracellular response related metadata."
+    },
+    {
+      "name": "stimuli",
+      "kind": "namevalue",
+      "purpose": "Table for storing intracellular stimulus related metadata."
+    }
+  ]
+},
+"types.core.IntracellularResponsesTable": {
+  "inputs": [
+    {
+      "name": "colnames",
+      "kind": "namevalue",
+      "purpose": "The names of the columns in this table. This should be used to specify an order to the columns."
+    },
+    {
+      "name": "id",
+      "kind": "namevalue",
+      "purpose": "Array of unique identifiers for the rows of this dynamic table."
+    },
+    {
+      "name": "response",
+      "kind": "namevalue",
+      "purpose": "Column storing the reference to the recorded response for the recording (rows)."
+    }
+  ]
+},
+"types.core.IntracellularStimuliTable": {
+  "inputs": [
+    {
+      "name": "colnames",
+      "kind": "namevalue",
+      "purpose": "The names of the columns in this table. This should be used to specify an order to the columns."
+    },
+    {
+      "name": "id",
+      "kind": "namevalue",
+      "purpose": "Array of unique identifiers for the rows of this dynamic table."
+    },
+    {
+      "name": "stimulus",
+      "kind": "namevalue",
+      "purpose": "Column storing the reference to the recorded stimulus for the recording (rows)."
+    },
+    {
+      "name": "stimulus_template",
+      "kind": "namevalue",
+      "purpose": "Column storing the reference to the stimulus template for the recording (rows)."
+    }
+  ]
+},
+"types.core.LFP": {
+  "inputs": []
+},
+"types.core.LabMetaData": {
+  "inputs": []
+},
+"types.core.MotionCorrection": {
+  "inputs": []
+},
+"types.core.NWBContainer": {
+  "inputs": []
+},
+"types.core.NWBData": {
+  "inputs": [
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Data property for dataset class (NWBData)"
+    }
+  ]
+},
+"types.core.NWBDataInterface": {
+  "inputs": []
+},
+"types.core.NWBFile": {
+  "inputs": [
+    {
+      "name": "file_create_date",
+      "kind": "namevalue",
+      "purpose": "A record of the date the file was created and of subsequent modifications. The date is stored in UTC with local timezone offset as ISO 8601 extended formatted strings: 2018-09-28T14:43:54.123+02:00. Dates stored in UTC end in \"Z\" with no timezone offset. Date accuracy is up to milliseconds. The file can be created after the experiment was run, so this may differ from the experiment start time. Each modification to the nwb file adds a new entry to the array."
+    },
+    {
+      "name": "general_data_collection",
+      "kind": "namevalue",
+      "purpose": "Notes about data collection and analysis."
+    },
+    {
+      "name": "general_experiment_description",
+      "kind": "namevalue",
+      "purpose": "General description of the experiment."
+    },
+    {
+      "name": "general_experimenter",
+      "kind": "namevalue",
+      "purpose": "Name of person(s) who performed the experiment. Can also specify roles of different people involved."
+    },
+    {
+      "name": "general_external_resources",
+      "kind": "namevalue",
+      "purpose": "This is the HERD structure for this specific NWBFile, storing the mapped external resources."
+    },
+    {
+      "name": "general_extracellular_ephys_electrodes",
+      "kind": "namevalue",
+      "purpose": "A table of all electrodes (i.e., channels) used for recording. Changed in NWB 2.9.0 to use the newly added ElectrodesTable neurodata type instead of a DynamicTable with added columns."
+    },
+    {
+      "name": "general_institution",
+      "kind": "namevalue",
+      "purpose": "Institution(s) where experiment was performed."
+    },
+    {
+      "name": "general_intracellular_ephys_experimental_conditions",
+      "kind": "namevalue",
+      "purpose": "A table for grouping different intracellular recording repetitions together that belong to the same experimental conditions."
+    },
+    {
+      "name": "general_intracellular_ephys_filtering",
+      "kind": "namevalue",
+      "purpose": "[DEPRECATED] Use IntracellularElectrode.filtering instead. Description of filtering used. Includes filtering type and parameters, frequency fall-off, etc. If this changes between TimeSeries, filter description should be stored as a text attribute for each TimeSeries."
+    },
+    {
+      "name": "general_intracellular_ephys_intracellular_recordings",
+      "kind": "namevalue",
+      "purpose": "A table to group together a stimulus and response from a single electrode and a single simultaneous recording. Each row in the table represents a single recording consisting typically of a stimulus and a corresponding response. In some cases, however, only a stimulus or a response are recorded as part of an experiment. In this case, both the stimulus and response will point to the same TimeSeries while the idx_start and count of the invalid column will be set to -1, thus, indicating that no values have been recorded for the stimulus or response, respectively. Note, a recording MUST contain at least a stimulus or a response. Typically the stimulus and response are PatchClampSeries. However, the use of AD/DA channels that are not associated to an electrode is also common in intracellular electrophysiology, in which case other TimeSeries may be used."
+    },
+    {
+      "name": "general_intracellular_ephys_repetitions",
+      "kind": "namevalue",
+      "purpose": "A table for grouping different sequential intracellular recordings together. With each SequentialRecording typically representing a particular type of stimulus, the RepetitionsTable table is typically used to group sets of stimuli applied in sequence."
+    },
+    {
+      "name": "general_intracellular_ephys_sequential_recordings",
+      "kind": "namevalue",
+      "purpose": "A table for grouping different sequential recordings from the SimultaneousRecordingsTable table together. This is typically used to group together sequential recordings where a sequence of stimuli of the same type with varying parameters have been presented in a sequence."
+    },
+    {
+      "name": "general_intracellular_ephys_simultaneous_recordings",
+      "kind": "namevalue",
+      "purpose": "A table for grouping different intracellular recordings from the IntracellularRecordingsTable table together that were recorded simultaneously from different electrodes"
+    },
+    {
+      "name": "general_intracellular_ephys_sweep_table",
+      "kind": "namevalue",
+      "purpose": "[DEPRECATED] Table used to group different PatchClampSeries. SweepTable is being replaced by IntracellularRecordingsTable and SimultaneousRecordingsTable tables. Additional SequentialRecordingsTable, RepetitionsTable and ExperimentalConditions tables provide enhanced support for experiment metadata."
+    },
+    {
+      "name": "general_keywords",
+      "kind": "namevalue",
+      "purpose": "Terms to search over."
+    },
+    {
+      "name": "general_lab",
+      "kind": "namevalue",
+      "purpose": "Laboratory where experiment was performed."
+    },
+    {
+      "name": "general_notes",
+      "kind": "namevalue",
+      "purpose": "Notes about the experiment."
+    },
+    {
+      "name": "general_pharmacology",
+      "kind": "namevalue",
+      "purpose": "Description of drugs used, including how and when they were administered. Anesthesia(s), painkiller(s), etc., plus dosage, concentration, etc."
+    },
+    {
+      "name": "general_protocol",
+      "kind": "namevalue",
+      "purpose": "Experimental protocol, if applicable. e.g., include IACUC protocol number."
+    },
+    {
+      "name": "general_related_publications",
+      "kind": "namevalue",
+      "purpose": "Publication information. PMID, DOI, URL, etc."
+    },
+    {
+      "name": "general_session_id",
+      "kind": "namevalue",
+      "purpose": "Lab-specific ID for the session."
+    },
+    {
+      "name": "general_slices",
+      "kind": "namevalue",
+      "purpose": "Description of slices, including information about preparation thickness, orientation, temperature, and bath solution."
+    },
+    {
+      "name": "general_source_script",
+      "kind": "namevalue",
+      "purpose": "Script file or link to public source code used to create this NWB file."
+    },
+    {
+      "name": "general_source_script_file_name",
+      "kind": "namevalue",
+      "purpose": "Name of script file."
+    },
+    {
+      "name": "general_stimulus",
+      "kind": "namevalue",
+      "purpose": "Notes about stimuli, such as how and where they were presented."
+    },
+    {
+      "name": "general_subject",
+      "kind": "namevalue",
+      "purpose": "Information about the animal or person from which the data was measured."
+    },
+    {
+      "name": "general_surgery",
+      "kind": "namevalue",
+      "purpose": "Narrative description about surgery/surgeries, including date(s) and who performed surgery."
+    },
+    {
+      "name": "general_virus",
+      "kind": "namevalue",
+      "purpose": "Information about virus(es) used in experiments, including virus ID, source, date made, injection location, volume, etc."
+    },
+    {
+      "name": "general_was_generated_by",
+      "kind": "namevalue",
+      "purpose": "Name and version of software package(s) used to generate data contained in this NWB file. For each software package or library, include the name of the software as the first value and the version as the second value."
+    },
+    {
+      "name": "identifier",
+      "kind": "namevalue",
+      "purpose": "A unique text identifier for the file. For example, concatenated lab name, file creation date/time and experimentalist, or a hash of these and/or other values. The goal is that the string should be unique to all other files."
+    },
+    {
+      "name": "intervals_epochs",
+      "kind": "namevalue",
+      "purpose": "Time intervals marking coarse-grained experimental phases or subdivisions of a recording session, such as baseline, task, rest, or sleep stages."
+    },
+    {
+      "name": "intervals_invalid_times",
+      "kind": "namevalue",
+      "purpose": "Time intervals that should be removed from analysis."
+    },
+    {
+      "name": "intervals_trials",
+      "kind": "namevalue",
+      "purpose": "Time intervals corresponding to repeated experimental units with consistent structure, such as individual stimulus-response-reward cycles."
+    },
+    {
+      "name": "session_description",
+      "kind": "namevalue",
+      "purpose": "A description of the experimental session and data in the file."
+    },
+    {
+      "name": "session_start_time",
+      "kind": "namevalue",
+      "purpose": "Date and time of the experiment/session start. The date is stored in UTC with local timezone offset as ISO 8601 extended formatted string: 2018-09-28T14:43:54.123+02:00. Dates stored in UTC end in \"Z\" with no timezone offset. Date accuracy is up to milliseconds."
+    },
+    {
+      "name": "timestamps_reference_time",
+      "kind": "namevalue",
+      "purpose": "Date and time corresponding to time zero of all timestamps. The date is stored in UTC with local timezone offset as ISO 8601 extended formatted string: 2018-09-28T14:43:54.123+02:00. Dates stored in UTC end in \"Z\" with no timezone offset. Date accuracy is up to milliseconds. All times stored in the file use this time as reference (i.e., time zero)."
+    },
+    {
+      "name": "units",
+      "kind": "namevalue",
+      "purpose": "Data about sorted spike units."
+    }
+  ]
+},
+"types.core.OnePhotonSeries": {
+  "inputs": [
+    {
+      "name": "binning",
+      "kind": "namevalue",
+      "purpose": "Amount of pixels combined into 'bins'; could be 1, 2, 4, 8, etc."
+    },
+    {
+      "name": "comments",
+      "kind": "namevalue",
+      "purpose": "Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string."
+    },
+    {
+      "name": "control",
+      "kind": "namevalue",
+      "purpose": "Numerical labels that apply to each time point in data for the purpose of querying and slicing data by these values. If present, the length of this array should be the same as the length of the first dimension of data."
+    },
+    {
+      "name": "control_description",
+      "kind": "namevalue",
+      "purpose": "Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0."
+    },
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Time-series of microscopy data indexed as data[time, width, height]. Indexing convention: - width: first spatial axis (horizontal direction, columns) - height: second spatial axis (vertical direction, rows) For raster-scanning systems (two-photon, confocal, one-photon laser scanning): - width: fast scan direction (horizontal) - height: slow scan direction (vertical) Coordinate system diagram:: height ^ (slow) | | +-----------------+ | | | | | Image plane | | | | | +-----------------+ | 0 ----------------------> width (fast) For non-raster systems (wide-field, light-sheet, random-access), width and height are arbitrary coordinates of the image plane. Note: This indexing convention conflicts with standard matrix[row, column] notation for array access where the first index moves vertically through rows and the second moves horizontally through columns. In the schema, data[time, width, height] means that the first spatial index moves horizontally (width) through columns and the second spatial index moves vertically (height) through rows. In summary, incrementing the first spatial index moves you horizontally across the image, while in matrix notation it would move you vertically across the rows of the image."
+    },
+    {
+      "name": "data_continuity",
+      "kind": "namevalue",
+      "purpose": "Optionally describe the continuity of the data. Can be \"continuous\", \"instantaneous\", or \"step\". For example, a voltage trace would be \"continuous\", because samples are recorded from a continuous process. An array of lick times would be \"instantaneous\", because the data represents distinct moments in time. Times of image presentations would be \"step\" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable. For storing instantaneous event information, it is recommended to use an EventsTable instead of a TimeSeries with continuity set to \"instantaneous\"."
+    },
+    {
+      "name": "data_conversion",
+      "kind": "namevalue",
+      "purpose": "Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data to the specified 'unit'. For example, if the data acquisition system stores values in this object as signed 16-bit integers (int16 range -32,768 to 32,767) that correspond to a 5V range (-2.5V to 2.5V), and the data acquisition system gain is 8000X, then the 'conversion' multiplier to get from raw data acquisition values to recorded volts is 2.5/32768/8000 = 9.5367e-9."
+    },
+    {
+      "name": "data_offset",
+      "kind": "namevalue",
+      "purpose": "Scalar to add to the data after scaling by 'conversion' to finalize its coercion to the specified 'unit'. Two common examples of this include (a) data stored in an unsigned type that requires a shift after scaling to re-center the data, and (b) specialized recording devices that naturally cause a scalar offset with respect to the true units."
+    },
+    {
+      "name": "data_resolution",
+      "kind": "namevalue",
+      "purpose": "Smallest meaningful difference between values in data, stored in the specified unit, e.g., the change in value of the least significant bit, or a larger number if signal noise is known to be present. If unknown, use -1.0."
+    },
+    {
+      "name": "data_unit",
+      "kind": "namevalue",
+      "purpose": "Base unit of measurement for working with the data. Actual stored values are not necessarily stored in these units. To access the data in these units, multiply 'data' by 'conversion' and add 'offset'."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the time series."
+    },
+    {
+      "name": "device",
+      "kind": "namevalue",
+      "purpose": "Link to the Device object that was used to capture these images."
+    },
+    {
+      "name": "dimension",
+      "kind": "namevalue",
+      "purpose": "Number of pixels on x, y, (and z) axes."
+    },
+    {
+      "name": "exposure_time",
+      "kind": "namevalue",
+      "purpose": "Exposure time of the sample; often the inverse of the frequency."
+    },
+    {
+      "name": "external_file",
+      "kind": "namevalue",
+      "purpose": "Paths to one or more external file(s). The field is only present if format='external'. This is only relevant if the image series is stored in the file system as one or more image file(s). This field should NOT be used if the image is stored in another NWB file and that file is linked to this file."
+    },
+    {
+      "name": "external_file_starting_frame",
+      "kind": "namevalue",
+      "purpose": "Each external image may contain one or more consecutive frames of the full ImageSeries. This attribute serves as an index to indicate which frames each file contains, to facilitate random access. The 'starting_frame' attribute, hence, contains a list of frame numbers within the full ImageSeries of the first frame of each file listed in the parent 'external_file' dataset. Zero-based indexing is used (hence, the first element will always be zero). For example, if the 'external_file' dataset has three paths to files and the first file has 5 frames, the second file has 10 frames, and the third file has 20 frames, then this attribute will have values [0, 5, 15]. If there is a single external file that holds all of the frames of the ImageSeries (and so there is a single element in the 'external_file' dataset), then this attribute should have value [0]."
+    },
+    {
+      "name": "format",
+      "kind": "namevalue",
+      "purpose": "Format of image. If this is 'external', then the attribute 'external_file' contains the path information to the image files. If this is 'raw', then the raw (single-channel) binary data is stored in the 'data' dataset. If this attribute is not present, then the default format='raw' case is assumed."
+    },
+    {
+      "name": "imaging_plane",
+      "kind": "namevalue",
+      "purpose": "Link to ImagingPlane object from which this TimeSeries data was generated."
+    },
+    {
+      "name": "intensity",
+      "kind": "namevalue",
+      "purpose": "Intensity of the excitation in mW/mm^2, if known."
+    },
+    {
+      "name": "num_samples",
+      "kind": "namevalue",
+      "purpose": "Total number of frames across all external files. This is required when format='external' and timing is described using starting_time and rate, since data is empty and its first dimension cannot be used to determine the number of frames. When timestamps is provided, len(timestamps) already serves this purpose."
+    },
+    {
+      "name": "pmt_gain",
+      "kind": "namevalue",
+      "purpose": "Photomultiplier gain."
+    },
+    {
+      "name": "power",
+      "kind": "namevalue",
+      "purpose": "Power of the excitation in mW, if known."
+    },
+    {
+      "name": "scan_line_rate",
+      "kind": "namevalue",
+      "purpose": "Lines imaged per second. This is also stored in /general/optophysiology but is kept here as it is useful information for analysis, and is therefore stored with the actual data."
+    },
+    {
+      "name": "starting_time",
+      "kind": "namevalue",
+      "purpose": "Timestamp of the first sample in seconds. When timestamps are uniformly spaced, the timestamp of the first sample can be specified and all subsequent ones calculated from the sampling rate attribute."
+    },
+    {
+      "name": "starting_time_rate",
+      "kind": "namevalue",
+      "purpose": "Sampling rate, in Hz."
+    },
+    {
+      "name": "timestamps",
+      "kind": "namevalue",
+      "purpose": "Timestamps for samples stored in data, in seconds, relative to the common experiment master clock stored in NWBFile.timestamps_reference_time."
+    }
+  ]
+},
+"types.core.OpticalChannel": {
+  "inputs": [
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description or other notes about the channel."
+    },
+    {
+      "name": "emission_lambda",
+      "kind": "namevalue",
+      "purpose": "Emission wavelength for channel, in nm."
+    }
+  ]
+},
+"types.core.OpticalSeries": {
+  "inputs": [
+    {
+      "name": "comments",
+      "kind": "namevalue",
+      "purpose": "Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string."
+    },
+    {
+      "name": "control",
+      "kind": "namevalue",
+      "purpose": "Numerical labels that apply to each time point in data for the purpose of querying and slicing data by these values. If present, the length of this array should be the same as the length of the first dimension of data."
+    },
+    {
+      "name": "control_description",
+      "kind": "namevalue",
+      "purpose": "Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0."
+    },
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Images presented to subject, either grayscale or RGB"
+    },
+    {
+      "name": "data_continuity",
+      "kind": "namevalue",
+      "purpose": "Optionally describe the continuity of the data. Can be \"continuous\", \"instantaneous\", or \"step\". For example, a voltage trace would be \"continuous\", because samples are recorded from a continuous process. An array of lick times would be \"instantaneous\", because the data represents distinct moments in time. Times of image presentations would be \"step\" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable. For storing instantaneous event information, it is recommended to use an EventsTable instead of a TimeSeries with continuity set to \"instantaneous\"."
+    },
+    {
+      "name": "data_conversion",
+      "kind": "namevalue",
+      "purpose": "Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data to the specified 'unit'. For example, if the data acquisition system stores values in this object as signed 16-bit integers (int16 range -32,768 to 32,767) that correspond to a 5V range (-2.5V to 2.5V), and the data acquisition system gain is 8000X, then the 'conversion' multiplier to get from raw data acquisition values to recorded volts is 2.5/32768/8000 = 9.5367e-9."
+    },
+    {
+      "name": "data_offset",
+      "kind": "namevalue",
+      "purpose": "Scalar to add to the data after scaling by 'conversion' to finalize its coercion to the specified 'unit'. Two common examples of this include (a) data stored in an unsigned type that requires a shift after scaling to re-center the data, and (b) specialized recording devices that naturally cause a scalar offset with respect to the true units."
+    },
+    {
+      "name": "data_resolution",
+      "kind": "namevalue",
+      "purpose": "Smallest meaningful difference between values in data, stored in the specified unit, e.g., the change in value of the least significant bit, or a larger number if signal noise is known to be present. If unknown, use -1.0."
+    },
+    {
+      "name": "data_unit",
+      "kind": "namevalue",
+      "purpose": "Base unit of measurement for working with the data. Actual stored values are not necessarily stored in these units. To access the data in these units, multiply 'data' by 'conversion' and add 'offset'."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the time series."
+    },
+    {
+      "name": "device",
+      "kind": "namevalue",
+      "purpose": "Link to the Device object that was used to capture these images."
+    },
+    {
+      "name": "dimension",
+      "kind": "namevalue",
+      "purpose": "Number of pixels on x, y, (and z) axes."
+    },
+    {
+      "name": "distance",
+      "kind": "namevalue",
+      "purpose": "Distance from camera/monitor to target/eye."
+    },
+    {
+      "name": "external_file",
+      "kind": "namevalue",
+      "purpose": "Paths to one or more external file(s). The field is only present if format='external'. This is only relevant if the image series is stored in the file system as one or more image file(s). This field should NOT be used if the image is stored in another NWB file and that file is linked to this file."
+    },
+    {
+      "name": "external_file_starting_frame",
+      "kind": "namevalue",
+      "purpose": "Each external image may contain one or more consecutive frames of the full ImageSeries. This attribute serves as an index to indicate which frames each file contains, to facilitate random access. The 'starting_frame' attribute, hence, contains a list of frame numbers within the full ImageSeries of the first frame of each file listed in the parent 'external_file' dataset. Zero-based indexing is used (hence, the first element will always be zero). For example, if the 'external_file' dataset has three paths to files and the first file has 5 frames, the second file has 10 frames, and the third file has 20 frames, then this attribute will have values [0, 5, 15]. If there is a single external file that holds all of the frames of the ImageSeries (and so there is a single element in the 'external_file' dataset), then this attribute should have value [0]."
+    },
+    {
+      "name": "field_of_view",
+      "kind": "namevalue",
+      "purpose": "Width, height and depth of image, or imaged area, in meters."
+    },
+    {
+      "name": "format",
+      "kind": "namevalue",
+      "purpose": "Format of image. If this is 'external', then the attribute 'external_file' contains the path information to the image files. If this is 'raw', then the raw (single-channel) binary data is stored in the 'data' dataset. If this attribute is not present, then the default format='raw' case is assumed."
+    },
+    {
+      "name": "num_samples",
+      "kind": "namevalue",
+      "purpose": "Total number of frames across all external files. This is required when format='external' and timing is described using starting_time and rate, since data is empty and its first dimension cannot be used to determine the number of frames. When timestamps is provided, len(timestamps) already serves this purpose."
+    },
+    {
+      "name": "orientation",
+      "kind": "namevalue",
+      "purpose": "Description of image relative to some reference frame (e.g., which way is up). Must also specify frame of reference."
+    },
+    {
+      "name": "starting_time",
+      "kind": "namevalue",
+      "purpose": "Timestamp of the first sample in seconds. When timestamps are uniformly spaced, the timestamp of the first sample can be specified and all subsequent ones calculated from the sampling rate attribute."
+    },
+    {
+      "name": "starting_time_rate",
+      "kind": "namevalue",
+      "purpose": "Sampling rate, in Hz."
+    },
+    {
+      "name": "timestamps",
+      "kind": "namevalue",
+      "purpose": "Timestamps for samples stored in data, in seconds, relative to the common experiment master clock stored in NWBFile.timestamps_reference_time."
+    }
+  ]
+},
+"types.core.OptogeneticSeries": {
+  "inputs": [
+    {
+      "name": "comments",
+      "kind": "namevalue",
+      "purpose": "Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string."
+    },
+    {
+      "name": "control",
+      "kind": "namevalue",
+      "purpose": "Numerical labels that apply to each time point in data for the purpose of querying and slicing data by these values. If present, the length of this array should be the same as the length of the first dimension of data."
+    },
+    {
+      "name": "control_description",
+      "kind": "namevalue",
+      "purpose": "Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0."
+    },
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Applied power for optogenetic stimulus, in watts. Shape can be 1-D or 2-D. 2-D data is meant to be used in an extension of OptogeneticSeries that defines what the second dimension represents."
+    },
+    {
+      "name": "data_continuity",
+      "kind": "namevalue",
+      "purpose": "Optionally describe the continuity of the data. Can be \"continuous\", \"instantaneous\", or \"step\". For example, a voltage trace would be \"continuous\", because samples are recorded from a continuous process. An array of lick times would be \"instantaneous\", because the data represents distinct moments in time. Times of image presentations would be \"step\" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable. For storing instantaneous event information, it is recommended to use an EventsTable instead of a TimeSeries with continuity set to \"instantaneous\"."
+    },
+    {
+      "name": "data_conversion",
+      "kind": "namevalue",
+      "purpose": "Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data to the specified 'unit'. For example, if the data acquisition system stores values in this object as signed 16-bit integers (int16 range -32,768 to 32,767) that correspond to a 5V range (-2.5V to 2.5V), and the data acquisition system gain is 8000X, then the 'conversion' multiplier to get from raw data acquisition values to recorded volts is 2.5/32768/8000 = 9.5367e-9."
+    },
+    {
+      "name": "data_offset",
+      "kind": "namevalue",
+      "purpose": "Scalar to add to the data after scaling by 'conversion' to finalize its coercion to the specified 'unit'. Two common examples of this include (a) data stored in an unsigned type that requires a shift after scaling to re-center the data, and (b) specialized recording devices that naturally cause a scalar offset with respect to the true units."
+    },
+    {
+      "name": "data_resolution",
+      "kind": "namevalue",
+      "purpose": "Smallest meaningful difference between values in data, stored in the specified unit, e.g., the change in value of the least significant bit, or a larger number if signal noise is known to be present. If unknown, use -1.0."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the time series."
+    },
+    {
+      "name": "site",
+      "kind": "namevalue",
+      "purpose": "Link to OptogeneticStimulusSite object that describes the site to which this stimulus was applied."
+    },
+    {
+      "name": "starting_time",
+      "kind": "namevalue",
+      "purpose": "Timestamp of the first sample in seconds. When timestamps are uniformly spaced, the timestamp of the first sample can be specified and all subsequent ones calculated from the sampling rate attribute."
+    },
+    {
+      "name": "starting_time_rate",
+      "kind": "namevalue",
+      "purpose": "Sampling rate, in Hz."
+    },
+    {
+      "name": "timestamps",
+      "kind": "namevalue",
+      "purpose": "Timestamps for samples stored in data, in seconds, relative to the common experiment master clock stored in NWBFile.timestamps_reference_time."
+    }
+  ]
+},
+"types.core.OptogeneticStimulusSite": {
+  "inputs": [
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of stimulation site."
+    },
+    {
+      "name": "device",
+      "kind": "namevalue",
+      "purpose": "Device that generated the stimulus."
+    },
+    {
+      "name": "excitation_lambda",
+      "kind": "namevalue",
+      "purpose": "Excitation wavelength, in nm."
+    },
+    {
+      "name": "location",
+      "kind": "namevalue",
+      "purpose": "Location of the stimulation site. Specify the area, layer, comments on estimation of area/layer, stereotaxic coordinates if in vivo, etc. Use standard atlas names for anatomical regions when possible."
+    }
+  ]
+},
+"types.core.PatchClampSeries": {
+  "inputs": [
+    {
+      "name": "comments",
+      "kind": "namevalue",
+      "purpose": "Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string."
+    },
+    {
+      "name": "control",
+      "kind": "namevalue",
+      "purpose": "Numerical labels that apply to each time point in data for the purpose of querying and slicing data by these values. If present, the length of this array should be the same as the length of the first dimension of data."
+    },
+    {
+      "name": "control_description",
+      "kind": "namevalue",
+      "purpose": "Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0."
+    },
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Recorded voltage or current."
+    },
+    {
+      "name": "data_continuity",
+      "kind": "namevalue",
+      "purpose": "Optionally describe the continuity of the data. Can be \"continuous\", \"instantaneous\", or \"step\". For example, a voltage trace would be \"continuous\", because samples are recorded from a continuous process. An array of lick times would be \"instantaneous\", because the data represents distinct moments in time. Times of image presentations would be \"step\" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable. For storing instantaneous event information, it is recommended to use an EventsTable instead of a TimeSeries with continuity set to \"instantaneous\"."
+    },
+    {
+      "name": "data_conversion",
+      "kind": "namevalue",
+      "purpose": "Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data to the specified 'unit'. For example, if the data acquisition system stores values in this object as signed 16-bit integers (int16 range -32,768 to 32,767) that correspond to a 5V range (-2.5V to 2.5V), and the data acquisition system gain is 8000X, then the 'conversion' multiplier to get from raw data acquisition values to recorded volts is 2.5/32768/8000 = 9.5367e-9."
+    },
+    {
+      "name": "data_offset",
+      "kind": "namevalue",
+      "purpose": "Scalar to add to the data after scaling by 'conversion' to finalize its coercion to the specified 'unit'. Two common examples of this include (a) data stored in an unsigned type that requires a shift after scaling to re-center the data, and (b) specialized recording devices that naturally cause a scalar offset with respect to the true units."
+    },
+    {
+      "name": "data_resolution",
+      "kind": "namevalue",
+      "purpose": "Smallest meaningful difference between values in data, stored in the specified unit, e.g., the change in value of the least significant bit, or a larger number if signal noise is known to be present. If unknown, use -1.0."
+    },
+    {
+      "name": "data_unit",
+      "kind": "namevalue",
+      "purpose": "Base unit of measurement for working with the data. Actual stored values are not necessarily stored in these units. To access the data in these units, multiply 'data' by 'conversion' and add 'offset'."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the time series."
+    },
+    {
+      "name": "electrode",
+      "kind": "namevalue",
+      "purpose": "Link to IntracellularElectrode object that describes the electrode that was used to apply or record this data."
+    },
+    {
+      "name": "gain",
+      "kind": "namevalue",
+      "purpose": "Gain of the recording, in units Volt/Amp (v-clamp) or Volt/Volt (c-clamp)."
+    },
+    {
+      "name": "starting_time",
+      "kind": "namevalue",
+      "purpose": "Timestamp of the first sample in seconds. When timestamps are uniformly spaced, the timestamp of the first sample can be specified and all subsequent ones calculated from the sampling rate attribute."
+    },
+    {
+      "name": "starting_time_rate",
+      "kind": "namevalue",
+      "purpose": "Sampling rate, in Hz."
+    },
+    {
+      "name": "stimulus_description",
+      "kind": "namevalue",
+      "purpose": "Protocol/stimulus name for this patch-clamp dataset."
+    },
+    {
+      "name": "sweep_number",
+      "kind": "namevalue",
+      "purpose": "Sweep number, allows users to group different PatchClampSeries together."
+    },
+    {
+      "name": "timestamps",
+      "kind": "namevalue",
+      "purpose": "Timestamps for samples stored in data, in seconds, relative to the common experiment master clock stored in NWBFile.timestamps_reference_time."
+    }
+  ]
+},
+"types.core.PlaneSegmentation": {
+  "inputs": [
+    {
+      "name": "colnames",
+      "kind": "namevalue",
+      "purpose": "The names of the columns in this table. This should be used to specify an order to the columns."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of what is in this dynamic table."
+    },
+    {
+      "name": "id",
+      "kind": "namevalue",
+      "purpose": "Array of unique identifiers for the rows of this dynamic table."
+    },
+    {
+      "name": "image_mask",
+      "kind": "namevalue",
+      "purpose": "ROI masks for each ROI. Each image mask is the size of the original imaging plane (or volume) and members of the ROI are finite non-zero. At least one of `image_mask`, `pixel_mask`, or `voxel_mask` is required."
+    },
+    {
+      "name": "imaging_plane",
+      "kind": "namevalue",
+      "purpose": "Link to ImagingPlane object from which this data was generated."
+    },
+    {
+      "name": "pixel_mask",
+      "kind": "namevalue",
+      "purpose": "Pixel masks for each ROI: a list of indices and weights for the ROI. Pixel masks are concatenated and parsing of this dataset is maintained by the PlaneSegmentation. At least one of `image_mask`, `pixel_mask`, or `voxel_mask` is required."
+    },
+    {
+      "name": "pixel_mask_index",
+      "kind": "namevalue",
+      "purpose": "Index into pixel_mask."
+    },
+    {
+      "name": "voxel_mask",
+      "kind": "namevalue",
+      "purpose": "Voxel masks for each ROI: a list of indices and weights for the ROI. Voxel masks are concatenated and parsing of this dataset is maintained by the PlaneSegmentation. At least one of `image_mask`, `pixel_mask`, or `voxel_mask` is required."
+    },
+    {
+      "name": "voxel_mask_index",
+      "kind": "namevalue",
+      "purpose": "Index into voxel_mask."
+    }
+  ]
+},
+"types.core.Position": {
+  "inputs": []
+},
+"types.core.ProcessingModule": {
+  "inputs": [
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of this collection of processed data."
+    }
+  ]
+},
+"types.core.PupilTracking": {
+  "inputs": []
+},
+"types.core.RGBAImage": {
+  "inputs": [
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Data property for dataset class (RGBAImage)"
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the image."
+    },
+    {
+      "name": "resolution",
+      "kind": "namevalue",
+      "purpose": "Pixel resolution of the image, in pixels per centimeter."
+    }
+  ]
+},
+"types.core.RGBImage": {
+  "inputs": [
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Data property for dataset class (RGBImage)"
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the image."
+    },
+    {
+      "name": "resolution",
+      "kind": "namevalue",
+      "purpose": "Pixel resolution of the image, in pixels per centimeter."
+    }
+  ]
+},
+"types.core.RepetitionsTable": {
+  "inputs": [
+    {
+      "name": "colnames",
+      "kind": "namevalue",
+      "purpose": "The names of the columns in this table. This should be used to specify an order to the columns."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of what is in this dynamic table."
+    },
+    {
+      "name": "id",
+      "kind": "namevalue",
+      "purpose": "Array of unique identifiers for the rows of this dynamic table."
+    },
+    {
+      "name": "sequential_recordings",
+      "kind": "namevalue",
+      "purpose": "A reference to one or more rows in the SequentialRecordingsTable table."
+    },
+    {
+      "name": "sequential_recordings_index",
+      "kind": "namevalue",
+      "purpose": "Index dataset for the sequential_recordings column."
+    }
+  ]
+},
+"types.core.RoiResponseSeries": {
+  "inputs": [
+    {
+      "name": "comments",
+      "kind": "namevalue",
+      "purpose": "Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string."
+    },
+    {
+      "name": "control",
+      "kind": "namevalue",
+      "purpose": "Numerical labels that apply to each time point in data for the purpose of querying and slicing data by these values. If present, the length of this array should be the same as the length of the first dimension of data."
+    },
+    {
+      "name": "control_description",
+      "kind": "namevalue",
+      "purpose": "Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0."
+    },
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Signals from ROIs."
+    },
+    {
+      "name": "data_continuity",
+      "kind": "namevalue",
+      "purpose": "Optionally describe the continuity of the data. Can be \"continuous\", \"instantaneous\", or \"step\". For example, a voltage trace would be \"continuous\", because samples are recorded from a continuous process. An array of lick times would be \"instantaneous\", because the data represents distinct moments in time. Times of image presentations would be \"step\" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable. For storing instantaneous event information, it is recommended to use an EventsTable instead of a TimeSeries with continuity set to \"instantaneous\"."
+    },
+    {
+      "name": "data_conversion",
+      "kind": "namevalue",
+      "purpose": "Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data to the specified 'unit'. For example, if the data acquisition system stores values in this object as signed 16-bit integers (int16 range -32,768 to 32,767) that correspond to a 5V range (-2.5V to 2.5V), and the data acquisition system gain is 8000X, then the 'conversion' multiplier to get from raw data acquisition values to recorded volts is 2.5/32768/8000 = 9.5367e-9."
+    },
+    {
+      "name": "data_offset",
+      "kind": "namevalue",
+      "purpose": "Scalar to add to the data after scaling by 'conversion' to finalize its coercion to the specified 'unit'. Two common examples of this include (a) data stored in an unsigned type that requires a shift after scaling to re-center the data, and (b) specialized recording devices that naturally cause a scalar offset with respect to the true units."
+    },
+    {
+      "name": "data_resolution",
+      "kind": "namevalue",
+      "purpose": "Smallest meaningful difference between values in data, stored in the specified unit, e.g., the change in value of the least significant bit, or a larger number if signal noise is known to be present. If unknown, use -1.0."
+    },
+    {
+      "name": "data_unit",
+      "kind": "namevalue",
+      "purpose": "Base unit of measurement for working with the data. Actual stored values are not necessarily stored in these units. To access the data in these units, multiply 'data' by 'conversion' and add 'offset'."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the time series."
+    },
+    {
+      "name": "rois",
+      "kind": "namevalue",
+      "purpose": "DynamicTableRegion referencing into a PlaneSegmentation table containing information on the ROIs stored in this TimeSeries."
+    },
+    {
+      "name": "starting_time",
+      "kind": "namevalue",
+      "purpose": "Timestamp of the first sample in seconds. When timestamps are uniformly spaced, the timestamp of the first sample can be specified and all subsequent ones calculated from the sampling rate attribute."
+    },
+    {
+      "name": "starting_time_rate",
+      "kind": "namevalue",
+      "purpose": "Sampling rate, in Hz."
+    },
+    {
+      "name": "timestamps",
+      "kind": "namevalue",
+      "purpose": "Timestamps for samples stored in data, in seconds, relative to the common experiment master clock stored in NWBFile.timestamps_reference_time."
+    }
+  ]
+},
+"types.core.ScratchData": {
+  "inputs": [
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Data property for dataset class (ScratchData)"
+    },
+    {
+      "name": "notes",
+      "kind": "namevalue",
+      "purpose": "Any notes the user has about the dataset being stored"
+    }
+  ]
+},
+"types.core.SequentialRecordingsTable": {
+  "inputs": [
+    {
+      "name": "colnames",
+      "kind": "namevalue",
+      "purpose": "The names of the columns in this table. This should be used to specify an order to the columns."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of what is in this dynamic table."
+    },
+    {
+      "name": "id",
+      "kind": "namevalue",
+      "purpose": "Array of unique identifiers for the rows of this dynamic table."
+    },
+    {
+      "name": "simultaneous_recordings",
+      "kind": "namevalue",
+      "purpose": "A reference to one or more rows in the SimultaneousRecordingsTable table."
+    },
+    {
+      "name": "simultaneous_recordings_index",
+      "kind": "namevalue",
+      "purpose": "Index dataset for the simultaneous_recordings column."
+    },
+    {
+      "name": "stimulus_type",
+      "kind": "namevalue",
+      "purpose": "The type of stimulus used for the sequential recording."
+    }
+  ]
+},
+"types.core.SimultaneousRecordingsTable": {
+  "inputs": [
+    {
+      "name": "colnames",
+      "kind": "namevalue",
+      "purpose": "The names of the columns in this table. This should be used to specify an order to the columns."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of what is in this dynamic table."
+    },
+    {
+      "name": "id",
+      "kind": "namevalue",
+      "purpose": "Array of unique identifiers for the rows of this dynamic table."
+    },
+    {
+      "name": "recordings",
+      "kind": "namevalue",
+      "purpose": "A reference to one or more rows in the IntracellularRecordingsTable table."
+    },
+    {
+      "name": "recordings_index",
+      "kind": "namevalue",
+      "purpose": "Index dataset for the recordings column."
+    }
+  ]
+},
+"types.core.SpatialSeries": {
+  "inputs": [
+    {
+      "name": "comments",
+      "kind": "namevalue",
+      "purpose": "Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string."
+    },
+    {
+      "name": "control",
+      "kind": "namevalue",
+      "purpose": "Numerical labels that apply to each time point in data for the purpose of querying and slicing data by these values. If present, the length of this array should be the same as the length of the first dimension of data."
+    },
+    {
+      "name": "control_description",
+      "kind": "namevalue",
+      "purpose": "Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0."
+    },
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "1-D or 2-D array storing position or direction relative to some reference frame."
+    },
+    {
+      "name": "data_continuity",
+      "kind": "namevalue",
+      "purpose": "Optionally describe the continuity of the data. Can be \"continuous\", \"instantaneous\", or \"step\". For example, a voltage trace would be \"continuous\", because samples are recorded from a continuous process. An array of lick times would be \"instantaneous\", because the data represents distinct moments in time. Times of image presentations would be \"step\" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable. For storing instantaneous event information, it is recommended to use an EventsTable instead of a TimeSeries with continuity set to \"instantaneous\"."
+    },
+    {
+      "name": "data_conversion",
+      "kind": "namevalue",
+      "purpose": "Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data to the specified 'unit'. For example, if the data acquisition system stores values in this object as signed 16-bit integers (int16 range -32,768 to 32,767) that correspond to a 5V range (-2.5V to 2.5V), and the data acquisition system gain is 8000X, then the 'conversion' multiplier to get from raw data acquisition values to recorded volts is 2.5/32768/8000 = 9.5367e-9."
+    },
+    {
+      "name": "data_offset",
+      "kind": "namevalue",
+      "purpose": "Scalar to add to the data after scaling by 'conversion' to finalize its coercion to the specified 'unit'. Two common examples of this include (a) data stored in an unsigned type that requires a shift after scaling to re-center the data, and (b) specialized recording devices that naturally cause a scalar offset with respect to the true units."
+    },
+    {
+      "name": "data_resolution",
+      "kind": "namevalue",
+      "purpose": "Smallest meaningful difference between values in data, stored in the specified unit, e.g., the change in value of the least significant bit, or a larger number if signal noise is known to be present. If unknown, use -1.0."
+    },
+    {
+      "name": "data_unit",
+      "kind": "namevalue",
+      "purpose": "Base unit of measurement for working with the data. The default value is 'meters'. Actual stored values are not necessarily stored in these units. To access the data in these units, multiply 'data' by 'conversion' and add 'offset'."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the time series."
+    },
+    {
+      "name": "reference_frame",
+      "kind": "namevalue",
+      "purpose": "Description defining what exactly 'straight-ahead' means."
+    },
+    {
+      "name": "starting_time",
+      "kind": "namevalue",
+      "purpose": "Timestamp of the first sample in seconds. When timestamps are uniformly spaced, the timestamp of the first sample can be specified and all subsequent ones calculated from the sampling rate attribute."
+    },
+    {
+      "name": "starting_time_rate",
+      "kind": "namevalue",
+      "purpose": "Sampling rate, in Hz."
+    },
+    {
+      "name": "timestamps",
+      "kind": "namevalue",
+      "purpose": "Timestamps for samples stored in data, in seconds, relative to the common experiment master clock stored in NWBFile.timestamps_reference_time."
+    }
+  ]
+},
+"types.core.SpikeEventSeries": {
+  "inputs": [
+    {
+      "name": "channel_conversion",
+      "kind": "namevalue",
+      "purpose": "Channel-specific conversion factor. Multiply the data in the 'data' dataset by these values along the channel axis (as indicated by axis attribute) AND by the global conversion factor in the 'conversion' attribute of 'data' to get the data values in Volts, i.e., data in Volts = data * data.conversion * channel_conversion. This approach allows for both global and per-channel data conversion factors needed to support the storage of electrical recordings as native values generated by data acquisition systems. If this dataset is not present, then there is no channel-specific conversion factor, i.e., it is 1 for all channels."
+    },
+    {
+      "name": "comments",
+      "kind": "namevalue",
+      "purpose": "Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string."
+    },
+    {
+      "name": "control",
+      "kind": "namevalue",
+      "purpose": "Numerical labels that apply to each time point in data for the purpose of querying and slicing data by these values. If present, the length of this array should be the same as the length of the first dimension of data."
+    },
+    {
+      "name": "control_description",
+      "kind": "namevalue",
+      "purpose": "Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0."
+    },
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Spike waveforms."
+    },
+    {
+      "name": "data_continuity",
+      "kind": "namevalue",
+      "purpose": "Optionally describe the continuity of the data. Can be \"continuous\", \"instantaneous\", or \"step\". For example, a voltage trace would be \"continuous\", because samples are recorded from a continuous process. An array of lick times would be \"instantaneous\", because the data represents distinct moments in time. Times of image presentations would be \"step\" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable. For storing instantaneous event information, it is recommended to use an EventsTable instead of a TimeSeries with continuity set to \"instantaneous\"."
+    },
+    {
+      "name": "data_conversion",
+      "kind": "namevalue",
+      "purpose": "Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data to the specified 'unit'. For example, if the data acquisition system stores values in this object as signed 16-bit integers (int16 range -32,768 to 32,767) that correspond to a 5V range (-2.5V to 2.5V), and the data acquisition system gain is 8000X, then the 'conversion' multiplier to get from raw data acquisition values to recorded volts is 2.5/32768/8000 = 9.5367e-9."
+    },
+    {
+      "name": "data_offset",
+      "kind": "namevalue",
+      "purpose": "Scalar to add to the data after scaling by 'conversion' to finalize its coercion to the specified 'unit'. Two common examples of this include (a) data stored in an unsigned type that requires a shift after scaling to re-center the data, and (b) specialized recording devices that naturally cause a scalar offset with respect to the true units."
+    },
+    {
+      "name": "data_resolution",
+      "kind": "namevalue",
+      "purpose": "Smallest meaningful difference between values in data, stored in the specified unit, e.g., the change in value of the least significant bit, or a larger number if signal noise is known to be present. If unknown, use -1.0."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the time series."
+    },
+    {
+      "name": "electrodes",
+      "kind": "namevalue",
+      "purpose": "DynamicTableRegion pointer to the electrodes that this time series was generated from."
+    },
+    {
+      "name": "filtering",
+      "kind": "namevalue",
+      "purpose": "Filtering applied to all channels of the data. For example, if this ElectricalSeries represents high-pass-filtered data (also known as AP Band), then this value could be \"High-pass 4-pole Bessel filter at 500 Hz\". If this ElectricalSeries represents low-pass-filtered LFP data and the type of filter is unknown, then this value could be \"Low-pass filter at 300 Hz\". If a non-standard filter type is used, provide as much detail about the filter properties as possible."
+    },
+    {
+      "name": "starting_time",
+      "kind": "namevalue",
+      "purpose": "Timestamp of the first sample in seconds. When timestamps are uniformly spaced, the timestamp of the first sample can be specified and all subsequent ones calculated from the sampling rate attribute."
+    },
+    {
+      "name": "starting_time_rate",
+      "kind": "namevalue",
+      "purpose": "Sampling rate, in Hz."
+    },
+    {
+      "name": "timestamps",
+      "kind": "namevalue",
+      "purpose": "Timestamps for samples stored in data, in seconds, relative to the common experiment master-clock stored in NWBFile.timestamps_reference_time. Timestamps are required for the events. Unlike for TimeSeries, timestamps are required for SpikeEventSeries and are thus re-specified here."
+    }
+  ]
+},
+"types.core.Subject": {
+  "inputs": [
+    {
+      "name": "age",
+      "kind": "namevalue",
+      "purpose": "Age of subject. Can be supplied instead of 'date_of_birth'. The ISO 8601 Duration format is recommended, e.g., 'P90D' for 90 days old. If the precise age is unknown, an age range can be given by '[lower bound]/[upper bound]' e.g. 'P10D/P20D' would mean that the age is in between 10 and 20 days. If only the lower bound is known, then including only the slash after that lower bound can be used to indicate a missing bound. For instance, 'P90Y/' would indicate that the age is 90 years or older."
+    },
+    {
+      "name": "age_reference",
+      "kind": "namevalue",
+      "purpose": "Age is with reference to this event. Can be 'birth' or 'gestational'. If reference is omitted, 'birth' is implied."
+    },
+    {
+      "name": "date_of_birth",
+      "kind": "namevalue",
+      "purpose": "Date of birth of subject. Can be supplied instead of 'age'."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of subject and where subject came from (e.g., breeder, if animal)."
+    },
+    {
+      "name": "genotype",
+      "kind": "namevalue",
+      "purpose": "Genetic strain. If absent, assume Wild Type (WT)."
+    },
+    {
+      "name": "sex",
+      "kind": "namevalue",
+      "purpose": "Biological sex of subject."
+    },
+    {
+      "name": "species",
+      "kind": "namevalue",
+      "purpose": "Species of subject."
+    },
+    {
+      "name": "strain",
+      "kind": "namevalue",
+      "purpose": "Strain of subject."
+    },
+    {
+      "name": "subject_id",
+      "kind": "namevalue",
+      "purpose": "ID of animal/person used/participating in experiment (lab convention)."
+    },
+    {
+      "name": "weight",
+      "kind": "namevalue",
+      "purpose": "Weight at time of experiment, at time of surgery and at other important times."
+    }
+  ]
+},
+"types.core.SweepTable": {
+  "inputs": [
+    {
+      "name": "colnames",
+      "kind": "namevalue",
+      "purpose": "The names of the columns in this table. This should be used to specify an order to the columns."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of what is in this dynamic table."
+    },
+    {
+      "name": "id",
+      "kind": "namevalue",
+      "purpose": "Array of unique identifiers for the rows of this dynamic table."
+    },
+    {
+      "name": "series",
+      "kind": "namevalue",
+      "purpose": "The PatchClampSeries with the sweep number in that row."
+    },
+    {
+      "name": "series_index",
+      "kind": "namevalue",
+      "purpose": "Index for series."
+    },
+    {
+      "name": "sweep_number",
+      "kind": "namevalue",
+      "purpose": "Sweep number of the PatchClampSeries in that row."
+    }
+  ]
+},
+"types.core.TimeIntervals": {
+  "inputs": [
+    {
+      "name": "colnames",
+      "kind": "namevalue",
+      "purpose": "The names of the columns in this table. This should be used to specify an order to the columns."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of what is in this dynamic table."
+    },
+    {
+      "name": "id",
+      "kind": "namevalue",
+      "purpose": "Array of unique identifiers for the rows of this dynamic table."
+    },
+    {
+      "name": "start_time",
+      "kind": "namevalue",
+      "purpose": "Start time of epoch, in seconds."
+    },
+    {
+      "name": "stop_time",
+      "kind": "namevalue",
+      "purpose": "Stop time of epoch, in seconds."
+    },
+    {
+      "name": "tags",
+      "kind": "namevalue",
+      "purpose": "User-defined tags that identify or categorize events."
+    },
+    {
+      "name": "tags_index",
+      "kind": "namevalue",
+      "purpose": "Index for tags."
+    },
+    {
+      "name": "timeseries",
+      "kind": "namevalue",
+      "purpose": "An index into a TimeSeries object."
+    },
+    {
+      "name": "timeseries_index",
+      "kind": "namevalue",
+      "purpose": "Index for timeseries."
+    }
+  ]
+},
+"types.core.TimeSeries": {
+  "inputs": [
+    {
+      "name": "comments",
+      "kind": "namevalue",
+      "purpose": "Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string."
+    },
+    {
+      "name": "control",
+      "kind": "namevalue",
+      "purpose": "Numerical labels that apply to each time point in data for the purpose of querying and slicing data by these values. If present, the length of this array should be the same as the length of the first dimension of data."
+    },
+    {
+      "name": "control_description",
+      "kind": "namevalue",
+      "purpose": "Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0."
+    },
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Data values. Data can be in 1-D, 2-D, 3-D, or 4-D. The first dimension should always represent time. This can also be used to store binary data (e.g., image frames). This can also be a link to data stored in an external file."
+    },
+    {
+      "name": "data_continuity",
+      "kind": "namevalue",
+      "purpose": "Optionally describe the continuity of the data. Can be \"continuous\", \"instantaneous\", or \"step\". For example, a voltage trace would be \"continuous\", because samples are recorded from a continuous process. An array of lick times would be \"instantaneous\", because the data represents distinct moments in time. Times of image presentations would be \"step\" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable. For storing instantaneous event information, it is recommended to use an EventsTable instead of a TimeSeries with continuity set to \"instantaneous\"."
+    },
+    {
+      "name": "data_conversion",
+      "kind": "namevalue",
+      "purpose": "Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data to the specified 'unit'. For example, if the data acquisition system stores values in this object as signed 16-bit integers (int16 range -32,768 to 32,767) that correspond to a 5V range (-2.5V to 2.5V), and the data acquisition system gain is 8000X, then the 'conversion' multiplier to get from raw data acquisition values to recorded volts is 2.5/32768/8000 = 9.5367e-9."
+    },
+    {
+      "name": "data_offset",
+      "kind": "namevalue",
+      "purpose": "Scalar to add to the data after scaling by 'conversion' to finalize its coercion to the specified 'unit'. Two common examples of this include (a) data stored in an unsigned type that requires a shift after scaling to re-center the data, and (b) specialized recording devices that naturally cause a scalar offset with respect to the true units."
+    },
+    {
+      "name": "data_resolution",
+      "kind": "namevalue",
+      "purpose": "Smallest meaningful difference between values in data, stored in the specified unit, e.g., the change in value of the least significant bit, or a larger number if signal noise is known to be present. If unknown, use -1.0."
+    },
+    {
+      "name": "data_unit",
+      "kind": "namevalue",
+      "purpose": "Base unit of measurement for working with the data. Actual stored values are not necessarily stored in these units. To access the data in these units, multiply 'data' by 'conversion' and add 'offset'."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the time series."
+    },
+    {
+      "name": "starting_time",
+      "kind": "namevalue",
+      "purpose": "Timestamp of the first sample in seconds. When timestamps are uniformly spaced, the timestamp of the first sample can be specified and all subsequent ones calculated from the sampling rate attribute."
+    },
+    {
+      "name": "starting_time_rate",
+      "kind": "namevalue",
+      "purpose": "Sampling rate, in Hz."
+    },
+    {
+      "name": "timestamps",
+      "kind": "namevalue",
+      "purpose": "Timestamps for samples stored in data, in seconds, relative to the common experiment master clock stored in NWBFile.timestamps_reference_time."
+    }
+  ]
+},
+"types.core.TimeSeriesReferenceVectorData": {
+  "inputs": [
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Data property for dataset class (TimeSeriesReferenceVectorData)"
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of what these vectors represent."
+    }
+  ]
+},
+"types.core.TimestampVectorData": {
+  "inputs": [
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Data property for dataset class (TimestampVectorData)"
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of what these vectors represent."
+    },
+    {
+      "name": "resolution",
+      "kind": "namevalue",
+      "purpose": "The temporal resolution of the timestamps, in seconds. This is typically the sampling period (1 / sampling_rate), also known as the clock period, of the data acquisition system from which the timestamps were recorded or derived."
+    }
+  ]
+},
+"types.core.TwoPhotonSeries": {
+  "inputs": [
+    {
+      "name": "comments",
+      "kind": "namevalue",
+      "purpose": "Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string."
+    },
+    {
+      "name": "control",
+      "kind": "namevalue",
+      "purpose": "Numerical labels that apply to each time point in data for the purpose of querying and slicing data by these values. If present, the length of this array should be the same as the length of the first dimension of data."
+    },
+    {
+      "name": "control_description",
+      "kind": "namevalue",
+      "purpose": "Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0."
+    },
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Time-series of microscopy data indexed as data[time, width, height]. Indexing convention: - width: first spatial axis (horizontal direction, columns) - height: second spatial axis (vertical direction, rows) For raster-scanning systems (two-photon, confocal, one-photon laser scanning): - width: fast scan direction (horizontal) - height: slow scan direction (vertical) Coordinate system diagram:: height ^ (slow) | | +-----------------+ | | | | | Image plane | | | | | +-----------------+ | 0 ----------------------> width (fast) For non-raster systems (wide-field, light-sheet, random-access), width and height are arbitrary coordinates of the image plane. Note: This indexing convention conflicts with standard matrix[row, column] notation for array access where the first index moves vertically through rows and the second moves horizontally through columns. In the schema, data[time, width, height] means that the first spatial index moves horizontally (width) through columns and the second spatial index moves vertically (height) through rows."
+    },
+    {
+      "name": "data_continuity",
+      "kind": "namevalue",
+      "purpose": "Optionally describe the continuity of the data. Can be \"continuous\", \"instantaneous\", or \"step\". For example, a voltage trace would be \"continuous\", because samples are recorded from a continuous process. An array of lick times would be \"instantaneous\", because the data represents distinct moments in time. Times of image presentations would be \"step\" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable. For storing instantaneous event information, it is recommended to use an EventsTable instead of a TimeSeries with continuity set to \"instantaneous\"."
+    },
+    {
+      "name": "data_conversion",
+      "kind": "namevalue",
+      "purpose": "Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data to the specified 'unit'. For example, if the data acquisition system stores values in this object as signed 16-bit integers (int16 range -32,768 to 32,767) that correspond to a 5V range (-2.5V to 2.5V), and the data acquisition system gain is 8000X, then the 'conversion' multiplier to get from raw data acquisition values to recorded volts is 2.5/32768/8000 = 9.5367e-9."
+    },
+    {
+      "name": "data_offset",
+      "kind": "namevalue",
+      "purpose": "Scalar to add to the data after scaling by 'conversion' to finalize its coercion to the specified 'unit'. Two common examples of this include (a) data stored in an unsigned type that requires a shift after scaling to re-center the data, and (b) specialized recording devices that naturally cause a scalar offset with respect to the true units."
+    },
+    {
+      "name": "data_resolution",
+      "kind": "namevalue",
+      "purpose": "Smallest meaningful difference between values in data, stored in the specified unit, e.g., the change in value of the least significant bit, or a larger number if signal noise is known to be present. If unknown, use -1.0."
+    },
+    {
+      "name": "data_unit",
+      "kind": "namevalue",
+      "purpose": "Base unit of measurement for working with the data. Actual stored values are not necessarily stored in these units. To access the data in these units, multiply 'data' by 'conversion' and add 'offset'."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the time series."
+    },
+    {
+      "name": "device",
+      "kind": "namevalue",
+      "purpose": "Link to the Device object that was used to capture these images."
+    },
+    {
+      "name": "dimension",
+      "kind": "namevalue",
+      "purpose": "Number of pixels on x, y, (and z) axes."
+    },
+    {
+      "name": "external_file",
+      "kind": "namevalue",
+      "purpose": "Paths to one or more external file(s). The field is only present if format='external'. This is only relevant if the image series is stored in the file system as one or more image file(s). This field should NOT be used if the image is stored in another NWB file and that file is linked to this file."
+    },
+    {
+      "name": "external_file_starting_frame",
+      "kind": "namevalue",
+      "purpose": "Each external image may contain one or more consecutive frames of the full ImageSeries. This attribute serves as an index to indicate which frames each file contains, to facilitate random access. The 'starting_frame' attribute, hence, contains a list of frame numbers within the full ImageSeries of the first frame of each file listed in the parent 'external_file' dataset. Zero-based indexing is used (hence, the first element will always be zero). For example, if the 'external_file' dataset has three paths to files and the first file has 5 frames, the second file has 10 frames, and the third file has 20 frames, then this attribute will have values [0, 5, 15]. If there is a single external file that holds all of the frames of the ImageSeries (and so there is a single element in the 'external_file' dataset), then this attribute should have value [0]."
+    },
+    {
+      "name": "field_of_view",
+      "kind": "namevalue",
+      "purpose": "Physical dimensions of the imaging field of view in width, height, and optionally depth directions, in meters. The width dimension corresponds to the faster scanning axis, and the height dimension corresponds to the slower scanning axis."
+    },
+    {
+      "name": "format",
+      "kind": "namevalue",
+      "purpose": "Format of image. If this is 'external', then the attribute 'external_file' contains the path information to the image files. If this is 'raw', then the raw (single-channel) binary data is stored in the 'data' dataset. If this attribute is not present, then the default format='raw' case is assumed."
+    },
+    {
+      "name": "imaging_plane",
+      "kind": "namevalue",
+      "purpose": "Link to ImagingPlane object from which this TimeSeries data was generated."
+    },
+    {
+      "name": "num_samples",
+      "kind": "namevalue",
+      "purpose": "Total number of frames across all external files. This is required when format='external' and timing is described using starting_time and rate, since data is empty and its first dimension cannot be used to determine the number of frames. When timestamps is provided, len(timestamps) already serves this purpose."
+    },
+    {
+      "name": "pmt_gain",
+      "kind": "namevalue",
+      "purpose": "Photomultiplier gain."
+    },
+    {
+      "name": "scan_line_rate",
+      "kind": "namevalue",
+      "purpose": "Lines imaged per second. This is also stored in /general/optophysiology but is kept here as it is useful information for analysis, and is therefore stored with the actual data."
+    },
+    {
+      "name": "starting_time",
+      "kind": "namevalue",
+      "purpose": "Timestamp of the first sample in seconds. When timestamps are uniformly spaced, the timestamp of the first sample can be specified and all subsequent ones calculated from the sampling rate attribute."
+    },
+    {
+      "name": "starting_time_rate",
+      "kind": "namevalue",
+      "purpose": "Sampling rate, in Hz."
+    },
+    {
+      "name": "timestamps",
+      "kind": "namevalue",
+      "purpose": "Timestamps for samples stored in data, in seconds, relative to the common experiment master clock stored in NWBFile.timestamps_reference_time."
+    }
+  ]
+},
+"types.core.Units": {
+  "inputs": [
+    {
+      "name": "colnames",
+      "kind": "namevalue",
+      "purpose": "The names of the columns in this table. This should be used to specify an order to the columns."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of what is in this dynamic table."
+    },
+    {
+      "name": "electrode_group",
+      "kind": "namevalue",
+      "purpose": "Electrode group that each spike unit came from."
+    },
+    {
+      "name": "electrodes",
+      "kind": "namevalue",
+      "purpose": "Electrode that each spike unit came from, specified using a DynamicTableRegion."
+    },
+    {
+      "name": "electrodes_index",
+      "kind": "namevalue",
+      "purpose": "Index into electrodes."
+    },
+    {
+      "name": "id",
+      "kind": "namevalue",
+      "purpose": "Array of unique identifiers for the rows of this dynamic table."
+    },
+    {
+      "name": "obs_intervals",
+      "kind": "namevalue",
+      "purpose": "Observation intervals for each unit, in seconds, relative to the session reference time (i.e., session_start_time or, if defined, timestamps_reference_time). Intervals should be in ascending order and non-overlapping."
+    },
+    {
+      "name": "obs_intervals_index",
+      "kind": "namevalue",
+      "purpose": "Index into the obs_intervals dataset."
+    },
+    {
+      "name": "spike_times",
+      "kind": "namevalue",
+      "purpose": "Spike times for each unit, in seconds, relative to the session reference time (i.e., session_start_time or, if defined, timestamps_reference_time). Times should be stored in ascending order."
+    },
+    {
+      "name": "spike_times_index",
+      "kind": "namevalue",
+      "purpose": "Index into the spike_times dataset."
+    },
+    {
+      "name": "spike_times_resolution",
+      "kind": "namevalue",
+      "purpose": "The temporal resolution of the spike times, in seconds. This is typically the sampling period (1/sampling_rate) of the acquisition data from which spikes were extracted. If the acquisition data was downsampled before spike sorting, the resolution should be based on the downsampled sampling rate (lower sampling rate, larger resolution value). If interpolation was applied during spike sorting, then spike times may fall between samples of the acquisition data, so the resolution should be the interpolation step size (higher sampling rate, smaller resolution value)."
+    },
+    {
+      "name": "waveform_mean",
+      "kind": "namevalue",
+      "purpose": "Spike waveform mean for each spike unit."
+    },
+    {
+      "name": "waveform_mean_sampling_rate",
+      "kind": "namevalue",
+      "purpose": "Sampling rate, in hertz."
+    },
+    {
+      "name": "waveform_mean_time_before_peak_in_ms",
+      "kind": "namevalue",
+      "purpose": "Time, in milliseconds, from the start of the waveform to the spike peak. The peak is the alignment point used during spike sorting, typically the sample of maximum absolute amplitude. The same value applies to every unit in the table. Together with 'sampling_rate' and the number of samples, this fully specifies where each waveform sample falls relative to the spike event."
+    },
+    {
+      "name": "waveform_mean_unit",
+      "kind": "namevalue",
+      "purpose": "Unit of measurement. The default value is 'volts'."
+    },
+    {
+      "name": "waveform_sd",
+      "kind": "namevalue",
+      "purpose": "Spike waveform standard deviation for each spike unit."
+    },
+    {
+      "name": "waveform_sd_sampling_rate",
+      "kind": "namevalue",
+      "purpose": "Sampling rate, in hertz."
+    },
+    {
+      "name": "waveform_sd_time_before_peak_in_ms",
+      "kind": "namevalue",
+      "purpose": "Time, in milliseconds, from the start of the waveform to the spike peak. The peak is the alignment point used during spike sorting, typically the sample of maximum absolute amplitude. The same value applies to every unit in the table. Together with 'sampling_rate' and the number of samples, this fully specifies where each waveform sample falls relative to the spike event."
+    },
+    {
+      "name": "waveform_sd_unit",
+      "kind": "namevalue",
+      "purpose": "Unit of measurement. The default value is 'volts'."
+    },
+    {
+      "name": "waveforms",
+      "kind": "namevalue",
+      "purpose": "Individual waveforms for each spike on each electrode. This is a doubly indexed column. The 'waveforms_index' column indexes which waveforms in this column belong to the same spike event for a given unit, where each waveform was recorded from a different electrode. The 'waveforms_index_index' column indexes the 'waveforms_index' column to indicate which spike events belong to a given unit. For example, if the 'waveforms_index_index' column has values [2, 5, 6], then the first 2 elements of the 'waveforms_index' column correspond to the 2 spike events of the first unit, the next 3 elements of the 'waveforms_index' column correspond to the 3 spike events of the second unit, and the next 1 element of the 'waveforms_index' column corresponds to the 1 spike event of the third unit. If the 'waveforms_index' column has values [3, 6, 8, 10, 12, 13], then the first 3 elements of the 'waveforms' column contain the 3 spike waveforms that were recorded from 3 different electrodes for the first spike time of the first unit. See https://nwb-schema.readthedocs.io/en/stable/format_description.html#doubly-ragged-arrays for a graphical representation of this example. When there is only one electrode for each unit (i.e., each spike time is associated with a single waveform), then the 'waveforms_index' column will have values 1, 2, ..., N, where N is the number of spike events. The number of electrodes for each spike event should be the same within a given unit. The 'electrodes' column should be used to indicate which electrodes are associated with each unit, and the order of the waveforms within a given unit x spike event should be the same as the order of the electrodes referenced in the 'electrodes' column of this table. The number of samples for each waveform must be the same."
+    },
+    {
+      "name": "waveforms_index",
+      "kind": "namevalue",
+      "purpose": "Index into the 'waveforms' dataset. One value for every spike event. See 'waveforms' for more detail."
+    },
+    {
+      "name": "waveforms_index_index",
+      "kind": "namevalue",
+      "purpose": "Index into the 'waveforms_index' dataset. One value for every unit (row in the table). See 'waveforms' for more detail."
+    },
+    {
+      "name": "waveforms_sampling_rate",
+      "kind": "namevalue",
+      "purpose": "Sampling rate, in hertz."
+    },
+    {
+      "name": "waveforms_time_before_peak_in_ms",
+      "kind": "namevalue",
+      "purpose": "Time, in milliseconds, from the start of the waveform to the spike peak. The peak is the alignment point used during spike sorting, typically the sample of maximum absolute amplitude. The same value applies to every waveform in the table. Together with 'sampling_rate' and the number of samples, this fully specifies where each waveform sample falls relative to the spike event."
+    },
+    {
+      "name": "waveforms_unit",
+      "kind": "namevalue",
+      "purpose": "Unit of measurement. The default value is 'volts'."
+    }
+  ]
+},
+"types.core.VoltageClampSeries": {
+  "inputs": [
+    {
+      "name": "capacitance_fast",
+      "kind": "namevalue",
+      "purpose": "Fast capacitance, in farads."
+    },
+    {
+      "name": "capacitance_slow",
+      "kind": "namevalue",
+      "purpose": "Slow capacitance, in farads."
+    },
+    {
+      "name": "comments",
+      "kind": "namevalue",
+      "purpose": "Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string."
+    },
+    {
+      "name": "control",
+      "kind": "namevalue",
+      "purpose": "Numerical labels that apply to each time point in data for the purpose of querying and slicing data by these values. If present, the length of this array should be the same as the length of the first dimension of data."
+    },
+    {
+      "name": "control_description",
+      "kind": "namevalue",
+      "purpose": "Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0."
+    },
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Recorded current."
+    },
+    {
+      "name": "data_continuity",
+      "kind": "namevalue",
+      "purpose": "Optionally describe the continuity of the data. Can be \"continuous\", \"instantaneous\", or \"step\". For example, a voltage trace would be \"continuous\", because samples are recorded from a continuous process. An array of lick times would be \"instantaneous\", because the data represents distinct moments in time. Times of image presentations would be \"step\" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable. For storing instantaneous event information, it is recommended to use an EventsTable instead of a TimeSeries with continuity set to \"instantaneous\"."
+    },
+    {
+      "name": "data_conversion",
+      "kind": "namevalue",
+      "purpose": "Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data to the specified 'unit'. For example, if the data acquisition system stores values in this object as signed 16-bit integers (int16 range -32,768 to 32,767) that correspond to a 5V range (-2.5V to 2.5V), and the data acquisition system gain is 8000X, then the 'conversion' multiplier to get from raw data acquisition values to recorded volts is 2.5/32768/8000 = 9.5367e-9."
+    },
+    {
+      "name": "data_offset",
+      "kind": "namevalue",
+      "purpose": "Scalar to add to the data after scaling by 'conversion' to finalize its coercion to the specified 'unit'. Two common examples of this include (a) data stored in an unsigned type that requires a shift after scaling to re-center the data, and (b) specialized recording devices that naturally cause a scalar offset with respect to the true units."
+    },
+    {
+      "name": "data_resolution",
+      "kind": "namevalue",
+      "purpose": "Smallest meaningful difference between values in data, stored in the specified unit, e.g., the change in value of the least significant bit, or a larger number if signal noise is known to be present. If unknown, use -1.0."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the time series."
+    },
+    {
+      "name": "electrode",
+      "kind": "namevalue",
+      "purpose": "Link to IntracellularElectrode object that describes the electrode that was used to apply or record this data."
+    },
+    {
+      "name": "gain",
+      "kind": "namevalue",
+      "purpose": "Gain of the recording, in units Volt/Amp (v-clamp) or Volt/Volt (c-clamp)."
+    },
+    {
+      "name": "resistance_comp_bandwidth",
+      "kind": "namevalue",
+      "purpose": "Resistance compensation bandwidth, in hertz."
+    },
+    {
+      "name": "resistance_comp_correction",
+      "kind": "namevalue",
+      "purpose": "Resistance compensation correction, in percent."
+    },
+    {
+      "name": "resistance_comp_prediction",
+      "kind": "namevalue",
+      "purpose": "Resistance compensation prediction, in percent."
+    },
+    {
+      "name": "starting_time",
+      "kind": "namevalue",
+      "purpose": "Timestamp of the first sample in seconds. When timestamps are uniformly spaced, the timestamp of the first sample can be specified and all subsequent ones calculated from the sampling rate attribute."
+    },
+    {
+      "name": "starting_time_rate",
+      "kind": "namevalue",
+      "purpose": "Sampling rate, in Hz."
+    },
+    {
+      "name": "stimulus_description",
+      "kind": "namevalue",
+      "purpose": "Protocol/stimulus name for this patch-clamp dataset."
+    },
+    {
+      "name": "sweep_number",
+      "kind": "namevalue",
+      "purpose": "Sweep number, allows users to group different PatchClampSeries together."
+    },
+    {
+      "name": "timestamps",
+      "kind": "namevalue",
+      "purpose": "Timestamps for samples stored in data, in seconds, relative to the common experiment master clock stored in NWBFile.timestamps_reference_time."
+    },
+    {
+      "name": "whole_cell_capacitance_comp",
+      "kind": "namevalue",
+      "purpose": "Whole cell capacitance compensation, in farads."
+    },
+    {
+      "name": "whole_cell_series_resistance_comp",
+      "kind": "namevalue",
+      "purpose": "Whole cell series resistance compensation, in ohms."
+    }
+  ]
+},
+"types.core.VoltageClampStimulusSeries": {
+  "inputs": [
+    {
+      "name": "comments",
+      "kind": "namevalue",
+      "purpose": "Human-readable comments about the TimeSeries. This second descriptive field can be used to store additional information, or descriptive information if the primary description field is populated with a computer-readable string."
+    },
+    {
+      "name": "control",
+      "kind": "namevalue",
+      "purpose": "Numerical labels that apply to each time point in data for the purpose of querying and slicing data by these values. If present, the length of this array should be the same as the length of the first dimension of data."
+    },
+    {
+      "name": "control_description",
+      "kind": "namevalue",
+      "purpose": "Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0."
+    },
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Stimulus voltage applied."
+    },
+    {
+      "name": "data_continuity",
+      "kind": "namevalue",
+      "purpose": "Optionally describe the continuity of the data. Can be \"continuous\", \"instantaneous\", or \"step\". For example, a voltage trace would be \"continuous\", because samples are recorded from a continuous process. An array of lick times would be \"instantaneous\", because the data represents distinct moments in time. Times of image presentations would be \"step\" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable. For storing instantaneous event information, it is recommended to use an EventsTable instead of a TimeSeries with continuity set to \"instantaneous\"."
+    },
+    {
+      "name": "data_conversion",
+      "kind": "namevalue",
+      "purpose": "Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data to the specified 'unit'. For example, if the data acquisition system stores values in this object as signed 16-bit integers (int16 range -32,768 to 32,767) that correspond to a 5V range (-2.5V to 2.5V), and the data acquisition system gain is 8000X, then the 'conversion' multiplier to get from raw data acquisition values to recorded volts is 2.5/32768/8000 = 9.5367e-9."
+    },
+    {
+      "name": "data_offset",
+      "kind": "namevalue",
+      "purpose": "Scalar to add to the data after scaling by 'conversion' to finalize its coercion to the specified 'unit'. Two common examples of this include (a) data stored in an unsigned type that requires a shift after scaling to re-center the data, and (b) specialized recording devices that naturally cause a scalar offset with respect to the true units."
+    },
+    {
+      "name": "data_resolution",
+      "kind": "namevalue",
+      "purpose": "Smallest meaningful difference between values in data, stored in the specified unit, e.g., the change in value of the least significant bit, or a larger number if signal noise is known to be present. If unknown, use -1.0."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of the time series."
+    },
+    {
+      "name": "electrode",
+      "kind": "namevalue",
+      "purpose": "Link to IntracellularElectrode object that describes the electrode that was used to apply or record this data."
+    },
+    {
+      "name": "gain",
+      "kind": "namevalue",
+      "purpose": "Gain of the recording, in units Volt/Amp (v-clamp) or Volt/Volt (c-clamp)."
+    },
+    {
+      "name": "starting_time",
+      "kind": "namevalue",
+      "purpose": "Timestamp of the first sample in seconds. When timestamps are uniformly spaced, the timestamp of the first sample can be specified and all subsequent ones calculated from the sampling rate attribute."
+    },
+    {
+      "name": "starting_time_rate",
+      "kind": "namevalue",
+      "purpose": "Sampling rate, in Hz."
+    },
+    {
+      "name": "stimulus_description",
+      "kind": "namevalue",
+      "purpose": "Protocol/stimulus name for this patch-clamp dataset."
+    },
+    {
+      "name": "sweep_number",
+      "kind": "namevalue",
+      "purpose": "Sweep number, allows users to group different PatchClampSeries together."
+    },
+    {
+      "name": "timestamps",
+      "kind": "namevalue",
+      "purpose": "Timestamps for samples stored in data, in seconds, relative to the common experiment master clock stored in NWBFile.timestamps_reference_time."
+    }
+  ]
+},
+"types.hdmf_common.AlignedDynamicTable": {
+  "inputs": [
+    {
+      "name": "categories",
+      "kind": "namevalue",
+      "purpose": "The names of the categories in this AlignedDynamicTable. Each category is represented by one DynamicTable stored in the parent group. This attribute should be used to specify an order of categories and the category names must match the names of the corresponding DynamicTable in the group."
+    },
+    {
+      "name": "colnames",
+      "kind": "namevalue",
+      "purpose": "The names of the columns in this table. This should be used to specify an order to the columns."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of what is in this dynamic table."
+    },
+    {
+      "name": "id",
+      "kind": "namevalue",
+      "purpose": "Array of unique identifiers for the rows of this dynamic table."
+    }
+  ]
+},
+"types.hdmf_common.CSRMatrix": {
+  "inputs": [
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "The non-zero values in the matrix."
+    },
+    {
+      "name": "indices",
+      "kind": "namevalue",
+      "purpose": "The column indices."
+    },
+    {
+      "name": "indptr",
+      "kind": "namevalue",
+      "purpose": "The row index pointer."
+    },
+    {
+      "name": "shape",
+      "kind": "namevalue",
+      "purpose": "The shape (number of rows, number of columns) of this sparse matrix."
+    }
+  ]
+},
+"types.hdmf_common.Container": {
+  "inputs": []
+},
+"types.hdmf_common.Data": {
+  "inputs": [
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Data property for dataset class (Data)"
+    }
+  ]
+},
+"types.hdmf_common.DynamicTable": {
+  "inputs": [
+    {
+      "name": "colnames",
+      "kind": "namevalue",
+      "purpose": "The names of the columns in this table. This should be used to specify an order to the columns."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of what is in this dynamic table."
+    },
+    {
+      "name": "id",
+      "kind": "namevalue",
+      "purpose": "Array of unique identifiers for the rows of this dynamic table."
+    }
+  ]
+},
+"types.hdmf_common.DynamicTableRegion": {
+  "inputs": [
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Data property for dataset class (DynamicTableRegion)"
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of what this table region points to."
+    },
+    {
+      "name": "table",
+      "kind": "namevalue",
+      "purpose": "Reference to the DynamicTable object that this region applies to."
+    }
+  ]
+},
+"types.hdmf_common.ElementIdentifiers": {
+  "inputs": [
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Data property for dataset class (ElementIdentifiers)"
+    }
+  ]
+},
+"types.hdmf_common.HERD": {
+  "inputs": [
+    {
+      "name": "entities",
+      "kind": "namevalue",
+      "purpose": "A table for mapping user terms (i.e., keys) to resource entities."
+    },
+    {
+      "name": "entity_keys",
+      "kind": "namevalue",
+      "purpose": "A table for identifying which keys use which entity."
+    },
+    {
+      "name": "files",
+      "kind": "namevalue",
+      "purpose": "A table for storing object ids of files used in external resources."
+    },
+    {
+      "name": "keys",
+      "kind": "namevalue",
+      "purpose": "A table for storing user terms that are used to refer to external resources."
+    },
+    {
+      "name": "object_keys",
+      "kind": "namevalue",
+      "purpose": "A table for identifying which objects use which keys."
+    },
+    {
+      "name": "objects",
+      "kind": "namevalue",
+      "purpose": "A table for identifying which objects in a file contain references to external resources."
+    }
+  ]
+},
+"types.hdmf_common.MeaningsTable": {
+  "inputs": [
+    {
+      "name": "colnames",
+      "kind": "namevalue",
+      "purpose": "The names of the columns in this table. This should be used to specify an order to the columns."
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of what is in this dynamic table."
+    },
+    {
+      "name": "id",
+      "kind": "namevalue",
+      "purpose": "Array of unique identifiers for the rows of this dynamic table."
+    },
+    {
+      "name": "meaning",
+      "kind": "namevalue",
+      "purpose": "The meaning of the value in the referenced VectorData object."
+    },
+    {
+      "name": "target",
+      "kind": "namevalue",
+      "purpose": "Reference to the VectorData object for which this table provides meanings."
+    },
+    {
+      "name": "value",
+      "kind": "namevalue",
+      "purpose": "The value of a row in the referenced VectorData object."
+    }
+  ]
+},
+"types.hdmf_common.SimpleMultiContainer": {
+  "inputs": []
+},
+"types.hdmf_common.VectorData": {
+  "inputs": [
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Data property for dataset class (VectorData)"
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of what these vectors represent."
+    }
+  ]
+},
+"types.hdmf_common.VectorIndex": {
+  "inputs": [
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Data property for dataset class (VectorIndex)"
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of what these vectors represent."
+    },
+    {
+      "name": "target",
+      "kind": "namevalue",
+      "purpose": "Reference to the target dataset that this index applies to."
+    }
+  ]
+},
+"types.hdmf_experimental.EnumData": {
+  "inputs": [
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Data property for dataset class (EnumData)"
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of what these vectors represent."
+    },
+    {
+      "name": "elements",
+      "kind": "namevalue",
+      "purpose": "Reference to the VectorData object that contains the enumerable elements."
+    }
+  ]
+}
 }
