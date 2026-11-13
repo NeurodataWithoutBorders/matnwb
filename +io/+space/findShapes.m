@@ -1,24 +1,32 @@
 function shapes = findShapes(indices)
-% findShapes - Split indices along one dimension into hyperslab shapes.
+% findShapes - Convert indices along one dimension into hyperslab shapes.
 %   shapes = io.space.findShapes(indices) returns a cell array of
-%   io.space.Shape objects whose union selects the given 1-based indices
-%   along one dimension of a dataspace. io.space.getReadSpace ORs one
-%   hyperslab per shape into the file space, so fewer shapes make a
-%   cheaper selection.
+%   io.space.shape.Block and io.space.shape.Point objects that together
+%   select indices, a vector of 1-based indices along one dimension of a
+%   dataset. Order and repeats in indices are ignored, and an empty
+%   indices returns one Block that selects nothing.
 %
-%   The indices are sorted and deduplicated. Each run of two or more
-%   consecutive indices becomes an io.space.shape.Block with step 1 and
-%   each isolated index an io.space.shape.Point, in increasing order. This
-%   split takes time linear in the number of indices.
+%   A read with a subscript per dimension is described to HDF5 as a set
+%   of hyperslabs. Along one dimension a hyperslab is a start, a step and
+%   a count: it can select 1:100 or 1:2:99, but a list such as
+%   [1 2 3 7 10] needs several. A Block is a range start:step:stop and a
+%   Point a single index, so each shape fits in one hyperslab. A
+%   selection takes longer to build the more hyperslabs it has, so
+%   findShapes looks for few shapes, in two stages:
 %
-%   When most indices are isolated, as in 1:2:N, a strided block search
-%   runs first. Each pass takes the longest regularly strided block, so a
-%   pure stride becomes one strided Block. A pass is only accepted when its
-%   block covers a quarter of the remaining indices, which bounds the number
-%   of passes by a logarithm of the number of indices; irregular isolated
-%   indices fall back to the run split after one rejected pass.
+%   1. When the indices average fewer than two per run of consecutive
+%      indices, as in 1:2:99, the longest evenly spaced stretches become
+%      Blocks with that spacing as their step.
+%   2. Each run of consecutive indices left becomes a Block with step 1,
+%      and each single index left a Point.
 %
-%   An empty input selects nothing: a Block with stop 0.
+%   Examples:
+%     io.space.findShapes([5 1 2 3 3])   % Block 1:3, Point 5
+%     io.space.findShapes(1:2:99)        % Block 1:2:99
+%     io.space.findShapes([1 2 3 7 10])  % Block 1:3, Block 7:3:10
+%
+%   See also io.space.segmentSelection, io.space.getReadSpace
+
 import io.space.shape.Block;
 validateattributes(indices, {'numeric'}, {'nonnegative', 'finite'});
 if isempty(indices)
