@@ -14,9 +14,6 @@ classdef Block < io.space.Shape
     
     methods
         function obj = Block(options)
-            % The selection of a dataset with many runs builds thousands of
-            % blocks, so the constructor validates with an arguments block,
-            % which costs a few microseconds per call.
             arguments
                 options.start (1,1) {mustBeNumeric, mustBeNonnegative} = 1
                 options.step (1,1) {mustBeNumeric, mustBeNonnegative} = 1
