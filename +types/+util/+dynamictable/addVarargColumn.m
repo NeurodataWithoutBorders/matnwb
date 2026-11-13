@@ -9,6 +9,13 @@ newColNames = DynamicTable.validate_colnames(fieldnames(p.Unmatched));
 newVectorData = p.Unmatched;
 [storageTargets, storageNames] = resolveStorageTargets(DynamicTable, newColNames);
 
+% The elements of an EnumData column are stored next to the column. They are
+% not a column of the table, so they have no row height and no entry in
+% colnames.
+isEnumElements = ismember(newColNames, ...
+    getNewEnumElementsNames(DynamicTable, newColNames, newVectorData));
+newTableColumnNames = newColNames(~isEnumElements);
+
 % Check if any of the new columns already exist in the table
 existingCols = getExistingColumns( ...
     DynamicTable, newColNames, storageTargets, storageNames);
@@ -26,9 +33,9 @@ if ~isempty(DynamicTable.colnames)
 end
 
 % If adding the first column, initialize the id with 0-indexed values
-if isFirstColumn && ~isempty(newColNames)
+if isFirstColumn && ~isempty(newTableColumnNames)
     % Determine the height of the first column
-    firstColName = newColNames{1};
+    firstColName = newTableColumnNames{1};
     indexName = getIndexInSet(newVectorData, firstColName);
     if isempty(indexName)
         firstColData = newVectorData.(firstColName);
@@ -45,7 +52,7 @@ for i = 1:length(newColNames)
     new_cn = newColNames{i};
     new_cv = newVectorData.(new_cn);
     % check height match before adding column
-    if ~isempty(DynamicTable.colnames)
+    if ~isempty(DynamicTable.colnames) && ~isEnumElements(i)
         indexName = getIndexInSet(newVectorData,new_cn);
 
         if isempty(indexName)
@@ -59,8 +66,24 @@ for i = 1:length(newColNames)
     end
     assignColumn( ...
         DynamicTable, new_cn, new_cv, storageTargets{i}, storageNames{i});
-    updateColnames(DynamicTable, new_cn, new_cv)
+    if ~isEnumElements(i)
+        updateColnames(DynamicTable, new_cn, new_cv)
+    end
 end
+end
+
+function elementsNames = getNewEnumElementsNames(dynamicTable, newColumnNames, newVectorData)
+    % Return which of the new vectors hold the elements of an EnumData
+    % column, where the EnumData column is either new or already in the
+    % table.
+    newVectors = cellfun(@(name) newVectorData.(name), newColumnNames, ...
+        'UniformOutput', false);
+    vectorNames = [reshape(dynamicTable.vectordata.keys(), 1, []), reshape(newColumnNames, 1, [])];
+    vectors = [reshape(dynamicTable.vectordata.values(), 1, []), reshape(newVectors, 1, [])];
+
+    elementsNames = types.util.dynamictable.internal.getEnumElementsNames( ...
+        vectorNames, vectors);
+    elementsNames = intersect(elementsNames, newColumnNames, 'stable');
 end
 
 function [storageTargets, storageNames] = resolveStorageTargets(dynamicTable, columnNames)
