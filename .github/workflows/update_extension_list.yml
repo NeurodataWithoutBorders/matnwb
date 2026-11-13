@@ -25,21 +25,21 @@ jobs:
           ref: refs/heads/main
           ssh-key: ${{ secrets.DEPLOY_KEY }}
 
-      - name: Update extension list in nwbInstallExtensions
+      - name: Update extension list in nwbInstallExtension and CatalogExtension
         uses: matlab-actions/run-command@v3
         with:
           command: |
             addpath(genpath("tools"));
             matnwb_createNwbInstallExtension();
 
-      - name: Commit the updated nwbInstallExtension function
+      - name: Commit the updated extension list
         run: |
           set -e  # Exit script on error
           git config user.name "${{ github.workflow }} by ${{ github.actor }}"
           git config user.email "<>"
 
-          if [[ -n $(git status --porcelain nwbInstallExtension.m) ]]; then
-            git add nwbInstallExtension.m
+          if [[ -n $(git status --porcelain nwbInstallExtension.m +matnwb/+extension/CatalogExtension.m) ]]; then
+            git add nwbInstallExtension.m +matnwb/+extension/CatalogExtension.m
             git commit -m "Update list of extensions in nwbInstallExtension"
             git push
           else
