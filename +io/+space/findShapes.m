@@ -1,9 +1,10 @@
 function shapes = findShapes(indices)
-% FINDSHAPES Split indices along one dimension into hyperslab shapes.
-%   shapes = FINDSHAPES(indices) returns a cell array of io.space.Shape
-%   objects whose union selects the given 1-based indices along one
-%   dimension of a dataspace. io.space.getReadSpace ORs one hyperslab per
-%   shape into the file space, so fewer shapes make a cheaper selection.
+% findShapes - Split indices along one dimension into hyperslab shapes.
+%   shapes = io.space.findShapes(indices) returns a cell array of
+%   io.space.Shape objects whose union selects the given 1-based indices
+%   along one dimension of a dataspace. io.space.getReadSpace ORs one
+%   hyperslab per shape into the file space, so fewer shapes make a
+%   cheaper selection.
 %
 %   The indices are sorted and deduplicated. Each run of two or more
 %   consecutive indices becomes an io.space.shape.Block with step 1 and
