@@ -205,6 +205,13 @@ where ``numWaveforms`` = 5 spikes × 3 electrodes = 15), ``waveforms_index = [3 
 spikes). The ``electrodes`` column is paired in the same order as the waveform columns
 within each spike.
 
+.. note::
+
+   Inside the nested cell array a vector is read by its orientation: a column vector
+   ``[numSamples x 1]`` is one element (one waveform), and a row vector ``[1 x n]`` is
+   ``n`` scalar elements. Give a sub-group of scalars as a row vector. This differs from
+   a ragged column (``Depth`` 1), where a row or a column vector is a list of scalars.
+
 .. warning::
 
    For a multi-channel unit, the order of the waveform columns within each spike must

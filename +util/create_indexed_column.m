@@ -17,7 +17,9 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %     - [] for a row with no elements.
 %     - text: a string array, a cell array of character vectors or a
 %       character vector, as a vector. A string or cell array is a list of
-%       text elements, and a character vector is one text element.
+%       text elements, and a character vector is one text element. The
+%       empty character vector '' is a row with no elements, like []; give
+%       "" or {''} for one empty text element.
 %       DATA_VECTOR.data is a string column when every text row is a string
 %       array, and a column cell array of character vectors otherwise.
 %     - compound: a table holds one compound element per table row, a struct

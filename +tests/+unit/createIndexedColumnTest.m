@@ -179,6 +179,22 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(index.data, uint64([2; 2; 3]));
         end
 
+        function testEmptyCharRowHasNoElements(testCase)
+            % '' is empty, so it is a row with no elements, like []. "" and
+            % {''} are one empty text element.
+            [vector, index] = util.create_indexed_column({'abc', ''});
+            testCase.verifyEqual(vector.data, {'abc'});
+            testCase.verifyEqual(index.data, uint64([1; 1]));
+
+            [vector, index] = util.create_indexed_column({"abc", ""});
+            testCase.verifyEqual(vector.data, ["abc"; ""]);
+            testCase.verifyEqual(index.data, uint64([1; 2]));
+
+            [vector, index] = util.create_indexed_column({'abc', {''}});
+            testCase.verifyEqual(vector.data, {'abc'; ''});
+            testCase.verifyEqual(index.data, uint64([1; 2]));
+        end
+
         function testObjectViewRowsKeepTheirClass(testCase)
             % Rows of object references, with [] for a row that references
             % nothing, as when linking each trial to its raw data.
