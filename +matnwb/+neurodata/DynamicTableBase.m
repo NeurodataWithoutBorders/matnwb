@@ -175,13 +175,16 @@ classdef (Abstract) DynamicTableBase < handle
                 options.description (1,1) string = "no description"
                 options.table = []
                 options.Depth (1,1) {mustBeInteger, mustBePositive} = 1
-                options.ElementsPerRow {mustBeNumeric, mustBeInteger, mustBeNonnegative} = []
+                options.ElementsPerRow {mustBeNumeric, mustBeInteger, mustBeNonnegative}
             end
 
+            % The layout options are passed on only when they were given:
+            % ElementsPerRow is empty for a table with no rows, which differs
+            % from leaving it out.
+            layoutOptions = namedargs2cell(rmfield(options, {'description', 'table'}));
             columns = cell(1, options.Depth + 1);
             [columns{:}] = util.create_indexed_column(data, ...
-                char(options.description), options.table, ...
-                'Depth', options.Depth, 'ElementsPerRow', options.ElementsPerRow);
+                char(options.description), options.table, layoutOptions{:});
 
             % The data column, then one index level per depth: '<name>_index',
             % '<name>_index_index', ...

@@ -121,7 +121,7 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
         description = ''
         table = []
         options.Depth (1,1) {mustBeInteger, mustBePositive} = 1
-        options.ElementsPerRow {mustBeNumeric, mustBeInteger, mustBeNonnegative} = []
+        options.ElementsPerRow {mustBeNumeric, mustBeInteger, mustBeNonnegative}
     end
 
     depth = options.Depth;
@@ -136,7 +136,9 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
         description = char(description);
     end
 
-    if isempty(options.ElementsPerRow)
+    % ElementsPerRow is empty for a table with no rows, so whether it was given
+    % decides the form of DATA, not whether it is empty.
+    if ~isfield(options, 'ElementsPerRow')
         if ~iscell(data)
             error("NWB:CreateIndexedColumn:InvalidData", ...
                 "DATA must be a cell array with one cell per row. To give data that " + ...

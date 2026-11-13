@@ -73,6 +73,15 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(index.data, uint64([2; 3]));
         end
 
+        function testFlatDataForTableWithNoRows(testCase)
+            % An empty ElementsPerRow is a table with no rows, not a missing
+            % argument.
+            [vector, index] = util.create_indexed_column( ...
+                zeros(0, 1), 'ElementsPerRow', zeros(0, 1));
+            testCase.verifyEmpty(vector.data);
+            testCase.verifyEqual(index.data, zeros(0, 1, 'uint64'));
+        end
+
         function testFlatCompoundDataMatchesCellForm(testCase)
             [roi1, roi2] = examplePixelMasks();
 

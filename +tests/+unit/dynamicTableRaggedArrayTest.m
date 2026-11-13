@@ -185,6 +185,16 @@ classdef dynamicTableRaggedArrayTest < tests.abstract.NwbTestCase
             end
         end
 
+        function testAddRaggedArrayToTableWithNoRows(testCase)
+            % An empty ElementsPerRow is passed on as given: flat data for a
+            % table with no rows.
+            dt = types.hdmf_common.DynamicTable('description', 'test');
+            dt.addRaggedArray('mask', zeros(0, 1), 'ElementsPerRow', zeros(0, 1));
+
+            testCase.verifyEqual(dt.colnames, {'mask'});
+            testCase.verifyEmpty(dt.vectordata.get('mask_index').data);
+        end
+
         function testAddRaggedArrayDepth2WithNDElements(testCase)
             % data{row}{subGroup} = [elementDims x nElements]; here elements are
             % [4 x 3] and the ragged axis stays last.
