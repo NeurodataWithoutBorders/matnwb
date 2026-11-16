@@ -214,10 +214,30 @@ class NWBFileIOTest(PyNWBIOTest):
         return file
 
 
-class UnitTimesIOTest(PyNWBIOTest):
+class UnitsTableIOTest(PyNWBIOTest):
     def addContainer(self, file):
-        self.file.units = Units('units', waveform_rate=1., resolution=3.)
-        self.file.units.add_unit(waveform_mean=[5], waveform_sd=[7], waveforms=np.full((1, 1), 9),
-                                 spike_times=[11])
+        # Build a Units table with multi-electrode, doubly-ragged waveforms
+        # using the idiomatic add_unit method. This mirrors the MatNWB
+        # addRaggedArray / addDoublyRaggedArray construction in UnitsTableIOTest.m.
+        #
+        # Each unit's waveforms are passed as a 3-D array with shape
+        # (num_spikes, num_electrodes, num_samples). Note the LAST dimension is
+        # samples, not electrodes: the `waveforms` column is doubly indexed, so
+        # add_unit stores a 2-D [num_waveforms, num_samples] dataset with the
+        # electrode dimension carried by waveforms_index. (The add_unit docstring
+        # line "the third dimension shows ... different electrodes" describes a
+        # non-indexed 3-D dataset and does not match this input order.)
+        #
+        # Unit 1 has 2 spikes, unit 2 has 3 spikes; each spike has 2 electrodes
+        # and 3 samples.
+        self.file.units = Units(name='units', waveform_rate=1., resolution=3.,
+                                description='data on spiking units')
+        self.file.units.add_unit(spike_times=[1., 2.],
+                                 waveform_mean=[1., 2., 3.], waveform_sd=[7., 8., 9.],
+                                 waveforms=np.arange(1, 13, dtype=np.int32).reshape(2, 2, 3))
+        self.file.units.add_unit(spike_times=[3., 4., 5.],
+                                 waveform_mean=[4., 5., 6.], waveform_sd=[10., 11., 12.],
+                                 waveforms=np.arange(13, 31, dtype=np.int32).reshape(3, 2, 3))
+
     def getContainer(self, file):
         return file.units
