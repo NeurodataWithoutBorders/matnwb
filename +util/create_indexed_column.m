@@ -36,10 +36,9 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %   A column holds elements of one kind: numeric, text, compound or object
 %   references. Numeric rows must all be of the same class (for example all
 %   int32, not int32 and double), as the column keeps that class. The same
-%   holds for each numeric field of compound rows that are stored as a
-%   table. The column is built in memory, so a row cannot be a DataPipe or
-%   a DataStub, and it cannot hold SoftLinks: reference objects with
-%   ObjectViews instead.
+%   holds for each numeric field of compound rows. The column is built in
+%   memory, so a row cannot be a DataPipe or a DataStub, and it cannot hold
+%   SoftLinks: reference objects with ObjectViews instead.
 %   All array rows must share elementDims. Trailing dimensions of 1 may be
 %   omitted, as MATLAB omits them from size: the number of element
 %   dimensions is the largest any row shows, and rows with fewer dimensions
@@ -262,8 +261,11 @@ function [flatData, counts] = flattenRows(rows, depth, elementsPerSubGroup)
     end
 
     flatData = concatenateChunks(chunks, layout);
-    if layout.kind == "compound" && layout.compoundClass == "table" && ~isempty(flatData)
+    hasCompoundData = layout.kind == "compound" && ~isempty(flatData);
+    if hasCompoundData && layout.compoundClass == "table"
         flatData = struct2table(flatData);
+    elseif hasCompoundData
+        rejectMixedNumericFields(flatData);
     end
     counts = cell(1, depth);
     counts{depth} = rowCounts;
@@ -666,6 +668,7 @@ function [flatData, numElements] = normalizeFlatData(data)
     elseif isStructArrayRow(data) && (isvector(data) || isempty(data))
         flatData = data(:);
         numElements = numel(flatData);
+        rejectMixedNumericFields(flatData);
     elseif isCompoundRow(data)
         [columns, numElements] = compoundColumns(data, []);
         flatData = struct2table(columns);
@@ -699,6 +702,7 @@ function [columns, numElements] = compoundColumns(item, indexPath)
             if all(cellfun(@ischar, values))
                 columns.(names{iName}) = values(:);
             else
+                rejectMixedNumericClasses(values, names{iName});
                 columns.(names{iName}) = vertcat(values{:});
             end
         end
@@ -732,16 +736,33 @@ function joined = joinCompoundColumns(chunks)
     joined = struct();
     for iName = 1:numel(names)
         parts = cellfun(@(chunk) chunk.(names{iName}), chunks, 'UniformOutput', false);
-        % Numeric parts of different classes are not combined, as the values
-        % of one class would be converted to the other.
-        partClasses = unique(string(cellfun(@class, parts, 'UniformOutput', false)), 'stable');
-        hasNumericPart = any(cellfun(@(part) isnumeric(part) || islogical(part), parts));
-        if hasNumericPart && ~isscalar(partClasses)
-            error("NWB:CreateIndexedColumn:InconsistentElementType", ...
-                "All compound elements must hold the field ""%s"" in the same class, " + ...
-                "but the rows hold %s.", names{iName}, strjoin(partClasses, " and "));
-        end
+        rejectMixedNumericClasses(parts, names{iName});
         joined.(names{iName}) = vertcat(parts{:});
+    end
+end
+
+function rejectMixedNumericFields(structArray)
+    % A struct column holds one value per struct in each field. The values
+    % of a field are joined into one array when the column is written, so
+    % they must be of one class like the parts of any other compound field.
+    names = fieldnames(structArray);
+    for iName = 1:numel(names)
+        rejectMixedNumericClasses({structArray.(names{iName})}, names{iName});
+    end
+end
+
+function rejectMixedNumericClasses(values, fieldName)
+    % VALUES holds the values of one compound field, as one cell per element
+    % or per row. Numeric values of different classes are not combined, as
+    % the values of one class would be converted to the other.
+    if isempty(values) || all(cellfun('isclass', values, class(values{1})))
+        return
+    end
+    if any(cellfun(@(value) isnumeric(value) || islogical(value), values))
+        valueClasses = unique(string(cellfun(@class, values, 'UniformOutput', false)), 'stable');
+        error("NWB:CreateIndexedColumn:InconsistentElementType", ...
+            "All compound elements must hold the field ""%s"" in the same class, " + ...
+            "but it holds %s values.", fieldName, strjoin(valueClasses, " and "));
     end
 end
 

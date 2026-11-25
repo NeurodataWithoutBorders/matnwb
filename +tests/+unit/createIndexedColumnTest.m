@@ -50,6 +50,30 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
                 'NWB:CreateIndexedColumn:InconsistentElementType');
         end
 
+        function testStructArrayFieldsOfDifferentClassesError(testCase)
+            % A struct array holds one value per struct, so the values of a
+            % numeric field can differ in class within a row. Joining them
+            % into one column would convert 300.7 to uint8(255).
+            mixedRow = struct('x', {uint8(1), 300.7});
+            uint8Row = struct('x', {uint8(1), uint8(2)});
+            doubleRow = struct('x', 300.7);
+            tableRow = table(uint8(3), 'VariableNames', {'x'});
+
+            % Within a row of a column that is stored as a table.
+            testCase.verifyError(@() util.create_indexed_column({mixedRow, tableRow}), ...
+                'NWB:CreateIndexedColumn:InconsistentElementType');
+            % Within a row and between rows of a column that is stored as a
+            % struct array.
+            testCase.verifyError(@() util.create_indexed_column({mixedRow}), ...
+                'NWB:CreateIndexedColumn:InconsistentElementType');
+            testCase.verifyError(@() util.create_indexed_column({uint8Row, doubleRow}), ...
+                'NWB:CreateIndexedColumn:InconsistentElementType');
+            % In flat data.
+            testCase.verifyError( ...
+                @() util.create_indexed_column(mixedRow, 'ElementsPerRow', 2), ...
+                'NWB:CreateIndexedColumn:InconsistentElementType');
+        end
+
         function testCompoundAndNumericRowsErrors(testCase)
             roi = table(uint32(1), single(1), 'VariableNames', {'x', 'weight'});
 
