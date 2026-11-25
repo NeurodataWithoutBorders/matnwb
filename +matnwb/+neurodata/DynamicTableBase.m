@@ -193,8 +193,15 @@ classdef (Abstract) DynamicTableBase < handle
             % from leaving it out.
             layoutOptions = namedargs2cell(rmfield(options, {'description', 'table'}));
             columns = cell(1, options.Depth + 1);
+            % The description is set on the column after the call: as a
+            % positional argument, a text that starts an option name of
+            % util.create_indexed_column, such as 'depth', is read as that
+            % option name.
             [columns{:}] = util.create_indexed_column(data, ...
-                char(options.description), options.table, layoutOptions{:});
+                '', options.table, layoutOptions{:});
+            if strlength(options.description) > 0
+                columns{1}.description = char(options.description);
+            end
 
             % The data column, then one index level per depth: '<name>_index',
             % '<name>_index_index', ...

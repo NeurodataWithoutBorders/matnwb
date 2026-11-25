@@ -124,6 +124,29 @@ classdef dynamicTableRaggedArrayTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(dt.vectordata.get('spikes').description, 'spike times');
         end
 
+        function testDescriptionThatStartsAnOptionNameIsStored(testCase)
+            % 'depth' and 'Dep' start the option name 'Depth' of
+            % util.create_indexed_column, and 'ElementsPerRow' is one of its
+            % option names.
+            for description = ["depth", "Dep", "ElementsPerRow"]
+                dt = types.hdmf_common.DynamicTable('description', 'test');
+                dt.addRaggedArray('x', {[1 2], 3}, 'description', description);
+
+                testCase.verifyEqual(dt.vectordata.get('x').description, char(description));
+            end
+
+            dt = types.hdmf_common.DynamicTable('description', 'test');
+            dt.addDoublyRaggedArray('x', {{[1 2], 3}, {4}}, 'description', 'depth');
+            testCase.verifyEqual(dt.vectordata.get('x').description, 'depth');
+        end
+
+        function testAddRaggedArrayWithoutDescription(testCase)
+            dt = types.hdmf_common.DynamicTable('description', 'test');
+            dt.addRaggedArray('x', {[1 2], 3});
+
+            testCase.verifyEqual(dt.vectordata.get('x').description, 'no description');
+        end
+
         function testAddRaggedArrayWithMatrixRows(testCase)
             % Elements are 4-sample vectors, one per column, as in VectorData.data.
             row1 = reshape(1:8, 4, 2);

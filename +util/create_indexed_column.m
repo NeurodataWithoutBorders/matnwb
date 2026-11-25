@@ -51,7 +51,11 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %     data_vector.data is [4 x 5] (five 4-sample elements) and data_index.data is [2;5].
 %
 %   [DATA_VECTOR, DATA_INDEX] = CREATE_INDEXED_COLUMN(DATA, DESCRIPTION)
-%   adds the string DESCRIPTION in the description field of the data vector
+%   adds the string DESCRIPTION in the description field of the data vector.
+%   A DESCRIPTION that starts an option name ('Depth', 'ElementsPerRow' or
+%   'ElementsPerSubGroup') in any letter case, such as 'depth', is read as
+%   that option name when an even number of arguments follows DATA. Set
+%   DATA_VECTOR.description after the call instead.
 %
 %   [DYNAMICTABLEREGION, DATA_INDEX] = CREATE_INDEXED_COLUMN(DATA, DESCRIPTION, TABLE)
 %   returns a DynamicTableRegion that references TABLE instead of a
