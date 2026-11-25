@@ -29,13 +29,7 @@ end
 % If adding the first column, initialize the id with 0-indexed values
 if isFirstColumn && ~isempty(newColNames)
     % Determine the height of the first column
-    firstColName = newColNames{1};
-    indexName = getIndexInSet(newVectorData, firstColName);
-    if isempty(indexName)
-        firstColData = newVectorData.(firstColName);
-    else
-        firstColData = newVectorData.(indexName);
-    end
+    firstColData = getHeightColumn(DynamicTable, newVectorData, newColNames{1});
 
     newTableHeight = types.util.dynamictable.internal.getColumnHeight(firstColData);
     types.util.dynamictable.internal.initDynamicTableId(DynamicTable, newTableHeight);
@@ -46,12 +40,7 @@ for i = 1:length(newColNames)
     new_cn = newColNames{i};
     new_cv = newVectorData.(new_cn);
     % check height match before adding column
-    indexName = getIndexInSet(newVectorData,new_cn);
-    if isempty(indexName)
-        heightColumn = new_cv;
-    else
-        heightColumn = newVectorData.(indexName);
-    end
+    heightColumn = getHeightColumn(DynamicTable, newVectorData, new_cn);
     currentColumnHeight = types.util.dynamictable.internal.getColumnHeight(heightColumn);
     validateColumnHeight(new_cn, currentColumnHeight, tableHeight)
 
@@ -131,22 +120,45 @@ function updateColnames(DynamicTable, new_cn, new_cv)
     end
 end
 
-function indexName = getIndexInSet(inputStruct, inputName)
-    % wrap input set with an empty dynamic table
-    T = types.hdmf_common.DynamicTable();
-    % convert input structure to a set
-    columnNames = fieldnames(inputStruct);
-    for i = 1:length(columnNames)
-        T.vectordata.set(columnNames{i},inputStruct.(columnNames{i}));
+function heightColumn = getHeightColumn(dynamicTable, newVectorData, columnName)
+    % The column whose height is the number of table rows for the new column
+    % COLUMNNAME: its outermost index, whatever the depth of the ragged
+    % column, or the column itself when it has no index. The index is one of
+    % the new columns, or a column of the table when it was added in an
+    % earlier call.
+
+    % wrap the new columns and the index columns of the table in an empty
+    % dynamic table
+    wrapperTable = types.hdmf_common.DynamicTable();
+    newColumnNames = fieldnames(newVectorData);
+    for i = 1:length(newColumnNames)
+        wrapperTable.vectordata.set(newColumnNames{i}, newVectorData.(newColumnNames{i}));
     end
-    % Follow the chain of indices to the outermost one. Its length is the
-    % number of table rows, whatever the depth of the ragged column. A
-    % column without an index resolves to itself.
-    outermostName = types.util.dynamictable.internal.getOutermostIndexColumnName(T, inputName);
-    if strcmp(outermostName, inputName)
-        indexName = '';
-    else
-        indexName = outermostName;
+    vectorNames = dynamicTable.vectordata.keys();
+    for i = 1:length(vectorNames)
+        setIndexColumn(wrapperTable, vectorNames{i}, dynamicTable.vectordata.get(vectorNames{i}));
+    end
+    % Index columns that the schema defines are stored on properties.
+    propertyNames = properties(dynamicTable);
+    for i = 1:length(propertyNames)
+        setIndexColumn(wrapperTable, propertyNames{i}, dynamicTable.(propertyNames{i}));
+    end
+
+    % Follow the chain of indices to the outermost one. A column without an
+    % index resolves to itself.
+    outermostName = types.util.dynamictable.internal.getOutermostIndexColumnName( ...
+        wrapperTable, columnName);
+    heightColumn = wrapperTable.vectordata.get(outermostName);
+end
+
+function setIndexColumn(wrapperTable, columnName, column)
+    % Add COLUMN to the wrapper table when it is a VectorIndex that can be
+    % the index of a new column: it has a target, and no new column has its
+    % name.
+    isVectorIndex = isa(column, 'types.hdmf_common.VectorIndex') ...
+        || isa(column, 'types.core.VectorIndex');
+    if isVectorIndex && ~isempty(column.target) && ~wrapperTable.vectordata.isKey(columnName)
+        wrapperTable.vectordata.set(columnName, column);
     end
 end
 

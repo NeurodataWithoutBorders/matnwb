@@ -465,6 +465,48 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(dynamicTable.id.data, int64([0; 1]));
         end
 
+        function testAddRaggedColumnIndexFirstInSeparateCalls(testCase)
+            % The index of a ragged column can be added in an earlier call
+            % than its data column. The data column is then compared with
+            % the table height by that index, not by its number of elements.
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'empty test table');
+            [vectorData, vectorIndex] = util.create_indexed_column({[1, 2], 3});
+
+            dynamicTable.addColumn('raggedCol_index', vectorIndex);
+            dynamicTable.addColumn('raggedCol', vectorData);
+
+            testCase.verifyEqual(dynamicTable.colnames, {'raggedCol'});
+            testCase.verifyEqual(dynamicTable.id.data, int64([0; 1]));
+        end
+
+        function testAddSchemaDefinedRaggedColumnIndexFirst(testCase)
+            % An index column that the schema defines is stored on a property
+            % of the table, not in vectordata.
+            units = types.core.Units('description', 'test units table');
+            [spikeTimes, spikeTimesIndex] = util.create_indexed_column({[1, 2, 3], [4, 5]});
+
+            units.addColumn('spike_times_index', spikeTimesIndex);
+            units.addColumn('spike_times', spikeTimes);
+
+            testCase.verifyEqual(units.colnames, {'spike_times'});
+            testCase.verifyEqual(units.id.data, int64([0; 1]));
+        end
+
+        function testAddColumnChecksHeightByIndexOfEarlierCall(testCase)
+            % The index added in an earlier call has 2 rows, so a data column
+            % it targets does not fit a table with 3 ids.
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'empty test table');
+            [vectorData, vectorIndex] = util.create_indexed_column({[1, 2], 3});
+            dynamicTable.addColumn('raggedCol_index', vectorIndex);
+            dynamicTable.id.data = int64([0; 1; 2]);
+
+            testCase.verifyError( ...
+                @() dynamicTable.addColumn('raggedCol', vectorData), ...
+                'NWB:DynamicTable:AddColumn:MissingRows');
+        end
+
         function testAddColumnToTableWithIdsOnlyChecksHeight(testCase)
             dynamicTable = types.hdmf_common.DynamicTable( ...
                 'description', 'ids only', ...
