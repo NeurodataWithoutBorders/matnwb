@@ -134,13 +134,15 @@ classdef (Abstract) DynamicTableBase < handle
         %  - columnName (string) -
         %    Name of the new column.
         %
-        %  - data (cell) -
+        %  - data (cell | numeric | text | table | struct) -
         %    A cell array with one cell per row, holding that row's elements
         %    in the orientation of VectorData.data: a vector of scalars (e.g.
-        %    {[1 2 3], [4 5]} for a 2-row table) or an [elementDims x nElements]
-        %    array with the ragged axis last. With Depth 2 each cell holds the
-        %    row's sub-groups, either as a cell of [elementDims x nElements]
-        %    arrays or as one [elementDims x nElements x nSubGroups] array. See
+        %    {[1 2 3], [4 5]} for a 2-row table), an [elementDims x nElements]
+        %    array with the ragged axis last, text, or compound data (a table
+        %    or struct). With Depth 2 each cell holds the row's sub-groups,
+        %    either as a cell of [elementDims x nElements] arrays or as one
+        %    [elementDims x nElements x nSubGroups] array. With ElementsPerRow,
+        %    data is instead the elements of all rows in row order. See
         %    util.create_indexed_column for all accepted forms.
         %
         %  - options (name-value pairs) -
@@ -157,6 +159,12 @@ classdef (Abstract) DynamicTableBase < handle
         %    - Depth (integer) -
         %      Number of VectorIndex levels: 1 (default) for a ragged column,
         %      2 for a doubly ragged column.
+        %
+        %    - ElementsPerRow (vector of non-negative integers) -
+        %      Number of elements in each row, for data that is already flat:
+        %      data then holds the elements of all rows in row order, and the
+        %      column has depth 1. For example, pixel masks as one table of all
+        %      pixels plus the number of pixels of each ROI.
         %
         %    - ElementsPerSubGroup (positive integer | vector of positive integers) -
         %      Number of elements in each sub-group of the numeric rows of a
@@ -190,6 +198,14 @@ classdef (Abstract) DynamicTableBase < handle
         %    units = types.core.Units('colnames', {}, 'description', 'units');
         %    units.addRaggedArray('waveforms', {rand(40, 3, 2), rand(40, 3, 3)}, 'Depth', 2);
         %
+        %  Example 5 - Add pixel masks from one table of all pixels and the number of pixels of each ROI::
+        %
+        %    % 5 pixels: the first 3 belong to ROI 1, the last 2 to ROI 2.
+        %    pixels = table(uint32([1; 2; 3; 7; 8]), uint32([4; 4; 5; 9; 9]), single([1; 1; 0.5; 1; 1]), ...
+        %        'VariableNames', {'x', 'y', 'weight'});
+        %    planeSegmentation = types.core.PlaneSegmentation('description', 'rois');
+        %    planeSegmentation.addRaggedArray('pixel_mask', pixels, 'ElementsPerRow', [3 2]);
+        %
         % See also:
         %   util.create_indexed_column, addColumn, addDoublyRaggedArray
 
@@ -200,10 +216,13 @@ classdef (Abstract) DynamicTableBase < handle
                 options.Description (1,1) string = "no description"
                 options.TargetTable {mustBeEmptyOrDynamicTable} = []
                 options.Depth (1,1) {mustBeInteger, mustBePositive} = 1
+                options.ElementsPerRow {mustBeNumeric, mustBeInteger, mustBeNonnegative}
                 options.ElementsPerSubGroup {mustBeNumeric, mustBeInteger, mustBePositive}
             end
 
-            % ElementsPerSubGroup is passed on only when it was given.
+            % The layout options are passed on only when they were given:
+            % ElementsPerRow is empty for a table with no rows, which differs
+            % from leaving it out.
             layoutOptions = namedargs2cell(rmfield(options, {'Description', 'TargetTable'}));
             columns = cell(1, options.Depth+1);
             % The description is set on the column after the call: as a
