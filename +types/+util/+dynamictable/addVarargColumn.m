@@ -136,6 +136,15 @@ function indexColumns = collectIndexColumns(dynamicTable, newVectorData)
     vectorColumns = cellfun(@(name) dynamicTable.vectordata.get(name), vectorNames, ...
         'UniformOutput', false);
 
+    % Schema versions before 2.3.0 keep index columns in a set of their own.
+    if isprop(dynamicTable, 'vectorindex')
+        indexSetNames = reshape(dynamicTable.vectorindex.keys(), 1, []);
+        indexSetColumns = cellfun(@(name) dynamicTable.vectorindex.get(name), ...
+            indexSetNames, 'UniformOutput', false);
+        vectorNames = [vectorNames, indexSetNames];
+        vectorColumns = [vectorColumns, indexSetColumns];
+    end
+
     % Index columns that the schema defines are stored on properties of the
     % class. The properties of the object also list one dynamic property for
     % each entry of vectordata, which the keys above cover.
