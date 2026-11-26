@@ -20,6 +20,10 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %  'waveforms' column of Units: a row is a unit, a sub-group is a spike
 %  event, and an element is the waveform on one electrode.
 %
+%  [data_vector, index1, index2] = util.create_indexed_column(data, 'Depth', 2, 'ElementsPerSubGroup', numElements)
+%  States the number of elements in each sub-group of the numeric rows,
+%  so that it is not read from the dimensions of the rows.
+%
 % Input Arguments:
 %  - data (cell) -
 %    A cell array with one cell per row.
@@ -67,8 +71,39 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %      k-sample element, and a [1 x m] row vector is m single-sample
 %      elements.
 %
+%    - A numeric array [elementDims x nElements x nSubGroups], with
+%      Depth 2 -
+%      Every sub-group holds nElements elements. For the 'waveforms'
+%      column of Units this is one
+%      [num_samples x num_electrodes x num_spike_events] array per unit.
+%      It is the (num_spikes, num_electrodes, num_samples) array that
+%      Units.add_unit of PyNWB takes, with its dimensions reversed as for
+%      any other MatNWB dataset. A unit with a single spike event is then
+%      [num_samples x num_electrodes], with its trailing dimension of
+%      size 1 omitted.
+%
+%    - A numeric matrix [k x nSubGroups], with Depth 2 (the shortcut
+%      form) -
+%      Every sub-group holds a single k-sample element, as for spike
+%      waveforms on one electrode.
+%
 %    - [], {} or an empty matrix of any size -
-%      A row with no sub-groups.
+%      A row with no sub-groups. An [elementDims x 0 x nSubGroups] array
+%      is nSubGroups sub-groups that hold no elements. MATLAB drops a
+%      trailing dimension of size 1, so a single sub-group with no
+%      elements is given in the cell form, as {[]}.
+%
+%    A [k x m] row fits both numeric forms, because MATLAB drops trailing
+%    dimensions of size 1. The column is therefore read one way as a
+%    whole. If any numeric row has more than n dimensions, every numeric
+%    row is read as [elementDims x nElements x nSubGroups], with its
+%    omitted trailing dimensions of size 1 restored. A [k x m] row is then
+%    one sub-group of m elements (for 'waveforms', one spike event on m
+%    electrodes), and a row with one element per sub-group must be given
+%    as [k x 1 x nSubGroups] (one electrode), because MATLAB keeps a
+%    dimension of size 1 that is not the last. Otherwise every [k x m] row
+%    is read in the shortcut form. The cell form is read the same way in
+%    either case.
 %
 %    A column whose elements have more than one value needs at least two
 %    elements in total. The data of a single element, [elementDims x 1],
@@ -96,6 +131,21 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %
 %    - Depth (integer) -
 %      Number of VectorIndex objects. Default: 1.
+%
+%    - ElementsPerSubGroup (positive integer | vector of positive integers) -
+%      Number of elements in each sub-group of the numeric rows of a
+%      column of depth 2, as one value or one value per row. A numeric row
+%      is then [elementDims x nElements], with the elements of the first
+%      sub-group first and nElements a multiple of the value for that
+%      row, or [elementDims x value x nSubGroups]. A [k x m] row is
+%      m/value sub-groups whatever the other rows are, and no dimension of
+%      size 1 is needed. For the 'waveforms' column of Units, the value is
+%      the number of electrodes of each unit.
+%
+%      Elements are vectors unless a row shows more element dimensions,
+%      by being given in the second form or as a cell array. A row given
+%      as a cell array states its sub-groups itself and is not compared
+%      with the value.
 %
 % Output Arguments:
 %  - data_vector (VectorData | DynamicTableRegion) -
@@ -129,6 +179,20 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %    units.waveforms_index = wfIndex;
 %    units.waveforms_index_index = wfIndexIndex;
 %
+%  Example 4 - Waveforms of 2 units with 3 and 4 spikes on one electrode::
+%
+%    unit1 = rand(40, 3);   % [num_samples x num_spikes]
+%    unit2 = rand(40, 4);
+%    [wf, wfIndex, wfIndexIndex] = util.create_indexed_column({unit1, unit2}, 'spike waveforms', 'Depth', 2);
+%
+%  Example 5 - Units with 3 electrodes and 1 electrode, each given as one matrix of all waveforms::
+%
+%    unit1 = rand(40, 6);   % [num_samples x (3 electrodes * 2 spike events)]
+%    unit2 = rand(40, 4);   % [num_samples x (1 electrode * 4 spike events)]
+%    [wf, wfIndex, wfIndexIndex] = util.create_indexed_column({unit1, unit2}, ...
+%        'spike waveforms', 'Depth', 2, 'ElementsPerSubGroup', [3 1]);
+%    % wfIndex.data is [3;6;7;8;9;10] and wfIndexIndex.data is [2;6].
+%
 % See also:
 %   types.hdmf_common.DynamicTable/addRaggedArray
 
@@ -157,6 +221,7 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
         description = ''
         table = []
         options.Depth (1,1) {mustBeInteger, mustBePositive} = 1
+        options.ElementsPerSubGroup {mustBeNumeric, mustBeInteger, mustBePositive}
     end
 
     depth = options.Depth;
@@ -165,13 +230,22 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
             "A column of depth %d has %d outputs: the data vector and %d index level(s).", ...
             depth, depth+1, depth);
     end
+    hasElementsPerSubGroup = isfield(options, 'ElementsPerSubGroup');
+    if hasElementsPerSubGroup && depth ~= 2
+        error("NWB:CreateIndexedColumn:ElementsPerSubGroupNeedsDepth2", ...
+            "ElementsPerSubGroup applies to a column of depth 2, but Depth is %d.", depth);
+    end
     if isempty(description)
         description = 'no description';
     else
         description = char(description);
     end
 
-    [flatData, groupLengths] = flattenRows(data, depth);
+    elementsPerSubGroup = [];
+    if hasElementsPerSubGroup
+        elementsPerSubGroup = expandToRows(options.ElementsPerSubGroup, numel(data));
+    end
+    [flatData, groupLengths] = flattenRows(data, depth, elementsPerSubGroup);
 
     if isempty(table)
         data_vector = types.hdmf_common.VectorData( ...
@@ -212,8 +286,32 @@ end
 %    levels) that a group holds directly.
 %  - position - Where a group is in data, as a vector of cell indices:
 %    [3 2] is the second sub-group of row 3.
+%  - ragged dimensions - The trailing dimensions of a numeric array that
+%    count its elements and sub-groups, written raggedDims. The size of
+%    the array is [elementDims x raggedDims].
+%  - shortcut form - A numeric row [k x nSubGroups] of a column of depth
+%    2, in which every sub-group holds one element of k values.
 
-function [flatData, groupLengths] = flattenRows(rows, depth)
+function elementsPerSubGroup = expandToRows(elementsPerSubGroup, numRows)
+% expandToRows - Return ElementsPerSubGroup as a column with one value per row.
+%
+% The option is given as one value for all rows, or as one value per row.
+% Any other number of values raises
+% NWB:CreateIndexedColumn:ElementsPerSubGroupCountMismatch.
+
+    if isscalar(elementsPerSubGroup)
+        elementsPerSubGroup = repmat(double(elementsPerSubGroup), numRows, 1);
+    elseif numel(elementsPerSubGroup) == numRows
+        elementsPerSubGroup = double(elementsPerSubGroup(:));
+    else
+        error("NWB:CreateIndexedColumn:ElementsPerSubGroupCountMismatch", ...
+            "ElementsPerSubGroup must be a scalar or hold one value per row. The data " + ...
+            "has %d row(s), but ElementsPerSubGroup has %d value(s).", ...
+            numRows, numel(elementsPerSubGroup));
+    end
+end
+
+function [flatData, groupLengths] = flattenRows(rows, depth, elementsPerSubGroup)
 % flattenRows - Concatenate the elements of all rows, and return the length of every row and sub-group.
 %
 % The layout is inferred from all rows before any row is flattened,
@@ -227,6 +325,9 @@ function [flatData, groupLengths] = flattenRows(rows, depth)
 % Input arguments:
 %  - rows - The cell array with one cell per row.
 %  - depth - The number of levels of the column.
+%  - elementsPerSubGroup - The number of elements in each sub-group of the
+%    numeric rows, as one value per row. It is [] when that number is read
+%    from the dimensions of the rows.
 %
 % Output arguments:
 %  - flatData - The elements of all rows, concatenated along the last
@@ -236,13 +337,17 @@ function [flatData, groupLengths] = flattenRows(rows, depth)
 %    row order, so groupLengths{depth} holds one value per row. The
 %    cumulative sum of groupLengths{n} is the data of VectorIndex n.
 
-    layout = inferLayout(rows, depth);
+    hasElementsPerSubGroup = ~isempty(elementsPerSubGroup);
+    layout = inferLayout(rows, depth, hasElementsPerSubGroup);
 
     numRows = numel(rows);
     rowElements = cell(1, numRows);
     rowLengths = zeros(numRows, 1);
     rowInnerLengths = cell(1, numRows);
     for iRow = 1:numRows
+        if hasElementsPerSubGroup
+            layout.elementsPerSubGroup = elementsPerSubGroup(iRow);
+        end
         [rowElements{iRow}, rowLengths(iRow), rowInnerLengths{iRow}] = flattenGroup( ...
             rows{iRow}, depth, layout, iRow);
     end
@@ -282,6 +387,10 @@ function [elements, groupLength, innerLengths] = flattenGroup(group, level, layo
 % array of sub-groups: the function calls itself for each sub-group and
 % joins the results.
 %
+% A group of a higher level can also be one numeric array. Its trailing
+% dimensions then state the sub-groups (see splitDims), and the array is
+% reshaped without calling the function again.
+%
 % Input arguments:
 %  - group - The row or sub-group, as it was given in data.
 %  - level - The level of the group.
@@ -300,9 +409,8 @@ function [elements, groupLength, innerLengths] = flattenGroup(group, level, layo
     elementDims = layout.elementDims;
     innerLengths = repmat({zeros(0, 1)}, 1, level-1);
     % An innermost group without elements is a row or sub-group with no
-    % elements, whatever its size. Above the innermost level, an empty cell
-    % or an empty matrix such as [] is a row with no sub-groups.
-    if isempty(group) && (iscell(group) || level == 1 || ismatrix(group))
+    % elements, whatever its size.
+    if isempty(group) && (iscell(group) || isempty(elementDims) || level == 1)
         elements = [];
         groupLength = 0;
         return
@@ -350,18 +458,11 @@ function [elements, groupLength, innerLengths] = flattenGroup(group, level, layo
         return
     end
 
-    if level > 1
-        error("NWB:CreateIndexedColumn:InvalidRow", ...
-            "%s is a %s of size [%s], but a row of depth %d must be a cell array " + ...
-            "with one cell per sub-group.", ...
-            formatPosition(position), class(group), join(string(size(group)), " "), level);
-    end
-
     if ~(isnumeric(group) || islogical(group))
         error("NWB:CreateIndexedColumn:InvalidRow", ...
             "%s must be a numeric or logical array, or a vector of strings, " + ...
-            "characters, structs or objects. It is a %s.", ...
-            formatPosition(position), class(group));
+            "characters, structs or objects%s. It is a %s.", ...
+            formatPosition(position), cellFormHint(level), class(group));
     end
 
     if isempty(elementDims)
@@ -371,34 +472,112 @@ function [elements, groupLength, innerLengths] = flattenGroup(group, level, layo
         return
     end
 
-    [groupElementDims, numElements] = splitDims(group, numel(elementDims));
+    if isempty(group) && ismatrix(group)
+        % An empty matrix such as [], zeros(1, 0) or zeros(k, 0) has no
+        % sub-groups, whatever its size. An empty array with more dimensions
+        % declares sub-groups, such as [k x 0 x n] for n sub-groups with no
+        % elements, so its element shape must match like any other row's.
+        elements = [];
+        groupLength = 0;
+        return
+    end
+
+    [groupElementDims, raggedDims] = splitDims(group, level, numel(elementDims), layout.useShortcut);
     if ~isequal(groupElementDims, elementDims)
         error("NWB:CreateIndexedColumn:InconsistentElementShape", ...
             "All elements must have the same shape. Expected elements of shape [%s], " + ...
-            "but %s has size [%s]. Give a numeric row as [elementShape x nElements], " + ...
-            "with the ragged axis last.", ...
+            "but %s has size [%s]. Give a numeric row as [elementShape x ...] with the " + ...
+            "ragged axes last.", ...
             join(string(elementDims), " "), formatPosition(position), join(string(size(group)), " "));
     end
-    elements = reshape(group, [elementDims, numElements]);
-    groupLength = numElements;
+    if level == 2 && ~isempty(layout.elementsPerSubGroup)
+        raggedDims = regroupElements(raggedDims, layout.elementsPerSubGroup, group, position);
+    end
+
+    % Merging the trailing ragged dimensions lists the elements of the first
+    % sub-group first, which is the order the index levels describe.
+    elements = reshape(group, [elementDims, prod(raggedDims)]);
+    groupLength = raggedDims(level);
+    for iLevel = 1:level-1
+        innerLengths{iLevel} = repmat(raggedDims(iLevel), prod(raggedDims(iLevel+1:level)), 1);
+    end
 end
 
-function [elementDims, numElements] = splitDims(array, numElementDims)
-% splitDims - Split the size of a numeric array into the size of one element and the number of elements.
+function [elementDims, raggedDims] = splitDims(array, level, numElementDims, useShortcut)
+% splitDims - Split the size of a numeric array into the size of one element and its ragged dimensions.
 %
-% The elements run along the last dimension. MATLAB drops trailing
-% dimensions of size 1 from the size of an array, so the size is first
-% padded with ones to numElementDims + 1 dimensions. An array with more
-% dimensions than that keeps them in elementDims, where the size check
-% of the caller rejects it.
+% The array of a group of level n has the size [elementDims x raggedDims].
+% raggedDims holds n values, innermost first: the number of elements in
+% each sub-group, then the number of sub-groups, and so on. For a group of
+% level 1 it is the number of elements.
+%
+% MATLAB drops trailing dimensions of size 1 from the size of an array,
+% so the size is first padded with ones to numElementDims + level
+% dimensions. An array with more dimensions than that keeps them in
+% elementDims, where the size check of the caller rejects it.
+%
+% With useShortcut, the array of a group of level 2 or higher is read in
+% the shortcut form [k x s2 x ... x s_level]. Each innermost sub-group
+% then holds one element of k values, so raggedDims starts with 1.
+%
+% Input arguments:
+%  - array - The numeric array.
+%  - level - The level of the group that the array was given for.
+%  - numElementDims - The number of dimensions of one element.
+%  - useShortcut - True when the column is read in the shortcut form.
 
     dims = size(array);
-    dims(end+1:numElementDims+1) = 1;
-    elementDims = dims(1:end-1);
-    numElements = dims(end);
+    if useShortcut && level >= 2
+        % [k x s2 x ... x s_level]: one element per innermost sub-group.
+        dims(end+1:level) = 1;
+        elementDims = dims(1:end-level+1);
+        raggedDims = [1, dims(end-level+2:end)];
+    else
+        dims(end+1:numElementDims+level) = 1;
+        elementDims = dims(1:end-level);
+        raggedDims = dims(end-level+1:end);
+    end
 end
 
-function layout = inferLayout(rows, depth)
+function raggedDims = regroupElements(raggedDims, elementsPerSubGroup, array, position)
+% regroupElements - Divide the elements of a numeric row into sub-groups of the stated size.
+%
+% The function is used when ElementsPerSubGroup is given, for a row of a
+% column of depth 2. raggedDims is [nElements, nSubGroups], as the size of
+% the array states them:
+%  - A row given as [elementDims x nElements] states all its elements as
+%    one sub-group. They are divided into sub-groups of
+%    elementsPerSubGroup elements, so nElements must be a multiple of
+%    that number.
+%  - A row given as [elementDims x nElements x nSubGroups] must state
+%    elementsPerSubGroup elements in each sub-group.
+% Any other size raises NWB:CreateIndexedColumn:ElementsPerSubGroupMismatch.
+%
+% Input arguments:
+%  - raggedDims - [nElements, nSubGroups], from splitDims.
+%  - elementsPerSubGroup - The stated number of elements in each
+%    sub-group of this row.
+%  - array - The numeric array of the row, used in the error message.
+%  - position - The position of the row, used in the error message.
+
+    numElements = raggedDims(1);
+    numSubGroups = raggedDims(2);
+    if numElements == elementsPerSubGroup
+        return
+    end
+    if numSubGroups == 1 && mod(numElements, elementsPerSubGroup) == 0
+        raggedDims = [elementsPerSubGroup, numElements/elementsPerSubGroup];
+        return
+    end
+    error("NWB:CreateIndexedColumn:ElementsPerSubGroupMismatch", ...
+        "%s has size [%s], which does not divide into sub-groups of %d element(s). " + ...
+        "With ElementsPerSubGroup, give a numeric row as [elementShape x nElements] " + ...
+        "with nElements a multiple of %d, or as [elementShape x %d x nSubGroups].", ...
+        formatPosition(position), join(string(size(array)), " "), elementsPerSubGroup, ...
+        elementsPerSubGroup, elementsPerSubGroup);
+end
+
+function layout = inferLayout(rows, depth, hasElementsPerSubGroup)
 % inferLayout - Decide how the rows are read, from the classes and sizes of all rows.
 %
 % The size of one element cannot be read from a single row. MATLAB drops
@@ -409,25 +588,68 @@ function layout = inferLayout(rows, depth)
 % Input arguments:
 %  - rows - The cell array with one cell per row.
 %  - depth - The number of levels of the column.
+%  - hasElementsPerSubGroup - True when ElementsPerSubGroup is given.
 %
 % The layout is a struct with the fields:
 %  - elementDims - The size of one element of a column of numeric arrays,
 %    such as [40 3]. It is [] when the elements are scalars, strings,
-%    characters, structs or objects, and when no row holds an element.
+%    characters, structs or objects, and when no row holds an element or
+%    declares sub-groups.
+%  - useShortcut - True when the numeric rows of a column of depth 2 or
+%    more are read in the shortcut form. A [k x m] row fits both the
+%    shortcut form and the form [elementDims x nElements x nSubGroups],
+%    so the shortcut form is used only while no array has more dimensions
+%    than its level. It is not used when ElementsPerSubGroup is given.
 %  - structFields - The field names of struct rows, in the order of the
 %    first struct row. It is {} when no row is a struct.
+%  - elementsPerSubGroup - The value of ElementsPerSubGroup for the row
+%    that is being flattened. flattenRows sets it for each row. It is []
+%    when the option is not given.
 
-    findings = struct('maxNumElementDims', -Inf, 'firstArray', [], ...
-        'elementClass', "", 'structFields', {{}});
+    findings = struct('maxNumElementDims', -Inf, 'shortcutAllowed', true, ...
+        'firstArray', [], 'firstArrayLevel', 0, ...
+        'firstEmptyArray', [], 'firstEmptyArrayLevel', 0, ...
+        'elementClass', "", 'structFields', {{}}, 'hasTextOrStructOrObject', false);
     for iRow = 1:numel(rows)
         findings = inspectGroup(rows{iRow}, depth, depth == 1, findings, iRow);
     end
 
-    layout = struct('elementDims', [], 'structFields', {findings.structFields});
-    if isempty(findings.firstArray)
+    layout = struct('elementDims', [], 'useShortcut', false, ...
+        'structFields', {findings.structFields}, 'elementsPerSubGroup', []);
+    if findings.hasTextOrStructOrObject
+        % Rows of strings, characters, structs or objects have no element
+        % shape.
         return
     end
-    layout.elementDims = splitDims(findings.firstArray, findings.maxNumElementDims);
+    shapeArray = findings.firstArray;
+    shapeArrayLevel = findings.firstArrayLevel;
+    if isempty(shapeArray)
+        if findings.firstEmptyArrayLevel == 0
+            return
+        end
+        shapeArray = findings.firstEmptyArray;
+        shapeArrayLevel = findings.firstEmptyArrayLevel;
+    end
+    useShortcut = ~hasElementsPerSubGroup && depth >= 2 ...
+        && findings.shortcutAllowed && findings.maxNumElementDims <= 1;
+    if useShortcut
+        numElementDims = 1;
+    elseif hasElementsPerSubGroup
+        % A [elementDims x nElements] row shows one dimension fewer than the
+        % full form, so a column of such rows shows no element dimension.
+        % Elements have at least one.
+        numElementDims = max(findings.maxNumElementDims, 1);
+    else
+        numElementDims = findings.maxNumElementDims;
+    end
+    elementDims = splitDims(shapeArray, shapeArrayLevel, numElementDims, useShortcut);
+    if any(elementDims == 0)
+        % The array is empty along an element dimension, so it declares no
+        % elements or sub-groups to count.
+        return
+    end
+    layout.useShortcut = useShortcut;
+    layout.elementDims = elementDims;
 end
 
 function findings = inspectGroup(group, level, vectorsAreScalarLists, findings, position)
@@ -442,13 +664,25 @@ function findings = inspectGroup(group, level, vectorsAreScalarLists, findings, 
 % The findings are a struct with the fields:
 %  - maxNumElementDims - The largest number of element dimensions that
 %    any numeric array shows. It is -Inf until an array shows one.
-%  - firstArray - The first numeric array that is not a list of scalars.
-%    Its leading dimensions give the size of one element. It is [] until
-%    such an array is found.
+%  - shortcutAllowed - True until the numeric array of a group of level 2
+%    or higher has more dimensions than its level. Such an array is not
+%    in the shortcut form.
+%  - firstArray - The first numeric array that is not empty and not a
+%    list of scalars. Its leading dimensions give the size of one element.
+%    It is [] until such an array is found.
+%  - firstArrayLevel - The level of the group that firstArray was given
+%    for.
+%  - firstEmptyArray - The first empty array that declares sub-groups,
+%    such as [k x 0 x n]. It gives the size of one element when no row
+%    holds an element.
+%  - firstEmptyArrayLevel - The level of the group that firstEmptyArray
+%    was given for. It is 0 until such an array is found.
 %  - elementClass - The class of the elements, such as "double". It is
 %    an empty string until a row holds an element.
 %  - structFields - The field names of the first struct row. It is {}
 %    until a struct row is found.
+%  - hasTextOrStructOrObject - True when a row holds strings, characters,
+%    structs or objects.
 %
 % Input arguments:
 %  - group - The row or sub-group, as it was given in data.
@@ -461,6 +695,7 @@ function findings = inspectGroup(group, level, vectorsAreScalarLists, findings, 
 
     if level == 1 && isTextOrStructOrObject(group)
         if ~isempty(group)
+            findings.hasTextOrStructOrObject = true;
             findings = recordElementClass(findings, group, position);
         end
         if isstruct(group) && ~isempty(group)
@@ -484,22 +719,35 @@ function findings = inspectGroup(group, level, vectorsAreScalarLists, findings, 
         end
         return
     end
-    isNumericArray = isnumeric(group) || islogical(group);
-    if ~isNumericArray || level > 1 || isempty(group)
-        % A group of another class and a numeric array above the innermost
-        % level are rejected by flattenGroup. An innermost group without
-        % elements declares no element shape, whatever its size.
+    if ~(isnumeric(group) || islogical(group))
         return
     end
-    findings = recordElementClass(findings, group, position);
+    if ~isempty(group)
+        findings = recordElementClass(findings, group, position);
+    end
+    if level == 1 && isempty(group)
+        % An innermost group without elements declares no element shape,
+        % whatever its size.
+        return
+    end
     if vectorsAreScalarLists && isvector(group)
         return
     end
 
-    % The first array that is not a list of scalars supplies the element shape.
-    findings.maxNumElementDims = max(findings.maxNumElementDims, ndims(group)-1);
-    if isempty(findings.firstArray)
+    numDims = ndims(group);
+    findings.maxNumElementDims = max(findings.maxNumElementDims, numDims-level);
+    if level >= 2 && numDims > level
+        findings.shortcutAllowed = false;
+    end
+    % The first non-empty array supplies the element shape. An empty array that
+    % declares sub-groups, such as [k x 0 x n], supplies it when no row holds
+    % an element.
+    if isempty(findings.firstArray) && ~isempty(group)
         findings.firstArray = group;
+        findings.firstArrayLevel = level;
+    elseif isempty(group) && level >= 2 && ~ismatrix(group) && findings.firstEmptyArrayLevel == 0
+        findings.firstEmptyArray = group;
+        findings.firstEmptyArrayLevel = level;
     end
 end
 
@@ -548,6 +796,19 @@ function tf = isObjectArray(value)
 % A table is an object too, but its rows are not elements of one class.
 
     tf = isobject(value) && ~istable(value);
+end
+
+function hint = cellFormHint(level)
+% cellFormHint - Return the part of an error message that names the cell form of a row.
+%
+% A row can be a cell array of sub-groups only above level 1, so the text
+% is empty for a group of level 1.
+
+    if level > 1
+        hint = ' or a cell array of sub-groups';
+    else
+        hint = '';
+    end
 end
 
 function label = formatPosition(position)
