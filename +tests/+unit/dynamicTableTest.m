@@ -507,6 +507,25 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
                 'NWB:DynamicTable:AddColumn:MissingRows');
         end
 
+        function testAddRaggedColumnWithIndexTargetGivenAsPath(testCase)
+            % The target of an index can be given as the path of its data
+            % column in the file. The column is then matched to the index by
+            % the name that ends the path, and the index sets the height.
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'empty test table');
+            vectorData = types.hdmf_common.VectorData( ...
+                'description', 'ragged column', 'data', [1; 2; 3]);
+            vectorIndex = types.hdmf_common.VectorIndex( ...
+                'description', 'index with a path as target', ...
+                'target', types.untyped.ObjectView('/table/raggedCol'), ...
+                'data', uint64([2; 3]));
+
+            dynamicTable.addColumn('raggedCol', vectorData, 'raggedCol_index', vectorIndex);
+
+            testCase.verifyEqual(dynamicTable.colnames, {'raggedCol'});
+            testCase.verifyEqual(dynamicTable.id.data, int64([0; 1]));
+        end
+
         function testAddColumnToTableWithIdsOnlyChecksHeight(testCase)
             dynamicTable = types.hdmf_common.DynamicTable( ...
                 'description', 'ids only', ...
