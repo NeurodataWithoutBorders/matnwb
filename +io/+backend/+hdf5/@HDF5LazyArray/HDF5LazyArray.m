@@ -1,5 +1,10 @@
 classdef HDF5LazyArray < io.backend.base.LazyArray
 % HDF5LazyArray - HDF5-backed lazy dataset access implementation.
+%
+% MATLAB's HDF5 functions present a dataset in MATLAB's dimension order,
+% which is MatNWB's, so the storage order is not reversed. A point
+% selection is cheap in HDF5, so a linear selection is read through its
+% bounding box only when it fills the box (the base class default).
 
     methods
         function obj = HDF5LazyArray(filename, path, dims, dataType)
@@ -32,8 +37,12 @@ classdef HDF5LazyArray < io.backend.base.LazyArray
         end
 
         data = load_h5_style(obj, varargin)
+    end
 
-        data = load_mat_style(obj, varargin)
+    methods (Access = protected)
+        data = readSubscripts(obj, selection)
+
+        values = readPoints(obj, subscripts)
     end
 
     methods (Access = private)
