@@ -25,10 +25,11 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %     - compound: a table holds one compound element per table row, a struct
 %       array (a vector) one element per struct, with one value in each
 %       field, and a scalar struct whose fields are equal-length columns one
-%       element per column entry. DATA_VECTOR.data is a struct column when
-%       every compound row is a struct array, and a table otherwise; either
-%       is written as a compound dataset (for example
-%       PlaneSegmentation.pixel_mask).
+%       element per column entry. A table variable or a field of a scalar
+%       struct holds one value per element, so it is a vector, not a matrix.
+%       DATA_VECTOR.data is a struct column when every compound row is a
+%       struct array, and a table otherwise; either is written as a compound
+%       dataset (for example PlaneSegmentation.pixel_mask).
 %     - object references: an array of objects such as
 %       types.untyped.ObjectView, as a vector, one element per object.
 %       DATA_VECTOR.data keeps the class, for example a column of ObjectView
@@ -715,7 +716,20 @@ function [columns, numElements] = compoundColumns(item, indexPath)
             end
         end
     end
-    lengths = structfun(@numel, columns);
+    names = fieldnames(columns);
+    lengths = zeros(numel(names), 1);
+    for iName = 1:numel(names)
+        column = columns.(names{iName});
+        % A field holds one value per element. A table variable or struct
+        % field with several columns has more values than elements.
+        if ~(iscolumn(column) || isempty(column))
+            error("NWB:CreateIndexedColumn:InconsistentElementShape", ...
+                "In %s, the field ""%s"" has size [%s]. Every field of compound data " + ...
+                "must hold one value per element, as a vector.", ...
+                formatLabel(indexPath), names{iName}, join(string(size(column)), " "));
+        end
+        lengths(iName) = numel(column);
+    end
     if isempty(lengths) || any(lengths ~= lengths(1))
         error("NWB:CreateIndexedColumn:InconsistentElementShape", ...
             "%s must have fields of equal length, one entry per compound element.", formatLabel(indexPath));
@@ -724,10 +738,15 @@ function [columns, numElements] = compoundColumns(item, indexPath)
 end
 
 function column = toColumn(value)
+    % A field of a scalar struct of columns as a column. A character vector
+    % is one text value. An array that is not a vector is returned as it is,
+    % for compoundColumns to reject with its size.
     if ischar(value)
         column = {value};
-    else
+    elseif isvector(value) || isempty(value)
         column = value(:);
+    else
+        column = value;
     end
 end
 

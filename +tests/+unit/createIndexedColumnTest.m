@@ -74,6 +74,26 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
                 'NWB:CreateIndexedColumn:InconsistentElementType');
         end
 
+        function testCompoundFieldWithSeveralColumnsErrors(testCase)
+            % A compound field holds one value per element. A table variable
+            % or struct field of size [3 x 2] holds 6 values for 3 elements.
+            positions = table([1 2; 3 4; 5 6], 'VariableNames', {'position'});
+
+            testCase.verifyError(@() util.create_indexed_column({positions}), ...
+                'NWB:CreateIndexedColumn:InconsistentElementShape');
+            testCase.verifyError( ...
+                @() util.create_indexed_column({struct('position', [1 2; 3 4; 5 6])}), ...
+                'NWB:CreateIndexedColumn:InconsistentElementShape');
+            testCase.verifyError( ...
+                @() util.create_indexed_column(positions, 'ElementsPerRow', 3), ...
+                'NWB:CreateIndexedColumn:InconsistentElementShape');
+
+            % The fields of a scalar struct may be row vectors.
+            [vector, index] = util.create_indexed_column({struct('x', [1 2 3], 'y', [4 5 6])});
+            testCase.verifyEqual(vector.data, table([1; 2; 3], [4; 5; 6], 'VariableNames', {'x', 'y'}));
+            testCase.verifyEqual(index.data, uint64(3));
+        end
+
         function testCompoundAndNumericRowsErrors(testCase)
             roi = table(uint32(1), single(1), 'VariableNames', {'x', 'weight'});
 
