@@ -437,6 +437,151 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(dynamicTable.id.data, int64((0:numRows-1)'));
         end
 
+        function testAddDoublyRaggedColumnChecksHeightByOutermostIndex(testCase)
+            % A doubly ragged column has an index of its index. The number
+            % of table rows is the height of the outermost index, here 2,
+            % not the 7 entries of the inner index.
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'empty test table');
+            vectorData = types.hdmf_common.VectorData( ...
+                'description', 'doubly ragged column', 'data', (1:7)');
+            vectorIndex = types.hdmf_common.VectorIndex( ...
+                'description', 'index of the column', ...
+                'target', types.untyped.ObjectView(vectorData), ...
+                'data', uint64((1:7)'));
+            vectorIndexIndex = types.hdmf_common.VectorIndex( ...
+                'description', 'index of the index', ...
+                'target', types.untyped.ObjectView(vectorIndex), ...
+                'data', uint64([3; 7]));
+
+            dynamicTable.addColumn( ...
+                'raggedCol', vectorData, ...
+                'raggedCol_index', vectorIndex, ...
+                'raggedCol_index_index', vectorIndexIndex);
+
+            testCase.verifyEqual(dynamicTable.colnames, {'raggedCol'});
+            testCase.verifyEqual(dynamicTable.id.data, int64([0; 1]));
+        end
+
+        function testAddColumnRejectsVectorIndexWithoutTarget(testCase)
+            % An index column names the column it indexes through its
+            % target, so one without a target cannot be matched to a data
+            % column. Nothing is added to the table.
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'empty test table');
+            vectorData = types.hdmf_common.VectorData( ...
+                'description', 'ragged column', 'data', [1; 2; 3]);
+            vectorIndex = types.hdmf_common.VectorIndex( ...
+                'description', 'index without a target', ...
+                'data', uint64([2; 3]));
+
+            testCase.verifyError( ...
+                @() dynamicTable.addColumn('raggedCol', vectorData, 'raggedCol_index', vectorIndex), ...
+                'NWB:DynamicTable:AddColumn:MissingIndexTarget');
+            testCase.verifyEmpty(dynamicTable.colnames);
+            testCase.verifyEmpty(dynamicTable.vectordata.keys());
+        end
+
+        function testAddColumnRejectsVectorIndexTargetingItself(testCase)
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'empty test table');
+            vectorIndex = types.hdmf_common.VectorIndex( ...
+                'description', 'index that targets itself', ...
+                'data', uint64(1));
+            vectorIndex.target = types.untyped.ObjectView(vectorIndex);
+
+            testCase.verifyError( ...
+                @() dynamicTable.addColumn('raggedCol_index', vectorIndex), ...
+                'NWB:DynamicTable:CheckConfig:InfiniteReferenceLoop');
+        end
+
+        function testAddRaggedColumnToTableWithIdsOnly(testCase)
+            % A table can get its ids before its first column. The ids then
+            % set the height, which the outermost index of a ragged column
+            % must match.
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'ids only', ...
+                'id', types.hdmf_common.ElementIdentifiers('data', int64([0; 1])));
+            [vectorData, vectorIndex] = util.create_indexed_column({[1, 2], 3});
+
+            dynamicTable.addColumn('raggedCol', vectorData, 'raggedCol_index', vectorIndex);
+
+            testCase.verifyEqual(dynamicTable.colnames, {'raggedCol'});
+            testCase.verifyEqual(dynamicTable.id.data, int64([0; 1]));
+        end
+
+        function testAddRaggedColumnIndexFirstInSeparateCalls(testCase)
+            % The index of a ragged column can be added in an earlier call
+            % than its data column. The data column is then compared with
+            % the table height by that index, not by its number of elements.
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'empty test table');
+            [vectorData, vectorIndex] = util.create_indexed_column({[1, 2], 3});
+
+            dynamicTable.addColumn('raggedCol_index', vectorIndex);
+            dynamicTable.addColumn('raggedCol', vectorData);
+
+            testCase.verifyEqual(dynamicTable.colnames, {'raggedCol'});
+            testCase.verifyEqual(dynamicTable.id.data, int64([0; 1]));
+        end
+
+        function testAddSchemaDefinedRaggedColumnIndexFirst(testCase)
+            % An index column that the schema defines is stored on a property
+            % of the table, not in vectordata.
+            units = types.core.Units('description', 'test units table');
+            [spikeTimes, spikeTimesIndex] = util.create_indexed_column({[1, 2, 3], [4, 5]});
+
+            units.addColumn('spike_times_index', spikeTimesIndex);
+            units.addColumn('spike_times', spikeTimes);
+
+            testCase.verifyEqual(units.colnames, {'spike_times'});
+            testCase.verifyEqual(units.id.data, int64([0; 1]));
+        end
+
+        function testAddColumnChecksHeightByIndexOfEarlierCall(testCase)
+            % The index added in an earlier call has 2 rows, so a data column
+            % it targets does not fit a table with 3 ids.
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'empty test table');
+            [vectorData, vectorIndex] = util.create_indexed_column({[1, 2], 3});
+            dynamicTable.addColumn('raggedCol_index', vectorIndex);
+            dynamicTable.id.data = int64([0; 1; 2]);
+
+            testCase.verifyError( ...
+                @() dynamicTable.addColumn('raggedCol', vectorData), ...
+                'NWB:DynamicTable:AddColumn:MissingRows');
+        end
+
+        function testAddRaggedColumnWithIndexTargetGivenAsPath(testCase)
+            % The target of an index can be given as the path of its data
+            % column in the file. The column is then matched to the index by
+            % the name that ends the path, and the index sets the height.
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'empty test table');
+            vectorData = types.hdmf_common.VectorData( ...
+                'description', 'ragged column', 'data', [1; 2; 3]);
+            vectorIndex = types.hdmf_common.VectorIndex( ...
+                'description', 'index with a path as target', ...
+                'target', types.untyped.ObjectView('/table/raggedCol'), ...
+                'data', uint64([2; 3]));
+
+            dynamicTable.addColumn('raggedCol', vectorData, 'raggedCol_index', vectorIndex);
+
+            testCase.verifyEqual(dynamicTable.colnames, {'raggedCol'});
+            testCase.verifyEqual(dynamicTable.id.data, int64([0; 1]));
+        end
+
+        function testAddColumnToTableWithIdsOnlyChecksHeight(testCase)
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'ids only', ...
+                'id', types.hdmf_common.ElementIdentifiers('data', int64([0; 1])));
+
+            testCase.verifyError( ...
+                @() dynamicTable.addColumn('col', types.hdmf_common.VectorData( ...
+                    'description', 'three rows', 'data', [1; 2; 3])), ...
+                'NWB:DynamicTable:AddColumn:MissingRows');
+        end
+
         function testAddColumnThrowsErrorForExistingColumn(testCase)
             % Test that adding a column that already exists throws an error
             dynamicTable = testCase.createDynamicTable();
