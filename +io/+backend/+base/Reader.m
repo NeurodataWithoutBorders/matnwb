@@ -4,6 +4,14 @@ classdef Reader < handle
 % This class defines the minimal read-side interface used by nwbRead
 % and the parse helpers. Concrete backends should override the methods
 % below.
+%
+% A reader describes the nodes of a file with the classes in
+% io.backend.model: GroupInfo, DatasetInfo, LinkInfo and AttributeInfo.
+% The parse helpers read names, child nodes, links and attribute values
+% from them, and pass dataset and attribute descriptions back to the
+% reader to read values. How a backend stores types and shapes stays in
+% the BackendInfo property of DatasetInfo and AttributeInfo, which only
+% the reader that created the object reads.
 
 % Note: This class is intended to be abstract. However, it is implemented as a
 % concrete class so it can be used for property and argument validation across 
@@ -60,29 +68,34 @@ classdef Reader < handle
         end
 
         function node = readRootInfo(obj) %#ok<MANU>
-        % readRootInfo - Return metadata for the root node of the backend resource.
+        % readRootInfo - Return the description of the root group.
         %
         % Input Arguments:
         %   obj - Reader instance used to inspect the backend resource.
         %
         % Output Arguments:
-        %   node - Structure containing metadata for the root node.
+        %   node - io.backend.model.GroupInfo describing the root group and,
+        %       through its child groups, the whole hierarchy.
 
-            node = struct();
+            node = io.backend.model.GroupInfo.empty;
             io.backend.base.Reader.throwNotImplemented("readRootInfo")
         end
 
         function node = readNodeInfo(obj, nodePath) %#ok<INUSD>
-        % readNodeInfo - Return metadata for a node at the specified path.
+        % readNodeInfo - Return the description of the node at a path.
+        %
+        % A link at nodePath is described without following it, so a
+        % caller can tell a link apart from the node it points to.
         %
         % Input Arguments:
         %   obj - Reader instance used to inspect the backend resource.
-        %   nodePath - Backend-relative path to the node being queried.
+        %   nodePath - Absolute path of the node within the backend resource.
         %
         % Output Arguments:
-        %   node - Structure containing metadata for the requested node.
+        %   node - io.backend.model.GroupInfo, io.backend.model.DatasetInfo
+        %       or io.backend.model.LinkInfo, depending on the node.
 
-            node = struct();
+            node = io.backend.model.GroupInfo.empty;
             io.backend.base.Reader.throwNotImplemented("readNodeInfo")
         end
 
@@ -91,9 +104,9 @@ classdef Reader < handle
         %
         % Input Arguments:
         %   obj - Reader instance used to access backend content.
-        %   attributeInfo - Structure or object describing the attribute to
-        %       read.
-        %   attributePath - Backend-relative path to the attribute being read.
+        %   attributeInfo - io.backend.model.AttributeInfo describing the
+        %       attribute, as listed with its node.
+        %   attributePath - Path of the node that holds the attribute.
         %
         % Output Arguments:
         %   attributeValue - Value read for the requested attribute.
@@ -108,12 +121,12 @@ classdef Reader < handle
         % A dataset of references has to be read and resolved rather than
         % returned as a lazy stub, so callers deciding how to handle a
         % dataset need to ask this without knowing how the backend encodes
-        % it (HDF5 uses a reference datatype class; hdmf-zarr marks the
-        % dataset with a "zarr_dtype" attribute of "object").
+        % references.
         %
         % Input Arguments:
         %  - obj - Reader instance.
-        %  - datasetInfo - Dataset metadata, as returned by readNodeInfo.
+        %  - datasetInfo - io.backend.model.DatasetInfo, as returned by
+        %    readNodeInfo.
         %
         % Output Arguments:
         %  - tf - true when the dataset holds references.
@@ -136,29 +149,14 @@ classdef Reader < handle
             io.backend.base.Reader.throwNotImplemented("getExternalLinkBase")
         end
 
-        function linkInfo = readLinkInfo(obj, linkPath) %#ok<INUSD>
-        % readLinkInfo - Return the target of a link without following it.
-        %
-        % Input Arguments:
-        %  - obj - Reader instance.
-        %  - linkPath - Path of the link node.
-        %
-        % Output Arguments:
-        %  - linkInfo - Struct with fields type ("soft link" or "external
-        %    link", matching the vocabulary io.parseGroup consumes),
-        %    targetPath, and targetFilename (empty for a soft link).
-            linkInfo = struct.empty;
-            io.backend.base.Reader.throwNotImplemented("readLinkInfo")
-        end
-
         function datasetValue = readDatasetValue(obj, datasetInfo, datasetPath) %#ok<INUSD>
         % readDatasetValue - Read the value of a dataset from the backend.
         %
         % Input Arguments:
         %   obj - Reader instance used to access backend content.
-        %   datasetInfo - Structure or object describing the dataset to
-        %       read.
-        %   datasetPath - Backend-relative path to the dataset being read.
+        %   datasetInfo - io.backend.model.DatasetInfo describing the
+        %       dataset, as returned by readNodeInfo.
+        %   datasetPath - Absolute path of the dataset.
         %
         % Output Arguments:
         %   datasetValue - Value read for the requested dataset.

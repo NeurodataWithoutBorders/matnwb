@@ -86,7 +86,7 @@ classdef EmptyCompoundTest < tests.abstract.NwbTestCase
             datasetPath = '/empty_compound';
             tests.unit.io.EmptyCompoundTest.writeReferenceCompound(fileName, datasetPath);
 
-            datasetInfo = h5info(fileName, datasetPath);
+            datasetInfo = readNodeInfo(io.backend.hdf5.HDF5Reader(fileName), datasetPath);
             parsed = io.parseDataset(fileName, datasetInfo, datasetPath);
             stub = parsed('empty_compound');
 

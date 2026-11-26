@@ -1,17 +1,19 @@
 function [args, type] = parseAttributes(filename, attributes, context, exclusions, reader)
-% parseAttributes - Parse an attribute info structure
+% parseAttributes - Parse the attributes of a node
 %
 % Syntax:
-%   [args, type] = io.parseAttributes(filename, attributes, context, exclusions)
-%   This function parses a given attribute info structure and returns a 
+%   [args, type] = io.parseAttributes(filename, attributes, context, exclusions, reader)
+%   This function parses the attributes of a node and returns a 
 %   containers.Map of valid attributes along with neurodata type info if it 
 %   exists.
 %
 % Input Arguments:
 %   filename   - The name of the file containing attributes.
-%   attributes - The attributes to be parsed.
-%   context    - The context (h5 location) in which the attributes are located.
+%   attributes - io.backend.model.AttributeInfo array of the attributes to
+%                be parsed.
+%   context    - The path of the node that holds the attributes.
 %   exclusions - Attribute and group names to be excluded from the parsing.
+%   reader     - The io.backend.base.Reader that reads the attribute values.
 %
 % Output Arguments:
 %   args - A containers.Map of all valid attributes.
