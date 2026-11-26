@@ -1,4 +1,4 @@
-function [data_vector, varargout] = create_indexed_column(data, description, table, options)
+function [data_vector, varargout] = create_indexed_column(data, optionalArgument)
 %CREATE_INDEXED_COLUMN creates the vector and index NWB objects for storing
 %a ragged column in an NWB DynamicTable
 %
@@ -53,16 +53,20 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %
 %   [DATA_VECTOR, DATA_INDEX] = CREATE_INDEXED_COLUMN(DATA, DESCRIPTION)
 %   adds the string DESCRIPTION in the description field of the data vector.
-%   A DESCRIPTION that starts an option name ('Depth', 'ElementsPerRow' or
-%   'ElementsPerSubGroup') in any letter case, such as 'depth', is read as
-%   that option name when an even number of arguments follows DATA. Set
-%   DATA_VECTOR.description after the call instead.
 %
 %   [DYNAMICTABLEREGION, DATA_INDEX] = CREATE_INDEXED_COLUMN(DATA, DESCRIPTION, TABLE)
 %   returns a DynamicTableRegion that references TABLE instead of a
 %   VectorData. TABLE is the DynamicTable object itself; the function wraps
 %   it in an ObjectView. The values in DATA are 0-based row indices into
 %   TABLE, and the DynamicTableRegion is indexed the same way as a VectorData.
+%
+%   DESCRIPTION and TABLE are positional and come before the name-value
+%   arguments described below. Arguments that follow DATA are read by their
+%   number and class: an NWB object in second place is TABLE, and the
+%   argument before it is DESCRIPTION. Without a TABLE, an odd number of
+%   arguments starts with DESCRIPTION and an even number holds name-value
+%   pairs only. A DESCRIPTION may therefore be any text, including the name
+%   of an option such as 'Depth'.
 %
 %   [DATA_VECTOR, INDEX1, ..., INDEXn] = CREATE_INDEXED_COLUMN(__, 'Depth', n)
 %   builds a column with n levels of VectorIndex; n = 2 gives a doubly ragged
@@ -151,12 +155,13 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 
     arguments
         data
-        description = ''
-        table = []
-        options.Depth (1,1) {mustBeInteger, mustBePositive} = 1
-        options.ElementsPerRow {mustBeNumeric, mustBeInteger, mustBeNonnegative}
-        options.ElementsPerSubGroup {mustBeNumeric, mustBeInteger, mustBePositive}
     end
+    arguments (Repeating)
+        optionalArgument
+    end
+
+    [description, table, nameValuePairs] = splitPositionalArguments(optionalArgument);
+    options = parseOptions(nameValuePairs{:});
 
     depth = options.Depth;
     if nargout > depth + 1
@@ -228,6 +233,39 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
             'description', 'indexes data' ...
         );
         target = varargout{iLevel};
+    end
+end
+
+function [description, table, nameValuePairs] = splitPositionalArguments(optionalArguments)
+    % Split the arguments that follow DATA into DESCRIPTION, TABLE and the
+    % name-value pairs. An arguments block with optional positional
+    % arguments cannot do this: it reads a DESCRIPTION that starts an option
+    % name, such as 'depth', as that option name. TABLE is an NWB object and
+    % no option takes one, so an NWB object in second place marks the pair
+    % (DESCRIPTION, TABLE). Without it, an odd number of arguments starts
+    % with DESCRIPTION, and an even number holds name-value pairs only.
+    description = '';
+    table = [];
+    numArguments = numel(optionalArguments);
+    hasTable = numArguments >= 2 && isa(optionalArguments{2}, 'types.untyped.MetaClass');
+    if hasTable
+        description = optionalArguments{1};
+        table = optionalArguments{2};
+        numPositional = 2;
+    elseif mod(numArguments, 2) == 1
+        description = optionalArguments{1};
+        numPositional = 1;
+    else
+        numPositional = 0;
+    end
+    nameValuePairs = optionalArguments(numPositional + 1:end);
+end
+
+function options = parseOptions(options)
+    arguments
+        options.Depth (1,1) {mustBeInteger, mustBePositive} = 1
+        options.ElementsPerRow {mustBeNumeric, mustBeInteger, mustBeNonnegative}
+        options.ElementsPerSubGroup {mustBeNumeric, mustBeInteger, mustBePositive}
     end
 end
 

@@ -182,7 +182,7 @@ classdef (Abstract) DynamicTableBase < handle
                 columnName (1,1) string
                 data
                 options.description (1,1) string = "no description"
-                options.table = []
+                options.table {mustBeEmptyOrDynamicTable} = []
                 options.Depth (1,1) {mustBeInteger, mustBePositive} = 1
                 options.ElementsPerRow {mustBeNumeric, mustBeInteger, mustBeNonnegative}
                 options.ElementsPerSubGroup {mustBeNumeric, mustBeInteger, mustBePositive}
@@ -192,16 +192,16 @@ classdef (Abstract) DynamicTableBase < handle
             % ElementsPerRow is empty for a table with no rows, which differs
             % from leaving it out.
             layoutOptions = namedargs2cell(rmfield(options, {'description', 'table'}));
-            columns = cell(1, options.Depth + 1);
-            % The description is set on the column after the call: as a
-            % positional argument, a text that starts an option name of
-            % util.create_indexed_column, such as 'depth', is read as that
-            % option name.
-            [columns{:}] = util.create_indexed_column(data, ...
-                '', options.table, layoutOptions{:});
-            if strlength(options.description) > 0
-                columns{1}.description = char(options.description);
+            % util.create_indexed_column takes the table as its second
+            % positional argument, and reads an argument in that place as
+            % the table only when it is an NWB object.
+            positionalArguments = {char(options.description)};
+            if ~isempty(options.table)
+                positionalArguments{end + 1} = options.table;
             end
+            columns = cell(1, options.Depth + 1);
+            [columns{:}] = util.create_indexed_column(data, ...
+                positionalArguments{:}, layoutOptions{:});
 
             % The data column, then one index level per depth: '<name>_index',
             % '<name>_index_index', ...
@@ -408,5 +408,13 @@ classdef (Abstract) DynamicTableBase < handle
                 ['Cannot write to on-file Dynamic Tables without enabling data pipes. '...
                 'If this was produced with pynwb, please enable chunking for this table.']);
         end
+    end
+end
+
+function mustBeEmptyOrDynamicTable(value)
+    % The table that a DynamicTableRegion column references, or empty for a
+    % VectorData column.
+    if ~isempty(value)
+        matnwb.common.validation.mustBeDynamicTable(value)
     end
 end

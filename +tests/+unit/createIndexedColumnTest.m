@@ -842,6 +842,50 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(vector.description, 'spike times');
         end
 
+        function testDescriptionMayBeAnOptionName(testCase)
+            % A description that starts an option name, in any letter case,
+            % is stored as the description, with and without a table.
+            target = types.hdmf_common.DynamicTable( ...
+                'description', 'target', ...
+                'colnames', {'x'}, ...
+                'x', types.hdmf_common.VectorData('description', 'x', 'data', (1:5)'), ...
+                'id', types.hdmf_common.ElementIdentifiers('data', (0:4)'));
+
+            for description = ["depth", "Dep", "e", "Elements", "ElementsPerRow"]
+                vector = util.create_indexed_column({[0 1], 2}, description);
+                testCase.verifyClass(vector, 'types.hdmf_common.VectorData');
+                testCase.verifyEqual(vector.description, char(description));
+
+                [region, index] = util.create_indexed_column({[0 1], 2}, description, target);
+                testCase.verifyClass(region, 'types.hdmf_common.DynamicTableRegion');
+                testCase.verifyEqual(region.description, char(description));
+                testCase.verifyEqual(index.data, uint64([2; 3]));
+            end
+        end
+
+        function testDescriptionAndTableBeforeNameValuePairs(testCase)
+            target = types.hdmf_common.DynamicTable( ...
+                'description', 'target', ...
+                'colnames', {'x'}, ...
+                'x', types.hdmf_common.VectorData('description', 'x', 'data', (1:5)'), ...
+                'id', types.hdmf_common.ElementIdentifiers('data', (0:4)'));
+
+            % Name-value pairs follow the description and the table.
+            [region, index, indexIndex] = util.create_indexed_column( ...
+                {{[0 1], 2}, {[3 4]}}, 'depth', target, 'Depth', 2);
+            testCase.verifyClass(region, 'types.hdmf_common.DynamicTableRegion');
+            testCase.verifyEqual(region.description, 'depth');
+            testCase.verifyEqual(index.data, uint64([2; 3; 5]));
+            testCase.verifyEqual(indexIndex.data, uint64([2; 3]));
+
+            % An even number of arguments without a table holds name-value
+            % pairs only.
+            [vector, ~, indexIndex] = util.create_indexed_column( ...
+                {{[0 1], 2}, {[3 4]}}, 'Depth', 2);
+            testCase.verifyEqual(vector.description, 'no description');
+            testCase.verifyEqual(indexIndex.data, uint64([2; 3]));
+        end
+
         function testShapeErrorNamesTheRow(testCase)
             % Row 2 has 5-sample elements among 4-sample ones; the error names it.
             try

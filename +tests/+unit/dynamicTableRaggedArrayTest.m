@@ -174,6 +174,23 @@ classdef dynamicTableRaggedArrayTest < tests.abstract.NwbTestCase
             column = dt.vectordata.get('regions');
             testCase.verifyClass(column, 'types.hdmf_common.DynamicTableRegion');
             testCase.verifyEqual(dt.vectordata.get('regions_index').data, uint64([2; 5]));
+
+            % A description that is an option name of
+            % util.create_indexed_column is stored beside a table too.
+            dt = types.hdmf_common.DynamicTable('description', 'test');
+            dt.addRaggedArray('regions', {[0 1], [2 3 4]}, ...
+                'description', 'depth', 'table', target);
+            column = dt.vectordata.get('regions');
+            testCase.verifyClass(column, 'types.hdmf_common.DynamicTableRegion');
+            testCase.verifyEqual(column.description, 'depth');
+        end
+
+        function testAddRaggedArrayTableMustBeADynamicTable(testCase)
+            dt = types.hdmf_common.DynamicTable('description', 'test');
+
+            testCase.verifyError( ...
+                @() dt.addRaggedArray('regions', {[0 1], 2}, 'table', 5), ...
+                'NWB:validators:mustBeDynamicTable');
         end
 
         function testAddRaggedArrayDepth2Generic(testCase)
