@@ -24,8 +24,13 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %  States the number of elements in each sub-group of the numeric rows,
 %  so that it is not read from the dimensions of the rows.
 %
+%  [data_vector, data_index] = util.create_indexed_column(flatData, 'ElementsPerRow', numElements)
+%  Creates the same column from data that is already flat. flatData holds
+%  the elements of all rows in row order, and numElements holds the number
+%  of elements in each row.
+%
 % Input Arguments:
-%  - data (cell) -
+%  - data (cell | numeric | text | table | struct) -
 %    A cell array with one cell per row.
 %
 %    With Depth 1, each cell holds the elements of that row in one of
@@ -42,17 +47,44 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %      of data_vector is [elementDims x totalElements]. On disk that
 %      dimension comes first, as the schema requires.
 %
-%    - A string array, character vector, struct array or array of objects
-%      (such as types.untyped.ObjectView references), as a vector -
-%      One element per string, character, struct or object. The data of
-%      data_vector keeps the class, as a column.
+%    - Text: a string array or a cell array of character vectors, as a
+%      vector, or a character vector -
+%      A string array or a cell array holds one text element per string
+%      or cell, and a character vector is one text element. The data of
+%      data_vector is a string column when every text row is a string
+%      array, and a column cell array of character vectors otherwise.
+%
+%    - Compound data: a table, a struct array, or a scalar struct whose
+%      fields are columns of equal length -
+%      A table holds one compound element per table row. A struct array,
+%      as a vector, holds one element per struct, with one value in each
+%      field. A scalar struct holds one element per value of its columns.
+%      A table variable or a field of a scalar struct holds one value per
+%      element, so it is a vector, not a matrix. The data of data_vector
+%      is a struct column when every compound row is a struct array, and
+%      a table otherwise. Either is written as a compound dataset, such
+%      as the pixel_mask column of PlaneSegmentation.
+%
+%    - An array of objects, such as types.untyped.ObjectView references,
+%      as a vector -
+%      One element per object. The data of data_vector keeps the class,
+%      for example a column of ObjectView references to the TimeSeries
+%      that was recorded during each trial.
 %
 %    - [] or an empty array of any size -
-%      A row with no elements.
+%      A row with no elements. The empty character vector '' is also a row
+%      with no elements. Give a string with no characters or {''} for one
+%      empty text element.
 %
-%    All rows must hold elements of the same class (for example all
-%    int32, not int32 and double), and struct rows the same fields. All
-%    array rows must share elementDims.
+%    A column holds elements of one kind: numeric, text, compound or
+%    objects. Numeric rows must all be of the same class (for example all
+%    int32, not int32 and double), because the column keeps that class.
+%    The same holds for each numeric field of compound rows. All array
+%    rows must share elementDims.
+%
+%    The column is built in memory, so a row cannot be a DataPipe or a
+%    DataStub. A row cannot hold SoftLink objects either. Reference
+%    objects with ObjectView instead.
 %
 %    Trailing dimensions of size 1 may be omitted, as MATLAB omits them
 %    from the size of an array. The number of element dimensions is the
@@ -105,6 +137,9 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %    is read in the shortcut form. The cell form is read the same way in
 %    either case.
 %
+%    Text is given in the cell form: each sub-group is text as described
+%    for Depth 1.
+%
 %    A column whose elements have more than one value needs at least two
 %    elements in total. The data of a single element, [elementDims x 1],
 %    is written without its last dimension and read back as a list of
@@ -112,6 +147,14 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %    NWB:CreateIndexedColumn:SingleElementColumn. To store such a column,
 %    build the VectorData directly with a DataPipe that states every
 %    dimension.
+%
+%    With ElementsPerRow, data is not a cell array. It holds the elements
+%    of all rows in row order, as a numeric vector (scalar elements), a
+%    numeric array [elementDims x nElements], text (a cell array of
+%    character vectors or a string array), compound data (a table, a
+%    struct array or a scalar struct of columns) or a vector of objects.
+%    It keeps its class as rows do: a string array stays a string column,
+%    and a struct array a struct column.
 %
 %  - description (text) -
 %    Description of the VectorData. Default: 'no description'.
@@ -131,6 +174,11 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %
 %    - Depth (integer) -
 %      Number of VectorIndex objects. Default: 1.
+%
+%    - ElementsPerRow (vector of non-negative integers) -
+%      Number of elements in each row, for data that is already flat. The
+%      values must add up to the number of elements in data. This form
+%      creates a column of depth 1.
 %
 %    - ElementsPerSubGroup (positive integer | vector of positive integers) -
 %      Number of elements in each sub-group of the numeric rows of a
@@ -193,6 +241,12 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %        'spike waveforms', 'Depth', 2, 'ElementsPerSubGroup', [3 1]);
 %    % wfIndex.data is [3;6;7;8;9;10] and wfIndexIndex.data is [2;6].
 %
+%  Example 6 - Pixel masks of 2 ROIs with 3 and 2 pixels, from one table of all pixels::
+%
+%    pixels = table(uint32([1;2;3;7;8]), uint32([4;4;4;9;9]), single(ones(5,1)), ...
+%        'VariableNames', {'x', 'y', 'weight'});
+%    [mask, maskIndex] = util.create_indexed_column(pixels, 'pixel masks', 'ElementsPerRow', [3 2]);
+%
 % See also:
 %   types.hdmf_common.DynamicTable/addRaggedArray
 
@@ -221,6 +275,7 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
         description = ''
         table = []
         options.Depth (1,1) {mustBeInteger, mustBePositive} = 1
+        options.ElementsPerRow {mustBeNumeric, mustBeInteger, mustBeNonnegative}
         options.ElementsPerSubGroup {mustBeNumeric, mustBeInteger, mustBePositive}
     end
 
@@ -241,11 +296,34 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
         description = char(description);
     end
 
-    elementsPerSubGroup = [];
-    if hasElementsPerSubGroup
-        elementsPerSubGroup = expandToRows(options.ElementsPerSubGroup, numel(data));
+    % ElementsPerRow is empty for a table with no rows, so whether it was given
+    % decides the form of data, not whether it is empty.
+    if ~isfield(options, 'ElementsPerRow')
+        if ~iscell(data)
+            error("NWB:CreateIndexedColumn:InvalidData", ...
+                "The data must be a cell array with one cell per row. To give data that " + ...
+                "is already flat, also give ElementsPerRow.");
+        end
+        elementsPerSubGroup = [];
+        if hasElementsPerSubGroup
+            elementsPerSubGroup = expandToRows(options.ElementsPerSubGroup, numel(data));
+        end
+        [flatData, groupLengths] = flattenRows(data, depth, elementsPerSubGroup);
+    else
+        if depth ~= 1
+            error("NWB:CreateIndexedColumn:ElementsPerRowNeedsDepth1", ...
+                "ElementsPerRow builds a column of depth 1. Give the rows as a cell " + ...
+                "array to build a column of depth %d.", depth);
+        end
+        [flatData, numElements] = normalizeFlatData(data);
+        elementsPerRow = double(options.ElementsPerRow(:));
+        if sum(elementsPerRow) ~= numElements
+            error("NWB:CreateIndexedColumn:ElementCountMismatch", ...
+                "ElementsPerRow adds up to %d elements, but the data holds %d.", ...
+                sum(elementsPerRow), numElements);
+        end
+        groupLengths = {elementsPerRow};
     end
-    [flatData, groupLengths] = flattenRows(data, depth, elementsPerSubGroup);
 
     if isempty(table)
         data_vector = types.hdmf_common.VectorData( ...
@@ -291,6 +369,8 @@ end
 %    the array is [elementDims x raggedDims].
 %  - shortcut form - A numeric row [k x nSubGroups] of a column of depth
 %    2, in which every sub-group holds one element of k values.
+%  - kind - What the elements of a column are: numeric, text, compound or
+%    object. A column holds elements of one kind.
 
 function elementsPerSubGroup = expandToRows(elementsPerSubGroup, numRows)
 % expandToRows - Return ElementsPerSubGroup as a column with one value per row.
@@ -332,6 +412,8 @@ function [flatData, groupLengths] = flattenRows(rows, depth, elementsPerSubGroup
 % Output arguments:
 %  - flatData - The elements of all rows, concatenated along the last
 %    dimension in row order. It becomes the data of the VectorData.
+%    Compound elements are returned as a table, or as a struct column
+%    when every compound row is a struct array.
 %  - groupLengths - A cell array with one vector per level, innermost
 %    first. groupLengths{n} holds the length of every group of level n in
 %    row order, so groupLengths{depth} holds one value per row. The
@@ -353,6 +435,12 @@ function [flatData, groupLengths] = flattenRows(rows, depth, elementsPerSubGroup
     end
 
     flatData = concatenateElements(rowElements, layout);
+    hasCompoundData = layout.elementKind == "compound" && ~isempty(flatData);
+    if hasCompoundData && layout.compoundClass == "table"
+        flatData = struct2table(flatData);
+    elseif hasCompoundData
+        rejectMixedNumericFields(flatData);
+    end
     groupLengths = cell(1, depth);
     groupLengths{depth} = rowLengths;
     for iLevel = 1:depth-1
@@ -366,7 +454,7 @@ function [flatData, groupLengths] = flattenRows(rows, depth, elementsPerSubGroup
     % the row reads back as one sample. A DataPipe states every dimension of
     % the dataset, so it can hold such a column.
     numElements = sum(groupLengths{1});
-    if numElements == 1 && prod(layout.elementDims) > 1
+    if layout.elementKind == "numeric" && numElements == 1 && prod(layout.elementDims) > 1
         elementShape = join(string(layout.elementDims), " ");
         error("NWB:CreateIndexedColumn:SingleElementColumn", ...
             "The column holds a single element of shape [%s]. Its data " + ...
@@ -382,10 +470,10 @@ end
 function [elements, groupLength, innerLengths] = flattenGroup(group, level, layout, position)
 % flattenGroup - Return the elements of one row or sub-group as one array, with the lengths of the groups in it.
 %
-% A group of level 1 holds its elements in one array, which is checked
-% against the layout and returned. A group of a higher level is a cell
-% array of sub-groups: the function calls itself for each sub-group and
-% joins the results.
+% A group of level 1 holds its elements in one array, table or struct,
+% which is checked against the layout and returned. A group of a higher
+% level is a cell array of sub-groups: the function calls itself for each
+% sub-group and joins the results.
 %
 % A group of a higher level can also be one numeric array. Its trailing
 % dimensions then state the sub-groups (see splitDims), and the array is
@@ -398,9 +486,10 @@ function [elements, groupLength, innerLengths] = flattenGroup(group, level, layo
 %  - position - The position of the group, used in error messages.
 %
 % Output arguments:
-%  - elements - The elements of the group as one array. It is
-%    [elementDims x nElements] for array elements, and a column for
-%    scalars, strings, characters, structs and objects.
+%  - elements - The elements of the group. They are an
+%    [elementDims x nElements] array for numeric array elements, a column
+%    for scalars, text, struct elements and objects, and a scalar struct
+%    of columns for other compound elements (see compoundColumns).
 %  - groupLength - The length of the group.
 %  - innerLengths - A cell array with one vector per level below the
 %    level of the group. innerLengths{n} holds the length of every group
@@ -416,18 +505,62 @@ function [elements, groupLength, innerLengths] = flattenGroup(group, level, layo
         return
     end
 
-    if level == 1 && isTextOrStructOrObject(group)
+    if layout.elementKind == "compound" && level == 1
+        if ~isCompound(group)
+            error("NWB:CreateIndexedColumn:InconsistentElementType", ...
+                "%s must be compound data (a table, a struct array or a scalar struct " + ...
+                "of columns) like the other rows of the column. It is a %s.", ...
+                formatPosition(position), class(group));
+        end
+        if isstruct(group) && ~isscalar(group) && ~isvector(group)
+            error("NWB:CreateIndexedColumn:InvalidRow", ...
+                "%s must be a vector of structs. It is a struct array of size [%s].", ...
+                formatPosition(position), join(string(size(group)), " "));
+        end
+        if layout.compoundClass == "struct"
+            elements = group(:);
+            groupLength = numel(group);
+        else
+            [elements, groupLength] = compoundColumns(group, position);
+        end
+        return
+    end
+
+    if layout.elementKind == "text" && level == 1
+        if ~isText(group)
+            error("NWB:CreateIndexedColumn:InconsistentElementType", ...
+                "%s must be text (a cell array of character vectors, a string array or " + ...
+                "a character vector) like the other rows of the column. It is a %s.", ...
+                formatPosition(position), class(group));
+        end
         if ~isvector(group)
             error("NWB:CreateIndexedColumn:InvalidRow", ...
-                "%s must be a vector of strings, characters, structs or objects. " + ...
-                "It is a %s of size [%s].", ...
+                "%s must be a vector of text elements. It is a %s of size [%s].", ...
+                formatPosition(position), class(group), join(string(size(group)), " "));
+        end
+        if layout.textClass == "string"
+            elements = group(:);
+        elseif ischar(group)
+            elements = {group};
+        else
+            elements = cellstr(group(:));
+        end
+        groupLength = numel(elements);
+        return
+    end
+
+    if layout.elementKind == "object" && level == 1
+        if ~isObjectArray(group) || string(class(group)) ~= layout.objectClass
+            error("NWB:CreateIndexedColumn:InconsistentElementType", ...
+                "%s must be an array of %s objects like the other rows of the column. " + ...
+                "It is a %s.", formatPosition(position), layout.objectClass, class(group));
+        end
+        if ~isvector(group)
+            error("NWB:CreateIndexedColumn:InvalidRow", ...
+                "%s must be a vector of objects. It is a %s of size [%s].", ...
                 formatPosition(position), class(group), join(string(size(group)), " "));
         end
         elements = group(:);
-        if isstruct(group)
-            % Concatenating structs needs the fields in the same order.
-            elements = orderfields(elements, layout.structFields);
-        end
         groupLength = numel(group);
         return
     end
@@ -436,8 +569,8 @@ function [elements, groupLength, innerLengths] = flattenGroup(group, level, layo
         if level == 1
             error("NWB:CreateIndexedColumn:InvalidRow", ...
                 "%s is a cell array, but at the innermost level a row must be a " + ...
-                "numeric or logical array, or a vector of strings, characters, " + ...
-                "structs or objects. Increase Depth for nested rows.", formatPosition(position));
+                "numeric or logical array, text, compound data or an array of " + ...
+                "objects. Increase Depth for nested rows.", formatPosition(position));
         end
         numSubGroups = numel(group);
         subGroupElements = cell(1, numSubGroups);
@@ -460,8 +593,7 @@ function [elements, groupLength, innerLengths] = flattenGroup(group, level, layo
 
     if ~(isnumeric(group) || islogical(group))
         error("NWB:CreateIndexedColumn:InvalidRow", ...
-            "%s must be a numeric or logical array, or a vector of strings, " + ...
-            "characters, structs or objects%s. It is a %s.", ...
+            "%s must be a numeric or logical array%s. It is a %s.", ...
             formatPosition(position), cellFormHint(level), class(group));
     end
 
@@ -585,6 +717,9 @@ function layout = inferLayout(rows, depth, hasElementsPerSubGroup)
 % dimensions than the elements have. All rows are therefore inspected
 % first (see inspectGroup), and the layout is derived from the findings.
 %
+% A column holds elements of one kind. Rows of different kinds raise
+% NWB:CreateIndexedColumn:InconsistentElementType.
+%
 % Input arguments:
 %  - rows - The cell array with one cell per row.
 %  - depth - The number of levels of the column.
@@ -592,33 +727,59 @@ function layout = inferLayout(rows, depth, hasElementsPerSubGroup)
 %
 % The layout is a struct with the fields:
 %  - elementDims - The size of one element of a column of numeric arrays,
-%    such as [40 3]. It is [] when the elements are scalars, strings,
-%    characters, structs or objects, and when no row holds an element or
-%    declares sub-groups.
+%    such as [40 3]. It is [] when the elements are scalars or are not
+%    numeric, and when no row holds an element or declares sub-groups.
 %  - useShortcut - True when the numeric rows of a column of depth 2 or
 %    more are read in the shortcut form. A [k x m] row fits both the
 %    shortcut form and the form [elementDims x nElements x nSubGroups],
 %    so the shortcut form is used only while no array has more dimensions
 %    than its level. It is not used when ElementsPerSubGroup is given.
-%  - structFields - The field names of struct rows, in the order of the
-%    first struct row. It is {} when no row is a struct.
+%  - elementKind - The kind of the elements: "numeric", "text",
+%    "compound" or "object". It is "numeric" when no row holds an element.
+%  - textClass - The class of the data of a text column: "string" when
+%    every text row is a string array, and "cellstr" otherwise.
+%  - compoundClass - The class of the data of a compound column: "struct"
+%    when every compound row is a struct array with one struct per
+%    element, and "table" otherwise.
+%  - objectClass - The class of the objects of an object column.
 %  - elementsPerSubGroup - The value of ElementsPerSubGroup for the row
 %    that is being flattened. flattenRows sets it for each row. It is []
 %    when the option is not given.
+%
+% With textClass and compoundClass, a column keeps the class that its
+% rows were given in, where that is possible.
 
     findings = struct('maxNumElementDims', -Inf, 'shortcutAllowed', true, ...
         'firstArray', [], 'firstArrayLevel', 0, ...
         'firstEmptyArray', [], 'firstEmptyArrayLevel', 0, ...
-        'elementClass', "", 'structFields', {{}}, 'hasTextOrStructOrObject', false);
+        'hasNumeric', false, 'numericClass', "", ...
+        'hasText', false, 'hasCompound', false, ...
+        'hasObject', false, 'objectClass', "", ...
+        'allStrings', true, 'allStructArrays', true);
     for iRow = 1:numel(rows)
         findings = inspectGroup(rows{iRow}, depth, depth == 1, findings, iRow);
     end
 
-    layout = struct('elementDims', [], 'useShortcut', false, ...
-        'structFields', {findings.structFields}, 'elementsPerSubGroup', []);
-    if findings.hasTextOrStructOrObject
-        % Rows of strings, characters, structs or objects have no element
-        % shape.
+    kinds = ["numeric", "text", "compound", "object"];
+    presentKinds = kinds([findings.hasNumeric, findings.hasText, findings.hasCompound, findings.hasObject]);
+    if numel(presentKinds) > 1
+        error("NWB:CreateIndexedColumn:InconsistentElementType", ...
+            "A column holds elements of one kind, but the data has %s elements.", ...
+            strjoin(presentKinds, " and "));
+    end
+    layout = struct('elementDims', [], 'useShortcut', false, 'elementKind', "numeric", ...
+        'textClass', "cellstr", 'compoundClass', "table", 'objectClass', findings.objectClass, ...
+        'elementsPerSubGroup', []);
+    if ~isempty(presentKinds)
+        layout.elementKind = presentKinds;
+    end
+    if findings.allStrings
+        layout.textClass = "string";
+    end
+    if findings.allStructArrays
+        layout.compoundClass = "struct";
+    end
+    if layout.elementKind ~= "numeric"
         return
     end
     shapeArray = findings.firstArray;
@@ -657,8 +818,8 @@ function findings = inspectGroup(group, level, vectorsAreScalarLists, findings, 
 %
 % inferLayout calls this function for every row before any data is
 % copied. The function records the facts that the layout is derived from,
-% and raises an error when rows cannot be combined in one column: rows of
-% different classes, or struct rows with different fields. For a cell
+% and raises an error for numeric rows of different classes and for a
+% value that a column cannot hold (see rejectUnstorableClass). For a cell
 % array of sub-groups, the function calls itself for each sub-group.
 %
 % The findings are a struct with the fields:
@@ -677,12 +838,15 @@ function findings = inspectGroup(group, level, vectorsAreScalarLists, findings, 
 %    holds an element.
 %  - firstEmptyArrayLevel - The level of the group that firstEmptyArray
 %    was given for. It is 0 until such an array is found.
-%  - elementClass - The class of the elements, such as "double". It is
-%    an empty string until a row holds an element.
-%  - structFields - The field names of the first struct row. It is {}
-%    until a struct row is found.
-%  - hasTextOrStructOrObject - True when a row holds strings, characters,
-%    structs or objects.
+%  - hasNumeric, hasText, hasCompound, hasObject - True when a group
+%    holds elements of that kind.
+%  - numericClass - The class of the numeric elements, such as "double".
+%    It is an empty string until a group holds a numeric element.
+%  - objectClass - The class of the first group of objects. It is an
+%    empty string until a group holds an object.
+%  - allStrings - True while every text group is a string array.
+%  - allStructArrays - True while every compound group is a struct array
+%    with one struct per element.
 %
 % Input arguments:
 %  - group - The row or sub-group, as it was given in data.
@@ -693,19 +857,26 @@ function findings = inspectGroup(group, level, vectorsAreScalarLists, findings, 
 %  - findings - The findings of the groups inspected so far.
 %  - position - The position of the group, used in error messages.
 
-    if level == 1 && isTextOrStructOrObject(group)
+    rejectUnstorableClass(group, position, "NWB:CreateIndexedColumn:InvalidRow");
+    if level == 1 && isText(group)
         if ~isempty(group)
-            findings.hasTextOrStructOrObject = true;
-            findings = recordElementClass(findings, group, position);
+            findings.hasText = true;
+            findings.allStrings = findings.allStrings && isstring(group);
         end
-        if isstruct(group) && ~isempty(group)
-            if isempty(findings.structFields)
-                findings.structFields = fieldnames(group);
-            elseif ~isequal(sort(fieldnames(group)), sort(findings.structFields))
-                error("NWB:CreateIndexedColumn:InconsistentElementShape", ...
-                    "All struct rows must have the same fields. %s has fields {%s}, " + ...
-                    "but an earlier row has {%s}.", formatPosition(position), ...
-                    strjoin(fieldnames(group), ", "), strjoin(findings.structFields, ", "));
+        return
+    end
+    if level == 1 && isCompound(group)
+        if ~isempty(group)
+            findings.hasCompound = true;
+            findings.allStructArrays = findings.allStructArrays && isStructPerElement(group);
+        end
+        return
+    end
+    if level == 1 && isObjectArray(group)
+        if ~isempty(group)
+            findings.hasObject = true;
+            if findings.objectClass == ""
+                findings.objectClass = string(class(group));
             end
         end
         return
@@ -723,7 +894,17 @@ function findings = inspectGroup(group, level, vectorsAreScalarLists, findings, 
         return
     end
     if ~isempty(group)
-        findings = recordElementClass(findings, group, position);
+        findings.hasNumeric = true;
+        % Rows of different numeric classes are not combined, as the values
+        % of one class would be converted to the other.
+        groupClass = string(class(group));
+        if findings.numericClass == ""
+            findings.numericClass = groupClass;
+        elseif groupClass ~= findings.numericClass
+            error("NWB:CreateIndexedColumn:InconsistentElementType", ...
+                "%s must hold %s elements like the other rows of the column. " + ...
+                "It holds %s elements.", formatPosition(position), findings.numericClass, groupClass);
+        end
     end
     if level == 1 && isempty(group)
         % An innermost group without elements declares no element shape,
@@ -756,46 +937,251 @@ function joined = concatenateElements(elementArrays, layout)
 %
 % Empty arrays are left out before joining, so a group with no elements
 % can be given as an empty array of any size.
+%
+% Compound elements are joined as struct columns when every compound row
+% is a struct array (see joinStructArrays), and field by field otherwise
+% (see joinCompoundColumns).
 
     nonEmptyArrays = elementArrays(~cellfun(@isempty, elementArrays));
     if isempty(nonEmptyArrays)
         joined = [];
         return
     end
-    joined = cat(numel(layout.elementDims)+1, nonEmptyArrays{:});
-end
-
-function findings = recordElementClass(findings, group, position)
-% recordElementClass - Record the class of the elements of a group, and reject a class that differs from earlier groups.
-%
-% Rows of different classes are not combined, because joining them would
-% convert the values of one class to the other.
-
-    groupClass = string(class(group));
-    if findings.elementClass == ""
-        findings.elementClass = groupClass;
-    elseif groupClass ~= findings.elementClass
-        error("NWB:CreateIndexedColumn:InconsistentElementType", ...
-            "%s must hold %s elements like the other rows of the column. " + ...
-            "It holds %s elements.", formatPosition(position), findings.elementClass, groupClass);
+    if layout.elementKind == "compound" && layout.compoundClass == "struct"
+        joined = joinStructArrays(nonEmptyArrays);
+    elseif layout.elementKind == "compound"
+        joined = joinCompoundColumns(nonEmptyArrays);
+    else
+        joined = cat(numel(layout.elementDims)+1, nonEmptyArrays{:});
     end
 end
 
-function tf = isTextOrStructOrObject(value)
-% isTextOrStructOrObject - Return true for a string array, character vector, struct array or array of objects.
+function [flatData, numElements] = normalizeFlatData(data)
+% normalizeFlatData - Put flat data in the form that the column stores, and count its elements.
 %
-% Such a value holds one element per string, character, struct or object.
-% A numeric array is instead split into elements by its dimensions.
+% Flat data holds the elements of all rows in row order, and is given
+% together with ElementsPerRow. Each kind of data is brought to the form
+% that flattenRows returns for rows of that kind:
+%  - A numeric or logical vector becomes a column of scalar elements. Any
+%    other numeric array is kept, with its elements along the last
+%    dimension.
+%  - A string array or a cell array of character vectors becomes a column.
+%  - A struct array with one struct per element becomes a struct column.
+%  - Other compound data, which is a table or a scalar struct of columns,
+%    becomes a table.
+%  - An array of objects becomes a column.
+% Any other data raises NWB:CreateIndexedColumn:InvalidData.
 
-    tf = isstring(value) || ischar(value) || isstruct(value) || isObjectArray(value);
+    rejectUnstorableClass(data, [], "NWB:CreateIndexedColumn:InvalidData");
+    if isnumeric(data) || islogical(data)
+        if isvector(data) || isempty(data)
+            flatData = data(:);
+            numElements = numel(data);
+        else
+            flatData = data;
+            numElements = size(data, ndims(data));
+        end
+    elseif (iscellstr(data) || isstring(data)) && (isvector(data) || isempty(data))
+        flatData = data(:);
+        numElements = numel(flatData);
+    elseif isStructPerElement(data) && (isvector(data) || isempty(data))
+        flatData = data(:);
+        numElements = numel(flatData);
+        rejectMixedNumericFields(flatData);
+    elseif isCompound(data)
+        [columns, numElements] = compoundColumns(data, []);
+        flatData = struct2table(columns);
+    elseif isObjectArray(data) && (isvector(data) || isempty(data))
+        flatData = data(:);
+        numElements = numel(flatData);
+    else
+        error("NWB:CreateIndexedColumn:InvalidData", ...
+            "Flat data must be numeric, logical, text or compound data, or a vector " + ...
+            "of objects. It is a %s.", class(data));
+    end
 end
 
-function tf = isObjectArray(value)
-% isObjectArray - Return true for an array of objects, such as types.untyped.ObjectView references.
+function [columns, numElements] = compoundColumns(compoundData, position)
+% compoundColumns - Return compound elements as a scalar struct with one column per field.
 %
-% A table is an object too, but its rows are not elements of one class.
+% Compound data can be given as a table, as a struct array with one
+% struct per element, or as a scalar struct whose fields are columns. In
+% this one form, rows that were given in different forms can be joined
+% field by field (see joinCompoundColumns).
+%
+% Every field must hold one value per element, as a vector, and all
+% fields must have the same length. Otherwise the function raises
+% NWB:CreateIndexedColumn:InconsistentElementShape.
+%
+% Input arguments:
+%  - compoundData - The table or struct.
+%  - position - The position of the group, used in error messages. It is
+%    [] for flat data.
+%
+% Output arguments:
+%  - columns - A scalar struct with one column per field.
+%  - numElements - The number of compound elements, which is the length
+%    of the columns.
 
-    tf = isobject(value) && ~istable(value);
+    if istable(compoundData)
+        columns = table2struct(compoundData, 'ToScalar', true);
+    elseif isscalar(compoundData)
+        columns = structfun(@toColumn, compoundData, 'UniformOutput', false);
+    else
+        columns = struct();
+        names = fieldnames(compoundData);
+        for iName = 1:numel(names)
+            values = {compoundData.(names{iName})};
+            if ~all(cellfun(@(value) isscalar(value) || ischar(value), values))
+                error("NWB:CreateIndexedColumn:InconsistentElementShape", ...
+                    "In %s, every element of a struct array must have scalar fields. " + ...
+                    "Give columns of values as a scalar struct instead.", formatPosition(position));
+            end
+            if all(cellfun(@ischar, values))
+                columns.(names{iName}) = values(:);
+            else
+                rejectMixedNumericClasses(values, names{iName});
+                columns.(names{iName}) = vertcat(values{:});
+            end
+        end
+    end
+    names = fieldnames(columns);
+    lengths = zeros(numel(names), 1);
+    for iName = 1:numel(names)
+        column = columns.(names{iName});
+        % A field holds one value per element. A table variable or struct
+        % field with several columns has more values than elements.
+        if ~(iscolumn(column) || isempty(column))
+            error("NWB:CreateIndexedColumn:InconsistentElementShape", ...
+                "In %s, the field ""%s"" has size [%s]. Every field of compound data " + ...
+                "must hold one value per element, as a vector.", ...
+                formatPosition(position), names{iName}, join(string(size(column)), " "));
+        end
+        lengths(iName) = numel(column);
+    end
+    if isempty(lengths) || any(lengths ~= lengths(1))
+        error("NWB:CreateIndexedColumn:InconsistentElementShape", ...
+            "%s must have fields of equal length, one value per compound element.", formatPosition(position));
+    end
+    numElements = lengths(1);
+end
+
+function column = toColumn(value)
+% toColumn - Return one field of a scalar struct of columns as a column.
+%
+% A character vector is one text value, so it becomes a column of one
+% cell. An array that is not a vector is returned as it is, so that
+% compoundColumns can reject it and report its size.
+
+    if ischar(value)
+        column = {value};
+    elseif isvector(value) || isempty(value)
+        column = value(:);
+    else
+        column = value;
+    end
+end
+
+function joined = joinCompoundColumns(columnStructs)
+% joinCompoundColumns - Join scalar structs of columns, field by field, into one scalar struct of columns.
+%
+% The result is converted to a table once, in flattenRows, which avoids
+% creating a table for every row. All structs must have the same fields,
+% and the numeric values of a field must be of one class.
+
+    names = fieldnames(columnStructs{1});
+    for iStruct = 2:numel(columnStructs)
+        if ~isequal(sort(fieldnames(columnStructs{iStruct})), sort(names))
+            error("NWB:CreateIndexedColumn:InconsistentElementShape", ...
+                "All compound elements must have the same fields: %s.", strjoin(names, ", "));
+        end
+    end
+    joined = struct();
+    for iName = 1:numel(names)
+        parts = cellfun(@(columns) columns.(names{iName}), columnStructs, 'UniformOutput', false);
+        rejectMixedNumericClasses(parts, names{iName});
+        joined.(names{iName}) = vertcat(parts{:});
+    end
+end
+
+function rejectMixedNumericFields(structArray)
+% rejectMixedNumericFields - Raise an error when a numeric field of a struct column holds values of different classes.
+%
+% A struct column holds one value per struct in each field. The values of
+% a field are joined into one array when the column is written, so they
+% must be of one class, like the parts of any other compound field.
+
+    names = fieldnames(structArray);
+    for iName = 1:numel(names)
+        rejectMixedNumericClasses({structArray.(names{iName})}, names{iName});
+    end
+end
+
+function rejectMixedNumericClasses(values, fieldName)
+% rejectMixedNumericClasses - Raise an error when the numeric values of one compound field are of different classes.
+%
+% Numeric values of different classes are not combined, because joining
+% them would convert the values of one class to the other.
+%
+% Input arguments:
+%  - values - The values of one compound field, as a cell array with one
+%    cell per element or per row.
+%  - fieldName - The name of the field, used in the error message.
+
+    if isempty(values) || all(cellfun('isclass', values, class(values{1})))
+        return
+    end
+    if any(cellfun(@(value) isnumeric(value) || islogical(value), values))
+        valueClasses = unique(string(cellfun(@class, values, 'UniformOutput', false)), 'stable');
+        error("NWB:CreateIndexedColumn:InconsistentElementType", ...
+            "All compound elements must hold the field ""%s"" in the same class, " + ...
+            "but it holds %s values.", fieldName, strjoin(valueClasses, " and "));
+    end
+end
+
+function joined = joinStructArrays(structArrays)
+% joinStructArrays - Concatenate struct columns into one struct column.
+%
+% The fields of every struct array are put in the order of the first,
+% because concatenation requires the same field order. Struct arrays with
+% different fields raise NWB:CreateIndexedColumn:InconsistentElementShape.
+
+    names = fieldnames(structArrays{1});
+    for iArray = 1:numel(structArrays)
+        if ~isequal(sort(fieldnames(structArrays{iArray})), sort(names))
+            error("NWB:CreateIndexedColumn:InconsistentElementShape", ...
+                "All compound elements must have the same fields: %s.", strjoin(names, ", "));
+        end
+        structArrays{iArray} = orderfields(structArrays{iArray}, names);
+    end
+    joined = vertcat(structArrays{:});
+end
+
+function tf = isCompound(value)
+% isCompound - Return true for compound data, which is a table or a struct.
+
+    tf = istable(value) || isstruct(value);
+end
+
+function tf = isStructPerElement(compoundData)
+% isStructPerElement - Return true for a struct array that holds one struct per element.
+%
+% Each field of such a struct array holds one scalar or one character
+% vector per struct. The other struct form of compound data is a scalar
+% struct whose fields are columns of values.
+
+    tf = isstruct(compoundData);
+    if ~tf
+        return
+    end
+    names = fieldnames(compoundData);
+    for iName = 1:numel(names)
+        values = {compoundData.(names{iName})};
+        if ~all(cellfun(@(value) isscalar(value) || ischar(value), values))
+            tf = false;
+            return
+        end
+    end
 end
 
 function hint = cellFormHint(level)
@@ -811,6 +1197,20 @@ function hint = cellFormHint(level)
     end
 end
 
+function tf = isText(value)
+% isText - Return true for text: a cell array of character vectors, a string array or a character vector.
+
+    tf = iscellstr(value) || isstring(value) || ischar(value);
+end
+
+function tf = isObjectArray(value)
+% isObjectArray - Return true for an array of objects, such as types.untyped.ObjectView references.
+%
+% A table is an object too, but it is compound data.
+
+    tf = isobject(value) && ~istable(value);
+end
+
 function label = formatPosition(position)
 % formatPosition - Return the position of a group as text for an error message.
 %
@@ -822,5 +1222,29 @@ function label = formatPosition(position)
     label = 'data';
     if ~isempty(position)
         label = [label, sprintf('{%d}', position)];
+    end
+end
+
+function rejectUnstorableClass(value, position, errorId)
+% rejectUnstorableClass - Raise an error for a value that a column built in memory cannot hold.
+%
+% The column is built in memory, so data that is read lazily (a DataStub)
+% or written in parts (a DataPipe) cannot be a row. A dataset cannot hold
+% links, so a SoftLink is rejected as well.
+%
+% Input arguments:
+%  - value - The row, sub-group or flat data to check.
+%  - position - The position of the group, used in the error message.
+%  - errorId - The identifier of the error to raise.
+
+    if isa(value, 'types.untyped.DataPipe') || isa(value, 'types.untyped.DataStub')
+        error(errorId, ...
+            "%s is a %s, but the column is built in memory. Give the data as an " + ...
+            "array (load() a DataStub), or build the VectorData and VectorIndex " + ...
+            "with DataPipes directly.", formatPosition(position), class(value));
+    elseif isa(value, 'types.untyped.SoftLink')
+        error(errorId, ...
+            "%s is a types.untyped.SoftLink, but a column cannot hold links. " + ...
+            "Reference objects with types.untyped.ObjectView instead.", formatPosition(position));
     end
 end

@@ -17,18 +17,156 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
             testCase.verifySameHandle(index.target.target, vector);
         end
 
-        function testStringRowsKeepTheirClass(testCase)
-            [vector, index] = util.create_indexed_column({["a" "b"], "c"});
+        function testCompoundRowsAsTablesAndStructs(testCase)
+            % A table, a struct array and a scalar struct of columns are lists
+            % of compound elements; all give the same column.
+            [roi1, roi2] = examplePixelMasks();
 
+            [fromTables, index] = util.create_indexed_column({roi1, roi2});
+            testCase.verifyEqual(fromTables.data, [roi1; roi2]);
+            testCase.verifyEqual(index.data, uint64([3; 5]));
+
+            roi1Columns = table2struct(roi1, 'ToScalar', true);
+            roi2Elements = table2struct(roi2);   % struct array, one struct per pixel
+            fromStructs = util.create_indexed_column({roi1Columns, roi2Elements});
+            testCase.verifyEqual(fromStructs.data, fromTables.data);
+        end
+
+        function testCompoundFieldMismatchErrors(testCase)
+            roi1 = table(uint32(1), single(1), 'VariableNames', {'x', 'weight'});
+            roi2 = table(uint32(2), single(1), 'VariableNames', {'y', 'weight'});
+
+            testCase.verifyError(@() util.create_indexed_column({roi1, roi2}), ...
+                'NWB:CreateIndexedColumn:InconsistentElementShape');
+        end
+
+        function testCompoundFieldsOfDifferentClassesError(testCase)
+            % A numeric field keeps its class, as a numeric column does:
+            % joining uint8 and double values would convert the doubles.
+            roi1 = table(uint8([1; 2]), 'VariableNames', {'x'});
+            roi2 = table(300.7, 'VariableNames', {'x'});
+
+            testCase.verifyError(@() util.create_indexed_column({roi1, roi2}), ...
+                'NWB:CreateIndexedColumn:InconsistentElementType');
+        end
+
+        function testStructArrayFieldsOfDifferentClassesError(testCase)
+            % A struct array holds one value per struct, so the values of a
+            % numeric field can differ in class within a row. Joining them
+            % into one column would convert 300.7 to uint8(255).
+            mixedRow = struct('x', {uint8(1), 300.7});
+            uint8Row = struct('x', {uint8(1), uint8(2)});
+            doubleRow = struct('x', 300.7);
+            tableRow = table(uint8(3), 'VariableNames', {'x'});
+
+            % Within a row of a column that is stored as a table.
+            testCase.verifyError(@() util.create_indexed_column({mixedRow, tableRow}), ...
+                'NWB:CreateIndexedColumn:InconsistentElementType');
+            % Within a row and between rows of a column that is stored as a
+            % struct array.
+            testCase.verifyError(@() util.create_indexed_column({mixedRow}), ...
+                'NWB:CreateIndexedColumn:InconsistentElementType');
+            testCase.verifyError(@() util.create_indexed_column({uint8Row, doubleRow}), ...
+                'NWB:CreateIndexedColumn:InconsistentElementType');
+            % In flat data.
+            testCase.verifyError( ...
+                @() util.create_indexed_column(mixedRow, 'ElementsPerRow', 2), ...
+                'NWB:CreateIndexedColumn:InconsistentElementType');
+        end
+
+        function testCompoundFieldWithSeveralColumnsErrors(testCase)
+            % A compound field holds one value per element. A table variable
+            % or struct field of size [3 x 2] holds 6 values for 3 elements.
+            positions = table([1 2; 3 4; 5 6], 'VariableNames', {'position'});
+
+            testCase.verifyError(@() util.create_indexed_column({positions}), ...
+                'NWB:CreateIndexedColumn:InconsistentElementShape');
+            testCase.verifyError( ...
+                @() util.create_indexed_column({struct('position', [1 2; 3 4; 5 6])}), ...
+                'NWB:CreateIndexedColumn:InconsistentElementShape');
+            testCase.verifyError( ...
+                @() util.create_indexed_column(positions, 'ElementsPerRow', 3), ...
+                'NWB:CreateIndexedColumn:InconsistentElementShape');
+
+            % The fields of a scalar struct may be row vectors.
+            [vector, index] = util.create_indexed_column({struct('x', [1 2 3], 'y', [4 5 6])});
+            testCase.verifyEqual(vector.data, table([1; 2; 3], [4; 5; 6], 'VariableNames', {'x', 'y'}));
+            testCase.verifyEqual(index.data, uint64(3));
+        end
+
+        function testCompoundAndNumericRowsErrors(testCase)
+            roi = table(uint32(1), single(1), 'VariableNames', {'x', 'weight'});
+
+            testCase.verifyError(@() util.create_indexed_column({roi, [1 2]}), ...
+                'NWB:CreateIndexedColumn:InconsistentElementType');
+        end
+
+        function testFlatDataWithElementsPerRow(testCase)
+            [vector, index] = util.create_indexed_column([1 2 3 4 5], 'ElementsPerRow', [3 2]);
+            testCase.verifyEqual(vector.data, [1; 2; 3; 4; 5]);
+            testCase.verifyEqual(index.data, uint64([3; 5]));
+
+            % Elements are 4-sample vectors, one per column.
+            samples = reshape(1:20, 4, 5);
+            [vector, index] = util.create_indexed_column(samples, 'ElementsPerRow', [2 3]);
+            testCase.verifyEqual(vector.data, samples);
+            testCase.verifyEqual(index.data, uint64([2; 5]));
+
+            [vector, index] = util.create_indexed_column(["a" "b" "c"], 'ElementsPerRow', [2 1]);
             testCase.verifyEqual(vector.data, ["a"; "b"; "c"]);
             testCase.verifyEqual(index.data, uint64([2; 3]));
         end
 
-        function testCharRowsAreListsOfCharacters(testCase)
+        function testFlatDataForTableWithNoRows(testCase)
+            % An empty ElementsPerRow is a table with no rows, not a missing
+            % argument.
+            [vector, index] = util.create_indexed_column( ...
+                zeros(0, 1), 'ElementsPerRow', zeros(0, 1));
+            testCase.verifyEmpty(vector.data);
+            testCase.verifyEqual(index.data, zeros(0, 1, 'uint64'));
+        end
+
+        function testFlatCompoundDataMatchesCellForm(testCase)
+            [roi1, roi2] = examplePixelMasks();
+
+            flat = util.create_indexed_column([roi1; roi2], 'ElementsPerRow', [3 2]);
+            perRow = util.create_indexed_column({roi1, roi2});
+
+            testCase.verifyEqual(flat.data, perRow.data);
+        end
+
+        function testElementsPerRowErrors(testCase)
+            testCase.verifyError( ...
+                @() util.create_indexed_column([1 2 3], 'ElementsPerRow', [1 1]), ...
+                'NWB:CreateIndexedColumn:ElementCountMismatch');
+            testCase.verifyError( ...
+                @() util.create_indexed_column([1 2 3], 'ElementsPerRow', [1 2], 'Depth', 2), ...
+                'NWB:CreateIndexedColumn:ElementsPerRowNeedsDepth1');
+            % Data that is not a cell array needs ElementsPerRow.
+            testCase.verifyError(@() util.create_indexed_column([1 2 3]), ...
+                'NWB:CreateIndexedColumn:InvalidData');
+        end
+
+        function testTextRowsKeepStringClass(testCase)
+            % String rows give a string column; cell arrays of character
+            % vectors give a cellstr column.
+            [vector, index] = util.create_indexed_column({["a" "b"], "c"});
+            testCase.verifyEqual(vector.data, ["a"; "b"; "c"]);
+            testCase.verifyEqual(index.data, uint64([2; 3]));
+
+            vector = util.create_indexed_column({{'a'; 'b'}, {'c'}});
+            testCase.verifyEqual(vector.data, {'a'; 'b'; 'c'});
+
+            % String rows together with other text rows give a cellstr column.
+            vector = util.create_indexed_column({["a" "b"], {'c'}});
+            testCase.verifyEqual(vector.data, {'a'; 'b'; 'c'});
+        end
+
+        function testCharRowIsOneTextElement(testCase)
             [vector, index] = util.create_indexed_column({'abc', 'de'});
 
-            testCase.verifyEqual(vector.data, ('abcde')');
-            testCase.verifyEqual(index.data, uint64([3; 5]));
+            testCase.verifyEqual(vector.data, {'abc'; 'de'});
+            testCase.verifyEqual(index.data, uint64([1; 2]));
         end
 
         function testStructArrayRowsKeepTheirClass(testCase)
@@ -36,21 +174,69 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
             s2 = struct('weight', single(0.5), 'x', uint32(7));   % fields in another order
 
             [vector, index] = util.create_indexed_column({s1, s2});
-
             testCase.verifyEqual(vector.data, [s1(:); orderfields(s2, s1)]);
             testCase.verifyEqual(index.data, uint64([2; 3]));
+
+            % Flat struct arrays keep their class too.
+            flat = util.create_indexed_column([s1(:); orderfields(s2, s1)], ...
+                'ElementsPerRow', [2 1]);
+            testCase.verifyEqual(flat.data, vector.data);
         end
 
-        function testMixedRowTypesErrors(testCase)
-            testCase.verifyError(@() util.create_indexed_column({[1 2], "a"}), ...
-                'NWB:CreateIndexedColumn:InconsistentElementType');
-            % Rows of different numeric classes would convert values silently
-            % (3.5 would become int32(4)), so they are rejected.
-            testCase.verifyError(@() util.create_indexed_column({int32([1 2]), 3.5}), ...
-                'NWB:CreateIndexedColumn:InconsistentElementType');
+        function testStructArraysWithTablesGiveATable(testCase)
+            s1 = struct('x', {uint32(1), uint32(2)}, 'weight', {single(1), single(1)});
+            t2 = table(uint32(7), single(0.5), 'VariableNames', {'x', 'weight'});
+
+            vector = util.create_indexed_column({s1, t2});
+
+            testCase.verifyEqual(vector.data, [struct2table(s1(:)); t2]);
+        end
+
+        function testTextAndStructRowsMustBeVectors(testCase)
+            testCase.verifyError( ...
+                @() util.create_indexed_column({["a" "b"; "c" "d"]}), ...
+                'NWB:CreateIndexedColumn:InvalidRow');
+            testCase.verifyError( ...
+                @() util.create_indexed_column({repmat(struct('x', 1), 2, 2)}), ...
+                'NWB:CreateIndexedColumn:InvalidRow');
             testCase.verifyError( ...
                 @() util.create_indexed_column({struct('x', 1), struct('y', 2)}), ...
                 'NWB:CreateIndexedColumn:InconsistentElementShape');
+        end
+
+        function testTextRows(testCase)
+            % A cell array of character vectors, a string array and a character
+            % vector are lists of text elements, stored as a column cellstr.
+            [vector, index] = util.create_indexed_column({{'1a'; '1b'; '1c'}, {'2a'}});
+            testCase.verifyEqual(vector.data, {'1a'; '1b'; '1c'; '2a'});
+            testCase.verifyEqual(index.data, uint64([3; 4]));
+
+            [vector, index] = util.create_indexed_column({["1a" "1b" "1c"], '2a'});
+            testCase.verifyEqual(vector.data, {'1a'; '1b'; '1c'; '2a'});
+            testCase.verifyEqual(index.data, uint64([3; 4]));
+        end
+
+        function testTextColumnWithEmptyRow(testCase)
+            [vector, index] = util.create_indexed_column({{'a'; 'b'}, [], {'c'}});
+
+            testCase.verifyEqual(vector.data, {'a'; 'b'; 'c'});
+            testCase.verifyEqual(index.data, uint64([2; 2; 3]));
+        end
+
+        function testEmptyCharRowHasNoElements(testCase)
+            % '' is empty, so it is a row with no elements, like []. "" and
+            % {''} are one empty text element.
+            [vector, index] = util.create_indexed_column({'abc', ''});
+            testCase.verifyEqual(vector.data, {'abc'});
+            testCase.verifyEqual(index.data, uint64([1; 1]));
+
+            [vector, index] = util.create_indexed_column({"abc", ""});
+            testCase.verifyEqual(vector.data, ["abc"; ""]);
+            testCase.verifyEqual(index.data, uint64([1; 2]));
+
+            [vector, index] = util.create_indexed_column({'abc', {''}});
+            testCase.verifyEqual(vector.data, {'abc'; ''});
+            testCase.verifyEqual(index.data, uint64([1; 2]));
         end
 
         function testObjectViewRowsKeepTheirClass(testCase)
@@ -66,6 +252,17 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(index.data, uint64([1; 1; 3]));
         end
 
+        function testFlatObjectDataWithElementsPerRow(testCase)
+            seriesView = types.untyped.ObjectView(types.core.TimeSeries('description', 'raw'));
+            deviceView = types.untyped.ObjectView(types.core.Device());
+
+            [vector, index] = util.create_indexed_column( ...
+                [seriesView; seriesView; deviceView], 'refs', 'ElementsPerRow', [1 0 2]);
+
+            testCase.verifyEqual(vector.data, [seriesView; seriesView; deviceView]);
+            testCase.verifyEqual(index.data, uint64([1; 1; 3]));
+        end
+
         function testObjectRowsMustShareAClassAndBeVectors(testCase)
             seriesView = types.untyped.ObjectView(types.core.TimeSeries('description', 'raw'));
             timestamp = datetime(2024, 1, 1);
@@ -76,6 +273,47 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
                 'NWB:CreateIndexedColumn:InconsistentElementType');
             testCase.verifyError(@() util.create_indexed_column({repmat(seriesView, 2, 2)}), ...
                 'NWB:CreateIndexedColumn:InvalidRow');
+        end
+
+        function testPipesStubsAndLinksAreRejected(testCase)
+            % The column is built in memory, and a dataset cannot hold links.
+            pipe = types.untyped.DataPipe('data', (1:3)', 'maxSize', Inf);
+            link = types.untyped.SoftLink(types.core.Device());
+            nwb = tests.factory.NWBFile();
+            nwb.acquisition.set('series', types.core.TimeSeries('description', 'd', ...
+                'data', (1:3)', 'data_unit', 'V', 'starting_time', 0, 'starting_time_rate', 1));
+            fileName = testCase.getRandomFilename();
+            nwbExport(nwb, fileName);
+            stub = nwbRead(fileName, 'ignorecache').acquisition.get('series').data;
+
+            testCase.verifyError(@() util.create_indexed_column({pipe, [4; 5]}), ...
+                'NWB:CreateIndexedColumn:InvalidRow');
+            testCase.verifyError(@() util.create_indexed_column({{pipe}}, 'Depth', 2), ...
+                'NWB:CreateIndexedColumn:InvalidRow');
+            testCase.verifyError(@() util.create_indexed_column({stub, [4; 5]}), ...
+                'NWB:CreateIndexedColumn:InvalidRow');
+            testCase.verifyError(@() util.create_indexed_column({link, []}), ...
+                'NWB:CreateIndexedColumn:InvalidRow');
+            testCase.verifyError( ...
+                @() util.create_indexed_column(pipe, 'd', 'ElementsPerRow', [2 1]), ...
+                'NWB:CreateIndexedColumn:InvalidData');
+            testCase.verifyError( ...
+                @() util.create_indexed_column(stub, 'd', 'ElementsPerRow', [2 1]), ...
+                'NWB:CreateIndexedColumn:InvalidData');
+        end
+
+        function testTextRowsAtDepth2(testCase)
+            [vector, index, indexIndex] = util.create_indexed_column( ...
+                {{{'a', 'b'}, {'c'}}, {{'d'}}}, 'Depth', 2);
+
+            testCase.verifyEqual(vector.data, {'a'; 'b'; 'c'; 'd'});
+            testCase.verifyEqual(index.data, uint64([2; 3; 4]));
+            testCase.verifyEqual(indexIndex.data, uint64([2; 3]));
+        end
+
+        function testTextAndNumericRowsErrors(testCase)
+            testCase.verifyError(@() util.create_indexed_column({{'a'}, [1 2]}), ...
+                'NWB:CreateIndexedColumn:InconsistentElementType');
         end
 
         function testIntegerRowsKeepTheirClass(testCase)
@@ -197,10 +435,6 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
         function testInvalidRowTypeErrors(testCase)
             testCase.verifyError( ...
                 @() util.create_indexed_column({[1 2], @sin}), ...
-                'NWB:CreateIndexedColumn:InvalidRow');
-            % Strings, characters and structs are accepted as vectors only.
-            testCase.verifyError( ...
-                @() util.create_indexed_column({["a" "b"; "c" "d"]}), ...
                 'NWB:CreateIndexedColumn:InvalidRow');
         end
 
@@ -703,6 +937,14 @@ function spikeEvents = splitSpikeEvents(unitWaveforms)
     for iSpikeEvent = 1:numSpikeEvents
         spikeEvents{iSpikeEvent} = unitWaveforms(:, :, iSpikeEvent);
     end
+end
+
+function [roi1, roi2] = examplePixelMasks()
+    % Pixel masks of two ROIs with 3 and 2 pixels.
+    roi1 = table(uint32([1; 2; 3]), uint32([4; 4; 4]), single([1; 1; 1]), ...
+        'VariableNames', {'x', 'y', 'weight'});
+    roi2 = table(uint32([7; 8]), uint32([9; 9]), single([0.5; 0.5]), ...
+        'VariableNames', {'x', 'y', 'weight'});
 end
 
 function requestThreeOutputs(data)
