@@ -789,6 +789,32 @@ classdef createIndexedColumnTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(indexIndex.data, uint64([2; 2]));
         end
 
+        function testDepth2EmptyMatrixRowHasNoSubGroups(testCase)
+            % An empty matrix is a row with no sub-groups in every form of
+            % the column, whether or not its first dimension is the element
+            % length.
+            numSamples = 4;
+            fullFormRow = ones(numSamples, 3, 2);
+            emptyRows = {zeros(numSamples, 0), zeros(5, 0), zeros(0, 3), []};
+            for iRow = 1:numel(emptyRows)
+                [~, index, indexIndex] = util.create_indexed_column( ...
+                    {fullFormRow, emptyRows{iRow}}, 'Depth', 2);
+                testCase.verifyEqual(index.data, uint64([3; 6]));
+                testCase.verifyEqual(indexIndex.data, uint64([2; 2]));
+            end
+
+            [~, index, indexIndex] = util.create_indexed_column( ...
+                {ones(numSamples, 3), zeros(numSamples, 0)}, 'Depth', 2);
+            testCase.verifyEqual(index.data, uint64([1; 2; 3]));
+            testCase.verifyEqual(indexIndex.data, uint64([3; 3]));
+
+            % One sub-group with no elements is given in the cell form.
+            [~, index, indexIndex] = util.create_indexed_column( ...
+                {fullFormRow, {[]}}, 'Depth', 2);
+            testCase.verifyEqual(index.data, uint64([3; 6; 6]));
+            testCase.verifyEqual(indexIndex.data, uint64([2; 3]));
+        end
+
         function testStringDescriptionIsStoredAsChar(testCase)
             vector = util.create_indexed_column({[1 2]}, "spike times");
 

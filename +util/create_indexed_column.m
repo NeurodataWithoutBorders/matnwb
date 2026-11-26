@@ -85,8 +85,10 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %       [num_samples x num_electrodes], its trailing dimension of 1 omitted.
 %     - a numeric matrix [k x nSubGroups] (for n = 2): every sub-group holds a
 %       single k-sample element, as for spike waveforms on one electrode.
-%     - [] or {} for a row with no sub-groups, or [elementDims x 0 x nSubGroups]
-%       for nSubGroups sub-groups that hold no elements.
+%     - [], {} or an empty matrix of any size for a row with no sub-groups, or
+%       [elementDims x 0 x nSubGroups] for nSubGroups sub-groups that hold no
+%       elements. MATLAB drops a trailing dimension of 1, so a single
+%       sub-group with no elements is given in the cell form, as {[]}.
 %   MATLAB drops trailing dimensions of 1, so a [k x m] row fits both numeric
 %   forms, and DATA is read one way as a whole. If any numeric row has more
 %   than n dimensions, every numeric row is read in the full form with its
@@ -412,17 +414,19 @@ function [chunk, ownCount, innerCounts] = flattenItem(item, level, layout, index
         return
     end
 
+    if isempty(item) && ismatrix(item)
+        % An empty matrix such as [], zeros(1, 0) or zeros(k, 0) has no
+        % entries at this level, whatever its size. An empty array with more
+        % dimensions declares entries, such as [k x 0 x n] for n sub-groups
+        % with no elements, so its element shape must match like any other
+        % row's.
+        chunk = [];
+        ownCount = 0;
+        return
+    end
+
     [itemElementDims, levelSizes] = splitDims(item, level, numel(elementDims), layout.useShortcut);
     if ~isequal(itemElementDims, elementDims)
-        if isempty(item) && ismatrix(item)
-            % An empty matrix such as [] or zeros(1, 0) has no entries at this
-            % level. An empty array with more dimensions declares entries,
-            % such as [k x 0 x n] for n sub-groups with no elements, so its
-            % element shape must match like any other row's.
-            chunk = [];
-            ownCount = 0;
-            return
-        end
         error("NWB:CreateIndexedColumn:InconsistentElementShape", ...
             "All elements must have the same shape. Expected elements of shape [%s], " + ...
             "but %s has size [%s]. Give a numeric row as [elementShape x ...] with the " + ...
