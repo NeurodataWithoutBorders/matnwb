@@ -28,6 +28,12 @@ identifier = [animal '_' session];
 % a data structures .mat file containing processed data, and a raw .tar archive 
 % containing multiple raw electrophysiology data separated by trials as .mat files. 
 % All files will be merged into a single NWB file.
+% 
+% The script reads the dataset from the folder named by the |CRCNS_ALM3_ROOT_PATH| 
+% environment variable. That folder must contain the |data| folder of the ALM-3 
+% download, and the NWB file is written to an |out| folder next to it. If the 
+% variable is not set, the script uses the current folder. To set the variable, 
+% run, for example, |setenv("CRCNS_ALM3_ROOT_PATH", "/path/to/alm-3")|.
 
 % Specify the local path for the downloaded data:
 alm3_dataset_rootpath = getenv('CRCNS_ALM3_ROOT_PATH'); % Uses current directory if not set
@@ -39,7 +45,9 @@ datastructure_loc = fullfile(data_root_path, 'data_structure_files', ...
 rawdata_loc = fullfile(data_root_path, 'RawVoltageTraces', [identifier '.tar']);
 
 assert(isfile(metadata_loc) && isfile(datastructure_loc) && isfile(rawdata_loc), ...
-    'Dataset files (metadata, processed and raw) were not found.')
+    ['Dataset files (metadata, processed and raw) were not found in "%s". Set the ', ...
+    'CRCNS_ALM3_ROOT_PATH environment variable to the folder that contains the ALM-3 "data" folder.'], ...
+    data_root_path)
 %% 
 % |metadata_loc|, |datastructure_loc|, and |rawdata_loc| should refer to the 
 % metadata .mat file, the data structure .mat file, and the raw .tar file.
@@ -110,10 +118,18 @@ nwb.general_subject = types.core.Subject( ...
     'species', meta.species{1}, ...
     'subject_id', meta.animalID{1}(1,:), ... %weird case with duplicate Animal ID
     'sex', upper(meta.sex), ... % NWB Best practice: 'M' (male), 'F' (female), 'O' (other), or 'U' (unknown).
-    'age', meta.dateOfBirth, ... % evaluated to 'not recorded' for example session.
     'description', [...
         'Whisker Config: ' strjoin(meta.whiskerConfig, ', ') newline...
         'Animal Source: ' strjoin(meta.animalSource, ', ')]);
+
+% NWB stores a date of birth in date_of_birth as a datetime, while age holds an
+% ISO 8601 duration such as 'P90D'. ALM-3 stores the date of birth as text, which
+% is 'not recorded' for the example session. A recorded date is read with the
+% yyyyMMdd format of dateOfExperiment; datetime errors if the format differs.
+if ~strcmp(meta.dateOfBirth, 'not recorded')
+    nwb.general_subject.date_of_birth = datetime(meta.dateOfBirth, ...
+        'InputFormat', 'yyyyMMdd', 'TimeZone', 'America/New_York');
+end
 %% 
 % Ideally, if a raw data field does not correspond directly to a NWB field, 
 % one would create their own using a <https://pynwb.readthedocs.io/en/latest/extensions.html 
@@ -204,7 +220,8 @@ electrodeGroup = types.core.ElectrodeGroup( ...
     'description', formatStruct(meta.extracellular, structDesc), ...
     'location', recordingLocation, ...
     'device', types.untyped.SoftLink(siliconProbe));
-nwb.general_extracellular_ephys.set('ElectrodeGroup', electrodeGroup);
+electrodeGroupName = 'ElectrodeGroup';
+nwb.general_extracellular_ephys.set(electrodeGroupName, electrodeGroup);
 %% 
 % The NWB *ElectrodeGroup* object stores experimental information regarding 
 % a group of probes. Doing so requires a *SoftLink* to the silicon probe previously 
@@ -215,15 +232,15 @@ nwb.general_extracellular_ephys.set('ElectrodeGroup', electrodeGroup);
 % probe.
 
 % Initialize a table with 0-row VectorData objects for each column, using
-% name-value arguments in the ElectrodesTable constructor.
-dtColNames = {'x', 'y', 'z', 'imp', 'location', 'filtering','group', 'group_name'};
+% name-value arguments in the ElectrodesTable constructor. The optional imp
+% (impedance) column is left out, because the impedance was not recorded.
+dtColNames = {'x', 'y', 'z', 'location', 'filtering','group', 'group_name'};
 electrodesTable = types.core.ElectrodesTable( ...
     'colnames', dtColNames, ...
     'description', 'Electrode channels', ...
     'x', types.hdmf_common.VectorData('description', 'x coordinate of the channel location in the brain (+x is posterior).'), ...
     'y', types.hdmf_common.VectorData('description', 'y coordinate of the channel location in the brain (+y is inferior).'), ...
     'z', types.hdmf_common.VectorData('description', 'z coordinate of the channel location in the brain (+z is right).'), ...
-    'imp', types.hdmf_common.VectorData('description', 'Impedance of the channel.'), ...
     'location', types.hdmf_common.VectorData('description', ['Location of the electrode (channel). '...
     'Specify the area, layer, comments on estimation of area/layer, stereotaxic coordinates if '...
     'in vivo, etc. Use standard atlas names for anatomical regions when possible.']), ...
@@ -240,11 +257,10 @@ for i = 1:length(meta.extracellular.siteLocations)
     location = meta.extracellular.siteLocations{i};
     electrodesTable.addRow( ...
         'x', location(1), 'y', location(2), 'z', location(3), ...
-        'imp', 0, ...
         'location', recordingLocation, ...
         'filtering', '', ...
         'group', eGroupReference, ...
-        'group_name', meta.extracellular.probeType{1});
+        'group_name', electrodeGroupName);
 end
 %% 
 % The |group| column in the |*ElectrodesTable*| contains an *ObjectView* to 
@@ -355,6 +371,10 @@ trial_intervals = types.core.TimeIntervals( ...
     'id', types.hdmf_common.ElementIdentifiers( ...
         'data', data.trialIds' ) );
 
+% The code below uses ALM-3 trial numbers as row positions in the trials table.
+assert(isequal(data.trialIds(:), (1:numel(data.trialIds))'), ...
+    'Expected the trial IDs to run from 1 to the number of trials.')
+
 % Add columns for the trial types. These are all boolean state.
 for i = 1:length(data.trialTypeStr)
     columnName = data.trialTypeStr{i};
@@ -398,6 +418,10 @@ lick_trace_reference = types.untyped.ObjectView(lickTrace);
 aom_input_trace_reference = types.untyped.ObjectView(aomInputTrace);
 laser_power_ref = types.untyped.ObjectView(laserPowerTrace);
 
+% A trial's stop time is the last sample recorded for it, by Ephus here or in
+% the raw voltage traces below. A trial with neither has no known stop time (NaN).
+stopTimes = NaN(size(data.trialStartTimes));
+
 % Append trials timeseries references in order. We must populate this way 
 % because trials may not be in trial order.
 [ephus_trials, ~, trials_to_data] = unique(ephusTimeseriesData.trial);
@@ -406,6 +430,7 @@ for i = 1:length(ephus_trials)
     t_start = find(i_loc, 1) - 1;   % 0-based index for TimeSeriesReference.idx_start
     t_count = sum(i_loc);
     trial = ephus_trials(i);
+    stopTimes(trial) = ephusTimeseriesData.time(find(i_loc, 1, 'last'));
     
     trial_timeseries{trial}(end+(1:3), :) = {...
         lick_trace_reference int64(t_start) int64(t_count);...
@@ -477,6 +502,11 @@ for i = 1:length(unitIds)
     assert(strcmp(data.timeUnitNames{data.timeUnitIds(esData.timeUnit)}, 'seconds'), ...
         'Expected time unit for spike event series data to be seconds')
 
+    % The waveforms column below stores one waveform per spike, which is only
+    % valid for a unit recorded on one electrode.
+    assert(isscalar(unique(channel)), ...
+        'Expected unit %d to be recorded on one electrode.', unitIds(i))
+
     if ~isempty(esData.cellType)
         cellType = esData.cellType{1};
     else
@@ -503,7 +533,8 @@ end
 nwb.units.addDoublyRaggedArray(...
     'waveforms', waveform_snippets, ...
     'description', 'Spike waveforms for each unit')
-nwb.units.waveforms_sampling_rate = 19531.25; % from data descriptor
+waveformSamplingRate = 19531.25; % Hz, from data descriptor
+nwb.units.waveforms_sampling_rate = waveformSamplingRate;
 
 % Add the per-unit mean waveforms as a single fixed-shape column. Building it
 % here (rather than via addRow) keeps waveform_mean as a plain 2-D dataset
@@ -511,14 +542,16 @@ nwb.units.waveforms_sampling_rate = 19531.25; % from data descriptor
 nwb.units.waveform_mean = types.hdmf_common.VectorData( ...
     'description', 'Mean spike waveform for each unit', ...
     'data', [waveform_means{:}]); % [numSamples x numUnits]
+nwb.units.waveform_mean_sampling_rate = waveformSamplingRate;
 
 % Repeat for waveform_std
 nwb.units.waveform_sd = types.hdmf_common.VectorData( ...
     'description', 'Standard deviation of spike waveform for each unit', ...
     'data', [waveform_stds{:}]); % [numSamples x numUnits]
+nwb.units.waveform_sd_sampling_rate = waveformSamplingRate;
 %% 
 % To better understand how |spike_times_index| and |spike_times| map to each 
-% other, refer to <https://neurodatawithoutborders.github.io/matnwb/tutorials/html/ecephys.html#13 
+% other, refer to <https://matnwb.readthedocs.io/en/latest/_static/html/tutorials/ecephys.html#H_70ee 
 % this diagram> from the Extracellular Electrophysiology Tutorial. 
 % 
 % *Advanced note*: if a unit was present on more than one electrode, each spike 
@@ -548,26 +581,28 @@ rawfiles = dir(untarLoc);
 rawfiles = fullfile(untarLoc, {rawfiles(~[rawfiles.isdir]).name});
 
 nrows = length(nwb.general_extracellular_ephys_electrodes.id.data);
-objrefs = cell(size(rawfiles));
+objrefs = cell(size(data.trialIds));
 
-endTimestamps = trial_intervals.start_time.data;
 for i = 1:length(rawfiles)
     tnumstr = regexp(rawfiles{i}, '_trial_(\d+)\.mat$', 'tokens', 'once');
     tnumstr = tnumstr{1};
     rawdata = load(rawfiles{i}, 'ch_MUA', 'TimeStamps');
     tnum = str2double(tnumstr);
     
-    if tnum > length(endTimestamps)
+    if tnum > numel(data.trialIds)
         continue; % sometimes there are extra trials without an associated start time.
     end
 
+    % TimeStamps count from the start of the trial. Adding the trial's start
+    % time places the series on the session clock.
+    timestamps = data.trialStartTimes(tnum) + rawdata.TimeStamps;
     deltaT = diff( rawdata.TimeStamps );
     tol = 1e-6;
     if max(abs(diff(deltaT))) < tol*mean(deltaT) % Constant rate
-        nvPairs = {'starting_time', rawdata.TimeStamps(1), ...
+        nvPairs = {'starting_time', timestamps(1), ...
             'starting_time_rate', 1 / mean(deltaT)};
     else
-        nvPairs = {'timestamps', rawdata.TimeStamps};
+        nvPairs = {'timestamps', timestamps};
     end
 
     % Each ElectricalSeries owns its electrodes region: a neurodata object
@@ -586,7 +621,7 @@ for i = 1:length(rawfiles)
     tname = ['trial ' tnumstr];
     nwb.acquisition.set(tname, electricalSeries);
     
-    endTimestamps(tnum) = endTimestamps(tnum) + rawdata.TimeStamps(end);
+    stopTimes(tnum) = max(stopTimes(tnum), timestamps(end)); % max ignores NaN
     objrefs{tnum} = types.untyped.ObjectView(electricalSeries);
 end
 % Link the raw acquired data to the trials in the trials table.
@@ -602,14 +637,14 @@ objrefs(emptyReferences) = {[]};
 trial_intervals.addRaggedArray('raw_voltage_traces', objrefs, ...
     'description', 'Reference to recorded (raw) electrical signals per trial');
 
-% Finally, we also add the trials' stop_time which were extracted from the
-% raw data.
+% Finally, we add the trials' stop_time, the last sample time recorded for
+% each trial.
 trial_intervals.stop_time = types.hdmf_common.VectorData( ...
-     'data', endTimestamps', ...
+     'data', stopTimes', ...
      'description', 'The end time of each trial');
 
 % Reorder colnames
-trial_intervals.colnames = [{'start_time', 'stop_time'}, setdiff(trial_intervals.colnames, {'start_time', 'stop_time'})];
+trial_intervals.colnames = [{'start_time', 'stop_time'}, setdiff(trial_intervals.colnames, {'start_time', 'stop_time'}, 'stable')];
 
 % Display to complete trials table
 trial_intervals.toTable()
@@ -633,4 +668,6 @@ nwbExport(nwb, nwbFilePath);
 % Note: The following function assumes the nwbinspector tool is installed. See 
 % `|help inspectNwbFile|`
 
-inspectNwbFile(nwbFilePath)
+% The file_path column is left out, because every row refers to the same file.
+inspectNwbFile(nwbFilePath, 'VariableOrder', ...
+    ["importance", "check_function_name", "object_name", "object_type", "message", "location"])
