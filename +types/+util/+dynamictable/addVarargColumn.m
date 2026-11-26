@@ -43,7 +43,9 @@ end
 for i = 1:length(newColNames)
     new_cn = newColNames{i};
     new_cv = newVectorData.(new_cn);
-    % check height match before adding column
+    % The new column must span as many rows as the table has. The rows of a
+    % ragged column are counted by its outermost index, not by the number of
+    % elements it holds.
     heightColumn = getHeightColumn(newVectorData, new_cn, indexColumns);
     currentColumnHeight = types.util.dynamictable.internal.getColumnHeight(heightColumn);
     validateColumnHeight(new_cn, currentColumnHeight, tableHeight)
@@ -125,10 +127,10 @@ function updateColnames(DynamicTable, new_cn, new_cv)
 end
 
 function indexColumns = collectIndexColumns(dynamicTable, newVectorData)
-    % The VectorIndex columns that can index a new column, as a struct array
-    % with the fields name and column, in the order they are searched: the
-    % new columns first, then the index columns of the table, which hold an
-    % index that was added in an earlier call.
+    % Collect the VectorIndex columns that can index a new column, as a
+    % struct array with the fields name and column, in the order they are
+    % searched: the new columns first, then the index columns of the table,
+    % which hold an index that was added in an earlier call.
     names = reshape(fieldnames(newVectorData), 1, []);
     columns = cellfun(@(name) newVectorData.(name), names, 'UniformOutput', false);
 
@@ -182,9 +184,15 @@ function assertIndexColumnsHaveTargets(newVectorData)
 end
 
 function heightColumn = getHeightColumn(newVectorData, columnName, indexColumns)
-    % The column whose height is the number of table rows for the new column
-    % COLUMNNAME: its outermost index, whatever the depth of the ragged
-    % column, or the column itself when it has no index.
+    % Return the column that holds one entry per table row for the new
+    % column COLUMNNAME. Its height is compared with the table height.
+    %   - plain column: the column itself.
+    %   - ragged column: its VectorIndex. The data holds a variable number
+    %     of entries per row, and the index marks where each row ends.
+    %   - doubly ragged column: the index of that index, and so on for any
+    %     depth. Only the outermost index has one entry per row.
+    % Example: waveforms holds 7 waveforms, waveforms_index 7 spike events
+    % and waveforms_index_index 2 units, so the column spans 2 rows.
     heightColumn = newVectorData.(columnName);
     visitedNames = {};
     iIndex = findIndexOf(columnName, heightColumn, indexColumns);
@@ -200,9 +208,9 @@ function heightColumn = getHeightColumn(newVectorData, columnName, indexColumns)
 end
 
 function iIndex = findIndexOf(columnName, column, indexColumns)
-    % The position in INDEXCOLUMNS of the first VectorIndex that targets
-    % COLUMN, or empty when none does. A target that has a path in a file is
-    % matched by the column name that ends the path, as
+    % Return the position in INDEXCOLUMNS of the first VectorIndex that
+    % targets COLUMN, or empty when none does. A target that has a path in
+    % a file is matched by the column name that ends the path, as
     % types.util.dynamictable.getIndex matches it; any other target is
     % matched by the object it holds.
     iIndex = [];
