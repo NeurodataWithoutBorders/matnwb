@@ -16,10 +16,6 @@ classdef Writer < handle
         ObjectIdToPathMap
     end
 
-    properties (Dependent, SetAccess = private, Hidden)
-        FileId
-    end
-
     methods
         function obj = Writer(filename)
             if nargin < 1
@@ -109,6 +105,32 @@ classdef Writer < handle
             io.backend.base.Writer.throwNotImplemented("copyDatasetFromFile")
         end
 
+        function writtenPipe = exportDataPipe(obj, dataPipe, destinationPath) %#ok<INUSD>
+        % exportDataPipe - Write a DataPipe's dataset into this file.
+        %
+        % Writes the dataset held by dataPipe at destinationPath, honouring
+        % the pipe's storage configuration (chunking, compression and the
+        % other pipe properties). Returns the pipe state representing the
+        % dataset as written; DataPipe.export stores it as the pipe's new
+        % internal state, which is how an in-memory blueprint pipe becomes
+        % bound to the dataset in this file. A pipe already bound to a
+        % dataset in this file is left in place. A pipe bound to a dataset
+        % in a different file holds only a reference to that data, not the
+        % data itself, so exporting it raises an error
+        % ('NWB:BoundPipe:CannotExportToNewFile').
+        %
+        % Input Arguments:
+        %   obj - Writer instance targeting the destination file.
+        %   dataPipe - types.untyped.DataPipe whose dataset is written.
+        %   destinationPath - Path the dataset is written to in this file.
+        %
+        % Output Arguments:
+        %   writtenPipe - Pipe object bound to the dataset as written.
+
+            writtenPipe = [];
+            io.backend.base.Writer.throwNotImplemented("exportDataPipe")
+        end
+
         function writeSoftLink(obj, linkPath, targetPath) %#ok<INUSD>
             % writeSoftLink - Create a link to another location in this file.
             %
@@ -186,10 +208,6 @@ classdef Writer < handle
         function abort(obj)
             obj.close();
         end
-
-        function fileId = get.FileId(obj)
-            fileId = obj.getFileId();
-        end
     end
 
     methods (Static)
@@ -200,13 +218,6 @@ classdef Writer < handle
             end
 
             writer = io.backend.BackendFactory.createWriter(writerOrFileReference);
-        end
-    end
-
-    methods (Access = protected)
-        function fileId = getFileId(obj) %#ok<MANU>
-            io.backend.base.Writer.throwNotImplemented("getFileId")
-            fileId = [];
         end
     end
 

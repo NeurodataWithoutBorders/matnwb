@@ -15,7 +15,7 @@ classdef HDF5WriterTest < matlab.unittest.TestCase
 
             writer.deleteGroup('/specifications/core');
 
-            groupExists = H5L.exists(writer.FileId, ...
+            groupExists = H5L.exists(writer.H5FileId, ...
                 '/specifications/core', 'H5P_DEFAULT');
             testCase.verifyFalse(logical(groupExists));
         end
