@@ -1,0 +1,21 @@
+{
+"types.hdmf_experimental.EnumData": {
+  "inputs": [
+    {
+      "name": "data",
+      "kind": "namevalue",
+      "purpose": "Data property for dataset class (EnumData)"
+    },
+    {
+      "name": "description",
+      "kind": "namevalue",
+      "purpose": "Description of what these vectors represent."
+    },
+    {
+      "name": "elements",
+      "kind": "namevalue",
+      "purpose": "Reference to the VectorData object that contains the enumerable elements."
+    }
+  ]
+}
+}

@@ -1,0 +1,81 @@
+{
+  "_schemaVersion": "1.0.0",
+  "generateCore":
+  {
+    "inputs":
+    [
+      {
+        "name":"version",
+        "kind":"required",
+        "type":"choices={'2.0.2','2.1.0','2.2.0','2.2.1','2.2.2','2.2.3','2.2.4','2.2.5','2.3.0','2.4.0','2.5.0','2.6.0','2.7.0'}",
+        "purpose": "Version number for NWB core schema specifications"
+      },
+      {
+        "name":"savedir",
+        "kind":"namevalue",
+        "type":"folder",
+        "purpose": "Output folder for generated classes"
+      }
+    ]
+  },
+  "generateCore":
+  {
+    "inputs":
+    [
+      {
+        "name":"savedir",
+        "kind":"namevalue",
+        "type":"folder",
+        "purpose": "Output folder for generated classes"
+      }
+    ]
+  },
+  "generateExtension":
+  {
+    "inputs":
+    [
+      {
+        "name":"namespaceFilePath",
+        "repeating":true,
+        "kind":"required",
+        "type":"file=*.yaml,*.yml",
+        "purpose": "Path to a *namespace.yaml file."
+      },
+      {
+        "name":"savedir",
+        "kind":"namevalue",
+        "type":"folder",
+        "purpose": "Output folder for generated classes"
+      }
+    ]
+  },
+  "nwbRead":
+  {
+    "inputs":
+    [
+      {"name":"filename", "kind":"required", "type":"file=*.nwb,*.h5"},
+      {"mutuallyExclusiveGroup":
+          [
+            [
+              {"name":"flag",  "kind":"ordered", "type":"choices='ignorecache'"}
+            ],
+            [
+              {"name":"savedir", "kind":"namevalue", "type":"folder","purpose": "Output folder for generated classes"}
+            ]
+          ]
+        }
+    ],
+    "outputs":
+    [
+      {"name":"NwbFile Object", "type":"nwbfile"}
+    ]
+  },
+  "nwbExport":
+  {
+    "inputs":
+    [
+      {"name":"nwbFileObjects", "kind":"required", "type":"NwbFile", "purpose":"An NWB file object or a list of NWB file objects"},
+      {"name":"filePaths", "kind":"required", "type":"file=*.nwb", "purpose":"A filepath or a list of filepaths for exporting NWB file object(s)"}
+    ]
+  }
+}

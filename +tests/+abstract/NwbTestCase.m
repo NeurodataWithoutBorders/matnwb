@@ -39,6 +39,7 @@ classdef (Abstract, SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) .
             typesOutputFolder = testCase.getTypesOutputFolder();
             rmdir(fullfile(typesOutputFolder, '+types', ['+', namespaceFolderName]), 's')
             delete(fullfile(typesOutputFolder, 'namespaces', [extensionName '.mat']))
+            matnwb.internal.typecache.writeFunctionSignatures(typesOutputFolder)
         end
     end
 

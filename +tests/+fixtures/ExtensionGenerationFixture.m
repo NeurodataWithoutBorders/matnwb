@@ -53,6 +53,7 @@ classdef ExtensionGenerationFixture < matlab.unittest.fixtures.Fixture
             if isfile(cacheFile)
                 delete(cacheFile)
             end
+            matnwb.internal.typecache.writeFunctionSignatures(fixture.TypesOutputFolder)
         end
     end
 end
