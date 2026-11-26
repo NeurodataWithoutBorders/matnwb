@@ -20,21 +20,18 @@ assert(isempty(existingCols), ...
 isFirstColumn = isempty(DynamicTable.colnames) && ...
     (isempty(DynamicTable.id) || isempty(DynamicTable.id.data));
 
-% get current table height - assume id length reflects table height
-if ~isempty(DynamicTable.colnames)
+% The id column sets the table height whenever the table has ids, including a
+% table that has ids but no columns yet.
+if ~isFirstColumn
     tableHeight = types.util.dynamictable.internal.getColumnHeight(DynamicTable.id);
 end
+
+indexColumns = collectIndexColumns(DynamicTable, newVectorData);
 
 % If adding the first column, initialize the id with 0-indexed values
 if isFirstColumn && ~isempty(newColNames)
     % Determine the height of the first column
-    firstColName = newColNames{1};
-    indexName = getIndexInSet(newVectorData, firstColName);
-    if isempty(indexName)
-        firstColData = newVectorData.(firstColName);
-    else
-        firstColData = newVectorData.(indexName);
-    end
+    firstColData = getHeightColumn(newVectorData, newColNames{1}, indexColumns);
 
     newTableHeight = types.util.dynamictable.internal.getColumnHeight(firstColData);
     types.util.dynamictable.internal.initDynamicTableId(DynamicTable, newTableHeight);
@@ -45,18 +42,10 @@ for i = 1:length(newColNames)
     new_cn = newColNames{i};
     new_cv = newVectorData.(new_cn);
     % check height match before adding column
-    if ~isempty(DynamicTable.colnames)
-        indexName = getIndexInSet(newVectorData,new_cn);
+    heightColumn = getHeightColumn(newVectorData, new_cn, indexColumns);
+    currentColumnHeight = types.util.dynamictable.internal.getColumnHeight(heightColumn);
+    validateColumnHeight(new_cn, currentColumnHeight, tableHeight)
 
-        if isempty(indexName)
-            heightColumn = new_cv;
-        else
-            heightColumn = newVectorData.(indexName);
-        end
-        currentColumnHeight = types.util.dynamictable.internal.getColumnHeight(heightColumn);
-
-        validateColumnHeight(new_cn, currentColumnHeight, tableHeight)
-    end
     assignColumn( ...
         DynamicTable, new_cn, new_cv, storageTargets{i}, storageNames{i});
     updateColnames(DynamicTable, new_cn, new_cv)
@@ -133,16 +122,74 @@ function updateColnames(DynamicTable, new_cn, new_cv)
     end
 end
 
-function indexName = getIndexInSet(inputStruct, inputName)
-    % wrap input set with an empty dynamic table
-    T = types.hdmf_common.DynamicTable();
-    % convert input structure to a set
-    columnNames = fieldnames(inputStruct);
-    for i = 1:length(columnNames)
-        T.vectordata.set(columnNames{i},inputStruct.(columnNames{i}));
+function indexColumns = collectIndexColumns(dynamicTable, newVectorData)
+    % The VectorIndex columns that can index a new column, as a struct array
+    % with the fields name and column, in the order they are searched: the
+    % new columns first, then the index columns of the table, which hold an
+    % index that was added in an earlier call.
+    names = reshape(fieldnames(newVectorData), 1, []);
+    columns = cellfun(@(name) newVectorData.(name), names, 'UniformOutput', false);
+
+    vectorNames = reshape(dynamicTable.vectordata.keys(), 1, []);
+    vectorColumns = cellfun(@(name) dynamicTable.vectordata.get(name), vectorNames, ...
+        'UniformOutput', false);
+
+    % Index columns that the schema defines are stored on properties of the
+    % class. The properties of the object also list one dynamic property for
+    % each entry of vectordata, which the keys above cover.
+    propertyNames = reshape(properties(class(dynamicTable)), 1, []);
+    propertyColumns = cellfun(@(name) dynamicTable.(name), propertyNames, ...
+        'UniformOutput', false);
+
+    names = [names, vectorNames, propertyNames];
+    columns = [columns, vectorColumns, propertyColumns];
+    isIndex = cellfun(@isVectorIndexWithTarget, columns);
+    indexColumns = struct('name', names(isIndex), 'column', columns(isIndex));
+end
+
+function tf = isVectorIndexWithTarget(column)
+    isVectorIndex = isa(column, 'types.hdmf_common.VectorIndex') ...
+        || isa(column, 'types.core.VectorIndex');
+    tf = isVectorIndex && ~isempty(column.target);
+end
+
+function heightColumn = getHeightColumn(newVectorData, columnName, indexColumns)
+    % The column whose height is the number of table rows for the new column
+    % COLUMNNAME: its outermost index, whatever the depth of the ragged
+    % column, or the column itself when it has no index.
+    heightColumn = newVectorData.(columnName);
+    visitedNames = {};
+    iIndex = findIndexOf(columnName, heightColumn, indexColumns);
+    while ~isempty(iIndex)
+        indexName = indexColumns(iIndex).name;
+        assert(~any(strcmp(visitedNames, indexName)), ...
+            'NWB:DynamicTable:CheckConfig:InfiniteReferenceLoop', ...
+            'Invalid Table shape detected: There is an infinite loop in your VectorIndex objects.');
+        visitedNames{end+1} = indexName; %#ok<AGROW>
+        heightColumn = indexColumns(iIndex).column;
+        iIndex = findIndexOf(indexName, heightColumn, indexColumns);
     end
-    % use dynamic table function to get index name
-    indexName = types.util.dynamictable.getIndex(T, inputName);
+end
+
+function iIndex = findIndexOf(columnName, column, indexColumns)
+    % The position in INDEXCOLUMNS of the first VectorIndex that targets
+    % COLUMN, or empty when none does. A target that has a path in a file is
+    % matched by the column name that ends the path, as
+    % types.util.dynamictable.getIndex matches it; any other target is
+    % matched by the object it holds.
+    iIndex = [];
+    for i = 1:numel(indexColumns)
+        target = indexColumns(i).column.target;
+        if target.has_path()
+            isTarget = endsWith(target.path, ['/' columnName]);
+        else
+            isTarget = ~isempty(target.target) && target.target == column;
+        end
+        if isTarget
+            iIndex = i;
+            return
+        end
+    end
 end
 
 function validateColumnHeight(columnName, currentColumnHeight, tableHeight)
