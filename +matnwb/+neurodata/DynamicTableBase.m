@@ -139,8 +139,9 @@ classdef (Abstract) DynamicTableBase < handle
         %    in the orientation of VectorData.data: a vector of scalars (e.g.
         %    {[1 2 3], [4 5]} for a 2-row table) or an [elementDims x nElements]
         %    array with the ragged axis last. With Depth 2 each cell holds the
-        %    row's sub-groups as a cell of [elementDims x nElements] arrays.
-        %    See util.create_indexed_column for all accepted forms.
+        %    row's sub-groups, either as a cell of [elementDims x nElements]
+        %    arrays or as one [elementDims x nElements x nSubGroups] array. See
+        %    util.create_indexed_column for all accepted forms.
         %
         %  - options (name-value pairs) -
         %    Optional name-value pairs. Available options:
@@ -156,6 +157,15 @@ classdef (Abstract) DynamicTableBase < handle
         %    - Depth (integer) -
         %      Number of VectorIndex levels: 1 (default) for a ragged column,
         %      2 for a doubly ragged column.
+        %
+        %    - ElementsPerSubGroup (positive integer | vector of positive integers) -
+        %      Number of elements in each sub-group of the numeric rows of a
+        %      column with Depth 2, as one value or one value per row. A row is
+        %      then [elementDims x nElements], with nElements a multiple of the
+        %      row's value, or [elementDims x value x nSubGroups]. For the Units
+        %      'waveforms' column this is the number of electrodes of each
+        %      unit. Without it, the number is read from the dimensions of the
+        %      rows.
         %
         % Usage:
         %  Example 1 - Add spike times for two units with 3 and 2 spikes::
@@ -175,6 +185,11 @@ classdef (Abstract) DynamicTableBase < handle
         %    unit2 = {rand(40, 3), rand(40, 3), rand(40, 3)};
         %    units.addRaggedArray('waveforms', {unit1, unit2}, 'Depth', 2);
         %
+        %  Example 4 - Add waveforms as one [num_samples x num_electrodes x num_spike_events] array per unit::
+        %
+        %    units = types.core.Units('colnames', {}, 'description', 'units');
+        %    units.addRaggedArray('waveforms', {rand(40, 3, 2), rand(40, 3, 3)}, 'Depth', 2);
+        %
         % See also:
         %   util.create_indexed_column, addColumn, addDoublyRaggedArray
 
@@ -185,9 +200,11 @@ classdef (Abstract) DynamicTableBase < handle
                 options.Description (1,1) string = "no description"
                 options.TargetTable {mustBeEmptyOrDynamicTable} = []
                 options.Depth (1,1) {mustBeInteger, mustBePositive} = 1
+                options.ElementsPerSubGroup {mustBeNumeric, mustBeInteger, mustBePositive}
             end
 
-            layoutOptions = {'Depth', options.Depth};
+            % ElementsPerSubGroup is passed on only when it was given.
+            layoutOptions = namedargs2cell(rmfield(options, {'Description', 'TargetTable'}));
             columns = cell(1, options.Depth+1);
             % The description is set on the column after the call: as a
             % positional argument, a text that starts an option name of
@@ -227,14 +244,19 @@ classdef (Abstract) DynamicTableBase < handle
         %    Name of the new column.
         %
         %  - data (cell) -
-        %    A cell array with one cell per row, holding that row's sub-groups
-        %    as a cell of [elementDims x nElements] arrays. See addRaggedArray.
+        %    A cell array with one cell per row, holding that row's sub-groups,
+        %    either as a cell of [elementDims x nElements] arrays or as one
+        %    [elementDims x nElements x nSubGroups] array. See addRaggedArray.
         %
         %  - options (name-value pairs) -
         %    Optional name-value pairs. Available options:
         %
         %    - Description (string) -
         %      Description stored on the VectorData column. Default: "no description".
+        %
+        %    - ElementsPerSubGroup (positive integer | vector of positive integers) -
+        %      Number of elements in each sub-group of the numeric rows. See
+        %      addRaggedArray.
         %
         % Usage:
         %  Example 1 - Add waveforms for two units with 2 and 3 spike events on 3 electrodes::
@@ -253,6 +275,7 @@ classdef (Abstract) DynamicTableBase < handle
                 columnName (1,1) string
                 data cell
                 options.Description (1,1) string = "no description"
+                options.ElementsPerSubGroup {mustBeNumeric, mustBeInteger, mustBePositive}
             end
 
             forwardedOptions = namedargs2cell(options);

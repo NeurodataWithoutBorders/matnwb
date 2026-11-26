@@ -36,7 +36,9 @@ sections of the :nwb-format-description:`NWB format specification <tables-and-ra
 MatNWB provides one :class:`types.hdmf_common.DynamicTable` method that builds and wires
 these objects for you in a single call: ``addRaggedArray``. Its ``Depth`` argument sets
 the number of index levels: 1 (the default) for a ragged column, 2 for a doubly-ragged
-column. ``addDoublyRaggedArray`` is a shorthand for ``Depth`` 2.
+column. ``addDoublyRaggedArray`` is a shorthand for ``Depth`` 2. Its
+``ElementsPerSubGroup`` argument states the number of elements in each sub-group of a
+doubly-ragged column.
 
 .. note::
 
@@ -102,7 +104,25 @@ The values are 0-based row indices into the referenced table.
 Doubly-ragged arrays
 --------------------
 Use ``addRaggedArray`` with ``Depth`` 2 for columns such as :class:`types.core.Units`
-``waveforms``. Give each row as a nested cell array with one cell per sub-group.
+``waveforms``. There are three input forms, depending on how many electrodes contribute
+a waveform per spike and whether that number is the same for every spike.
+
+Single electrode (shortcut form)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+When each spike has a single waveform (one electrode per unit), pass one
+``[numSamples x numWaveforms]`` matrix per unit — one column per waveform, which for a
+single electrode is one column per spike (here ``unit1`` is ``[40 x 3]`` and ``unit2`` is
+``[40 x 4]``):
+
+.. literalinclude:: examples/ragged_arrays_examples.m
+   :language: matlab
+   :start-after: % snippet: doubly-single-electrode
+   :end-before: % end snippet
+   :dedent:
+
+This yields ``waveforms.data = [unit1, unit2]`` (``[40 x 7]``),
+``waveforms_index = [1 2 3 4 5 6 7]`` (one waveform per spike) and
+``waveforms_index_index = [3 7]`` (3 spikes, then 4 spikes).
 
 Multiple channels (nested form)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -138,6 +158,76 @@ within each spike.
    match the order of the electrodes listed in that unit's ``electrodes`` row, and each
    spike of a given unit should have the same number of electrodes.
 
+Multiple channels (array shortcut)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+When every spike of a unit was recorded on the same electrodes, the nested cell array
+can be replaced by one ``[numSamples x numElectrodes x numSpikes]`` array per unit. This
+is the ``(numSpikes, numElectrodes, numSamples)`` array PyNWB's ``Units.add_unit`` takes,
+with its dimensions reversed, and it produces the same column as the nested form: each
+spike becomes one sub-group holding one waveform per electrode. Here ``a1`` is
+``[40 x 3 x 2]`` and ``a2`` is ``[40 x 3 x 3]``:
+
+.. literalinclude:: examples/ragged_arrays_examples.m
+   :language: matlab
+   :start-after: % snippet: doubly-multi-channel-array
+   :end-before: % end snippet
+   :dedent:
+
+This yields the same ``waveforms.data`` size ``[40 15]``, ``waveforms_index = [3 6 9 12
+15]`` and ``waveforms_index_index = [2 5]`` as the nested form above. Dimensions before
+the last two, if there are more than one, are kept as part of each element.
+
+Units with different electrode counts
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+MATLAB drops a trailing dimension of 1, so a ``[numSamples x n]`` matrix fits two forms:
+``n`` spikes on one electrode (the single-electrode form), or one spike on ``n``
+electrodes (the array shortcut for a unit with one spike). ``addRaggedArray`` reads a
+whole column one way:
+
+- If any unit is given as a 3-D ``[numSamples x numElectrodes x numSpikes]`` array, every
+  unit is read as the array shortcut. A ``[numSamples x n]`` matrix is then a unit with
+  one spike on ``n`` electrodes, and a unit recorded on one electrode must be given as
+  ``[numSamples x 1 x numSpikes]``: MATLAB keeps a dimension of 1 that is not the last.
+- Otherwise every ``[numSamples x n]`` matrix is the single-electrode form.
+
+The nested form is read the same way in both cases. Here ``b1`` holds 2 spikes on 3
+electrodes (``[40 x 3 x 2]``), ``b2`` holds 4 spikes on one electrode (``[40 x 1 x 4]``)
+and ``b3`` holds a single spike on 3 electrodes (``[40 x 3]``, its trailing 1 dropped):
+
+.. literalinclude:: examples/ragged_arrays_examples.m
+   :language: matlab
+   :start-after: % snippet: doubly-mixed-electrode-counts
+   :end-before: % end snippet
+   :dedent:
+
+This yields ``waveforms_index = [3 6 7 8 9 10 13]`` (3 waveforms for each spike of
+``b1``, 1 for each spike of ``b2``, 3 for the spike of ``b3``) and
+``waveforms_index_index = [2 6 7]`` (2 spikes, then 4, then 1).
+
+Stating the electrode count with ``ElementsPerSubGroup``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+To avoid the rule above, state the number of waveforms per spike yourself with
+``ElementsPerSubGroup``: one value for all units, or one value per unit. For
+``waveforms`` this is the number of electrodes of each unit, which is the length of the
+unit's row in the ``electrodes`` column. Every unit is then a plain
+``[numSamples x numWaveforms]`` matrix with the waveforms of the first spike first, and
+``numWaveforms`` must be a multiple of the unit's value. No dimension of 1 is needed, and
+a matrix is read the same way whatever the other units are. Here ``c1`` is ``[40 x 6]``
+(2 spikes on 3 electrodes), ``c2`` is ``[40 x 4]`` (4 spikes on one electrode) and ``c3``
+is ``[40 x 3]`` (1 spike on 3 electrodes):
+
+.. literalinclude:: examples/ragged_arrays_examples.m
+   :language: matlab
+   :start-after: % snippet: doubly-elements-per-sub-group
+   :end-before: % end snippet
+   :dedent:
+
+This yields the same ``waveforms_index`` and ``waveforms_index_index`` as the example
+above. A unit can still be given as a ``[numSamples x numElectrodes x numSpikes]`` array;
+its second dimension must then equal the unit's value. A unit given as a nested cell
+array states its spikes itself and is not compared with ``ElementsPerSubGroup``.
+``ElementsPerSubGroup`` applies to ``Depth`` 2 only.
+
 Understanding the two index levels
 ----------------------------------
 For the multi-channel example above:
@@ -155,7 +245,8 @@ If you need the underlying objects (for example, to pass them to a constructor),
 helper function that ``addRaggedArray`` builds on: ``util.create_indexed_column`` returns
 a :class:`types.hdmf_common.VectorData` (or :class:`types.hdmf_common.DynamicTableRegion`)
 followed by one :class:`types.hdmf_common.VectorIndex` per index level, innermost first.
-It takes the same ``Depth`` argument and the same input forms.
+It takes the same ``Depth`` and ``ElementsPerSubGroup`` arguments and the same input
+forms.
 
 .. literalinclude:: examples/ragged_arrays_examples.m
    :language: matlab
