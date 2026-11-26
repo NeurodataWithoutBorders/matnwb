@@ -42,6 +42,8 @@ classdef HDF5LazyArray < io.backend.base.LazyArray
         data = load_h5_style(obj, varargin)
 
         data = load_mat_style(obj, varargin)
+
+        data = loadSelections(obj, selections)
     end
 
     methods (Access = private)
