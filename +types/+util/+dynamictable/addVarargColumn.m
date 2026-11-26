@@ -16,6 +16,8 @@ assert(isempty(existingCols), ...
     'NWB:DynamicTable:AddColumn:ColumnExists', ...
     'Column(s) { %s } already exist in the table', strjoin(existingCols, ', '));
 
+assertIndexColumnsHaveTargets(newVectorData)
+
 % Check if this is the first column being added (no existing columns and no id data)
 isFirstColumn = isempty(DynamicTable.colnames) && ...
     (isempty(DynamicTable.id) || isempty(DynamicTable.id.data));
@@ -148,9 +150,26 @@ function indexColumns = collectIndexColumns(dynamicTable, newVectorData)
 end
 
 function tf = isVectorIndexWithTarget(column)
-    isVectorIndex = isa(column, 'types.hdmf_common.VectorIndex') ...
+    tf = isVectorIndex(column) && ~isempty(column.target);
+end
+
+function tf = isVectorIndex(column)
+    tf = isa(column, 'types.hdmf_common.VectorIndex') ...
         || isa(column, 'types.core.VectorIndex');
-    tf = isVectorIndex && ~isempty(column.target);
+end
+
+function assertIndexColumnsHaveTargets(newVectorData)
+    % An index column names the column it indexes through its target.
+    % Without a target it cannot be matched to a data column.
+    columnNames = fieldnames(newVectorData);
+    for i = 1:numel(columnNames)
+        column = newVectorData.(columnNames{i});
+        if isVectorIndex(column) && isempty(column.target)
+            error("NWB:DynamicTable:AddColumn:MissingIndexTarget", ...
+                "Index column `%s` has no target. Set its `target` property to a " + ...
+                "`types.untyped.ObjectView` of the column it indexes.", columnNames{i})
+        end
+    end
 end
 
 function heightColumn = getHeightColumn(newVectorData, columnName, indexColumns)

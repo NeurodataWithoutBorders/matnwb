@@ -463,6 +463,25 @@ classdef dynamicTableTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(dynamicTable.id.data, int64([0; 1]));
         end
 
+        function testAddColumnRejectsVectorIndexWithoutTarget(testCase)
+            % An index column names the column it indexes through its
+            % target, so one without a target cannot be matched to a data
+            % column. Nothing is added to the table.
+            dynamicTable = types.hdmf_common.DynamicTable( ...
+                'description', 'empty test table');
+            vectorData = types.hdmf_common.VectorData( ...
+                'description', 'ragged column', 'data', [1; 2; 3]);
+            vectorIndex = types.hdmf_common.VectorIndex( ...
+                'description', 'index without a target', ...
+                'data', uint64([2; 3]));
+
+            testCase.verifyError( ...
+                @() dynamicTable.addColumn('raggedCol', vectorData, 'raggedCol_index', vectorIndex), ...
+                'NWB:DynamicTable:AddColumn:MissingIndexTarget');
+            testCase.verifyEmpty(dynamicTable.colnames);
+            testCase.verifyEmpty(dynamicTable.vectordata.keys());
+        end
+
         function testAddColumnRejectsVectorIndexTargetingItself(testCase)
             dynamicTable = types.hdmf_common.DynamicTable( ...
                 'description', 'empty test table');
