@@ -22,3 +22,6 @@ nwbtest.env
 
 docs/build
 docs/reports
+
+# Generated classes kept for reuse across schema versions
+generated-types-cache/
