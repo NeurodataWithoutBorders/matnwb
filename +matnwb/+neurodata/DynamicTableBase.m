@@ -9,6 +9,7 @@ classdef (Abstract) DynamicTableBase < handle
     properties (Abstract)
         id
         colnames
+        vectordata
     end
     
     methods
@@ -110,6 +111,152 @@ classdef (Abstract) DynamicTableBase < handle
         
             columnVectorPairs = [columnName; columnVector];
             types.util.dynamictable.addVarargColumn(obj, columnVectorPairs{:});
+        end
+
+        function addRaggedArray(obj, columnName, data, options)
+        % addRaggedArray - Add a ragged or doubly ragged column to the DynamicTable.
+        %
+        % Syntax:
+        %  dynamicTable.addRaggedArray(columnName, data) Adds a column in which
+        %  each row holds a variable number of elements. The elements of all rows
+        %  are stored in one VectorData named columnName, and a VectorIndex named
+        %  '<columnName>_index' stores where each row ends.
+        %
+        %  dynamicTable.addRaggedArray(columnName, data, Name, Value) Adds the
+        %  column using optional name-value pairs. With Depth 2 the column is
+        %  doubly ragged, like the 'waveforms' column of Units: each row holds a
+        %  variable number of sub-groups, and each sub-group holds a variable
+        %  number of elements. '<columnName>_index' then stores where each
+        %  sub-group ends, and a second VectorIndex named
+        %  '<columnName>_index_index' stores where each row ends.
+        %
+        % Input Arguments:
+        %  - columnName (string) -
+        %    Name of the new column.
+        %
+        %  - data (cell) -
+        %    A cell array with one cell per row, holding that row's elements
+        %    in the orientation of VectorData.data: a vector of scalars (e.g.
+        %    {[1 2 3], [4 5]} for a 2-row table) or an [elementDims x nElements]
+        %    array with the ragged axis last. With Depth 2 each cell holds the
+        %    row's sub-groups as a cell of [elementDims x nElements] arrays.
+        %    See util.create_indexed_column for all accepted forms.
+        %
+        %  - options (name-value pairs) -
+        %    Optional name-value pairs. Available options:
+        %
+        %    - Description (string) -
+        %      Description stored on the VectorData column. Default: "no description".
+        %
+        %    - TargetTable (DynamicTable) -
+        %      If provided, the column is created as a DynamicTableRegion
+        %      instead of a VectorData, and the values in data are 0-based row
+        %      indices into this table.
+        %
+        %    - Depth (integer) -
+        %      Number of VectorIndex levels: 1 (default) for a ragged column,
+        %      2 for a doubly ragged column.
+        %
+        % Usage:
+        %  Example 1 - Add spike times for two units with 3 and 2 spikes::
+        %
+        %    units = types.core.Units('colnames', {}, 'description', 'units');
+        %    units.addRaggedArray('spike_times', {[0.1 0.2 0.3], [0.5 0.6]});
+        %
+        %  Example 2 - Add electrode references for the same two units::
+        %
+        %    % electrodeTable is a DynamicTable with 4 rows. Row indices start at 0.
+        %    units.addRaggedArray('electrodes', {[0 1 2], 3}, 'TargetTable', electrodeTable);
+        %
+        %  Example 3 - Add waveforms for the same two units, with 2 and 3 spike events on 3 electrodes::
+        %
+        %    % Each spike event is a [num_samples x num_electrodes] matrix.
+        %    unit1 = {rand(40, 3), rand(40, 3)};
+        %    unit2 = {rand(40, 3), rand(40, 3), rand(40, 3)};
+        %    units.addRaggedArray('waveforms', {unit1, unit2}, 'Depth', 2);
+        %
+        % See also:
+        %   util.create_indexed_column, addColumn, addDoublyRaggedArray
+
+            arguments
+                obj (1,1) {matnwb.common.validation.mustBeDynamicTable}
+                columnName (1,1) string
+                data
+                options.Description (1,1) string = "no description"
+                options.TargetTable {mustBeEmptyOrDynamicTable} = []
+                options.Depth (1,1) {mustBeInteger, mustBePositive} = 1
+            end
+
+            layoutOptions = {'Depth', options.Depth};
+            columns = cell(1, options.Depth+1);
+            % The description is set on the column after the call: as a
+            % positional argument, a text that starts an option name of
+            % util.create_indexed_column, such as 'depth', is read as that
+            % option name.
+            [columns{:}] = util.create_indexed_column(data, ...
+                '', options.TargetTable, layoutOptions{:});
+            if strlength(options.Description) > 0
+                columns{1}.description = char(options.Description);
+            end
+
+            % The data column, then one index level per depth: '<name>_index',
+            % '<name>_index_index', ...
+            names = strings(1, options.Depth+1);
+            names(1) = columnName;
+            for iLevel = 1:options.Depth
+                names(iLevel+1) = names(iLevel) + "_index";
+            end
+            pairs = [num2cell(names); columns];
+            obj.addColumn(pairs{:});
+        end
+
+        function addDoublyRaggedArray(obj, columnName, data, options)
+        % addDoublyRaggedArray - Add a doubly ragged column to the DynamicTable.
+        %
+        % Syntax:
+        %  dynamicTable.addDoublyRaggedArray(columnName, data) Adds a column in
+        %  which each row holds a variable number of sub-groups, and each
+        %  sub-group holds a variable number of elements. It is the same as
+        %  dynamicTable.addRaggedArray(columnName, data, 'Depth', 2).
+        %
+        %  dynamicTable.addDoublyRaggedArray(columnName, data, Name, Value) Adds
+        %  the column using optional name-value pairs.
+        %
+        % Input Arguments:
+        %  - columnName (string) -
+        %    Name of the new column.
+        %
+        %  - data (cell) -
+        %    A cell array with one cell per row, holding that row's sub-groups
+        %    as a cell of [elementDims x nElements] arrays. See addRaggedArray.
+        %
+        %  - options (name-value pairs) -
+        %    Optional name-value pairs. Available options:
+        %
+        %    - Description (string) -
+        %      Description stored on the VectorData column. Default: "no description".
+        %
+        % Usage:
+        %  Example 1 - Add waveforms for two units with 2 and 3 spike events on 3 electrodes::
+        %
+        %    % Each spike event is a [num_samples x num_electrodes] matrix.
+        %    units = types.core.Units('colnames', {}, 'description', 'units');
+        %    unit1 = {rand(40, 3), rand(40, 3)};
+        %    unit2 = {rand(40, 3), rand(40, 3), rand(40, 3)};
+        %    units.addDoublyRaggedArray('waveforms', {unit1, unit2});
+        %
+        % See also:
+        %   addRaggedArray
+
+            arguments
+                obj (1,1) {matnwb.common.validation.mustBeDynamicTable}
+                columnName (1,1) string
+                data cell
+                options.Description (1,1) string = "no description"
+            end
+
+            forwardedOptions = namedargs2cell(options);
+            obj.addRaggedArray(columnName, data, forwardedOptions{:}, 'Depth', 2);
         end
 
         function row = getRow(obj, rowIndices, options)
@@ -285,5 +432,13 @@ classdef (Abstract) DynamicTableBase < handle
                 ['Cannot write to on-file Dynamic Tables without enabling data pipes. '...
                 'If this was produced with pynwb, please enable chunking for this table.']);
         end
+    end
+end
+
+function mustBeEmptyOrDynamicTable(value)
+    % The table that a DynamicTableRegion column references, or empty for a
+    % VectorData column.
+    if ~isempty(value)
+        matnwb.common.validation.mustBeDynamicTable(value)
     end
 end
