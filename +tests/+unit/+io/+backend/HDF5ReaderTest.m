@@ -7,6 +7,19 @@ classdef HDF5ReaderTest < matlab.unittest.TestCase
     end
 
     methods (Test)
+        function canOpenOnlyHDF5Files(testCase)
+            h5create("probe.h5", "/data", 1);
+            fileId = fopen("probe.txt", "w");
+            fprintf(fileId, "not an HDF5 file");
+            fclose(fileId);
+            mkdir("probe-folder")
+
+            testCase.verifyTrue(io.backend.hdf5.HDF5Reader.canOpen("probe.h5"));
+            testCase.verifyFalse(io.backend.hdf5.HDF5Reader.canOpen("probe.txt"));
+            testCase.verifyFalse(io.backend.hdf5.HDF5Reader.canOpen("probe-folder"));
+            testCase.verifyFalse(io.backend.hdf5.HDF5Reader.canOpen("missing.h5"));
+        end
+
         function readRootAndSchemaVersion(testCase)
             nwb = tests.factory.NWBFile();
             filename = "reader-test.nwb";

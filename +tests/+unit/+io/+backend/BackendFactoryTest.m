@@ -57,6 +57,31 @@ classdef BackendFactoryTest < matlab.unittest.TestCase
                 "NWB:BackendFactory:InvalidHDF5");
         end
 
+        function autoDetectionDoesNotDependOnFileExtension(testCase)
+            filename = "factory-extension-test.bin";
+            h5create(filename, "/data", [2, 2]);
+
+            reader = io.backend.BackendFactory.createReader(filename);
+            lazyArray = io.backend.BackendFactory.createLazyArray(filename, "/data");
+
+            testCase.verifyClass(reader, "io.backend.hdf5.HDF5Reader");
+            testCase.verifyClass(lazyArray, "io.backend.hdf5.HDF5LazyArray");
+        end
+
+        function fileNoBackendCanOpenThrowsError(testCase)
+            filename = "factory-text-test.nwb";
+            fileId = fopen(filename, "w");
+            fprintf(fileId, "not an HDF5 file");
+            fclose(fileId);
+
+            testCase.verifyError( ...
+                @() io.backend.BackendFactory.createReader(filename), ...
+                "NWB:BackendFactory:UnsupportedFormat");
+            testCase.verifyError( ...
+                @() io.backend.BackendFactory.createLazyArray(filename, "/data"), ...
+                "NWB:BackendFactory:UnsupportedFormat");
+        end
+
         function createHDF5WriterWithStorageBackendOption(testCase)
             filename = "factory-writer-test.nwb";
 
