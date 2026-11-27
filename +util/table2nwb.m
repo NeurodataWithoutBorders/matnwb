@@ -13,7 +13,9 @@ function nwbtable = table2nwb(T, description, dataType)
 %
 % Input Arguments:
 %  - T (table) -
-%    A MATLAB table to be converted.
+%    A MATLAB table to be converted. The description of each column is
+%    taken from T.Properties.VariableDescriptions. A column without one
+%    gets the description "no description".
 %
 %  - description (string)
 %    A string providing a description for the DynamicTable (default is 
@@ -62,7 +64,7 @@ for col = T
                 && ~isempty(col.Properties.VariableDescriptions{1})
             description = col.Properties.VariableDescriptions{1};
         else
-            description = 'no description provided';
+            description = 'no description';
         end
 
         currentVectorData = types.hdmf_common.VectorData(...
