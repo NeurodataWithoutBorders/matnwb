@@ -1,43 +1,43 @@
-classdef RaggedColumn
-% RaggedColumn - Data for a DynamicTable column in which each row holds a variable number of elements.
+classdef RaggedArrayColumn
+% RaggedArrayColumn - Data for a DynamicTable column in which each row holds a variable number of elements.
 %
 % Syntax:
-%  column = types.untyped.RaggedColumn(data) creates a ragged column from
-%  a cell array with one cell per row.
+%  column = types.untyped.RaggedArrayColumn(data) creates a ragged array
+%  column from a cell array with one cell per row.
 %
-%  column = types.untyped.RaggedColumn(data, Name, Value) creates the
+%  column = types.untyped.RaggedArrayColumn(data, Name, Value) creates the
 %  column using optional name-value pairs.
 %
-% A RaggedColumn is passed to a DynamicTable constructor under the column's
-% name, or added to an existing table with addRaggedArray. The table stores
-% it as a VectorData (or a DynamicTableRegion, with TargetTable) named after
-% the column, plus one VectorIndex per depth level: '<name>_index',
-% '<name>_index_index'. A table read from a file holds those objects, not
-% a RaggedColumn.
+% A RaggedArrayColumn is passed to a DynamicTable constructor under the
+% column's name, or added to an existing table with addRaggedArrayColumn.
+% The table stores it as a VectorData (or a DynamicTableRegion, with
+% TargetTable) named after the column, plus one VectorIndex per depth level:
+% '<name>_index', '<name>_index_index'. A table read from a file holds
+% those objects, not a RaggedArrayColumn.
 %
 % Input Arguments:
 %  - data (cell | numeric | text | table | struct) -
-%    The rows of the column. See DynamicTableBase.addRaggedArray for the
-%    accepted forms.
+%    The rows of the column. See DynamicTableBase.addRaggedArrayColumn for
+%    the accepted forms.
 %
 %  - options (name-value pairs) -
 %    Optional name-value pairs: Description, TargetTable, Depth,
 %    ElementsPerRow and ElementsPerSubGroup, as in
-%    DynamicTableBase.addRaggedArray.
+%    DynamicTableBase.addRaggedArrayColumn.
 %
 % Usage:
 %  Example 1 - Create a Units table with spike times for two units::
 %
-%    spikeTimes = types.untyped.RaggedColumn({[0.1 0.2 0.3], [0.5 0.6]}, ...
+%    spikeTimes = types.untyped.RaggedArrayColumn({[0.1 0.2 0.3], [0.5 0.6]}, ...
 %        Description="spike times of each unit, in seconds");
 %    units = types.core.Units('colnames', {'spike_times'}, ...
 %        'description', 'units', 'spike_times', spikeTimes);
 %
 % See also:
-%   matnwb.neurodata.DynamicTableBase/addRaggedArray
+%   matnwb.neurodata.DynamicTableBase/addRaggedArrayColumn
 
     properties (SetAccess = private)
-        % Data - The rows of the column, in a form accepted by addRaggedArray.
+        % Data - The rows of the column, in a form accepted by addRaggedArrayColumn.
         Data
 
         % Description - Description stored on the VectorData column.
@@ -64,7 +64,7 @@ classdef RaggedColumn
     end
 
     methods
-        function obj = RaggedColumn(data, options)
+        function obj = RaggedArrayColumn(data, options)
             arguments
                 data
                 options.Description (1,1) string = "no description"
@@ -97,7 +97,7 @@ classdef RaggedColumn
         %  VectorIndex per depth level.
 
             arguments
-                obj (1,1) types.untyped.RaggedColumn
+                obj (1,1) types.untyped.RaggedArrayColumn
                 columnName (1,1) string
             end
 

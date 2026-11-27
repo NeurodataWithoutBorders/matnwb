@@ -1,11 +1,12 @@
-function nameValuePairs = expandRaggedColumns(nameValuePairs)
-% expandRaggedColumns - Replace each RaggedColumn argument with its stored column objects.
+function nameValuePairs = expandRaggedArrayColumns(nameValuePairs)
+% expandRaggedArrayColumns - Replace each RaggedArrayColumn argument with its stored column objects.
 %
 % Syntax:
-%  nameValuePairs = types.util.dynamictable.expandRaggedColumns(nameValuePairs)
-%  replaces every pair {columnName, raggedColumn}, where raggedColumn is a
-%  types.untyped.RaggedColumn, with {columnName, data, '<columnName>_index',
-%  index, ...}. Other pairs are returned unchanged and in order.
+%  nameValuePairs = types.util.dynamictable.expandRaggedArrayColumns(nameValuePairs)
+%  replaces every pair {columnName, raggedArrayColumn}, where
+%  raggedArrayColumn is a types.untyped.RaggedArrayColumn, with
+%  {columnName, data, '<columnName>_index', index, ...}. Other pairs are
+%  returned unchanged and in order.
 %
 % Generated DynamicTable constructors call this before they parse their
 % arguments, so each constructor receives the VectorData and VectorIndex
@@ -21,18 +22,18 @@ function nameValuePairs = expandRaggedColumns(nameValuePairs)
         return
     end
 
-    isRaggedColumn = cellfun(@(value) isa(value, 'types.untyped.RaggedColumn'), ...
+    isRaggedArrayColumn = cellfun(@(value) isa(value, 'types.untyped.RaggedArrayColumn'), ...
         nameValuePairs(2:2:end));
-    if ~any(isRaggedColumn)
+    if ~any(isRaggedArrayColumn)
         return
     end
 
-    expandedPairs = cell(1, numel(isRaggedColumn));
-    indexNames = cell(1, numel(isRaggedColumn));
-    for iPair = 1:numel(isRaggedColumn)
+    expandedPairs = cell(1, numel(isRaggedArrayColumn));
+    indexNames = cell(1, numel(isRaggedArrayColumn));
+    for iPair = 1:numel(isRaggedArrayColumn)
         name = nameValuePairs{2*iPair-1};
         value = nameValuePairs{2*iPair};
-        if isRaggedColumn(iPair)
+        if isRaggedArrayColumn(iPair)
             expandedPairs{iPair} = value.toNameValuePairs(name);
             indexNames{iPair} = expandedPairs{iPair}(3:2:end);
         else
@@ -48,8 +49,8 @@ function nameValuePairs = expandRaggedColumns(nameValuePairs)
     isGivenTwice = arrayfun(@(name) sum(argumentNames == name) > 1, indexNames);
     duplicateNames = indexNames(isGivenTwice);
     if ~isempty(duplicateNames)
-        error('NWB:DynamicTable:RaggedColumn:DuplicateArgument', ...
-            ['A RaggedColumn creates its own index columns, so they cannot also ' ...
+        error('NWB:DynamicTable:RaggedArrayColumn:DuplicateArgument', ...
+            ['A RaggedArrayColumn creates its own index columns, so they cannot also ' ...
             'be given as arguments. Remove the argument(s): %s.'], ...
             strjoin(duplicateNames, ', '))
     end

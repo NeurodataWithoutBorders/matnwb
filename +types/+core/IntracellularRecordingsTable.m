@@ -49,7 +49,7 @@ methods
         % Output Arguments:
         %  - intracellularRecordingsTable (types.core.IntracellularRecordingsTable) - An IntracellularRecordingsTable object
         
-        varargin = types.util.dynamictable.expandRaggedColumns(varargin);
+        varargin = types.util.dynamictable.expandRaggedArrayColumns(varargin);
         varargin = [{'description' 'A table to group together a stimulus and response from a single electrode and a single simultaneous recording and for storing metadata about the intracellular recording.'} varargin];
         obj = obj@types.hdmf_common.AlignedDynamicTable(varargin{:});
         

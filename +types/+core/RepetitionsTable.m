@@ -41,7 +41,7 @@ methods
         % Output Arguments:
         %  - repetitionsTable (types.core.RepetitionsTable) - A RepetitionsTable object
         
-        varargin = types.util.dynamictable.expandRaggedColumns(varargin);
+        varargin = types.util.dynamictable.expandRaggedArrayColumns(varargin);
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         
         

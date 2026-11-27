@@ -8,11 +8,11 @@ function functionString = fillConstructor(name, parentname, defaults, props, nam
     end
 
     bodyString = fillBody(parentname, defaults, props, namespace, inherited);
-    % Expand RaggedColumn arguments before any constructor in the chain
+    % Expand RaggedArrayColumn arguments before any constructor in the chain
     % parses them: each constructor validates a column as the VectorData
     % and VectorIndex objects it is stored as.
     if file.internal.isDescendantOf(name, namespace, 'DynamicTable')
-        bodyString = ['varargin = types.util.dynamictable.expandRaggedColumns(varargin);' ...
+        bodyString = ['varargin = types.util.dynamictable.expandRaggedArrayColumns(varargin);' ...
             newline bodyString];
     end
     if ~isempty(bodyString)

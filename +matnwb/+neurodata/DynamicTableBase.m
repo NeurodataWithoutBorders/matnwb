@@ -221,8 +221,8 @@ classdef (Abstract) DynamicTableBase < handle
             end
 
             columnOptions = namedargs2cell(options);
-            raggedColumn = types.untyped.RaggedColumn(data, columnOptions{:});
-            pairs = raggedColumn.toNameValuePairs(columnName);
+            raggedArrayColumn = types.untyped.RaggedArrayColumn(data, columnOptions{:});
+            pairs = raggedArrayColumn.toNameValuePairs(columnName);
             obj.addColumn(pairs{:});
         end
 
