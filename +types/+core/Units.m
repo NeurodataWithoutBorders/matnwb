@@ -101,7 +101,7 @@ methods
         % Output Arguments:
         %  - units (types.core.Units) - A Units object
         
-        varargin = types.util.dynamictable.expandRaggedArrayColumns(varargin);
+        varargin = types.util.dynamictable.expandTableColumns(varargin);
         varargin = [{'waveform_mean_unit' 'volts' 'waveform_sd_unit' 'volts' 'waveforms_unit' 'volts'} varargin];
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         

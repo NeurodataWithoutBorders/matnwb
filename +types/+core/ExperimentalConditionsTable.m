@@ -41,7 +41,7 @@ methods
         % Output Arguments:
         %  - experimentalConditionsTable (types.core.ExperimentalConditionsTable) - An ExperimentalConditionsTable object
         
-        varargin = types.util.dynamictable.expandRaggedArrayColumns(varargin);
+        varargin = types.util.dynamictable.expandTableColumns(varargin);
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         
         

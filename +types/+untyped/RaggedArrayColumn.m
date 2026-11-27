@@ -1,4 +1,4 @@
-classdef RaggedArrayColumn
+classdef RaggedArrayColumn < types.untyped.abstract.ExpandableTableColumn
 % RaggedArrayColumn - Data for a DynamicTable column in which each row holds a variable number of elements.
 %
 % Syntax:

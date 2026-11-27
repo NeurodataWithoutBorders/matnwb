@@ -74,7 +74,7 @@ methods
         % Output Arguments:
         %  - electrodesTable (types.core.ElectrodesTable) - An ElectrodesTable object
         
-        varargin = types.util.dynamictable.expandRaggedArrayColumns(varargin);
+        varargin = types.util.dynamictable.expandTableColumns(varargin);
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         
         

@@ -42,7 +42,7 @@ methods
         % Output Arguments:
         %  - intracellularStimuliTable (types.core.IntracellularStimuliTable) - An IntracellularStimuliTable object
         
-        varargin = types.util.dynamictable.expandRaggedArrayColumns(varargin);
+        varargin = types.util.dynamictable.expandTableColumns(varargin);
         varargin = [{'description' 'Table for storing intracellular stimulus related metadata.'} varargin];
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         
