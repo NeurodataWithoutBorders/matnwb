@@ -87,6 +87,16 @@ classdef dynamicTableAddRowTest < tests.abstract.NwbTestCase
             testCase.verifyFalse(dynamicTable.vectordata.isKey('waveforms_index_index_index'));
             testCase.verifyEqual(double(dynamicTable.vectordata.get('waveforms_index_index').data), 2);
         end
+
+        function testAddRowGivesNewColumnPlaceholderDescription(testCase)
+            % NWB Inspector reports "no description" as a placeholder, so a
+            % column that addRow creates is flagged until it is described.
+            dynamicTable = testCase.createTable('x');
+
+            dynamicTable.addRow('x', 1);
+
+            testCase.verifyEqual(dynamicTable.vectordata.get('x').description, 'no description');
+        end
     end
 
     methods (Static, Access = private)

@@ -291,7 +291,7 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
             "ElementsPerSubGroup applies to a column of depth 2, but Depth is %d.", depth);
     end
     if isempty(description)
-        description = 'no description';
+        description = matnwb.common.constant.DESCRIPTION_PLACEHOLDER;
     else
         description = char(description);
     end
