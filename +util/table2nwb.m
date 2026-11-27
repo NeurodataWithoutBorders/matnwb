@@ -62,14 +62,14 @@ for col = T
     else
         if ~isempty(col.Properties.VariableDescriptions) ...
                 && ~isempty(col.Properties.VariableDescriptions{1})
-            description = col.Properties.VariableDescriptions{1};
+            columnDescription = col.Properties.VariableDescriptions{1};
         else
-            description = 'no description';
+            columnDescription = 'no description';
         end
 
         currentVectorData = types.hdmf_common.VectorData(...
             'data', col.Variables', ...
-            'description', description);
+            'description', columnDescription);
 
         if isprop(nwbtable, currentVariableName)
             nwbtable.(currentVariableName) = currentVectorData;
