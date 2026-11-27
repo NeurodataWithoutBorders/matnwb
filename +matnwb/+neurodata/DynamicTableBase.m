@@ -84,8 +84,11 @@ classdef (Abstract) DynamicTableBase < handle
         %  - columnName (string) -
         %    Name of the new column in the table.
         %
-        %  - columnVector (VectorData | VectorIndex) -
-        %    Corresponding VectorData or VectorIndex for the new column
+        %  - columnVector (VectorData | VectorIndex | types.untyped.abstract.ExpandableTableColumn) -
+        %    Corresponding VectorData or VectorIndex for the new column. An
+        %    ExpandableTableColumn, such as a types.untyped.RaggedArrayColumn,
+        %    adds the column together with the objects it is stored with, for
+        %    example '<columnName>_index'.
         %
         % Note:
         %   The height of the columns to be appended must match the height of 
@@ -110,6 +113,7 @@ classdef (Abstract) DynamicTableBase < handle
             obj.assertIsEditable('NWB:DynamicTable:AddColumn:Uneditable')
         
             columnVectorPairs = [columnName; columnVector];
+            columnVectorPairs = types.util.dynamictable.expandTableColumns(columnVectorPairs(:)');
             types.util.dynamictable.addVarargColumn(obj, columnVectorPairs{:});
         end
 
@@ -221,9 +225,7 @@ classdef (Abstract) DynamicTableBase < handle
             end
 
             columnOptions = namedargs2cell(options);
-            raggedArrayColumn = types.untyped.RaggedArrayColumn(data, columnOptions{:});
-            pairs = raggedArrayColumn.toNameValuePairs(columnName);
-            obj.addColumn(pairs{:});
+            obj.addColumn(columnName, types.untyped.RaggedArrayColumn(data, columnOptions{:}));
         end
 
         function addDoublyRaggedArrayColumn(obj, columnName, data, options)

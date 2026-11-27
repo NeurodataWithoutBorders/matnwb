@@ -8,8 +8,9 @@ classdef RaggedArrayColumn < types.untyped.abstract.ExpandableTableColumn
 %  column = types.untyped.RaggedArrayColumn(data, Name, Value) creates the
 %  column using optional name-value pairs.
 %
-% A RaggedArrayColumn is passed to a DynamicTable constructor under the
-% column's name, or added to an existing table with addRaggedArrayColumn.
+% A RaggedArrayColumn is passed to a DynamicTable constructor or to
+% addColumn under the column's name. addRaggedArrayColumn creates one and
+% adds it to an existing table in one call.
 % The table stores it as a VectorData (or a DynamicTableRegion, with
 % TargetTable) named after the column, plus one VectorIndex per depth level:
 % '<name>_index', '<name>_index_index'. A table read from a file holds
@@ -33,7 +34,13 @@ classdef RaggedArrayColumn < types.untyped.abstract.ExpandableTableColumn
 %    units = types.core.Units('colnames', {'spike_times'}, ...
 %        'description', 'units', 'spike_times', spikeTimes);
 %
+%  Example 2 - Add the same column to an existing table::
+%
+%    units = types.core.Units('colnames', {}, 'description', 'units');
+%    units.addColumn('spike_times', spikeTimes);
+%
 % See also:
+%   types.untyped.abstract.ExpandableTableColumn,
 %   matnwb.neurodata.DynamicTableBase/addRaggedArrayColumn
 
     properties (SetAccess = private)
