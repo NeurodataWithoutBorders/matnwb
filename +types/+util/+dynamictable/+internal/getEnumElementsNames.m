@@ -12,14 +12,20 @@ function elementsNames = getEnumElementsNames(vectorNames, vectors)
         vectors (1,:) cell
     end
 
+    isEnumColumn = false(size(vectors));
+    for iVector = 1:numel(vectors)
+        vector = vectors{iVector};
+        isEnumColumn(iVector) = isa(vector, 'types.hdmf_experimental.EnumData') ...
+            && ~isempty(vector.elements);
+    end
+    enumColumns = vectors(isEnumColumn);
+
     elementsNames = {};
-    for iEnum = 1:numel(vectors)
-        enumColumn = vectors{iEnum};
-        if isa(enumColumn, 'types.hdmf_experimental.EnumData') && ~isempty(enumColumn.elements)
-            for iVector = 1:numel(vectors)
-                if isReferenceTarget(enumColumn.elements, vectors{iVector}, vectorNames{iVector})
-                    elementsNames{end+1} = vectorNames{iVector}; %#ok<AGROW>
-                end
+    for iEnum = 1:numel(enumColumns)
+        elements = enumColumns{iEnum}.elements;
+        for iVector = 1:numel(vectors)
+            if isReferenceTarget(elements, vectors{iVector}, vectorNames{iVector})
+                elementsNames{end+1} = vectorNames{iVector}; %#ok<AGROW>
             end
         end
     end
