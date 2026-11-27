@@ -20,6 +20,9 @@ end
 properties (Constant, Access = private)
     DeclaredSchemaColumns = ["start_time", "stop_time", "tags", "tags_index", "timeseries", "timeseries_index"];
 end
+properties (Constant, Access = private)
+    DeclaredSchemaColumnTypes = struct('timeseries', 'types.core.TimeSeriesReferenceVectorData');
+end
 
 methods
     function obj = TimeIntervals(varargin)

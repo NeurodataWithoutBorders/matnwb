@@ -13,6 +13,9 @@ end
 properties (Constant, Access = private)
     DeclaredSchemaColumns = ["repetitions", "repetitions_index"];
 end
+properties (Constant, Access = private)
+    DeclaredSchemaColumnTypes = struct('repetitions', 'types.hdmf_common.DynamicTableRegion');
+end
 
 methods
     function obj = ExperimentalConditionsTable(varargin)

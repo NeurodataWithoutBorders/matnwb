@@ -19,6 +19,9 @@ properties (Constant, Access = private)
     DeclaredSchemaColumns = ["annotation", "duration", "timestamp"];
 end
 properties (Constant, Access = private)
+    DeclaredSchemaColumnTypes = struct('duration', 'types.core.DurationVectorData', 'timestamp', 'types.core.TimestampVectorData');
+end
+properties (Constant, Access = private)
     SchemaRelativePaths = ["source_description"];
 end
 

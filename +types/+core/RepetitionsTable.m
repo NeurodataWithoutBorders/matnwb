@@ -13,6 +13,9 @@ end
 properties (Constant, Access = private)
     DeclaredSchemaColumns = ["sequential_recordings", "sequential_recordings_index"];
 end
+properties (Constant, Access = private)
+    DeclaredSchemaColumnTypes = struct('sequential_recordings', 'types.hdmf_common.DynamicTableRegion');
+end
 
 methods
     function obj = RepetitionsTable(varargin)

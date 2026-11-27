@@ -12,6 +12,9 @@ end
 properties (Constant, Access = private)
     DeclaredSchemaColumns = ["response"];
 end
+properties (Constant, Access = private)
+    DeclaredSchemaColumnTypes = struct('response', 'types.core.TimeSeriesReferenceVectorData');
+end
 
 methods
     function obj = IntracellularResponsesTable(varargin)
