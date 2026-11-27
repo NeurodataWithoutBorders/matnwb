@@ -16,6 +16,21 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             testCase.verifyEqual(double(stimuliTable.id.data), [0; 1])
         end
 
+        function testFirstRowCreatesEventsTableColumnsOfSchemaClass(testCase)
+            eventsTable = types.core.EventsTable( ...
+                'description', 'reward deliveries', ...
+                'colnames', {'timestamp', 'duration'});
+
+            eventsTable.addRow('timestamp', 12.5, 'duration', 0.2);
+            eventsTable.addRow('timestamp', 31.0, 'duration', 0.4);
+
+            testCase.verifyClass(eventsTable.timestamp, 'types.core.TimestampVectorData')
+            testCase.verifyClass(eventsTable.duration, 'types.core.DurationVectorData')
+            testCase.verifyEqual(eventsTable.timestamp.data(:), [12.5; 31.0])
+            testCase.verifyEqual(eventsTable.duration.data(:), [0.2; 0.4])
+            testCase.verifyEqual(double(eventsTable.id.data), [0; 1])
+        end
+
         function testFirstRowCreatesPlainColumnAsVectorData(testCase)
             unitsTable = types.core.Units( ...
                 'description', 'units', 'colnames', {'spike_times'});
