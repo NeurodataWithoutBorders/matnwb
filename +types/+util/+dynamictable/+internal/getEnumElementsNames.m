@@ -1,11 +1,23 @@
 function elementsNames = getEnumElementsNames(vectorNames, vectors)
 % getEnumElementsNames - Return the names of vectors that hold EnumData elements.
 %
-% Given the names and objects of a set of vectors, return the names of those
-% that an EnumData column in the same set refers to as its elements. The
-% elements are stored next to the columns of a DynamicTable, but they are
-% not a column: their height is the number of enumerated elements, not the
-% number of rows, and they are not listed in `colnames`.
+% Syntax:
+%  elementsNames = types.util.dynamictable.internal.getEnumElementsNames(vectorNames, vectors)
+%  finds the EnumData vectors in vectors that have an `elements` reference,
+%  and returns the names of the vectors in vectors that those references
+%  point to. Each name is returned once.
+%
+%  A reference points to a vector when its target is that vector object. A
+%  reference read from a file has no target object, only a path, and points
+%  to the vector whose name ends that path.
+%
+% Input Arguments:
+%  - vectorNames (cell) - Name of each vector in vectors.
+%  - vectors (cell) - Vector objects to search, in the order of vectorNames.
+%
+% Output Arguments:
+%  - elementsNames (cell) - Names from vectorNames of the vectors that hold
+%    the elements of an EnumData vector in vectors.
 
     arguments
         vectorNames (1,:) cell
