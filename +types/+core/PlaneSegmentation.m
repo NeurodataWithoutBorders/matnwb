@@ -59,6 +59,7 @@ methods
         % Output Arguments:
         %  - planeSegmentation (types.core.PlaneSegmentation) - A PlaneSegmentation object
         
+        varargin = types.util.dynamictable.expandRaggedColumns(varargin);
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         
         

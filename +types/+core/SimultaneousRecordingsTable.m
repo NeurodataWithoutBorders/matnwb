@@ -41,6 +41,7 @@ methods
         % Output Arguments:
         %  - simultaneousRecordingsTable (types.core.SimultaneousRecordingsTable) - A SimultaneousRecordingsTable object
         
+        varargin = types.util.dynamictable.expandRaggedColumns(varargin);
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         
         

@@ -50,6 +50,7 @@ methods
         % Output Arguments:
         %  - frequencyBandsTable (types.core.FrequencyBandsTable) - A FrequencyBandsTable object
         
+        varargin = types.util.dynamictable.expandRaggedColumns(varargin);
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         
         

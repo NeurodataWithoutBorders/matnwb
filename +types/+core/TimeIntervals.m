@@ -56,6 +56,7 @@ methods
         % Output Arguments:
         %  - timeIntervals (types.core.TimeIntervals) - A TimeIntervals object
         
+        varargin = types.util.dynamictable.expandRaggedColumns(varargin);
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         
         
