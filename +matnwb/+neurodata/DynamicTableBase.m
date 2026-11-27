@@ -220,29 +220,9 @@ classdef (Abstract) DynamicTableBase < handle
                 options.ElementsPerSubGroup {mustBeNumeric, mustBeInteger, mustBePositive}
             end
 
-            % The layout options are passed on only when they were given:
-            % ElementsPerRow is empty for a table with no rows, which differs
-            % from leaving it out.
-            layoutOptions = namedargs2cell(rmfield(options, {'Description', 'TargetTable'}));
-            columns = cell(1, options.Depth+1);
-            % The description is set on the column after the call: as a
-            % positional argument, a text that starts an option name of
-            % util.create_indexed_column, such as 'depth', is read as that
-            % option name.
-            [columns{:}] = util.create_indexed_column(data, ...
-                '', options.TargetTable, layoutOptions{:});
-            if strlength(options.Description) > 0
-                columns{1}.description = char(options.Description);
-            end
-
-            % The data column, then one index level per depth: '<name>_index',
-            % '<name>_index_index', ...
-            names = strings(1, options.Depth+1);
-            names(1) = columnName;
-            for iLevel = 1:options.Depth
-                names(iLevel+1) = names(iLevel) + "_index";
-            end
-            pairs = [num2cell(names); columns];
+            columnOptions = namedargs2cell(options);
+            raggedColumn = types.untyped.RaggedColumn(data, columnOptions{:});
+            pairs = raggedColumn.toNameValuePairs(columnName);
             obj.addColumn(pairs{:});
         end
 
