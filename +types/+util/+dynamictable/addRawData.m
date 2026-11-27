@@ -89,7 +89,7 @@ function initVecData(DynamicTable, column, dataType)
         VecData = types.core.VectorData();
     end
 
-    VecData.description = 'no description';
+    VecData.description = matnwb.common.constant.DESCRIPTION_PLACEHOLDER;
 
     if strcmp(dataType, 'logical')
         % Logical is the lowest precedent type when concatenating primitive

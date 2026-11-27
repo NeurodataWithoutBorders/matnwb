@@ -213,7 +213,7 @@ classdef (Abstract) DynamicTableBase < handle
                 obj (1,1) {matnwb.common.validation.mustBeDynamicTable}
                 columnName (1,1) string
                 data
-                options.Description (1,1) string = "no description"
+                options.Description (1,1) string = matnwb.common.constant.DESCRIPTION_PLACEHOLDER
                 options.TargetTable {mustBeEmptyOrDynamicTable} = []
                 options.Depth (1,1) {mustBeInteger, mustBePositive} = 1
                 options.ElementsPerRow {mustBeNumeric, mustBeInteger, mustBeNonnegative}
@@ -293,7 +293,7 @@ classdef (Abstract) DynamicTableBase < handle
                 obj (1,1) {matnwb.common.validation.mustBeDynamicTable}
                 columnName (1,1) string
                 data cell
-                options.Description (1,1) string = "no description"
+                options.Description (1,1) string = matnwb.common.constant.DESCRIPTION_PLACEHOLDER
                 options.ElementsPerSubGroup {mustBeNumeric, mustBeInteger, mustBePositive}
             end
 

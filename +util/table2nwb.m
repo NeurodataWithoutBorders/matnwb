@@ -39,7 +39,7 @@ function nwbtable = table2nwb(T, description, dataType)
 
 arguments
     T table
-    description (1,1) string = "no description"
+    description (1,1) string = matnwb.common.constant.DESCRIPTION_PLACEHOLDER
     dataType (1,1) string {mustBeDynamicTableTypeName} = "types.hdmf_common.DynamicTable"
 end
 
@@ -64,7 +64,7 @@ for col = T
                 && ~isempty(col.Properties.VariableDescriptions{1})
             columnDescription = col.Properties.VariableDescriptions{1};
         else
-            columnDescription = 'no description';
+            columnDescription = matnwb.common.constant.DESCRIPTION_PLACEHOLDER;
         end
 
         currentVectorData = types.hdmf_common.VectorData(...
