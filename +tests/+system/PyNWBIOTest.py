@@ -218,7 +218,7 @@ class UnitsTableIOTest(PyNWBIOTest):
     def addContainer(self, file):
         # Build a Units table with multi-electrode, doubly-ragged waveforms
         # using the idiomatic add_unit method. This mirrors the MatNWB
-        # addRaggedArray / addDoublyRaggedArray construction in UnitsTableIOTest.m.
+        # addRaggedArrayColumn / addDoublyRaggedArrayColumn construction in UnitsTableIOTest.m.
         #
         # Each unit's waveforms are passed as a 3-D array with shape
         # (num_spikes, num_electrodes, num_samples). Note the LAST dimension is

@@ -1,6 +1,6 @@
 classdef UnitsTableIOTest < tests.system.PyNWBIOTest
     properties (ClassSetupParameter)
-        % Both input forms of addRaggedArray with Depth 2 must store the same
+        % Both input forms of addRaggedArrayColumn with Depth 2 must store the same
         % waveforms layout as PyNWB's Units.add_unit.
         WaveformInput = struct( ...
             "CellPerSpike", "cell", ...
@@ -21,12 +21,12 @@ classdef UnitsTableIOTest < tests.system.PyNWBIOTest
     methods
         function addContainer(testCase, file)
             % Build a Units table with multi-electrode, doubly-ragged waveforms
-            % using addRaggedArray. This mirrors PyNWB's Units.add_unit in
+            % using addRaggedArrayColumn. This mirrors PyNWB's Units.add_unit in
             % PyNWBIOTest.py so the two round-tripped containers compare equal.
             file.units = types.core.Units('description', 'data on spiking units');
 
             % spike_times: a ragged column, one list of times per unit.
-            file.units.addRaggedArray('spike_times', {[1 2], [3 4 5]});
+            file.units.addRaggedArrayColumn('spike_times', {[1 2], [3 4 5]});
 
             % waveforms: a doubly-ragged column stored as a 2-D
             % [num_waveforms, num_samples] dataset, with the electrode dimension
@@ -53,7 +53,7 @@ classdef UnitsTableIOTest < tests.system.PyNWBIOTest
                 otherwise
                     error("Unknown WaveformInput value ""%s"".", testCase.WaveformInputForm)
             end
-            file.units.addRaggedArray('waveforms', waveforms, 'Depth', 2);
+            file.units.addRaggedArrayColumn('waveforms', waveforms, 'Depth', 2);
 
             % waveform_mean / waveform_sd: fixed 2-D columns [numSamples x numUnits].
             file.units.waveform_mean = types.hdmf_common.VectorData( ...

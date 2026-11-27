@@ -113,19 +113,19 @@ classdef (Abstract) DynamicTableBase < handle
             types.util.dynamictable.addVarargColumn(obj, columnVectorPairs{:});
         end
 
-        function addRaggedArray(obj, columnName, data, options)
-        % addRaggedArray - Add a ragged or doubly ragged column to the DynamicTable.
+        function addRaggedArrayColumn(obj, columnName, data, options)
+        % addRaggedArrayColumn - Add a ragged or doubly ragged column to the DynamicTable.
         %
         % Syntax:
-        %  dynamicTable.addRaggedArray(columnName, data) Adds a column in which
-        %  each row holds a variable number of elements. The elements of all rows
-        %  are stored in one VectorData named columnName, and a VectorIndex named
-        %  '<columnName>_index' stores where each row ends.
+        %  dynamicTable.addRaggedArrayColumn(columnName, data) Adds a column in
+        %  which each row holds a variable number of elements. The elements of
+        %  all rows are stored in one VectorData named columnName, and a
+        %  VectorIndex named '<columnName>_index' stores where each row ends.
         %
-        %  dynamicTable.addRaggedArray(columnName, data, Name, Value) Adds the
-        %  column using optional name-value pairs. With Depth 2 the column is
-        %  doubly ragged, like the 'waveforms' column of Units: each row holds a
-        %  variable number of sub-groups, and each sub-group holds a variable
+        %  dynamicTable.addRaggedArrayColumn(columnName, data, Name, Value) Adds
+        %  the column using optional name-value pairs. With Depth 2 the column
+        %  is doubly ragged, like the 'waveforms' column of Units: each row holds
+        %  a variable number of sub-groups, and each sub-group holds a variable
         %  number of elements. '<columnName>_index' then stores where each
         %  sub-group ends, and a second VectorIndex named
         %  '<columnName>_index_index' stores where each row ends.
@@ -179,24 +179,24 @@ classdef (Abstract) DynamicTableBase < handle
         %  Example 1 - Add spike times for two units with 3 and 2 spikes::
         %
         %    units = types.core.Units('colnames', {}, 'description', 'units');
-        %    units.addRaggedArray('spike_times', {[0.1 0.2 0.3], [0.5 0.6]});
+        %    units.addRaggedArrayColumn('spike_times', {[0.1 0.2 0.3], [0.5 0.6]});
         %
         %  Example 2 - Add electrode references for the same two units::
         %
         %    % electrodeTable is a DynamicTable with 4 rows. Row indices start at 0.
-        %    units.addRaggedArray('electrodes', {[0 1 2], 3}, 'TargetTable', electrodeTable);
+        %    units.addRaggedArrayColumn('electrodes', {[0 1 2], 3}, 'TargetTable', electrodeTable);
         %
         %  Example 3 - Add waveforms for the same two units, with 2 and 3 spike events on 3 electrodes::
         %
         %    % Each spike event is a [num_samples x num_electrodes] matrix.
         %    unit1 = {rand(40, 3), rand(40, 3)};
         %    unit2 = {rand(40, 3), rand(40, 3), rand(40, 3)};
-        %    units.addRaggedArray('waveforms', {unit1, unit2}, 'Depth', 2);
+        %    units.addRaggedArrayColumn('waveforms', {unit1, unit2}, 'Depth', 2);
         %
         %  Example 4 - Add waveforms as one [num_samples x num_electrodes x num_spike_events] array per unit::
         %
         %    units = types.core.Units('colnames', {}, 'description', 'units');
-        %    units.addRaggedArray('waveforms', {rand(40, 3, 2), rand(40, 3, 3)}, 'Depth', 2);
+        %    units.addRaggedArrayColumn('waveforms', {rand(40, 3, 2), rand(40, 3, 3)}, 'Depth', 2);
         %
         %  Example 5 - Add pixel masks from one table of all pixels and the number of pixels of each ROI::
         %
@@ -204,10 +204,10 @@ classdef (Abstract) DynamicTableBase < handle
         %    pixels = table(uint32([1; 2; 3; 7; 8]), uint32([4; 4; 5; 9; 9]), single([1; 1; 0.5; 1; 1]), ...
         %        'VariableNames', {'x', 'y', 'weight'});
         %    planeSegmentation = types.core.PlaneSegmentation('description', 'rois');
-        %    planeSegmentation.addRaggedArray('pixel_mask', pixels, 'ElementsPerRow', [3 2]);
+        %    planeSegmentation.addRaggedArrayColumn('pixel_mask', pixels, 'ElementsPerRow', [3 2]);
         %
         % See also:
-        %   util.create_indexed_column, addColumn, addDoublyRaggedArray
+        %   util.create_indexed_column, addColumn, addDoublyRaggedArrayColumn
 
             arguments
                 obj (1,1) {matnwb.common.validation.mustBeDynamicTable}
@@ -226,17 +226,17 @@ classdef (Abstract) DynamicTableBase < handle
             obj.addColumn(pairs{:});
         end
 
-        function addDoublyRaggedArray(obj, columnName, data, options)
-        % addDoublyRaggedArray - Add a doubly ragged column to the DynamicTable.
+        function addDoublyRaggedArrayColumn(obj, columnName, data, options)
+        % addDoublyRaggedArrayColumn - Add a doubly ragged column to the DynamicTable.
         %
         % Syntax:
-        %  dynamicTable.addDoublyRaggedArray(columnName, data) Adds a column in
-        %  which each row holds a variable number of sub-groups, and each
-        %  sub-group holds a variable number of elements. It is the same as
-        %  dynamicTable.addRaggedArray(columnName, data, 'Depth', 2).
+        %  dynamicTable.addDoublyRaggedArrayColumn(columnName, data) Adds a
+        %  column in which each row holds a variable number of sub-groups, and
+        %  each sub-group holds a variable number of elements. It is the same as
+        %  dynamicTable.addRaggedArrayColumn(columnName, data, 'Depth', 2).
         %
-        %  dynamicTable.addDoublyRaggedArray(columnName, data, Name, Value) Adds
-        %  the column using optional name-value pairs.
+        %  dynamicTable.addDoublyRaggedArrayColumn(columnName, data, Name,
+        %  Value) Adds the column using optional name-value pairs.
         %
         % Input Arguments:
         %  - columnName (string) -
@@ -245,7 +245,7 @@ classdef (Abstract) DynamicTableBase < handle
         %  - data (cell) -
         %    A cell array with one cell per row, holding that row's sub-groups,
         %    either as a cell of [elementDims x nElements] arrays or as one
-        %    [elementDims x nElements x nSubGroups] array. See addRaggedArray.
+        %    [elementDims x nElements x nSubGroups] array. See addRaggedArrayColumn.
         %
         %  - options (name-value pairs) -
         %    Optional name-value pairs. Available options:
@@ -255,7 +255,7 @@ classdef (Abstract) DynamicTableBase < handle
         %
         %    - ElementsPerSubGroup (positive integer | vector of positive integers) -
         %      Number of elements in each sub-group of the numeric rows. See
-        %      addRaggedArray.
+        %      addRaggedArrayColumn.
         %
         % Usage:
         %  Example 1 - Add waveforms for two units with 2 and 3 spike events on 3 electrodes::
@@ -264,10 +264,10 @@ classdef (Abstract) DynamicTableBase < handle
         %    units = types.core.Units('colnames', {}, 'description', 'units');
         %    unit1 = {rand(40, 3), rand(40, 3)};
         %    unit2 = {rand(40, 3), rand(40, 3), rand(40, 3)};
-        %    units.addDoublyRaggedArray('waveforms', {unit1, unit2});
+        %    units.addDoublyRaggedArrayColumn('waveforms', {unit1, unit2});
         %
         % See also:
-        %   addRaggedArray
+        %   addRaggedArrayColumn
 
             arguments
                 obj (1,1) {matnwb.common.validation.mustBeDynamicTable}
@@ -278,7 +278,7 @@ classdef (Abstract) DynamicTableBase < handle
             end
 
             forwardedOptions = namedargs2cell(options);
-            obj.addRaggedArray(columnName, data, forwardedOptions{:}, 'Depth', 2);
+            obj.addRaggedArrayColumn(columnName, data, forwardedOptions{:}, 'Depth', 2);
         end
 
         function row = getRow(obj, rowIndices, options)

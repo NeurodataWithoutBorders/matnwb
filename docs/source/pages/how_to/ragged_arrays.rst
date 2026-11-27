@@ -34,16 +34,16 @@ doubly-ragged layout — see the "Tables and ragged arrays" and "Doubly ragged a
 sections of the :nwb-format-description:`NWB format specification <tables-and-ragged-arrays>`.
 
 MatNWB provides one :class:`types.hdmf_common.DynamicTable` method that builds and wires
-these objects for you in a single call: ``addRaggedArray``. Its ``Depth`` argument sets
+these objects for you in a single call: ``addRaggedArrayColumn``. Its ``Depth`` argument sets
 the number of index levels: 1 (the default) for a ragged column, 2 for a doubly-ragged
-column. ``addDoublyRaggedArray`` is a shorthand for ``Depth`` 2. Its ``ElementsPerRow``
+column. ``addDoublyRaggedArrayColumn`` is a shorthand for ``Depth`` 2. Its ``ElementsPerRow``
 argument builds a ragged column from data that is already flat, and its
 ``ElementsPerSubGroup`` argument states the number of elements in each sub-group of a
 doubly-ragged column.
 
 .. note::
 
-   ``addRaggedArray`` builds a whole column in one call. ``addRow`` can also build a
+   ``addRaggedArrayColumn`` builds a whole column in one call. ``addRow`` can also build a
    ragged column row by row once the column is listed in ``colnames``, or append rows to
    an existing one. Give a row of scalars as a column vector. For a doubly-ragged column,
    give each row as a cell with one matrix per sub-group, as in the nested form described
@@ -171,7 +171,7 @@ equal the number of elements. ``ElementsPerRow`` builds ragged columns only
 
 Doubly-ragged arrays
 --------------------
-Use ``addRaggedArray`` with ``Depth`` 2 for columns such as :class:`types.core.Units`
+Use ``addRaggedArrayColumn`` with ``Depth`` 2 for columns such as :class:`types.core.Units`
 ``waveforms``. There are three input forms, depending on how many electrodes contribute
 a waveform per spike and whether that number is the same for every spike.
 
@@ -249,7 +249,7 @@ Units with different electrode counts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 MATLAB drops a trailing dimension of 1, so a ``[numSamples x n]`` matrix fits two forms:
 ``n`` spikes on one electrode (the single-electrode form), or one spike on ``n``
-electrodes (the array shortcut for a unit with one spike). ``addRaggedArray`` reads a
+electrodes (the array shortcut for a unit with one spike). ``addRaggedArrayColumn`` reads a
 whole column one way:
 
 - If any unit is given as a 3-D ``[numSamples x numElectrodes x numSpikes]`` array, every
@@ -310,7 +310,7 @@ For the multi-channel example above:
 Building columns without adding them to a table
 -----------------------------------------------
 If you need the underlying objects (for example, to pass them to a constructor), use the
-helper function that ``addRaggedArray`` builds on: ``util.create_indexed_column`` returns
+helper function that ``addRaggedArrayColumn`` builds on: ``util.create_indexed_column`` returns
 a :class:`types.hdmf_common.VectorData` (or :class:`types.hdmf_common.DynamicTableRegion`)
 followed by one :class:`types.hdmf_common.VectorIndex` per index level, innermost first.
 It takes the same ``Depth``, ``ElementsPerRow`` and ``ElementsPerSubGroup`` arguments and

@@ -14,7 +14,7 @@ function ragged_arrays_examples()
 
     % snippet: ragged-spike-times
     units = types.core.Units('colnames', {}, 'description', 'units');
-    units.addRaggedArray('spike_times', {[0.1 0.2 0.3], [0.5 0.6]}, ...
+    units.addRaggedArrayColumn('spike_times', {[0.1 0.2 0.3], [0.5 0.6]}, ...
         'Description', 'spike times');
     % end snippet
     assert(isequal(units.spike_times_index.data(:).', uint64([3 5])))
@@ -38,7 +38,7 @@ function ragged_arrays_examples()
     % end snippet
 
     % snippet: ragged-electrodes-region
-    units.addRaggedArray('electrodes', {[0 1 2], [0 1 2]}, 'TargetTable', electrodesTable);
+    units.addRaggedArrayColumn('electrodes', {[0 1 2], [0 1 2]}, 'TargetTable', electrodesTable);
     % end snippet
     assert(isa(units.electrodes, 'types.hdmf_common.DynamicTableRegion'))
 
@@ -47,7 +47,7 @@ function ragged_arrays_examples()
         'colnames', {'start_time', 'stop_time'});
     trials.addRow('start_time', 0.0, 'stop_time', 1.0);
     trials.addRow('start_time', 2.0, 'stop_time', 3.0);
-    trials.addRaggedArray('tags', {["go", "rewarded"], "nogo"}, ...
+    trials.addRaggedArrayColumn('tags', {["go", "rewarded"], "nogo"}, ...
         'Description', 'trial tags');
     % end snippet
     assert(isequal(trials.tags.data, ["go"; "rewarded"; "nogo"]))
@@ -59,7 +59,7 @@ function ragged_arrays_examples()
     roi2 = table(uint32([7; 8]), uint32([9; 9]), single([1; 1]), ...
         'VariableNames', {'x', 'y', 'weight'});
     planeSegmentation = types.core.PlaneSegmentation('description', 'rois');
-    planeSegmentation.addRaggedArray('pixel_mask', {roi1, roi2}, ...
+    planeSegmentation.addRaggedArrayColumn('pixel_mask', {roi1, roi2}, ...
         'Description', 'pixel masks');
     % end snippet
     assert(isequal(planeSegmentation.pixel_mask.data, [roi1; roi2]))
@@ -73,7 +73,7 @@ function ragged_arrays_examples()
     trials.addRow('start_time', 0.0, 'stop_time', 1.0);
     trials.addRow('start_time', 2.0, 'stop_time', 3.0);
     trials.addRow('start_time', 4.0, 'stop_time', 5.0);
-    trials.addRaggedArray('raw_data', ...
+    trials.addRaggedArrayColumn('raw_data', ...
         {types.untyped.ObjectView(rawTrial1), [], types.untyped.ObjectView(rawTrial3)}, ...
         'Description', 'raw data recorded during each trial');
     % end snippet
@@ -87,7 +87,7 @@ function ragged_arrays_examples()
         'VariableNames', {'x', 'y', 'weight'});
     pixelsPerRoi = [3; 2];
     planeSegmentation = types.core.PlaneSegmentation('description', 'rois');
-    planeSegmentation.addRaggedArray('pixel_mask', pixels, ...
+    planeSegmentation.addRaggedArrayColumn('pixel_mask', pixels, ...
         'ElementsPerRow', pixelsPerRoi, 'Description', 'pixel masks');
     % end snippet
     assert(isequal(planeSegmentation.pixel_mask.data, [roi1; roi2]))
@@ -98,7 +98,7 @@ function ragged_arrays_examples()
     unit1 = rand(40, 3);   % [numSamples x numSpikes]: 3 spikes
     unit2 = rand(40, 4);   % 4 spikes
     units = types.core.Units('colnames', {}, 'description', 'units');
-    units.addRaggedArray('waveforms', {unit1, unit2}, ...
+    units.addRaggedArrayColumn('waveforms', {unit1, unit2}, ...
         'Description', 'spike waveforms', 'Depth', 2);
     % end snippet
     assert(isequal(units.waveforms.data, [unit1, unit2]))
@@ -111,9 +111,9 @@ function ragged_arrays_examples()
     m1 = {rand(40, 3), rand(40, 3)};
     m2 = {rand(40, 3), rand(40, 3), rand(40, 3)};
     units = types.core.Units('colnames', {}, 'description', 'units');
-    units.addRaggedArray('waveforms', {m1, m2}, ...
+    units.addRaggedArrayColumn('waveforms', {m1, m2}, ...
         'Description', 'multi-channel spike waveforms', 'Depth', 2);
-    units.addRaggedArray('electrodes', {[0 1 2], [0 1 2]}, 'TargetTable', electrodesTable);
+    units.addRaggedArrayColumn('electrodes', {[0 1 2], [0 1 2]}, 'TargetTable', electrodesTable);
     % end snippet
     assert(isequal(size(units.waveforms.data), [numSamples, 15]))
     assert(isequal(units.waveforms.data(:, 4:6), m1{2}))
@@ -125,7 +125,7 @@ function ragged_arrays_examples()
     a1 = rand(40, 3, 2);   % [numSamples x numElectrodes x numSpikes]: 2 spikes
     a2 = rand(40, 3, 3);   % 3 spikes
     units = types.core.Units('colnames', {}, 'description', 'units');
-    units.addRaggedArray('waveforms', {a1, a2}, ...
+    units.addRaggedArrayColumn('waveforms', {a1, a2}, ...
         'Description', 'multi-channel spike waveforms', 'Depth', 2);
     % end snippet
     assert(isequal(size(units.waveforms.data), [numSamples, 15]))
@@ -140,7 +140,7 @@ function ragged_arrays_examples()
     b2 = rand(40, 1, 4);   % 4 spikes on 1 electrode
     b3 = rand(40, 3);      % 1 spike on 3 electrodes
     units = types.core.Units('colnames', {}, 'description', 'units');
-    units.addRaggedArray('waveforms', {b1, b2, b3}, ...
+    units.addRaggedArrayColumn('waveforms', {b1, b2, b3}, ...
         'Description', 'spike waveforms', 'Depth', 2);
     % end snippet
     assert(isequal(size(units.waveforms.data), [numSamples, 13]))
@@ -154,7 +154,7 @@ function ragged_arrays_examples()
     c2 = rand(40, 4);   % 4 spikes on 1 electrode: 4 waveforms
     c3 = rand(40, 3);   % 1 spike on 3 electrodes: 3 waveforms
     units = types.core.Units('colnames', {}, 'description', 'units');
-    units.addRaggedArray('waveforms', {c1, c2, c3}, ...
+    units.addRaggedArrayColumn('waveforms', {c1, c2, c3}, ...
         'Description', 'spike waveforms', 'Depth', 2, ...
         'ElementsPerSubGroup', [3 1 3]);
     % end snippet
