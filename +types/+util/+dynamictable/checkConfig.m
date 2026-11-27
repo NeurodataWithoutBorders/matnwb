@@ -24,7 +24,12 @@ function checkConfig(DynamicTable, ignoreList)
         ignoreList (1,:) cell = {};
     end
 
-    detectedColumnNames = getDetectedColumnNames(DynamicTable);
+    % The elements of an EnumData column are stored next to the column, but
+    % they are not a column of the table.
+    enumElementsNames = types.util.dynamictable.internal.getEnumElementsNames( ...
+        DynamicTable.vectordata.keys(), DynamicTable.vectordata.values());
+    detectedColumnNames = setdiff( ...
+        getDetectedColumnNames(DynamicTable), enumElementsNames, 'stable');
     % Remove ignored columns before any validation so that columns
     % intentionally omitted from colnames do not trigger ColumnNamesMismatch.
     if ~isempty(ignoreList)
@@ -43,6 +48,7 @@ function checkConfig(DynamicTable, ignoreList)
         % Skip on file read, this might mutate colnames
         types.util.dynamictable.validateUniqueColnames(columns);
     end
+    warnIfEnumElementsInColnames(columns, enumElementsNames)
 
     missingColumnNames = setdiff(detectedColumnNames, columns, 'stable');
     if ~isempty(missingColumnNames)
@@ -120,9 +126,20 @@ function names = getDetectedColumnNames(DynamicTable)
         end
     end
     names = unique(names, 'stable');
-    enumElementsNames = types.util.dynamictable.internal.getEnumElementsNames( ...
-        DynamicTable.vectordata.keys(), DynamicTable.vectordata.values());
-    names = setdiff(names, enumElementsNames, 'stable');
+end
+
+function warnIfEnumElementsInColnames(columnNames, enumElementsNames)
+    % Elements that are listed in `colnames` are written as a column of the
+    % table. The schema allows a column to double as the elements of an
+    % EnumData column, so this is reported as a warning.
+    listedElementsNames = intersect(columnNames, enumElementsNames, 'stable');
+    if ~isempty(listedElementsNames)
+        warning('NWB:DynamicTable:CheckConfig:EnumElementsInColnames', ...
+            ['`colnames` lists the elements of an EnumData column: %s. They are ' ...
+            'treated as a column of the table. Remove them from `colnames` ' ...
+            'unless the elements are also meant to be a column.'], ...
+            strjoin(listedElementsNames, ', '));
+    end
 end
 
 function tf = isMaterializedColumn(value)
