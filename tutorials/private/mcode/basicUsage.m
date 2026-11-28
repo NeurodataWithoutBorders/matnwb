@@ -13,33 +13,9 @@
 % NWB files can be read in using the _nwbRead()_ function.  This function returns 
 % a _nwbfile_ object which is the in-memory representation of the NWB file structure.
 
-nwb = nwbRead('out\ANM255201_20141124.nwb', 'ignorecache');
-%% *Constrained Sets*
-% Analyzed data in NWB is placed under the _analysis_ property, which is a *Constrained 
-% Set*.  A constrained set consists of an arbitrary amount of key-value pairs 
-% similar to <https://www.mathworks.com/help/matlab/map-containers.html Map containers> 
-% in MATLAB or a dictionary in Python.  However, constrained sets also have the 
-% ability to validate their own properties closer to how a typed Object would.
-% 
-% You can get/set values in constrained sets using their respective _.get()/.set()_ 
-% methods and retrieve all Set properties using the _keys()_ method, like in a 
-% _containers.Map._
-
-unit_names = keys(nwb.analysis);
-%% Dictionaries with MATLAB R2022b
-% As noted above, constrained sets uses Map container objects, a custom class 
-% that allows user to retrieve values using a corresponding key.  For users working 
-% with MATLAB version R2022b, a notable addition of the <https://www.mathworks.com/help/matlab/ref/dictionary.html?s_tid=doc_ta 
-% dictionary> object offers significantly faster functionality.
-% 
-% You can initialize a dictionary and configure its contents from relevant analysed 
-% NWB data with the same key/values noted above. 
-% 
-% Number of entries in a dictionary can be done with the new <https://www.mathworks.com/help/matlab/ref/dictionary.numentries.html 
-% numEntries()> function. One can also return all the keys and values of a dictionary 
-% as arrays using <https://www.mathworks.com/help/matlab/ref/dictionary.keys.html 
-% keys(dict_name)> and <https://www.mathworks.com/help/matlab/ref/dictionary.values.html 
-% values(dict_name)> functions. 
+alm3_dataset_rootpath = getenv('CRCNS_ALM3_ROOT_PATH'); % Uses current directory if not set
+nwbFilePath = fullfile(alm3_dataset_rootpath, 'out', 'ANM255201_20141124.nwb');
+nwb = nwbRead(nwbFilePath, 'ignorecache');
 %% Dynamic Tables
 % _nwb.intervals_trials_ returns a unique type of table called a *Dynamic Table*.  
 % Dynamic tables inherit from the NWB type _types.hdmf_common.DynamicTable_ and 
@@ -141,14 +117,11 @@ unit_struct = struct(...
     'photostim', Photostim); % can have multiple photostim
 %%
 for unit_id = unit_ids'
-%% 
-% We first extract trial IDs from the Unit IDs.
-
+    % We first extract trial IDs from the Unit IDs.
     unit_trial_id = unit_trials(unit_id);
-%% 
-% Then filter out outliers from the Sample, Delay, and Response time points 
-% with which we derive a "good enough" estimate.
-
+    
+    % Then filter out outliers from the Sample, Delay, and Response time points 
+    % with which we derive a "good enough" estimate.
     trial = nwb.intervals_trials.getRow(unit_trial_id, 'useId', true,...
         'columns', {'PoleInTime', 'PoleOutTime', 'CueTime', 'GoodTrials'});
     unit_sample = trial.PoleInTime;

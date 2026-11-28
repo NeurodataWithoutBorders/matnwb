@@ -22,7 +22,7 @@ function matnwb_exportModifiedTutorials()
     
     tutorialFiles = modifiedFiles(isInTutorialFolder & isLivescript);
 
-    filesToIgnore = ["basicUsage", "read_demo", "remote_read"];
+    filesToIgnore = ["convertTrials", "basicUsage", "read_demo", "remote_read"];
     isIgnored = endsWith(tutorialFiles, filesToIgnore + ".mlx");
     if any(isIgnored)
         warning('Skipping export for the following files (see matnwb_exportTutorials):\n%s', ...
