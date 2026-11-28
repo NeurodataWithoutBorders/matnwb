@@ -131,6 +131,145 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             testCase.verifyEqual(matlabTable.custom.ColumnA, 20)
         end
 
+        function testAddRowAddsRowToEachCategory(testCase)
+            [alignedTable, categoryTable] = ...
+                tests.system.AlignedDynamicTableTest.createAlignedTableWithCategoryColumn();
+
+            alignedTable.addRow('x', 10, 'custom', struct('ColumnA', 20));
+
+            testCase.verifyWarningFree(@() alignedTable.ensureAlignedTableConsistency())
+            testCase.verifyEqual(double(alignedTable.id.data), (0:3)')
+            testCase.verifyEqual(double(categoryTable.id.data), (0:3)')
+            matlabTable = alignedTable.toTable();
+            testCase.verifyEqual(matlabTable.x(end), 10)
+            testCase.verifyEqual(matlabTable.custom.ColumnA(end), 20)
+        end
+
+        function testAddRowSetsIdOfParentTableOnly(testCase)
+            [alignedTable, categoryTable] = ...
+                tests.system.AlignedDynamicTableTest.createAlignedTableWithCategoryColumn();
+
+            alignedTable.addRow('x', 10, 'custom', struct('ColumnA', 20), 'id', 42);
+
+            testCase.verifyEqual(double(alignedTable.id.data(end)), 42)
+            testCase.verifyEqual(double(categoryTable.id.data(end)), 3)
+        end
+
+        function testAddRowToParentWithoutColumns(testCase)
+            alignedTable = tests.system.AlignedDynamicTableTest.createAlignedTable();
+            categoryTable = tests.factory.DynamicTable(NumRows=3, NumColumns=1);
+            alignedTable.addCategory("custom", categoryTable)
+
+            alignedTable.addRow('custom', struct('ColumnA', 20));
+
+            testCase.verifyWarningFree(@() alignedTable.ensureAlignedTableConsistency())
+            testCase.verifyEqual(double(alignedTable.id.data), (0:3)')
+            testCase.verifyEqual(double(categoryTable.id.data), (0:3)')
+        end
+
+        function testAddRowAddsIdToCategoryWithoutColumns(testCase)
+            [alignedTable, categoryTable] = ...
+                tests.system.AlignedDynamicTableTest.createAlignedTableWithCategoryColumn();
+            columnlessTable = tests.system.AlignedDynamicTableTest.createTableWithHeight(3);
+            alignedTable.addCategory("columnless", columnlessTable)
+
+            alignedTable.addRow('x', 10, 'custom', struct('ColumnA', 20));
+
+            testCase.verifyWarningFree(@() alignedTable.ensureAlignedTableConsistency())
+            testCase.verifyEqual(double(categoryTable.id.data), (0:3)')
+            testCase.verifyEqual(double(columnlessTable.id.data), (0:3)')
+        end
+
+        function testAddRowToSchemaCategories(testCase)
+            electrode = types.core.IntracellularElectrode( ...
+                'description', 'electrode', ...
+                'device', types.untyped.SoftLink(types.core.Device()));
+            alignedTable = tests.system.AlignedDynamicTableTest.createSchemaAlignedTable();
+            alignedTable.electrodes = types.core.IntracellularElectrodesTable( ...
+                'colnames', {'electrode'});
+
+            for iRow = 1:2
+                alignedTable.addRow( ...
+                    'electrodes', struct('electrode', types.untyped.ObjectView(electrode)));
+            end
+
+            testCase.verifyWarningFree(@() alignedTable.ensureAlignedTableConsistency())
+            testCase.verifyEqual(double(alignedTable.id.data), [0; 1])
+            testCase.verifyEqual(double(alignedTable.electrodes.id.data), [0; 1])
+            testCase.verifyNumElements(alignedTable.electrodes.electrode.data, 2)
+        end
+
+        function testAddRowRejectsMissingCategoryRow(testCase)
+            [alignedTable, categoryTable] = ...
+                tests.system.AlignedDynamicTableTest.createAlignedTableWithCategoryColumn();
+            otherCategoryTable = tests.factory.DynamicTable(NumRows=3, NumColumns=1);
+            alignedTable.addCategory("other", otherCategoryTable)
+
+            testCase.verifyError( ...
+                @() alignedTable.addRow('x', 10, 'custom', struct('ColumnA', 20)), ...
+                'NWB:DynamicTable:AddRow:MissingColumns')
+
+            testCase.verifyNumElements(alignedTable.id.data, 3)
+            testCase.verifyNumElements(categoryTable.id.data, 3)
+            testCase.verifyNumElements(otherCategoryTable.id.data, 3)
+        end
+
+        function testAddRowRejectsUnknownCategoryColumn(testCase)
+            [alignedTable, categoryTable] = ...
+                tests.system.AlignedDynamicTableTest.createAlignedTableWithCategoryColumn();
+
+            testCase.verifyError( ...
+                @() alignedTable.addRow('x', 10, ...
+                    'custom', struct('ColumnA', 20, 'ColumnB', 30)), ...
+                'NWB:DynamicTable:AddRow:InvalidColumns')
+
+            testCase.verifyNumElements(alignedTable.id.data, 3)
+            testCase.verifyNumElements(categoryTable.id.data, 3)
+        end
+
+        function testAddRowRejectsUnknownParentColumn(testCase)
+            [alignedTable, categoryTable] = ...
+                tests.system.AlignedDynamicTableTest.createAlignedTableWithCategoryColumn();
+
+            testCase.verifyError( ...
+                @() alignedTable.addRow('x', 10, 'y', 1, 'custom', struct('ColumnA', 20)), ...
+                'NWB:DynamicTable:AddRow:InvalidColumns')
+
+            testCase.verifyNumElements(alignedTable.id.data, 3)
+            testCase.verifyNumElements(categoryTable.id.data, 3)
+        end
+
+        function testAddRowRejectsCategoryRowThatIsNotAStruct(testCase)
+            alignedTable = ...
+                tests.system.AlignedDynamicTableTest.createAlignedTableWithCategoryColumn();
+
+            testCase.verifyError( ...
+                @() alignedTable.addRow('x', 10, 'custom', 20), ...
+                'NWB:AlignedDynamicTable:AddRow:InvalidCategoryRow')
+            testCase.verifyError( ...
+                @() alignedTable.addRow('x', 10, 'custom', struct('ColumnA', {20, 30})), ...
+                'NWB:AlignedDynamicTable:AddRow:InvalidCategoryRow')
+        end
+
+        function testAddRowWithoutRowValuesNamesCategories(testCase)
+            % The parent table has no columns, so every row value of this
+            % table belongs to the category `custom`.
+            alignedTable = tests.system.AlignedDynamicTableTest.createAlignedTable();
+            categoryTable = tests.factory.DynamicTable(NumRows=3, NumColumns=1);
+            alignedTable.addCategory("custom", categoryTable)
+
+            try
+                alignedTable.addRow()
+                testCase.verifyFail('Expected an error.')
+            catch exception
+                testCase.verifyEqual(exception.identifier, 'NWB:DynamicTable:AddRow:NoData')
+                testCase.verifySubstring(exception.message, 'custom')
+            end
+
+            testCase.verifyNumElements(alignedTable.id.data, 3)
+            testCase.verifyNumElements(categoryTable.id.data, 3)
+        end
+
         function testAddCustomCategoryRejectsExistingCategory(testCase)
             alignedTable = tests.system.AlignedDynamicTableTest.createAlignedTable();
             categoryTable = tests.system.AlignedDynamicTableTest.createTableWithHeight(2);
@@ -460,6 +599,19 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
             alignedTable = types.hdmf_common.AlignedDynamicTable( ...
                 'description', 'parent table', ...
                 'categories', categories);
+        end
+
+        function [alignedTable, categoryTable] = createAlignedTableWithCategoryColumn()
+            % A table with 3 rows, a parent column 'x', and a category
+            % 'custom' with the column 'ColumnA'.
+            alignedTable = types.hdmf_common.AlignedDynamicTable( ...
+                'description', 'parent table', ...
+                'colnames', {'x'}, ...
+                'x', types.hdmf_common.VectorData( ...
+                    'description', 'parent column', ...
+                    'data', (1:3)'));
+            categoryTable = tests.factory.DynamicTable(NumRows=3, NumColumns=1);
+            alignedTable.addCategory("custom", categoryTable)
         end
 
         function alignedTable = createSchemaAlignedTable(options)

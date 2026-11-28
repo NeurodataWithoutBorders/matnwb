@@ -460,7 +460,7 @@ classdef (Abstract) DynamicTableBase < handle
         end
     end
 
-    methods (Access = private)
+    methods (Access = protected)
         function assertIsEditable(obj, errorID)
             arguments
                 obj (1,1) matnwb.neurodata.DynamicTableBase

@@ -84,6 +84,136 @@ classdef (Abstract) AlignedDynamicTableBase < matnwb.neurodata.DynamicTableBase
             categoryTable = obj.getCategoryTable(categoryName);
         end
 
+        function addRow(obj, name, value, options)
+        % addRow - Add a single row to the AlignedDynamicTable.
+        %
+        % Syntax:
+        %  alignedDynamicTable.addRow(columnName, columnValue, ..., categoryName, categoryRow, ...)
+        %  appends one row to the table and one row to each of its category
+        %  tables, so that all tables keep the same height.
+        %
+        %  alignedDynamicTable.addRow(columnName, columnValue, ...) appends one
+        %  row to the table only. The category tables are not changed, and a
+        %  row must be added to each of them separately before the table is
+        %  exported.
+        %
+        %  alignedDynamicTable.addRow(__, 'id', id) sets the id of the row
+        %  that is added to the table.
+        %
+        % Input Arguments (Repeating):
+        %  - name (string) -
+        %    Name of a column of the table, or name of a category.
+        %
+        %  - value (any | struct) -
+        %    For a column, the value of the row in that column. For a
+        %    category, a scalar struct with one field per column of the
+        %    category table, holding the value of the row in that column.
+        %
+        % Name-Value Arguments:
+        %  - id (int) -
+        %    A custom value for the id of the row in the table. The row ids of
+        %    the category tables are assigned automatically.
+        %
+        % When a row is given for at least one category, a value is required
+        % for every column of the table and of every category table. A
+        % category table without columns needs no struct. If a column name is
+        % unknown or a column has no value, no table is changed.
+        %
+        % Usage:
+        %  Example 1 - Add a recording to an IntracellularRecordingsTable::
+        %
+        %    % electrode is an IntracellularElectrode, and stimulus and
+        %    % response are PatchClampSeries with 100 samples each.
+        %    stimulusRow = struct('stimulus', struct( ...
+        %        'idx_start', 0, 'count', 100, ...
+        %        'timeseries', types.untyped.ObjectView(stimulus)));
+        %    responseRow = struct('response', struct( ...
+        %        'idx_start', 0, 'count', 100, ...
+        %        'timeseries', types.untyped.ObjectView(response)));
+        %    electrodeRow = struct('electrode', types.untyped.ObjectView(electrode));
+        %    recordings.addRow( ...
+        %        'electrodes', electrodeRow, ...
+        %        'stimuli', stimulusRow, ...
+        %        'responses', responseRow);
+        %
+        % See also:
+        %   addCategory, getRow
+
+            arguments
+                obj (1,1) matnwb.neurodata.AlignedDynamicTableBase
+            end
+            arguments (Repeating)
+                name (1,1) string
+                value
+            end
+            arguments
+                options.id
+            end
+
+            names = string(name);
+            categoryNames = string(obj.getMaterializedCategoryNames());
+            isCategoryRow = ismember(names, categoryNames);
+            optionalArgs = namedargs2cell(options);
+
+            if ~any(isCategoryRow)
+                % A call without row values cannot add a row. The error names
+                % the categories, because the row values of a table without
+                % columns of its own are all given as category rows.
+                if isempty(names) && ~isempty(categoryNames)
+                    error('NWB:DynamicTable:AddRow:NoData', ...
+                        ['No row values were given. Give a value for each column ', ...
+                        'of the table, and a struct with one field per column for ', ...
+                        'each of these categories: %s.'], strjoin(categoryNames, ', '))
+                end
+
+                columnValuePairs = [name; value];
+                addRow@matnwb.neurodata.DynamicTableBase( ...
+                    obj, columnValuePairs{:}, optionalArgs{:});
+                return
+            end
+
+            obj.ensureAlignedTableConsistency()
+
+            % Every check that can fail runs on all tables before the first
+            % row is appended, so that a rejected row leaves all tables at
+            % the same height.
+            obj.assertIsEditable('NWB:DynamicTable:AddRow:Uneditable')
+            assertRowMatchesColumns(obj, names(~isCategoryRow), "the table")
+
+            numCategories = numel(categoryNames);
+            categoryTables = cell(1, numCategories);
+            categoryRows = cell(1, numCategories);
+            for iCategory = 1:numCategories
+                categoryName = categoryNames(iCategory);
+                categoryTable = obj.getCategoryTable(categoryName);
+                % A category table without columns takes a row that holds
+                % an id only.
+                categoryRow = struct();
+                isRowOfCategory = names == categoryName;
+                if any(isRowOfCategory)
+                    categoryRow = value{find(isRowOfCategory, 1, 'last')};
+                end
+
+                assert(isstruct(categoryRow) && isscalar(categoryRow), ...
+                    'NWB:AlignedDynamicTable:AddRow:InvalidCategoryRow', ...
+                    ['The row of category `%s` must be a scalar struct with one ', ...
+                    'field per column of the category table.'], categoryName)
+                categoryTable.assertIsEditable('NWB:DynamicTable:AddRow:Uneditable')
+                assertRowMatchesColumns(categoryTable, string(fieldnames(categoryRow))', ...
+                    "category `" + categoryName + "`")
+
+                categoryTables{iCategory} = categoryTable;
+                categoryRows{iCategory} = categoryRow;
+            end
+
+            columnValuePairs = [name(~isCategoryRow); value(~isCategoryRow)];
+            types.util.dynamictable.addVarargRow(obj, columnValuePairs{:}, optionalArgs{:});
+            for iCategory = 1:numCategories
+                columnValuePairs = namedargs2cell(categoryRows{iCategory});
+                types.util.dynamictable.addVarargRow(categoryTables{iCategory}, columnValuePairs{:});
+            end
+        end
+
         function clear(obj)
         % clear - Remove all rows and column data from the AlignedDynamicTable.
         %
@@ -525,6 +655,33 @@ function validateUniqueCategoryNames(categories)
 
     matnwb.common.validation.reportSchemaViolation(...
         'NWB:AlignedDynamicTable:DuplicateCategoryNames', message)
+end
+
+function columnNames = listColumnNames(dynamicTable)
+    % An unset `colnames` can be an empty char, which string() converts to
+    % one name without characters.
+    if isempty(dynamicTable.colnames)
+        columnNames = string.empty(1, 0);
+    else
+        columnNames = string(types.util.dynamictable.normalizeColnames(dynamicTable.colnames));
+        columnNames = reshape(columnNames, 1, []);
+    end
+end
+
+function assertRowMatchesColumns(dynamicTable, givenNames, tableLabel)
+% assertRowMatchesColumns - Assert that a row has one value per column of a table.
+
+    columnNames = listColumnNames(dynamicTable);
+
+    unknownNames = setdiff(givenNames, columnNames, 'stable');
+    assert(isempty(unknownNames), ...
+        'NWB:DynamicTable:AddRow:InvalidColumns', ...
+        'Invalid column name(s) { %s } for %s.', strjoin(unknownNames, ', '), tableLabel)
+
+    missingNames = setdiff(columnNames, givenNames, 'stable');
+    assert(isempty(missingNames), ...
+        'NWB:DynamicTable:AddRow:MissingColumns', ...
+        'Missing columns { %s } of %s.', strjoin(missingNames, ', '), tableLabel)
 end
 
 function mustNotBeAlignedDynamicTable(value)
