@@ -301,22 +301,20 @@ spike_times
 % |*Units*|> table. These indexed columns have two components, the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/VectorData.html 
 % |*VectorData*|> object that holds the data and the <https://matnwb.readthedocs.io/en/latest/pages/neurodata_types/hdmf_common/VectorIndex.html 
 % |*VectorIndex*|> object that holds the indices in the vector that indicate the 
-% row breaks. You can use the convenience function |util.create_indexed_column| 
-% to create these objects. For more information about ragged arrays, we refer 
-% you to the *"Ragged Array Columns"* section of the <./dynamic_tables.mlx dynamic 
-% table> tutorial.
+% row breaks. A |RaggedArrayColumn| creates both objects from a cell array with 
+% one cell per row. It is passed to the table under the name of the column. For 
+% more information about ragged arrays, we refer you to the *"Ragged Array Columns"* 
+% section of the <./dynamic_tables.mlx dynamic table> tutorial.
 % 
 % 
 
-[spike_times_vector, spike_times_index] = util.create_indexed_column(spike_times);
 spike_times_resolution = 1/20000; % If original sampling rate was 20 kHz 
 
 nwb.units = types.core.Units( ...
     'colnames', {'spike_times'}, ...
     'description', 'units table', ...
-    'spike_times', spike_times_vector, ...
-    'spike_times_index', spike_times_index, ...
-    'spike_times_resolution', spike_times_resolution ...
+    'spike_times_resolution', spike_times_resolution, ...
+    'spike_times', types.untyped.RaggedArrayColumn(spike_times) ...
 );
 
 nwb.units.toTable()
