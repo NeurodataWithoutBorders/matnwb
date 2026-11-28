@@ -530,7 +530,7 @@ for i = 1:length(unitIds)
     waveform_stds{i} = std(waveforms, 0, 1).'; % [numSamples x 1]
 end
 
-nwb.units.addDoublyRaggedArray(...
+nwb.units.addDoublyRaggedArrayColumn(...
     'waveforms', waveform_snippets, ...
     'description', 'Spike waveforms for each unit')
 waveformSamplingRate = 19531.25; % Hz, from data descriptor
@@ -559,11 +559,11 @@ nwb.units.waveform_sd_sampling_rate = waveformSamplingRate;
 % nested cell, where |data{unit}{spike}| is a |[numSamples x numElectrodes]| matrix 
 % with one column per electrode, or, when every spike of the unit was recorded 
 % on the same electrodes, as one |[numSamples x numElectrodes x numSpikes]| array, 
-% and pass it to |addDoublyRaggedArray|. The column order must match the electrodes 
-% listed in that unit's |electrodes| entry, as the NWB schema requires. Here each 
-% unit was recorded on a single electrode, so each spike has exactly one waveform 
-% and the simpler |[numSamples x numSpikes]| form used above is sufficient, with 
-% one column per spike.
+% and pass it to |addDoublyRaggedArrayColumn|. The column order must match the 
+% electrodes listed in that unit's |electrodes| entry, as the NWB schema requires. 
+% Here each unit was recorded on a single electrode, so each spike has exactly 
+% one waveform and the simpler |[numSamples x numSpikes]| form used above is sufficient, 
+% with one column per spike.
 %% Raw Acquisition Data
 % Each ALM-3 session is associated with a large number of raw voltage data grouped 
 % by trial ID. To map this data to NWB, each trial is created as its own *ElectricalSeries* 
@@ -634,7 +634,7 @@ end
 emptyReferences = cellfun('isempty', objrefs);
 objrefs(emptyReferences) = {[]};
 
-trial_intervals.addRaggedArray('raw_voltage_traces', objrefs, ...
+trial_intervals.addRaggedArrayColumn('raw_voltage_traces', objrefs, ...
     'description', 'Reference to recorded (raw) electrical signals per trial');
 
 % Finally, we add the trials' stop_time, the last sample time recorded for
