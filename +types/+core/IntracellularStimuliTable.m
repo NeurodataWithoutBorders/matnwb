@@ -16,6 +16,9 @@ end
 properties (Constant, Access = private)
     DeclaredSchemaColumns = ["stimulus", "stimulus_template"];
 end
+properties (Constant, Access = private)
+    DeclaredSchemaColumnTypes = struct('stimulus', 'types.core.TimeSeriesReferenceVectorData', 'stimulus_template', 'types.core.TimeSeriesReferenceVectorData');
+end
 
 methods
     function obj = IntracellularStimuliTable(varargin)

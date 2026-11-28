@@ -33,6 +33,9 @@ end
 properties (Constant, Access = private)
     DeclaredSchemaColumns = ["electrode_group", "electrodes", "electrodes_index", "obs_intervals", "obs_intervals_index", "spike_times", "spike_times_index", "waveform_mean", "waveform_sd", "waveforms", "waveforms_index", "waveforms_index_index"];
 end
+properties (Constant, Access = private)
+    DeclaredSchemaColumnTypes = struct('electrodes', 'types.hdmf_common.DynamicTableRegion');
+end
 
 methods
     function obj = Units(varargin)

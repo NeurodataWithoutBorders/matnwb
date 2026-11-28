@@ -184,6 +184,17 @@ function template = fillClass(name, namespace, processed, classprops, inherited,
             'DeclaredSchemaColumns', columnNames);
         fullPropertyDefinition = strjoin(...
             {fullPropertyDefinition, schemaColumnPropertyBlock}, newline);
+
+        % Emit the class of each column that the schema declares as a
+        % subtype of VectorData. A generated property holds no record of its
+        % type, so addRow reads this mapping to create a column of the
+        % required class when the first row is added.
+        schemaColumnTypeBlock = createSchemaColumnTypeBlock( ...
+            classprops, nonInherited, namespace);
+        if ~isempty(schemaColumnTypeBlock)
+            fullPropertyDefinition = strjoin(...
+                {fullPropertyDefinition, schemaColumnTypeBlock}, newline);
+        end
     end
 
     % Emit the schema path of each property that holds a plain value rather
@@ -308,6 +319,43 @@ function columnNames = collectSchemaDefinedTableColumns( ...
             columnNames(end+1) = string(propertyName); %#ok<AGROW>
         end
     end
+end
+
+function propertyBlockStr = createSchemaColumnTypeBlock( ...
+        classProps, propertyNames, namespace)
+% createSchemaColumnTypeBlock - Build a private constant struct that maps a
+% column name to the full class name of the column.
+%
+% Only columns whose type is a subtype of VectorData are listed. A
+% VectorIndex is left out: it is created together with the column it
+% indexes and holds no row values of its own.
+
+    entries = {};
+    for iProperty = 1:length(propertyNames)
+        propertyName = propertyNames{iProperty};
+        propertyInfo = classProps(propertyName);
+        if ~file.internal.isSchemaDefinedTableColumn(propertyInfo, namespace)
+            continue
+        end
+        isPlainVectorData = strcmp(propertyInfo.type, 'VectorData');
+        isVectorIndex = file.internal.isDescendantOf( ...
+            propertyInfo.type, namespace, 'VectorIndex');
+        if isPlainVectorData || isVectorIndex
+            continue
+        end
+        entries{end+1} = sprintf('''%s'', ''%s''', ...
+            propertyName, namespace.getFullClassName(propertyInfo.type)); %#ok<AGROW>
+    end
+
+    if isempty(entries)
+        propertyBlockStr = '';
+        return
+    end
+
+    propertyBlockStr = strjoin({...
+        'properties (Constant, Access = private)', ...
+        sprintf('    DeclaredSchemaColumnTypes = struct(%s);', strjoin(entries, ', ')), ...
+        'end'}, newline);
 end
 
 function relativePaths = collectSchemaRelativePaths(propertyNames, classInfo)

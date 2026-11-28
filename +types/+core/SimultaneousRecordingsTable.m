@@ -13,6 +13,9 @@ end
 properties (Constant, Access = private)
     DeclaredSchemaColumns = ["recordings", "recordings_index"];
 end
+properties (Constant, Access = private)
+    DeclaredSchemaColumnTypes = struct('recordings', 'types.hdmf_common.DynamicTableRegion');
+end
 
 methods
     function obj = SimultaneousRecordingsTable(varargin)
