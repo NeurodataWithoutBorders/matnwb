@@ -41,6 +41,10 @@ argument builds a ragged column from data that is already flat, and its
 ``ElementsPerSubGroup`` argument states the number of elements in each sub-group of a
 doubly-ragged column.
 
+To give such a column to a table constructor or to ``addColumn`` instead, wrap the same
+data and arguments in a ``types.untyped.RaggedArrayColumn``. See
+`Ragged array columns in a table constructor`_.
+
 .. note::
 
    ``addRaggedArrayColumn`` builds a whole column in one call. ``addRow`` can also build a
@@ -307,10 +311,42 @@ For the multi-channel example above:
 - ``waveforms_index_index`` (``[2 5]``) has one entry per unit and marks where each
   unit's spike events end, so unit 1 owns spikes 1-2 and unit 2 owns spikes 3-5.
 
+Ragged array columns in a table constructor
+-------------------------------------------
+``addRaggedArrayColumn`` adds a column to a table that already exists. To create a table
+together with its ragged array columns, wrap the rows of each column in a
+``types.untyped.RaggedArrayColumn`` and pass it to the constructor under the column's name.
+A ``RaggedArrayColumn`` takes the same input forms as ``addRaggedArrayColumn`` and the same
+``Description``, ``TargetTable``, ``Depth``, ``ElementsPerRow`` and ``ElementsPerSubGroup``
+arguments:
+
+.. literalinclude:: examples/ragged_arrays_examples.m
+   :language: matlab
+   :start-after: % snippet: constructor-spike-times
+   :end-before: % end snippet
+   :dedent:
+
+List the column in ``colnames``. The table stores ``spike_times`` and ``spike_times_index``
+as in the first example of this guide, and gives the two rows the ids 0 and 1.
+
+``addColumn`` accepts a ``RaggedArrayColumn`` too, alone or together with other columns.
+The example adds a plain column and a column of electrode references to the ``units``
+table, using the ``electrodesTable`` created above:
+
+.. literalinclude:: examples/ragged_arrays_examples.m
+   :language: matlab
+   :start-after: % snippet: add-column-ragged-array-column
+   :end-before: % end snippet
+   :dedent:
+
+A ``RaggedArrayColumn`` only describes the column. The table stores the
+:class:`types.hdmf_common.VectorData` and :class:`types.hdmf_common.VectorIndex` objects,
+and a table read from a file holds those objects.
+
 Building columns without adding them to a table
 -----------------------------------------------
-If you need the underlying objects (for example, to pass them to a constructor), use the
-helper function that ``addRaggedArrayColumn`` builds on: ``util.create_indexed_column`` returns
+If you need the stored objects themselves, use the helper function that
+``RaggedArrayColumn`` and ``addRaggedArrayColumn`` build on: ``util.create_indexed_column`` returns
 a :class:`types.hdmf_common.VectorData` (or :class:`types.hdmf_common.DynamicTableRegion`)
 followed by one :class:`types.hdmf_common.VectorIndex` per index level, innermost first.
 It takes the same ``Depth``, ``ElementsPerRow`` and ``ElementsPerSubGroup`` arguments and

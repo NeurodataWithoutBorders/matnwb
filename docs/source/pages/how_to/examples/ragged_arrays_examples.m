@@ -162,6 +162,30 @@ function ragged_arrays_examples()
     assert(isequal(units.waveforms_index.data(:).', uint64([3 6 7 8 9 10 13])))
     assert(isequal(units.waveforms_index_index.data(:).', uint64([2 6 7])))
 
+    % ---- A RaggedArrayColumn in a constructor and in addColumn ----
+    % snippet: constructor-spike-times
+    spikeTimes = types.untyped.RaggedArrayColumn({[0.1 0.2 0.3], [0.5 0.6]}, ...
+        'Description', 'spike times');
+    units = types.core.Units( ...
+        'colnames', {'spike_times'}, ...
+        'description', 'units', ...
+        'spike_times', spikeTimes);
+    % end snippet
+    assert(isequal(units.spike_times.data(:).', [0.1 0.2 0.3 0.5 0.6]))
+    assert(isequal(units.spike_times_index.data(:).', uint64([3 5])))
+    assert(isequal(units.id.data(:).', int64([0 1])))
+
+    % snippet: add-column-ragged-array-column
+    quality = types.hdmf_common.VectorData('description', 'unit quality', ...
+        'data', [0.9; 0.4]);
+    electrodes = types.untyped.RaggedArrayColumn({[0 1 2], [0 1 2]}, ...
+        'TargetTable', electrodesTable);
+    units.addColumn('quality', quality, 'electrodes', electrodes);
+    % end snippet
+    assert(isequal(sort(units.colnames), {'electrodes', 'quality', 'spike_times'}))
+    assert(isa(units.electrodes, 'types.hdmf_common.DynamicTableRegion'))
+    assert(isequal(units.electrodes_index.data(:).', uint64([3 6])))
+
     % snippet: helper-functions
     unit1 = rand(40, 3);   % [numSamples x numSpikes]: 3 spikes
     unit2 = rand(40, 4);   % 4 spikes
