@@ -1,6 +1,6 @@
 classdef DynamicTableRaggedArrayTest < tests.abstract.NwbTestCase
-% DynamicTableRaggedArrayTest - Tests for the DynamicTable addRaggedArray and
-% addDoublyRaggedArray convenience methods.
+% DynamicTableRaggedArrayTest - Tests for the DynamicTable addRaggedArrayColumn and
+% addDoublyRaggedArrayColumn convenience methods.
 
     methods (TestClassSetup)
         function setupClass(testCase)
@@ -9,14 +9,14 @@ classdef DynamicTableRaggedArrayTest < tests.abstract.NwbTestCase
     end
 
     methods (Test)
-        function testAddRaggedArrayPixelMaskOnPlaneSegmentation(testCase)
+        function testAddRaggedArrayColumnPixelMaskOnPlaneSegmentation(testCase)
             % Pixel masks as one table of all pixels plus the pixel count of
             % each ROI; PlaneSegmentation stores them on its typed properties.
             pixels = table(uint32([1; 2; 3; 7; 8]), uint32([4; 4; 4; 9; 9]), single(ones(5, 1)), ...
                 'VariableNames', {'x', 'y', 'weight'});
 
             planeSegmentation = types.core.PlaneSegmentation('description', 'rois', 'colnames', {});
-            planeSegmentation.addRaggedArray('pixel_mask', pixels, 'ElementsPerRow', [3 2], ...
+            planeSegmentation.addRaggedArrayColumn('pixel_mask', pixels, 'ElementsPerRow', [3 2], ...
                 'Description', 'pixel masks');
 
             testCase.verifyEqual(planeSegmentation.colnames, {'pixel_mask'});
@@ -25,13 +25,13 @@ classdef DynamicTableRaggedArrayTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(planeSegmentation.id.data, int64([0; 1]));
         end
 
-        function testAddRaggedArrayCompoundRoundTrip(testCase)
+        function testAddRaggedArrayColumnCompoundRoundTrip(testCase)
             roi1 = table(uint32([1; 2; 3]), uint32([4; 4; 4]), single([1; 1; 1]), ...
                 'VariableNames', {'x', 'y', 'weight'});
             roi2 = table(uint32([7; 8]), uint32([9; 9]), single([0.5; 0.5]), ...
                 'VariableNames', {'x', 'y', 'weight'});
             dt = types.hdmf_common.DynamicTable('description', 'test');
-            dt.addRaggedArray('mask', {roi1, roi2}, 'Description', 'masks');
+            dt.addRaggedArrayColumn('mask', {roi1, roi2}, 'Description', 'masks');
 
             nwb = NwbFile( ...
                 'identifier', 'ragged_compound_test', ...
@@ -48,9 +48,9 @@ classdef DynamicTableRaggedArrayTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(tableBack.vectordata.get('mask_index').data.load(), uint64([3; 5]));
         end
 
-        function testAddRaggedArrayWithTextRowsRoundTrip(testCase)
+        function testAddRaggedArrayColumnWithTextRowsRoundTrip(testCase)
             dt = types.hdmf_common.DynamicTable('description', 'test');
-            dt.addRaggedArray('tags', {{'1a'; '1b'; '1c'}, {'2a'}}, 'Description', 'tags');
+            dt.addRaggedArrayColumn('tags', {{'1a'; '1b'; '1c'}, {'2a'}}, 'Description', 'tags');
 
             nwb = NwbFile( ...
                 'identifier', 'ragged_text_test', ...
@@ -66,7 +66,7 @@ classdef DynamicTableRaggedArrayTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(table.vectordata.get('tags_index').data.load(), uint64([3; 4]));
         end
 
-        function testAddRaggedArrayWithObjectViewRowsRoundTrip(testCase)
+        function testAddRaggedArrayColumnWithObjectViewRowsRoundTrip(testCase)
             % Each trial references the TimeSeries recorded during it, with
             % [] for a trial that has none.
             raw1 = types.core.TimeSeries('description', 'raw 1', 'data', [1 2 3], ...
@@ -78,7 +78,7 @@ classdef DynamicTableRaggedArrayTest < tests.abstract.NwbTestCase
             trials.addRow('start_time', 0, 'stop_time', 1);
             trials.addRow('start_time', 2, 'stop_time', 3);
             trials.addRow('start_time', 4, 'stop_time', 5);
-            trials.addRaggedArray('raw_data', ...
+            trials.addRaggedArrayColumn('raw_data', ...
                 {types.untyped.ObjectView(raw1), [], types.untyped.ObjectView(raw3)}, ...
                 'Description', 'raw data of each trial');
 
@@ -101,21 +101,21 @@ classdef DynamicTableRaggedArrayTest < tests.abstract.NwbTestCase
                 uint64([1; 1; 2]));
         end
 
-        function testAddRaggedArrayToTableWithIdsOnly(testCase)
+        function testAddRaggedArrayColumnToTableWithIdsOnly(testCase)
             % A table can be constructed with its ids only and get a ragged
             % column afterwards. The ids then set the number of rows.
             dt = types.hdmf_common.DynamicTable('description', 'test', ...
                 'id', types.hdmf_common.ElementIdentifiers('data', int64([19; 21])));
-            dt.addRaggedArray('refs', {0, [0 1]});
+            dt.addRaggedArrayColumn('refs', {0, [0 1]});
 
             testCase.verifyEqual(dt.vectordata.get('refs_index').data, uint64([1; 3]));
-            testCase.verifyError(@() dt.addRaggedArray('more', {0}), ...
+            testCase.verifyError(@() dt.addRaggedArrayColumn('more', {0}), ...
                 'NWB:DynamicTable:AddColumn:MissingRows');
         end
 
-        function testAddRaggedArray(testCase)
+        function testAddRaggedArrayColumn(testCase)
             dt = types.hdmf_common.DynamicTable('description', 'test');
-            dt.addRaggedArray('spikes', {[1 2 3], [4 5]}, 'Description', 'spike times');
+            dt.addRaggedArrayColumn('spikes', {[1 2 3], [4 5]}, 'Description', 'spike times');
 
             testCase.verifyTrue(any(strcmp(dt.colnames, 'spikes')));
             testCase.verifyEqual(numel(dt.id.data), 2);
@@ -130,37 +130,37 @@ classdef DynamicTableRaggedArrayTest < tests.abstract.NwbTestCase
             % option names.
             for description = ["depth", "Dep", "ElementsPerRow"]
                 dt = types.hdmf_common.DynamicTable('description', 'test');
-                dt.addRaggedArray('x', {[1 2], 3}, 'Description', description);
+                dt.addRaggedArrayColumn('x', {[1 2], 3}, 'Description', description);
 
                 testCase.verifyEqual(dt.vectordata.get('x').description, char(description));
             end
 
             dt = types.hdmf_common.DynamicTable('description', 'test');
-            dt.addDoublyRaggedArray('x', {{[1 2], 3}, {4}}, 'Description', 'depth');
+            dt.addDoublyRaggedArrayColumn('x', {{[1 2], 3}, {4}}, 'Description', 'depth');
             testCase.verifyEqual(dt.vectordata.get('x').description, 'depth');
         end
 
-        function testAddRaggedArrayWithoutDescription(testCase)
+        function testAddRaggedArrayColumnWithoutDescription(testCase)
             dt = types.hdmf_common.DynamicTable('description', 'test');
-            dt.addRaggedArray('x', {[1 2], 3});
+            dt.addRaggedArrayColumn('x', {[1 2], 3});
 
             testCase.verifyEqual(dt.vectordata.get('x').description, 'no description');
         end
 
-        function testAddRaggedArrayWithMatrixRows(testCase)
+        function testAddRaggedArrayColumnWithMatrixRows(testCase)
             % Elements are 4-sample vectors, one per column, as in VectorData.data.
             row1 = reshape(1:8, 4, 2);
             row2 = 100 + reshape(1:12, 4, 3);
 
             dt = types.hdmf_common.DynamicTable('description', 'test');
-            dt.addRaggedArray('wf', {row1, row2});
+            dt.addRaggedArrayColumn('wf', {row1, row2});
 
             testCase.verifyEqual(numel(dt.id.data), 2);
             testCase.verifyEqual(dt.vectordata.get('wf').data, [row1, row2]);
             testCase.verifyEqual(dt.vectordata.get('wf_index').data, uint64([2; 5]));
         end
 
-        function testAddRaggedArrayWithTableRegion(testCase)
+        function testAddRaggedArrayColumnWithTableRegion(testCase)
             target = types.hdmf_common.DynamicTable( ...
                 'description', 'target', ...
                 'colnames', {'x'}, ...
@@ -168,7 +168,7 @@ classdef DynamicTableRaggedArrayTest < tests.abstract.NwbTestCase
                 'id', types.hdmf_common.ElementIdentifiers('data', (0:4)'));
 
             dt = types.hdmf_common.DynamicTable('description', 'test');
-            dt.addRaggedArray('regions', {[0 1], [2 3 4]}, ...
+            dt.addRaggedArrayColumn('regions', {[0 1], [2 3 4]}, ...
                 'Description', 'regions', 'TargetTable', target);
 
             column = dt.vectordata.get('regions');
@@ -178,29 +178,29 @@ classdef DynamicTableRaggedArrayTest < tests.abstract.NwbTestCase
             % A description that is an option name of
             % util.create_indexed_column is stored beside a table too.
             dt = types.hdmf_common.DynamicTable('description', 'test');
-            dt.addRaggedArray('regions', {[0 1], [2 3 4]}, ...
+            dt.addRaggedArrayColumn('regions', {[0 1], [2 3 4]}, ...
                 'Description', 'depth', 'TargetTable', target);
             column = dt.vectordata.get('regions');
             testCase.verifyClass(column, 'types.hdmf_common.DynamicTableRegion');
             testCase.verifyEqual(column.description, 'depth');
         end
 
-        function testAddRaggedArrayTableMustBeADynamicTable(testCase)
+        function testAddRaggedArrayColumnTableMustBeADynamicTable(testCase)
             dt = types.hdmf_common.DynamicTable('description', 'test');
 
             testCase.verifyError( ...
-                @() dt.addRaggedArray('regions', {[0 1], 2}, 'TargetTable', 5), ...
+                @() dt.addRaggedArrayColumn('regions', {[0 1], 2}, 'TargetTable', 5), ...
                 'NWB:validators:mustBeDynamicTable');
         end
 
-        function testAddRaggedArrayDepth2Generic(testCase)
+        function testAddRaggedArrayColumnDepth2Generic(testCase)
             % [num_samples x num_waveforms] per row: one waveform per sub-group.
             numSamples = 4;
             unit1 = reshape(1:(3*numSamples), numSamples, 3);
             unit2 = 100 + reshape(1:(4*numSamples), numSamples, 4);
 
             dt = types.hdmf_common.DynamicTable('description', 'test');
-            dt.addRaggedArray('wf', {unit1, unit2}, 'Description', 'waveforms', 'Depth', 2);
+            dt.addRaggedArrayColumn('wf', {unit1, unit2}, 'Description', 'waveforms', 'Depth', 2);
 
             testCase.verifyEqual(dt.colnames, {'wf'});
             testCase.verifyEqual(numel(dt.id.data), 2);
@@ -209,15 +209,15 @@ classdef DynamicTableRaggedArrayTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(dt.vectordata.get('wf_index_index').data, uint64([3; 7]));
         end
 
-        function testAddDoublyRaggedArrayIsDepth2(testCase)
+        function testAddDoublyRaggedArrayColumnIsDepth2(testCase)
             numSamples = 4;
             unit1 = reshape(1:(3*numSamples), numSamples, 3);
             unit2 = 100 + reshape(1:(4*numSamples), numSamples, 4);
 
             viaDepth = types.hdmf_common.DynamicTable('description', 'test');
-            viaDepth.addRaggedArray('wf', {unit1, unit2}, 'Description', 'waveforms', 'Depth', 2);
+            viaDepth.addRaggedArrayColumn('wf', {unit1, unit2}, 'Description', 'waveforms', 'Depth', 2);
             viaAlias = types.hdmf_common.DynamicTable('description', 'test');
-            viaAlias.addDoublyRaggedArray('wf', {unit1, unit2}, 'Description', 'waveforms');
+            viaAlias.addDoublyRaggedArrayColumn('wf', {unit1, unit2}, 'Description', 'waveforms');
 
             for name = ["wf", "wf_index", "wf_index_index"]
                 testCase.verifyEqual(viaAlias.vectordata.get(name).data, ...
@@ -232,10 +232,10 @@ classdef DynamicTableRaggedArrayTest < tests.abstract.NwbTestCase
             unit2 = 100 + reshape(1:16, 4, 4);
 
             viaDepth = types.hdmf_common.DynamicTable('description', 'test');
-            viaDepth.addRaggedArray('wf', {unit1, unit2}, ...
+            viaDepth.addRaggedArrayColumn('wf', {unit1, unit2}, ...
                 'Depth', 2, 'ElementsPerSubGroup', [3 1]);
             viaAlias = types.hdmf_common.DynamicTable('description', 'test');
-            viaAlias.addDoublyRaggedArray('wf', {unit1, unit2}, 'ElementsPerSubGroup', [3 1]);
+            viaAlias.addDoublyRaggedArrayColumn('wf', {unit1, unit2}, 'ElementsPerSubGroup', [3 1]);
 
             testCase.verifyEqual(viaDepth.vectordata.get('wf_index').data, ...
                 uint64([3; 6; 7; 8; 9; 10]));
@@ -246,24 +246,24 @@ classdef DynamicTableRaggedArrayTest < tests.abstract.NwbTestCase
             end
         end
 
-        function testAddRaggedArrayToTableWithNoRows(testCase)
+        function testAddRaggedArrayColumnToTableWithNoRows(testCase)
             % An empty ElementsPerRow is passed on as given: flat data for a
             % table with no rows.
             dt = types.hdmf_common.DynamicTable('description', 'test');
-            dt.addRaggedArray('mask', zeros(0, 1), 'ElementsPerRow', zeros(0, 1));
+            dt.addRaggedArrayColumn('mask', zeros(0, 1), 'ElementsPerRow', zeros(0, 1));
 
             testCase.verifyEqual(dt.colnames, {'mask'});
             testCase.verifyEmpty(dt.vectordata.get('mask_index').data);
         end
 
-        function testAddRaggedArrayDepth2WithNDElements(testCase)
+        function testAddRaggedArrayColumnDepth2WithNDElements(testCase)
             % data{row}{subGroup} = [elementDims x nElements]; here elements are
             % [4 x 3] and the ragged axis stays last.
             unit1 = {reshape(1:(4*3*2), 4, 3, 2), 100+reshape(1:(4*3), 4, 3)};
             unit2 = {200+reshape(1:(4*3*3), 4, 3, 3)};
 
             dt = types.hdmf_common.DynamicTable('description', 'test');
-            dt.addRaggedArray('wf', {unit1, unit2}, 'Description', 'volumes', 'Depth', 2);
+            dt.addRaggedArrayColumn('wf', {unit1, unit2}, 'Description', 'volumes', 'Depth', 2);
 
             testCase.verifyEqual(size(dt.vectordata.get('wf').data), [4, 3, 6]);
             testCase.verifyEqual(dt.vectordata.get('wf').data(:, :, 1), unit1{1}(:, :, 1));
@@ -278,7 +278,7 @@ classdef DynamicTableRaggedArrayTest < tests.abstract.NwbTestCase
             unit2 = 100 + reshape(1:(4*numSamples), numSamples, 4);
 
             units = types.core.Units('colnames', {}, 'description', 'units');
-            units.addRaggedArray('waveforms', {unit1, unit2}, ...
+            units.addRaggedArrayColumn('waveforms', {unit1, unit2}, ...
                 'Description', 'spike waveforms', 'Depth', 2);
 
             testCase.verifyTrue(any(strcmp(units.colnames, 'waveforms')));
@@ -312,7 +312,7 @@ classdef DynamicTableRaggedArrayTest < tests.abstract.NwbTestCase
             unit2 = 100 + reshape(1:(numSamples*numElectrodes*2), numSamples, numElectrodes, 2);
 
             units = types.core.Units('colnames', {}, 'description', 'units');
-            units.addRaggedArray('waveforms', {unit1, unit2}, 'Depth', 2);
+            units.addRaggedArrayColumn('waveforms', {unit1, unit2}, 'Depth', 2);
 
             waveforms = units.waveforms.data;
             testCase.verifyEqual(size(waveforms), [numSamples, 20]);
@@ -330,9 +330,9 @@ classdef DynamicTableRaggedArrayTest < tests.abstract.NwbTestCase
             cellForm = {splitSpikeEvents(unit1), splitSpikeEvents(unit2)};
 
             fromArray = types.core.Units('colnames', {}, 'description', 'units');
-            fromArray.addRaggedArray('waveforms', {unit1, unit2}, 'Depth', 2);
+            fromArray.addRaggedArrayColumn('waveforms', {unit1, unit2}, 'Depth', 2);
             fromCell = types.core.Units('colnames', {}, 'description', 'units');
-            fromCell.addRaggedArray('waveforms', cellForm, 'Depth', 2);
+            fromCell.addRaggedArrayColumn('waveforms', cellForm, 'Depth', 2);
 
             testCase.verifyEqual(fromArray.waveforms.data, fromCell.waveforms.data);
             testCase.verifyEqual(fromArray.waveforms_index.data, fromCell.waveforms_index.data);
@@ -349,7 +349,7 @@ classdef DynamicTableRaggedArrayTest < tests.abstract.NwbTestCase
                 'session_description', 'test', ...
                 'session_start_time', datetime(2024, 1, 1, 'TimeZone', 'local'));
             nwb.units = types.core.Units('colnames', {}, 'description', 'units');
-            nwb.units.addRaggedArray('waveforms', {unit1, unit2}, 'Depth', 2);
+            nwb.units.addRaggedArrayColumn('waveforms', {unit1, unit2}, 'Depth', 2);
 
             fileName = testCase.getRandomFilename();
             nwbExport(nwb, fileName);
@@ -360,33 +360,33 @@ classdef DynamicTableRaggedArrayTest < tests.abstract.NwbTestCase
             testCase.verifyEqual(back.units.waveforms_index_index.data.load(), uint64([3; 5]));
         end
 
-        function testAddRaggedArrayExistingColumnErrors(testCase)
+        function testAddRaggedArrayColumnExistingColumnErrors(testCase)
             % Adding a column that already exists is an error at any depth,
             % both for generic columns and for schema-defined properties.
             unit1 = reshape(1:8, 4, 2);
             unit2 = reshape(1:12, 4, 3);
 
             dt = types.hdmf_common.DynamicTable('description', 'test');
-            dt.addRaggedArray('wf', {unit1, unit2}, 'Depth', 2);
+            dt.addRaggedArrayColumn('wf', {unit1, unit2}, 'Depth', 2);
             testCase.verifyError( ...
-                @() dt.addRaggedArray('wf', {unit1, unit2}, 'Depth', 2), ...
+                @() dt.addRaggedArrayColumn('wf', {unit1, unit2}, 'Depth', 2), ...
                 'NWB:DynamicTable:AddColumn:ColumnExists');
 
             units = types.core.Units('colnames', {}, 'description', 'units');
-            units.addRaggedArray('waveforms', {unit1, unit2}, 'Depth', 2);
+            units.addRaggedArrayColumn('waveforms', {unit1, unit2}, 'Depth', 2);
             testCase.verifyError( ...
-                @() units.addRaggedArray('waveforms', {unit1, unit2}, 'Depth', 2), ...
+                @() units.addRaggedArrayColumn('waveforms', {unit1, unit2}, 'Depth', 2), ...
                 'NWB:DynamicTable:AddColumn:ColumnExists');
         end
 
-        function testAddRaggedArrayHeightMismatchErrors(testCase)
+        function testAddRaggedArrayColumnHeightMismatchErrors(testCase)
             dt = types.hdmf_common.DynamicTable('description', 'test');
             dt.addColumn('a', types.hdmf_common.VectorData( ...
                 'description', 'a', 'data', [1 2 3]'));  % 3 rows
 
             % The outermost index has 2 entries, one per row given.
             testCase.verifyError( ...
-                @() dt.addRaggedArray('wf', {reshape(1:8, 4, 2), reshape(1:8, 4, 2)}, 'Depth', 2), ...
+                @() dt.addRaggedArrayColumn('wf', {reshape(1:8, 4, 2), reshape(1:8, 4, 2)}, 'Depth', 2), ...
                 'NWB:DynamicTable:AddColumn:MissingRows');
         end
     end

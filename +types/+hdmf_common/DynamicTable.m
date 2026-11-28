@@ -49,6 +49,7 @@ methods
         % Output Arguments:
         %  - dynamicTable (types.hdmf_common.DynamicTable) - A DynamicTable object
         
+        varargin = types.util.dynamictable.expandTableColumns(varargin);
         obj = obj@types.hdmf_common.Container(varargin{:});
         [obj.vectordata, ivarargin] = types.util.parseConstrained(obj,'vectordata', 'types.hdmf_common.VectorData', varargin{:});
         varargin(ivarargin) = [];

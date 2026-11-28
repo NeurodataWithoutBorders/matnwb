@@ -36,6 +36,7 @@ methods
         % Output Arguments:
         %  - intracellularResponsesTable (types.core.IntracellularResponsesTable) - An IntracellularResponsesTable object
         
+        varargin = types.util.dynamictable.expandTableColumns(varargin);
         varargin = [{'description' 'Table for storing intracellular response related metadata.'} varargin];
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         

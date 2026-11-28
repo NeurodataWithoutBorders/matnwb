@@ -53,6 +53,7 @@ methods
         % Output Arguments:
         %  - eventsTable (types.core.EventsTable) - An EventsTable object
         
+        varargin = types.util.dynamictable.expandTableColumns(varargin);
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         
         

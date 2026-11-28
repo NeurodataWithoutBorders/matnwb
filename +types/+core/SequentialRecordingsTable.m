@@ -44,6 +44,7 @@ methods
         % Output Arguments:
         %  - sequentialRecordingsTable (types.core.SequentialRecordingsTable) - A SequentialRecordingsTable object
         
+        varargin = types.util.dynamictable.expandTableColumns(varargin);
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         
         

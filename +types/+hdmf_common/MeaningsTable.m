@@ -47,6 +47,7 @@ methods
         % Output Arguments:
         %  - meaningsTable (types.hdmf_common.MeaningsTable) - A MeaningsTable object
         
+        varargin = types.util.dynamictable.expandTableColumns(varargin);
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         
         

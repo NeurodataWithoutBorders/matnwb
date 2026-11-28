@@ -248,7 +248,7 @@ function [data_vector, varargout] = create_indexed_column(data, description, tab
 %    [mask, maskIndex] = util.create_indexed_column(pixels, 'pixel masks', 'ElementsPerRow', [3 2]);
 %
 % See also:
-%   types.hdmf_common.DynamicTable/addRaggedArray
+%   types.hdmf_common.DynamicTable/addRaggedArrayColumn
 
 % Terms:
 %  - row -

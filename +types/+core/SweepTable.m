@@ -44,6 +44,7 @@ methods
         % Output Arguments:
         %  - sweepTable (types.core.SweepTable) - A SweepTable object
         
+        varargin = types.util.dynamictable.expandTableColumns(varargin);
         obj = obj@types.hdmf_common.DynamicTable(varargin{:});
         
         
