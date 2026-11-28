@@ -251,6 +251,25 @@ classdef (SharedTestFixtures = {tests.fixtures.GenerateCoreFixture}) ...
                 'NWB:AlignedDynamicTable:AddRow:InvalidCategoryRow')
         end
 
+        function testAddRowWithoutRowValuesNamesCategories(testCase)
+            % The parent table has no columns, so every row value of this
+            % table belongs to the category `custom`.
+            alignedTable = tests.system.AlignedDynamicTableTest.createAlignedTable();
+            categoryTable = tests.factory.DynamicTable(NumRows=3, NumColumns=1);
+            alignedTable.addCategory("custom", categoryTable)
+
+            try
+                alignedTable.addRow()
+                testCase.verifyFail('Expected an error.')
+            catch exception
+                testCase.verifyEqual(exception.identifier, 'NWB:DynamicTable:AddRow:NoData')
+                testCase.verifySubstring(exception.message, 'custom')
+            end
+
+            testCase.verifyNumElements(alignedTable.id.data, 3)
+            testCase.verifyNumElements(categoryTable.id.data, 3)
+        end
+
         function testAddCustomCategoryRejectsExistingCategory(testCase)
             alignedTable = tests.system.AlignedDynamicTableTest.createAlignedTable();
             categoryTable = tests.system.AlignedDynamicTableTest.createTableWithHeight(2);

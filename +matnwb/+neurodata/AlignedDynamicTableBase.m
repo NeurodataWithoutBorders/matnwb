@@ -156,6 +156,16 @@ classdef (Abstract) AlignedDynamicTableBase < matnwb.neurodata.DynamicTableBase
             optionalArgs = namedargs2cell(options);
 
             if ~any(isCategoryRow)
+                % A call without row values cannot add a row. The error names
+                % the categories, because the row values of a table without
+                % columns of its own are all given as category rows.
+                if isempty(names) && ~isempty(categoryNames)
+                    error('NWB:DynamicTable:AddRow:NoData', ...
+                        ['No row values were given. Give a value for each column ', ...
+                        'of the table, and a struct with one field per column for ', ...
+                        'each of these categories: %s.'], strjoin(categoryNames, ', '))
+                end
+
                 columnValuePairs = [name; value];
                 addRow@matnwb.neurodata.DynamicTableBase( ...
                     obj, columnValuePairs{:}, optionalArgs{:});
