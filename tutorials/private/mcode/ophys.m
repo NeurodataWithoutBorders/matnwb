@@ -218,39 +218,29 @@ if selection == "Create Pixel Mask"
     ind = find(image_mask);
     [y_ind, x_ind, roi_ind] = ind2sub(size(image_mask), ind);
 
+    % One entry per pixel, for all ROIs. find returns the pixels ROI by ROI,
+    % so the pixels of each ROI are contiguous.
     pixel_mask_struct = struct();
     pixel_mask_struct.x = uint32(x_ind); % Add x coordinates to struct field x
     pixel_mask_struct.y = uint32(y_ind); % Add y coordinates to struct field y
-    pixel_mask_struct.weight = single(ones(size(x_ind))); 
-    
-    % Create pixel mask vector data
-    pixel_mask = types.hdmf_common.VectorData(...
-            'data', struct2table(pixel_mask_struct), ...
-            'description', 'pixel masks');
+    pixel_mask_struct.weight = single(ones(size(x_ind)));
 
-    % When creating a pixel mask, it is also necessary to specify a
-    % pixel_mask_index vector. See the documentation for ragged arrays linked
-    % above to learn more.
     num_pixels_per_roi = zeros(n_rois, 1); % Column vector
     for i_roi = 1:n_rois
         num_pixels_per_roi(i_roi) = sum(roi_ind == i_roi);
     end
 
-    pixel_mask_index = uint16(cumsum(num_pixels_per_roi)); % Note: Use an integer 
-    % type that can accommodate the maximum value of the cumulative sum
-
-    % Create pixel_mask_index vector
-    pixel_mask_index = types.hdmf_common.VectorIndex(...
-            'description', 'Index into pixel_mask VectorData', ...
-            'data', pixel_mask_index, ...
-            'target', types.untyped.ObjectView(pixel_mask) );
-
+    % pixel_mask is a ragged array column: each ROI (row) has its own number
+    % of pixels. A RaggedArrayColumn takes the pixels of all ROIs and the
+    % number of pixels of each ROI. The table stores the pixels in pixel_mask
+    % and the position of each ROI's last pixel in pixel_mask_index.
     plane_segmentation = types.core.PlaneSegmentation( ...
         'colnames', {'pixel_mask'}, ...
         'description', 'roi pixel position (x,y) and pixel weight', ...
         'imaging_plane', types.untyped.SoftLink(imaging_plane), ...
-        'pixel_mask_index', pixel_mask_index, ...
-        'pixel_mask', pixel_mask ...
+        'pixel_mask', types.untyped.RaggedArrayColumn(struct2table(pixel_mask_struct), ...
+            'ElementsPerRow', num_pixels_per_roi, ...
+            'Description', 'pixel masks') ...
     );
 
 else % selection == "Create Image Mask"
